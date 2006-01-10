@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/rules/simple-patchsys.mk
+
+DEB_CONFIGURE_EXTRA_FLAGS += \
+		--with-dbus-sys=/etc/dbus-1/system.d \
+		--libexecdir=/usr/bin \
+		--localstatedir=/var/run \
+		--without-named \
+		--with-dhcdbd=/sbin/dhcdbd \
+		--with-distro=debian
+
+clean::
+	
+	rm -f po/*.gmo
+
+install_arch::
+	
+	install -m 755 debian/network-manager.dbus-event debian/network-manager/etc/dbus-1/event.d/25NetworkManager
+	install -m 755 debian/network-manager-dispatcher.dbus-event debian/network-manager/etc/dbus-1/event.d/25NetworkManagerDispatcher
+	mkdir -p -m 755 debian/network-manager/etc/NetworkManager/dispatcher.d
+	install -m 644 debian/nm-applet.conf debian/network-manager/etc/dbus-1/system.d/nm-applet.conf
+	install -m 644 debian/network-manager.dbus-conf debian/network-manager/etc/dbus-1/system.d/NetworkManager.conf
+								 

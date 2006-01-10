@@ -1,0 +1,10 @@
+debian/tmp/usr/bin/NetworkManager usr/sbin/
+debian/tmp/usr/bin/NetworkManagerDispatcher usr/sbin/
+debian/tmp/usr/bin/nm-vpn-properties
+debian/tmp/usr/bin/nm-applet
+debian/tmp/usr/share/locale/*
+debian/tmp/usr/share/NetworkManager/*
+debian/tmp/usr/share/NetworkManagerNotification/*
+debian/tmp/usr/share/nm-applet/*
+debian/tmp/usr/share/icons/hicolor
+debian/tmp/usr/share/gnome-vpn-properties

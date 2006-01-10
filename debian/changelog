@@ -1,0 +1,210 @@
+network-manager (0.5.1-1) experimental; urgency=low
+ 
+  * Inital upload to Debian (Closes #)
+  * work based on the ubuntu package
+  
+ -- Riccardo Setti <giskard@autistici.org>  Mon, 5 Jan 2006 17:09:29 +0100
+
+network-manager (0.5.1-0ubuntu6) dapper; urgency=low
+
+  * Really don't depend on bind9 being installed
+
+ -- Matthew Garrett <mjg59@srcf.ucam.org>  Mon, 26 Dec 2005 00:40:29 +0000
+
+network-manager (0.5.1-0ubuntu5) dapper; urgency=low
+
+  * debian/control:
+    - Version dep on dhcdbd to (>= 1.10-0ubuntu2).
+
+ -- Christian Bjälevik <nafallo@ubuntu.com>  Wed, 21 Dec 2005 19:08:53 +0100
+
+network-manager (0.5.1-0ubuntu4) dapper; urgency=low
+
+  * debian/control:
+    - Version all accurances of libdbus-glib-1-dev to (>= 0.60).
+    - Removed not needed Build-Dep on libxdcmp-dev, this is a dep
+      of libx11-dev now.
+  * debian/patches/01-STOLEN_FROM_HEAD-dbus-60:
+    - Add a patch from CVS HEAD to fix FTBFS.
+      No patchsystem, only applied it.
+
+ -- Christian Bjälevik <nafallo@ubuntu.com>  Wed, 21 Dec 2005 14:22:34 +0100
+
+network-manager (0.5.1-0ubuntu3) dapper; urgency=low
+
+  * debian/control:
+    - Changed versioned dep on wireless-tools to >= 28pre9
+      (what upstream says in their .news).
+    - Removed commented out Conflicts-line.
+    - Do not depend on bind9 being installed.
+    - Added libxdmcp-dev as a Build-Dep.
+  * debian/*.dbus-event:
+    - Use "$NAME" instead of the incredible long "$DESC: ".
+  * debian/network-manager.postinst:
+    - Do not run gtk-update-icon-cache on configure cause
+      seb128 says it's a bad idea and explained why :-).
+  * debian/README:
+    - Fix typo (cann -> can).
+  * debian/rules:
+    - Removed named-support (we don't want bind9 for this)
+    - Added --with-distro=debian.
+
+ -- Christian Bjälevik <nafallo@ubuntu.com>  Thu, 15 Dec 2005 02:04:12 +0100
+
+network-manager (0.5.1-0ubuntu2) dapper; urgency=low
+
+  * remove .arch-ids traces
+
+ -- Jan Gerber <j@bootlab.org>  Sun, 13 Nov 2005 21:19:18 -0500
+
+network-manager (0.5.1-0ubuntu1) dapper; urgency=low
+
+  * New upstream version
+
+ -- Jan Gerber <j@bootlab.org>  Fri, 21 Oct 2005 08:33:25 -0400
+
+network-manager (0.5.0-0ubuntu1) breezy; urgency=low
+
+  * New upstream version
+  * split headers into network-manager-dev
+
+ -- Jan Gerber <j@bootlab.org>  Tue, 18 Oct 2005 17:43:56 +0200
+
+network-manager (0.4.1+cvs20050817-0ubuntu5) breezy; urgency=low
+
+  * fix postinst so its possible to install network-manager 
+    in pbuilder
+
+ -- Jan Gerber <j@bootlab.org>  Tue, 11 Oct 2005 19:23:47 +0200
+
+network-manager (0.4.1+cvs20050817-0ubuntu4) breezy; urgency=low
+
+  * update postinst to restart dbus on install
+
+ -- Jan Gerber <j@bootlab.org>  Sat, 29 Aug 2005 13:40:26 +0200
+
+network-manager (0.4.1+cvs20050817-0ubuntu3) breezy; urgency=low
+
+  * this is NetworkManager CVS Tag NM_0_4_1_RELEASE + 3 patches
+    - make dhcdbd only a runtime dependency
+    - fix build due to one too many ,s
+    - fix debian backend to support static IP settings again
+      (all changes are upstream by now)
+
+ -- Jan Gerber <j@bootlab.org>  Sat, 27 Aug 2005 23:40:26 +0200
+
+network-manager (0.4.1+cvs20050817-0ubuntu2) breezy; urgency=low
+
+  * restructure build system to creat orig.tar.gz and diff.gz files
+
+ -- Jan Gerber <j@bootlab.org>  Sat, 27 Aug 2005 14:04:26 +0200
+
+network-manager (0.4.1+cvs20050817-0unbuntu1) breezy; urgency=low
+
+  * fix loading static IP settings from /etc/network/interfaces
+
+ -- Jan Gerber <j@bootlab.org>  Sun, 21 Aug 2005 19:40:26 +0200
+
+network-manager (0.4.1+cvs20050817-0) breezy; urgency=low
+
+  * update to NM_0_4_1_RELEASE
+
+ -- Jan Gerber <j@bootlab.org>  Sun, 21 Aug 2005 15:27:26 +0200
+
+network-manager (0.4.1+cvs20050813-0) breezy; urgency=low
+
+  * change back to using BIND
+  * remove dependency on resolvconf and dnsmasq
+
+ -- Jan Gerber <j@bootlab.org>  Sat, 13 Aug 2005 19:37:26 +0200
+
+network-manager (0.4.1+cvs20050618-3) breezy; urgency=low
+
+  * Run resolvconf instead of messing with BIND.  Dependencies
+    changed too.  Unfortunately these changes are not properly
+    tested :-(.
+
+ -- Ian Jackson <ian@ubuntu.com>  Sat, 18 Jun 2005 13:33:26 +0100
+
+network-manager (0.4.1+cvs20050618-2) breezy; urgency=low
+
+  * Sort out chown of /var/lib/NetworkManager
+
+ -- Thom May <thom@ubuntu.com>  Sat, 18 Jun 2005 13:33:26 +0100
+
+network-manager (0.4.1+cvs20050618-1) breezy; urgency=low
+
+  * update from CVS
+  * Add configure magic to ensure we get the correct path for dhcdbd
+    (Ubuntu: #11905)
+  * Ensure /var/lib/NetworkManager is created with the correct permisions
+    (Ubuntu: #11904)
+  * Rename dbus event script to correct name and restart dbus in postinst
+  * Depend on lsb-base and use log_*_msg in event script
+
+ -- Thom May <thom@ubuntu.com>  Sat, 18 Jun 2005 11:22:49 +0100
+
+network-manager (0.4.1+cvs20050616-1) breezy; urgency=low
+
+  * New upstream. Fix descriptions.
+
+ -- Thom May <thom@ubuntu.com>  Thu, 16 Jun 2005 14:47:30 +0100
+   
+network-manager (0.4.1+cvs20050614-1) unstable; urgency=low
+
+  * New upstream release. Move to 0.4 branch; use dhcdbd.
+  * Drop network-manager-gnome
+  * add libnm-glib-0 and libnm-glib-0-dev
+
+ -- Thom May <thom@debian.org>  Tue, 14 Jun 2005 12:41:29 +0100
+
+network-manager (0.3.1+cvs20041108-1) unstable; urgency=low
+
+  * New upstream release
+  * Add dpatch
+
+ -- Thom May <thom@debian.org>  Mon,  8 Nov 2004 13:49:15 +0000
+
+network-manager (0.3.1+cvs20041101-2) unstable; urgency=low
+
+  * Update dependencies, thanks to j@bootlab.org
+
+ -- Thom May <thom@debian.org>  Tue,  2 Nov 2004 16:32:45 +0000
+
+network-manager (0.3.1+cvs20041101-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Thom May <thom@debian.org>  Mon,  1 Nov 2004 13:08:32 +0000
+
+network-manager (0.3.1+cvs20041028-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Thom May <thom@debian.org>  Thu, 28 Oct 2004 13:12:42 +0100
+
+network-manager (0.3+cvs20041016-2) unstable; urgency=low
+
+  * fix some minor problems in packaging; clean up for pkg-utopia entry
+
+ -- Thom May <thom@canonical.com>  Mon, 25 Oct 2004 13:43:07 +0100
+
+network-manager (0.3+cvs20041016-1) unstable; urgency=low
+
+  * New upstream release
+  * Clean up backend for debian
+
+ -- Thom May <thom@debian.org>  Sat, 16 Oct 2004 21:32:43 +0100
+
+network-manager (0.3-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Thom May <thom@debian.org>  Fri, 15 Oct 2004 13:55:46 +0100
+
+network-manager (0.2+cvs20040928-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Thom May <thom@debian.org>  Sun,  3 Oct 2004 11:54:56 +0100
+

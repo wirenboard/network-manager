@@ -1,0 +1,5 @@
+etc/dbus-1/event.d
+etc/dbus-1/system.d
+usr/bin
+usr/share/locale
+var/lib/NetworkManager

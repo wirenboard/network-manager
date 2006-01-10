@@ -1,0 +1,5 @@
+debian/tmp/usr/lib/pkgconfig/libnm_glib.pc
+debian/tmp/usr/lib/libnm_glib*.a
+debian/tmp/usr/lib/libnm_glib*.la
+debian/tmp/usr/lib/libnm_glib*.so
+debian/tmp/usr/include/NetworkManager/libnm_glib.h

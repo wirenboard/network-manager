@@ -1,0 +1,79 @@
+#! /bin/sh
+#
+# NetworkManager NetworkManagerDispatcher daemon
+#				Daemon for automatically switching network 
+#				connections to the best available connection.
+#				This file should be placed in /etc/init.d.
+#
+# Authors:	Jan Gerber <j@bootlab.org>
+#			Mark Roach <mrroach@okmaybe.com>
+#			Thom May <thom@debian.org>
+#
+#
+
+set -e
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="Network connection manager dispatcher daemon"
+NAME="NetworkManagerDispatcher"
+DAEMON=/usr/sbin/$NAME
+PIDDIR=/var/run/NetworkManager
+PIDFILE=$PIDDIR/$NAME.pid
+SCRIPTNAME=/etc/dbus-1/event.d/25$NAME
+USER=root
+
+# Gracefully exit if the package has been removed.
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+test -f /etc/default/rcS && . /etc/default/rcS
+test -f /etc/default/NetworkManagerDispatcher && . /etc/default/NetworkManagerDispatcher
+
+#
+#	Function that starts the daemon/service.
+#
+d_start() {
+        log_begin_msg "Starting $NAME"
+	if [ ! -d $PIDDIR ]; then
+		mkdir -p $PIDDIR
+		chown $USER:$USER $PIDDIR
+	fi
+
+	start-stop-daemon --start --quiet --pidfile $PIDFILE \
+		--user $USER --exec $DAEMON -- $DAEMON_OPTS
+    RETVAL=$?
+	log_end_msg $RETVAL
+    [ $RETVAL -eq 0 ] && echo `/bin/pidof $NAME` > $PIDFILE
+}
+
+#
+#	Function that stops the daemon/service.
+#
+d_stop() {
+        log_begin_msg "Stopping $NAME"
+	start-stop-daemon --stop --quiet --pidfile $PIDFILE \
+		 --oknodo --user $USER --exec $DAEMON
+        log_end_msg $?
+}
+
+
+case "$1" in
+  start)
+	d_start
+	;;
+  stop)
+	d_stop
+	;;
+  restart|force-reload)
+	d_stop
+	sleep 1
+	d_start
+	;;
+  *)
+	log_success_msg "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

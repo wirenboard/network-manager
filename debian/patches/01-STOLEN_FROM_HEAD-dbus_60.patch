@@ -1,0 +1,11 @@
+--- gnome/applet/applet-dbus.c.old	2005-12-21 14:19:38.000000000 +0100
++++ gnome/applet/applet-dbus.c	2005-12-21 14:20:12.000000000 +0100
+@@ -388,7 +388,7 @@
+ 	}
+ 
+ 	dbus_error_init (&error);
+-	acquisition = dbus_bus_request_name (connection, NMI_DBUS_SERVICE, DBUS_NAME_FLAG_PROHIBIT_REPLACEMENT, &error);
++	acquisition = dbus_bus_request_name (connection, NMI_DBUS_SERVICE, DBUS_NAME_FLAG_REPLACE_EXISTING, &error);
+ 	if (dbus_error_is_set (&error))
+ 	{
+ 		nm_warning ("nmwa_dbus_init() could not acquire its service.  dbus_bus_acquire_service() says: '%s'", error.message);
