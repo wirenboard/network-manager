@@ -1,4 +1,4 @@
-NetworkManager (0.5.1-1) experimental; urgency=low
+network-manager (0.5.1-1) experimental; urgency=low
  
   * Inital upload to Debian (Closes #)
   * work based on the ubuntu package
