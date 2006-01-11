@@ -2,7 +2,9 @@ network-manager (0.5.1-1) experimental; urgency=low
  
   * Inital upload to Debian (Closes #)
   * work based on the ubuntu package
-  
+  * Added 01.patch and 02.patch for fix the problem with recente linux 
+  kernel-headers
+ 
  -- Riccardo Setti <giskard@autistici.org>  Mon, 5 Jan 2006 17:09:29 +0100
 
 network-manager (0.5.1-0ubuntu6) dapper; urgency=low
