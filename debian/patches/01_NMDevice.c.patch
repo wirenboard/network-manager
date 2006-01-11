@@ -1,5 +1,5 @@
 --- NetworkManagerDevice.c	2005-10-19 16:19:53.000000000 +0200
-+++ ../../NetworkManagerDevice.c	2006-01-11 12:14:53.000000000 +0100
++++ src/NetworkManagerDevice.c	2006-01-11 12:14:53.000000000 +0100
 @@ -4283,7 +4283,7 @@
  
  	strncpy (ifr.ifr_name, nm_device_get_iface (dev), sizeof(ifr.ifr_name)-1);
