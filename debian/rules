@@ -16,11 +16,15 @@ clean::
 	
 	rm -f po/*.gmo
 
-install_arch::
+binary-install/network-manager::
 	
 	install -m 755 debian/network-manager.dbus-event debian/network-manager/etc/dbus-1/event.d/25NetworkManager
 	install -m 755 debian/network-manager-dispatcher.dbus-event debian/network-manager/etc/dbus-1/event.d/25NetworkManagerDispatcher
+	
 	mkdir -p -m 755 debian/network-manager/etc/NetworkManager/dispatcher.d
 	install -m 644 debian/nm-applet.conf debian/network-manager/etc/dbus-1/system.d/nm-applet.conf
 	install -m 644 debian/network-manager.dbus-conf debian/network-manager/etc/dbus-1/system.d/NetworkManager.conf
-								 
+	
+	mkdir -p debian/network-manager/etc/dhcp3/dhclient-exit-hooks.d/
+	cp debian/dhcdbd.dhcp3 debian/network-manager/etc/dhcp3/dhclient-exit-hooks.d/dhcdbd
+	
