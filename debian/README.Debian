@@ -4,6 +4,7 @@ the user can interact with. Since NetworkManager is not part of
 main yet, you have to add nm-applet to your session once.
 
 (instructions for gnome only)
+First add yourself to the plugdev group
 Go to System -> Preferences -> Sessions
 In the Startup Programs tab, click Add
 type "nm-applet", click OK.
