@@ -9,7 +9,7 @@ DEB_CONFIGURE_EXTRA_FLAGS += \
 		--libexecdir=/usr/bin \
 		--localstatedir=/var/run \
 		--without-named \
-		--with-dhcdbd=/sbin/dhcdbd \
+		--with-dhcdbd=/usr/sbin/dhcdbd \
 		--with-distro=debian
 
 clean::
