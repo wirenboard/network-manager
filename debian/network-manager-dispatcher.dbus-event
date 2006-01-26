@@ -5,7 +5,8 @@
 #				connections to the best available connection.
 #				This file should be placed in /etc/init.d.
 #
-# Authors:	Jan Gerber <j@bootlab.org>
+# Authors:	Christian Bjälevik <nafallo@magicalforest.se>
+#			Jan Gerber <j@bootlab.org>
 #			Mark Roach <mrroach@okmaybe.com>
 #			Thom May <thom@debian.org>
 #
@@ -14,12 +15,12 @@
 set -e
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DESC="Network connection manager dispatcher daemon"
+DESC="NetworkManager dispatcher"
 NAME="NetworkManagerDispatcher"
 DAEMON=/usr/sbin/$NAME
 PIDDIR=/var/run/NetworkManager
 PIDFILE=$PIDDIR/$NAME.pid
-SCRIPTNAME=/etc/dbus-1/event.d/25$NAME
+SCRIPTNAME=/etc/dbus-1/event.d/26$NAME
 USER=root
 
 # Gracefully exit if the package has been removed.
@@ -34,7 +35,7 @@ test -f /etc/default/NetworkManagerDispatcher && . /etc/default/NetworkManagerDi
 #	Function that starts the daemon/service.
 #
 d_start() {
-        log_begin_msg "Starting $NAME"
+        log_begin_msg "Starting $DESC"
 	if [ ! -d $PIDDIR ]; then
 		mkdir -p $PIDDIR
 		chown $USER:$USER $PIDDIR
@@ -51,7 +52,7 @@ d_start() {
 #	Function that stops the daemon/service.
 #
 d_stop() {
-        log_begin_msg "Stopping $NAME"
+        log_begin_msg "Stopping $DESC"
 	start-stop-daemon --stop --quiet --pidfile $PIDFILE \
 		 --oknodo --user $USER --exec $DAEMON
         log_end_msg $?

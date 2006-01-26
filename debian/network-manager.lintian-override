@@ -1,5 +1,3 @@
-network-manager: binary-without-manpage NetworkManager
-network-manager: binary-without-manpage NetworkManagerDispatcher
 network-manager: binary-without-manpage nm-applet
 network-manager: binary-without-manpage nm-vpn-properties
 

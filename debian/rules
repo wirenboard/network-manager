@@ -11,17 +11,21 @@ DEB_CONFIGURE_EXTRA_FLAGS += \
 		--without-named \
 		--with-dhcdbd=/usr/sbin/dhcdbd \
 		--with-distro=debian
-
+	
 clean::
 	
 	rm -f po/*.gmo
+	rm debian/*.1
 
 binary-install/network-manager::
+	
+	/usr/bin/docbook-to-man debian/NetworkManagerDispatcher.sgml > NetworkManagerDispatcher.1
+	/usr/bin/docbook-to-man debian/NetworkManager.sgml > NetworkManager.1
 	
 	install -m 755 debian/network-manager.dbus-event \
 		debian/network-manager/etc/dbus-1/event.d/25NetworkManager
 	install -m 755 debian/network-manager-dispatcher.dbus-event \
-		debian/network-manager/etc/dbus-1/event.d/25NetworkManagerDispatcher
+		debian/network-manager/etc/dbus-1/event.d/26NetworkManagerDispatcher
 	
 	install -d -m 755 debian/network-manager/etc/NetworkManager/dispatcher.d
 	install -m 644 debian/nm-applet.conf \
