@@ -20,8 +20,8 @@ clean::
 
 build/network-manager::
 	
-	/usr/bin/docbook-to-man debian/NetworkManagerDispatcher.sgml > NetworkManagerDispatcher.1
-	/usr/bin/docbook-to-man debian/NetworkManager.sgml > NetworkManager.1
+	/usr/bin/docbook-to-man debian/NetworkManagerDispatcher.sgml > debian/NetworkManagerDispatcher.1
+	/usr/bin/docbook-to-man debian/NetworkManager.sgml > debian/NetworkManager.1
 	
 binary-install/network-manager::
 	install -m 755 debian/network-manager.dbus-event \
