@@ -2,7 +2,7 @@ Source: network-manager
 Section: net
 Priority: optional
 Maintainer: Riccardo Setti <giskard@autistici.org>
-Build-Depends: debhelper (>= 4.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev
+Build-Depends: debhelper (>= 4.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev, libhal-dev
 Standards-Version: 3.6.2
 
 Package: network-manager
@@ -54,7 +54,7 @@ Description: network management framework daemon (GLib shared library)
 
 Package: libnm-glib-dev
 Architecture: any
-Depends: libglib2.0-dev, libnm-glib0, libdbus-glib-1-dev (>= 0.60)
+Depends: libglib2.0-dev, libnm-glib0 (= ${Source-Version}), libdbus-glib-1-dev (>= 0.60)
 Description: network management framework daemon (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
