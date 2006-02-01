@@ -1,16 +1,11 @@
-network-manager (0.5.1-2) experimental; urgency=low
+network-manager (0.5.1-1) experimental; urgency=low
 
   * renamed 25NetworkManagerDispatcher in 26NetworkManagerDispatcher because
   first we need to start NetworkManager and then NetworkManagerDispatcher 
   * added networkmanger and networkmanaferdispatcher manpages. 
-  
- -- Riccardo Setti <giskard@autistici.org>  Wed, 25 Jan 2006 22:54:01 +0100
-
-network-manager (0.5.1-1) experimental; urgency=low
- 
-  * Inital upload to Debian (Closes #)
+  * Inital upload to Debian (Closes: #270538)
   * work based on the ubuntu package
-  * Added 01.patch and 02.patch for fix the problem with recente linux 
+  * Added 01.patch and 02.patch for fix the problem with recent linux 
   kernel-headers
  
  -- Riccardo Setti <giskard@autistici.org>  Mon, 5 Jan 2006 17:09:29 +0100
