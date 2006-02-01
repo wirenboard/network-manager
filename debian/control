@@ -16,9 +16,21 @@ Description: network management framework daemon
  NetworkManager is _intended_ to replace default routes, obtain IP addresses
  from a DHCP server, and change nameservers whenever it sees fit.
  .
- This package provides the userspace daemons and a notification applet to
- control the system.
+ This package provides the userspace daemons.
 
+Package: network-manager-gnome
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager
+Description: network management framework daemon
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package provides the notification applet to the control system.
+ 
 Package: network-manager-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, pkg-config
