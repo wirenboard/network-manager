@@ -35,7 +35,3 @@ binary-install/network-manager::
 	install -m 644 debian/network-manager.dbus-conf \
 		debian/network-manager/etc/dbus-1/system.d/NetworkManager.conf
 	
-	install -d $(CURDIR)/debian/network-manager/usr/share/lintian/overrides/network-manager
-	install -m 0644 debian/network-manager.lintian-override \
-		$(CURDIR)/debian/network-manager/usr/share/lintian/overrides/network-manager
-	  
