@@ -73,11 +73,11 @@ d_stop() {
 
         # if NetworkManager does not want to die, apply some more force
         if [ -e $PIDFILE ]; then
-            kill -9 $(< $PIDFILE) || true
+            kill -9 $(cat $PIDFILE) || true
             rm -f $PIDFILE
         fi
         if [ -e $NAMED_PIDFILE ]; then
-            kill -9 $(< $NAMED_PIDFILE) || true
+            kill -9 $(cat $NAMED_PIDFILE) || true
             rm -f $NAMED_PIDFILE
         fi
 

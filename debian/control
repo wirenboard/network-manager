@@ -20,6 +20,7 @@ Description: network management framework daemon
 
 Package: network-manager-gnome
 Architecture: any
+Section: gnome
 Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
@@ -39,6 +40,7 @@ Description: network management framework daemon development
  compile VPN Plugins for NetworManager.
 
 Package: libnm-glib0
+Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: network management framework daemon (GLib shared library)
@@ -53,6 +55,7 @@ Description: network management framework daemon (GLib shared library)
  connection status via NetworkManager.
 
 Package: libnm-glib-dev
+Section: libdevel
 Architecture: any
 Depends: libglib2.0-dev, libnm-glib0 (= ${Source-Version}), libdbus-glib-1-dev (>= 0.60)
 Description: network management framework daemon (GLib interface)
