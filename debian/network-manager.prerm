@@ -8,13 +8,9 @@ case "$1" in
 			fi
 		;;
   	remove)
-	 if [ -x /usr/bin/dbus-send ]; then
-		/usr/bin/dbus-send --system --type=method_call \
-        	--dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-		/etc/dbus-1/event.d/25NetworkManager stop 
+    	/etc/dbus-1/event.d/25NetworkManager stop
 		/etc/dbus-1/event.d/26NetworkManagerDispatcher stop
-    fi
-    ;;
+	 ;;
 esac
 
 #DEBHELPER#
