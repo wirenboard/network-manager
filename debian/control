@@ -34,6 +34,7 @@ Description: network management framework daemon
  
 Package: network-manager-dev
 Architecture: any
+Section: devel
 Depends: ${shlibs:Depends}, ${misc:Depends}, pkg-config
 Description: network management framework daemon development
  this package provides header files that are needed to 
