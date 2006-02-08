@@ -85,7 +85,8 @@ Description: network management framework (shared library)
  NetworkManager is _intended_ to replace default routes, obtain IP addresses
  from a DHCP server, and change nameservers whenever it sees fit.
  .
- This package contains a convenience library to ease the access to NetworkManager.
+ This package contains a convenience library to ease the access to 
+ NetworkManager.
 
 Package: libnm-util-dev
 Section: libdevel
