@@ -17,10 +17,10 @@ manpage.1: manpage.sgml
   -->
 
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY date        "<date>30 August, 2005</date>">
+  <!ENTITY date        "<date>8 February, 2006</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
-  <!ENTITY package     "NetworkManagerDispatcher">
+  <!ENTITY package     "nm-applet">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
   <!ENTITY gpl         "&gnu; <acronym>GPL</acronym>">
 ]>
@@ -28,20 +28,20 @@ manpage.1: manpage.sgml
 <refentry>
   <refentryinfo>
     <address>
-      <email>j@bootlab.org</email>;
+      <email>giskard@autistici.org</email>;
     </address>
     <author>
-      <firstname>Jan</firstname>
-      <surname>Gerber</surname>
+      <firstname>Riccardo</firstname>
+      <surname>Setti</surname>
     </author>
     <copyright>
-      <year>2005</year>
-      <holder>Jan Gerber</holder>
+      <year>2006</year>
+      <holder>Riccardo Setti</holder>
     </copyright>
     &date;
   </refentryinfo>
   <refmeta>
-    <refentrytitle>NetworkManagerDispatcher</refentrytitle>
+    <refentrytitle>nm-applet</refentrytitle>
     <manvolnum>1</manvolnum>
   </refmeta>
   <refnamediv>
@@ -57,23 +57,23 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>DESCRIPTION</title>
 
-    <para><command>&package;</command> calls scripts in 
-/etc/NetworkManager/dispatcher.d each time the network is broght up or down by NetworkManager. Arguments to these scripts are network device and up or down. so it will call something like /etc/NetworkManager/dispatcher.d/example eth0 up
-</para>
+    <para><command>&package;</command> is the gnome front-end for NetworkManager</para>
+	 <para>If you want to know how you can add by default nm-applet in your gnome notify-area, please read README.Debian
+	 in /usr/share/doc/network-manager</para>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>NetworkManager (1), nm-applet (1).</para>
+    <para>NetworkManager (1). nm-vpn-properties (1)</para>
 
     <para>More Information about NetworkManager can be found at
-     http://www.gnome.org/projects/NetworkManager/ .</para>
+      http://www.gnome.org/projects/NetworkManager/ .</para>
   </refsect1>
   <refsect1>
     <title>AUTHOR</title>
 
-    <para>This manual page was written by Jan Gerber <email>j@bootlab.org</email> and by Riccardo Setti 
-	 <email>giskard@autistici.org</email> for the <productname>Debian/Ubuntu</productname> system.
+    <para>This manual page was written by Riccardo Setti <email>giskard@autistici.org</email> for
+      the <productname>Debian</productname> system.
     </para>
 
   </refsect1>
