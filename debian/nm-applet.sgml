@@ -59,7 +59,7 @@ manpage.1: manpage.sgml
 
     <para><command>&package;</command> is the gnome front-end for NetworkManager</para>
 	 <para>If you want to know how you can add by default nm-applet in your gnome notify-area, please read README.Debian
-	 in /usr/share/common/&package;
+	 in /usr/share/doc/network-manager</para>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
