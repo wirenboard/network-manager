@@ -4,9 +4,9 @@ network-manager (0.5.1-2) unstable; urgency=low
   - added nm-vpn-properties, nm-applet manpages
   - added debian/nm-applet.manpages
   - modifyed NetworManager*.sgml for reflect the correct website.
-  * uploaded to unstable.
+  * uploaded to unstable. 
 
- -- Riccardo Setti <giskard@autistici.org>  Wed,  8 Feb 2006 22:16:34 +0100
+ -- Riccardo Setti <giskard@autistici.org>  Wed,  8 Feb 2006 22:32:05 +0100
 
 network-manager (0.5.1-1) experimental; urgency=low
 
