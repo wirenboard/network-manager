@@ -6,8 +6,6 @@ include /usr/share/cdbs/1/rules/simple-patchsys.mk
 
 DEB_CONFIGURE_EXTRA_FLAGS += \
 		--with-dbus-sys=/etc/dbus-1/system.d \
-		--libexecdir=/usr/bin \
-		--localstatedir=/var/run \
 		--without-named \
 		--with-dhcdbd=/usr/sbin/dhcdbd \
 		--with-distro=debian
