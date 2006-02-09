@@ -28,11 +28,7 @@ binary-install/network-manager::
 		debian/network-manager/etc/dbus-1/event.d/25NetworkManager
 	install -m 755 debian/network-manager-dispatcher.dbus-event \
 		debian/network-manager/etc/dbus-1/event.d/26NetworkManagerDispatcher
-	install -d -m 755 debian/network-manager/etc/NetworkManager/dispatcher.d
-	install -m 644 debian/network-manager.dbus-conf \
-		debian/network-manager/etc/dbus-1/system.d/NetworkManager.conf
 
-binary-install/network-manager-gnome::	
-	install -m 644 debian/nm-applet.conf \
-		debian/network-manager/etc/dbus-1/system.d/nm-applet.conf
-
+binary-install/network-manger-gnome::
+	install -m 644 debian/nm-logo.xpm \
+		debian/network-manager-gnome/usr/share/pixmaps

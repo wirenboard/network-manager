@@ -4,8 +4,12 @@ network-manager (0.5.1-2) unstable; urgency=low
   - added nm-vpn-properties, nm-applet manpages
   - added debian/network-manager-gnome.manpages
   - modifyed NetworManager*.sgml for reflect the correct website.
-  * uploaded to unstable.
+  * added nm-vpn-properties.desktop, nm-logo.xpm
+  * added dbus_access_network_manager and dbus_access_nm_applet patches:
+  - switched to group netdev
+  - updated the dep on dhcdbd
   * removed network-manager.doc as it was empty. 
+  * uploaded to unstable.
 
  -- Riccardo Setti <giskard@autistici.org>  Thu,  9 Feb 2006 10:18:13 +0100
 

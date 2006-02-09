@@ -7,7 +7,7 @@ Standards-Version: 3.6.2
 
 Package: network-manager
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>= 1.10), lsb-base (>= 2.0-6)
+Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>= 1.10-2), lsb-base (>= 2.0-6)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
