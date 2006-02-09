@@ -20,8 +20,8 @@ build/network-manager::
 	
 	/usr/bin/docbook-to-man debian/NetworkManager.sgml > debian/NetworkManager.1
 	/usr/bin/docbook-to-man debian/NetworkManagerDispatcher.sgml > debian/NetworkManagerDispatcher.1
-	/usr/bin/docbook-to-man debian/nm-vpn-properties > debian/nm-vpn-properties.1
-	/usr/bin/docbook-to-man debian/nm-applet > debian/nm-applet.1
+	/usr/bin/docbook-to-man debian/nm-vpn-properties.sgml > debian/nm-vpn-properties.1
+	/usr/bin/docbook-to-man debian/nm-applet.sgml > debian/nm-applet.1
 	
 binary-install/network-manager::
 	install -m 755 debian/network-manager.dbus-event \
