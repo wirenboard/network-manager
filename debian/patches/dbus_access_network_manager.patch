@@ -1,0 +1,11 @@
+--- src/NetworkManager.conf.orig	2006-02-07 04:24:38.000000000 +0100
++++ src/NetworkManager.conf	2006-02-07 04:25:00.000000000 +0100
+@@ -8,7 +8,7 @@
+                 <allow send_destination="org.freedesktop.NetworkManager"/>
+                 <allow send_interface="org.freedesktop.NetworkManager"/>
+         </policy>
+-        <policy at_console="true">
++        <policy group="netdev">
+                 <allow send_destination="org.freedesktop.NetworkManager"/>
+                 <allow send_interface="org.freedesktop.NetworkManager"/>
+         </policy>

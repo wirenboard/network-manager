@@ -8,6 +8,7 @@ network-manager (0.5.1-2) unstable; urgency=low
   * added dbus_access_network_manager and dbus_access_nm_applet patches:
   - switched to group netdev
   - updated the dep on dhcdbd
+  - removed debian/network-manager.dbus-conf debian/nm-applet.conf
   * removed network-manager.doc as it was empty. 
   * uploaded to unstable.
 

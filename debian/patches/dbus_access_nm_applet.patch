@@ -1,0 +1,11 @@
+--- gnome/applet/nm-applet.conf.orig	2006-02-07 04:22:39.000000000 +0100
++++ gnome/applet/nm-applet.conf	2006-02-07 04:23:00.000000000 +0100
+@@ -8,7 +8,7 @@
+ 		<allow send_destination="org.freedesktop.NetworkManagerInfo"/>
+                 <allow send_interface="org.freedesktop.NetworkManagerInfo"/>
+ 	</policy>
+-	<policy at_console="true">
++	<policy group="netdev">
+ 		<allow own="org.freedesktop.NetworkManagerInfo"/>
+ 
+ 		<allow send_destination="org.freedesktop.NetworkManagerInfo"/>
