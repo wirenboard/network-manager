@@ -23,7 +23,6 @@ DAEMON=/usr/sbin/$NAME
 
 PIDDIR=/var/run/NetworkManager
 PIDFILE=$PIDDIR/$NAME.pid
-NAMED_PIDFILE=/var/lib/NetworkManager/NetworkManager-pid-named
 
 SCRIPTNAME=/etc/dbus-1/event.d/25$NAME
 USER=root
@@ -54,12 +53,9 @@ d_start() {
 	chmod 755 /var/lib/NetworkManager
 
 	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--user $USER --exec $DAEMON -- $DAEMON_OPTS
-    RETVAL=$?
-	log_end_msg $RETVAL
-    [ $RETVAL -eq 0 ] && echo `/bin/pidof $NAME` > $PIDFILE
-
-
+		--user $USER --exec $DAEMON -- $DAEMON_OPTS --pid-file $PIDFILE
+		
+	log_end_msg $?
 }
 
 #
@@ -76,11 +72,6 @@ d_stop() {
             kill -9 $(cat $PIDFILE) || true
             rm -f $PIDFILE
         fi
-        if [ -e $NAMED_PIDFILE ]; then
-            kill -9 $(cat $NAMED_PIDFILE) || true
-            rm -f $NAMED_PIDFILE
-        fi
-
 }
 
 

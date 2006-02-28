@@ -42,10 +42,9 @@ d_start() {
 	fi
 
 	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--user $USER --exec $DAEMON -- $DAEMON_OPTS
-    RETVAL=$?
-	log_end_msg $RETVAL
-    [ $RETVAL -eq 0 ] && echo `/bin/pidof $NAME` > $PIDFILE
+		--user $USER --exec $DAEMON -- $DAEMON_OPTS --pid-file $PIDFILE
+
+	log_end_msg $?
 }
 
 #
