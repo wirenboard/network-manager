@@ -65,13 +65,8 @@ d_stop() {
         log_begin_msg "Stopping $DESC"
 	start-stop-daemon --stop --quiet --pidfile $PIDFILE \
 		 --oknodo --user $USER --exec $DAEMON
+		 
         log_end_msg $?
-
-        # if NetworkManager does not want to die, apply some more force
-        if [ -e $PIDFILE ]; then
-            kill -9 $(cat $PIDFILE) || true
-            rm -f $PIDFILE
-        fi
 }
 
 

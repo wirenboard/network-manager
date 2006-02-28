@@ -4,5 +4,4 @@ debian/tmp/usr/share/locale/*
 debian/tmp/usr/share/nm-applet/*
 debian/tmp/usr/share/icons
 debian/tmp/usr/share/gnome-vpn-properties
-debian/tmp/usr/share/autostart
 debian/tmp/etc/dbus-1/system.d/nm-applet.conf
