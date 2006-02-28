@@ -5,7 +5,7 @@
                  <allow send_interface="org.freedesktop.NetworkManager"/>
          </policy>
 -        <policy at_console="true">
-+        <policy group="plugdev">
++        <policy group="netdev">
                  <allow send_destination="org.freedesktop.NetworkManager"/>
                  <allow send_interface="org.freedesktop.NetworkManager"/>
          </policy>
