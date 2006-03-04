@@ -32,8 +32,9 @@ binary-install/network-manager::
 	install -m 755 debian/network-manager-dispatcher.dbus-event \
 		debian/network-manager/etc/dbus-1/event.d/26NetworkManagerDispatcher
 
-binary-install/network-manger-gnome::
+binary-install/network-manager-gnome::
 	install -m 644 debian/nm-logo.xpm \
-		debian/network-manager-gnome/usr/share/pixmaps
-	install -m 644 debian/nm-vpn-properties.desktop
-		debian/network-manager-gnome/usr/share/applications
+		debian/network-manager-gnome/usr/share/pixmaps/nm-logo.xpm
+	install -m 644 debian/nm-vpn-properties.desktop \
+		debian/network-manager-gnome/usr/share/applications/nm-vpn-properties.desktop
+
