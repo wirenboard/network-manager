@@ -9,6 +9,7 @@ DEB_CONFIGURE_SCRIPT_ENV += LDFLAGS="-lm"
 DEB_CONFIGURE_EXTRA_FLAGS += \
 		--with-dbus-sys=/etc/dbus-1/system.d \
 		--without-named \
+		--with-wpa_supplicant=/usr/sbin/wpa_supplicant \
 		--with-dhcdbd=/usr/sbin/dhcdbd \
 		--with-distro=debian
 	
