@@ -35,3 +35,5 @@ binary-install/network-manager::
 binary-install/network-manger-gnome::
 	install -m 644 debian/nm-logo.xpm \
 		debian/network-manager-gnome/usr/share/pixmaps
+	install -m 644 debian/nm-vpn-properties.desktop
+		debian/network-manager-gnome/usr/share/applications
