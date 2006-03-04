@@ -1,3 +1,15 @@
+network-manager (0.6.0-1) unstable; urgency=low
+
+  * New upstream release.
+  - most of the work is taken from the experimental branch of NM.
+    Thanks goes to  Michael Biebl.
+  * switched to debhelper5.
+  * added libnl-util0, libnl-util-dev packages.
+  - added debian/libnl-util0.install , debian/libnl-util-dev.install
+  * removed debian/dirs as it was useless.
+  
+ -- Riccardo Setti <giskard@autistici.org>  Sat,  4 Mar 2006 20:48:58 +0100
+
 network-manager (0.5.1-3) unstable; urgency=low
 
   * improved debian/copyright . I hope this time it will be 
