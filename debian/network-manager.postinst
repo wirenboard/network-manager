@@ -7,9 +7,13 @@ case "$1" in
 		invoke-rc.d dbus force-reload || true
 	fi
 	
-	/etc/dbus-1/event.d/25NetworkManager restart
-	/etc/dbus-1/event.d/26NetworkManagerDispatcher restart
-				 
+	if [ -x "/etc/dbus-1/event.d/25NetworkManager" ]; then
+		/etc/dbus-1/event.d/25NetworkManager restart
+	fi
+	
+	if [ -x "/etc/dbus-1/event.d/26NetworkManagerDispatcher"]; then
+		/etc/dbus-1/event.d/26NetworkManagerDispatcher restart
+	fi			 
 	 ;;
 esac
 
