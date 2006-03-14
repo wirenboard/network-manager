@@ -1,37 +1,45 @@
+network-manager (0.6.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Added myself to uploaders.
+  * Added a dependency on dbus.
+
+ -- Michael Biebl <biebl@teco.edu>  Tue, 14 Mar 2006 15:48:41 +0100
+
 network-manager (0.6.0-1) unstable; urgency=low
 
   * New upstream release.
-  - most of the work is taken from the experimental branch of NM.
-    Thanks goes to  Michael Biebl.
-  - Added NetworkManagerDebian.patch which introduce supports for resolvconf
+    - most of the work is taken from the experimental branch of NM.
+      Thanks goes to  Michael Biebl.
+    - Added NetworkManagerDebian.patch which introduce supports for resolvconf
   * switched to debhelper5.
   * added libnl-util0, libnl-util-dev packages.
-  - added debian/libnl-util0.install , debian/libnl-util-dev.install
+    - added debian/libnl-util0.install , debian/libnl-util-dev.install
   * removed debian/dirs as it was useless.
-  * added a Dep on wpasupplicant as it's necessary for all encrypted
-  connections.
+  * added a dependency on wpasupplicant as it's necessary for all encrypted
+    connections.
 
  -- Riccardo Setti <giskard@autistici.org>  Thu,  9 Mar 2006 15:38:01 +0100
 
 network-manager (0.5.1-3) unstable; urgency=low
 
   * improved debian/copyright . I hope this time it will be 
-  good enough to pass the ftp-master check. Thanks to Joerg Jaspert who
-  has pointed me to the problem.
+    good enough to pass the ftp-master check. Thanks to Joerg Jaspert who
+    has pointed me to the problem.
 
  -- Riccardo Setti <giskard@autistici.org>  Sun, 26 Feb 2006 21:57:29 +0100
 
 network-manager (0.5.1-2) unstable; urgency=low
 
   * improved manpages.
-  - added nm-vpn-properties, nm-applet manpages
-  - added debian/network-manager-gnome.manpages
-  - modifyed NetworManager*.sgml for reflect the correct website.
+    - added nm-vpn-properties, nm-applet manpages
+    - added debian/network-manager-gnome.manpages
+    - modifyed NetworManager*.sgml for reflect the correct website.
   * added nm-vpn-properties.desktop, nm-logo.xpm
   * added dbus_access_network_manager and dbus_access_nm_applet patches:
-  - switched to group netdev
-  - updated the dep on dhcdbd
-  - removed debian/network-manager.dbus-conf debian/nm-applet.conf
+    - switched to group netdev
+    - updated the dep on dhcdbd
+    - removed debian/network-manager.dbus-conf debian/nm-applet.conf
   * removed network-manager.doc as it was empty. 
   * uploaded to unstable.
 
@@ -40,12 +48,12 @@ network-manager (0.5.1-2) unstable; urgency=low
 network-manager (0.5.1-1) experimental; urgency=low
 
   * renamed 25NetworkManagerDispatcher in 26NetworkManagerDispatcher because
-  first we need to start NetworkManager and then NetworkManagerDispatcher 
+    first we need to start NetworkManager and then NetworkManagerDispatcher 
   * added networkmanger and networkmanaferdispatcher manpages. 
   * Inital upload to Debian (Closes: #270538)
   * work based on the ubuntu package
   * Added 01.patch and 02.patch for fix the problem with recent linux 
-  kernel-headers
+    kernel-headers
  
  -- Riccardo Setti <giskard@autistici.org>  Mon, 5 Jan 2006 17:09:29 +0100
 
