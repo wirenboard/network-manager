@@ -1,9 +1,0 @@
-[Desktop Entry]
-Encoding=UTF-8
-Name=NetworkManager VPN Manager
-Name[it]=Gestore di VPN
-Exec=nm-vpn-properties
-Icon=nm-logo.xpm
-Terminal=false
-Type=Application
-Categories=Application;System;Settings; 

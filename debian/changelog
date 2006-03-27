@@ -2,6 +2,7 @@ network-manager (0.6.2-1) unstable; urgency=low
 
   * New upstream release. 
   * Updated if_fix.patch, parts of it have been fixed upstream.
+  * Lowered dependency on dhcbd to (>= 1.10). We don't necessarily need 1.12.
 
  -- Michael Biebl <biebl@teco.edu>  Mon, 27 Mar 2006 21:56:37 +0200
 
