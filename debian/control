@@ -8,7 +8,7 @@ Standards-Version: 3.6.2
 
 Package: network-manager
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>= 1.10), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60)
+Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>= 1.12-2), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60)
 Suggests: openvpn, pptpd
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
