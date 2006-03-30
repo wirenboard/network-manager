@@ -9,7 +9,6 @@ Standards-Version: 3.6.2
 Package: network-manager
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>= 1.12-2), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60)
-Suggests: openvpn, pptpd
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -38,7 +37,7 @@ Package: network-manager-dev
 Architecture: any
 Section: devel
 Depends: ${shlibs:Depends}, ${misc:Depends}, pkg-config
-Description: network management framework daemon (development files)
+Description: network management framework (development files)
  this package provides header files that are needed to 
  compile VPN Plugins for NetworManager.
 
