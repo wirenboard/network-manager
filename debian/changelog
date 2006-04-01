@@ -4,6 +4,8 @@ network-manager (0.6.2-1) unstable; urgency=low
   * Updated if_fix.patch, parts of it have been fixed upstream.
   * Depend on dhcbd (>= 1.12-2) because NM 0.6.2 does not start dhcdbd itself
     anymore.
+  * The wpa_supplicant binary was moved from /usr/sbin to /sbin. Updated
+    debian/rules accordingly.
 
  -- Michael Biebl <biebl@teco.edu>  Mon, 27 Mar 2006 21:56:37 +0200
 
