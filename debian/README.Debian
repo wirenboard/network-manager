@@ -1,11 +1,8 @@
-NetworkManger has two parts one is run on the system level to 
-manager connections and gather information. The other is an applet
-the user can interact with. Since NetworkManager is not part of
-main yet, you have to add nm-applet to your session once.
+NetworkManger consists of two parts: one is on the system level daemon that
+manages the connections and gathers information about new networks. The other 
+is an applet that users can use to interact with the NetworkManager daemon. 
 
-(instructions for gnome only)
-First add yourself to the netdev group
-Go to System -> Preferences -> Sessions
-In the Startup Programs tab, click Add
-type "nm-applet", click OK.
-log out of your gnome session, and log back in again.
+To allow users to connect to the NetworkManager daemon they have to be in the
+group "netdev". If you want to add a user to group "netdev" use the command
+"adduser username netdev" or one of the graphical user management frontends.
+After that you have to reload dbus with the command "/etc/init.d/dbus reload".

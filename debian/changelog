@@ -1,13 +1,17 @@
 network-manager (0.6.2-1) unstable; urgency=low
 
-  * New upstream release. 
+  * New upstream release.
   * Updated if_fix.patch, parts of it have been fixed upstream.
+  * Renamed patches to use a more consistent naming scheme.
   * Depend on dhcbd (>= 1.12-2) because NM 0.6.2 does not start dhcdbd itself
     anymore.
   * The wpa_supplicant binary was moved from /usr/sbin to /sbin. Updated
     debian/rules accordingly.
+  * Added dependency on hal (Closes: #356622)
+  * Added autostart file to network-manager-gnome. This way nm-applet is
+    started automatically on login.
 
- -- Michael Biebl <biebl@teco.edu>  Mon, 27 Mar 2006 21:56:37 +0200
+ -- Michael Biebl <biebl@teco.edu>  Sun,  2 Apr 2006 19:48:28 +0200
 
 network-manager (0.6.1-1) unstable; urgency=low
 
@@ -19,7 +23,7 @@ network-manager (0.6.1-1) unstable; urgency=low
 
 network-manager (0.6.0-1) unstable; urgency=low
 
-  * New upstream release.
+  * New upstream release (Closes: #355246)
     - most of the work is taken from the experimental branch of NM.
       Thanks goes to  Michael Biebl.
     - Added NetworkManagerDebian.patch which introduce supports for resolvconf
