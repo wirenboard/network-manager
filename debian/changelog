@@ -1,3 +1,13 @@
+network-manager (0.6.2-2) unstable; urgency=low
+
+  * More integration work. 
+    Added network-manager-dispatcher.script and 06-dispatch_more_events.patch.
+    This way the scripts in /etc/networks/if-*.d/ are called properly by
+    NetworkManagerDispatcher.
+    Thanks to the Ubuntu devs for this work!
+
+ -- Michael Biebl <biebl@teco.edu>  Wed,  5 Apr 2006 18:52:57 +0200
+
 network-manager (0.6.2-1) unstable; urgency=low
 
   * New upstream release.

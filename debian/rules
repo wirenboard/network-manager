@@ -28,4 +28,6 @@ binary-install/network-manager::
 		debian/network-manager/etc/dbus-1/event.d/25NetworkManager
 	install -m 755 debian/network-manager-dispatcher.dbus-event \
 		debian/network-manager/etc/dbus-1/event.d/26NetworkManagerDispatcher
-
+	install -m 755 debian/network-manager-dispatcher.script \
+		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
+		

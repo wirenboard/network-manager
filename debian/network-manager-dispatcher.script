@@ -1,0 +1,44 @@
+#!/bin/sh -e
+# Script to dispatch NetworkManager events
+#
+# Runs ifupdown scripts when NetworkManager fiddles with interfaces.
+
+if [ -z "$1" ]; then
+    echo "$0: called with no interface" 1>&2
+    exit 1;
+fi
+
+# Fake ifupdown environment
+export IFACE="$1"
+export LOGICAL="$1"
+export ADDRFAM="NetworkManager"
+export METHOD="NetworkManager"
+export VERBOSITY="0"
+
+# Run the right scripts
+case "$2" in
+    up)
+	export MODE="start"
+	export PHASE="up"
+	exec run-parts /etc/network/if-up.d
+	;;
+    down)
+	export MODE="stop"
+	export PHASE="down"
+	exec run-parts /etc/network/if-down.d
+	;;
+    pre-up)
+	export MODE="start"
+	export PHASE="pre-up"
+	exec run-parts /etc/network/if-pre-up.d
+	;;
+    post-down)
+	export MODE="stop"
+	export PHASE="post-down"
+	exec run-parts /etc/network/if-post-down.d
+	;;
+    *)
+	echo "$0: called with unknown action \`$2'" 1>&2
+	exit 1
+	;;
+esac
