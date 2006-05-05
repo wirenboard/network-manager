@@ -1,0 +1,52 @@
+--- src/backends/NetworkManagerDebian.c.orig	2006-05-05 19:59:18.000000000 +0200
++++ src/backends/NetworkManagerDebian.c	2006-05-05 20:04:34.000000000 +0200
+@@ -521,7 +521,48 @@
+  */
+ gboolean nm_system_device_get_disabled (NMDevice *dev)
+ {
+-	return FALSE;
++	const char      *iface;
++	if_block	*curr_device, *curr_b;
++	if_data		*curr_d;
++	gboolean	 blacklist = TRUE;
++
++	g_return_val_if_fail (dev != NULL, TRUE);
++
++	iface = nm_device_get_iface (dev);
++
++	ifparser_init ();
++
++	/* If the interface isn't listed in /etc/network/interfaces then
++	 * it's considered okay to control it.
++ 	 */
++	curr_device = ifparser_getif (iface);
++	if (curr_device == NULL) {
++		blacklist = FALSE;
++		goto out;
++	}
++
++	/* If the interface is listed and isn't marked "auto" then it's
++	 * definitely not okay to control it.
++	 */
++	for (curr_b = ifparser_getfirst(); curr_b; curr_b = curr_b->next) {
++		if (!strcmp (curr_b->type, "auto")
++		    && !strcmp (curr_b->name, iface))
++			blacklist = FALSE;
++	}
++
++	/* If the interface has no options other than just "inet dhcp"
++	 * it's probably ok to fiddle with it.
++	 */
++	for (curr_d = curr_device->info; curr_d; curr_d = curr_d->next) {
++		if (strcmp (curr_d->key, "inet")
++		    || strcmp (curr_d->data, "dhcp"))
++			blacklist = TRUE;
++	}
++
++out:
++	ifparser_destroy ();
++
++	return blacklist;
+ }
+ 
+ 
