@@ -1,12 +1,15 @@
 network-manager (0.6.2-2) unstable; urgency=low
 
-  * More integration work. 
+  * More integration work.
     Added network-manager-dispatcher.script and 06-dispatch_more_events.patch.
     This way the scripts in /etc/networks/if-*.d/ are called properly by
     NetworkManagerDispatcher.
     Thanks to the Ubuntu devs for this work!
+  * Added 07-libnm_glib_reconnect_dbus.patch which makes libnm_glib sleep between
+    unsuccessful connection attempts to dbus. (Closes: #366010)
+  * Bumped Standards-Version to 3.7.2, no further changes required.
 
- -- Michael Biebl <biebl@teco.edu>  Wed,  5 Apr 2006 18:52:57 +0200
+ -- Michael Biebl <biebl@teco.edu>  Fri,  5 May 2006 18:01:47 +0200
 
 network-manager (0.6.2-1) unstable; urgency=low
 
