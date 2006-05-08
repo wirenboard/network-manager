@@ -16,6 +16,8 @@ network-manager (0.6.2-2) unstable; urgency=low
   * Added 07-libnm_glib_reconnect_dbus.patch which makes libnm_glib sleep 
     between unsuccessful connection attempts to dbus. (Closes: #366010)
   * Bumped Standards-Version to 3.7.2, no further changes required.
+  * Removed *.la files from the dev packages as we also ship pkg-config files
+    which are a better alternative.
 
  -- Michael Biebl <biebl@teco.edu>  Fri,  5 May 2006 18:01:47 +0200
 

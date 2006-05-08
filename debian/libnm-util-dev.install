@@ -1,6 +1,5 @@
 debian/tmp/usr/lib/pkgconfig/libnm-util.pc
 debian/tmp/usr/lib/libnm-util.a
-debian/tmp/usr/lib/libnm-util.la
 debian/tmp/usr/lib/libnm-util.so
 debian/tmp/usr/include/NetworkManager/cipher.h
 debian/tmp/usr/include/NetworkManager/cipher-wep-hex.h
