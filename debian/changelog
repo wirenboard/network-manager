@@ -11,13 +11,15 @@ network-manager (0.6.2-2) unstable; urgency=low
       not handled by NM. This makes it possible to configure interfaces 
       statically and have NM not messing with them. 
       Updated README.Debian to reflect these changes.
-    - Added 09-nm_bad_mutex_free.patch. Otherwise NM crashes if devices are
-      listed in /etc/network/interfaces. 
+    - Added 09-nm_bad_mutex_free.patch. Otherwise NM crashes if a device is
+      disabled.
   * Added 07-libnm_glib_reconnect_dbus.patch which makes libnm_glib sleep 
     between unsuccessful connection attempts to dbus. (Closes: #366010)
   * Bumped Standards-Version to 3.7.2, no further changes required.
   * Removed *.la files from the dev packages as we also ship pkg-config files
     which are a better alternative.
+  * Added 10-interface_parser_fixes.patch which fixes several problems with
+    the /etc/network/interfaces parser. (Closes: #355564)
 
  -- Michael Biebl <biebl@teco.edu>  Fri,  5 May 2006 18:01:47 +0200
 

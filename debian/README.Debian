@@ -11,8 +11,11 @@ After that you have to reload dbus with the command "/etc/init.d/dbus reload".
 
 Configuration
 ~~~~~~~~~~~~~
-Only devices that are not listed in /etc/network/interfaces or which have been
-configured "auto" and "dhcp" (with no other options) are managed by NM.
+Only devices that are *not* listed in /etc/network/interfaces or which have 
+been configured "auto" and "dhcp" (with no other options) are managed by NM.
+
+This way you can setup a custom (static) configuration for a device and NM 
+will not try to override this setting.
 
 Examples:
 
