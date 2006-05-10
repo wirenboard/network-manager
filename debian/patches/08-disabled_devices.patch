@@ -30,7 +30,7 @@
 +	 */
 +	for (curr_b = ifparser_getfirst(); curr_b; curr_b = curr_b->next) {
 +		if (!strcmp (curr_b->type, "auto")
-+		    && !strcmp (curr_b->name, iface))
++		    && strstr (curr_b->name, iface))
 +			blacklist = FALSE;
 +	}
 +
