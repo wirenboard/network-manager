@@ -1,0 +1,17 @@
+===================================================================
+RCS file: /cvs/gnome/NetworkManager/src/nm-device-802-3-ethernet.c,v
+retrieving revision 1.13.2.1
+retrieving revision 1.13.2.2
+diff -u -r1.13.2.1 -r1.13.2.2
+--- src/nm-device-802-3-ethernet.c	2006/03/09 21:39:15	1.13.2.1
++++ src/nm-device-802-3-ethernet.c	2006/05/13 19:06:05	1.13.2.2
+@@ -207,8 +207,7 @@
+ 	if (supports_ethtool_carrier_detect (self) || supports_mii_carrier_detect (self))
+ 		caps |= NM_DEVICE_CAP_CARRIER_DETECT;
+ 
+-	if (caps)
+-		caps |= NM_DEVICE_CAP_NM_SUPPORTED;
++	caps |= NM_DEVICE_CAP_NM_SUPPORTED;
+ 
+ 	return caps;
+ }
