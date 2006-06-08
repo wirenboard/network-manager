@@ -1,3 +1,14 @@
+network-manager (0.6.3-1) unstable; urgency=low
+
+  * New upstream release.
+    - Removed 07-libnm_glib_reconnect_dbus.patch, merged upstream.
+    - Removed 09-nm_bad_mutex_free.patch, fixed upstream.
+    - Removed 10-interface_parser_fixes.patch, merged upstream.
+    - Removed 11-carrier_detection.patch, merged upstream.
+  * Added a watch file.
+
+ -- Michael Biebl <biebl@teco.edu>  Thu,  8 Jun 2006 13:53:33 +0200
+
 network-manager (0.6.2-3) unstable; urgency=low
 
   * Ship the NEWS.Debian file only for the network-manager package.
