@@ -63,7 +63,7 @@ d_start() {
 #
 d_stop() {
         log_begin_msg "Stopping $DESC"
-	start-stop-daemon --stop --quiet --pidfile $PIDFILE \
+	start-stop-daemon --stop --retry 60 --quiet --pidfile $PIDFILE \
 		 --oknodo --user $USER --exec $DAEMON
 		 
         log_end_msg $?
