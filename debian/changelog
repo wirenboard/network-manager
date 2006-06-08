@@ -6,8 +6,9 @@ network-manager (0.6.3-1) unstable; urgency=low
     - Removed 10-interface_parser_fixes.patch, merged upstream.
     - Removed 11-carrier_detection.patch, merged upstream.
   * Added a watch file.
+  * Added homepage URL to package description.
 
- -- Michael Biebl <biebl@teco.edu>  Thu,  8 Jun 2006 13:53:33 +0200
+ -- Michael Biebl <biebl@teco.edu>  Thu,  8 Jun 2006 16:21:43 +0200
 
 network-manager (0.6.2-3) unstable; urgency=low
 

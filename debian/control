@@ -18,6 +18,8 @@ Description: network management framework daemon
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package provides the userspace daemons.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager-gnome
 Architecture: any
@@ -32,6 +34,8 @@ Description: network management framework (GNOME frontend)
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package provides the notification applet to the control system.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
  
 Package: network-manager-dev
 Architecture: any
@@ -40,6 +44,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, pkg-config
 Description: network management framework (development files)
  this package provides header files that are needed to 
  compile VPN Plugins for NetworManager.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-glib0
 Section: libs
@@ -55,6 +61,8 @@ Description: network management framework (GLib shared library)
  .
  This package provides the shared library that applications can use to query
  connection status via NetworkManager.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-glib-dev
 Section: libdevel
@@ -70,6 +78,8 @@ Description: network management framework (GLib interface)
  .
  This package provides the interface that applications can use to query
  connection status via NetworkManager.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-util0
 Section: libs
@@ -85,6 +95,8 @@ Description: network management framework (shared library)
  .
  This package contains a convenience library to ease the access to
  NetworkManager.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-util-dev
 Section: libdevel
@@ -99,4 +111,6 @@ Description: network management framework (development files)
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package contains header and development files.
+ .
+  Homepage: http://www.gnome.org/projects/NetworkManager/
 
