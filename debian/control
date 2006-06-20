@@ -34,7 +34,12 @@ Description: network management framework (GNOME frontend)
  NetworkManager is _intended_ to replace default routes, obtain IP addresses
  from a DHCP server, and change nameservers whenever it sees fit.
  .
- This package provides the notification applet to the control system.
+ This package contains a systray applet for GNOME's notification area but it
+ also works for other desktop environments which provide a systray like KDE
+ or XFCE.
+ It displays the available networks and allows to easily switch between them.
+ For encrypted networks it will prompt the user for the key/passphrase and it
+ can optionally store them in the gnome-keyring.
  .
   Homepage: http://www.gnome.org/projects/NetworkManager/
  

@@ -1,6 +1,7 @@
 NetworkManager consists of two parts: one is on the system level daemon that
 manages the connections and gathers information about new networks. The other 
-is an applet that users can use to interact with the NetworkManager daemon. 
+is a systray applet that users can use to interact with the NetworkManager 
+daemon. 
 
 Security
 ~~~~~~~~

@@ -4,8 +4,10 @@ network-manager (0.6.3-2) unstable; urgency=low
     (running as user "hal") to send events about hotplugged devices to the
     NetworkManager daemon. (Closes: 355785)
   * Added a Recommends: notification-daemon to network-manager-gnome.
+  * Improved the package description and the manpage of network-manager-gnome.
+    (Closes: #362962)
 
- -- Michael Biebl <biebl@teco.edu>  Wed, 14 Jun 2006 14:00:15 +0200
+ -- Michael Biebl <biebl@teco.edu>  Tue, 20 Jun 2006 23:22:11 +0200
 
 network-manager (0.6.3-1) unstable; urgency=low
 

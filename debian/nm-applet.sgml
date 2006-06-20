@@ -57,9 +57,12 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>DESCRIPTION</title>
 
-    <para><command>&package;</command> is the gnome front-end for NetworkManager</para>
-	 <para>If you want to know how you can add by default nm-applet in your gnome notify-area, please read README.Debian
-	 in /usr/share/doc/network-manager</para>
+    <para><command>&package;</command> is the GNOME front-end for NetworkManager</para>
+         <para>It is a systray applet which will display an icon in GNOME's notification area but it 
+	 also works for other desktop environments which provide a systray like KDE or XFCE.</para>
+	 <para><command>&package;</command> shows a list of available networks and allows you to easily switch between them. For encrypted networks it 
+	 will prompt you for the key/passphrase and you can optionally store them in the gnome-keyring so you don't have to 
+	 type them again.</para>
   </refsect1>
   <refsect1>
     <title>SEE ALSO</title>
