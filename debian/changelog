@@ -3,8 +3,9 @@ network-manager (0.6.3-2) unstable; urgency=low
   * Updated 02-dbus_access_network_manager.patch to allow the hal daemon
     (running as user "hal") to send events about hotplugged devices to the
     NetworkManager daemon. (Closes: 355785)
+  * Added a Recommends: notification-daemon to network-manager-gnome.
 
- -- Michael Biebl <biebl@teco.edu>  Wed, 14 Jun 2006 02:53:13 +0200
+ -- Michael Biebl <biebl@teco.edu>  Wed, 14 Jun 2006 14:00:15 +0200
 
 network-manager (0.6.3-1) unstable; urgency=low
 
