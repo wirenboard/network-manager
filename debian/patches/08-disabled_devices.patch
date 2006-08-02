@@ -29,7 +29,7 @@
 +	 * definitely not okay to control it.
 +	 */
 +	for (curr_b = ifparser_getfirst(); curr_b; curr_b = curr_b->next) {
-+		if (!strcmp (curr_b->type, "auto") || !strcmp (curr_b->type, "allow-hotplug")
++		if ((!strcmp (curr_b->type, "auto") || !strcmp (curr_b->type, "allow-hotplug"))
 +		    && strstr (curr_b->name, iface))
 +			blacklist = FALSE;
 +	}
@@ -39,7 +39,7 @@
 +	 */
 +	for (curr_d = curr_device->info; curr_d; curr_d = curr_d->next) {
 +		if (strcmp (curr_d->key, "inet")
-+		    || strcmp (curr_d->data, "dhcp" )|| strcmp ( currd->key, "iface"))
++		    || strcmp (curr_d->data, "dhcp" )|| strcmp ( curr_d->key, "iface"))
 +			blacklist = TRUE;
 +	}
 +
