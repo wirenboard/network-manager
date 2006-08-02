@@ -29,17 +29,17 @@
 +	 * definitely not okay to control it.
 +	 */
 +	for (curr_b = ifparser_getfirst(); curr_b; curr_b = curr_b->next) {
-+		if (!strcmp (curr_b->type, "auto")
++		if (!strcmp (curr_b->type, "auto") || !strcmp (curr_b->type, "allow-hotplug")
 +		    && strstr (curr_b->name, iface))
 +			blacklist = FALSE;
 +	}
 +
 +	/* If the interface has no options other than just "inet dhcp"
-+	 * it's probably ok to fiddle with it.
++	 * it's probably ok to fiddle with it. 
 +	 */
 +	for (curr_d = curr_device->info; curr_d; curr_d = curr_d->next) {
 +		if (strcmp (curr_d->key, "inet")
-+		    || strcmp (curr_d->data, "dhcp"))
++		    || strcmp (curr_d->data, "dhcp" )|| strcmp ( currd->key, "iface"))
 +			blacklist = TRUE;
 +	}
 +

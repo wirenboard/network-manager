@@ -1,8 +1,9 @@
 network-manager (0.6.4-1) unstable; urgency=low
 
   * New upstream release. (closes: #379163)
+  - allow "auto-hotplug" iface to be managed by NM. (closes: #381017)
 
- -- Riccardo Setti <giskard@autistici.org>  Sun, 23 Jul 2006 11:47:10 +0200
+ -- Riccardo Setti <giskard@debian.org>  Wed,  2 Aug 2006 19:51:48 +0200
 
 network-manager (0.6.3-2) unstable; urgency=low
 
