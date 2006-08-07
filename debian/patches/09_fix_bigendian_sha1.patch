@@ -1,0 +1,14 @@
+--- configure.old	2006-08-07 10:31:07.000000000 +0200
++++ configure	2006-08-07 10:31:14.000000000 +0200
+@@ -25440,6 +25440,11 @@
+ echo "${ECHO_T}no" >&6; }
+ fi
+ 
++## Enable bigendian stuff for sha1 hash code
++if "$target_cpu" = "powerpc"; then
++      CPU_CFLAGS="-DWORDS_BIGENDIAN $CPU_CFLAGS"
++fi
++
+ ac_config_files="$ac_config_files Makefile include/Makefile utils/Makefile src/Makefile src/named-manager/Makefile src/vpn-manager/Makefile src/dhcp-manager/Makefile src/backends/Makefile libnm-util/libnm-util.pc libnm-util/Makefile dispatcher-daemon/Makefile gnome/Makefile gnome/applet/Makefile gnome/applet/icons/Makefile gnome/libnm_glib/libnm_glib.pc gnome/libnm_glib/Makefile gnome/vpn-properties/Makefile test/Makefile test/test-common/Makefile test/libnm-util/Makefile initscript/Makefile initscript/RedHat/Makefile initscript/RedHat/NetworkManager initscript/RedHat/NetworkManagerDispatcher initscript/Gentoo/Makefile initscript/Gentoo/NetworkManager initscript/Debian/Makefile initscript/Slackware/Makefile initscript/Slackware/rc.networkmanager initscript/Slackware/rc.networkmanager-dispatcher initscript/SUSE/Makefile initscript/SUSE/networkmanager initscript/SUSE/networkmanager-dispatcher initscript/Arch/Makefile initscript/Arch/networkmanager initscript/Arch/networkmanager-dispatcher man/Makefile man/NetworkManager.1 man/NetworkManagerDispatcher.1 man/nm-tool.1 po/Makefile.in NetworkManager.pc"
+ 
+ cat >confcache <<\_ACEOF
