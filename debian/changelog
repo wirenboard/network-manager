@@ -2,10 +2,10 @@ network-manager (0.6.4-1) unstable; urgency=low
 
   * New upstream release. (closes: #379163)
    - allow "auto-hotplug" iface to be managed by NM. (closes: #381017)
-  * Added 09_fix_bigendian_sha1.patch wich will fix the WPA+plaint text pw
+  * Added 09_fix_bigendian_words.patch wich will fix the WPA+plaint text pw
     auth method on powerpc (and in other bigendian arch) (closes: #381464)
 
- -- Riccardo Setti <giskard@debian.org>  Mon,  7 Aug 2006 10:32:52 +0200
+ -- Riccardo Setti <giskard@debian.org>  Mon,  7 Aug 2006 17:06:47 +0200
 
 network-manager (0.6.3-2) unstable; urgency=low
 
