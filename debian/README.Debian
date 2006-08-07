@@ -8,7 +8,7 @@ Security
 To allow users to connect to the NetworkManager daemon they have to be in the
 group "netdev". If you want to add a user to group "netdev" use the command
 "adduser username netdev" or one of the graphical user management frontends.
-After that you have to reload dbus with the command "/etc/init.d/dbus reload".
+After that you have to reload D-Bus with the command "/etc/init.d/dbus reload".
 
 Configuration
 ~~~~~~~~~~~~~
@@ -28,7 +28,7 @@ iface wlan0 inet dhcp
 1.a)
 allow-hotplug eth0
 iface eth0 inet dhcp
--> This device is manager by NM
+-> This device is managed by NM
 
 2.)
 auto wlan0
@@ -42,9 +42,9 @@ iface wlan0 inet dhcp
 
 4.)
 iface eth0 inet static
-address 192.168.1.10
-netmask 255.255.255.0
-gateway 192.168.1.1
+	address 192.168.1.10
+	netmask 255.255.255.0
+	gateway 192.168.1.1
 -> This device is *not* managed by NM because it is configured as "static" and
    has additional options.
 
