@@ -26,8 +26,8 @@ iface wlan0 inet dhcp
 -> This device is managed by NM.
 
 1.a)
-allow-hotplug eth1
-iface eth0 ined dhcp
+allow-hotplug eth0
+iface eth0 inet dhcp
 -> This device is manager by NM
 
 2.)
