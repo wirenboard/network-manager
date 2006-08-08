@@ -1,12 +1,19 @@
 network-manager (0.6.4-1) unstable; urgency=low
 
+  [ Riccardo Setti ]
   * New upstream release. (Closes: #379163)
-  * Allow interfaces marked "auto-hotplug" to be managed by NM. 
+  * Allow interfaces marked "auto-hotplug" to be managed by NM.
     (Closes: #381017)
   * Added 09_fix_bigendian_words.patch wich will fix the WPA+plaint text pw
     auth method on powerpc (and on other bigendian arch). (Closes: #381464)
 
- -- Riccardo Setti <giskard@debian.org>  Mon,  7 Aug 2006 17:06:47 +0200
+  [ Michael Biebl ]
+  * Merged the patches 05-resolvconf.patch and 08-disabled_devices.patch into
+    a single patch called 05-debian_backend.patch.
+  * Updated 05-debian_backend.patch to not control mapped interfaces. 
+    (Closes: #377498)
+
+ -- Michael Biebl <biebl@teco.edu>  Tue,  8 Aug 2006 01:51:13 +0200
 
 network-manager (0.6.3-2) unstable; urgency=low
 

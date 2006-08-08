@@ -1,0 +1,123 @@
+diff --git a/src/backends/NetworkManagerDebian.c b/src/backends/NetworkManagerDebian.c
+index 740572a..8090696 100644
+--- a/src/backends/NetworkManagerDebian.c
++++ b/src/backends/NetworkManagerDebian.c
+@@ -37,6 +37,7 @@ #include "interface_parser.h"
+ #include "nm-utils.h"
+ 
+ #define ARPING "/usr/sbin/arping"
++#define RESOLVCONF "resolvconf"
+ 
+ /*
+  * nm_system_init
+@@ -514,13 +515,60 @@ gboolean nm_system_device_get_use_dhcp (
+ /*
+  * nm_system_device_get_disabled
+  *
+- * Return whether the distro-specific system config tells us to use
+- * dhcp for this device.
++ * Return whether the distro-specific system config tells us to disable 
++ * this device.
+  *
+  */
+ gboolean nm_system_device_get_disabled (NMDevice *dev)
+ {
+-	return FALSE;
++	const char      *iface;
++	if_block	*curr_device, *curr_b;
++	if_data		*curr_d;
++	gboolean	 blacklist = TRUE;
++
++	g_return_val_if_fail (dev != NULL, TRUE);
++
++	iface = nm_device_get_iface (dev);
++
++	ifparser_init ();
++
++	/* If the device is listed in a mapping, do not control it */
++	if (ifparser_getmapping (iface) != NULL) {
++		blacklist = TRUE;
++		goto out;
++	}
++
++	/* If the interface isn't listed in /etc/network/interfaces then
++	 * it's considered okay to control it.
++ 	 */
++	curr_device = ifparser_getif (iface);
++	if (curr_device == NULL) {
++		blacklist = FALSE;
++		goto out;
++	}
++
++	/* If the interface is listed and isn't marked "auto" then it's
++	 * definitely not okay to control it.
++	 */
++	for (curr_b = ifparser_getfirst (); curr_b; curr_b = curr_b->next) {
++		if ((!strcmp (curr_b->type, "auto") || !strcmp (curr_b->type, "allow-hotplug"))
++		    && strstr (curr_b->name, iface))
++			blacklist = FALSE;
++	}
++
++	/* If the interface has no options other than just "inet dhcp"
++	 * it's probably ok to fiddle with it. 
++	 */
++	for (curr_d = curr_device->info; curr_d; curr_d = curr_d->next) {
++		if (strcmp (curr_d->key, "inet")
++		    || strcmp (curr_d->data, "dhcp" ))
++			blacklist = TRUE;
++	}
++
++out:
++	ifparser_destroy ();
++
++	return blacklist;
+ }
+ 
+ 
+@@ -679,7 +727,10 @@ void nm_system_set_hostname (NMIP4Config
+  */
+ gboolean nm_system_should_modify_resolv_conf (void)
+ {
+-	return TRUE;
++	if (g_find_program_in_path(RESOLVCONF) != NULL)
++		return FALSE;
++	else
++		return TRUE;
+ }
+ 
+ 
+diff --git a/src/backends/interface_parser.c b/src/backends/interface_parser.c
+index 53d6487..aa81134 100644
+--- a/src/backends/interface_parser.c
++++ b/src/backends/interface_parser.c
+@@ -198,6 +198,18 @@ if_block *ifparser_getif(const char* ifa
+ 	return NULL;
+ }
+ 
++if_block *ifparser_getmapping(const char* iface)
++{
++	if_block *curr = first;
++	while(curr!=NULL)
++	{
++		if (strcmp(curr->type,"mapping")==0 && strcmp(curr->name,iface)==0)
++			return curr;
++		curr = curr->next;
++	}
++	return NULL;
++}
++
+ const char *ifparser_getkey(if_block* iface, const char *key)
+ {
+ 	if_data *curr = iface->info;
+diff --git a/src/backends/interface_parser.h b/src/backends/interface_parser.h
+index 075f454..8914283 100644
+--- a/src/backends/interface_parser.h
++++ b/src/backends/interface_parser.h
+@@ -44,6 +44,7 @@ void ifparser_init(void);
+ void ifparser_destroy(void);
+ 
+ if_block *ifparser_getif(const char* iface);
++if_block *ifparser_getmapping(const char* iface);
+ if_block *ifparser_getfirst(void);
+ const char *ifparser_getkey(if_block* iface, const char *key);
+ 
