@@ -1,5 +1,5 @@
 diff --git a/src/backends/NetworkManagerDebian.c b/src/backends/NetworkManagerDebian.c
-index 740572a..8090696 100644
+index 740572a..3a2fdd6 100644
 --- a/src/backends/NetworkManagerDebian.c
 +++ b/src/backends/NetworkManagerDebian.c
 @@ -37,6 +37,7 @@ #include "interface_parser.h"
@@ -74,7 +74,95 @@ index 740572a..8090696 100644
  }
  
  
-@@ -679,7 +727,10 @@ void nm_system_set_hostname (NMIP4Config
+@@ -563,12 +611,18 @@ gboolean nm_system_deactivate_dialup (GS
+ 		if (strcmp (dialup, config->name) == 0)
+ 		{
+ 			char *cmd;
++			int status;
+ 
+ 			nm_info ("Deactivating dialup device %s (%s) ...", dialup, (char *) config->data);
+ 			cmd = g_strdup_printf ("/sbin/ifdown %s", (char *) config->data);
+ 			nm_spawn_process (cmd);
+ 			g_free (cmd);
+-			ret = TRUE;
++			if (status == 0) {
++				ret = TRUE;
++			} else {
++				nm_warning ("Couldn't deactivate dialup device %s (%s) - %d", dialup, (char *) config->data, status);
++				ret = FALSE;
++			}
+ 			break;
+ 		}
+ 	}
+@@ -587,12 +641,18 @@ gboolean nm_system_activate_dialup (GSLi
+ 		if (strcmp (dialup, config->name) == 0)
+ 		{
+ 			char *cmd;
++			int status;
+ 
+ 			nm_info ("Activating dialup device %s (%s) ...", dialup, (char *) config->data);
+ 			cmd = g_strdup_printf ("/sbin/ifup %s", (char *) config->data);
+ 			nm_spawn_process (cmd);
+ 			g_free (cmd);
+-			ret = TRUE;
++			if (status == 0) {
++				ret = TRUE;
++			} else {
++				nm_warning ("Couldn't activate dialup device %s (%s) - %d", dialup, (char *) config->data, status);
++				ret = FALSE;
++			}
+ 			break;
+ 		}
+ 	}
+@@ -603,23 +663,26 @@ gboolean nm_system_activate_dialup (GSLi
+ GSList * nm_system_get_dialup_config (void)
+ {
+ 	const char *buf;
+-	unsigned int i = 0;
++	const char *provider;
+ 	GSList *list = NULL;
+ 	if_block *curr;
+ 	ifparser_init();
+ 
+ 	/* FIXME: get all ppp(and others?) lines from /e/n/i here */
+ 	curr = ifparser_getfirst();
+-	while(curr!=NULL)
++	while (curr != NULL)
+ 	{
+ 		NMDialUpConfig *config;
+-		if (strcmp(curr->type,"iface")==0) 
++		if (strcmp(curr->type, "iface") == 0) 
+ 		{
+-			buf = ifparser_getkey(curr,"inet");
+-			if (buf && strcmp (buf, "ppp")==0)
++			buf = ifparser_getkey(curr, "inet");
++			if (buf && strcmp (buf, "ppp") == 0)
+ 			{
++				provider = ifparser_getkey(curr, "provider");
++				if (!provider) 
++					provider = "default provider";
+ 				config = g_malloc (sizeof (NMDialUpConfig));
+-				config->name = g_strdup_printf ("Modem (#%d)", i++);
++				config->name = g_strdup_printf ("%s via Modem", provider);
+ 				config->data = g_strdup (curr->name);	/* interface name */
+ 
+ 				list = g_slist_append (list, config);
+@@ -631,14 +694,6 @@ GSList * nm_system_get_dialup_config (vo
+ 	}
+ 	ifparser_destroy();
+ 
+-	/* Hack: Go back and remove the "(#0)" if there is only one device */
+-	if (i == 1)
+-	{
+-		NMDialUpConfig *config = (NMDialUpConfig *) list->data;
+-		g_free (config->name);
+-		config->name = g_strdup ("Modem");
+-	}
+-
+ 	return list;
+ }
+ 
+@@ -679,7 +734,10 @@ void nm_system_set_hostname (NMIP4Config
   */
  gboolean nm_system_should_modify_resolv_conf (void)
  {

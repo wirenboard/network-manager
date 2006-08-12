@@ -10,8 +10,8 @@ group "netdev". If you want to add a user to group "netdev" use the command
 "adduser username netdev" or one of the graphical user management frontends.
 After that you have to reload D-Bus with the command "/etc/init.d/dbus reload".
 
-Configuration
-~~~~~~~~~~~~~
+Configuration of wireless and ethernet interfaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Only devices that are *not* listed in /etc/network/interfaces or which have 
 been configured "auto" and "dhcp" (with no other options) are managed by NM.
 
@@ -51,3 +51,19 @@ iface eth0 inet static
 5.)
 Device is not listed in /etc/network/interfaces.
 -> Device is managed by NM.
+
+Dial-up configuration
+~~~~~~~~~~~~~~~~~~~~~
+After configuring your PPP interface (either manually or by using a tool like
+"pppconfig") to work with a peer called "myisp" you should edit 
+/etc/network/interfaces and add a stanza like this:
+
+iface ppp0 inet ppp
+	provider myisp
+
+NM will then make it possible to dial this connection.
+If you want to set up multiple internet service providers simply create a new 
+stanza as listed above specifying the provider and a different iface, e.g. ppp1.
+
+Please read the "Debian Reference Manual", section 10.6.1.4 or the "interfaces"
+man page for further information.
