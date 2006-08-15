@@ -2,3 +2,4 @@ debian/tmp/usr/sbin/NetworkManager
 debian/tmp/usr/sbin/NetworkManagerDispatcher
 debian/tmp/usr/lib/network-manager
 debian/tmp/etc/dbus-1/system.d/NetworkManager.conf
+test/nm-tool /usr/bin/

@@ -12,10 +12,11 @@ network-manager (0.6.4-1) unstable; urgency=low
   [ Michael Biebl ]
   * Merged the patches 05-resolvconf.patch and 08-disabled_devices.patch into
     a single patch called 05-debian_backend.patch.
-  * Updated 05-debian_backend.patch to not control mapped interfaces. 
+  * Updated 05-debian_backend.patch to not control mapped interfaces.
     (Closes: #377498)
+  * Ship the nm-tool utility.
 
- -- Michael Biebl <biebl@teco.edu>  Tue,  8 Aug 2006 01:51:13 +0200
+ -- Michael Biebl <biebl@teco.edu>  Tue, 15 Aug 2006 22:52:30 +0200
 
 network-manager (0.6.3-2) unstable; urgency=low
 
