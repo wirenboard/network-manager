@@ -18,7 +18,7 @@ clean::
 
 
 build/network-manager::
-	/usr/bin/docbook-to-man debian/NetworkManagerDispatcher.sgml > debian/NetworkManagerDispatcher.1
+	/usr/bin/docbook-to-man debian/NetworkManager.sgml > debian/NetworkManager.1
 	/usr/bin/docbook-to-man debian/nm-vpn-properties.sgml > debian/nm-vpn-properties.1
 	/usr/bin/docbook-to-man debian/nm-applet.sgml > debian/nm-applet.1
 	
