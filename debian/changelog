@@ -2,6 +2,8 @@ network-manager (0.6.4-1) unstable; urgency=low
 
   [ Riccardo Setti ]
   * New upstream release. (Closes: #379163)
+    - Bumped hal deps to version 0.5.7.1. NM needs user haldaemon for dbus
+    operations.
   * Allow interfaces marked "auto-hotplug" to be managed by NM.
     (Closes: #381017)
   * Added 09_fix_bigendian_words.patch which will fix the WPA+plain text pw

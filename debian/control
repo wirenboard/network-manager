@@ -3,12 +3,12 @@ Section: net
 Priority: optional
 Maintainer: Riccardo Setti <giskard@debian.org>
 Uploaders: Michael Biebl <biebl@teco.edu>
-Build-Depends: debhelper (>= 5.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man
+Build-Depends: debhelper (>= 5.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev, libhal-dev (>= 0.5.7.1), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man
 Standards-Version: 3.7.2
 
 Package: network-manager
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>= 1.12-2), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60), hal (>= 0.5.0), ifupdown
+Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>=1.12-2), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60), hal (>=0.5.7.1), ifupdown
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
