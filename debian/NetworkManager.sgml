@@ -102,7 +102,7 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para>nm-applet (1), NetworkManagerDispatcher (1).</para>
+    <para>nm-applet (1), NetworkManagerDispatcher (1), nm-tool (1).</para>
 
     <para>More Information about NetworkManager can be found at
       http://www.gnome.org/projects/NetworkManager/ .</para>
@@ -111,7 +111,7 @@ manpage.1: manpage.sgml
     <title>AUTHOR</title>
 
     <para>This manual page was written by Jan Gerber <email>j@bootlab.org</email> and by
-	 Riccardo Setti <email>giskard@autistici.org</email> for
+	 Riccardo Setti <email>giskard@debian.org</email> for
       the <productname>Debian/Ubuntu</productname> system.
     </para>
 

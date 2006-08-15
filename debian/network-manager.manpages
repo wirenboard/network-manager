@@ -1,2 +1,3 @@
-debian/NetworkManagerDispatcher.1
+man/NetworkManagerDispatcher.1
+man/nm-tools.1
 debian/NetworkManager.1
