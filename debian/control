@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Riccardo Setti <giskard@debian.org>
 Uploaders: Michael Biebl <biebl@teco.edu>
-Build-Depends: debhelper (>= 5.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev, libhal-dev (>= 0.5.7.1), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man
+Build-Depends: debhelper (>= 5.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man
 Standards-Version: 3.7.2
 
 Package: network-manager
