@@ -1,6 +1,6 @@
 network-manager (0.6.4-2) unstable; urgency=low
 
-  * Ship the nm-tool binary.
+  * Ship the nm-tool binary. (closes: #384891)
 
  -- Michael Biebl <biebl@teco.edu>  Tue, 15 Aug 2006 23:42:09 +0200
 
