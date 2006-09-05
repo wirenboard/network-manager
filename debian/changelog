@@ -1,13 +1,13 @@
 network-manager (0.6.4-3) unstable; urgency=low
 
-  * Changed adeprecated dbus function (closes: 385380)
-   - added 12_dbus0.9.patch.
+  * Changed adeprecated dbus function. (Closes: 385380)
+    - Added 12_dbus0.9.patch.
 
  -- Riccardo Setti <giskard@debian.org>  Tue,  5 Sep 2006 19:48:00 +0200
 
 network-manager (0.6.4-2) unstable; urgency=low
 
-  * Ship the nm-tool binary. (closes: #384891)
+  * Ship the nm-tool binary. (Closes: #384891)
 
  -- Michael Biebl <biebl@teco.edu>  Tue, 15 Aug 2006 23:42:09 +0200
 
