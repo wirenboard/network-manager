@@ -1,3 +1,9 @@
+network-manager (0.6.4-4) unstable; urgency=low
+
+  * Correct typo in package description. (Closes: #390062)
+
+ -- Michael Biebl <biebl@teco.edu>  Fri, 29 Sep 2006 13:18:02 +0200
+
 network-manager (0.6.4-3) unstable; urgency=low
 
   * Changed adeprecated dbus function. (Closes: 385380)

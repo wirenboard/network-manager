@@ -49,7 +49,7 @@ Section: devel
 Depends: ${shlibs:Depends}, ${misc:Depends}, pkg-config
 Description: network management framework (development files)
  this package provides header files that are needed to 
- compile VPN Plugins for NetworManager.
+ compile VPN Plugins for NetworkManager.
  .
   Homepage: http://www.gnome.org/projects/NetworkManager/
 
