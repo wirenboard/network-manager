@@ -18,6 +18,9 @@ been configured "auto" and "dhcp" (with no other options) are managed by NM.
 This way you can setup a custom (static) configuration for a device and NM 
 will not try to override this setting.
 
+After modifying /etc/network/interfaces you have to restart NM with the
+command "/etc/dbus-1/event.d/25NetworkManager restart".
+
 Examples:
 
 1.)
@@ -65,5 +68,9 @@ NM will then make it possible to dial this connection.
 If you want to set up multiple internet service providers simply create a new 
 stanza as listed above specifying the provider and a different iface, e.g. ppp1.
 
+After modifying /etc/network/interfaces you have to restart NM with the
+command "/etc/dbus-1/event.d/25NetworkManager restart".
+
 Please read the "Debian Reference Manual", section 10.6.1.4 or the "interfaces"
 man page for further information.
+

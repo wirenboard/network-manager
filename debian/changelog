@@ -3,8 +3,10 @@ network-manager (0.6.4-4) unstable; urgency=low
   * Correct typo in package description. (Closes: #390062)
   * debian/network-manager.postinst
     - Create group netdev if not yet existent. Add a Depends on adduser.
+  * Add instructions to README.Debian how to restart NetworkManager after
+    modifying /etc/network/interfaces. (Closes: 384892) 
 
- -- Michael Biebl <biebl@debian.org>  Tue, 24 Oct 2006 14:32:54 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 24 Oct 2006 14:58:19 +0200
 
 network-manager (0.6.4-3) unstable; urgency=low
 
