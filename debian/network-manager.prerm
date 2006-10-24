@@ -1,16 +1,14 @@
 #!/bin/sh
+
 set -e
 
 case "$1" in
-	configure)
-		if [ -f /etc/dbus-1/event.d/25NetworkManagerDispatcher ]; then
-			rm /etc/dbus-1/event.d/25NetworkManagerDispatcher
-		fi
-		;;
   	remove)
 		/etc/dbus-1/event.d/25NetworkManager stop
 		/etc/dbus-1/event.d/26NetworkManagerDispatcher stop
-	 ;;
+	;;
 esac
 
 #DEBHELPER#
+
+exit 0
