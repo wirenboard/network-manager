@@ -1,20 +1,27 @@
 #!/bin/sh
+
 set -e
 
 case "$1" in
-  configure)
-  	if [ -x "/etc/init.d/dbus" ]; then
-		invoke-rc.d dbus force-reload || true
-	fi
+    	configure)
+		if ! getent group netdev > /dev/null; then
+			addgroup --quiet --system netdev
+		fi
+
+		if [ -x "/etc/init.d/dbus" ]; then
+			invoke-rc.d dbus force-reload || true
+		fi
 	
-	if [ -x "/etc/dbus-1/event.d/25NetworkManager" ]; then
-		/etc/dbus-1/event.d/25NetworkManager restart
-	fi
+		if [ -x "/etc/dbus-1/event.d/25NetworkManager" ]; then
+			/etc/dbus-1/event.d/25NetworkManager restart
+		fi
 	
-	if [ -x "/etc/dbus-1/event.d/26NetworkManagerDispatcher" ]; then
-		/etc/dbus-1/event.d/26NetworkManagerDispatcher restart
-	fi			 
-	;;
+		if [ -x "/etc/dbus-1/event.d/26NetworkManagerDispatcher" ]; then
+			/etc/dbus-1/event.d/26NetworkManagerDispatcher restart
+		fi			 
+    	;;
 esac
 
 #DEBHELPER#
+
+exit 0
