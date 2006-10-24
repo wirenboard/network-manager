@@ -4,9 +4,12 @@ network-manager (0.6.4-4) unstable; urgency=low
   * debian/network-manager.postinst
     - Create group netdev if not yet existent. Add a Depends on adduser.
   * Add instructions to README.Debian how to restart NetworkManager after
-    modifying /etc/network/interfaces. (Closes: 384892) 
+    modifying /etc/network/interfaces. (Closes: 384892)
+  * debian/patches/05-debian_backend.patch
+    - Fix the parser for /etc/network/interfaces. (Closes: #383765)
+    - Do not restart nscd on dns changes, only invalidate the hosts cache.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 24 Oct 2006 14:58:19 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 24 Oct 2006 20:18:18 +0200
 
 network-manager (0.6.4-3) unstable; urgency=low
 

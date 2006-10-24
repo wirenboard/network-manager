@@ -1,5 +1,5 @@
 diff --git a/src/backends/NetworkManagerDebian.c b/src/backends/NetworkManagerDebian.c
-index 740572a..3a2fdd6 100644
+index 740572a..93c2914 100644
 --- a/src/backends/NetworkManagerDebian.c
 +++ b/src/backends/NetworkManagerDebian.c
 @@ -37,6 +37,7 @@ #include "interface_parser.h"
@@ -10,6 +10,25 @@ index 740572a..3a2fdd6 100644
  
  /*
   * nm_system_init
+@@ -238,14 +239,14 @@ void nm_system_kill_all_dhcp_daemons (vo
+ /*
+  * nm_system_update_dns
+  *
+- * Make glibc/nscd aware of any changes to the resolv.conf file by
+- * restarting nscd.
++ * Invalidate the nscd host cache, if it exists, since
++ * we changed resolv.conf.
+  *
+  */
+ void nm_system_update_dns (void)
+ {
+-	nm_spawn_process ("/usr/sbin/invoke-rc.d nscd restart");
+-
++	nm_info ("Clearing nscd hosts cache.");
++	nm_spawn_process ("/usr/sbin/nscd -i hosts");
+ }
+ 
+ 
 @@ -514,13 +515,60 @@ gboolean nm_system_device_get_use_dhcp (
  /*
   * nm_system_device_get_disabled
@@ -175,10 +194,78 @@ index 740572a..3a2fdd6 100644
  
  
 diff --git a/src/backends/interface_parser.c b/src/backends/interface_parser.c
-index 53d6487..aa81134 100644
+index 53d6487..2fa559f 100644
 --- a/src/backends/interface_parser.c
 +++ b/src/backends/interface_parser.c
-@@ -198,6 +198,18 @@ if_block *ifparser_getif(const char* ifa
+@@ -71,7 +71,8 @@ void add_data(const char *key,const char
+ 	//printf("added data '%s' with key '%s'\n",data,key);
+ }
+ 
+-#define SPACE_OR_TAB(string,ret) {ret = strchr(string,' ');ret=(ret == NULL?strchr(string,'\t'):ret);}
++// define what we consider a whitespace
++#define WS " \t"
+ 
+ void ifparser_init(void)
+ {
+@@ -105,36 +106,52 @@ void ifparser_init(void)
+ 		if (line[0]=='#' || line[0]=='\0')
+ 			continue;
+ 		
+-		SPACE_OR_TAB(line,space)
++		space = line;
++		while (!strchr(WS, space[0])) space++;
++
+ 		if (space == NULL)
+ 		{
+-			nm_warning ("Error: Can't parse interface line '%s'\n",line);
++			nm_warning ("Error: Can't parse line '%s'\n",line);
+ 			continue;
+ 		}
++
++		// terminate line string and skip further whitespaces
+ 		space[0] = '\0';
+-		
++		while (isspace(space[1])) space++;
++
+ 		// There are four different stanzas:
+ 		// iface, mapping, auto and allow-*. Create a block for each of them.
+ 		if (strcmp(line,"iface")==0)
+ 		{
+-			char *space2 = strchr(space+1,' ');
++			char *space2 = space+1;
++			while (!strchr(WS, space2[0])) space2++;
++
+ 			if (space2 == NULL)
+ 			{
+ 				nm_warning ("Error: Can't parse iface line '%s'\n",space+1);
+ 				continue;
+ 			}
++
++			// terminate space string and skip further whitespaces
+ 			space2[0]='\0';
++			while (isspace(space2[1])) space2++;
++
+ 			add_block(line,space+1);
+ 
+ 			if (space2[1]!='\0')
+ 			{
+-				space = strchr(space2+1,' ');
++				space = space2+1;
++				while (!strchr(WS, space[0])) space++;
++
+ 				if (space == NULL)
+ 				{
+ 					nm_warning ("Error: Can't parse data '%s'\n",space2+1);
+ 					continue;
+ 				}
++				// terminate space2 string and skip further whitespaces
+ 				space[0] = '\0';
++				while (isspace(space[1])) space++;
++
+ 				add_data(space2+1,space+1);
+ 			}
+ 		}
+@@ -198,6 +215,18 @@ if_block *ifparser_getif(const char* ifa
  	return NULL;
  }
  
