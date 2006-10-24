@@ -15,7 +15,7 @@
 set -e
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DESC="NetworkManager dispatcher"
+DESC="network events dispatcher"
 NAME="NetworkManagerDispatcher"
 DAEMON=/usr/sbin/$NAME
 PIDDIR=/var/run/NetworkManager
@@ -35,7 +35,6 @@ test -f /etc/default/NetworkManagerDispatcher && . /etc/default/NetworkManagerDi
 #	Function that starts the daemon/service.
 #
 d_start() {
-        log_begin_msg "Starting $DESC"
 	if [ ! -d $PIDDIR ]; then
 		mkdir -p $PIDDIR
 		chown $USER:$USER $PIDDIR
@@ -44,33 +43,34 @@ d_start() {
 	start-stop-daemon --start --quiet --pidfile $PIDFILE \
 		--user $USER --exec $DAEMON -- $DAEMON_OPTS --pid-file $PIDFILE
 
-	log_end_msg $?
 }
 
 #
 #	Function that stops the daemon/service.
 #
 d_stop() {
-        log_begin_msg "Stopping $DESC"
 	start-stop-daemon --stop --retry 60 --quiet --pidfile $PIDFILE \
 		 --oknodo --user $USER --exec $DAEMON
-        log_end_msg $?
 }
 
 
 case "$1" in
   start)
+        log_daemon_msg "Starting $DESC" "$NAME"
 	d_start
 	;;
   stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
 	d_stop
 	;;
   restart|force-reload)
+        log_daemon_msg "Restarting $DESC" "$NAME"
 	d_stop
 	d_start
+        log_end_msg $?
 	;;
   *)
-	log_success_msg "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
 	exit 1
 	;;
 esac
