@@ -69,12 +69,12 @@ case "$1" in
 	log_end_msg $?
 	;;
   stop)
-        log_daemon_msg "Stopping $DESC" "$NAME"
+	log_daemon_msg "Stopping $DESC" "$NAME"
 	d_stop
 	log_end_msg $?
 	;;
   restart|force-reload)
-  	log_daemon_msg "Restarting $DESC" "$NAME"
+	log_daemon_msg "Restarting $DESC" "$NAME"
 	d_stop
 	d_start
 	log_end_msg $?
