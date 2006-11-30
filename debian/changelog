@@ -1,3 +1,11 @@
+network-manager (0.6.4-6) unstable; urgency=low
+
+  * debian/patches/10-po_fr.patch
+    - Added. Small fixes for the French translation. (Closes: #401060)
+      Thanks to Cyril Brulebois.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 30 Nov 2006 18:30:16 +0100
+
 network-manager (0.6.4-5) unstable; urgency=low
 
   * Small fix for the NetworkManagerDispatcher init script. 
