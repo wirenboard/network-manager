@@ -1,0 +1,45 @@
+Index: man/NetworkManager.1.in
+===================================================================
+RCS file: /cvs/gnome/NetworkManager/man/NetworkManager.1.in,v
+retrieving revision 1.2
+diff -u -3 -p -r1.2 NetworkManager.1.in
+--- man/NetworkManager.1.in	1 Feb 2006 18:14:15 -0000	1.2
++++ man/NetworkManager.1.in	30 Nov 2006 19:33:39 -0000
+@@ -3,6 +3,7 @@
+ .\" Copyright (C) 2005 Robert Love
+ .\"
+ .TH NETWORKMANAGER "1"
++.SH NAME
+ NetworkManager \- network management daemon
+ .SH SYNOPSIS
+ .B NetworkManager [\-\-no-daemon] [\-\-enable-test-devices]
+Index: man/NetworkManagerDispatcher.1.in
+===================================================================
+RCS file: /cvs/gnome/NetworkManager/man/NetworkManagerDispatcher.1.in,v
+retrieving revision 1.2
+diff -u -3 -p -r1.2 NetworkManagerDispatcher.1.in
+--- man/NetworkManagerDispatcher.1.in	1 Feb 2006 18:14:15 -0000	1.2
++++ man/NetworkManagerDispatcher.1.in	30 Nov 2006 19:33:39 -0000
+@@ -3,6 +3,7 @@
+ .\" Copyright (C) 2005 Robert Love
+ .\"
+ .TH NETWORKMANAGERDISPATCHER "1"
++.SH NAME
+ NetworkManagerDispatcher \- daemon that runs commands in response to off/online
+ .SH SYNOPSIS
+ .B NetworkManagerDispatcher [\-\-no-daemon]
+Index: man/nm-tool.1.in
+===================================================================
+RCS file: /cvs/gnome/NetworkManager/man/nm-tool.1.in,v
+retrieving revision 1.1
+diff -u -3 -p -r1.1 nm-tool.1.in
+--- man/nm-tool.1.in	1 Feb 2006 18:14:15 -0000	1.1
++++ man/nm-tool.1.in	30 Nov 2006 19:33:39 -0000
+@@ -3,6 +3,7 @@
+ .\" Copyright (C) 2005 Robert Love
+ .\"
+ .TH NM-TOOL "1"
++.SH NAME
+ nm-tool \- utility to report NetworkManager state 
+ .SH SYNOPSIS
+ .B nm-tool
