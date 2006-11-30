@@ -1,10 +1,14 @@
-network-manager (0.6.4-6) unstable; urgency=low
+network-manager (0.6.4-6) unstable; urgency=medium
 
   * debian/patches/10-po_fr.patch
     - Added. Small fixes for the French translation. (Closes: #401060)
       Thanks to Cyril Brulebois.
+  * debian/patches/12_dbus1.0.patch
+    - Updated 12_dbus0.9.patch for D-Bus 1.0 to pass the correct flags to
+      dbus_bus_request_name(). (Closes: #401039)
+  * Urgency medium, as it fixes a FTBFS bug.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 30 Nov 2006 18:30:16 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 30 Nov 2006 20:05:36 +0100
 
 network-manager (0.6.4-5) unstable; urgency=low
 
