@@ -1,31 +1,42 @@
---- ./gnome/libnm_glib/libnm_glib.c.old	2006-08-24 18:08:22.200388750 +0200
-+++ ./gnome/libnm_glib/libnm_glib.c	2006-08-24 18:08:33.353085750 +0200
-@@ -230,7 +230,7 @@
+diff -urN NetworkManager-0.6.4.orig/gnome/libnm_glib/libnm_glib.c NetworkManager-0.6.4/gnome/libnm_glib/libnm_glib.c
+--- NetworkManager-0.6.4.orig/gnome/libnm_glib/libnm_glib.c	2007-01-10 21:58:05.000000000 +0100
++++ NetworkManager-0.6.4/gnome/libnm_glib/libnm_glib.c	2007-01-10 22:00:00.000000000 +0100
+@@ -230,7 +230,8 @@
  	{
  		/* Try to reactivate our connection to dbus on the next pass through the event loop */
  		ctx->nm_state = LIBNM_NO_DBUS;
 -		dbus_connection_disconnect (ctx->dbus_con);
-+		dbus_connection_close (ctx->dbus_con);
++		dbus_connection_unref (ctx->dbus_con);
++		ctx->dbus_con = NULL;
  		libnm_glib_schedule_dbus_watcher (ctx);
  	}
  	else if (dbus_message_is_signal (message, DBUS_INTERFACE_DBUS, "NameOwnerChanged"))
-@@ -444,7 +444,7 @@
+@@ -444,7 +445,10 @@
  		g_main_loop_unref (ctx->g_main_loop);
  
  	if (ctx->dbus_con)
 -		dbus_connection_disconnect (ctx->dbus_con);
-+		dbus_connection_close (ctx->dbus_con);
++	{
++        	dbus_connection_unref (ctx->dbus_con);
++		ctx->dbus_con = NULL;
++	}
  
  	if (ctx->callbacks_lock)
  		g_mutex_free (ctx->callbacks_lock);
---- src/NetworkManagerDbus.c.orig	2006-11-14 21:10:57.000000000 +0100
-+++ src//NetworkManagerDbus.c	2006-11-14 21:13:19.000000000 +0100
-@@ -832,7 +832,7 @@
+diff -urN NetworkManager-0.6.4.orig/src/NetworkManagerDbus.c NetworkManager-0.6.4/src/NetworkManagerDbus.c
+--- NetworkManager-0.6.4.orig/src/NetworkManagerDbus.c	2007-01-10 21:58:05.000000000 +0100
++++ NetworkManager-0.6.4/src/NetworkManagerDbus.c	2007-01-10 22:01:49.000000000 +0100
+@@ -831,10 +831,10 @@
  	}
  
  	dbus_error_init (&error);
 -#if (DBUS_VERSION_MAJOR == 0) && (DBUS_VERSION_MINOR >= 60)
-+#if (DBUS_VERSION_MAJOR == 1) || (DBUS_VERSION_MINOR >= 60)
- 	flags = DBUS_NAME_FLAG_DO_NOT_QUEUE;	/* Prohibit replacement is now the default */
+-	flags = DBUS_NAME_FLAG_DO_NOT_QUEUE;	/* Prohibit replacement is now the default */
++#if (DBUS_VERSION_MAJOR == 0) && (DBUS_VERSION_MINOR < 60)
++	 flags = DBUS_NAME_FLAG_PROHIBIT_REPLACEMENT;
  #else
- 	flags = DBUS_NAME_FLAG_PROHIBIT_REPLACEMENT;
+-	flags = DBUS_NAME_FLAG_PROHIBIT_REPLACEMENT;
++	flags = DBUS_NAME_FLAG_DO_NOT_QUEUE;
+ #endif
+ 	ret = dbus_bus_request_name (connection, NM_DBUS_SERVICE, flags, &error);
+ 	if (dbus_error_is_set (&error))
