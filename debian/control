@@ -26,7 +26,7 @@ Package: network-manager-gnome
 Architecture: any
 Section: gnome
 Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager (= ${Source-Version})
-Recommends: notification-daemon
+Recommends: notification-daemon, libpam-keyring
 Description: network management framework (GNOME frontend)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
