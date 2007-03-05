@@ -4,9 +4,10 @@ network-manager (0.6.4-7) unstable; urgency=low
     - Add Recommends: network-manager-gnome | network-manager-kde to
       network-manager.
     - Add Recommends: libpam-keyring to network-manager-gnome. This allows to
-      unlock the gnome-keyring automatically upon login. 
+      unlock the gnome-keyring automatically upon login.
+    - Add XS-Vcs-* fields.
   * debian/patches/12_dbus1.0.patch
-    - Updated to unref rather than close the connection.
+    - Updated to unref rather than close the D-Bus connection.
   * debian/patches/13-wep_capabilities.patch
     - Correctly set the available WEP capabilities. (Closes: #411867)
       Thanks to Andy Whitcroft for the patch!
