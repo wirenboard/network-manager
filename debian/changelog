@@ -9,15 +9,17 @@ network-manager (0.6.4-7) unstable; urgency=low
       network-manager-gnome. (Closes: #406241)
     - Add XS-Vcs-* fields.
     - Add Depends: gnome-icon-theme to network-manager-gnome, which fixes a
-      problem with nm-applet failing to start because of missing icons. 
+      problem with nm-applet failing to start because of missing icons.
       (Closes: #372466)
   * debian/patches/12_dbus1.0.patch
     - Updated to unref rather than close the D-Bus connection.
   * debian/patches/13-wep_capabilities.patch
     - Correctly set the available WEP capabilities. (Closes: #411867)
       Thanks to Andy Whitcroft for the patch!
+  * debian/network-manager-gnome.README.Debian
+    - Add a README.Debian file for network-manager-gnome. (Closes: #414187)
 
- -- Michael Biebl <biebl@debian.org>  Wed, 10 Jan 2007 22:03:15 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2007 01:39:48 +0200
 
 network-manager (0.6.4-6) unstable; urgency=medium
 
