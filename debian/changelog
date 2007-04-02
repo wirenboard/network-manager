@@ -5,6 +5,8 @@ network-manager (0.6.4-7) unstable; urgency=low
       network-manager.
     - Add Recommends: libpam-keyring to network-manager-gnome. This allows to
       unlock the gnome-keyring automatically upon login.
+    - Add Recommends: network-manager-vpnc, network-manager-openvpn to
+      network-manager-gnome. (Closes: #406241)
     - Add XS-Vcs-* fields.
   * debian/patches/12_dbus1.0.patch
     - Updated to unref rather than close the D-Bus connection.
