@@ -11,6 +11,9 @@ network-manager (0.6.4-7) unstable; urgency=low
     - Add Depends: gnome-icon-theme to network-manager-gnome, which fixes a
       problem with nm-applet failing to start because of missing icons.
       (Closes: #372466)
+    - Change maintainer address to
+      pkg-utopia-maintainers@lists.alioth.debian.org.
+      Add Riccardo and myself to Uploaders.
   * debian/patches/12_dbus1.0.patch
     - Updated to unref rather than close the D-Bus connection.
   * debian/patches/13-wep_capabilities.patch
