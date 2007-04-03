@@ -1,8 +1,8 @@
 diff --git a/src/backends/NetworkManagerDebian.c b/src/backends/NetworkManagerDebian.c
-index 740572a..93c2914 100644
+index 740572a..4e3e44a 100644
 --- a/src/backends/NetworkManagerDebian.c
 +++ b/src/backends/NetworkManagerDebian.c
-@@ -37,6 +37,7 @@ #include "interface_parser.h"
+@@ -37,6 +37,7 @@
  #include "nm-utils.h"
  
  #define ARPING "/usr/sbin/arping"
@@ -10,7 +10,7 @@ index 740572a..93c2914 100644
  
  /*
   * nm_system_init
-@@ -238,14 +239,14 @@ void nm_system_kill_all_dhcp_daemons (vo
+@@ -238,14 +239,16 @@ void nm_system_kill_all_dhcp_daemons (void)
  /*
   * nm_system_update_dns
   *
@@ -24,12 +24,24 @@ index 740572a..93c2914 100644
  {
 -	nm_spawn_process ("/usr/sbin/invoke-rc.d nscd restart");
 -
-+	nm_info ("Clearing nscd hosts cache.");
-+	nm_spawn_process ("/usr/sbin/nscd -i hosts");
++	if (g_file_test ("/usr/sbin/nscd", G_FILE_TEST_IS_EXECUTABLE)) {
++		nm_info ("Clearing nscd hosts cache.");
++		nm_spawn_process ("/usr/sbin/nscd -i hosts");
++	}
  }
  
  
-@@ -514,13 +515,60 @@ gboolean nm_system_device_get_use_dhcp (
+@@ -257,8 +260,7 @@ void nm_system_update_dns (void)
+  *
+  */
+ void nm_system_restart_mdns_responder (void)
+-{
+-	nm_spawn_process ("/usr/bin/killall -q -USR1 mDNSResponder");
++{	
+ }
+ 
+ 
+@@ -514,13 +516,60 @@ gboolean nm_system_device_get_use_dhcp (NMDevice *dev)
  /*
   * nm_system_device_get_disabled
   *
@@ -93,7 +105,7 @@ index 740572a..93c2914 100644
  }
  
  
-@@ -563,12 +611,18 @@ gboolean nm_system_deactivate_dialup (GS
+@@ -563,12 +612,18 @@ gboolean nm_system_deactivate_dialup (GSList *list, const char *dialup)
  		if (strcmp (dialup, config->name) == 0)
  		{
  			char *cmd;
@@ -101,7 +113,8 @@ index 740572a..93c2914 100644
  
  			nm_info ("Deactivating dialup device %s (%s) ...", dialup, (char *) config->data);
  			cmd = g_strdup_printf ("/sbin/ifdown %s", (char *) config->data);
- 			nm_spawn_process (cmd);
+-			nm_spawn_process (cmd);
++			status = nm_spawn_process (cmd);
  			g_free (cmd);
 -			ret = TRUE;
 +			if (status == 0) {
@@ -113,7 +126,7 @@ index 740572a..93c2914 100644
  			break;
  		}
  	}
-@@ -587,12 +641,18 @@ gboolean nm_system_activate_dialup (GSLi
+@@ -587,12 +642,18 @@ gboolean nm_system_activate_dialup (GSList *list, const char *dialup)
  		if (strcmp (dialup, config->name) == 0)
  		{
  			char *cmd;
@@ -121,7 +134,8 @@ index 740572a..93c2914 100644
  
  			nm_info ("Activating dialup device %s (%s) ...", dialup, (char *) config->data);
  			cmd = g_strdup_printf ("/sbin/ifup %s", (char *) config->data);
- 			nm_spawn_process (cmd);
+-			nm_spawn_process (cmd);
++			status = nm_spawn_process (cmd);
  			g_free (cmd);
 -			ret = TRUE;
 +			if (status == 0) {
@@ -133,7 +147,7 @@ index 740572a..93c2914 100644
  			break;
  		}
  	}
-@@ -603,23 +663,26 @@ gboolean nm_system_activate_dialup (GSLi
+@@ -603,23 +664,26 @@ gboolean nm_system_activate_dialup (GSList *list, const char *dialup)
  GSList * nm_system_get_dialup_config (void)
  {
  	const char *buf;
@@ -166,7 +180,7 @@ index 740572a..93c2914 100644
  				config->data = g_strdup (curr->name);	/* interface name */
  
  				list = g_slist_append (list, config);
-@@ -631,14 +694,6 @@ GSList * nm_system_get_dialup_config (vo
+@@ -631,14 +695,6 @@ GSList * nm_system_get_dialup_config (void)
  	}
  	ifparser_destroy();
  
@@ -181,7 +195,7 @@ index 740572a..93c2914 100644
  	return list;
  }
  
-@@ -679,7 +734,10 @@ void nm_system_set_hostname (NMIP4Config
+@@ -679,7 +735,10 @@ void nm_system_set_hostname (NMIP4Config *config)
   */
  gboolean nm_system_should_modify_resolv_conf (void)
  {
@@ -197,7 +211,7 @@ diff --git a/src/backends/interface_parser.c b/src/backends/interface_parser.c
 index 53d6487..b3ad300 100644
 --- a/src/backends/interface_parser.c
 +++ b/src/backends/interface_parser.c
-@@ -50,11 +50,13 @@ void add_block(const char *type, const c
+@@ -50,11 +50,13 @@ void add_block(const char *type, const char* name)
  
  void add_data(const char *key,const char *data)
  {
@@ -212,7 +226,7 @@ index 53d6487..b3ad300 100644
  	ret->key = g_strdup(key);
  	ret->data = g_strdup(data);
  	
-@@ -71,14 +73,18 @@ void add_data(const char *key,const char
+@@ -71,14 +73,18 @@ void add_data(const char *key,const char *data)
  	//printf("added data '%s' with key '%s'\n",data,key);
  }
  
@@ -339,7 +353,7 @@ index 53d6487..b3ad300 100644
  		
  		//printf("line: '%s' ret=%d\n",rline,ret);
  	}
-@@ -198,6 +225,18 @@ if_block *ifparser_getif(const char* ifa
+@@ -198,6 +225,18 @@ if_block *ifparser_getif(const char* iface)
  	return NULL;
  }
  

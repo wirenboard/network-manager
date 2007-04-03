@@ -20,8 +20,15 @@ network-manager (0.6.4-7) unstable; urgency=low
     - Add a README.Debian file for network-manager-gnome. (Closes: #414187)
   * debian/patches/14-po_de.patch
     - Added. Small fix for the German translation.
+  * debian/patches/05-debian_backend.patch
+    - Updated. Set status variable to return code of ifup/ifdown. 
+      (Closes: #415642)
+    - Only invalidate the nscd hosts cache when nscd is actually installed.
+      (Closes: #402436)
+    - Remove mDNSResponder restart from nm_system_restart_mdns_responder().
+      mDNSResponder has been obsoleted by Avahi which does not need a restart.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2007 02:18:28 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2007 02:21:57 +0200
 
 network-manager (0.6.4-6) unstable; urgency=medium
 
