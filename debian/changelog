@@ -18,8 +18,10 @@ network-manager (0.6.4-7) unstable; urgency=low
       Thanks to Andy Whitcroft for the patch!
   * debian/network-manager-gnome.README.Debian
     - Add a README.Debian file for network-manager-gnome. (Closes: #414187)
+  * debian/patches/14-po_de.patch
+    - Added. Small fix for the German translation.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2007 01:39:48 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2007 02:18:28 +0200
 
 network-manager (0.6.4-6) unstable; urgency=medium
 
