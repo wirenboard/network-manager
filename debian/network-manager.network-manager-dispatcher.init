@@ -1,16 +1,16 @@
 #! /bin/sh
-#
-# NetworkManager NetworkManagerDispatcher daemon
-#				Daemon for automatically switching network 
-#				connections to the best available connection.
-#				This file should be placed in /etc/init.d.
-#
-# Authors:	Christian Bjälevik <nafallo@magicalforest.se>
-#			Jan Gerber <j@bootlab.org>
-#			Mark Roach <mrroach@okmaybe.com>
-#			Thom May <thom@debian.org>
-#
-#
+### BEGIN INIT INFO
+# Provides:          NetworkManagerDispatcher
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Should-Start:	     $syslog
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: network events dispatcher
+# Description:       This daemon automatically runs scripts when 
+#                    NetworkManager changes the network state.
+### END INIT INFO
 
 set -e
 
@@ -20,7 +20,7 @@ NAME="NetworkManagerDispatcher"
 DAEMON=/usr/sbin/$NAME
 PIDDIR=/var/run/NetworkManager
 PIDFILE=$PIDDIR/$NAME.pid
-SCRIPTNAME=/etc/dbus-1/event.d/26$NAME
+SCRIPTNAME=/etc/init.d/network-manager-dispatcher
 USER=root
 
 # Gracefully exit if the package has been removed.

@@ -1,17 +1,16 @@
 #! /bin/sh
-#
-# NetworkManager	NetworkManager daemon
-#				Daemon for automatically switching network 
-#				connections to the best available connection.
-#				This file should be placed in /etc/init.d.
-#
-# Authors:	Christian Bjälevik <nafallo@magicalforest.se>
-#			Jan Gerber <j@bootlab.org>
-#			Mark Roach <mrroach@okmaybe.com>
-#			Thom May <thom@debian.org>
-#
-# Version:	@(#)skeleton  2.85-23  28-Jul-2004  miquels@cistron.nl
-#
+### BEGIN INIT INFO
+# Provides:          NetworkManager
+# Required-Start:    $local_fs dbus dhcdbd hal
+# Required-Stop:     $local_fs dbus dhcdbd hal
+# Should-Start:	     $syslog
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: network connection manager
+# Description:       Daemon for automatically switching network 
+#		     connections to the best available connection.
+### END INIT INFO
 
 set -e
 
@@ -24,7 +23,7 @@ DAEMON=/usr/sbin/$NAME
 PIDDIR=/var/run/NetworkManager
 PIDFILE=$PIDDIR/$NAME.pid
 
-SCRIPTNAME=/etc/dbus-1/event.d/25$NAME
+SCRIPTNAME=/etc/init.d/network-manager
 USER=root
 
 # Gracefully exit if the package has been removed.

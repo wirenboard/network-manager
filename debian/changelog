@@ -1,3 +1,20 @@
+network-manager (0.6.4-8) unstable; urgency=low
+
+  * Install the NetworkManager and NetworkManagerDispatcher start scripts as
+    regular SysV init scripts
+    - Rename debian/network-manager.dbus-event to debian/network-manager.init
+      and debian/network-manager-dispatcher.dbus-event to
+      debian/network-manager.network-manager-dispatcher.init.
+    - Add proper LSB headers to the init scripts.
+    - debian/rules
+      Call dh_installinit for network-manager and network-manager-dispatcher.
+    - debian/network-manager.{preinst,postinst,postrm}
+      Remove the old conffiles /etc/dbus-1/event.d/25NetworkManager and
+      /etc/dbus-1/event.d/26NetworkManagerDispatcher or rename them to
+      *.dpkg-bak if they were changed locally.   
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 24 Apr 2007 22:30:22 +0200
+
 network-manager (0.6.4-7) unstable; urgency=low
 
   * debian/control
