@@ -1,3 +1,2 @@
-etc/dbus-1/event.d
 etc/NetworkManager/dispatcher.d
 var/lib/NetworkManager
