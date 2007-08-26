@@ -14,6 +14,8 @@ DEB_CONFIGURE_EXTRA_FLAGS += \
 	
 DEB_DH_INSTALLINIT_ARGS := -- start 26 2 3 4 5 . stop 14 0 1 6 .
 
+DEB_DH_SHLIBDEPS_ARGS := -Xnm-vpn-properties
+
 clean::
 	rm -f po/*.gmo
 	rm -f debian/*.1
@@ -21,7 +23,6 @@ clean::
 
 build/network-manager::
 	/usr/bin/docbook-to-man debian/nm-vpn-properties.sgml > debian/nm-vpn-properties.1
-	/usr/bin/docbook-to-man debian/nm-applet.sgml > debian/nm-applet.1
 	
 binary-install/network-manager::
 	dh_installinit --name network-manager-dispatcher $(DEB_DH_INSTALLINIT_ARGS)

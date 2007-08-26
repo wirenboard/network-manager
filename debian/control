@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
 Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
-Build-Depends: debhelper (>= 5.0.0), cdbs, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libpanel-applet2-dev, libglade2-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man
+Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libglade2-dev, libglib2.0-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man
 Standards-Version: 3.7.2
 XS-Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
 XS-Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
@@ -12,6 +12,8 @@ Package: network-manager
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>=1.12-2), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60), hal (>=0.5.7.1), ifupdown, adduser
 Recommends: network-manager-gnome | network-manager-kde
+Conflicts: network-manager-gnome (<< 0.6.5-1)
+Replaces: network-manager-gnome (<< 0.6.5-1)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -24,32 +26,10 @@ Description: network management framework daemon
  .
   Homepage: http://www.gnome.org/projects/NetworkManager/
 
-Package: network-manager-gnome
-Architecture: any
-Section: gnome
-Depends: ${shlibs:Depends}, ${misc:Depends}, network-manager (= ${Source-Version}), gnome-icon-theme
-Recommends: notification-daemon, libpam-keyring, network-manager-vpnc, network-manager-openvpn
-Description: network management framework (GNOME frontend)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
- .
- This package contains a systray applet for GNOME's notification area but it
- also works for other desktop environments which provide a systray like KDE
- or XFCE.
- It displays the available networks and allows to easily switch between them.
- For encrypted networks it will prompt the user for the key/passphrase and it
- can optionally store them in the gnome-keyring.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
- 
 Package: network-manager-dev
 Architecture: any
 Section: devel
-Depends: ${shlibs:Depends}, ${misc:Depends}, pkg-config
+Depends: pkg-config
 Description: network management framework (development files)
  this package provides header files that are needed to 
  compile VPN Plugins for NetworkManager.
@@ -76,7 +56,7 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib0 (= ${Source-Version}), libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends: libnm-glib0 (= ${binary:Version}), libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -110,7 +90,7 @@ Description: network management framework (shared library)
 Package: libnm-util-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-util0 (= ${Source-Version}), libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends: libnm-util0 (= ${binary:Version}), libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
 Description: network management framework (development files)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for

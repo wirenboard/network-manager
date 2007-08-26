@@ -1,5 +1,8 @@
 debian/tmp/usr/sbin/NetworkManager 
 debian/tmp/usr/sbin/NetworkManagerDispatcher
 debian/tmp/usr/lib/network-manager
+debian/tmp/usr/share/locale
 debian/tmp/etc/dbus-1/system.d/NetworkManager.conf
 test/nm-tool /usr/bin/
+debian/tmp/usr/bin/nm-vpn-properties
+debian/tmp/usr/share/gnome-vpn-properties/nm-vpn-properties.glade
