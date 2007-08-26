@@ -36,8 +36,12 @@ network-manager (0.6.5-1) unstable; urgency=low
       + Exclude nm-vpn-properties from dh_shlibdeps. This is a temporary
         workaround until this binary has also been moved into the nm-applet
         source package.
+  * debian/patches/20-stable_branch_updates_r2652.patch
+    - Pull updates from the stable branch up until revision 2652.
+    - Fixes broken link detection and a couple of smaller issues.
+    - Adds support for the rfkill switch.
 
- -- Michael Biebl <biebl@debian.org>  Sun, 26 Aug 2007 23:55:17 +0200
+ -- Michael Biebl <biebl@debian.org>  Mon, 27 Aug 2007 00:39:16 +0200
 
 network-manager (0.6.4-8) unstable; urgency=low
 
