@@ -1,3 +1,16 @@
+network-manager (0.6.5-1) unstable; urgency=low
+
+  * New upstream release. (Closes: #420959, #431658)
+    - Runs wpa_supplicant in less verbose mode. (Closes: #375302, #431562)
+    - Adds support for LEAP and phase two authentication.
+      (Closes: #420959, #402747)
+  * Removed patches that were merged upstream
+    - debian/patches/09_fix_bigendian_words.patch
+    - debian/patches/12_dbus1.0.patch
+    - debian/patches/13-wep_capabilities
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 25 Aug 2007 00:21:49 +0200
+
 network-manager (0.6.4-8) unstable; urgency=low
 
   * Install the NetworkManager and NetworkManagerDispatcher start scripts as
