@@ -1,15 +1,19 @@
---- src/NetworkManager.conf.orig	2006-06-14 02:47:10.000000000 +0200
-+++ src/NetworkManager.conf	2006-06-14 02:48:31.000000000 +0200
-@@ -8,7 +8,11 @@
+Index: src/NetworkManager.conf
+===================================================================
+--- src/NetworkManager.conf	(Revision 2735)
++++ src/NetworkManager.conf	(Arbeitskopie)
+@@ -8,6 +8,14 @@
                  <allow send_destination="org.freedesktop.NetworkManager"/>
                  <allow send_interface="org.freedesktop.NetworkManager"/>
          </policy>
--        <policy at_console="true">
 +        <policy user="haldaemon">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>
 +                <allow send_interface="org.freedesktop.NetworkManager"/>
 +        </policy>
 +        <policy group="netdev">
++                <allow send_destination="org.freedesktop.NetworkManager"/>
++                <allow send_interface="org.freedesktop.NetworkManager"/>
++        </policy>
+         <policy at_console="true">
                  <allow send_destination="org.freedesktop.NetworkManager"/>
                  <allow send_interface="org.freedesktop.NetworkManager"/>
-         </policy>

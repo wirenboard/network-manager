@@ -43,6 +43,8 @@ network-manager (0.6.5-1) unstable; urgency=low
     - Pull updates from the stable branch up until revision 2652.
     - Fixes broken link detection and a couple of smaller issues.
     - Adds support for the rfkill switch.
+  * debian/patches/02-dbus_access_network_manager.patch
+    - Add support for at_console dbus access check. (Closes: #426462)
 
  -- Michael Biebl <biebl@debian.org>  Mon, 27 Aug 2007 00:39:16 +0200
 
