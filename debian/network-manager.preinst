@@ -18,11 +18,12 @@
 # Prepare to remove a no-longer used conffile
 prep_rm_conffile()
 {
-    CONFFILE="$1"
+    PKGNAME="$1"
+    CONFFILE="$2"
 
     if [ -e "$CONFFILE" ]; then
 	md5sum="`md5sum \"$CONFFILE\" | sed -e \"s/ .*//\"`"
-	old_md5sum="`sed -n -e \"/^Conffiles:/,/^[^ ]/{\\\\' $CONFFILE '{s/ obsolete$//;s/.* //;p}}\" /var/lib/dpkg/status`"
+	old_md5sum="`dpkg-query -W -f='${Conffiles}' $PKGNAME | sed -n -e \"\\\\' $CONFFILE'{s/ obsolete$//;s/.* //p}\"`"
 	if [ "$md5sum" != "$old_md5sum" ]; then
 	    echo "Obsolete conffile $CONFFILE has been modified by you, renaming to .dpkg-bak"
 	    mv -f "$CONFFILE" "$CONFFILE".dpkg-bak
@@ -46,8 +47,8 @@ case "$1" in
 	    if [ -x "/etc/dbus-1/event.d/26NetworkManagerDispatcher" ]; then
 		/etc/dbus-1/event.d/26NetworkManagerDispatcher stop   
 	    fi
-	    prep_rm_conffile /etc/dbus-1/event.d/25NetworkManager
-	    prep_rm_conffile /etc/dbus-1/event.d/26NetworkManagerDispatcher
+	    prep_rm_conffile network-manager /etc/dbus-1/event.d/25NetworkManager
+	    prep_rm_conffile network-manager /etc/dbus-1/event.d/26NetworkManagerDispatcher
 	fi
 	;;
 

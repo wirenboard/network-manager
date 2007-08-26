@@ -8,8 +8,10 @@ network-manager (0.6.5-1) unstable; urgency=low
     - debian/patches/09_fix_bigendian_words.patch
     - debian/patches/12_dbus1.0.patch
     - debian/patches/13-wep_capabilities
+  * debian/network-manager.preinst
+    - Do not parse /var/lib/dpkg/status directly but use dpkg-query instead.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 25 Aug 2007 00:21:49 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 26 Aug 2007 20:46:05 +0200
 
 network-manager (0.6.4-8) unstable; urgency=low
 
