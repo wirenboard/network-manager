@@ -29,8 +29,8 @@ network-manager (0.6.5-1) unstable; urgency=low
       + Remove the binary package network-manager-gnome.
       + Add Conflicts/Replaces: network-manager-gnome (<< 0.6.5-1) as
         nm-vpn-properties is now part of the network-manager binary package.
-      + Update Build-Depends. Add autotools-dev and libglib2.0-dev, remove
-        libpanel-applet2-dev.
+      + Update Build-Depends. Add autotools-dev, libglib2.0-dev and iproute, 
+        remove libpanel-applet2-dev.
     - debian/rules
       + Do not build the nm-applet.1 manpage anymore.
       + Exclude nm-vpn-properties from dh_shlibdeps. This is a temporary
