@@ -36,6 +36,9 @@ network-manager (0.6.5-1) unstable; urgency=low
       + Exclude nm-vpn-properties from dh_shlibdeps. This is a temporary
         workaround until this binary has also been moved into the nm-applet
         source package.
+    - debian/copyright
+      + Remove the copyright notices for files which are now in the nm-applet
+        source package.
   * debian/patches/20-stable_branch_updates_r2652.patch
     - Pull updates from the stable branch up until revision 2652.
     - Fixes broken link detection and a couple of smaller issues.
