@@ -1,3 +1,9 @@
+network-manager (0.6.5-3) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 28 Sep 2007 21:33:25 +0200
+
 network-manager (0.6.5-2) unstable; urgency=low
 
   * debian/patches/21-endianess_fix_r2754.patch
