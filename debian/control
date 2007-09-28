@@ -3,10 +3,11 @@ Section: net
 Priority: optional
 Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
 Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
-Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, gnome-common, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libglade2-dev, libglib2.0-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man, iproute
+Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libglade2-dev, libglib2.0-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man, iproute
 Standards-Version: 3.7.2
 XS-Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
 XS-Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
+Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager
 Architecture: any
@@ -23,8 +24,6 @@ Description: network management framework daemon
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package provides the userspace daemons.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager-dev
 Architecture: any
@@ -33,8 +32,6 @@ Depends: pkg-config
 Description: network management framework (development files)
  this package provides header files that are needed to 
  compile VPN Plugins for NetworkManager.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-glib0
 Section: libs
@@ -50,8 +47,6 @@ Description: network management framework (GLib shared library)
  .
  This package provides the shared library that applications can use to query
  connection status via NetworkManager.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-glib-dev
 Section: libdevel
@@ -67,8 +62,6 @@ Description: network management framework (GLib interface)
  .
  This package provides the interface that applications can use to query
  connection status via NetworkManager.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-util0
 Section: libs
@@ -84,8 +77,6 @@ Description: network management framework (shared library)
  .
  This package contains a convenience library to ease the access to
  NetworkManager.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: libnm-util-dev
 Section: libdevel
@@ -100,6 +91,4 @@ Description: network management framework (development files)
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package contains header and development files.
- .
-  Homepage: http://www.gnome.org/projects/NetworkManager/
 
