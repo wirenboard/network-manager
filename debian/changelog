@@ -1,8 +1,10 @@
-network-manager (0.6.5-2) UNRELEASED; urgency=low
+network-manager (0.6.5-2) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * debian/patches/21-endianess_fix_r2754.patch
+    - Fixes a problem with ASCII passphrases on big-endian systems due to a missing 
+      config.h include. (Closes: 391364)
 
- -- Michael Biebl <biebl@debian.org>  Mon, 27 Aug 2007 01:42:37 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 09 Sep 2007 17:54:50 +0200
 
 network-manager (0.6.5-1) unstable; urgency=low
 
