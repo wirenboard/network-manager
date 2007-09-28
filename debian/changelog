@@ -7,8 +7,12 @@ network-manager (0.6.5-2) unstable; urgency=low
     - Install nm-vpn-properties manpage.
   * debian/control
     - Use the new "Homepage:" field to specify the upstream URL.
+  * 22-fix_vpn_ftbfs_dont_disable_gnome_deprecated.patch
+    - Patch from Ubuntu. Don't set the GNOME_DISABLE_DEPRECATED flag as
+      nm-vpn-properties requires gnome druid which has been deprecated in 
+      GTK+ 2.12.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 28 Sep 2007 20:37:08 +0200
+ -- Michael Biebl <biebl@debian.org>  Fri, 28 Sep 2007 21:12:33 +0200
 
 network-manager (0.6.5-1) unstable; urgency=low
 

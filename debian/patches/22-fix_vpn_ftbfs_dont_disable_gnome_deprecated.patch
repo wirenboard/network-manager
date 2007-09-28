@@ -1,0 +1,44 @@
+=== modified file 'gnome/vpn-properties/Makefile.am'
+--- network-manager-0.6.5.old/gnome/vpn-properties/Makefile.am	2007-06-25 13:51:34 +0000
++++ network-manager-0.6.5/gnome/vpn-properties/Makefile.am	2007-08-03 11:50:32 +0000
+@@ -21,17 +21,16 @@ nm_vpn_properties_CFLAGS =              
+         $(GCONF_CFLAGS)                                 \
+         $(GMODULE_CFLAGS)                               \
+         $(LIBGNOMEUI_CFLAGS)                            \
+         -DSYSCONFDIR=\"$(sysconfdir)\"			\
+         -DICONDIR=\""$(datadir)/icons"\"                \
+         -DGLADEDIR=\""$(gladedir)"\"                    \
+         -DG_DISABLE_DEPRECATED                          \
+         -DGDK_DISABLE_DEPRECATED                        \
+-        -DGNOME_DISABLE_DEPRECATED                      \
+ 	-DGNOMELOCALEDIR=\"$(datadir)/locale\"		\
+         -DVERSION=\"$(VERSION)\" \
+         $(NULL)
+ 
+ nm_vpn_properties_LDADD =               \
+         $(GLADE_LIBS)                   \
+         $(GTK_LIBS)                     \
+         $(GCONF_LIBS)                   \
+
+=== modified file 'gnome/vpn-properties/Makefile.in'
+--- network-manager-0.6.5.old/gnome/vpn-properties/Makefile.in	2007-06-25 13:51:34 +0000
++++ network-manager-0.6.5/gnome/vpn-properties/Makefile.in	2007-08-03 11:50:32 +0000
+@@ -258,17 +258,16 @@ nm_vpn_properties_CFLAGS = \
+         $(GCONF_CFLAGS)                                 \
+         $(GMODULE_CFLAGS)                               \
+         $(LIBGNOMEUI_CFLAGS)                            \
+         -DSYSCONFDIR=\"$(sysconfdir)\"			\
+         -DICONDIR=\""$(datadir)/icons"\"                \
+         -DGLADEDIR=\""$(gladedir)"\"                    \
+         -DG_DISABLE_DEPRECATED                          \
+         -DGDK_DISABLE_DEPRECATED                        \
+-        -DGNOME_DISABLE_DEPRECATED                      \
+ 	-DGNOMELOCALEDIR=\"$(datadir)/locale\"		\
+         -DVERSION=\"$(VERSION)\" \
+         $(NULL)
+ 
+ 
+ nm_vpn_properties_LDADD = \
+         $(GLADE_LIBS)                   \
+         $(GTK_LIBS)                     \
+
