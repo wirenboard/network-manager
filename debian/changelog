@@ -1,8 +1,10 @@
-network-manager (0.6.5-3) UNRELEASED; urgency=low
+network-manager (0.6.5-3) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * debian/patches/23-rfkill_return_type.patch
+    - The return type of the GetPower() method from Device.Killswitch has 
+      changed from UINT32 to INT32 in hal-0.5.10. Fix the code accordingly.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 28 Sep 2007 21:33:25 +0200
+ -- Michael Biebl <biebl@debian.org>  Mon, 22 Oct 2007 17:05:44 +0200
 
 network-manager (0.6.5-2) unstable; urgency=low
 
