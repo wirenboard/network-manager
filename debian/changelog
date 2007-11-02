@@ -1,3 +1,10 @@
+network-manager (0.6.5-4) UNRELEASED; urgency=low
+
+  * debian/control
+    - The Vcs-* fields are now officially supported, so remove the XS- prefix.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 03 Nov 2007 00:43:02 +0100
+
 network-manager (0.6.5-3) unstable; urgency=low
 
   * debian/patches/23-rfkill_return_type.patch

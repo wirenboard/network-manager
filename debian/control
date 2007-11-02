@@ -5,8 +5,8 @@ Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.
 Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
 Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, intltool, libgnome-keyring-dev, libdbus-glib-1-dev (>= 0.60), libiw-dev(>= 27+28pre9), libgnomeui-dev, libglade2-dev, libglib2.0-dev, libgconf2-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 0.99+1.0.svn21), libnotify-dev (>= 0.3), docbook-to-man, iproute
 Standards-Version: 3.7.2
-XS-Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
-XS-Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
+Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
+Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
 Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager
