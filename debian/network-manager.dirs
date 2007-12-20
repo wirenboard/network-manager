@@ -1,2 +1,3 @@
 etc/NetworkManager/dispatcher.d
 var/lib/NetworkManager
+var/run/NetworkManager
