@@ -2,8 +2,11 @@ network-manager (0.6.5-4) UNRELEASED; urgency=low
 
   * debian/control
     - The Vcs-* fields are now officially supported, so remove the XS- prefix.
+    - Bump Build-Depends on libnl-dev to (>= 1.0~pre8).
+  * debian/patches/24-libnl1-pre8_fix.patch
+    - Backport support for libnl 1.0-pre8 from upstream SVN. 
 
- -- Michael Biebl <biebl@debian.org>  Sat, 03 Nov 2007 00:43:02 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 20 Dec 2007 07:58:34 +0100
 
 network-manager (0.6.5-3) unstable; urgency=low
 
