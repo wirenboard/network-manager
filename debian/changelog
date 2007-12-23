@@ -7,8 +7,11 @@ network-manager (0.6.5-4) UNRELEASED; urgency=low
     - Backport support for libnl 1.0-pre8 from upstream SVN.
   * debian/network-manager.dirs
     - Add /var/run/NetworkManager.
+  * debian/network-manager-dispatcher.script
+    - Set PHASE="post-up" for scripts in if-up.d and PHASE="pre-down" for
+      scripts in if-down.d to be compliant with ifupdown. (Closes: #452371)
 
- -- Michael Biebl <biebl@debian.org>  Thu, 20 Dec 2007 08:04:17 +0100
+ -- Michael Biebl <biebl@debian.org>  Sun, 23 Dec 2007 16:27:30 +0100
 
 network-manager (0.6.5-3) unstable; urgency=low
 

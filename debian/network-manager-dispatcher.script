@@ -19,12 +19,12 @@ export VERBOSITY="0"
 case "$2" in
     up)
 	export MODE="start"
-	export PHASE="up"
+	export PHASE="post-up"
 	exec run-parts /etc/network/if-up.d
 	;;
     down)
 	export MODE="stop"
-	export PHASE="down"
+	export PHASE="pre-down"
 	exec run-parts /etc/network/if-down.d
 	;;
     pre-up)
