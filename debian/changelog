@@ -1,3 +1,9 @@
+network-manager (0.6.5-5) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 25 Dec 2007 17:22:22 +0100
+
 network-manager (0.6.5-4) unstable; urgency=low
 
   * debian/control
