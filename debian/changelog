@@ -1,4 +1,4 @@
-network-manager (0.6.5-4) UNRELEASED; urgency=low
+network-manager (0.6.5-4) unstable; urgency=low
 
   * debian/control
     - The Vcs-* fields are now officially supported, so remove the XS- prefix.
@@ -10,8 +10,10 @@ network-manager (0.6.5-4) UNRELEASED; urgency=low
   * debian/network-manager-dispatcher.script
     - Set PHASE="post-up" for scripts in if-up.d and PHASE="pre-down" for
       scripts in if-down.d to be compliant with ifupdown. (Closes: #452371)
+  * debian/patches/12_readme_format.patch
+    - Fix line break in README file. (Closes: #444038)
 
- -- Michael Biebl <biebl@debian.org>  Sun, 23 Dec 2007 16:27:30 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 25 Dec 2007 16:51:00 +0100
 
 network-manager (0.6.5-3) unstable; urgency=low
 
