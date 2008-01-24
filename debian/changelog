@@ -1,4 +1,4 @@
-network-manager (0.6.5-5) UNRELEASED; urgency=low
+network-manager (0.6.5-5) unstable; urgency=low
 
   * Rebuild against libnl1. (Closes: #461922)
   * debian/patches/24-get_mode_fix_r3122.patch
@@ -6,7 +6,7 @@ network-manager (0.6.5-5) UNRELEASED; urgency=low
     - Fix getting mode of device.
   * debian/patches/25-libnl_unique_pid_r3155.patch
     - Pull r3155 from stable branch.
-    - Ensures that the pid acquired by libnl is unique.
+    - Ensures that the netlink pid is unique.
   * debian/patches/26-libnl_1.0-pre8_r3206.patch
     - Pull r3206 from upstream stable branch.
     - Replaces 24-libnl1-pre8_fix.patch, which has been removed.
