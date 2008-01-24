@@ -1,18 +1,59 @@
-#!/bin/sh
-set -e
+#!/bin/sh -e
+# This script can be called in the following ways:
+#
+# After the package was installed:
+#	<postinst> configure <old-version>
+#
+#
+# If prerm fails during upgrade or fails on failed upgrade:
+#	<old-postinst> abort-upgrade <new-version>
+#
+# If prerm fails during deconfiguration of a package:
+#	<postinst> abort-deconfigure in-favour <new-package> <version>
+#	           removing <old-package> <version>
+#
+# If prerm fails during replacement due to conflict:
+#	<postinst> abort-remove in-favour <new-package> <version>
+
+
+# Remove a no-longer used conffile
+rm_conffile()
+{
+    CONFFILE="$1"
+    
+    if [ -e "$CONFFILE".dpkg-remove ]; then
+	echo "Removing obsolete conffile $CONFFILE"
+	rm -f "$CONFFILE".dpkg-remove
+    fi
+}
+
 
 case "$1" in
-  configure)
-    if [ -x /etc/dbus-1/event.d/zz99NetworkManager ]; then
-      mv /etc/dbus-1/event.d/zz99NetworkManager /etc/dbus-1/event.d/zz99NetworkManager.disabled
-    fi
-	 if [ -x /usr/bin/dbus-send ]; then
-		/usr/bin/dbus-send --system --type=method_call \
-        	--dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-		/etc/dbus-1/event.d/25NetworkManager restart
-		/etc/dbus-1/event.d/26NetworkManagerDispatcher restart
-    fi
-    ;;
+    configure)
+	# Upgrade from previous versions
+        if dpkg --compare-versions "$2" lt "0.6.4-8"; then
+	    rm_conffile /etc/dbus-1/event.d/25NetworkManager
+	    rm_conffile /etc/dbus-1/event.d/26NetworkManagerDispatcher
+	fi
+	
+	if ! getent group netdev > /dev/null; then
+	    addgroup --quiet --system netdev
+	fi
+	
+	if [ -x "/etc/init.d/dbus" ]; then
+	    invoke-rc.d dbus force-reload || true
+	fi
+	;;
+    
+    abort-upgrade|abort-deconfigure|abort-remove)
+	;;
+
+    *)
+        echo "$0 called with unknown argument \`$1'" 1>&2
+	exit 1
+	;;
 esac
 
 #DEBHELPER#
+exit 0
+

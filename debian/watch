@@ -1,0 +1,3 @@
+version=3
+
+http://download.gnome.org/sources/NetworkManager/0.6/NetworkManager-(.*)\.tar\.gz

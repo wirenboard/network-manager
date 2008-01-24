@@ -1,2 +1,4 @@
-debian/NetworkManagerDispatcher.1
-debian/NetworkManager.1
+man/NetworkManagerDispatcher.1
+man/nm-tool.1
+man/NetworkManager.1
+debian/nm-vpn-properties.1

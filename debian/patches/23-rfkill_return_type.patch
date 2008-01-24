@@ -1,0 +1,22 @@
+Index: src/NetworkManager.c
+===================================================================
+--- src/NetworkManager.c	(Revision 2974)
++++ src/NetworkManager.c	(Arbeitskopie)
+@@ -339,7 +339,7 @@
+ {
+ 	DBusError		err;
+ 	DBusMessage *	reply = NULL;
+-	guint32			status;
++	gint32			status;
+ 
+ 	g_return_if_fail (pcall != NULL);
+ 	g_return_if_fail (data != NULL);
+@@ -358,7 +358,7 @@
+ 		goto out;
+ 	}
+ 
+-	if (!dbus_message_get_args (reply, &err, DBUS_TYPE_UINT32, &status, DBUS_TYPE_INVALID)) {
++	if (!dbus_message_get_args (reply, &err, DBUS_TYPE_INT32, &status, DBUS_TYPE_INVALID)) {
+ 		nm_info ("Error getting killswitch power arguments: %s - %s", err.name, err.message);
+ 		dbus_error_free (&err);
+ 		goto out;

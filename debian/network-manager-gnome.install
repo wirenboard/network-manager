@@ -1,7 +1,0 @@
-debian/tmp/usr/bin/nm-vpn-properties
-debian/tmp/usr/bin/nm-applet
-debian/tmp/usr/share/locale/*
-debian/tmp/usr/share/nm-applet/*
-debian/tmp/usr/share/icons
-debian/tmp/usr/share/gnome-vpn-properties
-debian/tmp/etc/dbus-1/system.d/nm-applet.conf

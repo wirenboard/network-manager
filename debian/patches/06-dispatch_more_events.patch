@@ -1,0 +1,99 @@
+--- dispatcher-daemon/NetworkManagerDispatcher.c.old	2006-08-13 22:40:18.000000000 +0200
++++ dispatcher-daemon/NetworkManagerDispatcher.c	2006-08-13 22:40:27.000000000 +0200
+@@ -44,6 +44,8 @@
+ 	NMD_DEVICE_DONT_KNOW,
+ 	NMD_DEVICE_NOW_INACTIVE,
+ 	NMD_DEVICE_NOW_ACTIVE,
++	NMD_DEVICE_GOING_INACTIVE,
++	NMD_DEVICE_GOING_ACTIVE,
+ };
+ typedef enum NMDAction	NMDAction;
+ 
+@@ -95,6 +97,10 @@
+ 	if (action == NMD_DEVICE_NOW_ACTIVE)
+ 		char_act = "up";
+ 	else if (action == NMD_DEVICE_NOW_INACTIVE)
++		char_act = "post-down";
++	else if (action == NMD_DEVICE_GOING_ACTIVE)
++		char_act = "pre-up";
++	else if (action == NMD_DEVICE_GOING_INACTIVE)
+ 		char_act = "down";
+ 	else
+ 		return;
+@@ -217,9 +223,13 @@
+ 	}
+ 
+ 	if (dbus_message_is_signal (message, NM_DBUS_INTERFACE, "DeviceNoLongerActive"))
+-		action = NMD_DEVICE_NOW_INACTIVE;
++		action = NMD_DEVICE_GOING_INACTIVE;
+ 	else if (dbus_message_is_signal (message, NM_DBUS_INTERFACE, "DeviceNowActive"))
+ 		action = NMD_DEVICE_NOW_ACTIVE;
++	else if (dbus_message_is_signal (message, NM_DBUS_INTERFACE, "DeviceActivating"))
++		action = NMD_DEVICE_GOING_ACTIVE;
++	else if (dbus_message_is_signal (message, NM_DBUS_INTERFACE, "DeviceDeactivated"))
++		action = NMD_DEVICE_NOW_INACTIVE;
+ 
+ 	if (action != NMD_DEVICE_DONT_KNOW)
+ 	{
+@@ -234,8 +244,10 @@
+ 			if (dev_object_path && dev_iface_name)
+ 			{
+ 				nm_info ("Device %s (%s) is now %s.", dev_object_path, dev_iface_name,
+-						(action == NMD_DEVICE_NOW_INACTIVE ? "down" :
+-						(action == NMD_DEVICE_NOW_ACTIVE ? "up" : "error")));
++						(action == NMD_DEVICE_NOW_INACTIVE ? "going down" :
++						(action == NMD_DEVICE_NOW_ACTIVE ? "up" :
++						(action == NMD_DEVICE_GOING_INACTIVE ? "going down" :
++						(action == NMD_DEVICE_GOING_ACTIVE ? "going up" : "error")))));
+ 
+ 				nmd_execute_scripts (action, dev_iface_name);
+ 			}
+--- man/NetworkManagerDispatcher.1.in	2006-02-01 19:14:15.000000000 +0100
++++ man/NetworkManagerDispatcher.1.in.new	2006-08-15 20:13:00.000000000 +0200
+@@ -12,10 +12,14 @@
+ directory in response to interfaces coming up and down.  The scripts are run
+ alphabetically.  The first parameter is the network interface name.  The second
+ parameter is
++.I pre\-up
++before bringing the interface up,
+ .I up
+-if the interface is now up and
++after bringing the interface up,
+ .I down
+-if the interface is now down.
++before taking the interface down and
++.I post\-down
++after taking the interface down.
+ .SH OPTIONS
+ The following options are supported:
+ .TP
+--- src/NetworkManagerDbus.c	2006-05-21 19:28:02.000000000 +0200
++++ src/NetworkManagerDbus.c.new	2006-08-15 20:15:18.000000000 +0200
+@@ -191,6 +191,7 @@
+ 	{ DEVICE_NOW_ACTIVE,		"DeviceNowActive"		},
+ 	{ DEVICE_ACTIVATING,		"DeviceActivating"		},
+ 	{ DEVICE_ACTIVATION_FAILED,	"DeviceActivationFailed"	},
++	{ DEVICE_DEACTIVATED,       "DeviceDeactivated"     },
+ 	{ DEVICE_ADDED,			"DeviceAdded"			},
+ 	{ DEVICE_REMOVED,			"DeviceRemoved"		},
+ 	{ DEVICE_CARRIER_ON,		"DeviceCarrierOn"		},
+--- src/NetworkManagerDbus.h	2006-05-21 19:28:02.000000000 +0200
++++ src/NetworkManagerDbus.h.new	2006-08-15 20:15:39.000000000 +0200
+@@ -40,6 +40,7 @@
+ 	DEVICE_ACTIVATING,
+ 	DEVICE_ACTIVATION_FAILED,
+ 	DEVICE_ACTIVATION_CANCELED,
++	DEVICE_DEACTIVATED,
+ 	DEVICE_ADDED,
+ 	DEVICE_REMOVED,
+ 	DEVICE_CARRIER_ON,
+--- src/nm-device.c	2006-07-10 22:30:49.000000000 +0200
++++ src/nm-device.c.new	2006-08-15 20:16:11.000000000 +0200
+@@ -1436,6 +1436,7 @@
+ 		NM_DEVICE_GET_CLASS (self)->deactivate (self);
+ 
+ 	nm_schedule_state_change_signal_broadcast (self->priv->app_data);
++	nm_dbus_schedule_device_status_change_signal (self->priv->app_data, self, NULL, DEVICE_DEACTIVATED);
+ }
+ 
+ 

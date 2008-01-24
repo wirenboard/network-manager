@@ -22,12 +22,8 @@ License:
     License along with this package; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
-src/gnome-keyring-md5.c, gnome-keyring-md5.h is written by Colin Plumb.
+libnm-util/gnome-keyring-md5.c, gnome-keyring-md5.h is written by Colin Plumb.
 This code is in the public domain; do with it what you wish.
-
-gnome/nm-applet/eggtrayicon.c, eggtrayicon.h are copyright of 
-Anders Carlsson <andersca@gnu.org> and are released under the terms of 
-the GNU Lesser General Public. (see above).
 
 src/nm-netlink-monitor.c is copyright of Ray Strode, David Zeuthen, <david@fubar.dk> and
 Novell, Inc. and it's released under the terms of the  GNU General Public License.
@@ -67,11 +63,7 @@ are released under the terms of the GNU General Public License. (see below).
 initscript/Debian/NetworkManager is copyright of <j@bootlab.org>, 
 Mark Roach <mrroach@okmaybe.com>, Thom May <thom@debian.org>
 
-gnome/applet/menu-info.c, menu-info.h are copyright of 
-Jonathan Blandford <jrb@redhat.com> and are released under the term of
-the GNU General Public License. (see below).
-
-gnome//nm-vpn-properties.c, nm-vpn-properties.h are copyright of 
+gnome/nm-vpn-properties.c, nm-vpn-properties.h are copyright of 
 David Zeuthen, <davidz@redhat.com> and are licensed to you
 under your choice of the Academic Free License version 2.0, or the
 GNU General Public License version 2. (see below)
