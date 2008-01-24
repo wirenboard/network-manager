@@ -11,7 +11,7 @@ Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>=1.12-2), lsb-base (>= 2.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60), hal (>=0.5.7.1), ifupdown, adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}, iproute, iputils-arping, dhcdbd (>=1.12-2), lsb-base (>= 3.0-6), wpasupplicant (>= 0.4.8), dbus (>= 0.60), hal (>= 0.5.7.1), ifupdown, adduser
 Recommends: network-manager-gnome | network-manager-kde
 Conflicts: network-manager-gnome (<< 0.6.5-1)
 Replaces: network-manager-gnome (<< 0.6.5-1)
