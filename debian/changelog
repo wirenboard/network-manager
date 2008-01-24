@@ -18,8 +18,15 @@ network-manager (0.6.5-5) UNRELEASED; urgency=low
   * debian/patches/27-dont_repeat_errors.patch
     - Backported r3160 from upstream stable branch.
     - Don't repeat killswitch errors too often. (Closes: #456363)
+  * debian/network-manager.init,
+    debian/network-manager.network-manager-dispatcher.init
+    - Fix LSB init header. Use $remote_fs instead of $local_fs as the
+      daemon requires /usr to be mounted. 
+      Remove S from Should-Stop. (Closes: #459480)
+    - Shorten retry-time to 5 secs on stop.
+    - Don't fail to start if daemon is already running.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 25 Jan 2008 00:07:19 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 25 Jan 2008 00:11:47 +0100
 
 network-manager (0.6.5-4) unstable; urgency=low
 
