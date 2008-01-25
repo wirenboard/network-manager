@@ -1,10 +1,10 @@
 Index: src/NetworkManager.conf
 ===================================================================
---- src/NetworkManager.conf	(Revision 2735)
+--- src/NetworkManager.conf	(Revision 3269)
 +++ src/NetworkManager.conf	(Arbeitskopie)
-@@ -8,6 +8,14 @@
-                 <allow send_destination="org.freedesktop.NetworkManager"/>
-                 <allow send_interface="org.freedesktop.NetworkManager"/>
+@@ -11,6 +11,14 @@
+                 <allow send_destination="org.freedesktop.NetworkManager.PPP"/>
+                 <allow send_interface="org.freedesktop.NetworkManager.PPP"/>
          </policy>
 +        <policy user="haldaemon">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>

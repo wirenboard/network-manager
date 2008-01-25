@@ -1,3 +1,27 @@
+network-manager (0.7.0~svn3269-1) experimental; urgency=low
+
+  * SVN snapshot of the upcoming 0.7 release.
+  * Drop patches which are either obsolete, merged upstream or not yet ported
+    - 01-supplicant_timeout.patch
+    - 04-if_fix.patch
+    - 11-man_page_sh_name.patch
+    - 12_readme_format.patch
+    - 13-validate_mac_addr.patch
+    - 20-stable_branch_updates_r2652.patch
+    - 21-endianess_fix_r2754.patch
+    - 22-fix_vpn_ftbfs_dont_disable_gnome_deprecated.patch
+    - 23-rfkill_return_type.patch
+    - 24-get_mode_fix_r3122.patch
+    - 25-libnl_unique_pid_r3155.patch
+    - 26-libnl_1.0-pre8_r3206.patch
+    - 27-dont_repeat_errors.patch
+  * debian/patches/05-debian_backend.patch
+    - Updated for 0.7.
+  * debian/patches/02-dbus_access_network_manager.patch
+    - Updated for 0.7.
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 25 Jan 2008 15:35:15 +0100
+
 network-manager (0.6.5-5) unstable; urgency=low
 
   * Rebuild against libnl1. (Closes: #461922)
