@@ -6,15 +6,15 @@ network-manager (0.6.6-1) UNRELEASED; urgency=low
     - debian/patches/04-if_fix.patch (obsolete)
     - debian/patches/11-man_page_sh_name.patch (merged upstream)
     - debian/patches/12_readme_format.patch (merged upstream)
-    - debian/patches/20-stable_branch_updates_r2652.patch (merged upstream)
-    - debian/patches/21-endianess_fix_r2754.patch (merged upstream)
+    - debian/patches/20-stable_branch_updates_r2652.patch (applied upstream)
+    - debian/patches/21-endianess_fix_r2754.patch (applied upstream)
     - debian/patches/22-fix_vpn_ftbfs_dont_disable_gnome_deprecated.patch
       (merged upstream)
     - debian/patches/23-rfkill_return_type.patch (fixed upstream)
-    - debian/patches/24-get_mode_fix_r3122.patch (merged upstream)
-    - debian/patches/25-libnl_unique_pid_r3155.patch (merged upstream)
-    - debian/patches/26-libnl_1.0-pre8_r3206.patch (merged upstream)
-    - debian/patches/27-dont_repeat_errors.patch (merged upstream)
+    - debian/patches/24-get_mode_fix_r3122.patch (applied upstream)
+    - debian/patches/25-libnl_unique_pid_r3155.patch (applied upstream)
+    - debian/patches/26-libnl_1.0-pre8_r3206.patch (applied upstream)
+    - debian/patches/27-dont_repeat_errors.patch (applied upstream)
   * debian/patches/06-dispatch_more_events.patch
     - NetworkManagerDispatcher.1.in has been renamed to
       NetworkManagerDispatcher.8.in. Update the patch accordingly.
