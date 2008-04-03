@@ -1,0 +1,34 @@
+Index: src/nm-device.c
+===================================================================
+--- src/nm-device.c	(Revision 3527)
++++ src/nm-device.c	(Arbeitskopie)
+@@ -115,19 +115,24 @@
+ nm_get_device_driver_name (LibHalContext *ctx, const char *udi)
+ {
+ 	char	*	driver_name = NULL;
+-	char *	physdev_udi = NULL;
++	char *	origdev_udi = NULL;
+ 
+ 	g_return_val_if_fail (ctx != NULL, NULL);
+ 	g_return_val_if_fail (udi != NULL, NULL);
+ 
+-	physdev_udi = libhal_device_get_property_string (ctx, udi, "net.physical_device", NULL);
+-	if (physdev_udi && libhal_device_property_exists (ctx, physdev_udi, "info.linux.driver", NULL))
++	origdev_udi = libhal_device_get_property_string (ctx, udi, "net.originating_device", NULL);
++	if (!origdev_udi) {
++		/* Older HAL uses 'physical_device' */
++		origdev_udi = libhal_device_get_property_string (ctx, udi, "net.physical_device", NULL);
++	}
++
++	if (origdev_udi && libhal_device_property_exists (ctx, origdev_udi, "info.linux.driver", NULL))
+ 	{
+-		char *drv = libhal_device_get_property_string (ctx, physdev_udi, "info.linux.driver", NULL);
++		char *drv = libhal_device_get_property_string (ctx, origdev_udi, "info.linux.driver", NULL);
+ 		driver_name = g_strdup (drv);
+ 		g_free (drv);
+ 	}
+-	g_free (physdev_udi);
++	g_free (origdev_udi);
+ 
+ 	return driver_name;
+ }

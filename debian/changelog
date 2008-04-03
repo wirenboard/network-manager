@@ -18,6 +18,9 @@ network-manager (0.6.6-1) UNRELEASED; urgency=low
   * debian/patches/07-domain_search.patch
     - Add support for DHCP domain-search option. (Closes: #465158)
       Thanks to Bas Zoetekouw for the patch.
+  * debian/patches/08-hal_deprecated_keys.patch
+    - Add support for the "net.originating_device" key, which has replaced
+      the deprecated "net.physical_device" key in newer HAL versions.
   * debian/patches/06-dispatch_more_events.patch
     - NetworkManagerDispatcher.1.in has been renamed to
       NetworkManagerDispatcher.8.in. Update the patch accordingly.
