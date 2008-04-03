@@ -24,6 +24,10 @@ network-manager (0.6.6-1) UNRELEASED; urgency=low
   * debian/network-manager.manpages
     - The NetworkManager and NetworkManagerDispatcher man pages have been
       moved to section 8.
+  * debian/control
+    - The pkg-config files have been fixed upstream and unnecessary
+      dependencies were removed. Update Depends: for libnm-glib-dev and
+      libnm-util-dev accordingly. (Closes: #469195)
 
  -- Michael Biebl <biebl@debian.org>  Thu, 03 Apr 2008 02:11:34 +0200
 
