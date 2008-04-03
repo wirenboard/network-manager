@@ -15,6 +15,9 @@ network-manager (0.6.6-1) UNRELEASED; urgency=low
     - debian/patches/25-libnl_unique_pid_r3155.patch (applied upstream)
     - debian/patches/26-libnl_1.0-pre8_r3206.patch (applied upstream)
     - debian/patches/27-dont_repeat_errors.patch (applied upstream)
+  * debian/patches/07-domain_search.patch
+    - Add support for DHCP domain-search option. (Closes: #465158)
+      Thanks to Bas Zoetekouw for the patch.
   * debian/patches/06-dispatch_more_events.patch
     - NetworkManagerDispatcher.1.in has been renamed to
       NetworkManagerDispatcher.8.in. Update the patch accordingly.
