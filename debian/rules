@@ -12,7 +12,7 @@ DEB_CONFIGURE_EXTRA_FLAGS += \
 		--with-dhcdbd=/usr/sbin/dhcdbd \
 		--with-distro=debian
 	
-DEB_DH_INSTALLINIT_ARGS := -- start 26 2 3 4 5 . stop 14 0 1 6 .
+DEB_DH_INSTALLINIT_ARGS := -r -- start 26 2 3 4 5 . stop 14 0 1 6 .
 
 DEB_DH_SHLIBDEPS_ARGS := -Xnm-vpn-properties
 

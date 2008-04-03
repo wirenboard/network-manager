@@ -35,10 +35,7 @@ prep_rm_conffile()
 
 
 case "$1" in
-    install)
-        ;;
-
-    upgrade)
+    install|upgrade)
 	# Upgrade from previous versions
         if dpkg --compare-versions "$2" lt "0.6.4-8"; then
 	    if [ -x "/etc/dbus-1/event.d/25NetworkManager" ]; then

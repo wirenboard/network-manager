@@ -28,8 +28,12 @@ network-manager (0.6.6-1) UNRELEASED; urgency=low
     - The pkg-config files have been fixed upstream and unnecessary
       dependencies were removed. Update Depends: for libnm-glib-dev and
       libnm-util-dev accordingly. (Closes: #469195)
+  * debian/rules, debian/network-manager.postinst
+    - Minimize downtime during upgrades. (Closes: #432322)
+      Restart the service in postinst instead of stop in prerm and start in
+      postinst.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 03 Apr 2008 02:11:34 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 03 Apr 2008 02:37:16 +0200
 
 network-manager (0.6.5-5) unstable; urgency=low
 
