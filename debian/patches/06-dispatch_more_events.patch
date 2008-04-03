@@ -48,8 +48,8 @@
  
  				nmd_execute_scripts (action, dev_iface_name);
  			}
---- man/NetworkManagerDispatcher.1.in	2006-02-01 19:14:15.000000000 +0100
-+++ man/NetworkManagerDispatcher.1.in.new	2006-08-15 20:13:00.000000000 +0200
+--- man/NetworkManagerDispatcher.8.in	2006-02-01 19:14:15.000000000 +0100
++++ man/NetworkManagerDispatcher.8.in.new	2006-08-15 20:13:00.000000000 +0200
 @@ -12,10 +12,14 @@
  directory in response to interfaces coming up and down.  The scripts are run
  alphabetically.  The first parameter is the network interface name.  The second

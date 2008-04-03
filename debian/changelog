@@ -15,8 +15,14 @@ network-manager (0.6.6-1) UNRELEASED; urgency=low
     - debian/patches/25-libnl_unique_pid_r3155.patch (merged upstream)
     - debian/patches/26-libnl_1.0-pre8_r3206.patch (merged upstream)
     - debian/patches/27-dont_repeat_errors.patch (merged upstream)
+  * debian/patches/06-dispatch_more_events.patch
+    - NetworkManagerDispatcher.1.in has been renamed to
+      NetworkManagerDispatcher.8.in. Update the patch accordingly.
+  * debian/network-manager.manpages
+    - The NetworkManager and NetworkManagerDispatcher man pages have been
+      moved to section 8.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 03 Apr 2008 00:49:13 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 03 Apr 2008 02:11:34 +0200
 
 network-manager (0.6.5-5) unstable; urgency=low
 
