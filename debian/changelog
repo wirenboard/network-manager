@@ -1,3 +1,11 @@
+network-manager (0.7.0~svn3758-1) UNRELEASED; urgency=low
+
+  * New SVN snapshot
+  * debian/patches/03-system-settings-conf.patch
+    - Removed. Merged upstream
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Wed, 18 Jun 2008 14:39:19 +0100
+
 network-manager (0.7.0~svn3747-1) experimental; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
