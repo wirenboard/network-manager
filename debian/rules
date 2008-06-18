@@ -5,6 +5,9 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 include /usr/share/cdbs/1/rules/utils.mk
 
+# List any files which are not installed
+common-binary-post-install-arch:: list-missing
+
 DEB_INSTALL_DOCS_ALL := README AUTHORS TODO
 
 DEB_CONFIGURE_LIBEXECDIR := "\$$(prefix)/lib/NetworkManager"
@@ -22,4 +25,3 @@ clean::
 binary-install/network-manager::
 	install -m 755 debian/network-manager-dispatcher.script \
 		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
-		

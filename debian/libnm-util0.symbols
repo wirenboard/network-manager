@@ -18,6 +18,7 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_connection_get_setting_by_name@Base 0.7.0~svn3712
  nm_connection_get_type@Base 0.7.0~svn3712
  nm_connection_lookup_setting_type@Base 0.7.0~svn3712
+ nm_connection_lookup_setting_type_by_quark@Base 0.7.0~svn3758-1
  nm_connection_need_secrets@Base 0.7.0~svn3712
  nm_connection_new@Base 0.7.0~svn3712
  nm_connection_new_from_hash@Base 0.7.0~svn3712
@@ -31,6 +32,8 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_crypto_error_quark@Base 0.7.0~svn3712
  nm_param_spec_specialized@Base 0.7.0~svn3712
  nm_param_spec_specialized_get_type@Base 0.7.0~svn3712
+ nm_setting_802_1x_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_802_1x_error_quark@Base 0.7.0~svn3758-1
  nm_setting_802_1x_get_type@Base 0.7.0~svn3712
  nm_setting_802_1x_new@Base 0.7.0~svn3712
  nm_setting_802_1x_set_ca_cert@Base 0.7.0~svn3712
@@ -39,10 +42,14 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_802_1x_set_phase2_client_cert@Base 0.7.0~svn3712
  nm_setting_802_1x_set_phase2_private_key@Base 0.7.0~svn3712
  nm_setting_802_1x_set_private_key@Base 0.7.0~svn3712
+ nm_setting_cdma_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_cdma_error_quark@Base 0.7.0~svn3758-1
  nm_setting_cdma_get_type@Base 0.7.0~svn3712
  nm_setting_cdma_new@Base 0.7.0~svn3712
  nm_setting_clear_secrets@Base 0.7.0~svn3712
  nm_setting_compare@Base 0.7.0~svn3712
+ nm_setting_connection_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_connection_error_quark@Base 0.7.0~svn3758-1
  nm_setting_connection_get_type@Base 0.7.0~svn3712
  nm_setting_connection_new@Base 0.7.0~svn3712
  nm_setting_duplicate@Base 0.7.0~svn3712
@@ -50,16 +57,26 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_from_hash@Base 0.7.0~svn3712
  nm_setting_get_name@Base 0.7.0~svn3712
  nm_setting_get_type@Base 0.7.0~svn3712
+ nm_setting_gsm_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_gsm_error_quark@Base 0.7.0~svn3758-1
  nm_setting_gsm_get_type@Base 0.7.0~svn3712
  nm_setting_gsm_new@Base 0.7.0~svn3712
+ nm_setting_ip4_config_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_ip4_config_error_quark@Base 0.7.0~svn3758-1
  nm_setting_ip4_config_get_type@Base 0.7.0~svn3712
  nm_setting_ip4_config_new@Base 0.7.0~svn3712
  nm_setting_need_secrets@Base 0.7.0~svn3712
+ nm_setting_ppp_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_ppp_error_quark@Base 0.7.0~svn3758-1
  nm_setting_ppp_get_type@Base 0.7.0~svn3712
  nm_setting_ppp_new@Base 0.7.0~svn3712
+ nm_setting_pppoe_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_pppoe_error_quark@Base 0.7.0~svn3758-1
  nm_setting_pppoe_get_type@Base 0.7.0~svn3712
  nm_setting_pppoe_new@Base 0.7.0~svn3712
  nm_setting_register@Base 0.7.0~svn3712
+ nm_setting_serial_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_serial_error_quark@Base 0.7.0~svn3758-1
  nm_setting_serial_get_type@Base 0.7.0~svn3712
  nm_setting_serial_new@Base 0.7.0~svn3712
  nm_setting_to_hash@Base 0.7.0~svn3712
@@ -67,15 +84,25 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_unregister@Base 0.7.0~svn3712
  nm_setting_update_secrets@Base 0.7.0~svn3712
  nm_setting_verify@Base 0.7.0~svn3712
+ nm_setting_vpn_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_vpn_error_quark@Base 0.7.0~svn3758-1
  nm_setting_vpn_get_type@Base 0.7.0~svn3712
  nm_setting_vpn_new@Base 0.7.0~svn3712
+ nm_setting_vpn_properties_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_vpn_properties_error_quark@Base 0.7.0~svn3758-1
  nm_setting_vpn_properties_get_type@Base 0.7.0~svn3712
  nm_setting_vpn_properties_new@Base 0.7.0~svn3712
+ nm_setting_wired_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_wired_error_quark@Base 0.7.0~svn3758-1
  nm_setting_wired_get_type@Base 0.7.0~svn3712
  nm_setting_wired_new@Base 0.7.0~svn3712
  nm_setting_wireless_ap_security_compatible@Base 0.7.0~svn3712
+ nm_setting_wireless_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_wireless_error_quark@Base 0.7.0~svn3758-1
  nm_setting_wireless_get_type@Base 0.7.0~svn3712
  nm_setting_wireless_new@Base 0.7.0~svn3712
+ nm_setting_wireless_security_error_get_type@Base 0.7.0~svn3758-1
+ nm_setting_wireless_security_error_quark@Base 0.7.0~svn3758-1
  nm_setting_wireless_security_get_type@Base 0.7.0~svn3712
  nm_setting_wireless_security_new@Base 0.7.0~svn3712
  nm_utils_escape_ssid@Base 0.7.0~svn3712
