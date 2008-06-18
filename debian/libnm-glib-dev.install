@@ -4,8 +4,8 @@ debian/tmp/usr/lib/libnm_glib.so
 debian/tmp/usr/include/libnm-glib/libnm_glib.h
 debian/tmp/usr/include/libnm-glib/nm-object.h
 debian/tmp/usr/include/libnm-glib/nm-client.h
-debian/tmp/usr/include/libnm-glib/nm-*device*
+debian/tmp/usr/include/libnm-glib/nm*device*
 debian/tmp/usr/include/libnm-glib/nm-access-point.h
 debian/tmp/usr/include/libnm-glib/nm-ip4-config.h
-debian/tmp/usr/include/libnm-glib/nm-*-settings*.h
-debian/tmp/usr/include/libnm-glib/nm-*-connection.h
+debian/tmp/usr/include/libnm-glib/nm*settings*.h
+debian/tmp/usr/include/libnm-glib/nm*connection.h
