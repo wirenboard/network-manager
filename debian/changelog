@@ -1,26 +1,69 @@
-network-manager (0.7.0~svn3269-1) experimental; urgency=low
+network-manager (0.7.0~svn3747-1) experimental; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
   * Drop patches which are either obsolete, merged upstream or not yet ported
     - 01-supplicant_timeout.patch
-    - 04-if_fix.patch
-    - 11-man_page_sh_name.patch
-    - 12_readme_format.patch
     - 13-validate_mac_addr.patch
-    - 20-stable_branch_updates_r2652.patch
-    - 21-endianess_fix_r2754.patch
-    - 22-fix_vpn_ftbfs_dont_disable_gnome_deprecated.patch
-    - 23-rfkill_return_type.patch
-    - 24-get_mode_fix_r3122.patch
-    - 25-libnl_unique_pid_r3155.patch
-    - 26-libnl_1.0-pre8_r3206.patch
-    - 27-dont_repeat_errors.patch
   * debian/patches/05-debian_backend.patch
     - Updated for 0.7.
   * debian/patches/02-dbus_access_network_manager.patch
     - Updated for 0.7.
+  * debian/patches/03-system-settings-conf.patch
+    - Added. Put system settings config file in /etc/NetworkManager
+  * debian/control: Updated dependencies and build-depends
+  * debian/rules:
+    - Switch to quilt as a patch system
+     - Update for the 0.7 build
+  * debian/copyright: Updated
+  * debian/nm-vpn-properties.sgml: Dropped, obsolete
+  * debian/watch: Updated to match both the current 0.6 and the upcoming 0.7
+    series
+  * debian/network-manager.postrm: Relevant code moved to preinst
+  * debian/network-manager.network-manager-dispatcher.init: Dropped, obsolete
+  * debian/*.install: Updated
+  * debian/*.symbols: Updated
 
  -- Michael Biebl <biebl@debian.org>  Fri, 25 Jan 2008 15:35:15 +0100
+
+network-manager (0.6.6-1) unstable; urgency=low
+
+  * New upstream release. (Closes: #470197)
+    - Ensure dbus errors are properly initialised. (Closes: #471317)
+  * Removed patches
+    - debian/patches/04-if_fix.patch (obsolete)
+    - debian/patches/11-man_page_sh_name.patch (merged upstream)
+    - debian/patches/12_readme_format.patch (merged upstream)
+    - debian/patches/20-stable_branch_updates_r2652.patch (applied upstream)
+    - debian/patches/21-endianess_fix_r2754.patch (applied upstream)
+    - debian/patches/22-fix_vpn_ftbfs_dont_disable_gnome_deprecated.patch
+      (merged upstream)
+    - debian/patches/23-rfkill_return_type.patch (fixed upstream)
+    - debian/patches/24-get_mode_fix_r3122.patch (applied upstream)
+    - debian/patches/25-libnl_unique_pid_r3155.patch (applied upstream)
+    - debian/patches/26-libnl_1.0-pre8_r3206.patch (applied upstream)
+    - debian/patches/27-dont_repeat_errors.patch (applied upstream)
+  * debian/patches/07-domain_search.patch
+    - Add support for DHCP domain-search option. (Closes: #465158)
+      Thanks to Bas Zoetekouw for the patch.
+  * debian/patches/08-hal_deprecated_keys.patch
+    - Add support for the "net.originating_device" key, which has replaced
+      the deprecated "net.physical_device" key in newer HAL versions.
+  * debian/patches/06-dispatch_more_events.patch
+    - NetworkManagerDispatcher.1.in has been renamed to
+      NetworkManagerDispatcher.8.in. Update the patch accordingly.
+  * debian/network-manager.manpages
+    - The NetworkManager and NetworkManagerDispatcher man pages have been
+      moved to section 8.
+  * debian/control
+    - The pkg-config files have been fixed upstream and unnecessary
+      dependencies were removed. Update Depends: for libnm-glib-dev and
+      libnm-util-dev accordingly. (Closes: #469195)
+  * debian/rules, debian/network-manager.postinst
+    - Minimize downtime during upgrades. (Closes: #432322)
+      Restart the service in postinst instead of stop in prerm and start in
+      postinst.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 03 Apr 2008 02:37:16 +0200
 
 network-manager (0.6.5-5) unstable; urgency=low
 

@@ -1,3 +1,4 @@
 etc/NetworkManager/dispatcher.d
+etc/NetworkManager/system-connections
 var/lib/NetworkManager
 var/run/NetworkManager

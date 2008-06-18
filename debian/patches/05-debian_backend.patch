@@ -1,7 +1,48 @@
-Index: src/backends/interface_parser.c
+Index: NetworkManager/src/backends/NetworkManagerDebian.c
 ===================================================================
---- src/backends/interface_parser.c	(Revision 2569)
-+++ src/backends/interface_parser.c	(Arbeitskopie)
+--- NetworkManager.orig/src/backends/NetworkManagerDebian.c	2008-06-11 12:28:11.000000000 +0200
++++ NetworkManager/src/backends/NetworkManagerDebian.c	2008-06-11 12:33:02.000000000 +0200
+@@ -74,18 +74,21 @@
+ 	nm_spawn_process ("/usr/bin/killall -q dhclient");
+ }
+ 
++#define RESOLVCONF "resolvconf"
+ 
+ /*
+  * nm_system_update_dns
+  *
+- * Make glibc/nscd aware of any changes to the resolv.conf file by
+- * restarting nscd.
++ * Invalidate the nscd host cache, if it exists, since
++ * we changed resolv.conf.
+  *
+  */
+ void nm_system_update_dns (void)
+ {
+-	nm_spawn_process ("/usr/sbin/invoke-rc.d nscd restart");
+-
++	if (g_file_test ("/usr/sbin/nscd", G_FILE_TEST_IS_EXECUTABLE)) {
++		nm_info ("Clearing nscd hosts cache.");
++		nm_spawn_process ("/usr/sbin/nscd -i hosts");
++	}
+ }
+ 
+ /*
+@@ -125,6 +128,9 @@
+  */
+ gboolean nm_system_should_modify_resolv_conf (void)
+ {
+-	return TRUE;
++	if (g_find_program_in_path(RESOLVCONF) != NULL)
++		return FALSE;
++	else
++		return TRUE;
+ }
+ 
+Index: NetworkManager/src/backends/interface_parser.c
+===================================================================
+--- NetworkManager.orig/src/backends/interface_parser.c	2008-06-11 12:28:11.000000000 +0200
++++ NetworkManager/src/backends/interface_parser.c	2008-06-11 12:33:02.000000000 +0200
 @@ -73,14 +73,18 @@
  	//printf("added data '%s' with key '%s'\n",data,key);
  }
@@ -148,10 +189,10 @@ Index: src/backends/interface_parser.c
  const char *ifparser_getkey(if_block* iface, const char *key)
  {
  	if_data *curr = iface->info;
-Index: src/backends/interface_parser.h
+Index: NetworkManager/src/backends/interface_parser.h
 ===================================================================
---- src/backends/interface_parser.h	(Revision 2569)
-+++ src/backends/interface_parser.h	(Arbeitskopie)
+--- NetworkManager.orig/src/backends/interface_parser.h	2008-06-11 12:28:11.000000000 +0200
++++ NetworkManager/src/backends/interface_parser.h	2008-06-11 12:33:02.000000000 +0200
 @@ -44,6 +44,7 @@
  void ifparser_destroy(void);
  
@@ -159,213 +200,4 @@ Index: src/backends/interface_parser.h
 +if_block *ifparser_getmapping(const char* iface);
  if_block *ifparser_getfirst(void);
  const char *ifparser_getkey(if_block* iface, const char *key);
- 
-Index: src/backends/NetworkManagerDebian.c
-===================================================================
---- src/backends/NetworkManagerDebian.c	(Revision 2569)
-+++ src/backends/NetworkManagerDebian.c	(Arbeitskopie)
-@@ -42,6 +42,7 @@
- #include "nm-utils.h"
- 
- #define ARPING "/usr/sbin/arping"
-+#define RESOLVCONF "resolvconf"
- 
- /*
-  * nm_system_init
-@@ -198,14 +199,16 @@
- /*
-  * nm_system_update_dns
-  *
-- * Make glibc/nscd aware of any changes to the resolv.conf file by
-- * restarting nscd.
-+ * Invalidate the nscd host cache, if it exists, since
-+ * we changed resolv.conf.
-  *
-  */
- void nm_system_update_dns (void)
- {
--	nm_spawn_process ("/usr/sbin/invoke-rc.d nscd restart");
--
-+	if (g_file_test ("/usr/sbin/nscd", G_FILE_TEST_IS_EXECUTABLE)) {
-+		nm_info ("Clearing nscd hosts cache.");
-+		nm_spawn_process ("/usr/sbin/nscd -i hosts");
-+	}
- }
- 
- 
-@@ -217,8 +220,7 @@
-  *
-  */
- void nm_system_restart_mdns_responder (void)
--{
--	nm_spawn_process ("/usr/bin/killall -q -USR1 mDNSResponder");
-+{	
- }
- 
- 
-@@ -377,13 +379,60 @@
- /*
-  * nm_system_device_get_disabled
-  *
-- * Return whether the distro-specific system config tells us to use
-- * dhcp for this device.
-+ * Return whether the distro-specific system config tells us to disable 
-+ * this device.
-  *
-  */
- gboolean nm_system_device_get_disabled (NMDevice *dev)
- {
--	return FALSE;
-+	const char      *iface;
-+	if_block	*curr_device, *curr_b;
-+	if_data		*curr_d;
-+	gboolean	 blacklist = TRUE;
-+
-+	g_return_val_if_fail (dev != NULL, TRUE);
-+
-+	iface = nm_device_get_iface (dev);
-+
-+	ifparser_init ();
-+
-+	/* If the device is listed in a mapping, do not control it */
-+	if (ifparser_getmapping (iface) != NULL) {
-+		blacklist = TRUE;
-+		goto out;
-+	}
-+
-+	/* If the interface isn't listed in /etc/network/interfaces then
-+	 * it's considered okay to control it.
-+ 	 */
-+	curr_device = ifparser_getif (iface);
-+	if (curr_device == NULL) {
-+		blacklist = FALSE;
-+		goto out;
-+	}
-+
-+	/* If the interface is listed and isn't marked "auto" then it's
-+	 * definitely not okay to control it.
-+	 */
-+	for (curr_b = ifparser_getfirst (); curr_b; curr_b = curr_b->next) {
-+		if ((!strcmp (curr_b->type, "auto") || !strcmp (curr_b->type, "allow-hotplug"))
-+		    && strstr (curr_b->name, iface))
-+			blacklist = FALSE;
-+	}
-+
-+	/* If the interface has no options other than just "inet dhcp"
-+	 * it's probably ok to fiddle with it. 
-+	 */
-+	for (curr_d = curr_device->info; curr_d; curr_d = curr_d->next) {
-+		if (strcmp (curr_d->key, "inet")
-+		    || strcmp (curr_d->data, "dhcp" ))
-+			blacklist = TRUE;
-+	}
-+
-+out:
-+	ifparser_destroy ();
-+
-+	return blacklist;
- }
- 
- 
-@@ -426,12 +475,18 @@
- 		if (strcmp (dialup, config->name) == 0)
- 		{
- 			char *cmd;
-+			int status;
- 
- 			nm_info ("Deactivating dialup device %s (%s) ...", dialup, (char *) config->data);
- 			cmd = g_strdup_printf ("/sbin/ifdown %s", (char *) config->data);
--			nm_spawn_process (cmd);
-+			status = nm_spawn_process (cmd);
- 			g_free (cmd);
--			ret = TRUE;
-+			if (status == 0) {
-+				ret = TRUE;
-+			} else {
-+				nm_warning ("Couldn't deactivate dialup device %s (%s) - %d", dialup, (char *) config->data, status);
-+				ret = FALSE;
-+			}
- 			break;
- 		}
- 	}
-@@ -450,12 +505,18 @@
- 		if (strcmp (dialup, config->name) == 0)
- 		{
- 			char *cmd;
-+			int status;
- 
- 			nm_info ("Activating dialup device %s (%s) ...", dialup, (char *) config->data);
- 			cmd = g_strdup_printf ("/sbin/ifup %s", (char *) config->data);
--			nm_spawn_process (cmd);
-+			status = nm_spawn_process (cmd);
- 			g_free (cmd);
--			ret = TRUE;
-+			if (status == 0) {
-+				ret = TRUE;
-+			} else {
-+				nm_warning ("Couldn't activate dialup device %s (%s) - %d", dialup, (char *) config->data, status);
-+				ret = FALSE;
-+			}
- 			break;
- 		}
- 	}
-@@ -466,23 +527,26 @@
- GSList * nm_system_get_dialup_config (void)
- {
- 	const char *buf;
--	unsigned int i = 0;
-+	const char *provider;
- 	GSList *list = NULL;
- 	if_block *curr;
- 	ifparser_init();
- 
- 	/* FIXME: get all ppp(and others?) lines from /e/n/i here */
- 	curr = ifparser_getfirst();
--	while(curr!=NULL)
-+	while (curr != NULL)
- 	{
- 		NMDialUpConfig *config;
--		if (strcmp(curr->type,"iface")==0) 
-+		if (strcmp(curr->type, "iface") == 0) 
- 		{
--			buf = ifparser_getkey(curr,"inet");
--			if (buf && strcmp (buf, "ppp")==0)
-+			buf = ifparser_getkey(curr, "inet");
-+			if (buf && strcmp (buf, "ppp") == 0)
- 			{
-+				provider = ifparser_getkey(curr, "provider");
-+				if (!provider) 
-+					provider = "default provider";
- 				config = g_malloc (sizeof (NMDialUpConfig));
--				config->name = g_strdup_printf ("Modem (#%d)", i++);
-+				config->name = g_strdup_printf ("%s via Modem", provider);
- 				config->data = g_strdup (curr->name);	/* interface name */
- 
- 				list = g_slist_append (list, config);
-@@ -494,14 +558,6 @@
- 	}
- 	ifparser_destroy();
- 
--	/* Hack: Go back and remove the "(#0)" if there is only one device */
--	if (i == 1)
--	{
--		NMDialUpConfig *config = (NMDialUpConfig *) list->data;
--		g_free (config->name);
--		config->name = g_strdup ("Modem");
--	}
--
- 	return list;
- }
- 
-@@ -542,7 +598,10 @@
-  */
- gboolean nm_system_should_modify_resolv_conf (void)
- {
--	return TRUE;
-+	if (g_find_program_in_path(RESOLVCONF) != NULL)
-+		return FALSE;
-+	else
-+		return TRUE;
- }
- 
  

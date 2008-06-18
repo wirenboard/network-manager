@@ -1,11 +1,7 @@
 debian/tmp/usr/lib/pkgconfig/libnm-util.pc
 debian/tmp/usr/lib/libnm-util.a
 debian/tmp/usr/lib/libnm-util.so
-debian/tmp/usr/include/NetworkManager/cipher.h
-debian/tmp/usr/include/NetworkManager/cipher-wep-hex.h
-debian/tmp/usr/include/NetworkManager/cipher-wep-passphrase.h
-debian/tmp/usr/include/NetworkManager/cipher-wep-ascii.h
-debian/tmp/usr/include/NetworkManager/cipher-wpa-psk-hex.h
-debian/tmp/usr/include/NetworkManager/cipher-wpa-psk-passphrase.h
-debian/tmp/usr/include/NetworkManager/dbus-helpers.h 
-debian/tmp/usr/include/NetworkManager/dbus-method-dispatcher.h
+debian/tmp/usr/include/NetworkManager/nm-connection.h
+debian/tmp/usr/include/NetworkManager/nm-utils.h
+debian/tmp/usr/include/NetworkManager/nm-setting.h
+debian/tmp/usr/include/NetworkManager/nm-setting-*.h
