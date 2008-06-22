@@ -27,7 +27,12 @@ network-manager (0.7.0~svn3758-1) UNRELEASED; urgency=low
   * debian/*.install: Updated
   * debian/*.symbols: Updated
 
- -- Michael Biebl <biebl@debian.org>  Thu, 19 Jun 2008 00:11:17 +0200
+  [ Sjoerd Simons ]
+  * debian/patches/10-execute_system_dhclient_script.patch
+    - Added. Let NM's custom dhclient script execute the systems dhclient
+    script.
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sun, 22 Jun 2008 22:25:32 +0100
 
 network-manager (0.6.6-1) unstable; urgency=low
 
