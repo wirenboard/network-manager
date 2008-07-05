@@ -1,4 +1,4 @@
-network-manager (0.6.6-2) UNRELEASED; urgency=low
+network-manager (0.6.6-2) unstable; urgency=low
 
   * debian/control
     - Add Build-Depends on pkg-config.
@@ -6,7 +6,7 @@ network-manager (0.6.6-2) UNRELEASED; urgency=low
   * debian/patches/09-nm_dbus_get_ap_from_object_path-mem_leak_fix.patch 
     - Fix memory leak in src/nm-dbus-net.c. (Closes: #488604)
 
- -- Michael Biebl <biebl@debian.org>  Sat, 05 Jul 2008 14:57:29 +0200
+ -- Michael Biebl <biebl@debian.org>  Sat, 05 Jul 2008 15:11:33 +0200
 
 network-manager (0.6.6-1) unstable; urgency=low
 
