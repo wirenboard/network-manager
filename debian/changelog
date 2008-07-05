@@ -2,6 +2,7 @@ network-manager (0.6.6-2) UNRELEASED; urgency=low
 
   * debian/control
     - Add Build-Depends on pkg-config.
+    - Drop obsolete Depends on iputils-arping. (Closes: #487794)
   * debian/patches/09-nm_dbus_get_ap_from_object_path-mem_leak_fix.patch 
     - Fix memory leak in src/nm-dbus-net.c. (Closes: #488604)
 
