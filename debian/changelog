@@ -1,4 +1,4 @@
-network-manager (0.7.0~svn3758-1) UNRELEASED; urgency=low
+network-manager (0.7.0~svn4002-1) UNRELEASED; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
 
@@ -25,7 +25,7 @@ network-manager (0.7.0~svn3758-1) UNRELEASED; urgency=low
   * debian/network-manager.postrm: Relevant code moved to preinst
   * debian/network-manager.network-manager-dispatcher.init: Dropped, obsolete
   * debian/*.install: Updated
-  * debian/*.symbols: Updated
+  * debian/*.symbols: Added
 
   [ Sjoerd Simons ]
   * debian/patches/10-execute_system_dhclient_script.patch
