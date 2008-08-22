@@ -74,8 +74,11 @@ case "$1" in
 	d_start
 	log_end_msg $?
 	;;
+  status)
+	status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+	;;
   *)
-	echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|status}" >&2
 	exit 1
 	;;
 esac
