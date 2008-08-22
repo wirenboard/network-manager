@@ -7,6 +7,7 @@ debian/tmp/usr/include/libnm-glib/nm-client.h
 debian/tmp/usr/include/libnm-glib/nm*device*
 debian/tmp/usr/include/libnm-glib/nm-access-point.h
 debian/tmp/usr/include/libnm-glib/nm-ip4-config.h
+debian/tmp/usr/include/libnm-glib/nm-dhcp4-config.h
 debian/tmp/usr/include/libnm-glib/nm*settings*.h
 debian/tmp/usr/include/libnm-glib/nm*connection.h
 debian/tmp/usr/include/libnm-glib/nm-types.h
