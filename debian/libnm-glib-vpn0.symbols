@@ -1,9 +1,4 @@
 libnm_glib_vpn.so.0 libnm-glib-vpn0 #MINVER#
- dbus_glib_marshal_nm_vpn_plugin_BOOLEAN__BOXED_POINTER@Base 0.7.0~svn3712
- dbus_glib_marshal_nm_vpn_plugin_BOOLEAN__BOXED_POINTER_POINTER@Base 0.7.0~svn3712
- dbus_glib_marshal_nm_vpn_plugin_BOOLEAN__POINTER@Base 0.7.0~svn3712
- dbus_glib_marshal_nm_vpn_plugin_BOOLEAN__STRING_POINTER@Base 0.7.0~svn3712
- dbus_glib_nm_vpn_plugin_object_info@Base 0.7.0~svn3712
  nm_vpn_plugin_disconnect@Base 0.7.0~svn3712
  nm_vpn_plugin_error_get_type@Base 0.7.0~svn3712
  nm_vpn_plugin_error_quark@Base 0.7.0~svn3712

@@ -1,16 +1,12 @@
 libnm-util.so.0 libnm-util0 #MINVER#
- crypto_decrypt@Base 0.7.0~svn3712
- crypto_deinit@Base 0.7.0~svn3712
- crypto_get_private_key@Base 0.7.0~svn3712
- crypto_init@Base 0.7.0~svn3712
- crypto_load_and_verify_certificate@Base 0.7.0~svn3712
- crypto_md5_hash@Base 0.7.0~svn3712
- crypto_verify_cert@Base 0.7.0~svn3712
  nm_connection_add_setting@Base 0.7.0~svn3712
  nm_connection_clear_secrets@Base 0.7.0~svn3712
  nm_connection_compare@Base 0.7.0~svn3712
  nm_connection_create_setting@Base 0.7.0~svn3712
  nm_connection_dump@Base 0.7.0~svn3712
+ nm_connection_duplicate@Base 0.7.0~svn3758
+ nm_connection_error_get_type@Base 0.7.0~svn3896
+ nm_connection_error_quark@Base 0.7.0~svn3896
  nm_connection_for_each_setting_value@Base 0.7.0~svn3712
  nm_connection_get_path@Base 0.7.0~svn3712
  nm_connection_get_scope@Base 0.7.0~svn3712
@@ -29,9 +25,6 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_connection_to_hash@Base 0.7.0~svn3712
  nm_connection_update_secrets@Base 0.7.0~svn3712
  nm_connection_verify@Base 0.7.0~svn3712
- nm_crypto_error_quark@Base 0.7.0~svn3712
- nm_param_spec_specialized@Base 0.7.0~svn3712
- nm_param_spec_specialized_get_type@Base 0.7.0~svn3712
  nm_setting_802_1x_error_get_type@Base 0.7.0~svn3758
  nm_setting_802_1x_error_quark@Base 0.7.0~svn3758
  nm_setting_802_1x_get_type@Base 0.7.0~svn3712
@@ -65,6 +58,10 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_ip4_config_error_quark@Base 0.7.0~svn3758
  nm_setting_ip4_config_get_type@Base 0.7.0~svn3712
  nm_setting_ip4_config_new@Base 0.7.0~svn3712
+ nm_setting_ip6_config_error_get_type@Base 0.7.0~svn3778
+ nm_setting_ip6_config_error_quark@Base 0.7.0~svn3778
+ nm_setting_ip6_config_get_type@Base 0.7.0~svn3778
+ nm_setting_ip6_config_new@Base 0.7.0~svn3778
  nm_setting_need_secrets@Base 0.7.0~svn3712
  nm_setting_ppp_error_get_type@Base 0.7.0~svn3758
  nm_setting_ppp_error_quark@Base 0.7.0~svn3758
@@ -88,10 +85,6 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_vpn_error_quark@Base 0.7.0~svn3758
  nm_setting_vpn_get_type@Base 0.7.0~svn3712
  nm_setting_vpn_new@Base 0.7.0~svn3712
- nm_setting_vpn_properties_error_get_type@Base 0.7.0~svn3758
- nm_setting_vpn_properties_error_quark@Base 0.7.0~svn3758
- nm_setting_vpn_properties_get_type@Base 0.7.0~svn3712
- nm_setting_vpn_properties_new@Base 0.7.0~svn3712
  nm_setting_wired_error_get_type@Base 0.7.0~svn3758
  nm_setting_wired_error_quark@Base 0.7.0~svn3758
  nm_setting_wired_get_type@Base 0.7.0~svn3712
@@ -106,10 +99,17 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_wireless_security_get_type@Base 0.7.0~svn3712
  nm_setting_wireless_security_new@Base 0.7.0~svn3712
  nm_utils_escape_ssid@Base 0.7.0~svn3712
- nm_utils_garray_to_string@Base 0.7.0~svn3712
  nm_utils_gvalue_hash_dup@Base 0.7.0~svn3712
  nm_utils_ip4_addresses_from_gvalue@Base 0.7.0~svn3712
  nm_utils_ip4_addresses_to_gvalue@Base 0.7.0~svn3712
+ nm_utils_ip4_netmask_to_prefix@Base 0.7.0~svn3815
+ nm_utils_ip4_prefix_to_netmask@Base 0.7.0~svn3815
+ nm_utils_ip4_routes_from_gvalue@Base 0.7.0~svn3900
+ nm_utils_ip4_routes_to_gvalue@Base 0.7.0~svn3900
+ nm_utils_ip6_addresses_from_gvalue@Base 0.7.0~svn3778
+ nm_utils_ip6_addresses_to_gvalue@Base 0.7.0~svn3778
+ nm_utils_ip6_dns_from_gvalue@Base 0.7.0~svn3778
+ nm_utils_ip6_dns_to_gvalue@Base 0.7.0~svn3778
  nm_utils_is_empty_ssid@Base 0.7.0~svn3712
  nm_utils_register_value_transformations@Base 0.7.0~svn3712
  nm_utils_same_ssid@Base 0.7.0~svn3712

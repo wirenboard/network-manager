@@ -1,10 +1,4 @@
 libnm_glib.so.0 libnm-glib0 #MINVER#
- dbus_glib_marshal_nm_exported_connection_BOOLEAN__POINTER_POINTER@Base 0.7.0~svn3712
- dbus_glib_marshal_nm_exported_connection_VOID__BOXED_POINTER@Base 0.7.0~svn3712
- dbus_glib_marshal_nm_exported_connection_VOID__STRING_BOXED_BOOLEAN_POINTER@Base 0.7.0~svn3712
- dbus_glib_marshal_nm_settings_BOOLEAN__POINTER_POINTER@Base 0.7.0~svn3712
- dbus_glib_nm_exported_connection_object_info@Base 0.7.0~svn3712
- dbus_glib_nm_settings_object_info@Base 0.7.0~svn3712
  libnm_glib_get_network_state@Base 0.6.4
  libnm_glib_init@Base 0.6.4
  libnm_glib_register_callback@Base 0.6.4
@@ -26,8 +20,6 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_active_connection_get_devices@Base 0.7.0~svn3712
  nm_active_connection_get_scope@Base 0.7.0~svn3712
  nm_active_connection_get_service_name@Base 0.7.0~svn3712
- nm_active_connection_get_shared_connection@Base 0.7.0~svn3712
- nm_active_connection_get_shared_service_name@Base 0.7.0~svn3712
  nm_active_connection_get_specific_object@Base 0.7.0~svn3712
  nm_active_connection_get_state@Base 0.7.0~svn3712
  nm_active_connection_get_type@Base 0.7.0~svn3712
@@ -49,13 +41,6 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_client_wireless_set_enabled@Base 0.7.0~svn3712
  nm_dbus_connection_get_type@Base 0.7.0~svn3712
  nm_dbus_connection_new@Base 0.7.0~svn3712
- nm_dbus_get_int_property@Base 0.7.0~svn3712
- nm_dbus_get_object_path_property@Base 0.7.0~svn3712
- nm_dbus_get_property@Base 0.7.0~svn3712
- nm_dbus_get_string_property@Base 0.7.0~svn3712
- nm_dbus_get_uint_property@Base 0.7.0~svn3712
- nm_dbus_introspect@Base 0.7.0~svn3712
- nm_dbus_set_property@Base 0.7.0~svn3712
  nm_dbus_settings_get_connection_by_path@Base 0.7.0~svn3712
  nm_dbus_settings_get_type@Base 0.7.0~svn3712
  nm_dbus_settings_new@Base 0.7.0~svn3712
@@ -69,6 +54,7 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_device_ethernet_get_type@Base 0.7.0~svn3746
  nm_device_ethernet_new@Base 0.7.0~svn3746
  nm_device_get_capabilities@Base 0.7.0~svn3712
+ nm_device_get_dhcp4_config@Base 0.7.0~svn3907
  nm_device_get_driver@Base 0.7.0~svn3712
  nm_device_get_iface@Base 0.7.0~svn3712
  nm_device_get_ip4_config@Base 0.7.0~svn3712
@@ -88,7 +74,10 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_device_wifi_get_mode@Base 0.7.0~svn3746
  nm_device_wifi_get_type@Base 0.7.0~svn3746
  nm_device_wifi_new@Base 0.7.0~svn3746
- nm_device_wifi_set_wireless_enabled@Base 0.7.0~svn3746
+ nm_dhcp4_config_get_one_option@Base 0.7.0~svn3907
+ nm_dhcp4_config_get_options@Base 0.7.0~svn3907
+ nm_dhcp4_config_get_type@Base 0.7.0~svn3907
+ nm_dhcp4_config_new@Base 0.7.0~svn3907
  nm_exported_connection_delete@Base 0.7.0~svn3712
  nm_exported_connection_get_connection@Base 0.7.0~svn3712
  nm_exported_connection_get_id@Base 0.7.0~svn3712
@@ -104,46 +93,13 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_ip4_config_get_domains@Base 0.7.0~svn3712
  nm_ip4_config_get_hostname@Base 0.7.0~svn3712
  nm_ip4_config_get_nameservers@Base 0.7.0~svn3712
- nm_ip4_config_get_nis_domain@Base 0.7.0~svn3712
- nm_ip4_config_get_nis_servers@Base 0.7.0~svn3712
+ nm_ip4_config_get_routes@Base 0.7.0~svn3900
  nm_ip4_config_get_type@Base 0.7.0~svn3712
  nm_ip4_config_new@Base 0.7.0~svn3712
- nm_marshal_VOID__OBJECT_OBJECT_ENUM@Base 0.7.0~svn3712
- nm_marshal_VOID__OBJECT_POINTER@Base 0.7.0~svn3712
- nm_marshal_VOID__OBJECT_STRING@Base 0.7.0~svn3712
- nm_marshal_VOID__OBJECT_UINT@Base 0.7.0~svn3712
- nm_marshal_VOID__OBJECT_UINT_UINT@Base 0.7.0~svn3712
- nm_marshal_VOID__POINTER_STRING@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_INT@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_OBJECT@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_STRING@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_STRING_POINTER@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_STRING_STRING@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_UCHAR@Base 0.7.0~svn3712
- nm_marshal_VOID__STRING_UINT@Base 0.7.0~svn3712
- nm_marshal_VOID__UINT_UINT@Base 0.7.0~svn3712
- nm_object_array_demarshal@Base 0.7.0~svn3712
  nm_object_array_get_type@Base 0.7.0~svn3712
- nm_object_cache_add@Base 0.7.0~svn3712
- nm_object_cache_get@Base 0.7.0~svn3712
- nm_object_cache_remove_by_object@Base 0.7.0~svn3712
- nm_object_cache_remove_by_path@Base 0.7.0~svn3712
- nm_object_demarshal_generic@Base 0.7.0~svn3712
- nm_object_get_boolean_property@Base 0.7.0~svn3712
- nm_object_get_byte_array_property@Base 0.7.0~svn3712
- nm_object_get_byte_property@Base 0.7.0~svn3712
  nm_object_get_connection@Base 0.7.0~svn3712
- nm_object_get_double_property@Base 0.7.0~svn3712
- nm_object_get_int_property@Base 0.7.0~svn3712
- nm_object_get_object_path_property@Base 0.7.0~svn3712
  nm_object_get_path@Base 0.7.0~svn3712
- nm_object_get_property@Base 0.7.0~svn3712
- nm_object_get_string_property@Base 0.7.0~svn3712
  nm_object_get_type@Base 0.7.0~svn3712
- nm_object_get_uint_property@Base 0.7.0~svn3712
- nm_object_handle_properties_changed@Base 0.7.0~svn3712
- nm_object_queue_notify@Base 0.7.0~svn3712
- nm_object_set_property@Base 0.7.0~svn3712
  nm_serial_device_get_bytes_received@Base 0.7.0~svn3746
  nm_serial_device_get_bytes_sent@Base 0.7.0~svn3746
  nm_serial_device_get_type@Base 0.7.0~svn3746
@@ -151,11 +107,8 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_settings_get_type@Base 0.7.0~svn3712
  nm_settings_list_connections@Base 0.7.0~svn3712
  nm_settings_signal_new_connection@Base 0.7.0~svn3712
- nm_ssid_demarshal@Base 0.7.0~svn3712
  nm_ssid_get_type@Base 0.7.0~svn3712
- nm_string_array_demarshal@Base 0.7.0~svn3712
  nm_string_array_get_type@Base 0.7.0~svn3712
- nm_uint_array_demarshal@Base 0.7.0~svn3712
  nm_uint_array_get_type@Base 0.7.0~svn3712
  nm_vpn_connection_get_banner@Base 0.7.0~svn3712
  nm_vpn_connection_get_type@Base 0.7.0~svn3712
