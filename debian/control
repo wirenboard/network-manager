@@ -4,21 +4,20 @@ Priority: optional
 Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
 Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
 Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, pkg-config,
- intltool, quilt, libdbus-glib-1-dev (>= 0.75),
- libiw-dev(>= 27+28pre9), libglib2.0-dev,
- libhal-dev (>= 0.5.0), libnl-dev (>= 1.0~pre8),
- ppp-dev, libpolkit-dbus-dev,
- libgnutls-dev
-Standards-Version: 3.7.3
+ intltool, quilt, libdbus-glib-1-dev (>= 0.75), libiw-dev(>= 27+28pre9),
+ libglib2.0-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 1.0~pre8), ppp-dev,
+ libpolkit-dbus-dev, libgnutls-dev
+Standards-Version: 3.8.0
 Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
 Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.0-6), wpasupplicant (>= 0.6.2-1), dbus (>= 1.1.2), hal (>= 0.5.7.1), ifupdown, adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.2-14), wpasupplicant (>= 0.6.2-1), dbus (>= 1.1.2), hal (>= 0.5.7.1), ifupdown, adduser
 Recommends: network-manager-gnome | network-manager-kde, policykit
 Conflicts: network-manager-gnome (<< 0.6.5-1)
+Suggests: avahi-autoipd
 Replaces: network-manager-gnome (<< 0.6.5-1)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
