@@ -1,4 +1,4 @@
-network-manager (0.7.0~svn4004-1) UNRELEASED; urgency=low
+network-manager (0.7.0~svn4035-1) UNRELEASED; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
 
@@ -27,7 +27,11 @@ network-manager (0.7.0~svn4004-1) UNRELEASED; urgency=low
   * debian/*.install: Updated
   * debian/*.symbols: Added
 
- -- Michael Biebl <biebl@debian.org>  Fri, 22 Aug 2008 21:53:54 +0200
+  [ Simon McVittie ]
+  * Newer tarball
+  * debian/patches/03-run-resolvconf.patch: Use (and depend on) resolvconf
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 04 Sep 2008 19:29:36 +0100
 
 network-manager (0.6.6-1) unstable; urgency=low
 
