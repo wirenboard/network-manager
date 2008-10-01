@@ -80,6 +80,7 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_dhcp4_config_new@Base 0.7.0~svn3907
  nm_exported_connection_delete@Base 0.7.0~svn3712
  nm_exported_connection_get_connection@Base 0.7.0~svn3712
+ nm_exported_connection_get_id@Base 0.7.0~svn3712
  nm_exported_connection_get_type@Base 0.7.0~svn3712
  nm_exported_connection_new@Base 0.7.0~svn3712
  nm_exported_connection_register_object@Base 0.7.0~svn3712
