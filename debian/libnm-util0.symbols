@@ -98,8 +98,10 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_setting_wireless_security_error_quark@Base 0.7.0~svn3758
  nm_setting_wireless_security_get_type@Base 0.7.0~svn3712
  nm_setting_wireless_security_new@Base 0.7.0~svn3712
+ nm_utils_deinit@Base 0.7.0~svn4142-1
  nm_utils_escape_ssid@Base 0.7.0~svn3712
  nm_utils_gvalue_hash_dup@Base 0.7.0~svn3712
+ nm_utils_init@Base 0.7.0~svn4142-1
  nm_utils_ip4_addresses_from_gvalue@Base 0.7.0~svn3712
  nm_utils_ip4_addresses_to_gvalue@Base 0.7.0~svn3712
  nm_utils_ip4_netmask_to_prefix@Base 0.7.0~svn3815
@@ -119,3 +121,5 @@ libnm-util.so.0 libnm-util0 #MINVER#
  nm_utils_string_in_list@Base 0.7.0~svn3712
  nm_utils_string_list_contains@Base 0.7.0~svn3712
  nm_utils_string_slist_validate@Base 0.7.0~svn3712
+ nm_utils_uuid_generate@Base 0.7.0~svn4142-1
+ nm_utils_uuid_generate_from_string@Base 0.7.0~svn4142-1
