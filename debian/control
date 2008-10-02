@@ -6,7 +6,7 @@ Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
 Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, pkg-config,
  intltool, quilt, libdbus-glib-1-dev (>= 0.75), libiw-dev(>= 27+28pre9),
  libglib2.0-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 1.0~pre8), ppp-dev,
- libpolkit-dbus-dev, libgnutls-dev
+ libpolkit-dbus-dev, libgnutls-dev, uuid-dev
 Standards-Version: 3.8.0
 Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager

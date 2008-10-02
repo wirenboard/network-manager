@@ -1,4 +1,4 @@
-network-manager (0.7.0~svn4004-1) UNRELEASED; urgency=low
+network-manager (0.7.0~svn4142-1) UNRELEASED; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
 
@@ -27,7 +27,10 @@ network-manager (0.7.0~svn4004-1) UNRELEASED; urgency=low
   * debian/*.install: Updated
   * debian/*.symbols: Added
 
- -- Michael Biebl <biebl@debian.org>  Fri, 22 Aug 2008 21:53:54 +0200
+  [ Sjoerd Simons ]
+  * debian/control: Add build-depend on uuid-dev
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Thu, 02 Oct 2008 23:14:10 +0100
 
 network-manager (0.6.6-1) unstable; urgency=low
 
