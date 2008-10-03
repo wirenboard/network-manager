@@ -30,8 +30,11 @@ network-manager (0.7.0~svn4142-1) UNRELEASED; urgency=low
   [ Sjoerd Simons ]
   * debian/control: Add build-depend on uuid-dev
   * Update the various symbols files
+  * debian/patches/03-nm_get_debian_hostname.patch:
+    - Added. Temporary minimal patch to get hostname from /etc/hostname. There
+      is work being done upstream for a more extensive version.
 
- -- Sjoerd Simons <sjoerd@debian.org>  Thu, 02 Oct 2008 23:39:59 +0100
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 03 Oct 2008 12:39:14 +0100
 
 network-manager (0.6.6-1) unstable; urgency=low
 

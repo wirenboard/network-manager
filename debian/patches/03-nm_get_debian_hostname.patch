@@ -1,0 +1,49 @@
+Index: system-settings/plugins/ifupdown/plugin.c
+===================================================================
+--- system-settings/plugins/ifupdown/plugin.c	(revision 4142)
++++ system-settings/plugins/ifupdown/plugin.c	(working copy)
+@@ -293,9 +293,15 @@
+ 	case NM_SYSTEM_CONFIG_INTERFACE_PROP_CAPABILITIES:
+ 		g_value_set_uint (value, NM_SYSTEM_CONFIG_INTERFACE_CAP_NONE);
+ 		break;
+-	case NM_SYSTEM_CONFIG_INTERFACE_PROP_HOSTNAME:
+-		g_value_set_string (value, "");
++	case NM_SYSTEM_CONFIG_INTERFACE_PROP_HOSTNAME: {
++		char *hostname;
++		if (g_file_get_contents ("/etc/hostname", &hostname, NULL, NULL)) {
++			g_value_take_string (value, hostname);
++		} else {
++			g_value_set_string (value, "");
++		}
+ 		break;
++	}
+ 	default:
+ 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+ 		break;
+Index: system-settings/src/dbus-settings.c
+===================================================================
+--- system-settings/src/dbus-settings.c	(revision 4142)
++++ system-settings/src/dbus-settings.c	(working copy)
+@@ -240,17 +240,12 @@
+ 		 * that provides one.
+ 		 */
+ 		for (iter = priv->plugins; iter; iter = iter->next) {
+-			NMSystemConfigInterfaceCapabilities caps = NM_SYSTEM_CONFIG_INTERFACE_CAP_NONE;
++			char *hostname = NULL;
+ 
+-			g_object_get (G_OBJECT (iter->data), NM_SYSTEM_CONFIG_INTERFACE_CAPABILITIES, &caps, NULL);
+-			if (caps & NM_SYSTEM_CONFIG_INTERFACE_CAP_MODIFY_HOSTNAME) {
+-				char *hostname = NULL;
+-
+-				g_object_get (G_OBJECT (iter->data), NM_SYSTEM_CONFIG_INTERFACE_HOSTNAME, &hostname, NULL);
+-				if (hostname && strlen (hostname)) {
+-					g_value_take_string (value, hostname);
+-					break;
+-				}
++			g_object_get (G_OBJECT (iter->data), NM_SYSTEM_CONFIG_INTERFACE_HOSTNAME, &hostname, NULL);
++			if (hostname && strlen (hostname)) {
++				g_value_take_string (value, hostname);
++				break;
+ 			}
+ 		}
+ 
