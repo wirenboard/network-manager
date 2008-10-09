@@ -1,4 +1,4 @@
-network-manager (0.7.0~svn4142-1) UNRELEASED; urgency=low
+network-manager (0.7.0~svn4160-1) UNRELEASED; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
 
@@ -34,7 +34,7 @@ network-manager (0.7.0~svn4142-1) UNRELEASED; urgency=low
     - Added. Temporary minimal patch to get hostname from /etc/hostname. There
       is work being done upstream for a more extensive version.
 
- -- Sjoerd Simons <sjoerd@debian.org>  Fri, 03 Oct 2008 12:39:14 +0100
+ -- Sjoerd Simons <sjoerd@debian.org>  Thu, 09 Oct 2008 23:31:04 +0100
 
 network-manager (0.6.6-1) unstable; urgency=low
 
