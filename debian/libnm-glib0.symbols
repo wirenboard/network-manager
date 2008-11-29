@@ -45,6 +45,7 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_dbus_settings_get_type@Base 0.7.0~svn3712
  nm_dbus_settings_new@Base 0.7.0~svn3712
  nm_dbus_settings_system_add_connection@Base 0.7.0~svn3712
+ nm_dbus_settings_system_get_can_modify@Base 0.7.0-1
  nm_dbus_settings_system_get_type@Base 0.7.0~svn3712
  nm_dbus_settings_system_get_unmanaged_devices@Base 0.7.0~svn3712
  nm_dbus_settings_system_new@Base 0.7.0~svn3712

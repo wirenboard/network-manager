@@ -2,8 +2,9 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
 
   * New upstream release
   * debian/libnm-util0.symbols: Updated
+  * debian/libnm-glib0.symbols: Updated
 
- -- Sjoerd Simons <sjoerd@debian.org>  Sat, 29 Nov 2008 22:22:42 +0100
+ -- Sjoerd Simons <sjoerd@debian.org>  Sat, 29 Nov 2008 23:15:47 +0100
 
 network-manager (0.7.0~svn4191-1) experimental; urgency=low
 
