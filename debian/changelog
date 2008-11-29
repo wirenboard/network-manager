@@ -1,3 +1,9 @@
+network-manager (0.7.0-1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sat, 29 Nov 2008 22:04:26 +0100
+
 network-manager (0.7.0~svn4191-1) experimental; urgency=low
 
   * SVN snapshot of the upcoming 0.7 release.
