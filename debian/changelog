@@ -5,8 +5,9 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
   * debian/libnm-glib0.symbols: Updated
   * debian/patches/03-F3507g.patch
     - Added. Fix gsm support for Ericsson F3507g Mobile Broadband cards
+  * debian/control: Recommend ppp
 
- -- Sjoerd Simons <sjoerd@debian.org>  Sun, 30 Nov 2008 15:06:27 +0100
+ -- Sjoerd Simons <sjoerd@debian.org>  Wed, 03 Dec 2008 23:50:41 +0000
 
 network-manager (0.7.0~svn4191-1) experimental; urgency=low
 
