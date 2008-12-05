@@ -1,4 +1,4 @@
-libnm-util.so.0 libnm-util0 #MINVER#
+libnm-util.so.1 libnm-util1 #MINVER#
  nm_connection_add_setting@Base 0.7.0
  nm_connection_clear_secrets@Base 0.7.0
  nm_connection_compare@Base 0.7.0

@@ -1,0 +1,78 @@
+Index: network-manager-0.7.0/libnm-glib/Makefile.am
+===================================================================
+--- network-manager-0.7.0.orig/libnm-glib/Makefile.am	2008-12-06 00:35:11.000000000 +0100
++++ network-manager-0.7.0/libnm-glib/Makefile.am	2008-12-06 00:35:23.000000000 +0100
+@@ -91,7 +91,8 @@
+ 	$(GCONF_LIBS)					\
+ 	$(GNOME_KEYRING_LIBS)
+ 
+-libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib.ver
++libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib.ver \
++	-version-info "1:0:1"
+ 
+ noinst_PROGRAMS = libnm-glib-test
+ 
+@@ -103,7 +104,8 @@
+ libnm_glib_vpn_la_SOURCES = nm-vpn-plugin.c nm-vpn-plugin-ui-interface.c
+ libnm_glib_vpn_la_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
+ libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
+-libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib_vpn.ver
++libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib_vpn.ver \
++	-version-info "0:0:0"
+ 
+ 
+ nm-client-bindings.h: $(top_srcdir)/introspection/nm-manager-client.xml
+Index: network-manager-0.7.0/libnm-glib/Makefile.in
+===================================================================
+--- network-manager-0.7.0.orig/libnm-glib/Makefile.in	2008-12-06 00:35:14.000000000 +0100
++++ network-manager-0.7.0/libnm-glib/Makefile.in	2008-12-06 00:36:06.000000000 +0100
+@@ -405,14 +405,18 @@
+ 	$(GCONF_LIBS)					\
+ 	$(GNOME_KEYRING_LIBS)
+ 
+-libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib.ver
++libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib.ver \
++	-version-info "1:0:1"
++
+ libnm_glib_test_SOURCES = libnm-glib-test.c
+ libnm_glib_test_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
+ libnm_glib_test_LDADD = libnm_glib.la $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
+ libnm_glib_vpn_la_SOURCES = nm-vpn-plugin.c nm-vpn-plugin-ui-interface.c
+ libnm_glib_vpn_la_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
+ libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
+-libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib_vpn.ver
++libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm_glib_vpn.ver \
++	-version-info "0:0:0"
++
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = libnm_glib.pc libnm_glib_vpn.pc
+ DISTCLEANFILES = libnm_glib.pc libnm_glib.pc
+Index: network-manager-0.7.0/libnm-util/Makefile.am
+===================================================================
+--- network-manager-0.7.0.orig/libnm-util/Makefile.am	2008-12-06 00:34:59.000000000 +0100
++++ network-manager-0.7.0/libnm-util/Makefile.am	2008-12-06 00:35:23.000000000 +0100
+@@ -52,7 +52,8 @@
+ 
+ libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS)
+ 
+-libnm_util_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-util.ver
++libnm_util_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-util.ver \
++	-version-info "1:0:0"
+ 
+ if WITH_GNUTLS
+ libnm_util_la_SOURCES += crypto_gnutls.c
+Index: network-manager-0.7.0/libnm-util/Makefile.in
+===================================================================
+--- network-manager-0.7.0.orig/libnm-util/Makefile.in	2008-12-06 00:35:02.000000000 +0100
++++ network-manager-0.7.0/libnm-util/Makefile.in	2008-12-06 00:35:39.000000000 +0100
+@@ -367,7 +367,9 @@
+ 	$(libnm_util_include_HEADERS) $(am__append_1) $(am__append_4)
+ libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS) \
+ 	$(am__append_3) $(am__append_6)
+-libnm_util_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-util.ver
++libnm_util_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-util.ver \
++	-version-info "1:0:0"
++
+ libnm_util_includedir = $(includedir)/NetworkManager
+ test_crypto_SOURCES = test-crypto.c crypto.c $(am__append_7) \
+ 	$(am__append_10)

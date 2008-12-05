@@ -1,5 +1,6 @@
 network-manager (0.7.0-1) UNRELEASED; urgency=low
 
+  [ Sjoerd Simons ]
   * New upstream release
   * debian/libnm-util0.symbols: Updated
   * debian/libnm-glib0.symbols: Updated
@@ -7,7 +8,14 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
     - Added. Fix gsm support for Ericsson F3507g Mobile Broadband cards
   * debian/control: Recommend ppp
 
- -- Sjoerd Simons <sjoerd@debian.org>  Wed, 03 Dec 2008 23:50:41 +0000
+  [ Michael Biebl ]
+  * debian/patches/04-ltversioning.patch
+    - Bump soname of libnm-util due to an ABI break between 0.6.6 and 0.7.
+      (Closes: #503682)
+  * Update control, install and symbols file for the new libnm-util library
+    name.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 06 Dec 2008 00:43:22 +0100
 
 network-manager (0.7.0~svn4191-1) experimental; urgency=low
 
