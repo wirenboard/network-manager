@@ -1,0 +1,16 @@
+Index: network-manager-0.7.0/src/dhcp-manager/nm-dhcp-dhclient.c
+===================================================================
+--- network-manager-0.7.0.orig/src/dhcp-manager/nm-dhcp-dhclient.c	2008-12-06 01:09:52.000000000 +0100
++++ network-manager-0.7.0/src/dhcp-manager/nm-dhcp-dhclient.c	2008-12-06 01:10:29.000000000 +0100
+@@ -36,7 +36,11 @@
+ #define NM_DHCP_MANAGER_PID_FILENAME	"dhclient"
+ #define NM_DHCP_MANAGER_PID_FILE_EXT	"pid"
+ 
++#if defined (TARGET_DEBIAN)
++#define NM_DHCP_MANAGER_LEASE_DIR       LOCALSTATEDIR "/lib/dhcp3"
++#else
+ #define NM_DHCP_MANAGER_LEASE_DIR       LOCALSTATEDIR "/lib/dhclient"
++#endif
+ #define NM_DHCP_MANAGER_LEASE_FILENAME	"dhclient"
+ #define NM_DHCP_MANAGER_LEASE_FILE_EXT	"lease"
+ 

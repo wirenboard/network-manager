@@ -14,6 +14,8 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
       (Closes: #503682)
   * Update control, install and symbols file for the new libnm-util library
     name.
+  * debian/patches/05-dhclient_lease_files.patch
+    - Change the location of the dhclient lease files to /var/lib/dhcp3.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 06 Dec 2008 00:43:22 +0100
 
