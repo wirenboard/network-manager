@@ -30,6 +30,9 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
       versions of those packages do not work with network-manager 0.7.
   * debian/patches/05-dhclient_lease_files.patch
     - Change the location of the dhclient lease files to /var/lib/dhcp3.
+  * debian/network-manager.README.Debian
+    - Merge the README.Debian from Ubuntu which describes the new
+      managed/unmanaged modes.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 06 Dec 2008 00:43:22 +0100
 
