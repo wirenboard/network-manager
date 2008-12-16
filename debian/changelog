@@ -35,6 +35,9 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
       managed/unmanaged modes.
   * debian/nm-system-settings.conf
     - Set default mode to unmanaged.
+  * debian/copyright
+    - Revised and updated. libnm-glib and libnm-util are licensed under the
+      LGPL v2 or later.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 06 Dec 2008 00:43:22 +0100
 
