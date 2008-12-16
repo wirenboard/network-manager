@@ -1,4 +1,4 @@
-network-manager (0.7.0-1) UNRELEASED; urgency=low
+network-manager (0.7.0-1) experimental; urgency=low
 
   * New upstream release. (Closes: #446098)
     - Allow connections before login (system connections). (Closes: #461831)
@@ -39,7 +39,7 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
     - Revised and updated. libnm-glib and libnm-util are licensed under the
       LGPL v2 or later.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 06 Dec 2008 00:43:22 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 16 Dec 2008 09:56:14 +0100
 
 network-manager (0.7.0~svn4191-1) experimental; urgency=low
 
