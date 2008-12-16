@@ -26,7 +26,7 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
   * debian/control
     - Add Conflicts/Replaces: network-manager-pptp (<< 0.7~~) as the pppd
       plugin is now shipped by this package.
-    - Add Breaks for network-manager-{gnome,kde} (<< 0.7~~) as the 0.6
+    - Add Breaks (<< 0.7~~) for the network-manager-* packages as the 0.6
       versions of those packages do not work with network-manager 0.7.
   * debian/patches/05-dhclient_lease_files.patch
     - Change the location of the dhclient lease files to /var/lib/dhcp3.
