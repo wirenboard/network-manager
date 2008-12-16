@@ -1,7 +1,7 @@
-Index: src/nm-gsm-device.c
+Index: network-manager-0.7.0/src/nm-gsm-device.c
 ===================================================================
---- src/nm-gsm-device.c	(revision 4357)
-+++ src/nm-gsm-device.c	(working copy)
+--- network-manager-0.7.0.orig/src/nm-gsm-device.c	2008-11-12 22:29:43.000000000 +0100
++++ network-manager-0.7.0/src/nm-gsm-device.c	2008-12-16 10:03:48.000000000 +0100
 @@ -51,6 +51,15 @@
  	guint init_tries;
  } NMGsmDevicePrivate;
@@ -60,7 +60,7 @@ Index: src/nm-gsm-device.c
  		check_pin (NM_GSM_DEVICE (device));
  		break;
  	case -1:
-@@ -657,36 +666,27 @@
+@@ -657,35 +666,26 @@
  		                         NM_DEVICE_STATE_REASON_MODEM_INIT_FAILED);
  		break;
  	default:
@@ -98,14 +98,13 @@ Index: src/nm-gsm-device.c
 +	NMGsmDevicePrivate *priv = NM_GSM_DEVICE_GET_PRIVATE (device);
  	const char *responses[] = { "OK", "ERROR", "ERR", NULL };
 -	const char *init_string = user_data;
-+	const char *init_string = modem_init_sequences[priv->init_tries];
- 
+-
 -	if (!init_string)
 -		init_string = "ATZ E0 V1 X4 &C1 +FCLASS=0";
--
++	const char *init_string = modem_init_sequences[priv->init_tries];
+ 
  	modem_wait_for_reply (NM_GSM_DEVICE (device), init_string, 10, responses, responses, init_done, NULL);
  }
- 
 @@ -706,7 +706,7 @@
  
  	NM_GSM_DEVICE_GET_PRIVATE (device)->init_tries = 0;
@@ -115,10 +114,10 @@ Index: src/nm-gsm-device.c
  	if (!id)
  		*reason = NM_DEVICE_STATE_REASON_UNKNOWN;
  
-Index: src/nm-serial-device.c
+Index: network-manager-0.7.0/src/nm-serial-device.c
 ===================================================================
---- src/nm-serial-device.c	(revision 4357)
-+++ src/nm-serial-device.c	(working copy)
+--- network-manager-0.7.0.orig/src/nm-serial-device.c	2008-11-20 18:12:16.000000000 +0100
++++ network-manager-0.7.0/src/nm-serial-device.c	2008-12-16 10:03:48.000000000 +0100
 @@ -415,6 +415,7 @@
  	}
  
