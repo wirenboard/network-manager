@@ -33,6 +33,8 @@ network-manager (0.7.0-1) UNRELEASED; urgency=low
   * debian/network-manager.README.Debian
     - Merge the README.Debian from Ubuntu which describes the new
       managed/unmanaged modes.
+  * debian/nm-system-settings.conf
+    - Set default mode to unmanaged.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 06 Dec 2008 00:43:22 +0100
 

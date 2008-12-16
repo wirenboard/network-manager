@@ -43,7 +43,7 @@ using the command:
 Dial-up configuration
 ~~~~~~~~~~~~~~~~~~~~~
 
-Your dialup configurations can now be one in network-manager connection editor.
+Your dialup configurations can now be done in nm-connection-editor.
 Because of that /etc/network/interfaces configurations are considered "legacy"
 from a network manager point of view.
 
@@ -51,7 +51,7 @@ However, if you want to use your /etc/network/interfaces configuration make
 sure that you have the ifupdown plugin in "Unmanaged mode" and take care that
 the used wired/wireless device is also configured in /etc/network/interfaces.
 
-Not that NetworkManager 0.7 will not provive UI hooks to up and down ppp
+Note that NetworkManager 0.7 will not provide UI hooks to up and down ppp
 connections managed outside of NetworkManager itself (not that it ever worked
 nicely before).
 
