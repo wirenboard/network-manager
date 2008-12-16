@@ -1,12 +1,21 @@
 network-manager (0.7.0-1) UNRELEASED; urgency=low
 
+  * New upstream release. (Closes: #446098)
+    - Allow connections before login (system connections). (Closes: #461831)
+    - Storing system connections via PolicyKit is working. (Closes: #504443)
+    - The nm-vpn-properties tool has been obsoleted by nm-connection-editor
+      from the network-manager-gnome package and thus removed from the
+      tarball. (Closes: #497108)
+    - Removed dependency on dhcdbd. (Closes: #478469)
+    - Improved communication between NM and wpasupplicant (over D-Bus) for
+      faster wireless connections. (Closes: #385647)
+
   [ Sjoerd Simons ]
-  * New upstream release
   * debian/libnm-util0.symbols: Updated
   * debian/libnm-glib0.symbols: Updated
   * debian/patches/03-F3507g.patch
     - Added. Fix gsm support for Ericsson F3507g Mobile Broadband cards
-  * debian/control: Recommend ppp
+  * debian/control: Recommend ppp (Closes: #507842)
 
   [ Michael Biebl ]
   * debian/patches/04-ltversioning.patch
@@ -64,7 +73,7 @@ network-manager (0.7.0~svn4191-1) experimental; urgency=low
     - Stop old network-manager-dispatcher on upgrades and remove the init
       script and the start symlinks.
   * debian/network-manager.network-manager-dispatcher.init:
-    - Dropped, obsolete.
+    - Dropped, obsolete. (Closes: #500085)
       The dispatcher functionality is now provided by a D-Bus activated system
       service which is started on demand.
   * debian/network-manager.init

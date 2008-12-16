@@ -16,8 +16,8 @@ Package: network-manager
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.2-14), wpasupplicant (>= 0.6.2-1), dbus (>= 1.1.2), hal (>= 0.5.7.1), ifupdown, adduser
 Recommends: network-manager-gnome | network-manager-kde, policykit, ppp
-Conflicts: network-manager-gnome (<< 0.6.5-1)
 Suggests: avahi-autoipd
+Conflicts: network-manager-gnome (<< 0.6.5-1)
 Replaces: network-manager-gnome (<< 0.6.5-1)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
