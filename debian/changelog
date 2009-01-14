@@ -1,4 +1,4 @@
-network-manager (0.6.6-3) UNRELEASED; urgency=low
+network-manager (0.6.6-3) unstable; urgency=low
 
   * debian/network-manager.network-manager-dispatcher.init 
     - NetworkManagerDispatcher uses the D-Bus system bus. Update the LSB
@@ -13,7 +13,7 @@ network-manager (0.6.6-3) UNRELEASED; urgency=low
       offline mode otherwise, even if there is a connection (established via
       ifupdown). (Closes: #491826, #502371, #509006, #509829, #511712)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 07:11:49 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 14 Jan 2009 09:29:03 +0100
 
 network-manager (0.6.6-2) unstable; urgency=low
 
