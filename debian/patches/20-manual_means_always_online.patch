@@ -1,0 +1,36 @@
+diff -Nur bzr.debian.0.9.5/src/NetworkManagerDbus.c bzr.debian.0.9.5.new/src/NetworkManagerDbus.c
+--- bzr.debian.0.9.5/src/NetworkManagerDbus.c	2007-06-25 17:38:42.000000000 +0200
++++ bzr.debian.0.9.5.new/src/NetworkManagerDbus.c	2007-06-25 17:38:42.000000000 +0200
+@@ -302,6 +302,9 @@
+ 	if (data->asleep == TRUE)
+ 		return NM_STATE_ASLEEP;
+ 
++	if (data->always_online == TRUE)
++	  return NM_STATE_CONNECTED;
++
+ 	act_dev = nm_get_active_device (data);
+ 	if (!act_dev && !data->modem_active)
+ 		return NM_STATE_DISCONNECTED;
+diff -Nur bzr.debian.0.9.5/src/NetworkManagerMain.h bzr.debian.0.9.5.new/src/NetworkManagerMain.h
+--- bzr.debian.0.9.5/src/NetworkManagerMain.h	2007-06-25 17:18:17.000000000 +0200
++++ bzr.debian.0.9.5.new/src/NetworkManagerMain.h	2007-06-25 17:38:42.000000000 +0200
+@@ -86,6 +86,7 @@
+ 	gboolean				modem_active;
+ 	gboolean				asleep;
+ 	gboolean				disconnected;
++	gboolean                                always_online;
+ 
+ 	GSList *				dialup_list;
+ 	GMutex *				dialup_list_mutex;
+diff -Nur bzr.debian.0.9.5/src/nm-device.c bzr.debian.0.9.5.new/src/nm-device.c
+--- bzr.debian.0.9.5/src/nm-device.c	2007-06-25 17:38:42.000000000 +0200
++++ bzr.debian.0.9.5.new/src/nm-device.c	2007-06-25 17:38:42.000000000 +0200
+@@ -195,6 +195,8 @@
+ 	/* Allow distributions to flag devices as disabled */
+ 	if (nm_system_device_get_disabled (dev))
+ 	{
++		/* In this case, we assume we're always online */
++		app_data->always_online = TRUE;
+ 		g_object_unref (G_OBJECT (dev));
+ 		return NULL;
+ 	}

@@ -4,8 +4,16 @@ network-manager (0.6.6-3) UNRELEASED; urgency=low
     - NetworkManagerDispatcher uses the D-Bus system bus. Update the LSB
       header accordingly to avoid breakages with insserv based systems.
       (Closes: #500085)
+  * debian/patches/20-manual_means_always_online.patch
+    - manual-means-online: If there are interfaces that are not managed by
+      NetworkManager because they have custom configuration in
+      /etc/network/interfaces, we assume to be online. This is obviously not
+      always correct. But reporting offline state for unmanaged devices is
+      causing major hassles as more and more apps rely on NM and go into
+      offline mode otherwise, even if there is a connection (established via
+      ifupdown). (Closes: #491826, #502371, #509006, #509829, #511712)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 07:05:50 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 07:11:49 +0100
 
 network-manager (0.6.6-2) unstable; urgency=low
 
