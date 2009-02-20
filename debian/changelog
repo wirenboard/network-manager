@@ -4,6 +4,9 @@ network-manager (0.7.0-2) UNRELEASED; urgency=low
     - Add ${misc:Depends} to all binary packages.
     - Let network-manager depend on dhcp3-client directly, as the dependency
       on dhcdbd has been removed. (Closes: #509655)
+  * debian/rules
+    - Include debhelper.mk before any other files as recommended by the cdbs
+      documentation.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 08:10:22 +0100
 
