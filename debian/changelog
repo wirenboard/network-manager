@@ -12,8 +12,7 @@ network-manager (0.7.0.97-1) UNRELEASED; urgency=low
     - Remove 07-domain_search.patch, merged upstream.
     - Remove 08-hal_deprecated_keys.patch, fixed upstream.
     - Remove 09-nm_dbus_get_ap_from_object_path-mem_leak_fix.patch, obsolete.
-    - Disable 20-manual_means_always_online.patch, needs to be ported to 0.7
-      first.
+    - Disable 20-manual_means_always_online.patch, needs to be ported to 0.7.
     - Drop libdbus-glib-1-dev Depends from libnm-util-dev.
   * debian/control 
     - Add ${misc:Depends} to all binary packages.
