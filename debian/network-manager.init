@@ -1,8 +1,8 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          NetworkManager
-# Required-Start:    $remote_fs dbus dhcdbd hal
-# Required-Stop:     $remote_fs dbus dhcdbd hal
+# Required-Start:    $remote_fs dbus hal
+# Required-Stop:     $remote_fs dbus hal
 # Should-Start:	     $syslog
 # Should-Stop:       $syslog
 # Default-Start:     2 3 4 5
@@ -28,9 +28,6 @@ USER=root
 
 # Gracefully exit if the package has been removed.
 test -x $DAEMON || exit 0
-
-# We need /sbin/ip
-[ -x /sbin/ip ] || exit 1
 
 . /lib/lsb/init-functions
 
@@ -77,8 +74,11 @@ case "$1" in
 	d_start
 	log_end_msg $?
 	;;
+  status)
+	status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+	;;
   *)
-	echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|status}" >&2
 	exit 1
 	;;
 esac

@@ -10,67 +10,48 @@ group "netdev". If you want to add a user to group "netdev" use the command
 "adduser username netdev" or one of the graphical user management frontends.
 After that you have to reload D-Bus with the command "/etc/init.d/dbus reload".
 
-Configuration of wireless and ethernet interfaces
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Only devices that are *not* listed in /etc/network/interfaces or which have 
-been configured "auto" and "dhcp" (with no other options) are managed by NM.
+Alternatively you can install the "consolekit" package which will grant access
+for all locally logged in users.
 
-This way you can setup a custom (static) configuration for a device and NM 
-will not try to override this setting.
 
-After modifying /etc/network/interfaces you have to restart NM with the
-command "/etc/init.d/network-manager restart".
+Managed vs. Unmanaged mode and /etc/network/interfaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Devices listed in /etc/network/interfaces _will_ be managed by NetworkManager
+unless the ifupdown system-config-setting is enabled and is setup to run
+in "Unmanaged mode".
 
-Examples:
+The config to select unmanaged/managed mode is in
+/etc/NetworkManager/nm-system-settings.conf:
 
-1.)
-auto wlan0
-iface wlan0 inet dhcp
--> This device is managed by NM.
+  [ifupdown]
+  managed=true/false
 
-1.a)
-allow-hotplug eth0
-iface eth0 inet dhcp
--> This device is managed by NM
+Unmanaged mode will make NetworkManager not touch any wired/wireless device
+matching an interface name configured in /etc/network/interfaces.
 
-2.)
-auto wlan0
-iface wlan0 inet dhcp
-	wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
--> This devices is *not* managed by NM because it has additional options.
+Managed mode will make NetworkManager manage all devices and will make
+NetworkManager honour all dhcp and static configurations for wired and
+wireless devices.
 
-3.)
-iface wlan0 inet dhcp
--> This device is *not* managed by NM because it is not set to "auto".
 
-4.)
-iface eth0 inet static
-	address 192.168.1.10
-	netmask 255.255.255.0
-	gateway 192.168.1.1
--> This device is *not* managed by NM because it is configured as "static" and
-   has additional options.
+After modifying /etc/NetworkManager/nm-systems-settings.conf _or_
+/etc/network/interfaces you may want to restart the system-settings daemon
+using the command:
+"sudo killall nm-system-settings" to apply those changes.
 
-5.)
-Device is not listed in /etc/network/interfaces.
--> Device is managed by NM.
 
 Dial-up configuration
 ~~~~~~~~~~~~~~~~~~~~~
-After configuring your PPP interface (either manually or by using a tool like
-"pppconfig") to work with a peer called "myisp" you should edit 
-/etc/network/interfaces and add a stanza like this:
 
-iface ppp0 inet ppp
-	provider myisp
+Your dialup configurations can now be done in nm-connection-editor.
+Because of that /etc/network/interfaces configurations are considered "legacy"
+from a network manager point of view.
 
-NM will then make it possible to dial this connection.
-If you want to set up multiple internet service providers simply create a new 
-stanza as listed above specifying the provider and a different iface, e.g. ppp1.
+However, if you want to use your /etc/network/interfaces configuration make
+sure that you have the ifupdown plugin in "Unmanaged mode" and take care that
+the used wired/wireless device is also configured in /etc/network/interfaces.
 
-After modifying /etc/network/interfaces you have to restart NM with the
-command "/etc/init.d/network-manager restart".
-
-Please read the "Debian Reference Manual", section 10.6.1.4 or the "interfaces"
-man page for further information.
+Note that NetworkManager 0.7 will not provide UI hooks to up and down ppp
+connections managed outside of NetworkManager itself (not that it ever worked
+nicely before).
 

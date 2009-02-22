@@ -1,3 +1,123 @@
+network-manager (0.7.0-2) UNRELEASED; urgency=low
+
+  * debian/control 
+    - Add ${misc:Depends} to all binary packages.
+    - Let network-manager depend on dhcp3-client directly, as the dependency
+      on dhcdbd has been removed. (Closes: #509655)
+  * debian/rules
+    - Include debhelper.mk before any other files as recommended by the cdbs
+      documentation.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 08:10:22 +0100
+
+network-manager (0.7.0-1) experimental; urgency=low
+
+  * New upstream release. (Closes: #446098)
+    - Allow connections before login (system connections). (Closes: #461831)
+    - Storing system connections via PolicyKit is working. (Closes: #504443)
+    - The nm-vpn-properties tool has been obsoleted by nm-connection-editor
+      from the network-manager-gnome package and thus removed from the
+      tarball. (Closes: #497108)
+    - Removed dependency on dhcdbd. (Closes: #478469)
+    - Improved communication between NM and wpasupplicant (over D-Bus) for
+      faster wireless connections. (Closes: #385647)
+
+  [ Sjoerd Simons ]
+  * debian/libnm-util0.symbols: Updated
+  * debian/libnm-glib0.symbols: Updated
+  * debian/patches/03-F3507g.patch
+    - Added. Fix gsm support for Ericsson F3507g Mobile Broadband cards
+  * debian/control: Recommend ppp (Closes: #507842)
+
+  [ Michael Biebl ]
+  * debian/patches/04-ltversioning.patch
+    - Bump soname of libnm-util due to an ABI break between 0.6.6 and 0.7.
+      (Closes: #503682)
+  * Update control, install and symbols file for the new libnm-util library
+    name (libnm-util0 -> libnm-util1).
+  * debian/control
+    - Add Conflicts/Replaces: network-manager-pptp (<< 0.7~~) as the pppd
+      plugin is now shipped by this package.
+    - Add Breaks (<< 0.7~~) for the network-manager-* packages as the 0.6
+      versions of those packages do not work with network-manager 0.7.
+  * debian/patches/05-dhclient_lease_files.patch
+    - Change the location of the dhclient lease files to /var/lib/dhcp3.
+  * debian/network-manager.README.Debian
+    - Merge README.Debian from Ubuntu which describes the new
+      managed/unmanaged modes.
+  * debian/nm-system-settings.conf
+    - Set default mode to unmanaged.
+  * debian/copyright
+    - Revised and updated. libnm-glib and libnm-util are licensed under the
+      LGPL v2 or later.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 16 Dec 2008 09:56:14 +0100
+
+network-manager (0.7.0~svn4191-1) experimental; urgency=low
+
+  * SVN snapshot of the upcoming 0.7 release.
+
+  [ Sjoerd Simons ]
+  * Split out libnm-glib-vpn from libnm-glib
+  * debian/rules: Use list-missing
+
+  [ Michael Biebl ]
+  * Drop obsolete patches
+    - debian/patches/01-supplicant_timeout.patch (obsolete)
+    - debian/patches/05-debian_backend.patch (obsolete, relevant changes
+      merged upstream)
+    - debian/patches/06-dispatch_more_events.patch (no longer applies)
+    - debian/patches/07-domain_search.patch (merged upstream)
+    - debian/patches/08-hal_deprecated_keys.patch( merged upstream)
+    - debian/patches/13-validate_mac_addr.patch (merged upstream)
+  * debian/patches/02-dbus_access_network_manager.patch
+    - Updated for 0.7.
+  * debian/control:
+    - Add Build-Depends on uuid-dev, libgnutls-dev, libpolkit-dbus-dev,
+      ppp-dev and quilt.
+    - Drop Build-Depends on libgnome-keyring-dev, libgnomeui-dev,
+      libglade2-dev, libgconf2-dev, libnotify-dev, docbook-to-man and iproute.
+    - Bump Build-Depends on libdbus-glib-1-dev to (>= 0.75).
+    - Drop Depends on dhcdbd (dhcdbd is dead) and iproute.
+    - Bump Depends on lsb-base to (>= 3.2-14) which provides status_of_proc().
+    - Bump Depends on dbus to (>= 1.1.2) for system bus activation support.
+    - Add Recommends on policykit, which is required if you want to manage
+      system connections.
+    - Add Suggests avahi-autoipd for IPv4LL support.
+  * Switch to quilt patch management system.
+  * debian/rules:
+    - Set libexecdir to /usr/lib/NetworkManager, so NetworkManager can
+      automatically find the VPN plugins. 
+    - Add support for resolvconf.
+    - Enable GnuTLS crypto support.
+    - Remove nm-vpn-properties bits.
+  * debian/nm-vpn-properties.sgml: Dropped, obsolete
+  * debian/copyright: Revised and updated
+  * debian/network-manager.postrm: Relevant code moved to preinst
+  * debian/network-manager.preinst:
+    - Stop old network-manager-dispatcher on upgrades and remove the init
+      script and the start symlinks.
+  * debian/network-manager.network-manager-dispatcher.init:
+    - Dropped, obsolete. (Closes: #500085)
+      The dispatcher functionality is now provided by a D-Bus activated system
+      service which is started on demand.
+  * debian/network-manager.init
+    - Remove dhdbd from Required-Start and Required-Stop in the LSB header.
+    - Remove check for /sbin/ip.
+    - Add "status" action.
+  * debian/*.install: Updated
+  * debian/*.symbols:
+    - Add symbols files for all libraries for improved shlibs handling.
+  * debian/nm-system-settings.conf:
+    - Ship a default configuration for the system settings service. Enable the
+      ifupdown (legacy ro support) and keyfile (rw) plugin.
+
+  [ Sjoerd Simons ]
+  * Update the various symbols files
+  * Update to current svn
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sat, 18 Oct 2008 21:28:05 +0100
+
 network-manager (0.6.6-3) unstable; urgency=low
 
   * debian/network-manager.network-manager-dispatcher.init 

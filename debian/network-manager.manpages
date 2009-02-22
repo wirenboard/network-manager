@@ -1,4 +1,2 @@
-man/NetworkManagerDispatcher.8
-man/nm-tool.1
 man/NetworkManager.8
-debian/nm-vpn-properties.1
+man/nm-tool.1

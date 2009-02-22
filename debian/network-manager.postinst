@@ -16,25 +16,8 @@
 #	<postinst> abort-remove in-favour <new-package> <version>
 
 
-# Remove a no-longer used conffile
-rm_conffile()
-{
-    CONFFILE="$1"
-    
-    if [ -e "$CONFFILE".dpkg-remove ]; then
-	echo "Removing obsolete conffile $CONFFILE"
-	rm -f "$CONFFILE".dpkg-remove
-    fi
-}
-
-
 case "$1" in
     configure)
-	# Upgrade from previous versions
-        if dpkg --compare-versions "$2" lt "0.6.4-8"; then
-	    rm_conffile /etc/dbus-1/event.d/25NetworkManager
-	    rm_conffile /etc/dbus-1/event.d/26NetworkManagerDispatcher
-	fi
 	
 	if ! getent group netdev > /dev/null; then
 	    addgroup --quiet --system netdev
@@ -49,9 +32,6 @@ case "$1" in
 	if [ -n "$2" ]; then
 		if [ -x "/etc/init.d/network-manager" ]; then
 			invoke-rc.d network-manager stop || true
-		fi
-		if [ -x "/etc/init.d/network-manager-dispatcher" ]; then
-			invoke-rc.d network-manager-dispatcher stop || true
 		fi
 	fi
 

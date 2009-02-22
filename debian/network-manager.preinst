@@ -15,8 +15,8 @@
 #	<old-preinst> abort-upgrade <new-version>
 
 
-# Prepare to remove a no-longer used conffile
-prep_rm_conffile()
+# remove a no-longer used conffile
+rm_conffile()
 {
     PKGNAME="$1"
     CONFFILE="$2"
@@ -25,10 +25,12 @@ prep_rm_conffile()
 	md5sum="`md5sum \"$CONFFILE\" | sed -e \"s/ .*//\"`"
 	old_md5sum="`dpkg-query -W -f='${Conffiles}' $PKGNAME | sed -n -e \"\\\\' $CONFFILE'{s/ obsolete$//;s/.* //p}\"`"
 	if [ "$md5sum" != "$old_md5sum" ]; then
-	    echo "Obsolete conffile $CONFFILE has been modified by you, renaming to .dpkg-bak"
+	    echo "Obsolete conffile $CONFFILE has been modified by you."
+	    echo "Saving as $CONFFILE.dpkg-bak ..."
 	    mv -f "$CONFFILE" "$CONFFILE".dpkg-bak
 	else
-	    mv -f "$CONFFILE" "$CONFFILE".dpkg-remove
+	    echo "Removing obsolete conffile $CONFFILE ..."
+	    rm -f "$CONFFILE"
 	fi
     fi
 }
@@ -44,8 +46,15 @@ case "$1" in
 	    if [ -x "/etc/dbus-1/event.d/26NetworkManagerDispatcher" ]; then
 		/etc/dbus-1/event.d/26NetworkManagerDispatcher stop   
 	    fi
-	    prep_rm_conffile network-manager /etc/dbus-1/event.d/25NetworkManager
-	    prep_rm_conffile network-manager /etc/dbus-1/event.d/26NetworkManagerDispatcher
+	    rm_conffile network-manager /etc/dbus-1/event.d/25NetworkManager
+	    rm_conffile network-manager /etc/dbus-1/event.d/26NetworkManagerDispatcher
+	fi
+	if dpkg --compare-versions "$2" lt "0.7.0~svn3624-1"; then
+	    if [ -x "/etc/init.d/network-manager-dispatcher" ]; then
+	        invoke-rc.d network-manager-dispatcher stop
+	    fi
+	    rm_conffile network-manager /etc/init.d/network-manager-dispatcher
+	    update-rc.d network-manager-dispatcher remove >/dev/null
 	fi
 	;;
 

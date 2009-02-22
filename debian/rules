@@ -1,31 +1,31 @@
 #!/usr/bin/make -f
 
-include /usr/share/cdbs/1/class/autotools.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/rules/simple-patchsys.mk
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/patchsys-quilt.mk
+include /usr/share/cdbs/1/rules/utils.mk
+
+# List any files which are not installed
+common-binary-post-install-arch:: list-missing
+
+DEB_DH_MAKESHLIBS_ARGS_ALL := -X/usr/lib/NetworkManager -X/usr/lib/pppd/
 
 DEB_INSTALL_DOCS_ALL := README AUTHORS TODO
 
+DEB_CONFIGURE_LIBEXECDIR := "\$$(prefix)/lib/NetworkManager"
+
 DEB_CONFIGURE_EXTRA_FLAGS += \
 		--with-dbus-sys=/etc/dbus-1/system.d \
-		--with-wpa_supplicant=/sbin/wpa_supplicant \
-		--with-dhcdbd=/usr/sbin/dhcdbd \
-		--with-distro=debian
+		--with-distro=debian \
+		--with-resolvconf=/sbin/resolvconf \
+		--with-dhcp-client=/sbin/dhclient \
+		--with-crypto=gnutls
 	
-DEB_DH_INSTALLINIT_ARGS := -r -- start 26 2 3 4 5 . stop 14 0 1 6 .
-
-DEB_DH_SHLIBDEPS_ARGS := -Xnm-vpn-properties
+DEB_DH_INSTALLINIT_ARGS := -r -- start 26 2 3 4 5 . stop 88 0 1 6 .
 
 clean::
 	rm -f po/*.gmo
-	rm -f debian/*.1
-
-
-build/network-manager::
-	/usr/bin/docbook-to-man debian/nm-vpn-properties.sgml > debian/nm-vpn-properties.1
 	
 binary-install/network-manager::
-	dh_installinit --name network-manager-dispatcher $(DEB_DH_INSTALLINIT_ARGS)
 	install -m 755 debian/network-manager-dispatcher.script \
 		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
-		
