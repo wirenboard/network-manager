@@ -95,6 +95,7 @@ libnm_glib.so.0 libnm-glib0 #MINVER#
  nm_ip4_config_get_nameservers@Base 0.7.0
  nm_ip4_config_get_routes@Base 0.7.0
  nm_ip4_config_get_type@Base 0.7.0
+ nm_ip4_config_get_wins_servers@Base 0.7.0.97
  nm_ip4_config_new@Base 0.7.0
  nm_object_array_get_type@Base 0.7.0
  nm_object_get_connection@Base 0.7.0

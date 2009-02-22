@@ -21,6 +21,7 @@ network-manager (0.7.0.97-1) UNRELEASED; urgency=low
   * debian/rules
     - Include debhelper.mk before any other files as recommended by the cdbs
       documentation.
+  * Update symbols file for libnm-util and libnm-glib due to API additions.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 08:10:22 +0100
 

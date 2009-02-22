@@ -143,6 +143,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_ip4_config_get_ignore_auto_dns@Base 0.7.0
  nm_setting_ip4_config_get_ignore_auto_routes@Base 0.7.0
  nm_setting_ip4_config_get_method@Base 0.7.0
+ nm_setting_ip4_config_get_never_default@Base 0.7.0.97
  nm_setting_ip4_config_get_num_addresses@Base 0.7.0
  nm_setting_ip4_config_get_num_dns@Base 0.7.0
  nm_setting_ip4_config_get_num_dns_searches@Base 0.7.0
