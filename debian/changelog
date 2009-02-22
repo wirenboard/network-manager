@@ -1,6 +1,13 @@
 network-manager (0.7.0.97-1) UNRELEASED; urgency=low
 
   * New upstream release.
+    - Update 02-dbus_access_network_manager.patch for the latest upstream
+      changes which fixes non-deterministic allow/deny for D-Bus messages with
+      no interface. (Closes: #510729)
+    - Disable 03-F3507g.patch for now, patch no longer applies and should be
+      replaced by ModemManager anyway.
+    - Remove 04-ltversioning.patch, merged upstream.
+    - Remove 05-dhclient_lease_files.patch, merged upstream.
   * Merge experimental branch into unstable. Remaining changes:
     - Remove 07-domain_search.patch, merged upstream.
     - Remove 08-hal_deprecated_keys.patch, fixed upstream.

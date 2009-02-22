@@ -1,10 +1,10 @@
-Index: NetworkManager/src/NetworkManager.conf
+Index: network-manager-0.7.0.97/src/NetworkManager.conf
 ===================================================================
---- NetworkManager.orig/src/NetworkManager.conf	2008-06-11 12:28:11.000000000 +0200
-+++ NetworkManager/src/NetworkManager.conf	2008-06-11 12:32:33.000000000 +0200
-@@ -11,6 +11,14 @@
-                 <allow send_destination="org.freedesktop.NetworkManager.PPP"/>
-                 <allow send_interface="org.freedesktop.NetworkManager.PPP"/>
+--- network-manager-0.7.0.97.orig/src/NetworkManager.conf	2009-02-17 16:45:44.000000000 +0100
++++ network-manager-0.7.0.97/src/NetworkManager.conf	2009-02-22 03:20:14.000000000 +0100
+@@ -9,6 +9,16 @@
+                 <allow send_destination="org.freedesktop.NetworkManager"
+                        send_interface="org.freedesktop.NetworkManager.PPP"/>
          </policy>
 +        <policy user="haldaemon">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>
@@ -12,8 +12,10 @@ Index: NetworkManager/src/NetworkManager.conf
 +        </policy>
 +        <policy group="netdev">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>
-+                <allow send_interface="org.freedesktop.NetworkManager"/>
++
++                <deny send_destination="org.freedesktop.NetworkManager"
++                      send_interface="org.freedesktop.NetworkManager.PPP"/>
 +        </policy>
          <policy at_console="true">
                  <allow send_destination="org.freedesktop.NetworkManager"/>
-                 <allow send_interface="org.freedesktop.NetworkManager"/>
+ 
