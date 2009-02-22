@@ -1,5 +1,6 @@
-network-manager (0.7.0-2) UNRELEASED; urgency=low
+network-manager (0.7.0.97-1) UNRELEASED; urgency=low
 
+  * New upstream release.
   * Merge experimental branch into unstable. Remaining changes:
     - Remove 07-domain_search.patch, merged upstream.
     - Remove 08-hal_deprecated_keys.patch, fixed upstream.
