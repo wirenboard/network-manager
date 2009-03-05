@@ -35,6 +35,15 @@ case "$1" in
 		fi
 	fi
 
+	# Update init script priorities
+	if dpkg --compare-versions "$2" lt "0.7.0.99-1"; then
+		for i in 0 1 6 ; do
+			if [ -e /etc/rc$i.d/K14network-manager ]; then
+				mv /etc/rc$i.d/K14network-manager /etc/rc$i.d/K88network-manager
+			fi
+		done
+	fi
+
 	;;
     
     abort-upgrade|abort-deconfigure|abort-remove)
