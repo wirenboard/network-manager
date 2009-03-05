@@ -1,6 +1,11 @@
 network-manager (0.7.0.99-1) UNRELEASED; urgency=low
 
-  * New upstream release.
+  * New upstream release (0.7.1 rc3).
+    - Fix FTBFS for older GCC versions. (Closes: #517520)
+    - Fix crash for wireless-ssid setting in ifupdown plugin which also caused
+      hostname to be set incorrectly. (Closes: #513852)
+    - Handle unsupported format for wifi keys in ifupdown plugin.
+      (Closes: #513874)
   * debian/network-manager.install
     - Install modem prober and corresponding udev rules file.
 
