@@ -1,6 +1,8 @@
 network-manager (0.7.0.99-1) UNRELEASED; urgency=low
 
   * New upstream release.
+  * debian/network-manager.install
+    - Install modem prober and corresponding udev rules file.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 05 Mar 2009 08:01:23 +0100
 
