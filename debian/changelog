@@ -1,4 +1,4 @@
-network-manager (0.7.0.99-1) UNRELEASED; urgency=low
+network-manager (0.7.0.99-1) unstable; urgency=low
 
   * New upstream release (0.7.1 rc3).
     - Fix FTBFS for older GCC versions. (Closes: #517520)
@@ -16,7 +16,7 @@ network-manager (0.7.0.99-1) UNRELEASED; urgency=low
   * debian/rules
     - Update stop priorities for 0 1 6 from K14 to K88.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 05 Mar 2009 08:01:23 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 05 Mar 2009 13:21:13 +0100
 
 network-manager (0.7.0.97-1) unstable; urgency=low
 
