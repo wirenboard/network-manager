@@ -8,6 +8,11 @@ network-manager (0.7.0.99-1) UNRELEASED; urgency=low
       (Closes: #513874)
   * debian/network-manager.install
     - Install modem prober and corresponding udev rules file.
+  * debian/control
+    - Add Recommends on dnsmasq-base and iptables which are required for
+      creating Ad-hoc connections and connection sharing. (Closes: #513151)
+    - Document optional dependencies, like avahi-autoipd or policykit, in the
+      package description. (Closes: #504455)
 
  -- Michael Biebl <biebl@debian.org>  Thu, 05 Mar 2009 08:01:23 +0100
 

@@ -26,7 +26,7 @@ Homepage: http://www.gnome.org/projects/NetworkManager/
 Package: network-manager
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.2-14), wpasupplicant (>= 0.6.2-1), dbus (>= 1.1.2), hal (>= 0.5.7.1), ifupdown, adduser, dhcp3-client
-Recommends: network-manager-gnome | network-manager-kde, policykit, ppp
+Recommends: network-manager-gnome | network-manager-kde, policykit, ppp, dnsmasq-base, iptables
 Suggests: avahi-autoipd
 Conflicts: network-manager-gnome (<< 0.6.5-1), network-manager-pptp (<< 0.7~~)
 Replaces: network-manager-gnome (<< 0.6.5-1), network-manager-pptp (<< 0.7~~)
@@ -40,6 +40,14 @@ Description: network management framework daemon
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package provides the userspace daemons.
+ .
+ Optional dependencies:
+  * policykit: Required for reading and writing system connections.
+  * ppp: Required for establishing dial-up connections (e.g. via GSM).
+  * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
+    connection sharing.
+  * avahi-autoipd: Used for IPv4LL, a protocol for automatic Link-Local IP
+    address configuration.
 
 Package: network-manager-dev
 Architecture: any
