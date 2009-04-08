@@ -6,6 +6,9 @@ network-manager (0.7.0.100-1) UNRELEASED; urgency=low
   * debian/network-manager.preinst
     - Remove obsolete conffile
       /etc/udev/rules.d/77-nm-probe-modem-capabilities.rules.
+    - Move the old pid file from /var/run/NetworkManager to /var/run on
+      upgrades so the daemon can be stopped correctly in postinst and the
+      obsolete run directory is removed automatically.
   * debian/network-manager.dirs,init
     - Do no longer install the /var/run/NetworkManager directory.
   * debian/network-manager.init
