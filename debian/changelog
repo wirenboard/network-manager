@@ -1,4 +1,4 @@
-network-manager (0.7.0.100-1) UNRELEASED; urgency=low
+network-manager (0.7.0.100-1) unstable; urgency=low
 
   * New upstream release (0.7.1 rc4).
   * debian/network-manager.install
@@ -19,7 +19,7 @@ network-manager (0.7.0.100-1) UNRELEASED; urgency=low
   * debian/patches/02-dbus_access_network_manager.patch
     - Remove haldaemon section, obsolete.
 
- -- Michael Biebl <biebl@debian.org>  Mon, 06 Apr 2009 10:13:04 +0200
+ -- Michael Biebl <biebl@debian.org>  Wed, 08 Apr 2009 07:06:19 +0200
 
 network-manager (0.7.0.99-1) unstable; urgency=low
 
