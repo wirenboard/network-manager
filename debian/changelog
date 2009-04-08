@@ -1,6 +1,11 @@
 network-manager (0.7.0.100-1) UNRELEASED; urgency=low
 
   * New upstream release (0.7.1 rc4).
+  * debian/network-manager.install
+    - Install modem prober udev rules file into /lib/udev/rules.d.
+  * debian/network-manager.preinst
+    - Remove obsolete conffile
+      /etc/udev/rules.d/77-nm-probe-modem-capabilities.rules.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 06 Apr 2009 10:13:04 +0200
 
