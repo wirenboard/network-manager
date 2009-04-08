@@ -1,3 +1,9 @@
+network-manager (0.7.0.100-1) UNRELEASED; urgency=low
+
+  * New upstream release (0.7.1 rc4).
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 06 Apr 2009 10:13:04 +0200
+
 network-manager (0.7.0.99-1) unstable; urgency=low
 
   * New upstream release (0.7.1 rc3).
