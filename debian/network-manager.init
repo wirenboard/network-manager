@@ -20,8 +20,7 @@ NAME="NetworkManager"
 
 DAEMON=/usr/sbin/$NAME
 
-PIDDIR=/var/run/NetworkManager
-PIDFILE=$PIDDIR/$NAME.pid
+PIDFILE=/var/run/$NAME.pid
 
 SCRIPTNAME=/etc/init.d/network-manager
 USER=root
@@ -37,13 +36,8 @@ test -f /etc/default/NetworkManager && . /etc/default/NetworkManager
 #	Function that starts the daemon/service.
 #
 d_start() {
-	if [ ! -d $PIDDIR ]; then
-		mkdir -p $PIDDIR
-		chown $USER:$USER $PIDDIR
-	fi
-
 	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--oknodo --user $USER --exec $DAEMON -- $DAEMON_OPTS --pid-file $PIDFILE
+		--oknodo --user $USER --exec $DAEMON -- $DAEMON_OPTS
 		
 }
 
