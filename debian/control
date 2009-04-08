@@ -18,7 +18,7 @@ Build-Depends: debhelper (>= 7),
  libpolkit-dbus-dev,
  libgnutls-dev,
  uuid-dev
-Standards-Version: 3.8.0
+Standards-Version: 3.8.1
 Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
 Homepage: http://www.gnome.org/projects/NetworkManager/

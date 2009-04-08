@@ -10,6 +10,9 @@ network-manager (0.7.0.100-1) UNRELEASED; urgency=low
     - Do no longer install the /var/run/NetworkManager directory.
   * debian/network-manager.init
     - Store the NetworkManager pid file directly in /var/run.
+  * debian/control
+    - Bump Standards-Version to 3.8.1. See the changes above wrt the /var/run
+      directory.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 06 Apr 2009 10:13:04 +0200
 
