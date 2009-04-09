@@ -1,3 +1,9 @@
+network-manager (0.7.0.100-2) UNRELEASED; urgency=low
+
+  * Use set -e instead of #!/bin/sh -e for all maintainer scripts.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 08 Apr 2009 08:02:10 +0200
+
 network-manager (0.7.0.100-1) unstable; urgency=low
 
   * New upstream release (0.7.1 rc4).
@@ -9,7 +15,7 @@ network-manager (0.7.0.100-1) unstable; urgency=low
     - Move the old pid file from /var/run/NetworkManager to /var/run on
       upgrades so the daemon can be stopped correctly in postinst and the
       obsolete run directory is removed automatically.
-  * debian/network-manager.dirs,init
+  * debian/network-manager.dirs
     - Do no longer install the /var/run/NetworkManager directory.
   * debian/network-manager.init
     - Store the NetworkManager pid file directly in /var/run.
