@@ -2,6 +2,9 @@ network-manager (0.7.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
   * Use set -e instead of #!/bin/sh -e for all maintainer scripts.
+  * debian/patches/04-struct_termios.patch
+    - Fix FTBFS on alpha by using the POSIX.1 struct termios interface instead
+      of the obsolete struct termio ioctl interface. (Closes: #524161)
 
  -- Michael Biebl <biebl@debian.org>  Fri, 17 Apr 2009 00:47:03 +0200
 
