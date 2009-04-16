@@ -2,9 +2,6 @@ network-manager (0.7.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
   * Use set -e instead of #!/bin/sh -e for all maintainer scripts.
-  * debian/control
-    - Add Build-Depends on libudev-dev. This allows to query udev for modem
-      capabilites without having to spawn udevadm.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 17 Apr 2009 00:47:03 +0200
 
