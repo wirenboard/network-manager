@@ -1,4 +1,4 @@
-network-manager (0.7.1-1) UNRELEASED; urgency=low
+network-manager (0.7.1-1) unstable; urgency=low
 
   * New upstream release.
   * Use set -e instead of #!/bin/sh -e for all maintainer scripts.
