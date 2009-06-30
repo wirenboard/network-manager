@@ -1,10 +1,15 @@
 network-manager (0.7.1-2) UNRELEASED; urgency=low
 
+  [ Michael Biebl ]
   * debian/control
     - Add Build-Depends on libudev-dev. This allows to query udev for modem
       capabilites without having to spawn udevadm.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 17 Apr 2009 11:39:35 +0200
+  [ Sjoerd Simons ]
+  * debian/control
+    - Add libnm-util-dev to the depends of libnm-glib-dev
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Tue, 30 Jun 2009 16:18:28 +0100
 
 network-manager (0.7.1-1) unstable; urgency=low
 

@@ -76,7 +76,7 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib0 (= ${binary:Version}), ${misc:Depends}, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends: libnm-glib0 (= ${binary:Version}), ${misc:Depends}, libnm-util-dev, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
