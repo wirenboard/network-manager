@@ -1,0 +1,19 @@
+commit 793cc30b5d20d728719c568f5bfac98f3bca3dca
+Author: Robert Piasek <robert@piasek.co.uk>
+Date:   2009-06-22 11:57:28 -0400
+
+    serial: fix serial port settings bug caused by 31a34fa7ffbceb79d5e6c16158e5dcce285dcff1
+
+diff --git a/src/nm-serial-device.c b/src/nm-serial-device.c
+index 54dd176..ad481d3 100644
+--- a/src/nm-serial-device.c
++++ b/src/nm-serial-device.c
+@@ -368,7 +368,7 @@ config_fd (NMSerialDevice *device, NMSettingSerial *setting)
+ 	stbuf.c_cflag &= ~(CBAUD | CSIZE | CSTOPB | CLOCAL | PARENB);
+ 	stbuf.c_cflag |= (speed | bits | CREAD | 0 | parity | stopbits);
+ 
+-	if (tcgetattr (priv->fd, &stbuf) < 0) {
++	if (tcsetattr (priv->fd, TCSANOW, &stbuf) < 0) {
+ 		nm_warning ("(%s) cannot control device (errno %d)",
+ 		            nm_device_get_iface (NM_DEVICE (device)), errno);
+ 		return FALSE;
