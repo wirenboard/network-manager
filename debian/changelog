@@ -1,4 +1,4 @@
-network-manager (0.7.1-2) unstable; urgency=low
+network-manager (0.7.1-2) UNRELEASED; urgency=low
 
   [ Michael Biebl ]
   * debian/control
