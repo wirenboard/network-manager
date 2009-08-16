@@ -3,3 +3,4 @@
 #20-manual_means_always_online.patch
 04-struct_termios.patch
 05-response-buffer-filled.patch
+06-handle-new-ssb-bus-from-HAL-0.5.13.patch
