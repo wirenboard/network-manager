@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          NetworkManager
+# Provides:          NetworkManager network-manager
 # Required-Start:    $remote_fs dbus hal
 # Required-Stop:     $remote_fs dbus hal
 # Should-Start:	     $syslog
