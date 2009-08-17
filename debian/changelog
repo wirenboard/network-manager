@@ -3,7 +3,7 @@ network-manager (0.7.1-2) UNRELEASED; urgency=low
   [ Michael Biebl ]
   * debian/control
     - Add Build-Depends on libudev-dev. This allows to query udev for modem
-      capabilites without having to spawn udevadm.
+      capabilities without having to spawn udevadm.
   * debian/patches/06-handle-new-ssb-bus-from-HAL-0.5.13.patch
     - HAL 0.5.13 added support for the ssb bus type which is internally used
       on most Broadcom ethernet and wifi chipsets. Update NM to detect the
