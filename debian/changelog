@@ -20,11 +20,6 @@ network-manager (0.7.1-2) UNRELEASED; urgency=low
   * debian/control
     - Add libnm-util-dev to the depends of libnm-glib-dev. (Closes: #539888)
 
-  [ Simon McVittie ]
-  * debian/patches/05-response-buffer-filled.patch: new, from upstream git
-    0.7 branch. Fixes "response buffer filled before repsonse received" (sic)
-    during communication with serial modems.
-
  -- Michael Biebl <biebl@debian.org>  Sun, 16 Aug 2009 03:00:50 +0200
 
 network-manager (0.7.1-1) unstable; urgency=low

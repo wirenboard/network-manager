@@ -42,7 +42,7 @@ index 1cba1ca..afdc6a6 100644
  	stbuf.c_cflag |= (speed | bits | CREAD | 0 | parity | stopbits);
  
 -	if (ioctl (priv->fd, TCSETA, &stbuf) < 0) {
-+	if (tcgetattr (priv->fd, &stbuf) < 0) {
++	if (tcsetattr (priv->fd, TCSANOW, &stbuf) < 0) {
  		nm_warning ("(%s) cannot control device (errno %d)",
  		            nm_device_get_iface (NM_DEVICE (device)), errno);
  		return FALSE;
