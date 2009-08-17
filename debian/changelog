@@ -4,17 +4,16 @@ network-manager (0.7.1-2) UNRELEASED; urgency=low
   * debian/control
     - Add Build-Depends on libudev-dev. This allows to query udev for modem
       capabilities without having to spawn udevadm.
-  * debian/patches/06-handle-new-ssb-bus-from-HAL-0.5.13.patch
+  * debian/patches/05-handle-new-ssb-bus-from-HAL-0.5.13.patch
     - HAL 0.5.13 added support for the ssb bus type which is internally used
       on most Broadcom ethernet and wifi chipsets. Update NM to detect the
       driver for the changed device layout. (Closes: #540613)
-      Patch pulled from upstream git.
+      Patch backported from upstream git.
   * debian/network-manager.init
-    - Update LSB header. Add "network-manager" to Provides as this name is
-      apparently used within the gdm init script and to be more in line with
-      the recommend practice to name the Provides like the init script.
-      Don't remove the "NetworkManager" Provides as other scripts might
-      already depend on that name. (Closes: #539753)
+    - Update LSB header. Provide the "network-manager" facility instead of
+      "NetworkManager" as gdm is depending on the former and to be more in
+      line with the recommended practice to name the Provides like the init
+      script itself. (Closes: #539753)
 
   [ Sjoerd Simons ]
   * debian/control
