@@ -262,6 +262,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_wireless_security_get_psk@Base 0.7.0
  nm_setting_wireless_security_get_type@Base 0.7.0
  nm_setting_wireless_security_get_wep_key@Base 0.7.0
+ nm_setting_wireless_security_get_wep_key_type@Base 0.7.2
  nm_setting_wireless_security_get_wep_tx_keyidx@Base 0.7.0
  nm_setting_wireless_security_new@Base 0.7.0
  nm_setting_wireless_security_remove_group@Base 0.7.0

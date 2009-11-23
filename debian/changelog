@@ -8,6 +8,8 @@ network-manager (0.7.2-1) UNRELEASED; urgency=low
   * Drop patches that have been merged upstream
     - debian/patches/04-struct_termios.patch
     - debian/patches/05-handle-new-ssb-bus-from-HAL-0.5.13.patch
+  * debian/libnm-util1.symbols
+    - Add new symbol nm_setting_wireless_security_get_wep_key_type.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 24 Nov 2009 00:34:08 +0100
 
