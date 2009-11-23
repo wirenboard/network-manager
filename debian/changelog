@@ -10,6 +10,8 @@ network-manager (0.7.2-1) UNRELEASED; urgency=low
     - debian/patches/05-handle-new-ssb-bus-from-HAL-0.5.13.patch
   * debian/libnm-util1.symbols
     - Add new symbol nm_setting_wireless_security_get_wep_key_type.
+  * debian/control
+    - Bump Standards-Version to 3.8.3. No further changes.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 24 Nov 2009 00:34:08 +0100
 
