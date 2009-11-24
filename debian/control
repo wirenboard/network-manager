@@ -55,7 +55,7 @@ Architecture: any
 Section: devel
 Depends: ${misc:Depends}
 Description: network management framework (development files)
- this package provides header files that are needed to 
+ this package provides header files that are needed to
  compile VPN Plugins for NetworkManager.
 
 Package: libnm-glib0
