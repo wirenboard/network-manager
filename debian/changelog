@@ -2,6 +2,7 @@ network-manager (0.7.2-1) UNRELEASED; urgency=low
 
   * New upstream release.
     - Fixes segfault of nm-system-settings for empty SSIDs. (Closes: #531605)
+    - Fixes build failures with binutils-gold. (Closes: #555770)
   * debian/patches/02-dbus_access_network_manager.patch
     - Update group="netdev" policy based on the upstream changes for
       at_console. The updated D-Bus policy also fixes communication failures
