@@ -1,4 +1,4 @@
-network-manager (0.7.2-1) UNRELEASED; urgency=low
+network-manager (0.7.2-1) unstable; urgency=low
 
   * New upstream release.
     - Fixes segfault of nm-system-settings for empty SSIDs. (Closes: #531605)
@@ -21,7 +21,7 @@ network-manager (0.7.2-1) UNRELEASED; urgency=low
     - Kill the D-Bus activated nm-system-settings daemon on "stop". Update
       README.Debian accordingly.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 24 Nov 2009 00:34:08 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 25 Nov 2009 00:12:29 +0100
 
 network-manager (0.7.1-2) unstable; urgency=low
 
