@@ -1,4 +1,4 @@
-debian/tmp/usr/sbin/NetworkManager 
+debian/tmp/usr/sbin/NetworkManager
 debian/tmp/usr/sbin/nm-system-settings
 debian/tmp/usr/bin/nm-tool
 debian/tmp/usr/lib/NetworkManager/nm-crash-logger
@@ -19,5 +19,5 @@ debian/tmp/etc/dbus-1/system.d/nm-avahi-autoipd.conf
 debian/tmp/etc/NetworkManager/dispatcher.d/
 debian/tmp/etc/NetworkManager/system-connections/
 debian/nm-system-settings.conf etc/NetworkManager/
-debian/tmp/lib/udev/rules.d/77-nm-probe-modem-capabilities.rules
+debian/tmp/lib/udev/rules.d/*.rules
 debian/tmp/lib/udev/nm-modem-probe
