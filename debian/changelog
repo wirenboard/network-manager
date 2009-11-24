@@ -17,6 +17,9 @@ network-manager (0.7.2-1) UNRELEASED; urgency=low
     - Bump Standards-Version to 3.8.3. No further changes.
   * debian/network-manager.install
     - Make sure we install all udev rules files.
+  * debian/network-manager.init
+    - Kill the D-Bus activated nm-system-settings daemon on "stop". Update
+      README.Debian accordingly.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 24 Nov 2009 00:34:08 +0100
 

@@ -37,7 +37,8 @@ wireless devices.
 After modifying /etc/NetworkManager/nm-systems-settings.conf _or_
 /etc/network/interfaces you may want to restart the system-settings daemon
 using the command:
-"sudo killall nm-system-settings" to apply those changes.
+"sudo killall nm-system-settings" or by running
+"sudo service network-manager restart".
 
 
 Dial-up configuration
