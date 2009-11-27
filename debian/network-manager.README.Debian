@@ -1,14 +1,14 @@
 NetworkManager consists of two parts: one is on the system level daemon that
-manages the connections and gathers information about new networks. The other 
-is a systray applet that users can use to interact with the NetworkManager 
-daemon. 
+manages the connections and gathers information about new networks. The other
+is a systray applet that users can use to interact with the NetworkManager
+daemon.
 
 Security
 ~~~~~~~~
 To allow users to connect to the NetworkManager daemon they have to be in the
 group "netdev". If you want to add a user to group "netdev" use the command
 "adduser username netdev" or one of the graphical user management frontends.
-After that you have to reload D-Bus with the command "/etc/init.d/dbus reload".
+After that you have to reload D-Bus with the command "service dbus reload".
 
 Alternatively you can install the "consolekit" package which will grant access
 for all locally logged in users.
@@ -35,10 +35,8 @@ wireless devices.
 
 
 After modifying /etc/NetworkManager/nm-systems-settings.conf _or_
-/etc/network/interfaces you may want to restart the system-settings daemon
-using the command:
-"sudo killall nm-system-settings" or by running
-"sudo service network-manager restart".
+/etc/network/interfaces you may want to tell NetworkManager about the changes
+by running "service network-manager restart".
 
 
 Dial-up configuration
