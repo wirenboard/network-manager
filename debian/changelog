@@ -1,3 +1,10 @@
+network-manager (0.7.2-3) UNRELEASED; urgency=low
+
+  * debian/rules
+    - Don't ship empty TODO file. (Closes: #558471)
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
+
 network-manager (0.7.2-2) unstable; urgency=low
 
   * debian/rules

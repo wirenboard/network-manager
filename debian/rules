@@ -10,7 +10,7 @@ common-binary-post-install-arch:: list-missing
 
 DEB_DH_MAKESHLIBS_ARGS_ALL := -X/usr/lib/NetworkManager -X/usr/lib/pppd/
 
-DEB_INSTALL_DOCS_ALL := README AUTHORS TODO
+DEB_INSTALL_DOCS_ALL := README AUTHORS
 
 DEB_CONFIGURE_LIBEXECDIR := "\$$(prefix)/lib/NetworkManager"
 
