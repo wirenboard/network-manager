@@ -1,19 +1,56 @@
-Index: NetworkManager/src/NetworkManager.conf
+Index: NetworkManager-0.7.2/src/NetworkManager.conf
 ===================================================================
---- NetworkManager.orig/src/NetworkManager.conf	2008-06-11 12:28:11.000000000 +0200
-+++ NetworkManager/src/NetworkManager.conf	2008-06-11 12:32:33.000000000 +0200
-@@ -11,6 +11,14 @@
-                 <allow send_destination="org.freedesktop.NetworkManager.PPP"/>
-                 <allow send_interface="org.freedesktop.NetworkManager.PPP"/>
+--- NetworkManager-0.7.2.orig/src/NetworkManager.conf	2009-11-23 20:17:47.000000000 +0100
++++ NetworkManager-0.7.2/src/NetworkManager.conf	2009-11-24 00:38:15.416687481 +0100
+@@ -9,6 +9,51 @@
+                 <allow send_destination="org.freedesktop.NetworkManager"
+                        send_interface="org.freedesktop.NetworkManager.PPP"/>
          </policy>
-+        <policy user="haldaemon">
-+                <allow send_destination="org.freedesktop.NetworkManager"/>
-+                <allow send_interface="org.freedesktop.NetworkManager"/>
-+        </policy>
 +        <policy group="netdev">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>
-+                <allow send_interface="org.freedesktop.NetworkManager"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.DBus.Introspectable"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.DBus.Properties"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.AccessPoint"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Connection.Active"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Device.Cdma"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Device.Wired"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Device.Gsm"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Device.Serial"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Device.Wireless"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.Device"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.DHCP4Config"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.IP4Config"/>
++
++		<allow send_destination="org.freedesktop.NetworkManager"
++		       send_interface="org.freedesktop.NetworkManager.VPN.Connection"/>
 +        </policy>
          <policy at_console="true">
                  <allow send_destination="org.freedesktop.NetworkManager"/>
-                 <allow send_interface="org.freedesktop.NetworkManager"/>
+ 

@@ -3,11 +3,23 @@ Section: net
 Priority: optional
 Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
 Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
-Build-Depends: debhelper (>= 5.0.0), cdbs, autotools-dev, pkg-config,
- intltool, quilt, libdbus-glib-1-dev (>= 0.75), libiw-dev(>= 27+28pre9),
- libglib2.0-dev, libhal-dev (>= 0.5.0), libnl-dev (>= 1.0~pre8), ppp-dev,
- libpolkit-dbus-dev, libgnutls-dev, uuid-dev
-Standards-Version: 3.8.0
+Build-Depends: debhelper (>= 7),
+ cdbs,
+ autotools-dev,
+ pkg-config,
+ intltool,
+ quilt,
+ libdbus-glib-1-dev (>= 0.75),
+ libiw-dev(>= 27+28pre9),
+ libglib2.0-dev,
+ libhal-dev (>= 0.5.0),
+ libnl-dev (>= 1.0~pre8),
+ ppp-dev,
+ libpolkit-dbus-dev,
+ libgnutls-dev,
+ uuid-dev,
+ libudev-dev
+Standards-Version: 3.8.3
 Vcs-Svn: svn://svn.debian.org/svn/pkg-utopia/packages/unstable/networkmanager
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager
 Homepage: http://www.gnome.org/projects/NetworkManager/
@@ -15,7 +27,7 @@ Homepage: http://www.gnome.org/projects/NetworkManager/
 Package: network-manager
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.2-14), wpasupplicant (>= 0.6.2-1), dbus (>= 1.1.2), hal (>= 0.5.7.1), ifupdown, adduser, dhcp3-client
-Recommends: network-manager-gnome | network-manager-kde, policykit, ppp
+Recommends: network-manager-gnome | network-manager-kde, policykit, ppp, dnsmasq-base, iptables
 Suggests: avahi-autoipd
 Conflicts: network-manager-gnome (<< 0.6.5-1), network-manager-pptp (<< 0.7~~)
 Replaces: network-manager-gnome (<< 0.6.5-1), network-manager-pptp (<< 0.7~~)
@@ -29,13 +41,21 @@ Description: network management framework daemon
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package provides the userspace daemons.
+ .
+ Optional dependencies:
+  * policykit: Required for reading and writing system connections.
+  * ppp: Required for establishing dial-up connections (e.g. via GSM).
+  * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
+    connection sharing.
+  * avahi-autoipd: Used for IPv4LL, a protocol for automatic Link-Local IP
+    address configuration.
 
 Package: network-manager-dev
 Architecture: any
 Section: devel
 Depends: ${misc:Depends}
 Description: network management framework (development files)
- this package provides header files that are needed to 
+ this package provides header files that are needed to
  compile VPN Plugins for NetworkManager.
 
 Package: libnm-glib0
@@ -56,7 +76,7 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib0 (= ${binary:Version}), ${misc:Depends}, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends: libnm-glib0 (= ${binary:Version}), ${misc:Depends}, libnm-util-dev, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -116,7 +136,7 @@ Description: network management framework (shared library)
 Package: libnm-util-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-util1 (= ${binary:Version}), ${misc:Depends}, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends: libnm-util1 (= ${binary:Version}), ${misc:Depends}, libglib2.0-dev
 Description: network management framework (development files)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for

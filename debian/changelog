@@ -1,14 +1,149 @@
-network-manager (0.7.0-2) UNRELEASED; urgency=low
+network-manager (0.7.2-3) UNRELEASED; urgency=low
 
+  * debian/rules
+    - Don't ship empty TODO file. (Closes: #558471)
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
+
+network-manager (0.7.2-2) unstable; urgency=low
+
+  * debian/rules
+    - Disable -Werror (more-warnings) for now as it causes build failures on
+      sparc.
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 27 Nov 2009 07:26:23 +0100
+
+network-manager (0.7.2-1) unstable; urgency=low
+
+  * New upstream release.
+    - Fixes segfault of nm-system-settings for empty SSIDs. (Closes: #531605)
+    - Fixes build failures with binutils-gold. (Closes: #555770)
+    - Adds support for GTC (WPA2 Enterprise/PEAP). (Closes: #543454)
+  * debian/patches/02-dbus_access_network_manager.patch
+    - Update group="netdev" policy based on the upstream changes for
+      at_console. The updated D-Bus policy also fixes communication failures
+      between pppd and NetworkManager. (Closes: #555624)
+  * Drop patches that have been merged upstream
+    - debian/patches/04-struct_termios.patch
+    - debian/patches/05-handle-new-ssb-bus-from-HAL-0.5.13.patch
+  * debian/libnm-util1.symbols
+    - Add new symbol nm_setting_wireless_security_get_wep_key_type.
+  * debian/control
+    - Bump Standards-Version to 3.8.3. No further changes.
+  * debian/network-manager.install
+    - Make sure we install all udev rules files.
+  * debian/network-manager.init
+    - Kill the D-Bus activated nm-system-settings daemon on "stop". Update
+      README.Debian accordingly.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 25 Nov 2009 00:12:29 +0100
+
+network-manager (0.7.1-2) unstable; urgency=low
+
+  [ Michael Biebl ]
+  * debian/control
+    - Add Build-Depends on libudev-dev. This allows to query udev for modem
+      capabilities without having to spawn udevadm.
+  * debian/patches/05-handle-new-ssb-bus-from-HAL-0.5.13.patch
+    - HAL 0.5.13 added support for the ssb bus type which is internally used
+      on most Broadcom ethernet and wifi chipsets. Update NM to detect the
+      driver for the changed device layout. (Closes: #540613)
+      Patch backported from upstream git.
+  * debian/network-manager.init
+    - Update LSB header. Provide the "network-manager" facility instead of
+      "NetworkManager" as gdm is depending on the former and to be more in
+      line with the recommended practice to name the Provides like the init
+      script itself. (Closes: #539753)
+
+  [ Sjoerd Simons ]
+  * debian/control
+    - Add libnm-util-dev to the depends of libnm-glib-dev. (Closes: #539888)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 17 Aug 2009 23:47:01 +0200
+
+network-manager (0.7.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Use set -e instead of #!/bin/sh -e for all maintainer scripts.
+  * debian/patches/04-struct_termios.patch
+    - Fix FTBFS on alpha by using the POSIX.1 struct termios interface instead
+      of the obsolete struct termio ioctl interface. (Closes: #524161)
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 17 Apr 2009 00:47:03 +0200
+
+network-manager (0.7.0.100-1) unstable; urgency=low
+
+  * New upstream release (0.7.1 rc4).
+  * debian/network-manager.install
+    - Install modem prober udev rules file into /lib/udev/rules.d.
+  * debian/network-manager.preinst
+    - Remove obsolete conffile
+      /etc/udev/rules.d/77-nm-probe-modem-capabilities.rules.
+    - Move the old pid file from /var/run/NetworkManager to /var/run on
+      upgrades so the daemon can be stopped correctly in postinst and the
+      obsolete run directory is removed automatically.
+  * debian/network-manager.dirs
+    - Do no longer install the /var/run/NetworkManager directory.
+  * debian/network-manager.init
+    - Store the NetworkManager pid file directly in /var/run.
+  * debian/control
+    - Bump Standards-Version to 3.8.1. See the changes above wrt the /var/run
+      directory.
+  * debian/patches/02-dbus_access_network_manager.patch
+    - Remove haldaemon section, obsolete.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 08 Apr 2009 07:06:19 +0200
+
+network-manager (0.7.0.99-1) unstable; urgency=low
+
+  * New upstream release (0.7.1 rc3).
+    - Fix FTBFS for older GCC versions. (Closes: #517520)
+    - Fix crash for wireless-ssid setting in ifupdown plugin which also caused
+      hostname to be set incorrectly. (Closes: #513852)
+    - Handle unsupported format for wifi keys in ifupdown plugin.
+      (Closes: #513874)
+  * debian/network-manager.install
+    - Install modem prober and corresponding udev rules file.
+  * debian/control
+    - Add Recommends on dnsmasq-base and iptables which are required for
+      creating Ad-hoc connections and connection sharing. (Closes: #513151)
+    - Document optional dependencies, like avahi-autoipd or policykit, in the
+      package description. (Closes: #504455)
+  * debian/rules
+    - Update stop priorities for 0 1 6 from K14 to K88.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 05 Mar 2009 13:21:13 +0100
+
+network-manager (0.7.0.97-1) unstable; urgency=low
+
+  * New upstream release.
+    - Update 02-dbus_access_network_manager.patch for the latest upstream
+      changes which fixes non-deterministic allow/deny for D-Bus messages with
+      no interface. (Closes: #510729)
+    - Disable 03-F3507g.patch for now, patch no longer applies and should be
+      replaced by ModemManager anyway.
+    - Remove 04-ltversioning.patch, merged upstream.
+    - Remove 05-dhclient_lease_files.patch, merged upstream.
+  * Merge experimental branch into unstable. Remaining changes:
+    - Remove 07-domain_search.patch, merged upstream.
+    - Remove 08-hal_deprecated_keys.patch, fixed upstream.
+    - Remove 09-nm_dbus_get_ap_from_object_path-mem_leak_fix.patch, obsolete.
+    - Disable 20-manual_means_always_online.patch, needs to be ported to 0.7.
+    - Drop libdbus-glib-1-dev Depends from libnm-util-dev.
   * debian/control 
     - Add ${misc:Depends} to all binary packages.
     - Let network-manager depend on dhcp3-client directly, as the dependency
       on dhcdbd has been removed. (Closes: #509655)
+    - Wrap Build-Depends.
+    - Bump Build-Depends on debhelper to (>= 7).
+  * debian/compat
+    - Bump debhelper compat level to 7.
   * debian/rules
     - Include debhelper.mk before any other files as recommended by the cdbs
       documentation.
+  * Update symbols file for libnm-util and libnm-glib due to API additions.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 13 Jan 2009 08:10:22 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 24 Feb 2009 22:47:20 +0100
 
 network-manager (0.7.0-1) experimental; urgency=low
 
@@ -117,6 +252,33 @@ network-manager (0.7.0~svn4191-1) experimental; urgency=low
   * Update to current svn
 
  -- Sjoerd Simons <sjoerd@debian.org>  Sat, 18 Oct 2008 21:28:05 +0100
+
+network-manager (0.6.6-3) unstable; urgency=low
+
+  * debian/network-manager.network-manager-dispatcher.init 
+    - NetworkManagerDispatcher uses the D-Bus system bus. Update the LSB
+      header accordingly to avoid breakages with insserv based systems.
+      (Closes: #500085)
+  * debian/patches/20-manual_means_always_online.patch
+    - manual-means-online: If there are interfaces that are not managed by
+      NetworkManager because they have custom configuration in
+      /etc/network/interfaces, we assume to be online. This is obviously not
+      always correct. But reporting offline state for unmanaged devices is
+      causing major hassles as more and more apps rely on NM and go into
+      offline mode otherwise, even if there is a connection (established via
+      ifupdown). (Closes: #491826, #502371, #509006, #509829, #511712)
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 14 Jan 2009 09:29:03 +0100
+
+network-manager (0.6.6-2) unstable; urgency=low
+
+  * debian/control
+    - Add Build-Depends on pkg-config.
+    - Drop obsolete Depends on iputils-arping. (Closes: #487794)
+  * debian/patches/09-nm_dbus_get_ap_from_object_path-mem_leak_fix.patch 
+    - Fix memory leak in src/nm-dbus-net.c. (Closes: #488604)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 05 Jul 2008 15:11:33 +0200
 
 network-manager (0.6.6-1) unstable; urgency=low
 
