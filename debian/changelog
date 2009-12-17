@@ -1,5 +1,12 @@
-network-manager (0.7.2-3) UNRELEASED; urgency=low
+network-manager (0.7.997-1) UNRELEASED; urgency=low
 
+  * Git snapshot (0.7.997) of the upcoming 0.8 release. (Closes: #553320)
+    - Much improved bluetooth support.
+    - Support for IPv6.
+    - Port to PolicyKit 1. (Closes: #549502)
+    - Drop hal dependency, use udev directly.
+    - Mobile broadband assistant.
+    - Use ModemManager for modem handling.
   * debian/rules
     - Don't ship empty TODO file. (Closes: #558471)
 
