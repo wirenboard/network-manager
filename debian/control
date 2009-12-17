@@ -58,7 +58,7 @@ Description: network management framework (development files)
  this package provides header files that are needed to
  compile VPN Plugins for NetworkManager.
 
-Package: libnm-glib0
+Package: libnm-glib2
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -76,7 +76,7 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib0 (= ${binary:Version}), ${misc:Depends}, libnm-util-dev, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends: libnm-glib2 (= ${binary:Version}), ${misc:Depends}, libnm-util-dev, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -88,7 +88,7 @@ Description: network management framework (GLib interface)
  This package provides the interface that applications can use to query
  connection status via NetworkManager.
 
-Package: libnm-glib-vpn0
+Package: libnm-glib-vpn1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -106,7 +106,7 @@ Description: network management framework (GLib VPN shared library)
 Package: libnm-glib-vpn-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib-vpn0 (= ${binary:Version}), ${misc:Depends}, libnm-glib-dev
+Depends: libnm-glib-vpn1 (= ${binary:Version}), ${misc:Depends}, libnm-glib-dev
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
