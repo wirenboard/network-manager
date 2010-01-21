@@ -9,6 +9,7 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Use ModemManager for modem handling.
   * debian/rules
     - Don't ship empty TODO file. (Closes: #558471)
+    - Specify the path to the iptables binary.
   * Update *.install, *.symbols and debian/control for library soname changes:
     libnm-glib0 → libnm-glib2 and libnm-glib-vpn0 → libnm-glib-vpn1.
   * debian/network-manager.install

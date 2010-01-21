@@ -19,6 +19,7 @@ DEB_CONFIGURE_EXTRA_FLAGS := \
 		--with-distro=debian \
 		--with-resolvconf=/sbin/resolvconf \
 		--with-dhcp-client=/sbin/dhclient \
+		--with-iptables=/sbin/iptables \
 		--with-crypto=gnutls \
 		--disable-more-warnings
 	
