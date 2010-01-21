@@ -25,6 +25,9 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Add Build-Depends on libdbus-1-dev (>= 1.1), libpolkit-gobject-1-dev and
       libgudev-1.0-dev.
     - Bump Build-Depends on libglib2.0-dev to (>= 2.18).
+    - Replace hal Depends with udev.
+    - Replace policykit Recommends with policykit-1.
+    - Update package description: policykit → policykit-1.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
 

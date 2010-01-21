@@ -34,13 +34,13 @@ Depends:
  lsb-base (>= 3.2-14),
  wpasupplicant (>= 0.6.2-1),
  dbus (>= 1.1.2),
- hal (>= 0.5.7.1),
+ udev,
  ifupdown,
  adduser,
  dhcp3-client
 Recommends:
  network-manager-gnome | network-manager-kde,
- policykit,
+ policykit-1,
  ppp,
  dnsmasq-base,
  iptables
@@ -68,7 +68,7 @@ Description: network management framework daemon
  This package provides the userspace daemons.
  .
  Optional dependencies:
-  * policykit: Required for reading and writing system connections.
+  * policykit-1: Required for reading and writing system connections.
   * ppp: Required for establishing dial-up connections (e.g. via GSM).
   * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
     connection sharing.
