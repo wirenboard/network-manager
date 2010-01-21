@@ -3,7 +3,8 @@ Section: net
 Priority: optional
 Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
 Uploaders: Riccardo Setti <giskard@debian.org>, Michael Biebl <biebl@debian.org>
-Build-Depends: debhelper (>= 7),
+Build-Depends:
+ debhelper (>= 7),
  cdbs,
  autotools-dev,
  pkg-config,
@@ -26,12 +27,35 @@ Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.2-14), wpasupplicant (>= 0.6.2-1), dbus (>= 1.1.2), hal (>= 0.5.7.1), ifupdown, adduser, dhcp3-client
-Recommends: network-manager-gnome | network-manager-kde, policykit, ppp, dnsmasq-base, iptables
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ lsb-base (>= 3.2-14),
+ wpasupplicant (>= 0.6.2-1),
+ dbus (>= 1.1.2),
+ hal (>= 0.5.7.1),
+ ifupdown,
+ adduser,
+ dhcp3-client
+Recommends:
+ network-manager-gnome | network-manager-kde,
+ policykit,
+ ppp,
+ dnsmasq-base,
+ iptables
 Suggests: avahi-autoipd
-Conflicts: network-manager-gnome (<< 0.6.5-1), network-manager-pptp (<< 0.7~~)
-Replaces: network-manager-gnome (<< 0.6.5-1), network-manager-pptp (<< 0.7~~)
-Breaks: network-manager-gnome (<< 0.7~~), network-manager-kde (<< 1:0.7~~), network-manager-openvpn (<< 0.7~~), network-manager-vpnc (<< 0.7~~), network-manager-pptp (<< 0.7~~)
+Conflicts:
+ network-manager-gnome (<< 0.6.5-1),
+ network-manager-pptp (<< 0.7~~)
+Replaces:
+ network-manager-gnome (<< 0.6.5-1),
+ network-manager-pptp (<< 0.7~~)
+Breaks:
+ network-manager-gnome (<< 0.7~~),
+ network-manager-kde (<< 1:0.7~~),
+ network-manager-openvpn (<< 0.7~~),
+ network-manager-vpnc (<< 0.7~~),
+ network-manager-pptp (<< 0.7~~)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -61,7 +85,9 @@ Description: network management framework (development files)
 Package: libnm-glib2
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
 Description: network management framework (GLib shared library)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -76,7 +102,13 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib2 (= ${binary:Version}), ${misc:Depends}, libnm-util-dev, network-manager-dev, libglib2.0-dev, libdbus-glib-1-dev (>= 0.60)
+Depends:
+ libnm-glib2 (= ${binary:Version}),
+ ${misc:Depends},
+ libnm-util-dev,
+ network-manager-dev,
+ libglib2.0-dev,
+ libdbus-glib-1-dev (>= 0.60)
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -91,7 +123,9 @@ Description: network management framework (GLib interface)
 Package: libnm-glib-vpn1
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
 Description: network management framework (GLib VPN shared library)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -106,7 +140,10 @@ Description: network management framework (GLib VPN shared library)
 Package: libnm-glib-vpn-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-glib-vpn1 (= ${binary:Version}), ${misc:Depends}, libnm-glib-dev
+Depends:
+ libnm-glib-vpn1 (= ${binary:Version}),
+ ${misc:Depends},
+ libnm-glib-dev
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -121,7 +158,9 @@ Description: network management framework (GLib interface)
 Package: libnm-util1
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
 Description: network management framework (shared library)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -136,7 +175,10 @@ Description: network management framework (shared library)
 Package: libnm-util-dev
 Section: libdevel
 Architecture: any
-Depends: libnm-util1 (= ${binary:Version}), ${misc:Depends}, libglib2.0-dev
+Depends:
+ libnm-util1 (= ${binary:Version}),
+ ${misc:Depends},
+ libglib2.0-dev
 Description: network management framework (development files)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
