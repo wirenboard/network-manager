@@ -47,8 +47,13 @@ case "$1" in
 		done
 	fi
 
+	# Kill nm-system-settings service as in 0.8 it is no longer a separate process
+	if dpkg --compare-versions "$2" lt "0.7.998-1"; then
+		kill `pidof /usr/sbin/nm-system-settings` 2>/dev/null || true
+	fi
+
 	;;
-    
+
     abort-upgrade|abort-deconfigure|abort-remove)
 	;;
 

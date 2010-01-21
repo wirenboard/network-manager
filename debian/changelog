@@ -36,6 +36,10 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
   * debian/network-manager.preinst
     - Remove the obsolete conffile
       /etc/dbus-1/system.d/nm-system-settings.conf on upgrades.
+  * network-manager.postinst
+    - Kill any running nm-system-settings daemon on upgrades before the new
+      NetworkManager daemon is started. Its functionality has been merged
+      into NetworkManager.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
 
