@@ -28,6 +28,8 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Bump Build-Depends on libglib2.0-dev to (>= 2.18).
     - Replace hal Depends with udev.
     - Replace policykit Recommends with policykit-1.
+    - Add Recommends on modemmanager which is required for mobile broadband
+      support.
     - Update package description: policykit → policykit-1.
   * debian/network-manager.init
     - Update LSB header: Replace hal dependency with udev.
