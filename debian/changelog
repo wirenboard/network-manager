@@ -15,6 +15,10 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Remove nm-system-settings files.
     - Install PolicyKit files to new location.
     - Remove udev modem prober.
+  * debian/libnm-glib-{vpn-}dev.links
+    - The name of the pkg-config files has changed ('_' → '-'). Create compat
+      symlinks so existing configure scripts keep working, allowing for a
+      smoother transition to the new library names.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
 
