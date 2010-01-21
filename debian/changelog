@@ -11,6 +11,10 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Don't ship empty TODO file. (Closes: #558471)
   * Update *.install, *.symbols and debian/control for library soname changes:
     libnm-glib0 → libnm-glib2 and libnm-glib-vpn0 → libnm-glib-vpn1.
+  * debian/network-manager.install
+    - Remove nm-system-settings files.
+    - Install PolicyKit files to new location.
+    - Remove udev modem prober.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
 
