@@ -44,10 +44,10 @@ case "$1" in
 	# Upgrade from previous versions
         if dpkg --compare-versions "$2" lt "0.6.4-8"; then
 	    if [ -x "/etc/dbus-1/event.d/25NetworkManager" ]; then
-		/etc/dbus-1/event.d/25NetworkManager stop   
+		/etc/dbus-1/event.d/25NetworkManager stop
 	    fi
 	    if [ -x "/etc/dbus-1/event.d/26NetworkManagerDispatcher" ]; then
-		/etc/dbus-1/event.d/26NetworkManagerDispatcher stop   
+		/etc/dbus-1/event.d/26NetworkManagerDispatcher stop
 	    fi
 	    rm_conffile network-manager /etc/dbus-1/event.d/25NetworkManager
 	    rm_conffile network-manager /etc/dbus-1/event.d/26NetworkManagerDispatcher
@@ -66,6 +66,9 @@ case "$1" in
 	    if [ -f /var/run/NetworkManager/NetworkManager.pid ]; then
 	        mv /var/run/NetworkManager/NetworkManager.pid /var/run/
 	    fi
+	fi
+	if dpkg --compare-versions "$2" lt "0.7.998-1"; then
+	    rm_conffile network-manager /etc/dbus-1/system.d/nm-system-settings.conf
 	fi
 	;;
 

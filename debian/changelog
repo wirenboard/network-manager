@@ -33,6 +33,9 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Update LSB header: Replace hal dependency with udev.
     - The nm-system-settings daemon has been merged into the NetworkManager
       daemon, so we no longer need to kill nm-system-settings on "stop".
+  * debian/network-manager.preinst
+    - Remove the obsolete conffile
+      /etc/dbus-1/system.d/nm-system-settings.conf on upgrades.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
 
