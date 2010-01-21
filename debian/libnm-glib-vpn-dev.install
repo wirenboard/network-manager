@@ -1,4 +1,4 @@
-debian/tmp/usr/lib/pkgconfig/libnm_glib_vpn.pc
-debian/tmp/usr/lib/libnm_glib_vpn.a
-debian/tmp/usr/lib/libnm_glib_vpn.so
+debian/tmp/usr/lib/pkgconfig/libnm-glib-vpn.pc
+debian/tmp/usr/lib/libnm-glib-vpn.a
+debian/tmp/usr/lib/libnm-glib-vpn.so
 debian/tmp/usr/include/libnm-glib/nm-vpn-plugin*
