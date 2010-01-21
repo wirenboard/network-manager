@@ -11,15 +11,16 @@ Build-Depends:
  intltool,
  quilt,
  libdbus-glib-1-dev (>= 0.75),
+ libdbus-1-dev (>= 1.1),
  libiw-dev(>= 27+28pre9),
- libglib2.0-dev,
- libhal-dev (>= 0.5.0),
+ libglib2.0-dev (>= 2.18),
  libnl-dev (>= 1.0~pre8),
  ppp-dev,
- libpolkit-dbus-dev,
+ libpolkit-gobject-1-dev,
  libgnutls-dev,
  uuid-dev,
- libudev-dev
+ libudev-dev,
+ libgudev-1.0-dev
 Standards-Version: 3.8.3
 Vcs-Svn: svn://svn.debian.org/pkg-utopia/packages/unstable/networkmanager/
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager/
