@@ -1,8 +1,8 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          network-manager
-# Required-Start:    $remote_fs dbus hal
-# Required-Stop:     $remote_fs dbus hal
+# Required-Start:    $remote_fs dbus udev
+# Required-Stop:     $remote_fs dbus udev
 # Should-Start:	     $syslog
 # Should-Stop:       $syslog
 # Default-Start:     2 3 4 5
@@ -44,11 +44,7 @@ d_start() {
 #
 d_stop() {
 	start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE \
-		 --oknodo --exec $DAEMON
-
-	# kill the system settings daemon
-	start-stop-daemon --stop --retry 5 --quiet \
-		 --oknodo --exec /usr/sbin/nm-system-settings
+		 --oknodo $USER --exec $DAEMON
 }
 
 

@@ -29,6 +29,10 @@ network-manager (0.7.998-1) UNRELEASED; urgency=low
     - Replace hal Depends with udev.
     - Replace policykit Recommends with policykit-1.
     - Update package description: policykit → policykit-1.
+  * debian/network-manager.init
+    - Update LSB header: Replace hal dependency with udev.
+    - The nm-system-settings daemon has been merged into the NetworkManager
+      daemon, so we no longer need to kill nm-system-settings on "stop".
 
  -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
 
