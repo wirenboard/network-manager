@@ -5,8 +5,7 @@ network-manager (0.7.999-1) UNRELEASED; urgency=low
     - Support for IPv6.
     - Port to PolicyKit 1. (Closes: #549502)
     - Drop hal dependency, use udev directly.
-    - Mobile broadband assistant.
-    - Use ModemManager for modem handling.
+    - Use ModemManager for better mobile broadband.
   * debian/rules
     - Don't ship empty TODO file. (Closes: #558471)
     - Specify the path to the iptables binary.
