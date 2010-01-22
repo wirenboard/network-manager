@@ -1,4 +1,4 @@
-network-manager (0.7.999-1) UNRELEASED; urgency=low
+network-manager (0.7.999-1) unstable; urgency=low
 
   * RC3 snapshot (0.7.999) of the upcoming 0.8 release. (Closes: #553320)
     - Much improved bluetooth support.
@@ -43,7 +43,7 @@ network-manager (0.7.999-1) UNRELEASED; urgency=low
       NetworkManager daemon is started. Its functionality has been merged
       into NetworkManager.
 
- -- Michael Biebl <biebl@debian.org>  Sun, 29 Nov 2009 10:19:59 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 22 Jan 2010 01:43:20 +0100
 
 network-manager (0.7.2-2) unstable; urgency=low
 
