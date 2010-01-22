@@ -1,6 +1,6 @@
-network-manager (0.7.999-1) unstable; urgency=low
+network-manager (0.7.999-1) UNRELEASED; urgency=low
 
-  * RC3 snapshot (0.7.999) of the upcoming 0.8 release. (Closes: #553320)
+  * New upstream release (0.8 rc3). (Closes: #553320)
     - Much improved bluetooth support.
     - Support for IPv6.
     - Port to PolicyKit 1. (Closes: #549502)
