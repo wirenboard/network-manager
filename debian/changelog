@@ -31,6 +31,7 @@ network-manager (0.7.999-1) UNRELEASED; urgency=low
     - Add Recommends on modemmanager which is required for mobile broadband
       support.
     - Update package description: policykit → policykit-1.
+    - Add -dbg package. (Closes: #380626)
   * debian/network-manager.init
     - Update LSB header: Replace hal dependency with udev.
     - The nm-system-settings daemon has been merged into the NetworkManager
