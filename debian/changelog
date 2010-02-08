@@ -15,6 +15,7 @@ network-manager (0.7.999-3) UNRELEASED; urgency=low
     - Remove Riccardo from Uploaders with Riccardo's consent.
     - Bump Breaks for network-manager-kde to (<< 1:0.9~~). The KDE3 version no
       longer works correctly with this version of network-manager.
+    - Bump Standards-Version to 3.8.4. No further changes.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 08 Feb 2010 15:35:45 +0100
 
