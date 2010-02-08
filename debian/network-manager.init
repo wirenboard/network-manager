@@ -12,8 +12,6 @@
 #		     connections to the best available connection.
 ### END INIT INFO
 
-set -e
-
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DESC="network connection manager"
 NAME="NetworkManager"
@@ -36,7 +34,7 @@ test -f /etc/default/NetworkManager && . /etc/default/NetworkManager
 #
 d_start() {
 	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--oknodo --exec $DAEMON -- $DAEMON_OPTS
+		--exec $DAEMON -- $DAEMON_OPTS
 }
 
 #
@@ -44,7 +42,7 @@ d_start() {
 #
 d_stop() {
 	start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE \
-		 --oknodo $USER --exec $DAEMON
+		--exec $DAEMON
 }
 
 
@@ -52,18 +50,26 @@ case "$1" in
   start)
 	log_daemon_msg "Starting $DESC" "$NAME"
 	d_start
-	log_end_msg $?
+	case "$?" in
+		0) log_end_msg 0 ;;
+		1) log_progress_msg "already started"
+		   log_end_msg 0 ;;
+		*) log_end_msg 1 ;;
+	esac
 	;;
   stop)
 	log_daemon_msg "Stopping $DESC" "$NAME"
 	d_stop
-	log_end_msg $?
+	case "$?" in
+		0) log_end_msg 0 ;;
+		1) log_progress_msg "already stopped"
+		   log_end_msg 0 ;;
+		*) log_end_msg 1 ;;
+	esac
 	;;
   restart|force-reload)
-	log_daemon_msg "Restarting $DESC" "$NAME"
-	d_stop
-	d_start
-	log_end_msg $?
+	$0 stop
+	$0 start
 	;;
   status)
 	status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
