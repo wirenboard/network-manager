@@ -8,6 +8,9 @@ network-manager (0.7.999-3) UNRELEASED; urgency=low
   * debian/patches/04-etc-hosts-rewrite.patch
     - Be more selective when adding hostname to /etc/hosts.
       Patch pulled from upstream Git. (Closes: #567411)
+  * debian/patches/05-ifupdown-allow-hotplug-autoconnect.patch
+    - Set autoconnect=true for devices marked as allow-hotplug in
+      /etc/network/interfaces. (Closes: #568784)
   * debian/control
     - Remove Riccardo from Uploaders with Riccardo's consent.
     - Bump Breaks for network-manager-kde to (<< 1:0.9~~). The KDE3 version no
