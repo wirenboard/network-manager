@@ -54,7 +54,7 @@ Replaces:
  network-manager-pptp (<< 0.7~~)
 Breaks:
  network-manager-gnome (<< 0.7~~),
- network-manager-kde (<< 1:0.7~~),
+ network-manager-kde (<< 1:0.9~~),
  network-manager-openvpn (<< 0.7~~),
  network-manager-vpnc (<< 0.7~~),
  network-manager-pptp (<< 0.7~~)
