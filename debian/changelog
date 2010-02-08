@@ -1,3 +1,13 @@
+network-manager (0.7.999-3) UNRELEASED; urgency=low
+
+  * debian/patches/03-hostname-fallback.patch
+    - If dhcp does not return a valid hostname and none of the system settings
+      plugins provides a hostname, fallback to the hostname that was set when
+      NetworkManager was started. Patch pulled from upstream Git.
+      (Closes: #567207)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 08 Feb 2010 15:35:45 +0100
+
 network-manager (0.7.999-2) unstable; urgency=low
 
   * Upload to unstable.
