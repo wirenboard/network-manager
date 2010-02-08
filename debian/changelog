@@ -1,4 +1,4 @@
-network-manager (0.7.999-3) unstable; urgency=low
+network-manager (0.7.999-3) UNRELEASED; urgency=low
 
   * debian/patches/03-hostname-fallback.patch
     - If dhcp does not return a valid hostname and none of the system settings
