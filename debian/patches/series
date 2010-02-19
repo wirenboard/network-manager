@@ -1,4 +1,1 @@
 02-dbus_access_network_manager.patch
-03-hostname-fallback.patch
-04-etc-hosts-rewrite.patch
-05-ifupdown-allow-hotplug-autoconnect.patch
