@@ -1,12 +1,12 @@
-network-manager (0.8-1) UNRELEASED; urgency=low
+network-manager (0.8-1) unstable; urgency=low
 
   * New upstream release.
     - ifupdown: don't export connections until "managed" state is checked.
       (Closes: #568287)
   * Remove patches, all merged upstream
+    - debian/patches/03-hostname-fallback.patch
     - debian/patches/04-etc-hosts-rewrite.patch
     - debian/patches/05-ifupdown-allow-hotplug-autoconnect.patch
-    - debian/patches/03-hostname-fallback.patch
   * debian/network-manager-dispatcher.script
     - Map NetworkManager down event to ifupdown post-down phase.
       (Closes: #562811)
@@ -15,7 +15,7 @@ network-manager (0.8-1) UNRELEASED; urgency=low
     - Comment out pre-up/pre-down events as they are not supported upstream.
     - Add hostname event but don't hook it up with a particular action.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 19 Feb 2010 21:41:06 +0100
+ -- Michael Biebl <biebl@debian.org>  Mon, 22 Feb 2010 00:31:22 +0100
 
 network-manager (0.7.999-3) unstable; urgency=low
 
