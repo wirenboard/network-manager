@@ -2,6 +2,7 @@
 # Script to dispatch NetworkManager events
 #
 # Runs ifupdown scripts when NetworkManager fiddles with interfaces.
+# See NetworkManager(8) for further documentation of the dispatcher events.
 
 if [ -z "$1" ]; then
     echo "$0: called with no interface" 1>&2
@@ -17,25 +18,29 @@ export VERBOSITY="0"
 
 # Run the right scripts
 case "$2" in
-    up)
+    up|vpn-up)
 	export MODE="start"
 	export PHASE="post-up"
 	exec run-parts /etc/network/if-up.d
 	;;
-    down)
-	export MODE="stop"
-	export PHASE="pre-down"
-	exec run-parts /etc/network/if-down.d
-	;;
-    pre-up)
-	export MODE="start"
-	export PHASE="pre-up"
-	exec run-parts /etc/network/if-pre-up.d
-	;;
-    post-down)
+    down|vpn-down)
 	export MODE="stop"
 	export PHASE="post-down"
 	exec run-parts /etc/network/if-post-down.d
+	;;
+# pre-up/pre-down not implemented. See
+# https://bugzilla.gnome.org/show_bug.cgi?id=387832
+#    pre-up)
+#	export MODE="start"
+#	export PHASE="pre-up"
+#	exec run-parts /etc/network/if-pre-up.d
+#	;;
+#    pre-down)
+#	export MODE="stop"
+#	export PHASE="pre-down"
+#	exec run-parts /etc/network/if-down.d
+#	;;
+    hostname)
 	;;
     *)
 	echo "$0: called with unknown action \`$2'" 1>&2
