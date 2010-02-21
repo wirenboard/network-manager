@@ -1,6 +1,8 @@
 network-manager (0.8-1) UNRELEASED; urgency=low
 
   * New upstream release.
+    - ifupdown: don't export connections until "managed" state is checked.
+      (Closes: #568287)
   * Remove patches, all merged upstream
     - debian/patches/04-etc-hosts-rewrite.patch
     - debian/patches/05-ifupdown-allow-hotplug-autoconnect.patch
