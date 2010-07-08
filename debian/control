@@ -109,7 +109,7 @@ Depends:
  libnm-util-dev,
  network-manager-dev,
  libglib2.0-dev,
- libdbus-glib-1-dev (>= 0.60)
+ libdbus-glib-1-dev
 Description: network management framework (GLib interface)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
@@ -179,7 +179,8 @@ Architecture: any
 Depends:
  libnm-util1 (= ${binary:Version}),
  ${misc:Depends},
- libglib2.0-dev
+ libglib2.0-dev,
+ libdbus-glib-1-dev
 Description: network management framework (development files)
  NetworkManager attempts to keep an active network connection available at all
  times. It is intended only for the desktop use-case, and is not intended for
