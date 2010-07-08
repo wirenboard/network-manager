@@ -20,6 +20,9 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
   * debian/control
     - Update Depends on dhcp3-client to isc-dhcp-client (>= 4.1.1-P1-4) to get
       DHCPv6 support.
+  * debian/patches/30-fix_paths_for_isc_dhcp_v4.patch
+    - Update dhclient.conf and lease directory path for isc-dhcp-client.
+      (Closes: #587473)
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 
