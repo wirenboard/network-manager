@@ -9,7 +9,6 @@ Build-Depends:
  autotools-dev,
  pkg-config,
  intltool,
- quilt,
  libdbus-glib-1-dev (>= 0.75),
  libdbus-1-dev (>= 1.1),
  libiw-dev(>= 27+28pre9),

@@ -4,8 +4,12 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
     - Bluetooth Dial-Up Networking support.
     - Command line interface via nmcli.
     - IPv6 DHCP support.
+  * Switch to source format 3.0 (quilt).
+    - Add debian/source/format.
+    - Drop Build-Depends on quilt.
+    - Remove /usr/share/cdbs/1/rules/patchsys-quilt.mk from debian/rules.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 20 May 2010 02:38:38 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 
 network-manager (0.8-1) unstable; urgency=low
 
