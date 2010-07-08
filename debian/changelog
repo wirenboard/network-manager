@@ -1,3 +1,12 @@
+network-manager (0.8.0.999-1) UNRELEASED; urgency=low
+
+  * New upstream release (0.8.1 rc1). (Closes: #582822)
+    - Bluetooth Dial-Up Networking support.
+    - Command line interface via nmcli.
+    - IPv6 DHCP support.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 20 May 2010 02:38:38 +0200
+
 network-manager (0.8-1) unstable; urgency=low
 
   * New upstream release.
