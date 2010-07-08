@@ -17,6 +17,9 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
   * debian/libnm-{glib,util}-dev.install
     - Install gtk-doc API documentation for libnm-glib and libnm-util.
     - Install nm-dhcp6-config.h for libnm-glib.
+  * debian/control
+    - Update Depends on dhcp3-client to isc-dhcp-client (>= 4.1.1-P1-4) to get
+      DHCPv6 support.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 
