@@ -14,6 +14,9 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
     - Update symbols files for new API additions.
   * debian/network-manager.{install,manpages}
     - Install nmcli binary and man page.
+  * debian/libnm-{glib,util}-dev.install
+    - Install gtk-doc API documentation for libnm-glib and libnm-util.
+    - Install nm-dhcp6-config.h for libnm-glib.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 
