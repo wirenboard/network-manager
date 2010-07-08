@@ -26,6 +26,9 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
   * debian/libnm-glib-{vpn-}dev.links
     - Stop installing compat symlinks for the pkg-config files.
       (Closes: #569187)
+  * debian/rules
+    - Set --with-pppd-plugin-dir configure option to /usr/lib/pppd/2.4.4.
+      The upstream default is 2.4.5 now but Debian still only has ppp 2.4.4.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 
