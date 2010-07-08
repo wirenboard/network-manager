@@ -1,5 +1,6 @@
 debian/tmp/usr/sbin/NetworkManager
 debian/tmp/usr/bin/nm-tool
+debian/tmp/usr/bin/nmcli
 debian/tmp/usr/lib/NetworkManager/nm-crash-logger
 debian/tmp/usr/lib/NetworkManager/nm-dhcp-client.action
 debian/tmp/usr/lib/NetworkManager/nm-dispatcher.action
