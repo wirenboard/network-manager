@@ -52,10 +52,12 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_ip6_address_compare@Base 0.7.999
  nm_ip6_address_dup@Base 0.7.999
  nm_ip6_address_get_address@Base 0.7.999
+ nm_ip6_address_get_gateway@Base 0.8.0.999
  nm_ip6_address_get_prefix@Base 0.7.999
  nm_ip6_address_new@Base 0.7.999
  nm_ip6_address_ref@Base 0.7.999
  nm_ip6_address_set_address@Base 0.7.999
+ nm_ip6_address_set_gateway@Base 0.8.0.999
  nm_ip6_address_set_prefix@Base 0.7.999
  nm_ip6_address_unref@Base 0.7.999
  nm_ip6_route_compare@Base 0.7.999
@@ -168,8 +170,10 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_get_type@Base 0.7.0
  nm_setting_gsm_error_get_type@Base 0.7.0
  nm_setting_gsm_error_quark@Base 0.7.0
+ nm_setting_gsm_get_allowed_bands@Base 0.8.0.999
  nm_setting_gsm_get_apn@Base 0.7.0
  nm_setting_gsm_get_band@Base 0.7.0
+ nm_setting_gsm_get_home_only@Base 0.8.0.999
  nm_setting_gsm_get_network_id@Base 0.7.0
  nm_setting_gsm_get_network_type@Base 0.7.0
  nm_setting_gsm_get_number@Base 0.7.0
@@ -197,6 +201,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_ip4_config_get_dns_search@Base 0.7.0
  nm_setting_ip4_config_get_ignore_auto_dns@Base 0.7.0
  nm_setting_ip4_config_get_ignore_auto_routes@Base 0.7.0
+ nm_setting_ip4_config_get_may_fail@Base 0.8.0.999
  nm_setting_ip4_config_get_method@Base 0.7.0
  nm_setting_ip4_config_get_never_default@Base 0.7.0.97
  nm_setting_ip4_config_get_num_addresses@Base 0.7.0
@@ -225,6 +230,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_ip6_config_get_dns_search@Base 0.7.999
  nm_setting_ip6_config_get_ignore_auto_dns@Base 0.7.999
  nm_setting_ip6_config_get_ignore_auto_routes@Base 0.7.999
+ nm_setting_ip6_config_get_may_fail@Base 0.8.0.999
  nm_setting_ip6_config_get_method@Base 0.7.999
  nm_setting_ip6_config_get_never_default@Base 0.7.999
  nm_setting_ip6_config_get_num_addresses@Base 0.7.999
@@ -365,6 +371,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_utils_init@Base 0.7.0
  nm_utils_ip4_addresses_from_gvalue@Base 0.7.0
  nm_utils_ip4_addresses_to_gvalue@Base 0.7.0
+ nm_utils_ip4_get_default_prefix@Base 0.8.0.999
  nm_utils_ip4_netmask_to_prefix@Base 0.7.0
  nm_utils_ip4_prefix_to_netmask@Base 0.7.0
  nm_utils_ip4_routes_from_gvalue@Base 0.7.0

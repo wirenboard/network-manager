@@ -8,6 +8,8 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
     - Add debian/source/format.
     - Drop Build-Depends on quilt.
     - Remove /usr/share/cdbs/1/rules/patchsys-quilt.mk from debian/rules.
+  * debian/libnm-{glib2,util1}.symbols
+    - Update symbols files for new API additions.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 

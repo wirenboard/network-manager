@@ -16,6 +16,7 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_access_point_get_wpa_flags@Base 0.7.999
  nm_access_point_new@Base 0.7.999
  nm_active_connection_get_connection@Base 0.7.999
+ nm_active_connection_get_default6@Base 0.8.0.999
  nm_active_connection_get_default@Base 0.7.999
  nm_active_connection_get_devices@Base 0.7.999
  nm_active_connection_get_scope@Base 0.7.999
@@ -34,6 +35,8 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_client_get_manager_running@Base 0.7.999
  nm_client_get_state@Base 0.7.999
  nm_client_get_type@Base 0.7.999
+ nm_client_networking_get_enabled@Base 0.8.0.999
+ nm_client_networking_set_enabled@Base 0.8.0.999
  nm_client_new@Base 0.7.999
  nm_client_sleep@Base 0.7.999
  nm_client_wireless_get_enabled@Base 0.7.999
@@ -119,6 +122,7 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_settings_connection_interface_get_type@Base 0.7.999
  nm_settings_connection_interface_update@Base 0.7.999
  nm_settings_interface_add_connection@Base 0.7.999
+ nm_settings_interface_error_get_type@Base 0.8.0.999
  nm_settings_interface_error_quark@Base 0.7.999
  nm_settings_interface_get_connection_by_path@Base 0.7.999
  nm_settings_interface_get_type@Base 0.7.999
