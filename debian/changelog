@@ -1,4 +1,4 @@
-network-manager (0.8.0.999-1) unstable; urgency=low
+network-manager (0.8.0.999-1) UNRELEASED; urgency=low
 
   * New upstream release (0.8.1 rc1). (Closes: #582822)
     - Bluetooth Dial-Up Networking support.
