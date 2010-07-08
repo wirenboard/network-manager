@@ -5,7 +5,7 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
     - Command line interface via nmcli.
     - IPv6 DHCP support.
     - Correctly reset state after a failed suspend/resume cycle.
-      (Closes: #620806)
+      (Closes: #566891)
   * Switch to source format 3.0 (quilt).
     - Add debian/source/format.
     - Drop Build-Depends on quilt.
