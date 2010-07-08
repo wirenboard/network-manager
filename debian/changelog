@@ -23,6 +23,9 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
   * debian/patches/30-fix_paths_for_isc_dhcp_v4.patch
     - Update dhclient.conf and lease directory path for isc-dhcp-client.
       (Closes: #587473)
+  * debian/libnm-glib-{vpn-}dev.links
+    - Stop installing compat symlinks for the pkg-config files.
+      (Closes: #569187)
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 03:32:37 +0200
 
