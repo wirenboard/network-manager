@@ -30,6 +30,7 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
   * debian/rules
     - Set --with-pppd-plugin-dir configure option to /usr/lib/pppd/2.4.4.
       The upstream default is 2.4.5 now but Debian still only has ppp 2.4.4.
+    - Set --with-dhclient configure option to /sbin/dhclient.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 16:39:38 +0200
 

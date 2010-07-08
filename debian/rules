@@ -14,10 +14,9 @@ DEB_INSTALL_DOCS_ALL := README AUTHORS
 DEB_CONFIGURE_LIBEXECDIR := "\$$(prefix)/lib/NetworkManager"
 
 DEB_CONFIGURE_EXTRA_FLAGS := \
-		--with-dbus-sys=/etc/dbus-1/system.d \
 		--with-distro=debian \
 		--with-resolvconf=/sbin/resolvconf \
-		--with-dhcp-client=/sbin/dhclient \
+		--with-dhclient=/sbin/dhclient \
 		--with-iptables=/sbin/iptables \
 		--with-crypto=gnutls \
 		--with-pppd-plugin-dir=/usr/lib/pppd/2.4.4 \
