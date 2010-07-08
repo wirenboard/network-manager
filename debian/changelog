@@ -1,4 +1,4 @@
-network-manager (0.8.0.999-1) UNRELEASED; urgency=low
+network-manager (0.8.0.999-1) unstable; urgency=low
 
   * New upstream release (0.8.1 rc1). (Closes: #582822)
     - Bluetooth Dial-Up Networking support.
@@ -33,7 +33,7 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
       The upstream default is 2.4.5 now but Debian still only has ppp 2.4.4.
     - Set --with-dhclient configure option to /sbin/dhclient.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 16:39:38 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 08 Jul 2010 17:01:53 +0200
 
 network-manager (0.8-1) unstable; urgency=low
 
