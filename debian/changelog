@@ -4,6 +4,8 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
     - Bluetooth Dial-Up Networking support.
     - Command line interface via nmcli.
     - IPv6 DHCP support.
+    - Correctly reset state after a failed suspend/resume cycle.
+      (Closes: #620806)
   * Switch to source format 3.0 (quilt).
     - Add debian/source/format.
     - Drop Build-Depends on quilt.
