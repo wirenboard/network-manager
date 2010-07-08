@@ -19,6 +19,7 @@ network-manager (0.8.0.999-1) UNRELEASED; urgency=low
     - Install nm-dhcp6-config.h for libnm-glib.
   * debian/control
     - Add Depends on libdbus-glib-1-dev for libnm-util-dev.
+    - Bump Standards-Version to 3.9.0. No further changes.
     - Update Depends on dhcp3-client to isc-dhcp-client (>= 4.1.1-P1-4) to get
       DHCPv6 support.
   * debian/patches/30-fix_paths_for_isc_dhcp_v4.patch
