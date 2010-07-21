@@ -1,6 +1,8 @@
 network-manager (0.8.1-1) UNRELEASED; urgency=low
 
   * New upstream release.
+  * debian/patches/30-fix_paths_for_isc_dhcp_v4.patch
+    - Remove, merged upstream.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jul 2010 01:50:20 +0200
 
