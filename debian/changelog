@@ -1,4 +1,4 @@
-network-manager (0.8.1-1) UNRELEASED; urgency=low
+network-manager (0.8.1-1) unstable; urgency=low
 
   * New upstream release. (Closes: #590139)
   * debian/patches/30-fix_paths_for_isc_dhcp_v4.patch
@@ -12,7 +12,7 @@ network-manager (0.8.1-1) UNRELEASED; urgency=low
   * debian/control
     - Bump Standards-Version to 3.9.1. No further changes.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 22 Jul 2010 01:50:20 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 27 Jul 2010 02:26:59 +0200
 
 network-manager (0.8.0.999-1) unstable; urgency=low
 
