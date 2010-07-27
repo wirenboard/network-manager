@@ -14,7 +14,7 @@ Build-Depends:
  libiw-dev(>= 27+28pre9),
  libglib2.0-dev (>= 2.18),
  libnl-dev (>= 1.0~pre8),
- ppp-dev,
+ ppp-dev (>= 2.4.5),
  libpolkit-gobject-1-dev,
  libgnutls-dev,
  uuid-dev,
@@ -40,7 +40,7 @@ Depends:
 Recommends:
  network-manager-gnome | network-manager-kde,
  policykit-1,
- ppp,
+ ppp (>= 2.4.5),
  dnsmasq-base,
  iptables,
  modemmanager
