@@ -7,6 +7,8 @@ network-manager (0.8.1-1) UNRELEASED; urgency=low
     - Bump Build-Depends on ppp to (>= 2.4.5).
     - Bump Recommends on ppp to (>= 2.4.5).
     - Drop --with-pppd-plugin-dir configure option and use upstream default.
+  * debian/network-manager.postrm
+    - Clean up /var/lib/NetworkManager on purge. (Closes: #584854)
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jul 2010 01:50:20 +0200
 
