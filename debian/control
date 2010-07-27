@@ -20,7 +20,7 @@ Build-Depends:
  uuid-dev,
  libudev-dev,
  libgudev-1.0-dev
-Standards-Version: 3.9.0
+Standards-Version: 3.9.1
 Vcs-Svn: svn://svn.debian.org/pkg-utopia/packages/unstable/networkmanager/
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager/
 Homepage: http://www.gnome.org/projects/NetworkManager/

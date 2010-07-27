@@ -9,6 +9,8 @@ network-manager (0.8.1-1) UNRELEASED; urgency=low
     - Drop --with-pppd-plugin-dir configure option and use upstream default.
   * debian/network-manager.postrm
     - Clean up /var/lib/NetworkManager on purge. (Closes: #584854)
+  * debian/control
+    - Bump Standards-Version to 3.9.1. No further changes.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jul 2010 01:50:20 +0200
 
