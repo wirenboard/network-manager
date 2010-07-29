@@ -18,49 +18,63 @@ set -e
 # If prerm fails during replacement due to conflict:
 #	<postinst> abort-remove in-favour <new-package> <version>
 
+# Move a conffile without triggering a dpkg question
+mv_conffile() {
+    local OLDCONFFILE="$1"
+    local NEWCONFFILE="$2"
+
+    [ -e "$OLDCONFFILE" ] || return 0
+
+    echo "Preserving user changes to $NEWCONFFILE ..."
+    mv -f "$NEWCONFFILE" "$NEWCONFFILE".dpkg-new
+    mv -f "$OLDCONFFILE" "$NEWCONFFILE"
+}
 
 case "$1" in
     configure)
-	
-	if ! getent group netdev > /dev/null; then
-	    addgroup --quiet --system netdev
-	fi
-	
-	if [ -x "/etc/init.d/dbus" ]; then
-	    invoke-rc.d dbus force-reload || true
-	fi
 
-	# Stop the service on upgrades before it is started again.
-	# dh_installinit -r will create the start code.
-	if [ -n "$2" ]; then
-		if [ -x "/etc/init.d/network-manager" ]; then
-			invoke-rc.d network-manager stop || true
-		fi
-	fi
+        if ! getent group netdev > /dev/null; then
+            addgroup --quiet --system netdev
+        fi
 
-	# Update init script priorities
-	if dpkg --compare-versions "$2" lt "0.7.0.99-1"; then
-		for i in 0 1 6 ; do
-			if [ -e /etc/rc$i.d/K14network-manager ]; then
-				mv /etc/rc$i.d/K14network-manager /etc/rc$i.d/K88network-manager
-			fi
-		done
-	fi
+        if [ -x "/etc/init.d/dbus" ]; then
+            invoke-rc.d dbus force-reload || true
+        fi
 
-	# Kill nm-system-settings service as in 0.8 it is no longer a separate process
-	if dpkg --compare-versions "$2" lt "0.7.999-1"; then
-		kill `pidof /usr/sbin/nm-system-settings` 2>/dev/null || true
-	fi
+        # Stop the service on upgrades before it is started again.
+        # dh_installinit -r will create the start code.
+        if [ -n "$2" ]; then
+            if [ -x "/etc/init.d/network-manager" ]; then
+                invoke-rc.d network-manager stop || true
+            fi
+        fi
 
-	;;
+        # Update init script priorities
+        if dpkg --compare-versions "$2" lt "0.7.0.99-1"; then
+            for i in 0 1 6 ; do
+                if [ -e /etc/rc$i.d/K14network-manager ]; then
+                    mv /etc/rc$i.d/K14network-manager /etc/rc$i.d/K88network-manager
+                fi
+            done
+        fi
+
+        # Kill nm-system-settings service as in 0.8 it is no longer a separate process
+        if dpkg --compare-versions "$2" lt "0.7.999-1"; then
+            kill `pidof /usr/sbin/nm-system-settings` 2>/dev/null || true
+        fi
+
+        if dpkg --compare-versions "$2" lt "0.8.1-2"; then
+            mv_conffile "/etc/NetworkManager/nm-system-setttings.conf" "/etc/NetworkManager/NetworkManager.conf"
+        fi
+        ;;
 
     abort-upgrade|abort-deconfigure|abort-remove)
-	;;
+        ;;
 
     *)
         echo "$0 called with unknown argument \`$1'" 1>&2
-	exit 1
-	;;
+        exit 1
+        ;;
 esac
 
 #DEBHELPER#

@@ -17,5 +17,5 @@ debian/tmp/etc/dbus-1/system.d/nm-dispatcher.conf
 debian/tmp/etc/dbus-1/system.d/nm-avahi-autoipd.conf
 debian/tmp/etc/NetworkManager/dispatcher.d/
 debian/tmp/etc/NetworkManager/system-connections/
-debian/nm-system-settings.conf etc/NetworkManager/
 debian/tmp/lib/udev/rules.d/*.rules
+debian/NetworkManager.conf etc/NetworkManager/
