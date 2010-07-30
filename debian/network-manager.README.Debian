@@ -21,7 +21,7 @@ unless the ifupdown system-config-setting is enabled and is setup to run
 in "Unmanaged mode".
 
 The config to select unmanaged/managed mode is in
-/etc/NetworkManager/nm-system-settings.conf:
+/etc/NetworkManager/NetworkManager.conf:
 
   [ifupdown]
   managed=true/false
@@ -34,7 +34,7 @@ NetworkManager honour all dhcp and static configurations for wired and
 wireless devices.
 
 
-After modifying /etc/NetworkManager/nm-systems-settings.conf _or_
+After modifying /etc/NetworkManager/NetworkManager.conf _or_
 /etc/network/interfaces you may want to tell NetworkManager about the changes
 by running "service network-manager restart".
 
