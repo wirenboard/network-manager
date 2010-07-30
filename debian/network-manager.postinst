@@ -64,7 +64,7 @@ case "$1" in
         fi
 
         if dpkg --compare-versions "$2" lt "0.8.1-2"; then
-            mv_conffile "/etc/NetworkManager/nm-system-setttings.conf" "/etc/NetworkManager/NetworkManager.conf"
+            mv_conffile "/etc/NetworkManager/nm-system-settings.conf" "/etc/NetworkManager/NetworkManager.conf"
         fi
         ;;
 

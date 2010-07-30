@@ -21,8 +21,8 @@ set -e
 # Remove a no-longer used conffile
 rm_conffile()
 {
-    PKGNAME="$1"
-    CONFFILE="$2"
+    local PKGNAME="$1"
+    local CONFFILE="$2"
 
     [ -e "$CONFFILE" ] || return 0
 
