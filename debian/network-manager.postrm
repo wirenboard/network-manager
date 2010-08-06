@@ -19,8 +19,10 @@ set -e
 case "$1" in
     purge)
         # Clean up state file on purge
-        rm -f /var/lib/NetworkManager/NetworkManager.state
-        rmdir --ignore-fail-on-non-empty /var/lib/NetworkManager
+        if [ -d /var/lib/NetworkManager ]; then
+            rm -f /var/lib/NetworkManager/NetworkManager.state
+            rmdir --ignore-fail-on-non-empty /var/lib/NetworkManager
+        fi
         ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         ;;

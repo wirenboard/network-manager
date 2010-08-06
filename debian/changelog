@@ -3,6 +3,9 @@ network-manager (0.8.1-2) UNRELEASED; urgency=low
   * Move configuration file /etc/NetworkManager/nm-system-settings.conf to
     /etc/NetworkManager/NetworkManager.conf. Update maintainer scripts to move
     the conffile without triggering a dpkg prompt.
+  * debian/network-manager.postrm
+    - Don't fail on purge if /var/lib/NetworkManager directory does not exist.
+      (Closes: #591861)
 
  -- Michael Biebl <biebl@debian.org>  Fri, 30 Jul 2010 01:53:34 +0200
 
