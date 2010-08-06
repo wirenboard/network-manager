@@ -6,6 +6,9 @@ network-manager (0.8.1-2) UNRELEASED; urgency=low
   * debian/network-manager.postrm
     - Don't fail on purge if /var/lib/NetworkManager directory does not exist.
       (Closes: #591861)
+  * debian/patches/10-dont_require_ifup_for_lo.patch
+    - Don't require ifup for enabling the loopback interface but use it if
+      installed. Patch cherry-picked from upstream Git.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 30 Jul 2010 01:53:34 +0200
 
