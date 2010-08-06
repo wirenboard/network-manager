@@ -34,7 +34,6 @@ Depends:
  wpasupplicant (>= 0.6.2-1),
  dbus (>= 1.1.2),
  udev,
- ifupdown,
  adduser,
  isc-dhcp-client (>= 4.1.1-P1-4)
 Recommends:
