@@ -37,7 +37,6 @@ Depends:
  adduser,
  isc-dhcp-client (>= 4.1.1-P1-4)
 Recommends:
- network-manager-gnome | network-manager-kde,
  policykit-1,
  ppp (>= 2.4.5),
  dnsmasq-base,
