@@ -1,4 +1,4 @@
-network-manager (0.8.1-3) UNRELEASED; urgency=low
+network-manager (0.8.1-3) unstable; urgency=low
 
   * debian/control
     - Drop Recommends: network-manager-gnome | network-manager-kde, as this
@@ -10,7 +10,7 @@ network-manager (0.8.1-3) UNRELEASED; urgency=low
     - Add a section briefly explaining system settings and add references to
       the online documentation and the system settings spec. (Closes: #594849)
 
- -- Michael Biebl <biebl@debian.org>  Fri, 06 Aug 2010 04:39:56 +0200
+ -- Michael Biebl <biebl@debian.org>  Wed, 22 Sep 2010 03:10:19 +0200
 
 network-manager (0.8.1-2) unstable; urgency=medium
 
