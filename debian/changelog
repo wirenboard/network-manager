@@ -9,6 +9,9 @@ network-manager (0.8.1-3) UNRELEASED; urgency=low
   * debian/network-manager.README.Debian
     - Add a section briefly explaining system settings and add references to
       the online documentation and the system settings spec. (Closes: #594849)
+  * debian/patches/30-typo_fix.patch
+    - Fix a small typo in README, and while at it, in other files too.
+      Thanks Christian Perrier for spotting it. (Closes: #594850)
 
  -- Michael Biebl <biebl@debian.org>  Wed, 22 Sep 2010 03:10:19 +0200
 
