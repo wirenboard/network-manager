@@ -5,6 +5,7 @@ network-manager (0.8.1-3) UNRELEASED; urgency=low
       can have unwanted side-effects, like GNOME packages being installed on
       a KDE desktop. Instead let the desktop meta packages depend on their
       preferred frontend. (Closes: #596233)
+    - Add Breaks: ppp (<< 2.4.5) to avoid partial upgrades. (Closes: #592444)
 
  -- Michael Biebl <biebl@debian.org>  Fri, 06 Aug 2010 04:39:56 +0200
 
