@@ -6,6 +6,9 @@ network-manager (0.8.1-3) UNRELEASED; urgency=low
       a KDE desktop. Instead let the desktop meta packages depend on their
       preferred frontend. (Closes: #596233)
     - Add Breaks: ppp (<< 2.4.5) to avoid partial upgrades. (Closes: #592444)
+  * debian/network-manager.README.Debian
+    - Add a section briefly explaining system settings and add references to
+      the online documentation and the system settings spec. (Closes: #594849)
 
  -- Michael Biebl <biebl@debian.org>  Fri, 06 Aug 2010 04:39:56 +0200
 
