@@ -18,5 +18,4 @@ debian/tmp/etc/dbus-1/system.d/nm-avahi-autoipd.conf
 debian/tmp/etc/NetworkManager/dispatcher.d/
 debian/tmp/etc/NetworkManager/system-connections/
 debian/tmp/lib/udev/rules.d/*.rules
-debian/ifblacklist_migrate.sh /usr/lib/NetworkManager
 debian/NetworkManager.conf etc/NetworkManager/

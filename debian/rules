@@ -29,3 +29,5 @@ clean::
 binary-install/network-manager::
 	install -m 755 debian/network-manager-dispatcher.script \
 		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
+	install -m 755 debian/ifblacklist_migrate.sh \
+		debian/network-manager/usr/lib/NetworkManager
