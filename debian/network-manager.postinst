@@ -66,6 +66,11 @@ case "$1" in
         if dpkg --compare-versions "$2" lt "0.8.1-2"; then
             mv_conffile "/etc/NetworkManager/nm-system-settings.conf" "/etc/NetworkManager/NetworkManager.conf"
         fi
+
+        if [ -z "$2" ] || dpkg --compare-versions "$2" lt-nl "0.8.1-4"; then
+            echo "Disabling interfaces configured with plain DHCP in /etc/network/interfaces so that NetworkManager can take them over"
+            sh /usr/lib/NetworkManager/ifblacklist_migrate.sh
+        fi
         ;;
 
     abort-upgrade|abort-deconfigure|abort-remove)
@@ -78,5 +83,4 @@ case "$1" in
 esac
 
 #DEBHELPER#
-exit 0
 

@@ -24,7 +24,15 @@ case "$1" in
             rmdir --ignore-fail-on-non-empty /var/lib/NetworkManager
         fi
         ;;
-    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    remove)
+        # Restore the ifupdown configuration that were disabled at installation
+        backup_suffix=0
+        while test -e /etc/network/interfaces.bak-${backup_suffix}; do
+            backup_suffix=$(($backup_suffix + 1))
+        done
+        sed -i.bak-${backup_suffix} -e "s/^#NetworkManager#//g" /etc/network/interfaces
+        ;;
+    upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         ;;
 
     *)
@@ -34,5 +42,3 @@ case "$1" in
 esac
 
 #DEBHELPER#
-
-exit 0
