@@ -1,0 +1,1077 @@
+# NetworkManager
+# Copyright (C) 2004 The GNOME Foundation.
+# This file is distributed under the same license as the NetworkManager package.
+# David Lodge <dave@cirt.net>, 2004.
+# Philip Withnall <philip@tecnocode.co.uk>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NetworkManager\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=NetworkManager&component=general\n"
+"POT-Creation-Date: 2009-09-11 15:24+0000\n"
+"PO-Revision-Date: 2006-12-28 18:52-0000\n"
+"Last-Translator: Philip Withnall <philip@tecnocode.co.uk>\n"
+"Language-Team: British English <en@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../libnm-util/crypto.c:120
+#, c-format
+msgid "PEM key file had no end tag '%s'."
+msgstr "PEM key file had no end tag '%s'."
+
+#: ../libnm-util/crypto.c:130
+#, c-format
+msgid "Doesn't look like a PEM private key file."
+msgstr "Doesn't look like a PEM private key file."
+
+#: ../libnm-util/crypto.c:138
+#, c-format
+msgid "Not enough memory to store PEM file data."
+msgstr "Not enough memory to store PEM file data."
+
+#: ../libnm-util/crypto.c:154
+#, c-format
+msgid "Malformed PEM file: Proc-Type was not first tag."
+msgstr "Malformed PEM file: Proc-Type was not first tag."
+
+#: ../libnm-util/crypto.c:162
+#, c-format
+msgid "Malformed PEM file: unknown Proc-Type tag '%s'."
+msgstr "Malformed PEM file: unknown Proc-Type tag '%s'."
+
+#: ../libnm-util/crypto.c:172
+#, c-format
+msgid "Malformed PEM file: DEK-Info was not the second tag."
+msgstr "Malformed PEM file: DEK-Info was not the second tag."
+
+#: ../libnm-util/crypto.c:183
+#, c-format
+msgid "Malformed PEM file: no IV found in DEK-Info tag."
+msgstr "Malformed PEM file: no IV found in DEK-Info tag."
+
+#: ../libnm-util/crypto.c:190
+#, c-format
+msgid "Malformed PEM file: invalid format of IV in DEK-Info tag."
+msgstr "Malformed PEM file: invalid format of IV in DEK-Info tag."
+
+#: ../libnm-util/crypto.c:203
+#, c-format
+msgid "Malformed PEM file: unknown private key cipher '%s'."
+msgstr "Malformed PEM file: unknown private key cipher '%s'."
+
+#: ../libnm-util/crypto.c:222
+#, c-format
+msgid "Could not decode private key."
+msgstr "Could not decode private key."
+
+#: ../libnm-util/crypto.c:267
+#, c-format
+msgid "PEM certificate '%s' had no end tag '%s'."
+msgstr "PEM certificate '%s' had no end tag '%s'."
+
+#: ../libnm-util/crypto.c:277
+#, c-format
+msgid "Failed to decode certificate."
+msgstr "Failed to decode certificate."
+
+#: ../libnm-util/crypto.c:286
+#, c-format
+msgid "Not enough memory to store certificate data."
+msgstr "Not enough memory to store certificate data."
+
+#: ../libnm-util/crypto.c:294
+#, c-format
+msgid "Not enough memory to store file data."
+msgstr "Not enough memory to store file data."
+
+#: ../libnm-util/crypto.c:324
+#, c-format
+msgid "IV must be an even number of bytes in length."
+msgstr "IV must be an even number of bytes in length."
+
+#: ../libnm-util/crypto.c:333
+#, c-format
+msgid "Not enough memory to store the IV."
+msgstr "Not enough memory to store the IV."
+
+#: ../libnm-util/crypto.c:344
+#, c-format
+msgid "IV contains non-hexadecimal digits."
+msgstr "IV contains non-hexadecimal digits."
+
+#: ../libnm-util/crypto.c:382 ../libnm-util/crypto_gnutls.c:143
+#: ../libnm-util/crypto_nss.c:169
+#, c-format
+msgid "Private key cipher '%s' was unknown."
+msgstr "Private key cipher '%s' was unknown."
+
+#: ../libnm-util/crypto.c:391
+#, c-format
+msgid "Not enough memory to decrypt private key."
+msgstr "Not enough memory to decrypt private key."
+
+#: ../libnm-util/crypto.c:511
+#, c-format
+msgid "Unable to determine private key type."
+msgstr "Unable to determine private key type."
+
+#: ../libnm-util/crypto.c:530
+#, c-format
+msgid "Not enough memory to store decrypted private key."
+msgstr "Not enough memory to store decrypted private key."
+
+#: ../libnm-util/crypto_gnutls.c:46
+msgid "Failed to initialize the crypto engine."
+msgstr "Failed to initialise the crypto engine."
+
+#: ../libnm-util/crypto_gnutls.c:90
+#, c-format
+msgid "Failed to initialize the MD5 engine: %s / %s."
+msgstr "Failed to initialise the MD5 engine: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:152 ../libnm-util/crypto_nss.c:178
+#, c-format
+msgid "Not enough memory for decrypted key buffer."
+msgstr "Not enough memory for decrypted key buffer."
+
+#: ../libnm-util/crypto_gnutls.c:160
+#, c-format
+msgid "Failed to initialize the decryption cipher context: %s / %s."
+msgstr "Failed to initialise the decryption cipher context: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:169
+#, c-format
+msgid "Failed to set symmetric key for decryption: %s / %s."
+msgstr "Failed to set symmetric key for decryption: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:178
+#, c-format
+msgid "Failed to set IV for decryption: %s / %s."
+msgstr "Failed to set IV for decryption: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:187
+#, c-format
+msgid "Failed to decrypt the private key: %s / %s."
+msgstr "Failed to decrypt the private key: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:200
+#, c-format
+msgid "Failed to decrypt the private key."
+msgstr "Failed to decrypt the private key."
+
+#: ../libnm-util/crypto_gnutls.c:235
+#, c-format
+msgid "Error initializing certificate data: %s"
+msgstr "Error initialising certificate data: %s"
+
+#: ../libnm-util/crypto_gnutls.c:257
+#, c-format
+msgid "Couldn't decode certificate: %s"
+msgstr "Couldn't decode certificate: %s"
+
+#: ../libnm-util/crypto_gnutls.c:281
+#, c-format
+msgid "Couldn't initialize PKCS#12 decoder: %s"
+msgstr "Couldn't initialise PKCS#12 decoder: %s"
+
+#: ../libnm-util/crypto_gnutls.c:294
+#, c-format
+msgid "Couldn't decode PKCS#12 file: %s"
+msgstr "Couldn't decode PKCS#12 file: %s"
+
+#: ../libnm-util/crypto_gnutls.c:306
+#, c-format
+msgid "Couldn't verify PKCS#12 file: %s"
+msgstr "Couldn't verify PKCS#12 file: %s"
+
+#: ../libnm-util/crypto_nss.c:57
+#: ../system-settings/plugins/ifcfg-rh/crypto.c:52
+#, c-format
+msgid "Failed to initialize the crypto engine: %d."
+msgstr "Failed to initialise the crypto engine: %d."
+
+#: ../libnm-util/crypto_nss.c:111
+#, c-format
+msgid "Failed to initialize the MD5 context: %d."
+msgstr "Failed to initialise the MD5 context: %d."
+
+#: ../libnm-util/crypto_nss.c:186
+#, c-format
+msgid "Failed to initialize the decryption cipher slot."
+msgstr "Failed to initialise the decryption cipher slot."
+
+#: ../libnm-util/crypto_nss.c:196
+#, c-format
+msgid "Failed to set symmetric key for decryption."
+msgstr "Failed to set symmetric key for decryption."
+
+#: ../libnm-util/crypto_nss.c:206
+#, c-format
+msgid "Failed to set IV for decryption."
+msgstr "Failed to set IV for decryption."
+
+#: ../libnm-util/crypto_nss.c:214
+#, c-format
+msgid "Failed to initialize the decryption context."
+msgstr "Failed to initialise the decryption context."
+
+#: ../libnm-util/crypto_nss.c:227
+#, c-format
+msgid "Failed to decrypt the private key: %d."
+msgstr "Failed to decrypt the private key: %d."
+
+#: ../libnm-util/crypto_nss.c:239
+#, c-format
+msgid "Failed to finalize decryption of the private key: %d."
+msgstr "Failed to finalise decryption of the private key: %d."
+
+#: ../libnm-util/crypto_nss.c:284
+#, c-format
+msgid "Couldn't decode certificate: %d"
+msgstr "Couldn't decode certificate: %d"
+
+#: ../libnm-util/crypto_nss.c:319
+#, c-format
+msgid "Couldn't convert password to UCS2: %d"
+msgstr "Couldn't convert password to UCS2: %d"
+
+#: ../libnm-util/crypto_nss.c:347
+#, c-format
+msgid "Couldn't initialize PKCS#12 decoder: %d"
+msgstr "Couldn't initialise PKCS#12 decoder: %d"
+
+#: ../libnm-util/crypto_nss.c:356
+#, c-format
+msgid "Couldn't decode PKCS#12 file: %d"
+msgstr "Couldn't decode PKCS#12 file: %d"
+
+#: ../libnm-util/crypto_nss.c:365
+#, c-format
+msgid "Couldn't verify PKCS#12 file: %d"
+msgstr "Couldn't verify PKCS#12 file: %d"
+
+#: ../src/nm-netlink-monitor.c:194 ../src/nm-netlink-monitor.c:464
+#: ../src/ip6-manager/nm-netlink-listener.c:352
+#, c-format
+msgid "error processing netlink message: %s"
+msgstr "error processing netlink message: %s"
+
+#: ../src/nm-netlink-monitor.c:260
+#, c-format
+msgid "unable to allocate netlink handle for monitoring link status: %s"
+msgstr "unable to allocate netlink handle for monitoring link status: %s"
+
+#: ../src/nm-netlink-monitor.c:270
+#, c-format
+msgid "unable to connect to netlink for monitoring link status: %s"
+msgstr "unable to connect to netlink for monitoring link status: %s"
+
+#: ../src/nm-netlink-monitor.c:278
+#, c-format
+msgid "unable to join netlink group for monitoring link status: %s"
+msgstr "unable to join netlink group for monitoring link status: %s"
+
+#: ../src/nm-netlink-monitor.c:286
+#, c-format
+msgid "unable to allocate netlink link cache for monitoring link status: %s"
+msgstr "unable to allocate netlink link cache for monitoring link status: %s"
+
+#: ../src/nm-netlink-monitor.c:494
+#: ../src/ip6-manager/nm-netlink-listener.c:382
+msgid "error occurred while waiting for data on socket"
+msgstr "error occurred while waiting for data on socket"
+
+#: ../src/NetworkManager.c:330
+#, c-format
+msgid "Invalid option.  Please use --help to see a list of valid options.\n"
+msgstr "Invalid option. Please use --help to see a list of valid options.\n"
+
+#: ../src/dhcp-manager/nm-dhcp-dhclient.c:304
+msgid "# Created by NetworkManager\n"
+msgstr "# Created by NetworkManager\n"
+
+#: ../src/dhcp-manager/nm-dhcp-dhclient.c:310
+#, c-format
+msgid ""
+"# Merged from %s\n"
+"\n"
+msgstr ""
+"# Merged from %s\n"
+"\n"
+
+#: ../src/ip6-manager/nm-netlink-listener.c:200
+#, c-format
+msgid "unable to allocate netlink handle: %s"
+msgstr "unable to allocate netlink handle: %s"
+
+#: ../src/ip6-manager/nm-netlink-listener.c:210
+#, c-format
+msgid "unable to connect to netlink: %s"
+msgstr "unable to connect to netlink: %s"
+
+#: ../src/ip6-manager/nm-netlink-listener.c:307
+#, c-format
+msgid "unable to join netlink group: %s"
+msgstr "unable to join netlink group: %s"
+
+#: ../src/named-manager/nm-named-manager.c:315
+msgid "NOTE: the libc resolver may not support more than 3 nameservers."
+msgstr "NOTE: the libc resolver may not support more than 3 nameservers."
+
+#: ../src/named-manager/nm-named-manager.c:317
+msgid "The nameservers listed below may not be recognized."
+msgstr "The nameservers listed below may not be recognised."
+
+#: ../src/system-settings/nm-default-wired-connection.c:194
+#, c-format
+msgid "Auto %s"
+msgstr "Auto %s"
+
+#: ../system-settings/plugins/ifcfg-rh/reader.c:2446
+msgid "System"
+msgstr "System"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:1
+msgid "Connection sharing via a protected WiFi network"
+msgstr "Connection sharing via a protected Wi-Fi network"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:2
+msgid "Connection sharing via an open WiFi network"
+msgstr "Connection sharing via an open Wi-Fi network"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:3
+msgid "Modify persistent system hostname"
+msgstr "Modify persistent system hostname"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:4
+msgid "Modify system connections"
+msgstr "Modify system connections"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:5
+msgid "System policy prevents modification of system settings"
+msgstr "System policy prevents modification of system settings"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:6
+msgid "System policy prevents modification of the persistent system hostname"
+msgstr "System policy prevents modification of the persistent system hostname"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:7
+msgid "System policy prevents sharing connections via a protected WiFi network"
+msgstr "System policy prevents sharing connections via a protected Wi-Fi network"
+
+#: ../policy/org.freedesktop.network-manager-settings.system.policy.in.h:8
+msgid "System policy prevents sharing connections via an open WiFi network"
+msgstr "System policy prevents sharing connections via an open Wi-Fi network"
+
+#
+#~ msgid "Passphrase for wireless network %s"
+#~ msgstr "Passphrase for wireless network %s"
+
+#
+#~ msgid "Connection to the wireless network '%s' failed."
+#~ msgstr "Connection to the wireless network '%s' failed."
+
+#~ msgid "Connection to the wired network failed."
+#~ msgstr "Connection to the wired network failed."
+
+#~ msgid "Error displaying connection information:"
+#~ msgstr "Error displaying connection information:"
+
+#~ msgid "Could not find some required resources (the glade file)!"
+#~ msgstr "Could not find some required resources (the glade file)!"
+
+#~ msgid "%d Mb/s"
+#~ msgstr "%d Mb/s"
+
+#~ msgid "Wired Ethernet (%s)"
+#~ msgstr "Wired Ethernet (%s)"
+
+#~ msgid "Wireless Ethernet (%s)"
+#~ msgstr "Wireless Ethernet (%s)"
+
+#~ msgid "Unknown"
+#~ msgstr "Unknown"
+
+#~ msgid "NetworkManager Applet"
+#~ msgstr "NetworkManager Applet"
+
+#~ msgid ""
+#~ "Copyright © 2004-2006 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+#~ msgstr ""
+#~ "Copyright © 2004-2006 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+
+#~ msgid ""
+#~ "Notification area applet for managing your network devices and "
+#~ "connections."
+#~ msgstr ""
+#~ "Notification area applet for managing your network devices and "
+#~ "connections."
+
+#~ msgid "translator-credits"
+#~ msgstr "David Lodge <dave@cirt.net>James Ogley <james@usr-local-bin.org>"
+
+#~ msgid ""
+#~ "Copyright © 2004-2005 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+#~ msgstr ""
+#~ "Copyright © 2004-2005 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+
+#~ msgid "VPN Login Failure"
+#~ msgstr "VPN Login Failure"
+
+#~ msgid "Could not start the VPN connection '%s' due to a login failure."
+#~ msgstr "Could not start the VPN connection '%s' due to a login failure."
+
+#~ msgid "VPN Start Failure"
+#~ msgstr "VPN Start Failure"
+
+#~ msgid ""
+#~ "Could not start the VPN connection '%s' due to a failure launching the "
+#~ "VPN program."
+#~ msgstr ""
+#~ "Could not start the VPN connection '%s' due to a failure launching the "
+#~ "VPN program."
+
+#~ msgid "VPN Connect Failure"
+#~ msgstr "VPN Connect Failure"
+
+#~ msgid "Could not start the VPN connection '%s' due to a connection error."
+#~ msgstr "Could not start the VPN connection '%s' due to a connection error."
+
+#~ msgid "VPN Configuration Error"
+#~ msgstr "VPN Configuration Error"
+
+#~ msgid "The VPN connection '%s' was not correctly configured."
+#~ msgstr "The VPN connection '%s' was not correctly configured."
+
+#~ msgid ""
+#~ "Could not start the VPN connection '%s' because the VPN server did not "
+#~ "return an adequate network configuration."
+#~ msgstr ""
+#~ "Could not start the VPN connection '%s' because the VPN server did not "
+#~ "return an adequate network configuration."
+
+#~ msgid "VPN Login Message"
+#~ msgstr "VPN Login Message"
+
+#~ msgid ""
+#~ "The NetworkManager Applet could not find some required resources (the "
+#~ "glade file was not found)."
+#~ msgstr ""
+#~ "The NetworkManager Applet could not find some required resources (the "
+#~ "glade file was not found)."
+
+#~ msgid "The network device \"%s (%s)\" does not support wireless scanning."
+#~ msgstr "The network device \"%s (%s)\" does not support wireless scanning."
+
+#~ msgid "The network device \"%s (%s)\" does not support link detection."
+#~ msgstr "The network device \"%s (%s)\" does not support link detection."
+
+#~ msgid "(unknown)"
+#~ msgstr "(unknown)"
+
+#~ msgid "Preparing device %s for the wired network..."
+#~ msgstr "Preparing device %s for the wired network..."
+
+#
+#~ msgid "Preparing device %s for the wireless network '%s'..."
+#~ msgstr "Preparing device %s for the wireless network '%s'..."
+
+#~ msgid "Configuring device %s for the wired network..."
+#~ msgstr "Configuring device %s for the wired network..."
+
+#
+#~ msgid "Attempting to join the wireless network '%s'..."
+#~ msgstr "Attempting to join the wireless network '%s'..."
+
+#
+#~ msgid "Waiting for Network Key for the wireless network '%s'..."
+#~ msgstr "Waiting for Network Key for the wireless network '%s'..."
+
+#~ msgid "Requesting a network address from the wired network..."
+#~ msgstr "Requesting a network address from the wired network..."
+
+#
+#~ msgid "Requesting a network address from the wireless network '%s'..."
+#~ msgstr "Requesting a network address from the wireless network '%s'..."
+
+#~ msgid "Finishing connection to the wired network..."
+#~ msgstr "Finishing connection to the wired network..."
+
+#
+#~ msgid "Finishing connection to the wireless network '%s'..."
+#~ msgstr "Finishing connection to the wireless network '%s'..."
+
+#~ msgid "NetworkManager is not running"
+#~ msgstr "NetworkManager is not running"
+
+#~ msgid "Networking disabled"
+#~ msgstr "Networking disabled"
+
+#~ msgid "No network connection"
+#~ msgstr "No network connection"
+
+#~ msgid "Wired network connection"
+#~ msgstr "Wired network connection"
+
+#
+#~ msgid "Connected to an Ad-Hoc wireless network"
+#~ msgstr "Connected to an Ad-Hoc wireless network"
+
+#~ msgid "Wireless network connection to '%s' (%d%%)"
+#~ msgstr "Wireless network connection to '%s' (%d%%)"
+
+#~ msgid "VPN connection to '%s'"
+#~ msgstr "VPN connection to '%s'"
+
+#~ msgid "VPN connecting to '%s'"
+#~ msgstr "VPN connecting to '%s'"
+
+#~ msgid "_Connect to Other Wireless Network..."
+#~ msgstr "_Connect to Other Wireless Network..."
+
+#~ msgid "Create _New Wireless Network..."
+#~ msgstr "Create _New Wireless Network..."
+
+#~ msgid "_VPN Connections"
+#~ msgstr "_VPN Connections"
+
+#~ msgid "_Configure VPN..."
+#~ msgstr "_Configure VPN..."
+
+#~ msgid "_Disconnect VPN..."
+#~ msgstr "_Disconnect VPN..."
+
+#~ msgid "_Dial Up Connections"
+#~ msgstr "_Dial Up Connections"
+
+#~ msgid "Connect to %s..."
+#~ msgstr "Connect to %s..."
+
+#~ msgid "Disconnect from %s..."
+#~ msgstr "Disconnect from %s..."
+
+#~ msgid "No network devices have been found"
+#~ msgstr "No network devices have been found"
+
+#~ msgid "NetworkManager is not running..."
+#~ msgstr "NetworkManager is not running..."
+
+#~ msgid "Enable _Networking"
+#~ msgstr "Enable _Networking"
+
+#~ msgid "Enable _Wireless"
+#~ msgstr "Enable _Wireless"
+
+#~ msgid "Connection _Information"
+#~ msgstr "Connection _Information"
+
+#~ msgid "_Help"
+#~ msgstr "_Help"
+
+#~ msgid "_About"
+#~ msgstr "_About"
+
+#~ msgid ""
+#~ "The NetworkManager applet could not find some required resources.  It "
+#~ "cannot continue.\n"
+#~ msgstr ""
+#~ "The NetworkManager Applet could not find some required resources.  It "
+#~ "cannot continue.\n"
+
+#~ msgid "Shared Key"
+#~ msgstr "Shared Key"
+
+#~ msgid "Automatic (Default)"
+#~ msgstr "Automatic (Default)"
+
+#~ msgid "AES-CCMP"
+#~ msgstr "AES-CCMP"
+
+#~ msgid "TKIP"
+#~ msgstr "TKIP"
+
+#~ msgid "Dynamic WEP"
+#~ msgstr "Dynamic WEP"
+
+#~ msgid "None"
+#~ msgstr "None"
+
+#~ msgid "WEP 64/128-bit ASCII"
+#~ msgstr "WEP 64/128-bit ASCII"
+
+#~ msgid "WEP 64/128-bit Hex"
+#~ msgstr "WEP 64/128-bit Hex"
+
+#~ msgid "WEP 128-bit Passphrase"
+#~ msgstr "WEP 128-bit Passphrase"
+
+#~ msgid "PEAP"
+#~ msgstr "PEAP"
+
+#~ msgid "TLS"
+#~ msgstr "TLS"
+
+#~ msgid "TTLS"
+#~ msgstr "TTLS"
+
+#~ msgid "WPA2 Enterprise"
+#~ msgstr "WPA2 Enterprise"
+
+#~ msgid "WPA Enterprise"
+#~ msgstr "WPA Enterprise"
+
+#~ msgid "WPA2 Personal"
+#~ msgstr "WPA2 Personal"
+
+#~ msgid "WPA Personal"
+#~ msgstr "WPA Personal"
+
+#~ msgid "Orientation"
+#~ msgstr "Orientation"
+
+#~ msgid "The orientation of the tray."
+#~ msgstr "The orientation of the tray."
+
+#~ msgid "Wired Network (%s)"
+#~ msgstr "Wired Network (%s)"
+
+#~ msgid "_Wired Network"
+#~ msgstr "_Wired Network"
+
+#~ msgid "Wireless Network (%s)"
+#~ msgid_plural "Wireless Networks (%s)"
+#~ msgstr[0] "Wireless Network (%s)"
+#~ msgstr[1] "Wireless Networks (%s)"
+
+#
+#~ msgid "Wireless Network"
+#~ msgid_plural "Wireless Networks"
+#~ msgstr[0] "Wireless Network"
+#~ msgstr[1] "Wireless Networks"
+
+#~ msgid " (invalid Unicode)"
+#~ msgstr " (invalid Unicode)"
+
+#~ msgid ""
+#~ "By default, the wireless network's name is set to your computer's name, %"
+#~ "s, with no encryption enabled"
+#~ msgstr ""
+#~ "By default, the wireless network's name is set to your computer's name, %"
+#~ "s, with no encryption enabled"
+
+#
+#~ msgid "Create new wireless network"
+#~ msgstr "Create new wireless network"
+
+#~ msgid ""
+#~ "Enter the name and security settings of the wireless network you wish to "
+#~ "create."
+#~ msgstr ""
+#~ "Enter the name and security settings of the wireless network you wish to "
+#~ "create."
+
+#~ msgid "Create New Wireless Network"
+#~ msgstr "Create New Wireless Network..."
+
+#
+#~ msgid "Existing wireless network"
+#~ msgstr "Existing wireless network"
+
+#~ msgid "Enter the name of the wireless network to which you wish to connect."
+#~ msgstr ""
+#~ "Enter the name of the wireless network to which you wish to connect."
+
+#~ msgid "Connect to Other Wireless Network"
+#~ msgstr "Connect to Other Wireless Network"
+
+#~ msgid "Error connecting to wireless network"
+#~ msgstr "Error connecting to wireless network"
+
+#~ msgid ""
+#~ "The requested wireless network requires security capabilities unsupported "
+#~ "by your hardware."
+#~ msgstr ""
+#~ "The requested wireless network requires security capabilities unsupported "
+#~ "by your hardware."
+
+#~ msgid "Cannot start VPN connection '%s'"
+#~ msgstr "Cannot start VPN connection '%s'"
+
+#~ msgid ""
+#~ "Could not find the authentication dialog for VPN connection type '%s'. "
+#~ "Contact your system administrator."
+#~ msgstr ""
+#~ "Could not find the authentication dialog for VPN connection type '%s'. "
+#~ "Contact your system administrator."
+
+#~ msgid ""
+#~ "There was a problem launching the authentication dialog for VPN "
+#~ "connection type '%s'. Contact your system administrator."
+#~ msgstr ""
+#~ "There was a problem launching the authentication dialog for VPN "
+#~ "connection type '%s'. Contact your system administrator."
+
+#~ msgid " "
+#~ msgstr " "
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Active Connection Information</span>"
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Active Connection Information</span>"
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Passphrase Required by Wireless "
+#~ "Network</span>\n"
+#~ "\n"
+#~ "A passphrase or encryption key is required to access the wireless network "
+#~ "'%s'."
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Passphrase Required by Wireless "
+#~ "Network</span>\n"
+#~ "\n"
+#~ "A passphrase or encryption key is required to access the wireless network "
+#~ "'%s'."
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Reduced Network Functionality</"
+#~ "span>\n"
+#~ "\n"
+#~ "%s  It will not be completely functional."
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Reduced Network Functionality</"
+#~ "span>\n"
+#~ "\n"
+#~ "%s  It will not be completely functional."
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Wireless Network Login "
+#~ "Confirmation</span>\n"
+#~ "\n"
+#~ "You have chosen to log in to the wireless network '%s'.  If you are sure "
+#~ "that this wireless network is secure, click the checkbox below and "
+#~ "NetworkManager will not require confirmation on subsequent log ins."
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Wireless Network Login "
+#~ "Confirmation</span>\n"
+#~ "\n"
+#~ "You have chosen to log in to the wireless network '%s'.  If you are sure "
+#~ "that this wireless network is secure, click the checkbox below and "
+#~ "NetworkManager will not require confirmation on subsequent log ins."
+
+#~ msgid "Anonymous Identity:"
+#~ msgstr "Anonymous Identity:"
+
+#~ msgid "Authentication:"
+#~ msgstr "Authentication:"
+
+#~ msgid "Broadcast Address:"
+#~ msgstr "Broadcast Address:"
+
+#~ msgid "CA Certificate File:"
+#~ msgstr "CA Certificate File:"
+
+#~ msgid "C_onnect"
+#~ msgstr "C_onnect"
+
+#~ msgid "Client Certificate File:"
+#~ msgstr "Client Certificate File:"
+
+#~ msgid "Connection Information"
+#~ msgstr "Connection Information"
+
+#~ msgid "Default Route:"
+#~ msgstr "Default Route:"
+
+#~ msgid "Destination Address:"
+#~ msgstr "Destination Address:"
+
+#~ msgid "Driver:"
+#~ msgstr "Driver:"
+
+#~ msgid "EAP Method:"
+#~ msgstr "EAP Method:"
+
+#~ msgid "Hardware Address:"
+#~ msgstr "Hardware Address:"
+
+#~ msgid "IP Address:"
+#~ msgstr "IP Address:"
+
+#~ msgid "Identity:"
+#~ msgstr "Identity:"
+
+#~ msgid "Interface:"
+#~ msgstr "Interface:"
+
+#~ msgid "Key Type:"
+#~ msgstr "Key Type:"
+
+#~ msgid "Key management:"
+#~ msgstr "Key management:"
+
+#~ msgid "Key:"
+#~ msgstr "Key:"
+
+#~ msgid ""
+#~ "None\n"
+#~ "WEP 128-bit Passphrase\n"
+#~ "WEP 64/128-bit Hex\n"
+#~ "WEP 64/128-bit ASCII\n"
+#~ msgstr ""
+#~ "None\n"
+#~ "WEP 128-bit Passphrase\n"
+#~ "WEP 64/128-bit Hex\n"
+#~ "WEP 64/128-bit ASCII\n"
+
+#~ msgid ""
+#~ "Open System\n"
+#~ "Shared Key"
+#~ msgstr ""
+#~ "Open System\n"
+#~ "Shared Key"
+
+#~ msgid "Other Wireless Network..."
+#~ msgstr "Other Wireless Networks..."
+
+#~ msgid "Passphrase:"
+#~ msgstr "Passphrase:"
+
+#~ msgid "Password:"
+#~ msgstr "Password:"
+
+#~ msgid "Primary DNS:"
+#~ msgstr "Primary DNS:"
+
+#~ msgid "Private Key File:"
+#~ msgstr "Private Key File:"
+
+#~ msgid "Private Key Password:"
+#~ msgstr "Private Key Password:"
+
+#~ msgid "Secondary DNS:"
+#~ msgstr "Secondary DNS:"
+
+#~ msgid "Select the CA Certificate File"
+#~ msgstr "Select the CA Certificate File"
+
+#~ msgid "Select the Client Certificate File"
+#~ msgstr "Select the Client Certificate File"
+
+#~ msgid "Select the Private Key File"
+#~ msgstr "Select the Private Key File"
+
+#~ msgid "Show key"
+#~ msgstr "Show key"
+
+#~ msgid "Show passphrase"
+#~ msgstr "Show passphrase"
+
+#~ msgid "Show password"
+#~ msgstr "Show password"
+
+#~ msgid "Show passwords"
+#~ msgstr "Show passwords"
+
+#~ msgid "Speed:"
+#~ msgstr "Speed:"
+
+#~ msgid "Subnet Mask:"
+#~ msgstr "Subnet Mask:"
+
+#~ msgid "Type:"
+#~ msgstr "Type:"
+
+#~ msgid "User Name:"
+#~ msgstr "User Name:"
+
+#~ msgid "Wireless Network Key Required"
+#~ msgstr "Wireless Network Key Required"
+
+#
+#~ msgid "Wireless _adapter:"
+#~ msgstr "Wireless _adapter:"
+
+#
+#~ msgid "_Always Trust this Wireless Network"
+#~ msgstr "_Always Trust this Wireless Network"
+
+#~ msgid "_Don't remind me again"
+#~ msgstr "_Don't remind me again"
+
+#~ msgid "_Fallback on this Network"
+#~ msgstr "_Fallback on this Network"
+
+#~ msgid "_Login to Network"
+#~ msgstr "_Login to Network"
+
+#~ msgid "_Network Name:"
+#~ msgstr "_Network Name:"
+
+#
+#~ msgid "_Wireless Security:"
+#~ msgstr "_Wireless Security:"
+
+#~ msgid "Cannot add VPN connection"
+#~ msgstr "Cannot add VPN connection"
+
+#~ msgid ""
+#~ "No suitable VPN software was found on your system. Contact your system "
+#~ "administrator."
+#~ msgstr ""
+#~ "No suitable VPN software was found on your system. Contact your system "
+#~ "administrator."
+
+#~ msgid "Cannot import VPN connection"
+#~ msgstr "Cannot import VPN connection"
+
+#~ msgid ""
+#~ "Cannot find suitable software for VPN connection type '%s' to import the "
+#~ "file '%s'. Contact your system administrator."
+#~ msgstr ""
+#~ "Cannot find suitable software for VPN connection type '%s' to import the "
+#~ "file '%s'. Contact your system administrator."
+
+#~ msgid "Error retrieving VPN connection '%s'"
+#~ msgstr "Error retrieving VPN connection '%s'"
+
+#~ msgid ""
+#~ "Could not find the UI files for VPN connection type '%s'. Contact your "
+#~ "system administrator."
+#~ msgstr ""
+#~ "Could not find the UI files for VPN connection type '%s'. Contact your "
+#~ "system administrator."
+
+#~ msgid "Delete VPN connection \"%s\"?"
+#~ msgstr "Delete VPN connection \"%s\"?"
+
+#~ msgid ""
+#~ "All information about the VPN connection \"%s\" will be lost and you may "
+#~ "need your system administrator to provide information to create a new "
+#~ "connection."
+#~ msgstr ""
+#~ "All information about the VPN connection \"%s\" will be lost and you may "
+#~ "need your system administrator to provide information to create a new "
+#~ "connection."
+
+#~ msgid "Unable to load"
+#~ msgstr "Unable to load"
+
+#~ msgid "Cannot find some needed resources (the glade file)!"
+#~ msgstr "Cannot find some needed resources (the glade file)!"
+
+#~ msgid "Create VPN Connection"
+#~ msgstr "Create VPN Connection"
+
+#~ msgid "Edit VPN Connection"
+#~ msgstr "Edit VPN Connection"
+
+#~ msgid "Add a new VPN connection"
+#~ msgstr "Add a new VPN connection"
+
+#~ msgid "Delete the selected VPN connection"
+#~ msgstr "Delete the selected VPN connection"
+
+#~ msgid "E_xport"
+#~ msgstr "E_xport"
+
+#~ msgid "Edit the selected VPN connection"
+#~ msgstr "Edit the selected VPN connection"
+
+#~ msgid "Export the VPN settings to a file"
+#~ msgstr "Export the VPN settings to a file"
+
+#~ msgid "Export the selected VPN connection to a file"
+#~ msgstr "Export the selected VPN connection to a file"
+
+#
+#~ msgid "Manage Virtual Private Network Connections"
+#~ msgstr "Manage Virtual Private Network Connections"
+
+#~ msgid "VPN Connections"
+#~ msgstr "VPN Connections"
+
+#~ msgid "40-bit WEP"
+#~ msgstr "40-bit WEP"
+
+#~ msgid "104-bit WEP"
+#~ msgstr "104-bit WEP"
+
+#~ msgid "WPA TKIP"
+#~ msgstr "WPA TKIP"
+
+#~ msgid "WPA CCMP"
+#~ msgstr "WPA CCMP"
+
+#~ msgid "WPA Automatic"
+#~ msgstr "WPA Automatic"
+
+#~ msgid "WPA2 TKIP"
+#~ msgstr "WPA2 TKIP"
+
+#~ msgid "WPA2 CCMP"
+#~ msgstr "WPA2 CCMP"
+
+#~ msgid "WPA2 Automatic"
+#~ msgstr "WPA2 Automatic"
+
+#~ msgid "none"
+#~ msgstr "none"
+
+#~ msgid "operation took too long"
+#~ msgstr "operation took too long"
+
+#~ msgid "received data from wrong type of sender"
+#~ msgstr "received data from wrong type of sender"
+
+#~ msgid "received data from unexpected sender"
+#~ msgstr "received data from unexpected sender"
+
+#~ msgid "too much data was sent over socket and some of it was lost"
+#~ msgstr "too much data was sent over socket and some of it was lost"
+
+#
+#~ msgid "You are now connected to the Ad-Hoc wireless network '%s'."
+#~ msgstr "You are now connected to the Ad-Hoc wireless network '%s'."
+
+#
+#~ msgid "You are now connected to the wireless network '%s'."
+#~ msgstr "You are now connected to the wireless network '%s'."
+
+#~ msgid "You are now connected to the wired network."
+#~ msgstr "You are now connected to the wired network."
+
+#~ msgid "Connection Established"
+#~ msgstr "Connection Established"
+
+#~ msgid "Disconnected"
+#~ msgstr "Disconnected"
+
+#~ msgid "The network connection has been disconnected."
+#~ msgstr "The network connection has been disconnected."
+
+#~ msgid "LEAP"
+#~ msgstr "LEAP"
+
+#~ msgid ""
+#~ "The requested wireless network '%s' does not appear to be in range.  A "
+#~ "different wireless network will be used if any are available."
+#~ msgstr ""
+#~ "The requested wireless network '%s' does not appear to be in range.  A "
+#~ "different wireless network will be used if any are available."
+
+#~ msgid "VPN Error"
+#~ msgstr "VPN Error"
+
+#~ msgid "The VPN service said: \"%s\""
+#~ msgstr "The VPN service said: \"%s\""
+
+#~ msgid "VPN connection '%s' said:"
+#~ msgstr "VPN connection '%s' said:"

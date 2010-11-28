@@ -1,0 +1,38 @@
+<!-- ##### SECTION Title ##### -->
+NMGsmDevice
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT NMGsmDevice ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION nm_gsm_device_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@path: 
+@Returns: 
+
+

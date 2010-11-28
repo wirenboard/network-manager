@@ -1,0 +1,160 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingBridge
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingBridgeError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_BRIDGE_ERROR_UNKNOWN: 
+@NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY: 
+
+<!-- ##### MACRO NM_TYPE_SETTING_BRIDGE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_bridge_error_quark ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_IFNAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_MEMBERS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingBridge ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingBridge:ifname ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingBridge:members ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nm_setting_bridge_get_type ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_get_ifname ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_get_num_members ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_get_member ##### -->
+<para>
+
+</para>
+
+@setting: 
+@i: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_add_member ##### -->
+<para>
+
+</para>
+
+@setting: 
+@uuid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_remove_member ##### -->
+<para>
+
+</para>
+
+@setting: 
+@i: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_clear_members ##### -->
+<para>
+
+</para>
+
+@setting: 
+
+

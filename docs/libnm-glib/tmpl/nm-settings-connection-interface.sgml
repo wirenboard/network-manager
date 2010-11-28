@@ -1,0 +1,138 @@
+<!-- ##### SECTION Title ##### -->
+nm-settings-connection-interface
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTINGS_CONNECTION_INTERFACE_GET_INTERFACE ##### -->
+<para>
+
+</para>
+
+@obj: 
+
+
+<!-- ##### MACRO NM_SETTINGS_CONNECTION_INTERFACE_UPDATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTINGS_CONNECTION_INTERFACE_REMOVED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingsConnectionInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@update: 
+@delete: 
+@get_secrets: 
+@emit_updated: 
+@updated: 
+@removed: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
+<!-- ##### USER_FUNCTION NMSettingsConnectionInterfaceUpdateFunc ##### -->
+<para>
+
+</para>
+
+@connection: 
+@error: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION NMSettingsConnectionInterfaceDeleteFunc ##### -->
+<para>
+
+</para>
+
+@connection: 
+@error: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION NMSettingsConnectionInterfaceGetSecretsFunc ##### -->
+<para>
+
+</para>
+
+@connection: 
+@secrets: 
+@error: 
+@user_data: 
+
+
+<!-- ##### FUNCTION nm_settings_connection_interface_update ##### -->
+<para>
+
+</para>
+
+@connection: 
+@callback: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_settings_connection_interface_delete ##### -->
+<para>
+
+</para>
+
+@connection: 
+@callback: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_settings_connection_interface_get_secrets ##### -->
+<para>
+
+</para>
+
+@connection: 
+@setting_name: 
+@hints: 
+@request_new: 
+@callback: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_settings_connection_interface_emit_updated ##### -->
+<para>
+
+</para>
+
+@connection: 
+
+

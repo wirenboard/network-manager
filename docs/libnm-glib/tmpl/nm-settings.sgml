@@ -1,0 +1,35 @@
+<!-- ##### SECTION Title ##### -->
+NMSettings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NMExportedConnection ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_exported_connection_new ##### -->
+<para>
+
+</para>
+
+@scope: 
+@Returns: 
+
+

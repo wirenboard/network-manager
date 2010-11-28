@@ -1,0 +1,38 @@
+<!-- ##### SECTION Title ##### -->
+NMRemoteSettingsSystem
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT NMRemoteSettingsSystem ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_remote_settings_system_new ##### -->
+<para>
+
+</para>
+
+@bus: 
+@Returns: 
+
+

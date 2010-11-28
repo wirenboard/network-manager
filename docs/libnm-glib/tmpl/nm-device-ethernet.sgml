@@ -1,0 +1,101 @@
+<!-- ##### SECTION Title ##### -->
+NMDeviceEthernet
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_DEVICE_ETHERNET_HW_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_ETHERNET_SPEED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_ETHERNET_CARRIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMDeviceEthernet ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceEthernet:carrier ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceEthernet:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceEthernet:speed ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nm_device_ethernet_new ##### -->
+<para>
+
+</para>
+
+@connection: 
+@path: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_ethernet_get_hw_address ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_ethernet_get_speed ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_ethernet_get_carrier ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+

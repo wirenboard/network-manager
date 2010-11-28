@@ -1,0 +1,35 @@
+<!-- ##### SECTION Title ##### -->
+nm-remote-connection-private
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### MACRO NM_REMOTE_CONNECTION_INIT_RESULT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMRemoteConnectionInitResult ##### -->
+<para>
+
+</para>
+
+@NM_REMOTE_CONNECTION_INIT_RESULT_UNKNOWN: 
+@NM_REMOTE_CONNECTION_INIT_RESULT_SUCCESS: 
+@NM_REMOTE_CONNECTION_INIT_RESULT_ERROR: 
+

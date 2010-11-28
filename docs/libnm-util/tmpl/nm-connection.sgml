@@ -1,0 +1,335 @@
+<!-- ##### SECTION Title ##### -->
+NMConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM NMConnectionScope ##### -->
+<para>
+
+</para>
+
+@NM_CONNECTION_SCOPE_UNKNOWN: 
+@NM_CONNECTION_SCOPE_SYSTEM: 
+@NM_CONNECTION_SCOPE_USER: 
+
+<!-- ##### ENUM NMConnectionError ##### -->
+<para>
+
+</para>
+
+@NM_CONNECTION_ERROR_UNKNOWN: 
+@NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND: 
+
+<!-- ##### MACRO NM_TYPE_CONNECTION_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CONNECTION_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_connection_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_CONNECTION_SCOPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CONNECTION_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NMConnection::secrets-updated ##### -->
+<para>
+
+</para>
+
+@nmconnection: the object which received the signal.
+@arg1: 
+
+<!-- ##### ARG NMConnection:path ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMConnection:scope ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMConnectionClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@secrets_updated: 
+
+<!-- ##### FUNCTION nm_connection_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_new_from_hash ##### -->
+<para>
+
+</para>
+
+@hash: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_duplicate ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_add_setting ##### -->
+<para>
+
+</para>
+
+@connection: 
+@setting: 
+
+
+<!-- ##### FUNCTION nm_connection_remove_setting ##### -->
+<para>
+
+</para>
+
+@connection: 
+@setting_type: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting ##### -->
+<para>
+
+</para>
+
+@connection: 
+@setting_type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_by_name ##### -->
+<para>
+
+</para>
+
+@connection: 
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_replace_settings ##### -->
+<para>
+
+</para>
+
+@connection: 
+@new_settings: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_compare ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_verify ##### -->
+<para>
+
+</para>
+
+@connection: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_need_secrets ##### -->
+<para>
+
+</para>
+
+@connection: 
+@hints: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_clear_secrets ##### -->
+<para>
+
+</para>
+
+@connection: 
+
+
+<!-- ##### FUNCTION nm_connection_update_secrets ##### -->
+<para>
+
+</para>
+
+@connection: 
+@setting_name: 
+@secrets: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_set_scope ##### -->
+<para>
+
+</para>
+
+@connection: 
+@scope: 
+
+
+<!-- ##### FUNCTION nm_connection_get_scope ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_set_path ##### -->
+<para>
+
+</para>
+
+@connection: 
+@path: 
+
+
+<!-- ##### FUNCTION nm_connection_get_path ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_for_each_setting_value ##### -->
+<para>
+
+</para>
+
+@connection: 
+@func: 
+@user_data: 
+
+
+<!-- ##### FUNCTION nm_connection_to_hash ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_dump ##### -->
+<para>
+
+</para>
+
+@connection: 
+
+
+<!-- ##### FUNCTION nm_connection_create_setting ##### -->
+<para>
+
+</para>
+
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_lookup_setting_type ##### -->
+<para>
+
+</para>
+
+@name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_lookup_setting_type_by_quark ##### -->
+<para>
+
+</para>
+
+@error_quark: 
+@Returns: 
+
+

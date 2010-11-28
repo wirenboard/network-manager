@@ -1,0 +1,236 @@
+==============================================
+NetworkManager-0.7.0
+Overview of changes since NetworkManager-0.6.6
+==============================================
+
+This is a new major stable release of NetworkManager.  Notable changes include:
+
+* Multiple active devices
+* Internet connection sharing
+* Support for many mobile broadband devices
+* Full static IP support
+* More reliable connections
+* Rich, flexible D-Bus API
+* Boot-time connections (no logins required)
+
+
+==============================================
+NetworkManager-0.6.2
+Overview of changes since NetworkManager-0.6.2
+==============================================
+
+0.6.2 is a bug fix release.  Note that NetworkManager no longer automatically
+runs dhcdbd if it is not running.  This means that it is now the system's
+responsibility to start dhcdbd prior to NetworkManager, e.g. in the
+distribution's NetworkManager initscript.
+
+* NetworkManager
+	* Many, many bug fixes (Everyone)
+	* Dynamic WEP Support (Robert Love)
+
+* nm-applet
+	* Many bug fixes (Everyone)
+
+
+==============================================
+NetworkManager-0.6.1
+Overview of changes since NetworkManager-0.6.0
+==============================================
+
+0.6.1 is a minor bug fix release.
+
+* NetworkManager
+	* Improved activation cancelation (Dan Williams)
+	* Workarounds for non-WPA drivers (Dan Williams)
+	* Fix WPA Enterprise crasher (Robert Love)
+
+* nm-applet
+	* Hide password entry fields by default (Robert Love)
+	* Add toggle to show/hide password field (Robert Love)
+	* Add 'Remove' option to right-click menu (Robert Love)
+
+==============================================
+NetworkManager-0.6.0
+Overview of changes since NetworkManager-0.5.1
+==============================================
+
+This releases ushers in WPA support, as well as many other features, bug fixes,
+and clean ups.
+
+We now require libnl, a netlink library (http://people.suug.ch/~tgr/libnl/) and
+wpa_supplicant, a WPA supplicant (http://hostap.epitest.fi/wpa_supplicant/).
+
+Two new VPN modules are part of the distribution: openvpn and pptp.
+
+* NetworkManager
+	* WPA and WPA2 support (Dan Williams)
+	* WPA Enterprise support (Robert Love)
+	* Rearchitecting, refactoring (Dan Williams)
+	* wpa_supplicant support (Dan Williams, Kay Sievers)
+	* NIS support (Robert Love)
+	* DHCP hostname support (Timo Hoenig)
+	* ISDN support, improve dial up support (Robert Love)
+	* Man pages (Robert Love)
+	* Survive DBUS and HAL restarts (Timo Hoening)
+	* Generate PID files (Dan Willians)
+	* Bug fixes and clean ups (the whole gang)
+
+* nm-applet
+	* New tray icon look and behavior (Robert Love, Dan Williams)
+	* New wireless security layer (Dan Williams)
+	* New "Enable Networking" toggle (Robert Love)
+	* Display speed of current connection (Robert Love)
+	* Bug fixes and clean ups (the whole gang)
+
+==============================================
+NetworkManager-0.5.1
+Overview of changes since NetworkManager-0.5.0
+==============================================
+
+* NetworkManager
+	* Don't drop the last scanned AP (Dan Williams)
+	* Broadcast state change when disconnected (Robert Love)
+	* The Slackware backend now builds (Nico)
+	* Don't install unsued config files (Dan Williams)
+	* Add a test for libnm_glib_unregister_callback (Christopher Aillon)
+	* Requires wireless-tools 28pre9 (Christopher Aillon)
+
+* nm-applet
+	* Use g_get_host_name () if we've got it (Christopher Aillon)
+	* Fix an unitialized variable (Robert Love)
+	* Fix sensitivity of VPN items (Robert Love)
+
+
+==============================================
+NetworkManager-0.5.0
+Overview of changes since NetworkManager-0.4.1
+==============================================
+
+* NetworkManager
+   * Initscripts are now generated
+   * Not waiting as long for scans to complete (Bill Moss).
+   * Fix several D-BUS object leaks (John Palmieri, Dan Williams,
+                                     Christopher Aillon)
+   * VPN now advertises state changes
+   * Make --without-named work (j@bootlab.org)
+   * Make --with-dhcdbd work correctly (j@bootlab.org)
+   * Fix timeout scan values (Bill Moss)
+   * Send notifications of device strength changing so clients do
+     not have to poll.
+   * Don't return a UDI device if it doesn't exist (Tomislav Vujec)
+   * Strip whitespace from the VPN banner (Bill Moss)
+   * VPN Manager rewritten to better support signals (Dan Williams)
+   * Don't allow clients to determine what states we should be
+     scanning in, add logic to scan when we need to.
+   * Blacklist some common ESSIDs such that multiple access points
+     with these ESSIDs aren't treated as the same network.
+   * Support for D-BUS enabled named (Dan Williams)
+   * Only '#' is a valid comment in resolv.conf (Robert Love)
+   * Don't try to set auth mode on the AP from the allowed list if
+     it's NULL (Bill Moss)
+   * Add internal scanning code so we don't have to use iwlib's
+     code any longer (Dan Williams)
+   * libnm now uses guints instead of gints for its callback IDs.
+   * libnm_glib_unregister_callback () now works.
+   * Fix our scanning interval (Robert Love)
+   * Updates to backends for Gentoo, SuSE, RedHat, Debian, and
+     Slackware (Robert Love, Peter Jones, Bill Nottingham,
+                j@bootlab.org)
+       - Dialup support in RedHat backend
+       - ISDN support in SUSE backend
+       - Other fixes
+
+* nm-applet
+   * The applet is no longer threaded (Dan Williams)
+   * Dialogs no longer block the UI when shown
+   * Passphrase dialog now treats Esc keypresses properly
+   * Create Network and Connect to Network dialogs now have
+     different window titles
+   * New icons for connecting to a network and to a VPN
+     (Diana Fong)
+   * Context menu items have been cleaned up
+   * Pressing enter in the passphrase entry should activate the
+     default action.
+   * Fix icon animation smoothness
+   * Display more data in the Connection Information dialog
+     (Robert Love) 
+
+
+============================================
+NetworkManager-0.3.1
+Overview of changes since NetworkManager-0.3
+============================================
+
+NetworkManager:
+
+ * Debian backend fixes, Thom May
+ * Build fixes, Thom May
+ * Better handling of encrypted devices, Dan Williams
+ * Better handling of user-selected access points, Dan Williams
+
+NetworkManagerNotification:
+
+ * Simplified D-Bus code, Dan Williams
+ * Better error handling and feedback, Dan Williams
+ * Greatly simplify the locking to UI smoother, Dan Williams
+
+============================================
+NetworkManager-0.3.0
+Overview of changes since NetworkManager-0.2
+============================================
+
+NetworkManager:
+
+ * Lots of fixes, Dan Williams
+ * Support static IP addresses, Dan Williams
+    - Get broadcast address from config files, Robert Paskowitz
+ * Support for non-ESSID-broadcasting base stations, Dan Williams
+ * Only accept and manager 802.3 and 802.11 devices, Dan Williams
+ * Don't blow away an active wired connection on startup, Dan Williams
+ * Improve strength calculation, Dan Williams
+ * Constantly scanning behavior, Dan Williams
+ * add .pc file, Colin Walters
+ * move to syslog, Dan Willemsen
+ * Improve MD5 hashing of 128-bit passphrases, Colin Walters
+ * DBUS API docs, Dan Williams
+ * Cleanups, Colin Walters
+ * Trusted networks, Dan Williams
+ * New Backends:
+   - Debian, Thom May and Mark Roach
+   - Slackware, Narayan Newton
+ * Fixes and functionality improvements in Gentoo backend, Robert Paskowitz
+
+Python:
+
+ * Example python code, Bryan Clark.
+ * python test framework, Bryan Clark
+
+NetworkManagerInfo:
+
+ * Trusted networks, Dan Williams
+ * Escape ESSIDs in gconf, Dan Williams
+ * Lifecycle improvements, John Palmieri
+
+Translations:
+
+ * New/Improved translations: da de sv en_CA nb no pa bs pt_BR wa gu es
+   - Thanks to:
+       Kjartan Maraas
+       Christian Rose
+       Adam Weinberger
+       Amanpreet Singh Alam
+       Akagic Amila
+       Raphael Higino
+       Pablo Saratxaga
+       Ankit Patel
+       Francisco Javier F. Serrador
+       Martin Willemoes Hansen
+       Hendrik Brandt
+
+NetworkManagerNotification:
+
+ * Complete rewrite, Jonathan Blandford and John Palmieri
+   - Now a Notification area
+   - Simpler menu
+   - Hook up the "other network" dialog to do something
+ * New icons, Diana Fong

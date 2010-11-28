@@ -1,0 +1,134 @@
+<!-- ##### SECTION Title ##### -->
+nm-types
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_TYPE_SSID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_ssid_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_TYPE_UINT_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_uint_array_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_TYPE_STRING_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_string_array_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_TYPE_OBJECT_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_object_array_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_TYPE_IP6_ADDRESS_OBJECT_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_ip6_address_object_array_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_TYPE_IP6_ADDRESS_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_ip6_address_array_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_TYPE_IP6_ROUTE_OBJECT_ARRAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_ip6_route_object_array_get_type ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+

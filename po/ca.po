@@ -1,0 +1,1209 @@
+# Catalan translation for NetworkManager
+# Copyright © 2005, 2006, The Free Software Foundation, Inc.
+# This file is distributed under the same license as the
+#   NetworkManager package.
+# Josep Puigdemont Casamajó <josep.puigdemont@gmail.com>, 2005, 2006.
+# David Planella <david.planella@gmail.com>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NetworkManager\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=NetworkManager&component=general\n"
+"POT-Creation-Date: 2009-01-10 17:02+0000\n"
+"PO-Revision-Date: 2009-01-21 17:51+0100\n"
+"Last-Translator: David Planella <david.planella@gmail.com>\n"
+"Language-Team: Catalan <tradgnome@softcatala.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: ../libnm-util/crypto.c:120
+#, c-format
+msgid "PEM key file had no end tag '%s'."
+msgstr "El fitxer de clau PEM no té l'etiqueta de final «%s»."
+
+#: ../libnm-util/crypto.c:130
+#, c-format
+msgid "Doesn't look like a PEM private key file."
+msgstr "Aquest no sembla que sigui un fitxer de clau privada PEM."
+
+#: ../libnm-util/crypto.c:138
+#, c-format
+msgid "Not enough memory to store PEM file data."
+msgstr "No hi ha prou memòria per a emmagatzemar les dades del fitxer PEM."
+
+#: ../libnm-util/crypto.c:154
+#, c-format
+msgid "Malformed PEM file: Proc-Type was not first tag."
+msgstr ""
+"El format del fitxer PEM és incorrecte: la primera etiqueta no és la de Proc-"
+"Type."
+
+#: ../libnm-util/crypto.c:162
+#, c-format
+msgid "Malformed PEM file: unknown Proc-Type tag '%s'."
+msgstr ""
+"El format del fitxer PEM és incorrecte: l'etiqueta de Proc-Type «%s» és "
+"desconeguda."
+
+#: ../libnm-util/crypto.c:172
+#, c-format
+msgid "Malformed PEM file: DEK-Info was not the second tag."
+msgstr ""
+"El format del fitxer PEM és incorrecte: la segona etiqueta no és la de DEK-"
+"Info."
+
+#: ../libnm-util/crypto.c:183
+#, c-format
+msgid "Malformed PEM file: no IV found in DEK-Info tag."
+msgstr ""
+"El format del fitxer PEM és incorrecte: no s'ha trobat cap vector "
+"d'inicialització a l'etiqueta de DEK-Info."
+
+#: ../libnm-util/crypto.c:190
+#, c-format
+msgid "Malformed PEM file: invalid format of IV in DEK-Info tag."
+msgstr ""
+"El format del fitxer PEM és incorrecte: el format del vector "
+"d'inicialització a l'etiqueta DEK-Info no és vàlid."
+
+#: ../libnm-util/crypto.c:203
+#, c-format
+msgid "Malformed PEM file: unknown private key cipher '%s'."
+msgstr ""
+"El format del fitxer PEM és incorrecte: el criptògraf «%s» de clau privada és "
+"desconegut."
+
+#: ../libnm-util/crypto.c:222
+#, c-format
+msgid "Could not decode private key."
+msgstr "No s'ha pogut descodificar la clau privada."
+
+#: ../libnm-util/crypto.c:267
+#, c-format
+msgid "PEM certificate '%s' had no end tag '%s'."
+msgstr "No s'ha trobat l'etiqueta de tancament «%s» al certificat PEM «%s»."
+
+#: ../libnm-util/crypto.c:277
+#, c-format
+msgid "Failed to decode certificate."
+msgstr "No s'ha pogut descodificar el certificat."
+
+#: ../libnm-util/crypto.c:286
+#, c-format
+msgid "Not enough memory to store certificate data."
+msgstr "No hi ha prou memòria per a emmagatzemar les dades del certificat."
+
+#: ../libnm-util/crypto.c:294
+#, c-format
+msgid "Not enough memory to store file data."
+msgstr "No hi ha prou memòria per a emmagatzemar les dades del fitxer."
+
+#: ../libnm-util/crypto.c:324
+#, c-format
+msgid "IV must be an even number of bytes in length."
+msgstr ""
+"La llargada del vector d'inicialització ha de ser un nombre parell de bytes."
+
+#: ../libnm-util/crypto.c:333
+#, c-format
+msgid "Not enough memory to store the IV."
+msgstr "No hi ha prou memòria per a emmagatzemar el vector d'inicialització."
+
+#: ../libnm-util/crypto.c:344
+#, c-format
+msgid "IV contains non-hexadecimal digits."
+msgstr "El vector d'inicialització conté dígits que no són hexadecimals."
+
+#: ../libnm-util/crypto.c:382 ../libnm-util/crypto_gnutls.c:143
+#: ../libnm-util/crypto_nss.c:169
+#, c-format
+msgid "Private key cipher '%s' was unknown."
+msgstr "Es desconeix el criptògraf «%s» de la clau privada."
+
+#: ../libnm-util/crypto.c:391
+#, c-format
+msgid "Not enough memory to decrypt private key."
+msgstr "No hi ha prou memòria per a desencriptar a la clau privada."
+
+#: ../libnm-util/crypto.c:511
+#, c-format
+msgid "Unable to determine private key type."
+msgstr "No s'ha pogut determinar el tipus de la clau privada."
+
+#: ../libnm-util/crypto.c:530
+#, c-format
+msgid "Not enough memory to store decrypted private key."
+msgstr ""
+"No hi ha prou memòria per a emmagatzemar la clau privada desencriptada."
+
+#: ../libnm-util/crypto_gnutls.c:46
+msgid "Failed to initialize the crypto engine."
+msgstr "No s'ha pogut inicialitzar el motor criptogràfic."
+
+#: ../libnm-util/crypto_gnutls.c:90
+#, c-format
+msgid "Failed to initialize the MD5 engine: %s / %s."
+msgstr "No s'ha pogut inicialitzar el motor MD5: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:152 ../libnm-util/crypto_nss.c:178
+#, c-format
+msgid "Not enough memory for decrypted key buffer."
+msgstr "No hi ha prou memòria per al búfer de la clau desencriptada."
+
+#: ../libnm-util/crypto_gnutls.c:160
+#, c-format
+msgid "Failed to initialize the decryption cipher context: %s / %s."
+msgstr ""
+"No s'ha pogut inicialitzar el context del criptògraf de desencriptació: %s / "
+"%s."
+
+#: ../libnm-util/crypto_gnutls.c:169
+#, c-format
+msgid "Failed to set symmetric key for decryption: %s / %s."
+msgstr ""
+"No s'ha pogut definir la clau simètrica per a la desencriptació: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:178
+#, c-format
+msgid "Failed to set IV for decryption: %s / %s."
+msgstr ""
+"No s'ha pogut definir el vector d'inicialització per a la desencriptació: %"
+"s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:187
+#, c-format
+msgid "Failed to decrypt the private key: %s / %s."
+msgstr "No s'ha pogut desencriptar la clau privada: %s / %s."
+
+#: ../libnm-util/crypto_gnutls.c:200
+#, c-format
+msgid "Failed to decrypt the private key."
+msgstr "No s'ha pogut desencriptar la clau privada."
+
+#: ../libnm-util/crypto_gnutls.c:235
+#, c-format
+msgid "Error initializing certificate data: %s"
+msgstr "S'ha produït un error en inicialitzar les dades del certificat: %s"
+
+#: ../libnm-util/crypto_gnutls.c:257
+#, c-format
+msgid "Couldn't decode certificate: %s"
+msgstr "No s'ha pogut descodificar el certificat: %s"
+
+#: ../libnm-util/crypto_gnutls.c:281
+#, c-format
+msgid "Couldn't initialize PKCS#12 decoder: %s"
+msgstr "No s'ha pogut inicialitzar el descodificador PKCS#12: %s"
+
+#: ../libnm-util/crypto_gnutls.c:294
+#, c-format
+msgid "Couldn't decode PKCS#12 file: %s"
+msgstr "No s'ha pogut descodificar el fitxer PKCS#12: %s"
+
+#: ../libnm-util/crypto_gnutls.c:306
+#, c-format
+msgid "Couldn't verify PKCS#12 file: %s"
+msgstr "No s'ha pogut verificar el fitxer PKCS#12: %s"
+
+#: ../libnm-util/crypto_nss.c:57
+#, c-format
+msgid "Failed to initialize the crypto engine: %d."
+msgstr "No s'ha pogut inicialitzar el motor criptogràfic: %d"
+
+#: ../libnm-util/crypto_nss.c:111
+#, c-format
+msgid "Failed to initialize the MD5 context: %d."
+msgstr "No s'ha pogut inicialitzar el context MD5: %d."
+
+#: ../libnm-util/crypto_nss.c:186
+#, c-format
+msgid "Failed to initialize the decryption cipher slot."
+msgstr "No s'ha pogut inicialitzar la ranura del criptògraf de desencriptació."
+
+#: ../libnm-util/crypto_nss.c:196
+#, c-format
+msgid "Failed to set symmetric key for decryption."
+msgstr "No s'ha pogut definir la clau simètrica per a la desencriptació."
+
+#: ../libnm-util/crypto_nss.c:206
+#, c-format
+msgid "Failed to set IV for decryption."
+msgstr ""
+"No s'ha pogut definir el vector d'inicialització per a la desencriptació."
+
+#: ../libnm-util/crypto_nss.c:214
+#, c-format
+msgid "Failed to initialize the decryption context."
+msgstr "No s'ha pogut inicialitzar el context de desxifratge."
+
+#: ../libnm-util/crypto_nss.c:227
+#, c-format
+msgid "Failed to decrypt the private key: %d."
+msgstr "No s'ha pogut desxifrar la clau privada: %d."
+
+#: ../libnm-util/crypto_nss.c:239
+#, c-format
+msgid "Failed to finalize decryption of the private key: %d."
+msgstr "No s'ha pogut finalitzar la desencriptació de la clau privada: %d."
+
+#: ../libnm-util/crypto_nss.c:284
+#, c-format
+msgid "Couldn't decode certificate: %d"
+msgstr "No s'ha pogut descodificar el certificat: %d"
+
+#: ../libnm-util/crypto_nss.c:319
+#, c-format
+msgid "Couldn't convert password to UCS2: %d"
+msgstr "No s'ha pogut convertir la contrasenya a UCS2: %d"
+
+#: ../libnm-util/crypto_nss.c:347
+#, c-format
+msgid "Couldn't initialize PKCS#12 decoder: %d"
+msgstr "No s'ha pogut inicialitzar el descodificador PKCS#12: %d"
+
+#: ../libnm-util/crypto_nss.c:356
+#, c-format
+msgid "Couldn't decode PKCS#12 file: %d"
+msgstr "No s'ha pogut descodificar el fitxer PKCS#12: %d"
+
+#: ../libnm-util/crypto_nss.c:365
+#, c-format
+msgid "Couldn't verify PKCS#12 file: %d"
+msgstr "No s'ha pogut verificar el fitxer PKCS#12: %d"
+
+#: ../src/nm-netlink-monitor.c:194 ../src/nm-netlink-monitor.c:454
+#, c-format
+msgid "error processing netlink message: %s"
+msgstr "s'ha produït un error en processar el missatge netlink: %s"
+
+#: ../src/nm-netlink-monitor.c:251
+#, c-format
+msgid "unable to allocate netlink handle for monitoring link status: %s"
+msgstr ""
+"no s'ha pogut assignar el gestor del netlink per a fer un seguiment de "
+"l'estat de l'enllaç: %s"
+
+#: ../src/nm-netlink-monitor.c:261
+#, c-format
+msgid "unable to connect to netlink for monitoring link status: %s"
+msgstr ""
+"no s'ha pogut connectar amb el netlink per a fer un seguiment de l'estat de "
+"l'enllaç: %s"
+
+#: ../src/nm-netlink-monitor.c:269
+#, c-format
+msgid "unable to join netlink group for monitoring link status: %s"
+msgstr ""
+"no s'ha pogut unir el grup del netlink per a fer un seguiment de l'estat de "
+"l'enllaç: %s"
+
+#: ../src/nm-netlink-monitor.c:277
+#, c-format
+msgid "unable to allocate netlink link cache for monitoring link status: %s"
+msgstr ""
+"no s'ha pogut assignar la memòria cau de l'enllaç del netlink per a fer un "
+"seguiment de l'estat de l'enllaç: %s"
+
+#: ../src/nm-netlink-monitor.c:418
+#, c-format
+msgid "error updating link cache: %s"
+msgstr "s'ha produït un error en actualitzar la memòria cau de l'enllaç: %s"
+
+#: ../src/nm-netlink-monitor.c:484
+msgid "error occurred while waiting for data on socket"
+msgstr "s'ha produït un error en esperar dades del sòcol"
+
+#: ../src/NetworkManager.c:293
+#, c-format
+msgid "Invalid option.  Please use --help to see a list of valid options.\n"
+msgstr ""
+"Opció no vàlida.  Utilitzeu --help per a veure la llista d'opcions vàlides.\n"
+
+#: ../src/dhcp-manager/nm-dhcp-dhclient.c:92
+msgid "# Created by NetworkManager\n"
+msgstr "# Creat pel NetworkManager\n"
+
+#: ../src/dhcp-manager/nm-dhcp-dhclient.c:98
+#, c-format
+msgid ""
+"# Merged from %s\n"
+"\n"
+msgstr ""
+"# Fusionat des de %s\n"
+"\n"
+
+#: ../src/named-manager/nm-named-manager.c:256
+msgid "NOTE: the libc resolver may not support more than 3 nameservers."
+msgstr ""
+"NOTA: pot ser que el sistema de resolució de la libc no funcioni amb més de "
+"3 servidors de noms."
+
+#: ../src/named-manager/nm-named-manager.c:258
+msgid "The nameservers listed below may not be recognized."
+msgstr "Pot ser que no es reconeguin els servidors de noms llistats més avall."
+
+#: ../system-settings/src/main.c:381
+#, c-format
+msgid "Auto %s"
+msgstr "%s automàtic"
+
+#~ msgid "Passphrase for wireless network %s"
+#~ msgstr "Contrasenya per a la xarxa sense fil %s"
+
+#~ msgid "Connection to the wireless network '%s' failed."
+#~ msgstr "Ha fallat la connexió a la xarxa sense fil «%s»."
+
+#~ msgid "Connection to the wired network failed."
+#~ msgstr "Ha fallat la connexió a la xarxa amb fil."
+
+#~ msgid "Error displaying connection information:"
+#~ msgstr "S'ha produït un error en mostrar la informació de la connexió:"
+
+#~ msgid "Could not find some required resources (the glade file)!"
+#~ msgstr ""
+#~ "Alguns dels recursos requerits no s'han pogut trobar (el fitxer glade)!"
+
+#~ msgid "No active connections!"
+#~ msgstr "No hi ha cap connexió activa."
+
+#~ msgid "%d Mb/s"
+#~ msgstr "%d Mb/s"
+
+#~ msgid "Wired Ethernet (%s)"
+#~ msgstr "Xarxa amb fil (%s)"
+
+#~ msgid "Wireless Ethernet (%s)"
+#~ msgstr "Xarxa sense fil (%s)"
+
+#~ msgid "Unknown"
+#~ msgstr "Desconegut"
+
+#~ msgid "NetworkManager Applet"
+#~ msgstr "Miniaplicació NetworkManager"
+
+#~ msgid ""
+#~ "Copyright © 2004-2006 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+#~ msgstr ""
+#~ "Copyright © 2004-2006 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+
+#~ msgid ""
+#~ "Notification area applet for managing your network devices and "
+#~ "connections."
+#~ msgstr ""
+#~ "Miniaplicació per a l'àrea de notificació per a gestionar els vostres "
+#~ "dispositius de xarxa i connexions."
+
+#~ msgid "translator-credits"
+#~ msgstr "Josep Puigdemont i Casamajó <josep.puigdemont@gmail.com>"
+
+#~ msgid ""
+#~ "Copyright © 2004-2005 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+#~ msgstr ""
+#~ "Copyright © 2004-2005 Red Hat, Inc.\n"
+#~ "Copyright © 2005-2006 Novell, Inc."
+
+#~ msgid "VPN Login Failure"
+#~ msgstr "S'ha produït un error en l'entrada VPN"
+
+#~ msgid "Could not start the VPN connection '%s' due to a login failure."
+#~ msgstr ""
+#~ "Atès que s'ha produït un error en l'entrada, no s'ha pogut iniciar la "
+#~ "connexió VPN «%s»."
+
+#~ msgid "VPN Start Failure"
+#~ msgstr "No s'ha pogut iniciar la VPN"
+
+#~ msgid ""
+#~ "Could not start the VPN connection '%s' due to a failure launching the "
+#~ "VPN program."
+#~ msgstr ""
+#~ "No s'ha pogut iniciar la connexió VPN «%s» perquè s'ha produït un error en "
+#~ "llançar la VPN."
+
+#~ msgid "VPN Connect Failure"
+#~ msgstr "S'ha produït un error en la connexió VPN"
+
+#~ msgid "Could not start the VPN connection '%s' due to a connection error."
+#~ msgstr ""
+#~ "No s'ha pogut iniciar la connexió VPN «%s» ja que s'ha produït un error de "
+#~ "connexió."
+
+#~ msgid "VPN Configuration Error"
+#~ msgstr "S'ha produït un error de configuració de la VPN"
+
+#~ msgid "The VPN connection '%s' was not correctly configured."
+#~ msgstr "La connexió VPN «%s» no està correctament configurada."
+
+#~ msgid ""
+#~ "Could not start the VPN connection '%s' because the VPN server did not "
+#~ "return an adequate network configuration."
+#~ msgstr ""
+#~ "No s'ha pogut iniciar la connexió VPN «%s» perquè el servidor VPN no ha "
+#~ "retornat cap configuració de xarxa adequada."
+
+#~ msgid "VPN Login Message"
+#~ msgstr "Missatge d'entrada de la VPN"
+
+#~ msgid ""
+#~ "The NetworkManager Applet could not find some required resources (the "
+#~ "glade file was not found)."
+#~ msgstr ""
+#~ "La miniaplicació NetworkManager no ha pogut trobar alguns dels recursos "
+#~ "requerits (no s'ha trobat el fitxer glade)."
+
+# FIXME
+#~ msgid "The network device \"%s (%s)\" does not support wireless scanning."
+#~ msgstr "El dispositiu de xarxa «%s (%s)» no permet l'escaneig sense fil."
+
+#~ msgid "The network device \"%s (%s)\" does not support link detection."
+#~ msgstr "El dispositiu de xarxa «%s (%s)» no permet la detecció de l'enllaç."
+
+#~ msgid "(unknown)"
+#~ msgstr "(desconegut)"
+
+#~ msgid "Preparing device %s for the wired network..."
+#~ msgstr "S'està preparant el dispositiu %s per a la xarxa amb fil..."
+
+#~ msgid "Preparing device %s for the wireless network '%s'..."
+#~ msgstr "S'està preparant el dispositiu %s per a la xarxa sense fil «%s»..."
+
+#~ msgid "Configuring device %s for the wired network..."
+#~ msgstr "S'està configurant el dispositiu %s per a la xarxa amb fil..."
+
+#~ msgid "Attempting to join the wireless network '%s'..."
+#~ msgstr "S'està intentant entrar a la xarxa sense fil «%s»..."
+
+#~ msgid "Waiting for Network Key for the wireless network '%s'..."
+#~ msgstr "S'està esperant per a la clau de xarxa de la xarxa sense fil «%s»..."
+
+#~ msgid "Requesting a network address from the wired network..."
+#~ msgstr "S'està sol·licitant una adreça de xarxa per a la xarxa amb fil..."
+
+#~ msgid "Requesting a network address from the wireless network '%s'..."
+#~ msgstr ""
+#~ "S'està sol·licitant una adreça de xarxa per a la xarxa sense fil «%s»..."
+
+#~ msgid "Finishing connection to the wired network..."
+#~ msgstr "S'està finalitzant la connexió a la xarxa amb fil..."
+
+#~ msgid "Finishing connection to the wireless network '%s'..."
+#~ msgstr "S'està finalizant la connexió a la xarxa sense fil «%s»..."
+
+#~ msgid "NetworkManager is not running"
+#~ msgstr "No s'està executant el NetworkManager"
+
+#~ msgid "Networking disabled"
+#~ msgstr "S'ha inhabilitat la xarxa"
+
+#~ msgid "No network connection"
+#~ msgstr "No hi ha cap connexió de xarxa"
+
+#~ msgid "Wired network connection"
+#~ msgstr "Connexió de xarxa amb fil"
+
+#~ msgid "Connected to an Ad-Hoc wireless network"
+#~ msgstr "Connectat a una xarxa Ad-Hoc sense fil"
+
+#~ msgid "Wireless network connection to '%s' (%d%%)"
+#~ msgstr "Connexió de xarxa sense fil a «%s» (%d%%)"
+
+#~ msgid "VPN connection to '%s'"
+#~ msgstr "Connexió VPN a «%s»"
+
+#~ msgid "VPN connecting to '%s'"
+#~ msgstr "S'està connectant amb VPN a «%s»"
+
+#~ msgid "_Connect to Other Wireless Network..."
+#~ msgstr "_Connecta a d'altres xarxes sense fil..."
+
+#~ msgid "Create _New Wireless Network..."
+#~ msgstr "Crea una xarxa sense fil _nova..."
+
+#~ msgid "_VPN Connections"
+#~ msgstr "Connexions _VPN"
+
+#~ msgid "_Configure VPN..."
+#~ msgstr "_Configura la VPN..."
+
+#~ msgid "_Disconnect VPN..."
+#~ msgstr "_Desconnecta la VPN..."
+
+#~ msgid "_Dial Up Connections"
+#~ msgstr "Connexions de _marcatge"
+
+#~ msgid "Connect to %s..."
+#~ msgstr "Connecta a %s..."
+
+#~ msgid "Disconnect from %s..."
+#~ msgstr "Desconnecta de %s..."
+
+#~ msgid "No network devices have been found"
+#~ msgstr "No s'ha trobat cap dispositiu de xarxa"
+
+#~ msgid "NetworkManager is not running..."
+#~ msgstr "No s'està executant el NetworkManager..."
+
+#~ msgid "Enable _Networking"
+#~ msgstr "Habilita la _xarxa"
+
+#~ msgid "Enable _Wireless"
+#~ msgstr "Habilita la xarxa _sense fil"
+
+#~ msgid "Connection _Information"
+#~ msgstr "_Informació de la connexió"
+
+#~ msgid "_Help"
+#~ msgstr "A_juda"
+
+#~ msgid "_About"
+#~ msgstr "_Quant a"
+
+#~ msgid ""
+#~ "The NetworkManager applet could not find some required resources.  It "
+#~ "cannot continue.\n"
+#~ msgstr ""
+#~ "La miniaplicació NetworkManager no ha pogut trobar alguns dels recursos "
+#~ "requerits. No pot continuar.\n"
+
+#~ msgid "Open System"
+#~ msgstr "Sistema obert"
+
+#~ msgid "Shared Key"
+#~ msgstr "Clau compartida"
+
+#~ msgid "Automatic (Default)"
+#~ msgstr "Automàtic (Predeterminat)"
+
+#~ msgid "AES-CCMP"
+#~ msgstr "AES-CCMP"
+
+#~ msgid "TKIP"
+#~ msgstr "TKIP"
+
+#~ msgid "Dynamic WEP"
+#~ msgstr "WEP dinàmic"
+
+#~ msgid "None"
+#~ msgstr "Cap"
+
+#~ msgid "WEP 64/128-bit ASCII"
+#~ msgstr "WEP 64/128-bit ASCII"
+
+#~ msgid "WEP 64/128-bit Hex"
+#~ msgstr "WEP 64/128-bit Hex"
+
+#~ msgid "WEP 128-bit Passphrase"
+#~ msgstr "WEP contrasenya de 128-bits"
+
+#~ msgid "PEAP"
+#~ msgstr "PEAP"
+
+#~ msgid "TLS"
+#~ msgstr "TLS"
+
+#~ msgid "TTLS"
+#~ msgstr "TTLS"
+
+#~ msgid "WPA2 Enterprise"
+#~ msgstr "WPA2 Enterprise"
+
+#~ msgid "WPA Enterprise"
+#~ msgstr "WPA Enterprise"
+
+#~ msgid "WPA2 Personal"
+#~ msgstr "WPA2 personal"
+
+#~ msgid "WPA Personal"
+#~ msgstr "WPA personal"
+
+#~ msgid "Orientation"
+#~ msgstr "Orientació"
+
+#~ msgid "The orientation of the tray."
+#~ msgstr "La orientació de l'àrea de notificació."
+
+#~ msgid "Wired Network (%s)"
+#~ msgstr "Xarxa amb fil (%s)"
+
+#~ msgid "_Wired Network"
+#~ msgstr "Xarxa amb _fil"
+
+#~ msgid "Wireless Network (%s)"
+#~ msgid_plural "Wireless Networks (%s)"
+#~ msgstr[0] "Xarxa sense fil (%s)"
+#~ msgstr[1] "Xarxes sense fil (%s)"
+
+#~ msgid "Wireless Network"
+#~ msgid_plural "Wireless Networks"
+#~ msgstr[0] "Xarxa sense fil"
+#~ msgstr[1] "Xarxes sense fil"
+
+#~ msgid " (invalid Unicode)"
+#~ msgstr " (Unicode invàlid)"
+
+#~ msgid ""
+#~ "By default, the wireless network's name is set to your computer's name, %"
+#~ "s, with no encryption enabled"
+#~ msgstr ""
+#~ "Per defecte, el nom de la xarxa sense fil s'estableix al nom de "
+#~ "l'ordinador, %s, sense habilitar el xifratge"
+
+#~ msgid "Create new wireless network"
+#~ msgstr "Crea una nova xarxa sense fil"
+
+#~ msgid ""
+#~ "Enter the name and security settings of the wireless network you wish to "
+#~ "create."
+#~ msgstr ""
+#~ "Entreu el nom els paràmetres de seguretat per a la xarxa sense fil que "
+#~ "vulgueu crear."
+
+#~ msgid "Create New Wireless Network"
+#~ msgstr "Crea una xarxa sense fil nova"
+
+#~ msgid "Existing wireless network"
+#~ msgstr "Xarxa sense fil existent"
+
+#~ msgid "Enter the name of the wireless network to which you wish to connect."
+#~ msgstr "Entreu el nom de la xarxa sense fil a la que vulgueu connectar-vos."
+
+#~ msgid "Connect to Other Wireless Network"
+#~ msgstr "Connecta a d'altres xarxes sense fil"
+
+#~ msgid "Error connecting to wireless network"
+#~ msgstr "S'ha produït un error en connectar a la xarxa sense fil..."
+
+#~ msgid ""
+#~ "The requested wireless network requires security capabilities unsupported "
+#~ "by your hardware."
+#~ msgstr ""
+#~ "La xarxa sense fil seleccionada requereix certes característiques de "
+#~ "seguretat que no estan implementades en el aquest maquinari."
+
+#~ msgid "Cannot start VPN connection '%s'"
+#~ msgstr "No s'ha pogut iniciar la connexió VPN «%s»"
+
+#~ msgid ""
+#~ "Could not find the authentication dialog for VPN connection type '%s'. "
+#~ "Contact your system administrator."
+#~ msgstr ""
+#~ "No s'ha pogut trobar el diàleg d'autenticació per al tipus de connexió "
+#~ "VPN «%s». Contacteu el vostre administrador de sistemes."
+
+#~ msgid ""
+#~ "There was a problem launching the authentication dialog for VPN "
+#~ "connection type '%s'. Contact your system administrator."
+#~ msgstr ""
+#~ "S'ha produït un error en llançar el diàleg d'autenticació per al tipus de "
+#~ "connexió VPN «%s». Contacteu el vostre administrador de sistemes."
+
+#~ msgid " "
+#~ msgstr " "
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Active Connection Information</span>"
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Informació de la connexió activa</"
+#~ "span>"
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Passphrase Required by Wireless "
+#~ "Network</span>\n"
+#~ "\n"
+#~ "A passphrase or encryption key is required to access the wireless network "
+#~ "'%s'."
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Contrasenya necessària per a la "
+#~ "xarxa sense fil</span>\n"
+#~ "\n"
+#~ "Es requereix una contrasenya o clau de xifratge per a la xarxa sense fil «%"
+#~ "s»."
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Reduced Network Functionality</"
+#~ "span>\n"
+#~ "\n"
+#~ "%s  It will not be completely functional."
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Funcionalitat de xarxa reduïda</"
+#~ "span>\n"
+#~ "\n"
+#~ "%s  No serà del tot funcional."
+
+#~ msgid ""
+#~ "<span weight=\"bold\" size=\"larger\">Wireless Network Login "
+#~ "Confirmation</span>\n"
+#~ "\n"
+#~ "You have chosen to log in to the wireless network '%s'.  If you are sure "
+#~ "that this wireless network is secure, click the checkbox below and "
+#~ "NetworkManager will not require confirmation on subsequent log ins."
+#~ msgstr ""
+#~ "<span weight=\"bold\" size=\"larger\">Confirmació de l'entrada a la xarxa "
+#~ "sense fil</span>\n"
+#~ "\n"
+#~ "Heu escollit entrar a la xarxa sense fil «%s». Si esteu segur que la xarxa "
+#~ "sense fil és segura, feu clic al quadre de comprovació de sota i el "
+#~ "NetworkManager no us tornarà a demanarà cap més confirmació per entrar a "
+#~ "aquesta xarxa en el futur."
+
+#~ msgid "Anonymous Identity:"
+#~ msgstr "Identitat anònima:"
+
+#~ msgid "Authentication:"
+#~ msgstr "Autenticació:"
+
+#~ msgid "Broadcast Address:"
+#~ msgstr "Adreça de multidifusió:"
+
+#~ msgid "CA Certificate File:"
+#~ msgstr "Fitxer del certificat CA:"
+
+#~ msgid "C_onnect"
+#~ msgstr "C_onnecta"
+
+#~ msgid "Client Certificate File:"
+#~ msgstr "Fitxer del certificat del client:"
+
+#~ msgid "Connection Information"
+#~ msgstr "Informació de la connexió"
+
+#~ msgid "Default Route:"
+#~ msgstr "Ruta predeterminada:"
+
+#~ msgid "Destination Address:"
+#~ msgstr "Adreça de destí:"
+
+#~ msgid "Driver:"
+#~ msgstr "Connector:"
+
+#~ msgid "EAP Method:"
+#~ msgstr "Mètode EAP:"
+
+#~ msgid "Hardware Address:"
+#~ msgstr "Adreça del maquinari:"
+
+#~ msgid "IP Address:"
+#~ msgstr "Adreça IP:"
+
+#~ msgid "Identity:"
+#~ msgstr "Identitat:"
+
+#~ msgid "Interface:"
+#~ msgstr "Interfície:"
+
+#~ msgid "Key Type:"
+#~ msgstr "Tipus de clau:"
+
+#~ msgid "Key management:"
+#~ msgstr "Gestió de claus:"
+
+#~ msgid "Key:"
+#~ msgstr "Clau:"
+
+#~ msgid ""
+#~ "None\n"
+#~ "WEP 128-bit Passphrase\n"
+#~ "WEP 64/128-bit Hex\n"
+#~ "WEP 64/128-bit ASCII\n"
+#~ msgstr ""
+#~ "Cap\n"
+#~ "WEP contrasenya de 128 bits\n"
+#~ "WEP 64/128-bit Hex\n"
+#~ "WEP 64/128-bit ASCII\n"
+
+#~ msgid ""
+#~ "Open System\n"
+#~ "Shared Key"
+#~ msgstr ""
+#~ "Sistema obert\n"
+#~ "Clau compartida"
+
+#~ msgid "Other Wireless Network..."
+#~ msgstr "Altres xarxes sense fil..."
+
+#~ msgid "Passphrase:"
+#~ msgstr "Contrasenya:"
+
+#~ msgid "Password:"
+#~ msgstr "Contrasenya:"
+
+#~ msgid "Primary DNS:"
+#~ msgstr "DNS primari:"
+
+#~ msgid "Private Key File:"
+#~ msgstr "Fitxer de la clau privada:"
+
+#~ msgid "Private Key Password:"
+#~ msgstr "Contrasenya de la clau privada:"
+
+#~ msgid "Secondary DNS:"
+#~ msgstr "DNS secundari:"
+
+#~ msgid "Select the CA Certificate File"
+#~ msgstr "Seleccioneu el fitxer del certificat de la CA"
+
+#~ msgid "Select the Client Certificate File"
+#~ msgstr "Seleccioneu el fitxer del certificat del client"
+
+#~ msgid "Select the Private Key File"
+#~ msgstr "Seleccioneu el fitxer de la clau privada"
+
+#~ msgid "Show key"
+#~ msgstr "Mostra la clau"
+
+#~ msgid "Show passphrase"
+#~ msgstr "Mostra la contrasenya:"
+
+#~ msgid "Show password"
+#~ msgstr "Mostra la contrasenya:"
+
+#~ msgid "Show passwords"
+#~ msgstr "Mostra les contrasenyes"
+
+#~ msgid "Speed:"
+#~ msgstr "Velocitat:"
+
+#~ msgid "Subnet Mask:"
+#~ msgstr "Màscara de subxarxa:"
+
+#~ msgid "Type:"
+#~ msgstr "Tipus:"
+
+#~ msgid "User Name:"
+#~ msgstr "Nom d'usuari:"
+
+#~ msgid "Wireless Network Key Required"
+#~ msgstr "Es requereix una clau per a la xarxa sense fil"
+
+#~ msgid "Wireless _adapter:"
+#~ msgstr "_Adaptador sense fil:"
+
+#~ msgid "_Always Trust this Wireless Network"
+#~ msgstr "Confia sempre en _aquesta xarxa sense fil"
+
+#~ msgid "_Don't remind me again"
+#~ msgstr "_No m'ho tornis a recordar"
+
+#~ msgid "_Fallback on this Network"
+#~ msgstr "Utilitza aquesta _xarxa com a alternativa"
+
+#~ msgid "_Login to Network"
+#~ msgstr "_Entra a la xarxa"
+
+#~ msgid "_Network Name:"
+#~ msgstr "Nom de _xarxa:"
+
+#~ msgid "_Wireless Security:"
+#~ msgstr "Seguretat de la _xarxa sense fil:"
+
+#~ msgid "Cannot add VPN connection"
+#~ msgstr "No s'ha pogut afegir la connexions VPN"
+
+#~ msgid ""
+#~ "No suitable VPN software was found on your system. Contact your system "
+#~ "administrator."
+#~ msgstr ""
+#~ "No s'ha pogut trobar el programari VPN adequat en aquest ordinador. "
+#~ "Contacteu el vostre administrador."
+
+#~ msgid "Cannot import VPN connection"
+#~ msgstr "No s'ha pogut importar la connexió VPN"
+
+#~ msgid ""
+#~ "Cannot find suitable software for VPN connection type '%s' to import the "
+#~ "file '%s'. Contact your system administrator."
+#~ msgstr ""
+#~ "No s'ha pogut trobar el programari adequat per al tipus de connexió VPN «%"
+#~ "s» per a importar el fitxer «%s». Contacteu el vostre administrador de "
+#~ "sistemes."
+
+#~ msgid "Error retrieving VPN connection '%s'"
+#~ msgstr "S'ha produït un error en recuperar la connexió VPN «%s»"
+
+#~ msgid ""
+#~ "Could not find the UI files for VPN connection type '%s'. Contact your "
+#~ "system administrator."
+#~ msgstr ""
+#~ "No s'han pogut trobar els fitxers d'UI per al tipus de connexió VPN «%s». "
+#~ "Contacteu el vostre administrador de sistemes."
+
+#~ msgid "Delete VPN connection \"%s\"?"
+#~ msgstr "Voleu suprimir la connexió VPN «%s»?"
+
+#~ msgid ""
+#~ "All information about the VPN connection \"%s\" will be lost and you may "
+#~ "need your system administrator to provide information to create a new "
+#~ "connection."
+#~ msgstr ""
+#~ "Tota la informació sobre la connexió VPN «%s» es perdrà, i segurament "
+#~ "necessitareu que el vostre administrador us proporcioni informació per a "
+#~ "crear una connexió nova."
+
+#~ msgid "Unable to load"
+#~ msgstr "No es pot carregar"
+
+#~ msgid "Cannot find some needed resources (the glade file)!"
+#~ msgstr ""
+#~ "No s'han pogut trobar alguns dels recursos requerits el fitxer glade)."
+
+#~ msgid "Create VPN Connection"
+#~ msgstr "Crea una connexió VPN"
+
+#~ msgid "Edit VPN Connection"
+#~ msgstr "Edita la connexió VPN"
+
+#~ msgid "Add a new VPN connection"
+#~ msgstr "Afegeix una connexions VPN nova"
+
+#~ msgid "Delete the selected VPN connection"
+#~ msgstr "Suprimeix la connexió VPN seleccionada"
+
+#~ msgid "E_xport"
+#~ msgstr "E_xporta"
+
+#~ msgid "Edit the selected VPN connection"
+#~ msgstr "Edita la connexió VPN seleccionada"
+
+#~ msgid "Export the VPN settings to a file"
+#~ msgstr "Exporta els paràmetres VPN al fitxer"
+
+#~ msgid "Export the selected VPN connection to a file"
+#~ msgstr "Exporta la connexió VPN a un fitxer"
+
+#~ msgid "Manage Virtual Private Network Connections"
+#~ msgstr "Gestioneu connexions a xarxes privades virtuals"
+
+#~ msgid "VPN Connections"
+#~ msgstr "Connexions VPN"
+
+#~ msgid "40-bit WEP"
+#~ msgstr "40-bit WEP"
+
+#~ msgid "104-bit WEP"
+#~ msgstr "104-bit WEP"
+
+#~ msgid "WPA TKIP"
+#~ msgstr "WPA TKIP"
+
+#~ msgid "WPA CCMP"
+#~ msgstr "WPA CCMP"
+
+#~ msgid "WPA Automatic"
+#~ msgstr "WPA automàtic"
+
+#~ msgid "WPA2 TKIP"
+#~ msgstr "WPA2 TKIP"
+
+#~ msgid "WPA2 CCMP"
+#~ msgstr "WPA2 CCMP"
+
+#~ msgid "WPA2 Automatic"
+#~ msgstr "WPA2 automàtic"
+
+#~ msgid "none"
+#~ msgstr "cap"
+
+#~ msgid "operation took too long"
+#~ msgstr "l'operació ha trigat massa"
+
+#~ msgid "received data from wrong type of sender"
+#~ msgstr "s'han rebut dades d'un tipus de remitent equivocat"
+
+#~ msgid "received data from unexpected sender"
+#~ msgstr "s'han rebut dades d'un remitent que no s'esperava"
+
+#~ msgid "too much data was sent over socket and some of it was lost"
+#~ msgstr ""
+#~ "s'han enviat massa dades a través del sòcol, i se n'han perdut algunes"
+
+#~ msgid "You are now connected to the Ad-Hoc wireless network '%s'."
+#~ msgstr "Ara esteu connectat a la xarxa Ad-Hoc sense fil «%s»."
+
+#~ msgid "You are now connected to the wireless network '%s'."
+#~ msgstr "Ara esteu connectat a la xarxa sense fil «%s»."
+
+#~ msgid "You are now connected to the wired network."
+#~ msgstr "Ara esteu connectat a la xarxa amb fil."
+
+#~ msgid "Connection Established"
+#~ msgstr "S'ha establert la connexió"
+
+#~ msgid "Disconnected"
+#~ msgstr "Desconnectat"
+
+#~ msgid "The network connection has been disconnected."
+#~ msgstr "S'ha desconnectat la connexió de xarxa."
+
+#~ msgid "LEAP"
+#~ msgstr "LEAP"
+
+#~ msgid "Choose which type of VPN connection you wish to create."
+#~ msgstr "Escolliu el tipus de connexió VPN que vulgueu crear."
+
+#~ msgid "Connect to:"
+#~ msgstr "Connecta a:"
+
+#~ msgid "Create VPN Connection - 1 of 2"
+#~ msgstr "Creació d'una connexió VPN - 1 de 2"
+
+#~ msgid "Create VPN Connection - 2 of 2"
+#~ msgstr "Creació d'una connexió VPN - 2 de 2"
+
+#~ msgid "Finish Creating VPN Connection"
+#~ msgstr "Finalitza la creació de la connexió VPN"
+
+#~ msgid ""
+#~ "This assistant will guide you through the creation of a connection to a "
+#~ "Virtual Private Network (VPN).\n"
+#~ "\n"
+#~ "It will require some information, such as IP addresses and secrets.  "
+#~ "Please see your system administrator to obtain this information."
+#~ msgstr ""
+#~ "Aquest auxiliar us guiarà a través de la creació d'una nova connexió VPN "
+#~ "a una xarxa privada (VPN).\n"
+#~ "\n"
+#~ "Cal certa informació, com ara l'adreça IP i secrets, que us hauria de "
+#~ "proporcionar el vostre administrador."
+
+#~ msgid "VPN Error"
+#~ msgstr "Error VPN"
+
+#~ msgid "The VPN service said: \"%s\""
+#~ msgstr "El servei VPN digué: «%s»"
+
+#~ msgid "VPN connection '%s' said:"
+#~ msgstr "La connexió VPN «%s» digué:"
+
+#~ msgid "leap_subwindow"
+#~ msgstr "leap_subwindow"
+
+#~ msgid "wep_key_subwindow"
+#~ msgstr "wep_key_subwindow"
+
+#~ msgid "wep_passphrase_subwindow"
+#~ msgstr "wep_passphrase_subwindow"
+
+#~ msgid "wpa_psk_subwindow"
+#~ msgstr "wpa_psk_subwindow"
+
+#~ msgid ""
+#~ "The requested wireless network '%s' does not appear to be in range.  A "
+#~ "different wireless network will be used if any are available."
+#~ msgstr ""
+#~ "La xarxa sense fil sol·licitada «%s», sembla que no està dins del rang. "
+#~ "Se'n farà servir una altra si n'hi ha cap de disponible."
+
+#~ msgid "Failed to get information about the interface!"
+#~ msgstr "No s'ha pogut obtenir informació quant a la interfície."
+
+#~ msgid "_Stop All Wireless Devices"
+#~ msgstr "Atura tots els dispositius _sense fil"
+
+#~ msgid "_Start All Wireless Devices"
+#~ msgstr "Inicia tots els dispositius _sense fil"
+
+#~ msgid "_Wireless Network Discovery"
+#~ msgstr "Descobriment de _xarxes sense fil"
+
+#~ msgid "Always Search"
+#~ msgstr "Cerca sempre"
+
+#~ msgid "Search Only When Disconnected"
+#~ msgstr "Cerca només en estar desconnectat"
+
+#~ msgid "Never Search"
+#~ msgstr "No cerquis mai"
+
+#~ msgid "Stop All Wireless Devices"
+#~ msgstr "Atura tots els dispositius sense fil"
+
+#~ msgid "_Passphrase:"
+#~ msgstr "_Contrasenya:"
+
+#~ msgid "_ASCII Key:"
+#~ msgstr "Klau _ASCII:"
+
+#~ msgid "_Hex Key:"
+#~ msgstr "Clau _hexadecimal:"
+
+#~ msgid ", with no encryption enabled."
+#~ msgstr ", amb el xifratge habilitat."
+
+#~ msgid "ASCII Key:"
+#~ msgstr "Clau ASCII:"
+
+#~ msgid ""
+#~ "128-bit Passphrase (WEP)\n"
+#~ "ASCII Key (WEP)\n"
+#~ "Hex Key (WEP)"
+#~ msgstr ""
+#~ "Contrasenya de 128-bit (WEP)\n"
+#~ "Clau ASCII (WEP)\n"
+#~ "Clau Hexadecimal (WEP)"
+
+#~ msgid ""
+#~ "128-bit passphrase (WEP)\n"
+#~ "ASCII key (WEP)\n"
+#~ "Hex key (WEP)"
+#~ msgstr ""
+#~ "Contrasenya de 128-bit (WEP)\n"
+#~ "Clau ASCII (WEP)\n"
+#~ "Clau hexadecimal (WEP)"
+
+#~ msgid "Connect with _encryption enabled"
+#~ msgstr "Connecta amb el _xifratge habilitat"
+
+#~ msgid "Wireless _network:"
+#~ msgstr "_Xarxa sense fil:"
+
+#~ msgid ""
+#~ "Dependent on the private network you want to connect to, you need to "
+#~ "select what type of connection you want to create."
+#~ msgstr ""
+#~ "Depenent del tipus de xarxa privada a la que us vulgueu connectar, heu "
+#~ "d'escollir el tipus de connexió que vulgueu crear."
+
+#~ msgid "Other Wireless Networks..."
+#~ msgstr "Altres xarxes sense fil..."
+
+# FIXME
+#~ msgid "Pause Wireless Scanning"
+#~ msgstr "Atura l'escaneig sense fil"
+
+# FIXME
+#~ msgid "Resume Wireless Scanning"
+#~ msgstr "Reprèn l'escaneig sense fil"
+
+#~ msgid "progress bar label|%d %%"
+#~ msgstr "Etiqueta de la barra de progrés|%d %%"
+
+# FIXME?
+#~ msgid "You must log in to access the Virtual Private Network '%s'."
+#~ msgstr "Heu d'autenticar-vos per accedir a la xarxa privada virtual «%s»."
+
+#~ msgid "_OK"
+#~ msgstr "_D'acord"
+
+#~ msgid "%s"
+#~ msgstr "%s"
+
+#~ msgid "<span weight=\"bold\">Wireless Networks:</span>"
+#~ msgstr "<span weight=\"bold\">Xarxes sense fil:</span>"
+
+#~ msgid "Modify Wireless Networks"
+#~ msgstr "Modifica xarxes sense fil"
+
+#~ msgid "*"
+#~ msgstr "*"
+
+#~ msgid "You must log in to access the private network %s"
+#~ msgstr "Heu d'autenticar-vos per accedir a la xarxa privada %s"
+
+#~ msgid "_About..."
+#~ msgstr "_Quant a..."

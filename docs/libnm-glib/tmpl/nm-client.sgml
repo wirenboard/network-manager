@@ -1,0 +1,284 @@
+<!-- ##### SECTION Title ##### -->
+NMClient
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_CLIENT_STATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CLIENT_MANAGER_RUNNING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CLIENT_WIRELESS_ENABLED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CLIENT_WIRELESS_HARDWARE_ENABLED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CLIENT_WWAN_ENABLED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CLIENT_WWAN_HARDWARE_ENABLED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CLIENT_ACTIVE_CONNECTIONS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMClient ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NMClient::device-added ##### -->
+<para>
+
+</para>
+
+@nmclient: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL NMClient::device-removed ##### -->
+<para>
+
+</para>
+
+@nmclient: the object which received the signal.
+@arg1: 
+
+<!-- ##### ARG NMClient:active-connections ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:manager-running ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:networking-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:state ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wireless-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wireless-hardware-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wwan-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wwan-hardware-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nm_client_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_get_devices ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_get_device_by_path ##### -->
+<para>
+
+</para>
+
+@client: 
+@object_path: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION NMClientActivateDeviceFn ##### -->
+<para>
+
+</para>
+
+@user_data: 
+@object_path: 
+@error: 
+
+
+<!-- ##### FUNCTION nm_client_activate_connection ##### -->
+<para>
+
+</para>
+
+@client: 
+@service_name: 
+@connection_path: 
+@device: 
+@specific_object: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION nm_client_deactivate_connection ##### -->
+<para>
+
+</para>
+
+@client: 
+@active: 
+
+
+<!-- ##### FUNCTION nm_client_wireless_get_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_wireless_set_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@enabled: 
+
+
+<!-- ##### FUNCTION nm_client_wireless_hardware_get_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_wwan_get_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_wwan_set_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@enabled: 
+
+
+<!-- ##### FUNCTION nm_client_wwan_hardware_get_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_get_state ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_get_manager_running ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_get_active_connections ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_sleep ##### -->
+<para>
+
+</para>
+
+@client: 
+@sleep: 
+
+
