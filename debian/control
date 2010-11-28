@@ -1,0 +1,208 @@
+Source: network-manager
+Section: net
+Priority: optional
+Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
+Uploaders: Michael Biebl <biebl@debian.org>
+Build-Depends:
+ debhelper (>= 7),
+ cdbs,
+ autotools-dev,
+ pkg-config,
+ intltool,
+ libdbus-glib-1-dev (>= 0.75),
+ libdbus-1-dev (>= 1.1),
+ libiw-dev(>= 27+28pre9),
+ libglib2.0-dev (>= 2.18),
+ libnl-dev (>= 1.0~pre8),
+ ppp-dev (>= 2.4.5),
+ libpolkit-gobject-1-dev,
+ libgnutls-dev,
+ uuid-dev,
+ libudev-dev,
+ libgudev-1.0-dev
+Standards-Version: 3.9.1
+Vcs-Svn: svn://svn.debian.org/pkg-utopia/packages/unstable/networkmanager/
+Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager/
+Homepage: http://www.gnome.org/projects/NetworkManager/
+
+Package: network-manager
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ lsb-base (>= 3.2-14),
+ wpasupplicant (>= 0.6.2-1),
+ dbus (>= 1.1.2),
+ udev,
+ adduser,
+ isc-dhcp-client (>= 4.1.1-P1-4)
+Recommends:
+ policykit-1,
+ ppp (>= 2.4.5),
+ dnsmasq-base,
+ iptables,
+ modemmanager
+Suggests: avahi-autoipd
+Conflicts:
+ network-manager-gnome (<< 0.6.5-1),
+ network-manager-pptp (<< 0.7~~)
+Replaces:
+ network-manager-gnome (<< 0.6.5-1),
+ network-manager-pptp (<< 0.7~~)
+Breaks:
+ network-manager-gnome (<< 0.7~~),
+ network-manager-kde (<< 1:0.9~~),
+ network-manager-openvpn (<< 0.7~~),
+ network-manager-vpnc (<< 0.7~~),
+ network-manager-pptp (<< 0.7~~),
+ ppp (<< 2.4.5)
+Description: network management framework daemon
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package provides the userspace daemons.
+ .
+ Optional dependencies:
+  * policykit-1: Required for reading and writing system connections.
+  * ppp: Required for establishing dial-up connections (e.g. via GSM).
+  * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
+    connection sharing.
+  * avahi-autoipd: Used for IPv4LL, a protocol for automatic Link-Local IP
+    address configuration.
+
+Package: network-manager-dev
+Architecture: any
+Section: devel
+Depends: ${misc:Depends}
+Description: network management framework (development files)
+ this package provides header files that are needed to
+ compile VPN Plugins for NetworkManager.
+
+Package: libnm-glib2
+Section: libs
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: network management framework (GLib shared library)
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package provides the shared library that applications can use to query
+ connection status via NetworkManager.
+
+Package: libnm-glib-dev
+Section: libdevel
+Architecture: any
+Depends:
+ libnm-glib2 (= ${binary:Version}),
+ ${misc:Depends},
+ libnm-util-dev,
+ network-manager-dev,
+ libglib2.0-dev,
+ libdbus-glib-1-dev
+Description: network management framework (GLib interface)
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package provides the interface that applications can use to query
+ connection status via NetworkManager.
+
+Package: libnm-glib-vpn1
+Section: libs
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: network management framework (GLib VPN shared library)
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package provides the shared library that applications can use for
+ creating VPN connections via NetworkManager.
+
+Package: libnm-glib-vpn-dev
+Section: libdevel
+Architecture: any
+Depends:
+ libnm-glib-vpn1 (= ${binary:Version}),
+ ${misc:Depends},
+ libnm-glib-dev
+Description: network management framework (GLib interface)
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package provides the shared library that applications can use for
+ creating VPN connections via NetworkManager.
+
+Package: libnm-util1
+Section: libs
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: network management framework (shared library)
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package contains a convenience library to ease the access to
+ NetworkManager.
+
+Package: libnm-util-dev
+Section: libdevel
+Architecture: any
+Depends:
+ libnm-util1 (= ${binary:Version}),
+ ${misc:Depends},
+ libglib2.0-dev,
+ libdbus-glib-1-dev
+Description: network management framework (development files)
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package contains header and development files.
+
+Package: network-manager-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends:
+ network-manager (= ${binary:Version}) | libnm-util1 (= ${binary:Version}) | libnm-glib2 (= ${binary:Version}) | libnm-glib-vpn1 (= ${binary:Version}),
+ ${misc:Depends}
+Description: network management framework daemon - debugging symbols
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package contains detached debugging symbols.

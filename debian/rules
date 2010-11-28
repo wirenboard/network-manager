@@ -1,0 +1,33 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/utils.mk
+
+# List any files which are not installed
+common-binary-post-install-arch:: list-missing
+
+DEB_DH_MAKESHLIBS_ARGS_ALL := -X/usr/lib/NetworkManager/ -X/usr/lib/pppd/
+
+DEB_INSTALL_DOCS_ALL := README AUTHORS
+
+DEB_CONFIGURE_LIBEXECDIR := "\$$(prefix)/lib/NetworkManager"
+
+DEB_CONFIGURE_EXTRA_FLAGS := \
+		--with-distro=debian \
+		--with-resolvconf=/sbin/resolvconf \
+		--with-dhclient=/sbin/dhclient \
+		--with-iptables=/sbin/iptables \
+		--with-crypto=gnutls \
+		--disable-more-warnings
+
+DEB_DH_INSTALLINIT_ARGS := -r -- start 26 2 3 4 5 . stop 88 0 1 6 .
+
+clean::
+	rm -f po/*.gmo
+
+binary-install/network-manager::
+	install -m 755 debian/network-manager-dispatcher.script \
+		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
+	install -m 755 debian/ifblacklist_migrate.sh \
+		debian/network-manager/usr/lib/NetworkManager
