@@ -21,8 +21,8 @@ Build-Depends:
  libudev-dev,
  libgudev-1.0-dev
 Standards-Version: 3.9.1
-Vcs-Svn: svn://svn.debian.org/pkg-utopia/packages/unstable/networkmanager/
-Vcs-Browser: http://svn.debian.org/wsvn/pkg-utopia/packages/unstable/networkmanager/
+Vcs-Git: git://git.debian.org/git/pkg-utopia/network-manager.git
+Vcs-Browser: http://git.debian.org/?p=pkg-utopia/network-manager.git;a=summary
 Homepage: http://www.gnome.org/projects/NetworkManager/
 
 Package: network-manager
