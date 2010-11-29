@@ -19,7 +19,8 @@ DEB_CONFIGURE_EXTRA_FLAGS := \
 		--with-dhclient=/sbin/dhclient \
 		--with-iptables=/sbin/iptables \
 		--with-crypto=gnutls \
-		--disable-more-warnings
+		--disable-more-warnings \
+		--with-docs
 
 DEB_DH_INSTALLINIT_ARGS := -r -- start 26 2 3 4 5 . stop 88 0 1 6 .
 

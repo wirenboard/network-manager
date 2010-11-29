@@ -7,6 +7,9 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
     - debian/patches/30-typo_fix.patch
   * debian/libnm-{glib2,util1}.symbols
     - Update symbols files for new API additions.
+  * Make sure gtk-doc API documentation is built
+    - Add Build-Depends on gtk-doc-tools.
+    - Add --with-docs configure option.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 

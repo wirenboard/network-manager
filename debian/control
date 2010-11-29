@@ -19,7 +19,8 @@ Build-Depends:
  libgnutls-dev,
  uuid-dev,
  libudev-dev,
- libgudev-1.0-dev
+ libgudev-1.0-dev,
+ gtk-doc-tools
 Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/pkg-utopia/network-manager.git
 Vcs-Browser: http://git.debian.org/?p=pkg-utopia/network-manager.git;a=summary
