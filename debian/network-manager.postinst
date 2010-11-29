@@ -68,8 +68,10 @@ case "$1" in
         fi
 
         if [ -z "$2" ] || dpkg --compare-versions "$2" lt-nl "0.8.1-4"; then
-            echo "Disabling interfaces configured with plain DHCP in /etc/network/interfaces so that NetworkManager can take them over"
-            /usr/lib/NetworkManager/ifblacklist_migrate.sh
+            if [ -f /etc/network/interfaces ]; then
+                echo "Disabling interfaces configured with plain DHCP in /etc/network/interfaces so that NetworkManager can take them over"
+                /usr/lib/NetworkManager/ifblacklist_migrate.sh
+            fi
         fi
         ;;
 
