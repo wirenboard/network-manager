@@ -2,6 +2,9 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
 
   * New upstream release.
     - Set timestamp for system connections. (Closes: #509817)
+  * Remove patches, merged upstream
+    - debian/patches/10-dont_require_ifup_for_lo.patch
+    - debian/patches/30-typo_fix.patch
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 
