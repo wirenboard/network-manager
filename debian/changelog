@@ -1,10 +1,10 @@
-network-manager (0.8.1-5) UNRELEASED; urgency=low
+network-manager (0.8.1-5) unstable; urgency=low
 
   * Update Vcs-* fields: Move packaging from svn to git.
   * Don't try the interfaces migration if /etc/network/interfaces does not
     exist. This avoids a failure on remove. (Closes: #605360)
 
- -- Michael Biebl <biebl@debian.org>  Sun, 28 Nov 2010 23:47:41 +0100
+ -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 15:06:21 +0100
 
 network-manager (0.8.1-4) unstable; urgency=low
 
