@@ -125,7 +125,11 @@
     <function name="NM_SETTING_WIRED_DUPLEX" link="NMSettingWired.html#NM-SETTING-WIRED-DUPLEX:CAPS"/>
     <function name="NM_SETTING_WIRED_AUTO_NEGOTIATE" link="NMSettingWired.html#NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS"/>
     <function name="NM_SETTING_WIRED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS:CAPS"/>
+    <function name="NM_SETTING_WIRED_CLONED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS"/>
     <function name="NM_SETTING_WIRED_MTU" link="NMSettingWired.html#NM-SETTING-WIRED-MTU:CAPS"/>
+    <function name="NM_SETTING_WIRED_S390_SUBCHANNELS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS"/>
+    <function name="NM_SETTING_WIRED_S390_NETTYPE" link="NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS"/>
+    <function name="NM_SETTING_WIRED_S390_OPTIONS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-OPTIONS:CAPS"/>
     <function name="NMSettingWired" link="NMSettingWired.html#NMSettingWired-struct"/>
     <function name="NMSettingWiredClass" link="NMSettingWired.html#NMSettingWiredClass"/>
     <function name="nm_setting_wired_get_type ()" link="NMSettingWired.html#nm-setting-wired-get-type"/>
@@ -135,12 +139,24 @@
     <function name="nm_setting_wired_get_duplex ()" link="NMSettingWired.html#nm-setting-wired-get-duplex"/>
     <function name="nm_setting_wired_get_auto_negotiate ()" link="NMSettingWired.html#nm-setting-wired-get-auto-negotiate"/>
     <function name="nm_setting_wired_get_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-mac-address"/>
+    <function name="nm_setting_wired_get_cloned_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-cloned-mac-address"/>
     <function name="nm_setting_wired_get_mtu ()" link="NMSettingWired.html#nm-setting-wired-get-mtu"/>
+    <function name="nm_setting_wired_get_s390_subchannels ()" link="NMSettingWired.html#nm-setting-wired-get-s390-subchannels"/>
+    <function name="nm_setting_wired_get_s390_nettype ()" link="NMSettingWired.html#nm-setting-wired-get-s390-nettype"/>
+    <function name="nm_setting_wired_get_num_s390_options ()" link="NMSettingWired.html#nm-setting-wired-get-num-s390-options"/>
+    <function name="nm_setting_wired_get_s390_option ()" link="NMSettingWired.html#nm-setting-wired-get-s390-option"/>
+    <function name="nm_setting_wired_get_s390_option_by_key ()" link="NMSettingWired.html#nm-setting-wired-get-s390-option-by-key"/>
+    <function name="nm_setting_wired_add_s390_option ()" link="NMSettingWired.html#nm-setting-wired-add-s390-option"/>
+    <function name="nm_setting_wired_remove_s390_option ()" link="NMSettingWired.html#nm-setting-wired-remove-s390-option"/>
     <function name="The &quot;auto-negotiate&quot; property" link="NMSettingWired.html#NMSettingWired--auto-negotiate"/>
+    <function name="The &quot;cloned-mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--cloned-mac-address"/>
     <function name="The &quot;duplex&quot; property" link="NMSettingWired.html#NMSettingWired--duplex"/>
     <function name="The &quot;mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--mac-address"/>
     <function name="The &quot;mtu&quot; property" link="NMSettingWired.html#NMSettingWired--mtu"/>
     <function name="The &quot;port&quot; property" link="NMSettingWired.html#NMSettingWired--port"/>
+    <function name="The &quot;s390-nettype&quot; property" link="NMSettingWired.html#NMSettingWired--s390-nettype"/>
+    <function name="The &quot;s390-options&quot; property" link="NMSettingWired.html#NMSettingWired--s390-options"/>
+    <function name="The &quot;s390-subchannels&quot; property" link="NMSettingWired.html#NMSettingWired--s390-subchannels"/>
     <function name="The &quot;speed&quot; property" link="NMSettingWired.html#NMSettingWired--speed"/>
     <function name="NM_SETTING_WIRELESS_SETTING_NAME" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SETTING-NAME:CAPS"/>
     <function name="enum NMSettingWirelessError" link="NMSettingWireless.html#NMSettingWirelessError"/>
@@ -155,6 +171,7 @@
     <function name="NM_SETTING_WIRELESS_RATE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-RATE:CAPS"/>
     <function name="NM_SETTING_WIRELESS_TX_POWER" link="NMSettingWireless.html#NM-SETTING-WIRELESS-TX-POWER:CAPS"/>
     <function name="NM_SETTING_WIRELESS_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS"/>
+    <function name="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"/>
     <function name="NM_SETTING_WIRELESS_MTU" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS"/>
     <function name="NM_SETTING_WIRELESS_SEEN_BSSIDS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS"/>
     <function name="NM_SETTING_WIRELESS_SEC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS"/>
@@ -170,6 +187,7 @@
     <function name="nm_setting_wireless_get_rate ()" link="NMSettingWireless.html#nm-setting-wireless-get-rate"/>
     <function name="nm_setting_wireless_get_tx_power ()" link="NMSettingWireless.html#nm-setting-wireless-get-tx-power"/>
     <function name="nm_setting_wireless_get_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address"/>
+    <function name="nm_setting_wireless_get_cloned_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address"/>
     <function name="nm_setting_wireless_get_mtu ()" link="NMSettingWireless.html#nm-setting-wireless-get-mtu"/>
     <function name="nm_setting_wireless_get_security ()" link="NMSettingWireless.html#nm-setting-wireless-get-security"/>
     <function name="nm_setting_wireless_add_seen_bssid ()" link="NMSettingWireless.html#nm-setting-wireless-add-seen-bssid"/>
@@ -179,6 +197,7 @@
     <function name="The &quot;band&quot; property" link="NMSettingWireless.html#NMSettingWireless--band"/>
     <function name="The &quot;bssid&quot; property" link="NMSettingWireless.html#NMSettingWireless--bssid"/>
     <function name="The &quot;channel&quot; property" link="NMSettingWireless.html#NMSettingWireless--channel"/>
+    <function name="The &quot;cloned-mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--cloned-mac-address"/>
     <function name="The &quot;mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address"/>
     <function name="The &quot;mode&quot; property" link="NMSettingWireless.html#NMSettingWireless--mode"/>
     <function name="The &quot;mtu&quot; property" link="NMSettingWireless.html#NMSettingWireless--mtu"/>
@@ -597,6 +616,7 @@
     <function name="NM_SETTING_IP6_CONFIG_MAY_FAIL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-MAY-FAIL:CAPS"/>
     <function name="NM_SETTING_IP6_CONFIG_METHOD_IGNORE" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-IGNORE:CAPS"/>
     <function name="NM_SETTING_IP6_CONFIG_METHOD_AUTO" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-AUTO:CAPS"/>
+    <function name="NM_SETTING_IP6_CONFIG_METHOD_DHCP" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-DHCP:CAPS"/>
     <function name="NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-LINK-LOCAL:CAPS"/>
     <function name="NM_SETTING_IP6_CONFIG_METHOD_MANUAL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-MANUAL:CAPS"/>
     <function name="NM_SETTING_IP6_CONFIG_METHOD_SHARED" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-SHARED:CAPS"/>
@@ -809,5 +829,9 @@
     <function name="nm_utils_uuid_generate ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate"/>
     <function name="nm_utils_uuid_generate_from_string ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string"/>
     <function name="nm_utils_rsa_key_encrypt ()" link="libnm-util-nm-utils.html#nm-utils-rsa-key-encrypt"/>
+    <function name="nm_utils_wifi_freq_to_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel"/>
+    <function name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
+    <function name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
+    <function name="nm_utils_wifi_is_channel_valid ()" link="libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
   </functions>
 </book>

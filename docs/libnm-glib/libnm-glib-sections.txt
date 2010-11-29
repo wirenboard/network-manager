@@ -2,6 +2,7 @@
 <FILE>nm-remote-settings-system</FILE>
 <TITLE>NMRemoteSettingsSystem</TITLE>
 NMRemoteSettingsSystem
+NMRemoteSettingsSystemClass
 nm_remote_settings_system_new
 <SUBSECTION Standard>
 NM_REMOTE_SETTINGS_SYSTEM
@@ -15,6 +16,7 @@ NM_REMOTE_SETTINGS_SYSTEM_GET_CLASS
 
 <SECTION>
 <FILE>nm-active-connection</FILE>
+<TITLE>NMActiveConnection</TITLE>
 NM_ACTIVE_CONNECTION_SERVICE_NAME
 NM_ACTIVE_CONNECTION_CONNECTION
 NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT
@@ -22,8 +24,8 @@ NM_ACTIVE_CONNECTION_DEVICES
 NM_ACTIVE_CONNECTION_STATE
 NM_ACTIVE_CONNECTION_DEFAULT
 NM_ACTIVE_CONNECTION_DEFAULT6
-<TITLE>NMActiveConnection</TITLE>
 NMActiveConnection
+NMActiveConnectionClass
 nm_active_connection_new
 nm_active_connection_get_service_name
 nm_active_connection_get_scope
@@ -45,8 +47,8 @@ NM_ACTIVE_CONNECTION_GET_CLASS
 
 <SECTION>
 <FILE>nm-settings-system-interface</FILE>
+<TITLE>NMSettingsSystem</TITLE>
 NMSettingsSystemPermissions
-NM_SETTINGS_SYSTEM_INTERFACE_GET_INTERFACE
 NM_SETTINGS_SYSTEM_INTERFACE_HOSTNAME
 NM_SETTINGS_SYSTEM_INTERFACE_CAN_MODIFY
 NM_SETTINGS_SYSTEM_INTERFACE_CHECK_PERMISSIONS
@@ -61,15 +63,17 @@ NM_SETTINGS_SYSTEM_INTERFACE
 NM_IS_SETTINGS_SYSTEM_INTERFACE
 NM_TYPE_SETTINGS_SYSTEM_INTERFACE
 nm_settings_system_interface_get_type
+NM_SETTINGS_SYSTEM_INTERFACE_GET_INTERFACE
 </SECTION>
 
 <SECTION>
 <FILE>nm-remote-settings</FILE>
+<TITLE>NMRemoteSettings</TITLE>
 NM_REMOTE_SETTINGS_BUS
 NM_REMOTE_SETTINGS_SCOPE
 NM_REMOTE_SETTINGS_SERVICE_RUNNING
-<TITLE>NMRemoteSettings</TITLE>
 NMRemoteSettings
+NMRemoteSettingsClass
 nm_remote_settings_new
 <SUBSECTION Standard>
 NM_REMOTE_SETTINGS
@@ -85,6 +89,7 @@ NM_REMOTE_SETTINGS_GET_CLASS
 <FILE>nm-serial-device</FILE>
 <TITLE>NMSerialDevice</TITLE>
 NMSerialDevice
+NMSerialDeviceClass
 nm_serial_device_get_bytes_received
 nm_serial_device_get_bytes_sent
 <SUBSECTION Standard>
@@ -99,15 +104,18 @@ NM_SERIAL_DEVICE_GET_CLASS
 
 <SECTION>
 <FILE>nm-device-wifi</FILE>
+<TITLE>NMDeviceWifi</TITLE>
 NM_DEVICE_WIFI_HW_ADDRESS
+NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS
 NM_DEVICE_WIFI_MODE
 NM_DEVICE_WIFI_BITRATE
 NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT
 NM_DEVICE_WIFI_CAPABILITIES
-<TITLE>NMDeviceWifi</TITLE>
 NMDeviceWifi
+NMDeviceWifiClass
 nm_device_wifi_new
 nm_device_wifi_get_hw_address
+nm_device_wifi_get_permanent_hw_address
 nm_device_wifi_get_mode
 nm_device_wifi_get_bitrate
 nm_device_wifi_get_capabilities
@@ -128,6 +136,7 @@ NM_DEVICE_WIFI_GET_CLASS
 <FILE>nm-dhcp6-config</FILE>
 <TITLE>NMDHCP6Config</TITLE>
 NMDHCP6Config
+NMDHCP6ConfigClass
 NM_DHCP6_CONFIG_OPTIONS
 nm_dhcp6_config_new
 nm_dhcp6_config_get_options
@@ -145,6 +154,7 @@ NM_IS_DHCP6_CONFIG_CLASS
 <FILE>nm-exported-connection</FILE>
 <TITLE>NMExportedConnection</TITLE>
 NMExportedConnection
+NMExportedConnectionClass
 nm_exported_connection_new
 <SUBSECTION Standard>
 NM_EXPORTED_CONNECTION
@@ -158,10 +168,11 @@ NM_EXPORTED_CONNECTION_GET_CLASS
 
 <SECTION>
 <FILE>nm-object</FILE>
+<TITLE>NMObject</TITLE>
 NM_OBJECT_DBUS_CONNECTION
 NM_OBJECT_DBUS_PATH
-<TITLE>NMObject</TITLE>
 NMObject
+NMObjectClass
 nm_object_get_connection
 nm_object_get_path
 <SUBSECTION Standard>
@@ -176,11 +187,11 @@ NM_OBJECT_GET_CLASS
 
 <SECTION>
 <FILE>nm-settings-interface</FILE>
+<TITLE>NMSettings</TITLE>
 NMSettingsInterfaceError
 NM_SETTINGS_INTERFACE_ERROR
 nm_settings_interface_error_quark
 NM_TYPE_SETTINGS_INTERFACE_ERROR
-NM_SETTINGS_INTERFACE_GET_INTERFACE
 NM_SETTINGS_INTERFACE_NEW_CONNECTION
 NM_SETTINGS_INTERFACE_CONNECTIONS_READ
 NMSettingsInterface
@@ -194,14 +205,16 @@ NM_SETTINGS_INTERFACE
 NM_IS_SETTINGS_INTERFACE
 NM_TYPE_SETTINGS_INTERFACE
 nm_settings_interface_error_get_type
+NM_SETTINGS_INTERFACE_GET_INTERFACE
 </SECTION>
 
 <SECTION>
 <FILE>nm-settings-service</FILE>
+<TITLE>NMSettingsService</TITLE>
 NM_SETTINGS_SERVICE_BUS
 NM_SETTINGS_SERVICE_SCOPE
-<TITLE>NMSettingsService</TITLE>
 NMSettingsService
+NMSettingsServiceClass
 nm_settings_service_get_connection_by_path
 nm_settings_service_export
 nm_settings_service_export_connection
@@ -219,6 +232,7 @@ NM_SETTINGS_SERVICE_GET_CLASS
 <FILE>nm-ip4-config</FILE>
 <TITLE>NMIP4Config</TITLE>
 NMIP4Config
+NMIP4ConfigClass
 NM_IP4_CONFIG_ADDRESSES
 NM_IP4_CONFIG_HOSTNAME
 NM_IP4_CONFIG_NAMESERVERS
@@ -246,6 +260,7 @@ NM_IP4_CONFIG_GET_CLASS
 <FILE>nm-gsm-device</FILE>
 <TITLE>NMGsmDevice</TITLE>
 NMGsmDevice
+NMGsmDeviceClass
 nm_gsm_device_new
 <SUBSECTION Standard>
 NM_GSM_DEVICE
@@ -259,13 +274,14 @@ NM_GSM_DEVICE_GET_CLASS
 
 <SECTION>
 <FILE>nm-vpn-plugin</FILE>
+<TITLE>NMVPNPlugin</TITLE>
 NM_VPN_PLUGIN_DBUS_SERVICE_NAME
 NM_VPN_PLUGIN_STATE
 NMVPNPluginError
 NM_VPN_PLUGIN_ERROR
 NM_TYPE_VPN_PLUGIN_ERROR
-<TITLE>NMVPNPlugin</TITLE>
 NMVPNPlugin
+NMVPNPluginClass
 nm_vpn_plugin_error_quark
 nm_vpn_plugin_error_get_type
 nm_vpn_plugin_get_connection
@@ -287,6 +303,7 @@ NM_VPN_PLUGIN_GET_CLASS
 
 <SECTION>
 <FILE>nm-access-point</FILE>
+<TITLE>NMAccessPoint</TITLE>
 NM_ACCESS_POINT_FLAGS
 NM_ACCESS_POINT_WPA_FLAGS
 NM_ACCESS_POINT_RSN_FLAGS
@@ -296,8 +313,8 @@ NM_ACCESS_POINT_HW_ADDRESS
 NM_ACCESS_POINT_MODE
 NM_ACCESS_POINT_MAX_BITRATE
 NM_ACCESS_POINT_STRENGTH
-<TITLE>NMAccessPoint</TITLE>
 NMAccessPoint
+NMAccessPointClass
 nm_access_point_new
 nm_access_point_get_flags
 nm_access_point_get_wpa_flags
@@ -320,11 +337,14 @@ NM_ACCESS_POINT_GET_CLASS
 
 <SECTION>
 <FILE>nm-device</FILE>
+<TITLE>NMDevice</TITLE>
 NM_DEVICE_UDI
 NM_DEVICE_INTERFACE
+NM_DEVICE_IP_INTERFACE
 NM_DEVICE_DRIVER
 NM_DEVICE_CAPABILITIES
 NM_DEVICE_MANAGED
+NM_DEVICE_FIRMWARE_MISSING
 NM_DEVICE_IP4_CONFIG
 NM_DEVICE_DHCP4_CONFIG
 NM_DEVICE_IP6_CONFIG
@@ -332,14 +352,16 @@ NM_DEVICE_DHCP6_CONFIG
 NM_DEVICE_STATE
 NM_DEVICE_VENDOR
 NM_DEVICE_PRODUCT
-<TITLE>NMDevice</TITLE>
 NMDevice
+NMDeviceClass
 nm_device_new
 nm_device_get_iface
+nm_device_get_ip_iface
 nm_device_get_udi
 nm_device_get_driver
 nm_device_get_capabilities
 nm_device_get_managed
+nm_device_get_firmware_missing
 nm_device_get_ip4_config
 nm_device_get_dhcp4_config
 nm_device_get_ip6_config
@@ -361,13 +383,16 @@ NM_DEVICE_GET_CLASS
 
 <SECTION>
 <FILE>nm-device-ethernet</FILE>
+<TITLE>NMDeviceEthernet</TITLE>
 NM_DEVICE_ETHERNET_HW_ADDRESS
+NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS
 NM_DEVICE_ETHERNET_SPEED
 NM_DEVICE_ETHERNET_CARRIER
-<TITLE>NMDeviceEthernet</TITLE>
 NMDeviceEthernet
+NMDeviceEthernetClass
 nm_device_ethernet_new
 nm_device_ethernet_get_hw_address
+nm_device_ethernet_get_permanent_hw_address
 nm_device_ethernet_get_speed
 nm_device_ethernet_get_carrier
 <SUBSECTION Standard>
@@ -382,7 +407,7 @@ NM_DEVICE_ETHERNET_GET_CLASS
 
 <SECTION>
 <FILE>nm-settings-connection-interface</FILE>
-NM_SETTINGS_CONNECTION_INTERFACE_GET_INTERFACE
+<TITLE>NMSettingsConnection</TITLE>
 NM_SETTINGS_CONNECTION_INTERFACE_UPDATED
 NM_SETTINGS_CONNECTION_INTERFACE_REMOVED
 NMSettingsConnectionInterface
@@ -398,14 +423,16 @@ NM_SETTINGS_CONNECTION_INTERFACE
 NM_IS_SETTINGS_CONNECTION_INTERFACE
 NM_TYPE_SETTINGS_CONNECTION_INTERFACE
 nm_settings_connection_interface_get_type
+NM_SETTINGS_CONNECTION_INTERFACE_GET_INTERFACE
 </SECTION>
 
 <SECTION>
 <FILE>nm-vpn-connection</FILE>
+<TITLE>NMVPNConnection</TITLE>
 NM_VPN_CONNECTION_VPN_STATE
 NM_VPN_CONNECTION_BANNER
-<TITLE>NMVPNConnection</TITLE>
 NMVPNConnection
+NMVPNConnectionClass
 nm_vpn_connection_new
 nm_vpn_connection_get_vpn_state
 nm_vpn_connection_get_banner
@@ -421,11 +448,12 @@ NM_VPN_CONNECTION_GET_CLASS
 
 <SECTION>
 <FILE>nm-vpn-plugin-ui-interface</FILE>
+<TITLE>NMVpnPluginUiWidget</TITLE>
+<TITLE>NMVpnPluginUi</TITLE>
 NMVpnPluginUiInterface
 NMVpnPluginUiWidgetInterface
 NMVpnPluginUiFactory
 nm_vpn_plugin_ui_factory
-NM_VPN_PLUGIN_UI_INTERFACE_GET_INTERFACE
 NM_VPN_PLUGIN_UI_CAPABILITY_NONE
 NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT
 NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT
@@ -452,12 +480,14 @@ NM_VPN_PLUGIN_UI_INTERFACE
 NM_IS_VPN_PLUGIN_UI_INTERFACE
 NM_TYPE_VPN_PLUGIN_UI_INTERFACE
 nm_vpn_plugin_ui_interface_get_type
+NM_VPN_PLUGIN_UI_INTERFACE_GET_INTERFACE
 </SECTION>
 
 <SECTION>
 <FILE>nm-ip6-config</FILE>
 <TITLE>NMIP6Config</TITLE>
 NMIP6Config
+NMIP6ConfigClass
 NM_IP6_CONFIG_ADDRESSES
 NM_IP6_CONFIG_NAMESERVERS
 NM_IP6_CONFIG_DOMAINS
@@ -479,11 +509,12 @@ NM_IP6_CONFIG_GET_CLASS
 
 <SECTION>
 <FILE>nm-device-bt</FILE>
+<TITLE>NMDeviceBt</TITLE>
 NM_DEVICE_BT_HW_ADDRESS
 NM_DEVICE_BT_NAME
 NM_DEVICE_BT_CAPABILITIES
-<TITLE>NMDeviceBt</TITLE>
 NMDeviceBt
+NMDeviceBtClass
 nm_device_bt_new
 nm_device_bt_get_hw_address
 nm_device_bt_get_name
@@ -500,21 +531,27 @@ NM_DEVICE_BT_GET_CLASS
 
 <SECTION>
 <FILE>nm-client</FILE>
+<TITLE>NMClient</TITLE>
 NM_CLIENT_STATE
 NM_CLIENT_MANAGER_RUNNING
+NM_CLIENT_NETWORKING_ENABLED
 NM_CLIENT_WIRELESS_ENABLED
 NM_CLIENT_WIRELESS_HARDWARE_ENABLED
 NM_CLIENT_WWAN_ENABLED
 NM_CLIENT_WWAN_HARDWARE_ENABLED
 NM_CLIENT_ACTIVE_CONNECTIONS
-<TITLE>NMClient</TITLE>
+NMClientPermission
+NMClientPermissionResult
 NMClient
+NMClientClass
 nm_client_new
 nm_client_get_devices
 nm_client_get_device_by_path
 NMClientActivateDeviceFn
 nm_client_activate_connection
 nm_client_deactivate_connection
+nm_client_networking_get_enabled
+nm_client_networking_set_enabled
 nm_client_wireless_get_enabled
 nm_client_wireless_set_enabled
 nm_client_wireless_hardware_get_enabled
@@ -525,6 +562,7 @@ nm_client_get_state
 nm_client_get_manager_running
 nm_client_get_active_connections
 nm_client_sleep
+nm_client_get_permission_result
 <SUBSECTION Standard>
 NM_CLIENT
 NM_IS_CLIENT
@@ -539,6 +577,7 @@ NM_CLIENT_GET_CLASS
 <FILE>nm-dhcp4-config</FILE>
 <TITLE>NMDHCP4Config</TITLE>
 NMDHCP4Config
+NMDHCP4ConfigClass
 NM_DHCP4_CONFIG_OPTIONS
 nm_dhcp4_config_new
 nm_dhcp4_config_get_options
@@ -556,6 +595,7 @@ NM_IS_DHCP4_CONFIG_CLASS
 <FILE>nm-remote-connection</FILE>
 <TITLE>NMRemoteConnection</TITLE>
 NMRemoteConnection
+NMRemoteConnectionClass
 nm_remote_connection_new
 <SUBSECTION Standard>
 NM_REMOTE_CONNECTION
@@ -571,6 +611,7 @@ NM_REMOTE_CONNECTION_GET_CLASS
 <FILE>nm-cdma-device</FILE>
 <TITLE>NMCdmaDevice</TITLE>
 NMCdmaDevice
+NMCdmaDeviceClass
 nm_cdma_device_new
 <SUBSECTION Standard>
 NM_CDMA_DEVICE
@@ -583,7 +624,12 @@ NM_CDMA_DEVICE_GET_CLASS
 </SECTION>
 
 <SECTION>
-<FILE>libnm_glib</FILE>
+<FILE>nm-wimax-device-bindings</FILE>
+DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManager_Device_WiMax
+org_freedesktop_NetworkManager_Device_WiMax_get_nsp_list
+org_freedesktop_NetworkManager_Device_WiMax_get_nsp_list_reply
+org_freedesktop_NetworkManager_Device_WiMax_get_nsp_list_async
+dbus_g_proxy_begin_call
 </SECTION>
 
 <SECTION>
@@ -602,5 +648,24 @@ NM_TYPE_IP6_ADDRESS_ARRAY
 nm_ip6_address_array_get_type
 NM_TYPE_IP6_ROUTE_OBJECT_ARRAY
 nm_ip6_route_object_array_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-sysconfig-connection-bindings</FILE>
+DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManager_Settings_Connection
+org_freedesktop_NetworkManager_Settings_Connection_update
+org_freedesktop_NetworkManager_Settings_Connection_update_reply
+org_freedesktop_NetworkManager_Settings_Connection_update_async
+dbus_g_proxy_begin_call
+org_freedesktop_NetworkManager_Settings_Connection_delete
+org_freedesktop_NetworkManager_Settings_Connection_delete_reply
+org_freedesktop_NetworkManager_Settings_Connection_delete_async
+org_freedesktop_NetworkManager_Settings_Connection_get_settings
+org_freedesktop_NetworkManager_Settings_Connection_get_settings_reply
+org_freedesktop_NetworkManager_Settings_Connection_get_settings_async
+DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManager_Settings_Connection_Secrets
+org_freedesktop_NetworkManager_Settings_Connection_Secrets_get_secrets
+org_freedesktop_NetworkManager_Settings_Connection_Secrets_get_secrets_reply
+org_freedesktop_NetworkManager_Settings_Connection_Secrets_get_secrets_async
 </SECTION>
 

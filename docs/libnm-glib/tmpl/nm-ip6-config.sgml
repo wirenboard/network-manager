@@ -46,6 +46,19 @@ NMIP6Config
 
 </para>
 
+<!-- ##### STRUCT NMIP6ConfigClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### MACRO NM_IP6_CONFIG_ADDRESSES ##### -->
 <para>
 

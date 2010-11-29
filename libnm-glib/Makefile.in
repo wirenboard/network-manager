@@ -86,14 +86,17 @@ am_libdeprecated_nm_glib_la_OBJECTS =  \
 	libdeprecated_nm_glib_la-libnm_glib.lo
 libdeprecated_nm_glib_la_OBJECTS =  \
 	$(am_libdeprecated_nm_glib_la_OBJECTS)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 libnm_glib_vpn_la_DEPENDENCIES =  \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am_libnm_glib_vpn_la_OBJECTS = libnm_glib_vpn_la-nm-vpn-plugin.lo \
 	libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo
 libnm_glib_vpn_la_OBJECTS = $(am_libnm_glib_vpn_la_OBJECTS)
-libnm_glib_vpn_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
+libnm_glib_vpn_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) \
 	$(libnm_glib_vpn_la_LDFLAGS) $(LDFLAGS) -o $@
 libnm_glib_la_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
@@ -123,7 +126,7 @@ am_libnm_glib_la_OBJECTS = libnm_glib_la-nm-object.lo \
 	libnm_glib_la-nm-exported-connection.lo \
 	libnm_glib_la-nm-settings-service.lo
 libnm_glib_la_OBJECTS = $(am_libnm_glib_la_OBJECTS)
-libnm_glib_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+libnm_glib_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libnm_glib_la_CFLAGS) \
 	$(CFLAGS) $(libnm_glib_la_LDFLAGS) $(LDFLAGS) -o $@
 PROGRAMS = $(noinst_PROGRAMS)
@@ -133,22 +136,36 @@ libnm_glib_test_OBJECTS = $(am_libnm_glib_test_OBJECTS)
 libnm_glib_test_DEPENDENCIES = libnm-glib.la \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-libnm_glib_test_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libnm_glib_test_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+libnm_glib_test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libnm_glib_test_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libdeprecated_nm_glib_la_SOURCES) \
 	$(libnm_glib_vpn_la_SOURCES) $(libnm_glib_la_SOURCES) \
 	$(libnm_glib_test_SOURCES)
@@ -164,6 +181,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -184,6 +202,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -225,6 +244,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -264,6 +284,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -320,7 +342,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -332,6 +353,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -467,7 +489,7 @@ libnm_glib_la_LIBADD = \
 	$(GUDEV_LIBS)
 
 libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib.ver \
-	-version-info "4:3:2"
+	-version-info "6:2:4"
 
 libnm_glib_test_SOURCES = libnm-glib-test.c
 libnm_glib_test_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
@@ -563,11 +585,11 @@ clean-noinstLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libdeprecated-nm-glib.la: $(libdeprecated_nm_glib_la_OBJECTS) $(libdeprecated_nm_glib_la_DEPENDENCIES) 
-	$(LINK)  $(libdeprecated_nm_glib_la_OBJECTS) $(libdeprecated_nm_glib_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK)  $(libdeprecated_nm_glib_la_OBJECTS) $(libdeprecated_nm_glib_la_LIBADD) $(LIBS)
 libnm-glib-vpn.la: $(libnm_glib_vpn_la_OBJECTS) $(libnm_glib_vpn_la_DEPENDENCIES) 
-	$(libnm_glib_vpn_la_LINK) -rpath $(libdir) $(libnm_glib_vpn_la_OBJECTS) $(libnm_glib_vpn_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnm_glib_vpn_la_LINK) -rpath $(libdir) $(libnm_glib_vpn_la_OBJECTS) $(libnm_glib_vpn_la_LIBADD) $(LIBS)
 libnm-glib.la: $(libnm_glib_la_OBJECTS) $(libnm_glib_la_DEPENDENCIES) 
-	$(libnm_glib_la_LINK) -rpath $(libdir) $(libnm_glib_la_OBJECTS) $(libnm_glib_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnm_glib_la_LINK) -rpath $(libdir) $(libnm_glib_la_OBJECTS) $(libnm_glib_la_LIBADD) $(LIBS)
 
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
@@ -579,7 +601,7 @@ clean-noinstPROGRAMS:
 	rm -f $$list
 libnm-glib-test$(EXEEXT): $(libnm_glib_test_OBJECTS) $(libnm_glib_test_DEPENDENCIES) 
 	@rm -f libnm-glib-test$(EXEEXT)
-	$(libnm_glib_test_LINK) $(libnm_glib_test_OBJECTS) $(libnm_glib_test_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(libnm_glib_test_LINK) $(libnm_glib_test_OBJECTS) $(libnm_glib_test_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -620,249 +642,284 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 libdeprecated_nm_glib_la-libnm_glib.lo: libnm_glib.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdeprecated_nm_glib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libdeprecated_nm_glib_la-libnm_glib.lo -MD -MP -MF $(DEPDIR)/libdeprecated_nm_glib_la-libnm_glib.Tpo -c -o libdeprecated_nm_glib_la-libnm_glib.lo `test -f 'libnm_glib.c' || echo '$(srcdir)/'`libnm_glib.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libdeprecated_nm_glib_la-libnm_glib.Tpo $(DEPDIR)/libdeprecated_nm_glib_la-libnm_glib.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdeprecated_nm_glib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libdeprecated_nm_glib_la-libnm_glib.lo -MD -MP -MF $(DEPDIR)/libdeprecated_nm_glib_la-libnm_glib.Tpo -c -o libdeprecated_nm_glib_la-libnm_glib.lo `test -f 'libnm_glib.c' || echo '$(srcdir)/'`libnm_glib.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libdeprecated_nm_glib_la-libnm_glib.Tpo $(DEPDIR)/libdeprecated_nm_glib_la-libnm_glib.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='libnm_glib.c' object='libdeprecated_nm_glib_la-libnm_glib.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdeprecated_nm_glib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libdeprecated_nm_glib_la-libnm_glib.lo `test -f 'libnm_glib.c' || echo '$(srcdir)/'`libnm_glib.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdeprecated_nm_glib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libdeprecated_nm_glib_la-libnm_glib.lo `test -f 'libnm_glib.c' || echo '$(srcdir)/'`libnm_glib.c
 
 libnm_glib_vpn_la-nm-vpn-plugin.lo: nm-vpn-plugin.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -MT libnm_glib_vpn_la-nm-vpn-plugin.lo -MD -MP -MF $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Tpo -c -o libnm_glib_vpn_la-nm-vpn-plugin.lo `test -f 'nm-vpn-plugin.c' || echo '$(srcdir)/'`nm-vpn-plugin.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Tpo $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -MT libnm_glib_vpn_la-nm-vpn-plugin.lo -MD -MP -MF $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Tpo -c -o libnm_glib_vpn_la-nm-vpn-plugin.lo `test -f 'nm-vpn-plugin.c' || echo '$(srcdir)/'`nm-vpn-plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Tpo $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-vpn-plugin.c' object='libnm_glib_vpn_la-nm-vpn-plugin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_vpn_la-nm-vpn-plugin.lo `test -f 'nm-vpn-plugin.c' || echo '$(srcdir)/'`nm-vpn-plugin.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_vpn_la-nm-vpn-plugin.lo `test -f 'nm-vpn-plugin.c' || echo '$(srcdir)/'`nm-vpn-plugin.c
 
 libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo: nm-vpn-plugin-ui-interface.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -MT libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Tpo -c -o libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo `test -f 'nm-vpn-plugin-ui-interface.c' || echo '$(srcdir)/'`nm-vpn-plugin-ui-interface.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Tpo $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -MT libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Tpo -c -o libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo `test -f 'nm-vpn-plugin-ui-interface.c' || echo '$(srcdir)/'`nm-vpn-plugin-ui-interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Tpo $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-vpn-plugin-ui-interface.c' object='libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo `test -f 'nm-vpn-plugin-ui-interface.c' || echo '$(srcdir)/'`nm-vpn-plugin-ui-interface.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo `test -f 'nm-vpn-plugin-ui-interface.c' || echo '$(srcdir)/'`nm-vpn-plugin-ui-interface.c
 
 libnm_glib_la-nm-object.lo: nm-object.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-object.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-object.Tpo -c -o libnm_glib_la-nm-object.lo `test -f 'nm-object.c' || echo '$(srcdir)/'`nm-object.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-object.Tpo $(DEPDIR)/libnm_glib_la-nm-object.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-object.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-object.Tpo -c -o libnm_glib_la-nm-object.lo `test -f 'nm-object.c' || echo '$(srcdir)/'`nm-object.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-object.Tpo $(DEPDIR)/libnm_glib_la-nm-object.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-object.c' object='libnm_glib_la-nm-object.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-object.lo `test -f 'nm-object.c' || echo '$(srcdir)/'`nm-object.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-object.lo `test -f 'nm-object.c' || echo '$(srcdir)/'`nm-object.c
 
 libnm_glib_la-nm-client.lo: nm-client.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-client.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-client.Tpo -c -o libnm_glib_la-nm-client.lo `test -f 'nm-client.c' || echo '$(srcdir)/'`nm-client.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-client.Tpo $(DEPDIR)/libnm_glib_la-nm-client.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-client.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-client.Tpo -c -o libnm_glib_la-nm-client.lo `test -f 'nm-client.c' || echo '$(srcdir)/'`nm-client.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-client.Tpo $(DEPDIR)/libnm_glib_la-nm-client.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-client.c' object='libnm_glib_la-nm-client.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-client.lo `test -f 'nm-client.c' || echo '$(srcdir)/'`nm-client.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-client.lo `test -f 'nm-client.c' || echo '$(srcdir)/'`nm-client.c
 
 libnm_glib_la-nm-dbus-utils.lo: nm-dbus-utils.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dbus-utils.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Tpo -c -o libnm_glib_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Tpo $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dbus-utils.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Tpo -c -o libnm_glib_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Tpo $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dbus-utils.c' object='libnm_glib_la-nm-dbus-utils.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
 
 libnm_glib_la-nm-device.lo: nm-device.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device.Tpo -c -o libnm_glib_la-nm-device.lo `test -f 'nm-device.c' || echo '$(srcdir)/'`nm-device.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device.Tpo $(DEPDIR)/libnm_glib_la-nm-device.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device.Tpo -c -o libnm_glib_la-nm-device.lo `test -f 'nm-device.c' || echo '$(srcdir)/'`nm-device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device.Tpo $(DEPDIR)/libnm_glib_la-nm-device.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device.c' object='libnm_glib_la-nm-device.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device.lo `test -f 'nm-device.c' || echo '$(srcdir)/'`nm-device.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device.lo `test -f 'nm-device.c' || echo '$(srcdir)/'`nm-device.c
 
 libnm_glib_la-nm-device-ethernet.lo: nm-device-ethernet.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-ethernet.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-ethernet.Tpo -c -o libnm_glib_la-nm-device-ethernet.lo `test -f 'nm-device-ethernet.c' || echo '$(srcdir)/'`nm-device-ethernet.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-ethernet.Tpo $(DEPDIR)/libnm_glib_la-nm-device-ethernet.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-ethernet.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-ethernet.Tpo -c -o libnm_glib_la-nm-device-ethernet.lo `test -f 'nm-device-ethernet.c' || echo '$(srcdir)/'`nm-device-ethernet.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-ethernet.Tpo $(DEPDIR)/libnm_glib_la-nm-device-ethernet.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-ethernet.c' object='libnm_glib_la-nm-device-ethernet.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-ethernet.lo `test -f 'nm-device-ethernet.c' || echo '$(srcdir)/'`nm-device-ethernet.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-ethernet.lo `test -f 'nm-device-ethernet.c' || echo '$(srcdir)/'`nm-device-ethernet.c
 
 libnm_glib_la-nm-device-wifi.lo: nm-device-wifi.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-wifi.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo -c -o libnm_glib_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo $(DEPDIR)/libnm_glib_la-nm-device-wifi.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-wifi.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo -c -o libnm_glib_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo $(DEPDIR)/libnm_glib_la-nm-device-wifi.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-wifi.c' object='libnm_glib_la-nm-device-wifi.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
 
 libnm_glib_la-nm-device-bt.lo: nm-device-bt.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-bt.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-bt.Tpo -c -o libnm_glib_la-nm-device-bt.lo `test -f 'nm-device-bt.c' || echo '$(srcdir)/'`nm-device-bt.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-bt.Tpo $(DEPDIR)/libnm_glib_la-nm-device-bt.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-bt.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-bt.Tpo -c -o libnm_glib_la-nm-device-bt.lo `test -f 'nm-device-bt.c' || echo '$(srcdir)/'`nm-device-bt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-bt.Tpo $(DEPDIR)/libnm_glib_la-nm-device-bt.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-bt.c' object='libnm_glib_la-nm-device-bt.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-bt.lo `test -f 'nm-device-bt.c' || echo '$(srcdir)/'`nm-device-bt.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-bt.lo `test -f 'nm-device-bt.c' || echo '$(srcdir)/'`nm-device-bt.c
 
 libnm_glib_la-nm-access-point.lo: nm-access-point.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-access-point.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-access-point.Tpo -c -o libnm_glib_la-nm-access-point.lo `test -f 'nm-access-point.c' || echo '$(srcdir)/'`nm-access-point.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-access-point.Tpo $(DEPDIR)/libnm_glib_la-nm-access-point.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-access-point.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-access-point.Tpo -c -o libnm_glib_la-nm-access-point.lo `test -f 'nm-access-point.c' || echo '$(srcdir)/'`nm-access-point.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-access-point.Tpo $(DEPDIR)/libnm_glib_la-nm-access-point.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-access-point.c' object='libnm_glib_la-nm-access-point.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-access-point.lo `test -f 'nm-access-point.c' || echo '$(srcdir)/'`nm-access-point.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-access-point.lo `test -f 'nm-access-point.c' || echo '$(srcdir)/'`nm-access-point.c
 
 libnm_glib_la-nm-ip4-config.lo: nm-ip4-config.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-ip4-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-ip4-config.Tpo -c -o libnm_glib_la-nm-ip4-config.lo `test -f 'nm-ip4-config.c' || echo '$(srcdir)/'`nm-ip4-config.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-ip4-config.Tpo $(DEPDIR)/libnm_glib_la-nm-ip4-config.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-ip4-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-ip4-config.Tpo -c -o libnm_glib_la-nm-ip4-config.lo `test -f 'nm-ip4-config.c' || echo '$(srcdir)/'`nm-ip4-config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-ip4-config.Tpo $(DEPDIR)/libnm_glib_la-nm-ip4-config.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-ip4-config.c' object='libnm_glib_la-nm-ip4-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-ip4-config.lo `test -f 'nm-ip4-config.c' || echo '$(srcdir)/'`nm-ip4-config.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-ip4-config.lo `test -f 'nm-ip4-config.c' || echo '$(srcdir)/'`nm-ip4-config.c
 
 libnm_glib_la-nm-gsm-device.lo: nm-gsm-device.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-gsm-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-gsm-device.Tpo -c -o libnm_glib_la-nm-gsm-device.lo `test -f 'nm-gsm-device.c' || echo '$(srcdir)/'`nm-gsm-device.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-gsm-device.Tpo $(DEPDIR)/libnm_glib_la-nm-gsm-device.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-gsm-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-gsm-device.Tpo -c -o libnm_glib_la-nm-gsm-device.lo `test -f 'nm-gsm-device.c' || echo '$(srcdir)/'`nm-gsm-device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-gsm-device.Tpo $(DEPDIR)/libnm_glib_la-nm-gsm-device.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-gsm-device.c' object='libnm_glib_la-nm-gsm-device.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-gsm-device.lo `test -f 'nm-gsm-device.c' || echo '$(srcdir)/'`nm-gsm-device.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-gsm-device.lo `test -f 'nm-gsm-device.c' || echo '$(srcdir)/'`nm-gsm-device.c
 
 libnm_glib_la-nm-cdma-device.lo: nm-cdma-device.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-cdma-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-cdma-device.Tpo -c -o libnm_glib_la-nm-cdma-device.lo `test -f 'nm-cdma-device.c' || echo '$(srcdir)/'`nm-cdma-device.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-cdma-device.Tpo $(DEPDIR)/libnm_glib_la-nm-cdma-device.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-cdma-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-cdma-device.Tpo -c -o libnm_glib_la-nm-cdma-device.lo `test -f 'nm-cdma-device.c' || echo '$(srcdir)/'`nm-cdma-device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-cdma-device.Tpo $(DEPDIR)/libnm_glib_la-nm-cdma-device.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-cdma-device.c' object='libnm_glib_la-nm-cdma-device.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-cdma-device.lo `test -f 'nm-cdma-device.c' || echo '$(srcdir)/'`nm-cdma-device.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-cdma-device.lo `test -f 'nm-cdma-device.c' || echo '$(srcdir)/'`nm-cdma-device.c
 
 libnm_glib_la-nm-serial-device.lo: nm-serial-device.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-serial-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-serial-device.Tpo -c -o libnm_glib_la-nm-serial-device.lo `test -f 'nm-serial-device.c' || echo '$(srcdir)/'`nm-serial-device.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-serial-device.Tpo $(DEPDIR)/libnm_glib_la-nm-serial-device.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-serial-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-serial-device.Tpo -c -o libnm_glib_la-nm-serial-device.lo `test -f 'nm-serial-device.c' || echo '$(srcdir)/'`nm-serial-device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-serial-device.Tpo $(DEPDIR)/libnm_glib_la-nm-serial-device.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-serial-device.c' object='libnm_glib_la-nm-serial-device.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-serial-device.lo `test -f 'nm-serial-device.c' || echo '$(srcdir)/'`nm-serial-device.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-serial-device.lo `test -f 'nm-serial-device.c' || echo '$(srcdir)/'`nm-serial-device.c
 
 libnm_glib_la-nm-vpn-connection.lo: nm-vpn-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-vpn-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-vpn-connection.Tpo -c -o libnm_glib_la-nm-vpn-connection.lo `test -f 'nm-vpn-connection.c' || echo '$(srcdir)/'`nm-vpn-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-vpn-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-vpn-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-vpn-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-vpn-connection.Tpo -c -o libnm_glib_la-nm-vpn-connection.lo `test -f 'nm-vpn-connection.c' || echo '$(srcdir)/'`nm-vpn-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-vpn-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-vpn-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-vpn-connection.c' object='libnm_glib_la-nm-vpn-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-vpn-connection.lo `test -f 'nm-vpn-connection.c' || echo '$(srcdir)/'`nm-vpn-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-vpn-connection.lo `test -f 'nm-vpn-connection.c' || echo '$(srcdir)/'`nm-vpn-connection.c
 
 libnm_glib_la-nm-types.lo: nm-types.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-types.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-types.Tpo -c -o libnm_glib_la-nm-types.lo `test -f 'nm-types.c' || echo '$(srcdir)/'`nm-types.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-types.Tpo $(DEPDIR)/libnm_glib_la-nm-types.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-types.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-types.Tpo -c -o libnm_glib_la-nm-types.lo `test -f 'nm-types.c' || echo '$(srcdir)/'`nm-types.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-types.Tpo $(DEPDIR)/libnm_glib_la-nm-types.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-types.c' object='libnm_glib_la-nm-types.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-types.lo `test -f 'nm-types.c' || echo '$(srcdir)/'`nm-types.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-types.lo `test -f 'nm-types.c' || echo '$(srcdir)/'`nm-types.c
 
 libnm_glib_la-nm-object-cache.lo: nm-object-cache.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-object-cache.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-object-cache.Tpo -c -o libnm_glib_la-nm-object-cache.lo `test -f 'nm-object-cache.c' || echo '$(srcdir)/'`nm-object-cache.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-object-cache.Tpo $(DEPDIR)/libnm_glib_la-nm-object-cache.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-object-cache.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-object-cache.Tpo -c -o libnm_glib_la-nm-object-cache.lo `test -f 'nm-object-cache.c' || echo '$(srcdir)/'`nm-object-cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-object-cache.Tpo $(DEPDIR)/libnm_glib_la-nm-object-cache.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-object-cache.c' object='libnm_glib_la-nm-object-cache.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-object-cache.lo `test -f 'nm-object-cache.c' || echo '$(srcdir)/'`nm-object-cache.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-object-cache.lo `test -f 'nm-object-cache.c' || echo '$(srcdir)/'`nm-object-cache.c
 
 libnm_glib_la-nm-active-connection.lo: nm-active-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-active-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-active-connection.Tpo -c -o libnm_glib_la-nm-active-connection.lo `test -f 'nm-active-connection.c' || echo '$(srcdir)/'`nm-active-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-active-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-active-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-active-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-active-connection.Tpo -c -o libnm_glib_la-nm-active-connection.lo `test -f 'nm-active-connection.c' || echo '$(srcdir)/'`nm-active-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-active-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-active-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-active-connection.c' object='libnm_glib_la-nm-active-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-active-connection.lo `test -f 'nm-active-connection.c' || echo '$(srcdir)/'`nm-active-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-active-connection.lo `test -f 'nm-active-connection.c' || echo '$(srcdir)/'`nm-active-connection.c
 
 libnm_glib_la-nm-dhcp4-config.lo: nm-dhcp4-config.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dhcp4-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Tpo -c -o libnm_glib_la-nm-dhcp4-config.lo `test -f 'nm-dhcp4-config.c' || echo '$(srcdir)/'`nm-dhcp4-config.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Tpo $(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dhcp4-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Tpo -c -o libnm_glib_la-nm-dhcp4-config.lo `test -f 'nm-dhcp4-config.c' || echo '$(srcdir)/'`nm-dhcp4-config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Tpo $(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dhcp4-config.c' object='libnm_glib_la-nm-dhcp4-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dhcp4-config.lo `test -f 'nm-dhcp4-config.c' || echo '$(srcdir)/'`nm-dhcp4-config.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dhcp4-config.lo `test -f 'nm-dhcp4-config.c' || echo '$(srcdir)/'`nm-dhcp4-config.c
 
 libnm_glib_la-nm-ip6-config.lo: nm-ip6-config.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-ip6-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-ip6-config.Tpo -c -o libnm_glib_la-nm-ip6-config.lo `test -f 'nm-ip6-config.c' || echo '$(srcdir)/'`nm-ip6-config.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-ip6-config.Tpo $(DEPDIR)/libnm_glib_la-nm-ip6-config.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-ip6-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-ip6-config.Tpo -c -o libnm_glib_la-nm-ip6-config.lo `test -f 'nm-ip6-config.c' || echo '$(srcdir)/'`nm-ip6-config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-ip6-config.Tpo $(DEPDIR)/libnm_glib_la-nm-ip6-config.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-ip6-config.c' object='libnm_glib_la-nm-ip6-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-ip6-config.lo `test -f 'nm-ip6-config.c' || echo '$(srcdir)/'`nm-ip6-config.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-ip6-config.lo `test -f 'nm-ip6-config.c' || echo '$(srcdir)/'`nm-ip6-config.c
 
 libnm_glib_la-nm-dhcp6-config.lo: nm-dhcp6-config.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dhcp6-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Tpo -c -o libnm_glib_la-nm-dhcp6-config.lo `test -f 'nm-dhcp6-config.c' || echo '$(srcdir)/'`nm-dhcp6-config.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Tpo $(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dhcp6-config.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Tpo -c -o libnm_glib_la-nm-dhcp6-config.lo `test -f 'nm-dhcp6-config.c' || echo '$(srcdir)/'`nm-dhcp6-config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Tpo $(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dhcp6-config.c' object='libnm_glib_la-nm-dhcp6-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dhcp6-config.lo `test -f 'nm-dhcp6-config.c' || echo '$(srcdir)/'`nm-dhcp6-config.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dhcp6-config.lo `test -f 'nm-dhcp6-config.c' || echo '$(srcdir)/'`nm-dhcp6-config.c
 
 libnm_glib_la-nm-remote-connection.lo: nm-remote-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-remote-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-remote-connection.Tpo -c -o libnm_glib_la-nm-remote-connection.lo `test -f 'nm-remote-connection.c' || echo '$(srcdir)/'`nm-remote-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-remote-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-remote-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-remote-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-remote-connection.Tpo -c -o libnm_glib_la-nm-remote-connection.lo `test -f 'nm-remote-connection.c' || echo '$(srcdir)/'`nm-remote-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-remote-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-remote-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-remote-connection.c' object='libnm_glib_la-nm-remote-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-remote-connection.lo `test -f 'nm-remote-connection.c' || echo '$(srcdir)/'`nm-remote-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-remote-connection.lo `test -f 'nm-remote-connection.c' || echo '$(srcdir)/'`nm-remote-connection.c
 
 libnm_glib_la-nm-settings-interface.lo: nm-settings-interface.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-interface.Tpo -c -o libnm_glib_la-nm-settings-interface.lo `test -f 'nm-settings-interface.c' || echo '$(srcdir)/'`nm-settings-interface.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-interface.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-interface.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-interface.Tpo -c -o libnm_glib_la-nm-settings-interface.lo `test -f 'nm-settings-interface.c' || echo '$(srcdir)/'`nm-settings-interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-interface.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-interface.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-settings-interface.c' object='libnm_glib_la-nm-settings-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-interface.lo `test -f 'nm-settings-interface.c' || echo '$(srcdir)/'`nm-settings-interface.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-interface.lo `test -f 'nm-settings-interface.c' || echo '$(srcdir)/'`nm-settings-interface.c
 
 libnm_glib_la-nm-settings-system-interface.lo: nm-settings-system-interface.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-system-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-system-interface.Tpo -c -o libnm_glib_la-nm-settings-system-interface.lo `test -f 'nm-settings-system-interface.c' || echo '$(srcdir)/'`nm-settings-system-interface.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-system-interface.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-system-interface.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-system-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-system-interface.Tpo -c -o libnm_glib_la-nm-settings-system-interface.lo `test -f 'nm-settings-system-interface.c' || echo '$(srcdir)/'`nm-settings-system-interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-system-interface.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-system-interface.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-settings-system-interface.c' object='libnm_glib_la-nm-settings-system-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-system-interface.lo `test -f 'nm-settings-system-interface.c' || echo '$(srcdir)/'`nm-settings-system-interface.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-system-interface.lo `test -f 'nm-settings-system-interface.c' || echo '$(srcdir)/'`nm-settings-system-interface.c
 
 libnm_glib_la-nm-remote-settings.lo: nm-remote-settings.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-remote-settings.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-remote-settings.Tpo -c -o libnm_glib_la-nm-remote-settings.lo `test -f 'nm-remote-settings.c' || echo '$(srcdir)/'`nm-remote-settings.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-remote-settings.Tpo $(DEPDIR)/libnm_glib_la-nm-remote-settings.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-remote-settings.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-remote-settings.Tpo -c -o libnm_glib_la-nm-remote-settings.lo `test -f 'nm-remote-settings.c' || echo '$(srcdir)/'`nm-remote-settings.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-remote-settings.Tpo $(DEPDIR)/libnm_glib_la-nm-remote-settings.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-remote-settings.c' object='libnm_glib_la-nm-remote-settings.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-remote-settings.lo `test -f 'nm-remote-settings.c' || echo '$(srcdir)/'`nm-remote-settings.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-remote-settings.lo `test -f 'nm-remote-settings.c' || echo '$(srcdir)/'`nm-remote-settings.c
 
 libnm_glib_la-nm-remote-settings-system.lo: nm-remote-settings-system.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-remote-settings-system.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-remote-settings-system.Tpo -c -o libnm_glib_la-nm-remote-settings-system.lo `test -f 'nm-remote-settings-system.c' || echo '$(srcdir)/'`nm-remote-settings-system.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-remote-settings-system.Tpo $(DEPDIR)/libnm_glib_la-nm-remote-settings-system.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-remote-settings-system.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-remote-settings-system.Tpo -c -o libnm_glib_la-nm-remote-settings-system.lo `test -f 'nm-remote-settings-system.c' || echo '$(srcdir)/'`nm-remote-settings-system.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-remote-settings-system.Tpo $(DEPDIR)/libnm_glib_la-nm-remote-settings-system.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-remote-settings-system.c' object='libnm_glib_la-nm-remote-settings-system.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-remote-settings-system.lo `test -f 'nm-remote-settings-system.c' || echo '$(srcdir)/'`nm-remote-settings-system.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-remote-settings-system.lo `test -f 'nm-remote-settings-system.c' || echo '$(srcdir)/'`nm-remote-settings-system.c
 
 libnm_glib_la-nm-settings-connection-interface.lo: nm-settings-connection-interface.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-connection-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-connection-interface.Tpo -c -o libnm_glib_la-nm-settings-connection-interface.lo `test -f 'nm-settings-connection-interface.c' || echo '$(srcdir)/'`nm-settings-connection-interface.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-connection-interface.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-connection-interface.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-connection-interface.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-connection-interface.Tpo -c -o libnm_glib_la-nm-settings-connection-interface.lo `test -f 'nm-settings-connection-interface.c' || echo '$(srcdir)/'`nm-settings-connection-interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-connection-interface.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-connection-interface.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-settings-connection-interface.c' object='libnm_glib_la-nm-settings-connection-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-connection-interface.lo `test -f 'nm-settings-connection-interface.c' || echo '$(srcdir)/'`nm-settings-connection-interface.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-connection-interface.lo `test -f 'nm-settings-connection-interface.c' || echo '$(srcdir)/'`nm-settings-connection-interface.c
 
 libnm_glib_la-nm-exported-connection.lo: nm-exported-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-exported-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-exported-connection.Tpo -c -o libnm_glib_la-nm-exported-connection.lo `test -f 'nm-exported-connection.c' || echo '$(srcdir)/'`nm-exported-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-exported-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-exported-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-exported-connection.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-exported-connection.Tpo -c -o libnm_glib_la-nm-exported-connection.lo `test -f 'nm-exported-connection.c' || echo '$(srcdir)/'`nm-exported-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-exported-connection.Tpo $(DEPDIR)/libnm_glib_la-nm-exported-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-exported-connection.c' object='libnm_glib_la-nm-exported-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-exported-connection.lo `test -f 'nm-exported-connection.c' || echo '$(srcdir)/'`nm-exported-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-exported-connection.lo `test -f 'nm-exported-connection.c' || echo '$(srcdir)/'`nm-exported-connection.c
 
 libnm_glib_la-nm-settings-service.lo: nm-settings-service.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-service.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-service.Tpo -c -o libnm_glib_la-nm-settings-service.lo `test -f 'nm-settings-service.c' || echo '$(srcdir)/'`nm-settings-service.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-service.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-service.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-settings-service.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-settings-service.Tpo -c -o libnm_glib_la-nm-settings-service.lo `test -f 'nm-settings-service.c' || echo '$(srcdir)/'`nm-settings-service.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-settings-service.Tpo $(DEPDIR)/libnm_glib_la-nm-settings-service.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-settings-service.c' object='libnm_glib_la-nm-settings-service.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-service.lo `test -f 'nm-settings-service.c' || echo '$(srcdir)/'`nm-settings-service.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-settings-service.lo `test -f 'nm-settings-service.c' || echo '$(srcdir)/'`nm-settings-service.c
 
 libnm_glib_test-libnm-glib-test.o: libnm-glib-test.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -MT libnm_glib_test-libnm-glib-test.o -MD -MP -MF $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo -c -o libnm_glib_test-libnm-glib-test.o `test -f 'libnm-glib-test.c' || echo '$(srcdir)/'`libnm-glib-test.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo $(DEPDIR)/libnm_glib_test-libnm-glib-test.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -MT libnm_glib_test-libnm-glib-test.o -MD -MP -MF $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo -c -o libnm_glib_test-libnm-glib-test.o `test -f 'libnm-glib-test.c' || echo '$(srcdir)/'`libnm-glib-test.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo $(DEPDIR)/libnm_glib_test-libnm-glib-test.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='libnm-glib-test.c' object='libnm_glib_test-libnm-glib-test.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -c -o libnm_glib_test-libnm-glib-test.o `test -f 'libnm-glib-test.c' || echo '$(srcdir)/'`libnm-glib-test.c
 
 libnm_glib_test-libnm-glib-test.obj: libnm-glib-test.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -MT libnm_glib_test-libnm-glib-test.obj -MD -MP -MF $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo -c -o libnm_glib_test-libnm-glib-test.obj `if test -f 'libnm-glib-test.c'; then $(CYGPATH_W) 'libnm-glib-test.c'; else $(CYGPATH_W) '$(srcdir)/libnm-glib-test.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo $(DEPDIR)/libnm_glib_test-libnm-glib-test.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -MT libnm_glib_test-libnm-glib-test.obj -MD -MP -MF $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo -c -o libnm_glib_test-libnm-glib-test.obj `if test -f 'libnm-glib-test.c'; then $(CYGPATH_W) 'libnm-glib-test.c'; else $(CYGPATH_W) '$(srcdir)/libnm-glib-test.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo $(DEPDIR)/libnm_glib_test-libnm-glib-test.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='libnm-glib-test.c' object='libnm_glib_test-libnm-glib-test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -c -o libnm_glib_test-libnm-glib-test.obj `if test -f 'libnm-glib-test.c'; then $(CYGPATH_W) 'libnm-glib-test.c'; else $(CYGPATH_W) '$(srcdir)/libnm-glib-test.c'; fi`
@@ -1125,58 +1182,58 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-libnmincludeHEADERS \
 
 
 nm-client-bindings.h: $(top_srcdir)/introspection/nm-manager-client.xml
-	dbus-binding-tool --prefix=nm_client --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_client --mode=glib-client --output=$@ $<
 
 nm-device-bindings.h: $(top_srcdir)/introspection/nm-device.xml
-	dbus-binding-tool --prefix=nm_device --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device --mode=glib-client --output=$@ $<
 
 nm-device-ethernet-bindings.h: $(top_srcdir)/introspection/nm-device-ethernet.xml
-	dbus-binding-tool --prefix=nm_device_ethernet --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_ethernet --mode=glib-client --output=$@ $<
 
 nm-device-wifi-bindings.h: $(top_srcdir)/introspection/nm-device-wifi.xml
-	dbus-binding-tool --prefix=nm_device_wifi --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_wifi --mode=glib-client --output=$@ $<
 
 nm-device-bt-bindings.h: $(top_srcdir)/introspection/nm-device-bt.xml
-	dbus-binding-tool --prefix=nm_device_bt --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_bt --mode=glib-client --output=$@ $<
 
 nm-access-point-bindings.h: $(top_srcdir)/introspection/nm-access-point.xml
-	dbus-binding-tool --prefix=nm_access_point --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_access_point --mode=glib-client --output=$@ $<
 
 nm-settings-glue.h: $(top_srcdir)/introspection/nm-settings.xml
-	dbus-binding-tool --prefix=nm_settings --mode=glib-server --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_settings --mode=glib-server --output=$@ $<
 
 nm-settings-bindings.h: $(top_srcdir)/introspection/nm-settings.xml
-	dbus-binding-tool --prefix=nm_settings --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_settings --mode=glib-client --output=$@ $<
 
 nm-settings-system-bindings.h: $(top_srcdir)/introspection/nm-settings-system.xml
-	dbus-binding-tool --prefix=nm_settings_system --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_settings_system --mode=glib-client --output=$@ $<
 
 nm-exported-connection-glue.h: $(top_srcdir)/introspection/nm-exported-connection.xml
-	dbus-binding-tool --prefix=nm_exported_connection --mode=glib-server --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_exported_connection --mode=glib-server --output=$@ $<
 
 nm-exported-connection-bindings.h: $(top_srcdir)/introspection/nm-exported-connection.xml
-	dbus-binding-tool --prefix=nm_exported_connection --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_exported_connection --mode=glib-client --output=$@ $<
 
 nm-vpn-connection-bindings.h: $(top_srcdir)/introspection/nm-vpn-connection.xml
-	dbus-binding-tool --prefix=nm_vpn_connection --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_vpn_connection --mode=glib-client --output=$@ $<
 
 nm-vpn-plugin-glue.h: $(top_srcdir)/introspection/nm-vpn-plugin.xml
-	dbus-binding-tool --prefix=nm_vpn_plugin --mode=glib-server --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_vpn_plugin --mode=glib-server --output=$@ $<
 
 nm-active-connection-bindings.h: $(top_srcdir)/introspection/nm-active-connection.xml
-	dbus-binding-tool --prefix=nm_active_connection --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_active_connection --mode=glib-client --output=$@ $<
 
 nm-ip4-config-bindings.h: $(top_srcdir)/introspection/nm-ip4-config.xml
-	dbus-binding-tool --prefix=nm_ip4_config --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ip4_config --mode=glib-client --output=$@ $<
 
 nm-dhcp4-config-bindings.h: $(top_srcdir)/introspection/nm-dhcp4-config.xml
-	dbus-binding-tool --prefix=nm_dhcp4_config --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dhcp4_config --mode=glib-client --output=$@ $<
 
 nm-ip6-config-bindings.h: $(top_srcdir)/introspection/nm-ip6-config.xml
-	dbus-binding-tool --prefix=nm_ip6_config --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ip6_config --mode=glib-client --output=$@ $<
 
 nm-dhcp6-config-bindings.h: $(top_srcdir)/introspection/nm-dhcp6-config.xml
-	dbus-binding-tool --prefix=nm_dhcp6_config --mode=glib-client --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dhcp6_config --mode=glib-client --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

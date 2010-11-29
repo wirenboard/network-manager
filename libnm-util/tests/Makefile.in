@@ -59,6 +59,9 @@ am__DEPENDENCIES_1 =
 test_crypto_DEPENDENCIES =  \
 	$(top_builddir)/libnm-util/libtest-crypto.la \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 am_test_general_OBJECTS = test_general-test-general.$(OBJEXT)
 test_general_OBJECTS = $(am_test_general_OBJECTS)
 test_general_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
@@ -87,13 +90,26 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(test_crypto_SOURCES) $(test_general_SOURCES) \
 	$(test_need_secrets_SOURCES) $(test_setting_8021x_SOURCES) \
 	$(test_settings_defaults_SOURCES)
@@ -145,6 +161,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -165,6 +182,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -206,6 +224,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -245,6 +264,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -301,7 +322,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -313,6 +333,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -427,19 +448,19 @@ clean-noinstPROGRAMS:
 	rm -f $$list
 test-crypto$(EXEEXT): $(test_crypto_OBJECTS) $(test_crypto_DEPENDENCIES) 
 	@rm -f test-crypto$(EXEEXT)
-	$(LINK) $(test_crypto_OBJECTS) $(test_crypto_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_crypto_OBJECTS) $(test_crypto_LDADD) $(LIBS)
 test-general$(EXEEXT): $(test_general_OBJECTS) $(test_general_DEPENDENCIES) 
 	@rm -f test-general$(EXEEXT)
-	$(LINK) $(test_general_OBJECTS) $(test_general_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_general_OBJECTS) $(test_general_LDADD) $(LIBS)
 test-need-secrets$(EXEEXT): $(test_need_secrets_OBJECTS) $(test_need_secrets_DEPENDENCIES) 
 	@rm -f test-need-secrets$(EXEEXT)
-	$(LINK) $(test_need_secrets_OBJECTS) $(test_need_secrets_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_need_secrets_OBJECTS) $(test_need_secrets_LDADD) $(LIBS)
 test-setting-8021x$(EXEEXT): $(test_setting_8021x_OBJECTS) $(test_setting_8021x_DEPENDENCIES) 
 	@rm -f test-setting-8021x$(EXEEXT)
-	$(LINK) $(test_setting_8021x_OBJECTS) $(test_setting_8021x_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_setting_8021x_OBJECTS) $(test_setting_8021x_LDADD) $(LIBS)
 test-settings-defaults$(EXEEXT): $(test_settings_defaults_OBJECTS) $(test_settings_defaults_DEPENDENCIES) 
 	@rm -f test-settings-defaults$(EXEEXT)
-	$(LINK) $(test_settings_defaults_OBJECTS) $(test_settings_defaults_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_settings_defaults_OBJECTS) $(test_settings_defaults_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -454,95 +475,108 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_settings_defaults-test-settings-defaults.Po@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 test_crypto-test-crypto.o: test-crypto.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_crypto_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_crypto-test-crypto.o -MD -MP -MF $(DEPDIR)/test_crypto-test-crypto.Tpo -c -o test_crypto-test-crypto.o `test -f 'test-crypto.c' || echo '$(srcdir)/'`test-crypto.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_crypto-test-crypto.Tpo $(DEPDIR)/test_crypto-test-crypto.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_crypto_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_crypto-test-crypto.o -MD -MP -MF $(DEPDIR)/test_crypto-test-crypto.Tpo -c -o test_crypto-test-crypto.o `test -f 'test-crypto.c' || echo '$(srcdir)/'`test-crypto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_crypto-test-crypto.Tpo $(DEPDIR)/test_crypto-test-crypto.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-crypto.c' object='test_crypto-test-crypto.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_crypto_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_crypto-test-crypto.o `test -f 'test-crypto.c' || echo '$(srcdir)/'`test-crypto.c
 
 test_crypto-test-crypto.obj: test-crypto.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_crypto_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_crypto-test-crypto.obj -MD -MP -MF $(DEPDIR)/test_crypto-test-crypto.Tpo -c -o test_crypto-test-crypto.obj `if test -f 'test-crypto.c'; then $(CYGPATH_W) 'test-crypto.c'; else $(CYGPATH_W) '$(srcdir)/test-crypto.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_crypto-test-crypto.Tpo $(DEPDIR)/test_crypto-test-crypto.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_crypto_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_crypto-test-crypto.obj -MD -MP -MF $(DEPDIR)/test_crypto-test-crypto.Tpo -c -o test_crypto-test-crypto.obj `if test -f 'test-crypto.c'; then $(CYGPATH_W) 'test-crypto.c'; else $(CYGPATH_W) '$(srcdir)/test-crypto.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_crypto-test-crypto.Tpo $(DEPDIR)/test_crypto-test-crypto.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-crypto.c' object='test_crypto-test-crypto.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_crypto_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_crypto-test-crypto.obj `if test -f 'test-crypto.c'; then $(CYGPATH_W) 'test-crypto.c'; else $(CYGPATH_W) '$(srcdir)/test-crypto.c'; fi`
 
 test_general-test-general.o: test-general.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_general-test-general.o -MD -MP -MF $(DEPDIR)/test_general-test-general.Tpo -c -o test_general-test-general.o `test -f 'test-general.c' || echo '$(srcdir)/'`test-general.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_general-test-general.Tpo $(DEPDIR)/test_general-test-general.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_general-test-general.o -MD -MP -MF $(DEPDIR)/test_general-test-general.Tpo -c -o test_general-test-general.o `test -f 'test-general.c' || echo '$(srcdir)/'`test-general.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_general-test-general.Tpo $(DEPDIR)/test_general-test-general.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-general.c' object='test_general-test-general.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_general-test-general.o `test -f 'test-general.c' || echo '$(srcdir)/'`test-general.c
 
 test_general-test-general.obj: test-general.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_general-test-general.obj -MD -MP -MF $(DEPDIR)/test_general-test-general.Tpo -c -o test_general-test-general.obj `if test -f 'test-general.c'; then $(CYGPATH_W) 'test-general.c'; else $(CYGPATH_W) '$(srcdir)/test-general.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_general-test-general.Tpo $(DEPDIR)/test_general-test-general.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_general-test-general.obj -MD -MP -MF $(DEPDIR)/test_general-test-general.Tpo -c -o test_general-test-general.obj `if test -f 'test-general.c'; then $(CYGPATH_W) 'test-general.c'; else $(CYGPATH_W) '$(srcdir)/test-general.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_general-test-general.Tpo $(DEPDIR)/test_general-test-general.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-general.c' object='test_general-test-general.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_general_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_general-test-general.obj `if test -f 'test-general.c'; then $(CYGPATH_W) 'test-general.c'; else $(CYGPATH_W) '$(srcdir)/test-general.c'; fi`
 
 test_need_secrets-test-need-secrets.o: test-need-secrets.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_need_secrets_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_need_secrets-test-need-secrets.o -MD -MP -MF $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo -c -o test_need_secrets-test-need-secrets.o `test -f 'test-need-secrets.c' || echo '$(srcdir)/'`test-need-secrets.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo $(DEPDIR)/test_need_secrets-test-need-secrets.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_need_secrets_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_need_secrets-test-need-secrets.o -MD -MP -MF $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo -c -o test_need_secrets-test-need-secrets.o `test -f 'test-need-secrets.c' || echo '$(srcdir)/'`test-need-secrets.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo $(DEPDIR)/test_need_secrets-test-need-secrets.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-need-secrets.c' object='test_need_secrets-test-need-secrets.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_need_secrets_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_need_secrets-test-need-secrets.o `test -f 'test-need-secrets.c' || echo '$(srcdir)/'`test-need-secrets.c
 
 test_need_secrets-test-need-secrets.obj: test-need-secrets.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_need_secrets_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_need_secrets-test-need-secrets.obj -MD -MP -MF $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo -c -o test_need_secrets-test-need-secrets.obj `if test -f 'test-need-secrets.c'; then $(CYGPATH_W) 'test-need-secrets.c'; else $(CYGPATH_W) '$(srcdir)/test-need-secrets.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo $(DEPDIR)/test_need_secrets-test-need-secrets.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_need_secrets_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_need_secrets-test-need-secrets.obj -MD -MP -MF $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo -c -o test_need_secrets-test-need-secrets.obj `if test -f 'test-need-secrets.c'; then $(CYGPATH_W) 'test-need-secrets.c'; else $(CYGPATH_W) '$(srcdir)/test-need-secrets.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_need_secrets-test-need-secrets.Tpo $(DEPDIR)/test_need_secrets-test-need-secrets.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-need-secrets.c' object='test_need_secrets-test-need-secrets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_need_secrets_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_need_secrets-test-need-secrets.obj `if test -f 'test-need-secrets.c'; then $(CYGPATH_W) 'test-need-secrets.c'; else $(CYGPATH_W) '$(srcdir)/test-need-secrets.c'; fi`
 
 test_setting_8021x-test-setting-8021x.o: test-setting-8021x.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_setting_8021x_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_setting_8021x-test-setting-8021x.o -MD -MP -MF $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo -c -o test_setting_8021x-test-setting-8021x.o `test -f 'test-setting-8021x.c' || echo '$(srcdir)/'`test-setting-8021x.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo $(DEPDIR)/test_setting_8021x-test-setting-8021x.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_setting_8021x_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_setting_8021x-test-setting-8021x.o -MD -MP -MF $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo -c -o test_setting_8021x-test-setting-8021x.o `test -f 'test-setting-8021x.c' || echo '$(srcdir)/'`test-setting-8021x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo $(DEPDIR)/test_setting_8021x-test-setting-8021x.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-setting-8021x.c' object='test_setting_8021x-test-setting-8021x.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_setting_8021x_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_setting_8021x-test-setting-8021x.o `test -f 'test-setting-8021x.c' || echo '$(srcdir)/'`test-setting-8021x.c
 
 test_setting_8021x-test-setting-8021x.obj: test-setting-8021x.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_setting_8021x_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_setting_8021x-test-setting-8021x.obj -MD -MP -MF $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo -c -o test_setting_8021x-test-setting-8021x.obj `if test -f 'test-setting-8021x.c'; then $(CYGPATH_W) 'test-setting-8021x.c'; else $(CYGPATH_W) '$(srcdir)/test-setting-8021x.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo $(DEPDIR)/test_setting_8021x-test-setting-8021x.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_setting_8021x_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_setting_8021x-test-setting-8021x.obj -MD -MP -MF $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo -c -o test_setting_8021x-test-setting-8021x.obj `if test -f 'test-setting-8021x.c'; then $(CYGPATH_W) 'test-setting-8021x.c'; else $(CYGPATH_W) '$(srcdir)/test-setting-8021x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_setting_8021x-test-setting-8021x.Tpo $(DEPDIR)/test_setting_8021x-test-setting-8021x.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-setting-8021x.c' object='test_setting_8021x-test-setting-8021x.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_setting_8021x_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_setting_8021x-test-setting-8021x.obj `if test -f 'test-setting-8021x.c'; then $(CYGPATH_W) 'test-setting-8021x.c'; else $(CYGPATH_W) '$(srcdir)/test-setting-8021x.c'; fi`
 
 test_settings_defaults-test-settings-defaults.o: test-settings-defaults.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_settings_defaults-test-settings-defaults.o -MD -MP -MF $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo -c -o test_settings_defaults-test-settings-defaults.o `test -f 'test-settings-defaults.c' || echo '$(srcdir)/'`test-settings-defaults.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo $(DEPDIR)/test_settings_defaults-test-settings-defaults.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_settings_defaults-test-settings-defaults.o -MD -MP -MF $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo -c -o test_settings_defaults-test-settings-defaults.o `test -f 'test-settings-defaults.c' || echo '$(srcdir)/'`test-settings-defaults.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo $(DEPDIR)/test_settings_defaults-test-settings-defaults.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-settings-defaults.c' object='test_settings_defaults-test-settings-defaults.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_settings_defaults-test-settings-defaults.o `test -f 'test-settings-defaults.c' || echo '$(srcdir)/'`test-settings-defaults.c
 
 test_settings_defaults-test-settings-defaults.obj: test-settings-defaults.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_settings_defaults-test-settings-defaults.obj -MD -MP -MF $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo -c -o test_settings_defaults-test-settings-defaults.obj `if test -f 'test-settings-defaults.c'; then $(CYGPATH_W) 'test-settings-defaults.c'; else $(CYGPATH_W) '$(srcdir)/test-settings-defaults.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo $(DEPDIR)/test_settings_defaults-test-settings-defaults.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_settings_defaults-test-settings-defaults.obj -MD -MP -MF $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo -c -o test_settings_defaults-test-settings-defaults.obj `if test -f 'test-settings-defaults.c'; then $(CYGPATH_W) 'test-settings-defaults.c'; else $(CYGPATH_W) '$(srcdir)/test-settings-defaults.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_settings_defaults-test-settings-defaults.Tpo $(DEPDIR)/test_settings_defaults-test-settings-defaults.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-settings-defaults.c' object='test_settings_defaults-test-settings-defaults.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_settings_defaults_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_settings_defaults-test-settings-defaults.obj `if test -f 'test-settings-defaults.c'; then $(CYGPATH_W) 'test-settings-defaults.c'; else $(CYGPATH_W) '$(srcdir)/test-settings-defaults.c'; fi`

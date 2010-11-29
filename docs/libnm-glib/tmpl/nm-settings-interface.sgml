@@ -56,14 +56,6 @@ nm-settings-interface
 
 
 
-<!-- ##### MACRO NM_SETTINGS_INTERFACE_GET_INTERFACE ##### -->
-<para>
-
-</para>
-
-@obj: 
-
-
 <!-- ##### MACRO NM_SETTINGS_INTERFACE_NEW_CONNECTION ##### -->
 <para>
 

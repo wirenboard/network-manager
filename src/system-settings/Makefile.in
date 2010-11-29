@@ -66,22 +66,39 @@ am_libsystem_settings_la_OBJECTS =  \
 	libsystem_settings_la-nm-sysconfig-connection.lo \
 	libsystem_settings_la-nm-default-wired-connection.lo
 libsystem_settings_la_OBJECTS = $(am_libsystem_settings_la_OBJECTS)
-libsystem_settings_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libsystem_settings_la_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+libsystem_settings_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libsystem_settings_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libsystem_settings_la_SOURCES)
 DIST_SOURCES = $(libsystem_settings_la_SOURCES)
 ETAGS = etags
@@ -91,6 +108,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -111,6 +129,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -152,6 +171,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -191,6 +211,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -247,7 +269,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -259,6 +280,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -364,7 +386,7 @@ clean-noinstLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libsystem-settings.la: $(libsystem_settings_la_OBJECTS) $(libsystem_settings_la_DEPENDENCIES) 
-	$(libsystem_settings_la_LINK)  $(libsystem_settings_la_OBJECTS) $(libsystem_settings_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libsystem_settings_la_LINK)  $(libsystem_settings_la_OBJECTS) $(libsystem_settings_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -380,70 +402,79 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 libsystem_settings_la-nm-sysconfig-settings.lo: nm-sysconfig-settings.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-sysconfig-settings.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-sysconfig-settings.Tpo -c -o libsystem_settings_la-nm-sysconfig-settings.lo `test -f 'nm-sysconfig-settings.c' || echo '$(srcdir)/'`nm-sysconfig-settings.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-sysconfig-settings.Tpo $(DEPDIR)/libsystem_settings_la-nm-sysconfig-settings.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-sysconfig-settings.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-sysconfig-settings.Tpo -c -o libsystem_settings_la-nm-sysconfig-settings.lo `test -f 'nm-sysconfig-settings.c' || echo '$(srcdir)/'`nm-sysconfig-settings.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-sysconfig-settings.Tpo $(DEPDIR)/libsystem_settings_la-nm-sysconfig-settings.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-sysconfig-settings.c' object='libsystem_settings_la-nm-sysconfig-settings.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-sysconfig-settings.lo `test -f 'nm-sysconfig-settings.c' || echo '$(srcdir)/'`nm-sysconfig-settings.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-sysconfig-settings.lo `test -f 'nm-sysconfig-settings.c' || echo '$(srcdir)/'`nm-sysconfig-settings.c
 
 libsystem_settings_la-nm-inotify-helper.lo: nm-inotify-helper.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-inotify-helper.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-inotify-helper.Tpo -c -o libsystem_settings_la-nm-inotify-helper.lo `test -f 'nm-inotify-helper.c' || echo '$(srcdir)/'`nm-inotify-helper.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-inotify-helper.Tpo $(DEPDIR)/libsystem_settings_la-nm-inotify-helper.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-inotify-helper.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-inotify-helper.Tpo -c -o libsystem_settings_la-nm-inotify-helper.lo `test -f 'nm-inotify-helper.c' || echo '$(srcdir)/'`nm-inotify-helper.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-inotify-helper.Tpo $(DEPDIR)/libsystem_settings_la-nm-inotify-helper.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-inotify-helper.c' object='libsystem_settings_la-nm-inotify-helper.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-inotify-helper.lo `test -f 'nm-inotify-helper.c' || echo '$(srcdir)/'`nm-inotify-helper.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-inotify-helper.lo `test -f 'nm-inotify-helper.c' || echo '$(srcdir)/'`nm-inotify-helper.c
 
 libsystem_settings_la-nm-system-config-error.lo: nm-system-config-error.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-system-config-error.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-system-config-error.Tpo -c -o libsystem_settings_la-nm-system-config-error.lo `test -f 'nm-system-config-error.c' || echo '$(srcdir)/'`nm-system-config-error.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-system-config-error.Tpo $(DEPDIR)/libsystem_settings_la-nm-system-config-error.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-system-config-error.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-system-config-error.Tpo -c -o libsystem_settings_la-nm-system-config-error.lo `test -f 'nm-system-config-error.c' || echo '$(srcdir)/'`nm-system-config-error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-system-config-error.Tpo $(DEPDIR)/libsystem_settings_la-nm-system-config-error.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-system-config-error.c' object='libsystem_settings_la-nm-system-config-error.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-system-config-error.lo `test -f 'nm-system-config-error.c' || echo '$(srcdir)/'`nm-system-config-error.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-system-config-error.lo `test -f 'nm-system-config-error.c' || echo '$(srcdir)/'`nm-system-config-error.c
 
 libsystem_settings_la-nm-system-config-interface.lo: nm-system-config-interface.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-system-config-interface.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Tpo -c -o libsystem_settings_la-nm-system-config-interface.lo `test -f 'nm-system-config-interface.c' || echo '$(srcdir)/'`nm-system-config-interface.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Tpo $(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-system-config-interface.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Tpo -c -o libsystem_settings_la-nm-system-config-interface.lo `test -f 'nm-system-config-interface.c' || echo '$(srcdir)/'`nm-system-config-interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Tpo $(DEPDIR)/libsystem_settings_la-nm-system-config-interface.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-system-config-interface.c' object='libsystem_settings_la-nm-system-config-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-system-config-interface.lo `test -f 'nm-system-config-interface.c' || echo '$(srcdir)/'`nm-system-config-interface.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-system-config-interface.lo `test -f 'nm-system-config-interface.c' || echo '$(srcdir)/'`nm-system-config-interface.c
 
 libsystem_settings_la-nm-sysconfig-connection.lo: nm-sysconfig-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-sysconfig-connection.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-sysconfig-connection.Tpo -c -o libsystem_settings_la-nm-sysconfig-connection.lo `test -f 'nm-sysconfig-connection.c' || echo '$(srcdir)/'`nm-sysconfig-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-sysconfig-connection.Tpo $(DEPDIR)/libsystem_settings_la-nm-sysconfig-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-sysconfig-connection.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-sysconfig-connection.Tpo -c -o libsystem_settings_la-nm-sysconfig-connection.lo `test -f 'nm-sysconfig-connection.c' || echo '$(srcdir)/'`nm-sysconfig-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-sysconfig-connection.Tpo $(DEPDIR)/libsystem_settings_la-nm-sysconfig-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-sysconfig-connection.c' object='libsystem_settings_la-nm-sysconfig-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-sysconfig-connection.lo `test -f 'nm-sysconfig-connection.c' || echo '$(srcdir)/'`nm-sysconfig-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-sysconfig-connection.lo `test -f 'nm-sysconfig-connection.c' || echo '$(srcdir)/'`nm-sysconfig-connection.c
 
 libsystem_settings_la-nm-default-wired-connection.lo: nm-default-wired-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-default-wired-connection.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-default-wired-connection.Tpo -c -o libsystem_settings_la-nm-default-wired-connection.lo `test -f 'nm-default-wired-connection.c' || echo '$(srcdir)/'`nm-default-wired-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-default-wired-connection.Tpo $(DEPDIR)/libsystem_settings_la-nm-default-wired-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libsystem_settings_la-nm-default-wired-connection.lo -MD -MP -MF $(DEPDIR)/libsystem_settings_la-nm-default-wired-connection.Tpo -c -o libsystem_settings_la-nm-default-wired-connection.lo `test -f 'nm-default-wired-connection.c' || echo '$(srcdir)/'`nm-default-wired-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsystem_settings_la-nm-default-wired-connection.Tpo $(DEPDIR)/libsystem_settings_la-nm-default-wired-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-default-wired-connection.c' object='libsystem_settings_la-nm-default-wired-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-default-wired-connection.lo `test -f 'nm-default-wired-connection.c' || echo '$(srcdir)/'`nm-default-wired-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsystem_settings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsystem_settings_la-nm-default-wired-connection.lo `test -f 'nm-default-wired-connection.c' || echo '$(srcdir)/'`nm-default-wired-connection.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -654,7 +685,7 @@ uninstall-am:
 
 
 nm-settings-system-glue.h: $(top_srcdir)/introspection/nm-settings-system.xml
-	dbus-binding-tool --prefix=nm_settings_system --mode=glib-server --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_settings_system --mode=glib-server --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

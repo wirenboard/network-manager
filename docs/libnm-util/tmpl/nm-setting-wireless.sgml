@@ -117,6 +117,13 @@ NMSettingWireless
 
 
 
+<!-- ##### MACRO NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_WIRELESS_MTU ##### -->
 <para>
 
@@ -155,6 +162,11 @@ NMSettingWireless
 </para>
 
 <!-- ##### ARG NMSettingWireless:channel ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:cloned-mac-address ##### -->
 <para>
 
 </para>
@@ -292,6 +304,15 @@ NMSettingWireless
 
 
 <!-- ##### FUNCTION nm_setting_wireless_get_mac_address ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_get_cloned_mac_address ##### -->
 <para>
 
 </para>

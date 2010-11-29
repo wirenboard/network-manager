@@ -27,6 +27,13 @@ NMDeviceWifi
 
 
 
+<!-- ##### MACRO NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_DEVICE_WIFI_MODE ##### -->
 <para>
 
@@ -97,10 +104,30 @@ NMDeviceWifi
 
 </para>
 
+<!-- ##### ARG NMDeviceWifi:perm-hw-address ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMDeviceWifi:wireless-capabilities ##### -->
 <para>
 
 </para>
+
+<!-- ##### STRUCT NMDeviceWifiClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@access_point_added: 
+@access_point_removed: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
 
 <!-- ##### FUNCTION nm_device_wifi_new ##### -->
 <para>
@@ -113,6 +140,15 @@ NMDeviceWifi
 
 
 <!-- ##### FUNCTION nm_device_wifi_get_hw_address ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_wifi_get_permanent_hw_address ##### -->
 <para>
 
 </para>

@@ -113,6 +113,12 @@ NMSettingWimax
 @NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY: 
 @NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY: 
 
+<!-- ##### ARG NMSettingConnection:permissions ##### -->
+<para>
+
+</para>
+
+
 <!-- ##### ENUM NMSettingGsmNetworkMode ##### -->
 <para>
 
@@ -158,24 +164,6 @@ NMSettingWimax
 @NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY: 
 @NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY: 
 
-<!-- ##### ARG NMSettingWired:cloned-mac-address ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingWired:s390-nettype ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingWired:s390-options ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### ARG NMSettingWired:s390-port-name ##### -->
 <para>
 
@@ -194,19 +182,19 @@ NMSettingWimax
 </para>
 
 
-<!-- ##### ARG NMSettingWired:s390-subchannels ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### ARG NMSettingWired:zvm-subchannels ##### -->
 <para>
 
 </para>
 
 
-<!-- ##### ARG NMSettingWireless:cloned-mac-address ##### -->
+<!-- ##### MACRO NM_SETTINGS_CONNECTION_PERMISSION_PREFIX_GROUP ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### MACRO NM_SETTINGS_CONNECTION_PERMISSION_PREFIX_USER ##### -->
 <para>
 
 </para>
@@ -272,7 +260,7 @@ NMSettingWimax
 </para>
 
 
-<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_DHCP ##### -->
+<!-- ##### MACRO NM_SETTING_CONNECTION_PERMISSIONS ##### -->
 <para>
 
 </para>
@@ -302,24 +290,6 @@ NMSettingWimax
 </para>
 
 
-<!-- ##### MACRO NM_SETTING_WIRED_CLONED_MAC_ADDRESS ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_S390_NETTYPE ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_S390_OPTIONS ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### MACRO NM_SETTING_WIRED_S390_PORT_NAME ##### -->
 <para>
 
@@ -338,19 +308,7 @@ NMSettingWimax
 </para>
 
 
-<!-- ##### MACRO NM_SETTING_WIRED_S390_SUBCHANNELS ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### MACRO NM_SETTING_WIRED_ZVM_SUBCHANNELS ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### MACRO NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS ##### -->
 <para>
 
 </para>
@@ -506,6 +464,32 @@ NMSettingWimax
 @setting: 
 @i: 
 
+<!-- ##### FUNCTION nm_setting_connection_get_num_permissions ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+<!-- ##### FUNCTION nm_setting_connection_get_permission ##### -->
+<para>
+
+</para>
+
+@setting: 
+@index: 
+@Returns: 
+
+<!-- ##### FUNCTION nm_setting_connection_get_permission_entry ##### -->
+<para>
+
+</para>
+
+@setting: 
+@index: 
+@Returns: 
+
 <!-- ##### FUNCTION nm_setting_wimax_error_quark ##### -->
 <para>
 
@@ -546,60 +530,6 @@ NMSettingWimax
 @void: 
 @Returns: 
 
-<!-- ##### FUNCTION nm_setting_wired_add_s390_option ##### -->
-<para>
-
-</para>
-
-@setting: 
-@key: 
-@item: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wired_get_cloned_mac_address ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wired_get_num_s390_options ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wired_get_s390_nettype ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wired_get_s390_option ##### -->
-<para>
-
-</para>
-
-@setting: 
-@idx: 
-@out_key: 
-@out_value: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wired_get_s390_option_by_key ##### -->
-<para>
-
-</para>
-
-@setting: 
-@key: 
-@Returns: 
-
 <!-- ##### FUNCTION nm_setting_wired_get_s390_port_name ##### -->
 <para>
 
@@ -624,72 +554,11 @@ NMSettingWimax
 @setting: 
 @Returns: 
 
-<!-- ##### FUNCTION nm_setting_wired_get_s390_subchannels ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
 <!-- ##### FUNCTION nm_setting_wired_get_zvm_subchannels ##### -->
 <para>
 
 </para>
 
 @setting: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wired_remove_s390_option ##### -->
-<para>
-
-</para>
-
-@setting: 
-@key: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_setting_wireless_get_cloned_mac_address ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_utils_wifi_channel_to_freq ##### -->
-<para>
-
-</para>
-
-@channel: 
-@band: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_utils_wifi_find_next_channel ##### -->
-<para>
-
-</para>
-
-@channel: 
-@direction: 
-@band: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_utils_wifi_freq_to_channel ##### -->
-<para>
-
-</para>
-
-@freq: 
-@Returns: 
-
-<!-- ##### FUNCTION nm_utils_wifi_is_channel_valid ##### -->
-<para>
-
-</para>
-
-@channel: 
-@band: 
 @Returns: 
 

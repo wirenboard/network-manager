@@ -50,6 +50,19 @@ NMObject
 
 </para>
 
+<!-- ##### STRUCT NMObjectClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_object_get_connection ##### -->
 <para>
 

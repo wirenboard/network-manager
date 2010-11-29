@@ -20,14 +20,6 @@ nm-settings-connection-interface
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### MACRO NM_SETTINGS_CONNECTION_INTERFACE_GET_INTERFACE ##### -->
-<para>
-
-</para>
-
-@obj: 
-
-
 <!-- ##### MACRO NM_SETTINGS_CONNECTION_INTERFACE_UPDATED ##### -->
 <para>
 

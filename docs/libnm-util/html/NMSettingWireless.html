@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSettingWireless</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingWired.html" title="NMSettingWired">
 <link rel="next" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">
-<meta name="generator" content="GTK-Doc V1.14 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -45,7 +45,7 @@
 enum                <a class="link" href="NMSettingWireless.html#NMSettingWirelessError" title="enum NMSettingWirelessError">NMSettingWirelessError</a>;
 #define             <a class="link" href="NMSettingWireless.html#NM-TYPE-SETTING-WIRELESS-ERROR:CAPS" title="NM_TYPE_SETTING_WIRELESS_ERROR">NM_TYPE_SETTING_WIRELESS_ERROR</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR:CAPS" title="NM_SETTING_WIRELESS_ERROR">NM_SETTING_WIRELESS_ERROR</a>
-<a href="/usr/share/gtk-doc/html/glib/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingWireless.html#nm-setting-wireless-error-quark" title="nm_setting_wireless_error_quark ()">nm_setting_wireless_error_quark</a>     (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingWireless.html#nm-setting-wireless-error-quark" title="nm_setting_wireless_error_quark ()">nm_setting_wireless_error_quark</a>     (<em class="parameter"><code><span class="type">void</span></code></em>);
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-SSID:CAPS" title="NM_SETTING_WIRELESS_SSID">NM_SETTING_WIRELESS_SSID</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE:CAPS" title="NM_SETTING_WIRELESS_MODE">NM_SETTING_WIRELESS_MODE</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-BAND:CAPS" title="NM_SETTING_WIRELESS_BAND">NM_SETTING_WIRELESS_BAND</a>
@@ -54,42 +54,45 @@ enum                <a class="link" href="NMSettingWireless.html#NMSettingWirele
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-RATE:CAPS" title="NM_SETTING_WIRELESS_RATE">NM_SETTING_WIRELESS_RATE</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-TX-POWER:CAPS" title="NM_SETTING_WIRELESS_TX_POWER">NM_SETTING_WIRELESS_TX_POWER</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS" title="NM_SETTING_WIRELESS_MAC_ADDRESS">NM_SETTING_WIRELESS_MAC_ADDRESS</a>
+#define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS" title="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS">NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS" title="NM_SETTING_WIRELESS_MTU">NM_SETTING_WIRELESS_MTU</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS" title="NM_SETTING_WIRELESS_SEEN_BSSIDS">NM_SETTING_WIRELESS_SEEN_BSSIDS</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS" title="NM_SETTING_WIRELESS_SEC">NM_SETTING_WIRELESS_SEC</a>
                     <a class="link" href="NMSettingWireless.html#NMSettingWireless-struct" title="NMSettingWireless">NMSettingWireless</a>;
                     <a class="link" href="NMSettingWireless.html#NMSettingWirelessClass" title="NMSettingWirelessClass">NMSettingWirelessClass</a>;
-<a href="/usr/share/gtk-doc/html/gobject/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-type" title="nm_setting_wireless_get_type ()">nm_setting_wireless_get_type</a>        (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-type" title="nm_setting_wireless_get_type ()">nm_setting_wireless_get_type</a>        (<em class="parameter"><code><span class="type">void</span></code></em>);
 <a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMSettingWireless.html#nm-setting-wireless-new" title="nm_setting_wireless_new ()">nm_setting_wireless_new</a>             (<em class="parameter"><code><span class="type">void</span></code></em>);
-const <a href="/usr/share/gtk-doc/html/glib/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-ssid" title="nm_setting_wireless_get_ssid ()">nm_setting_wireless_get_ssid</a>        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-ssid" title="nm_setting_wireless_get_ssid ()">nm_setting_wireless_get_ssid</a>        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-mode" title="nm_setting_wireless_get_mode ()">nm_setting_wireless_get_mode</a>        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-band" title="nm_setting_wireless_get_band ()">nm_setting_wireless_get_band</a>        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-channel" title="nm_setting_wireless_get_channel ()">nm_setting_wireless_get_channel</a>     (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-const <a href="/usr/share/gtk-doc/html/glib/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-bssid" title="nm_setting_wireless_get_bssid ()">nm_setting_wireless_get_bssid</a>       (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-rate" title="nm_setting_wireless_get_rate ()">nm_setting_wireless_get_rate</a>        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-tx-power" title="nm_setting_wireless_get_tx_power ()">nm_setting_wireless_get_tx_power</a>    (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-const <a href="/usr/share/gtk-doc/html/glib/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-mac-address" title="nm_setting_wireless_get_mac_address ()">nm_setting_wireless_get_mac_address</a> (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-mtu" title="nm_setting_wireless_get_mtu ()">nm_setting_wireless_get_mtu</a>         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-channel" title="nm_setting_wireless_get_channel ()">nm_setting_wireless_get_channel</a>     (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-bssid" title="nm_setting_wireless_get_bssid ()">nm_setting_wireless_get_bssid</a>       (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-rate" title="nm_setting_wireless_get_rate ()">nm_setting_wireless_get_rate</a>        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-tx-power" title="nm_setting_wireless_get_tx_power ()">nm_setting_wireless_get_tx_power</a>    (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-mac-address" title="nm_setting_wireless_get_mac_address ()">nm_setting_wireless_get_mac_address</a> (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address" title="nm_setting_wireless_get_cloned_mac_address ()">nm_setting_wireless_get_cloned_mac_address</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-mtu" title="nm_setting_wireless_get_mtu ()">nm_setting_wireless_get_mtu</a>         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-security" title="nm_setting_wireless_get_security ()">nm_setting_wireless_get_security</a>    (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingWireless.html#nm-setting-wireless-add-seen-bssid" title="nm_setting_wireless_add_seen_bssid ()">nm_setting_wireless_add_seen_bssid</a>  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingWireless.html#nm-setting-wireless-add-seen-bssid" title="nm_setting_wireless_add_seen_bssid ()">nm_setting_wireless_add_seen_bssid</a>  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *bssid</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-num-seen-bssids" title="nm_setting_wireless_get_num_seen_bssids ()">nm_setting_wireless_get_num_seen_bssids</a>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-num-seen-bssids" title="nm_setting_wireless_get_num_seen_bssids ()">nm_setting_wireless_get_num_seen_bssids</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-seen-bssid" title="nm_setting_wireless_get_seen_bssid ()">nm_setting_wireless_get_seen_bssid</a>  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> i</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingWireless.html#nm-setting-wireless-ap-security-compatible" title="nm_setting_wireless_ap_security_compatible ()">nm_setting_wireless_ap_security_compatible</a>
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> i</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingWireless.html#nm-setting-wireless-ap-security-compatible" title="nm_setting_wireless_ap_security_compatible ()">nm_setting_wireless_ap_security_compatible</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *s_wireless</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *s_wireless_sec</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_flags</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_wpa</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_rsn</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_mode</code></em>);
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_wpa</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_rsn</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_mode</code></em>);
 </pre>
 </div>
 <div class="refsect1" title="Object Hierarchy">
 <a name="NMSettingWireless.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
-  <a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
    +----<a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
          +----NMSettingWireless
 </pre>
@@ -97,17 +100,18 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <div class="refsect1" title="Properties">
 <a name="NMSettingWireless.properties"></a><h2>Properties</h2>
 <pre class="synopsis">
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--band" title='The "band" property'>band</a>"                     <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--band" title='The "band" property'>band</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
   "<a class="link" href="NMSettingWireless.html#NMSettingWireless--bssid" title='The "bssid" property'>bssid</a>"                    <span class="type">GArray_guchar_</span>*       : Read / Write
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--channel" title='The "channel" property'>channel</a>"                  <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--channel" title='The "channel" property'>channel</a>"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--cloned-mac-address" title='The "cloned-mac-address" property'>cloned-mac-address</a>"       <span class="type">GArray_guchar_</span>*       : Read / Write
   "<a class="link" href="NMSettingWireless.html#NMSettingWireless--mac-address" title='The "mac-address" property'>mac-address</a>"              <span class="type">GArray_guchar_</span>*       : Read / Write
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--mode" title='The "mode" property'>mode</a>"                     <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--mtu" title='The "mtu" property'>mtu</a>"                      <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--rate" title='The "rate" property'>rate</a>"                     <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--security" title='The "security" property'>security</a>"                 <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--mode" title='The "mode" property'>mode</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--mtu" title='The "mtu" property'>mtu</a>"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--rate" title='The "rate" property'>rate</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--security" title='The "security" property'>security</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
   "<a class="link" href="NMSettingWireless.html#NMSettingWireless--seen-bssids" title='The "seen-bssids" property'>seen-bssids</a>"              <span class="type">GSList_gchararray_</span>*   : Read / Write
   "<a class="link" href="NMSettingWireless.html#NMSettingWireless--ssid" title='The "ssid" property'>ssid</a>"                     <span class="type">GArray_guchar_</span>*       : Read / Write
-  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--tx-power" title='The "tx-power" property'>tx-power</a>"                 <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
+  "<a class="link" href="NMSettingWireless.html#NMSettingWireless--tx-power" title='The "tx-power" property'>tx-power</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct
 </pre>
 </div>
 <div class="refsect1" title="Description">
@@ -158,7 +162,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_error_quark ()">
 <a name="nm-setting-wireless-error-quark"></a><h3>nm_setting_wireless_error_quark ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_wireless_error_quark     (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_wireless_error_quark     (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -235,6 +239,14 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
+<div class="refsect2" title="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS">
+<a name="NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"></a><h3>NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS "cloned-mac-address"
+</pre>
+<p>
+</p>
+</div>
+<hr>
 <div class="refsect2" title="NM_SETTING_WIRELESS_MTU">
 <a name="NM-SETTING-WIRELESS-MTU:CAPS"></a><h3>NM_SETTING_WIRELESS_MTU</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_MTU         "mtu"
@@ -284,7 +296,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_type ()">
 <a name="nm-setting-wireless-get-type"></a><h3>nm_setting_wireless_get_type ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/gobject/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_setting_wireless_get_type        (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_setting_wireless_get_type        (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -314,7 +326,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_ssid ()">
 <a name="nm-setting-wireless-get-ssid"></a><h3>nm_setting_wireless_get_ssid ()</h3>
-<pre class="programlisting">const <a href="/usr/share/gtk-doc/html/glib/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_ssid        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_ssid        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -380,7 +392,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_channel ()">
 <a name="nm-setting-wireless-get-channel"></a><h3>nm_setting_wireless_get_channel ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_channel     (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_channel     (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -402,7 +414,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_bssid ()">
 <a name="nm-setting-wireless-get-bssid"></a><h3>nm_setting_wireless_get_bssid ()</h3>
-<pre class="programlisting">const <a href="/usr/share/gtk-doc/html/glib/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_bssid       (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_bssid       (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -424,7 +436,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_rate ()">
 <a name="nm-setting-wireless-get-rate"></a><h3>nm_setting_wireless_get_rate ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_rate        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_rate        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -446,7 +458,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_tx_power ()">
 <a name="nm-setting-wireless-get-tx-power"></a><h3>nm_setting_wireless_get_tx_power ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_tx_power    (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_tx_power    (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -468,7 +480,30 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_mac_address ()">
 <a name="nm-setting-wireless-get-mac-address"></a><h3>nm_setting_wireless_get_mac_address ()</h3>
-<pre class="programlisting">const <a href="/usr/share/gtk-doc/html/glib/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_mac_address (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_mac_address (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<p>
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="nm_setting_wireless_get_cloned_mac_address ()">
+<a name="nm-setting-wireless-get-cloned-mac-address"></a><h3>nm_setting_wireless_get_cloned_mac_address ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_wireless_get_cloned_mac_address
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -490,7 +525,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_mtu ()">
 <a name="nm-setting-wireless-get-mtu"></a><h3>nm_setting_wireless_get_mtu ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_mtu         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_mtu         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -534,7 +569,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_add_seen_bssid ()">
 <a name="nm-setting-wireless-add-seen-bssid"></a><h3>nm_setting_wireless_add_seen_bssid ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_wireless_add_seen_bssid  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_wireless_add_seen_bssid  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *bssid</code></em>);</pre>
 <p>
 </p>
@@ -562,7 +597,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_get_num_seen_bssids ()">
 <a name="nm-setting-wireless-get-num-seen-bssids"></a><h3>nm_setting_wireless_get_num_seen_bssids ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_num_seen_bssids
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_wireless_get_num_seen_bssids
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>
 </p>
@@ -586,7 +621,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <div class="refsect2" title="nm_setting_wireless_get_seen_bssid ()">
 <a name="nm-setting-wireless-get-seen-bssid"></a><h3>nm_setting_wireless_get_seen_bssid ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_wireless_get_seen_bssid  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> i</code></em>);</pre>
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> i</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -613,13 +648,13 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <hr>
 <div class="refsect2" title="nm_setting_wireless_ap_security_compatible ()">
 <a name="nm-setting-wireless-ap-security-compatible"></a><h3>nm_setting_wireless_ap_security_compatible ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_wireless_ap_security_compatible
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_wireless_ap_security_compatible
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *s_wireless</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *s_wireless_sec</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_flags</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_wpa</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_rsn</code></em>,
-                                                         <em class="parameter"><code><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_mode</code></em>);</pre>
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_wpa</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_rsn</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> ap_mode</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">
@@ -668,7 +703,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <a name="NMSettingWireless.property-details"></a><h2>Property Details</h2>
 <div class="refsect2" title='The "band" property'>
 <a name="NMSettingWireless--band"></a><h3>The <code class="literal">"band"</code> property</h3>
-<pre class="programlisting">  "band"                     <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
+<pre class="programlisting">  "band"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
 <p>
 802.11 frequency band of the network.  One of 'a' for 5GHz 802.11a or
 'bg' for 2.4GHz 802.11.  This will lock associations to the WiFi network
@@ -693,7 +728,7 @@ creating an Ad-Hoc network and is unlikely to in the future.
 <hr>
 <div class="refsect2" title='The "channel" property'>
 <a name="NMSettingWireless--channel"></a><h3>The <code class="literal">"channel"</code> property</h3>
-<pre class="programlisting">  "channel"                  <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
+<pre class="programlisting">  "channel"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
 <p>
 Wireless channel to use for the WiFi connection.  The device will only
 join (or create for Ad-Hoc networks) a WiFi network on the specified
@@ -703,19 +738,28 @@ also requires the 'band' property to be set.
 <p>Default value: 0</p>
 </div>
 <hr>
+<div class="refsect2" title='The "cloned-mac-address" property'>
+<a name="NMSettingWireless--cloned-mac-address"></a><h3>The <code class="literal">"cloned-mac-address"</code> property</h3>
+<pre class="programlisting">  "cloned-mac-address"       <span class="type">GArray_guchar_</span>*       : Read / Write</pre>
+<p>
+If specified, request that the Wifi device use this MAC address instead of its
+permanent MAC address.  This is known as MAC cloning or spoofing.
+</p>
+</div>
+<hr>
 <div class="refsect2" title='The "mac-address" property'>
 <a name="NMSettingWireless--mac-address"></a><h3>The <code class="literal">"mac-address"</code> property</h3>
 <pre class="programlisting">  "mac-address"              <span class="type">GArray_guchar_</span>*       : Read / Write</pre>
 <p>
 If specified, this connection will only apply to the WiFi device
-whose MAC address matches. This property does not change the MAC address
-of the device (known as MAC spoofing).
+whose permanent MAC address matches. This property does not change the MAC address
+of the device (i.e. MAC spoofing).
 </p>
 </div>
 <hr>
 <div class="refsect2" title='The "mode" property'>
 <a name="NMSettingWireless--mode"></a><h3>The <code class="literal">"mode"</code> property</h3>
-<pre class="programlisting">  "mode"                     <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
+<pre class="programlisting">  "mode"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
 <p>
 WiFi network mode; one of 'infrastructure' or 'adhoc'.  If blank,
 infrastructure is assumed.
@@ -725,7 +769,7 @@ infrastructure is assumed.
 <hr>
 <div class="refsect2" title='The "mtu" property'>
 <a name="NMSettingWireless--mtu"></a><h3>The <code class="literal">"mtu"</code> property</h3>
-<pre class="programlisting">  "mtu"                      <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
+<pre class="programlisting">  "mtu"                      <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
 <p>
 If non-zero, only transmit packets of the specified size or smaller,
 breaking larger packets up into multiple Ethernet frames.
@@ -735,7 +779,7 @@ breaking larger packets up into multiple Ethernet frames.
 <hr>
 <div class="refsect2" title='The "rate" property'>
 <a name="NMSettingWireless--rate"></a><h3>The <code class="literal">"rate"</code> property</h3>
-<pre class="programlisting">  "rate"                     <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
+<pre class="programlisting">  "rate"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
 <p>
 If non-zero, directs the device to only use the specified bitrate for
 communication with the access point.  Units are in Kb/s, ie 5500 = 5.5
@@ -747,7 +791,7 @@ support setting a static bitrate.
 <hr>
 <div class="refsect2" title='The "security" property'>
 <a name="NMSettingWireless--security"></a><h3>The <code class="literal">"security"</code> property</h3>
-<pre class="programlisting">  "security"                 <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
+<pre class="programlisting">  "security"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
 <p>
 If the wireless connection has any security restrictions, like 802.1x,
 WEP, or WPA, set this property to '802-11-wireless-security' and ensure
@@ -780,7 +824,7 @@ SSID of the WiFi network.
 <hr>
 <div class="refsect2" title='The "tx-power" property'>
 <a name="NMSettingWireless--tx-power"></a><h3>The <code class="literal">"tx-power"</code> property</h3>
-<pre class="programlisting">  "tx-power"                 <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
+<pre class="programlisting">  "tx-power"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
 <p>
 If non-zero, directs the device to use the specified transmit power.
 Units are dBm.  This property is highly driver dependent and not all
@@ -792,6 +836,6 @@ devices support setting a static transmit power.
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.14</div>
+          Generated by GTK-Doc V1.15</div>
 </body>
 </html>

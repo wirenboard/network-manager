@@ -186,6 +186,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>b</code></dt><dd>
           If FALSE, indicates that all networking should be disabled.  If TRUE,
           indicates that NetworkManager should begin managing network devices.
+        </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.GetPermissions" id="org.freedesktop.NetworkManager.GetPermissions">GetPermissions</a> (
+        
+        ) &#8594;
+        a{ss}</h3><div class="docstring">
+        Returns the permissions a caller has for various authenticated operations
+        that NetworkManager provides, like Enable/Disable networking, changing
+        WiFi, WWAN, and WiMAX state, etc.
+      </div><div><h4>Returns</h4><dl><dt><code>permissions</code> -
+      <code>a{ss}</code></dt><dd>
+          Dictionary of available permissions and results.  Each permission
+          is represented by a name (ie "org.freedesktop.NetworkManager.Foobar")
+          and each result is one of the following values: "yes" (the permission
+          is available), "auth" (the permission is available after a successful
+          authentication), or "no" (the permission is denied).  Clients may use
+          these values in the UI to indicate the ability to perform certain
+          operations.
         </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.SetLogging" id="org.freedesktop.NetworkManager.SetLogging">SetLogging</a> (
         s: level, s: domains
         ) &#8594;
@@ -220,7 +236,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </div><div><h4>Returns</h4><dl><dt><code>state</code> -
       <code>u</code>
       (<a xmlns="" href="#type-NM_STATE">NM_STATE</a>)
-    </dt><dd></dd></dl></div></div><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.StateChanged" id="org.freedesktop.NetworkManager.StateChanged">StateChanged</a> (
+    </dt><dd></dd></dl></div></div><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.CheckPermissions" id="org.freedesktop.NetworkManager.CheckPermissions">CheckPermissions</a> (
+        
+        )</h3><div class="docstring">
+        Emitted when system authorization details change, indicating that
+        clients may wish to recheck permissions with GetPermissions.
+      </div></div><div class="signal"><h3><a name="org.freedesktop.NetworkManager.StateChanged" id="org.freedesktop.NetworkManager.StateChanged">StateChanged</a> (
         u: state
         )</h3><div class="docstring">
         NetworkManager's state changed.
@@ -286,6 +307,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>ao</code> -
       <code>(read)</code></dt><dd>
         List of active connection object paths.
+      </dd><dt><code>Version</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        NetworkManager version.
       </dd><dt><code>State</code> -
       <code>u</code> -
       <code>(read)</code>
@@ -374,7 +399,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </dd><dt><code>Interface</code> -
       <code>s</code> -
       <code>(read)</code></dt><dd>
-        The network interface offered by the device.
+        The name of the device's control (and often data) interface.
+      </dd><dt><code>IpInterface</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The name of the device's data interface when available.  This property
+        may not refer to the actual data interface until the device has
+        successfully established a data connection, indicated by the device's
+        State becoming ACTIVATED.
       </dd><dt><code>Driver</code> -
       <code>s</code> -
       <code>(read)</code></dt><dd>
@@ -411,6 +443,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>b</code> -
       <code>(read)</code></dt><dd>
         Whether or not this device is managed by NetworkManager.
+      </dd><dt><code>FirmwareMissing</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        If TRUE, indicates the device is likely missing firmware necessary for
+        its operation.
       </dd><dt><code>DeviceType</code> -
       <code>u</code> -
       <code>(read)</code>
@@ -549,7 +586,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
       <code>s</code> -
       <code>(read)</code></dt><dd>
-        Hardware address of the device.
+        Active hardware address of the device.
+      </dd><dt><code>PermHwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Permanent hardware address of the device.
       </dd><dt><code>Speed</code> -
       <code>u</code> -
       <code>(read)</code></dt><dd>
@@ -594,7 +635,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
       <code>s</code> -
       <code>(read)</code></dt><dd>
-        The hardware address of the device.
+        The active hardware address of the device.
+      </dd><dt><code>PermHwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The permanent hardware address of the device.
       </dd><dt><code>Mode</code> -
       <code>u</code> -
       <code>(read)</code>

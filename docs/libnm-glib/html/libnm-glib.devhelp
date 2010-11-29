@@ -3,213 +3,242 @@
 <book xmlns="http://www.devhelp.net/book" title="libnm-glib Reference Manual" link="index.html" author="" name="libnm-glib">
   <chapters>
     <sub name="libnm-glib Objects" link="ch01.html">
-      <sub name="NMClient" link="libnm-glib-nm-client.html"/>
-      <sub name="NMActiveConnection" link="libnm-glib-nm-active-connection.html"/>
-      <sub name="NMDevice" link="libnm-glib-nm-device.html"/>
-      <sub name="NMDeviceEthernet" link="libnm-glib-nm-device-ethernet.html"/>
-      <sub name="NMDeviceWifi" link="libnm-glib-nm-device-wifi.html"/>
+      <sub name="NMClient" link="NMClient.html"/>
+      <sub name="NMActiveConnection" link="NMActiveConnection.html"/>
+      <sub name="NMDevice" link="NMDevice.html"/>
+      <sub name="NMDeviceEthernet" link="NMDeviceEthernet.html"/>
+      <sub name="NMDeviceWifi" link="NMDeviceWifi.html"/>
       <sub name="NMSerialDevice" link="NMSerialDevice.html"/>
       <sub name="NMGsmDevice" link="NMGsmDevice.html"/>
       <sub name="NMCdmaDevice" link="NMCdmaDevice.html"/>
-      <sub name="NMDeviceBt" link="libnm-glib-nm-device-bt.html"/>
-      <sub name="NMAccessPoint" link="libnm-glib-nm-access-point.html"/>
+      <sub name="NMDeviceBt" link="libnm-glib-NMDeviceBt.html"/>
+      <sub name="NMAccessPoint" link="NMAccessPoint.html"/>
       <sub name="NMIP4Config" link="NMIP4Config.html"/>
       <sub name="NMIP6Config" link="NMIP6Config.html"/>
       <sub name="NMDHCP4Config" link="NMDHCP4Config.html"/>
       <sub name="NMDHCP6Config" link="NMDHCP6Config.html"/>
       <sub name="NMExportedConnection" link="libnm-glib-NMExportedConnection.html"/>
-      <sub name="NMObject" link="libnm-glib-nm-object.html"/>
+      <sub name="NMObject" link="NMObject.html"/>
       <sub name="NMRemoteConnection" link="libnm-glib-NMRemoteConnection.html"/>
-      <sub name="NMRemoteSettings" link="libnm-glib-nm-remote-settings.html"/>
+      <sub name="NMRemoteSettings" link="libnm-glib-NMRemoteSettings.html"/>
       <sub name="NMRemoteSettingsSystem" link="libnm-glib-NMRemoteSettingsSystem.html"/>
-      <sub name="nm-settings-connection-interface" link="libnm-glib-nm-settings-connection-interface.html"/>
-      <sub name="nm-settings-interface" link="libnm-glib-nm-settings-interface.html"/>
-      <sub name="NMSettingsService" link="libnm-glib-nm-settings-service.html"/>
-      <sub name="nm-settings-system-interface" link="libnm-glib-nm-settings-system-interface.html"/>
+      <sub name="nm-settings-connection-interface" link="libnm-glib-NMSettingsConnection.html"/>
+      <sub name="nm-settings-interface" link="libnm-glib-NMSettings.html"/>
+      <sub name="NMSettingsService" link="libnm-glib-NMSettingsService.html"/>
+      <sub name="nm-settings-system-interface" link="libnm-glib-NMSettingsSystem.html"/>
       <sub name="nm-types" link="libnm-glib-nm-types.html"/>
-      <sub name="NMVPNConnection" link="libnm-glib-nm-vpn-connection.html"/>
-      <sub name="NMVPNPlugin" link="libnm-glib-nm-vpn-plugin.html"/>
-      <sub name="nm-vpn-plugin-ui-interface" link="libnm-glib-nm-vpn-plugin-ui-interface.html"/>
+      <sub name="NMVPNConnection" link="libnm-glib-NMVPNConnection.html"/>
+      <sub name="NMVPNPlugin" link="libnm-glib-NMVPNPlugin.html"/>
+      <sub name="nm-vpn-plugin-ui-interface" link="libnm-glib-NMVpnPluginUi.html"/>
     </sub>
   </chapters>
   <functions>
-    <function name="NM_CLIENT_STATE" link="libnm-glib-nm-client.html#NM-CLIENT-STATE:CAPS"/>
-    <function name="NM_CLIENT_MANAGER_RUNNING" link="libnm-glib-nm-client.html#NM-CLIENT-MANAGER-RUNNING:CAPS"/>
-    <function name="NM_CLIENT_WIRELESS_ENABLED" link="libnm-glib-nm-client.html#NM-CLIENT-WIRELESS-ENABLED:CAPS"/>
-    <function name="NM_CLIENT_WIRELESS_HARDWARE_ENABLED" link="libnm-glib-nm-client.html#NM-CLIENT-WIRELESS-HARDWARE-ENABLED:CAPS"/>
-    <function name="NM_CLIENT_WWAN_ENABLED" link="libnm-glib-nm-client.html#NM-CLIENT-WWAN-ENABLED:CAPS"/>
-    <function name="NM_CLIENT_WWAN_HARDWARE_ENABLED" link="libnm-glib-nm-client.html#NM-CLIENT-WWAN-HARDWARE-ENABLED:CAPS"/>
-    <function name="NM_CLIENT_ACTIVE_CONNECTIONS" link="libnm-glib-nm-client.html#NM-CLIENT-ACTIVE-CONNECTIONS:CAPS"/>
-    <function name="NMClient" link="libnm-glib-nm-client.html#NMClient-struct"/>
-    <function name="nm_client_new ()" link="libnm-glib-nm-client.html#nm-client-new"/>
-    <function name="nm_client_get_devices ()" link="libnm-glib-nm-client.html#nm-client-get-devices"/>
-    <function name="nm_client_get_device_by_path ()" link="libnm-glib-nm-client.html#nm-client-get-device-by-path"/>
-    <function name="NMClientActivateDeviceFn ()" link="libnm-glib-nm-client.html#NMClientActivateDeviceFn"/>
-    <function name="nm_client_activate_connection ()" link="libnm-glib-nm-client.html#nm-client-activate-connection"/>
-    <function name="nm_client_deactivate_connection ()" link="libnm-glib-nm-client.html#nm-client-deactivate-connection"/>
-    <function name="nm_client_wireless_get_enabled ()" link="libnm-glib-nm-client.html#nm-client-wireless-get-enabled"/>
-    <function name="nm_client_wireless_set_enabled ()" link="libnm-glib-nm-client.html#nm-client-wireless-set-enabled"/>
-    <function name="nm_client_wireless_hardware_get_enabled ()" link="libnm-glib-nm-client.html#nm-client-wireless-hardware-get-enabled"/>
-    <function name="nm_client_wwan_get_enabled ()" link="libnm-glib-nm-client.html#nm-client-wwan-get-enabled"/>
-    <function name="nm_client_wwan_set_enabled ()" link="libnm-glib-nm-client.html#nm-client-wwan-set-enabled"/>
-    <function name="nm_client_wwan_hardware_get_enabled ()" link="libnm-glib-nm-client.html#nm-client-wwan-hardware-get-enabled"/>
-    <function name="nm_client_get_state ()" link="libnm-glib-nm-client.html#nm-client-get-state"/>
-    <function name="nm_client_get_manager_running ()" link="libnm-glib-nm-client.html#nm-client-get-manager-running"/>
-    <function name="nm_client_get_active_connections ()" link="libnm-glib-nm-client.html#nm-client-get-active-connections"/>
-    <function name="nm_client_sleep ()" link="libnm-glib-nm-client.html#nm-client-sleep"/>
-    <function name="The &quot;active-connections&quot; property" link="libnm-glib-nm-client.html#NMClient--active-connections"/>
-    <function name="The &quot;manager-running&quot; property" link="libnm-glib-nm-client.html#NMClient--manager-running"/>
-    <function name="The &quot;networking-enabled&quot; property" link="libnm-glib-nm-client.html#NMClient--networking-enabled"/>
-    <function name="The &quot;state&quot; property" link="libnm-glib-nm-client.html#NMClient--state"/>
-    <function name="The &quot;wireless-enabled&quot; property" link="libnm-glib-nm-client.html#NMClient--wireless-enabled"/>
-    <function name="The &quot;wireless-hardware-enabled&quot; property" link="libnm-glib-nm-client.html#NMClient--wireless-hardware-enabled"/>
-    <function name="The &quot;wwan-enabled&quot; property" link="libnm-glib-nm-client.html#NMClient--wwan-enabled"/>
-    <function name="The &quot;wwan-hardware-enabled&quot; property" link="libnm-glib-nm-client.html#NMClient--wwan-hardware-enabled"/>
-    <function name="The &quot;device-added&quot; signal" link="libnm-glib-nm-client.html#NMClient-device-added"/>
-    <function name="The &quot;device-removed&quot; signal" link="libnm-glib-nm-client.html#NMClient-device-removed"/>
-    <function name="NM_ACTIVE_CONNECTION_SERVICE_NAME" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-SERVICE-NAME:CAPS"/>
-    <function name="NM_ACTIVE_CONNECTION_CONNECTION" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-CONNECTION:CAPS"/>
-    <function name="NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS"/>
-    <function name="NM_ACTIVE_CONNECTION_DEVICES" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-DEVICES:CAPS"/>
-    <function name="NM_ACTIVE_CONNECTION_STATE" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-STATE:CAPS"/>
-    <function name="NM_ACTIVE_CONNECTION_DEFAULT" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-DEFAULT:CAPS"/>
-    <function name="NM_ACTIVE_CONNECTION_DEFAULT6" link="libnm-glib-nm-active-connection.html#NM-ACTIVE-CONNECTION-DEFAULT6:CAPS"/>
-    <function name="NMActiveConnection" link="libnm-glib-nm-active-connection.html#NMActiveConnection-struct"/>
-    <function name="nm_active_connection_new ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-new"/>
-    <function name="nm_active_connection_get_service_name ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-service-name"/>
-    <function name="nm_active_connection_get_scope ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-scope"/>
-    <function name="nm_active_connection_get_connection ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-connection"/>
-    <function name="nm_active_connection_get_specific_object ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-specific-object"/>
-    <function name="nm_active_connection_get_devices ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-devices"/>
-    <function name="nm_active_connection_get_state ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-state"/>
-    <function name="nm_active_connection_get_default ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-default"/>
-    <function name="nm_active_connection_get_default6 ()" link="libnm-glib-nm-active-connection.html#nm-active-connection-get-default6"/>
-    <function name="The &quot;connection&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--connection"/>
-    <function name="The &quot;default&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--default"/>
-    <function name="The &quot;default6&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--default6"/>
-    <function name="The &quot;devices&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--devices"/>
-    <function name="The &quot;service-name&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--service-name"/>
-    <function name="The &quot;specific-object&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--specific-object"/>
-    <function name="The &quot;state&quot; property" link="libnm-glib-nm-active-connection.html#NMActiveConnection--state"/>
-    <function name="NM_DEVICE_UDI" link="libnm-glib-nm-device.html#NM-DEVICE-UDI:CAPS"/>
-    <function name="NM_DEVICE_INTERFACE" link="libnm-glib-nm-device.html#NM-DEVICE-INTERFACE:CAPS"/>
-    <function name="NM_DEVICE_DRIVER" link="libnm-glib-nm-device.html#NM-DEVICE-DRIVER:CAPS"/>
-    <function name="NM_DEVICE_CAPABILITIES" link="libnm-glib-nm-device.html#NM-DEVICE-CAPABILITIES:CAPS"/>
-    <function name="NM_DEVICE_MANAGED" link="libnm-glib-nm-device.html#NM-DEVICE-MANAGED:CAPS"/>
-    <function name="NM_DEVICE_IP4_CONFIG" link="libnm-glib-nm-device.html#NM-DEVICE-IP4-CONFIG:CAPS"/>
-    <function name="NM_DEVICE_DHCP4_CONFIG" link="libnm-glib-nm-device.html#NM-DEVICE-DHCP4-CONFIG:CAPS"/>
-    <function name="NM_DEVICE_IP6_CONFIG" link="libnm-glib-nm-device.html#NM-DEVICE-IP6-CONFIG:CAPS"/>
-    <function name="NM_DEVICE_DHCP6_CONFIG" link="libnm-glib-nm-device.html#NM-DEVICE-DHCP6-CONFIG:CAPS"/>
-    <function name="NM_DEVICE_STATE" link="libnm-glib-nm-device.html#NM-DEVICE-STATE:CAPS"/>
-    <function name="NM_DEVICE_VENDOR" link="libnm-glib-nm-device.html#NM-DEVICE-VENDOR:CAPS"/>
-    <function name="NM_DEVICE_PRODUCT" link="libnm-glib-nm-device.html#NM-DEVICE-PRODUCT:CAPS"/>
-    <function name="NMDevice" link="libnm-glib-nm-device.html#NMDevice-struct"/>
-    <function name="nm_device_new ()" link="libnm-glib-nm-device.html#nm-device-new"/>
-    <function name="nm_device_get_iface ()" link="libnm-glib-nm-device.html#nm-device-get-iface"/>
-    <function name="nm_device_get_udi ()" link="libnm-glib-nm-device.html#nm-device-get-udi"/>
-    <function name="nm_device_get_driver ()" link="libnm-glib-nm-device.html#nm-device-get-driver"/>
-    <function name="nm_device_get_capabilities ()" link="libnm-glib-nm-device.html#nm-device-get-capabilities"/>
-    <function name="nm_device_get_managed ()" link="libnm-glib-nm-device.html#nm-device-get-managed"/>
-    <function name="nm_device_get_ip4_config ()" link="libnm-glib-nm-device.html#nm-device-get-ip4-config"/>
-    <function name="nm_device_get_dhcp4_config ()" link="libnm-glib-nm-device.html#nm-device-get-dhcp4-config"/>
-    <function name="nm_device_get_ip6_config ()" link="libnm-glib-nm-device.html#nm-device-get-ip6-config"/>
-    <function name="nm_device_get_dhcp6_config ()" link="libnm-glib-nm-device.html#nm-device-get-dhcp6-config"/>
-    <function name="nm_device_get_state ()" link="libnm-glib-nm-device.html#nm-device-get-state"/>
-    <function name="nm_device_get_product ()" link="libnm-glib-nm-device.html#nm-device-get-product"/>
-    <function name="nm_device_get_vendor ()" link="libnm-glib-nm-device.html#nm-device-get-vendor"/>
-    <function name="NMDeviceDeactivateFn ()" link="libnm-glib-nm-device.html#NMDeviceDeactivateFn"/>
-    <function name="nm_device_disconnect ()" link="libnm-glib-nm-device.html#nm-device-disconnect"/>
-    <function name="The &quot;capabilities&quot; property" link="libnm-glib-nm-device.html#NMDevice--capabilities"/>
-    <function name="The &quot;dhcp4-config&quot; property" link="libnm-glib-nm-device.html#NMDevice--dhcp4-config"/>
-    <function name="The &quot;dhcp6-config&quot; property" link="libnm-glib-nm-device.html#NMDevice--dhcp6-config"/>
-    <function name="The &quot;driver&quot; property" link="libnm-glib-nm-device.html#NMDevice--driver"/>
-    <function name="The &quot;interface&quot; property" link="libnm-glib-nm-device.html#NMDevice--interface"/>
-    <function name="The &quot;ip4-config&quot; property" link="libnm-glib-nm-device.html#NMDevice--ip4-config"/>
-    <function name="The &quot;ip6-config&quot; property" link="libnm-glib-nm-device.html#NMDevice--ip6-config"/>
-    <function name="The &quot;managed&quot; property" link="libnm-glib-nm-device.html#NMDevice--managed"/>
-    <function name="The &quot;product&quot; property" link="libnm-glib-nm-device.html#NMDevice--product"/>
-    <function name="The &quot;state&quot; property" link="libnm-glib-nm-device.html#NMDevice--state"/>
-    <function name="The &quot;udi&quot; property" link="libnm-glib-nm-device.html#NMDevice--udi"/>
-    <function name="The &quot;vendor&quot; property" link="libnm-glib-nm-device.html#NMDevice--vendor"/>
-    <function name="The &quot;state-changed&quot; signal" link="libnm-glib-nm-device.html#NMDevice-state-changed"/>
-    <function name="NM_DEVICE_ETHERNET_HW_ADDRESS" link="libnm-glib-nm-device-ethernet.html#NM-DEVICE-ETHERNET-HW-ADDRESS:CAPS"/>
-    <function name="NM_DEVICE_ETHERNET_SPEED" link="libnm-glib-nm-device-ethernet.html#NM-DEVICE-ETHERNET-SPEED:CAPS"/>
-    <function name="NM_DEVICE_ETHERNET_CARRIER" link="libnm-glib-nm-device-ethernet.html#NM-DEVICE-ETHERNET-CARRIER:CAPS"/>
-    <function name="NMDeviceEthernet" link="libnm-glib-nm-device-ethernet.html#NMDeviceEthernet-struct"/>
-    <function name="nm_device_ethernet_new ()" link="libnm-glib-nm-device-ethernet.html#nm-device-ethernet-new"/>
-    <function name="nm_device_ethernet_get_hw_address ()" link="libnm-glib-nm-device-ethernet.html#nm-device-ethernet-get-hw-address"/>
-    <function name="nm_device_ethernet_get_speed ()" link="libnm-glib-nm-device-ethernet.html#nm-device-ethernet-get-speed"/>
-    <function name="nm_device_ethernet_get_carrier ()" link="libnm-glib-nm-device-ethernet.html#nm-device-ethernet-get-carrier"/>
-    <function name="The &quot;carrier&quot; property" link="libnm-glib-nm-device-ethernet.html#NMDeviceEthernet--carrier"/>
-    <function name="The &quot;hw-address&quot; property" link="libnm-glib-nm-device-ethernet.html#NMDeviceEthernet--hw-address"/>
-    <function name="The &quot;speed&quot; property" link="libnm-glib-nm-device-ethernet.html#NMDeviceEthernet--speed"/>
-    <function name="NM_DEVICE_WIFI_HW_ADDRESS" link="libnm-glib-nm-device-wifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS"/>
-    <function name="NM_DEVICE_WIFI_MODE" link="libnm-glib-nm-device-wifi.html#NM-DEVICE-WIFI-MODE:CAPS"/>
-    <function name="NM_DEVICE_WIFI_BITRATE" link="libnm-glib-nm-device-wifi.html#NM-DEVICE-WIFI-BITRATE:CAPS"/>
-    <function name="NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT" link="libnm-glib-nm-device-wifi.html#NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"/>
-    <function name="NM_DEVICE_WIFI_CAPABILITIES" link="libnm-glib-nm-device-wifi.html#NM-DEVICE-WIFI-CAPABILITIES:CAPS"/>
-    <function name="NMDeviceWifi" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi-struct"/>
-    <function name="nm_device_wifi_new ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-new"/>
-    <function name="nm_device_wifi_get_hw_address ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-hw-address"/>
-    <function name="nm_device_wifi_get_mode ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-mode"/>
-    <function name="nm_device_wifi_get_bitrate ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-bitrate"/>
-    <function name="nm_device_wifi_get_capabilities ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-capabilities"/>
-    <function name="nm_device_wifi_get_active_access_point ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-active-access-point"/>
-    <function name="nm_device_wifi_get_access_point_by_path ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-access-point-by-path"/>
-    <function name="nm_device_wifi_get_access_points ()" link="libnm-glib-nm-device-wifi.html#nm-device-wifi-get-access-points"/>
-    <function name="The &quot;active-access-point&quot; property" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi--active-access-point"/>
-    <function name="The &quot;bitrate&quot; property" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi--bitrate"/>
-    <function name="The &quot;hw-address&quot; property" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi--hw-address"/>
-    <function name="The &quot;mode&quot; property" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi--mode"/>
-    <function name="The &quot;wireless-capabilities&quot; property" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi--wireless-capabilities"/>
-    <function name="The &quot;access-point-added&quot; signal" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi-access-point-added"/>
-    <function name="The &quot;access-point-removed&quot; signal" link="libnm-glib-nm-device-wifi.html#NMDeviceWifi-access-point-removed"/>
+    <function name="NM_CLIENT_STATE" link="NMClient.html#NM-CLIENT-STATE:CAPS"/>
+    <function name="NM_CLIENT_MANAGER_RUNNING" link="NMClient.html#NM-CLIENT-MANAGER-RUNNING:CAPS"/>
+    <function name="NM_CLIENT_NETWORKING_ENABLED" link="NMClient.html#NM-CLIENT-NETWORKING-ENABLED:CAPS"/>
+    <function name="NM_CLIENT_WIRELESS_ENABLED" link="NMClient.html#NM-CLIENT-WIRELESS-ENABLED:CAPS"/>
+    <function name="NM_CLIENT_WIRELESS_HARDWARE_ENABLED" link="NMClient.html#NM-CLIENT-WIRELESS-HARDWARE-ENABLED:CAPS"/>
+    <function name="NM_CLIENT_WWAN_ENABLED" link="NMClient.html#NM-CLIENT-WWAN-ENABLED:CAPS"/>
+    <function name="NM_CLIENT_WWAN_HARDWARE_ENABLED" link="NMClient.html#NM-CLIENT-WWAN-HARDWARE-ENABLED:CAPS"/>
+    <function name="NM_CLIENT_ACTIVE_CONNECTIONS" link="NMClient.html#NM-CLIENT-ACTIVE-CONNECTIONS:CAPS"/>
+    <function name="enum NMClientPermission" link="NMClient.html#NMClientPermission"/>
+    <function name="enum NMClientPermissionResult" link="NMClient.html#NMClientPermissionResult"/>
+    <function name="NMClient" link="NMClient.html#NMClient-struct"/>
+    <function name="NMClientClass" link="NMClient.html#NMClientClass"/>
+    <function name="nm_client_new ()" link="NMClient.html#nm-client-new"/>
+    <function name="nm_client_get_devices ()" link="NMClient.html#nm-client-get-devices"/>
+    <function name="nm_client_get_device_by_path ()" link="NMClient.html#nm-client-get-device-by-path"/>
+    <function name="NMClientActivateDeviceFn ()" link="NMClient.html#NMClientActivateDeviceFn"/>
+    <function name="nm_client_activate_connection ()" link="NMClient.html#nm-client-activate-connection"/>
+    <function name="nm_client_deactivate_connection ()" link="NMClient.html#nm-client-deactivate-connection"/>
+    <function name="nm_client_networking_get_enabled ()" link="NMClient.html#nm-client-networking-get-enabled"/>
+    <function name="nm_client_networking_set_enabled ()" link="NMClient.html#nm-client-networking-set-enabled"/>
+    <function name="nm_client_wireless_get_enabled ()" link="NMClient.html#nm-client-wireless-get-enabled"/>
+    <function name="nm_client_wireless_set_enabled ()" link="NMClient.html#nm-client-wireless-set-enabled"/>
+    <function name="nm_client_wireless_hardware_get_enabled ()" link="NMClient.html#nm-client-wireless-hardware-get-enabled"/>
+    <function name="nm_client_wwan_get_enabled ()" link="NMClient.html#nm-client-wwan-get-enabled"/>
+    <function name="nm_client_wwan_set_enabled ()" link="NMClient.html#nm-client-wwan-set-enabled"/>
+    <function name="nm_client_wwan_hardware_get_enabled ()" link="NMClient.html#nm-client-wwan-hardware-get-enabled"/>
+    <function name="nm_client_get_state ()" link="NMClient.html#nm-client-get-state"/>
+    <function name="nm_client_get_manager_running ()" link="NMClient.html#nm-client-get-manager-running"/>
+    <function name="nm_client_get_active_connections ()" link="NMClient.html#nm-client-get-active-connections"/>
+    <function name="nm_client_sleep ()" link="NMClient.html#nm-client-sleep"/>
+    <function name="nm_client_get_permission_result ()" link="NMClient.html#nm-client-get-permission-result"/>
+    <function name="The &quot;active-connections&quot; property" link="NMClient.html#NMClient--active-connections"/>
+    <function name="The &quot;manager-running&quot; property" link="NMClient.html#NMClient--manager-running"/>
+    <function name="The &quot;networking-enabled&quot; property" link="NMClient.html#NMClient--networking-enabled"/>
+    <function name="The &quot;state&quot; property" link="NMClient.html#NMClient--state"/>
+    <function name="The &quot;wireless-enabled&quot; property" link="NMClient.html#NMClient--wireless-enabled"/>
+    <function name="The &quot;wireless-hardware-enabled&quot; property" link="NMClient.html#NMClient--wireless-hardware-enabled"/>
+    <function name="The &quot;wwan-enabled&quot; property" link="NMClient.html#NMClient--wwan-enabled"/>
+    <function name="The &quot;wwan-hardware-enabled&quot; property" link="NMClient.html#NMClient--wwan-hardware-enabled"/>
+    <function name="The &quot;device-added&quot; signal" link="NMClient.html#NMClient-device-added"/>
+    <function name="The &quot;device-removed&quot; signal" link="NMClient.html#NMClient-device-removed"/>
+    <function name="The &quot;permission-changed&quot; signal" link="NMClient.html#NMClient-permission-changed"/>
+    <function name="NM_ACTIVE_CONNECTION_SERVICE_NAME" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-SERVICE-NAME:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_CONNECTION" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-CONNECTION:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_DEVICES" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEVICES:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_STATE" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-STATE:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_DEFAULT" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEFAULT:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_DEFAULT6" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEFAULT6:CAPS"/>
+    <function name="NMActiveConnection" link="NMActiveConnection.html#NMActiveConnection-struct"/>
+    <function name="NMActiveConnectionClass" link="NMActiveConnection.html#NMActiveConnectionClass"/>
+    <function name="nm_active_connection_new ()" link="NMActiveConnection.html#nm-active-connection-new"/>
+    <function name="nm_active_connection_get_service_name ()" link="NMActiveConnection.html#nm-active-connection-get-service-name"/>
+    <function name="nm_active_connection_get_scope ()" link="NMActiveConnection.html#nm-active-connection-get-scope"/>
+    <function name="nm_active_connection_get_connection ()" link="NMActiveConnection.html#nm-active-connection-get-connection"/>
+    <function name="nm_active_connection_get_specific_object ()" link="NMActiveConnection.html#nm-active-connection-get-specific-object"/>
+    <function name="nm_active_connection_get_devices ()" link="NMActiveConnection.html#nm-active-connection-get-devices"/>
+    <function name="nm_active_connection_get_state ()" link="NMActiveConnection.html#nm-active-connection-get-state"/>
+    <function name="nm_active_connection_get_default ()" link="NMActiveConnection.html#nm-active-connection-get-default"/>
+    <function name="nm_active_connection_get_default6 ()" link="NMActiveConnection.html#nm-active-connection-get-default6"/>
+    <function name="The &quot;connection&quot; property" link="NMActiveConnection.html#NMActiveConnection--connection"/>
+    <function name="The &quot;default&quot; property" link="NMActiveConnection.html#NMActiveConnection--default"/>
+    <function name="The &quot;default6&quot; property" link="NMActiveConnection.html#NMActiveConnection--default6"/>
+    <function name="The &quot;devices&quot; property" link="NMActiveConnection.html#NMActiveConnection--devices"/>
+    <function name="The &quot;service-name&quot; property" link="NMActiveConnection.html#NMActiveConnection--service-name"/>
+    <function name="The &quot;specific-object&quot; property" link="NMActiveConnection.html#NMActiveConnection--specific-object"/>
+    <function name="The &quot;state&quot; property" link="NMActiveConnection.html#NMActiveConnection--state"/>
+    <function name="NM_DEVICE_UDI" link="NMDevice.html#NM-DEVICE-UDI:CAPS"/>
+    <function name="NM_DEVICE_INTERFACE" link="NMDevice.html#NM-DEVICE-INTERFACE:CAPS"/>
+    <function name="NM_DEVICE_IP_INTERFACE" link="NMDevice.html#NM-DEVICE-IP-INTERFACE:CAPS"/>
+    <function name="NM_DEVICE_DRIVER" link="NMDevice.html#NM-DEVICE-DRIVER:CAPS"/>
+    <function name="NM_DEVICE_CAPABILITIES" link="NMDevice.html#NM-DEVICE-CAPABILITIES:CAPS"/>
+    <function name="NM_DEVICE_MANAGED" link="NMDevice.html#NM-DEVICE-MANAGED:CAPS"/>
+    <function name="NM_DEVICE_FIRMWARE_MISSING" link="NMDevice.html#NM-DEVICE-FIRMWARE-MISSING:CAPS"/>
+    <function name="NM_DEVICE_IP4_CONFIG" link="NMDevice.html#NM-DEVICE-IP4-CONFIG:CAPS"/>
+    <function name="NM_DEVICE_DHCP4_CONFIG" link="NMDevice.html#NM-DEVICE-DHCP4-CONFIG:CAPS"/>
+    <function name="NM_DEVICE_IP6_CONFIG" link="NMDevice.html#NM-DEVICE-IP6-CONFIG:CAPS"/>
+    <function name="NM_DEVICE_DHCP6_CONFIG" link="NMDevice.html#NM-DEVICE-DHCP6-CONFIG:CAPS"/>
+    <function name="NM_DEVICE_STATE" link="NMDevice.html#NM-DEVICE-STATE:CAPS"/>
+    <function name="NM_DEVICE_VENDOR" link="NMDevice.html#NM-DEVICE-VENDOR:CAPS"/>
+    <function name="NM_DEVICE_PRODUCT" link="NMDevice.html#NM-DEVICE-PRODUCT:CAPS"/>
+    <function name="NMDevice" link="NMDevice.html#NMDevice-struct"/>
+    <function name="NMDeviceClass" link="NMDevice.html#NMDeviceClass"/>
+    <function name="nm_device_new ()" link="NMDevice.html#nm-device-new"/>
+    <function name="nm_device_get_iface ()" link="NMDevice.html#nm-device-get-iface"/>
+    <function name="nm_device_get_ip_iface ()" link="NMDevice.html#nm-device-get-ip-iface"/>
+    <function name="nm_device_get_udi ()" link="NMDevice.html#nm-device-get-udi"/>
+    <function name="nm_device_get_driver ()" link="NMDevice.html#nm-device-get-driver"/>
+    <function name="nm_device_get_capabilities ()" link="NMDevice.html#nm-device-get-capabilities"/>
+    <function name="nm_device_get_managed ()" link="NMDevice.html#nm-device-get-managed"/>
+    <function name="nm_device_get_firmware_missing ()" link="NMDevice.html#nm-device-get-firmware-missing"/>
+    <function name="nm_device_get_ip4_config ()" link="NMDevice.html#nm-device-get-ip4-config"/>
+    <function name="nm_device_get_dhcp4_config ()" link="NMDevice.html#nm-device-get-dhcp4-config"/>
+    <function name="nm_device_get_ip6_config ()" link="NMDevice.html#nm-device-get-ip6-config"/>
+    <function name="nm_device_get_dhcp6_config ()" link="NMDevice.html#nm-device-get-dhcp6-config"/>
+    <function name="nm_device_get_state ()" link="NMDevice.html#nm-device-get-state"/>
+    <function name="nm_device_get_product ()" link="NMDevice.html#nm-device-get-product"/>
+    <function name="nm_device_get_vendor ()" link="NMDevice.html#nm-device-get-vendor"/>
+    <function name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
+    <function name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
+    <function name="The &quot;capabilities&quot; property" link="NMDevice.html#NMDevice--capabilities"/>
+    <function name="The &quot;dhcp4-config&quot; property" link="NMDevice.html#NMDevice--dhcp4-config"/>
+    <function name="The &quot;dhcp6-config&quot; property" link="NMDevice.html#NMDevice--dhcp6-config"/>
+    <function name="The &quot;driver&quot; property" link="NMDevice.html#NMDevice--driver"/>
+    <function name="The &quot;firmware-missing&quot; property" link="NMDevice.html#NMDevice--firmware-missing"/>
+    <function name="The &quot;interface&quot; property" link="NMDevice.html#NMDevice--interface"/>
+    <function name="The &quot;ip4-config&quot; property" link="NMDevice.html#NMDevice--ip4-config"/>
+    <function name="The &quot;ip6-config&quot; property" link="NMDevice.html#NMDevice--ip6-config"/>
+    <function name="The &quot;managed&quot; property" link="NMDevice.html#NMDevice--managed"/>
+    <function name="The &quot;product&quot; property" link="NMDevice.html#NMDevice--product"/>
+    <function name="The &quot;state&quot; property" link="NMDevice.html#NMDevice--state"/>
+    <function name="The &quot;udi&quot; property" link="NMDevice.html#NMDevice--udi"/>
+    <function name="The &quot;vendor&quot; property" link="NMDevice.html#NMDevice--vendor"/>
+    <function name="The &quot;state-changed&quot; signal" link="NMDevice.html#NMDevice-state-changed"/>
+    <function name="NM_DEVICE_ETHERNET_HW_ADDRESS" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-HW-ADDRESS:CAPS"/>
+    <function name="NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-PERMANENT-HW-ADDRESS:CAPS"/>
+    <function name="NM_DEVICE_ETHERNET_SPEED" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-SPEED:CAPS"/>
+    <function name="NM_DEVICE_ETHERNET_CARRIER" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-CARRIER:CAPS"/>
+    <function name="NMDeviceEthernet" link="NMDeviceEthernet.html#NMDeviceEthernet-struct"/>
+    <function name="NMDeviceEthernetClass" link="NMDeviceEthernet.html#NMDeviceEthernetClass"/>
+    <function name="nm_device_ethernet_new ()" link="NMDeviceEthernet.html#nm-device-ethernet-new"/>
+    <function name="nm_device_ethernet_get_hw_address ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-hw-address"/>
+    <function name="nm_device_ethernet_get_permanent_hw_address ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-permanent-hw-address"/>
+    <function name="nm_device_ethernet_get_speed ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-speed"/>
+    <function name="nm_device_ethernet_get_carrier ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-carrier"/>
+    <function name="The &quot;carrier&quot; property" link="NMDeviceEthernet.html#NMDeviceEthernet--carrier"/>
+    <function name="The &quot;hw-address&quot; property" link="NMDeviceEthernet.html#NMDeviceEthernet--hw-address"/>
+    <function name="The &quot;perm-hw-address&quot; property" link="NMDeviceEthernet.html#NMDeviceEthernet--perm-hw-address"/>
+    <function name="The &quot;speed&quot; property" link="NMDeviceEthernet.html#NMDeviceEthernet--speed"/>
+    <function name="NM_DEVICE_WIFI_HW_ADDRESS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS"/>
+    <function name="NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS"/>
+    <function name="NM_DEVICE_WIFI_MODE" link="NMDeviceWifi.html#NM-DEVICE-WIFI-MODE:CAPS"/>
+    <function name="NM_DEVICE_WIFI_BITRATE" link="NMDeviceWifi.html#NM-DEVICE-WIFI-BITRATE:CAPS"/>
+    <function name="NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"/>
+    <function name="NM_DEVICE_WIFI_CAPABILITIES" link="NMDeviceWifi.html#NM-DEVICE-WIFI-CAPABILITIES:CAPS"/>
+    <function name="NMDeviceWifi" link="NMDeviceWifi.html#NMDeviceWifi-struct"/>
+    <function name="NMDeviceWifiClass" link="NMDeviceWifi.html#NMDeviceWifiClass"/>
+    <function name="nm_device_wifi_new ()" link="NMDeviceWifi.html#nm-device-wifi-new"/>
+    <function name="nm_device_wifi_get_hw_address ()" link="NMDeviceWifi.html#nm-device-wifi-get-hw-address"/>
+    <function name="nm_device_wifi_get_permanent_hw_address ()" link="NMDeviceWifi.html#nm-device-wifi-get-permanent-hw-address"/>
+    <function name="nm_device_wifi_get_mode ()" link="NMDeviceWifi.html#nm-device-wifi-get-mode"/>
+    <function name="nm_device_wifi_get_bitrate ()" link="NMDeviceWifi.html#nm-device-wifi-get-bitrate"/>
+    <function name="nm_device_wifi_get_capabilities ()" link="NMDeviceWifi.html#nm-device-wifi-get-capabilities"/>
+    <function name="nm_device_wifi_get_active_access_point ()" link="NMDeviceWifi.html#nm-device-wifi-get-active-access-point"/>
+    <function name="nm_device_wifi_get_access_point_by_path ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path"/>
+    <function name="nm_device_wifi_get_access_points ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-points"/>
+    <function name="The &quot;active-access-point&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--active-access-point"/>
+    <function name="The &quot;bitrate&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--bitrate"/>
+    <function name="The &quot;hw-address&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--hw-address"/>
+    <function name="The &quot;mode&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--mode"/>
+    <function name="The &quot;perm-hw-address&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--perm-hw-address"/>
+    <function name="The &quot;wireless-capabilities&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--wireless-capabilities"/>
+    <function name="The &quot;access-point-added&quot; signal" link="NMDeviceWifi.html#NMDeviceWifi-access-point-added"/>
+    <function name="The &quot;access-point-removed&quot; signal" link="NMDeviceWifi.html#NMDeviceWifi-access-point-removed"/>
     <function name="NMSerialDevice" link="NMSerialDevice.html#NMSerialDevice-struct"/>
+    <function name="NMSerialDeviceClass" link="NMSerialDevice.html#NMSerialDeviceClass"/>
     <function name="nm_serial_device_get_bytes_received ()" link="NMSerialDevice.html#nm-serial-device-get-bytes-received"/>
     <function name="nm_serial_device_get_bytes_sent ()" link="NMSerialDevice.html#nm-serial-device-get-bytes-sent"/>
     <function name="The &quot;ppp-stats&quot; signal" link="NMSerialDevice.html#NMSerialDevice-ppp-stats"/>
     <function name="NMGsmDevice" link="NMGsmDevice.html#NMGsmDevice-struct"/>
+    <function name="NMGsmDeviceClass" link="NMGsmDevice.html#NMGsmDeviceClass"/>
     <function name="nm_gsm_device_new ()" link="NMGsmDevice.html#nm-gsm-device-new"/>
     <function name="NMCdmaDevice" link="NMCdmaDevice.html#NMCdmaDevice-struct"/>
+    <function name="NMCdmaDeviceClass" link="NMCdmaDevice.html#NMCdmaDeviceClass"/>
     <function name="nm_cdma_device_new ()" link="NMCdmaDevice.html#nm-cdma-device-new"/>
-    <function name="NM_DEVICE_BT_HW_ADDRESS" link="libnm-glib-nm-device-bt.html#NM-DEVICE-BT-HW-ADDRESS:CAPS"/>
-    <function name="NM_DEVICE_BT_NAME" link="libnm-glib-nm-device-bt.html#NM-DEVICE-BT-NAME:CAPS"/>
-    <function name="NM_DEVICE_BT_CAPABILITIES" link="libnm-glib-nm-device-bt.html#NM-DEVICE-BT-CAPABILITIES:CAPS"/>
-    <function name="NMDeviceBt" link="libnm-glib-nm-device-bt.html#NMDeviceBt"/>
-    <function name="nm_device_bt_new ()" link="libnm-glib-nm-device-bt.html#nm-device-bt-new"/>
-    <function name="nm_device_bt_get_hw_address ()" link="libnm-glib-nm-device-bt.html#nm-device-bt-get-hw-address"/>
-    <function name="nm_device_bt_get_name ()" link="libnm-glib-nm-device-bt.html#nm-device-bt-get-name"/>
-    <function name="nm_device_bt_get_capabilities ()" link="libnm-glib-nm-device-bt.html#nm-device-bt-get-capabilities"/>
-    <function name="NM_ACCESS_POINT_FLAGS" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-FLAGS:CAPS"/>
-    <function name="NM_ACCESS_POINT_WPA_FLAGS" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-WPA-FLAGS:CAPS"/>
-    <function name="NM_ACCESS_POINT_RSN_FLAGS" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-RSN-FLAGS:CAPS"/>
-    <function name="NM_ACCESS_POINT_SSID" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-SSID:CAPS"/>
-    <function name="NM_ACCESS_POINT_FREQUENCY" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-FREQUENCY:CAPS"/>
-    <function name="NM_ACCESS_POINT_HW_ADDRESS" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-HW-ADDRESS:CAPS"/>
-    <function name="NM_ACCESS_POINT_MODE" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-MODE:CAPS"/>
-    <function name="NM_ACCESS_POINT_MAX_BITRATE" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-MAX-BITRATE:CAPS"/>
-    <function name="NM_ACCESS_POINT_STRENGTH" link="libnm-glib-nm-access-point.html#NM-ACCESS-POINT-STRENGTH:CAPS"/>
-    <function name="NMAccessPoint" link="libnm-glib-nm-access-point.html#NMAccessPoint-struct"/>
-    <function name="nm_access_point_new ()" link="libnm-glib-nm-access-point.html#nm-access-point-new"/>
-    <function name="nm_access_point_get_flags ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-flags"/>
-    <function name="nm_access_point_get_wpa_flags ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-wpa-flags"/>
-    <function name="nm_access_point_get_rsn_flags ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-rsn-flags"/>
-    <function name="nm_access_point_get_ssid ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-ssid"/>
-    <function name="nm_access_point_get_frequency ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-frequency"/>
-    <function name="nm_access_point_get_hw_address ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-hw-address"/>
-    <function name="nm_access_point_get_mode ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-mode"/>
-    <function name="nm_access_point_get_max_bitrate ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-max-bitrate"/>
-    <function name="nm_access_point_get_strength ()" link="libnm-glib-nm-access-point.html#nm-access-point-get-strength"/>
-    <function name="The &quot;flags&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--flags"/>
-    <function name="The &quot;frequency&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--frequency"/>
-    <function name="The &quot;hw-address&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--hw-address"/>
-    <function name="The &quot;max-bitrate&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--max-bitrate"/>
-    <function name="The &quot;mode&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--mode"/>
-    <function name="The &quot;rsn-flags&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--rsn-flags"/>
-    <function name="The &quot;ssid&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--ssid"/>
-    <function name="The &quot;strength&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--strength"/>
-    <function name="The &quot;wpa-flags&quot; property" link="libnm-glib-nm-access-point.html#NMAccessPoint--wpa-flags"/>
+    <function name="NM_DEVICE_BT_HW_ADDRESS" link="libnm-glib-NMDeviceBt.html#NM-DEVICE-BT-HW-ADDRESS:CAPS"/>
+    <function name="NM_DEVICE_BT_NAME" link="libnm-glib-NMDeviceBt.html#NM-DEVICE-BT-NAME:CAPS"/>
+    <function name="NM_DEVICE_BT_CAPABILITIES" link="libnm-glib-NMDeviceBt.html#NM-DEVICE-BT-CAPABILITIES:CAPS"/>
+    <function name="NMDeviceBt" link="libnm-glib-NMDeviceBt.html#NMDeviceBt"/>
+    <function name="NMDeviceBtClass" link="libnm-glib-NMDeviceBt.html#NMDeviceBtClass"/>
+    <function name="nm_device_bt_new ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-new"/>
+    <function name="nm_device_bt_get_hw_address ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-get-hw-address"/>
+    <function name="nm_device_bt_get_name ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-get-name"/>
+    <function name="nm_device_bt_get_capabilities ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-get-capabilities"/>
+    <function name="NM_ACCESS_POINT_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-FLAGS:CAPS"/>
+    <function name="NM_ACCESS_POINT_WPA_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-WPA-FLAGS:CAPS"/>
+    <function name="NM_ACCESS_POINT_RSN_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-RSN-FLAGS:CAPS"/>
+    <function name="NM_ACCESS_POINT_SSID" link="NMAccessPoint.html#NM-ACCESS-POINT-SSID:CAPS"/>
+    <function name="NM_ACCESS_POINT_FREQUENCY" link="NMAccessPoint.html#NM-ACCESS-POINT-FREQUENCY:CAPS"/>
+    <function name="NM_ACCESS_POINT_HW_ADDRESS" link="NMAccessPoint.html#NM-ACCESS-POINT-HW-ADDRESS:CAPS"/>
+    <function name="NM_ACCESS_POINT_MODE" link="NMAccessPoint.html#NM-ACCESS-POINT-MODE:CAPS"/>
+    <function name="NM_ACCESS_POINT_MAX_BITRATE" link="NMAccessPoint.html#NM-ACCESS-POINT-MAX-BITRATE:CAPS"/>
+    <function name="NM_ACCESS_POINT_STRENGTH" link="NMAccessPoint.html#NM-ACCESS-POINT-STRENGTH:CAPS"/>
+    <function name="NMAccessPoint" link="NMAccessPoint.html#NMAccessPoint-struct"/>
+    <function name="NMAccessPointClass" link="NMAccessPoint.html#NMAccessPointClass"/>
+    <function name="nm_access_point_new ()" link="NMAccessPoint.html#nm-access-point-new"/>
+    <function name="nm_access_point_get_flags ()" link="NMAccessPoint.html#nm-access-point-get-flags"/>
+    <function name="nm_access_point_get_wpa_flags ()" link="NMAccessPoint.html#nm-access-point-get-wpa-flags"/>
+    <function name="nm_access_point_get_rsn_flags ()" link="NMAccessPoint.html#nm-access-point-get-rsn-flags"/>
+    <function name="nm_access_point_get_ssid ()" link="NMAccessPoint.html#nm-access-point-get-ssid"/>
+    <function name="nm_access_point_get_frequency ()" link="NMAccessPoint.html#nm-access-point-get-frequency"/>
+    <function name="nm_access_point_get_hw_address ()" link="NMAccessPoint.html#nm-access-point-get-hw-address"/>
+    <function name="nm_access_point_get_mode ()" link="NMAccessPoint.html#nm-access-point-get-mode"/>
+    <function name="nm_access_point_get_max_bitrate ()" link="NMAccessPoint.html#nm-access-point-get-max-bitrate"/>
+    <function name="nm_access_point_get_strength ()" link="NMAccessPoint.html#nm-access-point-get-strength"/>
+    <function name="The &quot;flags&quot; property" link="NMAccessPoint.html#NMAccessPoint--flags"/>
+    <function name="The &quot;frequency&quot; property" link="NMAccessPoint.html#NMAccessPoint--frequency"/>
+    <function name="The &quot;hw-address&quot; property" link="NMAccessPoint.html#NMAccessPoint--hw-address"/>
+    <function name="The &quot;max-bitrate&quot; property" link="NMAccessPoint.html#NMAccessPoint--max-bitrate"/>
+    <function name="The &quot;mode&quot; property" link="NMAccessPoint.html#NMAccessPoint--mode"/>
+    <function name="The &quot;rsn-flags&quot; property" link="NMAccessPoint.html#NMAccessPoint--rsn-flags"/>
+    <function name="The &quot;ssid&quot; property" link="NMAccessPoint.html#NMAccessPoint--ssid"/>
+    <function name="The &quot;strength&quot; property" link="NMAccessPoint.html#NMAccessPoint--strength"/>
+    <function name="The &quot;wpa-flags&quot; property" link="NMAccessPoint.html#NMAccessPoint--wpa-flags"/>
     <function name="NMIP4Config" link="NMIP4Config.html#NMIP4Config-struct"/>
+    <function name="NMIP4ConfigClass" link="NMIP4Config.html#NMIP4ConfigClass"/>
     <function name="NM_IP4_CONFIG_ADDRESSES" link="NMIP4Config.html#NM-IP4-CONFIG-ADDRESSES:CAPS"/>
     <function name="NM_IP4_CONFIG_HOSTNAME" link="NMIP4Config.html#NM-IP4-CONFIG-HOSTNAME:CAPS"/>
     <function name="NM_IP4_CONFIG_NAMESERVERS" link="NMIP4Config.html#NM-IP4-CONFIG-NAMESERVERS:CAPS"/>
@@ -230,6 +259,7 @@
     <function name="The &quot;routes&quot; property" link="NMIP4Config.html#NMIP4Config--routes"/>
     <function name="The &quot;wins-servers&quot; property" link="NMIP4Config.html#NMIP4Config--wins-servers"/>
     <function name="NMIP6Config" link="NMIP6Config.html#NMIP6Config-struct"/>
+    <function name="NMIP6ConfigClass" link="NMIP6Config.html#NMIP6ConfigClass"/>
     <function name="NM_IP6_CONFIG_ADDRESSES" link="NMIP6Config.html#NM-IP6-CONFIG-ADDRESSES:CAPS"/>
     <function name="NM_IP6_CONFIG_NAMESERVERS" link="NMIP6Config.html#NM-IP6-CONFIG-NAMESERVERS:CAPS"/>
     <function name="NM_IP6_CONFIG_DOMAINS" link="NMIP6Config.html#NM-IP6-CONFIG-DOMAINS:CAPS"/>
@@ -244,75 +274,80 @@
     <function name="The &quot;nameservers&quot; property" link="NMIP6Config.html#NMIP6Config--nameservers"/>
     <function name="The &quot;routes&quot; property" link="NMIP6Config.html#NMIP6Config--routes"/>
     <function name="NMDHCP4Config" link="NMDHCP4Config.html#NMDHCP4Config-struct"/>
+    <function name="NMDHCP4ConfigClass" link="NMDHCP4Config.html#NMDHCP4ConfigClass"/>
     <function name="NM_DHCP4_CONFIG_OPTIONS" link="NMDHCP4Config.html#NM-DHCP4-CONFIG-OPTIONS:CAPS"/>
     <function name="nm_dhcp4_config_new ()" link="NMDHCP4Config.html#nm-dhcp4-config-new"/>
     <function name="nm_dhcp4_config_get_options ()" link="NMDHCP4Config.html#nm-dhcp4-config-get-options"/>
     <function name="nm_dhcp4_config_get_one_option ()" link="NMDHCP4Config.html#nm-dhcp4-config-get-one-option"/>
     <function name="The &quot;options&quot; property" link="NMDHCP4Config.html#NMDHCP4Config--options"/>
     <function name="NMDHCP6Config" link="NMDHCP6Config.html#NMDHCP6Config-struct"/>
+    <function name="NMDHCP6ConfigClass" link="NMDHCP6Config.html#NMDHCP6ConfigClass"/>
     <function name="NM_DHCP6_CONFIG_OPTIONS" link="NMDHCP6Config.html#NM-DHCP6-CONFIG-OPTIONS:CAPS"/>
     <function name="nm_dhcp6_config_new ()" link="NMDHCP6Config.html#nm-dhcp6-config-new"/>
     <function name="nm_dhcp6_config_get_options ()" link="NMDHCP6Config.html#nm-dhcp6-config-get-options"/>
     <function name="nm_dhcp6_config_get_one_option ()" link="NMDHCP6Config.html#nm-dhcp6-config-get-one-option"/>
     <function name="NMExportedConnection" link="libnm-glib-NMExportedConnection.html#NMExportedConnection"/>
+    <function name="NMExportedConnectionClass" link="libnm-glib-NMExportedConnection.html#NMExportedConnectionClass"/>
     <function name="nm_exported_connection_new ()" link="libnm-glib-NMExportedConnection.html#nm-exported-connection-new"/>
-    <function name="NM_OBJECT_DBUS_CONNECTION" link="libnm-glib-nm-object.html#NM-OBJECT-DBUS-CONNECTION:CAPS"/>
-    <function name="NM_OBJECT_DBUS_PATH" link="libnm-glib-nm-object.html#NM-OBJECT-DBUS-PATH:CAPS"/>
-    <function name="NMObject" link="libnm-glib-nm-object.html#NMObject-struct"/>
-    <function name="nm_object_get_connection ()" link="libnm-glib-nm-object.html#nm-object-get-connection"/>
-    <function name="nm_object_get_path ()" link="libnm-glib-nm-object.html#nm-object-get-path"/>
-    <function name="The &quot;dbus-connection&quot; property" link="libnm-glib-nm-object.html#NMObject--dbus-connection"/>
-    <function name="The &quot;dbus-path&quot; property" link="libnm-glib-nm-object.html#NMObject--dbus-path"/>
+    <function name="NM_OBJECT_DBUS_CONNECTION" link="NMObject.html#NM-OBJECT-DBUS-CONNECTION:CAPS"/>
+    <function name="NM_OBJECT_DBUS_PATH" link="NMObject.html#NM-OBJECT-DBUS-PATH:CAPS"/>
+    <function name="NMObject" link="NMObject.html#NMObject-struct"/>
+    <function name="NMObjectClass" link="NMObject.html#NMObjectClass"/>
+    <function name="nm_object_get_connection ()" link="NMObject.html#nm-object-get-connection"/>
+    <function name="nm_object_get_path ()" link="NMObject.html#nm-object-get-path"/>
+    <function name="The &quot;dbus-connection&quot; property" link="NMObject.html#NMObject--dbus-connection"/>
+    <function name="The &quot;dbus-path&quot; property" link="NMObject.html#NMObject--dbus-path"/>
     <function name="NMRemoteConnection" link="libnm-glib-NMRemoteConnection.html#NMRemoteConnection"/>
+    <function name="NMRemoteConnectionClass" link="libnm-glib-NMRemoteConnection.html#NMRemoteConnectionClass"/>
     <function name="nm_remote_connection_new ()" link="libnm-glib-NMRemoteConnection.html#nm-remote-connection-new"/>
-    <function name="NM_REMOTE_SETTINGS_BUS" link="libnm-glib-nm-remote-settings.html#NM-REMOTE-SETTINGS-BUS:CAPS"/>
-    <function name="NM_REMOTE_SETTINGS_SCOPE" link="libnm-glib-nm-remote-settings.html#NM-REMOTE-SETTINGS-SCOPE:CAPS"/>
-    <function name="NM_REMOTE_SETTINGS_SERVICE_RUNNING" link="libnm-glib-nm-remote-settings.html#NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS"/>
-    <function name="NMRemoteSettings" link="libnm-glib-nm-remote-settings.html#NMRemoteSettings"/>
-    <function name="nm_remote_settings_new ()" link="libnm-glib-nm-remote-settings.html#nm-remote-settings-new"/>
+    <function name="NM_REMOTE_SETTINGS_BUS" link="libnm-glib-NMRemoteSettings.html#NM-REMOTE-SETTINGS-BUS:CAPS"/>
+    <function name="NM_REMOTE_SETTINGS_SCOPE" link="libnm-glib-NMRemoteSettings.html#NM-REMOTE-SETTINGS-SCOPE:CAPS"/>
+    <function name="NM_REMOTE_SETTINGS_SERVICE_RUNNING" link="libnm-glib-NMRemoteSettings.html#NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS"/>
+    <function name="NMRemoteSettings" link="libnm-glib-NMRemoteSettings.html#NMRemoteSettings"/>
+    <function name="NMRemoteSettingsClass" link="libnm-glib-NMRemoteSettings.html#NMRemoteSettingsClass"/>
+    <function name="nm_remote_settings_new ()" link="libnm-glib-NMRemoteSettings.html#nm-remote-settings-new"/>
     <function name="NMRemoteSettingsSystem" link="libnm-glib-NMRemoteSettingsSystem.html#NMRemoteSettingsSystem"/>
+    <function name="NMRemoteSettingsSystemClass" link="libnm-glib-NMRemoteSettingsSystem.html#NMRemoteSettingsSystemClass"/>
     <function name="nm_remote_settings_system_new ()" link="libnm-glib-NMRemoteSettingsSystem.html#nm-remote-settings-system-new"/>
-    <function name="NM_SETTINGS_CONNECTION_INTERFACE_GET_INTERFACE()" link="libnm-glib-nm-settings-connection-interface.html#NM-SETTINGS-CONNECTION-INTERFACE-GET-INTERFACE:CAPS"/>
-    <function name="NM_SETTINGS_CONNECTION_INTERFACE_UPDATED" link="libnm-glib-nm-settings-connection-interface.html#NM-SETTINGS-CONNECTION-INTERFACE-UPDATED:CAPS"/>
-    <function name="NM_SETTINGS_CONNECTION_INTERFACE_REMOVED" link="libnm-glib-nm-settings-connection-interface.html#NM-SETTINGS-CONNECTION-INTERFACE-REMOVED:CAPS"/>
-    <function name="NMSettingsConnectionInterface" link="libnm-glib-nm-settings-connection-interface.html#NMSettingsConnectionInterface"/>
-    <function name="NMSettingsConnectionInterfaceUpdateFunc ()" link="libnm-glib-nm-settings-connection-interface.html#NMSettingsConnectionInterfaceUpdateFunc"/>
-    <function name="NMSettingsConnectionInterfaceDeleteFunc ()" link="libnm-glib-nm-settings-connection-interface.html#NMSettingsConnectionInterfaceDeleteFunc"/>
-    <function name="NMSettingsConnectionInterfaceGetSecretsFunc ()" link="libnm-glib-nm-settings-connection-interface.html#NMSettingsConnectionInterfaceGetSecretsFunc"/>
-    <function name="nm_settings_connection_interface_update ()" link="libnm-glib-nm-settings-connection-interface.html#nm-settings-connection-interface-update"/>
-    <function name="nm_settings_connection_interface_delete ()" link="libnm-glib-nm-settings-connection-interface.html#nm-settings-connection-interface-delete"/>
-    <function name="nm_settings_connection_interface_get_secrets ()" link="libnm-glib-nm-settings-connection-interface.html#nm-settings-connection-interface-get-secrets"/>
-    <function name="nm_settings_connection_interface_emit_updated ()" link="libnm-glib-nm-settings-connection-interface.html#nm-settings-connection-interface-emit-updated"/>
-    <function name="enum NMSettingsInterfaceError" link="libnm-glib-nm-settings-interface.html#NMSettingsInterfaceError"/>
-    <function name="NM_SETTINGS_INTERFACE_ERROR" link="libnm-glib-nm-settings-interface.html#NM-SETTINGS-INTERFACE-ERROR:CAPS"/>
-    <function name="nm_settings_interface_error_quark ()" link="libnm-glib-nm-settings-interface.html#nm-settings-interface-error-quark"/>
-    <function name="NM_TYPE_SETTINGS_INTERFACE_ERROR" link="libnm-glib-nm-settings-interface.html#NM-TYPE-SETTINGS-INTERFACE-ERROR:CAPS"/>
-    <function name="NM_SETTINGS_INTERFACE_GET_INTERFACE()" link="libnm-glib-nm-settings-interface.html#NM-SETTINGS-INTERFACE-GET-INTERFACE:CAPS"/>
-    <function name="NM_SETTINGS_INTERFACE_NEW_CONNECTION" link="libnm-glib-nm-settings-interface.html#NM-SETTINGS-INTERFACE-NEW-CONNECTION:CAPS"/>
-    <function name="NM_SETTINGS_INTERFACE_CONNECTIONS_READ" link="libnm-glib-nm-settings-interface.html#NM-SETTINGS-INTERFACE-CONNECTIONS-READ:CAPS"/>
-    <function name="NMSettingsInterface" link="libnm-glib-nm-settings-interface.html#NMSettingsInterface"/>
-    <function name="NMSettingsAddConnectionFunc ()" link="libnm-glib-nm-settings-interface.html#NMSettingsAddConnectionFunc"/>
-    <function name="nm_settings_interface_get_type ()" link="libnm-glib-nm-settings-interface.html#nm-settings-interface-get-type"/>
-    <function name="nm_settings_interface_list_connections ()" link="libnm-glib-nm-settings-interface.html#nm-settings-interface-list-connections"/>
-    <function name="nm_settings_interface_get_connection_by_path ()" link="libnm-glib-nm-settings-interface.html#nm-settings-interface-get-connection-by-path"/>
-    <function name="nm_settings_interface_add_connection ()" link="libnm-glib-nm-settings-interface.html#nm-settings-interface-add-connection"/>
-    <function name="NM_SETTINGS_SERVICE_BUS" link="libnm-glib-nm-settings-service.html#NM-SETTINGS-SERVICE-BUS:CAPS"/>
-    <function name="NM_SETTINGS_SERVICE_SCOPE" link="libnm-glib-nm-settings-service.html#NM-SETTINGS-SERVICE-SCOPE:CAPS"/>
-    <function name="NMSettingsService" link="libnm-glib-nm-settings-service.html#NMSettingsService"/>
-    <function name="nm_settings_service_get_connection_by_path ()" link="libnm-glib-nm-settings-service.html#nm-settings-service-get-connection-by-path"/>
-    <function name="nm_settings_service_export ()" link="libnm-glib-nm-settings-service.html#nm-settings-service-export"/>
-    <function name="nm_settings_service_export_connection ()" link="libnm-glib-nm-settings-service.html#nm-settings-service-export-connection"/>
-    <function name="enum NMSettingsSystemPermissions" link="libnm-glib-nm-settings-system-interface.html#NMSettingsSystemPermissions"/>
-    <function name="NM_SETTINGS_SYSTEM_INTERFACE_GET_INTERFACE()" link="libnm-glib-nm-settings-system-interface.html#NM-SETTINGS-SYSTEM-INTERFACE-GET-INTERFACE:CAPS"/>
-    <function name="NM_SETTINGS_SYSTEM_INTERFACE_HOSTNAME" link="libnm-glib-nm-settings-system-interface.html#NM-SETTINGS-SYSTEM-INTERFACE-HOSTNAME:CAPS"/>
-    <function name="NM_SETTINGS_SYSTEM_INTERFACE_CAN_MODIFY" link="libnm-glib-nm-settings-system-interface.html#NM-SETTINGS-SYSTEM-INTERFACE-CAN-MODIFY:CAPS"/>
-    <function name="NM_SETTINGS_SYSTEM_INTERFACE_CHECK_PERMISSIONS" link="libnm-glib-nm-settings-system-interface.html#NM-SETTINGS-SYSTEM-INTERFACE-CHECK-PERMISSIONS:CAPS"/>
-    <function name="enum NMSettingsSystemInterfaceProp" link="libnm-glib-nm-settings-system-interface.html#NMSettingsSystemInterfaceProp"/>
-    <function name="NMSettingsSystemInterface" link="libnm-glib-nm-settings-system-interface.html#NMSettingsSystemInterface"/>
-    <function name="NMSettingsSystemSaveHostnameFunc ()" link="libnm-glib-nm-settings-system-interface.html#NMSettingsSystemSaveHostnameFunc"/>
-    <function name="NMSettingsSystemGetPermissionsFunc ()" link="libnm-glib-nm-settings-system-interface.html#NMSettingsSystemGetPermissionsFunc"/>
-    <function name="nm_settings_system_interface_save_hostname ()" link="libnm-glib-nm-settings-system-interface.html#nm-settings-system-interface-save-hostname"/>
-    <function name="nm_settings_system_interface_get_permissions ()" link="libnm-glib-nm-settings-system-interface.html#nm-settings-system-interface-get-permissions"/>
+    <function name="NM_SETTINGS_CONNECTION_INTERFACE_UPDATED" link="libnm-glib-NMSettingsConnection.html#NM-SETTINGS-CONNECTION-INTERFACE-UPDATED:CAPS"/>
+    <function name="NM_SETTINGS_CONNECTION_INTERFACE_REMOVED" link="libnm-glib-NMSettingsConnection.html#NM-SETTINGS-CONNECTION-INTERFACE-REMOVED:CAPS"/>
+    <function name="NMSettingsConnectionInterface" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface"/>
+    <function name="NMSettingsConnectionInterfaceUpdateFunc ()" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterfaceUpdateFunc"/>
+    <function name="NMSettingsConnectionInterfaceDeleteFunc ()" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterfaceDeleteFunc"/>
+    <function name="NMSettingsConnectionInterfaceGetSecretsFunc ()" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterfaceGetSecretsFunc"/>
+    <function name="nm_settings_connection_interface_update ()" link="libnm-glib-NMSettingsConnection.html#nm-settings-connection-interface-update"/>
+    <function name="nm_settings_connection_interface_delete ()" link="libnm-glib-NMSettingsConnection.html#nm-settings-connection-interface-delete"/>
+    <function name="nm_settings_connection_interface_get_secrets ()" link="libnm-glib-NMSettingsConnection.html#nm-settings-connection-interface-get-secrets"/>
+    <function name="nm_settings_connection_interface_emit_updated ()" link="libnm-glib-NMSettingsConnection.html#nm-settings-connection-interface-emit-updated"/>
+    <function name="enum NMSettingsInterfaceError" link="libnm-glib-NMSettings.html#NMSettingsInterfaceError"/>
+    <function name="NM_SETTINGS_INTERFACE_ERROR" link="libnm-glib-NMSettings.html#NM-SETTINGS-INTERFACE-ERROR:CAPS"/>
+    <function name="nm_settings_interface_error_quark ()" link="libnm-glib-NMSettings.html#nm-settings-interface-error-quark"/>
+    <function name="NM_TYPE_SETTINGS_INTERFACE_ERROR" link="libnm-glib-NMSettings.html#NM-TYPE-SETTINGS-INTERFACE-ERROR:CAPS"/>
+    <function name="NM_SETTINGS_INTERFACE_NEW_CONNECTION" link="libnm-glib-NMSettings.html#NM-SETTINGS-INTERFACE-NEW-CONNECTION:CAPS"/>
+    <function name="NM_SETTINGS_INTERFACE_CONNECTIONS_READ" link="libnm-glib-NMSettings.html#NM-SETTINGS-INTERFACE-CONNECTIONS-READ:CAPS"/>
+    <function name="NMSettingsInterface" link="libnm-glib-NMSettings.html#NMSettingsInterface"/>
+    <function name="NMSettingsAddConnectionFunc ()" link="libnm-glib-NMSettings.html#NMSettingsAddConnectionFunc"/>
+    <function name="nm_settings_interface_get_type ()" link="libnm-glib-NMSettings.html#nm-settings-interface-get-type"/>
+    <function name="nm_settings_interface_list_connections ()" link="libnm-glib-NMSettings.html#nm-settings-interface-list-connections"/>
+    <function name="nm_settings_interface_get_connection_by_path ()" link="libnm-glib-NMSettings.html#nm-settings-interface-get-connection-by-path"/>
+    <function name="nm_settings_interface_add_connection ()" link="libnm-glib-NMSettings.html#nm-settings-interface-add-connection"/>
+    <function name="NM_SETTINGS_SERVICE_BUS" link="libnm-glib-NMSettingsService.html#NM-SETTINGS-SERVICE-BUS:CAPS"/>
+    <function name="NM_SETTINGS_SERVICE_SCOPE" link="libnm-glib-NMSettingsService.html#NM-SETTINGS-SERVICE-SCOPE:CAPS"/>
+    <function name="NMSettingsService" link="libnm-glib-NMSettingsService.html#NMSettingsService"/>
+    <function name="NMSettingsServiceClass" link="libnm-glib-NMSettingsService.html#NMSettingsServiceClass"/>
+    <function name="nm_settings_service_get_connection_by_path ()" link="libnm-glib-NMSettingsService.html#nm-settings-service-get-connection-by-path"/>
+    <function name="nm_settings_service_export ()" link="libnm-glib-NMSettingsService.html#nm-settings-service-export"/>
+    <function name="nm_settings_service_export_connection ()" link="libnm-glib-NMSettingsService.html#nm-settings-service-export-connection"/>
+    <function name="enum NMSettingsSystemPermissions" link="libnm-glib-NMSettingsSystem.html#NMSettingsSystemPermissions"/>
+    <function name="NM_SETTINGS_SYSTEM_INTERFACE_HOSTNAME" link="libnm-glib-NMSettingsSystem.html#NM-SETTINGS-SYSTEM-INTERFACE-HOSTNAME:CAPS"/>
+    <function name="NM_SETTINGS_SYSTEM_INTERFACE_CAN_MODIFY" link="libnm-glib-NMSettingsSystem.html#NM-SETTINGS-SYSTEM-INTERFACE-CAN-MODIFY:CAPS"/>
+    <function name="NM_SETTINGS_SYSTEM_INTERFACE_CHECK_PERMISSIONS" link="libnm-glib-NMSettingsSystem.html#NM-SETTINGS-SYSTEM-INTERFACE-CHECK-PERMISSIONS:CAPS"/>
+    <function name="enum NMSettingsSystemInterfaceProp" link="libnm-glib-NMSettingsSystem.html#NMSettingsSystemInterfaceProp"/>
+    <function name="NMSettingsSystemInterface" link="libnm-glib-NMSettingsSystem.html#NMSettingsSystemInterface"/>
+    <function name="NMSettingsSystemSaveHostnameFunc ()" link="libnm-glib-NMSettingsSystem.html#NMSettingsSystemSaveHostnameFunc"/>
+    <function name="NMSettingsSystemGetPermissionsFunc ()" link="libnm-glib-NMSettingsSystem.html#NMSettingsSystemGetPermissionsFunc"/>
+    <function name="nm_settings_system_interface_save_hostname ()" link="libnm-glib-NMSettingsSystem.html#nm-settings-system-interface-save-hostname"/>
+    <function name="nm_settings_system_interface_get_permissions ()" link="libnm-glib-NMSettingsSystem.html#nm-settings-system-interface-get-permissions"/>
     <function name="NM_TYPE_SSID" link="libnm-glib-nm-types.html#NM-TYPE-SSID:CAPS"/>
     <function name="nm_ssid_get_type ()" link="libnm-glib-nm-types.html#nm-ssid-get-type"/>
     <function name="NM_TYPE_UINT_ARRAY" link="libnm-glib-nm-types.html#NM-TYPE-UINT-ARRAY:CAPS"/>
@@ -327,52 +362,53 @@
     <function name="nm_ip6_address_array_get_type ()" link="libnm-glib-nm-types.html#nm-ip6-address-array-get-type"/>
     <function name="NM_TYPE_IP6_ROUTE_OBJECT_ARRAY" link="libnm-glib-nm-types.html#NM-TYPE-IP6-ROUTE-OBJECT-ARRAY:CAPS"/>
     <function name="nm_ip6_route_object_array_get_type ()" link="libnm-glib-nm-types.html#nm-ip6-route-object-array-get-type"/>
-    <function name="NM_VPN_CONNECTION_VPN_STATE" link="libnm-glib-nm-vpn-connection.html#NM-VPN-CONNECTION-VPN-STATE:CAPS"/>
-    <function name="NM_VPN_CONNECTION_BANNER" link="libnm-glib-nm-vpn-connection.html#NM-VPN-CONNECTION-BANNER:CAPS"/>
-    <function name="NMVPNConnection" link="libnm-glib-nm-vpn-connection.html#NMVPNConnection"/>
-    <function name="nm_vpn_connection_new ()" link="libnm-glib-nm-vpn-connection.html#nm-vpn-connection-new"/>
-    <function name="nm_vpn_connection_get_vpn_state ()" link="libnm-glib-nm-vpn-connection.html#nm-vpn-connection-get-vpn-state"/>
-    <function name="nm_vpn_connection_get_banner ()" link="libnm-glib-nm-vpn-connection.html#nm-vpn-connection-get-banner"/>
-    <function name="NM_VPN_PLUGIN_DBUS_SERVICE_NAME" link="libnm-glib-nm-vpn-plugin.html#NM-VPN-PLUGIN-DBUS-SERVICE-NAME:CAPS"/>
-    <function name="NM_VPN_PLUGIN_STATE" link="libnm-glib-nm-vpn-plugin.html#NM-VPN-PLUGIN-STATE:CAPS"/>
-    <function name="enum NMVPNPluginError" link="libnm-glib-nm-vpn-plugin.html#NMVPNPluginError"/>
-    <function name="NM_VPN_PLUGIN_ERROR" link="libnm-glib-nm-vpn-plugin.html#NM-VPN-PLUGIN-ERROR:CAPS"/>
-    <function name="NM_TYPE_VPN_PLUGIN_ERROR" link="libnm-glib-nm-vpn-plugin.html#NM-TYPE-VPN-PLUGIN-ERROR:CAPS"/>
-    <function name="NMVPNPlugin" link="libnm-glib-nm-vpn-plugin.html#NMVPNPlugin"/>
-    <function name="nm_vpn_plugin_error_quark ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-error-quark"/>
-    <function name="nm_vpn_plugin_error_get_type ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-error-get-type"/>
-    <function name="nm_vpn_plugin_get_connection ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-get-connection"/>
-    <function name="nm_vpn_plugin_get_state ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-get-state"/>
-    <function name="nm_vpn_plugin_set_state ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-set-state"/>
-    <function name="nm_vpn_plugin_set_login_banner ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-set-login-banner"/>
-    <function name="nm_vpn_plugin_failure ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-failure"/>
-    <function name="nm_vpn_plugin_set_ip4_config ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-set-ip4-config"/>
-    <function name="nm_vpn_plugin_disconnect ()" link="libnm-glib-nm-vpn-plugin.html#nm-vpn-plugin-disconnect"/>
-    <function name="NMVpnPluginUiInterface" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NMVpnPluginUiInterface"/>
-    <function name="NMVpnPluginUiWidgetInterface" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NMVpnPluginUiWidgetInterface"/>
-    <function name="NMVpnPluginUiFactory ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NMVpnPluginUiFactory"/>
-    <function name="nm_vpn_plugin_ui_factory ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-factory"/>
-    <function name="NM_VPN_PLUGIN_UI_INTERFACE_GET_INTERFACE()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-INTERFACE-GET-INTERFACE:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_CAPABILITY_NONE" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_INTERFACE_NAME" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_INTERFACE_DESC" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_INTERFACE_SERVICE" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-INTERFACE-SERVICE:CAPS"/>
-    <function name="enum NMVpnPluginUiInterfaceProp" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NMVpnPluginUiInterfaceProp"/>
-    <function name="nm_vpn_plugin_ui_interface_ui_factory ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-interface-ui-factory"/>
-    <function name="nm_vpn_plugin_ui_interface_get_capabilities ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-interface-get-capabilities"/>
-    <function name="nm_vpn_plugin_ui_interface_import ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-interface-import"/>
-    <function name="nm_vpn_plugin_ui_interface_export ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-interface-export"/>
-    <function name="nm_vpn_plugin_ui_interface_get_suggested_name ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-interface-get-suggested-name"/>
-    <function name="nm_vpn_plugin_ui_interface_delete_connection ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-interface-delete-connection"/>
-    <function name="NM_TYPE_VPN_PLUGIN_UI_WIDGET_INTERFACE" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-TYPE-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_WIDGET_INTERFACE()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS"/>
-    <function name="NM_IS_VPN_PLUGIN_UI_WIDGET_INTERFACE()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-IS-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS"/>
-    <function name="NM_VPN_PLUGIN_UI_WIDGET_INTERFACE_GET_INTERFACE()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#NM-VPN-PLUGIN-UI-WIDGET-INTERFACE-GET-INTERFACE:CAPS"/>
-    <function name="nm_vpn_plugin_ui_widget_interface_get_type ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-widget-interface-get-type"/>
-    <function name="nm_vpn_plugin_ui_widget_interface_get_widget ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-widget-interface-get-widget"/>
-    <function name="nm_vpn_plugin_ui_widget_interface_update_connection ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-widget-interface-update-connection"/>
-    <function name="nm_vpn_plugin_ui_widget_interface_save_secrets ()" link="libnm-glib-nm-vpn-plugin-ui-interface.html#nm-vpn-plugin-ui-widget-interface-save-secrets"/>
+    <function name="NM_VPN_CONNECTION_VPN_STATE" link="libnm-glib-NMVPNConnection.html#NM-VPN-CONNECTION-VPN-STATE:CAPS"/>
+    <function name="NM_VPN_CONNECTION_BANNER" link="libnm-glib-NMVPNConnection.html#NM-VPN-CONNECTION-BANNER:CAPS"/>
+    <function name="NMVPNConnection" link="libnm-glib-NMVPNConnection.html#NMVPNConnection"/>
+    <function name="NMVPNConnectionClass" link="libnm-glib-NMVPNConnection.html#NMVPNConnectionClass"/>
+    <function name="nm_vpn_connection_new ()" link="libnm-glib-NMVPNConnection.html#nm-vpn-connection-new"/>
+    <function name="nm_vpn_connection_get_vpn_state ()" link="libnm-glib-NMVPNConnection.html#nm-vpn-connection-get-vpn-state"/>
+    <function name="nm_vpn_connection_get_banner ()" link="libnm-glib-NMVPNConnection.html#nm-vpn-connection-get-banner"/>
+    <function name="NM_VPN_PLUGIN_DBUS_SERVICE_NAME" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-DBUS-SERVICE-NAME:CAPS"/>
+    <function name="NM_VPN_PLUGIN_STATE" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-STATE:CAPS"/>
+    <function name="enum NMVPNPluginError" link="libnm-glib-NMVPNPlugin.html#NMVPNPluginError"/>
+    <function name="NM_VPN_PLUGIN_ERROR" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR:CAPS"/>
+    <function name="NM_TYPE_VPN_PLUGIN_ERROR" link="libnm-glib-NMVPNPlugin.html#NM-TYPE-VPN-PLUGIN-ERROR:CAPS"/>
+    <function name="NMVPNPlugin" link="libnm-glib-NMVPNPlugin.html#NMVPNPlugin"/>
+    <function name="NMVPNPluginClass" link="libnm-glib-NMVPNPlugin.html#NMVPNPluginClass"/>
+    <function name="nm_vpn_plugin_error_quark ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-error-quark"/>
+    <function name="nm_vpn_plugin_error_get_type ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-error-get-type"/>
+    <function name="nm_vpn_plugin_get_connection ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-get-connection"/>
+    <function name="nm_vpn_plugin_get_state ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-get-state"/>
+    <function name="nm_vpn_plugin_set_state ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-state"/>
+    <function name="nm_vpn_plugin_set_login_banner ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-login-banner"/>
+    <function name="nm_vpn_plugin_failure ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-failure"/>
+    <function name="nm_vpn_plugin_set_ip4_config ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-ip4-config"/>
+    <function name="nm_vpn_plugin_disconnect ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-disconnect"/>
+    <function name="NMVpnPluginUiInterface" link="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiInterface"/>
+    <function name="NMVpnPluginUiWidgetInterface" link="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiWidgetInterface"/>
+    <function name="NMVpnPluginUiFactory ()" link="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiFactory"/>
+    <function name="nm_vpn_plugin_ui_factory ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-factory"/>
+    <function name="NM_VPN_PLUGIN_UI_CAPABILITY_NONE" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_INTERFACE_NAME" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_INTERFACE_DESC" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_INTERFACE_SERVICE" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-INTERFACE-SERVICE:CAPS"/>
+    <function name="enum NMVpnPluginUiInterfaceProp" link="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiInterfaceProp"/>
+    <function name="nm_vpn_plugin_ui_interface_ui_factory ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-ui-factory"/>
+    <function name="nm_vpn_plugin_ui_interface_get_capabilities ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-get-capabilities"/>
+    <function name="nm_vpn_plugin_ui_interface_import ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-import"/>
+    <function name="nm_vpn_plugin_ui_interface_export ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-export"/>
+    <function name="nm_vpn_plugin_ui_interface_get_suggested_name ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-get-suggested-name"/>
+    <function name="nm_vpn_plugin_ui_interface_delete_connection ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-delete-connection"/>
+    <function name="NM_TYPE_VPN_PLUGIN_UI_WIDGET_INTERFACE" link="libnm-glib-NMVpnPluginUi.html#NM-TYPE-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_WIDGET_INTERFACE()" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS"/>
+    <function name="NM_IS_VPN_PLUGIN_UI_WIDGET_INTERFACE()" link="libnm-glib-NMVpnPluginUi.html#NM-IS-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS"/>
+    <function name="NM_VPN_PLUGIN_UI_WIDGET_INTERFACE_GET_INTERFACE()" link="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-WIDGET-INTERFACE-GET-INTERFACE:CAPS"/>
+    <function name="nm_vpn_plugin_ui_widget_interface_get_type ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-get-type"/>
+    <function name="nm_vpn_plugin_ui_widget_interface_get_widget ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-get-widget"/>
+    <function name="nm_vpn_plugin_ui_widget_interface_update_connection ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-update-connection"/>
+    <function name="nm_vpn_plugin_ui_widget_interface_save_secrets ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-save-secrets"/>
   </functions>
 </book>

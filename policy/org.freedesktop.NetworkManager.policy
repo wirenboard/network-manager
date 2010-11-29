@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+
+  <vendor>NetworkManager</vendor>
+  <vendor_url>http://www.gnome.org/projects/NetworkManager</vendor_url>
+  <icon_name>nm-icon</icon_name>
+
+  <action id="org.freedesktop.NetworkManager.enable-disable-network">
+    <description>Enable or disable system networking</description>
+    <description xml:lang="bg">Включване и изключване на мрежата на системно ниво</description>
+    <description xml:lang="cs">Povolit nebo zakázat systémovou síť</description>
+    <description xml:lang="de">System-Netzwerke aktivieren oder deaktivieren</description>
+    <description xml:lang="el">Ενεργοποίηση ή απενεργοποίηση δικτύωσης συστήματος</description>
+    <description xml:lang="es">Activar o desactivar la red del sistema</description>
+    <description xml:lang="gl">Activar ou desactivar a rede do sistema</description>
+    <description xml:lang="hi">तंत्र संजालन सक्रिय या निष्क्रिय करें</description>
+    <description xml:lang="hu">Rendszer hálózatkezelésének be- és kikapcsolása</description>
+    <description xml:lang="id">Aktifkan atau matikan jejaring sistem</description>
+    <description xml:lang="kn">ವ್ಯವಸ್ಥೆಯ ಜಾಲಬಂಧವನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
+    <description xml:lang="lt">Įjungti arba išjungti sistemos prieigą prie tinklo</description>
+    <description xml:lang="mr">प्रणाली नेटवर्किंग सुरू किंवा बंद करा</description>
+    <description xml:lang="or">ତନ୍ତ୍ର ନେଟୱର୍କିଙ୍ଗକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରନ୍ତୁ</description>
+    <description xml:lang="pa">ਸਿਸਟਮ ਨੈੱਟਵਰਕਿੰਗ ਚਾਲੂ ਜਾਂ ਬੰਦ</description>
+    <description xml:lang="pl">Włączenie lub wyłączenie sieci systemowej</description>
+    <description xml:lang="sl">Omogoči ali onemogoči sistemske omrežne povezave</description>
+    <description xml:lang="sr">Омогући или онемогући умрежавање на систему</description>
+    <description xml:lang="sr@latin">Omogući ili onemogući umrežavanje na sistemu</description>
+    <description xml:lang="sv">Aktivera eller inaktivera systemnätverk</description>
+    <description xml:lang="te">సిస్టమ్ నెట్వర్కింగ్‌ను చేతనము లేదా అచేతనము చేయుము</description>
+    <description xml:lang="zh_CN">启用或禁用系统网络</description>
+    <message>System policy prevents enabling or disabling system networking</message>
+    <message xml:lang="bg">Политиката на системата не позволява включване и изключване на мрежата на системно ниво</message>
+    <message xml:lang="cs">Systémová politika zamezuje povolit nebo zakázat systémovou síť</message>
+    <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung von System-Netzwerken</message>
+    <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει ενεργοποίηση ή απενεργοποίηση της δικτύωσης του συστήματος</message>
+    <message xml:lang="es">La política de sistema evita activar o desactivar la red del sistema</message>
+    <message xml:lang="gl">A normativa do sistema evita a activación ou desactivación da rede do sistema</message>
+    <message xml:lang="hi">तंत्र संजालन के युक्ति के सक्रियण या निष्क्रियण को तंत्र नीति रोकता है</message>
+    <message xml:lang="hu">A rendszer házirendje megakadályozza a rendszer hálózatkezelésének be- vagy kikapcsolását</message>
+    <message xml:lang="id">Kebijakan sistem mencegah mengaktifkan atau mematikan jejaring sistem</message>
+    <message xml:lang="kn">ವ್ಯವಸ್ಥೆಯ ಜಾಲಬಂಧವನ್ನು ಶಕ್ತ ಅಥವ ಅಶಕ್ತಗೊಳಿಸದಂತೆ ವ್ಯವಸ್ಥೆಯ ಪಾಲಿಸಿಯು ತಡೆಯುತ್ತಿದೆ</message>
+    <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti sistemos prieigos prie tinklo</message>
+    <message xml:lang="mr">प्रणाली करार प्रणाली नेटवर्किंगसा सुरू किंवा बंद होण्यापासून रोखते</message>
+    <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ତନ୍ତ୍ର ନେଟୱର୍କିଙ୍ଗକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ ହେବାରୁ ବାରଣ କରିଥାଏ</message>
+    <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਸਿਸਟਮ ਨੈੱਟਵਰਕਿੰਗ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
+    <message xml:lang="pl">Polityka systemu powstrzymuje włączanie lub wyłączanie sieci systemowej</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo omogočanje ali onemogočanje omrežnih povezav.</message>
+    <message xml:lang="sr">Овлашћења система онемогућавају управљање мрежом на систему</message>
+    <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upravljanje mrežom na sistemu</message>
+    <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av systemnätverk</message>
+    <message xml:lang="te">సిస్టమ్ నెట్వర్కింగ్‌ను చేతనము చేయుటకు లేదా అచేతనము చేయుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="zh_CN">系统策略阻止启用或禁用系统网络</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.NetworkManager.sleep-wake">
+    <description>Put NetworkManager to sleep or wake it up (should only be used by system power management)</description>
+    <description xml:lang="bg">Приспиване и събуждане на NetworkManager (за целите на модула за управление на захранването на системата)</description>
+    <description xml:lang="cs">Uspat Network Manager nebo jej probudit (mělo by být používáno pouze systémovou správou napájení)</description>
+    <description xml:lang="de">NetworkManager in den Schlafzustand versetzen oder daraus aufwecken (Sollte nur von der System-Energieverwaltung verwendet werden)</description>
+    <description xml:lang="el">Θέση της Διαχείρισης δικτύου σε αδράνεια ή ενεργοποίησή της (πρέπει να χρησιμοποιείται μόνο από τη διαχείριση ενέργειας του συστήματος)</description>
+    <description xml:lang="es">Poner NetworkManager a dormir o despertarlo (sólo lo debería usar el gestor de energía del sistema)</description>
+    <description xml:lang="gl">Poñer o NetworkManager en suspensión e espertalo (só debe ser usado polo sistema de xestión de rede)</description>
+    <description xml:lang="hi"> NetworkManager को स्लीप स्थिति या वेकअप स्थिति में रखें (केवल सिस्टम पावर मैनेजमेंट के द्वारा प्रयोग किया जाएगा)</description>
+    <description xml:lang="hu">Hálózatkezelő elaltatása vagy felébresztése (csak a rendszer energiagazdálkodása által használandó)</description>
+    <description xml:lang="id">Tidurkan NetworkManager atau bangunkan (mestinya hanya dipakai oleh manajemen daya sistem)</description>
+    <description xml:lang="kn">NetworkManager ಅನ್ನು ನಿದ್ರಾಸ್ಥಿತಿಗೆ ಅಥವ ಎಚ್ಚರಸ್ಥಿತಿಗೆ ಕಳುಹಿಸಿ (ಇದನ್ನು ಕೇವಲ ವ್ಯವಸ್ಥೆಯ ವಿದ್ಯುಚ್ಛಕ್ತಿ ನಿರ್ವಹಣೆಯಿಂದ ಮಾತ್ರ ಬಳಸಬೇಕು)</description>
+    <description xml:lang="lt">Užmigdyti arba pažadinti NetworkManager (tai turėtų naudoti tik sistemos energijos valdymo posistemė)</description>
+    <description xml:lang="mr">NetworkManager ला स्लीप किंवा वेकअप स्तरात न्या (फक्त प्रणाली पावर मॅनेजमेंटनेच याचा वापर करावा)</description>
+    <description xml:lang="or">NetworkManager କୁ ସୁପ୍ତ କିମ୍ବା ଜାଗ୍ରତ ରଖନ୍ତୁ (କେବଳ ତନ୍ତ୍ର ଶକ୍ତି ପରିଚାଳନା ଦ୍ୱାରା ବ୍ୟବହାର ହେବା ଉଚିତ)</description>
+    <description xml:lang="pa">ਨੈੱਟਵਰਕਮੈਨਜੇਰ ਨੂੰ ਸਲੀਪ ਕਰੋ ਜਾਂ ਵੇਕ ਅੱਪ ਕਰੋ (ਕੇਵਲ ਸਿਸਟਮ ਪਾਵਰ ਮੈਨਜੇਮੈਂਟ ਰਾਹੀਂ ਵਰਤਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ)</description>
+    <description xml:lang="pl">Umieszczenie programu NetworkManager w stanie uśpienia lub przebudzenie go (powinno być używane tylko przez systemowe zarządzanie zasilaniem)</description>
+    <description xml:lang="sl">Postavi program NetworkManager v mirovanje ali iz njega (možnost je namenjena upravljanju napajanja)</description>
+    <description xml:lang="sr">Омогућава успављивање Управника мреже (користи се са Управником потрошње на систему)</description>
+    <description xml:lang="sr@latin">Omogućava uspavljivanje Upravnika mreže (koristi se sa Upravnikom potrošnje na sistemu)</description>
+    <description xml:lang="sv">Försätt Nätverkshanterare i vänteläge eller återställ efter det (bör endast användas av systemets strömhantering)</description>
+    <description xml:lang="te">నెట్వర్కుమేనేజర్‌ను స్లీప్‌నకు లేదా దానిని మెల్కొలుపుటకు వుంచండి (సిస్టమ్ పవర్ నిర్వహణ చేత మాత్రమే వుపయోగించబడాలి)</description>
+    <description xml:lang="zh_CN">挂起或唤醒 NetworkManager (应仅用于系统电源管理)</description>
+    <message>System policy prevents putting NetworkManager to sleep or waking it up</message>
+    <message xml:lang="bg">Политиката на системата не позволява приспиване и събуждане на NetworkManager</message>
+    <message xml:lang="cs">Systémová politika zamezuje NetworkManager uspat nebo probudit</message>
+    <message xml:lang="de">Die Systemrichtlinien verhindern das in den Schlaf versetzen oder Aufwecken von NetworkManager</message>
+    <message xml:lang="el">Η πολιτική του συστήματος δεν επιτρέπει να τίθεται η διαχείριση δικτύου σε αδράνεια ή να ενεργοποιείται.</message>
+    <message xml:lang="es">La política del sistema evita poner a NetworkManager a dormir o despertarlo</message>
+    <message xml:lang="gl">A normativa do sistema evita poñer o NetworkManager en suspensión ou espertalo</message>
+    <message xml:lang="hi">NetworkManager को स्लीप या वेकअप स्थिति में लाने के लिए नेटवर्कमैनेजर रोकता है</message>
+    <message xml:lang="hu">A rendszer házirendje megakadályozza a Hálózatkezelő elaltatását vagy felébresztését</message>
+    <message xml:lang="id">Kebijakan sistem mencegah menidurkan NetworkManager atau membangunkannya</message>
+    <message xml:lang="kn">NetworkManager ಅನ್ನು ನಿದ್ರಾಸ್ಥಿತಿಗೆ ಅಥವ ಎಚ್ಚರಸ್ಥಿತಿಗೆ ಕಳುಹಿಸುವುದನ್ನು ವ್ಯವಸ್ಥೆಯ ನಿಯಮವು ತಡೆಯುತ್ತಿದೆ</message>
+    <message xml:lang="lt">Sistemos politika neleidžia užmigdyti arba pažadinti NetworkManager</message>
+    <message xml:lang="mr">प्रणाली करार NetworkManager ला स्लीप किंवा वेकअप मध्ये जाण्यापासून रोखते</message>
+    <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ NetworkManager କୁ ସୁପ୍ତ କିମ୍ବା ଜାଗ୍ରତ ରହିବାରୁ ବାରଣ କରିଥାଏ</message>
+    <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਨੈੱਟਵਰਕਮੈਨੇਜਰ ਨੂੰ ਸਲੀਪ ਜਾਂ ਵੇਕਅੱਪ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
+    <message xml:lang="pl">Polityka systemu powstrzymuje umieszczenie programu NetworkManager w stanie uśpienia lub przebudzenie go</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo postavitev programa NetworkManager v mirovanje ali iz njega.</message>
+    <message xml:lang="sr">Овлашћења система онемогућавају успављивање Управника мрежом</message>
+    <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju uspavljivanje Upravnika mrežom</message>
+    <message xml:lang="sv">Systemets policy förhindrar att Nätverkshanterare försätts i vänteläge eller återställs efter det</message>
+    <message xml:lang="te">నెట్వర్కుమేనేజర్‌ను స్లీప్‌నకు లేదా దానిని మెల్కొలుపుటకు వుంచుటను సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="zh_CN">系统策略阻止挂起或唤醒 NetworkManager</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>no</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.NetworkManager.enable-disable-wifi">
+    <description>Enable or disable WiFi devices</description>
+    <description xml:lang="bg">Включване и изключване на устройства за безжични мрежи</description>
+    <description xml:lang="cs">Povolit nebo zakázat zařízení WiFi</description>
+    <description xml:lang="de">WLAN-Geräte aktivieren oder deaktivieren</description>
+    <description xml:lang="el">Ενεργοποίηση ή απενεργοποίηση συσκευών ασύρματης δικτύωσης (WiFi)</description>
+    <description xml:lang="es">Activar o desactivar los dispositivos inalámbricos</description>
+    <description xml:lang="gl">Activar ou desactivar os dispositivos WiFi</description>
+    <description xml:lang="hi">WiFi युक्तियाँ सक्रिय या निष्क्रिय करें</description>
+    <description xml:lang="hu">WiFi eszközök be- és kikapcsolása</description>
+    <description xml:lang="id">Aktifkan atau matikan perangkat WiFi</description>
+    <description xml:lang="kn">WiFi ಸಾಧನಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
+    <description xml:lang="lt">Įjungti arba išjungti WiFi įrenginius</description>
+    <description xml:lang="mr">WiFi साधने सुरू किंवा बंद करा</description>
+    <description xml:lang="or">WiFi ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରନ୍ତୁ</description>
+    <description xml:lang="pa">ਵਾਈ-ਫਾਈ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰੋ</description>
+    <description xml:lang="pl">Włączenie lub wyłączenie urządzeń WiFi</description>
+    <description xml:lang="sl">Omogoči ali onemogoči naprave WiFi</description>
+    <description xml:lang="sr">Омогући или онемогући бежичне уређаје</description>
+    <description xml:lang="sr@latin">Omogući ili onemogući bežične uređaje</description>
+    <description xml:lang="sv">Aktivera eller inaktivera WiFi-enheter</description>
+    <description xml:lang="te">WiFi పరికరములను చేతనము లేదా అచేతనము చేయుము</description>
+    <description xml:lang="zh_CN">启用或禁用 WiFi 设备</description>
+    <message>System policy prevents enabling or disabling WiFi devices</message>
+    <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за безжични мрежи</message>
+    <message xml:lang="cs">Systémová politika zamezuje povolit nebo zakázat zařízení WiFi</message>
+    <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung von WLAN-Geräten</message>
+    <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει ενεργοποίηση ή απενεργοποίηση συσκευών ανοιχτού ασύρματου δικτύου (WiFi)</message>
+    <message xml:lang="es">La política de sistema evita activar o desactivar los dispositivos inalámbricos</message>
+    <message xml:lang="gl">A normativa do sistema evita a activación e desactivación dos dispositivos WiFi</message>
+    <message xml:lang="hi">WiFi युक्ति के सक्रियण या निष्क्रियण को तंत्र नीति रोकता है</message>
+    <message xml:lang="hu">A rendszer házirendje megakadályozza a WiFi eszközök be- vagy kikapcsolását</message>
+    <message xml:lang="id">Kebijakan sistem mencegah mengaktifkan atau mematikan perangkat WiFi</message>
+    <message xml:lang="kn">WiFi ಸಾಧನವನ್ನು ಶಕ್ತ ಅಥವ ಅಶಕ್ತಗೊಳಿಸದಂತೆ ವ್ಯವಸ್ಥೆಯ ನಿಯಮಗಳು ತಡೆಯುತ್ತಿವೆ</message>
+    <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti WiFi įrenginių</message>
+    <message xml:lang="mr">प्रणाली करार WiFi साधणांना सुरू किंवा बंद होण्यापासून रोखते</message>
+    <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ WiFi ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ ହେବାରୁ ବାରଣ କରିଥାଏ</message>
+    <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਵਾਈ-ਫਾਈ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨੋਂ ਰੋਕਦੀ ਹੈ</message>
+    <message xml:lang="pl">Polityka systemu powstrzymuje włączanie lub wyłączanie urządzeń WiFi</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo omogočanja ali onemogočanje WiFi naprav</message>
+    <message xml:lang="sr">Овлашћења система онемогућавају управљање бежичним уређајима</message>
+    <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upravljanje bežičnim uređajima</message>
+    <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av WiFi-enheter</message>
+    <message xml:lang="te">WiFi పరికరములను చేతనము చేయుటకు లేదా అచేతనము చేయుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="zh_CN">系统策略阻止启用或禁用 WiFi 设备</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.NetworkManager.enable-disable-wwan">
+    <description>Enable or disable mobile broadband devices</description>
+    <description xml:lang="bg">Включване и изключване на устройства за достъп до мобилни мрежи</description>
+    <description xml:lang="cs">Povolit nebo zakázat mobilní širokopásmová zařízení</description>
+    <description xml:lang="de">Mobile Breitbandgeräte aktivieren oder deaktivieren</description>
+    <description xml:lang="el">Ενεργοποίηση ή απενεργοποίηση συσκευών ευρυζωνικότητας κινητής τηλεφωνίας</description>
+    <description xml:lang="es">Activar o desactivar los dispositivos de banda ancha móvil</description>
+    <description xml:lang="gl">Activar ou desactivar os dispositivos de banda ancha móbiles</description>
+    <description xml:lang="hi">मोबाइल ब्राडबैंड युक्तियाँ सक्रिय या निष्क्रिय करें</description>
+    <description xml:lang="hu">Mobil széles sávú eszközök be- és kikapcsolása</description>
+    <description xml:lang="id">Aktifkan atau matikan perangkat broadband bergerak</description>
+    <description xml:lang="kn">ಮೊಬೈಲ್ ಬ್ರಾಡ್‌ಬ್ಯಾಂಡ್ ಸಾಧನಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
+    <description xml:lang="lt">Įjungti arba išjungti mobiliojo plačiajuosčio ryšio įrenginius</description>
+    <description xml:lang="mr">मोबाईल ब्रॉडबँड साधने सुरू किंवा बंद करा</description>
+    <description xml:lang="or">ମୋବାଇଲ ବ୍ରୋଡବ୍ୟାଣ୍ଡ ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରନ୍ତୁ</description>
+    <description xml:lang="pa">ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ</description>
+    <description xml:lang="pl">Włączenie lub wyłączenie urządzeń komórkowych</description>
+    <description xml:lang="sl">Omogoči ali onemogoči naprave mobilnih širokopasovnih storitev</description>
+    <description xml:lang="sr">Омогући или онемогући мобилне широкопојасне уређаје</description>
+    <description xml:lang="sr@latin">Omogući ili onemogući mobilne širokopojasne uređaje</description>
+    <description xml:lang="sv">Aktivera eller inaktivera mobila bredbandsenheter</description>
+    <description xml:lang="te">మొబైల్ బ్రాడ్‌బాండ్ పరికరములను చేతనము లేదా అచేతనము చేయుము</description>
+    <description xml:lang="zh_CN">启用或禁用移动宽带设备</description>
+    <message>System policy prevents enabling or disabling mobile broadband devices</message>
+    <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за мобилни мрежи</message>
+    <message xml:lang="cs">Systémová politika zamezuje povolení nebo zakázání mobilních širokopásmových zařízení</message>
+    <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung mobiler Breitbandgeräte</message>
+    <message xml:lang="el">Η πολιτική του συστήματος δεν επιτρέπει την ενεργοποίηση ή απενεργοποίηση συσκευών ευρυζωνικότητας κινητής τηλεφωνίας</message>
+    <message xml:lang="es">La política del sistema evita activar o desactivar los dispositivos de banda ancha móvil</message>
+    <message xml:lang="gl">A normativa do sistema evita a activación ou desactivación dos dispositivos de banda ancha.</message>
+    <message xml:lang="hi">मोबाइल ब्रॉडबैंड युक्ति के सक्रियण या निष्क्रियण को तंत्र नीति रोकता है</message>
+    <message xml:lang="hu">A rendszer házirendje megakadályozza a mobil széles sávú eszközök be- vagy kikapcsolását</message>
+    <message xml:lang="id">Kebijakan sistem mencegah mengaktifkan atau mematikan perangkat broadband bergerak</message>
+    <message xml:lang="kn">ಮೊಬೈಲ್ ಬ್ರಾಡ್‌ಬ್ಯಾಂಡ್ ಸಾಧನಗಳನ್ನು ಶಕ್ತ ಅಥವ ಅಶಕ್ತಗೊಳಿಸದಂತೆ ವ್ಯವಸ್ಥೆಯ ನಿಯಮಗಳು ತಡೆಯುತ್ತಿವೆ</message>
+    <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti mobiliojo plačiajuosčio ryšio įrenginių</message>
+    <message xml:lang="mr">प्रणाली करार मोबाईल ब्रॉडबँड साधणांना सुरू किंवा बंद होण्यापासून रोखते</message>
+    <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ମୋବାଇଲ ବ୍ରୋଡବ୍ୟାଣ୍ଡ ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ ହେବାରୁ ବାରଣ କରିଥାଏ</message>
+    <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
+    <message xml:lang="pl">Polityka systemu powstrzymuje włączenie lub wyłączenie urządzeń komórkowych</message>
+    <message xml:lang="sl">Sistemska določila preprečuje omogočanja ali onemogočanje mobilne širokopasovne naprave</message>
+    <message xml:lang="sr">Овлашћења система онемогућавају управљање мобилним широкопојасним уређајима</message>
+    <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upravljanje mobilnim širokopojasnim uređajima</message>
+    <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av mobila bredbandsenheter</message>
+    <message xml:lang="te">మొబైల్ బ్రాడ్‌బాండ్ పరికరములను చేతనముచేయుటకు లేదా అచేతనముచేయుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="zh_CN">系统策略阻止启用或禁用移动宽带设备</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.NetworkManager.use-user-connections">
+    <description>Allow use of user-specific connections</description>
+    <description xml:lang="bg">Разрешаване на използването на потребителски връзки</description>
+    <description xml:lang="cs">Povolit použití uživatelem specifikovaných připojení</description>
+    <description xml:lang="de">Die Verwendung von benutzerspezifischen Verbindungen erlauben</description>
+    <description xml:lang="el">Να επιτρέπεται η χρήση συνδέσεων συγκεκριμένων για το χρήστη</description>
+    <description xml:lang="es">Permitir el uso de conexiones específicas de usuario</description>
+    <description xml:lang="gl">Permitir o uso de conexións específicas do usuario</description>
+    <description xml:lang="hi">उपयोक्ता विशिष्ट कनेक्शन के उपयोग की स्वीकृति दें</description>
+    <description xml:lang="hu">Felhasználói szintű kapcsolatok engedélyezése</description>
+    <description xml:lang="id">Ijinkan penggunaan sambungan spesifik-pengguna</description>
+    <description xml:lang="kn">ಬಳಕೆದಾರ-ನಿಶ್ಚಿತ ಸಂಪರ್ಕಗಳನ್ನು  ಬಳಸುವುದನ್ನು ಅನುಮತಿಸು</description>
+    <description xml:lang="lt">Leisti naudoti pasirinktinius naudotojo ryšius</description>
+    <description xml:lang="mr">वापरकर्ता-निर्देशीत जोडणींचा वापर स्वीकारा</description>
+    <description xml:lang="or">ଚାଳକ-ନିର୍ଦ୍ଦିଷ୍ଟ ସଂଯୋଗଗୁଡ଼ିକର ବ୍ୟବହାରକୁ ଅନୁମତି ଦିଅନ୍ତୁ</description>
+    <description xml:lang="pa">ਖਾਸ ਯੂਜ਼ਰ ਕੁਨੈਕਸ਼ਨਾਂ ਦੀ ਵਰਤੋਂ ਮਨਜ਼ੂਰ</description>
+    <description xml:lang="pl">Umożliwienie użycia połączeń użytkowników</description>
+    <description xml:lang="sl">Dovoli uporabo posebnih uporabniških povezav.</description>
+    <description xml:lang="sr">Дозволи везе које одређује корисник</description>
+    <description xml:lang="sr@latin">Dozvoli veze koje određuje korisnik</description>
+    <description xml:lang="sv">Tillåt användning av användarspecifika anslutningar</description>
+    <description xml:lang="te">వినియోగదారి-ప్రత్యేక అనుసంధానముల వుపయోగమును అనుమతించుము</description>
+    <description xml:lang="zh_CN">允许用户连接</description>
+    <message>System policy prevents use of user-specific connections</message>
+    <message xml:lang="bg">Политиката на системата не позволява използване на потребителски връзки</message>
+    <message xml:lang="cs">Systémová politika zamezuje použití uživatelsky specifikovaných připojení</message>
+    <message xml:lang="de">Die Systemrichtlinien verhindern die Verwendung von benutzerspezifischen Verbindungen</message>
+    <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει τη χρήση συνδέσεων συγκεκριμένων για κάθε χρήστη</message>
+    <message xml:lang="es">La política del sistema evita el uso de conexiones específicas de usuario</message>
+    <message xml:lang="gl">A normativa do sistema evita o uso de conexións específicas do usuario</message>
+    <message xml:lang="hi">सिस्टम नीति उपयोक्ता विशेष कनेक्शन के उपयोग को रोकता है</message>
+    <message xml:lang="hu">A rendszer házirendje megakadályozza a felhasználói kapcsolatok használatát</message>
+    <message xml:lang="id">Kebijakan sistem mencegah penggunaan sambungan spesifik-pengguna</message>
+    <message xml:lang="kn">ಬಳಕೆದಾರ-ನಿಶ್ಚಿತ ಸಂಪರ್ಕಗಳನ್ನು ಬಳಸುವುದಂತೆ ವ್ಯವಸ್ಥೆಯ ನಿಯಮವು ತಡೆಯುತ್ತಿದೆ</message>
+    <message xml:lang="lt">Sistemos politika neleidžia naudoti pasirinktinių naudotojo ryšių</message>
+    <message xml:lang="mr">प्रणाली करार वापरकर्ता-निर्देशीत जोडणींचे वापर रोखते</message>
+    <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ତନ୍ତ୍ର-ନିର୍ଦ୍ଦିଷ୍ଟ ସଂଯୋଗଗୁଡ଼ିକୁ ବାରଣ କରିଥାଏ</message>
+    <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਖਾਸ-ਯੂਜ਼ਰ ਕੁਨੈਕਸ਼ਨ ਵਰਤੋਂ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
+    <message xml:lang="pl">Polityka systemu powstrzymuje użycie połączeń użytkownika</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo uporabo uporabniških povezav.</message>
+    <message xml:lang="sr">Овлашћења система онемогућавају употребу корисникових веза</message>
+    <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upotrebu korisnikovih veza</message>
+    <message xml:lang="sv">Systemets policy förhindrar användning av användarspecifika anslutningar</message>
+    <message xml:lang="te">వినియోగదారి-ప్రత్యేక అనుసంధానములను వుపయోగించుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="zh_CN">系统策略阻止使用用户连接</message>
+    <defaults>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.NetworkManager.network-control">
+    <description>Allow control of network connections</description>
+    <description xml:lang="bg">Разрешаване на управлението на мрежовите връзки</description>
+    <description xml:lang="cs">Povolit ovládání síťových připojení</description>
+    <description xml:lang="de">Die Kontrolle von Netzwerkverbindungen erlauben</description>
+    <description xml:lang="el">Να επιτρέπεται ο έλεγχος των συνδέσεων δικτύου</description>
+    <description xml:lang="es">Permitir controlar las conexiones de red</description>
+    <description xml:lang="gl">Permitir o control das conexións de rede</description>
+    <description xml:lang="hi">संजाल कनेक्शन के नियंत्रण स्वीकार करें</description>
+    <description xml:lang="hu">Hálózati kapcsolatok felügyeletének engedélyezése</description>
+    <description xml:lang="id">Ijinkan pengendalian sambungan jaringan</description>
+    <description xml:lang="kn">ಜಾಲಬಂಧ ಸಂಪರ್ಕಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದನ್ನು ಅನುಮತಿಸಿ</description>
+    <description xml:lang="lt">Leisti valdyti tinklo ryšius</description>
+    <description xml:lang="mr">नेटवर्क जोडणींचे नियंत्रण स्वीकारा</description>
+    <description xml:lang="or">ନେଟୱର୍କ ସଂଯୋଗଗୁଡ଼ିକ ପାଇଁ ନିୟନ୍ତ୍ରଣକୁ ଅନୁମତି ଦିଅନ୍ତୁ</description>
+    <description xml:lang="pa">ਨੈੱਟਵਰਕ ਕੁਨੈਕਸ਼ਨਾਂ ਲਈ ਕੰਟਰੋਲ ਮਨਜ਼ੂਰ</description>
+    <description xml:lang="pl">Umożliwienie kontroli połączeń sieciowych</description>
+    <description xml:lang="sl">Dovoli nadzor omrežnih povezav</description>
+    <description xml:lang="sr">Дозволи контролу мрежних веза</description>
+    <description xml:lang="sr@latin">Dozvoli kontrolu mrežnih veza</description>
+    <description xml:lang="sv">Tillåt kontroll av nätverksanslutningar</description>
+    <description xml:lang="te">నెట్వర్కు అనుసంధానముల యొక్క నియంత్రణ అనుమతించుము</description>
+    <description xml:lang="zh_CN">允许控制网络连接</description>
+    <message>System policy prevents control of network connections</message>
+    <message xml:lang="bg">Политиката на системата не позволява управляване на мрежовите връзки</message>
+    <message xml:lang="cs">Systémová politika zamezuje ovládání síťových připojení</message>
+    <message xml:lang="de">Die Systemrichtlinien verhindern die Kontrolle von Netzwerkverbindungen</message>
+    <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει τον έλεγχο των συνδέσεων δικτύου</message>
+    <message xml:lang="es">La política de sistema evita el control de las conexiones de red</message>
+    <message xml:lang="gl">A normativa do sistema evita o control das conexións de rede</message>
+    <message xml:lang="hi">सिस्टम कनेक्शन के नियंत्रण को सिस्टम नीति रोकता है</message>
+    <message xml:lang="hu">A rendszer házirendje megakadályozza a hálózati kapcsolatok felügyeletét</message>
+    <message xml:lang="id">Kebijakan sistem mencegah pengendalian sambungan jaringan</message>
+    <message xml:lang="kn">ಜಾಲಬಂಧ ಸಂಪರ್ಕಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದನ್ನು ವ್ಯವಸ್ಥೆಯ ನಿಯಮಗಳು ತಡೆಯುತ್ತಿವೆ</message>
+    <message xml:lang="lt">Sistemos politika neleidžia valdyti tinklo ryšių</message>
+    <message xml:lang="mr">प्रणाली करार नेटवर्क जोडणीचे नियंत्रण रोखते</message>
+    <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ନେଟୱର୍କ ସଂଯୋଗଗୁଡ଼ିକର ନିୟନ୍ତ୍ରଣକୁ ବାରଣ କରିଥାଏ</message>
+    <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਨੈੱਟਵਰਕ ਕੁਨੈਕਸ਼ਨ ਕੰਟਰੋਲ ਕਰਨ ਤੋਂ ਸੋਧ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
+    <message xml:lang="pl">Polityka systemu powstrzymuje kontrolę połączeń sieciowych</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo nadzor omrežnih povezav</message>
+    <message xml:lang="sr">Овлашћења система онемогућавају контролу мрежних веза</message>
+    <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju kontrolu mrežnih veza</message>
+    <message xml:lang="sv">Systemets policy förhindrar kontroll av nätverksanslutningar</message>
+    <message xml:lang="te">నెట్వర్కు అనుసంధానముల నియంత్రణను సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="zh_CN">系统策略阻止更改网络连接</message>
+    <defaults>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+</policyconfig>
