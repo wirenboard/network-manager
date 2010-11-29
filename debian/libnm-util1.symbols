@@ -309,16 +309,24 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_vpn_new@Base 0.7.0
  nm_setting_vpn_remove_data_item@Base 0.7.0
  nm_setting_vpn_remove_secret@Base 0.7.0
+ nm_setting_wired_add_s390_option@Base 0.8.2
  nm_setting_wired_error_get_type@Base 0.7.0
  nm_setting_wired_error_quark@Base 0.7.0
  nm_setting_wired_get_auto_negotiate@Base 0.7.0
+ nm_setting_wired_get_cloned_mac_address@Base 0.8.2
  nm_setting_wired_get_duplex@Base 0.7.0
  nm_setting_wired_get_mac_address@Base 0.7.0
  nm_setting_wired_get_mtu@Base 0.7.0
+ nm_setting_wired_get_num_s390_options@Base 0.8.2
  nm_setting_wired_get_port@Base 0.7.0
+ nm_setting_wired_get_s390_nettype@Base 0.8.2
+ nm_setting_wired_get_s390_option@Base 0.8.2
+ nm_setting_wired_get_s390_option_by_key@Base 0.8.2
+ nm_setting_wired_get_s390_subchannels@Base 0.8.2
  nm_setting_wired_get_speed@Base 0.7.0
  nm_setting_wired_get_type@Base 0.7.0
  nm_setting_wired_new@Base 0.7.0
+ nm_setting_wired_remove_s390_option@Base 0.8.2
  nm_setting_wireless_add_seen_bssid@Base 0.7.0
  nm_setting_wireless_ap_security_compatible@Base 0.7.0
  nm_setting_wireless_error_get_type@Base 0.7.0
@@ -326,6 +334,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_wireless_get_band@Base 0.7.0
  nm_setting_wireless_get_bssid@Base 0.7.0
  nm_setting_wireless_get_channel@Base 0.7.0
+ nm_setting_wireless_get_cloned_mac_address@Base 0.8.2
  nm_setting_wireless_get_mac_address@Base 0.7.0
  nm_setting_wireless_get_mode@Base 0.7.0
  nm_setting_wireless_get_mtu@Base 0.7.0
@@ -388,3 +397,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_utils_ssid_to_utf8@Base 0.7.0
  nm_utils_uuid_generate@Base 0.7.0
  nm_utils_uuid_generate_from_string@Base 0.7.0
+ nm_utils_wifi_channel_to_freq@Base 0.8.2
+ nm_utils_wifi_find_next_channel@Base 0.8.2
+ nm_utils_wifi_freq_to_channel@Base 0.8.2
+ nm_utils_wifi_is_channel_valid@Base 0.8.2

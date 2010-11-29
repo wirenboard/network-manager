@@ -33,6 +33,7 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_client_get_device_by_path@Base 0.7.999
  nm_client_get_devices@Base 0.7.999
  nm_client_get_manager_running@Base 0.7.999
+ nm_client_get_permission_result@Base 0.8.2
  nm_client_get_state@Base 0.7.999
  nm_client_get_type@Base 0.7.999
  nm_client_networking_get_enabled@Base 0.8.0.999
@@ -53,12 +54,14 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_device_disconnect@Base 0.7.999
  nm_device_ethernet_get_carrier@Base 0.7.999
  nm_device_ethernet_get_hw_address@Base 0.7.999
+ nm_device_ethernet_get_permanent_hw_address@Base 0.8.2
  nm_device_ethernet_get_speed@Base 0.7.999
  nm_device_ethernet_get_type@Base 0.7.999
  nm_device_ethernet_new@Base 0.7.999
  nm_device_get_capabilities@Base 0.7.999
  nm_device_get_dhcp4_config@Base 0.7.999
  nm_device_get_driver@Base 0.7.999
+ nm_device_get_firmware_missing@Base 0.8.2
  nm_device_get_iface@Base 0.7.999
  nm_device_get_ip4_config@Base 0.7.999
  nm_device_get_ip6_config@Base 0.7.999
@@ -76,6 +79,7 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_device_wifi_get_capabilities@Base 0.7.999
  nm_device_wifi_get_hw_address@Base 0.7.999
  nm_device_wifi_get_mode@Base 0.7.999
+ nm_device_wifi_get_permanent_hw_address@Base 0.8.2
  nm_device_wifi_get_type@Base 0.7.999
  nm_device_wifi_new@Base 0.7.999
  nm_dhcp4_config_get_one_option@Base 0.7.999

@@ -5,6 +5,8 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
   * Remove patches, merged upstream
     - debian/patches/10-dont_require_ifup_for_lo.patch
     - debian/patches/30-typo_fix.patch
+  * debian/libnm-{glib2,util1}.symbols
+    - Update symbols files for new API additions.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 
