@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMDHCP4Config</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
 <link rel="prev" href="NMIP6Config.html" title="NMIP6Config">
 <link rel="next" href="NMDHCP6Config.html" title="NMDHCP6Config">
-<meta name="generator" content="GTK-Doc V1.14 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -42,10 +42,11 @@
 <div class="refsynopsisdiv" title="Synopsis">
 <a name="NMDHCP4Config.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMDHCP4Config.html#NMDHCP4Config-struct" title="NMDHCP4Config">NMDHCP4Config</a>;
+                    <a class="link" href="NMDHCP4Config.html#NMDHCP4ConfigClass" title="NMDHCP4ConfigClass">NMDHCP4ConfigClass</a>;
 #define             <a class="link" href="NMDHCP4Config.html#NM-DHCP4-CONFIG-OPTIONS:CAPS" title="NM_DHCP4_CONFIG_OPTIONS">NM_DHCP4_CONFIG_OPTIONS</a>
-<a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMDHCP4Config.html#nm-dhcp4-config-new" title="nm_dhcp4_config_new ()">nm_dhcp4_config_new</a>                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMDHCP4Config.html#nm-dhcp4-config-new" title="nm_dhcp4_config_new ()">nm_dhcp4_config_new</a>                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *object_path</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        <a class="link" href="NMDHCP4Config.html#nm-dhcp4-config-get-options" title="nm_dhcp4_config_get_options ()">nm_dhcp4_config_get_options</a>         (<em class="parameter"><code><a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a> *config</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        <a class="link" href="NMDHCP4Config.html#nm-dhcp4-config-get-options" title="nm_dhcp4_config_get_options ()">nm_dhcp4_config_get_options</a>         (<em class="parameter"><code><a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a> *config</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMDHCP4Config.html#nm-dhcp4-config-get-one-option" title="nm_dhcp4_config_get_one_option ()">nm_dhcp4_config_get_one_option</a>      (<em class="parameter"><code><a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a> *config</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *option</code></em>);
 </pre>
@@ -53,15 +54,15 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
 <div class="refsect1" title="Object Hierarchy">
 <a name="NMDHCP4Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
-  <a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-   +----<a class="link" href="libnm-glib-nm-object.html#NMObject">NMObject</a>
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
          +----NMDHCP4Config
 </pre>
 </div>
 <div class="refsect1" title="Properties">
 <a name="NMDHCP4Config.properties"></a><h2>Properties</h2>
 <pre class="synopsis">
-  "<a class="link" href="NMDHCP4Config.html#NMDHCP4Config--options" title='The "options" property'>options</a>"                  <a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>*           : Read
+  "<a class="link" href="NMDHCP4Config.html#NMDHCP4Config--options" title='The "options" property'>options</a>"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>*           : Read
 </pre>
 </div>
 <div class="refsect1" title="Description">
@@ -78,6 +79,24 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
 </p>
 </div>
 <hr>
+<div class="refsect2" title="NMDHCP4ConfigClass">
+<a name="NMDHCP4ConfigClass"></a><h3>NMDHCP4ConfigClass</h3>
+<pre class="programlisting">typedef struct {
+	NMObjectClass parent;
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+	void (*_reserved5) (void);
+	void (*_reserved6) (void);
+} NMDHCP4ConfigClass;
+</pre>
+<p>
+</p>
+</div>
+<hr>
 <div class="refsect2" title="NM_DHCP4_CONFIG_OPTIONS">
 <a name="NM-DHCP4-CONFIG-OPTIONS:CAPS"></a><h3>NM_DHCP4_CONFIG_OPTIONS</h3>
 <pre class="programlisting">#define NM_DHCP4_CONFIG_OPTIONS "options"
@@ -88,7 +107,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
 <hr>
 <div class="refsect2" title="nm_dhcp4_config_new ()">
 <a name="nm-dhcp4-config-new"></a><h3>nm_dhcp4_config_new ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_dhcp4_config_new                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_dhcp4_config_new                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *object_path</code></em>);</pre>
 <p>
 Creates a new <a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a>.
@@ -117,7 +136,7 @@ Creates a new <a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><s
 <hr>
 <div class="refsect2" title="nm_dhcp4_config_get_options ()">
 <a name="nm-dhcp4-config-get-options"></a><h3>nm_dhcp4_config_get_options ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        nm_dhcp4_config_get_options         (<em class="parameter"><code><a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a> *config</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        nm_dhcp4_config_get_options         (<em class="parameter"><code><a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a> *config</code></em>);</pre>
 <p>
 Gets all the options contained in the configuration.
 </p>
@@ -131,7 +150,7 @@ Gets all the options contained in the configuration.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the <a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing strings for keys and values.
+<td> the <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing strings for keys and values.
 This is the internal copy used by the configuration, and must not be modified.
 </td>
 </tr>
@@ -173,15 +192,15 @@ configuration, and must not be modified.
 <a name="NMDHCP4Config.property-details"></a><h2>Property Details</h2>
 <div class="refsect2" title='The "options" property'>
 <a name="NMDHCP4Config--options"></a><h3>The <code class="literal">"options"</code> property</h3>
-<pre class="programlisting">  "options"                  <a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>*           : Read</pre>
+<pre class="programlisting">  "options"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>*           : Read</pre>
 <p>
-The <a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing options of the configuration.
+The <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing options of the configuration.
 </p>
 </div>
 </div>
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.14</div>
+          Generated by GTK-Doc V1.15</div>
 </body>
 </html>

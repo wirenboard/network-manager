@@ -3,18 +3,18 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSerialDevice</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
-<link rel="prev" href="libnm-glib-nm-device-wifi.html" title="NMDeviceWifi">
+<link rel="prev" href="NMDeviceWifi.html" title="NMDeviceWifi">
 <link rel="next" href="NMGsmDevice.html" title="NMGsmDevice">
-<meta name="generator" content="GTK-Doc V1.14 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
 <tr valign="middle">
-<td><a accesskey="p" href="libnm-glib-nm-device-wifi.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="NMDeviceWifi.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
 <td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
@@ -42,16 +42,17 @@
 <div class="refsynopsisdiv" title="Synopsis">
 <a name="NMSerialDevice.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMSerialDevice.html#NMSerialDevice-struct" title="NMSerialDevice">NMSerialDevice</a>;
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSerialDevice.html#nm-serial-device-get-bytes-received" title="nm_serial_device_get_bytes_received ()">nm_serial_device_get_bytes_received</a> (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSerialDevice.html#nm-serial-device-get-bytes-sent" title="nm_serial_device_get_bytes_sent ()">nm_serial_device_get_bytes_sent</a>     (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);
+                    <a class="link" href="NMSerialDevice.html#NMSerialDeviceClass" title="NMSerialDeviceClass">NMSerialDeviceClass</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSerialDevice.html#nm-serial-device-get-bytes-received" title="nm_serial_device_get_bytes_received ()">nm_serial_device_get_bytes_received</a> (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSerialDevice.html#nm-serial-device-get-bytes-sent" title="nm_serial_device_get_bytes_sent ()">nm_serial_device_get_bytes_sent</a>     (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);
 </pre>
 </div>
 <div class="refsect1" title="Object Hierarchy">
 <a name="NMSerialDevice.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
-  <a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-   +----<a class="link" href="libnm-glib-nm-object.html#NMObject">NMObject</a>
-         +----<a class="link" href="libnm-glib-nm-device.html#NMDevice">NMDevice</a>
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
+         +----<a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
                +----NMSerialDevice
                      +----<a class="link" href="NMGsmDevice.html" title="NMGsmDevice">NMGsmDevice</a>
                      +----<a class="link" href="NMCdmaDevice.html" title="NMCdmaDevice">NMCdmaDevice</a>
@@ -77,9 +78,30 @@
 </p>
 </div>
 <hr>
+<div class="refsect2" title="NMSerialDeviceClass">
+<a name="NMSerialDeviceClass"></a><h3>NMSerialDeviceClass</h3>
+<pre class="programlisting">typedef struct {
+	NMDeviceClass parent;
+
+	/* Signals */
+	void (*ppp_stats) (NMSerialDevice *self, guint32 in_bytes, guint32 out_bytes);
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+	void (*_reserved5) (void);
+	void (*_reserved6) (void);
+} NMSerialDeviceClass;
+</pre>
+<p>
+</p>
+</div>
+<hr>
 <div class="refsect2" title="nm_serial_device_get_bytes_received ()">
 <a name="nm-serial-device-get-bytes-received"></a><h3>nm_serial_device_get_bytes_received ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_serial_device_get_bytes_received (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_serial_device_get_bytes_received (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);</pre>
 <p>
 Gets the amount of bytes received by the serial device.
 This counter is reset when the device is activated.
@@ -103,7 +125,7 @@ This counter is reset when the device is activated.
 <hr>
 <div class="refsect2" title="nm_serial_device_get_bytes_sent ()">
 <a name="nm-serial-device-get-bytes-sent"></a><h3>nm_serial_device_get_bytes_sent ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_serial_device_get_bytes_sent     (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_serial_device_get_bytes_sent     (<em class="parameter"><code><a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *self</code></em>);</pre>
 <p>
 Gets the amount of bytes sent by the serial device.
 This counter is reset when the device is activated.
@@ -130,11 +152,11 @@ This counter is reset when the device is activated.
 <div class="refsect2" title='The "ppp-stats" signal'>
 <a name="NMSerialDevice-ppp-stats"></a><h3>The <code class="literal">"ppp-stats"</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMSerialDevice.html" title="NMSerialDevice"><span class="type">NMSerialDevice</span></a> *device,
-                                                        <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>           in_bytes,
-                                                        <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#guint"><span class="type">guint</span></a>           out_bytes,
-                                                        <a href="/usr/share/gtk-doc/html/glib/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)      : Run First</pre>
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>           in_bytes,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>           out_bytes,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>        user_data)      : Run First</pre>
 <p>
-Notifies that a <a class="link" href="libnm-glib-nm-access-point.html#NMAccessPoint"><span class="type">NMAccessPoint</span></a> is added to the wifi device.
+Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is added to the wifi device.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -165,6 +187,6 @@ Notifies that a <a class="link" href="libnm-glib-nm-access-point.html#NMAccessPo
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.14</div>
+          Generated by GTK-Doc V1.15</div>
 </body>
 </html>

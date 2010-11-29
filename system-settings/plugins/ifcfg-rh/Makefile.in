@@ -82,6 +82,9 @@ am_libifcfg_rh_io_la_OBJECTS = libifcfg_rh_io_la-shvar.lo \
 	libifcfg_rh_io_la-reader.lo libifcfg_rh_io_la-writer.lo \
 	libifcfg_rh_io_la-errors.lo libifcfg_rh_io_la-utils.lo
 libifcfg_rh_io_la_OBJECTS = $(am_libifcfg_rh_io_la_OBJECTS)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 libnm_settings_plugin_ifcfg_rh_la_DEPENDENCIES =  \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(top_builddir)/libnm-glib/libnm-glib.la \
@@ -93,9 +96,9 @@ am_libnm_settings_plugin_ifcfg_rh_la_OBJECTS =  \
 	libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo
 libnm_settings_plugin_ifcfg_rh_la_OBJECTS =  \
 	$(am_libnm_settings_plugin_ifcfg_rh_la_OBJECTS)
-libnm_settings_plugin_ifcfg_rh_la_LINK = $(LIBTOOL) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
+libnm_settings_plugin_ifcfg_rh_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libnm_settings_plugin_ifcfg_rh_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -103,13 +106,26 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libifcfg_rh_io_la_SOURCES) \
 	$(libnm_settings_plugin_ifcfg_rh_la_SOURCES)
 DIST_SOURCES = $(libifcfg_rh_io_la_SOURCES) \
@@ -160,6 +176,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -180,6 +197,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -221,6 +239,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -260,6 +279,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -316,7 +337,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -328,6 +348,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -476,9 +497,9 @@ clean-pkglibLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libifcfg-rh-io.la: $(libifcfg_rh_io_la_OBJECTS) $(libifcfg_rh_io_la_DEPENDENCIES) 
-	$(LINK)  $(libifcfg_rh_io_la_OBJECTS) $(libifcfg_rh_io_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK)  $(libifcfg_rh_io_la_OBJECTS) $(libifcfg_rh_io_la_LIBADD) $(LIBS)
 libnm-settings-plugin-ifcfg-rh.la: $(libnm_settings_plugin_ifcfg_rh_la_OBJECTS) $(libnm_settings_plugin_ifcfg_rh_la_DEPENDENCIES) 
-	$(libnm_settings_plugin_ifcfg_rh_la_LINK) -rpath $(pkglibdir) $(libnm_settings_plugin_ifcfg_rh_la_OBJECTS) $(libnm_settings_plugin_ifcfg_rh_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnm_settings_plugin_ifcfg_rh_la_LINK) -rpath $(pkglibdir) $(libnm_settings_plugin_ifcfg_rh_la_OBJECTS) $(libnm_settings_plugin_ifcfg_rh_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -495,77 +516,87 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 libifcfg_rh_io_la-shvar.lo: shvar.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-shvar.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-shvar.Tpo -c -o libifcfg_rh_io_la-shvar.lo `test -f 'shvar.c' || echo '$(srcdir)/'`shvar.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-shvar.Tpo $(DEPDIR)/libifcfg_rh_io_la-shvar.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-shvar.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-shvar.Tpo -c -o libifcfg_rh_io_la-shvar.lo `test -f 'shvar.c' || echo '$(srcdir)/'`shvar.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-shvar.Tpo $(DEPDIR)/libifcfg_rh_io_la-shvar.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shvar.c' object='libifcfg_rh_io_la-shvar.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-shvar.lo `test -f 'shvar.c' || echo '$(srcdir)/'`shvar.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-shvar.lo `test -f 'shvar.c' || echo '$(srcdir)/'`shvar.c
 
 libifcfg_rh_io_la-reader.lo: reader.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-reader.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-reader.Tpo -c -o libifcfg_rh_io_la-reader.lo `test -f 'reader.c' || echo '$(srcdir)/'`reader.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-reader.Tpo $(DEPDIR)/libifcfg_rh_io_la-reader.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-reader.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-reader.Tpo -c -o libifcfg_rh_io_la-reader.lo `test -f 'reader.c' || echo '$(srcdir)/'`reader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-reader.Tpo $(DEPDIR)/libifcfg_rh_io_la-reader.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='reader.c' object='libifcfg_rh_io_la-reader.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-reader.lo `test -f 'reader.c' || echo '$(srcdir)/'`reader.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-reader.lo `test -f 'reader.c' || echo '$(srcdir)/'`reader.c
 
 libifcfg_rh_io_la-writer.lo: writer.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-writer.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-writer.Tpo -c -o libifcfg_rh_io_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-writer.Tpo $(DEPDIR)/libifcfg_rh_io_la-writer.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-writer.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-writer.Tpo -c -o libifcfg_rh_io_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-writer.Tpo $(DEPDIR)/libifcfg_rh_io_la-writer.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='writer.c' object='libifcfg_rh_io_la-writer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
 
 libifcfg_rh_io_la-errors.lo: errors.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-errors.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-errors.Tpo -c -o libifcfg_rh_io_la-errors.lo `test -f 'errors.c' || echo '$(srcdir)/'`errors.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-errors.Tpo $(DEPDIR)/libifcfg_rh_io_la-errors.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-errors.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-errors.Tpo -c -o libifcfg_rh_io_la-errors.lo `test -f 'errors.c' || echo '$(srcdir)/'`errors.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-errors.Tpo $(DEPDIR)/libifcfg_rh_io_la-errors.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='errors.c' object='libifcfg_rh_io_la-errors.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-errors.lo `test -f 'errors.c' || echo '$(srcdir)/'`errors.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-errors.lo `test -f 'errors.c' || echo '$(srcdir)/'`errors.c
 
 libifcfg_rh_io_la-utils.lo: utils.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-utils.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-utils.Tpo -c -o libifcfg_rh_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-utils.Tpo $(DEPDIR)/libifcfg_rh_io_la-utils.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libifcfg_rh_io_la-utils.lo -MD -MP -MF $(DEPDIR)/libifcfg_rh_io_la-utils.Tpo -c -o libifcfg_rh_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libifcfg_rh_io_la-utils.Tpo $(DEPDIR)/libifcfg_rh_io_la-utils.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='utils.c' object='libifcfg_rh_io_la-utils.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libifcfg_rh_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libifcfg_rh_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
 
 libnm_settings_plugin_ifcfg_rh_la-plugin.lo: plugin.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_settings_plugin_ifcfg_rh_la-plugin.lo -MD -MP -MF $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Tpo -c -o libnm_settings_plugin_ifcfg_rh_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Tpo $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_settings_plugin_ifcfg_rh_la-plugin.lo -MD -MP -MF $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Tpo -c -o libnm_settings_plugin_ifcfg_rh_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Tpo $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-plugin.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin.c' object='libnm_settings_plugin_ifcfg_rh_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_settings_plugin_ifcfg_rh_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_settings_plugin_ifcfg_rh_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
 
 libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo: nm-ifcfg-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo -MD -MP -MF $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.Tpo -c -o libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo `test -f 'nm-ifcfg-connection.c' || echo '$(srcdir)/'`nm-ifcfg-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.Tpo $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo -MD -MP -MF $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.Tpo -c -o libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo `test -f 'nm-ifcfg-connection.c' || echo '$(srcdir)/'`nm-ifcfg-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.Tpo $(DEPDIR)/libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-ifcfg-connection.c' object='libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo `test -f 'nm-ifcfg-connection.c' || echo '$(srcdir)/'`nm-ifcfg-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_settings_plugin_ifcfg_rh_la-nm-ifcfg-connection.lo `test -f 'nm-ifcfg-connection.c' || echo '$(srcdir)/'`nm-ifcfg-connection.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -917,7 +948,7 @@ uninstall-am: uninstall-dbusserviceDATA uninstall-pkglibLTLIBRARIES
 
 
 nm-ifcfg-rh-glue.h: nm-ifcfg-rh.xml
-	dbus-binding-tool --prefix=nm_ifcfg_rh --mode=glib-server --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ifcfg_rh --mode=glib-server --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

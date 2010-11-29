@@ -35,6 +35,20 @@ NMSerialDevice
 @arg1: 
 @arg2: 
 
+<!-- ##### STRUCT NMSerialDeviceClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@ppp_stats: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_serial_device_get_bytes_received ##### -->
 <para>
 

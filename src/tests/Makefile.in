@@ -61,6 +61,9 @@ test_dhcp_options_DEPENDENCIES =  \
 	$(top_builddir)/src/dhcp-manager/libdhcp-manager.la \
 	$(top_builddir)/src/libtest-dhcp.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 am_test_policy_hosts_OBJECTS =  \
 	test_policy_hosts-test-policy-hosts.$(OBJEXT)
 test_policy_hosts_OBJECTS = $(am_test_policy_hosts_OBJECTS)
@@ -73,13 +76,26 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(test_dhcp_options_SOURCES) $(test_policy_hosts_SOURCES)
 DIST_SOURCES = $(test_dhcp_options_SOURCES) \
 	$(test_policy_hosts_SOURCES)
@@ -90,6 +106,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -110,6 +127,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -151,6 +169,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -190,6 +209,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -246,7 +267,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -258,6 +278,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -346,10 +367,10 @@ clean-noinstPROGRAMS:
 	rm -f $$list
 test-dhcp-options$(EXEEXT): $(test_dhcp_options_OBJECTS) $(test_dhcp_options_DEPENDENCIES) 
 	@rm -f test-dhcp-options$(EXEEXT)
-	$(LINK) $(test_dhcp_options_OBJECTS) $(test_dhcp_options_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_dhcp_options_OBJECTS) $(test_dhcp_options_LDADD) $(LIBS)
 test-policy-hosts$(EXEEXT): $(test_policy_hosts_OBJECTS) $(test_policy_hosts_DEPENDENCIES) 
 	@rm -f test-policy-hosts$(EXEEXT)
-	$(LINK) $(test_policy_hosts_OBJECTS) $(test_policy_hosts_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(test_policy_hosts_OBJECTS) $(test_policy_hosts_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -361,53 +382,60 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_policy_hosts-test-policy-hosts.Po@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 test_dhcp_options-test-dhcp-options.o: test-dhcp-options.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_dhcp_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_dhcp_options-test-dhcp-options.o -MD -MP -MF $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo -c -o test_dhcp_options-test-dhcp-options.o `test -f 'test-dhcp-options.c' || echo '$(srcdir)/'`test-dhcp-options.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo $(DEPDIR)/test_dhcp_options-test-dhcp-options.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_dhcp_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_dhcp_options-test-dhcp-options.o -MD -MP -MF $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo -c -o test_dhcp_options-test-dhcp-options.o `test -f 'test-dhcp-options.c' || echo '$(srcdir)/'`test-dhcp-options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo $(DEPDIR)/test_dhcp_options-test-dhcp-options.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-dhcp-options.c' object='test_dhcp_options-test-dhcp-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_dhcp_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_dhcp_options-test-dhcp-options.o `test -f 'test-dhcp-options.c' || echo '$(srcdir)/'`test-dhcp-options.c
 
 test_dhcp_options-test-dhcp-options.obj: test-dhcp-options.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_dhcp_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_dhcp_options-test-dhcp-options.obj -MD -MP -MF $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo -c -o test_dhcp_options-test-dhcp-options.obj `if test -f 'test-dhcp-options.c'; then $(CYGPATH_W) 'test-dhcp-options.c'; else $(CYGPATH_W) '$(srcdir)/test-dhcp-options.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo $(DEPDIR)/test_dhcp_options-test-dhcp-options.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_dhcp_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_dhcp_options-test-dhcp-options.obj -MD -MP -MF $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo -c -o test_dhcp_options-test-dhcp-options.obj `if test -f 'test-dhcp-options.c'; then $(CYGPATH_W) 'test-dhcp-options.c'; else $(CYGPATH_W) '$(srcdir)/test-dhcp-options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_dhcp_options-test-dhcp-options.Tpo $(DEPDIR)/test_dhcp_options-test-dhcp-options.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-dhcp-options.c' object='test_dhcp_options-test-dhcp-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_dhcp_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_dhcp_options-test-dhcp-options.obj `if test -f 'test-dhcp-options.c'; then $(CYGPATH_W) 'test-dhcp-options.c'; else $(CYGPATH_W) '$(srcdir)/test-dhcp-options.c'; fi`
 
 test_policy_hosts-test-policy-hosts.o: test-policy-hosts.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_policy_hosts-test-policy-hosts.o -MD -MP -MF $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo -c -o test_policy_hosts-test-policy-hosts.o `test -f 'test-policy-hosts.c' || echo '$(srcdir)/'`test-policy-hosts.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo $(DEPDIR)/test_policy_hosts-test-policy-hosts.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_policy_hosts-test-policy-hosts.o -MD -MP -MF $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo -c -o test_policy_hosts-test-policy-hosts.o `test -f 'test-policy-hosts.c' || echo '$(srcdir)/'`test-policy-hosts.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo $(DEPDIR)/test_policy_hosts-test-policy-hosts.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-policy-hosts.c' object='test_policy_hosts-test-policy-hosts.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_policy_hosts-test-policy-hosts.o `test -f 'test-policy-hosts.c' || echo '$(srcdir)/'`test-policy-hosts.c
 
 test_policy_hosts-test-policy-hosts.obj: test-policy-hosts.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_policy_hosts-test-policy-hosts.obj -MD -MP -MF $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo -c -o test_policy_hosts-test-policy-hosts.obj `if test -f 'test-policy-hosts.c'; then $(CYGPATH_W) 'test-policy-hosts.c'; else $(CYGPATH_W) '$(srcdir)/test-policy-hosts.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo $(DEPDIR)/test_policy_hosts-test-policy-hosts.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_policy_hosts-test-policy-hosts.obj -MD -MP -MF $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo -c -o test_policy_hosts-test-policy-hosts.obj `if test -f 'test-policy-hosts.c'; then $(CYGPATH_W) 'test-policy-hosts.c'; else $(CYGPATH_W) '$(srcdir)/test-policy-hosts.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_policy_hosts-test-policy-hosts.Tpo $(DEPDIR)/test_policy_hosts-test-policy-hosts.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-policy-hosts.c' object='test_policy_hosts-test-policy-hosts.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_policy_hosts-test-policy-hosts.obj `if test -f 'test-policy-hosts.c'; then $(CYGPATH_W) 'test-policy-hosts.c'; else $(CYGPATH_W) '$(srcdir)/test-policy-hosts.c'; fi`

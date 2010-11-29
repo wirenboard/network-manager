@@ -70,6 +70,27 @@ NMVPNPlugin
 
 @parent: 
 
+<!-- ##### STRUCT NMVPNPluginClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@connect: 
+@need_secrets: 
+@disconnect: 
+@state_changed: 
+@ip4_config: 
+@login_banner: 
+@failure: 
+@quit: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_vpn_plugin_error_quark ##### -->
 <para>
 

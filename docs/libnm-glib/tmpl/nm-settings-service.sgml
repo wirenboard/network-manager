@@ -41,6 +41,21 @@ NMSettingsService
 
 @parent: 
 
+<!-- ##### STRUCT NMSettingsServiceClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@list_connections: 
+@add_connection: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_settings_service_get_connection_by_path ##### -->
 <para>
 

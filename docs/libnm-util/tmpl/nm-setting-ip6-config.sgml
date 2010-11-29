@@ -137,6 +137,13 @@ NMSettingIP6Config
 
 
 
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_DHCP ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL ##### -->
 <para>
 

@@ -63,6 +63,9 @@ nm_avahi_autoipd_action_OBJECTS =  \
 am__DEPENDENCIES_1 =
 nm_avahi_autoipd_action_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 am_nm_dhcp_client_action_OBJECTS =  \
 	nm_dhcp_client_action-nm-dhcp-client-action.$(OBJEXT)
 nm_dhcp_client_action_OBJECTS = $(am_nm_dhcp_client_action_OBJECTS)
@@ -81,13 +84,26 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(nm_avahi_autoipd_action_SOURCES) \
 	$(nm_dhcp_client_action_SOURCES) \
 	$(nm_dispatcher_action_SOURCES)
@@ -123,6 +139,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -143,6 +160,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -184,6 +202,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -223,6 +242,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -279,7 +300,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -291,6 +311,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -449,13 +470,13 @@ clean-libexecPROGRAMS:
 	rm -f $$list
 nm-avahi-autoipd.action$(EXEEXT): $(nm_avahi_autoipd_action_OBJECTS) $(nm_avahi_autoipd_action_DEPENDENCIES) 
 	@rm -f nm-avahi-autoipd.action$(EXEEXT)
-	$(LINK) $(nm_avahi_autoipd_action_OBJECTS) $(nm_avahi_autoipd_action_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(nm_avahi_autoipd_action_OBJECTS) $(nm_avahi_autoipd_action_LDADD) $(LIBS)
 nm-dhcp-client.action$(EXEEXT): $(nm_dhcp_client_action_OBJECTS) $(nm_dhcp_client_action_DEPENDENCIES) 
 	@rm -f nm-dhcp-client.action$(EXEEXT)
-	$(LINK) $(nm_dhcp_client_action_OBJECTS) $(nm_dhcp_client_action_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(nm_dhcp_client_action_OBJECTS) $(nm_dhcp_client_action_LDADD) $(LIBS)
 nm-dispatcher.action$(EXEEXT): $(nm_dispatcher_action_OBJECTS) $(nm_dispatcher_action_DEPENDENCIES) 
 	@rm -f nm-dispatcher.action$(EXEEXT)
-	$(LINK) $(nm_dispatcher_action_OBJECTS) $(nm_dispatcher_action_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(nm_dispatcher_action_OBJECTS) $(nm_dispatcher_action_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -468,67 +489,76 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Po@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 nm_avahi_autoipd_action-nm-avahi-autoipd-action.o: nm-avahi-autoipd-action.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_avahi_autoipd_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_avahi_autoipd_action-nm-avahi-autoipd-action.o -MD -MP -MF $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo -c -o nm_avahi_autoipd_action-nm-avahi-autoipd-action.o `test -f 'nm-avahi-autoipd-action.c' || echo '$(srcdir)/'`nm-avahi-autoipd-action.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_avahi_autoipd_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_avahi_autoipd_action-nm-avahi-autoipd-action.o -MD -MP -MF $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo -c -o nm_avahi_autoipd_action-nm-avahi-autoipd-action.o `test -f 'nm-avahi-autoipd-action.c' || echo '$(srcdir)/'`nm-avahi-autoipd-action.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-avahi-autoipd-action.c' object='nm_avahi_autoipd_action-nm-avahi-autoipd-action.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_avahi_autoipd_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_avahi_autoipd_action-nm-avahi-autoipd-action.o `test -f 'nm-avahi-autoipd-action.c' || echo '$(srcdir)/'`nm-avahi-autoipd-action.c
 
 nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj: nm-avahi-autoipd-action.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_avahi_autoipd_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj -MD -MP -MF $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo -c -o nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj `if test -f 'nm-avahi-autoipd-action.c'; then $(CYGPATH_W) 'nm-avahi-autoipd-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-avahi-autoipd-action.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_avahi_autoipd_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj -MD -MP -MF $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo -c -o nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj `if test -f 'nm-avahi-autoipd-action.c'; then $(CYGPATH_W) 'nm-avahi-autoipd-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-avahi-autoipd-action.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Tpo $(DEPDIR)/nm_avahi_autoipd_action-nm-avahi-autoipd-action.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-avahi-autoipd-action.c' object='nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_avahi_autoipd_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_avahi_autoipd_action-nm-avahi-autoipd-action.obj `if test -f 'nm-avahi-autoipd-action.c'; then $(CYGPATH_W) 'nm-avahi-autoipd-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-avahi-autoipd-action.c'; fi`
 
 nm_dhcp_client_action-nm-dhcp-client-action.o: nm-dhcp-client-action.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dhcp_client_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dhcp_client_action-nm-dhcp-client-action.o -MD -MP -MF $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo -c -o nm_dhcp_client_action-nm-dhcp-client-action.o `test -f 'nm-dhcp-client-action.c' || echo '$(srcdir)/'`nm-dhcp-client-action.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dhcp_client_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dhcp_client_action-nm-dhcp-client-action.o -MD -MP -MF $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo -c -o nm_dhcp_client_action-nm-dhcp-client-action.o `test -f 'nm-dhcp-client-action.c' || echo '$(srcdir)/'`nm-dhcp-client-action.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dhcp-client-action.c' object='nm_dhcp_client_action-nm-dhcp-client-action.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dhcp_client_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_dhcp_client_action-nm-dhcp-client-action.o `test -f 'nm-dhcp-client-action.c' || echo '$(srcdir)/'`nm-dhcp-client-action.c
 
 nm_dhcp_client_action-nm-dhcp-client-action.obj: nm-dhcp-client-action.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dhcp_client_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dhcp_client_action-nm-dhcp-client-action.obj -MD -MP -MF $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo -c -o nm_dhcp_client_action-nm-dhcp-client-action.obj `if test -f 'nm-dhcp-client-action.c'; then $(CYGPATH_W) 'nm-dhcp-client-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-dhcp-client-action.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dhcp_client_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dhcp_client_action-nm-dhcp-client-action.obj -MD -MP -MF $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo -c -o nm_dhcp_client_action-nm-dhcp-client-action.obj `if test -f 'nm-dhcp-client-action.c'; then $(CYGPATH_W) 'nm-dhcp-client-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-dhcp-client-action.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Tpo $(DEPDIR)/nm_dhcp_client_action-nm-dhcp-client-action.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dhcp-client-action.c' object='nm_dhcp_client_action-nm-dhcp-client-action.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dhcp_client_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_dhcp_client_action-nm-dhcp-client-action.obj `if test -f 'nm-dhcp-client-action.c'; then $(CYGPATH_W) 'nm-dhcp-client-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-dhcp-client-action.c'; fi`
 
 nm_dispatcher_action-nm-dispatcher-action.o: nm-dispatcher-action.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dispatcher_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dispatcher_action-nm-dispatcher-action.o -MD -MP -MF $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo -c -o nm_dispatcher_action-nm-dispatcher-action.o `test -f 'nm-dispatcher-action.c' || echo '$(srcdir)/'`nm-dispatcher-action.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dispatcher_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dispatcher_action-nm-dispatcher-action.o -MD -MP -MF $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo -c -o nm_dispatcher_action-nm-dispatcher-action.o `test -f 'nm-dispatcher-action.c' || echo '$(srcdir)/'`nm-dispatcher-action.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dispatcher-action.c' object='nm_dispatcher_action-nm-dispatcher-action.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dispatcher_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_dispatcher_action-nm-dispatcher-action.o `test -f 'nm-dispatcher-action.c' || echo '$(srcdir)/'`nm-dispatcher-action.c
 
 nm_dispatcher_action-nm-dispatcher-action.obj: nm-dispatcher-action.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dispatcher_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dispatcher_action-nm-dispatcher-action.obj -MD -MP -MF $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo -c -o nm_dispatcher_action-nm-dispatcher-action.obj `if test -f 'nm-dispatcher-action.c'; then $(CYGPATH_W) 'nm-dispatcher-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-dispatcher-action.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dispatcher_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_dispatcher_action-nm-dispatcher-action.obj -MD -MP -MF $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo -c -o nm_dispatcher_action-nm-dispatcher-action.obj `if test -f 'nm-dispatcher-action.c'; then $(CYGPATH_W) 'nm-dispatcher-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-dispatcher-action.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Tpo $(DEPDIR)/nm_dispatcher_action-nm-dispatcher-action.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dispatcher-action.c' object='nm_dispatcher_action-nm-dispatcher-action.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_dispatcher_action_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_dispatcher_action-nm-dispatcher-action.obj `if test -f 'nm-dispatcher-action.c'; then $(CYGPATH_W) 'nm-dispatcher-action.c'; else $(CYGPATH_W) '$(srcdir)/nm-dispatcher-action.c'; fi`
@@ -813,7 +843,7 @@ uninstall-am: uninstall-dbusactivationDATA uninstall-dbusserviceDATA \
 
 
 nm-dispatcher-glue.h: nm-dispatcher.xml
-	dbus-binding-tool --prefix=nm_dispatcher --mode=glib-server --output=$@ $<
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dispatcher --mode=glib-server --output=$@ $<
 
 %.service: %.service.in
 	$(edit) $< >$@

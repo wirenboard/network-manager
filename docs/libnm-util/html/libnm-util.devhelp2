@@ -125,7 +125,11 @@
     <keyword type="macro" name="NM_SETTING_WIRED_DUPLEX" link="NMSettingWired.html#NM-SETTING-WIRED-DUPLEX:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_AUTO_NEGOTIATE" link="NMSettingWired.html#NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_CLONED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_MTU" link="NMSettingWired.html#NM-SETTING-WIRED-MTU:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_S390_SUBCHANNELS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_S390_NETTYPE" link="NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_S390_OPTIONS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-OPTIONS:CAPS"/>
     <keyword type="struct" name="NMSettingWired" link="NMSettingWired.html#NMSettingWired-struct"/>
     <keyword type="struct" name="NMSettingWiredClass" link="NMSettingWired.html#NMSettingWiredClass"/>
     <keyword type="function" name="nm_setting_wired_get_type ()" link="NMSettingWired.html#nm-setting-wired-get-type"/>
@@ -135,12 +139,24 @@
     <keyword type="function" name="nm_setting_wired_get_duplex ()" link="NMSettingWired.html#nm-setting-wired-get-duplex"/>
     <keyword type="function" name="nm_setting_wired_get_auto_negotiate ()" link="NMSettingWired.html#nm-setting-wired-get-auto-negotiate"/>
     <keyword type="function" name="nm_setting_wired_get_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-mac-address"/>
+    <keyword type="function" name="nm_setting_wired_get_cloned_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-cloned-mac-address"/>
     <keyword type="function" name="nm_setting_wired_get_mtu ()" link="NMSettingWired.html#nm-setting-wired-get-mtu"/>
+    <keyword type="function" name="nm_setting_wired_get_s390_subchannels ()" link="NMSettingWired.html#nm-setting-wired-get-s390-subchannels"/>
+    <keyword type="function" name="nm_setting_wired_get_s390_nettype ()" link="NMSettingWired.html#nm-setting-wired-get-s390-nettype"/>
+    <keyword type="function" name="nm_setting_wired_get_num_s390_options ()" link="NMSettingWired.html#nm-setting-wired-get-num-s390-options"/>
+    <keyword type="function" name="nm_setting_wired_get_s390_option ()" link="NMSettingWired.html#nm-setting-wired-get-s390-option"/>
+    <keyword type="function" name="nm_setting_wired_get_s390_option_by_key ()" link="NMSettingWired.html#nm-setting-wired-get-s390-option-by-key"/>
+    <keyword type="function" name="nm_setting_wired_add_s390_option ()" link="NMSettingWired.html#nm-setting-wired-add-s390-option"/>
+    <keyword type="function" name="nm_setting_wired_remove_s390_option ()" link="NMSettingWired.html#nm-setting-wired-remove-s390-option"/>
     <keyword type="property" name="The &quot;auto-negotiate&quot; property" link="NMSettingWired.html#NMSettingWired--auto-negotiate"/>
+    <keyword type="property" name="The &quot;cloned-mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--cloned-mac-address"/>
     <keyword type="property" name="The &quot;duplex&quot; property" link="NMSettingWired.html#NMSettingWired--duplex"/>
     <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--mac-address"/>
     <keyword type="property" name="The &quot;mtu&quot; property" link="NMSettingWired.html#NMSettingWired--mtu"/>
     <keyword type="property" name="The &quot;port&quot; property" link="NMSettingWired.html#NMSettingWired--port"/>
+    <keyword type="property" name="The &quot;s390-nettype&quot; property" link="NMSettingWired.html#NMSettingWired--s390-nettype"/>
+    <keyword type="property" name="The &quot;s390-options&quot; property" link="NMSettingWired.html#NMSettingWired--s390-options"/>
+    <keyword type="property" name="The &quot;s390-subchannels&quot; property" link="NMSettingWired.html#NMSettingWired--s390-subchannels"/>
     <keyword type="property" name="The &quot;speed&quot; property" link="NMSettingWired.html#NMSettingWired--speed"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SETTING_NAME" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingWirelessError" link="NMSettingWireless.html#NMSettingWirelessError"/>
@@ -155,6 +171,7 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_RATE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-RATE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_TX_POWER" link="NMSettingWireless.html#NM-SETTING-WIRELESS-TX-POWER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MTU" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SEEN_BSSIDS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SEC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS"/>
@@ -170,6 +187,7 @@
     <keyword type="function" name="nm_setting_wireless_get_rate ()" link="NMSettingWireless.html#nm-setting-wireless-get-rate"/>
     <keyword type="function" name="nm_setting_wireless_get_tx_power ()" link="NMSettingWireless.html#nm-setting-wireless-get-tx-power"/>
     <keyword type="function" name="nm_setting_wireless_get_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address"/>
+    <keyword type="function" name="nm_setting_wireless_get_cloned_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address"/>
     <keyword type="function" name="nm_setting_wireless_get_mtu ()" link="NMSettingWireless.html#nm-setting-wireless-get-mtu"/>
     <keyword type="function" name="nm_setting_wireless_get_security ()" link="NMSettingWireless.html#nm-setting-wireless-get-security"/>
     <keyword type="function" name="nm_setting_wireless_add_seen_bssid ()" link="NMSettingWireless.html#nm-setting-wireless-add-seen-bssid"/>
@@ -179,6 +197,7 @@
     <keyword type="property" name="The &quot;band&quot; property" link="NMSettingWireless.html#NMSettingWireless--band"/>
     <keyword type="property" name="The &quot;bssid&quot; property" link="NMSettingWireless.html#NMSettingWireless--bssid"/>
     <keyword type="property" name="The &quot;channel&quot; property" link="NMSettingWireless.html#NMSettingWireless--channel"/>
+    <keyword type="property" name="The &quot;cloned-mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--cloned-mac-address"/>
     <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address"/>
     <keyword type="property" name="The &quot;mode&quot; property" link="NMSettingWireless.html#NMSettingWireless--mode"/>
     <keyword type="property" name="The &quot;mtu&quot; property" link="NMSettingWireless.html#NMSettingWireless--mtu"/>
@@ -597,6 +616,7 @@
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_MAY_FAIL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-MAY-FAIL:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_IGNORE" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-IGNORE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_AUTO" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-AUTO:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_DHCP" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-DHCP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-LINK-LOCAL:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_MANUAL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-MANUAL:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_SHARED" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-SHARED:CAPS"/>
@@ -809,6 +829,10 @@
     <keyword type="function" name="nm_utils_uuid_generate ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate"/>
     <keyword type="function" name="nm_utils_uuid_generate_from_string ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string"/>
     <keyword type="function" name="nm_utils_rsa_key_encrypt ()" link="libnm-util-nm-utils.html#nm-utils-rsa-key-encrypt"/>
+    <keyword type="function" name="nm_utils_wifi_freq_to_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel"/>
+    <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
+    <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
+    <keyword type="function" name="nm_utils_wifi_is_channel_valid ()" link="libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
     <keyword type="constant" name="NM_CONNECTION_SCOPE_UNKNOWN" link="NMConnection.html#NM-CONNECTION-SCOPE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_SCOPE_SYSTEM" link="NMConnection.html#NM-CONNECTION-SCOPE-SYSTEM:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_SCOPE_USER" link="NMConnection.html#NM-CONNECTION-SCOPE-USER:CAPS"/>

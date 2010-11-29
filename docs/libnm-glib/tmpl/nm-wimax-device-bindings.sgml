@@ -1,0 +1,69 @@
+<!-- ##### SECTION Title ##### -->
+nm-wimax-device-bindings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManager_Device_WiMax ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Device_WiMax_get_nsp_list ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_nsps: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManager_Device_WiMax_get_nsp_list_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_nsps: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Device_WiMax_get_nsp_list_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION dbus_g_proxy_begin_call ##### -->
+<para>
+
+</para>
+
+@Param1: 
+@Returns: 
+
+

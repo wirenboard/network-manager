@@ -134,7 +134,10 @@ am_libnm_util_la_OBJECTS = libnm_util_la-crypto.lo \
 	libnm_util_la-nm-setting-vpn.lo libnm_util_la-nm-utils.lo \
 	$(am__objects_1) $(am__objects_2) $(am__objects_3)
 libnm_util_la_OBJECTS = $(am_libnm_util_la_OBJECTS)
-libnm_util_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+libnm_util_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libnm_util_la_LDFLAGS) $(LDFLAGS) -o $@
 libtest_crypto_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
@@ -152,13 +155,26 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libnm_util_la_SOURCES) $(libtest_crypto_la_SOURCES)
 DIST_SOURCES = $(am__libnm_util_la_SOURCES_DIST) \
 	$(am__libtest_crypto_la_SOURCES_DIST)
@@ -209,6 +225,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -229,6 +246,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -270,6 +288,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -309,6 +328,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -365,7 +386,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -377,6 +397,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -419,7 +440,7 @@ libnm_util_la_SOURCES = crypto.c crypto.h nm-connection.c \
 libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS) \
 	$(am__append_3) $(am__append_6)
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-util.ver \
-	-version-info "4:4:3"
+	-version-info "7:0:6"
 
 libnm_util_includedir = $(includedir)/NetworkManager
 
@@ -513,9 +534,9 @@ clean-noinstLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libnm-util.la: $(libnm_util_la_OBJECTS) $(libnm_util_la_DEPENDENCIES) 
-	$(libnm_util_la_LINK) -rpath $(libdir) $(libnm_util_la_OBJECTS) $(libnm_util_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnm_util_la_LINK) -rpath $(libdir) $(libnm_util_la_OBJECTS) $(libnm_util_la_LIBADD) $(LIBS)
 libtest-crypto.la: $(libtest_crypto_la_OBJECTS) $(libtest_crypto_la_DEPENDENCIES) 
-	$(LINK)  $(libtest_crypto_la_OBJECTS) $(libtest_crypto_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK)  $(libtest_crypto_la_OBJECTS) $(libtest_crypto_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -550,203 +571,231 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_crypto_la-crypto_nss.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 libnm_util_la-crypto.lo: crypto.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-crypto.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-crypto.Tpo -c -o libnm_util_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-crypto.Tpo $(DEPDIR)/libnm_util_la-crypto.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-crypto.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-crypto.Tpo -c -o libnm_util_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-crypto.Tpo $(DEPDIR)/libnm_util_la-crypto.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='crypto.c' object='libnm_util_la-crypto.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
 
 libnm_util_la-nm-connection.lo: nm-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-connection.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-connection.Tpo -c -o libnm_util_la-nm-connection.lo `test -f 'nm-connection.c' || echo '$(srcdir)/'`nm-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-connection.Tpo $(DEPDIR)/libnm_util_la-nm-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-connection.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-connection.Tpo -c -o libnm_util_la-nm-connection.lo `test -f 'nm-connection.c' || echo '$(srcdir)/'`nm-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-connection.Tpo $(DEPDIR)/libnm_util_la-nm-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-connection.c' object='libnm_util_la-nm-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-connection.lo `test -f 'nm-connection.c' || echo '$(srcdir)/'`nm-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-connection.lo `test -f 'nm-connection.c' || echo '$(srcdir)/'`nm-connection.c
 
 libnm_util_la-nm-param-spec-specialized.lo: nm-param-spec-specialized.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-param-spec-specialized.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Tpo -c -o libnm_util_la-nm-param-spec-specialized.lo `test -f 'nm-param-spec-specialized.c' || echo '$(srcdir)/'`nm-param-spec-specialized.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Tpo $(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-param-spec-specialized.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Tpo -c -o libnm_util_la-nm-param-spec-specialized.lo `test -f 'nm-param-spec-specialized.c' || echo '$(srcdir)/'`nm-param-spec-specialized.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Tpo $(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-param-spec-specialized.c' object='libnm_util_la-nm-param-spec-specialized.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-param-spec-specialized.lo `test -f 'nm-param-spec-specialized.c' || echo '$(srcdir)/'`nm-param-spec-specialized.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-param-spec-specialized.lo `test -f 'nm-param-spec-specialized.c' || echo '$(srcdir)/'`nm-param-spec-specialized.c
 
 libnm_util_la-nm-setting.lo: nm-setting.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting.Tpo -c -o libnm_util_la-nm-setting.lo `test -f 'nm-setting.c' || echo '$(srcdir)/'`nm-setting.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting.Tpo $(DEPDIR)/libnm_util_la-nm-setting.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting.Tpo -c -o libnm_util_la-nm-setting.lo `test -f 'nm-setting.c' || echo '$(srcdir)/'`nm-setting.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting.Tpo $(DEPDIR)/libnm_util_la-nm-setting.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting.c' object='libnm_util_la-nm-setting.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting.lo `test -f 'nm-setting.c' || echo '$(srcdir)/'`nm-setting.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting.lo `test -f 'nm-setting.c' || echo '$(srcdir)/'`nm-setting.c
 
 libnm_util_la-nm-setting-8021x.lo: nm-setting-8021x.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-8021x.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-8021x.Tpo -c -o libnm_util_la-nm-setting-8021x.lo `test -f 'nm-setting-8021x.c' || echo '$(srcdir)/'`nm-setting-8021x.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-8021x.Tpo $(DEPDIR)/libnm_util_la-nm-setting-8021x.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-8021x.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-8021x.Tpo -c -o libnm_util_la-nm-setting-8021x.lo `test -f 'nm-setting-8021x.c' || echo '$(srcdir)/'`nm-setting-8021x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-8021x.Tpo $(DEPDIR)/libnm_util_la-nm-setting-8021x.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-8021x.c' object='libnm_util_la-nm-setting-8021x.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-8021x.lo `test -f 'nm-setting-8021x.c' || echo '$(srcdir)/'`nm-setting-8021x.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-8021x.lo `test -f 'nm-setting-8021x.c' || echo '$(srcdir)/'`nm-setting-8021x.c
 
 libnm_util_la-nm-setting-bluetooth.lo: nm-setting-bluetooth.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-bluetooth.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Tpo -c -o libnm_util_la-nm-setting-bluetooth.lo `test -f 'nm-setting-bluetooth.c' || echo '$(srcdir)/'`nm-setting-bluetooth.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Tpo $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-bluetooth.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Tpo -c -o libnm_util_la-nm-setting-bluetooth.lo `test -f 'nm-setting-bluetooth.c' || echo '$(srcdir)/'`nm-setting-bluetooth.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Tpo $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-bluetooth.c' object='libnm_util_la-nm-setting-bluetooth.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-bluetooth.lo `test -f 'nm-setting-bluetooth.c' || echo '$(srcdir)/'`nm-setting-bluetooth.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-bluetooth.lo `test -f 'nm-setting-bluetooth.c' || echo '$(srcdir)/'`nm-setting-bluetooth.c
 
 libnm_util_la-nm-setting-connection.lo: nm-setting-connection.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-connection.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-connection.Tpo -c -o libnm_util_la-nm-setting-connection.lo `test -f 'nm-setting-connection.c' || echo '$(srcdir)/'`nm-setting-connection.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-connection.Tpo $(DEPDIR)/libnm_util_la-nm-setting-connection.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-connection.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-connection.Tpo -c -o libnm_util_la-nm-setting-connection.lo `test -f 'nm-setting-connection.c' || echo '$(srcdir)/'`nm-setting-connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-connection.Tpo $(DEPDIR)/libnm_util_la-nm-setting-connection.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-connection.c' object='libnm_util_la-nm-setting-connection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-connection.lo `test -f 'nm-setting-connection.c' || echo '$(srcdir)/'`nm-setting-connection.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-connection.lo `test -f 'nm-setting-connection.c' || echo '$(srcdir)/'`nm-setting-connection.c
 
 libnm_util_la-nm-setting-ip4-config.lo: nm-setting-ip4-config.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ip4-config.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Tpo -c -o libnm_util_la-nm-setting-ip4-config.lo `test -f 'nm-setting-ip4-config.c' || echo '$(srcdir)/'`nm-setting-ip4-config.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ip4-config.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Tpo -c -o libnm_util_la-nm-setting-ip4-config.lo `test -f 'nm-setting-ip4-config.c' || echo '$(srcdir)/'`nm-setting-ip4-config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-ip4-config.c' object='libnm_util_la-nm-setting-ip4-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ip4-config.lo `test -f 'nm-setting-ip4-config.c' || echo '$(srcdir)/'`nm-setting-ip4-config.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ip4-config.lo `test -f 'nm-setting-ip4-config.c' || echo '$(srcdir)/'`nm-setting-ip4-config.c
 
 libnm_util_la-nm-setting-ip6-config.lo: nm-setting-ip6-config.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ip6-config.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Tpo -c -o libnm_util_la-nm-setting-ip6-config.lo `test -f 'nm-setting-ip6-config.c' || echo '$(srcdir)/'`nm-setting-ip6-config.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ip6-config.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Tpo -c -o libnm_util_la-nm-setting-ip6-config.lo `test -f 'nm-setting-ip6-config.c' || echo '$(srcdir)/'`nm-setting-ip6-config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-ip6-config.c' object='libnm_util_la-nm-setting-ip6-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ip6-config.lo `test -f 'nm-setting-ip6-config.c' || echo '$(srcdir)/'`nm-setting-ip6-config.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ip6-config.lo `test -f 'nm-setting-ip6-config.c' || echo '$(srcdir)/'`nm-setting-ip6-config.c
 
 libnm_util_la-nm-setting-ppp.lo: nm-setting-ppp.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ppp.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ppp.Tpo -c -o libnm_util_la-nm-setting-ppp.lo `test -f 'nm-setting-ppp.c' || echo '$(srcdir)/'`nm-setting-ppp.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ppp.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ppp.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ppp.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ppp.Tpo -c -o libnm_util_la-nm-setting-ppp.lo `test -f 'nm-setting-ppp.c' || echo '$(srcdir)/'`nm-setting-ppp.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ppp.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ppp.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-ppp.c' object='libnm_util_la-nm-setting-ppp.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ppp.lo `test -f 'nm-setting-ppp.c' || echo '$(srcdir)/'`nm-setting-ppp.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ppp.lo `test -f 'nm-setting-ppp.c' || echo '$(srcdir)/'`nm-setting-ppp.c
 
 libnm_util_la-nm-setting-pppoe.lo: nm-setting-pppoe.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-pppoe.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-pppoe.Tpo -c -o libnm_util_la-nm-setting-pppoe.lo `test -f 'nm-setting-pppoe.c' || echo '$(srcdir)/'`nm-setting-pppoe.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-pppoe.Tpo $(DEPDIR)/libnm_util_la-nm-setting-pppoe.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-pppoe.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-pppoe.Tpo -c -o libnm_util_la-nm-setting-pppoe.lo `test -f 'nm-setting-pppoe.c' || echo '$(srcdir)/'`nm-setting-pppoe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-pppoe.Tpo $(DEPDIR)/libnm_util_la-nm-setting-pppoe.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-pppoe.c' object='libnm_util_la-nm-setting-pppoe.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-pppoe.lo `test -f 'nm-setting-pppoe.c' || echo '$(srcdir)/'`nm-setting-pppoe.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-pppoe.lo `test -f 'nm-setting-pppoe.c' || echo '$(srcdir)/'`nm-setting-pppoe.c
 
 libnm_util_la-nm-setting-serial.lo: nm-setting-serial.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-serial.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-serial.Tpo -c -o libnm_util_la-nm-setting-serial.lo `test -f 'nm-setting-serial.c' || echo '$(srcdir)/'`nm-setting-serial.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-serial.Tpo $(DEPDIR)/libnm_util_la-nm-setting-serial.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-serial.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-serial.Tpo -c -o libnm_util_la-nm-setting-serial.lo `test -f 'nm-setting-serial.c' || echo '$(srcdir)/'`nm-setting-serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-serial.Tpo $(DEPDIR)/libnm_util_la-nm-setting-serial.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-serial.c' object='libnm_util_la-nm-setting-serial.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-serial.lo `test -f 'nm-setting-serial.c' || echo '$(srcdir)/'`nm-setting-serial.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-serial.lo `test -f 'nm-setting-serial.c' || echo '$(srcdir)/'`nm-setting-serial.c
 
 libnm_util_la-nm-setting-gsm.lo: nm-setting-gsm.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-gsm.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-gsm.Tpo -c -o libnm_util_la-nm-setting-gsm.lo `test -f 'nm-setting-gsm.c' || echo '$(srcdir)/'`nm-setting-gsm.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-gsm.Tpo $(DEPDIR)/libnm_util_la-nm-setting-gsm.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-gsm.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-gsm.Tpo -c -o libnm_util_la-nm-setting-gsm.lo `test -f 'nm-setting-gsm.c' || echo '$(srcdir)/'`nm-setting-gsm.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-gsm.Tpo $(DEPDIR)/libnm_util_la-nm-setting-gsm.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-gsm.c' object='libnm_util_la-nm-setting-gsm.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-gsm.lo `test -f 'nm-setting-gsm.c' || echo '$(srcdir)/'`nm-setting-gsm.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-gsm.lo `test -f 'nm-setting-gsm.c' || echo '$(srcdir)/'`nm-setting-gsm.c
 
 libnm_util_la-nm-setting-cdma.lo: nm-setting-cdma.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-cdma.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-cdma.Tpo -c -o libnm_util_la-nm-setting-cdma.lo `test -f 'nm-setting-cdma.c' || echo '$(srcdir)/'`nm-setting-cdma.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-cdma.Tpo $(DEPDIR)/libnm_util_la-nm-setting-cdma.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-cdma.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-cdma.Tpo -c -o libnm_util_la-nm-setting-cdma.lo `test -f 'nm-setting-cdma.c' || echo '$(srcdir)/'`nm-setting-cdma.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-cdma.Tpo $(DEPDIR)/libnm_util_la-nm-setting-cdma.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-cdma.c' object='libnm_util_la-nm-setting-cdma.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-cdma.lo `test -f 'nm-setting-cdma.c' || echo '$(srcdir)/'`nm-setting-cdma.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-cdma.lo `test -f 'nm-setting-cdma.c' || echo '$(srcdir)/'`nm-setting-cdma.c
 
 libnm_util_la-nm-setting-olpc-mesh.lo: nm-setting-olpc-mesh.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-olpc-mesh.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Tpo -c -o libnm_util_la-nm-setting-olpc-mesh.lo `test -f 'nm-setting-olpc-mesh.c' || echo '$(srcdir)/'`nm-setting-olpc-mesh.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Tpo $(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-olpc-mesh.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Tpo -c -o libnm_util_la-nm-setting-olpc-mesh.lo `test -f 'nm-setting-olpc-mesh.c' || echo '$(srcdir)/'`nm-setting-olpc-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Tpo $(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-olpc-mesh.c' object='libnm_util_la-nm-setting-olpc-mesh.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-olpc-mesh.lo `test -f 'nm-setting-olpc-mesh.c' || echo '$(srcdir)/'`nm-setting-olpc-mesh.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-olpc-mesh.lo `test -f 'nm-setting-olpc-mesh.c' || echo '$(srcdir)/'`nm-setting-olpc-mesh.c
 
 libnm_util_la-nm-setting-wired.lo: nm-setting-wired.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wired.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wired.Tpo -c -o libnm_util_la-nm-setting-wired.lo `test -f 'nm-setting-wired.c' || echo '$(srcdir)/'`nm-setting-wired.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wired.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wired.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wired.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wired.Tpo -c -o libnm_util_la-nm-setting-wired.lo `test -f 'nm-setting-wired.c' || echo '$(srcdir)/'`nm-setting-wired.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wired.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wired.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-wired.c' object='libnm_util_la-nm-setting-wired.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wired.lo `test -f 'nm-setting-wired.c' || echo '$(srcdir)/'`nm-setting-wired.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wired.lo `test -f 'nm-setting-wired.c' || echo '$(srcdir)/'`nm-setting-wired.c
 
 libnm_util_la-nm-setting-wireless.lo: nm-setting-wireless.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wireless.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wireless.Tpo -c -o libnm_util_la-nm-setting-wireless.lo `test -f 'nm-setting-wireless.c' || echo '$(srcdir)/'`nm-setting-wireless.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wireless.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wireless.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wireless.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wireless.Tpo -c -o libnm_util_la-nm-setting-wireless.lo `test -f 'nm-setting-wireless.c' || echo '$(srcdir)/'`nm-setting-wireless.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wireless.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wireless.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-wireless.c' object='libnm_util_la-nm-setting-wireless.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wireless.lo `test -f 'nm-setting-wireless.c' || echo '$(srcdir)/'`nm-setting-wireless.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wireless.lo `test -f 'nm-setting-wireless.c' || echo '$(srcdir)/'`nm-setting-wireless.c
 
 libnm_util_la-nm-setting-wireless-security.lo: nm-setting-wireless-security.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wireless-security.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Tpo -c -o libnm_util_la-nm-setting-wireless-security.lo `test -f 'nm-setting-wireless-security.c' || echo '$(srcdir)/'`nm-setting-wireless-security.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wireless-security.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Tpo -c -o libnm_util_la-nm-setting-wireless-security.lo `test -f 'nm-setting-wireless-security.c' || echo '$(srcdir)/'`nm-setting-wireless-security.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-wireless-security.c' object='libnm_util_la-nm-setting-wireless-security.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wireless-security.lo `test -f 'nm-setting-wireless-security.c' || echo '$(srcdir)/'`nm-setting-wireless-security.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wireless-security.lo `test -f 'nm-setting-wireless-security.c' || echo '$(srcdir)/'`nm-setting-wireless-security.c
 
 libnm_util_la-nm-setting-vpn.lo: nm-setting-vpn.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-vpn.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-vpn.Tpo -c -o libnm_util_la-nm-setting-vpn.lo `test -f 'nm-setting-vpn.c' || echo '$(srcdir)/'`nm-setting-vpn.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-vpn.Tpo $(DEPDIR)/libnm_util_la-nm-setting-vpn.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-vpn.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-vpn.Tpo -c -o libnm_util_la-nm-setting-vpn.lo `test -f 'nm-setting-vpn.c' || echo '$(srcdir)/'`nm-setting-vpn.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-vpn.Tpo $(DEPDIR)/libnm_util_la-nm-setting-vpn.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-vpn.c' object='libnm_util_la-nm-setting-vpn.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-vpn.lo `test -f 'nm-setting-vpn.c' || echo '$(srcdir)/'`nm-setting-vpn.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-vpn.lo `test -f 'nm-setting-vpn.c' || echo '$(srcdir)/'`nm-setting-vpn.c
 
 libnm_util_la-nm-utils.lo: nm-utils.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-utils.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-utils.Tpo -c -o libnm_util_la-nm-utils.lo `test -f 'nm-utils.c' || echo '$(srcdir)/'`nm-utils.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-nm-utils.Tpo $(DEPDIR)/libnm_util_la-nm-utils.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-utils.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-utils.Tpo -c -o libnm_util_la-nm-utils.lo `test -f 'nm-utils.c' || echo '$(srcdir)/'`nm-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-utils.Tpo $(DEPDIR)/libnm_util_la-nm-utils.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-utils.c' object='libnm_util_la-nm-utils.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-utils.lo `test -f 'nm-utils.c' || echo '$(srcdir)/'`nm-utils.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-utils.lo `test -f 'nm-utils.c' || echo '$(srcdir)/'`nm-utils.c
 
 libnm_util_la-crypto_gnutls.lo: crypto_gnutls.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-crypto_gnutls.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-crypto_gnutls.Tpo -c -o libnm_util_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-crypto_gnutls.Tpo $(DEPDIR)/libnm_util_la-crypto_gnutls.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-crypto_gnutls.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-crypto_gnutls.Tpo -c -o libnm_util_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-crypto_gnutls.Tpo $(DEPDIR)/libnm_util_la-crypto_gnutls.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='crypto_gnutls.c' object='libnm_util_la-crypto_gnutls.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
 
 libnm_util_la-crypto_nss.lo: crypto_nss.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-crypto_nss.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-crypto_nss.Tpo -c -o libnm_util_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnm_util_la-crypto_nss.Tpo $(DEPDIR)/libnm_util_la-crypto_nss.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-crypto_nss.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-crypto_nss.Tpo -c -o libnm_util_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-crypto_nss.Tpo $(DEPDIR)/libnm_util_la-crypto_nss.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='crypto_nss.c' object='libnm_util_la-crypto_nss.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
 
 libtest_crypto_la-crypto.lo: crypto.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_crypto_la-crypto.lo -MD -MP -MF $(DEPDIR)/libtest_crypto_la-crypto.Tpo -c -o libtest_crypto_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtest_crypto_la-crypto.Tpo $(DEPDIR)/libtest_crypto_la-crypto.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_crypto_la-crypto.lo -MD -MP -MF $(DEPDIR)/libtest_crypto_la-crypto.Tpo -c -o libtest_crypto_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtest_crypto_la-crypto.Tpo $(DEPDIR)/libtest_crypto_la-crypto.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='crypto.c' object='libtest_crypto_la-crypto.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_crypto_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_crypto_la-crypto.lo `test -f 'crypto.c' || echo '$(srcdir)/'`crypto.c
 
 libtest_crypto_la-crypto_gnutls.lo: crypto_gnutls.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_crypto_la-crypto_gnutls.lo -MD -MP -MF $(DEPDIR)/libtest_crypto_la-crypto_gnutls.Tpo -c -o libtest_crypto_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtest_crypto_la-crypto_gnutls.Tpo $(DEPDIR)/libtest_crypto_la-crypto_gnutls.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_crypto_la-crypto_gnutls.lo -MD -MP -MF $(DEPDIR)/libtest_crypto_la-crypto_gnutls.Tpo -c -o libtest_crypto_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtest_crypto_la-crypto_gnutls.Tpo $(DEPDIR)/libtest_crypto_la-crypto_gnutls.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='crypto_gnutls.c' object='libtest_crypto_la-crypto_gnutls.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_crypto_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_crypto_la-crypto_gnutls.lo `test -f 'crypto_gnutls.c' || echo '$(srcdir)/'`crypto_gnutls.c
 
 libtest_crypto_la-crypto_nss.lo: crypto_nss.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_crypto_la-crypto_nss.lo -MD -MP -MF $(DEPDIR)/libtest_crypto_la-crypto_nss.Tpo -c -o libtest_crypto_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtest_crypto_la-crypto_nss.Tpo $(DEPDIR)/libtest_crypto_la-crypto_nss.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_crypto_la-crypto_nss.lo -MD -MP -MF $(DEPDIR)/libtest_crypto_la-crypto_nss.Tpo -c -o libtest_crypto_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtest_crypto_la-crypto_nss.Tpo $(DEPDIR)/libtest_crypto_la-crypto_nss.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='crypto_nss.c' object='libtest_crypto_la-crypto_nss.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_crypto_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_crypto_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_crypto_la-crypto_nss.lo `test -f 'crypto_nss.c' || echo '$(srcdir)/'`crypto_nss.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

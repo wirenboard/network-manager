@@ -1,3 +1,31 @@
+<!-- ##### SECTION ./tmpl/libnm_glib.sgml:Image ##### -->
+
+
+
+<!-- ##### SECTION ./tmpl/libnm_glib.sgml:Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION ./tmpl/libnm_glib.sgml:See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION ./tmpl/libnm_glib.sgml:Short_Description ##### -->
+
+
+
+<!-- ##### SECTION ./tmpl/libnm_glib.sgml:Stability_Level ##### -->
+
+
+
+<!-- ##### SECTION ./tmpl/libnm_glib.sgml:Title ##### -->
+libnm_glib
+
+
 <!-- ##### SECTION ./tmpl/nm-dbus-connection.sgml:Long_Description ##### -->
 <para>
 
@@ -208,15 +236,6 @@ NMSettings
 </para>
 
 
-<!-- ##### SIGNAL NMClient::permission-changed ##### -->
-<para>
-
-</para>
-
-@nmclient: the object which received the signal.
-@arg1: 
-@arg2: 
-
 <!-- ##### ARG NMClient:wimax-enabled ##### -->
 <para>
 
@@ -249,24 +268,6 @@ NMSettings
 </para>
 
 @parent: 
-
-<!-- ##### ARG NMDevice:firmware-missing ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceEthernet:perm-hw-address ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceWifi:perm-hw-address ##### -->
-<para>
-
-</para>
-
 
 <!-- ##### ENUM NMRemoteConnectionInitResult ##### -->
 <para>
@@ -390,6 +391,13 @@ NMSettings
 
 @klass: 
 
+<!-- ##### MACRO NM_SETTINGS_CONNECTION_INTERFACE_GET_INTERFACE ##### -->
+<para>
+
+</para>
+
+@obj: 
+
 <!-- ##### MACRO NM_SETTINGS_ERROR ##### -->
 <para>
 
@@ -403,11 +411,32 @@ NMSettings
 
 @obj: 
 
+<!-- ##### MACRO NM_SETTINGS_INTERFACE_GET_INTERFACE ##### -->
+<para>
+
+</para>
+
+@obj: 
+
+<!-- ##### MACRO NM_SETTINGS_SYSTEM_INTERFACE_GET_INTERFACE ##### -->
+<para>
+
+</para>
+
+@obj: 
+
 <!-- ##### MACRO NM_TYPE_SETTINGS ##### -->
 <para>
 
 </para>
 
+
+<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_GET_INTERFACE ##### -->
+<para>
+
+</para>
+
+@obj: 
 
 <!-- ##### USER_FUNCTION libnm_glib_callback_func ##### -->
 <para>

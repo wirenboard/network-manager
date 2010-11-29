@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>NetworkManager 0.8.1 Settings Specification</title></head>
+<title>NetworkManager 0.8.2 Settings Specification</title></head>
 <body>
 <p><h2>Setting name: '802-1x'</h2></p>
 <table cellspacing=10 border=0 cellpadding=2>
@@ -274,7 +274,7 @@
 <td><strong>apn</strong></td>
 <td>string</td>
 <td></td>
-<td>The GPRS Access Point Name specifying the APN used when establishing a data session with the GSM-based network.  The APN often determines how the user will be billed for their network usage and whether the user has access to the Internet or just a provider-specific walled-garden, so it is important to use the correct APN for the user's mobile broadband plan.</td>
+<td>The GPRS Access Point Name specifying the APN used when establishing a data session with the GSM-based network.  The APN often determines how the user will be billed for their network usage and whether the user has access to the Internet or just a provider-specific walled-garden, so it is important to use the correct APN for the user's mobile broadband plan.  The APN may only be composed of the characters a-z, 0-9, ., and - per GSM 03.60 Section 14.9.</td>
 </tr>
 <tr align=left valign=top>
 <td><strong>network-id</strong></td>
@@ -420,7 +420,7 @@
 <td><strong>method</strong></td>
 <td>string</td>
 <td></td>
-<td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (DHCP, PPP, router advertisement, etc) is used for the interface and most other properties can be left unset.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in the 'addresses' property.  If 'ignored' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' method are not yet supported.</td>
+<td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignored' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' methodis not yet supported.</td>
 </tr>
 <tr align=left valign=top>
 <td><strong>dns</strong></td>
@@ -450,13 +450,13 @@
 <td><strong>ignore-auto-routes</strong></td>
 <td>boolean</td>
 <td>FALSE</td>
-<td>When the method is set to 'auto' and this property is set to TRUE, automatically configured routes are ignored and only routes specified in the 'routes' property, if any, are used.</td>
+<td>When the method is set to 'auto' or 'dhcp' and this property is set to TRUE, automatically configured routes are ignored and only routes specified in the 'routes' property, if any, are used.</td>
 </tr>
 <tr align=left valign=top>
 <td><strong>ignore-auto-dns</strong></td>
 <td>boolean</td>
 <td>FALSE</td>
-<td>When the method is set to 'auto' and this property is set to TRUE, automatically configured nameservers and search domains are ignored and only nameservers and search domains specified in 'dns' and 'dns-search' properties, if any, are used.</td>
+<td>When the method is set to 'auto' or 'dhcp' and this property is set to TRUE, automatically configured nameservers and search domains are ignored and only nameservers and search domains specified in the 'dns' and 'dns-search' properties, if any, are used.</td>
 </tr>
 <tr align=left valign=top>
 <td><strong>never-default</strong></td>
@@ -774,13 +774,37 @@
 <td><strong>mac-address</strong></td>
 <td>byte array</td>
 <td>[]</td>
-<td>If specified, this connection will only apply to the ethernet device whose MAC address matches.  This property does not change the MAC address of the device (known as MAC spoofing).</td>
+<td>If specified, this connection will only apply to the ethernet device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</td>
+</tr>
+<tr align=left valign=top>
+<td><strong>cloned-mac-address</strong></td>
+<td>byte array</td>
+<td>[]</td>
+<td>If specified, request that the device use this MAC address instead of its permanent MAC address.  This is known as MAC cloning or spoofing.</td>
 </tr>
 <tr align=left valign=top>
 <td><strong>mtu</strong></td>
 <td>uint32</td>
 <td>0</td>
 <td>If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple Ethernet frames.</td>
+</tr>
+<tr align=left valign=top>
+<td><strong>s390-subchannels</strong></td>
+<td>GPtrArray_gchararray_</td>
+<td>[]</td>
+<td>Identifies specific subchannels that this network device uses for communcation with z/VM or s390 host.  Like the 'mac-address' property for non-z/VM devices, this property can be used to ensure this connection only applies to the network device that uses these subchannels. The list should contain exactly 3 strings, and each string may only be composed of hexadecimal characters and the period (.) character.</td>
+</tr>
+<tr align=left valign=top>
+<td><strong>s390-nettype</strong></td>
+<td>string</td>
+<td></td>
+<td>s390 network device type; one of 'qeth', 'lcs', or 'ctc', representing the different types of virtual network devices available on s390 systems.</td>
+</tr>
+<tr align=left valign=top>
+<td><strong>s390-options</strong></td>
+<td>dict of (string::string)</td>
+<td>[ ]</td>
+<td>Dictionary of key/value pairs of s390-specific device options.  Both keys and values must be strings.  Allowed keys include 'portno', 'layer2', 'portname', 'protocol', among others.</td>
 </tr>
 </table><br/>
 <p><h2>Setting name: '802-11-wireless'</h2></p>
@@ -841,7 +865,13 @@
 <td><strong>mac-address</strong></td>
 <td>byte array</td>
 <td>[]</td>
-<td>If specified, this connection will only apply to the WiFi device whose MAC address matches.  This property does not change the MAC address of the device (known as MAC spoofing).</td>
+<td>If specified, this connection will only apply to the WiFi device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</td>
+</tr>
+<tr align=left valign=top>
+<td><strong>cloned-mac-address</strong></td>
+<td>byte array</td>
+<td>[]</td>
+<td>If specified, request that the WiFi device use this MAC address instead of its permanent MAC address.  This is known as MAC cloning or spoofing.</td>
 </tr>
 <tr align=left valign=top>
 <td><strong>mtu</strong></td>

@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMCdmaDevice</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
 <link rel="prev" href="NMGsmDevice.html" title="NMGsmDevice">
-<link rel="next" href="libnm-glib-nm-device-bt.html" title="NMDeviceBt">
-<meta name="generator" content="GTK-Doc V1.14 (XML mode)">
+<link rel="next" href="libnm-glib-NMDeviceBt.html" title="NMDeviceBt">
+<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -18,7 +18,7 @@
 <td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
-<td><a accesskey="n" href="libnm-glib-nm-device-bt.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="libnm-glib-NMDeviceBt.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
 <a href="#NMCdmaDevice.synopsis" class="shortcut">Top</a>
@@ -40,16 +40,17 @@
 <div class="refsynopsisdiv" title="Synopsis">
 <a name="NMCdmaDevice.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMCdmaDevice.html#NMCdmaDevice-struct" title="NMCdmaDevice">NMCdmaDevice</a>;
-<a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMCdmaDevice.html#nm-cdma-device-new" title="nm_cdma_device_new ()">nm_cdma_device_new</a>                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+                    <a class="link" href="NMCdmaDevice.html#NMCdmaDeviceClass" title="NMCdmaDeviceClass">NMCdmaDeviceClass</a>;
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMCdmaDevice.html#nm-cdma-device-new" title="nm_cdma_device_new ()">nm_cdma_device_new</a>                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
 </pre>
 </div>
 <div class="refsect1" title="Object Hierarchy">
 <a name="NMCdmaDevice.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
-  <a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-   +----<a class="link" href="libnm-glib-nm-object.html#NMObject">NMObject</a>
-         +----<a class="link" href="libnm-glib-nm-device.html#NMDevice">NMDevice</a>
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
+         +----<a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
                +----<a class="link" href="NMSerialDevice.html" title="NMSerialDevice">NMSerialDevice</a>
                      +----NMCdmaDevice
 </pre>
@@ -68,9 +69,27 @@
 </p>
 </div>
 <hr>
+<div class="refsect2" title="NMCdmaDeviceClass">
+<a name="NMCdmaDeviceClass"></a><h3>NMCdmaDeviceClass</h3>
+<pre class="programlisting">typedef struct {
+	NMSerialDeviceClass parent;
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+	void (*_reserved5) (void);
+	void (*_reserved6) (void);
+} NMCdmaDeviceClass;
+</pre>
+<p>
+</p>
+</div>
+<hr>
 <div class="refsect2" title="nm_cdma_device_new ()">
 <a name="nm-cdma-device-new"></a><h3>nm_cdma_device_new ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_cdma_device_new                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_cdma_device_new                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
 <p>
 Creates a new <a class="link" href="NMCdmaDevice.html" title="NMCdmaDevice"><span class="type">NMCdmaDevice</span></a>.
@@ -100,6 +119,6 @@ Creates a new <a class="link" href="NMCdmaDevice.html" title="NMCdmaDevice"><spa
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.14</div>
+          Generated by GTK-Doc V1.15</div>
 </body>
 </html>

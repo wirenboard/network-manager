@@ -34,6 +34,13 @@ NMClient
 
 
 
+<!-- ##### MACRO NM_CLIENT_NETWORKING_ENABLED ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_CLIENT_WIRELESS_ENABLED ##### -->
 <para>
 
@@ -69,6 +76,28 @@ NMClient
 
 
 
+<!-- ##### ENUM NMClientPermission ##### -->
+<para>
+
+</para>
+
+@NM_CLIENT_PERMISSION_NONE: 
+@NM_CLIENT_PERMISSION_ENABLE_DISABLE_NETWORK: 
+@NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI: 
+@NM_CLIENT_PERMISSION_ENABLE_DISABLE_WWAN: 
+@NM_CLIENT_PERMISSION_USE_USER_CONNECTIONS: 
+@NM_CLIENT_PERMISSION_LAST: 
+
+<!-- ##### ENUM NMClientPermissionResult ##### -->
+<para>
+
+</para>
+
+@NM_CLIENT_PERMISSION_RESULT_UNKNOWN: 
+@NM_CLIENT_PERMISSION_RESULT_YES: 
+@NM_CLIENT_PERMISSION_RESULT_AUTH: 
+@NM_CLIENT_PERMISSION_RESULT_NO: 
+
 <!-- ##### STRUCT NMClient ##### -->
 <para>
 
@@ -90,6 +119,15 @@ NMClient
 
 @nmclient: the object which received the signal.
 @arg1: 
+
+<!-- ##### SIGNAL NMClient::permission-changed ##### -->
+<para>
+
+</para>
+
+@nmclient: the object which received the signal.
+@arg1: 
+@arg2: 
 
 <!-- ##### ARG NMClient:active-connections ##### -->
 <para>
@@ -130,6 +168,21 @@ NMClient
 <para>
 
 </para>
+
+<!-- ##### STRUCT NMClientClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@device_added: 
+@device_removed: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
 
 <!-- ##### FUNCTION nm_client_new ##### -->
 <para>
@@ -190,6 +243,24 @@ NMClient
 
 @client: 
 @active: 
+
+
+<!-- ##### FUNCTION nm_client_networking_get_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_networking_set_enabled ##### -->
+<para>
+
+</para>
+
+@client: 
+@enabled: 
 
 
 <!-- ##### FUNCTION nm_client_wireless_get_enabled ##### -->
@@ -280,5 +351,15 @@ NMClient
 
 @client: 
 @sleep: 
+
+
+<!-- ##### FUNCTION nm_client_get_permission_result ##### -->
+<para>
+
+</para>
+
+@client: 
+@permission: 
+@Returns: 
 
 

@@ -28,8 +28,8 @@ nm-vpn-plugin-ui-interface
 @g_iface: 
 @ui_factory: 
 @get_capabilities: 
-@import: 
-@export: 
+@import_from_file: 
+@export_to_file: 
 @get_suggested_name: 
 @delete_connection: 
 @_reserved1: 
@@ -66,14 +66,6 @@ nm-vpn-plugin-ui-interface
 
 @error: 
 @Returns: 
-
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_GET_INTERFACE ##### -->
-<para>
-
-</para>
-
-@obj: 
 
 
 <!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_NONE ##### -->

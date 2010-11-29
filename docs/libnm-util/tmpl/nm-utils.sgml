@@ -360,3 +360,43 @@ nm-utils
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_utils_wifi_freq_to_channel ##### -->
+<para>
+
+</para>
+
+@freq: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_wifi_channel_to_freq ##### -->
+<para>
+
+</para>
+
+@channel: 
+@band: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_wifi_find_next_channel ##### -->
+<para>
+
+</para>
+
+@channel: 
+@direction: 
+@band: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_wifi_is_channel_valid ##### -->
+<para>
+
+</para>
+
+@channel: 
+@band: 
+@Returns: 
+
+

@@ -1,3 +1,4 @@
+<ONLINE href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/">
 <ANCHOR id="NMConnection" href="libnm-util/NMConnection.html">
 <ANCHOR id="NMConnection.synopsis" href="libnm-util/NMConnection.html#NMConnection.synopsis">
 <ANCHOR id="NMConnection.object-hierarchy" href="libnm-util/NMConnection.html#NMConnection.object-hierarchy">
@@ -143,7 +144,11 @@
 <ANCHOR id="NM-SETTING-WIRED-DUPLEX:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-DUPLEX:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-MAC-ADDRESS:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-MTU:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-MTU:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-S390-NETTYPE:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-S390-OPTIONS:CAPS" href="libnm-util/NMSettingWired.html#NM-SETTING-WIRED-S390-OPTIONS:CAPS">
 <ANCHOR id="NMSettingWired-struct" href="libnm-util/NMSettingWired.html#NMSettingWired-struct">
 <ANCHOR id="NMSettingWiredClass" href="libnm-util/NMSettingWired.html#NMSettingWiredClass">
 <ANCHOR id="nm-setting-wired-get-type" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-type">
@@ -153,13 +158,25 @@
 <ANCHOR id="nm-setting-wired-get-duplex" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-duplex">
 <ANCHOR id="nm-setting-wired-get-auto-negotiate" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-auto-negotiate">
 <ANCHOR id="nm-setting-wired-get-mac-address" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-mac-address">
+<ANCHOR id="nm-setting-wired-get-cloned-mac-address" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-cloned-mac-address">
 <ANCHOR id="nm-setting-wired-get-mtu" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-mtu">
+<ANCHOR id="nm-setting-wired-get-s390-subchannels" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-s390-subchannels">
+<ANCHOR id="nm-setting-wired-get-s390-nettype" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-s390-nettype">
+<ANCHOR id="nm-setting-wired-get-num-s390-options" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-num-s390-options">
+<ANCHOR id="nm-setting-wired-get-s390-option" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-s390-option">
+<ANCHOR id="nm-setting-wired-get-s390-option-by-key" href="libnm-util/NMSettingWired.html#nm-setting-wired-get-s390-option-by-key">
+<ANCHOR id="nm-setting-wired-add-s390-option" href="libnm-util/NMSettingWired.html#nm-setting-wired-add-s390-option">
+<ANCHOR id="nm-setting-wired-remove-s390-option" href="libnm-util/NMSettingWired.html#nm-setting-wired-remove-s390-option">
 <ANCHOR id="NMSettingWired.property-details" href="libnm-util/NMSettingWired.html#NMSettingWired.property-details">
 <ANCHOR id="NMSettingWired--auto-negotiate" href="libnm-util/NMSettingWired.html#NMSettingWired--auto-negotiate">
+<ANCHOR id="NMSettingWired--cloned-mac-address" href="libnm-util/NMSettingWired.html#NMSettingWired--cloned-mac-address">
 <ANCHOR id="NMSettingWired--duplex" href="libnm-util/NMSettingWired.html#NMSettingWired--duplex">
 <ANCHOR id="NMSettingWired--mac-address" href="libnm-util/NMSettingWired.html#NMSettingWired--mac-address">
 <ANCHOR id="NMSettingWired--mtu" href="libnm-util/NMSettingWired.html#NMSettingWired--mtu">
 <ANCHOR id="NMSettingWired--port" href="libnm-util/NMSettingWired.html#NMSettingWired--port">
+<ANCHOR id="NMSettingWired--s390-nettype" href="libnm-util/NMSettingWired.html#NMSettingWired--s390-nettype">
+<ANCHOR id="NMSettingWired--s390-options" href="libnm-util/NMSettingWired.html#NMSettingWired--s390-options">
+<ANCHOR id="NMSettingWired--s390-subchannels" href="libnm-util/NMSettingWired.html#NMSettingWired--s390-subchannels">
 <ANCHOR id="NMSettingWired--speed" href="libnm-util/NMSettingWired.html#NMSettingWired--speed">
 <ANCHOR id="NMSettingWireless" href="libnm-util/NMSettingWireless.html">
 <ANCHOR id="NMSettingWireless.synopsis" href="libnm-util/NMSettingWireless.html#NMSettingWireless.synopsis">
@@ -180,6 +197,7 @@
 <ANCHOR id="NM-SETTING-WIRELESS-RATE:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-RATE:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-TX-POWER:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-TX-POWER:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS">
+<ANCHOR id="NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-MTU:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-SEC:CAPS" href="libnm-util/NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS">
@@ -195,6 +213,7 @@
 <ANCHOR id="nm-setting-wireless-get-rate" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-get-rate">
 <ANCHOR id="nm-setting-wireless-get-tx-power" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-get-tx-power">
 <ANCHOR id="nm-setting-wireless-get-mac-address" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-get-mac-address">
+<ANCHOR id="nm-setting-wireless-get-cloned-mac-address" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address">
 <ANCHOR id="nm-setting-wireless-get-mtu" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-get-mtu">
 <ANCHOR id="nm-setting-wireless-get-security" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-get-security">
 <ANCHOR id="nm-setting-wireless-add-seen-bssid" href="libnm-util/NMSettingWireless.html#nm-setting-wireless-add-seen-bssid">
@@ -205,6 +224,7 @@
 <ANCHOR id="NMSettingWireless--band" href="libnm-util/NMSettingWireless.html#NMSettingWireless--band">
 <ANCHOR id="NMSettingWireless--bssid" href="libnm-util/NMSettingWireless.html#NMSettingWireless--bssid">
 <ANCHOR id="NMSettingWireless--channel" href="libnm-util/NMSettingWireless.html#NMSettingWireless--channel">
+<ANCHOR id="NMSettingWireless--cloned-mac-address" href="libnm-util/NMSettingWireless.html#NMSettingWireless--cloned-mac-address">
 <ANCHOR id="NMSettingWireless--mac-address" href="libnm-util/NMSettingWireless.html#NMSettingWireless--mac-address">
 <ANCHOR id="NMSettingWireless--mode" href="libnm-util/NMSettingWireless.html#NMSettingWireless--mode">
 <ANCHOR id="NMSettingWireless--mtu" href="libnm-util/NMSettingWireless.html#NMSettingWireless--mtu">
@@ -685,6 +705,7 @@
 <ANCHOR id="NM-SETTING-IP6-CONFIG-MAY-FAIL:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-MAY-FAIL:CAPS">
 <ANCHOR id="NM-SETTING-IP6-CONFIG-METHOD-IGNORE:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-IGNORE:CAPS">
 <ANCHOR id="NM-SETTING-IP6-CONFIG-METHOD-AUTO:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-AUTO:CAPS">
+<ANCHOR id="NM-SETTING-IP6-CONFIG-METHOD-DHCP:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-DHCP:CAPS">
 <ANCHOR id="NM-SETTING-IP6-CONFIG-METHOD-LINK-LOCAL:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-LINK-LOCAL:CAPS">
 <ANCHOR id="NM-SETTING-IP6-CONFIG-METHOD-MANUAL:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-MANUAL:CAPS">
 <ANCHOR id="NM-SETTING-IP6-CONFIG-METHOD-SHARED:CAPS" href="libnm-util/NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-SHARED:CAPS">
@@ -923,3 +944,7 @@
 <ANCHOR id="nm-utils-uuid-generate" href="libnm-util/libnm-util-nm-utils.html#nm-utils-uuid-generate">
 <ANCHOR id="nm-utils-uuid-generate-from-string" href="libnm-util/libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string">
 <ANCHOR id="nm-utils-rsa-key-encrypt" href="libnm-util/libnm-util-nm-utils.html#nm-utils-rsa-key-encrypt">
+<ANCHOR id="nm-utils-wifi-freq-to-channel" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel">
+<ANCHOR id="nm-utils-wifi-channel-to-freq" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq">
+<ANCHOR id="nm-utils-wifi-find-next-channel" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel">
+<ANCHOR id="nm-utils-wifi-is-channel-valid" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid">

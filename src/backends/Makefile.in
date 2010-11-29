@@ -45,6 +45,7 @@ host_triplet = @host@
 @TARGET_FRUGALWARE_TRUE@am__append_9 = -lfwnetconfig -lfwutil
 @TARGET_MANDRIVA_TRUE@am__append_10 = NetworkManagerMandriva.c
 @TARGET_PARDUS_TRUE@am__append_11 = NetworkManagerPardus.c
+@TARGET_LINEXA_TRUE@am__append_12 = NetworkManagerLinexa.c
 subdir = src/backends
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -71,7 +72,7 @@ am__libnmbackend_la_SOURCES_DIST = NetworkManagerGeneric.c \
 	NetworkManagerDebian.c NetworkManagerSlackware.c \
 	NetworkManagerArch.c NetworkManagerPaldo.c \
 	NetworkManagerFrugalware.c NetworkManagerMandriva.c \
-	NetworkManagerPardus.c
+	NetworkManagerPardus.c NetworkManagerLinexa.c
 @TARGET_REDHAT_TRUE@am__objects_1 =  \
 @TARGET_REDHAT_TRUE@	libnmbackend_la-NetworkManagerRedHat.lo
 @TARGET_SUSE_TRUE@am__objects_2 =  \
@@ -89,25 +90,43 @@ am__libnmbackend_la_SOURCES_DIST = NetworkManagerGeneric.c \
 @TARGET_MANDRIVA_TRUE@am__objects_9 = libnmbackend_la-NetworkManagerMandriva.lo
 @TARGET_PARDUS_TRUE@am__objects_10 =  \
 @TARGET_PARDUS_TRUE@	libnmbackend_la-NetworkManagerPardus.lo
+@TARGET_LINEXA_TRUE@am__objects_11 =  \
+@TARGET_LINEXA_TRUE@	libnmbackend_la-NetworkManagerLinexa.lo
 am_libnmbackend_la_OBJECTS = libnmbackend_la-NetworkManagerGeneric.lo \
 	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
-	$(am__objects_10)
+	$(am__objects_10) $(am__objects_11)
 libnmbackend_la_OBJECTS = $(am_libnmbackend_la_OBJECTS)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libnmbackend_la_SOURCES)
 DIST_SOURCES = $(am__libnmbackend_la_SOURCES_DIST)
 ETAGS = etags
@@ -117,6 +136,7 @@ ACLOCAL = @ACLOCAL@
 ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -137,6 +157,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
+DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DSYMUTIL = @DSYMUTIL@
@@ -178,6 +199,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 IPTABLES_PATH = @IPTABLES_PATH@
+KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -217,6 +239,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
@@ -273,7 +297,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -285,6 +308,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
@@ -294,8 +318,6 @@ INCLUDES = \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/include \
 	-I${top_srcdir}/src \
-	-I${top_srcdir}/src/vpn-manager \
-	-I${top_srcdir}/src/named-manager \
 	-I${top_srcdir}/libnm-util
 
 noinst_LTLIBRARIES = libnmbackend.la
@@ -303,7 +325,7 @@ libnmbackend_la_SOURCES = NetworkManagerGeneric.c \
 	NetworkManagerGeneric.h $(am__append_1) $(am__append_2) \
 	$(am__append_3) $(am__append_4) $(am__append_5) \
 	$(am__append_6) $(am__append_7) $(am__append_8) \
-	$(am__append_10) $(am__append_11)
+	$(am__append_10) $(am__append_11) $(am__append_12)
 libnmbackend_la_LIBADD = $(am__append_9) \
 	$(top_builddir)/src/logging/libnm-logging.la $(DBUS_LIBS) \
 	$(GLIB_LIBS)
@@ -359,7 +381,7 @@ clean-noinstLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libnmbackend.la: $(libnmbackend_la_OBJECTS) $(libnmbackend_la_DEPENDENCIES) 
-	$(LINK)  $(libnmbackend_la_OBJECTS) $(libnmbackend_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK)  $(libnmbackend_la_OBJECTS) $(libnmbackend_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -372,6 +394,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerLinexa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Plo@am__quote@
@@ -380,105 +403,127 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
 libnmbackend_la-NetworkManagerGeneric.lo: NetworkManagerGeneric.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerGeneric.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Tpo -c -o libnmbackend_la-NetworkManagerGeneric.lo `test -f 'NetworkManagerGeneric.c' || echo '$(srcdir)/'`NetworkManagerGeneric.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerGeneric.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Tpo -c -o libnmbackend_la-NetworkManagerGeneric.lo `test -f 'NetworkManagerGeneric.c' || echo '$(srcdir)/'`NetworkManagerGeneric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerGeneric.c' object='libnmbackend_la-NetworkManagerGeneric.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerGeneric.lo `test -f 'NetworkManagerGeneric.c' || echo '$(srcdir)/'`NetworkManagerGeneric.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerGeneric.lo `test -f 'NetworkManagerGeneric.c' || echo '$(srcdir)/'`NetworkManagerGeneric.c
 
 libnmbackend_la-NetworkManagerRedHat.lo: NetworkManagerRedHat.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerRedHat.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerRedHat.Tpo -c -o libnmbackend_la-NetworkManagerRedHat.lo `test -f 'NetworkManagerRedHat.c' || echo '$(srcdir)/'`NetworkManagerRedHat.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerRedHat.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerRedHat.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerRedHat.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerRedHat.Tpo -c -o libnmbackend_la-NetworkManagerRedHat.lo `test -f 'NetworkManagerRedHat.c' || echo '$(srcdir)/'`NetworkManagerRedHat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerRedHat.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerRedHat.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerRedHat.c' object='libnmbackend_la-NetworkManagerRedHat.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerRedHat.lo `test -f 'NetworkManagerRedHat.c' || echo '$(srcdir)/'`NetworkManagerRedHat.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerRedHat.lo `test -f 'NetworkManagerRedHat.c' || echo '$(srcdir)/'`NetworkManagerRedHat.c
 
 libnmbackend_la-NetworkManagerSuSE.lo: NetworkManagerSuSE.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerSuSE.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Tpo -c -o libnmbackend_la-NetworkManagerSuSE.lo `test -f 'NetworkManagerSuSE.c' || echo '$(srcdir)/'`NetworkManagerSuSE.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerSuSE.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Tpo -c -o libnmbackend_la-NetworkManagerSuSE.lo `test -f 'NetworkManagerSuSE.c' || echo '$(srcdir)/'`NetworkManagerSuSE.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerSuSE.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerSuSE.c' object='libnmbackend_la-NetworkManagerSuSE.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerSuSE.lo `test -f 'NetworkManagerSuSE.c' || echo '$(srcdir)/'`NetworkManagerSuSE.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerSuSE.lo `test -f 'NetworkManagerSuSE.c' || echo '$(srcdir)/'`NetworkManagerSuSE.c
 
 libnmbackend_la-NetworkManagerGentoo.lo: NetworkManagerGentoo.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerGentoo.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Tpo -c -o libnmbackend_la-NetworkManagerGentoo.lo `test -f 'NetworkManagerGentoo.c' || echo '$(srcdir)/'`NetworkManagerGentoo.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerGentoo.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Tpo -c -o libnmbackend_la-NetworkManagerGentoo.lo `test -f 'NetworkManagerGentoo.c' || echo '$(srcdir)/'`NetworkManagerGentoo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerGentoo.c' object='libnmbackend_la-NetworkManagerGentoo.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerGentoo.lo `test -f 'NetworkManagerGentoo.c' || echo '$(srcdir)/'`NetworkManagerGentoo.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerGentoo.lo `test -f 'NetworkManagerGentoo.c' || echo '$(srcdir)/'`NetworkManagerGentoo.c
 
 libnmbackend_la-NetworkManagerDebian.lo: NetworkManagerDebian.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerDebian.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Tpo -c -o libnmbackend_la-NetworkManagerDebian.lo `test -f 'NetworkManagerDebian.c' || echo '$(srcdir)/'`NetworkManagerDebian.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerDebian.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Tpo -c -o libnmbackend_la-NetworkManagerDebian.lo `test -f 'NetworkManagerDebian.c' || echo '$(srcdir)/'`NetworkManagerDebian.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerDebian.c' object='libnmbackend_la-NetworkManagerDebian.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerDebian.lo `test -f 'NetworkManagerDebian.c' || echo '$(srcdir)/'`NetworkManagerDebian.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerDebian.lo `test -f 'NetworkManagerDebian.c' || echo '$(srcdir)/'`NetworkManagerDebian.c
 
 libnmbackend_la-NetworkManagerSlackware.lo: NetworkManagerSlackware.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerSlackware.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerSlackware.Tpo -c -o libnmbackend_la-NetworkManagerSlackware.lo `test -f 'NetworkManagerSlackware.c' || echo '$(srcdir)/'`NetworkManagerSlackware.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerSlackware.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerSlackware.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerSlackware.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerSlackware.Tpo -c -o libnmbackend_la-NetworkManagerSlackware.lo `test -f 'NetworkManagerSlackware.c' || echo '$(srcdir)/'`NetworkManagerSlackware.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerSlackware.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerSlackware.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerSlackware.c' object='libnmbackend_la-NetworkManagerSlackware.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerSlackware.lo `test -f 'NetworkManagerSlackware.c' || echo '$(srcdir)/'`NetworkManagerSlackware.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerSlackware.lo `test -f 'NetworkManagerSlackware.c' || echo '$(srcdir)/'`NetworkManagerSlackware.c
 
 libnmbackend_la-NetworkManagerArch.lo: NetworkManagerArch.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerArch.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerArch.Tpo -c -o libnmbackend_la-NetworkManagerArch.lo `test -f 'NetworkManagerArch.c' || echo '$(srcdir)/'`NetworkManagerArch.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerArch.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerArch.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerArch.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerArch.Tpo -c -o libnmbackend_la-NetworkManagerArch.lo `test -f 'NetworkManagerArch.c' || echo '$(srcdir)/'`NetworkManagerArch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerArch.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerArch.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerArch.c' object='libnmbackend_la-NetworkManagerArch.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerArch.lo `test -f 'NetworkManagerArch.c' || echo '$(srcdir)/'`NetworkManagerArch.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerArch.lo `test -f 'NetworkManagerArch.c' || echo '$(srcdir)/'`NetworkManagerArch.c
 
 libnmbackend_la-NetworkManagerPaldo.lo: NetworkManagerPaldo.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerPaldo.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Tpo -c -o libnmbackend_la-NetworkManagerPaldo.lo `test -f 'NetworkManagerPaldo.c' || echo '$(srcdir)/'`NetworkManagerPaldo.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerPaldo.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Tpo -c -o libnmbackend_la-NetworkManagerPaldo.lo `test -f 'NetworkManagerPaldo.c' || echo '$(srcdir)/'`NetworkManagerPaldo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerPaldo.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerPaldo.c' object='libnmbackend_la-NetworkManagerPaldo.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerPaldo.lo `test -f 'NetworkManagerPaldo.c' || echo '$(srcdir)/'`NetworkManagerPaldo.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerPaldo.lo `test -f 'NetworkManagerPaldo.c' || echo '$(srcdir)/'`NetworkManagerPaldo.c
 
 libnmbackend_la-NetworkManagerFrugalware.lo: NetworkManagerFrugalware.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerFrugalware.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Tpo -c -o libnmbackend_la-NetworkManagerFrugalware.lo `test -f 'NetworkManagerFrugalware.c' || echo '$(srcdir)/'`NetworkManagerFrugalware.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerFrugalware.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Tpo -c -o libnmbackend_la-NetworkManagerFrugalware.lo `test -f 'NetworkManagerFrugalware.c' || echo '$(srcdir)/'`NetworkManagerFrugalware.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerFrugalware.c' object='libnmbackend_la-NetworkManagerFrugalware.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerFrugalware.lo `test -f 'NetworkManagerFrugalware.c' || echo '$(srcdir)/'`NetworkManagerFrugalware.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerFrugalware.lo `test -f 'NetworkManagerFrugalware.c' || echo '$(srcdir)/'`NetworkManagerFrugalware.c
 
 libnmbackend_la-NetworkManagerMandriva.lo: NetworkManagerMandriva.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerMandriva.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Tpo -c -o libnmbackend_la-NetworkManagerMandriva.lo `test -f 'NetworkManagerMandriva.c' || echo '$(srcdir)/'`NetworkManagerMandriva.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerMandriva.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Tpo -c -o libnmbackend_la-NetworkManagerMandriva.lo `test -f 'NetworkManagerMandriva.c' || echo '$(srcdir)/'`NetworkManagerMandriva.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerMandriva.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerMandriva.c' object='libnmbackend_la-NetworkManagerMandriva.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerMandriva.lo `test -f 'NetworkManagerMandriva.c' || echo '$(srcdir)/'`NetworkManagerMandriva.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerMandriva.lo `test -f 'NetworkManagerMandriva.c' || echo '$(srcdir)/'`NetworkManagerMandriva.c
 
 libnmbackend_la-NetworkManagerPardus.lo: NetworkManagerPardus.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerPardus.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Tpo -c -o libnmbackend_la-NetworkManagerPardus.lo `test -f 'NetworkManagerPardus.c' || echo '$(srcdir)/'`NetworkManagerPardus.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerPardus.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Tpo -c -o libnmbackend_la-NetworkManagerPardus.lo `test -f 'NetworkManagerPardus.c' || echo '$(srcdir)/'`NetworkManagerPardus.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerPardus.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerPardus.c' object='libnmbackend_la-NetworkManagerPardus.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerPardus.lo `test -f 'NetworkManagerPardus.c' || echo '$(srcdir)/'`NetworkManagerPardus.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerPardus.lo `test -f 'NetworkManagerPardus.c' || echo '$(srcdir)/'`NetworkManagerPardus.c
+
+libnmbackend_la-NetworkManagerLinexa.lo: NetworkManagerLinexa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerLinexa.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerLinexa.Tpo -c -o libnmbackend_la-NetworkManagerLinexa.lo `test -f 'NetworkManagerLinexa.c' || echo '$(srcdir)/'`NetworkManagerLinexa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerLinexa.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerLinexa.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerLinexa.c' object='libnmbackend_la-NetworkManagerLinexa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerLinexa.lo `test -f 'NetworkManagerLinexa.c' || echo '$(srcdir)/'`NetworkManagerLinexa.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

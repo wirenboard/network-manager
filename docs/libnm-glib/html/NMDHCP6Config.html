@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMDHCP6Config</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
 <link rel="prev" href="NMDHCP4Config.html" title="NMDHCP4Config">
 <link rel="next" href="libnm-glib-NMExportedConnection.html" title="NMExportedConnection">
-<meta name="generator" content="GTK-Doc V1.14 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -40,10 +40,11 @@
 <div class="refsynopsisdiv" title="Synopsis">
 <a name="NMDHCP6Config.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMDHCP6Config.html#NMDHCP6Config-struct" title="NMDHCP6Config">NMDHCP6Config</a>;
+                    <a class="link" href="NMDHCP6Config.html#NMDHCP6ConfigClass" title="NMDHCP6ConfigClass">NMDHCP6ConfigClass</a>;
 #define             <a class="link" href="NMDHCP6Config.html#NM-DHCP6-CONFIG-OPTIONS:CAPS" title="NM_DHCP6_CONFIG_OPTIONS">NM_DHCP6_CONFIG_OPTIONS</a>
-<a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMDHCP6Config.html#nm-dhcp6-config-new" title="nm_dhcp6_config_new ()">nm_dhcp6_config_new</a>                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMDHCP6Config.html#nm-dhcp6-config-new" title="nm_dhcp6_config_new ()">nm_dhcp6_config_new</a>                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *object_path</code></em>);
-<a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        <a class="link" href="NMDHCP6Config.html#nm-dhcp6-config-get-options" title="nm_dhcp6_config_get_options ()">nm_dhcp6_config_get_options</a>         (<em class="parameter"><code><a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><span class="type">NMDHCP6Config</span></a> *config</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        <a class="link" href="NMDHCP6Config.html#nm-dhcp6-config-get-options" title="nm_dhcp6_config_get_options ()">nm_dhcp6_config_get_options</a>         (<em class="parameter"><code><a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><span class="type">NMDHCP6Config</span></a> *config</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMDHCP6Config.html#nm-dhcp6-config-get-one-option" title="nm_dhcp6_config_get_one_option ()">nm_dhcp6_config_get_one_option</a>      (<em class="parameter"><code><a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><span class="type">NMDHCP6Config</span></a> *config</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *option</code></em>);
 </pre>
@@ -51,8 +52,8 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
 <div class="refsect1" title="Object Hierarchy">
 <a name="NMDHCP6Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
-  <a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-   +----<a class="link" href="libnm-glib-nm-object.html#NMObject">NMObject</a>
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
          +----NMDHCP6Config
 </pre>
 </div>
@@ -70,6 +71,24 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
 </p>
 </div>
 <hr>
+<div class="refsect2" title="NMDHCP6ConfigClass">
+<a name="NMDHCP6ConfigClass"></a><h3>NMDHCP6ConfigClass</h3>
+<pre class="programlisting">typedef struct {
+	NMObjectClass parent;
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+	void (*_reserved5) (void);
+	void (*_reserved6) (void);
+} NMDHCP6ConfigClass;
+</pre>
+<p>
+</p>
+</div>
+<hr>
 <div class="refsect2" title="NM_DHCP6_CONFIG_OPTIONS">
 <a name="NM-DHCP6-CONFIG-OPTIONS:CAPS"></a><h3>NM_DHCP6_CONFIG_OPTIONS</h3>
 <pre class="programlisting">#define NM_DHCP6_CONFIG_OPTIONS "options"
@@ -80,7 +99,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
 <hr>
 <div class="refsect2" title="nm_dhcp6_config_new ()">
 <a name="nm-dhcp6-config-new"></a><h3>nm_dhcp6_config_new ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/gobject/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_dhcp6_config_new                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_dhcp6_config_new                 (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *object_path</code></em>);</pre>
 <p>
 Creates a new <a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><span class="type">NMDHCP6Config</span></a>.
@@ -109,7 +128,7 @@ Creates a new <a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><s
 <hr>
 <div class="refsect2" title="nm_dhcp6_config_get_options ()">
 <a name="nm-dhcp6-config-get-options"></a><h3>nm_dhcp6_config_get_options ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        nm_dhcp6_config_get_options         (<em class="parameter"><code><a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><span class="type">NMDHCP6Config</span></a> *config</code></em>);</pre>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="returnvalue">GHashTable</span></a> *        nm_dhcp6_config_get_options         (<em class="parameter"><code><a class="link" href="NMDHCP6Config.html" title="NMDHCP6Config"><span class="type">NMDHCP6Config</span></a> *config</code></em>);</pre>
 <p>
 Gets all the options contained in the configuration.
 </p>
@@ -123,7 +142,7 @@ Gets all the options contained in the configuration.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the <a href="/usr/share/gtk-doc/html/glib/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing strings for keys and values.
+<td> the <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing strings for keys and values.
 This is the internal copy used by the configuration, and must not be modified.
 </td>
 </tr>
@@ -164,6 +183,6 @@ configuration, and must not be modified.
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.14</div>
+          Generated by GTK-Doc V1.15</div>
 </body>
 </html>
