@@ -1,3 +1,10 @@
+network-manager (0.8.2-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - Set timestamp for system connections. (Closes: #509817)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
+
 network-manager (0.8.1-5) unstable; urgency=low
 
   * Update Vcs-* fields: Move packaging from svn to git.
