@@ -1,1 +1,2 @@
-var/lib/NetworkManager
+var/lib/NetworkManager/
+etc/NetworkManager/system-connections/
