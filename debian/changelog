@@ -10,6 +10,8 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
   * Make sure gtk-doc API documentation is built
     - Add Build-Depends on gtk-doc-tools.
     - Add --with-docs configure option.
+  * debian/network-manager.preinst
+    - Remove pre-lenny conffile upgrade code.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 
