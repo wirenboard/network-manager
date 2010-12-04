@@ -1,3 +1,11 @@
+network-manager (0.8.1-6) UNRELEASED; urgency=low
+
+  * debian/patches/40-umanaged-interfaces.patch
+    - For devices to be marked unmanaged, do not require a valid connection
+      configuration. (Closes: #569215)
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 02 Dec 2010 01:47:35 +0100
+
 network-manager (0.8.1-5) unstable; urgency=low
 
   * Update Vcs-* fields: Move packaging from svn to git.
