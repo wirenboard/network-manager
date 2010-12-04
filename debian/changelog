@@ -1,4 +1,4 @@
-network-manager (0.8.1-6) UNRELEASED; urgency=low
+network-manager (0.8.1-6) unstable; urgency=low
 
   * debian/patches/40-umanaged-interfaces.patch
     - For devices to be marked unmanaged, do not require a valid connection
@@ -10,7 +10,7 @@ network-manager (0.8.1-6) UNRELEASED; urgency=low
       The "all" keyword and regexes are not supported and simply skipped.
       (Closes: #530335)
 
- -- Michael Biebl <biebl@debian.org>  Thu, 02 Dec 2010 01:47:35 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 04 Dec 2010 17:11:13 +0100
 
 network-manager (0.8.1-5) unstable; urgency=low
 
