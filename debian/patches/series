@@ -3,3 +3,4 @@
 10-dont_require_ifup_for_lo.patch
 30-typo_fix.patch
 40-umanaged-interfaces.patch
+50-bridge-interfaces.patch
