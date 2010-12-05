@@ -15,6 +15,20 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 
+network-manager (0.8.1-6) unstable; urgency=low
+
+  * debian/patches/40-umanaged-interfaces.patch
+    - For devices to be marked unmanaged, do not require a valid connection
+      configuration. (Closes: #569215)
+  * debian/patches/50-bridge-interfaces.patch
+    - Parse bridge configurations in /etc/network/interfaces and add
+      interfaces defined via bridge_ports to well_known_interfaces. This
+      allows to mark those interfaces as unmanaged if managed=false.
+      The "all" keyword and regexes are not supported and simply skipped.
+      (Closes: #530335)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 04 Dec 2010 17:11:13 +0100
+
 network-manager (0.8.1-5) unstable; urgency=low
 
   * Update Vcs-* fields: Move packaging from svn to git.
