@@ -1,8 +1,8 @@
-Index: network-manager-0.7.999/src/NetworkManager.conf
+Index: network-manager/src/NetworkManager.conf
 ===================================================================
---- network-manager-0.7.999.orig/src/NetworkManager.conf	2010-01-22 01:27:48.273977786 +0100
-+++ network-manager-0.7.999/src/NetworkManager.conf	2010-01-22 01:28:01.153983423 +0100
-@@ -12,6 +12,51 @@
+--- network-manager.orig/src/NetworkManager.conf	2010-12-05 04:27:16.369752121 +0100
++++ network-manager/src/NetworkManager.conf	2010-12-05 05:36:13.629758385 +0100
+@@ -12,6 +12,67 @@
                  <allow send_destination="org.freedesktop.NetworkManager"
                         send_interface="org.freedesktop.NetworkManager.PPP"/>
          </policy>
@@ -50,6 +50,22 @@ Index: network-manager-0.7.999/src/NetworkManager.conf
 +
 +                <allow send_destination="org.freedesktop.NetworkManager"
 +                       send_interface="org.freedesktop.NetworkManager.VPN.Connection"/>
++
++                <deny send_destination="org.freedesktop.NetworkManager"
++                       send_interface="org.freedesktop.NetworkManager"
++                       send_member="SetLogging"/>
++
++                <deny send_destination="org.freedesktop.NetworkManager"
++                       send_interface="org.freedesktop.NetworkManager"
++                       send_member="Sleep"/>
++
++                <deny send_destination="org.freedesktop.NetworkManager"
++                       send_interface="org.freedesktop.NetworkManager"
++                       send_member="sleep"/>
++
++                <deny send_destination="org.freedesktop.NetworkManager"
++                       send_interface="org.freedesktop.NetworkManager"
++                       send_member="wake"/>
 +        </policy>
          <policy at_console="true">
                  <allow send_destination="org.freedesktop.NetworkManager"/>

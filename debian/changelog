@@ -14,6 +14,8 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
     - Remove pre-lenny conffile upgrade code.
   * debian/network-manager.install
     - Install nm-online binary.
+  * debian/patches/02-dbus_access_network_manager.patch
+    - Update policy for group netdev based on upstream changes for at_console.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 
