@@ -1,3 +1,9 @@
+Description: Correctly mark unmanaged devices
+ Add interface (iface ...) to well_known_interface no matter if we find a
+ valid connection configuration or not. This way interfaces are correctly
+ marked unmanaged for configurations NM does not understand.
+Author: Michael Biebl <biebl@debian.org>
+Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=569215
 Index: network-manager/system-settings/plugins/ifupdown/plugin.c
 ===================================================================
 --- network-manager.orig/system-settings/plugins/ifupdown/plugin.c	2010-12-05 04:24:58.153750890 +0100

@@ -1,3 +1,10 @@
+Description: Allow to unmanage bridge ports
+ Parse bridge configurations in /etc/network/interfaces and add
+ interfaces defined via bridge_ports to well_known_interfaces. This
+ allows to mark those interfaces as unmanaged if managed=false.
+ The "all" keyword and regexes are not supported and simply skipped.
+Author: Michael Biebl <biebl@debian.org>
+Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=530335
 Index: network-manager/system-settings/plugins/ifupdown/plugin.c
 ===================================================================
 --- network-manager.orig/system-settings/plugins/ifupdown/plugin.c	2010-12-05 04:27:03.157754436 +0100
