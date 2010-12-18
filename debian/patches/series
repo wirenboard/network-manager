@@ -3,3 +3,4 @@
 40-umanaged-interfaces.patch
 50-bridge-interfaces.patch
 60-policy-stop-touching-etc-hosts.patch
+70-install-nm-online.patch

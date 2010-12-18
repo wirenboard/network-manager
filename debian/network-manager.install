@@ -1,5 +1,6 @@
 debian/tmp/usr/sbin/NetworkManager
 debian/tmp/usr/bin/nm-tool
+debian/tmp/usr/bin/nm-online
 debian/tmp/usr/bin/nmcli
 debian/tmp/usr/lib/NetworkManager/nm-crash-logger
 debian/tmp/usr/lib/NetworkManager/nm-dhcp-client.action
@@ -10,7 +11,7 @@ debian/tmp/usr/lib/NetworkManager/libnm-settings-plugin-ifupdown.so
 debian/tmp/usr/lib/pppd/*/*.so
 debian/tmp/usr/share/locale/
 debian/tmp/usr/share/dbus-1/system-services/
-debian/tmp//usr/share/polkit-1/
+debian/tmp/usr/share/polkit-1/
 debian/tmp/etc/dbus-1/system.d/NetworkManager.conf
 debian/tmp/etc/dbus-1/system.d/nm-dhcp-client.conf
 debian/tmp/etc/dbus-1/system.d/nm-dispatcher.conf
@@ -18,4 +19,3 @@ debian/tmp/etc/dbus-1/system.d/nm-avahi-autoipd.conf
 debian/tmp/etc/NetworkManager/dispatcher.d/
 debian/tmp/lib/udev/rules.d/*.rules
 debian/NetworkManager.conf etc/NetworkManager/
-test/nm-online usr/bin/

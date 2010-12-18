@@ -1,0 +1,40 @@
+From 3619b3b834b9227628a5d73583401f404e2c46aa Mon Sep 17 00:00:00 2001
+From: Michael Biebl <biebl@debian.org>
+Date: Sat, 18 Dec 2010 12:04:07 +0100
+Subject: [PATCH] Install nm-online to bindir
+
+---
+ test/Makefile.am |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: network-manager/test/Makefile.am
+===================================================================
+--- network-manager.orig/test/Makefile.am	2010-11-29 00:51:00.710135988 +0100
++++ network-manager/test/Makefile.am	2010-12-18 12:38:17.333677825 +0100
+@@ -10,9 +10,9 @@
+ 	-DNM_RUN_DIR=\"$(rundir)\" \
+ 	-DDATADIR=\"$(datadir)\"
+ 
+-bin_PROGRAMS = nm-tool
++bin_PROGRAMS = nm-tool nm-online
+ 
+-noinst_PROGRAMS = nm-online libnm-glib-test
++noinst_PROGRAMS = libnm-glib-test
+ 
+ nm_tool_SOURCES = nm-tool.c
+ nm_tool_LDADD = \
+Index: network-manager/test/Makefile.in
+===================================================================
+--- network-manager.orig/test/Makefile.in	2010-12-18 12:38:31.881683944 +0100
++++ network-manager/test/Makefile.in	2010-12-18 12:39:35.693688720 +0100
+@@ -34,8 +34,8 @@
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
+-bin_PROGRAMS = nm-tool$(EXEEXT)
+-noinst_PROGRAMS = nm-online$(EXEEXT) libnm-glib-test$(EXEEXT)
++bin_PROGRAMS = nm-tool$(EXEEXT) nm-online$(EXEEXT)
++noinst_PROGRAMS = libnm-glib-test$(EXEEXT)
+ subdir = test
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
