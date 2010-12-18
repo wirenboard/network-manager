@@ -1,4 +1,4 @@
-network-manager (0.8.2-1) UNRELEASED; urgency=low
+network-manager (0.8.2-1) experimental; urgency=low
 
   * New upstream release.
     - Set timestamp for system connections. (Closes: #509817)
@@ -21,7 +21,7 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
       /etc/hosts so the hostname is resolvable. Patch cherry-picked from
       upstream Git.
 
- -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 18 Dec 2010 06:47:11 +0100
 
 network-manager (0.8.1-6) unstable; urgency=low
 
