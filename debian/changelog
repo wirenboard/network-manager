@@ -16,6 +16,10 @@ network-manager (0.8.2-1) UNRELEASED; urgency=low
     - Install nm-online binary and man page.
   * debian/patches/02-dbus_access_network_manager.patch
     - Update policy for group netdev based on upstream changes for at_console.
+  * debian/patches/60-policy-stop-touching-etc-hosts.patch
+    - Stop touching /etc/hosts. Rely on the debian installer to setup
+      /etc/hosts so the hostname is resolvable. Patch cherry-picked from
+      upstream Git.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 29 Nov 2010 19:03:34 +0100
 
