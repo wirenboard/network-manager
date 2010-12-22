@@ -1,0 +1,261 @@
+From 6ab5d4488e6365525684e542645f4b7adb428e70 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ji=C5=99=C3=AD=20Klime=C5=A1?= <jklimes@redhat.com>
+Date: Wed, 10 Nov 2010 16:21:25 +0100
+Subject: [PATCH] keyfile: ignore temporary files (bgo #602868)
+
+Ignore temporary files created by vim editor and temporary files created
+internally by g_file_set_contents() (mkstemp()) when writing connections.
+---
+ system-settings/plugins/keyfile/Makefile.am |    2 +
+ system-settings/plugins/keyfile/common.h    |    3 +
+ system-settings/plugins/keyfile/plugin.c    |    9 +++
+ system-settings/plugins/keyfile/utils.c     |   97 +++++++++++++++++++++++++++
+ system-settings/plugins/keyfile/utils.h     |   30 ++++++++
+ 5 files changed, 141 insertions(+), 0 deletions(-)
+ create mode 100644 system-settings/plugins/keyfile/utils.c
+ create mode 100644 system-settings/plugins/keyfile/utils.h
+
+Index: network-manager/system-settings/plugins/keyfile/Makefile.am
+===================================================================
+--- network-manager.orig/system-settings/plugins/keyfile/Makefile.am	2010-12-22 00:15:34.626168878 +0100
++++ network-manager/system-settings/plugins/keyfile/Makefile.am	2010-12-22 00:16:23.682172387 +0100
+@@ -16,6 +16,8 @@
+ 	writer.c \
+ 	writer.h \
+ 	errors.c \
++	utils.c \
++	utils.h \
+ 	common.h
+ 
+ libkeyfile_io_la_CPPFLAGS = \
+Index: network-manager/system-settings/plugins/keyfile/common.h
+===================================================================
+--- network-manager.orig/system-settings/plugins/keyfile/common.h	2010-12-22 00:15:34.542170745 +0100
++++ network-manager/system-settings/plugins/keyfile/common.h	2010-12-22 00:16:23.682172387 +0100
+@@ -23,6 +23,9 @@
+ 
+ #include <glib.h>
+ 
++#define SWP_TAG ".swp"
++#define SWPX_TAG ".swpx"
++
+ #define KEYFILE_PLUGIN_NAME "keyfile"
+ #define KEYFILE_PLUGIN_INFO "(c) 2007 - 2010 Red Hat, Inc.  To report bugs please use the NetworkManager mailing list."
+ 
+Index: network-manager/system-settings/plugins/keyfile/plugin.c
+===================================================================
+--- network-manager.orig/system-settings/plugins/keyfile/plugin.c	2010-12-22 00:15:34.566171289 +0100
++++ network-manager/system-settings/plugins/keyfile/plugin.c	2010-12-22 00:16:23.682172387 +0100
+@@ -39,6 +39,7 @@
+ #include "nm-keyfile-connection.h"
+ #include "writer.h"
+ #include "common.h"
++#include "utils.h"
+ 
+ #define CONF_FILE SYSCONFDIR "/NetworkManager/NetworkManager.conf"
+ #define OLD_CONF_FILE SYSCONFDIR "/NetworkManager/nm-system-settings.conf"
+@@ -89,6 +90,9 @@
+ 		NMKeyfileConnection *connection;
+ 		char *full_path;
+ 
++		if (utils_should_ignore_file (item))
++			continue;
++
+ 		full_path = g_build_filename (KEYFILE_DIR, item, NULL);
+ 		PLUGIN_PRINT (KEYFILE_PLUGIN_NAME, "parsing %s ... ", item);
+ 		connection = nm_keyfile_connection_new (full_path, &error);
+@@ -192,6 +196,11 @@
+ 	GError *error = NULL;
+ 
+ 	name = g_file_get_path (file);
++	if (utils_should_ignore_file (name)) {
++		g_free (name);
++		return;
++	}
++
+ 	connection = g_hash_table_lookup (priv->hash, name);
+ 
+ 	switch (event_type) {
+Index: network-manager/system-settings/plugins/keyfile/utils.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ network-manager/system-settings/plugins/keyfile/utils.c	2010-12-22 00:16:23.682172387 +0100
+@@ -0,0 +1,97 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
++/* NetworkManager system settings service
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * (C) Copyright 2010 Red Hat, Inc.
++ */
++
++#include <glib.h>
++#include <stdlib.h>
++#include <string.h>
++#include "utils.h"
++
++
++static const char temp_letters[] =
++"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
++
++/*
++ * Check '.[a-zA-Z0-9]{6}' file suffix used for temporary files by g_file_set_contents() (mkstemp()).
++ */
++static gboolean
++check_mkstemp_suffix (const char *path)
++{
++	const char *ptr;
++
++	g_return_val_if_fail (path != NULL, FALSE);
++
++	/* Matches *.[a-zA-Z0-9]{6} suffix of mkstemp()'s temporary files */
++	ptr = strrchr (path, '.');
++	if (ptr && (strspn (ptr + 1, temp_letters) == 6) && (! ptr[7]))
++		return TRUE;
++	return FALSE;
++}
++
++static gboolean
++check_prefix (const char *base, const char *tag)
++{
++	int len, tag_len;
++
++	g_return_val_if_fail (base != NULL, TRUE);
++	g_return_val_if_fail (tag != NULL, TRUE);
++
++	len = strlen (base);
++	tag_len = strlen (tag);
++	if ((len > tag_len) && !strncasecmp (base, tag, tag_len))
++		return TRUE;
++	return FALSE;
++}
++
++static gboolean
++check_suffix (const char *base, const char *tag)
++{
++	int len, tag_len;
++
++	g_return_val_if_fail (base != NULL, TRUE);
++	g_return_val_if_fail (tag != NULL, TRUE);
++
++	len = strlen (base);
++	tag_len = strlen (tag);
++	if ((len > tag_len) && !strcasecmp (base + len - tag_len, tag))
++		return TRUE;
++	return FALSE;
++}
++
++gboolean
++utils_should_ignore_file (const char *filename)
++{
++	char *base;
++	gboolean ignore = FALSE;
++
++	g_return_val_if_fail (filename != NULL, TRUE);
++
++	base = g_path_get_basename (filename);
++	g_return_val_if_fail (base != NULL, TRUE);
++
++	/* Ignore files with certain patterns */
++	if (   (check_prefix (base, ".") && check_suffix (base, SWP_TAG))   /* vim temporary files: .filename.swp */
++	    || (check_prefix (base, ".") && check_suffix (base, SWPX_TAG))  /* vim temporary files: .filename.swpx */
++	    || check_mkstemp_suffix (base))                                 /* temporary files created by mkstemp() */
++		ignore = TRUE;
++
++	g_free (base);
++	return ignore;
++}
++
+Index: network-manager/system-settings/plugins/keyfile/utils.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ network-manager/system-settings/plugins/keyfile/utils.h	2010-12-22 00:16:23.686171220 +0100
+@@ -0,0 +1,30 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
++/* NetworkManager system settings service
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * (C) Copyright 2010 Red Hat, Inc.
++ */
++
++#ifndef _UTILS_H_
++#define _UTILS_H_
++
++#include <glib.h>
++#include "common.h"
++
++gboolean utils_should_ignore_file (const char *filename);
++
++#endif  /* _UTILS_H_ */
++
+Index: network-manager/system-settings/plugins/keyfile/Makefile.in
+===================================================================
+--- network-manager.orig/system-settings/plugins/keyfile/Makefile.in	2010-12-22 00:16:33.014165791 +0100
++++ network-manager/system-settings/plugins/keyfile/Makefile.in	2010-12-22 00:16:56.402165785 +0100
+@@ -75,7 +75,8 @@
+ am__DEPENDENCIES_1 =
+ libkeyfile_io_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+ am_libkeyfile_io_la_OBJECTS = libkeyfile_io_la-reader.lo \
+-	libkeyfile_io_la-writer.lo libkeyfile_io_la-errors.lo
++	libkeyfile_io_la-writer.lo libkeyfile_io_la-errors.lo \
++	libkeyfile_io_la-utils.lo
+ libkeyfile_io_la_OBJECTS = $(am_libkeyfile_io_la_OBJECTS)
+ AM_V_lt = $(am__v_lt_$(V))
+ am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+@@ -361,6 +362,8 @@
+ 	writer.c \
+ 	writer.h \
+ 	errors.c \
++	utils.c \
++	utils.h \
+ 	common.h
+ 
+ libkeyfile_io_la_CPPFLAGS = \
+@@ -480,6 +483,7 @@
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-errors.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-reader.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-utils.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-writer.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_settings_plugin_keyfile_la-nm-keyfile-connection.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_settings_plugin_keyfile_la-plugin.Plo@am__quote@
+@@ -535,6 +539,14 @@
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libkeyfile_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libkeyfile_io_la-errors.lo `test -f 'errors.c' || echo '$(srcdir)/'`errors.c
+ 
++libkeyfile_io_la-utils.lo: utils.c
++@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libkeyfile_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libkeyfile_io_la-utils.lo -MD -MP -MF $(DEPDIR)/libkeyfile_io_la-utils.Tpo -c -o libkeyfile_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
++@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libkeyfile_io_la-utils.Tpo $(DEPDIR)/libkeyfile_io_la-utils.Plo
++@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='utils.c' object='libkeyfile_io_la-utils.lo' libtool=yes @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libkeyfile_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libkeyfile_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
++
+ libnm_settings_plugin_keyfile_la-nm-keyfile-connection.lo: nm-keyfile-connection.c
+ @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_keyfile_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_settings_plugin_keyfile_la-nm-keyfile-connection.lo -MD -MP -MF $(DEPDIR)/libnm_settings_plugin_keyfile_la-nm-keyfile-connection.Tpo -c -o libnm_settings_plugin_keyfile_la-nm-keyfile-connection.lo `test -f 'nm-keyfile-connection.c' || echo '$(srcdir)/'`nm-keyfile-connection.c
+ @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_settings_plugin_keyfile_la-nm-keyfile-connection.Tpo $(DEPDIR)/libnm_settings_plugin_keyfile_la-nm-keyfile-connection.Plo
