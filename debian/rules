@@ -1,19 +1,11 @@
 #!/usr/bin/make -f
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/autotools.mk
-include /usr/share/cdbs/1/rules/utils.mk
+%:
+	dh $@
 
-# List any files which are not installed
-common-binary-post-install-arch:: list-missing
-
-DEB_DH_MAKESHLIBS_ARGS_ALL := -X/usr/lib/NetworkManager/ -X/usr/lib/pppd/
-
-DEB_INSTALL_DOCS_ALL := README AUTHORS
-
-DEB_CONFIGURE_LIBEXECDIR := "\$$(prefix)/lib/NetworkManager"
-
-DEB_CONFIGURE_EXTRA_FLAGS := \
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		--libexecdir=/usr/lib/NetworkManager \
 		--with-distro=debian \
 		--with-resolvconf=/sbin/resolvconf \
 		--with-dhclient=/sbin/dhclient \
@@ -22,13 +14,20 @@ DEB_CONFIGURE_EXTRA_FLAGS := \
 		--disable-more-warnings \
 		--with-docs
 
-DEB_DH_INSTALLINIT_ARGS := -r -- start 26 2 3 4 5 . stop 88 0 1 6 .
-
-clean::
-	rm -f po/*.gmo
-
-binary-install/network-manager::
+override_dh_install:
+	dh_install --list-missing
 	install -m 755 debian/network-manager-dispatcher.script \
 		debian/network-manager/etc/NetworkManager/dispatcher.d/01ifupdown
 	install -m 755 debian/ifblacklist_migrate.sh \
 		debian/network-manager/usr/lib/NetworkManager
+
+override_dh_installinit:
+	dh_installinit -pnetwork-manager -r -- start 26 2 3 4 5 . stop 88 0 1 6 .
+
+override_dh_makeshlibs:
+	dh_makeshlibs -X/usr/lib/NetworkManager/ -X/usr/lib/pppd/
+
+override_dh_strip:
+	dh_strip --dbg-package=network-manager-dbg
+
+override_dh_auto_test:

@@ -3,6 +3,11 @@ network-manager (0.8.2-3) UNRELEASED; urgency=low
   * Cherry-pick two patches from upstream Git to make the keyfile plugin
     ignore temporary files and be more quiet when re-reading connections which
     have not changed.
+  * Switch from cdbs to dh
+    - Drop Build-Depends on cdbs.
+    - Bump Build-Depends on debhelper to (>= 7.0.50~) for override targets.
+    - Convert debian/rules to use dh.
+    - Add debian/network-manager.docs.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 22 Dec 2010 00:52:46 +0100
 
