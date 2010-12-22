@@ -1,4 +1,4 @@
-network-manager (0.8.2-3) UNRELEASED; urgency=low
+network-manager (0.8.2-3) experimental; urgency=low
 
   * Cherry-pick two patches from upstream Git to make the keyfile plugin
     ignore temporary files and be more quiet when re-reading connections which
@@ -14,7 +14,7 @@ network-manager (0.8.2-3) UNRELEASED; urgency=low
     - Add debian/patches/03-systemd.patch containing Debian specific tweaks
       for the NetworkManager.service unit file.
 
- -- Michael Biebl <biebl@debian.org>  Wed, 22 Dec 2010 00:52:46 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 22 Dec 2010 04:28:04 +0100
 
 network-manager (0.8.2-2) experimental; urgency=low
 
