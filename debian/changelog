@@ -8,6 +8,11 @@ network-manager (0.8.2-3) UNRELEASED; urgency=low
     - Bump Build-Depends on debhelper to (>= 7.0.50~) for override targets.
     - Convert debian/rules to use dh.
     - Add debian/network-manager.docs.
+  * Enable systemd support
+    - Install NetworkManager.service unit file in /lib/systemd/system.
+    - Add --with-systemdsystemunitdir=/lib/systemd/system to configure flags.
+    - Add debian/patches/03-systemd.patch containing Debian specific tweaks
+      for the NetworkManager.service unit file.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 22 Dec 2010 00:52:46 +0100
 

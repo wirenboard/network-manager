@@ -1,0 +1,18 @@
+Description: Debian specific tweaks for NetworkManager systemd service file
+ - Install an alias named network-manager.service as the legacy SysV init script
+   in Debian is called network-manager.
+ - Do not install NetworkManager into the network.target, as this will lead to a
+   dependency loop (NetworkManager is installed in /usr).
+Author: Michael Biebl <biebl@debian.org>
+diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
+index d93fc67..5604729 100644
+--- a/data/NetworkManager.service.in
++++ b/data/NetworkManager.service.in
+@@ -8,5 +8,6 @@ BusName=org.freedesktop.NetworkManager
+ ExecStart=@sbindir@/NetworkManager --no-daemon
+ 
+ [Install]
+-WantedBy=network.target multi-user.target
++WantedBy=multi-user.target
+ Alias=dbus-org.freedesktop.NetworkManager.service
++Alias=network-manager.service
