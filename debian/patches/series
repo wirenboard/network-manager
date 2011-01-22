@@ -7,3 +7,4 @@
 70-install-nm-online.patch
 80-keyfile-ignore-temporary-files.patch
 81-keyfile-quiet-keyfile-plugin-when-re-read-connection.patch
+82-core-handle-device-removal.patch
