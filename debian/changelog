@@ -1,9 +1,9 @@
-network-manager (0.8.2-4) UNRELEASED; urgency=low
+network-manager (0.8.2-4) experimental; urgency=low
 
   * Cherry-pick patch from upstream to correctly handle device removal when
     properties are unreadable. (Closes: #605570)
 
- -- Michael Biebl <biebl@debian.org>  Sat, 22 Jan 2011 16:53:48 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 22 Jan 2011 16:59:37 +0100
 
 network-manager (0.8.2-3) experimental; urgency=low
 
