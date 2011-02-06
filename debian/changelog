@@ -1,3 +1,9 @@
+network-manager (0.8.2-5) UNRELEASED; urgency=low
+
+  * Upload to unstable.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 06 Feb 2011 15:23:16 +0100
+
 network-manager (0.8.2-4) experimental; urgency=low
 
   * Cherry-pick patch from upstream to correctly handle device removal when
