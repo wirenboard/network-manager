@@ -41,7 +41,7 @@ for i in $auto_ifs; do
       if test x$nulled_line != x; then
 	  line_count=$(expr $line_count + 1)
       fi
-  done  
+  done
 
   if test $line_count -eq 0 -a $word_count -gt 0; then
      ifaces_to_disable="$ifaces_to_disable $i"
@@ -59,7 +59,7 @@ if [ -n "$ifaces_to_disable" ]; then
     cp $NIF_FILE "$NIF_FILE.bak-${backup_suffix}"
     for i in $ifaces_to_disable; do
 	echo -n "Disabling interface: $i ... "
-	sed -i -e "s/^\([ \t]*iface.*$i.*\)$/#NetworkManager#\1/" $NIF_FILE
+	sed -i -e "s/^\([ \t]*iface.*[ \t]$i[ \t].*\)$/#NetworkManager#\1/" $NIF_FILE
 	echo done.
     done
 fi

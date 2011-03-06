@@ -10,6 +10,9 @@ network-manager (0.8.2-6) UNRELEASED; urgency=low
     - Bump Breaks against network-manager-gnome to (<< 0.8.2) to avoid
       partial upgrades which can lead to problems with user settings for
       ethernet connections. (Closes: #612291)
+  * debian/ifblacklist_migrate.sh
+    - Only comment out iface lines if we have an exact match for the network
+      interface. (Closes: #612247)
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Mar 2011 17:12:47 +0100
 
