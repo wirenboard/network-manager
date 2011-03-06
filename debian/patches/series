@@ -8,3 +8,4 @@
 80-keyfile-ignore-temporary-files.patch
 81-keyfile-quiet-keyfile-plugin-when-re-read-connection.patch
 82-core-handle-device-removal.patch
+83-dnsmasq-send-no-config-file-instead-of-a-bogus-one.patch

@@ -1,3 +1,12 @@
+network-manager (0.8.2-6) UNRELEASED; urgency=low
+
+  * debian/patches/83-dnsmasq-send-no-config-file-instead-of-a-bogus-one.patch
+    - Newer versions of dnsmasq validate the option parameters more strictly.
+      Instead of passing a bogus file name simply use --conf-file without
+      additional parameters. (Closes: #615082)
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 06 Mar 2011 17:12:47 +0100
+
 network-manager (0.8.2-5) unstable; urgency=low
 
   * Upload to unstable.
