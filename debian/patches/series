@@ -3,6 +3,7 @@
 03-systemd.patch
 40-umanaged-interfaces.patch
 50-bridge-interfaces.patch
+51-normalized-keys.patch
 60-policy-stop-touching-etc-hosts.patch
 70-install-nm-online.patch
 80-keyfile-ignore-temporary-files.patch

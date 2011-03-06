@@ -1,0 +1,37 @@
+Index: network-manager/system-settings/plugins/ifupdown/interface_parser.c
+===================================================================
+--- network-manager.orig/system-settings/plugins/ifupdown/interface_parser.c	2011-03-06 20:49:32.229089569 +0100
++++ network-manager/system-settings/plugins/ifupdown/interface_parser.c	2011-03-06 20:53:09.749089571 +0100
+@@ -51,6 +51,7 @@
+ void add_data(const char *key,const char *data)
+ {
+ 	if_data *ret;
++	char *idx;
+ 
+ 	// Check if there is a block where we can attach our data
+ 	if (first == NULL)
+@@ -58,6 +59,11 @@
+ 
+ 	ret = (if_data*) calloc(1,sizeof(struct _if_data));
+ 	ret->key = g_strdup(key);
++	// Normalize keys. Convert '_' to '-', as ifupdown accepts both variants.
++	// When querying keys via ifparser_getkey(), use '-'.
++	while ((idx = strrchr(ret->key, '_'))) {
++		*idx = '-';
++	}
+ 	ret->data = g_strdup(data);
+ 
+ 	if (last->info == NULL)
+Index: network-manager/system-settings/plugins/ifupdown/plugin.c
+===================================================================
+--- network-manager.orig/system-settings/plugins/ifupdown/plugin.c	2011-03-06 20:49:36.721089570 +0100
++++ network-manager/system-settings/plugins/ifupdown/plugin.c	2011-03-06 20:50:13.493089573 +0100
+@@ -368,7 +368,7 @@
+ 			/* Bridge configuration */
+ 			if(!strncmp ("br", block->name, 2)) {
+ 				/* Try to find bridge ports */
+-				const char *ports = ifparser_getkey (block, "bridge_ports");
++				const char *ports = ifparser_getkey (block, "bridge-ports");
+ 				if (ports) {
+ 					PLUGIN_PRINT("SCPlugin-Ifupdown", "found bridge ports %s for %s", ports, block->name);
+ 					char **port_ifaces = g_strsplit_set (ports, " \t", -1);

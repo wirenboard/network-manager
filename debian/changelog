@@ -13,6 +13,10 @@ network-manager (0.8.2-6) UNRELEASED; urgency=low
   * debian/ifblacklist_migrate.sh
     - Only comment out iface lines if we have an exact match for the network
       interface. (Closes: #612247)
+  * debian/patches/51-normalized-keys.patch
+    - Normalize keys in ifupdown parser, so we accept options with either
+      hyphens or underscores, like e.g. bridge_ports and bridge-ports.
+      (Closes: #609831)
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Mar 2011 17:12:47 +0100
 
