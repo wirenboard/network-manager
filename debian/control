@@ -43,12 +43,6 @@ Recommends:
  iptables,
  modemmanager
 Suggests: avahi-autoipd
-Conflicts:
- network-manager-gnome (<< 0.6.5-1),
- network-manager-pptp (<< 0.7~~)
-Replaces:
- network-manager-gnome (<< 0.6.5-1),
- network-manager-pptp (<< 0.7~~)
 Breaks:
  network-manager-gnome (<< 0.7~~),
  network-manager-kde (<< 1:0.9~~),

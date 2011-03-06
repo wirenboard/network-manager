@@ -4,6 +4,9 @@ network-manager (0.8.2-6) UNRELEASED; urgency=low
     - Newer versions of dnsmasq validate the option parameters more strictly.
       Instead of passing a bogus file name simply use --conf-file without
       additional parameters. (Closes: #615082)
+  * debian/control
+    - Remove old Conflicts/Replaces which were required for upgrades to
+      squeeze.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Mar 2011 17:12:47 +0100
 
