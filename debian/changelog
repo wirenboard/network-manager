@@ -7,6 +7,9 @@ network-manager (0.8.2-6) UNRELEASED; urgency=low
   * debian/control
     - Remove old Conflicts/Replaces which were required for upgrades to
       squeeze.
+    - Bump Breaks against network-manager-gnome to (<< 0.8.2) to avoid
+      partial upgrades which can lead to problems with user settings for
+      ethernet connections. (Closes: #612291)
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Mar 2011 17:12:47 +0100
 

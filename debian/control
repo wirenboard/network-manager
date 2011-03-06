@@ -44,11 +44,11 @@ Recommends:
  modemmanager
 Suggests: avahi-autoipd
 Breaks:
- network-manager-gnome (<< 0.7~~),
+ network-manager-gnome (<< 0.8.2),
  network-manager-kde (<< 1:0.9~~),
- network-manager-openvpn (<< 0.7~~),
- network-manager-vpnc (<< 0.7~~),
- network-manager-pptp (<< 0.7~~),
+ network-manager-openvpn (<< 0.8),
+ network-manager-vpnc (<< 0.8),
+ network-manager-pptp (<< 0.8),
  ppp (<< 2.4.5)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
