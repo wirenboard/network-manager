@@ -7,9 +7,9 @@ Author: Michael Biebl <biebl@debian.org>
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=530335
 Index: network-manager/system-settings/plugins/ifupdown/plugin.c
 ===================================================================
---- network-manager.orig/system-settings/plugins/ifupdown/plugin.c	2010-12-05 04:27:03.157754436 +0100
-+++ network-manager/system-settings/plugins/ifupdown/plugin.c	2010-12-05 04:27:09.541753340 +0100
-@@ -362,9 +362,49 @@
+--- network-manager.orig/system-settings/plugins/ifupdown/plugin.c	2011-03-07 01:40:12.576352746 +0100
++++ network-manager/system-settings/plugins/ifupdown/plugin.c	2011-03-07 01:40:35.916352746 +0100
+@@ -362,9 +362,51 @@
  	while (block) {
  		if(!strcmp ("auto", block->type) || !strcmp ("allow-hotplug", block->type))
  			g_hash_table_insert (auto_ifaces, block->name, GUINT_TO_POINTER (1));
@@ -22,11 +22,13 @@ Index: network-manager/system-settings/plugins/ifupdown/plugin.c
 +				/* Try to find bridge ports */
 +				const char *ports = ifparser_getkey (block, "bridge_ports");
 +				if (ports) {
-+					PLUGIN_PRINT("SCPlugin-Ifupdown", "found bridge ports %s for %s", ports, block->name);
-+					char **port_ifaces = g_strsplit_set (ports, " \t", -1);
-+
 +					int i;
 +					int state = 0;
++					char **port_ifaces;
++
++					PLUGIN_PRINT("SCPlugin-Ifupdown", "found bridge ports %s for %s", ports, block->name);
++
++					port_ifaces = g_strsplit_set (ports, " \t", -1);
 +					for (i = 0; i < g_strv_length (port_ifaces); i++) {
 +						char *token = port_ifaces[i];
 +						/* Skip crazy stuff like regex or all */
@@ -60,7 +62,7 @@ Index: network-manager/system-settings/plugins/ifupdown/plugin.c
  			/* Remove any connection for this block that was previously found */
  			exported = g_hash_table_lookup (priv->iface_connections, block->name);
  			if (exported) {
-@@ -387,6 +427,7 @@
+@@ -387,6 +429,7 @@
  			g_hash_table_insert (priv->well_known_interfaces, block->name, "known");
  			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding mapping %s to well_known_interfaces", block->name);
  		}
