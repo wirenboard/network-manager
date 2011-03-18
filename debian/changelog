@@ -2,6 +2,17 @@ network-manager (0.8.3.998-1) UNRELEASED; urgency=low
 
   * New upstream release (0.8.4 rc1).
   * Bump debhelper compatibility level to 8.
+  * Remove patches (merged upstream)
+    - d/p/40-umanaged-interfaces.patch
+    - d/p/50-bridge-interfaces.patch
+    - d/p/51-normalized-keys.patch
+    - d/p/60-policy-stop-touching-etc-hosts.patch
+    - d/p/70-install-nm-online.patch
+    - d/p/80-keyfile-ignore-temporary-files.patch
+    - d/p/81-keyfile-quiet-keyfile-plugin-when-re-read-connection.patch
+    - d/p/82-core-handle-device-removal.patch
+    - d/p/83-dnsmasq-send-no-config-file-instead-of-a-bogus-one.patch
+
 
  -- Michael Biebl <biebl@debian.org>  Fri, 18 Mar 2011 20:18:32 +0100
 
