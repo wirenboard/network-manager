@@ -1,8 +1,9 @@
-network-manager (0.8.2-7) UNRELEASED; urgency=low
+network-manager (0.8.3.998-1) UNRELEASED; urgency=low
 
+  * New upstream release (0.8.4 rc1).
   * Bump debhelper compatibility level to 8.
 
- -- Michael Biebl <biebl@debian.org>  Mon, 07 Mar 2011 01:43:25 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 18 Mar 2011 20:18:32 +0100
 
 network-manager (0.8.2-6) unstable; urgency=medium
 
