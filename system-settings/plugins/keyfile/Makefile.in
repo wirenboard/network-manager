@@ -75,7 +75,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES) $(pkglib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libkeyfile_io_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libkeyfile_io_la_OBJECTS = libkeyfile_io_la-reader.lo \
-	libkeyfile_io_la-writer.lo libkeyfile_io_la-errors.lo
+	libkeyfile_io_la-writer.lo libkeyfile_io_la-errors.lo \
+	libkeyfile_io_la-utils.lo
 libkeyfile_io_la_OBJECTS = $(am_libkeyfile_io_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -257,6 +258,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -271,6 +276,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -361,6 +367,8 @@ libkeyfile_io_la_SOURCES = \
 	writer.c \
 	writer.h \
 	errors.c \
+	utils.c \
+	utils.h \
 	common.h
 
 libkeyfile_io_la_CPPFLAGS = \
@@ -393,6 +401,7 @@ libnm_settings_plugin_keyfile_la_LIBADD = \
 	$(DBUS_LIBS) \
 	$(GIO_LIBS)
 
+keyfiledir = $(sysconfdir)/NetworkManager/system-connections
 all: all-recursive
 
 .SUFFIXES:
@@ -480,6 +489,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-errors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-reader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libkeyfile_io_la-writer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_settings_plugin_keyfile_la-nm-keyfile-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_settings_plugin_keyfile_la-plugin.Plo@am__quote@
@@ -534,6 +544,14 @@ libkeyfile_io_la-errors.lo: errors.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='errors.c' object='libkeyfile_io_la-errors.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libkeyfile_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libkeyfile_io_la-errors.lo `test -f 'errors.c' || echo '$(srcdir)/'`errors.c
+
+libkeyfile_io_la-utils.lo: utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libkeyfile_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libkeyfile_io_la-utils.lo -MD -MP -MF $(DEPDIR)/libkeyfile_io_la-utils.Tpo -c -o libkeyfile_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libkeyfile_io_la-utils.Tpo $(DEPDIR)/libkeyfile_io_la-utils.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='utils.c' object='libkeyfile_io_la-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libkeyfile_io_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libkeyfile_io_la-utils.lo `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
 
 libnm_settings_plugin_keyfile_la-nm-keyfile-connection.lo: nm-keyfile-connection.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_settings_plugin_keyfile_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_settings_plugin_keyfile_la-nm-keyfile-connection.lo -MD -MP -MF $(DEPDIR)/libnm_settings_plugin_keyfile_la-nm-keyfile-connection.Tpo -c -o libnm_settings_plugin_keyfile_la-nm-keyfile-connection.lo `test -f 'nm-keyfile-connection.c' || echo '$(srcdir)/'`nm-keyfile-connection.c

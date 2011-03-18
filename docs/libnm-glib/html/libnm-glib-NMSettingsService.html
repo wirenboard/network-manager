@@ -3,11 +3,11 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSettingsService</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
-<link rel="prev" href="libnm-glib-NMSettings.html" title="nm-settings-interface">
-<link rel="next" href="libnm-glib-NMSettingsSystem.html" title="nm-settings-system-interface">
+<link rel="prev" href="libnm-glib-NMSettings.html" title="NMSettings">
+<link rel="next" href="libnm-glib-NMSettingsSystem.html" title="NMSettingsSystem">
 <meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -41,13 +41,13 @@
 #define             <a class="link" href="libnm-glib-NMSettingsService.html#NM-SETTINGS-SERVICE-SCOPE:CAPS" title="NM_SETTINGS_SERVICE_SCOPE">NM_SETTINGS_SERVICE_SCOPE</a>
                     <a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsService" title="NMSettingsService">NMSettingsService</a>;
                     <a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsServiceClass" title="NMSettingsServiceClass">NMSettingsServiceClass</a>;
-<a class="link" href="libnm-glib-NMExportedConnection.html#NMExportedConnection" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * <a class="link" href="libnm-glib-NMSettingsService.html#nm-settings-service-get-connection-by-path" title="nm_settings_service_get_connection_by_path ()">nm_settings_service_get_connection_by_path</a>
+<a class="link" href="NMExportedConnection.html" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * <a class="link" href="libnm-glib-NMSettingsService.html#nm-settings-service-get-connection-by-path" title="nm_settings_service_get_connection_by_path ()">nm_settings_service_get_connection_by_path</a>
                                                         (<em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsService" title="NMSettingsService"><span class="type">NMSettingsService</span></a> *self</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMSettingsService.html#nm-settings-service-export" title="nm_settings_service_export ()">nm_settings_service_export</a>          (<em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsService" title="NMSettingsService"><span class="type">NMSettingsService</span></a> *self</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMSettingsService.html#nm-settings-service-export-connection" title="nm_settings_service_export_connection ()">nm_settings_service_export_connection</a>
                                                         (<em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsService" title="NMSettingsService"><span class="type">NMSettingsService</span></a> *self</code></em>,
-                                                         <em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface" title="NMSettingsConnectionInterface"><span class="type">NMSettingsConnectionInterface</span></a> *exported</code></em>);
+                                                         <em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface"><span class="type">NMSettingsConnectionInterface</span></a> *exported</code></em>);
 </pre>
 </div>
 <div class="refsect1" title="Description">
@@ -115,7 +115,7 @@
 <hr>
 <div class="refsect2" title="nm_settings_service_get_connection_by_path ()">
 <a name="nm-settings-service-get-connection-by-path"></a><h3>nm_settings_service_get_connection_by_path ()</h3>
-<pre class="programlisting"><a class="link" href="libnm-glib-NMExportedConnection.html#NMExportedConnection" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * nm_settings_service_get_connection_by_path
+<pre class="programlisting"><a class="link" href="NMExportedConnection.html" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * nm_settings_service_get_connection_by_path
                                                         (<em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsService" title="NMSettingsService"><span class="type">NMSettingsService</span></a> *self</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
 <p>
@@ -161,7 +161,7 @@
 <a name="nm-settings-service-export-connection"></a><h3>nm_settings_service_export_connection ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                nm_settings_service_export_connection
                                                         (<em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsService.html#NMSettingsService" title="NMSettingsService"><span class="type">NMSettingsService</span></a> *self</code></em>,
-                                                         <em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface" title="NMSettingsConnectionInterface"><span class="type">NMSettingsConnectionInterface</span></a> *exported</code></em>);</pre>
+                                                         <em class="parameter"><code><a class="link" href="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface"><span class="type">NMSettingsConnectionInterface</span></a> *exported</code></em>);</pre>
 <p>
 </p>
 <div class="variablelist"><table border="0">

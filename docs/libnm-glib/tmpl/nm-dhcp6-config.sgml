@@ -9,10 +9,12 @@ NMDHCP6Config
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -25,6 +27,11 @@ NMDHCP6Config
 
 </para>
 
+
+<!-- ##### ARG NMDHCP6Config:options ##### -->
+<para>
+
+</para>
 
 <!-- ##### STRUCT NMDHCP6ConfigClass ##### -->
 <para>

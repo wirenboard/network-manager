@@ -9,10 +9,12 @@ NMSetting
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -200,6 +202,28 @@ NMSetting
 @a: 
 @b: 
 @flags: 
+@Returns: 
+
+
+<!-- ##### ENUM NMSettingDiffResult ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_DIFF_RESULT_UNKNOWN: 
+@NM_SETTING_DIFF_RESULT_IN_A: 
+@NM_SETTING_DIFF_RESULT_IN_B: 
+
+<!-- ##### FUNCTION nm_setting_diff ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@flags: 
+@invert_results: 
+@results: 
 @Returns: 
 
 

@@ -9,10 +9,12 @@ NMDevice
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -160,6 +162,11 @@ NMDevice
 </para>
 
 <!-- ##### ARG NMDevice:interface ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDevice:ip-interface ##### -->
 <para>
 
 </para>

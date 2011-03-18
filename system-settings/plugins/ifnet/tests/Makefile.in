@@ -59,9 +59,6 @@ check_ifnet_DEPENDENCIES = $(top_srcdir)/libnm-util/libnm-util.la \
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
-check_ifnet_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(check_ifnet_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -187,6 +184,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -201,6 +202,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -283,8 +285,7 @@ INCLUDES = -I$(top_srcdir)/system-settings/plugins/ifnet\
 	 -I$(top_srcdir)/src/system-settings
 
 check_ifnet_SOURCES = test_all.c 
-check_ifnet_LDFLAGS = -g
-check_ifnet_CPPFLAGS = $(CHECK_CFLAGS) $(GLIB_CFLAGS) -g
+check_ifnet_CPPFLAGS = $(CHECK_CFLAGS) $(GLIB_CFLAGS)
 check_ifnet_LDADD = $(top_srcdir)/libnm-util/libnm-util.la\
 		    $(top_srcdir)/system-settings/plugins/ifnet/lib-ifnet-io.la\
 		    $(CHECK_LIBS)\
@@ -335,7 +336,7 @@ clean-checkPROGRAMS:
 	rm -f $$list
 check_ifnet$(EXEEXT): $(check_ifnet_OBJECTS) $(check_ifnet_DEPENDENCIES) 
 	@rm -f check_ifnet$(EXEEXT)
-	$(AM_V_CCLD)$(check_ifnet_LINK) $(check_ifnet_OBJECTS) $(check_ifnet_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(check_ifnet_OBJECTS) $(check_ifnet_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

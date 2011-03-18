@@ -1,5 +1,5 @@
 <!-- ##### SECTION Title ##### -->
-nm-vpn-plugin-ui-interface
+NMVpnPluginUi
 
 <!-- ##### SECTION Short_Description ##### -->
 
@@ -9,10 +9,12 @@ nm-vpn-plugin-ui-interface
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 

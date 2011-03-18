@@ -9,10 +9,12 @@ NMConnection
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -203,6 +205,18 @@ NMConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_connection_diff ##### -->
+<para>
+
+</para>
+
+@a: 
+@b: 
+@flags: 
+@out_settings: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_connection_verify ##### -->
 <para>
 
@@ -238,7 +252,7 @@ NMConnection
 
 @connection: 
 @setting_name: 
-@secrets: 
+@setting_secrets: 
 @error: 
 @Returns: 
 

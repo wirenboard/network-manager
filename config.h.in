@@ -149,6 +149,9 @@
 /* Define if you have Debian */
 #undef TARGET_DEBIAN
 
+/* Define if you have Exherbo */
+#undef TARGET_EXHERBO
+
 /* Define if you have Frugalware */
 #undef TARGET_FRUGALWARE
 
@@ -203,6 +206,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if you have PPP support */
+#undef WITH_PPP
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMExportedConnection</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
 <link rel="prev" href="NMDHCP6Config.html" title="NMDHCP6Config">
@@ -21,40 +21,55 @@
 <td><a accesskey="n" href="NMObject.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
-<a href="#libnm-glib-NMExportedConnection.synopsis" class="shortcut">Top</a>
+<a href="#NMExportedConnection.synopsis" class="shortcut">Top</a>
                    | 
-                  <a href="#libnm-glib-NMExportedConnection.description" class="shortcut">Description</a>
+                  <a href="#NMExportedConnection.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#NMExportedConnection.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#NMExportedConnection.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
 </td></tr>
 </table>
 <div class="refentry" title="NMExportedConnection">
-<a name="libnm-glib-NMExportedConnection"></a><div class="titlepage"></div>
+<a name="NMExportedConnection"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
-<h2><span class="refentrytitle"><a name="libnm-glib-NMExportedConnection.top_of_page"></a>NMExportedConnection</span></h2>
+<h2><span class="refentrytitle"><a name="NMExportedConnection.top_of_page"></a>NMExportedConnection</span></h2>
 <p>NMExportedConnection</p>
 </td>
 <td valign="top" align="right"></td>
 </tr></table></div>
 <div class="refsynopsisdiv" title="Synopsis">
-<a name="libnm-glib-NMExportedConnection.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis">                    <a class="link" href="libnm-glib-NMExportedConnection.html#NMExportedConnection" title="NMExportedConnection">NMExportedConnection</a>;
-                    <a class="link" href="libnm-glib-NMExportedConnection.html#NMExportedConnectionClass" title="NMExportedConnectionClass">NMExportedConnectionClass</a>;
-<a class="link" href="libnm-glib-NMExportedConnection.html#NMExportedConnection" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * <a class="link" href="libnm-glib-NMExportedConnection.html#nm-exported-connection-new" title="nm_exported_connection_new ()">nm_exported_connection_new</a>       (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnectionScope"><span class="type">NMConnectionScope</span></a> scope</code></em>);
+<a name="NMExportedConnection.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="NMExportedConnection.html#NMExportedConnection-struct" title="NMExportedConnection">NMExportedConnection</a>;
+                    <a class="link" href="NMExportedConnection.html#NMExportedConnectionClass" title="NMExportedConnectionClass">NMExportedConnectionClass</a>;
+<a class="link" href="NMExportedConnection.html" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * <a class="link" href="NMExportedConnection.html#nm-exported-connection-new" title="nm_exported_connection_new ()">nm_exported_connection_new</a>       (<em class="parameter"><code><a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html#NMConnectionScope"><span class="type">NMConnectionScope</span></a> scope</code></em>);
 </pre>
 </div>
+<div class="refsect1" title="Object Hierarchy">
+<a name="NMExportedConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html">NMConnection</a>
+         +----NMExportedConnection
+</pre>
+</div>
+<div class="refsect1" title="Implemented Interfaces">
+<a name="NMExportedConnection.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+NMExportedConnection implements
+ <a class="link" href="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface">NMSettingsConnectionInterface</a>.</p>
+</div>
 <div class="refsect1" title="Description">
-<a name="libnm-glib-NMExportedConnection.description"></a><h2>Description</h2>
+<a name="NMExportedConnection.description"></a><h2>Description</h2>
 <p>
 </p>
 </div>
 <div class="refsect1" title="Details">
-<a name="libnm-glib-NMExportedConnection.details"></a><h2>Details</h2>
+<a name="NMExportedConnection.details"></a><h2>Details</h2>
 <div class="refsect2" title="NMExportedConnection">
-<a name="NMExportedConnection"></a><h3>NMExportedConnection</h3>
-<pre class="programlisting">typedef struct {
-	NMConnection parent;
-} NMExportedConnection;
-</pre>
+<a name="NMExportedConnection-struct"></a><h3>NMExportedConnection</h3>
+<pre class="programlisting">typedef struct _NMExportedConnection NMExportedConnection;</pre>
 <p>
 </p>
 </div>
@@ -95,7 +110,7 @@
 <hr>
 <div class="refsect2" title="nm_exported_connection_new ()">
 <a name="nm-exported-connection-new"></a><h3>nm_exported_connection_new ()</h3>
-<pre class="programlisting"><a class="link" href="libnm-glib-NMExportedConnection.html#NMExportedConnection" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * nm_exported_connection_new       (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnectionScope"><span class="type">NMConnectionScope</span></a> scope</code></em>);</pre>
+<pre class="programlisting"><a class="link" href="NMExportedConnection.html" title="NMExportedConnection"><span class="returnvalue">NMExportedConnection</span></a> * nm_exported_connection_new       (<em class="parameter"><code><a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html#NMConnectionScope"><span class="type">NMConnectionScope</span></a> scope</code></em>);</pre>
 <p>
 Creates a new object representing the remote connection.
 </p>

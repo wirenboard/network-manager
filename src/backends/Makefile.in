@@ -46,6 +46,7 @@ host_triplet = @host@
 @TARGET_MANDRIVA_TRUE@am__append_10 = NetworkManagerMandriva.c
 @TARGET_PARDUS_TRUE@am__append_11 = NetworkManagerPardus.c
 @TARGET_LINEXA_TRUE@am__append_12 = NetworkManagerLinexa.c
+@TARGET_EXHERBO_TRUE@am__append_13 = NetworkManagerExherbo.c
 subdir = src/backends
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -72,7 +73,8 @@ am__libnmbackend_la_SOURCES_DIST = NetworkManagerGeneric.c \
 	NetworkManagerDebian.c NetworkManagerSlackware.c \
 	NetworkManagerArch.c NetworkManagerPaldo.c \
 	NetworkManagerFrugalware.c NetworkManagerMandriva.c \
-	NetworkManagerPardus.c NetworkManagerLinexa.c
+	NetworkManagerPardus.c NetworkManagerLinexa.c \
+	NetworkManagerExherbo.c
 @TARGET_REDHAT_TRUE@am__objects_1 =  \
 @TARGET_REDHAT_TRUE@	libnmbackend_la-NetworkManagerRedHat.lo
 @TARGET_SUSE_TRUE@am__objects_2 =  \
@@ -92,11 +94,13 @@ am__libnmbackend_la_SOURCES_DIST = NetworkManagerGeneric.c \
 @TARGET_PARDUS_TRUE@	libnmbackend_la-NetworkManagerPardus.lo
 @TARGET_LINEXA_TRUE@am__objects_11 =  \
 @TARGET_LINEXA_TRUE@	libnmbackend_la-NetworkManagerLinexa.lo
+@TARGET_EXHERBO_TRUE@am__objects_12 =  \
+@TARGET_EXHERBO_TRUE@	libnmbackend_la-NetworkManagerExherbo.lo
 am_libnmbackend_la_OBJECTS = libnmbackend_la-NetworkManagerGeneric.lo \
 	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
-	$(am__objects_10) $(am__objects_11)
+	$(am__objects_10) $(am__objects_11) $(am__objects_12)
 libnmbackend_la_OBJECTS = $(am_libnmbackend_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -224,6 +228,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -238,6 +246,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -325,7 +334,8 @@ libnmbackend_la_SOURCES = NetworkManagerGeneric.c \
 	NetworkManagerGeneric.h $(am__append_1) $(am__append_2) \
 	$(am__append_3) $(am__append_4) $(am__append_5) \
 	$(am__append_6) $(am__append_7) $(am__append_8) \
-	$(am__append_10) $(am__append_11) $(am__append_12)
+	$(am__append_10) $(am__append_11) $(am__append_12) \
+	$(am__append_13)
 libnmbackend_la_LIBADD = $(am__append_9) \
 	$(top_builddir)/src/logging/libnm-logging.la $(DBUS_LIBS) \
 	$(GLIB_LIBS)
@@ -391,6 +401,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerArch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerDebian.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerExherbo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerFrugalware.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerGeneric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmbackend_la-NetworkManagerGentoo.Plo@am__quote@
@@ -524,6 +535,14 @@ libnmbackend_la-NetworkManagerLinexa.lo: NetworkManagerLinexa.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerLinexa.c' object='libnmbackend_la-NetworkManagerLinexa.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerLinexa.lo `test -f 'NetworkManagerLinexa.c' || echo '$(srcdir)/'`NetworkManagerLinexa.c
+
+libnmbackend_la-NetworkManagerExherbo.lo: NetworkManagerExherbo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmbackend_la-NetworkManagerExherbo.lo -MD -MP -MF $(DEPDIR)/libnmbackend_la-NetworkManagerExherbo.Tpo -c -o libnmbackend_la-NetworkManagerExherbo.lo `test -f 'NetworkManagerExherbo.c' || echo '$(srcdir)/'`NetworkManagerExherbo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmbackend_la-NetworkManagerExherbo.Tpo $(DEPDIR)/libnmbackend_la-NetworkManagerExherbo.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='NetworkManagerExherbo.c' object='libnmbackend_la-NetworkManagerExherbo.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmbackend_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmbackend_la-NetworkManagerExherbo.lo `test -f 'NetworkManagerExherbo.c' || echo '$(srcdir)/'`NetworkManagerExherbo.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -9,10 +9,12 @@ NMDeviceBt
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -46,7 +48,21 @@ NMDeviceBt
 
 </para>
 
-@parent: 
+
+<!-- ##### ARG NMDeviceBt:bt-capabilities ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceBt:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceBt:name ##### -->
+<para>
+
+</para>
 
 <!-- ##### STRUCT NMDeviceBtClass ##### -->
 <para>

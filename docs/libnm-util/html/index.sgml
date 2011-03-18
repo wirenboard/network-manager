@@ -30,6 +30,7 @@
 <ANCHOR id="nm-connection-get-setting-by-name" href="libnm-util/NMConnection.html#nm-connection-get-setting-by-name">
 <ANCHOR id="nm-connection-replace-settings" href="libnm-util/NMConnection.html#nm-connection-replace-settings">
 <ANCHOR id="nm-connection-compare" href="libnm-util/NMConnection.html#nm-connection-compare">
+<ANCHOR id="nm-connection-diff" href="libnm-util/NMConnection.html#nm-connection-diff">
 <ANCHOR id="nm-connection-verify" href="libnm-util/NMConnection.html#nm-connection-verify">
 <ANCHOR id="nm-connection-need-secrets" href="libnm-util/NMConnection.html#nm-connection-need-secrets">
 <ANCHOR id="nm-connection-clear-secrets" href="libnm-util/NMConnection.html#nm-connection-clear-secrets">
@@ -83,6 +84,11 @@
 <ANCHOR id="NM-SETTING-COMPARE-FLAG-IGNORE-ID:CAPS" href="libnm-util/NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-ID:CAPS">
 <ANCHOR id="NM-SETTING-COMPARE-FLAG-IGNORE-SECRETS:CAPS" href="libnm-util/NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-SECRETS:CAPS">
 <ANCHOR id="nm-setting-compare" href="libnm-util/NMSetting.html#nm-setting-compare">
+<ANCHOR id="NMSettingDiffResult" href="libnm-util/NMSetting.html#NMSettingDiffResult">
+<ANCHOR id="NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS" href="libnm-util/NMSetting.html#NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS">
+<ANCHOR id="NM-SETTING-DIFF-RESULT-IN-A:CAPS" href="libnm-util/NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A:CAPS">
+<ANCHOR id="NM-SETTING-DIFF-RESULT-IN-B:CAPS" href="libnm-util/NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B:CAPS">
+<ANCHOR id="nm-setting-diff" href="libnm-util/NMSetting.html#nm-setting-diff">
 <ANCHOR id="nm-setting-enumerate-values" href="libnm-util/NMSetting.html#nm-setting-enumerate-values">
 <ANCHOR id="nm-setting-to-string" href="libnm-util/NMSetting.html#nm-setting-to-string">
 <ANCHOR id="nm-setting-clear-secrets" href="libnm-util/NMSetting.html#nm-setting-clear-secrets">
@@ -948,3 +954,4 @@
 <ANCHOR id="nm-utils-wifi-channel-to-freq" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq">
 <ANCHOR id="nm-utils-wifi-find-next-channel" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel">
 <ANCHOR id="nm-utils-wifi-is-channel-valid" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid">
+<ANCHOR id="annotation-glossterm-element-type" href="libnm-util/annotation-glossary.html#annotation-glossterm-element-type">

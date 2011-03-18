@@ -260,6 +260,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -274,6 +278,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -370,8 +375,7 @@ libnm_settings_plugin_ifnet_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GUDEV_CFLAGS) \
 	-DG_DISABLE_DEPRECATED \
-	-DSYSCONFDIR=\"$(sysconfdir)\"\
-	-g
+	-DSYSCONFDIR=\"$(sysconfdir)\"
 
 libnm_settings_plugin_ifnet_la_LDFLAGS = -module -avoid-version
 libnm_settings_plugin_ifnet_la_LIBADD = \
@@ -398,8 +402,7 @@ lib_ifnet_io_la_CPPFLAGS = \
 		           $(DBUS_CFLAGS) \
 		           -DG_DISABLE_DEPRECATED \
 		           -DSYSCONFDIR=\"$(sysconfdir)\" \
-		           -DSBINDIR=\"$(sbindir)\"\
-			   -g
+		           -DSBINDIR=\"$(sbindir)\"
 
 lib_ifnet_io_la_LIBADD = \
 			 $(top_builddir)/libnm-util/libnm-util.la \
