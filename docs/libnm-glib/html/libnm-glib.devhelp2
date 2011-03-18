@@ -11,25 +11,25 @@
       <sub name="NMSerialDevice" link="NMSerialDevice.html"/>
       <sub name="NMGsmDevice" link="NMGsmDevice.html"/>
       <sub name="NMCdmaDevice" link="NMCdmaDevice.html"/>
-      <sub name="NMDeviceBt" link="libnm-glib-NMDeviceBt.html"/>
+      <sub name="NMDeviceBt" link="NMDeviceBt.html"/>
       <sub name="NMAccessPoint" link="NMAccessPoint.html"/>
       <sub name="NMIP4Config" link="NMIP4Config.html"/>
       <sub name="NMIP6Config" link="NMIP6Config.html"/>
       <sub name="NMDHCP4Config" link="NMDHCP4Config.html"/>
       <sub name="NMDHCP6Config" link="NMDHCP6Config.html"/>
-      <sub name="NMExportedConnection" link="libnm-glib-NMExportedConnection.html"/>
+      <sub name="NMExportedConnection" link="NMExportedConnection.html"/>
       <sub name="NMObject" link="NMObject.html"/>
-      <sub name="NMRemoteConnection" link="libnm-glib-NMRemoteConnection.html"/>
-      <sub name="NMRemoteSettings" link="libnm-glib-NMRemoteSettings.html"/>
+      <sub name="NMRemoteConnection" link="NMRemoteConnection.html"/>
+      <sub name="NMRemoteSettings" link="NMRemoteSettings.html"/>
       <sub name="NMRemoteSettingsSystem" link="libnm-glib-NMRemoteSettingsSystem.html"/>
-      <sub name="nm-settings-connection-interface" link="libnm-glib-NMSettingsConnection.html"/>
-      <sub name="nm-settings-interface" link="libnm-glib-NMSettings.html"/>
+      <sub name="NMSettingsConnection" link="libnm-glib-NMSettingsConnection.html"/>
+      <sub name="NMSettings" link="libnm-glib-NMSettings.html"/>
       <sub name="NMSettingsService" link="libnm-glib-NMSettingsService.html"/>
-      <sub name="nm-settings-system-interface" link="libnm-glib-NMSettingsSystem.html"/>
+      <sub name="NMSettingsSystem" link="libnm-glib-NMSettingsSystem.html"/>
       <sub name="nm-types" link="libnm-glib-nm-types.html"/>
-      <sub name="NMVPNConnection" link="libnm-glib-NMVPNConnection.html"/>
+      <sub name="NMVPNConnection" link="NMVPNConnection.html"/>
       <sub name="NMVPNPlugin" link="libnm-glib-NMVPNPlugin.html"/>
-      <sub name="nm-vpn-plugin-ui-interface" link="libnm-glib-NMVpnPluginUi.html"/>
+      <sub name="NMVpnPluginUi" link="libnm-glib-NMVpnPluginUi.html"/>
     </sub>
   </chapters>
   <functions>
@@ -139,6 +139,7 @@
     <keyword type="property" name="The &quot;driver&quot; property" link="NMDevice.html#NMDevice--driver"/>
     <keyword type="property" name="The &quot;firmware-missing&quot; property" link="NMDevice.html#NMDevice--firmware-missing"/>
     <keyword type="property" name="The &quot;interface&quot; property" link="NMDevice.html#NMDevice--interface"/>
+    <keyword type="property" name="The &quot;ip-interface&quot; property" link="NMDevice.html#NMDevice--ip-interface"/>
     <keyword type="property" name="The &quot;ip4-config&quot; property" link="NMDevice.html#NMDevice--ip4-config"/>
     <keyword type="property" name="The &quot;ip6-config&quot; property" link="NMDevice.html#NMDevice--ip6-config"/>
     <keyword type="property" name="The &quot;managed&quot; property" link="NMDevice.html#NMDevice--managed"/>
@@ -198,15 +199,18 @@
     <keyword type="struct" name="NMCdmaDevice" link="NMCdmaDevice.html#NMCdmaDevice-struct"/>
     <keyword type="struct" name="NMCdmaDeviceClass" link="NMCdmaDevice.html#NMCdmaDeviceClass"/>
     <keyword type="function" name="nm_cdma_device_new ()" link="NMCdmaDevice.html#nm-cdma-device-new"/>
-    <keyword type="macro" name="NM_DEVICE_BT_HW_ADDRESS" link="libnm-glib-NMDeviceBt.html#NM-DEVICE-BT-HW-ADDRESS:CAPS"/>
-    <keyword type="macro" name="NM_DEVICE_BT_NAME" link="libnm-glib-NMDeviceBt.html#NM-DEVICE-BT-NAME:CAPS"/>
-    <keyword type="macro" name="NM_DEVICE_BT_CAPABILITIES" link="libnm-glib-NMDeviceBt.html#NM-DEVICE-BT-CAPABILITIES:CAPS"/>
-    <keyword type="struct" name="NMDeviceBt" link="libnm-glib-NMDeviceBt.html#NMDeviceBt"/>
-    <keyword type="struct" name="NMDeviceBtClass" link="libnm-glib-NMDeviceBt.html#NMDeviceBtClass"/>
-    <keyword type="function" name="nm_device_bt_new ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-new"/>
-    <keyword type="function" name="nm_device_bt_get_hw_address ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-get-hw-address"/>
-    <keyword type="function" name="nm_device_bt_get_name ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-get-name"/>
-    <keyword type="function" name="nm_device_bt_get_capabilities ()" link="libnm-glib-NMDeviceBt.html#nm-device-bt-get-capabilities"/>
+    <keyword type="macro" name="NM_DEVICE_BT_HW_ADDRESS" link="NMDeviceBt.html#NM-DEVICE-BT-HW-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BT_NAME" link="NMDeviceBt.html#NM-DEVICE-BT-NAME:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BT_CAPABILITIES" link="NMDeviceBt.html#NM-DEVICE-BT-CAPABILITIES:CAPS"/>
+    <keyword type="struct" name="NMDeviceBt" link="NMDeviceBt.html#NMDeviceBt-struct"/>
+    <keyword type="struct" name="NMDeviceBtClass" link="NMDeviceBt.html#NMDeviceBtClass"/>
+    <keyword type="function" name="nm_device_bt_new ()" link="NMDeviceBt.html#nm-device-bt-new"/>
+    <keyword type="function" name="nm_device_bt_get_hw_address ()" link="NMDeviceBt.html#nm-device-bt-get-hw-address"/>
+    <keyword type="function" name="nm_device_bt_get_name ()" link="NMDeviceBt.html#nm-device-bt-get-name"/>
+    <keyword type="function" name="nm_device_bt_get_capabilities ()" link="NMDeviceBt.html#nm-device-bt-get-capabilities"/>
+    <keyword type="property" name="The &quot;bt-capabilities&quot; property" link="NMDeviceBt.html#NMDeviceBt--bt-capabilities"/>
+    <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceBt.html#NMDeviceBt--hw-address"/>
+    <keyword type="property" name="The &quot;name&quot; property" link="NMDeviceBt.html#NMDeviceBt--name"/>
     <keyword type="macro" name="NM_ACCESS_POINT_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_WPA_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-WPA-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_RSN_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-RSN-FLAGS:CAPS"/>
@@ -286,9 +290,10 @@
     <keyword type="function" name="nm_dhcp6_config_new ()" link="NMDHCP6Config.html#nm-dhcp6-config-new"/>
     <keyword type="function" name="nm_dhcp6_config_get_options ()" link="NMDHCP6Config.html#nm-dhcp6-config-get-options"/>
     <keyword type="function" name="nm_dhcp6_config_get_one_option ()" link="NMDHCP6Config.html#nm-dhcp6-config-get-one-option"/>
-    <keyword type="struct" name="NMExportedConnection" link="libnm-glib-NMExportedConnection.html#NMExportedConnection"/>
-    <keyword type="struct" name="NMExportedConnectionClass" link="libnm-glib-NMExportedConnection.html#NMExportedConnectionClass"/>
-    <keyword type="function" name="nm_exported_connection_new ()" link="libnm-glib-NMExportedConnection.html#nm-exported-connection-new"/>
+    <keyword type="property" name="The &quot;options&quot; property" link="NMDHCP6Config.html#NMDHCP6Config--options"/>
+    <keyword type="struct" name="NMExportedConnection" link="NMExportedConnection.html#NMExportedConnection-struct"/>
+    <keyword type="struct" name="NMExportedConnectionClass" link="NMExportedConnection.html#NMExportedConnectionClass"/>
+    <keyword type="function" name="nm_exported_connection_new ()" link="NMExportedConnection.html#nm-exported-connection-new"/>
     <keyword type="macro" name="NM_OBJECT_DBUS_CONNECTION" link="NMObject.html#NM-OBJECT-DBUS-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_OBJECT_DBUS_PATH" link="NMObject.html#NM-OBJECT-DBUS-PATH:CAPS"/>
     <keyword type="struct" name="NMObject" link="NMObject.html#NMObject-struct"/>
@@ -297,21 +302,26 @@
     <keyword type="function" name="nm_object_get_path ()" link="NMObject.html#nm-object-get-path"/>
     <keyword type="property" name="The &quot;dbus-connection&quot; property" link="NMObject.html#NMObject--dbus-connection"/>
     <keyword type="property" name="The &quot;dbus-path&quot; property" link="NMObject.html#NMObject--dbus-path"/>
-    <keyword type="struct" name="NMRemoteConnection" link="libnm-glib-NMRemoteConnection.html#NMRemoteConnection"/>
-    <keyword type="struct" name="NMRemoteConnectionClass" link="libnm-glib-NMRemoteConnection.html#NMRemoteConnectionClass"/>
-    <keyword type="function" name="nm_remote_connection_new ()" link="libnm-glib-NMRemoteConnection.html#nm-remote-connection-new"/>
-    <keyword type="macro" name="NM_REMOTE_SETTINGS_BUS" link="libnm-glib-NMRemoteSettings.html#NM-REMOTE-SETTINGS-BUS:CAPS"/>
-    <keyword type="macro" name="NM_REMOTE_SETTINGS_SCOPE" link="libnm-glib-NMRemoteSettings.html#NM-REMOTE-SETTINGS-SCOPE:CAPS"/>
-    <keyword type="macro" name="NM_REMOTE_SETTINGS_SERVICE_RUNNING" link="libnm-glib-NMRemoteSettings.html#NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS"/>
-    <keyword type="struct" name="NMRemoteSettings" link="libnm-glib-NMRemoteSettings.html#NMRemoteSettings"/>
-    <keyword type="struct" name="NMRemoteSettingsClass" link="libnm-glib-NMRemoteSettings.html#NMRemoteSettingsClass"/>
-    <keyword type="function" name="nm_remote_settings_new ()" link="libnm-glib-NMRemoteSettings.html#nm-remote-settings-new"/>
+    <keyword type="struct" name="NMRemoteConnection" link="NMRemoteConnection.html#NMRemoteConnection-struct"/>
+    <keyword type="struct" name="NMRemoteConnectionClass" link="NMRemoteConnection.html#NMRemoteConnectionClass"/>
+    <keyword type="function" name="nm_remote_connection_new ()" link="NMRemoteConnection.html#nm-remote-connection-new"/>
+    <keyword type="property" name="The &quot;bus&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--bus"/>
+    <keyword type="property" name="The &quot;init-result&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--init-result"/>
+    <keyword type="macro" name="NM_REMOTE_SETTINGS_BUS" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-BUS:CAPS"/>
+    <keyword type="macro" name="NM_REMOTE_SETTINGS_SCOPE" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-SCOPE:CAPS"/>
+    <keyword type="macro" name="NM_REMOTE_SETTINGS_SERVICE_RUNNING" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS"/>
+    <keyword type="struct" name="NMRemoteSettings" link="NMRemoteSettings.html#NMRemoteSettings-struct"/>
+    <keyword type="struct" name="NMRemoteSettingsClass" link="NMRemoteSettings.html#NMRemoteSettingsClass"/>
+    <keyword type="function" name="nm_remote_settings_new ()" link="NMRemoteSettings.html#nm-remote-settings-new"/>
+    <keyword type="property" name="The &quot;bus&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--bus"/>
+    <keyword type="property" name="The &quot;scope&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--scope"/>
+    <keyword type="property" name="The &quot;service-running&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--service-running"/>
     <keyword type="struct" name="NMRemoteSettingsSystem" link="libnm-glib-NMRemoteSettingsSystem.html#NMRemoteSettingsSystem"/>
     <keyword type="struct" name="NMRemoteSettingsSystemClass" link="libnm-glib-NMRemoteSettingsSystem.html#NMRemoteSettingsSystemClass"/>
     <keyword type="function" name="nm_remote_settings_system_new ()" link="libnm-glib-NMRemoteSettingsSystem.html#nm-remote-settings-system-new"/>
     <keyword type="macro" name="NM_SETTINGS_CONNECTION_INTERFACE_UPDATED" link="libnm-glib-NMSettingsConnection.html#NM-SETTINGS-CONNECTION-INTERFACE-UPDATED:CAPS"/>
     <keyword type="macro" name="NM_SETTINGS_CONNECTION_INTERFACE_REMOVED" link="libnm-glib-NMSettingsConnection.html#NM-SETTINGS-CONNECTION-INTERFACE-REMOVED:CAPS"/>
-    <keyword type="struct" name="NMSettingsConnectionInterface" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface"/>
+    <keyword type="struct" name="NMSettingsConnectionInterface" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterface-struct"/>
     <keyword type="function" name="NMSettingsConnectionInterfaceUpdateFunc ()" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterfaceUpdateFunc"/>
     <keyword type="function" name="NMSettingsConnectionInterfaceDeleteFunc ()" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterfaceDeleteFunc"/>
     <keyword type="function" name="NMSettingsConnectionInterfaceGetSecretsFunc ()" link="libnm-glib-NMSettingsConnection.html#NMSettingsConnectionInterfaceGetSecretsFunc"/>
@@ -325,7 +335,7 @@
     <keyword type="macro" name="NM_TYPE_SETTINGS_INTERFACE_ERROR" link="libnm-glib-NMSettings.html#NM-TYPE-SETTINGS-INTERFACE-ERROR:CAPS"/>
     <keyword type="macro" name="NM_SETTINGS_INTERFACE_NEW_CONNECTION" link="libnm-glib-NMSettings.html#NM-SETTINGS-INTERFACE-NEW-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_SETTINGS_INTERFACE_CONNECTIONS_READ" link="libnm-glib-NMSettings.html#NM-SETTINGS-INTERFACE-CONNECTIONS-READ:CAPS"/>
-    <keyword type="struct" name="NMSettingsInterface" link="libnm-glib-NMSettings.html#NMSettingsInterface"/>
+    <keyword type="struct" name="NMSettingsInterface" link="libnm-glib-NMSettings.html#NMSettingsInterface-struct"/>
     <keyword type="function" name="NMSettingsAddConnectionFunc ()" link="libnm-glib-NMSettings.html#NMSettingsAddConnectionFunc"/>
     <keyword type="function" name="nm_settings_interface_get_type ()" link="libnm-glib-NMSettings.html#nm-settings-interface-get-type"/>
     <keyword type="function" name="nm_settings_interface_list_connections ()" link="libnm-glib-NMSettings.html#nm-settings-interface-list-connections"/>
@@ -362,13 +372,16 @@
     <keyword type="function" name="nm_ip6_address_array_get_type ()" link="libnm-glib-nm-types.html#nm-ip6-address-array-get-type"/>
     <keyword type="macro" name="NM_TYPE_IP6_ROUTE_OBJECT_ARRAY" link="libnm-glib-nm-types.html#NM-TYPE-IP6-ROUTE-OBJECT-ARRAY:CAPS"/>
     <keyword type="function" name="nm_ip6_route_object_array_get_type ()" link="libnm-glib-nm-types.html#nm-ip6-route-object-array-get-type"/>
-    <keyword type="macro" name="NM_VPN_CONNECTION_VPN_STATE" link="libnm-glib-NMVPNConnection.html#NM-VPN-CONNECTION-VPN-STATE:CAPS"/>
-    <keyword type="macro" name="NM_VPN_CONNECTION_BANNER" link="libnm-glib-NMVPNConnection.html#NM-VPN-CONNECTION-BANNER:CAPS"/>
-    <keyword type="struct" name="NMVPNConnection" link="libnm-glib-NMVPNConnection.html#NMVPNConnection"/>
-    <keyword type="struct" name="NMVPNConnectionClass" link="libnm-glib-NMVPNConnection.html#NMVPNConnectionClass"/>
-    <keyword type="function" name="nm_vpn_connection_new ()" link="libnm-glib-NMVPNConnection.html#nm-vpn-connection-new"/>
-    <keyword type="function" name="nm_vpn_connection_get_vpn_state ()" link="libnm-glib-NMVPNConnection.html#nm-vpn-connection-get-vpn-state"/>
-    <keyword type="function" name="nm_vpn_connection_get_banner ()" link="libnm-glib-NMVPNConnection.html#nm-vpn-connection-get-banner"/>
+    <keyword type="macro" name="NM_VPN_CONNECTION_VPN_STATE" link="NMVPNConnection.html#NM-VPN-CONNECTION-VPN-STATE:CAPS"/>
+    <keyword type="macro" name="NM_VPN_CONNECTION_BANNER" link="NMVPNConnection.html#NM-VPN-CONNECTION-BANNER:CAPS"/>
+    <keyword type="struct" name="NMVPNConnection" link="NMVPNConnection.html#NMVPNConnection-struct"/>
+    <keyword type="struct" name="NMVPNConnectionClass" link="NMVPNConnection.html#NMVPNConnectionClass"/>
+    <keyword type="function" name="nm_vpn_connection_new ()" link="NMVPNConnection.html#nm-vpn-connection-new"/>
+    <keyword type="function" name="nm_vpn_connection_get_vpn_state ()" link="NMVPNConnection.html#nm-vpn-connection-get-vpn-state"/>
+    <keyword type="function" name="nm_vpn_connection_get_banner ()" link="NMVPNConnection.html#nm-vpn-connection-get-banner"/>
+    <keyword type="property" name="The &quot;banner&quot; property" link="NMVPNConnection.html#NMVPNConnection--banner"/>
+    <keyword type="property" name="The &quot;vpn-state&quot; property" link="NMVPNConnection.html#NMVPNConnection--vpn-state"/>
+    <keyword type="signal" name="The &quot;vpn-state-changed&quot; signal" link="NMVPNConnection.html#NMVPNConnection-vpn-state-changed"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_DBUS_SERVICE_NAME" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-DBUS-SERVICE-NAME:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_STATE" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-STATE:CAPS"/>
     <keyword type="enum" name="enum NMVPNPluginError" link="libnm-glib-NMVPNPlugin.html#NMVPNPluginError"/>

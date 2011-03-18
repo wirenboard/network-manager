@@ -1,5 +1,5 @@
 <!-- ##### SECTION Title ##### -->
-nm-settings-system-interface
+NMSettingsSystem
 
 <!-- ##### SECTION Short_Description ##### -->
 
@@ -9,10 +9,12 @@ nm-settings-system-interface
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 

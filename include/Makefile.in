@@ -36,7 +36,7 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = include
 DIST_COMMON = $(NetworkManagerinclude_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in
+	$(srcdir)/Makefile.in $(srcdir)/nm-version.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/intltool.m4 \
@@ -48,7 +48,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = nm-version.h
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
@@ -176,6 +176,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -190,6 +194,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -271,12 +276,14 @@ EXTRA_DIST = \
      wireless-helper.h \
      nm-dbus-glib-types.h \
      nm-glib-compat.h \
-     nm-test-helpers.h
+     nm-test-helpers.h \
+     nm-version.h.in
 
 NetworkManagerincludedir = $(includedir)/NetworkManager
 NetworkManagerinclude_HEADERS = \
 	NetworkManager.h \
-	NetworkManagerVPN.h
+	NetworkManagerVPN.h \
+	nm-version.h
 
 all: all-am
 
@@ -311,6 +318,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+nm-version.h: $(top_builddir)/config.status $(srcdir)/nm-version.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
 	-rm -f *.lo

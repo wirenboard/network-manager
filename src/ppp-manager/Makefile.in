@@ -82,15 +82,19 @@ libppp_manager_la_OBJECTS = $(am_libppp_manager_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
-nm_pppd_plugin_la_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_nm_pppd_plugin_la_OBJECTS = nm_pppd_plugin_la-nm-pppd-plugin.lo
+@WITH_PPP_TRUE@nm_pppd_plugin_la_DEPENDENCIES =  \
+@WITH_PPP_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@WITH_PPP_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__nm_pppd_plugin_la_SOURCES_DIST = nm-pppd-plugin.c nm-pppd-plugin.h \
+	nm-ppp-status.h
+@WITH_PPP_TRUE@am_nm_pppd_plugin_la_OBJECTS =  \
+@WITH_PPP_TRUE@	nm_pppd_plugin_la-nm-pppd-plugin.lo
 nm_pppd_plugin_la_OBJECTS = $(am_nm_pppd_plugin_la_OBJECTS)
 nm_pppd_plugin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(nm_pppd_plugin_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
+@WITH_PPP_TRUE@am_nm_pppd_plugin_la_rpath = -rpath $(pppd_plugindir)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -119,7 +123,7 @@ am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libppp_manager_la_SOURCES) $(nm_pppd_plugin_la_SOURCES)
 DIST_SOURCES = $(libppp_manager_la_SOURCES) \
-	$(nm_pppd_plugin_la_SOURCES)
+	$(am__nm_pppd_plugin_la_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -215,6 +219,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -229,6 +237,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -332,22 +341,22 @@ libppp_manager_la_LIBADD = \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
 
-pppd_plugindir = $(PPPD_PLUGIN_DIR)
-pppd_plugin_LTLIBRARIES = nm-pppd-plugin.la
-nm_pppd_plugin_la_SOURCES = \
-	nm-pppd-plugin.c \
-	nm-pppd-plugin.h \
-	nm-ppp-status.h
+@WITH_PPP_TRUE@pppd_plugindir = $(PPPD_PLUGIN_DIR)
+@WITH_PPP_TRUE@pppd_plugin_LTLIBRARIES = nm-pppd-plugin.la
+@WITH_PPP_TRUE@nm_pppd_plugin_la_SOURCES = \
+@WITH_PPP_TRUE@	nm-pppd-plugin.c \
+@WITH_PPP_TRUE@	nm-pppd-plugin.h \
+@WITH_PPP_TRUE@	nm-ppp-status.h
 
-nm_pppd_plugin_la_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS)
+@WITH_PPP_TRUE@nm_pppd_plugin_la_CPPFLAGS = \
+@WITH_PPP_TRUE@	$(DBUS_CFLAGS) \
+@WITH_PPP_TRUE@	$(GLIB_CFLAGS)
 
-nm_pppd_plugin_la_LDFLAGS = -module -avoid-version
-nm_pppd_plugin_la_LIBADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(DBUS_LIBS) \
-	$(GLIB_LIBS)
+@WITH_PPP_TRUE@nm_pppd_plugin_la_LDFLAGS = -module -avoid-version
+@WITH_PPP_TRUE@nm_pppd_plugin_la_LIBADD = \
+@WITH_PPP_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@WITH_PPP_TRUE@	$(DBUS_LIBS) \
+@WITH_PPP_TRUE@	$(GLIB_LIBS)
 
 BUILT_SOURCES = nm-ppp-manager-glue.h
 CLEANFILES = $(BUILT_SOURCES)
@@ -429,7 +438,7 @@ clean-pppd_pluginLTLIBRARIES:
 libppp-manager.la: $(libppp_manager_la_OBJECTS) $(libppp_manager_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libppp_manager_la_OBJECTS) $(libppp_manager_la_LIBADD) $(LIBS)
 nm-pppd-plugin.la: $(nm_pppd_plugin_la_OBJECTS) $(nm_pppd_plugin_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(nm_pppd_plugin_la_LINK) -rpath $(pppd_plugindir) $(nm_pppd_plugin_la_OBJECTS) $(nm_pppd_plugin_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(nm_pppd_plugin_la_LINK) $(am_nm_pppd_plugin_la_rpath) $(nm_pppd_plugin_la_OBJECTS) $(nm_pppd_plugin_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

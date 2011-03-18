@@ -57,7 +57,8 @@ libdns_manager_la_DEPENDENCIES =  \
 am_libdns_manager_la_OBJECTS = libdns_manager_la-nm-dns-manager.lo \
 	libdns_manager_la-nm-dns-plugin.lo \
 	libdns_manager_la-nm-dns-dnsmasq.lo \
-	libdns_manager_la-nm-dns-bind.lo
+	libdns_manager_la-nm-dns-bind.lo \
+	libdns_manager_la-nm-dns-utils.lo
 libdns_manager_la_OBJECTS = $(am_libdns_manager_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -185,6 +186,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -199,6 +204,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -289,7 +295,9 @@ libdns_manager_la_SOURCES = \
 	nm-dns-dnsmasq.h \
 	nm-dns-dnsmasq.c \
 	nm-dns-bind.h \
-	nm-dns-bind.c
+	nm-dns-bind.c \
+	nm-dns-utils.h \
+	nm-dns-utils.c
 
 libdns_manager_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
@@ -357,6 +365,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdns_manager_la-nm-dns-dnsmasq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdns_manager_la-nm-dns-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdns_manager_la-nm-dns-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdns_manager_la-nm-dns-utils.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -416,6 +425,14 @@ libdns_manager_la-nm-dns-bind.lo: nm-dns-bind.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dns-bind.c' object='libdns_manager_la-nm-dns-bind.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdns_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libdns_manager_la-nm-dns-bind.lo `test -f 'nm-dns-bind.c' || echo '$(srcdir)/'`nm-dns-bind.c
+
+libdns_manager_la-nm-dns-utils.lo: nm-dns-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdns_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libdns_manager_la-nm-dns-utils.lo -MD -MP -MF $(DEPDIR)/libdns_manager_la-nm-dns-utils.Tpo -c -o libdns_manager_la-nm-dns-utils.lo `test -f 'nm-dns-utils.c' || echo '$(srcdir)/'`nm-dns-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libdns_manager_la-nm-dns-utils.Tpo $(DEPDIR)/libdns_manager_la-nm-dns-utils.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dns-utils.c' object='libdns_manager_la-nm-dns-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdns_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libdns_manager_la-nm-dns-utils.lo `test -f 'nm-dns-utils.c' || echo '$(srcdir)/'`nm-dns-utils.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

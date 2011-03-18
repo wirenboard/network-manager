@@ -3,11 +3,11 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMDHCP6Config</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
 <link rel="prev" href="NMDHCP4Config.html" title="NMDHCP4Config">
-<link rel="next" href="libnm-glib-NMExportedConnection.html" title="NMExportedConnection">
+<link rel="next" href="NMExportedConnection.html" title="NMExportedConnection">
 <meta name="generator" content="GTK-Doc V1.15 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -18,7 +18,7 @@
 <td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
-<td><a accesskey="n" href="libnm-glib-NMExportedConnection.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="NMExportedConnection.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
 <a href="#NMDHCP6Config.synopsis" class="shortcut">Top</a>
@@ -26,6 +26,8 @@
                   <a href="#NMDHCP6Config.description" class="shortcut">Description</a>
                    | 
                   <a href="#NMDHCP6Config.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#NMDHCP6Config.properties" class="shortcut">Properties</a>
 </td></tr>
 </table>
 <div class="refentry" title="NMDHCP6Config">
@@ -55,6 +57,12 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMDHC
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
    +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
          +----NMDHCP6Config
+</pre>
+</div>
+<div class="refsect1" title="Properties">
+<a name="NMDHCP6Config.properties"></a><h2>Properties</h2>
+<pre class="synopsis">
+  "<a class="link" href="NMDHCP6Config.html#NMDHCP6Config--options" title='The "options" property'>options</a>"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>*           : Read
 </pre>
 </div>
 <div class="refsect1" title="Description">
@@ -178,6 +186,16 @@ configuration, and must not be modified.
 </tr>
 </tbody>
 </table></div>
+</div>
+</div>
+<div class="refsect1" title="Property Details">
+<a name="NMDHCP6Config.property-details"></a><h2>Property Details</h2>
+<div class="refsect2" title='The "options" property'>
+<a name="NMDHCP6Config--options"></a><h3>The <code class="literal">"options"</code> property</h3>
+<pre class="programlisting">  "options"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>*           : Read</pre>
+<p>
+The <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing options of the configuration.
+</p>
 </div>
 </div>
 </div>

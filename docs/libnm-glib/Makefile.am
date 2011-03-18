@@ -75,11 +75,17 @@ GTKDOC_CFLAGS =				\
 	$(GLIB_CFLAGS)			\
 	$(DBUS_CFLAGS)
 
-GTKDOC_LIBS = $(top_builddir)/libnm-glib/libnm-glib.la
+GTKDOC_LIBS =  \
+	$(top_builddir)/libnm-glib/libnm-glib.la \
+	$(GLIB_LIBS)
 
 
 # include common portion ...
 include $(top_srcdir)/gtk-doc.make
 
-CLEANFILES += libnm-glib-sections.txt
+CLEANFILES += \
+	libnm-glib-sections.txt \
+	html/* \
+	tmpl/* \
+	xml/*
 

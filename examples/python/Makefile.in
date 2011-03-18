@@ -149,6 +149,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -163,6 +167,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -241,10 +246,7 @@ top_srcdir = @top_srcdir@
 EXTRA_DIST = \
 	nm-state.py \
 	add-system-connection.py \
-	vpn.py \
-	list-connections.py \
-	show-bssids.py \
-	disconnect-device.py
+	add-system-wifi-connection.py
 
 all: all-am
 
@@ -430,6 +432,10 @@ uninstall-am:
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am
 
+	vpn.py \
+	list-connections.py \
+	show-bssids.py \
+	disconnect-device.py
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

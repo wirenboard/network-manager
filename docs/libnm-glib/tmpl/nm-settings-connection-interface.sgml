@@ -1,5 +1,5 @@
 <!-- ##### SECTION Title ##### -->
-nm-settings-connection-interface
+NMSettingsConnection
 
 <!-- ##### SECTION Short_Description ##### -->
 
@@ -9,10 +9,12 @@ nm-settings-connection-interface
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -39,19 +41,6 @@ nm-settings-connection-interface
 
 </para>
 
-@g_iface: 
-@update: 
-@delete: 
-@get_secrets: 
-@emit_updated: 
-@updated: 
-@removed: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
 
 <!-- ##### USER_FUNCTION NMSettingsConnectionInterfaceUpdateFunc ##### -->
 <para>

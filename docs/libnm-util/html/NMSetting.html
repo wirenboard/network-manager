@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSetting</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMConnection.html" title="NMConnection">
@@ -73,6 +73,12 @@ enum                <a class="link" href="NMSetting.html#NMSettingCompareFlags" 
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSetting.html#nm-setting-compare" title="nm_setting_compare ()">nm_setting_compare</a>                  (<em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *a</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *b</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMSetting.html#NMSettingCompareFlags" title="enum NMSettingCompareFlags"><span class="type">NMSettingCompareFlags</span></a> flags</code></em>);
+enum                <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult">NMSettingDiffResult</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSetting.html#nm-setting-diff" title="nm_setting_diff ()">nm_setting_diff</a>                     (<em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *a</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *b</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="NMSetting.html#NMSettingCompareFlags" title="enum NMSettingCompareFlags"><span class="type">NMSettingCompareFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> invert_results</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> **results</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="NMSetting.html#nm-setting-enumerate-values" title="nm_setting_enumerate_values ()">nm_setting_enumerate_values</a>         (<em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *setting</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMSetting.html#NMSettingValueIterFn" title="NMSettingValueIterFn ()"><span class="type">NMSettingValueIterFn</span></a> func</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
@@ -555,6 +561,94 @@ for a description of each flag's behavior.
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
 <td> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the comparison succeeds, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it does not
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="enum NMSettingDiffResult">
+<a name="NMSettingDiffResult"></a><h3>enum NMSettingDiffResult</h3>
+<pre class="programlisting">typedef enum {
+	NM_SETTING_DIFF_RESULT_UNKNOWN = 0x00000000,
+	NM_SETTING_DIFF_RESULT_IN_A =    0x00000001,
+	NM_SETTING_DIFF_RESULT_IN_B =    0x00000002,
+} NMSettingDiffResult;
+</pre>
+<p>
+These values indicate the result of a setting difference operation.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_SETTING_DIFF_RESULT_UNKNOWN</code></span></p></td>
+<td>unknown result
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-DIFF-RESULT-IN-A:CAPS"></a><span class="term"><code class="literal">NM_SETTING_DIFF_RESULT_IN_A</code></span></p></td>
+<td>the property is present in setting A
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-DIFF-RESULT-IN-B:CAPS"></a><span class="term"><code class="literal">NM_SETTING_DIFF_RESULT_IN_B</code></span></p></td>
+<td>the property is present in setting B
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2" title="nm_setting_diff ()">
+<a name="nm-setting-diff"></a><h3>nm_setting_diff ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_diff                     (<em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *a</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *b</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="NMSetting.html#NMSettingCompareFlags" title="enum NMSettingCompareFlags"><span class="type">NMSettingCompareFlags</span></a> flags</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> invert_results</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> **results</code></em>);</pre>
+<p>
+Compares two <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> objects for similarity, with comparison behavior
+modified by a set of flags.  See the documentation for <a class="link" href="NMSetting.html#NMSettingCompareFlags" title="enum NMSettingCompareFlags"><span class="type">NMSettingCompareFlags</span></a>
+for a description of each flag's behavior.  If the settings differ, the keys
+of each setting that differ from the other are added to <em class="parameter"><code>results</code></em>, mapped to
+one or more <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult"><span class="type">NMSettingDiffResult</span></a> values.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>a</code></em> :</span></p></td>
+<td>a <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>b</code></em> :</span></p></td>
+<td>a second <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> to compare with the first
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>flags</code></em> :</span></p></td>
+<td>compare flags, e.g. <a class="link" href="NMSetting.html#NM-SETTING-COMPARE-FLAG-EXACT:CAPS"><code class="literal">NM_SETTING_COMPARE_FLAG_EXACT</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>invert_results</code></em> :</span></p></td>
+<td>this parameter is used internally by libnm-util and should
+be set to <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a>.  If <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> inverts the meaning of the <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult"><span class="type">NMSettingDiffResult</span></a>.
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>results</code></em> :</span></p></td>
+<td> if the settings differ, on return a
+hash table mapping the differing keys to one or more <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult"><span class="type">NMSettingDiffResult</span></a>
+values OR-ed together.  If the settings do not differ, any hash table passed
+in is unmodified.  If no hash table is passed in, a new one is created. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 guint32]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td> <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the settings contain the same values, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if they do not
 </td>
 </tr>
 </tbody>

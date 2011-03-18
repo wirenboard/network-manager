@@ -9,10 +9,12 @@ NMRemoteSettings
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -46,7 +48,21 @@ NMRemoteSettings
 
 </para>
 
-@parent: 
+
+<!-- ##### ARG NMRemoteSettings:bus ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMRemoteSettings:scope ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMRemoteSettings:service-running ##### -->
+<para>
+
+</para>
 
 <!-- ##### STRUCT NMRemoteSettingsClass ##### -->
 <para>

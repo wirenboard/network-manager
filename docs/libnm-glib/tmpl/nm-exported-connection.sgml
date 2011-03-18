@@ -9,10 +9,12 @@ NMExportedConnection
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -25,7 +27,6 @@ NMExportedConnection
 
 </para>
 
-@parent: 
 
 <!-- ##### STRUCT NMExportedConnectionClass ##### -->
 <para>

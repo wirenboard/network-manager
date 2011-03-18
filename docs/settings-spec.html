@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>NetworkManager 0.8.2 Settings Specification</title></head>
+<title>NetworkManager 0.8.3.998 Settings Specification</title></head>
 <body>
 <p><h2>Setting name: '802-1x'</h2></p>
 <table cellspacing=10 border=0 cellpadding=2>
@@ -157,7 +157,7 @@
 <td><strong>type</strong></td>
 <td>string</td>
 <td></td>
-<td>Either 'dun' for Dial-Up Networking connections (not yet supported)  or 'panu' for Personal Area Networking connections.</td>
+<td>Either 'dun' for Dial-Up Networking connections or 'panu' for Personal Area Networking connections.</td>
 </tr>
 </table><br/>
 <p><h2>Setting name: 'cdma'</h2></p>
@@ -382,7 +382,7 @@
 <tr align=left valign=top>
 <td><strong>dhcp-send-hostname</strong></td>
 <td>boolean</td>
-<td>FALSE</td>
+<td>TRUE</td>
 <td>If TRUE, a hostname is sent to the DHCP server when acquiring a lease.  Some DHCP servers use this hostname to update DNS databases, essentially providing a static hostname for the computer.  If the 'dhcp-hostname' property is empty and this property is TRUE, the current persistent hostname of the computer is sent.</td>
 </tr>
 <tr align=left valign=top>

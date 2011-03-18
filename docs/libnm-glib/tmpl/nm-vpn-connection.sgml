@@ -9,10 +9,12 @@ NMVPNConnection
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -39,7 +41,25 @@ NMVPNConnection
 
 </para>
 
-@parent: 
+
+<!-- ##### SIGNAL NMVPNConnection::vpn-state-changed ##### -->
+<para>
+
+</para>
+
+@nmvpnconnection: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### ARG NMVPNConnection:banner ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMVPNConnection:vpn-state ##### -->
+<para>
+
+</para>
 
 <!-- ##### STRUCT NMVPNConnectionClass ##### -->
 <para>

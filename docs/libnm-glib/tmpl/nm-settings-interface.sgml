@@ -1,5 +1,5 @@
 <!-- ##### SECTION Title ##### -->
-nm-settings-interface
+NMSettings
 
 <!-- ##### SECTION Short_Description ##### -->
 
@@ -9,10 +9,12 @@ nm-settings-interface
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -75,18 +77,6 @@ nm-settings-interface
 
 </para>
 
-@g_iface: 
-@list_connections: 
-@get_connection_by_path: 
-@add_connection: 
-@new_connection: 
-@connections_read: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
 
 <!-- ##### USER_FUNCTION NMSettingsAddConnectionFunc ##### -->
 <para>

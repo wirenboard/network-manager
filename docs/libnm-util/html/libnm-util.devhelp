@@ -24,6 +24,7 @@
     </sub>
     <sub name="Object Hierarchy" link="object-tree.html"/>
     <sub name="API Index" link="api-index-full.html"/>
+    <sub name="Annotation Glossary" link="annotation-glossary.html"/>
   </chapters>
   <functions>
     <function name="enum NMConnectionScope" link="NMConnection.html#NMConnectionScope"/>
@@ -45,6 +46,7 @@
     <function name="nm_connection_get_setting_by_name ()" link="NMConnection.html#nm-connection-get-setting-by-name"/>
     <function name="nm_connection_replace_settings ()" link="NMConnection.html#nm-connection-replace-settings"/>
     <function name="nm_connection_compare ()" link="NMConnection.html#nm-connection-compare"/>
+    <function name="nm_connection_diff ()" link="NMConnection.html#nm-connection-diff"/>
     <function name="nm_connection_verify ()" link="NMConnection.html#nm-connection-verify"/>
     <function name="nm_connection_need_secrets ()" link="NMConnection.html#nm-connection-need-secrets"/>
     <function name="nm_connection_clear_secrets ()" link="NMConnection.html#nm-connection-clear-secrets"/>
@@ -82,6 +84,8 @@
     <function name="nm_setting_verify ()" link="NMSetting.html#nm-setting-verify"/>
     <function name="enum NMSettingCompareFlags" link="NMSetting.html#NMSettingCompareFlags"/>
     <function name="nm_setting_compare ()" link="NMSetting.html#nm-setting-compare"/>
+    <function name="enum NMSettingDiffResult" link="NMSetting.html#NMSettingDiffResult"/>
+    <function name="nm_setting_diff ()" link="NMSetting.html#nm-setting-diff"/>
     <function name="nm_setting_enumerate_values ()" link="NMSetting.html#nm-setting-enumerate-values"/>
     <function name="nm_setting_to_string ()" link="NMSetting.html#nm-setting-to-string"/>
     <function name="nm_setting_clear_secrets ()" link="NMSetting.html#nm-setting-clear-secrets"/>

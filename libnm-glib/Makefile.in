@@ -269,6 +269,10 @@ MSGFMT_OPTS = @MSGFMT_OPTS@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
+NM_MICRO_VERSION = @NM_MICRO_VERSION@
+NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
 OBJDUMP = @OBJDUMP@
@@ -283,6 +287,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -410,7 +415,6 @@ lib_LTLIBRARIES = libnm-glib.la libnm-glib-vpn.la
 libnm_glib_la_CFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	$(GCONF_CFLAGS) \
 	$(GUDEV_CFLAGS)
 
 libnmincludedir = $(includedir)/libnm-glib
@@ -485,11 +489,10 @@ libnm_glib_la_LIBADD = \
 	$(builddir)/libdeprecated-nm-glib.la \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
-	$(GCONF_LIBS) \
 	$(GUDEV_LIBS)
 
 libnm_glib_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib.ver \
-	-version-info "6:2:4"
+	-version-info "6:3:4"
 
 libnm_glib_test_SOURCES = libnm-glib-test.c
 libnm_glib_test_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)

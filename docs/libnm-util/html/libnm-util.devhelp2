@@ -24,6 +24,7 @@
     </sub>
     <sub name="Object Hierarchy" link="object-tree.html"/>
     <sub name="API Index" link="api-index-full.html"/>
+    <sub name="Annotation Glossary" link="annotation-glossary.html"/>
   </chapters>
   <functions>
     <keyword type="enum" name="enum NMConnectionScope" link="NMConnection.html#NMConnectionScope"/>
@@ -45,6 +46,7 @@
     <keyword type="function" name="nm_connection_get_setting_by_name ()" link="NMConnection.html#nm-connection-get-setting-by-name"/>
     <keyword type="function" name="nm_connection_replace_settings ()" link="NMConnection.html#nm-connection-replace-settings"/>
     <keyword type="function" name="nm_connection_compare ()" link="NMConnection.html#nm-connection-compare"/>
+    <keyword type="function" name="nm_connection_diff ()" link="NMConnection.html#nm-connection-diff"/>
     <keyword type="function" name="nm_connection_verify ()" link="NMConnection.html#nm-connection-verify"/>
     <keyword type="function" name="nm_connection_need_secrets ()" link="NMConnection.html#nm-connection-need-secrets"/>
     <keyword type="function" name="nm_connection_clear_secrets ()" link="NMConnection.html#nm-connection-clear-secrets"/>
@@ -82,6 +84,8 @@
     <keyword type="function" name="nm_setting_verify ()" link="NMSetting.html#nm-setting-verify"/>
     <keyword type="enum" name="enum NMSettingCompareFlags" link="NMSetting.html#NMSettingCompareFlags"/>
     <keyword type="function" name="nm_setting_compare ()" link="NMSetting.html#nm-setting-compare"/>
+    <keyword type="enum" name="enum NMSettingDiffResult" link="NMSetting.html#NMSettingDiffResult"/>
+    <keyword type="function" name="nm_setting_diff ()" link="NMSetting.html#nm-setting-diff"/>
     <keyword type="function" name="nm_setting_enumerate_values ()" link="NMSetting.html#nm-setting-enumerate-values"/>
     <keyword type="function" name="nm_setting_to_string ()" link="NMSetting.html#nm-setting-to-string"/>
     <keyword type="function" name="nm_setting_clear_secrets ()" link="NMSetting.html#nm-setting-clear-secrets"/>
@@ -846,6 +850,9 @@
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_FUZZY" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-FUZZY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_ID" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-ID:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_UNKNOWN" link="NMSetting.html#NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_A" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_B" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_UNKNOWN" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_INVALID_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-INVALID-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_MISSING_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-MISSING-PROPERTY:CAPS"/>

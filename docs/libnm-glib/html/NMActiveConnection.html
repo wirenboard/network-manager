@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMActiveConnection</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.0">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-glib Objects">
 <link rel="prev" href="NMClient.html" title="NMClient">
@@ -54,7 +54,7 @@
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMActiveConnection.html#nm-active-connection-get-service-name" title="nm_active_connection_get_service_name ()">nm_active_connection_get_service_name</a>
                                                         (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);
-<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnectionScope"><span class="returnvalue">NMConnectionScope</span></a>   <a class="link" href="NMActiveConnection.html#nm-active-connection-get-scope" title="nm_active_connection_get_scope ()">nm_active_connection_get_scope</a>      (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);
+<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html#NMConnectionScope"><span class="returnvalue">NMConnectionScope</span></a>   <a class="link" href="NMActiveConnection.html#nm-active-connection-get-scope" title="nm_active_connection_get_scope ()">nm_active_connection_get_scope</a>      (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMActiveConnection.html#nm-active-connection-get-connection" title="nm_active_connection_get_connection ()">nm_active_connection_get_connection</a> (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMActiveConnection.html#nm-active-connection-get-specific-object" title="nm_active_connection_get_specific_object ()">nm_active_connection_get_specific_object</a>
                                                         (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);
@@ -70,6 +70,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
    +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
          +----NMActiveConnection
+               +----<a class="link" href="NMVPNConnection.html" title="NMVPNConnection">NMVPNConnection</a>
 </pre>
 </div>
 <div class="refsect1" title="Properties">
@@ -228,7 +229,7 @@ connection, and must not be modified.
 <hr>
 <div class="refsect2" title="nm_active_connection_get_scope ()">
 <a name="nm-active-connection-get-scope"></a><h3>nm_active_connection_get_scope ()</h3>
-<pre class="programlisting"><a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnectionScope"><span class="returnvalue">NMConnectionScope</span></a>   nm_active_connection_get_scope      (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);</pre>
+<pre class="programlisting"><a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html#NMConnectionScope"><span class="returnvalue">NMConnectionScope</span></a>   nm_active_connection_get_scope      (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);</pre>
 <p>
 Gets the scope of the active connection.
 </p>
@@ -253,7 +254,7 @@ Gets the scope of the active connection.
 <a name="nm-active-connection-get-connection"></a><h3>nm_active_connection_get_connection ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *        nm_active_connection_get_connection (<em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *connection</code></em>);</pre>
 <p>
-Gets the <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html"><span class="type">NMConnection</span></a>'s DBus object path.
+Gets the <a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html"><span class="type">NMConnection</span></a>'s DBus object path.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -265,7 +266,7 @@ Gets the <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html"><span cl
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the object path of the <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html"><span class="type">NMConnection</span></a> inside of <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a>.
+<td> the object path of the <a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/NMConnection.html"><span class="type">NMConnection</span></a> inside of <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a>.
 This is the internal string used by the connection, and must not be modified.
 </td>
 </tr>
