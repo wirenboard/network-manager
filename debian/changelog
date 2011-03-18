@@ -1,4 +1,4 @@
-network-manager (0.8.3.998-1) UNRELEASED; urgency=low
+network-manager (0.8.3.998-1) unstable; urgency=low
 
   * New upstream release (0.8.4 rc1).
     - Store connection timestamps for system connections in
@@ -18,7 +18,7 @@ network-manager (0.8.3.998-1) UNRELEASED; urgency=low
   * Update debian/libnm-glib2.symbols and debian/libnm-util1.symbols.
   * Update debian/network-manager-dev.install, install nm-version.h.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 18 Mar 2011 20:18:32 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 18 Mar 2011 20:55:36 +0100
 
 network-manager (0.8.2-6) unstable; urgency=medium
 
