@@ -3,6 +3,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_connection_clear_secrets@Base 0.7.0
  nm_connection_compare@Base 0.7.0
  nm_connection_create_setting@Base 0.7.0
+ nm_connection_diff@Base 0.8.3.998
  nm_connection_dump@Base 0.7.0
  nm_connection_duplicate@Base 0.7.0
  nm_connection_error_get_type@Base 0.7.0
@@ -162,6 +163,7 @@ libnm-util.so.1 libnm-util1 #MINVER#
  nm_setting_connection_get_type@Base 0.7.0
  nm_setting_connection_get_uuid@Base 0.7.0
  nm_setting_connection_new@Base 0.7.0
+ nm_setting_diff@Base 0.8.3.998
  nm_setting_duplicate@Base 0.7.0
  nm_setting_enumerate_values@Base 0.7.0
  nm_setting_error_get_type@Base 0.7.0

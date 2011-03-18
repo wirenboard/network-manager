@@ -15,6 +15,7 @@ network-manager (0.8.3.998-1) UNRELEASED; urgency=low
     - d/p/81-keyfile-quiet-keyfile-plugin-when-re-read-connection.patch
     - d/p/82-core-handle-device-removal.patch
     - d/p/83-dnsmasq-send-no-config-file-instead-of-a-bogus-one.patch
+  * Update debian/libnm-glib2.symbols and debian/libnm-util1.symbols.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 18 Mar 2011 20:18:32 +0100
 

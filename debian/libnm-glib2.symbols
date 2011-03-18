@@ -60,6 +60,7 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_device_ethernet_new@Base 0.7.999
  nm_device_get_capabilities@Base 0.7.999
  nm_device_get_dhcp4_config@Base 0.7.999
+ nm_device_get_dhcp6_config@Base 0.8.3.998
  nm_device_get_driver@Base 0.7.999
  nm_device_get_firmware_missing@Base 0.8.2
  nm_device_get_iface@Base 0.7.999
@@ -86,6 +87,10 @@ libnm-glib.so.2 libnm-glib2 #MINVER#
  nm_dhcp4_config_get_options@Base 0.7.999
  nm_dhcp4_config_get_type@Base 0.7.999
  nm_dhcp4_config_new@Base 0.7.999
+ nm_dhcp6_config_get_one_option@Base 0.8.3.998
+ nm_dhcp6_config_get_options@Base 0.8.3.998
+ nm_dhcp6_config_get_type@Base 0.8.3.998
+ nm_dhcp6_config_new@Base 0.8.3.998
  nm_exported_connection_get_type@Base 0.7.999
  nm_exported_connection_new@Base 0.7.999
  nm_gsm_device_get_type@Base 0.7.999
