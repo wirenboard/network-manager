@@ -1,0 +1,164 @@
+<!-- ##### SECTION Title ##### -->
+nm-settings-connection-bindings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManager_Settings_Connection ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_update ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_properties: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManager_Settings_Connection_update_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_update_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_properties: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION dbus_g_proxy_begin_call ##### -->
+<para>
+
+</para>
+
+@Param1: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_delete ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManager_Settings_Connection_delete_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_delete_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_get_settings ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_settings: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManager_Settings_Connection_get_settings_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_settings: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_get_settings_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_get_secrets ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_setting_name: 
+@OUT_secrets: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManager_Settings_Connection_get_secrets_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_secrets: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManager_Settings_Connection_get_secrets_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_setting_name: 
+@callback: 
+@Returns: 
+
+
