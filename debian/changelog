@@ -2,6 +2,7 @@ network-manager (0.8.3.999-1) UNRELEASED; urgency=low
 
   * New upstream release (0.8.4 rc2).
   * Update debian/watch, switch to bzip2.
+  * Use dh_installinit -R instead of -r and stopping manually in postinst.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 04 Apr 2011 22:37:21 +0200
 
