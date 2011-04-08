@@ -30,11 +30,11 @@
 #include "NetworkManager.h"
 #include "NetworkManagerVPN.h"
 #include "nm-vpn-connection.h"
+#include "nm-device-interface.h"
 #include "nm-setting-connection.h"
 #include "nm-setting-vpn.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-dbus-manager.h"
-#include "nm-manager.h"
 #include "nm-system.h"
 #include "nm-logging.h"
 #include "nm-utils.h"
@@ -47,21 +47,22 @@
 #include "nm-dns-manager.h"
 #include "nm-netlink-monitor.h"
 #include "nm-glib-compat.h"
+#include "settings/nm-settings-connection.h"
 
 #include "nm-vpn-connection-glue.h"
 
-static void secrets_provider_interface_init (NMSecretsProviderInterface *sp_interface_class);
-
-G_DEFINE_TYPE_EXTENDED (NMVPNConnection, nm_vpn_connection, NM_TYPE_VPN_CONNECTION_BASE, 0,
-                        G_IMPLEMENT_INTERFACE (NM_TYPE_SECRETS_PROVIDER_INTERFACE,
-                                               secrets_provider_interface_init))
+G_DEFINE_TYPE (NMVPNConnection, nm_vpn_connection, NM_TYPE_VPN_CONNECTION_BASE)
 
 typedef struct {
 	gboolean disposed;
 
 	NMConnection *connection;
 
+	gboolean user_requested;
+	gulong user_uid;
 	NMActRequest *act_request;
+	guint32 secrets_id;
+	char *username;
 
 	NMDevice *parent_dev;
 	gulong device_monitor;
@@ -201,7 +202,9 @@ device_ip4_config_changed (NMDevice *device,
 NMVPNConnection *
 nm_vpn_connection_new (NMConnection *connection,
                        NMActRequest *act_request,
-                       NMDevice *parent_device)
+                       NMDevice *parent_device,
+                       gboolean user_requested,
+                       gulong user_uid)
 {
 	NMVPNConnection *self;
 	NMVPNConnectionPrivate *priv;
@@ -216,6 +219,8 @@ nm_vpn_connection_new (NMConnection *connection,
 
 	priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
 
+	priv->user_requested = user_requested;
+	priv->user_uid = user_uid;
 	priv->connection = g_object_ref (connection);
 	priv->parent_dev = g_object_ref (parent_device);
 	priv->act_request = g_object_ref (act_request);
@@ -470,8 +475,7 @@ nm_vpn_connection_ip4_config_get (DBusGProxy *proxy,
 
 	val = (GValue *) g_hash_table_lookup (config_hash, NM_VPN_PLUGIN_IP4_CONFIG_BANNER);
 	if (val) {
-		if (priv->banner)
-			g_free (priv->banner);
+		g_free (priv->banner);
 		priv->banner = g_strdup (g_value_get_string (val));
 	}
 
@@ -590,8 +594,36 @@ nm_vpn_connection_connect_cb (DBusGProxy *proxy, GError *err, gpointer user_data
 	}
 }
 
+/* Add a username to a hashed connection */
+static GHashTable *
+_hash_with_username (NMConnection *connection, const char *username)
+{
+	NMConnection *dup;
+	NMSetting *s_vpn;
+	GHashTable *hash;
+	const char *existing;
+
+	/* Shortcut if we weren't given a username or if there already was one in
+	 * the VPN setting; don't bother duplicating the connection and everything.
+	 */
+	s_vpn = nm_connection_get_setting (connection, NM_TYPE_SETTING_VPN);
+	g_assert (s_vpn);
+	existing = nm_setting_vpn_get_user_name (NM_SETTING_VPN (s_vpn));
+	if (username == NULL || existing)
+		return nm_connection_to_hash (connection, NM_SETTING_HASH_FLAG_ALL);
+
+	dup = nm_connection_duplicate (connection);
+	g_assert (dup);
+	s_vpn = nm_connection_get_setting (dup, NM_TYPE_SETTING_VPN);
+	g_assert (s_vpn);
+	g_object_set (s_vpn, NM_SETTING_VPN_USER_NAME, username, NULL);
+	hash = nm_connection_to_hash (dup, NM_SETTING_HASH_FLAG_ALL);
+	g_object_unref (dup);
+	return hash;
+}
+
 static void
-really_activate (NMVPNConnection *connection)
+really_activate (NMVPNConnection *connection, const char *username)
 {
 	NMVPNConnectionPrivate *priv;
 	GHashTable *hash;
@@ -611,7 +643,7 @@ really_activate (NMVPNConnection *connection)
 						    G_CALLBACK (nm_vpn_connection_ip4_config_get),
 						    connection, NULL);
 
-	hash = nm_connection_to_hash (priv->connection);
+	hash = _hash_with_username (priv->connection, username);
 	org_freedesktop_NetworkManager_VPN_Plugin_connect_async (priv->proxy,
 	                                                         hash,
 	                                                         nm_vpn_connection_connect_cb,
@@ -759,55 +791,26 @@ nm_vpn_connection_disconnect (NMVPNConnection *connection,
 
 /******************************************************************************/
 
-static gboolean
-secrets_update_setting (NMSecretsProviderInterface *interface,
-                        const char *setting_name,
-                        GHashTable *new)
-{
-	NMVPNConnection *self = NM_VPN_CONNECTION (interface);
-	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
-	GError *error = NULL;
-
-	g_return_val_if_fail (priv->connection != NULL, FALSE);
-
-	if (strcmp (setting_name, NM_SETTING_VPN_SETTING_NAME))
-		return FALSE;
-
-	if (!nm_connection_update_secrets (priv->connection, NM_SETTING_VPN_SETTING_NAME, new, &error)) {
-		nm_log_warn (LOGD_VPN, "Failed to update VPN secrets: %d %s",
-		             error ? error->code : -1,
-		             error && error->message ? error->message : "(none)");
-		g_clear_error (&error);
-		return FALSE;
-	}
-	return TRUE;
-}
-
 static void
-secrets_result (NMSecretsProviderInterface *interface,
-	            const char *setting_name,
-	            RequestSecretsCaller caller,
-	            const GSList *updated,
-	            GError *error)
+vpn_secrets_cb (NMSettingsConnection *connection,
+                guint32 call_id,
+                const char *agent_username,
+                const char *setting_name,
+                GError *error,
+                gpointer user_data)
 {
-	NMVPNConnection *self = NM_VPN_CONNECTION (interface);
+	NMVPNConnection *self = NM_VPN_CONNECTION (user_data);
 	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
 
-	g_return_if_fail (priv->connection != NULL);
-	g_return_if_fail (caller == SECRETS_CALLER_VPN);
+	g_return_if_fail (NM_CONNECTION (connection) == priv->connection);
+	g_return_if_fail (call_id == priv->secrets_id);
+
+	priv->secrets_id = 0;
 
 	if (error)
 		nm_vpn_connection_fail (self, NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS);
 	else
-		really_activate (self);
-}
-
-static void
-secrets_provider_interface_init (NMSecretsProviderInterface *sp_interface_class)
-{
-	/* interface implementation */
-	sp_interface_class->update_setting = secrets_update_setting;
-	sp_interface_class->result = secrets_result;
+		really_activate (self, agent_username);
 }
 
 static void
@@ -818,6 +821,7 @@ connection_need_secrets_cb  (DBusGProxy *proxy,
 {
 	NMVPNConnection *self = NM_VPN_CONNECTION (user_data);
 	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
+	GError *local = NULL;
 
 	if (error) {
 		nm_log_err (LOGD_VPN, "NeedSecrets failed: %s %s",
@@ -828,35 +832,107 @@ connection_need_secrets_cb  (DBusGProxy *proxy,
 	}
 
 	if (!setting_name || !strlen (setting_name)) {
+		nm_log_dbg (LOGD_VPN, "(%s/%s) service indicated no additional secrets required",
+				    nm_connection_get_uuid (priv->connection),
+				    nm_connection_get_id (priv->connection));
+
 		/* No secrets required */
-		really_activate (self);
+		really_activate (self, priv->username);
 		return;
 	}
 
-	/* Get the secrets the VPN plugin wants */
-	if (!nm_secrets_provider_interface_get_secrets (NM_SECRETS_PROVIDER_INTERFACE (self),
-                                                    priv->connection,
-                                                    setting_name,
-                                                    FALSE,
-                                                    SECRETS_CALLER_VPN,
-                                                    NULL,
-                                                    NULL))
+	nm_log_dbg (LOGD_VPN, "(%s/%s) service indicated additional '%s' secrets required",
+			    nm_connection_get_uuid (priv->connection),
+			    nm_connection_get_id (priv->connection),
+			    setting_name);
+
+	priv->secrets_id = nm_settings_connection_get_secrets (NM_SETTINGS_CONNECTION (priv->connection),
+	                                                       priv->user_requested,
+	                                                       priv->user_uid,
+	                                                       setting_name,
+	                                                       NM_SETTINGS_GET_SECRETS_FLAG_ALLOW_INTERACTION,
+	                                                       NULL,
+	                                                       vpn_secrets_cb,
+	                                                       self,
+	                                                       &local);
+	if (!priv->secrets_id) {
+		if (local)
+			nm_log_err (LOGD_VPN, "failed to get secrets: (%d) %s", local->code, local->message);
 		nm_vpn_connection_fail (self, NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS);
+		g_clear_error (&local);
+	}
 }
 
 static void
-call_need_secrets (NMVPNConnection *vpn_connection)
+existing_secrets_cb (NMSettingsConnection *connection,
+                     guint32 call_id,
+                     const char *agent_username,
+                     const char *setting_name,
+                     GError *error,
+                     gpointer user_data)
 {
-	NMVPNConnectionPrivate *priv;
-	GHashTable *settings;
+	NMVPNConnection *self = NM_VPN_CONNECTION (user_data);
+	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
+	GHashTable *hash;
 
-	priv = NM_VPN_CONNECTION_GET_PRIVATE (vpn_connection);
-	settings = nm_connection_to_hash (priv->connection);
-	org_freedesktop_NetworkManager_VPN_Plugin_need_secrets_async (priv->proxy,
-	                         settings,
-	                         connection_need_secrets_cb,
-	                         vpn_connection);
-	g_hash_table_destroy (settings);
+	g_return_if_fail (NM_CONNECTION (connection) == priv->connection);
+	g_return_if_fail (call_id == priv->secrets_id);
+
+	priv->secrets_id = 0;
+
+	if (error) {
+		nm_log_err (LOGD_VPN, "Failed to request existing VPN secrets #2: (%s) %s",
+		            g_quark_to_string (error->domain),
+		            error->message);
+		nm_vpn_connection_fail (self, NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS);
+	} else {
+		nm_log_dbg (LOGD_VPN, "(%s/%s) asking service if additional secrets are required",
+			        nm_connection_get_uuid (priv->connection),
+			        nm_connection_get_id (priv->connection));
+
+		/* Cache the username for later */
+		g_free (priv->username);
+		priv->username = g_strdup (agent_username);
+
+		/* Ask the VPN service if more secrets are required */
+		hash = _hash_with_username (priv->connection, priv->username);
+		org_freedesktop_NetworkManager_VPN_Plugin_need_secrets_async (priv->proxy,
+		                                                              hash,
+		                                                              connection_need_secrets_cb,
+		                                                              self);
+		g_hash_table_destroy (hash);
+	}
+}
+
+static void
+get_existing_secrets (NMVPNConnection *self)
+{
+	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
+	GError *error = NULL;
+
+	nm_log_dbg (LOGD_VPN, "(%s/%s) requesting existing VPN secrets",
+	            nm_connection_get_uuid (priv->connection),
+	            nm_connection_get_id (priv->connection));
+
+	/* Just get existing secrets if any so we can ask the VPN service if
+	 * any more are required.
+	 */
+	priv->secrets_id = nm_settings_connection_get_secrets (NM_SETTINGS_CONNECTION (priv->connection),
+	                                                       priv->user_requested,
+	                                                       priv->user_uid,
+	                                                       NM_SETTING_VPN_SETTING_NAME,
+	                                                       NM_SETTINGS_GET_SECRETS_FLAG_NONE,
+	                                                       NULL,
+	                                                       existing_secrets_cb,
+	                                                       self,
+	                                                       &error);
+	if (priv->secrets_id == 0) {
+		nm_log_err (LOGD_VPN, "Failed to request existing VPN secrets #1: (%s) %s",
+		            g_quark_to_string (error->domain),
+		            error->message);
+		g_error_free (error);
+		nm_vpn_connection_fail (self, NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS);
+	}
 }
 
 static void
@@ -901,15 +977,11 @@ vpn_cleanup (NMVPNConnection *connection)
 		priv->gw_route = NULL;
 	}
 
-	if (priv->banner) {
-		g_free (priv->banner);
-		priv->banner = NULL;
-	}
+	g_free (priv->banner);
+	priv->banner = NULL;
 
-	if (priv->ip_iface) {
-		g_free (priv->ip_iface);
-		priv->ip_iface = NULL;
-	}
+	g_free (priv->ip_iface);
+	priv->ip_iface = NULL;
 
 	/* Clear out connection secrets to ensure that the settings service
 	 * gets asked for them next time the connection is activated.
@@ -919,17 +991,25 @@ vpn_cleanup (NMVPNConnection *connection)
 }
 
 static void
-connection_state_changed (NMVPNConnection *connection,
+connection_state_changed (NMVPNConnection *self,
                           NMVPNConnectionState state,
                           NMVPNConnectionStateReason reason)
 {
-	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (connection);
+	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
 
-	nm_secrets_provider_interface_cancel_get_secrets (NM_SECRETS_PROVIDER_INTERFACE (priv->act_request));
+	/* Clear any in-progress secrets request */
+	if (priv->secrets_id) {
+		nm_settings_connection_cancel_secrets (NM_SETTINGS_CONNECTION (priv->connection), priv->secrets_id);
+		priv->secrets_id = 0;
+	}
 
 	switch (state) {
 	case NM_VPN_CONNECTION_STATE_NEED_AUTH:
-		call_need_secrets (connection);
+		get_existing_secrets (self);
+		break;
+	case NM_VPN_CONNECTION_STATE_ACTIVATED:
+		/* Secrets no longer needed now that we're connected */
+		nm_connection_clear_secrets (priv->connection);
 		break;
 	case NM_VPN_CONNECTION_STATE_DISCONNECTED:
 	case NM_VPN_CONNECTION_STATE_FAILED:
@@ -945,7 +1025,7 @@ connection_state_changed (NMVPNConnection *connection,
 			g_object_unref (priv->proxy);
 			priv->proxy = NULL;
 		}
-		vpn_cleanup (connection);
+		vpn_cleanup (self);
 		break;
 	default:
 		break;
@@ -989,8 +1069,14 @@ dispose (GObject *object)
 	if (priv->proxy)
 		g_object_unref (priv->proxy);
 
+	if (priv->secrets_id) {
+		nm_settings_connection_cancel_secrets (NM_SETTINGS_CONNECTION (priv->connection),
+		                                       priv->secrets_id);
+	}
+
 	g_object_unref (priv->act_request);
 	g_object_unref (priv->connection);
+	g_free (priv->username);
 
 	G_OBJECT_CLASS (nm_vpn_connection_parent_class)->dispose (object);
 }

@@ -3,19 +3,19 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMIP6Config</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
-<link rel="up" href="ch01.html" title="libnm-glib Objects">
+<link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMIP4Config.html" title="NMIP4Config">
 <link rel="next" href="NMDHCP4Config.html" title="NMDHCP4Config">
-<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
 <tr valign="middle">
 <td><a accesskey="p" href="NMIP4Config.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
 <td><a accesskey="n" href="NMDHCP4Config.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
@@ -30,7 +30,7 @@
                   <a href="#NMIP6Config.properties" class="shortcut">Properties</a>
 </td></tr>
 </table>
-<div class="refentry" title="NMIP6Config">
+<div class="refentry">
 <a name="NMIP6Config"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
@@ -39,7 +39,7 @@
 </td>
 <td valign="top" align="right"></td>
 </tr></table></div>
-<div class="refsynopsisdiv" title="Synopsis">
+<div class="refsynopsisdiv">
 <a name="NMIP6Config.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMIP6Config.html#NMIP6Config-struct" title="NMIP6Config">NMIP6Config</a>;
                     <a class="link" href="NMIP6Config.html#NMIP6ConfigClass" title="NMIP6ConfigClass">NMIP6ConfigClass</a>;
@@ -55,7 +55,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="returnvalue">GSList</span></a> *      <a class="link" href="NMIP6Config.html#nm-ip6-config-get-routes" title="nm_ip6_config_get_routes ()">nm_ip6_config_get_routes</a>            (<em class="parameter"><code><a class="link" href="NMIP6Config.html" title="NMIP6Config"><span class="type">NMIP6Config</span></a> *config</code></em>);
 </pre>
 </div>
-<div class="refsect1" title="Object Hierarchy">
+<div class="refsect1">
 <a name="NMIP6Config.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
@@ -63,30 +63,30 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-L
          +----NMIP6Config
 </pre>
 </div>
-<div class="refsect1" title="Properties">
+<div class="refsect1">
 <a name="NMIP6Config.properties"></a><h2>Properties</h2>
 <pre class="synopsis">
-  "<a class="link" href="NMIP6Config.html#NMIP6Config--addresses" title='The "addresses" property'>addresses</a>"                <span class="type">nm-ip6-address-object-array*</span>  : Read
-  "<a class="link" href="NMIP6Config.html#NMIP6Config--domains" title='The "domains" property'>domains</a>"                  <span class="type">nm-string-array*</span>      : Read
-  "<a class="link" href="NMIP6Config.html#NMIP6Config--nameservers" title='The "nameservers" property'>nameservers</a>"              <span class="type">nm-ip6-address-array*</span>  : Read
-  "<a class="link" href="NMIP6Config.html#NMIP6Config--routes" title='The "routes" property'>routes</a>"                   <span class="type">nm-ip6-route-object-array*</span>  : Read
+  "<a class="link" href="NMIP6Config.html#NMIP6Config--addresses" title='The "addresses" property'>addresses</a>"                <span class="type">NMIP6AddressObjectArray</span>*  : Read
+  "<a class="link" href="NMIP6Config.html#NMIP6Config--domains" title='The "domains" property'>domains</a>"                  <span class="type">NMStringArray</span>*        : Read
+  "<a class="link" href="NMIP6Config.html#NMIP6Config--nameservers" title='The "nameservers" property'>nameservers</a>"              <span class="type">NMIP6AddressArray</span>*    : Read
+  "<a class="link" href="NMIP6Config.html#NMIP6Config--routes" title='The "routes" property'>routes</a>"                   <span class="type">NMIP6RouteObjectArray</span>*  : Read
 </pre>
 </div>
-<div class="refsect1" title="Description">
+<div class="refsect1">
 <a name="NMIP6Config.description"></a><h2>Description</h2>
 <p>
 </p>
 </div>
-<div class="refsect1" title="Details">
+<div class="refsect1">
 <a name="NMIP6Config.details"></a><h2>Details</h2>
-<div class="refsect2" title="NMIP6Config">
+<div class="refsect2">
 <a name="NMIP6Config-struct"></a><h3>NMIP6Config</h3>
 <pre class="programlisting">typedef struct _NMIP6Config NMIP6Config;</pre>
 <p>
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NMIP6ConfigClass">
+<div class="refsect2">
 <a name="NMIP6ConfigClass"></a><h3>NMIP6ConfigClass</h3>
 <pre class="programlisting">typedef struct {
 	NMObjectClass parent;
@@ -104,7 +104,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-L
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_IP6_CONFIG_ADDRESSES">
+<div class="refsect2">
 <a name="NM-IP6-CONFIG-ADDRESSES:CAPS"></a><h3>NM_IP6_CONFIG_ADDRESSES</h3>
 <pre class="programlisting">#define NM_IP6_CONFIG_ADDRESSES "addresses"
 </pre>
@@ -112,7 +112,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-L
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_IP6_CONFIG_NAMESERVERS">
+<div class="refsect2">
 <a name="NM-IP6-CONFIG-NAMESERVERS:CAPS"></a><h3>NM_IP6_CONFIG_NAMESERVERS</h3>
 <pre class="programlisting">#define NM_IP6_CONFIG_NAMESERVERS "nameservers"
 </pre>
@@ -120,7 +120,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-L
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_IP6_CONFIG_DOMAINS">
+<div class="refsect2">
 <a name="NM-IP6-CONFIG-DOMAINS:CAPS"></a><h3>NM_IP6_CONFIG_DOMAINS</h3>
 <pre class="programlisting">#define NM_IP6_CONFIG_DOMAINS "domains"
 </pre>
@@ -128,7 +128,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-L
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_IP6_CONFIG_ROUTES">
+<div class="refsect2">
 <a name="NM-IP6-CONFIG-ROUTES:CAPS"></a><h3>NM_IP6_CONFIG_ROUTES</h3>
 <pre class="programlisting">#define NM_IP6_CONFIG_ROUTES "routes"
 </pre>
@@ -136,7 +136,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-L
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_config_new ()">
+<div class="refsect2">
 <a name="nm-ip6-config-new"></a><h3>nm_ip6_config_new ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_ip6_config_new                   (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *object_path</code></em>);</pre>
@@ -153,19 +153,18 @@ Creates a new <a class="link" href="NMIP6Config.html" title="NMIP6Config"><span 
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
-<td>the DBus object path of the device
-</td>
+<td>the DBus object path of the device</td>
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> a new IP6 configuration
+<td>a new IP6 configuration. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_config_get_addresses ()">
+<div class="refsect2">
 <a name="nm-ip6-config-get-addresses"></a><h3>nm_ip6_config_get_addresses ()</h3>
 <pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="returnvalue">GSList</span></a> *      nm_ip6_config_get_addresses         (<em class="parameter"><code><a class="link" href="NMIP6Config.html" title="NMIP6Config"><span class="type">NMIP6Config</span></a> *config</code></em>);</pre>
 <p>
@@ -181,15 +180,16 @@ Gets the IP6 addresses (containing the address, prefix, and gateway).
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> containing <span class="type">NMSettingIP6Address</span>es. This is the internal copy
-used by the configuration and must not be modified.
+<td>the <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> containing
+<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/09/NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a>es. This is the internal copy used by the configuration
+and must not be modified. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NetworkManager.IP6Address]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_config_get_nameservers ()">
+<div class="refsect2">
 <a name="nm-ip6-config-get-nameservers"></a><h3>nm_ip6_config_get_nameservers ()</h3>
 <pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="returnvalue">GSList</span></a> *      nm_ip6_config_get_nameservers       (<em class="parameter"><code><a class="link" href="NMIP6Config.html" title="NMIP6Config"><span class="type">NMIP6Config</span></a> *config</code></em>);</pre>
 <p>
@@ -205,16 +205,16 @@ Gets the domain name servers (DNS).
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> containing elements of type 'struct in6_addr' which contain
-the addresses of nameservers of the configuration.  This is the internal copy
-used by the configuration and must not be modified.
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> containing elements of type
+'struct in6_addr' which contain the addresses of nameservers of the configuration.
+This is the internal copy used by the configuration and must not be modified. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> Posix.in6_addr]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_config_get_domains ()">
+<div class="refsect2">
 <a name="nm-ip6-config-get-domains"></a><h3>nm_ip6_config_get_domains ()</h3>
 <pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   nm_ip6_config_get_domains           (<em class="parameter"><code><a class="link" href="NMIP6Config.html" title="NMIP6Config"><span class="type">NMIP6Config</span></a> *config</code></em>);</pre>
 <p>
@@ -230,15 +230,15 @@ Gets the domain names.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing domains as strings. This is the 
-internal copy used by the configuration, and must not be modified.
+<td>the <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing domains as strings.
+This is the internal copy used by the configuration, and must not be modified. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_config_get_routes ()">
+<div class="refsect2">
 <a name="nm-ip6-config-get-routes"></a><h3>nm_ip6_config_get_routes ()</h3>
 <pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="returnvalue">GSList</span></a> *      nm_ip6_config_get_routes            (<em class="parameter"><code><a class="link" href="NMIP6Config.html" title="NMIP6Config"><span class="type">NMIP6Config</span></a> *config</code></em>);</pre>
 <p>
@@ -254,49 +254,50 @@ Gets the routes.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> containing <span class="type">NMSettingIP6Route</span>s. This is the 
-internal copy used by the configuration, and must not be modified.
+<td>the <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> containing
+<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/09/NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a>s. This is the internal copy used by the configuration,
+and must not be modified. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NetworkManager.IP6Route]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 </div>
-<div class="refsect1" title="Property Details">
+<div class="refsect1">
 <a name="NMIP6Config.property-details"></a><h2>Property Details</h2>
-<div class="refsect2" title='The "addresses" property'>
+<div class="refsect2">
 <a name="NMIP6Config--addresses"></a><h3>The <code class="literal">"addresses"</code> property</h3>
-<pre class="programlisting">  "addresses"                <span class="type">nm-ip6-address-object-array*</span>  : Read</pre>
+<pre class="programlisting">  "addresses"                <span class="type">NMIP6AddressObjectArray</span>*  : Read</pre>
 <p>
 The <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing the IPv6 addresses;  use
-<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/libnm-util-nm-utils.html#nm-utils-ip6-addresses-from-gvalue"><code class="function">nm_utils_ip6_addresses_from_gvalue()</code></a> to return a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of
+<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/09/libnm-util-nm-utils.html#nm-utils-ip6-addresses-from-gvalue"><code class="function">nm_utils_ip6_addresses_from_gvalue()</code></a> to return a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of
 <span class="type">NMSettingIP6Address</span> objects that is more usable than the raw data.
 </p>
 </div>
 <hr>
-<div class="refsect2" title='The "domains" property'>
+<div class="refsect2">
 <a name="NMIP6Config--domains"></a><h3>The <code class="literal">"domains"</code> property</h3>
-<pre class="programlisting">  "domains"                  <span class="type">nm-string-array*</span>      : Read</pre>
+<pre class="programlisting">  "domains"                  <span class="type">NMStringArray</span>*        : Read</pre>
 <p>
 The <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing domain strings of the configuration.
 </p>
 </div>
 <hr>
-<div class="refsect2" title='The "nameservers" property'>
+<div class="refsect2">
 <a name="NMIP6Config--nameservers"></a><h3>The <code class="literal">"nameservers"</code> property</h3>
-<pre class="programlisting">  "nameservers"              <span class="type">nm-ip6-address-array*</span>  : Read</pre>
+<pre class="programlisting">  "nameservers"              <span class="type">NMIP6AddressArray</span>*    : Read</pre>
 <p>
 The <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing elements of type 'struct ip6_addr' which
 contain the addresses of nameservers of the configuration.
 </p>
 </div>
 <hr>
-<div class="refsect2" title='The "routes" property'>
+<div class="refsect2">
 <a name="NMIP6Config--routes"></a><h3>The <code class="literal">"routes"</code> property</h3>
-<pre class="programlisting">  "routes"                   <span class="type">nm-ip6-route-object-array*</span>  : Read</pre>
+<pre class="programlisting">  "routes"                   <span class="type">NMIP6RouteObjectArray</span>*  : Read</pre>
 <p>
 The <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing the IPv6 routes;  use
-<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/08/libnm-util-nm-utils.html#nm-utils-ip6-routes-from-gvalue"><code class="function">nm_utils_ip6_routes_from_gvalue()</code></a> to return a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of
+<a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/09/libnm-util-nm-utils.html#nm-utils-ip6-routes-from-gvalue"><code class="function">nm_utils_ip6_routes_from_gvalue()</code></a> to return a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of
 <span class="type">NMSettingIP6Address</span> objects that is more usable than the raw data.
 </p>
 </div>
@@ -304,6 +305,6 @@ The <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.ht
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.15</div>
+          Generated by GTK-Doc V1.17</div>
 </body>
 </html>

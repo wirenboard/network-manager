@@ -3,22 +3,22 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMDeviceWifi</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
-<link rel="up" href="ch01.html" title="libnm-glib Objects">
+<link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMDeviceEthernet.html" title="NMDeviceEthernet">
-<link rel="next" href="NMSerialDevice.html" title="NMSerialDevice">
-<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
+<link rel="next" href="NMDeviceModem.html" title="NMDeviceModem">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
 <tr valign="middle">
 <td><a accesskey="p" href="NMDeviceEthernet.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
-<td><a accesskey="n" href="NMSerialDevice.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="NMDeviceModem.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
 <a href="#NMDeviceWifi.synopsis" class="shortcut">Top</a>
@@ -32,7 +32,7 @@
                   <a href="#NMDeviceWifi.signals" class="shortcut">Signals</a>
 </td></tr>
 </table>
-<div class="refentry" title="NMDeviceWifi">
+<div class="refentry">
 <a name="NMDeviceWifi"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
@@ -41,7 +41,7 @@
 </td>
 <td valign="top" align="right"></td>
 </tr></table></div>
-<div class="refsynopsisdiv" title="Synopsis">
+<div class="refsynopsisdiv">
 <a name="NMDeviceWifi.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">#define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS" title="NM_DEVICE_WIFI_HW_ADDRESS">NM_DEVICE_WIFI_HW_ADDRESS</a>
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS" title="NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS">NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS</a>
@@ -53,21 +53,23 @@
                     <a class="link" href="NMDeviceWifi.html#NMDeviceWifiClass" title="NMDeviceWifiClass">NMDeviceWifiClass</a>;
 <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMDeviceWifi.html#nm-device-wifi-new" title="nm_device_wifi_new ()">nm_device_wifi_new</a>                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
-const <span class="returnvalue">char</span> *        <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-hw-address" title="nm_device_wifi_get_hw_address ()">nm_device_wifi_get_hw_address</a>       (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
-const <span class="returnvalue">char</span> *        <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-permanent-hw-address" title="nm_device_wifi_get_permanent_hw_address ()">nm_device_wifi_get_permanent_hw_address</a>
+const <span class="returnvalue">char</span> *              <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-hw-address" title="nm_device_wifi_get_hw_address ()">nm_device_wifi_get_hw_address</a> (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
+const <span class="returnvalue">char</span> *              <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-permanent-hw-address" title="nm_device_wifi_get_permanent_hw_address ()">nm_device_wifi_get_permanent_hw_address</a>
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
 <span class="returnvalue">NM80211Mode</span>         <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-mode" title="nm_device_wifi_get_mode ()">nm_device_wifi_get_mode</a>             (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-bitrate" title="nm_device_wifi_get_bitrate ()">nm_device_wifi_get_bitrate</a>          (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-capabilities" title="nm_device_wifi_get_capabilities ()">nm_device_wifi_get_capabilities</a>     (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
-<a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *     <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-active-access-point" title="nm_device_wifi_get_active_access_point ()">nm_device_wifi_get_active_access_point</a>
+<span class="returnvalue">NMDeviceWifiCapabilities</span>  <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-capabilities" title="nm_device_wifi_get_capabilities ()">nm_device_wifi_get_capabilities</a>
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
-<a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *     <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path" title="nm_device_wifi_get_access_point_by_path ()">nm_device_wifi_get_access_point_by_path</a>
+<a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *           <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-active-access-point" title="nm_device_wifi_get_active_access_point ()">nm_device_wifi_get_active_access_point</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
+<a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *           <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path" title="nm_device_wifi_get_access_point_by_path ()">nm_device_wifi_get_access_point_by_path</a>
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
-const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-access-points" title="nm_device_wifi_get_access_points ()">nm_device_wifi_get_access_points</a>    (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *         <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-access-points" title="nm_device_wifi_get_access_points ()">nm_device_wifi_get_access_points</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);
 </pre>
 </div>
-<div class="refsect1" title="Object Hierarchy">
+<div class="refsect1">
 <a name="NMDeviceWifi.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
@@ -76,7 +78,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
                +----NMDeviceWifi
 </pre>
 </div>
-<div class="refsect1" title="Properties">
+<div class="refsect1">
 <a name="NMDeviceWifi.properties"></a><h2>Properties</h2>
 <pre class="synopsis">
   "<a class="link" href="NMDeviceWifi.html#NMDeviceWifi--active-access-point" title='The "active-access-point" property'>active-access-point</a>"      <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a>*        : Read
@@ -87,21 +89,21 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
   "<a class="link" href="NMDeviceWifi.html#NMDeviceWifi--wireless-capabilities" title='The "wireless-capabilities" property'>wireless-capabilities</a>"    <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read
 </pre>
 </div>
-<div class="refsect1" title="Signals">
+<div class="refsect1">
 <a name="NMDeviceWifi.signals"></a><h2>Signals</h2>
 <pre class="synopsis">
-  "<a class="link" href="NMDeviceWifi.html#NMDeviceWifi-access-point-added" title='The "access-point-added" signal'>access-point-added</a>"                             : Run First
-  "<a class="link" href="NMDeviceWifi.html#NMDeviceWifi-access-point-removed" title='The "access-point-removed" signal'>access-point-removed</a>"                           : Run First
+  "<a class="link" href="NMDeviceWifi.html#NMDeviceWifi-access-point-added" title='The "access-point-added" signal'>access-point-added</a>"                             : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a>
+  "<a class="link" href="NMDeviceWifi.html#NMDeviceWifi-access-point-removed" title='The "access-point-removed" signal'>access-point-removed</a>"                           : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a>
 </pre>
 </div>
-<div class="refsect1" title="Description">
+<div class="refsect1">
 <a name="NMDeviceWifi.description"></a><h2>Description</h2>
 <p>
 </p>
 </div>
-<div class="refsect1" title="Details">
+<div class="refsect1">
 <a name="NMDeviceWifi.details"></a><h2>Details</h2>
-<div class="refsect2" title="NM_DEVICE_WIFI_HW_ADDRESS">
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_WIFI_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_HW_ADDRESS          "hw-address"
 </pre>
@@ -109,7 +111,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS">
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS "perm-hw-address"
 </pre>
@@ -117,7 +119,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_DEVICE_WIFI_MODE">
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-MODE:CAPS"></a><h3>NM_DEVICE_WIFI_MODE</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_MODE                "mode"
 </pre>
@@ -125,7 +127,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_DEVICE_WIFI_BITRATE">
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-BITRATE:CAPS"></a><h3>NM_DEVICE_WIFI_BITRATE</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_BITRATE             "bitrate"
 </pre>
@@ -133,7 +135,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT">
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"></a><h3>NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT "active-access-point"
 </pre>
@@ -141,7 +143,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_DEVICE_WIFI_CAPABILITIES">
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-CAPABILITIES:CAPS"></a><h3>NM_DEVICE_WIFI_CAPABILITIES</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_CAPABILITIES        "wireless-capabilities"
 </pre>
@@ -149,14 +151,14 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NMDeviceWifi">
+<div class="refsect2">
 <a name="NMDeviceWifi-struct"></a><h3>NMDeviceWifi</h3>
 <pre class="programlisting">typedef struct _NMDeviceWifi NMDeviceWifi;</pre>
 <p>
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NMDeviceWifiClass">
+<div class="refsect2">
 <a name="NMDeviceWifiClass"></a><h3>NMDeviceWifiClass</h3>
 <pre class="programlisting">typedef struct {
 	NMDeviceClass parent;
@@ -178,7 +180,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_new ()">
+<div class="refsect2">
 <a name="nm-device-wifi-new"></a><h3>nm_device_wifi_new ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_device_wifi_new                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
@@ -195,21 +197,20 @@ Creates a new <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><spa
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
-<td>the DBus object path of the device
-</td>
+<td>the DBus object path of the device</td>
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> a new device
+<td>a new WiFi device. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_hw_address ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-hw-address"></a><h3>nm_device_wifi_get_hw_address ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_device_wifi_get_hw_address       (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
+<pre class="programlisting">const <span class="returnvalue">char</span> *              nm_device_wifi_get_hw_address (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
 Gets the actual hardware (MAC) address of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>
 </p>
@@ -223,17 +224,16 @@ Gets the actual hardware (MAC) address of the <a class="link" href="NMDeviceWifi
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the actual hardware address. This is the internal string used by the
-device, and must not be modified.
-</td>
+<td>the actual hardware address. This is the internal string used by the
+device, and must not be modified.</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_permanent_hw_address ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-permanent-hw-address"></a><h3>nm_device_wifi_get_permanent_hw_address ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_device_wifi_get_permanent_hw_address
+<pre class="programlisting">const <span class="returnvalue">char</span> *              nm_device_wifi_get_permanent_hw_address
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
 Gets the permanent hardware (MAC) address of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>
@@ -248,15 +248,14 @@ Gets the permanent hardware (MAC) address of the <a class="link" href="NMDeviceW
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the permanent hardware address. This is the internal string used by the
-device, and must not be modified.
-</td>
+<td>the permanent hardware address. This is the internal string used by the
+device, and must not be modified.</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_mode ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-mode"></a><h3>nm_device_wifi_get_mode ()</h3>
 <pre class="programlisting"><span class="returnvalue">NM80211Mode</span>         nm_device_wifi_get_mode             (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
@@ -272,14 +271,13 @@ Gets the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span cla
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the mode
-</td>
+<td>the mode</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_bitrate ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-bitrate"></a><h3>nm_device_wifi_get_bitrate ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_device_wifi_get_bitrate          (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
@@ -295,16 +293,16 @@ Gets the bit rate of the <a class="link" href="NMDeviceWifi.html" title="NMDevic
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the bit rate
-</td>
+<td>the bit rate</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_capabilities ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-capabilities"></a><h3>nm_device_wifi_get_capabilities ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_device_wifi_get_capabilities     (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
+<pre class="programlisting"><span class="returnvalue">NMDeviceWifiCapabilities</span>  nm_device_wifi_get_capabilities
+                                                        (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
 Gets the WIFI capabilities of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>.
 </p>
@@ -318,16 +316,15 @@ Gets the WIFI capabilities of the <a class="link" href="NMDeviceWifi.html" title
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the capabilities
-</td>
+<td>the capabilities</td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_active_access_point ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-active-access-point"></a><h3>nm_device_wifi_get_active_access_point ()</h3>
-<pre class="programlisting"><a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *     nm_device_wifi_get_active_access_point
+<pre class="programlisting"><a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *           nm_device_wifi_get_active_access_point
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
 Gets the active <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a>.
@@ -342,16 +339,16 @@ Gets the active <a class="link" href="NMAccessPoint.html" title="NMAccessPoint">
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the access point or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is active
+<td>the access point or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is active. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_access_point_by_path ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-access-point-by-path"></a><h3>nm_device_wifi_get_access_point_by_path ()</h3>
-<pre class="programlisting"><a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *     nm_device_wifi_get_access_point_by_path
+<pre class="programlisting"><a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *           nm_device_wifi_get_access_point_by_path
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
 <p>
@@ -367,21 +364,21 @@ Gets a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span cla
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
-<td>the object path of the access point
-</td>
+<td>the object path of the access point</td>
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> the access point or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is found.
+<td>the access point or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is found. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_device_wifi_get_access_points ()">
+<div class="refsect2">
 <a name="nm-device-wifi-get-access-points"></a><h3>nm_device_wifi_get_access_points ()</h3>
-<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   nm_device_wifi_get_access_points    (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *         nm_device_wifi_get_access_points
+                                                        (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>
 Gets all the scanned access points of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>.
 </p>
@@ -395,17 +392,18 @@ Gets all the scanned access points of the <a class="link" href="NMDeviceWifi.htm
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td> a <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing all the scanned <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a>s.
-The returned array is owned by the client and should not be modified.
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing all the
+scanned <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a>s.
+The returned array is owned by the client and should not be modified. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMClient.AccessPoint]</span>
 </td>
 </tr>
 </tbody>
 </table></div>
 </div>
 </div>
-<div class="refsect1" title="Property Details">
+<div class="refsect1">
 <a name="NMDeviceWifi.property-details"></a><h2>Property Details</h2>
-<div class="refsect2" title='The "active-access-point" property'>
+<div class="refsect2">
 <a name="NMDeviceWifi--active-access-point"></a><h3>The <code class="literal">"active-access-point"</code> property</h3>
 <pre class="programlisting">  "active-access-point"      <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a>*        : Read</pre>
 <p>
@@ -413,7 +411,7 @@ The active <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span
 </p>
 </div>
 <hr>
-<div class="refsect2" title='The "bitrate" property'>
+<div class="refsect2">
 <a name="NMDeviceWifi--bitrate"></a><h3>The <code class="literal">"bitrate"</code> property</h3>
 <pre class="programlisting">  "bitrate"                  <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read</pre>
 <p>
@@ -422,7 +420,7 @@ The bit rate of the device.
 <p>Default value: 0</p>
 </div>
 <hr>
-<div class="refsect2" title='The "hw-address" property'>
+<div class="refsect2">
 <a name="NMDeviceWifi--hw-address"></a><h3>The <code class="literal">"hw-address"</code> property</h3>
 <pre class="programlisting">  "hw-address"               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read</pre>
 <p>
@@ -431,7 +429,7 @@ The hardware (MAC) address of the device.
 <p>Default value: NULL</p>
 </div>
 <hr>
-<div class="refsect2" title='The "mode" property'>
+<div class="refsect2">
 <a name="NMDeviceWifi--mode"></a><h3>The <code class="literal">"mode"</code> property</h3>
 <pre class="programlisting">  "mode"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read</pre>
 <p>
@@ -441,7 +439,7 @@ The mode of the device.
 <p>Default value: 2</p>
 </div>
 <hr>
-<div class="refsect2" title='The "perm-hw-address" property'>
+<div class="refsect2">
 <a name="NMDeviceWifi--perm-hw-address"></a><h3>The <code class="literal">"perm-hw-address"</code> property</h3>
 <pre class="programlisting">  "perm-hw-address"          <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read</pre>
 <p>
@@ -450,7 +448,7 @@ The hardware (MAC) address of the device.
 <p>Default value: NULL</p>
 </div>
 <hr>
-<div class="refsect2" title='The "wireless-capabilities" property'>
+<div class="refsect2">
 <a name="NMDeviceWifi--wireless-capabilities"></a><h3>The <code class="literal">"wireless-capabilities"</code> property</h3>
 <pre class="programlisting">  "wireless-capabilities"    <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read</pre>
 <p>
@@ -459,13 +457,13 @@ The wireless capabilities of the device.
 <p>Default value: 0</p>
 </div>
 </div>
-<div class="refsect1" title="Signal Details">
+<div class="refsect1">
 <a name="NMDeviceWifi.signal-details"></a><h2>Signal Details</h2>
-<div class="refsect2" title='The "access-point-added" signal'>
+<div class="refsect2">
 <a name="NMDeviceWifi-access-point-added"></a><h3>The <code class="literal">"access-point-added"</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device,
                                                         <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>      *ap,
-                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)      : Run First</pre>
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
 <p>
 Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is added to the wifi device.
 </p>
@@ -474,13 +472,11 @@ Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint">
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
-<td>the wifi device that received the signal
-</td>
+<td>the wifi device that received the signal</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>ap</code></em> :</span></p></td>
-<td>the new access point
-</td>
+<td>the new access point</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
@@ -490,11 +486,11 @@ Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint">
 </table></div>
 </div>
 <hr>
-<div class="refsect2" title='The "access-point-removed" signal'>
+<div class="refsect2">
 <a name="NMDeviceWifi-access-point-removed"></a><h3>The <code class="literal">"access-point-removed"</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device,
                                                         <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>      *ap,
-                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)      : Run First</pre>
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>      user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
 <p>
 Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is removed from the wifi device.
 </p>
@@ -503,13 +499,11 @@ Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint">
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
-<td>the wifi device that received the signal
-</td>
+<td>the wifi device that received the signal</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>ap</code></em> :</span></p></td>
-<td>the removed access point
-</td>
+<td>the removed access point</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
@@ -522,6 +516,6 @@ Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint">
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.15</div>
+          Generated by GTK-Doc V1.17</div>
 </body>
 </html>

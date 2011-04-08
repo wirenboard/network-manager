@@ -15,9 +15,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2010 Red Hat, Inc.
+ * Copyright (C) 2009 - 2011 Red Hat, Inc.
  */
 
+#include <config.h>
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -28,7 +29,6 @@
 
 #include "wireless-helper.h"
 
-#define G_UDEV_API_IS_SUBJECT_TO_CHANGE
 #include <gudev/gudev.h>
 
 #include "nm-udev-manager.h"
@@ -38,6 +38,9 @@
 #include "nm-device-wifi.h"
 #include "nm-device-olpc-mesh.h"
 #include "nm-device-ethernet.h"
+#if WITH_WIMAX
+#include "nm-device-wimax.h"
+#endif
 
 typedef struct {
 	GUdevClient *client;
@@ -335,6 +338,15 @@ is_olpc_mesh (GUdevDevice *device)
 	return (prop != NULL);
 }
 
+static gboolean
+is_wimax (const char *driver)
+{
+	/* FIXME: check 'DEVTYPE' instead; but since we only support Intel
+	 * WiMAX devices for now this is appropriate.
+	 */
+	return g_strcmp0 (driver, "i2400m_usb") == 0;
+}
+
 static GObject *
 device_creator (NMUdevManager *manager,
                 GUdevDevice *udev_device,
@@ -387,7 +399,11 @@ device_creator (NMUdevManager *manager,
 		device = (GObject *) nm_device_olpc_mesh_new (path, ifname, driver);
 	else if (is_wireless (udev_device))
 		device = (GObject *) nm_device_wifi_new (path, ifname, driver);
-	else
+	else if (is_wimax (driver)) {
+#if WITH_WIMAX
+		device = (GObject *) nm_device_wimax_new (path, ifname, driver);
+#endif
+	} else
 		device = (GObject *) nm_device_ethernet_new (path, ifname, driver);
 
 out:
@@ -403,7 +419,7 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 {
 	gint etype;
 	const char *iface;
-	const char *devtype;
+	const char *tmp;
 
 	g_return_if_fail (device != NULL);
 
@@ -420,10 +436,22 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 	 * subclass.  ModemManager will pick it up though and so we'll handle it
 	 * through the mobile broadband stuff.
 	 */
-	devtype = g_udev_device_get_property (device, "DEVTYPE");
-	if (devtype && !strcmp (devtype, "wwan")) {
-		nm_log_dbg (LOGD_HW, "ignoring interface with devtype '%s'", devtype);
+	tmp = g_udev_device_get_property (device, "DEVTYPE");
+	if (g_strcmp0 (tmp, "wwan") == 0) {
+		nm_log_dbg (LOGD_HW, "ignoring interface with devtype '%s'", tmp);
 		return;
+	}
+
+	/* Ignore Nokia cdc-ether interfaces in PC-Suite mode since we need to
+	 * talk phonet to use them, which ModemManager doesn't do yet.
+	 */
+	tmp = g_udev_device_get_property (device, "ID_VENDOR_ID");
+	if (g_strcmp0 (tmp, "0421") == 0) { /* Nokia vendor ID */
+		tmp = g_udev_device_get_property (device, "ID_MODEL");
+		if (tmp && (strstr (tmp, "PC-Suite") || strstr (tmp, "PC Suite"))) {
+			nm_log_dbg (LOGD_HW, "ignoring Nokia PC-Suite ethernet interface");
+			return;
+		}
 	}
 
 	iface = g_udev_device_get_name (device);

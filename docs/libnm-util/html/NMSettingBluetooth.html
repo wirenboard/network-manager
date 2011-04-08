@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSettingBluetooth</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">
 <link rel="next" href="NMSettingSerial.html" title="NMSettingSerial">
-<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -30,7 +30,7 @@
                   <a href="#NMSettingBluetooth.properties" class="shortcut">Properties</a>
 </td></tr>
 </table>
-<div class="refentry" title="NMSettingBluetooth">
+<div class="refentry">
 <a name="NMSettingBluetooth"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
@@ -39,10 +39,10 @@
 </td>
 <td valign="top" align="right"></td>
 </tr></table></div>
-<div class="refsynopsisdiv" title="Synopsis">
+<div class="refsynopsisdiv">
 <a name="NMSettingBluetooth.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis">#define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-SETTING-NAME:CAPS" title="NM_SETTING_BLUETOOTH_SETTING_NAME">NM_SETTING_BLUETOOTH_SETTING_NAME</a>
-enum                <a class="link" href="NMSettingBluetooth.html#NMSettingBluetoothError" title="enum NMSettingBluetoothError">NMSettingBluetoothError</a>;
+<a name="NMSettingBluetoothError"></a><pre class="synopsis">#define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-SETTING-NAME:CAPS" title="NM_SETTING_BLUETOOTH_SETTING_NAME">NM_SETTING_BLUETOOTH_SETTING_NAME</a>
+enum                <a class="link" href="NMSettingBluetooth.html#NMSettingBluetoothError">NMSettingBluetoothError</a>;
 #define             <a class="link" href="NMSettingBluetooth.html#NM-TYPE-SETTING-BLUETOOTH-ERROR:CAPS" title="NM_TYPE_SETTING_BLUETOOTH_ERROR">NM_TYPE_SETTING_BLUETOOTH_ERROR</a>
 #define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-ERROR:CAPS" title="NM_SETTING_BLUETOOTH_ERROR">NM_SETTING_BLUETOOTH_ERROR</a>
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingBluetooth.html#nm-setting-bluetooth-error-quark" title="nm_setting_bluetooth_error_quark ()">nm_setting_bluetooth_error_quark</a>    (<em class="parameter"><code><span class="type">void</span></code></em>);
@@ -59,29 +59,33 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
                                                         (<em class="parameter"><code><a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="type">NMSettingBluetooth</span></a> *setting</code></em>);
 </pre>
 </div>
-<div class="refsect1" title="Object Hierarchy">
+<div class="refsect1">
 <a name="NMSettingBluetooth.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GEnum
+   +----NMSettingBluetoothError
+</pre>
 <pre class="synopsis">
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
    +----<a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
          +----NMSettingBluetooth
 </pre>
 </div>
-<div class="refsect1" title="Properties">
+<div class="refsect1">
 <a name="NMSettingBluetooth.properties"></a><h2>Properties</h2>
 <pre class="synopsis">
   "<a class="link" href="NMSettingBluetooth.html#NMSettingBluetooth--bdaddr" title='The "bdaddr" property'>bdaddr</a>"                   <span class="type">GArray_guchar_</span>*       : Read / Write
   "<a class="link" href="NMSettingBluetooth.html#NMSettingBluetooth--type" title='The "type" property'>type</a>"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
 </pre>
 </div>
-<div class="refsect1" title="Description">
+<div class="refsect1">
 <a name="NMSettingBluetooth.description"></a><h2>Description</h2>
 <p>
 </p>
 </div>
-<div class="refsect1" title="Details">
+<div class="refsect1">
 <a name="NMSettingBluetooth.details"></a><h2>Details</h2>
-<div class="refsect2" title="NM_SETTING_BLUETOOTH_SETTING_NAME">
+<div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-SETTING-NAME:CAPS"></a><h3>NM_SETTING_BLUETOOTH_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_SETTING_NAME "bluetooth"
 </pre>
@@ -89,7 +93,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="enum NMSettingBluetoothError">
+<div class="refsect2">
 <a name="NMSettingBluetoothError"></a><h3>enum NMSettingBluetoothError</h3>
 <pre class="programlisting">typedef enum
 {
@@ -103,7 +107,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_SETTING_BLUETOOTH_ERROR">
+<div class="refsect2">
 <a name="NM-TYPE-SETTING-BLUETOOTH-ERROR:CAPS"></a><h3>NM_TYPE_SETTING_BLUETOOTH_ERROR</h3>
 <pre class="programlisting">#define NM_TYPE_SETTING_BLUETOOTH_ERROR (nm_setting_bluetooth_error_get_type ()) 
 </pre>
@@ -111,7 +115,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_SETTING_BLUETOOTH_ERROR">
+<div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-ERROR:CAPS"></a><h3>NM_SETTING_BLUETOOTH_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_ERROR nm_setting_bluetooth_error_quark ()
 </pre>
@@ -119,22 +123,14 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_setting_bluetooth_error_quark ()">
+<div class="refsect2">
 <a name="nm-setting-bluetooth-error-quark"></a><h3>nm_setting_bluetooth_error_quark ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_bluetooth_error_quark    (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_SETTING_BLUETOOTH_BDADDR">
+<div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-BDADDR:CAPS"></a><h3>NM_SETTING_BLUETOOTH_BDADDR</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_BDADDR    "bdaddr"
 </pre>
@@ -142,7 +138,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_SETTING_BLUETOOTH_TYPE">
+<div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-TYPE:CAPS"></a><h3>NM_SETTING_BLUETOOTH_TYPE</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_TYPE      "type"
 </pre>
@@ -150,7 +146,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_SETTING_BLUETOOTH_TYPE_DUN">
+<div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-TYPE-DUN:CAPS"></a><h3>NM_SETTING_BLUETOOTH_TYPE_DUN</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_TYPE_DUN  "dun"
 </pre>
@@ -158,7 +154,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NM_SETTING_BLUETOOTH_TYPE_PANU">
+<div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-TYPE-PANU:CAPS"></a><h3>NM_SETTING_BLUETOOTH_TYPE_PANU</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_TYPE_PANU "panu"
 </pre>
@@ -166,14 +162,14 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NMSettingBluetooth">
+<div class="refsect2">
 <a name="NMSettingBluetooth-struct"></a><h3>NMSettingBluetooth</h3>
 <pre class="programlisting">typedef struct _NMSettingBluetooth NMSettingBluetooth;</pre>
 <p>
 </p>
 </div>
 <hr>
-<div class="refsect2" title="NMSettingBluetoothClass">
+<div class="refsect2">
 <a name="NMSettingBluetoothClass"></a><h3>NMSettingBluetoothClass</h3>
 <pre class="programlisting">typedef struct {
 	NMSettingClass parent;
@@ -189,84 +185,38 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_setting_bluetooth_get_type ()">
+<div class="refsect2">
 <a name="nm-setting-bluetooth-get-type"></a><h3>nm_setting_bluetooth_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_setting_bluetooth_get_type       (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_setting_bluetooth_new ()">
+<div class="refsect2">
 <a name="nm-setting-bluetooth-new"></a><h3>nm_setting_bluetooth_new ()</h3>
 <pre class="programlisting"><a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         nm_setting_bluetooth_new            (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_setting_bluetooth_get_bdaddr ()">
+<div class="refsect2">
 <a name="nm-setting-bluetooth-get-bdaddr"></a><h3>nm_setting_bluetooth_get_bdaddr ()</h3>
 <pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="returnvalue">GByteArray</span></a> *  nm_setting_bluetooth_get_bdaddr     (<em class="parameter"><code><a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="type">NMSettingBluetooth</span></a> *setting</code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
-<td>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr>
-</tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="nm_setting_bluetooth_get_connection_type ()">
+<div class="refsect2">
 <a name="nm-setting-bluetooth-get-connection-type"></a><h3>nm_setting_bluetooth_get_connection_type ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_bluetooth_get_connection_type
                                                         (<em class="parameter"><code><a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="type">NMSettingBluetooth</span></a> *setting</code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
-<td>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr>
-</tbody>
-</table></div>
 </div>
 </div>
-<div class="refsect1" title="Property Details">
+<div class="refsect1">
 <a name="NMSettingBluetooth.property-details"></a><h2>Property Details</h2>
-<div class="refsect2" title='The "bdaddr" property'>
+<div class="refsect2">
 <a name="NMSettingBluetooth--bdaddr"></a><h3>The <code class="literal">"bdaddr"</code> property</h3>
 <pre class="programlisting">  "bdaddr"                   <span class="type">GArray_guchar_</span>*       : Read / Write</pre>
 <p>
@@ -274,7 +224,7 @@ The Bluetooth address of the device.
 </p>
 </div>
 <hr>
-<div class="refsect2" title='The "type" property'>
+<div class="refsect2">
 <a name="NMSettingBluetooth--type"></a><h3>The <code class="literal">"type"</code> property</h3>
 <pre class="programlisting">  "type"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
 <p>
@@ -287,6 +237,6 @@ Either 'dun' for Dial-Up Networking connections (not yet supported) or
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.15</div>
+          Generated by GTK-Doc V1.17</div>
 </body>
 </html>

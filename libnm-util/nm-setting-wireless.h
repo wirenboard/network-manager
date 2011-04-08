@@ -26,6 +26,7 @@
 #ifndef NM_SETTING_WIRELESS_H
 #define NM_SETTING_WIRELESS_H
 
+#include <NetworkManager.h>
 #include <nm-setting.h>
 #include <nm-setting-wireless-security.h>
 
@@ -68,6 +69,9 @@ GQuark nm_setting_wireless_error_quark (void);
 #define NM_SETTING_WIRELESS_SEEN_BSSIDS "seen-bssids"
 #define NM_SETTING_WIRELESS_SEC         "security"
 
+#define NM_SETTING_WIRELESS_MODE_ADHOC  "adhoc"
+#define NM_SETTING_WIRELESS_MODE_INFRA  "infrastructure"
+
 typedef struct {
 	NMSetting parent;
 } NMSettingWireless;
@@ -106,11 +110,11 @@ const char       *nm_setting_wireless_get_seen_bssid         (NMSettingWireless 
 															  guint32 i);
 
 gboolean          nm_setting_wireless_ap_security_compatible (NMSettingWireless *s_wireless,
-															  NMSettingWirelessSecurity *s_wireless_sec,
-															  guint32 ap_flags,
-															  guint32 ap_wpa,
-															  guint32 ap_rsn,
-															  guint32 ap_mode);
+                                                              NMSettingWirelessSecurity *s_wireless_sec,
+                                                              NM80211ApFlags ap_flags,
+                                                              NM80211ApSecurityFlags ap_wpa,
+                                                              NM80211ApSecurityFlags ap_rsn,
+                                                              NM80211Mode ap_mode);
 
 G_END_DECLS
 

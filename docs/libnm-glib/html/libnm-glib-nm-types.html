@@ -3,22 +3,22 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>nm-types</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
-<link rel="up" href="ch01.html" title="libnm-glib Objects">
-<link rel="prev" href="libnm-glib-NMSettingsSystem.html" title="NMSettingsSystem">
-<link rel="next" href="NMVPNConnection.html" title="NMVPNConnection">
-<meta name="generator" content="GTK-Doc V1.15 (XML mode)">
+<link rel="up" href="ch02.html" title="libnm-glib API Reference">
+<link rel="prev" href="NMRemoteSettings.html" title="NMRemoteSettings">
+<link rel="next" href="NMSecretAgent.html" title="NMSecretAgent">
+<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
 <tr valign="middle">
-<td><a accesskey="p" href="libnm-glib-NMSettingsSystem.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="NMRemoteSettings.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
-<td><a accesskey="n" href="NMVPNConnection.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="NMSecretAgent.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
 <a href="#libnm-glib-nm-types.synopsis" class="shortcut">Top</a>
@@ -26,7 +26,7 @@
                   <a href="#libnm-glib-nm-types.description" class="shortcut">Description</a>
 </td></tr>
 </table>
-<div class="refentry" title="nm-types">
+<div class="refentry">
 <a name="libnm-glib-nm-types"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
 <td valign="top">
@@ -35,7 +35,7 @@
 </td>
 <td valign="top" align="right"></td>
 </tr></table></div>
-<div class="refsynopsisdiv" title="Synopsis">
+<div class="refsynopsisdiv">
 <a name="libnm-glib-nm-types.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">#define             <a class="link" href="libnm-glib-nm-types.html#NM-TYPE-SSID:CAPS" title="NM_TYPE_SSID">NM_TYPE_SSID</a>
 <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="libnm-glib-nm-types.html#nm-ssid-get-type" title="nm_ssid_get_type ()">nm_ssid_get_type</a>                    (<em class="parameter"><code><span class="type">void</span></code></em>);
@@ -54,14 +54,14 @@
 <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               <a class="link" href="libnm-glib-nm-types.html#nm-ip6-route-object-array-get-type" title="nm_ip6_route_object_array_get_type ()">nm_ip6_route_object_array_get_type</a>  (<em class="parameter"><code><span class="type">void</span></code></em>);
 </pre>
 </div>
-<div class="refsect1" title="Description">
+<div class="refsect1">
 <a name="libnm-glib-nm-types.description"></a><h2>Description</h2>
 <p>
 </p>
 </div>
-<div class="refsect1" title="Details">
+<div class="refsect1">
 <a name="libnm-glib-nm-types.details"></a><h2>Details</h2>
-<div class="refsect2" title="NM_TYPE_SSID">
+<div class="refsect2">
 <a name="NM-TYPE-SSID:CAPS"></a><h3>NM_TYPE_SSID</h3>
 <pre class="programlisting">#define NM_TYPE_SSID  (nm_ssid_get_type ())
 </pre>
@@ -69,22 +69,14 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_ssid_get_type ()">
+<div class="refsect2">
 <a name="nm-ssid-get-type"></a><h3>nm_ssid_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_ssid_get_type                    (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_UINT_ARRAY">
+<div class="refsect2">
 <a name="NM-TYPE-UINT-ARRAY:CAPS"></a><h3>NM_TYPE_UINT_ARRAY</h3>
 <pre class="programlisting">#define NM_TYPE_UINT_ARRAY  (nm_uint_array_get_type ())
 </pre>
@@ -92,22 +84,14 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_uint_array_get_type ()">
+<div class="refsect2">
 <a name="nm-uint-array-get-type"></a><h3>nm_uint_array_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_uint_array_get_type              (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_STRING_ARRAY">
+<div class="refsect2">
 <a name="NM-TYPE-STRING-ARRAY:CAPS"></a><h3>NM_TYPE_STRING_ARRAY</h3>
 <pre class="programlisting">#define NM_TYPE_STRING_ARRAY  (nm_string_array_get_type ())
 </pre>
@@ -115,22 +99,14 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_string_array_get_type ()">
+<div class="refsect2">
 <a name="nm-string-array-get-type"></a><h3>nm_string_array_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_string_array_get_type            (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_OBJECT_ARRAY">
+<div class="refsect2">
 <a name="NM-TYPE-OBJECT-ARRAY:CAPS"></a><h3>NM_TYPE_OBJECT_ARRAY</h3>
 <pre class="programlisting">#define NM_TYPE_OBJECT_ARRAY  (nm_object_array_get_type ())
 </pre>
@@ -138,22 +114,14 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_object_array_get_type ()">
+<div class="refsect2">
 <a name="nm-object-array-get-type"></a><h3>nm_object_array_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_object_array_get_type            (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_IP6_ADDRESS_OBJECT_ARRAY">
+<div class="refsect2">
 <a name="NM-TYPE-IP6-ADDRESS-OBJECT-ARRAY:CAPS"></a><h3>NM_TYPE_IP6_ADDRESS_OBJECT_ARRAY</h3>
 <pre class="programlisting">#define NM_TYPE_IP6_ADDRESS_OBJECT_ARRAY  (nm_ip6_address_object_array_get_type ())
 </pre>
@@ -161,23 +129,15 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_address_object_array_get_type ()">
+<div class="refsect2">
 <a name="nm-ip6-address-object-array-get-type"></a><h3>nm_ip6_address_object_array_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_ip6_address_object_array_get_type
                                                         (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_IP6_ADDRESS_ARRAY">
+<div class="refsect2">
 <a name="NM-TYPE-IP6-ADDRESS-ARRAY:CAPS"></a><h3>NM_TYPE_IP6_ADDRESS_ARRAY</h3>
 <pre class="programlisting">#define NM_TYPE_IP6_ADDRESS_ARRAY  (nm_ip6_address_array_get_type ())
 </pre>
@@ -185,22 +145,14 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_address_array_get_type ()">
+<div class="refsect2">
 <a name="nm-ip6-address-array-get-type"></a><h3>nm_ip6_address_array_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_ip6_address_array_get_type       (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
-<div class="refsect2" title="NM_TYPE_IP6_ROUTE_OBJECT_ARRAY">
+<div class="refsect2">
 <a name="NM-TYPE-IP6-ROUTE-OBJECT-ARRAY:CAPS"></a><h3>NM_TYPE_IP6_ROUTE_OBJECT_ARRAY</h3>
 <pre class="programlisting">#define NM_TYPE_IP6_ROUTE_OBJECT_ARRAY  (nm_ip6_route_object_array_get_type ())
 </pre>
@@ -208,24 +160,16 @@
 </p>
 </div>
 <hr>
-<div class="refsect2" title="nm_ip6_route_object_array_get_type ()">
+<div class="refsect2">
 <a name="nm-ip6-route-object-array-get-type"></a><h3>nm_ip6_route_object_array_get_type ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="returnvalue">GType</span></a>               nm_ip6_route_object_array_get_type  (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-</td>
-</tr></tbody>
-</table></div>
 </div>
 </div>
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.15</div>
+          Generated by GTK-Doc V1.17</div>
 </body>
 </html>

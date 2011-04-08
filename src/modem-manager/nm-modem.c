@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2010 Red Hat, Inc.
+ * Copyright (C) 2009 - 2011 Red Hat, Inc.
  * Copyright (C) 2009 Novell, Inc.
  */
 
@@ -32,8 +32,6 @@
 #include "nm-device-private.h"
 #include "nm-device-interface.h"
 #include "nm-dbus-glib-types.h"
-
-#include "nm-serial-device-glue.h"
 
 G_DEFINE_TYPE (NMModem, nm_modem, G_TYPE_OBJECT)
 
@@ -62,7 +60,9 @@ typedef struct {
 	char *device;
 	char *iface;
 
+	NMActRequest *act_request;
 	guint32 secrets_tries;
+	guint32 secrets_id;
 
 	DBusGProxyCall *call;
 
@@ -78,7 +78,8 @@ enum {
 	PPP_FAILED,
 	PREPARE_RESULT,
 	IP4_CONFIG_RESULT,
-	NEED_AUTH,
+	AUTH_REQUESTED,
+	AUTH_RESULT,
 
 	LAST_SIGNAL
 };
@@ -475,67 +476,60 @@ nm_modem_stage4_get_ip4_config (NMModem *self,
 	return ret;
 }
 
-gboolean
-nm_modem_connection_secrets_updated (NMModem *self,
-                                     NMActRequest *req,
-                                     NMConnection *connection,
-                                     GSList *updated_settings,
-                                     RequestSecretsCaller caller)
+static void
+cancel_get_secrets (NMModem *self)
 {
-	NMModemPrivate *priv;
-	gboolean found = FALSE;
-	const char *setting_name;
-	GSList *iter;
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 
-	g_return_val_if_fail (self != NULL, FALSE);
-	g_return_val_if_fail (NM_IS_MODEM (self), FALSE);
-	g_return_val_if_fail (req != NULL, FALSE);
-	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), FALSE);
-	g_return_val_if_fail (connection != NULL, FALSE);
-	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), FALSE);
-
-	priv = NM_MODEM_GET_PRIVATE (self);
-
-	if (caller == SECRETS_CALLER_PPP) {
-		const char *user = NULL;
-		const char *pass = NULL;
-
-		g_return_val_if_fail (priv->ppp_manager != NULL, FALSE);
-
-		if (!NM_MODEM_GET_CLASS (self)->get_user_pass (self, connection, &user, &pass)) {
-			/* Shouldn't ever happen */
-			nm_ppp_manager_update_secrets (priv->ppp_manager,
-										   priv->iface,
-										   NULL,
-										   NULL,
-										   "missing GSM/CDMA setting; no secrets could be found.");
-		} else {
-			nm_ppp_manager_update_secrets (priv->ppp_manager,
-										   priv->iface,
-										   user ? user : "",
-										   pass ? pass : "",
-										   NULL);
-		}
-		return TRUE;
+	if (priv->secrets_id) {
+		nm_act_request_cancel_secrets (priv->act_request, priv->secrets_id);
+		priv->secrets_id = 0;
 	}
+}
 
-	g_return_val_if_fail (caller == SECRETS_CALLER_MOBILE_BROADBAND, FALSE);
+static void
+modem_secrets_cb (NMActRequest *req,
+                  guint32 call_id,
+                  NMConnection *connection,
+                  GError *error,
+                  gpointer user_data)
+{
+	NMModem *self = NM_MODEM (user_data);
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 
-	g_assert (NM_MODEM_GET_CLASS (self)->get_setting_name);
-	setting_name = NM_MODEM_GET_CLASS (self)->get_setting_name (self);
+	g_return_if_fail (call_id == priv->secrets_id);
 
-	for (iter = updated_settings; iter; iter = g_slist_next (iter)) {
-		const char *candidate_setting_name = (const char *) iter->data;
+	priv->secrets_id = 0;
 
-		if (!strcmp (candidate_setting_name, setting_name))
-			found = TRUE;
-		else {
-			nm_log_warn (LOGD_MB, "ignoring updated secrets for setting '%s'.",
-			            candidate_setting_name);
-		}
-	}
+	if (error)
+		nm_log_warn (LOGD_MB, "%s", error->message);
 
-	return found;
+	g_signal_emit (self, signals[AUTH_RESULT], 0, error);
+}
+
+gboolean
+nm_modem_get_secrets (NMModem *self,
+                      const char *setting_name,
+                      gboolean request_new,
+                      const char *hint)
+{
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
+	NMSettingsGetSecretsFlags flags = NM_SETTINGS_GET_SECRETS_FLAG_ALLOW_INTERACTION;
+
+	cancel_get_secrets (self);
+
+	if (request_new)
+		flags |= NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW;
+	priv->secrets_id = nm_act_request_get_secrets (priv->act_request,
+	                                               setting_name,
+	                                               flags,
+	                                               hint,
+	                                               modem_secrets_cb,
+	                                               self);
+	if (priv->secrets_id)
+		g_signal_emit (self, signals[AUTH_REQUESTED], 0);
+
+	return !!(priv->secrets_id);
 }
 
 static NMActStageReturn
@@ -558,6 +552,11 @@ nm_modem_act_stage1_prepare (NMModem *self,
 	NMActStageReturn ret;
 	GPtrArray *hints = NULL;
 	const char *setting_name = NULL;
+	NMSettingsGetSecretsFlags flags = NM_SETTINGS_GET_SECRETS_FLAG_ALLOW_INTERACTION;
+
+	if (priv->act_request)
+		g_object_unref (priv->act_request);
+	priv->act_request = g_object_ref (req);
 
 	ret = NM_MODEM_GET_CLASS (self)->act_stage1_prepare (self,
 	                                                     req,
@@ -565,22 +564,21 @@ nm_modem_act_stage1_prepare (NMModem *self,
 	                                                     &setting_name,
 	                                                     reason);
 	if ((ret == NM_ACT_STAGE_RETURN_POSTPONE) && setting_name) {
-		const char *hint1 = NULL, *hint2 = NULL;
+		if (priv->secrets_tries++)
+			flags |= NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW;
 
-		/* Need some secrets */
-		if (hints) {
-			if (hints->len > 0)
-				hint1 = g_ptr_array_index (hints, 0);
-			if (hints->len > 1)
-				hint2 = g_ptr_array_index (hints, 1);
+		priv->secrets_id = nm_act_request_get_secrets (req,
+		                                               setting_name,
+		                                               flags,
+		                                               hints ? g_ptr_array_index (hints, 0) : NULL,
+		                                               modem_secrets_cb,
+		                                               self);
+		if (priv->secrets_id)
+			g_signal_emit (self, signals[AUTH_REQUESTED], 0);
+		else {
+			*reason = NM_DEVICE_STATE_REASON_NO_SECRETS;
+			ret = NM_ACT_STAGE_RETURN_FAILURE;
 		}
-
-		g_signal_emit (self, signals[NEED_AUTH], 0,
-		               setting_name, 
-	                   priv->secrets_tries++ ? TRUE : FALSE,
-	                   SECRETS_CALLER_MOBILE_BROADBAND,
-	                   hint1,
-	                   hint2);
 
 		if (hints)
 			g_ptr_array_free (hints, TRUE);
@@ -624,8 +622,19 @@ nm_modem_check_connection_compatible (NMModem *self,
 	return FALSE;
 }
 
+gboolean
+nm_modem_complete_connection (NMModem *self,
+                              NMConnection *connection,
+                              const GSList *existing_connections,
+                              GError **error)
+{
+	if (NM_MODEM_GET_CLASS (self)->complete_connection)
+		return NM_MODEM_GET_CLASS (self)->complete_connection (self, connection, existing_connections, error);
+	return FALSE;
+}
+
 static void
-real_deactivate_quickly (NMModem *self, NMDevice *device)
+real_deactivate (NMModem *self, NMDevice *device)
 {
 	NMModemPrivate *priv;
 	const char *iface;
@@ -638,6 +647,12 @@ real_deactivate_quickly (NMModem *self, NMDevice *device)
 	priv = NM_MODEM_GET_PRIVATE (self);
 
 	priv->secrets_tries = 0;
+
+	if (priv->act_request) {
+		cancel_get_secrets (self);
+		g_object_unref (priv->act_request);
+		priv->act_request = NULL;
+	}
 
 	if (priv->call) {
 		dbus_g_proxy_cancel_call (priv->proxy, priv->call);
@@ -673,9 +688,9 @@ real_deactivate_quickly (NMModem *self, NMDevice *device)
 }
 
 void
-nm_modem_deactivate_quickly (NMModem *self, NMDevice *device)
+nm_modem_deactivate (NMModem *self, NMDevice *device)
 {
-	NM_MODEM_GET_CLASS (self)->deactivate_quickly (self, device);
+	NM_MODEM_GET_CLASS (self)->deactivate (self, device);
 }
 
 static void
@@ -697,6 +712,7 @@ nm_modem_device_state_changed (NMModem *self,
                                NMDeviceStateReason reason)
 {
 	gboolean was_connected = FALSE;
+	NMModemPrivate *priv;
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_MODEM (self));
@@ -704,16 +720,26 @@ nm_modem_device_state_changed (NMModem *self,
 	if (IS_ACTIVATING_STATE (old_state) || (old_state == NM_DEVICE_STATE_ACTIVATED))
 		was_connected = TRUE;
 
+	priv = NM_MODEM_GET_PRIVATE (self);
+
 	/* Make sure we don't leave the serial device open */
 	switch (new_state) {
 	case NM_DEVICE_STATE_NEED_AUTH:
-		if (NM_MODEM_GET_PRIVATE (self)->ppp_manager)
+		if (priv->ppp_manager)
 			break;
 		/* else fall through */
 	case NM_DEVICE_STATE_UNMANAGED:
 	case NM_DEVICE_STATE_UNAVAILABLE:
 	case NM_DEVICE_STATE_FAILED:
 	case NM_DEVICE_STATE_DISCONNECTED:
+		if (new_state != NM_DEVICE_STATE_NEED_AUTH) {
+			if (priv->act_request) {
+				cancel_get_secrets (self);
+				g_object_unref (priv->act_request);
+				priv->act_request = NULL;
+			}
+		}
+
 		if (was_connected) {
 			dbus_g_proxy_begin_call (nm_modem_get_proxy (self, MM_DBUS_INTERFACE_MODEM),
 			                         "Disconnect",
@@ -728,6 +754,12 @@ nm_modem_device_state_changed (NMModem *self,
 	}
 }
 
+static gboolean
+_state_is_active (NMDeviceState state)
+{
+	return (state >= NM_DEVICE_STATE_IP_CONFIG && state <= NM_DEVICE_STATE_DEACTIVATING);
+}
+
 gboolean
 nm_modem_hw_is_up (NMModem *self, NMDevice *device)
 {
@@ -738,7 +770,7 @@ nm_modem_hw_is_up (NMModem *self, NMDevice *device)
 		NMDeviceState state;
 
 		state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (device));
-		if (priv->pending_ip4_config || state == NM_DEVICE_STATE_IP_CONFIG || state == NM_DEVICE_STATE_ACTIVATED)
+		if (priv->pending_ip4_config || _state_is_active (state))
 			return nm_system_device_is_up (device);
 	}
 
@@ -755,7 +787,7 @@ nm_modem_hw_bring_up (NMModem *self, NMDevice *device, gboolean *no_firmware)
 		NMDeviceState state;
 
 		state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (device));
-		if (priv->pending_ip4_config || state == NM_DEVICE_STATE_IP_CONFIG || state == NM_DEVICE_STATE_ACTIVATED)
+		if (priv->pending_ip4_config || _state_is_active (state))
 			return nm_system_device_set_up_down (device, TRUE, no_firmware);
 	}
 
@@ -1022,6 +1054,9 @@ finalize (GObject *object)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (object);
 
+	if (priv->act_request)
+		g_object_unref (priv->act_request);
+
 	if (priv->proxy)
 		g_object_unref (priv->proxy);
 
@@ -1051,7 +1086,7 @@ nm_modem_class_init (NMModemClass *klass)
 	object_class->finalize = finalize;
 
 	klass->act_stage1_prepare = real_act_stage1_prepare;
-	klass->deactivate_quickly = real_deactivate_quickly;
+	klass->deactivate = real_deactivate;
 
 	/* Properties */
 	g_object_class_install_property
@@ -1134,20 +1169,22 @@ nm_modem_class_init (NMModemClass *klass)
 					  _nm_marshal_VOID__BOOLEAN_UINT,
 					  G_TYPE_NONE, 2, G_TYPE_BOOLEAN, G_TYPE_UINT);
 
-	signals[NEED_AUTH] =
-		g_signal_new (NM_MODEM_NEED_AUTH,
+	signals[AUTH_REQUESTED] =
+		g_signal_new (NM_MODEM_AUTH_REQUESTED,
 					  G_OBJECT_CLASS_TYPE (object_class),
 					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, need_auth),
+					  G_STRUCT_OFFSET (NMModemClass, auth_requested),
 					  NULL, NULL,
-					  _nm_marshal_VOID__STRING_BOOLEAN_UINT_STRING_STRING,
-					  G_TYPE_NONE, 5,
-					  G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-}
+					  g_cclosure_marshal_VOID__VOID,
+					  G_TYPE_NONE, 0);
 
-const DBusGObjectInfo *
-nm_modem_get_serial_dbus_info (void)
-{
-	return &dbus_glib_nm_serial_device_object_info;
+	signals[AUTH_RESULT] =
+		g_signal_new (NM_MODEM_AUTH_RESULT,
+					  G_OBJECT_CLASS_TYPE (object_class),
+					  G_SIGNAL_RUN_FIRST,
+					  G_STRUCT_OFFSET (NMModemClass, auth_result),
+					  NULL, NULL,
+					  g_cclosure_marshal_VOID__POINTER,
+					  G_TYPE_NONE, 1, G_TYPE_POINTER);
 }
 

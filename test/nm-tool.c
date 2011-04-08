@@ -1,3 +1,4 @@
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /* nm-tool - information tool for NetworkManager
  *
  * Dan Williams <dcbw@redhat.com>
@@ -16,10 +17,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2005 - 2010 Red Hat, Inc.
+ * (C) Copyright 2005 - 2011 Red Hat, Inc.
  * (C) Copyright 2007 Novell, Inc.
  */
 
+#include <config.h>
 #include <glib.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
@@ -35,9 +37,11 @@
 #include <nm-device.h>
 #include <nm-device-ethernet.h>
 #include <nm-device-wifi.h>
-#include <nm-gsm-device.h>
-#include <nm-cdma-device.h>
+#include <nm-device-modem.h>
 #include <nm-device-bt.h>
+#if WITH_WIMAX
+#include <nm-device-wimax.h>
+#endif
 #include <nm-utils.h>
 #include <nm-setting-ip4-config.h>
 #include <nm-setting-ip6-config.h>
@@ -51,8 +55,7 @@
 #define DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT   (dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, DBUS_TYPE_G_MAP_OF_VARIANT))
 #define DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH    (dbus_g_type_get_collection ("GPtrArray", DBUS_TYPE_G_OBJECT_PATH))
 
-static GHashTable *user_connections = NULL;
-static GHashTable *system_connections = NULL;
+static GHashTable *connections = NULL;
 
 static gboolean
 get_nm_state (NMClient *client)
@@ -67,19 +70,21 @@ get_nm_state (NMClient *client)
 	case NM_STATE_ASLEEP:
 		state_string = "asleep";
 		break;
-
 	case NM_STATE_CONNECTING:
 		state_string = "connecting";
 		break;
-
-	case NM_STATE_CONNECTED:
-		state_string = "connected";
+	case NM_STATE_CONNECTED_LOCAL:
+		state_string = "connected (local only)";
 		break;
-
+	case NM_STATE_CONNECTED_SITE:
+		state_string = "connected (site only)";
+		break;
+	case NM_STATE_CONNECTED_GLOBAL:
+		state_string = "connected (global)";
+		break;
 	case NM_STATE_DISCONNECTED:
 		state_string = "disconnected";
 		break;
-
 	case NM_STATE_UNKNOWN:
 	default:
 		state_string = "unknown";
@@ -193,6 +198,48 @@ detail_access_point (gpointer data, gpointer user_data)
 	g_free (tmp);
 }
 
+#if WITH_WIMAX
+static const char *
+wimax_network_type_to_str (NMWimaxNspNetworkType type)
+{
+	switch (type) {
+	case NM_WIMAX_NSP_NETWORK_TYPE_HOME:
+		return "Home";
+	case NM_WIMAX_NSP_NETWORK_TYPE_PARTNER:
+		return "Partner";
+	case NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER:
+		return "Roaming";
+	default:
+		return "Unknown";
+	}
+}
+
+static void
+detail_nsp (gpointer data, gpointer user_data)
+{
+	NMWimaxNsp *nsp = NM_WIMAX_NSP (data);
+	const char *active_name = (const char *) user_data;
+	const char *name;
+	char *label;
+	char *data_str;
+	gboolean active = FALSE;
+
+	name = nm_wimax_nsp_get_name (nsp);
+
+	if (active_name)
+		active = g_strcmp0 (active_name, name) == 0;
+
+	label = g_strdup_printf ("  %s%s", active ? "*" : "", name);
+	data_str = g_strdup_printf ("%d%% (%s)",
+				    nm_wimax_nsp_get_signal_quality (nsp),
+				    wimax_network_type_to_str (nm_wimax_nsp_get_network_type (nsp)));
+
+	print_string (label, data_str);
+	g_free (label);
+	g_free (data_str);
+}
+#endif
+
 static gchar *
 ip4_address_as_string (guint32 ip)
 {
@@ -205,8 +252,8 @@ ip4_address_as_string (guint32 ip)
 	if (inet_ntop (AF_INET, &tmp_addr, buf, INET_ADDRSTRLEN)) {
 		return g_strdup (buf);
 	} else {
-		nm_warning ("%s: error converting IP4 address 0x%X",
-		            __func__, ntohl (tmp_addr.s_addr));
+		g_warning ("%s: error converting IP4 address 0x%X",
+		           __func__, ntohl (tmp_addr.s_addr));
 		return NULL;
 	}
 }
@@ -226,8 +273,8 @@ ip6_address_as_string (const struct in6_addr *ip)
 		g_string_append_printf (ip6_str, "%02X", ip->s6_addr[0]);
 		for (j = 1; j < 16; j++)
 			g_string_append_printf (ip6_str, " %02X", ip->s6_addr[j]);
-		nm_warning ("%s: error converting IP6 address %s",
-		            __func__, ip6_str->str);
+		g_warning ("%s: error converting IP6 address %s",
+		           __func__, ip6_str->str);
 		g_string_free (ip6_str, TRUE);
 		return NULL;
 	}
@@ -250,8 +297,14 @@ get_dev_state_string (NMDeviceState state)
 		return "connecting (need authentication)";
 	else if (state == NM_DEVICE_STATE_IP_CONFIG)
 		return "connecting (getting IP configuration)";
+	else if (state == NM_DEVICE_STATE_IP_CHECK)
+		return "connecting (checking IP connectivity)";
+	else if (state == NM_DEVICE_STATE_SECONDARIES)
+		return "connecting (starting dependent connections)";
 	else if (state == NM_DEVICE_STATE_ACTIVATED)
 		return "connected";
+	else if (state == NM_DEVICE_STATE_DEACTIVATING)
+		return "disconnecting";
 	else if (state == NM_DEVICE_STATE_FAILED)
 		return "connection failed";
 	return "unknown";
@@ -260,7 +313,6 @@ get_dev_state_string (NMDeviceState state)
 static NMConnection *
 get_connection_for_active (NMActiveConnection *active)
 {
-	NMConnectionScope scope;
 	const char *path;
 
 	g_return_val_if_fail (active != NULL, NULL);
@@ -268,14 +320,7 @@ get_connection_for_active (NMActiveConnection *active)
 	path = nm_active_connection_get_connection (active);
 	g_return_val_if_fail (path != NULL, NULL);
 
-	scope = nm_active_connection_get_scope (active);
-	if (scope == NM_CONNECTION_SCOPE_USER)
-		return (NMConnection *) g_hash_table_lookup (user_connections, path);
-	else if (scope == NM_CONNECTION_SCOPE_SYSTEM)
-		return (NMConnection *) g_hash_table_lookup (system_connections, path);
-
-	g_warning ("error: unknown connection scope");
-	return NULL;
+	return (NMConnection *) g_hash_table_lookup (connections, path);
 }
 
 struct cb_info {
@@ -332,12 +377,22 @@ detail_device (gpointer data, gpointer user_data)
 		print_string ("Type", "Wired");
 	else if (NM_IS_DEVICE_WIFI (device))
 		print_string ("Type", "802.11 WiFi");
-	else if (NM_IS_GSM_DEVICE (device))
-		print_string ("Type", "Mobile Broadband (GSM)");
-	else if (NM_IS_CDMA_DEVICE (device))
-		print_string ("Type", "Mobile Broadband (CDMA)");
-	else if (NM_IS_DEVICE_BT (device))
+	else if (NM_IS_DEVICE_MODEM (device)) {
+		NMDeviceModemCapabilities modem_caps;
+
+		modem_caps = nm_device_modem_get_current_capabilities (NM_DEVICE_MODEM (device));
+		if (modem_caps & NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS)
+			print_string ("Type", "Mobile Broadband (GSM)");
+		else if (modem_caps & NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO)
+			print_string ("Type", "Mobile Broadband (CDMA)");
+		else
+			print_string ("Type", "Mobile Broadband (unknown)");
+	} else if (NM_IS_DEVICE_BT (device))
 		print_string ("Type", "Bluetooth");
+#if WITH_WIMAX
+	else if (NM_IS_DEVICE_WIMAX (device))
+		print_string ("Type", "WiMAX");
+#endif
 
 	print_string ("Driver", nm_device_get_driver (device) ? nm_device_get_driver (device) : "(unknown)");
 
@@ -353,6 +408,10 @@ detail_device (gpointer data, gpointer user_data)
 		tmp = g_strdup (nm_device_ethernet_get_hw_address (NM_DEVICE_ETHERNET (device)));
 	else if (NM_IS_DEVICE_WIFI (device))
 		tmp = g_strdup (nm_device_wifi_get_hw_address (NM_DEVICE_WIFI (device)));
+#if WITH_WIMAX
+	else if (NM_IS_DEVICE_WIMAX (device))
+		tmp = g_strdup (nm_device_wimax_get_hw_address (NM_DEVICE_WIMAX (device)));
+#endif
 
 	if (tmp) {
 		print_string ("HW Address", tmp);
@@ -418,6 +477,68 @@ detail_device (gpointer data, gpointer user_data)
 			print_string ("  Carrier", "on");
 		else
 			print_string ("  Carrier", "off");
+#if WITH_WIMAX
+	} else if (NM_IS_DEVICE_WIMAX (device)) {
+		NMDeviceWimax *wimax = NM_DEVICE_WIMAX (device);
+		NMWimaxNsp *active_nsp = NULL;
+		const char *active_name = NULL;
+		const GPtrArray *nsps;
+
+		if (nm_device_get_state (device) == NM_DEVICE_STATE_ACTIVATED) {
+			guint tmp_uint;
+			gint tmp_int;
+			const char *tmp_str;
+
+			active_nsp = nm_device_wimax_get_active_nsp (wimax);
+			active_name = active_nsp ? nm_wimax_nsp_get_name (active_nsp) : NULL;
+
+			printf ("\n  Link Status\n");
+
+			tmp_uint = nm_device_wimax_get_center_frequency (wimax);
+			if (tmp_uint)
+				tmp = g_strdup_printf ("%'.1f MHz", (double) tmp_uint / 1000.0);
+			else
+				tmp = g_strdup ("(unknown)");
+			print_string ("  Center Freq.", tmp);
+			g_free (tmp);
+
+			tmp_int = nm_device_wimax_get_rssi (wimax);
+			if (tmp_int)
+				tmp = g_strdup_printf ("%d dBm", tmp_int);
+			else
+				tmp = g_strdup ("(unknown)");
+			print_string ("  RSSI", tmp);
+			g_free (tmp);
+
+			tmp_int = nm_device_wimax_get_cinr (wimax);
+			if (tmp_int)
+				tmp = g_strdup_printf ("%d dB", tmp_int);
+			else
+				tmp = g_strdup ("(unknown)");
+			print_string ("  CINR", tmp);
+			g_free (tmp);
+
+			tmp_int = nm_device_wimax_get_tx_power (wimax);
+			if (tmp_int)
+				tmp = g_strdup_printf ("%'.2f dBm", (float) tmp_int / 2.0);
+			else
+				tmp = g_strdup ("(unknown)");
+			print_string ("  TX Power", tmp);
+			g_free (tmp);
+
+			tmp_str = nm_device_wimax_get_bsid (wimax);
+			if (tmp_str)
+				print_string ("  BSID", tmp_str);
+			else
+				print_string ("  BSID", "(unknown)");
+		}
+
+		printf ("\n  WiMAX NSPs %s\n", active_nsp ? "(* current NSP)" : "");
+
+		nsps = nm_device_wimax_get_nsps (NM_DEVICE_WIMAX (device));
+		if (nsps && nsps->len)
+			g_ptr_array_foreach ((GPtrArray *) nsps, detail_nsp, (gpointer) active_name);
+#endif
 	}
 
 	/* IP Setup info */
@@ -566,12 +687,10 @@ detail_vpn (gpointer data, gpointer user_data)
 static void
 get_one_connection (DBusGConnection *bus,
                     const char *path,
-                    NMConnectionScope scope,
                     GHashTable *table)
 {
 	DBusGProxy *proxy;
 	NMConnection *connection = NULL;
-	const char *service;
 	GError *error = NULL;
 	GHashTable *settings = NULL;
 
@@ -579,10 +698,8 @@ get_one_connection (DBusGConnection *bus,
 	g_return_if_fail (path != NULL);
 	g_return_if_fail (table != NULL);
 
-	service = (scope == NM_CONNECTION_SCOPE_SYSTEM) ?
-		NM_DBUS_SERVICE_SYSTEM_SETTINGS : NM_DBUS_SERVICE_USER_SETTINGS;
-
-	proxy = dbus_g_proxy_new_for_name (bus, service, path, NM_DBUS_IFACE_SETTINGS_CONNECTION);
+	proxy = dbus_g_proxy_new_for_name (bus, NM_DBUS_SERVICE,
+	                                   path, NM_DBUS_IFACE_SETTINGS_CONNECTION);
 	if (!proxy)
 		return;
 
@@ -590,7 +707,7 @@ get_one_connection (DBusGConnection *bus,
 	                        G_TYPE_INVALID,
 	                        DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, &settings,
 	                        G_TYPE_INVALID)) {
-		nm_warning ("error: cannot retrieve connection: %s", error ? error->message : "(unknown)");
+		g_warning ("error: cannot retrieve connection: %s", error ? error->message : "(unknown)");
 		goto out;
 	}
 
@@ -598,14 +715,13 @@ get_one_connection (DBusGConnection *bus,
 	g_hash_table_destroy (settings);
 
 	if (!connection) {
-		nm_warning ("error: invalid connection: '%s' / '%s' invalid: %d",
-		            error ? g_type_name (nm_connection_lookup_setting_type_by_quark (error->domain)) : "(unknown)",
-		            error ? error->message : "(unknown)",
-		            error ? error->code : -1);
+		g_warning ("error: invalid connection: '%s' / '%s' invalid: %d",
+		           error ? g_type_name (nm_connection_lookup_setting_type_by_quark (error->domain)) : "(unknown)",
+		           error ? error->message : "(unknown)",
+		           error ? error->code : -1);
 		goto out;
 	}
 
-	nm_connection_set_scope (connection, scope);
 	nm_connection_set_path (connection, path);
 	g_hash_table_insert (table, g_strdup (path), g_object_ref (connection));
 
@@ -616,27 +732,29 @@ out:
 	g_object_unref (proxy);
 }
 
-static void
-get_connections_for_service (DBusGConnection *bus,
-                             NMConnectionScope scope,
-                             GHashTable *table)
+static gboolean
+get_all_connections (void)
 {
 	GError *error = NULL;
-	DBusGProxy *proxy;
+	DBusGConnection *bus;
+	DBusGProxy *proxy = NULL;
 	GPtrArray *paths = NULL;
 	int i;
-	const char *service;
+	gboolean sucess = FALSE;
 
-	service = (scope == NM_CONNECTION_SCOPE_SYSTEM) ?
-		NM_DBUS_SERVICE_SYSTEM_SETTINGS : NM_DBUS_SERVICE_USER_SETTINGS;
+	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	if (error || !bus) {
+		g_warning ("error: could not connect to dbus");
+		goto out;
+	}
 
 	proxy = dbus_g_proxy_new_for_name (bus,
-	                                   service,
+	                                   NM_DBUS_SERVICE,
 	                                   NM_DBUS_PATH_SETTINGS,
 	                                   NM_DBUS_IFACE_SETTINGS);
 	if (!proxy) {
-		g_warning ("error: failed to create DBus proxy for %s", service);
-		return;
+		g_warning ("error: failed to create DBus proxy for settings service");
+		goto out;
 	}
 
 	if (!dbus_g_proxy_call (proxy, "ListConnections", &error,
@@ -648,33 +766,20 @@ get_connections_for_service (DBusGConnection *bus,
 		goto out;
 	}
 
+	connections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+
 	for (i = 0; paths && (i < paths->len); i++)
-		get_one_connection (bus, g_ptr_array_index (paths, i), scope, table);
+		get_one_connection (bus, g_ptr_array_index (paths, i), connections);
+
+	sucess = TRUE;
 
 out:
-	g_object_unref (proxy);
-}
+	if (bus)
+		dbus_g_connection_unref (bus);
+	if (proxy)
+		g_object_unref (proxy);
 
-static gboolean
-get_all_connections (void)
-{
-	DBusGConnection *bus;
-	GError *error = NULL;
-
-	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error || !bus) {
-		g_warning ("error: could not connect to dbus");
-		return FALSE;
-	}
-
-	user_connections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
-	get_connections_for_service (bus, NM_CONNECTION_SCOPE_USER, user_connections);
-
-	system_connections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
-	get_connections_for_service (bus, NM_CONNECTION_SCOPE_SYSTEM, system_connections);
-
-	dbus_g_connection_unref (bus);
-	return TRUE;
+	return sucess;
 }
 
 int
@@ -713,8 +818,7 @@ main (int argc, char *argv[])
 		g_ptr_array_foreach ((GPtrArray *) info.active, detail_vpn, &info);
 
 	g_object_unref (client);
-	g_hash_table_unref (user_connections);
-	g_hash_table_unref (system_connections);
+	g_hash_table_unref (connections);
 
 	return 0;
 }
