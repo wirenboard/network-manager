@@ -1,26 +1,27 @@
-AC_PREREQ(2.52)
+AC_PREREQ([2.63])
 
 dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [8])
-m4_define([nm_micro_version], [3])
-m4_define([nm_nano_version],  [999])
+m4_define([nm_micro_version], [998])
 m4_define([nm_version],
-          [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
+          [nm_major_version.nm_minor_version.nm_micro_version])
 
 AC_INIT([NetworkManager], [nm_version],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=NetworkManager],
         [NetworkManager])
-AM_INIT_AUTOMAKE([1.9 subdir-objects tar-ustar no-dist-gzip dist-bzip2])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([no])])
-AM_MAINTAINER_MODE
-
-AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
 
-dnl Define _GNU_SOURCE for various things like strcasestr()
-AC_GNU_SOURCE
+AM_INIT_AUTOMAKE([1.10 subdir-objects tar-ustar no-dist-gzip dist-bzip2])
+AM_MAINTAINER_MODE([enable])
+
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([no])])
+
+dnl Define _SYSTEM_EXTENSIONS for various things like strcasestr()
+AC_USE_SYSTEM_EXTENSIONS
 
 dnl
 dnl Require programs
@@ -28,15 +29,10 @@ dnl
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
 
-dnl ensure that when the Automake generated makefile calls aclocal,
-dnl it honours the $ACLOCAL_FLAGS environment variable
-ACLOCAL_AMFLAGS="\${ACLOCAL_FLAGS}"
-if test -n "$ac_macro_dir"; then
-    ACLOCAL_AMFLAGS="-I $ac_macro_dir $ACLOCAL_AMFLAGS"
-fi
-AC_SUBST([ACLOCAL_AMFLAGS])
+dnl Initialize libtool
+LT_PREREQ([2.2])
+LT_INIT([disable-static])
 
 dnl maintainer mode stuff
 if test $USE_MAINTAINER_MODE = yes; then
@@ -79,11 +75,14 @@ AC_CHECK_FUNCS(select socket uname)
 dnl
 dnl translation support
 dnl
+IT_PROG_INTLTOOL([0.40.0])
+
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.17])
+
 GETTEXT_PACKAGE=NetworkManager
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package])
-IT_PROG_INTLTOOL([0.35.0])
-AM_GLIB_GNU_GETTEXT
 
 dnl
 dnl Documentation
@@ -206,19 +205,21 @@ if ! test x"$ac_distver" = x""; then
 fi
 
 AC_MSG_CHECKING([Linux Wireless Extensions >= 18])
-AC_TRY_COMPILE([#ifndef __user
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+              [[#ifndef __user
                 #define __user
                 #endif
                 #include <sys/types.h>
                 #include <linux/types.h>
                 #include <sys/socket.h>
                 #include <net/if.h>
-                #include <wireless.h>],
-               [#ifndef IWEVGENIE
+                #include <wireless.h>]],
+              [[#ifndef IWEVGENIE
                 #error "not found"
-                #endif],
-               [ac_have_iwevgenie=yes],
-               [ac_have_iwevgenie=no])
+                #endif]])],
+        [ac_have_iwevgenie=yes],
+        [ac_have_iwevgenie=no])
 AC_MSG_RESULT($ac_have_iwevgenie)
 if test "$ac_have_iwevgenie" = no; then
 	AC_MSG_ERROR(wireless-tools library and development headers >= 28pre9 not installed or not functional)
@@ -245,7 +246,7 @@ PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.75)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-PKG_CHECK_MODULES(GLIB, gthread-2.0 glib-2.0 >= 2.18 gobject-2.0)
+PKG_CHECK_MODULES(GLIB, gthread-2.0 glib-2.0 >= 2.22 gobject-2.0)
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
@@ -253,13 +254,15 @@ PKG_CHECK_MODULES(GMODULE, gmodule-2.0)
 AC_SUBST(GMODULE_CFLAGS)
 AC_SUBST(GMODULE_LIBS)
 
-PKG_CHECK_MODULES(GUDEV, gudev-1.0)
+PKG_CHECK_MODULES(GUDEV, gudev-1.0 >= 147)
 AC_SUBST(GUDEV_CFLAGS)
 AC_SUBST(GUDEV_LIBS)
 
 PKG_CHECK_MODULES(GIO, gio-2.0)
 AC_SUBST(GIO_CFLAGS)
 AC_SUBST(GIO_LIBS)
+
+GOBJECT_INTROSPECTION_CHECK([0.9.6])
 
 AC_ARG_WITH(udev-dir, AS_HELP_STRING([--with-udev-dir=DIR], [where the udev base directory is]))
 if test -n "$with_udev_dir" ; then
@@ -279,6 +282,19 @@ if test "x$with_systemdsystemunitdir" != xno; then
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
+dnl
+dnl Disable ConsoleKit support
+dnl
+AC_ARG_WITH(ck, AS_HELP_STRING([--without-ck], [Build NetworkManager without ConsoleKit session tracking support]))
+AM_CONDITIONAL(WITH_CONSOLEKIT, test x"$with_ck" != xno)
+no_ck=0
+if test x"$with_ck" = x"no"; then
+	no_ck="1"
+else
+	with_ck="yes"
+fi
+AC_DEFINE_UNQUOTED(NO_CONSOLEKIT, $no_ck, [Define to disable use of ConsoleKit])
+
 PKG_CHECK_MODULES(LIBNL, libnl-1 >= 1.0-pre8)
 AC_SUBST(LIBNL_CFLAGS)
 AC_SUBST(LIBNL_LIBS)
@@ -287,6 +303,20 @@ NM_LIBNL_CHECK
 PKG_CHECK_MODULES(UUID, uuid)
 AC_SUBST(UUID_CFLAGS)
 AC_SUBST(UUID_LIBS)
+
+# Intel WiMAX SDK checks
+PKG_CHECK_MODULES(IWMX_SDK, [libiWmxSdk-0 >= 1.5.1], [have_wimax=yes],[have_wimax=no])
+AC_ARG_ENABLE(wimax, AS_HELP_STRING([--enable-wimax], [enable WiMAX support]),
+                     [enable_wimax=${enableval}], [enable_wimax=${have_wimax}])
+if (test "${enable_wimax}" = "yes"); then
+	if test x"$have_wimax" = x"no"; then
+		AC_MSG_ERROR(Intel WiMAX SDK is required)
+	fi
+	AC_SUBST(IWMX_SDK_CFLAGS)
+	AC_SUBST(IWMX_SDK_LIBS)
+	AC_DEFINE(WITH_WIMAX, 1, [Define if you have WiMAX support])
+fi
+AM_CONDITIONAL(WITH_WIMAX, test "${enable_wimax}" = "yes")
 
 PKG_CHECK_MODULES(POLKIT, polkit-gobject-1)
 AC_SUBST(POLKIT_CFLAGS)
@@ -354,7 +384,7 @@ fi
 AC_SUBST(DBUS_SYS_DIR)
 
 # pppd
-AC_ARG_ENABLE(ppp, AC_HELP_STRING([--enable-ppp], [enable PPP/PPPoE support]),
+AC_ARG_ENABLE(ppp, AS_HELP_STRING([--enable-ppp], [enable PPP/PPPoE support]),
                      [enable_ppp=${enableval}], [enable_ppp=yes])
 if (test "${enable_ppp}" = "yes"); then
 	AC_CHECK_HEADERS(pppd/pppd.h,,
@@ -485,7 +515,7 @@ if test -n "${RESOLVCONF_PATH}"; then
 fi
 
 # iptables path
-AC_ARG_WITH(iptables, AC_HELP_STRING([--with-iptables=/path/to/iptables], [path to iptables])) 
+AC_ARG_WITH(iptables, AS_HELP_STRING([--with-iptables=/path/to/iptables], [path to iptables]))
 if test "x${with_iptables}" = x; then
   AC_PATH_PROG(IPTABLES_PATH, iptables, [], $PATH:/sbin:/usr/sbin)
   if ! test -x "$IPTABLES_PATH"; then
@@ -555,7 +585,21 @@ src/ppp-manager/Makefile
 src/dnsmasq-manager/Makefile
 src/modem-manager/Makefile
 src/bluez-manager/Makefile
-src/system-settings/Makefile
+src/settings/Makefile
+src/settings/plugins/Makefile
+src/settings/plugins/ifupdown/Makefile
+src/settings/plugins/ifupdown/tests/Makefile
+src/settings/plugins/ifnet/Makefile
+src/settings/plugins/ifnet/tests/Makefile
+src/settings/plugins/ifcfg-rh/Makefile
+src/settings/plugins/ifcfg-rh/tests/Makefile
+src/settings/plugins/ifcfg-rh/tests/network-scripts/Makefile
+src/settings/plugins/ifcfg-suse/Makefile
+src/settings/plugins/keyfile/Makefile
+src/settings/plugins/keyfile/tests/Makefile
+src/settings/plugins/keyfile/tests/keyfiles/Makefile
+src/settings/tests/Makefile
+src/wimax/Makefile
 src/backends/Makefile
 libnm-util/libnm-util.pc
 libnm-util/Makefile
@@ -564,21 +608,9 @@ libnm-util/tests/certs/Makefile
 libnm-glib/libnm-glib.pc
 libnm-glib/libnm-glib-vpn.pc
 libnm-glib/Makefile
+libnm-glib/tests/Makefile
 callouts/Makefile
 tools/Makefile
-system-settings/Makefile
-system-settings/plugins/Makefile
-system-settings/plugins/ifupdown/Makefile
-system-settings/plugins/ifupdown/tests/Makefile
-system-settings/plugins/ifnet/Makefile
-system-settings/plugins/ifnet/tests/Makefile
-system-settings/plugins/ifcfg-rh/Makefile
-system-settings/plugins/ifcfg-rh/tests/Makefile
-system-settings/plugins/ifcfg-rh/tests/network-scripts/Makefile
-system-settings/plugins/ifcfg-suse/Makefile
-system-settings/plugins/keyfile/Makefile
-system-settings/plugins/keyfile/tests/Makefile
-system-settings/plugins/keyfile/tests/keyfiles/Makefile
 cli/Makefile
 cli/src/Makefile
 test/Makefile
@@ -613,11 +645,14 @@ po/Makefile.in
 policy/Makefile
 data/Makefile
 docs/Makefile
+docs/api/Makefile
+docs/api/version.xml
 docs/libnm-glib/Makefile
 docs/libnm-util/Makefile
 NetworkManager.pc
 examples/Makefile
 examples/python/Makefile
+examples/C/Makefile
 ])
 AC_OUTPUT
 
@@ -644,6 +679,18 @@ if test -n "${with_systemdsystemunitdir}"; then
 	echo systemd support: ${with_systemdsystemunitdir}
 else
 	echo systemd support: no
+fi
+
+if test -n "${with_ck}"; then
+	echo ConsoleKit support: ${with_ck}
+else
+	echo ConsoleKit support: no
+fi
+
+if test "${enable_wimax}" = "yes"; then
+	echo WiMAX support: yes
+else
+	echo WiMAX support: no
 fi
 
 if test "${enable_ppp}" = "yes"; then

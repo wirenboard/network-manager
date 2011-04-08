@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2010 Red Hat, Inc.
+ * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
 #include <string.h>
@@ -60,14 +60,23 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 
+/**
+ * nm_vpn_connection_new:
+ * @connection: the #DBusGConnection
+ * @path: the DBus object path of the new connection
+ *
+ * Creates a new #NMVPNConnection.
+ *
+ * Returns: (transfer full): a new connection object
+ **/
 GObject *
-nm_vpn_connection_new (DBusGConnection *dbus_connection, const char *path)
+nm_vpn_connection_new (DBusGConnection *connection, const char *path)
 {
-	g_return_val_if_fail (dbus_connection != NULL, NULL);
+	g_return_val_if_fail (connection != NULL, NULL);
 	g_return_val_if_fail (path != NULL, NULL);
 
 	return g_object_new (NM_TYPE_VPN_CONNECTION, 
-	                     NM_OBJECT_DBUS_CONNECTION, dbus_connection,
+	                     NM_OBJECT_DBUS_CONNECTION, connection,
 	                     NM_OBJECT_DBUS_PATH, path,
 	                     NULL);
 }
@@ -86,7 +95,8 @@ nm_vpn_connection_get_banner (NMVPNConnection *vpn)
 	if (!priv->banner) {
 		priv->banner = _nm_object_get_string_property (NM_OBJECT (vpn),
 		                                               NM_DBUS_INTERFACE_VPN_CONNECTION,
-		                                               DBUS_PROP_BANNER);
+		                                               DBUS_PROP_BANNER,
+		                                               NULL);
 		if (priv->banner && !strlen (priv->banner)) {
 			g_free (priv->banner);
 			priv->banner = NULL;
@@ -106,7 +116,8 @@ nm_vpn_connection_get_vpn_state (NMVPNConnection *vpn)
 	if (priv->vpn_state == NM_VPN_CONNECTION_STATE_UNKNOWN) {
 		priv->vpn_state = _nm_object_get_uint_property (NM_OBJECT (vpn),
 		                                                NM_DBUS_INTERFACE_VPN_CONNECTION,
-		                                                DBUS_PROP_VPN_STATE);
+		                                                DBUS_PROP_VPN_STATE,
+		                                                NULL);
 	}
 	return priv->vpn_state;
 }
@@ -175,9 +186,7 @@ finalize (GObject *object)
 {
 	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (object);
 
-	if (priv->banner)
-		g_free (priv->banner);
-
+	g_free (priv->banner);
 	g_object_unref (priv->proxy);
 
 	G_OBJECT_CLASS (nm_vpn_connection_parent_class)->finalize (object);

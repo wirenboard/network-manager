@@ -15,14 +15,19 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2010 Red Hat, Inc.
+ * Copyright (C) 2009 - 2011 Red Hat, Inc.
  * Copyright (C) 2009 Novell, Inc.
  */
 
+#include "config.h"
+
 #include <string.h>
+#include <glib/gi18n.h>
+
 #include "nm-dbus-glib-types.h"
 #include "nm-modem-gsm.h"
 #include "nm-device.h"
+#include "nm-device-private.h"
 #include "nm-setting-connection.h"
 #include "nm-setting-gsm.h"
 #include "nm-modem-types.h"
@@ -177,12 +182,10 @@ ask_for_pin (NMModemGsm *self, gboolean always_ask)
 	if (!always_ask)
 		tries = priv->pin_tries++;
 
-	g_signal_emit_by_name (self, NM_MODEM_NEED_AUTH,
-	                       NM_SETTING_GSM_SETTING_NAME,
-	                       (tries || always_ask) ? TRUE : FALSE,
-	                       SECRETS_CALLER_MOBILE_BROADBAND,
-	                       NM_SETTING_GSM_PIN,
-	                       NULL);
+	nm_modem_get_secrets (NM_MODEM (self),
+	                      NM_SETTING_GSM_SETTING_NAME,
+	                      (tries || always_ask) ? TRUE : FALSE,
+	                      NM_SETTING_GSM_PIN);
 }
 
 static void
@@ -470,6 +473,37 @@ real_check_connection_compatible (NMModem *modem,
 }
 
 static gboolean
+real_complete_connection (NMModem *modem,
+                          NMConnection *connection,
+                          const GSList *existing_connections,
+                          GError **error)
+{
+	NMSettingGsm *s_gsm;
+
+	s_gsm = (NMSettingGsm *) nm_connection_get_setting (connection, NM_TYPE_SETTING_GSM);
+	if (!s_gsm || !nm_setting_gsm_get_apn (s_gsm)) {
+		/* Need an APN at least */
+		g_set_error_literal (error,
+		                     NM_SETTING_GSM_ERROR,
+		                     NM_SETTING_GSM_ERROR_MISSING_PROPERTY,
+		                     NM_SETTING_GSM_APN);
+		return FALSE;
+	}
+
+	if (!nm_setting_gsm_get_number (s_gsm))
+		g_object_set (G_OBJECT (s_gsm), NM_SETTING_GSM_NUMBER, "*99#", NULL);
+
+	nm_utils_complete_generic (connection,
+	                           NM_SETTING_GSM_SETTING_NAME,
+	                           existing_connections,
+	                           _("GSM connection %d"),
+	                           NULL,
+	                           FALSE); /* No IPv6 yet by default */
+
+	return TRUE;
+}
+
+static gboolean
 real_get_user_pass (NMModem *modem,
                     NMConnection *connection,
                     const char **user,
@@ -496,7 +530,7 @@ real_get_setting_name (NMModem *modem)
 }
 
 static void
-real_deactivate_quickly (NMModem *modem, NMDevice *device)
+real_deactivate (NMModem *modem, NMDevice *device)
 {
 	NMModemGsmPrivate *priv = NM_MODEM_GSM_GET_PRIVATE (modem);
 
@@ -510,7 +544,7 @@ real_deactivate_quickly (NMModem *modem, NMDevice *device)
 
 	priv->pin_tries = 0;
 
-	NM_MODEM_CLASS (nm_modem_gsm_parent_class)->deactivate_quickly (modem, device);	
+	NM_MODEM_CLASS (nm_modem_gsm_parent_class)->deactivate (modem, device);	
 }
 
 
@@ -547,8 +581,9 @@ nm_modem_gsm_class_init (NMModemGsmClass *klass)
 	modem_class->get_setting_name = real_get_setting_name;
 	modem_class->get_best_auto_connection = real_get_best_auto_connection;
 	modem_class->check_connection_compatible = real_check_connection_compatible;
+	modem_class->complete_connection = real_complete_connection;
 	modem_class->act_stage1_prepare = real_act_stage1_prepare;
-	modem_class->deactivate_quickly = real_deactivate_quickly;
+	modem_class->deactivate = real_deactivate;
 
 	dbus_g_error_domain_register (NM_GSM_ERROR, NULL, NM_TYPE_GSM_ERROR);
 }

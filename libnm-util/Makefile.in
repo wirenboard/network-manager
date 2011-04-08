@@ -48,16 +48,23 @@ host_triplet = @host@
 @WITH_NSS_TRUE@am__append_10 = crypto_nss.c
 @WITH_NSS_TRUE@am__append_11 = $(NSS_CFLAGS)
 @WITH_NSS_TRUE@am__append_12 = $(NSS_LIBS)
+@HAVE_INTROSPECTION_TRUE@am__append_13 = NetworkManager-1.0.gir
+@HAVE_INTROSPECTION_TRUE@am__append_14 = $(gir_DATA) $(typelib_DATA)
 subdir = libnm-util
 DIST_COMMON = $(libnm_util_include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/libnm-util.pc.in COPYING
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
-	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/intltool.m4 \
-	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gtk-doc.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
+	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/introspection.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libnl-check.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -85,7 +92,8 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" \
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" \
+	"$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(typelibdir)" \
 	"$(DESTDIR)$(libnm_util_includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
@@ -95,27 +103,17 @@ am__DEPENDENCIES_1 =
 libnm_util_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
-am__libnm_util_la_SOURCES_DIST = crypto.c crypto.h nm-connection.c \
-	nm-param-spec-specialized.c nm-param-spec-specialized.h \
-	nm-setting.c nm-setting-8021x.c nm-setting-bluetooth.c \
-	nm-setting-connection.c nm-setting-ip4-config.c \
-	nm-setting-ip6-config.c nm-setting-ppp.c nm-setting-pppoe.c \
-	nm-setting-serial.c nm-setting-gsm.c nm-setting-cdma.c \
-	nm-setting-olpc-mesh.c nm-setting-wired.c \
-	nm-setting-wireless.c nm-setting-wireless-security.c \
-	nm-setting-vpn.c nm-utils.c nm-utils-private.h nm-connection.h \
-	nm-setting.h nm-setting-8021x.h nm-setting-bluetooth.h \
-	nm-setting-connection.h nm-setting-ip4-config.h \
-	nm-setting-ip6-config.h nm-setting-ppp.h nm-setting-pppoe.h \
-	nm-setting-serial.h nm-setting-gsm.h nm-setting-cdma.h \
-	nm-setting-olpc-mesh.h nm-setting-wired.h \
-	nm-setting-wireless.h nm-setting-wireless-security.h \
-	nm-setting-vpn.h nm-utils.h crypto_gnutls.c crypto_nss.c
-am__objects_1 =
-@WITH_GNUTLS_TRUE@am__objects_2 = libnm_util_la-crypto_gnutls.lo
-@WITH_NSS_TRUE@am__objects_3 = libnm_util_la-crypto_nss.lo
-am_libnm_util_la_OBJECTS = libnm_util_la-crypto.lo \
-	libnm_util_la-nm-connection.lo \
+am__libnm_util_la_SOURCES_DIST = crypto.c nm-connection.c \
+	nm-param-spec-specialized.c nm-setting.c nm-setting-8021x.c \
+	nm-setting-bluetooth.c nm-setting-connection.c \
+	nm-setting-ip4-config.c nm-setting-ip6-config.c \
+	nm-setting-ppp.c nm-setting-pppoe.c nm-setting-serial.c \
+	nm-setting-gsm.c nm-setting-cdma.c nm-setting-olpc-mesh.c \
+	nm-setting-wimax.c nm-setting-wired.c nm-setting-wireless.c \
+	nm-setting-wireless-security.c nm-setting-vpn.c nm-utils.c \
+	crypto.h nm-param-spec-specialized.h nm-utils-private.h \
+	nm-setting-private.h crypto_gnutls.c crypto_nss.c
+am__objects_1 = libnm_util_la-crypto.lo libnm_util_la-nm-connection.lo \
 	libnm_util_la-nm-param-spec-specialized.lo \
 	libnm_util_la-nm-setting.lo libnm_util_la-nm-setting-8021x.lo \
 	libnm_util_la-nm-setting-bluetooth.lo \
@@ -128,11 +126,16 @@ am_libnm_util_la_OBJECTS = libnm_util_la-crypto.lo \
 	libnm_util_la-nm-setting-gsm.lo \
 	libnm_util_la-nm-setting-cdma.lo \
 	libnm_util_la-nm-setting-olpc-mesh.lo \
+	libnm_util_la-nm-setting-wimax.lo \
 	libnm_util_la-nm-setting-wired.lo \
 	libnm_util_la-nm-setting-wireless.lo \
 	libnm_util_la-nm-setting-wireless-security.lo \
-	libnm_util_la-nm-setting-vpn.lo libnm_util_la-nm-utils.lo \
-	$(am__objects_1) $(am__objects_2) $(am__objects_3)
+	libnm_util_la-nm-setting-vpn.lo libnm_util_la-nm-utils.lo
+am__objects_2 =
+@WITH_GNUTLS_TRUE@am__objects_3 = libnm_util_la-crypto_gnutls.lo
+@WITH_NSS_TRUE@am__objects_4 = libnm_util_la-crypto_nss.lo
+am_libnm_util_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3) $(am__objects_4)
 libnm_util_la_OBJECTS = $(am_libnm_util_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -144,13 +147,13 @@ libtest_crypto_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
 am__libtest_crypto_la_SOURCES_DIST = crypto.c crypto_gnutls.c \
 	crypto_nss.c
-@WITH_GNUTLS_TRUE@am__objects_4 = libtest_crypto_la-crypto_gnutls.lo
-@WITH_NSS_TRUE@am__objects_5 = libtest_crypto_la-crypto_nss.lo
+@WITH_GNUTLS_TRUE@am__objects_5 = libtest_crypto_la-crypto_gnutls.lo
+@WITH_NSS_TRUE@am__objects_6 = libtest_crypto_la-crypto_nss.lo
 am_libtest_crypto_la_OBJECTS = libtest_crypto_la-crypto.lo \
-	$(am__objects_4) $(am__objects_5)
+	$(am__objects_5) $(am__objects_6)
 libtest_crypto_la_OBJECTS = $(am_libtest_crypto_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -185,7 +188,7 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
-DATA = $(pkgconfig_DATA)
+DATA = $(gir_DATA) $(pkgconfig_DATA) $(typelib_DATA)
 HEADERS = $(libnm_util_include_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
@@ -222,7 +225,6 @@ am__relativize = \
   done; \
   reldir="$$dir2"
 ACLOCAL = @ACLOCAL@
-ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -231,8 +233,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-CATALOGS = @CATALOGS@
-CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -249,6 +249,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -257,6 +258,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GIO_CFLAGS = @GIO_CFLAGS@
 GIO_LIBS = @GIO_LIBS@
@@ -265,8 +267,8 @@ GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
-GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
+GMSGFMT_015 = @GMSGFMT_015@
 GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
@@ -281,13 +283,23 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-INSTOBJEXT = @INSTOBJEXT@
 INTLLIBS = @INTLLIBS@
 INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
 INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
+INTROSPECTION_CFLAGS = @INTROSPECTION_CFLAGS@
+INTROSPECTION_COMPILER = @INTROSPECTION_COMPILER@
+INTROSPECTION_GENERATE = @INTROSPECTION_GENERATE@
+INTROSPECTION_GIRDIR = @INTROSPECTION_GIRDIR@
+INTROSPECTION_LIBS = @INTROSPECTION_LIBS@
+INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
+INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
+INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
+IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
@@ -295,6 +307,8 @@ LIBDL = @LIBDL@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
+LIBICONV = @LIBICONV@
+LIBINTL = @LIBINTL@
 LIBM = @LIBM@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
@@ -303,13 +317,15 @@ LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
+LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
-MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
-MSGFMT_OPTS = @MSGFMT_OPTS@
+MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -335,12 +351,9 @@ PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
-PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
-PO_IN_DATADIR_TRUE = @PO_IN_DATADIR_TRUE@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
 RANLIB = @RANLIB@
 RESOLVCONF_PATH = @RESOLVCONF_PATH@
@@ -355,10 +368,13 @@ UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
+XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
@@ -426,27 +442,50 @@ libnm_util_include_HEADERS = \
 	nm-setting-gsm.h		\
 	nm-setting-cdma.h		\
 	nm-setting-olpc-mesh.h		\
+	nm-setting-wimax.h		\
 	nm-setting-wired.h		\
 	nm-setting-wireless.h		\
 	nm-setting-wireless-security.h	\
 	nm-setting-vpn.h		\
 	nm-utils.h
 
-libnm_util_la_SOURCES = crypto.c crypto.h nm-connection.c \
-	nm-param-spec-specialized.c nm-param-spec-specialized.h \
-	nm-setting.c nm-setting-8021x.c nm-setting-bluetooth.c \
-	nm-setting-connection.c nm-setting-ip4-config.c \
-	nm-setting-ip6-config.c nm-setting-ppp.c nm-setting-pppoe.c \
-	nm-setting-serial.c nm-setting-gsm.c nm-setting-cdma.c \
-	nm-setting-olpc-mesh.c nm-setting-wired.c \
-	nm-setting-wireless.c nm-setting-wireless-security.c \
-	nm-setting-vpn.c nm-utils.c nm-utils-private.h \
-	$(libnm_util_include_HEADERS) $(am__append_1) $(am__append_4)
+libnm_util_la_private_headers = \
+	crypto.h			\
+	nm-param-spec-specialized.h	\
+	nm-utils-private.h \
+	nm-setting-private.h
+
+libnm_util_la_csources = \
+	crypto.c			\
+	nm-connection.c			\
+	nm-param-spec-specialized.c	\
+	nm-setting.c			\
+	nm-setting-8021x.c		\
+	nm-setting-bluetooth.c		\
+	nm-setting-connection.c		\
+	nm-setting-ip4-config.c		\
+	nm-setting-ip6-config.c		\
+	nm-setting-ppp.c		\
+	nm-setting-pppoe.c		\
+	nm-setting-serial.c		\
+	nm-setting-gsm.c		\
+	nm-setting-cdma.c		\
+	nm-setting-olpc-mesh.c		\
+	nm-setting-wimax.c		\
+	nm-setting-wired.c		\
+	nm-setting-wireless.c		\
+	nm-setting-wireless-security.c	\
+	nm-setting-vpn.c		\
+	nm-utils.c
+
+libnm_util_la_SOURCES = $(libnm_util_la_csources) \
+	$(libnm_util_la_private_headers) $(am__append_1) \
+	$(am__append_4)
 libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS) \
 	$(am__append_3) $(am__append_6)
 SYMBOL_VIS_FILE = $(srcdir)/libnm-util.ver
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "7:1:6"
+	-version-info "2:0:0"
 
 libnm_util_includedir = $(includedir)/NetworkManager
 
@@ -462,7 +501,22 @@ libtest_crypto_la_LIBADD = $(GLIB_LIBS) $(am__append_9) \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnm-util.pc
 DISTCLEANFILES = libnm-util.pc
+CLEANFILES = $(am__append_14)
 EXTRA_DIST = libnm-util.pc.in libnm-util.ver
+INTROSPECTION_GIRS = $(am__append_13)
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+@HAVE_INTROSPECTION_TRUE@introspection_sources = $(libnm_util_include_HEADERS) $(libnm_util_la_csources) $(top_srcdir)/include/NetworkManager.h $(top_srcdir)/include/NetworkManagerVPN.h
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-util
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_LIBS = libnm-util.la
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_FILES = $(introspection_sources)
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm_
+@HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/gir-1.0
+@HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
+@HAVE_INTROSPECTION_TRUE@typelibdir = $(libdir)/girepository-1.0
+@HAVE_INTROSPECTION_TRUE@typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 all: all-recursive
 
 .SUFFIXES:
@@ -567,6 +621,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-pppoe.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-serial.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-vpn.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wimax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wired.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wireless.Plo@am__quote@
@@ -723,6 +778,14 @@ libnm_util_la-nm-setting-olpc-mesh.lo: nm-setting-olpc-mesh.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-olpc-mesh.lo `test -f 'nm-setting-olpc-mesh.c' || echo '$(srcdir)/'`nm-setting-olpc-mesh.c
 
+libnm_util_la-nm-setting-wimax.lo: nm-setting-wimax.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wimax.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wimax.Tpo -c -o libnm_util_la-nm-setting-wimax.lo `test -f 'nm-setting-wimax.c' || echo '$(srcdir)/'`nm-setting-wimax.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wimax.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wimax.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-wimax.c' object='libnm_util_la-nm-setting-wimax.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-wimax.lo `test -f 'nm-setting-wimax.c' || echo '$(srcdir)/'`nm-setting-wimax.c
+
 libnm_util_la-nm-setting-wired.lo: nm-setting-wired.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-wired.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-wired.Tpo -c -o libnm_util_la-nm-setting-wired.lo `test -f 'nm-setting-wired.c' || echo '$(srcdir)/'`nm-setting-wired.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-wired.Tpo $(DEPDIR)/libnm_util_la-nm-setting-wired.Plo
@@ -808,6 +871,26 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-girDATA: $(gir_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(girdir)" || $(MKDIR_P) "$(DESTDIR)$(girdir)"
+	@list='$(gir_DATA)'; test -n "$(girdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(girdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(girdir)" || exit $$?; \
+	done
+
+uninstall-girDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(gir_DATA)'; test -n "$(girdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(girdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(girdir)" && rm -f $$files
 install-pkgconfigDATA: $(pkgconfig_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(pkgconfigdir)" || $(MKDIR_P) "$(DESTDIR)$(pkgconfigdir)"
@@ -828,6 +911,26 @@ uninstall-pkgconfigDATA:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(pkgconfigdir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(pkgconfigdir)" && rm -f $$files
+install-typelibDATA: $(typelib_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(typelibdir)" || $(MKDIR_P) "$(DESTDIR)$(typelibdir)"
+	@list='$(typelib_DATA)'; test -n "$(typelibdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(typelibdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(typelibdir)" || exit $$?; \
+	done
+
+uninstall-typelibDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(typelib_DATA)'; test -n "$(typelibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(typelibdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(typelibdir)" && rm -f $$files
 install-libnm_util_includeHEADERS: $(libnm_util_include_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libnm_util_includedir)" || $(MKDIR_P) "$(DESTDIR)$(libnm_util_includedir)"
@@ -1049,7 +1152,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(libnm_util_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(typelibdir)" "$(DESTDIR)$(libnm_util_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1069,6 +1172,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -1101,8 +1205,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-libnm_util_includeHEADERS \
-	install-pkgconfigDATA
+install-data-am: install-girDATA install-libnm_util_includeHEADERS \
+	install-pkgconfigDATA install-typelibDATA
 
 install-dvi: install-dvi-recursive
 
@@ -1148,8 +1252,9 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES \
-	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA
+uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
+	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA \
+	uninstall-typelibDATA
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) check-am \
 	ctags-recursive install-am install-strip tags-recursive
@@ -1161,17 +1266,23 @@ uninstall-am: uninstall-libLTLIBRARIES \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-libnm_util_includeHEADERS install-man install-pdf \
-	install-pdf-am install-pkgconfigDATA install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA
+	install-exec install-exec-am install-girDATA install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-libnm_util_includeHEADERS \
+	install-man install-pdf install-pdf-am install-pkgconfigDATA \
+	install-ps install-ps-am install-strip install-typelibDATA \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-girDATA uninstall-libLTLIBRARIES \
+	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA \
+	uninstall-typelibDATA
 
+
+-include $(INTROSPECTION_MAKEFILE)
+
+@HAVE_INTROSPECTION_TRUE@NetworkManager-1.0.gir: libnm-util.la
 
 @WITH_TESTS_TRUE@check-local:
 @WITH_TESTS_TRUE@	$(top_srcdir)/tools/check-exports.sh $(builddir)/.libs/libnm-util.so $(SYMBOL_VIS_FILE)

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2010 Red Hat, Inc.
+ * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
 #ifndef NM_DEVICE_H
@@ -44,6 +44,7 @@ G_BEGIN_DECLS
 #define NM_IS_DEVICE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((obj), NM_TYPE_DEVICE))
 #define NM_DEVICE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_DEVICE, NMDeviceClass))
 
+#define NM_DEVICE_DEVICE_TYPE "device-type"
 #define NM_DEVICE_UDI "udi"
 #define NM_DEVICE_INTERFACE "interface"
 #define NM_DEVICE_IP_INTERFACE "ip-interface"
@@ -72,6 +73,9 @@ typedef struct {
 	                       NMDeviceState old_state,
 	                       NMDeviceStateReason reason);
 
+	GSList * (*filter_connections) (NMDevice *device,
+	                                const GSList *connections);
+
 	/* Padding for future expansion */
 	void (*_reserved1) (void);
 	void (*_reserved2) (void);
@@ -85,26 +89,30 @@ GType nm_device_get_type (void);
 
 GObject * nm_device_new (DBusGConnection *connection, const char *path);
 
-const char *  nm_device_get_iface            (NMDevice *device);
-const char *  nm_device_get_ip_iface         (NMDevice *device);
-const char *  nm_device_get_udi              (NMDevice *device);
-const char *  nm_device_get_driver           (NMDevice *device);
-guint32       nm_device_get_capabilities     (NMDevice *device);
-gboolean      nm_device_get_managed          (NMDevice *device);
-gboolean      nm_device_get_firmware_missing (NMDevice *device);
-NMIP4Config * nm_device_get_ip4_config       (NMDevice *device);
-NMDHCP4Config * nm_device_get_dhcp4_config   (NMDevice *device);
-NMIP6Config * nm_device_get_ip6_config       (NMDevice *device);
-NMDHCP6Config * nm_device_get_dhcp6_config   (NMDevice *device);
-NMDeviceState nm_device_get_state            (NMDevice *device);
-const char *  nm_device_get_product          (NMDevice *device);
-const char *  nm_device_get_vendor           (NMDevice *device);
+const char *         nm_device_get_iface            (NMDevice *device);
+const char *         nm_device_get_ip_iface         (NMDevice *device);
+NMDeviceType         nm_device_get_device_type      (NMDevice *device);
+const char *         nm_device_get_udi              (NMDevice *device);
+const char *         nm_device_get_driver           (NMDevice *device);
+NMDeviceCapabilities nm_device_get_capabilities     (NMDevice *device);
+gboolean             nm_device_get_managed          (NMDevice *device);
+gboolean             nm_device_get_firmware_missing (NMDevice *device);
+NMIP4Config *        nm_device_get_ip4_config       (NMDevice *device);
+NMDHCP4Config *      nm_device_get_dhcp4_config     (NMDevice *device);
+NMIP6Config *        nm_device_get_ip6_config       (NMDevice *device);
+NMDHCP6Config *      nm_device_get_dhcp6_config     (NMDevice *device);
+NMDeviceState        nm_device_get_state            (NMDevice *device);
+const char *         nm_device_get_product          (NMDevice *device);
+const char *         nm_device_get_vendor           (NMDevice *device);
 
 typedef void (*NMDeviceDeactivateFn) (NMDevice *device, GError *error, gpointer user_data);
 
-void          nm_device_disconnect         (NMDevice *device,
-                                            NMDeviceDeactivateFn callback,
-                                            gpointer user_data);
+void                 nm_device_disconnect           (NMDevice *device,
+                                                     NMDeviceDeactivateFn callback,
+                                                     gpointer user_data);
+
+GSList *             nm_device_filter_connections   (NMDevice *device,
+                                                     const GSList *connections);
 
 G_END_DECLS
 

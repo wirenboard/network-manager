@@ -24,7 +24,6 @@
 
 #include <nm-client.h>
 #include <nm-remote-settings.h>
-#include <nm-remote-settings-system.h>
 
 /* nmcli exit codes */
 typedef enum {
@@ -50,7 +49,10 @@ typedef enum {
 	NMC_RESULT_ERROR_DEV_DISCONNECT = 6,
 
 	/* NetworkManager is not running */
-	NMC_RESULT_ERROR_NM_NOT_RUNNING = 7
+	NMC_RESULT_ERROR_NM_NOT_RUNNING = 7,
+
+	/* nmcli and NetworkManager versions mismatch */
+	NMC_RESULT_ERROR_VERSIONS_MISMATCH = 8
 } NMCResultCode;
 
 typedef enum {
@@ -95,14 +97,9 @@ typedef struct _NmCli {
 
 	int timeout;                                      /* Operation timeout */
 
-	NMRemoteSettingsSystem *system_settings;          /* System settings */
-	NMRemoteSettings *user_settings;                  /* User settings */
-
+	NMRemoteSettings *system_settings;                /* System settings */
 	gboolean system_settings_running;                 /* Is system settings service running? */
-	gboolean user_settings_running;                   /* Is user settings service running? */
-
 	GSList *system_connections;                       /* List of system connections */
-	GSList *user_connections;                         /* List of user connections */
 
 	gboolean should_wait;                             /* Indication that nmcli should not end yet */
 	gboolean nowait_flag;                             /* '--nowait' option; used for passing to callbacks */
@@ -113,6 +110,7 @@ typedef struct _NmCli {
 	char *required_fields;                            /* Required fields in output: '--fields' option */
 	NmcOutputField *allowed_fields;                   /* Array of allowed fields for particular commands */
 	NmcPrintFields print_fields;                      /* Structure with field indices to print */
+	gboolean nocheck_ver;                             /* Don't check nmcli and NM versions: option '--nocheck' */
 } NmCli;
 
 #endif /* NMC_NMCLI_H */

@@ -35,16 +35,21 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = test-dhcp-options$(EXEEXT) \
-	test-policy-hosts$(EXEEXT)
+	test-policy-hosts$(EXEEXT) test-wifi-ap-utils$(EXEEXT)
 subdir = src/tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
-	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/intltool.m4 \
-	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gtk-doc.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
+	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/introspection.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libnl-check.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -70,8 +75,15 @@ test_policy_hosts_OBJECTS = $(am_test_policy_hosts_OBJECTS)
 test_policy_hosts_DEPENDENCIES =  \
 	$(top_builddir)/src/libtest-policy-hosts.la \
 	$(am__DEPENDENCIES_1)
+am_test_wifi_ap_utils_OBJECTS =  \
+	test_wifi_ap_utils-test-wifi-ap-utils.$(OBJEXT)
+test_wifi_ap_utils_OBJECTS = $(am_test_wifi_ap_utils_OBJECTS)
+test_wifi_ap_utils_DEPENDENCIES =  \
+	$(top_builddir)/libnm-util/libnm-util.la \
+	$(top_builddir)/src/libtest-wifi-ap-utils.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -96,14 +108,14 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(test_dhcp_options_SOURCES) $(test_policy_hosts_SOURCES)
+SOURCES = $(test_dhcp_options_SOURCES) $(test_policy_hosts_SOURCES) \
+	$(test_wifi_ap_utils_SOURCES)
 DIST_SOURCES = $(test_dhcp_options_SOURCES) \
-	$(test_policy_hosts_SOURCES)
+	$(test_policy_hosts_SOURCES) $(test_wifi_ap_utils_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
-ACLOCAL_AMFLAGS = @ACLOCAL_AMFLAGS@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -112,8 +124,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-CATALOGS = @CATALOGS@
-CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -130,6 +140,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -138,6 +149,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GIO_CFLAGS = @GIO_CFLAGS@
 GIO_LIBS = @GIO_LIBS@
@@ -146,8 +158,8 @@ GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
-GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
+GMSGFMT_015 = @GMSGFMT_015@
 GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
@@ -162,13 +174,23 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-INSTOBJEXT = @INSTOBJEXT@
 INTLLIBS = @INTLLIBS@
 INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
 INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
+INTROSPECTION_CFLAGS = @INTROSPECTION_CFLAGS@
+INTROSPECTION_COMPILER = @INTROSPECTION_COMPILER@
+INTROSPECTION_GENERATE = @INTROSPECTION_GENERATE@
+INTROSPECTION_GIRDIR = @INTROSPECTION_GIRDIR@
+INTROSPECTION_LIBS = @INTROSPECTION_LIBS@
+INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
+INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
+INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
+IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
@@ -176,6 +198,8 @@ LIBDL = @LIBDL@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
+LIBICONV = @LIBICONV@
+LIBINTL = @LIBINTL@
 LIBM = @LIBM@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
@@ -184,13 +208,15 @@ LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
+LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
-MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
-MSGFMT_OPTS = @MSGFMT_OPTS@
+MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -216,12 +242,9 @@ PKGCONFIG_PATH = @PKGCONFIG_PATH@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
-POFILES = @POFILES@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
-PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
-PO_IN_DATADIR_TRUE = @PO_IN_DATADIR_TRUE@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
 RANLIB = @RANLIB@
 RESOLVCONF_PATH = @RESOLVCONF_PATH@
@@ -236,10 +259,13 @@ UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
+XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
@@ -327,6 +353,24 @@ test_policy_hosts_LDADD = \
 	$(top_builddir)/src/libtest-policy-hosts.la \
 	$(GLIB_LIBS)
 
+
+####### wifi ap utils test #######
+test_wifi_ap_utils_SOURCES = \
+	test-wifi-ap-utils.c
+
+test_wifi_ap_utils_CPPFLAGS = \
+	$(GLIB_CFLAGS) \
+	$(DBUS_CFLAGS)
+
+test_wifi_ap_utils_LDADD = \
+	$(top_builddir)/libnm-util/libnm-util.la \
+	$(top_builddir)/src/libtest-wifi-ap-utils.la \
+	$(GLIB_LIBS) \
+	$(DBUS_LIBS)
+
+
+####### secret agent interface test #######
+EXTRA_DIST = test-secret-agent.py
 all: all-am
 
 .SUFFIXES:
@@ -376,6 +420,9 @@ test-dhcp-options$(EXEEXT): $(test_dhcp_options_OBJECTS) $(test_dhcp_options_DEP
 test-policy-hosts$(EXEEXT): $(test_policy_hosts_OBJECTS) $(test_policy_hosts_DEPENDENCIES) 
 	@rm -f test-policy-hosts$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_policy_hosts_OBJECTS) $(test_policy_hosts_LDADD) $(LIBS)
+test-wifi-ap-utils$(EXEEXT): $(test_wifi_ap_utils_OBJECTS) $(test_wifi_ap_utils_DEPENDENCIES) 
+	@rm -f test-wifi-ap-utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_wifi_ap_utils_OBJECTS) $(test_wifi_ap_utils_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -385,6 +432,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_dhcp_options-test-dhcp-options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_policy_hosts-test-policy-hosts.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -444,6 +492,22 @@ test_policy_hosts-test-policy-hosts.obj: test-policy-hosts.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-policy-hosts.c' object='test_policy_hosts-test-policy-hosts.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_policy_hosts_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_policy_hosts-test-policy-hosts.obj `if test -f 'test-policy-hosts.c'; then $(CYGPATH_W) 'test-policy-hosts.c'; else $(CYGPATH_W) '$(srcdir)/test-policy-hosts.c'; fi`
+
+test_wifi_ap_utils-test-wifi-ap-utils.o: test-wifi-ap-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wifi_ap_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_wifi_ap_utils-test-wifi-ap-utils.o -MD -MP -MF $(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Tpo -c -o test_wifi_ap_utils-test-wifi-ap-utils.o `test -f 'test-wifi-ap-utils.c' || echo '$(srcdir)/'`test-wifi-ap-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Tpo $(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-wifi-ap-utils.c' object='test_wifi_ap_utils-test-wifi-ap-utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wifi_ap_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_wifi_ap_utils-test-wifi-ap-utils.o `test -f 'test-wifi-ap-utils.c' || echo '$(srcdir)/'`test-wifi-ap-utils.c
+
+test_wifi_ap_utils-test-wifi-ap-utils.obj: test-wifi-ap-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wifi_ap_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_wifi_ap_utils-test-wifi-ap-utils.obj -MD -MP -MF $(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Tpo -c -o test_wifi_ap_utils-test-wifi-ap-utils.obj `if test -f 'test-wifi-ap-utils.c'; then $(CYGPATH_W) 'test-wifi-ap-utils.c'; else $(CYGPATH_W) '$(srcdir)/test-wifi-ap-utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Tpo $(DEPDIR)/test_wifi_ap_utils-test-wifi-ap-utils.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-wifi-ap-utils.c' object='test_wifi_ap_utils-test-wifi-ap-utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wifi_ap_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_wifi_ap_utils-test-wifi-ap-utils.obj `if test -f 'test-wifi-ap-utils.c'; then $(CYGPATH_W) 'test-wifi-ap-utils.c'; else $(CYGPATH_W) '$(srcdir)/test-wifi-ap-utils.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -652,9 +716,12 @@ uninstall-am:
 	tags uninstall uninstall-am
 
 
-@WITH_TESTS_TRUE@check-local: test-dhcp-options
+###########################################
+
+@WITH_TESTS_TRUE@check-local: test-dhcp-options test-policy-hosts test-wifi-ap-utils
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-dhcp-options
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-policy-hosts
+@WITH_TESTS_TRUE@	$(abs_builddir)/test-wifi-ap-utils
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -18,10 +18,18 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2008 Red Hat, Inc.
+ * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
+#include <config.h>
 #include <string.h>
+#include <netinet/ether.h>
+
+#include <nm-connection.h>
+#include <nm-setting-connection.h>
+#include <nm-setting-wireless.h>
+#include <nm-setting-wireless-security.h>
+#include <nm-utils.h>
 
 #include "nm-access-point.h"
 #include "NetworkManager.h"
@@ -38,12 +46,12 @@ typedef struct {
 	gboolean disposed;
 	DBusGProxy *proxy;
 
-	guint32 flags;
-	guint32 wpa_flags;
-	guint32 rsn_flags;
+	NM80211ApFlags flags;
+	NM80211ApSecurityFlags wpa_flags;
+	NM80211ApSecurityFlags rsn_flags;
 	GByteArray *ssid;
 	guint32 frequency;
-	char *hw_address;
+	char *bssid;
 	NM80211Mode mode;
 	guint32 max_bitrate;
 	guint8 strength;
@@ -60,6 +68,7 @@ enum {
 	PROP_MODE,
 	PROP_MAX_BITRATE,
 	PROP_STRENGTH,
+	PROP_BSSID,
 
 	LAST_PROP
 };
@@ -81,7 +90,7 @@ enum {
  *
  * Creates a new #NMAccessPoint.
  *
- * Returns: a new access point
+ * Returns: (transfer full): a new access point
  **/
 GObject *
 nm_access_point_new (DBusGConnection *connection, const char *path)
@@ -99,11 +108,11 @@ nm_access_point_new (DBusGConnection *connection, const char *path)
  * nm_access_point_get_flags:
  * @ap: a #NMAccessPoint
  *
- * Gets the flags of the access point
+ * Gets the flags of the access point.
  *
  * Returns: the flags
  **/
-guint32
+NM80211ApFlags
 nm_access_point_get_flags (NMAccessPoint *ap)
 {
 	NMAccessPointPrivate *priv;
@@ -114,7 +123,8 @@ nm_access_point_get_flags (NMAccessPoint *ap)
 	if (!priv->flags) {
 		priv->flags = _nm_object_get_uint_property (NM_OBJECT (ap),
 		                                           NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                           DBUS_PROP_FLAGS);
+		                                           DBUS_PROP_FLAGS,
+		                                           NULL);
 	}
 
 	return priv->flags;
@@ -124,11 +134,11 @@ nm_access_point_get_flags (NMAccessPoint *ap)
  * nm_access_point_get_wpa_flags:
  * @ap: a #NMAccessPoint
  *
- * Gets the WPA flags of the access point.
+ * Gets the WPA (version 1) flags of the access point.
  *
  * Returns: the WPA flags
  **/
-guint32
+NM80211ApSecurityFlags
 nm_access_point_get_wpa_flags (NMAccessPoint *ap)
 {
 	NMAccessPointPrivate *priv;
@@ -139,7 +149,8 @@ nm_access_point_get_wpa_flags (NMAccessPoint *ap)
 	if (!priv->wpa_flags) {
 		priv->wpa_flags = _nm_object_get_uint_property (NM_OBJECT (ap),
 		                                               NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                               DBUS_PROP_WPA_FLAGS);
+		                                               DBUS_PROP_WPA_FLAGS,
+		                                               NULL);
 	}
 
 	return priv->wpa_flags;
@@ -149,11 +160,12 @@ nm_access_point_get_wpa_flags (NMAccessPoint *ap)
  * nm_access_point_get_rsn_flags:
  * @ap: a #NMAccessPoint
  *
- * Gets the RSN flags of the access point.
+ * Gets the RSN (Robust Secure Network, ie WPA version 2) flags of the access
+ * point.
  *
  * Returns: the RSN flags
  **/
-guint32
+NM80211ApSecurityFlags
 nm_access_point_get_rsn_flags (NMAccessPoint *ap)
 {
 	NMAccessPointPrivate *priv;
@@ -164,7 +176,8 @@ nm_access_point_get_rsn_flags (NMAccessPoint *ap)
 	if (!priv->rsn_flags) {
 		priv->rsn_flags = _nm_object_get_uint_property (NM_OBJECT (ap),
 		                                               NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                               DBUS_PROP_RSN_FLAGS);
+		                                               DBUS_PROP_RSN_FLAGS,
+		                                               NULL);
 	}
 
 	return priv->rsn_flags;
@@ -190,7 +203,8 @@ nm_access_point_get_ssid (NMAccessPoint *ap)
 	if (!priv->ssid) {
 		priv->ssid = _nm_object_get_byte_array_property (NM_OBJECT (ap),
 		                                                NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                                DBUS_PROP_SSID);
+		                                                DBUS_PROP_SSID,
+		                                                NULL);
 	}
 
 	return priv->ssid;
@@ -215,10 +229,38 @@ nm_access_point_get_frequency (NMAccessPoint *ap)
 	if (!priv->frequency) {
 		priv->frequency = _nm_object_get_uint_property (NM_OBJECT (ap),
 		                                               NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                               DBUS_PROP_FREQUENCY);
+		                                               DBUS_PROP_FREQUENCY,
+		                                               NULL);
 	}
 
 	return priv->frequency;
+}
+
+/**
+ * nm_access_point_get_bssid:
+ * @ap: a #NMAccessPoint
+ *
+ * Gets the Basic Service Set ID (BSSID) of the WiFi access point.
+ *
+ * Returns: the BSSID of the access point. This is an internal string and must
+ * not be modified or freed.
+ **/
+const char *
+nm_access_point_get_bssid (NMAccessPoint *ap)
+{
+	NMAccessPointPrivate *priv;
+
+	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NULL);
+
+	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
+	if (!priv->bssid) {
+		priv->bssid = _nm_object_get_string_property (NM_OBJECT (ap),
+		                                              NM_DBUS_INTERFACE_ACCESS_POINT,
+		                                              DBUS_PROP_HW_ADDRESS,
+		                                              NULL);
+	}
+
+	return priv->bssid;
 }
 
 /**
@@ -229,22 +271,13 @@ nm_access_point_get_frequency (NMAccessPoint *ap)
  *
  * Returns: the hardware address of the access point. This is the internal string used by the
  * access point and must not be modified.
+ *
+ * Deprecated: 0.9: Use nm_access_point_get_bssid() instead.
  **/
 const char *
 nm_access_point_get_hw_address (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
-	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NULL);
-
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->hw_address) {
-		priv->hw_address = _nm_object_get_string_property (NM_OBJECT (ap),
-		                                                  NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                                  DBUS_PROP_HW_ADDRESS);
-	}
-
-	return priv->hw_address;
+	return nm_access_point_get_bssid (ap);
 }
 
 /**
@@ -266,7 +299,8 @@ nm_access_point_get_mode (NMAccessPoint *ap)
 	if (!priv->mode) {
 		priv->mode = _nm_object_get_uint_property (NM_OBJECT (ap),
 		                                          NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                          DBUS_PROP_MODE);
+		                                          DBUS_PROP_MODE,
+		                                          NULL);
 	}
 
 	return priv->mode;
@@ -291,7 +325,8 @@ nm_access_point_get_max_bitrate (NMAccessPoint *ap)
 	if (!priv->max_bitrate) {
 		priv->max_bitrate = _nm_object_get_uint_property (NM_OBJECT (ap),
 		                                              NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                              DBUS_PROP_MAX_BITRATE);
+		                                              DBUS_PROP_MAX_BITRATE,
+		                                              NULL);
 	}
 
 	return priv->max_bitrate;
@@ -316,10 +351,129 @@ nm_access_point_get_strength (NMAccessPoint *ap)
 	if (!priv->strength) {
 		priv->strength = _nm_object_get_byte_property (NM_OBJECT (ap),
 		                                              NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                              DBUS_PROP_STRENGTH);
+		                                              DBUS_PROP_STRENGTH,
+		                                              NULL);
 	}
 
 	return priv->strength;
+}
+
+/**
+ * nm_access_point_filter_connections:
+ * @ap: an #NMAccessPoint to filter connections for
+ * @connections: a list of #NMConnection objects to filter
+ *
+ * Filters a given list of connections for a given #NMAccessPoint object and
+ * return connections which may be activated with the access point.  Any
+ * returned connections will match the @ap's SSID and (if given) BSSID and
+ * other attributes like security settings, channel, etc.
+ *
+ * Returns: (transfer container) (element-type NetworkManager.Connection): a
+ * list of #NMConnection objects that could be activated with the given @ap.
+ * The elements of the list are owned by their creator and should not be freed
+ * by the caller, but the returned list itself is owned by the caller and should
+ * be freed with g_slist_free() when it is no longer required.
+ **/
+GSList *
+nm_access_point_filter_connections (NMAccessPoint *ap, const GSList *connections)
+{
+	GSList *filtered = NULL;
+	const GSList *iter;
+
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMConnection *candidate = NM_CONNECTION (iter->data);
+		NMSettingConnection *s_con;
+		NMSettingWireless *s_wifi;
+		NMSettingWirelessSecurity *s_wsec;
+		const char *ctype, *ap_bssid_str;
+		const GByteArray *setting_ssid;
+		const GByteArray *ap_ssid;
+		const GByteArray *setting_bssid;
+		struct ether_addr *ap_bssid;
+		const char *setting_mode;
+		NM80211Mode ap_mode;
+		const char *setting_band;
+		guint32 ap_freq, setting_chan, ap_chan;
+
+		s_con = (NMSettingConnection *) nm_connection_get_setting (candidate, NM_TYPE_SETTING_CONNECTION);
+		g_assert (s_con);
+		ctype = nm_setting_connection_get_connection_type (s_con);
+		if (strcmp (ctype, NM_SETTING_WIRELESS_SETTING_NAME) != 0)
+			continue;
+
+		s_wifi = (NMSettingWireless *) nm_connection_get_setting (candidate, NM_TYPE_SETTING_WIRELESS);
+		if (!s_wifi)
+			continue;
+
+		/* SSID checks */
+		ap_ssid = nm_access_point_get_ssid (ap);
+		g_warn_if_fail (ap_ssid != NULL);
+		setting_ssid = nm_setting_wireless_get_ssid (s_wifi);
+		if (!setting_ssid || !ap_ssid || (setting_ssid->len != ap_ssid->len))
+			continue;
+		if (memcmp (setting_ssid->data, ap_ssid->data, ap_ssid->len) != 0)
+			continue;
+
+		/* BSSID checks */
+		ap_bssid_str = nm_access_point_get_bssid (ap);
+		g_warn_if_fail (ap_bssid_str);
+		setting_bssid = nm_setting_wireless_get_bssid (s_wifi);
+		if (setting_bssid && ap_bssid_str) {
+			g_assert (setting_bssid->len == ETH_ALEN);
+			ap_bssid = ether_aton (ap_bssid_str);
+			g_warn_if_fail (ap_bssid);
+			if (ap_bssid) {
+				if (memcmp (ap_bssid->ether_addr_octet, setting_bssid->data, ETH_ALEN) != 0)
+					continue;
+			}
+		}
+
+		/* Mode */
+		ap_mode = nm_access_point_get_mode (ap);
+		g_warn_if_fail (ap_mode != NM_802_11_MODE_UNKNOWN);
+		setting_mode = nm_setting_wireless_get_mode (s_wifi);
+		if (setting_mode && ap_mode) {
+			if (!strcmp (setting_mode, "infrastructure") && (ap_mode != NM_802_11_MODE_INFRA))
+				return NULL;
+			if (!strcmp (setting_mode, "adhoc") && (ap_mode != NM_802_11_MODE_ADHOC))
+				return NULL;
+		}
+
+		/* Band and Channel/Frequency */
+		ap_freq = nm_access_point_get_frequency (ap);
+		g_warn_if_fail (ap_freq > 0);
+		if (ap_freq) {
+			setting_band = nm_setting_wireless_get_band (s_wifi);
+			if (g_strcmp0 (setting_band, "a") == 0) {
+				if (ap_freq < 4915 || ap_freq > 5825)
+					continue;
+			} else if (g_strcmp0 (setting_band, "bg") == 0) {
+				if (ap_freq < 2412 || ap_freq > 2484)
+					continue;
+			}
+
+			setting_chan = nm_setting_wireless_get_channel (s_wifi);
+			if (setting_chan) {
+				ap_chan = nm_utils_wifi_freq_to_channel (ap_freq);
+				if (setting_chan != ap_chan)
+					continue;
+			}
+		}
+
+		s_wsec = (NMSettingWirelessSecurity *) nm_connection_get_setting (candidate, NM_TYPE_SETTING_WIRELESS_SECURITY);
+		if (!nm_setting_wireless_ap_security_compatible (s_wifi,
+		                                                 s_wsec,
+		                                                 nm_access_point_get_flags (ap),
+		                                                 nm_access_point_get_wpa_flags (ap),
+		                                                 nm_access_point_get_rsn_flags (ap),
+		                                                 ap_mode))
+			continue;
+
+		/* Connection applies to this device */
+		filtered = g_slist_prepend (filtered, candidate);
+	}
+
+	return g_slist_reverse (filtered);
 }
 
 /************************************************************/
@@ -354,8 +508,7 @@ finalize (GObject *object)
 	if (priv->ssid)
 		g_byte_array_free (priv->ssid, TRUE);
 
-	if (priv->hw_address)
-		g_free (priv->hw_address);
+	g_free (priv->bssid);
 
 	G_OBJECT_CLASS (nm_access_point_parent_class)->finalize (object);
 }
@@ -385,7 +538,10 @@ get_property (GObject *object,
 		g_value_set_uint (value, nm_access_point_get_frequency (ap));
 		break;
 	case PROP_HW_ADDRESS:
-		g_value_set_string (value, nm_access_point_get_hw_address (ap));
+		g_value_set_string (value, nm_access_point_get_bssid (ap));
+		break;
+	case PROP_BSSID:
+		g_value_set_string (value, nm_access_point_get_bssid (ap));
 		break;
 	case PROP_MODE:
 		g_value_set_uint (value, nm_access_point_get_mode (ap));
@@ -420,9 +576,9 @@ register_for_property_changed (NMAccessPoint *ap)
 		{ NM_ACCESS_POINT_FLAGS,       _nm_object_demarshal_generic, &priv->flags },
 		{ NM_ACCESS_POINT_WPA_FLAGS,   _nm_object_demarshal_generic, &priv->wpa_flags },
 		{ NM_ACCESS_POINT_RSN_FLAGS,   _nm_object_demarshal_generic, &priv->rsn_flags },
-		{ NM_ACCESS_POINT_SSID,        demarshal_ssid,              &priv->ssid },
+		{ NM_ACCESS_POINT_SSID,        demarshal_ssid,               &priv->ssid },
 		{ NM_ACCESS_POINT_FREQUENCY,   _nm_object_demarshal_generic, &priv->frequency },
-		{ NM_ACCESS_POINT_HW_ADDRESS,  _nm_object_demarshal_generic, &priv->hw_address },
+		{ NM_ACCESS_POINT_HW_ADDRESS,  _nm_object_demarshal_generic, &priv->bssid },
 		{ NM_ACCESS_POINT_MODE,        _nm_object_demarshal_generic, &priv->mode },
 		{ NM_ACCESS_POINT_MAX_BITRATE, _nm_object_demarshal_generic, &priv->max_bitrate },
 		{ NM_ACCESS_POINT_STRENGTH,    _nm_object_demarshal_generic, &priv->strength },
@@ -542,6 +698,19 @@ nm_access_point_class_init (NMAccessPointClass *ap_class)
 						"Frequency",
 						0, 10000, 0,
 						G_PARAM_READABLE));
+
+	/**
+	 * NMAccessPoint:bssid:
+	 *
+	 * The BSSID of the access point.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_BSSID,
+		 g_param_spec_string (NM_ACCESS_POINT_BSSID,
+						  "BSSID",
+						  "BSSID",
+						  NULL,
+						  G_PARAM_READABLE));
 
 	/**
 	 * NMAccessPoint:hw-address:

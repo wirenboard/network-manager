@@ -18,20 +18,19 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2010 Red Hat, Inc.
+ * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
 #include <string.h>
 
-#define G_UDEV_API_IS_SUBJECT_TO_CHANGE
 #include <gudev/gudev.h>
 
 #include "NetworkManager.h"
 #include "nm-device-ethernet.h"
 #include "nm-device-wifi.h"
-#include "nm-gsm-device.h"
-#include "nm-cdma-device.h"
+#include "nm-device-modem.h"
 #include "nm-device-bt.h"
+#include "nm-device-wimax.h"
 #include "nm-device.h"
 #include "nm-device-private.h"
 #include "nm-object-private.h"
@@ -50,9 +49,10 @@ typedef struct {
 
 	char *iface;
 	char *ip_iface;
+	NMDeviceType device_type;
 	char *udi;
 	char *driver;
-	guint32 capabilities;
+	NMDeviceCapabilities capabilities;
 	gboolean managed;
 	gboolean firmware_missing;
 	NMIP4Config *ip4_config;
@@ -86,6 +86,7 @@ enum {
 	PROP_VENDOR,
 	PROP_DHCP6_CONFIG,
 	PROP_IP_INTERFACE,
+	PROP_DEVICE_TYPE,
 
 	LAST_PROP
 };
@@ -126,9 +127,7 @@ demarshal_ip4_config (NMObject *object, GParamSpec *pspec, GValue *value, gpoint
 			priv->null_ip4_config = TRUE;
 		else {
 			config = NM_IP4_CONFIG (_nm_object_cache_get (path));
-			if (config)
-				config = g_object_ref (config);
-			else {
+			if (!config) {
 				connection = nm_object_get_connection (object);
 				config = NM_IP4_CONFIG (nm_ip4_config_new (connection, path));
 			}
@@ -166,9 +165,7 @@ demarshal_dhcp4_config (NMObject *object, GParamSpec *pspec, GValue *value, gpoi
 			priv->null_dhcp4_config = TRUE;
 		else {
 			config = NM_DHCP4_CONFIG (_nm_object_cache_get (path));
-			if (config)
-				config = g_object_ref (config);
-			else {
+			if (!config) {
 				connection = nm_object_get_connection (object);
 				config = NM_DHCP4_CONFIG (nm_dhcp4_config_new (connection, path));
 			}
@@ -206,9 +203,7 @@ demarshal_ip6_config (NMObject *object, GParamSpec *pspec, GValue *value, gpoint
 			priv->null_ip6_config = TRUE;
 		else {
 			config = NM_IP6_CONFIG (_nm_object_cache_get (path));
-			if (config)
-				config = g_object_ref (config);
-			else {
+			if (!config) {
 				connection = nm_object_get_connection (object);
 				config = NM_IP6_CONFIG (nm_ip6_config_new (connection, path));
 			}
@@ -246,9 +241,7 @@ demarshal_dhcp6_config (NMObject *object, GParamSpec *pspec, GValue *value, gpoi
 			priv->null_dhcp6_config = TRUE;
 		else {
 			config = NM_DHCP6_CONFIG (_nm_object_cache_get (path));
-			if (config)
-				config = g_object_ref (config);
-			else {
+			if (!config) {
 				connection = nm_object_get_connection (object);
 				config = NM_DHCP6_CONFIG (nm_dhcp6_config_new (connection, path));
 			}
@@ -400,6 +393,9 @@ get_property (GObject *object,
 	NMDevice *device = NM_DEVICE (object);
 
 	switch (prop_id) {
+	case PROP_DEVICE_TYPE:
+		g_value_set_uint (value, nm_device_get_device_type (device));
+		break;
 	case PROP_UDI:
 		g_value_set_string (value, nm_device_get_udi (device));
 		break;
@@ -449,6 +445,26 @@ get_property (GObject *object,
 }
 
 static void
+set_property (GObject *object,
+              guint prop_id,
+              const GValue *value,
+              GParamSpec *pspec)
+{
+	NMDevice *self = NM_DEVICE (object);
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
+
+	switch (prop_id) {
+	case PROP_DEVICE_TYPE:
+		/* Construct only */
+		priv->device_type = g_value_get_uint (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
 nm_device_class_init (NMDeviceClass *device_class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (device_class);
@@ -458,6 +474,7 @@ nm_device_class_init (NMDeviceClass *device_class)
 	/* virtual methods */
 	object_class->constructor = constructor;
 	object_class->get_property = get_property;
+	object_class->set_property = set_property;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 
@@ -491,9 +508,26 @@ nm_device_class_init (NMDeviceClass *device_class)
 						  G_PARAM_READABLE));
 
 	/**
+	 * NMDevice:device-type:
+	 *
+	 * The numeric type of the device.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_DEVICE_TYPE,
+		 g_param_spec_uint (NM_DEVICE_DEVICE_TYPE,
+						  "Device Type",
+						  "Numeric device type (ie ethernet, wifi, etc)",
+						  NM_DEVICE_TYPE_UNKNOWN, G_MAXUINT32, NM_DEVICE_TYPE_UNKNOWN,
+						  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+	/**
 	 * NMDevice:udi:
 	 *
-	 * The Unique Device Identifier of the device.
+	 * An operating-system specific device hardware identifier; this is not
+	 * unique to a specific hardware device across reboots or hotplugs.  It
+	 * is an opaque string which for some device types (Bluetooth, Modem)
+	 * contains an identifier provided by the underlying hardware service daemon
+	 * such as Bluez or ModemManager, and clients can use this property to
+	 * request more information about the device from those services.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_UDI,
@@ -674,7 +708,7 @@ nm_device_class_init (NMDeviceClass *device_class)
  *
  * Creates a new #NMDevice.
  *
- * Returns: a new device
+ * Returns: (transfer full): a new device
  **/
 GObject *
 nm_device_new (DBusGConnection *connection, const char *path)
@@ -684,6 +718,7 @@ nm_device_new (DBusGConnection *connection, const char *path)
 	GValue value = {0,};
 	GType dtype = 0;
 	NMDevice *device = NULL;
+	NMDeviceType nm_dtype;
 
 	g_return_val_if_fail (connection != NULL, NULL);
 	g_return_val_if_fail (path != NULL, NULL);
@@ -708,21 +743,22 @@ nm_device_new (DBusGConnection *connection, const char *path)
 		goto out;
 	}
 
-	switch (g_value_get_uint (&value)) {
+	nm_dtype = g_value_get_uint (&value);
+	switch (nm_dtype) {
 	case NM_DEVICE_TYPE_ETHERNET:
 		dtype = NM_TYPE_DEVICE_ETHERNET;
 		break;
 	case NM_DEVICE_TYPE_WIFI:
 		dtype = NM_TYPE_DEVICE_WIFI;
 		break;
-	case NM_DEVICE_TYPE_GSM:
-		dtype = NM_TYPE_GSM_DEVICE;
-		break;
-	case NM_DEVICE_TYPE_CDMA:
-		dtype = NM_TYPE_CDMA_DEVICE;
+	case NM_DEVICE_TYPE_MODEM:
+		dtype = NM_TYPE_DEVICE_MODEM;
 		break;
 	case NM_DEVICE_TYPE_BT:
 		dtype = NM_TYPE_DEVICE_BT;
+		break;
+	case NM_DEVICE_TYPE_WIMAX:
+		dtype = NM_TYPE_DEVICE_WIMAX;
 		break;
 	default:
 		g_warning ("Unknown device type %d", g_value_get_uint (&value));
@@ -733,6 +769,7 @@ nm_device_new (DBusGConnection *connection, const char *path)
 		device = (NMDevice *) g_object_new (dtype,
 											NM_OBJECT_DBUS_CONNECTION, connection,
 											NM_OBJECT_DBUS_PATH, path,
+											NM_DEVICE_DEVICE_TYPE, nm_dtype,
 											NULL);
 	}
 
@@ -761,7 +798,8 @@ nm_device_get_iface (NMDevice *device)
 	if (!priv->iface) {
 		priv->iface = _nm_object_get_string_property (NM_OBJECT (device),
 		                                             NM_DBUS_INTERFACE_DEVICE,
-		                                             "Interface");
+		                                             "Interface",
+		                                             NULL);
 	}
 
 	return priv->iface;
@@ -788,10 +826,27 @@ nm_device_get_ip_iface (NMDevice *device)
 	if (!priv->ip_iface) {
 		priv->ip_iface = _nm_object_get_string_property (NM_OBJECT (device),
 		                                                 NM_DBUS_INTERFACE_DEVICE,
-		                                                 "IpInterface");
+		                                                 "IpInterface",
+		                                                 NULL);
 	}
 
 	return priv->ip_iface;
+}
+
+/**
+ * nm_device_get_device_type:
+ * @device: a #NMDevice
+ *
+ * Returns the numeric type of the #NMDevice, ie ethernet, wifi, etc.
+ *
+ * Returns: the device type
+ **/
+NMDeviceType
+nm_device_get_device_type (NMDevice *self)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (self), NM_DEVICE_TYPE_UNKNOWN);
+
+	return NM_DEVICE_GET_PRIVATE (self)->device_type;
 }
 
 /**
@@ -815,7 +870,8 @@ nm_device_get_udi (NMDevice *device)
 	if (!priv->udi) {
 		priv->udi = _nm_object_get_string_property (NM_OBJECT (device),
 		                                           NM_DBUS_INTERFACE_DEVICE,
-		                                           "Udi");
+		                                           "Udi",
+		                                           NULL);
 	}
 
 	return priv->udi;
@@ -841,7 +897,8 @@ nm_device_get_driver (NMDevice *device)
 	if (!priv->driver) {
 		priv->driver = _nm_object_get_string_property (NM_OBJECT (device),
 		                                              NM_DBUS_INTERFACE_DEVICE,
-		                                              "Driver");
+		                                              "Driver",
+		                                              NULL);
 	}
 
 	return priv->driver;
@@ -855,7 +912,7 @@ nm_device_get_driver (NMDevice *device)
  *
  * Returns: the capabilities
  **/
-guint32
+NMDeviceCapabilities
 nm_device_get_capabilities (NMDevice *device)
 {
 	NMDevicePrivate *priv;
@@ -866,7 +923,8 @@ nm_device_get_capabilities (NMDevice *device)
 	if (!priv->capabilities) {
 		priv->capabilities = _nm_object_get_uint_property (NM_OBJECT (device),
 		                                                  NM_DBUS_INTERFACE_DEVICE,
-		                                                  "Capabilities");
+		                                                  "Capabilities",
+		                                                  NULL);
 	}
 
 	return priv->capabilities;
@@ -891,7 +949,8 @@ nm_device_get_managed (NMDevice *device)
 	if (!priv->managed) {
 		priv->managed = _nm_object_get_boolean_property (NM_OBJECT (device),
 		                                                NM_DBUS_INTERFACE_DEVICE,
-		                                                "Managed");
+		                                                "Managed",
+		                                                NULL);
 	}
 
 	return priv->managed;
@@ -918,7 +977,8 @@ nm_device_get_firmware_missing (NMDevice *device)
 	if (!priv->firmware_missing) {
 		priv->firmware_missing = _nm_object_get_boolean_property (NM_OBJECT (device),
 		                                                          NM_DBUS_INTERFACE_DEVICE,
-		                                                          "FirmwareMissing");
+		                                                          "FirmwareMissing",
+		                                                          NULL);
 	}
 
 	return priv->firmware_missing;
@@ -930,7 +990,7 @@ nm_device_get_firmware_missing (NMDevice *device)
  *
  * Gets the current #NMIP4Config associated with the #NMDevice.
  *
- * Returns: the #NMIP4Config or %NULL if the device is not activated.
+ * Returns: (transfer none): the #NMIP4Config or %NULL if the device is not activated.
  **/
 NMIP4Config *
 nm_device_get_ip4_config (NMDevice *device)
@@ -947,7 +1007,7 @@ nm_device_get_ip4_config (NMDevice *device)
 	if (priv->null_ip4_config)
 		return NULL;
 
-	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Ip4Config");
+	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Ip4Config", NULL);
 	if (path) {
 		g_value_init (&value, DBUS_TYPE_G_OBJECT_PATH);
 		g_value_take_boxed (&value, path);
@@ -964,7 +1024,7 @@ nm_device_get_ip4_config (NMDevice *device)
  *
  * Gets the current #NMDHCP4Config associated with the #NMDevice.
  *
- * Returns: the #NMDHCPConfig or %NULL if the device is not activated or not
+ * Returns: (transfer none): the #NMDHCPConfig or %NULL if the device is not activated or not
  * using DHCP.
  **/
 NMDHCP4Config *
@@ -982,7 +1042,7 @@ nm_device_get_dhcp4_config (NMDevice *device)
 	if (priv->null_dhcp4_config)
 		return NULL;
 
-	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Dhcp4Config");
+	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Dhcp4Config", NULL);
 	if (path) {
 		g_value_init (&value, DBUS_TYPE_G_OBJECT_PATH);
 		g_value_take_boxed (&value, path);
@@ -999,7 +1059,7 @@ nm_device_get_dhcp4_config (NMDevice *device)
  *
  * Gets the current #NMIP6Config associated with the #NMDevice.
  *
- * Returns: the #NMIP6Config or %NULL if the device is not activated.
+ * Returns: (transfer none): the #NMIP6Config or %NULL if the device is not activated.
  **/
 NMIP6Config *
 nm_device_get_ip6_config (NMDevice *device)
@@ -1016,7 +1076,7 @@ nm_device_get_ip6_config (NMDevice *device)
 	if (priv->null_ip6_config)
 		return NULL;
 
-	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Ip6Config");
+	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Ip6Config", NULL);
 	if (path) {
 		g_value_init (&value, DBUS_TYPE_G_OBJECT_PATH);
 		g_value_take_boxed (&value, path);
@@ -1033,7 +1093,7 @@ nm_device_get_ip6_config (NMDevice *device)
  *
  * Gets the current #NMDHCP6Config associated with the #NMDevice.
  *
- * Returns: the #NMDHCPConfig or %NULL if the device is not activated or not
+ * Returns: (transfer none): the #NMDHCPConfig or %NULL if the device is not activated or not
  * using DHCP.
  **/
 NMDHCP6Config *
@@ -1051,7 +1111,7 @@ nm_device_get_dhcp6_config (NMDevice *device)
 	if (priv->null_dhcp6_config)
 		return NULL;
 
-	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Dhcp6Config");
+	path = _nm_object_get_object_path_property (NM_OBJECT (device), NM_DBUS_INTERFACE_DEVICE, "Dhcp6Config", NULL);
 	if (path) {
 		g_value_init (&value, DBUS_TYPE_G_OBJECT_PATH);
 		g_value_take_boxed (&value, path);
@@ -1081,7 +1141,8 @@ nm_device_get_state (NMDevice *device)
 	if (priv->state == NM_DEVICE_STATE_UNKNOWN) {
 		priv->state = _nm_object_get_uint_property (NM_OBJECT (device), 
 		                                           NM_DBUS_INTERFACE_DEVICE,
-		                                           "State");
+		                                           "State",
+		                                           NULL);
 	}
 
 	return priv->state;
@@ -1313,7 +1374,7 @@ deactivate_cb (DBusGProxy *proxy,
 /**
  * nm_device_disconnect:
  * @device: a #NMDevice
- * @callback: callback to be called when disconnect operation completes
+ * @callback: (scope async): callback to be called when disconnect operation completes
  * @user_data: caller-specific data passed to @callback
  *
  * Disconnects the device if currently connected, and prevents the device from
@@ -1337,5 +1398,32 @@ nm_device_disconnect (NMDevice *device,
 	org_freedesktop_NetworkManager_Device_disconnect_async (NM_DEVICE_GET_PRIVATE (device)->proxy,
 	                                                        deactivate_cb,
 	                                                        info);
+}
+
+/**
+ * nm_device_filter_connections:
+ * @device: an #NMDevice to filter connections for
+ * @connections: a list of #NMConnection objects to filter
+ *
+ * Filters a given list of connections for a given #NMDevice object and return
+ * connections which may be activated with the device. For example if @device
+ * is a WiFi device that supports only WEP encryption, the returned list will
+ * contain any WiFi connections in @connections that allow connection to
+ * unencrypted or WEP-enabled SSIDs.  The returned list will not contain
+ * Ethernet, Bluetooth, WiFi WPA connections, or any other connection that is
+ * incompatible with the device.
+ *
+ * Returns: (transfer container) (element-type NetworkManager.Connection): a
+ * list of #NMConnection objects that could be activated with the given @device.
+ * The elements of the list are owned by their creator and should not be freed
+ * by the caller, but the returned list itself is owned by the caller and should
+ * be freed with g_slist_free() when it is no longer required.
+ **/
+GSList *
+nm_device_filter_connections (NMDevice *device, const GSList *connections)
+{
+	if (NM_DEVICE_GET_CLASS (device)->filter_connections)
+		return NM_DEVICE_GET_CLASS (device)->filter_connections (device, connections);
+	return NULL;
 }
 

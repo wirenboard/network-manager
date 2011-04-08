@@ -78,4 +78,11 @@ gboolean nm_utils_get_proc_sys_net_value (const char *path,
                                           const char *iface,
                                           guint32 *out_value);
 
+void nm_utils_complete_generic (NMConnection *connection,
+                                const char *ctype,
+                                const GSList *existing,
+                                const char *format,
+                                const char *preferred,
+                                gboolean default_enable_ipv6);
+
 #endif /* NETWORK_MANAGER_UTILS_H */

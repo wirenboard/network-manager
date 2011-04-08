@@ -17,6 +17,8 @@
  * (C) Copyright 2010 - 2011 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus.h>
@@ -38,16 +40,18 @@
 #include <nm-setting-cdma.h>
 #include <nm-setting-bluetooth.h>
 #include <nm-setting-olpc-mesh.h>
+#if WITH_WIMAX
+#include <nm-setting-wimax.h>
+#endif
 #include <nm-device-ethernet.h>
 #include <nm-device-wifi.h>
-#include <nm-gsm-device.h>
-#include <nm-cdma-device.h>
+#if WITH_WIMAX
+#include <nm-device-wimax.h>
+#endif
+#include <nm-device-modem.h>
 #include <nm-device-bt.h>
 //#include <nm-device-olpc-mesh.h>
 #include <nm-remote-settings.h>
-#include <nm-remote-settings-system.h>
-#include <nm-settings-interface.h>
-#include <nm-settings-connection-interface.h>
 #include <nm-vpn-connection.h>
 
 #include "utils.h"
@@ -60,32 +64,29 @@ static NmcOutputField nmc_fields_con_status[] = {
 	{"NAME",          N_("NAME"),         25, NULL, 0},  /* 0 */
 	{"UUID",          N_("UUID"),         38, NULL, 0},  /* 1 */
 	{"DEVICES",       N_("DEVICES"),      10, NULL, 0},  /* 2 */
-	{"SCOPE",         N_("SCOPE"),         8, NULL, 0},  /* 3 */
-	{"DEFAULT",       N_("DEFAULT"),       8, NULL, 0},  /* 4 */
-	{"DBUS-SERVICE",  N_("DBUS-SERVICE"), 45, NULL, 0},  /* 5 */
-	{"SPEC-OBJECT",   N_("SPEC-OBJECT"),  10, NULL, 0},  /* 6 */
-	{"VPN",           N_("VPN"),           5, NULL, 0},  /* 7 */
-	{"DBUS-PATH",     N_("DBUS-PATH"),    51, NULL, 0},  /* 8 */
+	{"DEFAULT",       N_("DEFAULT"),       8, NULL, 0},  /* 3 */
+	{"SPEC-OBJECT",   N_("SPEC-OBJECT"),  10, NULL, 0},  /* 4 */
+	{"VPN",           N_("VPN"),           5, NULL, 0},  /* 5 */
+	{"DBUS-PATH",     N_("DBUS-PATH"),    51, NULL, 0},  /* 6 */
 	{NULL,            NULL,                0, NULL, 0}
 };
-#define NMC_FIELDS_CON_STATUS_ALL     "NAME,UUID,DEVICES,SCOPE,DEFAULT,VPN,DBUS-SERVICE,DBUS-PATH,SPEC-OBJECT"
-#define NMC_FIELDS_CON_STATUS_COMMON  "NAME,UUID,DEVICES,SCOPE,DEFAULT,VPN"
+#define NMC_FIELDS_CON_STATUS_ALL     "NAME,UUID,DEVICES,DEFAULT,VPN,DBUS-PATH,SPEC-OBJECT"
+#define NMC_FIELDS_CON_STATUS_COMMON  "NAME,UUID,DEVICES,DEFAULT,VPN"
 
 /* Available fields for 'con list' */
 static NmcOutputField nmc_fields_con_list[] = {
 	{"NAME",            N_("NAME"),           25, NULL, 0},  /* 0 */
 	{"UUID",            N_("UUID"),           38, NULL, 0},  /* 1 */
 	{"TYPE",            N_("TYPE"),           17, NULL, 0},  /* 2 */
-	{"SCOPE",           N_("SCOPE"),           8, NULL, 0},  /* 3 */
-	{"TIMESTAMP",       N_("TIMESTAMP"),      12, NULL, 0},  /* 4 */
-	{"TIMESTAMP-REAL",  N_("TIMESTAMP-REAL"), 34, NULL, 0},  /* 5 */
-	{"AUTOCONNECT",     N_("AUTOCONNECT"),    13, NULL, 0},  /* 6 */
-	{"READONLY",        N_("READONLY"),       10, NULL, 0},  /* 7 */
-	{"DBUS-PATH",       N_("DBUS-PATH"),      42, NULL, 0},  /* 8 */
+	{"TIMESTAMP",       N_("TIMESTAMP"),      12, NULL, 0},  /* 3 */
+	{"TIMESTAMP-REAL",  N_("TIMESTAMP-REAL"), 34, NULL, 0},  /* 4 */
+	{"AUTOCONNECT",     N_("AUTOCONNECT"),    13, NULL, 0},  /* 5 */
+	{"READONLY",        N_("READONLY"),       10, NULL, 0},  /* 6 */
+	{"DBUS-PATH",       N_("DBUS-PATH"),      42, NULL, 0},  /* 7 */
 	{NULL,              NULL,                  0, NULL, 0}
 };
-#define NMC_FIELDS_CON_LIST_ALL     "NAME,UUID,TYPE,SCOPE,TIMESTAMP,TIMESTAMP-REAL,AUTOCONNECT,READONLY,DBUS-PATH"
-#define NMC_FIELDS_CON_LIST_COMMON  "NAME,UUID,TYPE,SCOPE,TIMESTAMP-REAL"
+#define NMC_FIELDS_CON_LIST_ALL     "NAME,UUID,TYPE,TIMESTAMP,TIMESTAMP-REAL,AUTOCONNECT,READONLY,DBUS-PATH"
+#define NMC_FIELDS_CON_LIST_COMMON  "NAME,UUID,TYPE,TIMESTAMP-REAL"
 
 
 /* Helper macro to define fields */
@@ -108,9 +109,10 @@ static NmcOutputField nmc_fields_settings_names[] = {
 	SETTING_FIELD (NM_SETTING_BLUETOOTH_SETTING_NAME, 0),             /* 12 */
 	SETTING_FIELD (NM_SETTING_OLPC_MESH_SETTING_NAME, 0),             /* 13 */
 	SETTING_FIELD (NM_SETTING_VPN_SETTING_NAME, 0),                   /* 14 */
+	SETTING_FIELD (NM_SETTING_WIMAX_SETTING_NAME, 0),                 /* 15 */
 	{NULL, NULL, 0, NULL, 0}
 };
-#define NMC_FIELDS_SETTINGS_NAMES_ALL    NM_SETTING_CONNECTION_SETTING_NAME","\
+#define NMC_FIELDS_SETTINGS_NAMES_ALL_X  NM_SETTING_CONNECTION_SETTING_NAME","\
                                          NM_SETTING_WIRED_SETTING_NAME","\
                                          NM_SETTING_802_1X_SETTING_NAME","\
                                          NM_SETTING_WIRELESS_SETTING_NAME","\
@@ -125,6 +127,12 @@ static NmcOutputField nmc_fields_settings_names[] = {
                                          NM_SETTING_BLUETOOTH_SETTING_NAME","\
                                          NM_SETTING_OLPC_MESH_SETTING_NAME","\
                                          NM_SETTING_VPN_SETTING_NAME
+#if WITH_WIMAX
+#define NMC_FIELDS_SETTINGS_NAMES_ALL    NMC_FIELDS_SETTINGS_NAMES_ALL_X","\
+                                         NM_SETTING_WIMAX_SETTING_NAME
+#else
+#define NMC_FIELDS_SETTINGS_NAMES_ALL    NMC_FIELDS_SETTINGS_NAMES_ALL_X
+#endif
 
 
 typedef struct {
@@ -143,11 +151,10 @@ static void quit (void);
 static void show_connection (NMConnection *data, gpointer user_data);
 static NMConnection *find_connection (GSList *list, const char *filter_type, const char *filter_val);
 static gboolean find_device_for_connection (NmCli *nmc, NMConnection *connection, const char *iface, const char *ap,
-                                            NMDevice **device, const char **spec_object, GError **error);
+                                            const char *nsp, NMDevice **device, const char **spec_object, GError **error);
 static const char *active_connection_state_to_string (NMActiveConnectionState state);
 static void active_connection_state_cb (NMActiveConnection *active, GParamSpec *pspec, gpointer user_data);
-static void activate_connection_cb (gpointer user_data, const char *path, GError *error);
-static void get_connections_cb (NMSettingsInterface *settings, gpointer user_data);
+static void get_connections_cb (NMRemoteSettings *settings, gpointer user_data);
 static NMCResultCode do_connections_list (NmCli *nmc, int argc, char **argv);
 static NMCResultCode do_connections_status (NmCli *nmc, int argc, char **argv);
 static NMCResultCode do_connection_up (NmCli *nmc, int argc, char **argv);
@@ -157,13 +164,26 @@ static void
 usage (void)
 {
 	fprintf (stderr,
-	 	 _("Usage: nmcli con { COMMAND | help }\n"
-		 "  COMMAND := { list | status | up | down }\n\n"
-		 "  list [id <id> | uuid <id> | system | user]\n"
-		 "  status\n"
-		 "  up id <id> | uuid <id> [iface <iface>] [ap <hwaddr>] [--nowait] [--timeout <timeout>]\n"
-		 "  down id <id> | uuid <id>\n"));
+	         _("Usage: nmcli con { COMMAND | help }\n"
+	         "  COMMAND := { list | status | up | down }\n\n"
+	         "  list [id <id> | uuid <id>]\n"
+	         "  status\n"
+#if WITH_WIMAX
+	         "  up id <id> | uuid <id> [iface <iface>] [ap <hwaddr>] [nsp <name>] [--nowait] [--timeout <timeout>]\n"
+#else
+	         "  up id <id> | uuid <id> [iface <iface>] [ap <hwaddr>] [--nowait] [--timeout <timeout>]\n"
+#endif
+	         "  down id <id> | uuid <id>\n"));
 }
+
+/* The real commands that do something - i.e. not 'help', etc. */
+static const char *real_con_commands[] = {
+	"list",
+	"status",
+	"up",
+	"down",
+	NULL
+};
 
 /* quit main loop */
 static void
@@ -354,6 +374,17 @@ nmc_connection_detail (NMConnection *connection, NmCli *nmc)
 				continue;
 			}
 		}
+
+#if WITH_WIMAX
+		if (!strcasecmp (nmc_fields_settings_names[section_idx].name, nmc_fields_settings_names[15].name)) {
+			setting = nm_connection_get_setting (connection, NM_TYPE_SETTING_WIMAX);
+			if (setting) {
+				setting_wimax_details (setting, nmc);
+				was_output = TRUE;
+				continue;
+			}
+		}
+#endif
 	}
 
 	if (print_settings_array)
@@ -372,7 +403,7 @@ show_connection (NMConnection *data, gpointer user_data)
 	char *timestamp_str;
 	char timestamp_real_str[64];
 
-	s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+	s_con = nm_connection_get_setting_connection (connection);
 	if (s_con) {
 		/* Obtain field values */
 		timestamp = nm_setting_connection_get_timestamp (s_con);
@@ -382,12 +413,11 @@ show_connection (NMConnection *data, gpointer user_data)
 		nmc->allowed_fields[0].value = nm_setting_connection_get_id (s_con);
 		nmc->allowed_fields[1].value = nm_setting_connection_get_uuid (s_con);
 		nmc->allowed_fields[2].value = nm_setting_connection_get_connection_type (s_con);
-		nmc->allowed_fields[3].value = nm_connection_get_scope (connection) == NM_CONNECTION_SCOPE_SYSTEM ? _("system") : _("user");
-		nmc->allowed_fields[4].value = timestamp_str;
-		nmc->allowed_fields[5].value = timestamp ? timestamp_real_str : _("never");
-		nmc->allowed_fields[6].value = nm_setting_connection_get_autoconnect (s_con) ? _("yes") : _("no");
-		nmc->allowed_fields[7].value = nm_setting_connection_get_read_only (s_con) ? _("yes") : _("no");
-		nmc->allowed_fields[8].value = nm_connection_get_path (connection);
+		nmc->allowed_fields[3].value = timestamp_str;
+		nmc->allowed_fields[4].value = timestamp ? timestamp_real_str : _("never");
+		nmc->allowed_fields[5].value = nm_setting_connection_get_autoconnect (s_con) ? _("yes") : _("no");
+		nmc->allowed_fields[6].value = nm_setting_connection_get_read_only (s_con) ? _("yes") : _("no");
+		nmc->allowed_fields[7].value = nm_connection_get_path (connection);
 
 		nmc->print_fields.flags &= ~NMC_PF_FLAG_MAIN_HEADER_ADD & ~NMC_PF_FLAG_MAIN_HEADER_ONLY & ~NMC_PF_FLAG_FIELD_NAMES; /* Clear header flags */
 		print_fields (nmc->print_fields, nmc->allowed_fields);
@@ -408,7 +438,7 @@ find_connection (GSList *list, const char *filter_type, const char *filter_val)
 	iterator = list;
 	while (iterator) {
 		connection = NM_CONNECTION (iterator->data);
-		s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+		s_con = nm_connection_get_setting_connection (connection);
 		if (s_con) {
 			id = nm_setting_connection_get_id (s_con);
 			uuid = nm_setting_connection_get_uuid (s_con);
@@ -458,22 +488,19 @@ do_connections_list (NmCli *nmc, int argc, char **argv)
 			goto error;
 		valid_param_specified = TRUE;
 
+		/* Print headers */
 		nmc->print_fields.flags = multiline_flag | mode_flag | escape_flag | NMC_PF_FLAG_MAIN_HEADER_ADD | NMC_PF_FLAG_FIELD_NAMES;
-		nmc->print_fields.header_name = _("System connections");
+		nmc->print_fields.header_name = _("Connection list");
 		print_fields (nmc->print_fields, nmc->allowed_fields);
-		g_slist_foreach (nmc->system_connections, (GFunc) show_connection, nmc);
 
-		nmc->print_fields.flags = multiline_flag | mode_flag | escape_flag | NMC_PF_FLAG_MAIN_HEADER_ADD | NMC_PF_FLAG_FIELD_NAMES;
-		nmc->print_fields.header_name = _("User connections");
-		print_fields (nmc->print_fields, nmc->allowed_fields);
-		g_slist_foreach (nmc->user_connections, (GFunc) show_connection, nmc);
+		/* Print values */
+		g_slist_foreach (nmc->system_connections, (GFunc) show_connection, nmc);
 	}
 	else {
 		while (argc > 0) {
 			if (strcmp (*argv, "id") == 0 || strcmp (*argv, "uuid") == 0) {
 				const char *selector = *argv;
-				NMConnection *con1;
-				NMConnection *con2;
+				NMConnection *con;
 
 				if (next_arg (&argc, &argv) != 0) {
 					g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
@@ -484,40 +511,14 @@ do_connections_list (NmCli *nmc, int argc, char **argv)
 				if (!nmc->mode_specified)
 					nmc->multiline_output = TRUE;  /* multiline mode is default for 'con list id|uuid' */
 
-				con1 = find_connection (nmc->system_connections, selector, *argv);
-				con2 = find_connection (nmc->user_connections, selector, *argv);
-				if (con1) nmc_connection_detail (con1, nmc);
-				if (con2) nmc_connection_detail (con2, nmc);
-				if (!con1 && !con2) {
+				con = find_connection (nmc->system_connections, selector, *argv);
+				if (con) {
+					nmc_connection_detail (con, nmc);
+				}
+				else {
 					g_string_printf (nmc->return_text, _("Error: %s - no such connection."), *argv);
 					nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
 				}
-				break;
-			}
-			else if (strcmp (*argv, "system") == 0) {
-				if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error2))
-					goto error;
-				if (error1)
-					goto error;
-				valid_param_specified = TRUE;
-
-				nmc->print_fields.flags = multiline_flag | mode_flag | escape_flag | NMC_PF_FLAG_MAIN_HEADER_ADD | NMC_PF_FLAG_FIELD_NAMES;
-				nmc->print_fields.header_name = _("System connections");
-				print_fields (nmc->print_fields, nmc->allowed_fields);
-				g_slist_foreach (nmc->system_connections, (GFunc) show_connection, nmc);
-				break;
-			}
-			else if (strcmp (*argv, "user") == 0) {
-				if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error2))
-					goto error;
-				if (error1)
-					goto error;
-				valid_param_specified = TRUE;
-
-				nmc->print_fields.flags = multiline_flag | mode_flag | escape_flag | NMC_PF_FLAG_MAIN_HEADER_ADD | NMC_PF_FLAG_FIELD_NAMES;
-				nmc->print_fields.header_name = _("User connections");
-				print_fields (nmc->print_fields, nmc->allowed_fields);
-				g_slist_foreach (nmc->user_connections, (GFunc) show_connection, nmc);
 				break;
 			}
 			else {
@@ -553,29 +554,19 @@ error:
 	return nmc->return_value;
 }
 
-typedef struct {
-	NmCli *nmc;
-	NMConnectionScope scope;
-} StatusInfo;
-
 static void
 show_active_connection (gpointer data, gpointer user_data)
 {
 	NMActiveConnection *active = NM_ACTIVE_CONNECTION (data);
-	StatusInfo *info = (StatusInfo *) user_data;
+	NmCli *nmc = (NmCli *) user_data;
 	GSList *con_list, *iter;
 	const char *active_path;
-	NMConnectionScope active_service_scope;
 	NMSettingConnection *s_con;
 	const GPtrArray *devices;
 	GString *dev_str;
 	int i;
 
 	active_path = nm_active_connection_get_connection (active);
-	active_service_scope = nm_active_connection_get_scope (active);
-
-	if (active_service_scope != info->scope)
-		return;
 
 	/* Get devices of the active connection */
 	dev_str = g_string_new (NULL);
@@ -589,29 +580,27 @@ show_active_connection (gpointer data, gpointer user_data)
 	if (dev_str->len > 0)
 		g_string_truncate (dev_str, dev_str->len - 1);  /* Cut off last ',' */
 
-	con_list = (info->scope == NM_CONNECTION_SCOPE_SYSTEM) ? info->nmc->system_connections : info->nmc->user_connections;
+	con_list = nmc->system_connections; 
 	for (iter = con_list; iter; iter = g_slist_next (iter)) {
 		NMConnection *connection = (NMConnection *) iter->data;
 		const char *con_path = nm_connection_get_path (connection);
 
 		if (!strcmp (active_path, con_path)) {
 			/* This connection is active */
-			s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+			s_con = nm_connection_get_setting_connection (connection);
 			g_assert (s_con != NULL);
 
 			/* Obtain field values */
-			info->nmc->allowed_fields[0].value = nm_setting_connection_get_id (s_con);
-			info->nmc->allowed_fields[1].value = nm_setting_connection_get_uuid (s_con);
-			info->nmc->allowed_fields[2].value = dev_str->str;
-			info->nmc->allowed_fields[3].value = active_service_scope == NM_CONNECTION_SCOPE_SYSTEM ? _("system") : _("user");
-			info->nmc->allowed_fields[4].value = nm_active_connection_get_default (active) ? _("yes") : _("no");
-			info->nmc->allowed_fields[5].value = nm_active_connection_get_service_name (active);
-			info->nmc->allowed_fields[6].value = nm_active_connection_get_specific_object (active);
-			info->nmc->allowed_fields[7].value = NM_IS_VPN_CONNECTION (active) ? _("yes") : _("no");
-			info->nmc->allowed_fields[8].value = nm_object_get_path (NM_OBJECT (active));
+			nmc->allowed_fields[0].value = nm_setting_connection_get_id (s_con);
+			nmc->allowed_fields[1].value = nm_setting_connection_get_uuid (s_con);
+			nmc->allowed_fields[2].value = dev_str->str;
+			nmc->allowed_fields[3].value = nm_active_connection_get_default (active) ? _("yes") : _("no");
+			nmc->allowed_fields[4].value = nm_active_connection_get_specific_object (active);
+			nmc->allowed_fields[5].value = NM_IS_VPN_CONNECTION (active) ? _("yes") : _("no");
+			nmc->allowed_fields[6].value = nm_object_get_path (NM_OBJECT (active));
 
-			info->nmc->print_fields.flags &= ~NMC_PF_FLAG_MAIN_HEADER_ADD & ~NMC_PF_FLAG_MAIN_HEADER_ONLY & ~NMC_PF_FLAG_FIELD_NAMES; /* Clear header flags */
-			print_fields (info->nmc->print_fields, info->nmc->allowed_fields);
+			nmc->print_fields.flags &= ~NMC_PF_FLAG_MAIN_HEADER_ADD & ~NMC_PF_FLAG_MAIN_HEADER_ONLY & ~NMC_PF_FLAG_FIELD_NAMES; /* Clear header flags */
+			print_fields (nmc->print_fields, nmc->allowed_fields);
 			break;
 		}
 	}
@@ -624,7 +613,6 @@ do_connections_status (NmCli *nmc, int argc, char **argv)
 {
 	const GPtrArray *active_cons;
 	GError *error = NULL;
-	StatusInfo *info;
 	char *fields_str;
 	char *fields_all =    NMC_FIELDS_CON_STATUS_ALL;
 	char *fields_common = NMC_FIELDS_CON_STATUS_COMMON;
@@ -673,15 +661,8 @@ do_connections_status (NmCli *nmc, int argc, char **argv)
 
 	nmc->get_client (nmc);
 	active_cons = nm_client_get_active_connections (nmc->client);
-	if (active_cons && active_cons->len) {
-		info = g_malloc0 (sizeof (StatusInfo));
-		info->nmc = nmc;
-		info->scope = NM_CONNECTION_SCOPE_SYSTEM;
-		g_ptr_array_foreach ((GPtrArray *) active_cons, show_active_connection, (gpointer) info);
-		info->scope = NM_CONNECTION_SCOPE_USER;
-		g_ptr_array_foreach ((GPtrArray *) active_cons, show_active_connection, (gpointer) info);
-		g_free (info);
-	}
+	if (active_cons && active_cons->len)
+		g_ptr_array_foreach ((GPtrArray *) active_cons, show_active_connection, (gpointer) nmc);
 
 error:
 	return nmc->return_value;
@@ -700,7 +681,7 @@ check_ethernet_compatible (NMDeviceEthernet *device, NMConnection *connection, G
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
 	connection_type = nm_setting_connection_get_connection_type (s_con);
@@ -714,7 +695,7 @@ check_ethernet_compatible (NMDeviceEthernet *device, NMConnection *connection, G
 	if (!strcmp (connection_type, NM_SETTING_PPPOE_SETTING_NAME))
 		is_pppoe = TRUE;
 
-	s_wired = (NMSettingWired *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRED);
+	s_wired = nm_connection_get_setting_wired (connection);
 	/* Wired setting is optional for PPPoE */
 	if (!is_pppoe && !s_wired) {
 		g_set_error (error, 0, 0,
@@ -756,7 +737,7 @@ check_wifi_compatible (NMDeviceWifi *device, NMConnection *connection, GError **
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
 	if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_WIRELESS_SETTING_NAME)) {
@@ -765,7 +746,7 @@ check_wifi_compatible (NMDeviceWifi *device, NMConnection *connection, GError **
 		return FALSE;
 	}
 
-	s_wireless = NM_SETTING_WIRELESS (nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRELESS));
+	s_wireless = nm_connection_get_setting_wireless (connection);
 	if (!s_wireless) {
 		g_set_error (error, 0, 0,
 		             "The connection was not a valid WiFi connection.");
@@ -814,7 +795,7 @@ check_bt_compatible (NMDeviceBt *device, NMConnection *connection, GError **erro
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
 	if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_BLUETOOTH_SETTING_NAME)) {
@@ -823,7 +804,7 @@ check_bt_compatible (NMDeviceBt *device, NMConnection *connection, GError **erro
 		return FALSE;
 	}
 
-	s_bt = NM_SETTING_BLUETOOTH (nm_connection_get_setting (connection, NM_TYPE_SETTING_BLUETOOTH));
+	s_bt = nm_connection_get_setting_bluetooth (connection);
 	if (!s_bt) {
 		g_set_error (error, 0, 0,
 		             "The connection was not a valid Bluetooth connection.");
@@ -873,7 +854,7 @@ check_olpc_mesh_compatible (NMDeviceOlpcMesh *device, NMConnection *connection, 
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
 	if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_OLPC_MESH_SETTING_NAME)) {
@@ -882,7 +863,7 @@ check_olpc_mesh_compatible (NMDeviceOlpcMesh *device, NMConnection *connection, 
 		return FALSE;
 	}
 
-	s_mesh = NM_SETTING_OLPC_MESH (nm_connection_get_setting (connection, NM_TYPE_SETTING_OLPC_MESH));
+	s_mesh = nm_connection_get_setting_olpc_mesh (connection);
 	if (!s_mesh) {
 		g_set_error (error, 0, 0,
 		             "The connection was not a valid Mesh connection.");
@@ -893,55 +874,94 @@ check_olpc_mesh_compatible (NMDeviceOlpcMesh *device, NMConnection *connection, 
 }
 #endif
 
+#if WITH_WIMAX
 static gboolean
-check_gsm_compatible (NMGsmDevice *device, NMConnection *connection, GError **error)
+check_wimax_compatible (NMDeviceWimax *device, NMConnection *connection, GError **error)
 {
 	NMSettingConnection *s_con;
-	NMSettingGsm *s_gsm;
+	NMSettingWimax *s_wimax;
+	const GByteArray *mac;
+	const char *device_mac_str;
+	struct ether_addr *device_mac = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
-	if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_GSM_SETTING_NAME)) {
+	if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_WIMAX_SETTING_NAME)) {
 		g_set_error (error, 0, 0,
-		             "The connection was not a GSM connection.");
+		             "The connection was not a WiMAX connection.");
 		return FALSE;
 	}
 
-	s_gsm = NM_SETTING_GSM (nm_connection_get_setting (connection, NM_TYPE_SETTING_GSM));
-	if (!s_gsm) {
+	s_wimax = nm_connection_get_setting_wimax (connection);
+	if (!s_wimax) {
 		g_set_error (error, 0, 0,
-		             "The connection was not a valid GSM connection.");
+		             "The connection was not a valid WiMAX connection.");
+		return FALSE;
+	}
+
+	device_mac_str = nm_device_wimax_get_hw_address (device);
+	if (device_mac_str)
+		device_mac = ether_aton (device_mac_str);
+	if (!device_mac) {
+		g_set_error (error, 0, 0, "Invalid device MAC address.");
+		return FALSE;
+	}
+
+	mac = nm_setting_wimax_get_mac_address (s_wimax);
+	if (mac && memcmp (mac->data, device_mac->ether_addr_octet, ETH_ALEN)) {
+		g_set_error (error, 0, 0,
+	        	     "The connection's MAC address did not match this device.");
 		return FALSE;
 	}
 
 	return TRUE;
 }
+#endif
 
 static gboolean
-check_cdma_compatible (NMCdmaDevice *device, NMConnection *connection, GError **error)
+check_modem_compatible (NMDeviceModem *device, NMConnection *connection, GError **error)
 {
 	NMSettingConnection *s_con;
+	NMSettingGsm *s_gsm;
 	NMSettingCdma *s_cdma;
+	NMDeviceModemCapabilities caps = NM_DEVICE_MODEM_CAPABILITY_NONE;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
-	if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_CDMA_SETTING_NAME)) {
-		g_set_error (error, 0, 0,
-		             "The connection was not a CDMA connection.");
-		return FALSE;
-	}
+	/* Figure out what the modem supports */
+	caps = nm_device_modem_get_current_capabilities (device);
+	if (caps & NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS) {
+		if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_GSM_SETTING_NAME)) {
+			g_set_error (error, 0, 0,
+				     "The connection was not a GSM connection.");
+			return FALSE;
+		}
 
-	s_cdma = NM_SETTING_CDMA (nm_connection_get_setting (connection, NM_TYPE_SETTING_CDMA));
-	if (!s_cdma) {
-		g_set_error (error, 0, 0,
-		             "The connection was not a valid CDMA connection.");
-		return FALSE;
+		s_gsm = nm_connection_get_setting_gsm (connection);
+		if (!s_gsm) {
+			g_set_error (error, 0, 0,
+				     "The connection was not a valid GSM connection.");
+			return FALSE;
+		}
+	} else if (caps & NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO) {
+		if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_CDMA_SETTING_NAME)) {
+			g_set_error (error, 0, 0,
+				     "The connection was not a CDMA connection.");
+			return FALSE;
+		}
+
+		s_cdma = nm_connection_get_setting_cdma (connection);
+		if (!s_cdma) {
+			g_set_error (error, 0, 0,
+				     "The connection was not a valid CDMA connection.");
+			return FALSE;
+		}
 	}
 
 	return TRUE;
@@ -961,49 +981,17 @@ nm_device_is_connection_compatible (NMDevice *device, NMConnection *connection, 
 		return check_bt_compatible (NM_DEVICE_BT (device), connection, error);
 //	else if (NM_IS_DEVICE_OLPC_MESH (device))
 //		return check_olpc_mesh_compatible (NM_DEVICE_OLPC_MESH (device), connection, error);
-	else if (NM_IS_GSM_DEVICE (device))
-		return check_gsm_compatible (NM_GSM_DEVICE (device), connection, error);
-	else if (NM_IS_CDMA_DEVICE (device))
-		return check_cdma_compatible (NM_CDMA_DEVICE (device), connection, error);
+#if WITH_WIMAX
+	else if (NM_IS_DEVICE_WIMAX (device))
+		return check_wimax_compatible (NM_DEVICE_WIMAX (device), connection, error);
+#endif
+	else if (NM_IS_DEVICE_MODEM (device))
+		return check_modem_compatible (NM_DEVICE_MODEM (device), connection, error);
 
 	g_set_error (error, 0, 0, "unhandled device type '%s'", G_OBJECT_TYPE_NAME (device));
 	return FALSE;
 }
 
-
-/**
- * nm_client_get_active_connection_by_path:
- * @client: a #NMClient
- * @object_path: the object path to search for
- *
- * Gets a #NMActiveConnection from a #NMClient.
- *
- * Returns: the #NMActiveConnection for the given @object_path or %NULL if none is found.
- **/
-static NMActiveConnection *
-nm_client_get_active_connection_by_path (NMClient *client, const char *object_path)
-{
-	const GPtrArray *actives;
-	int i;
-	NMActiveConnection *active = NULL;
-
-	g_return_val_if_fail (NM_IS_CLIENT (client), NULL);
-	g_return_val_if_fail (object_path, NULL);
-
-	actives = nm_client_get_active_connections (client);
-	if (!actives)
-		return NULL;
-
-	for (i = 0; i < actives->len; i++) {
-		NMActiveConnection *candidate = g_ptr_array_index (actives, i);
-		if (!strcmp (nm_object_get_path (NM_OBJECT (candidate)), object_path)) {
-			active = candidate;
-			break;
-		}
-	}
-
-	return active;
-}
 /* -------------------- */
 
 static NMActiveConnection *
@@ -1055,13 +1043,20 @@ get_default_active_connection (NmCli *nmc, NMDevice **device)
  * IN:  connection:  connection to activate
  *      iface:       device interface name to use (optional)
  *      ap:          access point to use (optional; valid just for 802-11-wireless)
+ *      nsp:         Network Service Provider to use (option; valid only for wimax)
  * OUT: device:      found device
  *      spec_object: specific_object path of NMAccessPoint
  * RETURNS: TRUE when a device is found, FALSE otherwise.
  */
 static gboolean
-find_device_for_connection (NmCli *nmc, NMConnection *connection, const char *iface, const char *ap,
-                            NMDevice **device, const char **spec_object, GError **error)
+find_device_for_connection (NmCli *nmc,
+                            NMConnection *connection,
+                            const char *iface,
+                            const char *ap,
+                            const char *nsp,
+                            NMDevice **device,
+                            const char **spec_object,
+                            GError **error)
 {
 	NMSettingConnection *s_con;
 	const char *con_type;
@@ -1072,7 +1067,7 @@ find_device_for_connection (NmCli *nmc, NMConnection *connection, const char *if
 	g_return_val_if_fail (spec_object != NULL && *spec_object == NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 	con_type = nm_setting_connection_get_connection_type (s_con);
 
@@ -1148,6 +1143,27 @@ find_device_for_connection (NmCli *nmc, NMConnection *connection, const char *if
 				}
 				g_free (hwaddr_up);
 			}
+
+#if WITH_WIMAX
+			if (   found_device
+			    && nsp
+			    && !strcmp (con_type, NM_SETTING_WIMAX_SETTING_NAME)
+			    && NM_IS_DEVICE_WIMAX (dev)) {
+				const GPtrArray *nsps = nm_device_wimax_get_nsps (NM_DEVICE_WIMAX (dev));
+				found_device = NULL;  /* Mark as not found; set to the device again later, only if NSP matches */
+
+				for (j = 0; nsps && (j < nsps->len); j++) {
+					NMWimaxNsp *candidate_nsp = g_ptr_array_index (nsps, j);
+					const char *candidate_name = nm_wimax_nsp_get_name (candidate_nsp);
+
+					if (!strcmp (nsp, candidate_name)) {
+						found_device = dev;
+						*spec_object = nm_object_get_path (NM_OBJECT (candidate_nsp));
+						break;
+					}
+				}
+			}
+#endif
 		}
 
 		if (found_device) {
@@ -1171,6 +1187,8 @@ active_connection_state_to_string (NMActiveConnectionState state)
 		return _("activating");
 	case NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
 		return _("activated");
+	case NM_ACTIVE_CONNECTION_STATE_DEACTIVATING:
+		return _("deactivating");
 	case NM_ACTIVE_CONNECTION_STATE_UNKNOWN:
 	default:
 		return _("unknown");
@@ -1300,79 +1318,32 @@ timeout_cb (gpointer user_data)
 }
 
 static void
-foo_active_connections_changed_cb (NMClient *client,
-                                   GParamSpec *pspec,
-                                   gpointer user_data)
-{
-	/* Call again activate_connection_cb with dummy arguments;
-	 * the correct ones are taken from its first call.
-	 */
-	activate_connection_cb (NULL, NULL, NULL);
-}
-
-static void
-activate_connection_cb (gpointer user_data, const char *path, GError *error)
+activate_connection_cb (NMClient *client, NMActiveConnection *active, GError *error, gpointer user_data)
 {
 	NmCli *nmc = (NmCli *) user_data;
-	NMActiveConnection *active;
 	NMActiveConnectionState state;
-	static gulong handler_id = 0;
-	static NmCli *orig_nmc;
-	static const char *orig_path;
-	static GError *orig_error;
 
-	if (nmc)
-	{
-		/* Called first time; store actual arguments */
-		orig_nmc = nmc;
-		orig_path = path;
-		orig_error = error;
-	}
-
-	/* Disconnect the handler not to be run any more */
-	if (handler_id != 0) {
-		g_signal_handler_disconnect (orig_nmc->client, handler_id);
-		handler_id = 0;
-	}
-
-	if (orig_error) {
-		g_string_printf (orig_nmc->return_text, _("Error: Connection activation failed: %s"), orig_error->message);
-		orig_nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
+	if (error) {
+		g_string_printf (nmc->return_text, _("Error: Connection activation failed: %s"), error->message);
+		nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
 		quit ();
 	} else {
-		active = nm_client_get_active_connection_by_path (orig_nmc->client, orig_path);
-		if (!active) {
-			/* The active connection path is not in active connections list yet; wait for active-connections signal. */
-			/* This is basically the case for VPN connections. */
-			if (nmc) {
-				/* Called first time, i.e. by nm_client_activate_connection() */
-				handler_id = g_signal_connect (orig_nmc->client, "notify::active-connections",
-				                               G_CALLBACK (foo_active_connections_changed_cb), NULL);
-				return;
-			} else {
-				g_string_printf (orig_nmc->return_text, _("Error: Obtaining active connection for '%s' failed."), orig_path);
-				orig_nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
-				quit ();
-				return;
-			}
-		}
-
 		state = nm_active_connection_get_state (active);
 
 		printf (_("Active connection state: %s\n"), active_connection_state_to_string (state));
-		printf (_("Active connection path: %s\n"), orig_path);
+		printf (_("Active connection path: %s\n"), nm_object_get_path (NM_OBJECT (active)));
 
-		if (orig_nmc->nowait_flag || state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
+		if (nmc->nowait_flag || state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
 			/* don't want to wait or already activated */
 			quit ();
 		} else {
 			if (NM_IS_VPN_CONNECTION (active))
-				g_signal_connect (NM_VPN_CONNECTION (active), "vpn-state-changed", G_CALLBACK (vpn_connection_state_cb), orig_nmc);
+				g_signal_connect (NM_VPN_CONNECTION (active), "vpn-state-changed", G_CALLBACK (vpn_connection_state_cb), nmc);
 			else
-				g_signal_connect (active, "notify::state", G_CALLBACK (active_connection_state_cb), orig_nmc);
+				g_signal_connect (active, "notify::state", G_CALLBACK (active_connection_state_cb), nmc);
 
 			/* Start timer not to loop forever when signals are not emitted */
-			g_timeout_add_seconds (orig_nmc->timeout, timeout_cb, orig_nmc);
+			g_timeout_add_seconds (nmc->timeout, timeout_cb, nmc);
 		}
 	}
 }
@@ -1385,11 +1356,10 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 	gboolean device_found;
 	NMConnection *connection = NULL;
 	NMSettingConnection *s_con;
-	gboolean is_system;
-	const char *con_path;
 	const char *con_type;
 	const char *iface = NULL;
 	const char *ap = NULL;
+	const char *nsp = NULL;
 	gboolean id_specified = FALSE;
 	gboolean wait = TRUE;
 	GError *error = NULL;
@@ -1410,8 +1380,7 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 				goto error;
 			}
 
-			if ((connection = find_connection (nmc->system_connections, selector, *argv)) == NULL)
-				connection = find_connection (nmc->user_connections, selector, *argv);
+			connection = find_connection (nmc->system_connections, selector, *argv);
 
 			if (!connection) {
 				g_string_printf (nmc->return_text, _("Error: Unknown connection: %s."), *argv);
@@ -1437,6 +1406,17 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 
 			ap = *argv;
 		}
+#if WITH_WIMAX
+		else if (strcmp (*argv, "nsp") == 0) {
+			if (next_arg (&argc, &argv) != 0) {
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				goto error;
+			}
+
+			nsp = *argv;
+		}
+#endif
 		else if (strcmp (*argv, "--nowait") == 0) {
 			wait = FALSE;
 		} else if (strcmp (*argv, "--timeout") == 0) {
@@ -1482,14 +1462,11 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 	/* create NMClient */
 	nmc->get_client (nmc);
 
-	is_system = (nm_connection_get_scope (connection) == NM_CONNECTION_SCOPE_SYSTEM) ? TRUE : FALSE;
-	con_path = nm_connection_get_path (connection);
-
-	s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 	con_type = nm_setting_connection_get_connection_type (s_con);
 
-	device_found = find_device_for_connection (nmc, connection, iface, ap, &device, &spec_object, &error);
+	device_found = find_device_for_connection (nmc, connection, iface, ap, nsp, &device, &spec_object, &error);
 
 	if (!device_found) {
 		if (error)
@@ -1501,13 +1478,14 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 		goto error;
 	}
 
-	/* Use nowait_flag instead of should_wait because exitting has to be postponed till active_connection_state_cb()
-	 * is called, giving NM time to check our permissions */
+	/* Use nowait_flag instead of should_wait because exiting has to be postponed till
+	 * active_connection_state_cb() is called. That gives NM time to check our permissions
+	 * and we can follow activation progress.
+	 */
 	nmc->nowait_flag = !wait;
 	nmc->should_wait = TRUE;
 	nm_client_activate_connection (nmc->client,
-	                               is_system ? NM_DBUS_SERVICE_SYSTEM_SETTINGS : NM_DBUS_SERVICE_USER_SETTINGS,
-	                               con_path,
+	                               connection,
 	                               device,
 	                               spec_object,
 	                               activate_connection_cb,
@@ -1528,7 +1506,6 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 	const GPtrArray *active_cons;
 	const char *con_path;
 	const char *active_path;
-	NMConnectionScope active_service_scope, con_scope;
 	gboolean id_specified = FALSE;
 	gboolean wait = TRUE;
 	int i;
@@ -1544,8 +1521,7 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 				goto error;
 			}
 
-			if ((connection = find_connection (nmc->system_connections, selector, *argv)) == NULL)
-				connection = find_connection (nmc->user_connections, selector, *argv);
+			connection = find_connection (nmc->system_connections, selector, *argv);
 
 			if (!connection) {
 				g_string_printf (nmc->return_text, _("Error: Unknown connection: %s."), *argv);
@@ -1586,15 +1562,13 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 	nmc->get_client (nmc);
 
 	con_path = nm_connection_get_path (connection);
-	con_scope = nm_connection_get_scope (connection);
 
 	active_cons = nm_client_get_active_connections (nmc->client);
 	for (i = 0; active_cons && (i < active_cons->len); i++) {
 		NMActiveConnection *candidate = g_ptr_array_index (active_cons, i);
 
 		active_path = nm_active_connection_get_connection (candidate);
-		active_service_scope = nm_active_connection_get_scope (candidate);
-		if (!strcmp (active_path, con_path) && active_service_scope == con_scope) {
+		if (!strcmp (active_path, con_path)) {
 			active = candidate;
 			break;
 		}
@@ -1602,9 +1576,8 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 
 	if (active)
 		nm_client_deactivate_connection (nmc->client, active);
-	else {
+	else
 		fprintf (stderr, _("Warning: Connection not active\n"));
-	}
 	sleep (1);  /* Don't quit immediatelly and give NM time to check our permissions */
 
 error:
@@ -1612,73 +1585,66 @@ error:
 	return nmc->return_value;
 }
 
-/* callback called when connections are obtained from the settings service */
-static void
-get_connections_cb (NMSettingsInterface *settings, gpointer user_data)
+static NMCResultCode
+parse_cmd (NmCli *nmc, int argc, char **argv)
 {
-	ArgsInfo *args = (ArgsInfo *) user_data;
-	static gboolean system_cb_called = FALSE;
-	static gboolean user_cb_called = FALSE;
 	GError *error = NULL;
 
-	if (NM_IS_REMOTE_SETTINGS_SYSTEM (settings)) {
-		system_cb_called = TRUE;
-		args->nmc->system_connections = nm_settings_interface_list_connections (settings);
-	}
-	else {
-		user_cb_called = TRUE;
-		args->nmc->user_connections = nm_settings_interface_list_connections (settings);
-	}
-
-	/* return and wait for the callback of the second settings is called */
-	if (   (args->nmc->system_settings_running && !system_cb_called)
-	    || (args->nmc->user_settings_running && !user_cb_called))
-		return;
-
-	if (args->argc == 0) {
-		if (!nmc_terse_option_check (args->nmc->print_output, args->nmc->required_fields, &error))
+	if (argc == 0) {
+		if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error))
 			goto opt_error;
-		args->nmc->return_value = do_connections_list (args->nmc, args->argc, args->argv);
+		nmc->return_value = do_connections_list (nmc, argc, argv);
 	} else {
 
-	 	if (matches (*args->argv, "list") == 0) {
-			args->nmc->return_value = do_connections_list (args->nmc, args->argc-1, args->argv+1);
+	 	if (matches (*argv, "list") == 0) {
+			nmc->return_value = do_connections_list (nmc, argc-1, argv+1);
 		}
-		else if (matches(*args->argv, "status") == 0) {
-			if (!nmc_terse_option_check (args->nmc->print_output, args->nmc->required_fields, &error))
+		else if (matches(*argv, "status") == 0) {
+			if (!nmc_terse_option_check (nmc->print_output, nmc->required_fields, &error))
 				goto opt_error;
-			args->nmc->return_value = do_connections_status (args->nmc, args->argc-1, args->argv+1);
+			nmc->return_value = do_connections_status (nmc, argc-1, argv+1);
 		}
-		else if (matches(*args->argv, "up") == 0) {
-			args->nmc->return_value = do_connection_up (args->nmc, args->argc-1, args->argv+1);
+		else if (matches(*argv, "up") == 0) {
+			nmc->return_value = do_connection_up (nmc, argc-1, argv+1);
 		}
-		else if (matches(*args->argv, "down") == 0) {
-			args->nmc->return_value = do_connection_down (args->nmc, args->argc-1, args->argv+1);
+		else if (matches(*argv, "down") == 0) {
+			nmc->return_value = do_connection_down (nmc, argc-1, argv+1);
 		}
-		else if (matches (*args->argv, "help") == 0) {
+		else if (matches (*argv, "help") == 0) {
 			usage ();
-			args->nmc->should_wait = FALSE;
+			nmc->should_wait = FALSE;
 		} else {
 			usage ();
-			g_string_printf (args->nmc->return_text, _("Error: 'con' command '%s' is not valid."), *args->argv);
-			args->nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-			args->nmc->should_wait = FALSE;
+			g_string_printf (nmc->return_text, _("Error: 'con' command '%s' is not valid."), *argv);
+			nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+			nmc->should_wait = FALSE;
 		}
 	}
+
+	return nmc->return_value;
+
+opt_error:
+	g_string_printf (nmc->return_text, _("Error: %s."), error->message);
+	nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+	nmc->should_wait = FALSE;
+	g_error_free (error);
+	return nmc->return_value;
+}
+
+/* callback called when connections are obtained from the settings service */
+static void
+get_connections_cb (NMRemoteSettings *settings, gpointer user_data)
+{
+	ArgsInfo *args = (ArgsInfo *) user_data;
+
+	/* Get the connection list */
+	args->nmc->system_connections = nm_remote_settings_list_connections (settings);
+
+	parse_cmd (args->nmc, args->argc, args->argv);
 
 	if (!args->nmc->should_wait)
 		quit ();
-	return;
-
-opt_error:
-	g_string_printf (args->nmc->return_text, _("Error: %s."), error->message);
-	args->nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-	args->nmc->should_wait = FALSE;
-	g_error_free (error);
-	quit ();
-	return;
 }
-
 
 /* Entry point function for connections-related commands: 'nmcli con' */
 NMCResultCode
@@ -1686,59 +1652,66 @@ do_connections (NmCli *nmc, int argc, char **argv)
 {
 	DBusGConnection *bus;
 	GError *error = NULL;
+	int i = 0;
+	gboolean real_cmd = FALSE;
 
-	nmc->should_wait = TRUE;
-
-	args_info.nmc = nmc;
-	args_info.argc = argc;
-	args_info.argv = argv;
-
-	/* connect to DBus' system bus */
-	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error || !bus) {
-		g_string_printf (nmc->return_text, _("Error: could not connect to D-Bus."));
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		return nmc->return_value;
+	if (argc == 0)
+		real_cmd = TRUE;
+	else {
+		while (real_con_commands[i] && matches (*argv, real_con_commands[i]) != 0)
+			i++;
+ 		if (real_con_commands[i] != NULL)
+			real_cmd = TRUE;
 	}
 
-	/* get system settings */
-	if (!(nmc->system_settings = nm_remote_settings_system_new (bus))) {
-		g_string_printf (nmc->return_text, _("Error: Could not get system settings."));
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		return nmc->return_value;
+	if (!real_cmd) {
+		/* no real execution command - no need to get connections */
+		return parse_cmd (nmc, argc, argv);
+	} else {
+		if (!nmc_versions_match (nmc))
+			return nmc->return_value;
 
+		nmc->should_wait = TRUE;
+
+		args_info.nmc = nmc;
+		args_info.argc = argc;
+		args_info.argv = argv;
+
+		/* connect to DBus' system bus */
+		bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+		if (error || !bus) {
+			g_string_printf (nmc->return_text, _("Error: could not connect to D-Bus."));
+			nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
+			return nmc->return_value;
+		}
+
+		/* get system settings */
+		if (!(nmc->system_settings = nm_remote_settings_new (bus))) {
+			g_string_printf (nmc->return_text, _("Error: Could not get system settings."));
+			nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
+			return nmc->return_value;
+
+		}
+
+		/* find out whether settings service is running */
+		g_object_get (nmc->system_settings, NM_REMOTE_SETTINGS_SERVICE_RUNNING, &nmc->system_settings_running, NULL);
+
+		if (!nmc->system_settings_running) {
+			g_string_printf (nmc->return_text, _("Error: Can't obtain connections: settings service is not running."));
+			nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
+			return nmc->return_value;
+		}
+
+		/* connect to signal "connections-read" - emitted when connections are fetched and ready */
+		g_signal_connect (nmc->system_settings, NM_REMOTE_SETTINGS_CONNECTIONS_READ,
+				  G_CALLBACK (get_connections_cb), &args_info);
+
+
+		dbus_g_connection_unref (bus);
+
+		/* The rest will be done in get_connection_cb() callback.
+		 * We need to wait for signals that connections are read.
+		 */
+		return NMC_RESULT_SUCCESS;
 	}
-
-	/* get user settings */
-	if (!(nmc->user_settings = nm_remote_settings_new (bus, NM_CONNECTION_SCOPE_USER))) {
-		g_string_printf (nmc->return_text, _("Error: Could not get user settings."));
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		return nmc->return_value;
-	}
-
-	/* find out whether setting services are running */
-	g_object_get (nmc->system_settings, NM_REMOTE_SETTINGS_SERVICE_RUNNING, &nmc->system_settings_running, NULL);
-	g_object_get (nmc->user_settings, NM_REMOTE_SETTINGS_SERVICE_RUNNING, &nmc->user_settings_running, NULL);
-
-	if (!nmc->system_settings_running && !nmc->user_settings_running) {
-		g_string_printf (nmc->return_text, _("Error: Can't obtain connections: settings services are not running."));
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		return nmc->return_value;
-	}
-
-	/* connect to signal "connections-read" - emitted when connections are fetched and ready */
-	if (nmc->system_settings_running)
-		g_signal_connect (nmc->system_settings, NM_SETTINGS_INTERFACE_CONNECTIONS_READ,
-		                  G_CALLBACK (get_connections_cb), &args_info);
-
-	if (nmc->user_settings_running)
-		g_signal_connect (nmc->user_settings, NM_SETTINGS_INTERFACE_CONNECTIONS_READ,
-		                  G_CALLBACK (get_connections_cb), &args_info);
-
-	dbus_g_connection_unref (bus);
-
-	/* The rest will be done in get_connection_cb() callback.
-	 * We need to wait for signals that connections are read.
-	 */
-	return NMC_RESULT_SUCCESS;
 }

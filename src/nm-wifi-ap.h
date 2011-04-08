@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2004 - 2010 Red Hat, Inc.
+ * Copyright (C) 2004 - 2011 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
@@ -110,12 +110,13 @@ void				nm_ap_set_user_created	(NMAccessPoint *ap, gboolean user_created);
 GSList *			nm_ap_get_user_addresses	(const NMAccessPoint *ap);
 void				nm_ap_set_user_addresses (NMAccessPoint *ap, GSList *list);
 
-guint32				nm_ap_add_security_from_ie (guint32 flags,
-                                                const guint8 *wpa_ie,
-                                                guint32 length);
-
 gboolean			nm_ap_check_compatible (NMAccessPoint *self,
                                             NMConnection *connection);
+
+gboolean            nm_ap_complete_connection (NMAccessPoint *self,
+                                               NMConnection *connection,
+                                               gboolean lock_bssid,
+                                               GError **error);
 
 NMAccessPoint *     nm_ap_match_in_list (NMAccessPoint *find_ap,
                                          GSList *ap_list,

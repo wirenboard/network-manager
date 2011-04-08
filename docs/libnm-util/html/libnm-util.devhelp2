@@ -3,7 +3,6 @@
 <book xmlns="http://www.devhelp.net/book" title="libnm-util Reference Manual" link="index.html" author="" name="libnm-util" version="2" language="c">
   <chapters>
     <sub name="libnm-util API Reference" link="ch01.html">
-      <sub name="NMConnection" link="NMConnection.html"/>
       <sub name="NMSetting" link="NMSetting.html"/>
       <sub name="NMSettingConnection" link="NMSettingConnection.html"/>
       <sub name="NMSettingWired" link="NMSettingWired.html"/>
@@ -27,43 +26,6 @@
     <sub name="Annotation Glossary" link="annotation-glossary.html"/>
   </chapters>
   <functions>
-    <keyword type="enum" name="enum NMConnectionScope" link="NMConnection.html#NMConnectionScope"/>
-    <keyword type="enum" name="enum NMConnectionError" link="NMConnection.html#NMConnectionError"/>
-    <keyword type="macro" name="NM_TYPE_CONNECTION_ERROR" link="NMConnection.html#NM-TYPE-CONNECTION-ERROR:CAPS"/>
-    <keyword type="macro" name="NM_CONNECTION_ERROR" link="NMConnection.html#NM-CONNECTION-ERROR:CAPS"/>
-    <keyword type="function" name="nm_connection_error_quark ()" link="NMConnection.html#nm-connection-error-quark"/>
-    <keyword type="macro" name="NM_CONNECTION_SCOPE" link="NMConnection.html#NM-CONNECTION-SCOPE:CAPS"/>
-    <keyword type="macro" name="NM_CONNECTION_PATH" link="NMConnection.html#NM-CONNECTION-PATH:CAPS"/>
-    <keyword type="struct" name="NMConnection" link="NMConnection.html#NMConnection-struct"/>
-    <keyword type="struct" name="NMConnectionClass" link="NMConnection.html#NMConnectionClass"/>
-    <keyword type="function" name="nm_connection_get_type ()" link="NMConnection.html#nm-connection-get-type"/>
-    <keyword type="function" name="nm_connection_new ()" link="NMConnection.html#nm-connection-new"/>
-    <keyword type="function" name="nm_connection_new_from_hash ()" link="NMConnection.html#nm-connection-new-from-hash"/>
-    <keyword type="function" name="nm_connection_duplicate ()" link="NMConnection.html#nm-connection-duplicate"/>
-    <keyword type="function" name="nm_connection_add_setting ()" link="NMConnection.html#nm-connection-add-setting"/>
-    <keyword type="function" name="nm_connection_remove_setting ()" link="NMConnection.html#nm-connection-remove-setting"/>
-    <keyword type="function" name="nm_connection_get_setting ()" link="NMConnection.html#nm-connection-get-setting"/>
-    <keyword type="function" name="nm_connection_get_setting_by_name ()" link="NMConnection.html#nm-connection-get-setting-by-name"/>
-    <keyword type="function" name="nm_connection_replace_settings ()" link="NMConnection.html#nm-connection-replace-settings"/>
-    <keyword type="function" name="nm_connection_compare ()" link="NMConnection.html#nm-connection-compare"/>
-    <keyword type="function" name="nm_connection_diff ()" link="NMConnection.html#nm-connection-diff"/>
-    <keyword type="function" name="nm_connection_verify ()" link="NMConnection.html#nm-connection-verify"/>
-    <keyword type="function" name="nm_connection_need_secrets ()" link="NMConnection.html#nm-connection-need-secrets"/>
-    <keyword type="function" name="nm_connection_clear_secrets ()" link="NMConnection.html#nm-connection-clear-secrets"/>
-    <keyword type="function" name="nm_connection_update_secrets ()" link="NMConnection.html#nm-connection-update-secrets"/>
-    <keyword type="function" name="nm_connection_set_scope ()" link="NMConnection.html#nm-connection-set-scope"/>
-    <keyword type="function" name="nm_connection_get_scope ()" link="NMConnection.html#nm-connection-get-scope"/>
-    <keyword type="function" name="nm_connection_set_path ()" link="NMConnection.html#nm-connection-set-path"/>
-    <keyword type="function" name="nm_connection_get_path ()" link="NMConnection.html#nm-connection-get-path"/>
-    <keyword type="function" name="nm_connection_for_each_setting_value ()" link="NMConnection.html#nm-connection-for-each-setting-value"/>
-    <keyword type="function" name="nm_connection_to_hash ()" link="NMConnection.html#nm-connection-to-hash"/>
-    <keyword type="function" name="nm_connection_dump ()" link="NMConnection.html#nm-connection-dump"/>
-    <keyword type="function" name="nm_connection_create_setting ()" link="NMConnection.html#nm-connection-create-setting"/>
-    <keyword type="function" name="nm_connection_lookup_setting_type ()" link="NMConnection.html#nm-connection-lookup-setting-type"/>
-    <keyword type="function" name="nm_connection_lookup_setting_type_by_quark ()" link="NMConnection.html#nm-connection-lookup-setting-type-by-quark"/>
-    <keyword type="property" name="The &quot;path&quot; property" link="NMConnection.html#NMConnection--path"/>
-    <keyword type="property" name="The &quot;scope&quot; property" link="NMConnection.html#NMConnection--scope"/>
-    <keyword type="signal" name="The &quot;secrets-updated&quot; signal" link="NMConnection.html#NMConnection-secrets-updated"/>
     <keyword type="enum" name="enum NMSettingError" link="NMSetting.html#NMSettingError"/>
     <keyword type="macro" name="NM_TYPE_SETTING_ERROR" link="NMSetting.html#NM-TYPE-SETTING-ERROR:CAPS"/>
     <keyword type="macro" name="NM_SETTING_ERROR" link="NMSetting.html#NM-SETTING-ERROR:CAPS"/>
@@ -73,10 +35,12 @@
     <keyword type="macro" name="NM_SETTING_PARAM_SECRET" link="NMSetting.html#NM-SETTING-PARAM-SECRET:CAPS"/>
     <keyword type="macro" name="NM_SETTING_PARAM_FUZZY_IGNORE" link="NMSetting.html#NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_NAME" link="NMSetting.html#NM-SETTING-NAME:CAPS"/>
+    <keyword type="enum" name="enum NMSettingSecretFlags" link="NMSetting.html#NMSettingSecretFlags"/>
     <keyword type="struct" name="NMSetting" link="NMSetting.html#NMSetting-struct"/>
     <keyword type="struct" name="NMSettingClass" link="NMSetting.html#NMSettingClass"/>
     <keyword type="function" name="NMSettingValueIterFn ()" link="NMSetting.html#NMSettingValueIterFn"/>
     <keyword type="function" name="nm_setting_get_type ()" link="NMSetting.html#nm-setting-get-type"/>
+    <keyword type="enum" name="enum NMSettingHashFlags" link="NMSetting.html#NMSettingHashFlags"/>
     <keyword type="function" name="nm_setting_to_hash ()" link="NMSetting.html#nm-setting-to-hash"/>
     <keyword type="function" name="nm_setting_new_from_hash ()" link="NMSetting.html#nm-setting-new-from-hash"/>
     <keyword type="function" name="nm_setting_duplicate ()" link="NMSetting.html#nm-setting-duplicate"/>
@@ -91,6 +55,8 @@
     <keyword type="function" name="nm_setting_clear_secrets ()" link="NMSetting.html#nm-setting-clear-secrets"/>
     <keyword type="function" name="nm_setting_need_secrets ()" link="NMSetting.html#nm-setting-need-secrets"/>
     <keyword type="function" name="nm_setting_update_secrets ()" link="NMSetting.html#nm-setting-update-secrets"/>
+    <keyword type="function" name="nm_setting_get_secret_flags ()" link="NMSetting.html#nm-setting-get-secret-flags"/>
+    <keyword type="function" name="nm_setting_set_secret_flags ()" link="NMSetting.html#nm-setting-set-secret-flags"/>
     <keyword type="property" name="The &quot;name&quot; property" link="NMSetting.html#NMSetting--name"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_SETTING_NAME" link="NMSettingConnection.html#NM-SETTING-CONNECTION-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingConnectionError" link="NMSettingConnection.html#NMSettingConnectionError"/>
@@ -103,6 +69,7 @@
     <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_TIMESTAMP" link="NMSettingConnection.html#NM-SETTING-CONNECTION-TIMESTAMP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_READ_ONLY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-READ-ONLY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_CONNECTION_PERMISSIONS" link="NMSettingConnection.html#NM-SETTING-CONNECTION-PERMISSIONS:CAPS"/>
     <keyword type="struct" name="NMSettingConnection" link="NMSettingConnection.html#NMSettingConnection-struct"/>
     <keyword type="struct" name="NMSettingConnectionClass" link="NMSettingConnection.html#NMSettingConnectionClass"/>
     <keyword type="function" name="nm_setting_connection_get_type ()" link="NMSettingConnection.html#nm-setting-connection-get-type"/>
@@ -113,8 +80,14 @@
     <keyword type="function" name="nm_setting_connection_get_autoconnect ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect"/>
     <keyword type="function" name="nm_setting_connection_get_timestamp ()" link="NMSettingConnection.html#nm-setting-connection-get-timestamp"/>
     <keyword type="function" name="nm_setting_connection_get_read_only ()" link="NMSettingConnection.html#nm-setting-connection-get-read-only"/>
+    <keyword type="function" name="nm_setting_connection_get_num_permissions ()" link="NMSettingConnection.html#nm-setting-connection-get-num-permissions"/>
+    <keyword type="function" name="nm_setting_connection_get_permission ()" link="NMSettingConnection.html#nm-setting-connection-get-permission"/>
+    <keyword type="function" name="nm_setting_connection_permissions_user_allowed ()" link="NMSettingConnection.html#nm-setting-connection-permissions-user-allowed"/>
+    <keyword type="function" name="nm_setting_connection_add_permission ()" link="NMSettingConnection.html#nm-setting-connection-add-permission"/>
+    <keyword type="function" name="nm_setting_connection_remove_permission ()" link="NMSettingConnection.html#nm-setting-connection-remove-permission"/>
     <keyword type="property" name="The &quot;autoconnect&quot; property" link="NMSettingConnection.html#NMSettingConnection--autoconnect"/>
     <keyword type="property" name="The &quot;id&quot; property" link="NMSettingConnection.html#NMSettingConnection--id"/>
+    <keyword type="property" name="The &quot;permissions&quot; property" link="NMSettingConnection.html#NMSettingConnection--permissions"/>
     <keyword type="property" name="The &quot;read-only&quot; property" link="NMSettingConnection.html#NMSettingConnection--read-only"/>
     <keyword type="property" name="The &quot;timestamp&quot; property" link="NMSettingConnection.html#NMSettingConnection--timestamp"/>
     <keyword type="property" name="The &quot;type&quot; property" link="NMSettingConnection.html#NMSettingConnection--type"/>
@@ -179,6 +152,8 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_MTU" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SEEN_BSSIDS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SEC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_ADHOC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-ADHOC:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_INFRA" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-INFRA:CAPS"/>
     <keyword type="struct" name="NMSettingWireless" link="NMSettingWireless.html#NMSettingWireless-struct"/>
     <keyword type="struct" name="NMSettingWirelessClass" link="NMSettingWireless.html#NMSettingWirelessClass"/>
     <keyword type="function" name="nm_setting_wireless_get_type ()" link="NMSettingWireless.html#nm-setting-wireless-get-type"/>
@@ -227,9 +202,12 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_WEP_KEY1" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-WEP-KEY1:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_WEP_KEY2" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-WEP-KEY2:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_WEP_KEY3" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-WEP-KEY3:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_PSK" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-PSK:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-LEAP-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_WEP_KEY_FLAGS" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-WEP-KEY-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_WEP_KEY_TYPE" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-WEP-KEY-TYPE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_PSK" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-PSK:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_PSK_FLAGS" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-PSK-FLAGS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-LEAP-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD_FLAGS" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-LEAP-PASSWORD-FLAGS:CAPS"/>
     <keyword type="struct" name="NMSettingWirelessSecurity" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity-struct"/>
     <keyword type="struct" name="NMSettingWirelessSecurityClass" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityClass"/>
     <keyword type="function" name="nm_setting_wireless_security_get_type ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-type"/>
@@ -251,21 +229,27 @@
     <keyword type="function" name="nm_setting_wireless_security_remove_group ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-remove-group"/>
     <keyword type="function" name="nm_setting_wireless_security_clear_groups ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-clear-groups"/>
     <keyword type="function" name="nm_setting_wireless_security_get_psk ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-psk"/>
+    <keyword type="function" name="nm_setting_wireless_security_get_psk_flags ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-psk-flags"/>
     <keyword type="function" name="nm_setting_wireless_security_get_leap_username ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-username"/>
     <keyword type="function" name="nm_setting_wireless_security_get_leap_password ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-password"/>
+    <keyword type="function" name="nm_setting_wireless_security_get_leap_password_flags ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-password-flags"/>
     <keyword type="function" name="nm_setting_wireless_security_get_wep_key ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key"/>
     <keyword type="function" name="nm_setting_wireless_security_set_wep_key ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-set-wep-key"/>
     <keyword type="function" name="nm_setting_wireless_security_get_wep_tx_keyidx ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-tx-keyidx"/>
     <keyword type="function" name="nm_setting_wireless_security_get_auth_alg ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-auth-alg"/>
+    <keyword type="function" name="nm_setting_wireless_security_get_wep_key_flags ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key-flags"/>
     <keyword type="function" name="nm_setting_wireless_security_get_wep_key_type ()" link="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key-type"/>
     <keyword type="property" name="The &quot;auth-alg&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--auth-alg"/>
     <keyword type="property" name="The &quot;group&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--group"/>
     <keyword type="property" name="The &quot;key-mgmt&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--key-mgmt"/>
     <keyword type="property" name="The &quot;leap-password&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-password"/>
+    <keyword type="property" name="The &quot;leap-password-flags&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-password-flags"/>
     <keyword type="property" name="The &quot;leap-username&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-username"/>
     <keyword type="property" name="The &quot;pairwise&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--pairwise"/>
     <keyword type="property" name="The &quot;proto&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--proto"/>
     <keyword type="property" name="The &quot;psk&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--psk"/>
+    <keyword type="property" name="The &quot;psk-flags&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--psk-flags"/>
+    <keyword type="property" name="The &quot;wep-key-flags&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wep-key-flags"/>
     <keyword type="property" name="The &quot;wep-key-type&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wep-key-type"/>
     <keyword type="property" name="The &quot;wep-key0&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wep-key0"/>
     <keyword type="property" name="The &quot;wep-key1&quot; property" link="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wep-key1"/>
@@ -321,6 +305,7 @@
     <keyword type="macro" name="NM_SETTING_CDMA_NUMBER" link="NMSettingCdma.html#NM-SETTING-CDMA-NUMBER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CDMA_USERNAME" link="NMSettingCdma.html#NM-SETTING-CDMA-USERNAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CDMA_PASSWORD" link="NMSettingCdma.html#NM-SETTING-CDMA-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_CDMA_PASSWORD_FLAGS" link="NMSettingCdma.html#NM-SETTING-CDMA-PASSWORD-FLAGS:CAPS"/>
     <keyword type="struct" name="NMSettingCdma" link="NMSettingCdma.html#NMSettingCdma-struct"/>
     <keyword type="struct" name="NMSettingCdmaClass" link="NMSettingCdma.html#NMSettingCdmaClass"/>
     <keyword type="function" name="nm_setting_cdma_get_type ()" link="NMSettingCdma.html#nm-setting-cdma-get-type"/>
@@ -328,8 +313,10 @@
     <keyword type="function" name="nm_setting_cdma_get_number ()" link="NMSettingCdma.html#nm-setting-cdma-get-number"/>
     <keyword type="function" name="nm_setting_cdma_get_username ()" link="NMSettingCdma.html#nm-setting-cdma-get-username"/>
     <keyword type="function" name="nm_setting_cdma_get_password ()" link="NMSettingCdma.html#nm-setting-cdma-get-password"/>
+    <keyword type="function" name="nm_setting_cdma_get_password_flags ()" link="NMSettingCdma.html#nm-setting-cdma-get-password-flags"/>
     <keyword type="property" name="The &quot;number&quot; property" link="NMSettingCdma.html#NMSettingCdma--number"/>
     <keyword type="property" name="The &quot;password&quot; property" link="NMSettingCdma.html#NMSettingCdma--password"/>
+    <keyword type="property" name="The &quot;password-flags&quot; property" link="NMSettingCdma.html#NMSettingCdma--password-flags"/>
     <keyword type="property" name="The &quot;username&quot; property" link="NMSettingCdma.html#NMSettingCdma--username"/>
     <keyword type="macro" name="NM_SETTING_GSM_SETTING_NAME" link="NMSettingGsm.html#NM-SETTING-GSM-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingGsmError" link="NMSettingGsm.html#NMSettingGsmError"/>
@@ -339,19 +326,14 @@
     <keyword type="macro" name="NM_SETTING_GSM_NUMBER" link="NMSettingGsm.html#NM-SETTING-GSM-NUMBER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_USERNAME" link="NMSettingGsm.html#NM-SETTING-GSM-USERNAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_PASSWORD" link="NMSettingGsm.html#NM-SETTING-GSM-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_GSM_PASSWORD_FLAGS" link="NMSettingGsm.html#NM-SETTING-GSM-PASSWORD-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_APN" link="NMSettingGsm.html#NM-SETTING-GSM-APN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_NETWORK_ID" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-ID:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_NETWORK_TYPE" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-TYPE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_ALLOWED_BANDS" link="NMSettingGsm.html#NM-SETTING-GSM-ALLOWED-BANDS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_PIN" link="NMSettingGsm.html#NM-SETTING-GSM-PIN:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_GSM_PIN_FLAGS" link="NMSettingGsm.html#NM-SETTING-GSM-PIN-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_GSM_HOME_ONLY" link="NMSettingGsm.html#NM-SETTING-GSM-HOME-ONLY:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_GSM_PUK" link="NMSettingGsm.html#NM-SETTING-GSM-PUK:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_GSM_BAND" link="NMSettingGsm.html#NM-SETTING-GSM-BAND:CAPS"/>
-    <keyword type="macro" name="NM_GSM_NETWORK_ANY" link="NMSettingGsm.html#NM-GSM-NETWORK-ANY:CAPS"/>
-    <keyword type="macro" name="NM_GSM_NETWORK_UMTS_HSPA" link="NMSettingGsm.html#NM-GSM-NETWORK-UMTS-HSPA:CAPS"/>
-    <keyword type="macro" name="NM_GSM_NETWORK_GPRS_EDGE" link="NMSettingGsm.html#NM-GSM-NETWORK-GPRS-EDGE:CAPS"/>
-    <keyword type="macro" name="NM_GSM_NETWORK_PREFER_UMTS_HSPA" link="NMSettingGsm.html#NM-GSM-NETWORK-PREFER-UMTS-HSPA:CAPS"/>
-    <keyword type="macro" name="NM_GSM_NETWORK_PREFER_GPRS_EDGE" link="NMSettingGsm.html#NM-GSM-NETWORK-PREFER-GPRS-EDGE:CAPS"/>
     <keyword type="enum" name="enum NMSettingGsmNetworkType" link="NMSettingGsm.html#NMSettingGsmNetworkType"/>
     <keyword type="enum" name="enum NMSettingGsmNetworkBand" link="NMSettingGsm.html#NMSettingGsmNetworkBand"/>
     <keyword type="struct" name="NMSettingGsm" link="NMSettingGsm.html#NMSettingGsm-struct"/>
@@ -367,18 +349,18 @@
     <keyword type="function" name="nm_setting_gsm_get_allowed_bands ()" link="NMSettingGsm.html#nm-setting-gsm-get-allowed-bands"/>
     <keyword type="function" name="nm_setting_gsm_get_pin ()" link="NMSettingGsm.html#nm-setting-gsm-get-pin"/>
     <keyword type="function" name="nm_setting_gsm_get_home_only ()" link="NMSettingGsm.html#nm-setting-gsm-get-home-only"/>
-    <keyword type="function" name="nm_setting_gsm_get_puk ()" link="NMSettingGsm.html#nm-setting-gsm-get-puk"/>
-    <keyword type="function" name="nm_setting_gsm_get_band ()" link="NMSettingGsm.html#nm-setting-gsm-get-band"/>
+    <keyword type="function" name="nm_setting_gsm_get_pin_flags ()" link="NMSettingGsm.html#nm-setting-gsm-get-pin-flags"/>
+    <keyword type="function" name="nm_setting_gsm_get_password_flags ()" link="NMSettingGsm.html#nm-setting-gsm-get-password-flags"/>
     <keyword type="property" name="The &quot;allowed-bands&quot; property" link="NMSettingGsm.html#NMSettingGsm--allowed-bands"/>
     <keyword type="property" name="The &quot;apn&quot; property" link="NMSettingGsm.html#NMSettingGsm--apn"/>
-    <keyword type="property" name="The &quot;band&quot; property" link="NMSettingGsm.html#NMSettingGsm--band"/>
     <keyword type="property" name="The &quot;home-only&quot; property" link="NMSettingGsm.html#NMSettingGsm--home-only"/>
     <keyword type="property" name="The &quot;network-id&quot; property" link="NMSettingGsm.html#NMSettingGsm--network-id"/>
     <keyword type="property" name="The &quot;network-type&quot; property" link="NMSettingGsm.html#NMSettingGsm--network-type"/>
     <keyword type="property" name="The &quot;number&quot; property" link="NMSettingGsm.html#NMSettingGsm--number"/>
     <keyword type="property" name="The &quot;password&quot; property" link="NMSettingGsm.html#NMSettingGsm--password"/>
+    <keyword type="property" name="The &quot;password-flags&quot; property" link="NMSettingGsm.html#NMSettingGsm--password-flags"/>
     <keyword type="property" name="The &quot;pin&quot; property" link="NMSettingGsm.html#NMSettingGsm--pin"/>
-    <keyword type="property" name="The &quot;puk&quot; property" link="NMSettingGsm.html#NMSettingGsm--puk"/>
+    <keyword type="property" name="The &quot;pin-flags&quot; property" link="NMSettingGsm.html#NMSettingGsm--pin-flags"/>
     <keyword type="property" name="The &quot;username&quot; property" link="NMSettingGsm.html#NMSettingGsm--username"/>
     <keyword type="macro" name="NM_SETTING_OLPC_MESH_SETTING_NAME" link="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingOlpcMeshError" link="NMSettingOlpcMesh.html#NMSettingOlpcMeshError"/>
@@ -420,12 +402,15 @@
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PASSWORD" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PASSWORD_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PRIVATE_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-PRIVATE-KEY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD" link="NMSetting8021x.html#NM-SETTING-802-1X-PRIVATE-KEY-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PRIVATE-KEY-PASSWORD-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_PRIVATE_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-PRIVATE-KEY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-PRIVATE-KEY-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-PRIVATE-KEY-PASSWORD-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PIN" link="NMSetting8021x.html#NM-SETTING-802-1X-PIN:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_802_1X_PSK" link="NMSetting8021x.html#NM-SETTING-802-1X-PSK:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PIN_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PIN-FLAGS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_SYSTEM_CA_CERTS" link="NMSetting8021x.html#NM-SETTING-802-1X-SYSTEM-CA-CERTS:CAPS"/>
     <keyword type="struct" name="NMSetting8021x" link="NMSetting8021x.html#NMSetting8021x-struct"/>
     <keyword type="struct" name="NMSetting8021xClass" link="NMSetting8021x.html#NMSetting8021xClass"/>
@@ -463,35 +448,23 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-path"/>
     <keyword type="function" name="nm_setting_802_1x_set_phase2_client_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-client-cert"/>
     <keyword type="function" name="nm_setting_802_1x_get_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-password"/>
+    <keyword type="function" name="nm_setting_802_1x_get_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-password-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_pin ()" link="NMSetting8021x.html#nm-setting-802-1x-get-pin"/>
-    <keyword type="function" name="nm_setting_802_1x_get_psk ()" link="NMSetting8021x.html#nm-setting-802-1x-get-psk"/>
+    <keyword type="function" name="nm_setting_802_1x_get_pin_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-pin-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-path"/>
     <keyword type="function" name="nm_setting_802_1x_set_private_key ()" link="NMSetting8021x.html#nm-setting-802-1x-set-private-key"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-password"/>
+    <keyword type="function" name="nm_setting_802_1x_get_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-password-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_private_key_format ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-format"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-path"/>
     <keyword type="function" name="nm_setting_802_1x_set_phase2_private_key ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-private-key"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_format ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-format"/>
-    <keyword type="enum" name="enum NMSetting8021xCKType" link="NMSetting8021x.html#NMSetting8021xCKType"/>
-    <keyword type="function" name="nm_setting_802_1x_get_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_set_ca_cert_from_file ()" link="NMSetting8021x.html#nm-setting-802-1x-set-ca-cert-from-file" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_client_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_set_client_cert_from_file ()" link="NMSetting8021x.html#nm-setting-802-1x-set-client-cert-from-file" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_set_phase2_ca_cert_from_file ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-ca-cert-from-file" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_set_phase2_client_cert_from_file ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-client-cert-from-file" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_private_key ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_set_private_key_from_file ()" link="NMSetting8021x.html#nm-setting-802-1x-set-private-key-from-file" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_private_key_type ()" link="NMSetting8021x.html#nm-setting-802-1x-get-private-key-type" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_set_phase2_private_key_from_file ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-private-key-from-file" deprecated=""/>
-    <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_type ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-type" deprecated=""/>
     <keyword type="property" name="The &quot;anonymous-identity&quot; property" link="NMSetting8021x.html#NMSetting8021x--anonymous-identity"/>
     <keyword type="property" name="The &quot;ca-cert&quot; property" link="NMSetting8021x.html#NMSetting8021x--ca-cert"/>
     <keyword type="property" name="The &quot;ca-path&quot; property" link="NMSetting8021x.html#NMSetting8021x--ca-path"/>
@@ -499,6 +472,7 @@
     <keyword type="property" name="The &quot;eap&quot; property" link="NMSetting8021x.html#NMSetting8021x--eap"/>
     <keyword type="property" name="The &quot;identity&quot; property" link="NMSetting8021x.html#NMSetting8021x--identity"/>
     <keyword type="property" name="The &quot;password&quot; property" link="NMSetting8021x.html#NMSetting8021x--password"/>
+    <keyword type="property" name="The &quot;password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--password-flags"/>
     <keyword type="property" name="The &quot;phase1-fast-provisioning&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-fast-provisioning"/>
     <keyword type="property" name="The &quot;phase1-peaplabel&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-peaplabel"/>
     <keyword type="property" name="The &quot;phase1-peapver&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-peapver"/>
@@ -509,8 +483,10 @@
     <keyword type="property" name="The &quot;phase2-client-cert&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-client-cert"/>
     <keyword type="property" name="The &quot;phase2-private-key&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key"/>
     <keyword type="property" name="The &quot;phase2-private-key-password&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password"/>
+    <keyword type="property" name="The &quot;phase2-private-key-password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password-flags"/>
     <keyword type="property" name="The &quot;private-key&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key"/>
     <keyword type="property" name="The &quot;private-key-password&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key-password"/>
+    <keyword type="property" name="The &quot;private-key-password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key-password-flags"/>
     <keyword type="property" name="The &quot;system-ca-certs&quot; property" link="NMSetting8021x.html#NMSetting8021x--system-ca-certs"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_SETTING_NAME" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingIP4ConfigError" link="NMSettingIP4Config.html#NMSettingIP4ConfigError"/>
@@ -535,6 +511,7 @@
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_METHOD_SHARED" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD-SHARED:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_METHOD_DISABLED" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD-DISABLED:CAPS"/>
     <keyword type="typedef" name="NMIP4Address" link="NMSettingIP4Config.html#NMIP4Address"/>
+    <keyword type="function" name="nm_ip4_address_get_type ()" link="NMSettingIP4Config.html#nm-ip4-address-get-type"/>
     <keyword type="function" name="nm_ip4_address_new ()" link="NMSettingIP4Config.html#nm-ip4-address-new"/>
     <keyword type="function" name="nm_ip4_address_dup ()" link="NMSettingIP4Config.html#nm-ip4-address-dup"/>
     <keyword type="function" name="nm_ip4_address_ref ()" link="NMSettingIP4Config.html#nm-ip4-address-ref"/>
@@ -547,6 +524,7 @@
     <keyword type="function" name="nm_ip4_address_get_gateway ()" link="NMSettingIP4Config.html#nm-ip4-address-get-gateway"/>
     <keyword type="function" name="nm_ip4_address_set_gateway ()" link="NMSettingIP4Config.html#nm-ip4-address-set-gateway"/>
     <keyword type="typedef" name="NMIP4Route" link="NMSettingIP4Config.html#NMIP4Route"/>
+    <keyword type="function" name="nm_ip4_route_get_type ()" link="NMSettingIP4Config.html#nm-ip4-route-get-type"/>
     <keyword type="function" name="nm_ip4_route_new ()" link="NMSettingIP4Config.html#nm-ip4-route-new"/>
     <keyword type="function" name="nm_ip4_route_dup ()" link="NMSettingIP4Config.html#nm-ip4-route-dup"/>
     <keyword type="function" name="nm_ip4_route_ref ()" link="NMSettingIP4Config.html#nm-ip4-route-ref"/>
@@ -625,6 +603,7 @@
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_MANUAL" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-MANUAL:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_METHOD_SHARED" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-SHARED:CAPS"/>
     <keyword type="typedef" name="NMIP6Address" link="NMSettingIP6Config.html#NMIP6Address"/>
+    <keyword type="function" name="nm_ip6_address_get_type ()" link="NMSettingIP6Config.html#nm-ip6-address-get-type"/>
     <keyword type="function" name="nm_ip6_address_new ()" link="NMSettingIP6Config.html#nm-ip6-address-new"/>
     <keyword type="function" name="nm_ip6_address_dup ()" link="NMSettingIP6Config.html#nm-ip6-address-dup"/>
     <keyword type="function" name="nm_ip6_address_ref ()" link="NMSettingIP6Config.html#nm-ip6-address-ref"/>
@@ -637,6 +616,7 @@
     <keyword type="function" name="nm_ip6_address_get_gateway ()" link="NMSettingIP6Config.html#nm-ip6-address-get-gateway"/>
     <keyword type="function" name="nm_ip6_address_set_gateway ()" link="NMSettingIP6Config.html#nm-ip6-address-set-gateway"/>
     <keyword type="typedef" name="NMIP6Route" link="NMSettingIP6Config.html#NMIP6Route"/>
+    <keyword type="function" name="nm_ip6_route_get_type ()" link="NMSettingIP6Config.html#nm-ip6-route-get-type"/>
     <keyword type="function" name="nm_ip6_route_new ()" link="NMSettingIP6Config.html#nm-ip6-route-new"/>
     <keyword type="function" name="nm_ip6_route_dup ()" link="NMSettingIP6Config.html#nm-ip6-route-dup"/>
     <keyword type="function" name="nm_ip6_route_ref ()" link="NMSettingIP6Config.html#nm-ip6-route-ref"/>
@@ -759,6 +739,7 @@
     <keyword type="macro" name="NM_SETTING_PPPOE_SERVICE" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-SERVICE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_PPPOE_USERNAME" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-USERNAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_PPPOE_PASSWORD" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_PPPOE_PASSWORD_FLAGS" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-PASSWORD-FLAGS:CAPS"/>
     <keyword type="struct" name="NMSettingPPPOE" link="NMSettingPPPOE.html#NMSettingPPPOE-struct"/>
     <keyword type="struct" name="NMSettingPPPOEClass" link="NMSettingPPPOE.html#NMSettingPPPOEClass"/>
     <keyword type="function" name="nm_setting_pppoe_get_type ()" link="NMSettingPPPOE.html#nm-setting-pppoe-get-type"/>
@@ -766,7 +747,9 @@
     <keyword type="function" name="nm_setting_pppoe_get_service ()" link="NMSettingPPPOE.html#nm-setting-pppoe-get-service"/>
     <keyword type="function" name="nm_setting_pppoe_get_username ()" link="NMSettingPPPOE.html#nm-setting-pppoe-get-username"/>
     <keyword type="function" name="nm_setting_pppoe_get_password ()" link="NMSettingPPPOE.html#nm-setting-pppoe-get-password"/>
+    <keyword type="function" name="nm_setting_pppoe_get_password_flags ()" link="NMSettingPPPOE.html#nm-setting-pppoe-get-password-flags"/>
     <keyword type="property" name="The &quot;password&quot; property" link="NMSettingPPPOE.html#NMSettingPPPOE--password"/>
+    <keyword type="property" name="The &quot;password-flags&quot; property" link="NMSettingPPPOE.html#NMSettingPPPOE--password-flags"/>
     <keyword type="property" name="The &quot;service&quot; property" link="NMSettingPPPOE.html#NMSettingPPPOE--service"/>
     <keyword type="property" name="The &quot;username&quot; property" link="NMSettingPPPOE.html#NMSettingPPPOE--username"/>
     <keyword type="macro" name="NM_SETTING_VPN_SETTING_NAME" link="NMSettingVPN.html#NM-SETTING-VPN-SETTING-NAME:CAPS"/>
@@ -780,7 +763,7 @@
     <keyword type="macro" name="NM_SETTING_VPN_SECRETS" link="NMSettingVPN.html#NM-SETTING-VPN-SECRETS:CAPS"/>
     <keyword type="struct" name="NMSettingVPN" link="NMSettingVPN.html#NMSettingVPN-struct"/>
     <keyword type="struct" name="NMSettingVPNClass" link="NMSettingVPN.html#NMSettingVPNClass"/>
-    <keyword type="function" name="VPNIterFunc ()" link="NMSettingVPN.html#VPNIterFunc"/>
+    <keyword type="function" name="NMVPNIterFunc ()" link="NMSettingVPN.html#NMVPNIterFunc"/>
     <keyword type="function" name="nm_setting_vpn_get_type ()" link="NMSettingVPN.html#nm-setting-vpn-get-type"/>
     <keyword type="function" name="nm_setting_vpn_new ()" link="NMSettingVPN.html#nm-setting-vpn-new"/>
     <keyword type="function" name="nm_setting_vpn_get_service_type ()" link="NMSettingVPN.html#nm-setting-vpn-get-service-type"/>
@@ -797,16 +780,6 @@
     <keyword type="property" name="The &quot;secrets&quot; property" link="NMSettingVPN.html#NMSettingVPN--secrets"/>
     <keyword type="property" name="The &quot;service-type&quot; property" link="NMSettingVPN.html#NMSettingVPN--service-type"/>
     <keyword type="property" name="The &quot;user-name&quot; property" link="NMSettingVPN.html#NMSettingVPN--user-name"/>
-    <keyword type="macro" name="nm_print_backtrace" link="libnm-util-nm-utils.html#nm-print-backtrace"/>
-    <keyword type="macro" name="nm_get_timestamp()" link="libnm-util-nm-utils.html#nm-get-timestamp"/>
-    <keyword type="macro" name="nm_info()" link="libnm-util-nm-utils.html#nm-info"/>
-    <keyword type="macro" name="nm_info_str()" link="libnm-util-nm-utils.html#nm-info-str"/>
-    <keyword type="macro" name="nm_debug()" link="libnm-util-nm-utils.html#nm-debug"/>
-    <keyword type="macro" name="nm_debug_str()" link="libnm-util-nm-utils.html#nm-debug-str"/>
-    <keyword type="macro" name="nm_warning()" link="libnm-util-nm-utils.html#nm-warning"/>
-    <keyword type="macro" name="nm_warning_str()" link="libnm-util-nm-utils.html#nm-warning-str"/>
-    <keyword type="macro" name="nm_error()" link="libnm-util-nm-utils.html#nm-error"/>
-    <keyword type="macro" name="nm_error_str()" link="libnm-util-nm-utils.html#nm-error-str"/>
     <keyword type="function" name="nm_utils_init ()" link="libnm-util-nm-utils.html#nm-utils-init"/>
     <keyword type="function" name="nm_utils_deinit ()" link="libnm-util-nm-utils.html#nm-utils-deinit"/>
     <keyword type="function" name="nm_utils_is_empty_ssid ()" link="libnm-util-nm-utils.html#nm-utils-is-empty-ssid"/>
@@ -837,15 +810,17 @@
     <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
     <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
     <keyword type="function" name="nm_utils_wifi_is_channel_valid ()" link="libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
-    <keyword type="constant" name="NM_CONNECTION_SCOPE_UNKNOWN" link="NMConnection.html#NM-CONNECTION-SCOPE-UNKNOWN:CAPS"/>
-    <keyword type="constant" name="NM_CONNECTION_SCOPE_SYSTEM" link="NMConnection.html#NM-CONNECTION-SCOPE-SYSTEM:CAPS"/>
-    <keyword type="constant" name="NM_CONNECTION_SCOPE_USER" link="NMConnection.html#NM-CONNECTION-SCOPE-USER:CAPS"/>
-    <keyword type="constant" name="NM_CONNECTION_ERROR_UNKNOWN" link="NMConnection.html#NM-CONNECTION-ERROR-UNKNOWN:CAPS"/>
-    <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-SETTING-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_UNKNOWN" link="NMSetting.html#NM-SETTING-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_FOUND" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_SECRET" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-SECRET:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_TYPE_MISMATCH" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-TYPE-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NONE" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_AGENT_OWNED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-AGENT-OWNED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NOT_SAVED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NOT-SAVED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NOT_REQUIRED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NOT-REQUIRED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_HASH_FLAG_ALL" link="NMSetting.html#NM-SETTING-HASH-FLAG-ALL:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_HASH_FLAG_NO_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_HASH_FLAG_ONLY_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-ONLY-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_EXACT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-EXACT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_FUZZY" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-FUZZY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_ID" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-ID:CAPS"/>
@@ -857,5 +832,12 @@
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_INVALID_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-INVALID-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_MISSING_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-MISSING-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_TYPE_SETTING_NOT_FOUND" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-TYPE-SETTING-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_X509" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-X509:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_RAW_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-RAW-KEY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_PKCS12" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-PKCS12:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_BLOB" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"/>
   </functions>
 </book>

@@ -24,6 +24,7 @@
  * (C) Copyright 2005 - 2010 Red Hat, Inc.
  */
 
+#include "config.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -214,45 +215,6 @@ get_encodings_for_lang (const char *lang,
 	return success;
 }
 
-static char *
-string_to_utf8 (const char *str, gsize len)
-{
-	char *converted = NULL;
-	char *lang, *e1 = NULL, *e2 = NULL, *e3 = NULL;
-
-	g_return_val_if_fail (str != NULL, NULL);
-
-	if (g_utf8_validate (str, len, NULL))
-		return g_strdup (str);
-
-	/* LANG may be a good encoding hint */
-	g_get_charset ((const char **)(&e1));
-	if ((lang = getenv ("LANG"))) {
-		char * dot;
-
-		lang = g_ascii_strdown (lang, -1);
-		if ((dot = strchr (lang, '.')))
-			*dot = '\0';
-
-		get_encodings_for_lang (lang, &e1, &e2, &e3);
-		g_free (lang);
-	}
-
-	converted = g_convert (str, len, "UTF-8", e1, NULL, NULL, NULL);
-	if (!converted && e2)
-		converted = g_convert (str, len, "UTF-8", e2, NULL, NULL, NULL);
-
-	if (!converted && e3)
-		converted = g_convert (str, len, "UTF-8", e3, NULL, NULL, NULL);
-
-	if (!converted) {
-		converted = g_convert_with_fallback (str, len, "UTF-8", e1,
-	                "?", NULL, NULL, NULL);
-	}
-
-	return converted;
-}
-
 /* init, deinit for libnm_util */
 
 static gboolean initialized = FALSE;
@@ -303,8 +265,7 @@ nm_utils_deinit (void)
 
 /**
  * nm_utils_ssid_to_utf8:
- * @ssid: pointer to a buffer containing the SSID data
- * @len: length of the SSID data in @ssid
+ * @ssid: a byte array containing the SSID data
  *
  * WiFi SSIDs are byte arrays, they are _not_ strings.  Thus, an SSID may
  * contain embedded NULLs and other unprintable characters.  Often it is
@@ -329,23 +290,46 @@ nm_utils_deinit (void)
  * Again, this function should be used for debugging and display purposes
  * _only_.
  *
- * Returns: an allocated string containing a UTF-8 representation of the
- * SSID, which must be freed by the caller using g_free().  Returns NULL
- * on errors.
+ * Returns: (transfer full): an allocated string containing a UTF-8
+ * representation of the SSID, which must be freed by the caller using g_free().
+ * Returns NULL on errors.
  **/
 char *
-nm_utils_ssid_to_utf8 (const char *ssid, guint32 len)
+nm_utils_ssid_to_utf8 (const GByteArray *ssid)
 {
-	char *converted = NULL, *buf;
-	gsize buflen = MIN (IW_ESSID_MAX_SIZE, (gsize) len);
+	char *converted = NULL;
+	char *lang, *e1 = NULL, *e2 = NULL, *e3 = NULL;
 
 	g_return_val_if_fail (ssid != NULL, NULL);
 
-	/* New buffer to ensure NULL-termination of SSID */
-	buf = g_malloc0 (IW_ESSID_MAX_SIZE + 1);
-	memcpy (buf, ssid, buflen);
-	converted = string_to_utf8 (buf, buflen);
-	g_free (buf);
+	if (g_utf8_validate ((const gchar *) ssid->data, ssid->len, NULL))
+		return g_strndup ((const gchar *) ssid->data, ssid->len);
+
+	/* LANG may be a good encoding hint */
+	g_get_charset ((const char **)(&e1));
+	if ((lang = getenv ("LANG"))) {
+		char * dot;
+
+		lang = g_ascii_strdown (lang, -1);
+		if ((dot = strchr (lang, '.')))
+			*dot = '\0';
+
+		get_encodings_for_lang (lang, &e1, &e2, &e3);
+		g_free (lang);
+	}
+
+	converted = g_convert ((const gchar *) ssid->data, ssid->len, "UTF-8", e1, NULL, NULL, NULL);
+	if (!converted && e2)
+		converted = g_convert ((const gchar *) ssid->data, ssid->len, "UTF-8", e2, NULL, NULL, NULL);
+
+	if (!converted && e3)
+		converted = g_convert ((const gchar *) ssid->data, ssid->len, "UTF-8", e3, NULL, NULL, NULL);
+
+	if (!converted) {
+		converted = g_convert_with_fallback ((const gchar *) ssid->data, ssid->len,
+		                                     "UTF-8", e1, "?", NULL, NULL, NULL);
+	}
+
 	return converted;
 }
 
@@ -486,7 +470,7 @@ value_dup (gpointer key, gpointer val, gpointer user_data)
  *
  * Utility function to duplicate a hash table of GValues.
  *
- * Returns: a newly allocated duplicated #GHashTable, caller must free the
+ * Returns: (transfer container) (element-type utf8 GObject.Value): a newly allocated duplicated #GHashTable, caller must free the
  * returned hash with g_hash_table_unref() or g_hash_table_destroy()
  **/
 GHashTable *
@@ -658,8 +642,8 @@ nm_utils_convert_uint_array_to_string (const GValue *src_value, GValue *dest_val
 		memset (buf, 0, sizeof (buf));
 		addr.s_addr = g_array_index (array, guint32, i++);
 		if (!inet_ntop (AF_INET, &addr, buf, INET_ADDRSTRLEN))
-			nm_warning ("%s: error converting IP4 address 0x%X",
-			            __func__, ntohl (addr.s_addr));
+			g_warning ("%s: error converting IP4 address 0x%X",
+			           __func__, ntohl (addr.s_addr));
 		g_string_append_printf (printable, "%u (%s)", addr.s_addr, buf);
 	}
 	g_string_append_c (printable, ']');
@@ -700,8 +684,8 @@ nm_utils_convert_ip4_addr_route_struct_array_to_string (const GValue *src_value,
 		memset (buf, 0, sizeof (buf));
 		addr.s_addr = g_array_index (array, guint32, 0);
 		if (!inet_ntop (AF_INET, &addr, buf, INET_ADDRSTRLEN))
-			nm_warning ("%s: error converting IP4 address 0x%X",
-			            __func__, ntohl (addr.s_addr));
+			g_warning ("%s: error converting IP4 address 0x%X",
+			           __func__, ntohl (addr.s_addr));
 		if (is_addr)
 			g_string_append_printf (printable, "ip = %s", buf);
 		else
@@ -718,8 +702,8 @@ nm_utils_convert_ip4_addr_route_struct_array_to_string (const GValue *src_value,
 			memset (buf, 0, sizeof (buf));
 			addr.s_addr = g_array_index (array, guint32, 2);
 			if (!inet_ntop (AF_INET, &addr, buf, INET_ADDRSTRLEN))
-				nm_warning ("%s: error converting IP4 address 0x%X",
-				            __func__, ntohl (addr.s_addr));
+				g_warning ("%s: error converting IP4 address 0x%X",
+				           __func__, ntohl (addr.s_addr));
 			if (is_addr)
 				g_string_append_printf (printable, "gw = %s", buf);
 			else
@@ -835,8 +819,8 @@ nm_utils_inet6_ntop (struct in6_addr *addr, char *buf)
 		g_string_append_printf (ip6_str, "%02X", addr->s6_addr[0]);
 		for (i = 1; i < 16; i++)
 			g_string_append_printf (ip6_str, " %02X", addr->s6_addr[i]);
-		nm_warning ("%s: error converting IP6 address %s",
-		            __func__, ip6_str->str);
+		g_warning ("%s: error converting IP6 address %s",
+		           __func__, ip6_str->str);
 		g_string_free (ip6_str, TRUE);
 		return FALSE;
 	}
@@ -1358,7 +1342,7 @@ nm_utils_security_valid (NMUtilsSecurityType type,
  * this serialization is not guaranteed to be stable and the #GArray may be
  * extended in the future.
  *
- * Returns: a newly allocated #GSList of #NMIP4Address objects
+ * Returns: (transfer full) (element-type NetworkManager.IP4Address): a newly allocated #GSList of #NMIP4Address objects
  **/
 GSList *
 nm_utils_ip4_addresses_from_gvalue (const GValue *value)
@@ -1373,7 +1357,7 @@ nm_utils_ip4_addresses_from_gvalue (const GValue *value)
 		NMIP4Address *addr;
 
 		if (array->len < 3) {
-			nm_warning ("Ignoring invalid IP4 address");
+			g_warning ("Ignoring invalid IP4 address");
 			continue;
 		}
 		
@@ -1440,7 +1424,7 @@ nm_utils_ip4_addresses_to_gvalue (GSList *list, GValue *value)
  * format of this serialization is not guaranteed to be stable and may be
  * extended in the future.
  *
- * Returns: a newly allocated #GSList of #NMIP4Route objects
+ * Returns: (transfer full) (element-type NetworkManager.IP4Route): a newly allocated #GSList of #NMIP4Route objects
  **/
 GSList *
 nm_utils_ip4_routes_from_gvalue (const GValue *value)
@@ -1455,7 +1439,7 @@ nm_utils_ip4_routes_from_gvalue (const GValue *value)
 		NMIP4Route *route;
 
 		if (array->len < 4) {
-			nm_warning ("Ignoring invalid IP4 route");
+			g_warning ("Ignoring invalid IP4 route");
 			continue;
 		}
 		
@@ -1603,7 +1587,7 @@ nm_utils_ip4_get_default_prefix (guint32 ip)
  * this serialization is not guaranteed to be stable and the #GValueArray may be
  * extended in the future.
  *
- * Returns: a newly allocated #GSList of #NMIP6Address objects
+ * Returns: (transfer full) (element-type NetworkManager.IP6Address): a newly allocated #GSList of #NMIP6Address objects
  **/
 GSList *
 nm_utils_ip6_addresses_from_gvalue (const GValue *value)
@@ -1623,27 +1607,27 @@ nm_utils_ip6_addresses_from_gvalue (const GValue *value)
 		guint32 prefix;
 
 		if (elements->n_values < 2 || elements->n_values > 3) {
-			nm_warning ("%s: ignoring invalid IP6 address structure", __func__);
+			g_warning ("%s: ignoring invalid IP6 address structure", __func__);
 			continue;
 		}
 
 		if (   (G_VALUE_TYPE (g_value_array_get_nth (elements, 0)) != DBUS_TYPE_G_UCHAR_ARRAY)
 		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 1)) != G_TYPE_UINT)) {
-			nm_warning ("%s: ignoring invalid IP6 address structure", __func__);
+			g_warning ("%s: ignoring invalid IP6 address structure", __func__);
 			continue;
 		}
 
 		/* Check optional 3rd element (gateway) */
 		if (   elements->n_values == 3
 		    && (G_VALUE_TYPE (g_value_array_get_nth (elements, 2)) != DBUS_TYPE_G_UCHAR_ARRAY)) {
-			nm_warning ("%s: ignoring invalid IP6 address structure", __func__);
+			g_warning ("%s: ignoring invalid IP6 address structure", __func__);
 			continue;
 		}
 
 		tmp = g_value_array_get_nth (elements, 0);
 		ba_addr = g_value_get_boxed (tmp);
 		if (ba_addr->len != 16) {
-			nm_warning ("%s: ignoring invalid IP6 address of length %d",
+			g_warning ("%s: ignoring invalid IP6 address of length %d",
 			            __func__, ba_addr->len);
 			continue;
 		}
@@ -1651,7 +1635,7 @@ nm_utils_ip6_addresses_from_gvalue (const GValue *value)
 		tmp = g_value_array_get_nth (elements, 1);
 		prefix = g_value_get_uint (tmp);
 		if (prefix > 128) {
-			nm_warning ("%s: ignoring invalid IP6 prefix %d",
+			g_warning ("%s: ignoring invalid IP6 prefix %d",
 			            __func__, prefix);
 			continue;
 		}
@@ -1660,7 +1644,7 @@ nm_utils_ip6_addresses_from_gvalue (const GValue *value)
 			tmp = g_value_array_get_nth (elements, 2);
 			ba_gw = g_value_get_boxed (tmp);
 			if (ba_gw->len != 16) {
-				nm_warning ("%s: ignoring invalid IP6 gateway address of length %d",
+				g_warning ("%s: ignoring invalid IP6 gateway address of length %d",
 				            __func__, ba_gw->len);
 				continue;
 			}
@@ -1746,7 +1730,7 @@ nm_utils_ip6_addresses_to_gvalue (GSList *list, GValue *value)
  * into a GSList of #NMIP6Route objects.  The specific format of this serialization
  * is not guaranteed to be stable and may be extended in the future.
  *
- * Returns: a newly allocated #GSList of #NMIP6Route objects
+ * Returns: (transfer full) (element-type NetworkManager.IP6Route): a newly allocated #GSList of #NMIP6Route objects
  **/
 GSList *
 nm_utils_ip6_routes_from_gvalue (const GValue *value)
@@ -1767,13 +1751,13 @@ nm_utils_ip6_routes_from_gvalue (const GValue *value)
 			|| (G_VALUE_TYPE (g_value_array_get_nth (route_values, 1)) != G_TYPE_UINT)
 		    || (G_VALUE_TYPE (g_value_array_get_nth (route_values, 2)) != DBUS_TYPE_G_UCHAR_ARRAY)
 			|| (G_VALUE_TYPE (g_value_array_get_nth (route_values, 3)) != G_TYPE_UINT)) {
-			nm_warning ("Ignoring invalid IP6 route");
+			g_warning ("Ignoring invalid IP6 route");
 			continue;
 		}
 
 		dest = g_value_get_boxed (g_value_array_get_nth (route_values, 0));
 		if (dest->len != 16) {
-			nm_warning ("%s: ignoring invalid IP6 dest address of length %d",
+			g_warning ("%s: ignoring invalid IP6 dest address of length %d",
 			            __func__, dest->len);
 			continue;
 		}
@@ -1782,7 +1766,7 @@ nm_utils_ip6_routes_from_gvalue (const GValue *value)
 
 		next_hop = g_value_get_boxed (g_value_array_get_nth (route_values, 2));
 		if (next_hop->len != 16) {
-			nm_warning ("%s: ignoring invalid IP6 next_hop address of length %d",
+			g_warning ("%s: ignoring invalid IP6 next_hop address of length %d",
 			            __func__, next_hop->len);
 			continue;
 		}
@@ -1862,6 +1846,18 @@ nm_utils_ip6_routes_to_gvalue (GSList *list, GValue *value)
 	g_value_take_boxed (value, routes);
 }
 
+/* FIXME: the Posix namespace does not exist, and thus neither does
+   the in6_addr struct. Marking (skip) for now */
+/**
+ * nm_utils_ip6_dns_from_gvalue: (skip):
+ * @value: a #GValue
+ *
+ * Converts a #GValue containing a #GPtrArray of IP6 DNS, represented as
+ * #GByteArray<!-- -->s into a #GSList of #in6_addr<!-- -->s.
+ *
+ * Returns: (transfer full) (element-type Posix.in6_addr): a #GSList of IP6
+ * addresses.
+ */
 GSList *
 nm_utils_ip6_dns_from_gvalue (const GValue *value)
 {
@@ -1875,8 +1871,8 @@ nm_utils_ip6_dns_from_gvalue (const GValue *value)
 		struct in6_addr *addr;
 
 		if (bytearray->len != 16) {
-			nm_warning ("%s: ignoring invalid IP6 address of length %d",
-			            __func__, bytearray->len);
+			g_warning ("%s: ignoring invalid IP6 address of length %d",
+			           __func__, bytearray->len);
 			continue;
 		}
 
@@ -1943,9 +1939,9 @@ nm_utils_uuid_generate_from_string (const char *s)
 	char *buf = NULL;
 
 	if (!nm_utils_init (&error)) {
-		nm_warning ("error initializing crypto: (%d) %s",
-		            error ? error->code : 0,
-		            error ? error->message : "unknown");
+		g_warning ("error initializing crypto: (%d) %s",
+		           error ? error->code : 0,
+		           error ? error->message : "unknown");
 		if (error)
 			g_error_free (error);
 		return NULL;
@@ -1953,9 +1949,9 @@ nm_utils_uuid_generate_from_string (const char *s)
 
 	uuid = g_malloc0 (sizeof (*uuid));
 	if (!crypto_md5_hash (NULL, 0, s, strlen (s), (char *) uuid, sizeof (*uuid), &error)) {
-		nm_warning ("error generating UUID: (%d) %s",
-		            error ? error->code : 0,
-		            error ? error->message : "unknown");
+		g_warning ("error generating UUID: (%d) %s",
+		           error ? error->code : 0,
+		           error ? error->message : "unknown");
 		if (error)
 			g_error_free (error);
 		goto out;
@@ -2045,8 +2041,8 @@ utils_bin2hexstr (const char *bytes, int len, int final_len)
 /**
  * nm_utils_rsa_key_encrypt:
  * @data: RSA private key data to be encrypted
- * @in_password: existing password to use, if any
- * @out_password: if @in_password was NULL, a random password will be generated
+ * @in_password: (allow-none): existing password to use, if any
+ * @out_password: (out) (allow-none): if @in_password was NULL, a random password will be generated
  *  and returned in this argument
  * @error: detailed error information on return, if an error occurred
  *
@@ -2054,7 +2050,7 @@ utils_bin2hexstr (const char *bytes, int len, int final_len)
  * a password if no password was given) and converts the data to PEM format
  * suitable for writing to a file.
  *
- * Returns: on success, PEM-formatted data suitable for writing to a PEM-formatted
+ * Returns: (transfer full): on success, PEM-formatted data suitable for writing to a PEM-formatted
  * certificate/private key file.
  **/
 GByteArray *
