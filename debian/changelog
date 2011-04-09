@@ -15,6 +15,7 @@ network-manager (0.8.998-1) UNRELEASED; urgency=low
        upgades.
      - Bump Depends on wpasuplicant to (>= 0.7.3-1) for the new wpasupplicant
        D-Bus interface.
+     - Bump Standards-Version to 3.9.2. No further changes.
    * Refresh debian/patches/02-dbus_access_network_manager.patch.
    * SONAME bump for libnm-glib (2→4) and libnm-util (1→2).
      - Rename *.install and *.symbols files.
