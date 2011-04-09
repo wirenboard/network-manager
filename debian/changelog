@@ -1,4 +1,4 @@
-network-manager (0.8.998-1) UNRELEASED; urgency=low
+network-manager (0.8.998-1) experimental; urgency=low
 
   * New major upstream release (0.9 rc1).
     - Support for fast user switching. (Closes: #563560)
@@ -36,7 +36,7 @@ network-manager (0.8.998-1) UNRELEASED; urgency=low
     - Install gir files in libnm-glib-dev.install and libnm-util-dev.install.
     - Call dh_girepository for libnm-glib4 and libnm-util2 in debian/rules.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 09 Apr 2011 05:49:11 +0200
+ -- Michael Biebl <biebl@debian.org>  Sat, 09 Apr 2011 06:49:57 +0200
 
 network-manager (0.8.3.999-1) unstable; urgency=low
 
