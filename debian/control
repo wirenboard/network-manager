@@ -19,7 +19,11 @@ Build-Depends:
  uuid-dev,
  libudev-dev (>= 147),
  libgudev-1.0-dev,
- gtk-doc-tools
+ gtk-doc-tools,
+ libgirepository1.0-dev (>= 0.9.12),
+ gobject-introspection (>= 0.9.12-4~),
+ gir1.2-glib-2.0,
+ gir1.2-freedesktop
 Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/pkg-utopia/network-manager.git
 Vcs-Browser: http://git.debian.org/?p=pkg-utopia/network-manager.git;a=summary
@@ -98,6 +102,7 @@ Section: libdevel
 Architecture: any
 Depends:
  libnm-glib4 (= ${binary:Version}),
+ gir1.2-networkmanager-1.0 (= ${binary:Version}),
  ${misc:Depends},
  libnm-util-dev,
  network-manager-dev,
@@ -171,6 +176,7 @@ Section: libdevel
 Architecture: any
 Depends:
  libnm-util2 (= ${binary:Version}),
+ gir1.2-networkmanager-1.0 (= ${binary:Version}),
  ${misc:Depends},
  libglib2.0-dev,
  libdbus-glib-1-dev
@@ -200,3 +206,21 @@ Description: network management framework daemon - debugging symbols
  from a DHCP server, and change nameservers whenever it sees fit.
  .
  This package contains detached debugging symbols.
+
+Package: gir1.2-networkmanager-1.0
+Section: libs
+Architecture: any
+Depends: ${gir:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Description: GObject introspection data for NetworkManager
+ NetworkManager attempts to keep an active network connection available at all
+ times. It is intended only for the desktop use-case, and is not intended for
+ usage on servers. The point of NetworkManager is to make networking
+ configuration and setup as painless and automatic as possible.  If using DHCP,
+ NetworkManager is _intended_ to replace default routes, obtain IP addresses
+ from a DHCP server, and change nameservers whenever it sees fit.
+ .
+ This package contains introspection data for NetworkManager.
+ .
+ It can be used by packages using the GIRepository format to generate
+ dynamic bindings.
+

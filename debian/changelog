@@ -25,6 +25,15 @@ network-manager (0.8.998-1) UNRELEASED; urgency=low
      - Install new header files for libnm-glib-dev.
      - Install network-manager gtk-doc documentation.
      - Drop keyfile plugin, it is now built into the core.
+  * Enable gobject introspection support
+    - Add Build-Depends on libgirepository1.0-dev (>= 0.9.12),
+      gobject-introspection (>= 0.9.12-4~), gir1.2-glib-2.0 and
+      gir1.2-freedesktop.
+    - Add package gir1.2-networkmanager-1.0 containing the typelib files.
+    - Add Depends on gir1.2-networkmanager-1.0 (= ${binary:Version}) to
+      libnm-glib-dev and libnm-util-dev according to the new policy.
+    - Install gir files in libnm-glib-dev.install and libnm-util-dev.install.
+    - Call dh_girepository for libnm-glib4 and libnm-util2 in debian/rules.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 09 Apr 2011 05:49:11 +0200
 

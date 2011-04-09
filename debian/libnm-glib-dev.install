@@ -14,3 +14,4 @@ debian/tmp/usr/include/libnm-glib/nm-types.h
 debian/tmp/usr/include/libnm-glib/nm-wimax-nsp.h
 debian/tmp/usr/include/libnm-glib/nm-secret-agent.h
 debian/tmp/usr/share/gtk-doc/html/libnm-glib/
+debian/tmp/usr/share/gir-1.0/NMClient-1.0.gir

@@ -13,6 +13,7 @@ override_dh_auto_configure:
 		--with-systemdsystemunitdir=/lib/systemd/system \
 		--with-crypto=gnutls \
 		--disable-more-warnings \
+		--enable-introspection \
 		--with-docs
 
 override_dh_install:
@@ -30,5 +31,10 @@ override_dh_makeshlibs:
 
 override_dh_strip:
 	dh_strip --dbg-package=network-manager-dbg
+
+override_dh_shlibdeps:
+	dh_shlibdeps
+	dh_girepository -plibnm-util2
+	dh_girepository -plibnm-glib4
 
 override_dh_auto_test:

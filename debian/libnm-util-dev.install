@@ -5,3 +5,4 @@ debian/tmp/usr/include/NetworkManager/nm-utils.h
 debian/tmp/usr/include/NetworkManager/nm-setting.h
 debian/tmp/usr/include/NetworkManager/nm-setting-*.h
 debian/tmp/usr/share/gtk-doc/html/libnm-util/
+debian/tmp/usr/share/gir-1.0/NetworkManager-1.0.gir
