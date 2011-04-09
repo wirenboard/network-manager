@@ -31,7 +31,7 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
  lsb-base (>= 3.2-14),
- wpasupplicant (>= 0.6.2-1),
+ wpasupplicant (>= 0.7.3-1),
  dbus (>= 1.1.2),
  udev,
  adduser,
@@ -44,11 +44,11 @@ Recommends:
  modemmanager
 Suggests: avahi-autoipd
 Breaks:
- network-manager-gnome (<< 0.8.2),
+ network-manager-gnome (<< 0.8.99),
  network-manager-kde (<< 1:0.9~~),
- network-manager-openvpn (<< 0.8),
- network-manager-vpnc (<< 0.8),
- network-manager-pptp (<< 0.8),
+ network-manager-openvpn (<< 0.8.99),
+ network-manager-vpnc (<< 0.8.99),
+ network-manager-pptp (<< 0.8.99),
  ppp (<< 2.4.5)
 Description: network management framework daemon
  NetworkManager attempts to keep an active network connection available at all
