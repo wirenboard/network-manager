@@ -18,6 +18,7 @@ network-manager (0.8.998-1) UNRELEASED; urgency=low
    * Refresh debian/patches/02-dbus_access_network_manager.patch.
    * SONAME bump for libnm-glib (2→4) and libnm-util (1→2).
      - Rename *.install and *.symbols files.
+     - Update debian/control.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 09 Apr 2011 05:49:11 +0200
 

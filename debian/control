@@ -76,7 +76,7 @@ Description: network management framework (development files)
  this package provides header files that are needed to
  compile VPN Plugins for NetworkManager.
 
-Package: libnm-glib2
+Package: libnm-glib4
 Section: libs
 Architecture: any
 Depends:
@@ -97,7 +97,7 @@ Package: libnm-glib-dev
 Section: libdevel
 Architecture: any
 Depends:
- libnm-glib2 (= ${binary:Version}),
+ libnm-glib4 (= ${binary:Version}),
  ${misc:Depends},
  libnm-util-dev,
  network-manager-dev,
@@ -149,7 +149,7 @@ Description: network management framework (GLib interface)
  This package provides the shared library that applications can use for
  creating VPN connections via NetworkManager.
 
-Package: libnm-util1
+Package: libnm-util2
 Section: libs
 Architecture: any
 Depends:
@@ -170,7 +170,7 @@ Package: libnm-util-dev
 Section: libdevel
 Architecture: any
 Depends:
- libnm-util1 (= ${binary:Version}),
+ libnm-util2 (= ${binary:Version}),
  ${misc:Depends},
  libglib2.0-dev,
  libdbus-glib-1-dev
@@ -189,7 +189,7 @@ Architecture: any
 Section: debug
 Priority: extra
 Depends:
- network-manager (= ${binary:Version}) | libnm-util1 (= ${binary:Version}) | libnm-glib2 (= ${binary:Version}) | libnm-glib-vpn1 (= ${binary:Version}),
+ network-manager (= ${binary:Version}) | libnm-util2 (= ${binary:Version}) | libnm-glib4 (= ${binary:Version}) | libnm-glib-vpn1 (= ${binary:Version}),
  ${misc:Depends}
 Description: network management framework daemon - debugging symbols
  NetworkManager attempts to keep an active network connection available at all
