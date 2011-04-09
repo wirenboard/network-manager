@@ -1,5 +1,4 @@
 debian/tmp/usr/lib/pkgconfig/libnm-glib.pc
-debian/tmp/usr/lib/libnm-glib.a
 debian/tmp/usr/lib/libnm-glib.so
 debian/tmp/usr/include/libnm-glib/libnm_glib.h
 debian/tmp/usr/include/libnm-glib/nm-object.h
@@ -12,4 +11,6 @@ debian/tmp/usr/include/libnm-glib/nm-dhcp6-config.h
 debian/tmp/usr/include/libnm-glib/nm*settings*.h
 debian/tmp/usr/include/libnm-glib/nm*connection.h
 debian/tmp/usr/include/libnm-glib/nm-types.h
+debian/tmp/usr/include/libnm-glib/nm-wimax-nsp.h
+debian/tmp/usr/include/libnm-glib/nm-secret-agent.h
 debian/tmp/usr/share/gtk-doc/html/libnm-glib/

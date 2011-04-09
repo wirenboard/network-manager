@@ -6,7 +6,6 @@ debian/tmp/usr/lib/NetworkManager/nm-crash-logger
 debian/tmp/usr/lib/NetworkManager/nm-dhcp-client.action
 debian/tmp/usr/lib/NetworkManager/nm-dispatcher.action
 debian/tmp/usr/lib/NetworkManager/nm-avahi-autoipd.action
-debian/tmp/usr/lib/NetworkManager/libnm-settings-plugin-keyfile.so
 debian/tmp/usr/lib/NetworkManager/libnm-settings-plugin-ifupdown.so
 debian/tmp/usr/lib/pppd/*/*.so
 debian/tmp/usr/share/locale/

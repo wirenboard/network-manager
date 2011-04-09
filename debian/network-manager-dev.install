@@ -2,3 +2,4 @@ debian/tmp/usr/lib/pkgconfig/NetworkManager.pc
 debian/tmp/usr/include/NetworkManager/NetworkManager.h
 debian/tmp/usr/include/NetworkManager/NetworkManagerVPN.h
 debian/tmp/usr/include/NetworkManager/nm-version.h
+debian/tmp/usr/share/gtk-doc/html/NetworkManager/

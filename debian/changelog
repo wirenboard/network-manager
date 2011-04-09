@@ -20,6 +20,11 @@ network-manager (0.8.998-1) UNRELEASED; urgency=low
      - Rename *.install and *.symbols files.
      - Update debian/control.
      - Update *.symbols files.
+   * Update *.install files.
+     - Drop static libraries from *-dev packages.
+     - Install new header files for libnm-glib-dev.
+     - Install network-manager gtk-doc documentation.
+     - Drop keyfile plugin, it is now built into the core.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 09 Apr 2011 05:49:11 +0200
 
