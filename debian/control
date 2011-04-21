@@ -50,15 +50,15 @@ Breaks:
  network-manager-vpnc (<< 0.8),
  network-manager-pptp (<< 0.8),
  ppp (<< 2.4.5)
-Description: network management framework daemon
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+Description: network management framework (daemon and userspace tools)
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
- This package provides the userspace daemons.
+ This package provides the userspace daemons and a command line interface to
+ interact with NetworkManager.
  .
  Optional dependencies:
   * policykit-1: Required for reading and writing system connections.
@@ -83,12 +83,11 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends}
 Description: network management framework (GLib shared library)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package provides the shared library that applications can use to query
  connection status via NetworkManager.
@@ -104,12 +103,11 @@ Depends:
  libglib2.0-dev,
  libdbus-glib-1-dev
 Description: network management framework (GLib interface)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package provides the interface that applications can use to query
  connection status via NetworkManager.
@@ -121,12 +119,11 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends}
 Description: network management framework (GLib VPN shared library)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package provides the shared library that applications can use for
  creating VPN connections via NetworkManager.
@@ -139,12 +136,11 @@ Depends:
  ${misc:Depends},
  libnm-glib-dev
 Description: network management framework (GLib interface)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package provides the shared library that applications can use for
  creating VPN connections via NetworkManager.
@@ -156,12 +152,11 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends}
 Description: network management framework (shared library)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package contains a convenience library to ease the access to
  NetworkManager.
@@ -175,12 +170,11 @@ Depends:
  libglib2.0-dev,
  libdbus-glib-1-dev
 Description: network management framework (development files)
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package contains header and development files.
 
@@ -191,12 +185,11 @@ Priority: extra
 Depends:
  network-manager (= ${binary:Version}) | libnm-util1 (= ${binary:Version}) | libnm-glib2 (= ${binary:Version}) | libnm-glib-vpn1 (= ${binary:Version}),
  ${misc:Depends}
-Description: network management framework daemon - debugging symbols
- NetworkManager attempts to keep an active network connection available at all
- times. It is intended only for the desktop use-case, and is not intended for
- usage on servers. The point of NetworkManager is to make networking
- configuration and setup as painless and automatic as possible.  If using DHCP,
- NetworkManager is _intended_ to replace default routes, obtain IP addresses
- from a DHCP server, and change nameservers whenever it sees fit.
+Description: network management framework (debugging symbols)
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
  .
  This package contains detached debugging symbols.
