@@ -1,9 +1,9 @@
-network-manager (0.8.4.0-1) UNRELEASED; urgency=low
+network-manager (0.8.4.0-1) unstable; urgency=low
 
   * New upstream release.
   * Bump Standards-Version to 3.9.2. No further changes.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 21 Apr 2011 10:43:58 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 21 Apr 2011 11:05:42 +0200
 
 network-manager (0.8.3.999-1) unstable; urgency=low
 
