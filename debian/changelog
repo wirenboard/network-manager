@@ -1,3 +1,9 @@
+network-manager (0.8.4.0-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 21 Apr 2011 10:43:58 +0200
+
 network-manager (0.8.3.999-1) unstable; urgency=low
 
   * New upstream release (0.8.4 rc2).
