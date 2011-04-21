@@ -88,7 +88,7 @@ rfkill_type_to_desc (RfKillType rtype)
 	if (rtype == 0)
 		return "WiFi";
 	else if (rtype == 1)
-		return "WWan";
+		return "WWAN";
 	else if (rtype == 2)
 		return "WiMAX";
 	return "unknown";
@@ -373,8 +373,12 @@ device_creator (NMUdevManager *manager,
 	}
 
 	if (!driver) {
-		nm_log_warn (LOGD_HW, "%s: couldn't determine device driver; ignoring...", path);
-		goto out;
+		if (g_str_has_prefix (ifname, "easytether")) {
+			driver = "easytether";
+		} else {
+			nm_log_warn (LOGD_HW, "%s: couldn't determine device driver; ignoring...", path);
+			goto out;
+		}
 	}
 
 	ifindex = g_udev_device_get_sysfs_attr_as_int (udev_device, "ifindex");
@@ -403,14 +407,24 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 {
 	gint etype;
 	const char *iface;
-	const char *devtype;
+	const char *tmp;
 
 	g_return_if_fail (device != NULL);
 
+	iface = g_udev_device_get_name (device);
+	if (!iface) {
+		nm_log_dbg (LOGD_HW, "failed to get device's interface");
+		return;
+	}
+
+	/* Ignore devices that don't report Ethernet encapsulation, except for
+	 * s390 CTC-type devices that report 256 for some reason.
+	 * FIXME: use something other than interface name to detect CTC here.
+	 */
 	etype = g_udev_device_get_sysfs_attr_as_int (device, "type");
-	if (etype != 1) {
+	if ((etype != 1) && (!strncmp (iface, "ctc", 3) && (etype != 256))) {
 		nm_log_dbg (LOGD_HW, "ignoring interface with type %d", etype);
-		return; /* Not using ethernet encapsulation, don't care */
+		return;
 	}
 
 	/* Not all ethernet devices are immediately usable; newer mobile broadband
@@ -420,16 +434,22 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 	 * subclass.  ModemManager will pick it up though and so we'll handle it
 	 * through the mobile broadband stuff.
 	 */
-	devtype = g_udev_device_get_property (device, "DEVTYPE");
-	if (devtype && !strcmp (devtype, "wwan")) {
-		nm_log_dbg (LOGD_HW, "ignoring interface with devtype '%s'", devtype);
+	tmp = g_udev_device_get_property (device, "DEVTYPE");
+	if (g_strcmp0 (tmp, "wwan") == 0) {
+		nm_log_dbg (LOGD_HW, "ignoring interface with devtype '%s'", tmp);
 		return;
 	}
 
-	iface = g_udev_device_get_name (device);
-	if (!iface) {
-		nm_log_dbg (LOGD_HW, "failed to get device's interface");
-		return;
+	/* Ignore Nokia cdc-ether interfaces in PC-Suite mode since we need to
+	 * talk phonet to use them, which ModemManager doesn't do yet.
+	 */
+	tmp = g_udev_device_get_property (device, "ID_VENDOR_ID");
+	if (g_strcmp0 (tmp, "0421") == 0) { /* Nokia vendor ID */
+		tmp = g_udev_device_get_property (device, "ID_MODEL");
+		if (tmp && (strstr (tmp, "PC-Suite") || strstr (tmp, "PC Suite"))) {
+			nm_log_dbg (LOGD_HW, "ignoring Nokia PC-Suite ethernet interface");
+			return;
+		}
 	}
 
 	g_signal_emit (self, signals[DEVICE_ADDED], 0, device, device_creator);

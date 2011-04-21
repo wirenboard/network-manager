@@ -309,7 +309,7 @@ fill_ip4_setting_from_ibft (shvarFile *ifcfg,
 				/* Record is good; fill IP4 config with its info */
 				if (!method) {
 					g_warning ("%s: malformed iscsiadm record: missing BOOTPROTO.", __func__);
-					return FALSE;
+					goto done;
 				}
 
 				g_object_set (s_ip4, NM_SETTING_IP4_CONFIG_METHOD, method, NULL);
@@ -320,7 +320,7 @@ fill_ip4_setting_from_ibft (shvarFile *ifcfg,
 				    if (!ipaddr.s_addr || !prefix) {
 						g_warning ("%s: malformed iscsiadm record: BOOTPROTO=static "
 						           "but missing IP address or prefix.", __func__);
-						return FALSE;
+						goto done;
 					}
 
 					addr = nm_ip4_address_new ();
@@ -337,7 +337,8 @@ fill_ip4_setting_from_ibft (shvarFile *ifcfg,
 
 					// FIXME: DNS search domains?
 				}
-				return TRUE;
+				success = TRUE;
+				goto done;
 			}
 			skip = FALSE;
 			hwaddr_matched = FALSE;
@@ -509,7 +510,7 @@ parse_ip6_address (const char *value,
 static NMIP4Address *
 read_full_ip4_address (shvarFile *ifcfg,
                        const char *network_file,
-                       guint32 which,
+                       gint32 which,
                        GError **error)
 {
 	NMIP4Address *addr;
@@ -519,12 +520,12 @@ read_full_ip4_address (shvarFile *ifcfg,
 	shvarFile *network_ifcfg;
 	char *value;
 
-	g_return_val_if_fail (which > 0, NULL);
+	g_return_val_if_fail (which >= -1, NULL);
 	g_return_val_if_fail (ifcfg != NULL, NULL);
 	g_return_val_if_fail (network_file != NULL, NULL);
 
 	addr = nm_ip4_address_new ();
-	if (which == 1) {
+	if (which == -1) {
 		ip_tag = g_strdup ("IPADDR");
 		prefix_tag = g_strdup ("PREFIX");
 		netmask_tag = g_strdup ("NETMASK");
@@ -783,7 +784,6 @@ read_route_file_legacy (const char *filename, NMSettingIP4Config *s_ip4, GError 
 			}
 		}
 		dest = g_match_info_fetch (match_info, 1);
-		g_match_info_free (match_info);
 		if (!strcmp (dest, "default"))
 			strcpy (dest, "0.0.0.0");
 		if (inet_pton (AF_INET, dest, &ip4_addr) != 1) {
@@ -797,6 +797,7 @@ read_route_file_legacy (const char *filename, NMSettingIP4Config *s_ip4, GError 
 
 		/* Prefix - is optional; 32 if missing */
 		prefix = g_match_info_fetch (match_info, 2);
+		g_match_info_free (match_info);
 		prefix_int = 32;
 		if (prefix) {
 			errno = 0;
@@ -808,7 +809,6 @@ read_route_file_legacy (const char *filename, NMSettingIP4Config *s_ip4, GError 
 				goto error;
 			}
 		}
-
 		nm_ip4_route_set_prefix (route, (guint32) prefix_int);
 		g_free (prefix);
 
@@ -1037,7 +1037,6 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 			}
 		}
 		dest = g_match_info_fetch (match_info, 1);
-		g_match_info_free (match_info);
 		if (!strcmp (dest, "default"))
 			strcpy (dest, "::");
 		if (inet_pton (AF_INET6, dest, &ip6_addr) != 1) {
@@ -1051,6 +1050,7 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 
 		/* Prefix - is optional; 128 if missing */
 		prefix = g_match_info_fetch (match_info, 2);
+		g_match_info_free (match_info);
 		prefix_int = 128;
 		if (prefix) {
 			errno = 0;
@@ -1062,7 +1062,6 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 				goto error;
 			}
 		}
-
 		nm_ip6_route_set_prefix (route, (guint32) prefix_int);
 		g_free (prefix);
 
@@ -1135,7 +1134,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	char *value = NULL;
 	char *route_path = NULL;
 	char *method = NM_SETTING_IP4_CONFIG_METHOD_MANUAL;
-	guint32 i;
+	gint32 i;
 	shvarFile *network_ifcfg;
 	shvarFile *route_ifcfg;
 	gboolean never_default = FALSE, tmp_success;
@@ -1179,6 +1178,7 @@ make_ip4_setting (shvarFile *ifcfg,
 		if (!g_ascii_strcasecmp (value, "bootp") || !g_ascii_strcasecmp (value, "dhcp"))
 			method = NM_SETTING_IP4_CONFIG_METHOD_AUTO;
 		else if (!g_ascii_strcasecmp (value, "ibft")) {
+			g_free (value);
 			g_object_set (s_ip4, NM_SETTING_IP4_CONFIG_NEVER_DEFAULT, never_default, NULL);
 			/* iSCSI Boot Firmware Table: need to read values from the iSCSI 
 			 * firmware for this device and create the IP4 setting using those.
@@ -1212,6 +1212,9 @@ make_ip4_setting (shvarFile *ifcfg,
 		g_free (value);
 	} else {
 		char *tmp_ip4, *tmp_prefix, *tmp_netmask;
+		char *tmp_ip4_0, *tmp_prefix_0, *tmp_netmask_0;
+		char *tmp_ip4_1, *tmp_prefix_1, *tmp_netmask_1;
+		char *tmp_ip4_2, *tmp_prefix_2, *tmp_netmask_2;
 
 		/* If there is no BOOTPROTO, no IPADDR, no PREFIX, no NETMASK, but
 		 * valid IPv6 configuration, assume that IPv4 is disabled.  Otherwise,
@@ -1226,7 +1229,19 @@ make_ip4_setting (shvarFile *ifcfg,
 		tmp_ip4 = svGetValue (ifcfg, "IPADDR", FALSE);
 		tmp_prefix = svGetValue (ifcfg, "PREFIX", FALSE);
 		tmp_netmask = svGetValue (ifcfg, "NETMASK", FALSE);
-		if (!tmp_ip4 && !tmp_prefix && !tmp_netmask) {
+		tmp_ip4_0 = svGetValue (ifcfg, "IPADDR0", FALSE);
+		tmp_prefix_0 = svGetValue (ifcfg, "PREFIX0", FALSE);
+		tmp_netmask_0 = svGetValue (ifcfg, "NETMASK0", FALSE);
+		tmp_ip4_1 = svGetValue (ifcfg, "IPADDR1", FALSE);
+		tmp_prefix_1 = svGetValue (ifcfg, "PREFIX1", FALSE);
+		tmp_netmask_1 = svGetValue (ifcfg, "NETMASK1", FALSE);
+		tmp_ip4_2 = svGetValue (ifcfg, "IPADDR2", FALSE);
+		tmp_prefix_2 = svGetValue (ifcfg, "PREFIX2", FALSE);
+		tmp_netmask_2 = svGetValue (ifcfg, "NETMASK2", FALSE);
+		if (   !tmp_ip4   && !tmp_prefix   && !tmp_netmask
+		    && !tmp_ip4_0 && !tmp_prefix_0 && !tmp_netmask_0
+		    && !tmp_ip4_1 && !tmp_prefix_1 && !tmp_netmask_1
+		    && !tmp_ip4_2 && !tmp_prefix_2 && !tmp_netmask_2) {
 			if (valid_ip6_config) {
 				/* Nope, no IPv4 */
 				g_object_set (s_ip4,
@@ -1240,6 +1255,15 @@ make_ip4_setting (shvarFile *ifcfg,
 		g_free (tmp_ip4);
 		g_free (tmp_prefix);
 		g_free (tmp_netmask);
+		g_free (tmp_ip4_0);
+		g_free (tmp_prefix_0);
+		g_free (tmp_netmask_0);
+		g_free (tmp_ip4_1);
+		g_free (tmp_prefix_1);
+		g_free (tmp_netmask_1);
+		g_free (tmp_ip4_2);
+		g_free (tmp_prefix_2);
+		g_free (tmp_netmask_2);
 	}
 
 	g_object_set (s_ip4,
@@ -1254,12 +1278,17 @@ make_ip4_setting (shvarFile *ifcfg,
 	if (!strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_MANUAL)) {
 		NMIP4Address *addr;
 
-		for (i = 1; i < 256; i++) {
+		for (i = -1; i < 256; i++) {
 			addr = read_full_ip4_address (ifcfg, network_file, i, error);
 			if (error && *error)
 				goto done;
-			if (!addr)
-				break;
+			if (!addr) {
+				/* The first mandatory variable is 2-indexed (IPADDR2)
+				 * Variables IPADDR, IPADDR0 and IPADDR1 are optional */
+				if (i > 1)
+					break;
+				continue;
+			}
 
 			if (!nm_setting_ip4_config_add_address (s_ip4, addr))
 				PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: duplicate IP4 address");
@@ -1665,6 +1694,7 @@ add_one_wep_key (shvarFile *ifcfg,
 
 	if (key) {
 		nm_setting_wireless_security_set_wep_key (s_wsec, key_idx, key);
+		g_free (key);
 		success = TRUE;
 	} else
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0, "Invalid WEP key length.");
@@ -2744,6 +2774,7 @@ make_wireless_setting (shvarFile *ifcfg,
 			ssid_len  = (value_len - 2) / 2;
 			memcpy (buf, tmp, ssid_len);
 			p = &buf[0];
+			g_free (tmp);
 		}
 
 		if (ssid_len > 32 || ssid_len == 0) {
@@ -2803,6 +2834,7 @@ make_wireless_setting (shvarFile *ifcfg,
 		if (!eth) {
 			g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 			             "Invalid BSSID '%s'", value);
+			g_free (value);
 			goto error;
 		}
 
@@ -2810,6 +2842,7 @@ make_wireless_setting (shvarFile *ifcfg,
 		g_byte_array_append (bssid, eth->ether_addr_octet, ETH_ALEN);
 		g_object_set (s_wireless, NM_SETTING_WIRELESS_BSSID, bssid, NULL);
 		g_byte_array_free (bssid, TRUE);
+		g_free (value);
 	}
 
 	value = svGetValue (ifcfg, "CHANNEL", FALSE);
@@ -2829,6 +2862,7 @@ make_wireless_setting (shvarFile *ifcfg,
 			g_object_set (s_wireless, NM_SETTING_WIRELESS_BAND, "a", NULL);
 		else
 			g_object_set (s_wireless, NM_SETTING_WIRELESS_BAND, "bg", NULL);
+		g_free (value);
 	}
 
 	value = svGetValue (ifcfg, "MTU", FALSE);
@@ -2844,6 +2878,7 @@ make_wireless_setting (shvarFile *ifcfg,
 			goto error;
 		}
 		g_object_set (s_wireless, NM_SETTING_WIRELESS_MTU, (guint32) mtu, NULL);
+		g_free (value);
 	}
 
 done:
@@ -2906,6 +2941,7 @@ wireless_connection_from_ifcfg (const char *file,
 		/* Wireless security */
 		security_setting = make_wireless_security_setting (ifcfg, file, ssid, adhoc, &s_8021x, error);
 		if (*error) {
+			g_free (printable_ssid);
 			g_object_unref (connection);
 			return NULL;
 		}
@@ -3039,6 +3075,11 @@ make_wired_setting (shvarFile *ifcfg,
 	}
 	g_free (value);
 
+	value = svGetValue (ifcfg, "CTCPROT", FALSE);
+	if (value && strlen (value))
+		nm_setting_wired_add_s390_option (s_wired, "ctcprot", value);
+	g_free (value);
+
 	nettype = svGetValue (ifcfg, "NETTYPE", FALSE);
 	if (nettype && strlen (nettype)) {
 		if (!strcmp (nettype, "qeth") || !strcmp (nettype, "lcs") || !strcmp (nettype, "ctc"))
@@ -3046,6 +3087,7 @@ make_wired_setting (shvarFile *ifcfg,
 		else
 			PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: unknown s390 NETTYPE '%s'", nettype);
 	}
+	g_free (nettype);
 
 	value = svGetValue (ifcfg, "OPTIONS", FALSE);
 	if (value && strlen (value)) {
@@ -3067,8 +3109,6 @@ make_wired_setting (shvarFile *ifcfg,
 		g_strfreev (options);
 	}
 	g_free (value);
-
-	g_free (nettype);
 
 	if (!nm_controlled && !*unmanaged) {
 		/* If NM_CONTROLLED=no but there wasn't a MAC address or z/VM
@@ -3294,6 +3334,12 @@ connection_from_file (const char *filename,
 		}
 
 		g_free (device);
+	} else {
+		/* Check for IBM s390 CTC devices and call them Ethernet */
+		if (g_strcmp0 (type, "CTC") == 0) {
+			g_free (type);
+			type = g_strdup (TYPE_ETHERNET);
+		}
 	}
 
 	nmc = svGetValue (parsed, "NM_CONTROLLED", FALSE);
@@ -3401,6 +3447,7 @@ connection_from_file (const char *filename,
 
 		g_object_set (G_OBJECT (s_con), NM_SETTING_CONNECTION_READ_ONLY, TRUE, NULL);
 	}
+	g_free (bootproto);
 
 	if (!nm_connection_verify (connection, &error)) {
 		g_object_unref (connection);
