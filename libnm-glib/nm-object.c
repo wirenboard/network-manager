@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2008 Red Hat, Inc.
  */
 
 #include <string.h>
@@ -223,7 +223,7 @@ nm_object_class_init (NMObjectClass *nm_object_class)
  *
  * Gets the #NMObject's DBusGConnection.
  *
- * Returns: (transfer none): the connection
+ * Returns: the connection
  **/
 DBusGConnection *
 nm_object_get_connection (NMObject *object)
@@ -369,18 +369,12 @@ out:
 	g_free (prop_name);
 }
 
-void
-_nm_object_process_properties_changed (NMObject *self, GHashTable *properties)
-{
-	g_hash_table_foreach (properties, handle_property_changed, self);
-}
-
 static void
 properties_changed_proxy (DBusGProxy *proxy,
                           GHashTable *properties,
                           gpointer user_data)
 {
-	_nm_object_process_properties_changed (NM_OBJECT (user_data), properties);
+	g_hash_table_foreach (properties, handle_property_changed, user_data);
 }
 
 void
@@ -486,10 +480,9 @@ done:
 
 gboolean
 _nm_object_get_property (NMObject *object,
-                         const char *interface,
-                         const char *prop_name,
-                         GValue *value,
-                         GError **error)
+						const char *interface,
+						const char *prop_name,
+						GValue *value)
 {
 	GError *err = NULL;
 
@@ -497,7 +490,6 @@ _nm_object_get_property (NMObject *object,
 	g_return_val_if_fail (interface != NULL, FALSE);
 	g_return_val_if_fail (prop_name != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (!dbus_g_proxy_call_with_timeout (NM_OBJECT_GET_PRIVATE (object)->properties_proxy,
 							"Get", 15000, &err,
@@ -508,10 +500,8 @@ _nm_object_get_property (NMObject *object,
 							G_TYPE_INVALID)) {
 		/* Don't warn about D-Bus no reply/timeout errors; it's mostly noise and
 		 * happens for example when NM quits and the applet is still running.
-		 * And don't warn when 'error' is not NULL, rather propagate 'err' so the caller
-		 * can do something with it. */
-		if (   !error
-		    && !(err->domain == DBUS_GERROR && err->code == DBUS_GERROR_NO_REPLY)) {
+		 */
+		if (!(err->domain == DBUS_GERROR && err->code == DBUS_GERROR_NO_REPLY)) {
 			g_warning ("%s: Error getting '%s' for %s: (%d) %s\n",
 			           __func__,
 			           prop_name,
@@ -519,7 +509,7 @@ _nm_object_get_property (NMObject *object,
 			           err->code,
 			           err->message);
 		}
-		g_propagate_error (error, err);
+		g_error_free (err);
 		return FALSE;
 	}
 
@@ -552,14 +542,13 @@ _nm_object_set_property (NMObject *object,
 
 char *
 _nm_object_get_string_property (NMObject *object,
-                                const char *interface,
-                                const char *prop_name,
-                                GError **error)
+							   const char *interface,
+							   const char *prop_name)
 {
 	char *str = NULL;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		if (G_VALUE_HOLDS_STRING (&value))
 			str = g_strdup (g_value_get_string (&value));
 		else if (G_VALUE_HOLDS (&value, DBUS_TYPE_G_OBJECT_PATH))
@@ -572,14 +561,13 @@ _nm_object_get_string_property (NMObject *object,
 
 char *
 _nm_object_get_object_path_property (NMObject *object,
-                                     const char *interface,
-                                     const char *prop_name,
-                                     GError **error)
+									const char *interface,
+									const char *prop_name)
 {
 	char *path = NULL;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		path = g_strdup (g_value_get_boxed (&value));
 		g_value_unset (&value);
 	}
@@ -589,14 +577,13 @@ _nm_object_get_object_path_property (NMObject *object,
 
 gint32
 _nm_object_get_int_property (NMObject *object,
-                             const char *interface,
-                             const char *prop_name,
-                             GError **error)
+							const char *interface,
+							const char *prop_name)
 {
 	gint32 i = 0;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		i = g_value_get_int (&value);
 		g_value_unset (&value);
 	}
@@ -606,14 +593,13 @@ _nm_object_get_int_property (NMObject *object,
 
 guint32
 _nm_object_get_uint_property (NMObject *object,
-                              const char *interface,
-                              const char *prop_name,
-                              GError **error)
+							 const char *interface,
+							 const char *prop_name)
 {
 	guint32 i = 0;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		i = g_value_get_uint (&value);
 		g_value_unset (&value);
 	}
@@ -623,14 +609,13 @@ _nm_object_get_uint_property (NMObject *object,
 
 gboolean
 _nm_object_get_boolean_property (NMObject *object,
-                                 const char *interface,
-                                 const char *prop_name,
-                                 GError **error)
+								const char *interface,
+								const char *prop_name)
 {
-	gboolean b = FALSE;
+	gboolean b = FALSE;  // FIXME: somehow convey failure if needed
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		b = g_value_get_boolean (&value);
 		g_value_unset (&value);
 	}
@@ -640,14 +625,13 @@ _nm_object_get_boolean_property (NMObject *object,
 
 gint8
 _nm_object_get_byte_property (NMObject *object,
-                              const char *interface,
-                              const char *prop_name,
-                              GError **error)
+							 const char *interface,
+							 const char *prop_name)
 {
 	gint8 b = G_MAXINT8;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		b = g_value_get_uchar (&value);
 		g_value_unset (&value);
 	}
@@ -657,14 +641,13 @@ _nm_object_get_byte_property (NMObject *object,
 
 gdouble
 _nm_object_get_double_property (NMObject *object,
-                                const char *interface,
-                                const char *prop_name,
-                                GError **error)
+							   const char *interface,
+							   const char *prop_name)
 {
 	gdouble d = G_MAXDOUBLE;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		d = g_value_get_double (&value);
 		g_value_unset (&value);
 	}
@@ -674,14 +657,13 @@ _nm_object_get_double_property (NMObject *object,
 
 GByteArray *
 _nm_object_get_byte_array_property (NMObject *object,
-                                    const char *interface,
-                                    const char *prop_name,
-                                    GError **error)
+								   const char *interface,
+								   const char *prop_name)
 {
-	GByteArray *array = NULL;
+	GByteArray * array = NULL;
 	GValue value = {0,};
 
-	if (_nm_object_get_property (object, interface, prop_name, &value, error)) {
+	if (_nm_object_get_property (object, interface, prop_name, &value)) {
 		GArray * tmp = g_value_get_boxed (&value);
 		int i;
 		unsigned char byte;

@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2005 - 2011 Red Hat, Inc.
+ * Copyright (C) 2005 - 2008 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
@@ -26,7 +26,7 @@
 #include <glib-object.h>
 #include "NetworkManagerVPN.h"
 #include "nm-device.h"
-#include "nm-activation-request.h"
+#include "nm-secrets-provider-interface.h"
 #include "nm-vpn-connection-base.h"
 
 #define NM_TYPE_VPN_CONNECTION            (nm_vpn_connection_get_type ())
@@ -56,11 +56,7 @@ typedef struct {
 
 GType nm_vpn_connection_get_type (void);
 
-NMVPNConnection * nm_vpn_connection_new (NMConnection *connection,
-                                         NMActRequest *act_request,
-                                         NMDevice *parent_device,
-                                         gboolean user_requested,
-                                         gulong user_uid);
+NMVPNConnection * nm_vpn_connection_new (NMConnection *connection, NMDevice *parent_device);
 
 void                 nm_vpn_connection_activate        (NMVPNConnection *connection);
 NMConnection *       nm_vpn_connection_get_connection  (NMVPNConnection *connection);

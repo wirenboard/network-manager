@@ -19,8 +19,7 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#include "config.h"
-
+#define _GNU_SOURCE
 #include <dlfcn.h>
 #include <syslog.h>
 #include <execinfo.h>
@@ -42,9 +41,8 @@ static guint32 log_level = LOGL_INFO | LOGL_WARN | LOGL_ERR;
 static guint32 log_domains = \
 	LOGD_HW | LOGD_RFKILL | LOGD_ETHER | LOGD_WIFI | LOGD_BT | LOGD_MB | \
 	LOGD_DHCP4 | LOGD_DHCP6 | LOGD_PPP | LOGD_IP4 | LOGD_IP6 | LOGD_AUTOIP4 | \
-	LOGD_DNS | LOGD_VPN | LOGD_SHARING | LOGD_SUPPLICANT | LOGD_AGENTS | \
-	LOGD_SETTINGS | LOGD_SUSPEND | LOGD_CORE | LOGD_DEVICE | LOGD_OLPC_MESH | \
-	LOGD_WIMAX;
+	LOGD_DNS | LOGD_VPN | LOGD_SHARING | LOGD_SUPPLICANT | LOGD_USER_SET | \
+	LOGD_SYS_SET | LOGD_SUSPEND | LOGD_CORE | LOGD_DEVICE | LOGD_OLPC_MESH;
 
 typedef struct {
 	guint32 num;
@@ -78,13 +76,12 @@ static const LogDesc domain_descs[] = {
 	{ LOGD_VPN,       "VPN" },
 	{ LOGD_SHARING,   "SHARING" },
 	{ LOGD_SUPPLICANT,"SUPPLICANT" },
-	{ LOGD_AGENTS,    "AGENTS" },
-	{ LOGD_SETTINGS,  "SETTINGS" },
+	{ LOGD_USER_SET,  "USER_SET" },
+	{ LOGD_SYS_SET,   "SYS_SET" },
 	{ LOGD_SUSPEND,   "SUSPEND" },
 	{ LOGD_CORE,      "CORE" },
 	{ LOGD_DEVICE,    "DEVICE" },
 	{ LOGD_OLPC_MESH, "OLPC" },
-	{ LOGD_WIMAX,     "WIMAX" },
 	{ 0, NULL }
 };
 

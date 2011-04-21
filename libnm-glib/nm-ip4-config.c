@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2007 - 2011 Novell, Inc.
+ * Copyright (C) 2007 - 2008 Novell, Inc.
  * Copyright (C) 2008 Red Hat, Inc.
  */
 
@@ -47,6 +47,7 @@ typedef struct {
 enum {
 	PROP_0,
 	PROP_ADDRESSES,
+	PROP_HOSTNAME,
 	PROP_NAMESERVERS,
 	PROP_DOMAINS,
 	PROP_ROUTES,
@@ -200,6 +201,9 @@ get_property (GObject *object,
 	case PROP_ADDRESSES:
 		nm_utils_ip4_addresses_to_gvalue (priv->addresses, value);
 		break;
+	case PROP_HOSTNAME:
+		g_value_set_string (value, NULL);
+		break;
 	case PROP_NAMESERVERS:
 		g_value_set_boxed (value, nm_ip4_config_get_nameservers (self));
 		break;
@@ -243,6 +247,19 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 						       "Addresses",
 						       "Addresses",
 						       G_PARAM_READABLE));
+
+	/**
+	 * NMIP4Config:hostname:
+	 *
+	 * DEPRECATED.  Don't use.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_HOSTNAME,
+		 g_param_spec_string (NM_IP4_CONFIG_HOSTNAME,
+						    "Hostname",
+						    "Hostname",
+						    NULL,
+						    G_PARAM_READABLE));
 
 	/**
 	 * NMIP4Config:nameservers:
@@ -303,7 +320,7 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
  *
  * Creates a new #NMIP4Config.
  *
- * Returns: (transfer full): a new IP4 configuration
+ * Returns: a new IP4 configuration
  **/
 GObject *
 nm_ip4_config_new (DBusGConnection *connection, const char *object_path)
@@ -320,8 +337,8 @@ nm_ip4_config_new (DBusGConnection *connection, const char *object_path)
  *
  * Gets the IP4 addresses (containing the address, prefix, and gateway).
  *
- * Returns: (element-type NetworkManager.IP4Address): the #GSList containing #NMIP4Address<!-- -->es.
- * This is the internal copy used by the configuration and must not be modified.
+ * Returns: the #GSList containing #NMSettingIP4Address<!-- -->es. This is the internal copy
+ * used by the configuration and must not be modified.
  **/
 const GSList *
 nm_ip4_config_get_addresses (NMIP4Config *config)
@@ -329,7 +346,7 @@ nm_ip4_config_get_addresses (NMIP4Config *config)
 	NMIP4ConfigPrivate *priv;
 	GValue value = { 0, };
 
-	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
+	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), 0);
 
 	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 	if (priv->addresses)
@@ -338,8 +355,7 @@ nm_ip4_config_get_addresses (NMIP4Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_IP4_CONFIG,
 	                              "Addresses",
-	                              &value,
-	                              NULL)) {
+	                              &value)) {
 		return NULL;
 	}
 
@@ -350,12 +366,26 @@ nm_ip4_config_get_addresses (NMIP4Config *config)
 }
 
 /**
+ * nm_ip4_config_get_hostname:
+ * @config: a #NMIP4Config
+ *
+ * DEPRECATED.  Don't use.
+ *
+ * Returns: NULL
+ **/
+const char *
+nm_ip4_config_get_hostname (NMIP4Config *config)
+{
+	return NULL;
+}
+
+/**
  * nm_ip4_config_get_nameservers:
  * @config: a #NMIP4Config
  *
  * Gets the domain name servers (DNS).
  *
- * Returns: (element-type guint32): the #GArray containing %guint32<!-- -->s. This is the internal copy used by the
+ * Returns: the #GArray containing %guint32<!-- -->s. This is the internal copy used by the
  * configuration and must not be modified.
  **/
 const GArray *
@@ -372,8 +402,7 @@ nm_ip4_config_get_nameservers (NMIP4Config *config)
 		if (_nm_object_get_property (NM_OBJECT (config),
 		                             NM_DBUS_INTERFACE_IP4_CONFIG,
 		                             "Nameservers",
-		                             &value,
-		                             NULL)) {
+		                             &value)) {
 			array = (GArray *) g_value_get_boxed (&value);
 			if (array && array->len) {
 				priv->nameservers = g_array_sized_new (FALSE, TRUE, sizeof (guint32), array->len);
@@ -392,7 +421,7 @@ nm_ip4_config_get_nameservers (NMIP4Config *config)
  *
  * Gets the domain names.
  *
- * Returns: (element-type utf8): the #GPtrArray containing domains as strings. This is the 
+ * Returns: the #GPtrArray containing domains as strings. This is the 
  * internal copy used by the configuration, and must not be modified.
  **/
 const GPtrArray *
@@ -410,8 +439,7 @@ nm_ip4_config_get_domains (NMIP4Config *config)
 	if (_nm_object_get_property (NM_OBJECT (config),
 	                             NM_DBUS_INTERFACE_IP4_CONFIG,
 	                             "Domains",
-	                             &value,
-	                             NULL)) {
+	                             &value)) {
 		char **array = NULL, **p;
 
 		array = (char **) g_value_get_boxed (&value);
@@ -432,8 +460,8 @@ nm_ip4_config_get_domains (NMIP4Config *config)
  *
  * Gets the Windows Internet Name Service servers (WINS).
  *
- * Returns: (element-type guint32): the #GArray containing %guint32<!-- -->s.
- * This is the internal copy used by the configuration and must not be modified.
+ * Returns: the #GArray containing %guint32<!-- -->s. This is the internal copy used by the
+ * configuration and must not be modified.
  **/
 const GArray *
 nm_ip4_config_get_wins_servers (NMIP4Config *config)
@@ -449,8 +477,7 @@ nm_ip4_config_get_wins_servers (NMIP4Config *config)
 		if (_nm_object_get_property (NM_OBJECT (config),
 		                             NM_DBUS_INTERFACE_IP4_CONFIG,
 		                             "Nameservers",
-		                             &value,
-		                             NULL)) {
+		                             &value)) {
 			array = (GArray *) g_value_get_boxed (&value);
 			if (array && array->len) {
 				priv->nameservers = g_array_sized_new (FALSE, TRUE, sizeof (guint32), array->len);
@@ -469,9 +496,8 @@ nm_ip4_config_get_wins_servers (NMIP4Config *config)
  *
  * Gets the routes.
  *
- * Returns: (element-type NetworkManager.IP4Route): the #GSList containing
- * #NMIP4Route<!-- -->s. This is the internal copy used by the configuration,
- * and must not be modified.
+ * Returns: the #GSList containing #NMSettingIP4Route<!-- -->s. This is the 
+ * internal copy used by the configuration, and must not be modified.
  **/
 const GSList *
 nm_ip4_config_get_routes (NMIP4Config *config)
@@ -479,7 +505,7 @@ nm_ip4_config_get_routes (NMIP4Config *config)
 	NMIP4ConfigPrivate *priv;
 	GValue value = { 0, };
 
-	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
+	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), 0);
 
 	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 	if (priv->routes)
@@ -488,8 +514,7 @@ nm_ip4_config_get_routes (NMIP4Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_IP4_CONFIG,
 	                              "Routes",
-	                              &value,
-	                              NULL)) {
+	                              &value)) {
 		return NULL;
 	}
 

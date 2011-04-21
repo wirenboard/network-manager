@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2008 - 2011 Red Hat, Inc.
+ * Copyright (C) 2008 - 2010 Red Hat, Inc.
  * Copyright (C) 2008 Novell, Inc.
  */
 
@@ -169,9 +169,6 @@ nm_dhcp4_config_class_init (NMDHCP4ConfigClass *config_class)
 	 * NMDHCP4Config:options:
 	 *
 	 * The #GHashTable containing options of the configuration.
-	 *
-	 * Type: GLib.HashTable
-	 * Element-Type: utf8,GObject.Value
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_OPTIONS,
@@ -189,7 +186,7 @@ nm_dhcp4_config_class_init (NMDHCP4ConfigClass *config_class)
  *
  * Creates a new #NMDHCP4Config.
  *
- * Returns: (transfer full): a new configuration
+ * Returns: a new configuration
  **/
 GObject *
 nm_dhcp4_config_new (DBusGConnection *connection, const char *object_path)
@@ -206,7 +203,7 @@ nm_dhcp4_config_new (DBusGConnection *connection, const char *object_path)
  *
  * Gets all the options contained in the configuration.
  *
- * Returns: (transfer none) (element-type utf8 GObject.Value): the #GHashTable containing strings for keys and values.
+ * Returns: the #GHashTable containing strings for keys and values.
  * This is the internal copy used by the configuration, and must not be modified.
  **/
 GHashTable *
@@ -221,8 +218,7 @@ nm_dhcp4_config_get_options (NMDHCP4Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_DHCP4_CONFIG,
 	                              "Options",
-	                              &value,
-	                              NULL))
+	                              &value))
 		goto out;
 
 	demarshal_dhcp4_options (NM_OBJECT (config), NULL, &value, &priv->options);	

@@ -190,7 +190,7 @@ find_zone (GPtrArray *zones, const char *domain)
 {
 	guint32 dhash, i;
 
-	g_return_val_if_fail (domain != NULL, NULL);
+	g_return_val_if_fail (domain != NULL, FALSE);
 
 	dhash = g_str_hash (domain);
 	for (i = 0; i < zones->len; i++) {

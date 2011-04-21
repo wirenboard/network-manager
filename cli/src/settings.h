@@ -35,7 +35,6 @@
 #include <nm-setting-bluetooth.h>
 #include <nm-setting-olpc-mesh.h>
 #include <nm-setting-vpn.h>
-#include <nm-setting-wimax.h>
 
 #include "nmcli.h"
 #include "utils.h"
@@ -56,6 +55,5 @@ gboolean setting_cdma_details (NMSetting *setting, NmCli *nmc);
 gboolean setting_bluetooth_details (NMSetting *setting, NmCli *nmc);
 gboolean setting_olpc_mesh_details (NMSetting *setting, NmCli *nmc);
 gboolean setting_vpn_details (NMSetting *setting, NmCli *nmc);
-gboolean setting_wimax_details (NMSetting *setting, NmCli *nmc);
 
 #endif /* NMC_SETTINGS_H */

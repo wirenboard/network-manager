@@ -65,6 +65,7 @@
  */
 static NMManager *manager = NULL;
 static GMainLoop *main_loop = NULL;
+static int quit_pipe[2] = { -1, -1 };
 
 typedef struct {
 	time_t time;
@@ -145,62 +146,62 @@ static gboolean quit_early = FALSE;
 static void
 nm_signal_handler (int signo)
 {
-	static int in_fatal = 0;
+	static int in_fatal = 0, x;
 
 	/* avoid loops */
 	if (in_fatal > 0)
 		return;
 	++in_fatal;
 
-	switch (signo)
-	{
-		case SIGSEGV:
-		case SIGBUS:
-		case SIGILL:
-		case SIGABRT:
-			nm_log_warn (LOGD_CORE, "caught signal %d. Generating backtrace...", signo);
-			nm_logging_backtrace ();
-			exit (1);
-			break;
-
-		case SIGFPE:
-		case SIGPIPE:
-			/* let the fatal signals interrupt us */
-			--in_fatal;
-
-			nm_log_warn (LOGD_CORE, "caught signal %d, shutting down abnormally. Generating backtrace...", signo);
-			nm_logging_backtrace ();
-			g_main_loop_quit (main_loop);
-			break;
-
-		case SIGINT:
-		case SIGTERM:
-			/* let the fatal signals interrupt us */
-			--in_fatal;
-
-			nm_log_info (LOGD_CORE, "caught signal %d, shutting down normally.", signo);
-			quit_early = TRUE;
-			g_main_loop_quit (main_loop);
-			break;
-
-		case SIGHUP:
-			--in_fatal;
-			/* FIXME:
-			 * Reread config stuff like system config files, VPN service files, etc
-			 */
-			break;
-
-		case SIGUSR1:
-			--in_fatal;
-			/* FIXME:
-			 * Play with log levels or something
-			 */
-			break;
-
-		default:
-			signal (signo, nm_signal_handler);
-			break;
+	switch (signo) {
+	case SIGSEGV:
+	case SIGBUS:
+	case SIGILL:
+	case SIGABRT:
+		nm_log_warn (LOGD_CORE, "caught signal %d. Generating backtrace...", signo);
+		nm_logging_backtrace ();
+		exit (1);
+		break;
+	case SIGFPE:
+	case SIGPIPE:
+		/* let the fatal signals interrupt us */
+		--in_fatal;
+		nm_log_warn (LOGD_CORE, "caught signal %d, shutting down abnormally. Generating backtrace...", signo);
+		nm_logging_backtrace ();
+		x = write (quit_pipe[1], "X", 1);
+		break;
+	case SIGINT:
+	case SIGTERM:
+		/* let the fatal signals interrupt us */
+		--in_fatal;
+		nm_log_info (LOGD_CORE, "caught signal %d, shutting down normally.", signo);
+		quit_early = TRUE;
+		x = write (quit_pipe[1], "X", 1);
+		break;
+	case SIGHUP:
+		--in_fatal;
+		/* Reread config stuff like system config files, VPN service files, etc */
+		break;
+	case SIGUSR1:
+		--in_fatal;
+		/* Play with log levels or something */
+		break;
+	default:
+		signal (signo, nm_signal_handler);
+		break;
 	}
+}
+
+static gboolean
+quit_watch (GIOChannel *src, GIOCondition condition, gpointer user_data)
+{
+
+	if (condition & G_IO_IN) {
+		nm_log_warn (LOGD_CORE, "quit request received, terminating...");
+		g_main_loop_quit (main_loop);
+	}
+
+	return FALSE;
 }
 
 static void
@@ -208,6 +209,17 @@ setup_signals (void)
 {
 	struct sigaction action;
 	sigset_t mask;
+	GIOChannel *quit_channel;
+
+	/* Set up our quit pipe */
+	if (pipe (quit_pipe) < 0) {
+		fprintf (stderr, "Failed to initialze SIGTERM pipe: %d", errno);
+		exit (1);
+	}
+	fcntl (quit_pipe[1], F_SETFL, O_NONBLOCK | fcntl (quit_pipe[1], F_GETFL));
+
+	quit_channel = g_io_channel_unix_new (quit_pipe[0]);
+	g_io_add_watch_full (quit_channel, G_PRIORITY_HIGH, G_IO_IN | G_IO_ERR, quit_watch, NULL, NULL);
 
 	sigemptyset (&mask);
 	action.sa_handler = nm_signal_handler;
@@ -307,7 +319,6 @@ parse_config_file (const char *filename,
                    GError **error)
 {
 	GKeyFile *config;
-	gboolean success = FALSE;
 
 	config = g_key_file_new ();
 	if (!config) {
@@ -318,11 +329,11 @@ parse_config_file (const char *filename,
 
 	g_key_file_set_list_separator (config, ',');
 	if (!g_key_file_load_from_file (config, filename, G_KEY_FILE_NONE, error))
-		goto out;
+		return FALSE;
 
 	*plugins = g_key_file_get_value (config, "main", "plugins", error);
 	if (*error)
-		goto out;
+		return FALSE;
 
 	*dhcp_client = g_key_file_get_value (config, "main", "dhcp", NULL);
 	*dns_plugins = g_key_file_get_string_list (config, "main", "dns", NULL, NULL);
@@ -330,11 +341,8 @@ parse_config_file (const char *filename,
 	*log_level = g_key_file_get_value (config, "logging", "level", NULL);
 	*log_domains = g_key_file_get_value (config, "logging", "domains", NULL);
 
-	success = TRUE;
-
-out:
 	g_key_file_free (config);
-	return success;
+	return TRUE;
 }
 
 static gboolean
@@ -342,17 +350,15 @@ parse_state_file (const char *filename,
                   gboolean *net_enabled,
                   gboolean *wifi_enabled,
                   gboolean *wwan_enabled,
-				  gboolean *wimax_enabled,
                   GError **error)
 {
 	GKeyFile *state_file;
 	GError *tmp_error = NULL;
-	gboolean wifi, net, wwan, wimax;
+	gboolean wifi, net, wwan;
 
 	g_return_val_if_fail (net_enabled != NULL, FALSE);
 	g_return_val_if_fail (wifi_enabled != NULL, FALSE);
 	g_return_val_if_fail (wwan_enabled != NULL, FALSE);
-	g_return_val_if_fail (wimax_enabled != NULL, FALSE);
 
 	state_file = g_key_file_new ();
 	if (!state_file) {
@@ -391,7 +397,6 @@ parse_state_file (const char *filename,
 			g_key_file_set_boolean (state_file, "main", "NetworkingEnabled", *net_enabled);
 			g_key_file_set_boolean (state_file, "main", "WirelessEnabled", *wifi_enabled);
 			g_key_file_set_boolean (state_file, "main", "WWANEnabled", *wwan_enabled);
-			g_key_file_set_boolean (state_file, "main", "WimaxEnabled", *wimax_enabled);
 
 			data = g_key_file_to_data (state_file, &len, NULL);
 			if (data)
@@ -434,14 +439,6 @@ parse_state_file (const char *filename,
 		*wwan_enabled = wwan;
 	g_clear_error (&tmp_error);
 
-	wimax = g_key_file_get_boolean (state_file, "main", "WimaxEnabled", &tmp_error);
-	if (tmp_error) {
-		g_clear_error (error);
-		g_set_error_literal (error, tmp_error->domain, tmp_error->code, tmp_error->message);
-	} else
-		*wimax_enabled = wimax;
-	g_clear_error (&tmp_error);
-
 	g_key_file_free (state_file);
 
 	return TRUE;
@@ -461,7 +458,7 @@ main (int argc, char *argv[])
 	char *config = NULL, *plugins = NULL, *conf_plugins = NULL;
 	char *log_level = NULL, *log_domains = NULL;
 	char **dns = NULL;
-	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE, wimax_enabled = TRUE;
+	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE;
 	gboolean success;
 	NMPolicy *policy = NULL;
 	NMVPNManager *vpn_manager = NULL;
@@ -469,7 +466,6 @@ main (int argc, char *argv[])
 	NMDBusManager *dbus_mgr = NULL;
 	NMSupplicantManager *sup_mgr = NULL;
 	NMDHCPManager *dhcp_mgr = NULL;
-	NMSettings *settings = NULL;
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
 	char *cfg_log_level = NULL, *cfg_log_domains = NULL;
@@ -597,7 +593,7 @@ main (int argc, char *argv[])
 	g_free (conf_plugins);
 
 	/* Parse the state file */
-	if (!parse_state_file (state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &wimax_enabled, &error)) {
+	if (!parse_state_file (state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &error)) {
 		fprintf (stderr, "State file %s parsing failed: (%d) %s\n",
 		         state_file,
 		         error ? error->code : -1,
@@ -689,29 +685,20 @@ main (int argc, char *argv[])
 		goto done;
 	}
 
-	settings = nm_settings_new (config, plugins, &error);
-	if (!settings) {
-		nm_log_err (LOGD_CORE, "failed to initialize settings storage: %s",
-		            error && error->message ? error->message : "(unknown)");
-		goto done;
-	}
-
-	manager = nm_manager_get (settings,
-	                          config,
+	manager = nm_manager_get (config,
 	                          plugins,
 	                          state_file,
 	                          net_enabled,
 	                          wifi_enabled,
 	                          wwan_enabled,
-	                          wimax_enabled,
 	                          &error);
 	if (manager == NULL) {
 		nm_log_err (LOGD_CORE, "failed to initialize the network manager: %s",
-		            error && error->message ? error->message : "(unknown)");
+		          error && error->message ? error->message : "(unknown)");
 		goto done;
 	}
 
-	policy = nm_policy_new (manager, vpn_manager, settings);
+	policy = nm_policy_new (manager, vpn_manager);
 	if (policy == NULL) {
 		nm_log_err (LOGD_CORE, "failed to initialize the policy.");
 		goto done;
@@ -761,9 +748,6 @@ done:
 
 	if (manager)
 		g_object_unref (manager);
-
-	if (settings)
-		g_object_unref (settings);
 
 	if (vpn_manager)
 		g_object_unref (vpn_manager);

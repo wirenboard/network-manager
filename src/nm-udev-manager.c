@@ -15,10 +15,9 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2011 Red Hat, Inc.
+ * Copyright (C) 2009 - 2010 Red Hat, Inc.
  */
 
-#include <config.h>
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -29,6 +28,7 @@
 
 #include "wireless-helper.h"
 
+#define G_UDEV_API_IS_SUBJECT_TO_CHANGE
 #include <gudev/gudev.h>
 
 #include "nm-udev-manager.h"
@@ -38,9 +38,6 @@
 #include "nm-device-wifi.h"
 #include "nm-device-olpc-mesh.h"
 #include "nm-device-ethernet.h"
-#if WITH_WIMAX
-#include "nm-device-wimax.h"
-#endif
 
 typedef struct {
 	GUdevClient *client;
@@ -91,7 +88,7 @@ rfkill_type_to_desc (RfKillType rtype)
 	if (rtype == 0)
 		return "WiFi";
 	else if (rtype == 1)
-		return "WWan";
+		return "WWAN";
 	else if (rtype == 2)
 		return "WiMAX";
 	return "unknown";
@@ -338,15 +335,6 @@ is_olpc_mesh (GUdevDevice *device)
 	return (prop != NULL);
 }
 
-static gboolean
-is_wimax (const char *driver)
-{
-	/* FIXME: check 'DEVTYPE' instead; but since we only support Intel
-	 * WiMAX devices for now this is appropriate.
-	 */
-	return g_strcmp0 (driver, "i2400m_usb") == 0;
-}
-
 static GObject *
 device_creator (NMUdevManager *manager,
                 GUdevDevice *udev_device,
@@ -385,8 +373,12 @@ device_creator (NMUdevManager *manager,
 	}
 
 	if (!driver) {
-		nm_log_warn (LOGD_HW, "%s: couldn't determine device driver; ignoring...", path);
-		goto out;
+		if (g_str_has_prefix (ifname, "easytether")) {
+			driver = "easytether";
+		} else {
+			nm_log_warn (LOGD_HW, "%s: couldn't determine device driver; ignoring...", path);
+			goto out;
+		}
 	}
 
 	ifindex = g_udev_device_get_sysfs_attr_as_int (udev_device, "ifindex");
@@ -399,11 +391,7 @@ device_creator (NMUdevManager *manager,
 		device = (GObject *) nm_device_olpc_mesh_new (path, ifname, driver);
 	else if (is_wireless (udev_device))
 		device = (GObject *) nm_device_wifi_new (path, ifname, driver);
-	else if (is_wimax (driver)) {
-#if WITH_WIMAX
-		device = (GObject *) nm_device_wimax_new (path, ifname, driver);
-#endif
-	} else
+	else
 		device = (GObject *) nm_device_ethernet_new (path, ifname, driver);
 
 out:
@@ -423,10 +411,20 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 
 	g_return_if_fail (device != NULL);
 
+	iface = g_udev_device_get_name (device);
+	if (!iface) {
+		nm_log_dbg (LOGD_HW, "failed to get device's interface");
+		return;
+	}
+
+	/* Ignore devices that don't report Ethernet encapsulation, except for
+	 * s390 CTC-type devices that report 256 for some reason.
+	 * FIXME: use something other than interface name to detect CTC here.
+	 */
 	etype = g_udev_device_get_sysfs_attr_as_int (device, "type");
-	if (etype != 1) {
+	if ((etype != 1) && (!strncmp (iface, "ctc", 3) && (etype != 256))) {
 		nm_log_dbg (LOGD_HW, "ignoring interface with type %d", etype);
-		return; /* Not using ethernet encapsulation, don't care */
+		return;
 	}
 
 	/* Not all ethernet devices are immediately usable; newer mobile broadband
@@ -452,12 +450,6 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 			nm_log_dbg (LOGD_HW, "ignoring Nokia PC-Suite ethernet interface");
 			return;
 		}
-	}
-
-	iface = g_udev_device_get_name (device);
-	if (!iface) {
-		nm_log_dbg (LOGD_HW, "failed to get device's interface");
-		return;
 	}
 
 	g_signal_emit (self, signals[DEVICE_ADDED], 0, device, device_creator);

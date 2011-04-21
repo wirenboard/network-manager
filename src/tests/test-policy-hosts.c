@@ -23,7 +23,7 @@
 
 #include "nm-policy-hosts.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 static void
 test_generic (const char *before, const char *after)

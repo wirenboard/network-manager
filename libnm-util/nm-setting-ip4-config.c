@@ -66,10 +66,6 @@ nm_setting_ip4_config_error_get_type (void)
 	return etype;
 }
 
-#if GLIB_CHECK_VERSION(2,26,0)
-G_DEFINE_BOXED_TYPE (NMIP4Address, nm_ip4_address, nm_ip4_address_dup, nm_ip4_address_unref)
-G_DEFINE_BOXED_TYPE (NMIP4Route, nm_ip4_route, nm_ip4_route_dup, nm_ip4_route_unref)
-#endif
 
 G_DEFINE_TYPE (NMSettingIP4Config, nm_setting_ip4_config, NM_TYPE_SETTING)
 
@@ -415,7 +411,7 @@ nm_setting_ip4_config_get_ignore_auto_dns (NMSettingIP4Config *setting)
 const char *
 nm_setting_ip4_config_get_dhcp_client_id (NMSettingIP4Config *setting)
 {
-	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), NULL);
+	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), FALSE);
 
 	return NM_SETTING_IP4_CONFIG_GET_PRIVATE (setting)->dhcp_client_id;
 }
@@ -431,7 +427,7 @@ nm_setting_ip4_config_get_dhcp_send_hostname (NMSettingIP4Config *setting)
 const char *
 nm_setting_ip4_config_get_dhcp_hostname (NMSettingIP4Config *setting)
 {
-	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), NULL);
+	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), FALSE);
 
 	return NM_SETTING_IP4_CONFIG_GET_PRIVATE (setting)->dhcp_hostname;
 }

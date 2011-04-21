@@ -30,7 +30,6 @@
 #include "NetworkManagerUtils.h"
 #include "nm-marshal.h"
 #include "nm-logging.h"
-#include "nm-system.h"
 
 /* Pre-DHCP addrconf timeout, in seconds */
 #define NM_IP6_TIMEOUT 20
@@ -261,7 +260,7 @@ static gboolean
 rdnss_expired (gpointer user_data)
 {
 	NMIP6Device *device = user_data;
-	CallbackInfo info = { device, IP6_DHCP_OPT_NONE };
+	CallbackInfo info = { device, IP6_DHCP_OPT_NONE, FALSE };
 
 	nm_log_dbg (LOGD_IP6, "(%s): IPv6 RDNSS information expired", device->iface);
 
@@ -308,9 +307,9 @@ set_rdnss_timeout (NMIP6Device *device)
 	}
 
 	if (expires) {
-		device->rdnss_timeout_id = g_timeout_add_seconds (expires - now,
-														  rdnss_expired,
-														  device);
+		device->rdnss_timeout_id = g_timeout_add_seconds (MIN (expires - now, G_MAXUINT32 - 1),
+		                                                  rdnss_expired,
+		                                                  device);
 	}
 }
 
@@ -363,7 +362,7 @@ set_dnssl_timeout (NMIP6Device *device)
 	}
 
 	if (expires) {
-		device->dnssl_timeout_id = g_timeout_add_seconds (expires - now,
+		device->dnssl_timeout_id = g_timeout_add_seconds (MIN (expires - now, G_MAXUINT32 - 1),
 		                                                  dnssl_expired,
 		                                                  device);
 	}
@@ -689,9 +688,12 @@ process_nduseropt_rdnss (NMIP6Device *device, struct nd_opt_hdr *opt)
 	for (addr = (struct in6_addr *) (rdnss_opt + 1); opt_len >= 2; addr++, opt_len -= 2) {
 		char buf[INET6_ADDRSTRLEN + 1];
 
-		if (!inet_ntop (AF_INET6, addr, buf, sizeof (buf)))
-			strcpy(buf, "[invalid]");
+		if (!inet_ntop (AF_INET6, addr, buf, sizeof (buf))) {
+			nm_log_warn (LOGD_IP6, "(%s): received invalid RA-provided nameserver", device->iface);
+			continue;
+		}
 
+		/* Update the cached timeout if we already saw this server */
 		for (i = 0; i < device->rdnss_servers->len; i++) {
 			cur_server = &(g_array_index (device->rdnss_servers, NMIP6RDNSS, i));
 
@@ -834,6 +836,7 @@ process_nduseropt_dnssl (NMIP6Device *device, struct nd_opt_hdr *opt)
 		if (domain_str[0] == '\0')
 			continue;
 
+		/* Update cached domain information if we've seen this domain before */
 		for (i = 0; i < device->dnssl_domains->len; i++) {
 			cur_domain = &(g_array_index (device->dnssl_domains, NMIP6DNSSL, i));
 

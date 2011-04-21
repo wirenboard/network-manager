@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2010 Red Hat, Inc.
  * Copyright (C) 2008 Novell, Inc.
  */
 
@@ -43,6 +43,8 @@ typedef struct {
 	gboolean disposed;
 	DBusGProxy *proxy;
 
+	char *service_name;
+	NMConnectionScope scope;
 	char *connection;
 	char *specific_object;
 	GPtrArray *devices;
@@ -53,6 +55,7 @@ typedef struct {
 
 enum {
 	PROP_0,
+	PROP_SERVICE_NAME,
 	PROP_CONNECTION,
 	PROP_SPECIFIC_OBJECT,
 	PROP_DEVICES,
@@ -63,6 +66,7 @@ enum {
 	LAST_PROP
 };
 
+#define DBUS_PROP_SERVICE_NAME "ServiceName"
 #define DBUS_PROP_CONNECTION "Connection"
 #define DBUS_PROP_SPECIFIC_OBJECT "SpecificObject"
 #define DBUS_PROP_DEVICES "Devices"
@@ -77,7 +81,7 @@ enum {
  *
  * Creates a new #NMActiveConnection.
  *
- * Returns: (transfer full): a new active connection
+ * Returns: a new active connection
  **/
 GObject *
 nm_active_connection_new (DBusGConnection *connection, const char *path)
@@ -89,6 +93,62 @@ nm_active_connection_new (DBusGConnection *connection, const char *path)
 						 NM_OBJECT_DBUS_CONNECTION, connection,
 						 NM_OBJECT_DBUS_PATH, path,
 						 NULL);
+}
+
+static NMConnectionScope
+get_scope_for_service_name (const char *service_name)
+{
+	if (service_name && !strcmp (service_name, NM_DBUS_SERVICE_USER_SETTINGS))
+		return NM_CONNECTION_SCOPE_USER;
+	else if (service_name && !strcmp (service_name, NM_DBUS_SERVICE_SYSTEM_SETTINGS))
+		return NM_CONNECTION_SCOPE_SYSTEM;
+
+	return NM_CONNECTION_SCOPE_UNKNOWN;
+}
+
+/**
+ * nm_active_connection_get_service_name:
+ * @connection: a #NMActiveConnection
+ *
+ * Gets the service name of the active connection.
+ *
+ * Returns: the service name. This is the internal string used by the
+ * connection, and must not be modified.
+ **/
+const char *
+nm_active_connection_get_service_name (NMActiveConnection *connection)
+{
+	NMActiveConnectionPrivate *priv;
+
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
+	if (!priv->service_name) {
+		priv->service_name = _nm_object_get_string_property (NM_OBJECT (connection),
+		                                                    NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
+		                                                    DBUS_PROP_SERVICE_NAME);
+		priv->scope = get_scope_for_service_name (priv->service_name);
+	}
+
+	return priv->service_name;
+}
+
+/**
+ * nm_active_connection_get_scope:
+ * @connection: a #NMActiveConnection
+ *
+ * Gets the scope of the active connection.
+ *
+ * Returns: the connection's scope
+ **/
+NMConnectionScope
+nm_active_connection_get_scope (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NM_CONNECTION_SCOPE_UNKNOWN);
+
+	/* Make sure service_name and scope are up-to-date */
+	nm_active_connection_get_service_name (connection);
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->scope;
 }
 
 /**
@@ -111,8 +171,7 @@ nm_active_connection_get_connection (NMActiveConnection *connection)
 	if (!priv->connection) {
 		priv->connection = _nm_object_get_string_property (NM_OBJECT (connection),
 		                                                  NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                  DBUS_PROP_CONNECTION,
-		                                                  NULL);
+		                                                  DBUS_PROP_CONNECTION);
 	}
 
 	return priv->connection;
@@ -138,8 +197,7 @@ nm_active_connection_get_specific_object (NMActiveConnection *connection)
 	if (!priv->specific_object) {
 		priv->specific_object = _nm_object_get_string_property (NM_OBJECT (connection),
 		                                                       NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                       DBUS_PROP_SPECIFIC_OBJECT,
-		                                                       NULL);
+		                                                       DBUS_PROP_SPECIFIC_OBJECT);
 	}
 
 	return priv->specific_object;
@@ -151,7 +209,7 @@ nm_active_connection_get_specific_object (NMActiveConnection *connection)
  *
  * Gets the #NMDevice<!-- -->s used for the active connections.
  *
- * Returns: (element-type NMClient.Device): the #GPtrArray containing #NMDevice<!-- -->s.
+ * Returns: the #GPtrArray containing #NMDevice<!-- -->s.
  * This is the internal copy used by the connection, and must not be modified.
  **/
 const GPtrArray *
@@ -169,8 +227,7 @@ nm_active_connection_get_devices (NMActiveConnection *connection)
 	if (!_nm_object_get_property (NM_OBJECT (connection),
 	                             NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
 	                             DBUS_PROP_DEVICES,
-	                             &value,
-	                             NULL)) {
+	                             &value)) {
 		return NULL;
 	}
 
@@ -199,8 +256,7 @@ nm_active_connection_get_state (NMActiveConnection *connection)
 	if (!priv->state) {
 		priv->state = _nm_object_get_uint_property (NM_OBJECT (connection),
 		                                           NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                           DBUS_PROP_STATE,
-		                                           NULL);
+		                                           DBUS_PROP_STATE);
 	}
 
 	return priv->state;
@@ -226,8 +282,7 @@ nm_active_connection_get_default (NMActiveConnection *connection)
 	if (!priv->is_default) {
 		priv->is_default = _nm_object_get_boolean_property (NM_OBJECT (connection),
 		                                                    NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                    DBUS_PROP_DEFAULT,
-		                                                    NULL);
+		                                                    DBUS_PROP_DEFAULT);
 	}
 
 	return priv->is_default;
@@ -253,8 +308,7 @@ nm_active_connection_get_default6 (NMActiveConnection *connection)
 	if (!priv->is_default6) {
 		priv->is_default6 = _nm_object_get_boolean_property (NM_OBJECT (connection),
 		                                                     NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                     DBUS_PROP_DEFAULT6,
-		                                                     NULL);
+		                                                     DBUS_PROP_DEFAULT6);
 	}
 
 	return priv->is_default6;
@@ -291,6 +345,7 @@ finalize (GObject *object)
 {
 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
 
+	g_free (priv->service_name);
 	g_free (priv->connection);
 	g_free (priv->specific_object);
 
@@ -306,8 +361,11 @@ get_property (GObject *object,
 	NMActiveConnection *self = NM_ACTIVE_CONNECTION (object);
 
 	switch (prop_id) {
+	case PROP_SERVICE_NAME:
+		g_value_set_string (value, nm_active_connection_get_service_name (self));
+		break;
 	case PROP_CONNECTION:
-		g_value_set_string (value, nm_active_connection_get_connection (self));
+		g_value_set_boxed (value, nm_active_connection_get_connection (self));
 		break;
 	case PROP_SPECIFIC_OBJECT:
 		g_value_set_boxed (value, nm_active_connection_get_specific_object (self));
@@ -343,11 +401,24 @@ demarshal_devices (NMObject *object, GParamSpec *pspec, GValue *value, gpointer 
 	return TRUE;
 }
 
+static gboolean
+demarshal_service (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field)
+{
+	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
+
+	if (_nm_object_demarshal_generic (object, pspec, value, field)) {
+		priv->scope = get_scope_for_service_name (priv->service_name);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 static void
 register_for_property_changed (NMActiveConnection *connection)
 {
 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
 	const NMPropertiesChangedInfo property_changed_info[] = {
+		{ NM_ACTIVE_CONNECTION_SERVICE_NAME,        demarshal_service,           &priv->service_name },
 		{ NM_ACTIVE_CONNECTION_CONNECTION,          _nm_object_demarshal_generic, &priv->connection },
 		{ NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT,     _nm_object_demarshal_generic, &priv->specific_object },
 		{ NM_ACTIVE_CONNECTION_DEVICES,             demarshal_devices,           &priv->devices },
@@ -405,6 +476,19 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 	/* properties */
 
 	/**
+	 * NMActiveConnection:service-name:
+	 *
+	 * The service name of the active connection.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_SERVICE_NAME,
+		 g_param_spec_string (NM_ACTIVE_CONNECTION_SERVICE_NAME,
+						  "Service Name",
+						  "Service Name",
+						  NULL,
+						  G_PARAM_READABLE));
+
+	/**
 	 * NMActiveConnection:connection:
 	 *
 	 * The connection's path of the active connection.
@@ -454,7 +538,7 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 							  "State",
 							  "State",
 							  NM_ACTIVE_CONNECTION_STATE_UNKNOWN,
-							  NM_ACTIVE_CONNECTION_STATE_DEACTIVATING,
+							  NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
 							  NM_ACTIVE_CONNECTION_STATE_UNKNOWN,
 							  G_PARAM_READABLE));
 

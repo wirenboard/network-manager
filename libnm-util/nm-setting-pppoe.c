@@ -19,14 +19,13 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2010 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
 #include <string.h>
 #include "nm-setting-pppoe.h"
 #include "nm-setting-ppp.h"
-#include "nm-setting-private.h"
 
 GQuark
 nm_setting_pppoe_error_quark (void)
@@ -72,7 +71,6 @@ typedef struct {
 	char *service;
 	char *username;
 	char *password;
-	NMSettingSecretFlags password_flags;
 } NMSettingPPPOEPrivate;
 
 enum {
@@ -80,7 +78,6 @@ enum {
 	PROP_SERVICE,
 	PROP_USERNAME,
 	PROP_PASSWORD,
-	PROP_PASSWORD_FLAGS,
 
 	LAST_PROP
 };
@@ -113,20 +110,6 @@ nm_setting_pppoe_get_password (NMSettingPPPOE *setting)
 	g_return_val_if_fail (NM_IS_SETTING_PPPOE (setting), NULL);
 
 	return NM_SETTING_PPPOE_GET_PRIVATE (setting)->password;
-}
-
-/**
- * nm_setting_pppoe_get_password_flags:
- * @setting: the #NMSettingPPPOE
- *
- * Returns: the #NMSettingSecretFlags pertaining to the #NMSettingPPPOE:password
- **/
-NMSettingSecretFlags
-nm_setting_pppoe_get_password_flags (NMSettingPPPOE *setting)
-{
-	g_return_val_if_fail (NM_IS_SETTING_PPPOE (setting), NM_SETTING_SECRET_FLAG_NONE);
-
-	return NM_SETTING_PPPOE_GET_PRIVATE (setting)->password_flags;
 }
 
 static gboolean
@@ -163,15 +146,13 @@ static GPtrArray *
 need_secrets (NMSetting *setting)
 {
 	NMSettingPPPOEPrivate *priv = NM_SETTING_PPPOE_GET_PRIVATE (setting);
-	GPtrArray *secrets = NULL;
+	GPtrArray *secrets;
 
 	if (priv->password)
 		return NULL;
 
-	if (!(priv->password_flags & NM_SETTING_SECRET_FLAG_NOT_REQUIRED)) {
-		secrets = g_ptr_array_sized_new (1);
-		g_ptr_array_add (secrets, NM_SETTING_PPPOE_PASSWORD);
-	}
+	secrets = g_ptr_array_sized_new (1);
+	g_ptr_array_add (secrets, NM_SETTING_PPPOE_PASSWORD);
 
 	return secrets;
 }
@@ -201,9 +182,6 @@ set_property (GObject *object, guint prop_id,
 		g_free (priv->password);
 		priv->password = g_value_dup_string (value);
 		break;
-	case PROP_PASSWORD_FLAGS:
-		priv->password_flags = g_value_get_uint (value);
-		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -225,9 +203,6 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_PASSWORD:
 		g_value_set_string (value, nm_setting_pppoe_get_password (setting));
-		break;
-	case PROP_PASSWORD_FLAGS:
-		g_value_set_uint (value, nm_setting_pppoe_get_password_flags (setting));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -296,18 +271,4 @@ nm_setting_pppoe_class_init (NMSettingPPPOEClass *setting_class)
 						  "Password used to authenticate with the PPPoE service.",
 						  NULL,
 						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
-
-	/**
-	 * NMSettingPPPOE:password-flags:
-	 *
-	 * Flags indicating how to handle #NMSettingPPPOE:password:.
-	 **/
-	g_object_class_install_property (object_class, PROP_PASSWORD_FLAGS,
-		 g_param_spec_uint (NM_SETTING_PPPOE_PASSWORD_FLAGS,
-		                    "Password Flags",
-		                    "Flags indicating how to handle the PPPoE password.",
-		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    NM_SETTING_SECRET_FLAGS_ALL,
-		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
 }

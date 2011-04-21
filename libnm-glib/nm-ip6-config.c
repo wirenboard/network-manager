@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2008 - 2011 Red Hat, Inc.
+ * Copyright (C) 2008 Red Hat, Inc.
  */
 
 #include <string.h>
@@ -60,7 +60,7 @@ enum {
  *
  * Creates a new #NMIP6Config.
  *
- * Returns: (transfer full): a new IP6 configuration
+ * Returns: a new IP6 configuration
  **/
 GObject *
 nm_ip6_config_new (DBusGConnection *connection, const char *object_path)
@@ -146,9 +146,8 @@ register_for_property_changed (NMIP6Config *config)
  *
  * Gets the IP6 addresses (containing the address, prefix, and gateway).
  *
- * Returns: (element-type NetworkManager.IP6Address): the #GSList containing
- * #NMIP6Address<!-- -->es. This is the internal copy used by the configuration
- * and must not be modified.
+ * Returns: the #GSList containing #NMSettingIP6Address<!-- -->es. This is the internal copy
+ * used by the configuration and must not be modified.
  **/
 const GSList *
 nm_ip6_config_get_addresses (NMIP6Config *config)
@@ -156,7 +155,7 @@ nm_ip6_config_get_addresses (NMIP6Config *config)
 	NMIP6ConfigPrivate *priv;
 	GValue value = { 0, };
 
-	g_return_val_if_fail (NM_IS_IP6_CONFIG (config), NULL);
+	g_return_val_if_fail (NM_IS_IP6_CONFIG (config), 0);
 
 	priv = NM_IP6_CONFIG_GET_PRIVATE (config);
 	if (priv->addresses)
@@ -165,8 +164,7 @@ nm_ip6_config_get_addresses (NMIP6Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_IP6_CONFIG,
 	                              "Addresses",
-	                              &value,
-	                              NULL)) {
+	                              &value)) {
 		return NULL;
 	}
 
@@ -176,16 +174,15 @@ nm_ip6_config_get_addresses (NMIP6Config *config)
 	return priv->addresses;
 }
 
-/* FIXME: like in libnm_util, in6_addr is not introspectable, so skipping here */
 /**
- * nm_ip6_config_get_nameservers: (skip)
+ * nm_ip6_config_get_nameservers:
  * @config: a #NMIP6Config
  *
  * Gets the domain name servers (DNS).
  *
- * Returns: (element-type Posix.in6_addr): a #GSList containing elements of type
- * 'struct in6_addr' which contain the addresses of nameservers of the configuration.
- * This is the internal copy used by the configuration and must not be modified.
+ * Returns: a #GSList containing elements of type 'struct in6_addr' which contain
+ * the addresses of nameservers of the configuration.  This is the internal copy
+ * used by the configuration and must not be modified.
  **/
 const GSList *
 nm_ip6_config_get_nameservers (NMIP6Config *config)
@@ -203,8 +200,7 @@ nm_ip6_config_get_nameservers (NMIP6Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_IP6_CONFIG,
 	                              "Nameservers",
-	                              &value,
-	                              NULL)) {
+	                              &value)) {
 		return NULL;
 	}
 
@@ -221,8 +217,8 @@ nm_ip6_config_get_nameservers (NMIP6Config *config)
  *
  * Gets the domain names.
  *
- * Returns: (element-type utf8): the #GPtrArray containing domains as strings.
- * This is the internal copy used by the configuration, and must not be modified.
+ * Returns: the #GPtrArray containing domains as strings. This is the 
+ * internal copy used by the configuration, and must not be modified.
  **/
 const GPtrArray *
 nm_ip6_config_get_domains (NMIP6Config *config)
@@ -239,8 +235,7 @@ nm_ip6_config_get_domains (NMIP6Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_IP6_CONFIG,
 	                              "Domains",
-	                              &value,
-	                              NULL)) {
+	                              &value)) {
 		return NULL;
 	}
 
@@ -256,9 +251,8 @@ nm_ip6_config_get_domains (NMIP6Config *config)
  *
  * Gets the routes.
  *
- * Returns: (element-type NetworkManager.IP6Route): the #GSList containing
- * #NMIP6Route<!-- -->s. This is the internal copy used by the configuration,
- * and must not be modified.
+ * Returns: the #GSList containing #NMSettingIP6Route<!-- -->s. This is the 
+ * internal copy used by the configuration, and must not be modified.
  **/
 const GSList *
 nm_ip6_config_get_routes (NMIP6Config *config)
@@ -266,7 +260,7 @@ nm_ip6_config_get_routes (NMIP6Config *config)
 	NMIP6ConfigPrivate *priv;
 	GValue value = { 0, };
 
-	g_return_val_if_fail (NM_IS_IP6_CONFIG (config), NULL);
+	g_return_val_if_fail (NM_IS_IP6_CONFIG (config), 0);
 
 	priv = NM_IP6_CONFIG_GET_PRIVATE (config);
 	if (priv->routes)
@@ -275,8 +269,7 @@ nm_ip6_config_get_routes (NMIP6Config *config)
 	if (!_nm_object_get_property (NM_OBJECT (config),
 	                              NM_DBUS_INTERFACE_IP6_CONFIG,
 	                              "Routes",
-	                              &value,
-	                              NULL)) {
+	                              &value)) {
 		return NULL;
 	}
 
