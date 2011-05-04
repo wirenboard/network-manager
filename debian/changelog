@@ -2,6 +2,7 @@ network-manager (0.8.999-1) UNRELEASED; urgency=low
 
   * New upstream release (0.9 rc2).
   * Refresh debian/patches/03-systemd.patch.
+  * Update debian/libnm-glib4.symbols and debian/libnm-util2.symbols.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 04 May 2011 21:36:00 +0200
 

@@ -4,6 +4,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  libnm_glib_register_callback@Base 0.7.999
  libnm_glib_shutdown@Base 0.7.999
  libnm_glib_unregister_callback@Base 0.7.999
+ nm_access_point_connection_valid@Base 0.8.999
  nm_access_point_filter_connections@Base 0.8.998
  nm_access_point_get_bssid@Base 0.8.998
  nm_access_point_get_flags@Base 0.7.999
@@ -24,6 +25,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_active_connection_get_specific_object@Base 0.7.999
  nm_active_connection_get_state@Base 0.7.999
  nm_active_connection_get_type@Base 0.7.999
+ nm_active_connection_get_uuid@Base 0.8.999
  nm_active_connection_new@Base 0.7.999
  nm_client_activate_connection@Base 0.7.999
  nm_client_add_and_activate_connection@Base 0.8.998
@@ -54,6 +56,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_bt_get_name@Base 0.7.999
  nm_device_bt_get_type@Base 0.7.999
  nm_device_bt_new@Base 0.7.999
+ nm_device_connection_valid@Base 0.8.999
  nm_device_disconnect@Base 0.7.999
  nm_device_ethernet_get_carrier@Base 0.7.999
  nm_device_ethernet_get_hw_address@Base 0.7.999
@@ -139,6 +142,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_remote_settings_error_get_type@Base 0.8.998
  nm_remote_settings_error_quark@Base 0.8.998
  nm_remote_settings_get_connection_by_path@Base 0.8.998
+ nm_remote_settings_get_connection_by_uuid@Base 0.8.999
  nm_remote_settings_get_type@Base 0.7.999
  nm_remote_settings_list_connections@Base 0.8.998
  nm_remote_settings_new@Base 0.7.999
@@ -158,6 +162,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_vpn_connection_get_type@Base 0.7.999
  nm_vpn_connection_get_vpn_state@Base 0.7.999
  nm_vpn_connection_new@Base 0.7.999
+ nm_wimax_nsp_connection_valid@Base 0.8.999
  nm_wimax_nsp_filter_connections@Base 0.8.998
  nm_wimax_nsp_get_name@Base 0.8.998
  nm_wimax_nsp_get_network_type@Base 0.8.998

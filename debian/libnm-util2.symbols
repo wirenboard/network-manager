@@ -414,6 +414,8 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_utils_ip4_routes_to_gvalue@Base 0.7.0
  nm_utils_ip6_addresses_from_gvalue@Base 0.7.999
  nm_utils_ip6_addresses_to_gvalue@Base 0.7.999
+ nm_utils_ip6_dns_from_gvalue@Base 0.8.999
+ nm_utils_ip6_dns_to_gvalue@Base 0.8.999
  nm_utils_ip6_routes_from_gvalue@Base 0.7.999
  nm_utils_ip6_routes_to_gvalue@Base 0.7.999
  nm_utils_is_empty_ssid@Base 0.7.0
