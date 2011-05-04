@@ -4,15 +4,21 @@ Description: Debian specific tweaks for NetworkManager systemd service file
  - Do not install NetworkManager into the network.target, as this will lead to a
    dependency loop (NetworkManager is installed in /usr).
 Author: Michael Biebl <biebl@debian.org>
-diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index d93fc67..5604729 100644
---- a/data/NetworkManager.service.in
-+++ b/data/NetworkManager.service.in
-@@ -8,5 +8,6 @@ BusName=org.freedesktop.NetworkManager
- ExecStart=@sbindir@/NetworkManager --no-daemon
+Index: network-manager/data/NetworkManager.service.in
+===================================================================
+--- network-manager.orig/data/NetworkManager.service.in	2011-05-04 21:35:57.000000000 +0200
++++ network-manager/data/NetworkManager.service.in	2011-05-04 22:27:37.411911227 +0200
+@@ -1,8 +1,6 @@
+ [Unit]
+ Description=Network Manager
+ After=syslog.target
+-Wants=network.target
+-Before=network.target
  
+ [Service]
+ Type=dbus
+@@ -12,3 +10,4 @@
  [Install]
--WantedBy=network.target multi-user.target
-+WantedBy=multi-user.target
+ WantedBy=multi-user.target
  Alias=dbus-org.freedesktop.NetworkManager.service
 +Alias=network-manager.service
