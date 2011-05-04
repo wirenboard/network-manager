@@ -11,7 +11,7 @@ Build-Depends:
  libdbus-glib-1-dev (>= 0.75),
  libdbus-1-dev (>= 1.1),
  libiw-dev(>= 27+28pre9),
- libglib2.0-dev (>= 2.26),
+ libglib2.0-dev (>= 2.22),
  libnl-dev (>= 1.0~pre8),
  ppp-dev (>= 2.4.5),
  libpolkit-gobject-1-dev,
