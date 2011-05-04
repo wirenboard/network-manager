@@ -57,6 +57,8 @@ const char *nm_vpn_service_get_name_file (NMVPNService *service);
 NMVPNConnection * nm_vpn_service_activate (NMVPNService *service,
                                            NMConnection *connection,
                                            NMDevice *device,
+                                           gboolean user_requested,
+                                           gulong user_uid,
                                            GError **error);
 
 GSList * nm_vpn_service_get_active_connections (NMVPNService *service);

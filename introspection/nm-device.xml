@@ -4,7 +4,18 @@
   <interface name="org.freedesktop.NetworkManager.Device">
     <property name="Udi" type="s" access="read">
       <tp:docstring>
-        Unique Device Identifier.
+        Operating-system specific transient device hardware identifier.  This
+        is an opaque string representing the underlying hardware for the device,
+        and shouldn't be used to keep track of individual devices.  For some
+        device types (Bluetooth, Modems) it is an identifier used by the
+        hardware service (ie bluez or ModemManager) to refer to that device,
+        and client programs use it get additional information from those
+        services which NM does not provide.  The Udi is not guaranteed to be
+        consistent across reboots or hotplugs of the hardware. If you're looking
+        for a way to uniquely track each device in your application, use the
+        object path.  If you're looking for a way to track a specific piece of
+        hardware across reboot or hotplug, use a MAC address or USB serial
+        number.
       </tp:docstring>
     </property>
     <property name="Interface" type="s" access="read">
@@ -111,47 +122,62 @@
           The device is in an unknown state.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="UNMANAGED" value="1">
+      <tp:enumvalue suffix="UNMANAGED" value="10">
         <tp:docstring>
-          The device is not managed by NetworkManager.
+          The device is recognized but not managed by NetworkManager.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="UNAVAILABLE" value="2">
+      <tp:enumvalue suffix="UNAVAILABLE" value="20">
         <tp:docstring>
           The device cannot be used (carrier off, rfkill, etc).
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="DISCONNECTED" value="3">
+      <tp:enumvalue suffix="DISCONNECTED" value="30">
         <tp:docstring>
           The device is not connected.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="PREPARE" value="4">
+      <tp:enumvalue suffix="PREPARE" value="40">
         <tp:docstring>
           The device is preparing to connect.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="CONFIG" value="5">
+      <tp:enumvalue suffix="CONFIG" value="50">
         <tp:docstring>
           The device is being configured.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="NEED_AUTH" value="6">
+      <tp:enumvalue suffix="NEED_AUTH" value="60">
         <tp:docstring>
           The device is awaiting secrets necessary to continue connection.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="IP_CONFIG" value="7">
+      <tp:enumvalue suffix="IP_CONFIG" value="70">
         <tp:docstring>
           The IP settings of the device are being requested and configured.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="ACTIVATED" value="8">
+      <tp:enumvalue suffix="IP_CHECK" value="80">
+        <tp:docstring>
+          The device's IP connectivity ability is being determined.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="SECONDARIES" value="90">
+        <tp:docstring>
+          The device is waiting for secondary connections to be activated.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="ACTIVATED" value="100">
         <tp:docstring>
           The device is active.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="FAILED" value="9">
+      <tp:enumvalue suffix="DEACTIVATING" value="110">
+        <tp:docstring>
+          The device's network connection is being torn down.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="FAILED" value="120">
         <tp:docstring>
           The device is in a failure state following an attempt to activate it.
         </tp:docstring>
@@ -174,14 +200,32 @@
           The device is an 802.11 WiFi device.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="GSM" value="3">
+      <tp:enumvalue suffix="UNUSED1" value="3">
+        <tp:docstring>Unused</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="UNUSED2" value="4">
+        <tp:docstring>Unused</tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="BT" value="5">
         <tp:docstring>
-          The device is a GSM-based cellular WAN device.
+          The device is Bluetooth device that provides PAN or DUN capabilities.
         </tp:docstring>
       </tp:enumvalue>
-      <tp:enumvalue suffix="CDMA" value="4">
+      <tp:enumvalue suffix="OLPC_MESH" value="6">
         <tp:docstring>
-          The device is a CDMA/IS-95-based cellular WAN device.
+          The device is an OLPC mesh networking device.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="WIMAX" value="7">
+        <tp:docstring>
+          The device is an 802.16e Mobile WiMAX device.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="MODEM" value="8">
+        <tp:docstring>
+          The device is a modem supporting one or more of analog telephone,
+          CDMA/EVDO, GSM/UMTS/HSPA, or LTE standards to access a cellular or
+          wireline data network.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>

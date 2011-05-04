@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2010 Red Hat, Inc.
+ * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
 #ifndef NM_CLIENT_H
@@ -41,6 +41,7 @@ G_BEGIN_DECLS
 #define NM_IS_CLIENT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((obj), NM_TYPE_CLIENT))
 #define NM_CLIENT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_CLIENT, NMClientClass))
 
+#define NM_CLIENT_VERSION "version"
 #define NM_CLIENT_STATE "state"
 #define NM_CLIENT_MANAGER_RUNNING "manager-running"
 #define NM_CLIENT_NETWORKING_ENABLED "networking-enabled"
@@ -48,6 +49,8 @@ G_BEGIN_DECLS
 #define NM_CLIENT_WIRELESS_HARDWARE_ENABLED "wireless-hardware-enabled"
 #define NM_CLIENT_WWAN_ENABLED "wwan-enabled"
 #define NM_CLIENT_WWAN_HARDWARE_ENABLED "wwan-hardware-enabled"
+#define NM_CLIENT_WIMAX_ENABLED "wimax-enabled"
+#define NM_CLIENT_WIMAX_HARDWARE_ENABLED "wimax-hardware-enabled"
 #define NM_CLIENT_ACTIVE_CONNECTIONS "active-connections"
 
 /* Permissions */
@@ -56,9 +59,16 @@ typedef enum {
 	NM_CLIENT_PERMISSION_ENABLE_DISABLE_NETWORK = 1,
 	NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI = 2,
 	NM_CLIENT_PERMISSION_ENABLE_DISABLE_WWAN = 3,
-	NM_CLIENT_PERMISSION_USE_USER_CONNECTIONS = 4,
+	NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIMAX = 4,
+	NM_CLIENT_PERMISSION_SLEEP_WAKE = 5,
+	NM_CLIENT_PERMISSION_NETWORK_CONTROL = 6,
+	NM_CLIENT_PERMISSION_WIFI_SHARE_PROTECTED = 7,
+	NM_CLIENT_PERMISSION_WIFI_SHARE_OPEN = 8,
+	NM_CLIENT_PERMISSION_SETTINGS_MODIFY_SYSTEM = 9,
+	NM_CLIENT_PERMISSION_SETTINGS_MODIFY_OWN = 10,
+	NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME = 11,
 
-	NM_CLIENT_PERMISSION_LAST = NM_CLIENT_PERMISSION_USE_USER_CONNECTIONS
+	NM_CLIENT_PERMISSION_LAST = NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME
 } NMClientPermission;
 
 typedef enum {
@@ -79,6 +89,9 @@ typedef struct {
 	/* Signals */
 	void (*device_added) (NMClient *client, NMDevice *device);
 	void (*device_removed) (NMClient *client, NMDevice *device);
+	void (*permission_changed) (NMClient *client,
+	                            NMClientPermission permission,
+	                            NMClientPermissionResult result);
 
 	/* Padding for future expansion */
 	void (*_reserved1) (void);
@@ -96,15 +109,30 @@ NMClient *nm_client_new (void);
 const GPtrArray *nm_client_get_devices    (NMClient *client);
 NMDevice *nm_client_get_device_by_path    (NMClient *client, const char *object_path);
 
-typedef void (*NMClientActivateDeviceFn) (gpointer user_data, const char *object_path, GError *error);
+typedef void (*NMClientActivateFn) (NMClient *client,
+                                    NMActiveConnection *active_connection,
+                                    GError *error,
+                                    gpointer user_data);
 
 void nm_client_activate_connection (NMClient *client,
-						  const char *service_name,
-						  const char *connection_path,
-						  NMDevice *device,
-						  const char *specific_object,
-						  NMClientActivateDeviceFn callback,
-						  gpointer user_data);
+                                    NMConnection *connection,
+                                    NMDevice *device,
+                                    const char *specific_object,
+                                    NMClientActivateFn callback,
+                                    gpointer user_data);
+
+typedef void (*NMClientAddActivateFn) (NMClient *client,
+                                       NMActiveConnection *connection,
+                                       const char *new_connection_path,
+                                       GError *error,
+                                       gpointer user_data);
+
+void nm_client_add_and_activate_connection (NMClient *client,
+                                            NMConnection *partial,
+                                            NMDevice *device,
+                                            const char *specific_object,
+                                            NMClientAddActivateFn callback,
+                                            gpointer user_data);
 
 void nm_client_deactivate_connection (NMClient *client, NMActiveConnection *active);
 
@@ -119,6 +147,11 @@ gboolean  nm_client_wwan_get_enabled (NMClient *client);
 void      nm_client_wwan_set_enabled (NMClient *client, gboolean enabled);
 gboolean  nm_client_wwan_hardware_get_enabled (NMClient *client);
 
+gboolean  nm_client_wimax_get_enabled (NMClient *client);
+void      nm_client_wimax_set_enabled (NMClient *client, gboolean enabled);
+gboolean  nm_client_wimax_hardware_get_enabled (NMClient *client);
+
+const char *nm_client_get_version        (NMClient *client);
 NMState   nm_client_get_state            (NMClient *client);
 gboolean  nm_client_get_manager_running  (NMClient *client);
 const GPtrArray *nm_client_get_active_connections (NMClient *client);

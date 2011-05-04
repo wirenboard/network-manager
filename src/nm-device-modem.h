@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2010 Red Hat, Inc.
+ * Copyright (C) 2011 Red Hat, Inc.
  */
 
 #ifndef NM_DEVICE_MODEM_H
@@ -35,6 +35,8 @@
 #define NM_DEVICE_MODEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_DEVICE_MODEM, NMDeviceModemClass))
 
 #define NM_DEVICE_MODEM_MODEM "modem"
+#define NM_DEVICE_MODEM_CAPABILITIES "modem-capabilities"
+#define NM_DEVICE_MODEM_CURRENT_CAPABILITIES "current-capabilities"
 
 #define NM_DEVICE_MODEM_ENABLE_CHANGED "enable-changed"
 
@@ -45,10 +47,12 @@ typedef struct {
 typedef struct {
 	NMDeviceClass parent;
 
-	void (*ppp_stats) (NMDeviceModem *self, guint32 in_bytes, guint32 out_bytes);
+	void (*properties_changed) (NMDeviceModem *self, GHashTable *properties);
 } NMDeviceModemClass;
 
 GType nm_device_modem_get_type (void);
+
+NMDevice *nm_device_modem_new (NMModem *modem, const char *driver);
 
 /* Private for subclases */
 NMModem *nm_device_modem_get_modem (NMDeviceModem *self);

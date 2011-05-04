@@ -319,6 +319,7 @@ parse_config_file (const char *filename,
                    GError **error)
 {
 	GKeyFile *config;
+	gboolean success = FALSE;
 
 	config = g_key_file_new ();
 	if (!config) {
@@ -329,11 +330,11 @@ parse_config_file (const char *filename,
 
 	g_key_file_set_list_separator (config, ',');
 	if (!g_key_file_load_from_file (config, filename, G_KEY_FILE_NONE, error))
-		return FALSE;
+		goto out;
 
 	*plugins = g_key_file_get_value (config, "main", "plugins", error);
 	if (*error)
-		return FALSE;
+		goto out;
 
 	*dhcp_client = g_key_file_get_value (config, "main", "dhcp", NULL);
 	*dns_plugins = g_key_file_get_string_list (config, "main", "dns", NULL, NULL);
@@ -341,8 +342,11 @@ parse_config_file (const char *filename,
 	*log_level = g_key_file_get_value (config, "logging", "level", NULL);
 	*log_domains = g_key_file_get_value (config, "logging", "domains", NULL);
 
+	success = TRUE;
+
+out:
 	g_key_file_free (config);
-	return TRUE;
+	return success;
 }
 
 static gboolean
@@ -350,15 +354,17 @@ parse_state_file (const char *filename,
                   gboolean *net_enabled,
                   gboolean *wifi_enabled,
                   gboolean *wwan_enabled,
+				  gboolean *wimax_enabled,
                   GError **error)
 {
 	GKeyFile *state_file;
 	GError *tmp_error = NULL;
-	gboolean wifi, net, wwan;
+	gboolean wifi, net, wwan, wimax;
 
 	g_return_val_if_fail (net_enabled != NULL, FALSE);
 	g_return_val_if_fail (wifi_enabled != NULL, FALSE);
 	g_return_val_if_fail (wwan_enabled != NULL, FALSE);
+	g_return_val_if_fail (wimax_enabled != NULL, FALSE);
 
 	state_file = g_key_file_new ();
 	if (!state_file) {
@@ -397,6 +403,7 @@ parse_state_file (const char *filename,
 			g_key_file_set_boolean (state_file, "main", "NetworkingEnabled", *net_enabled);
 			g_key_file_set_boolean (state_file, "main", "WirelessEnabled", *wifi_enabled);
 			g_key_file_set_boolean (state_file, "main", "WWANEnabled", *wwan_enabled);
+			g_key_file_set_boolean (state_file, "main", "WimaxEnabled", *wimax_enabled);
 
 			data = g_key_file_to_data (state_file, &len, NULL);
 			if (data)
@@ -439,6 +446,14 @@ parse_state_file (const char *filename,
 		*wwan_enabled = wwan;
 	g_clear_error (&tmp_error);
 
+	wimax = g_key_file_get_boolean (state_file, "main", "WimaxEnabled", &tmp_error);
+	if (tmp_error) {
+		g_clear_error (error);
+		g_set_error_literal (error, tmp_error->domain, tmp_error->code, tmp_error->message);
+	} else
+		*wimax_enabled = wimax;
+	g_clear_error (&tmp_error);
+
 	g_key_file_free (state_file);
 
 	return TRUE;
@@ -458,19 +473,21 @@ main (int argc, char *argv[])
 	char *config = NULL, *plugins = NULL, *conf_plugins = NULL;
 	char *log_level = NULL, *log_domains = NULL;
 	char **dns = NULL;
-	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE;
-	gboolean success;
+	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE, wimax_enabled = TRUE;
+	gboolean success, show_version = FALSE;
 	NMPolicy *policy = NULL;
 	NMVPNManager *vpn_manager = NULL;
 	NMDnsManager *dns_mgr = NULL;
 	NMDBusManager *dbus_mgr = NULL;
 	NMSupplicantManager *sup_mgr = NULL;
 	NMDHCPManager *dhcp_mgr = NULL;
+	NMSettings *settings = NULL;
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
 	char *cfg_log_level = NULL, *cfg_log_domains = NULL;
 
 	GOptionEntry options[] = {
+		{ "version", 0, 0, G_OPTION_ARG_NONE, &show_version, "Print NetworkManager version and exit", NULL },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &become_daemon, "Don't become a daemon", NULL },
 		{ "g-fatal-warnings", 0, 0, G_OPTION_ARG_NONE, &g_fatal_warnings, "Make all warnings fatal", NULL },
 		{ "pid-file", 0, 0, G_OPTION_ARG_FILENAME, &pidfile, "Specify the location of a PID file", "filename" },
@@ -479,15 +496,13 @@ main (int argc, char *argv[])
 		{ "plugins", 0, 0, G_OPTION_ARG_STRING, &plugins, "List of plugins separated by ','", "plugin1,plugin2" },
 		{ "log-level", 0, 0, G_OPTION_ARG_STRING, &log_level, "Log level: one of [ERR, WARN, INFO, DEBUG]", "INFO" },
 		{ "log-domains", 0, 0, G_OPTION_ARG_STRING, &log_domains,
-		        "Log domains separated by ',': any combination of [NONE,HW,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,WIFI_SCAN,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,SUPPLICANT,USER_SET,SYS_SET,SUSPEND,CORE,DEVICE,OLPC]",
+		        "Log domains separated by ',': any combination of\n"
+		        "                                          [NONE,HW,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,\n"
+		        "                                           WIFI_SCAN,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,SUPPLICANT,\n"
+		        "                                           AGENTS,SETTINGS,SUSPEND,CORE,DEVICE,OLPC,WIMAX]",
 		        "HW,RFKILL,WIFI" },
 		{NULL}
 	};
-
-	if (getuid () != 0) {
-		fprintf (stderr, "You must be root to run NetworkManager!\n");
-		exit (1);
-	}
 
 	if (!g_module_supported ()) {
 		fprintf (stderr, "GModules are not supported on your platform!\n");
@@ -513,6 +528,16 @@ main (int argc, char *argv[])
 
 	if (!success) {
 		fprintf (stderr, _("Invalid option.  Please use --help to see a list of valid options.\n"));
+		exit (1);
+	}
+
+	if (show_version) {
+		fprintf (stdout, NM_DIST_VERSION "\n");
+		exit (0);
+	}
+
+	if (getuid () != 0) {
+		fprintf (stderr, "You must be root to run NetworkManager!\n");
 		exit (1);
 	}
 
@@ -593,7 +618,7 @@ main (int argc, char *argv[])
 	g_free (conf_plugins);
 
 	/* Parse the state file */
-	if (!parse_state_file (state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &error)) {
+	if (!parse_state_file (state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &wimax_enabled, &error)) {
 		fprintf (stderr, "State file %s parsing failed: (%d) %s\n",
 		         state_file,
 		         error ? error->code : -1,
@@ -685,20 +710,29 @@ main (int argc, char *argv[])
 		goto done;
 	}
 
-	manager = nm_manager_get (config,
+	settings = nm_settings_new (config, plugins, &error);
+	if (!settings) {
+		nm_log_err (LOGD_CORE, "failed to initialize settings storage: %s",
+		            error && error->message ? error->message : "(unknown)");
+		goto done;
+	}
+
+	manager = nm_manager_get (settings,
+	                          config,
 	                          plugins,
 	                          state_file,
 	                          net_enabled,
 	                          wifi_enabled,
 	                          wwan_enabled,
+	                          wimax_enabled,
 	                          &error);
 	if (manager == NULL) {
 		nm_log_err (LOGD_CORE, "failed to initialize the network manager: %s",
-		          error && error->message ? error->message : "(unknown)");
+		            error && error->message ? error->message : "(unknown)");
 		goto done;
 	}
 
-	policy = nm_policy_new (manager, vpn_manager);
+	policy = nm_policy_new (manager, vpn_manager, settings);
 	if (policy == NULL) {
 		nm_log_err (LOGD_CORE, "failed to initialize the policy.");
 		goto done;
@@ -748,6 +782,9 @@ done:
 
 	if (manager)
 		g_object_unref (manager);
+
+	if (settings)
+		g_object_unref (settings);
 
 	if (vpn_manager)
 		g_object_unref (vpn_manager);

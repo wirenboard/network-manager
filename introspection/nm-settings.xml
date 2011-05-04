@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <node name="/" xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0">
-  <interface name="org.freedesktop.NetworkManagerSettings">
+  <interface name="org.freedesktop.NetworkManager.Settings">
     <tp:docstring>
-      The NetworkManagerSettings interface is provided by the service which provides connections to NetworkManager.
+      The Settings interface allows clients to view and administrate the connections stored and used by NetworkManager.
     </tp:docstring>
 
     <method name="ListConnections">
@@ -14,6 +14,23 @@
       <arg name="connections" type="ao" direction="out">
         <tp:docstring>
           List of connections.
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <method name="GetConnectionByUuid">
+      <tp:docstring>
+        Retrieve the object path of a connection, given that connection's UUID.
+      </tp:docstring>
+      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="impl_settings_get_connection_by_uuid"/>
+      <arg name="uuid" type="s" direction="in">
+        <tp:docstring>
+          The UUID to find the connection object path for.
+        </tp:docstring>
+      </arg>
+      <arg name="connection" type="o" direction="out">
+        <tp:docstring>
+          The connection's object path.
         </tp:docstring>
       </arg>
     </method>
@@ -29,7 +46,45 @@
           Connection settings and properties.
         </tp:docstring>
       </arg>
+      <arg name="path" type="o" direction="out">
+        <tp:docstring>
+          Object path of the new connection that was just added.
+        </tp:docstring>
+      </arg>
     </method>
+
+    <method name="SaveHostname">
+      <tp:docstring>
+        Save the hostname to persistent configuration.
+      </tp:docstring>
+      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="impl_settings_save_hostname"/>
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg name="hostname" type="s" direction="in">
+        <tp:docstring>
+          The hostname to save to persistent configuration.  If blank, the persistent hostname is cleared.
+        </tp:docstring>
+      </arg>
+    </method>
+
+    <property name="Hostname" type="s" access="read">
+      <tp:docstring>
+        The machine hostname stored in persistent configuration.
+      </tp:docstring>
+    </property>
+
+    <property name="CanModify" type="b" access="read">
+      <tp:docstring>
+        If true, adding and modifying connections is supported.
+      </tp:docstring>
+    </property>
+
+    <signal name="PropertiesChanged">
+        <arg name="properties" type="a{sv}" tp:type="String_Variant_Map">
+            <tp:docstring>
+                A dictionary mapping property names to variant boxed values
+            </tp:docstring>
+        </arg>
+    </signal>
 
     <signal name="NewConnection">
       <tp:docstring>

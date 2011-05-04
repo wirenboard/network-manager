@@ -20,7 +20,7 @@
  *
  */
 
-
+#include "config.h"
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus.h>
@@ -428,7 +428,7 @@ client_start (NMDHCPManager *self,
 	/* Kill any old client instance */
 	client = get_client_for_iface (self, iface, ipv6);
 	if (client) {
-		nm_dhcp_client_stop (client);
+		nm_dhcp_client_stop (client, FALSE);
 		remove_client (self, client);
 	}
 

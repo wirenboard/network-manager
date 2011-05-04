@@ -33,9 +33,6 @@
 #include <nm-client.h>
 #include <nm-setting-connection.h>
 #include <nm-remote-settings.h>
-#include <nm-remote-settings-system.h>
-#include <nm-settings-interface.h>
-#include <nm-settings-connection-interface.h>
 
 #include "nmcli.h"
 #include "utils.h"
@@ -71,6 +68,7 @@ usage (const char *prog_name)
 	         "  -m[ode] tabular|multiline                  output mode\n"
 	         "  -f[ields] <field1,field2,...>|all|common   specify fields to output\n"
 	         "  -e[scape] yes|no                           escape columns separators in values\n"
+	         "  -n[ocheck]                                 don't check nmcli and NetworkManager versions\n"
 	         "  -v[ersion]                                 show program version\n"
 	         "  -h[elp]                                    print this help\n\n"
 	         "OBJECT\n"
@@ -203,6 +201,8 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 				return nmc->return_value;
 			}
 			nmc->required_fields = g_strdup (argv[1]);
+		} else if (matches (opt, "-nocheck") == 0) {
+			nmc->nocheck_ver = TRUE;
 		} else if (matches (opt, "-version") == 0) {
 			printf (_("nmcli tool, version %s\n"), NMCLI_VERSION);
 			return NMC_RESULT_SUCCESS;
@@ -275,13 +275,8 @@ nmc_init (NmCli *nmc)
 	nmc->timeout = 10;
 
 	nmc->system_settings = NULL;
-	nmc->user_settings = NULL;
-
 	nmc->system_settings_running = FALSE;
-	nmc->user_settings_running = FALSE;
-
 	nmc->system_connections = NULL;
-	nmc->user_connections = NULL;
 
 	nmc->should_wait = FALSE;
 	nmc->nowait_flag = TRUE;
@@ -292,6 +287,7 @@ nmc_init (NmCli *nmc)
 	nmc->required_fields = NULL;
 	nmc->allowed_fields = NULL;
 	memset (&nmc->print_fields, '\0', sizeof (NmcPrintFields));
+	nmc->nocheck_ver = FALSE;
 }
 
 static void
@@ -302,10 +298,7 @@ nmc_cleanup (NmCli *nmc)
 	g_string_free (nmc->return_text, TRUE);
 
 	if (nmc->system_settings) g_object_unref (nmc->system_settings);
-	if (nmc->user_settings) g_object_unref (nmc->user_settings);
-
 	g_slist_free (nmc->system_connections);
-	g_slist_free (nmc->user_connections);
 
 	g_free (nmc->required_fields);
 	if (nmc->print_fields.indices)

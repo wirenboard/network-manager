@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2008 - 2010 Red Hat, Inc.
+ * Copyright (C) 2008 - 2011 Red Hat, Inc.
  *
  */
 
@@ -29,10 +29,13 @@
 #include "nm-setting-connection.h"
 #include "nm-setting-vpn.h"
 #include "nm-setting-gsm.h"
+#include "nm-setting-cdma.h"
 #include "nm-setting-wired.h"
+#include "nm-setting-wireless-security.h"
 #include "nm-setting-ip6-config.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-pppoe.h"
+#include "nm-setting-serial.h"
 #include "nm-dbus-glib-types.h"
 
 static void
@@ -131,6 +134,65 @@ test_setting_vpn_items (void)
 	nm_setting_vpn_foreach_secret (s_vpn, vpn_check_empty_func, "vpn-secrets-empty");
 
 	g_object_unref (s_vpn);
+}
+
+static void
+test_setting_vpn_update_secrets (void)
+{
+	NMConnection *connection;
+	NMSettingVPN *s_vpn;
+	GHashTable *settings, *vpn, *secrets;
+	GValue val = { 0 };
+	gboolean success;
+	GError *error = NULL;
+	const char *tmp;
+	const char *key1 = "foobar";
+	const char *key2 = "blahblah";
+	const char *val1 = "value1";
+	const char *val2 = "value2";
+
+	connection = nm_connection_new ();
+	ASSERT (connection != NULL,
+	        "vpn-update-secrets",
+	        "error creating connection");
+
+	s_vpn = (NMSettingVPN *) nm_setting_vpn_new ();
+	ASSERT (s_vpn != NULL,
+	        "vpn-update-secrets",
+	        "error creating vpn setting");
+	nm_connection_add_setting (connection, NM_SETTING (s_vpn));
+
+	settings = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, (GDestroyNotify) g_hash_table_destroy);
+	vpn = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, (GDestroyNotify) g_value_unset);
+	g_hash_table_insert (settings, NM_SETTING_VPN_SETTING_NAME, vpn);
+
+	secrets = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+	g_value_init (&val, DBUS_TYPE_G_MAP_OF_STRING);
+	g_value_take_boxed (&val, secrets);
+	g_hash_table_insert (vpn, NM_SETTING_VPN_SECRETS, &val);
+
+	/* Add some secrets */
+	g_hash_table_insert (secrets, (char *) key1, (char *) val1);
+	g_hash_table_insert (secrets, (char *) key2, (char *) val2);
+
+	success = nm_connection_update_secrets (connection, NM_SETTING_VPN_SETTING_NAME, settings, &error);
+	ASSERT (success == TRUE,
+	        "vpn-update-secrets", "failed to update VPN secrets: %s", error->message);
+
+	/* Read the secrets back out */
+	tmp = nm_setting_vpn_get_secret (s_vpn, key1);
+	ASSERT (tmp != NULL,
+	        "vpn-update-secrets", "unexpected failure getting key #1");
+	ASSERT (strcmp (tmp, val1) == 0,
+	        "vpn-update-secrets", "unexpected key #1 value");
+
+	tmp = nm_setting_vpn_get_secret (s_vpn, key2);
+	ASSERT (tmp != NULL,
+	        "vpn-update-secrets", "unexpected failure getting key #2");
+	ASSERT (strcmp (tmp, val2) == 0,
+	        "vpn-update-secrets", "unexpected key #2 value");
+
+	g_object_unref (connection);
 }
 
 #define OLD_DBUS_TYPE_G_IP6_ADDRESS (dbus_g_type_get_struct ("GValueArray", DBUS_TYPE_G_UCHAR_ARRAY, G_TYPE_UINT, G_TYPE_INVALID))
@@ -292,6 +354,319 @@ test_setting_gsm_apn_bad_chars (void)
 	        "gsm-apn-bad-chars", "unexpectedly valid GSM setting");
 }
 
+static NMSettingWirelessSecurity *
+make_test_wsec_setting (const char *detail)
+{
+	NMSettingWirelessSecurity *s_wsec;
+
+	s_wsec = (NMSettingWirelessSecurity *) nm_setting_wireless_security_new ();
+	ASSERT (s_wsec != NULL, detail, "error creating setting");
+
+	g_object_set (s_wsec,
+	              NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-psk",
+	              NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME, "foobarbaz",
+	              NM_SETTING_WIRELESS_SECURITY_PSK, "random psk",
+	              NM_SETTING_WIRELESS_SECURITY_WEP_KEY0, "aaaaaaaaaa",
+	              NULL);
+
+	return s_wsec;
+}
+
+static void
+test_setting_to_hash_all (void)
+{
+	NMSettingWirelessSecurity *s_wsec;
+	GHashTable *hash;
+
+	s_wsec = make_test_wsec_setting ("setting-to-hash-all");
+
+	hash = nm_setting_to_hash (NM_SETTING (s_wsec), NM_SETTING_HASH_FLAG_ALL);
+
+	/* Make sure all keys are there */
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT),
+	        "setting-to-hash-all", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_KEY_MGMT);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME),
+	        "setting-to-hash-all", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_PSK),
+	        "setting-to-hash-all", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_PSK);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_WEP_KEY0),
+	        "setting-to-hash-all", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_WEP_KEY0);
+
+	g_hash_table_destroy (hash);
+	g_object_unref (s_wsec);
+}
+
+static void
+test_setting_to_hash_no_secrets (void)
+{
+	NMSettingWirelessSecurity *s_wsec;
+	GHashTable *hash;
+
+	s_wsec = make_test_wsec_setting ("setting-to-hash-no-secrets");
+
+	hash = nm_setting_to_hash (NM_SETTING (s_wsec), NM_SETTING_HASH_FLAG_NO_SECRETS);
+
+	/* Make sure non-secret keys are there */
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT),
+	        "setting-to-hash-no-secrets", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_KEY_MGMT);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME),
+	        "setting-to-hash-no-secrets", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME);
+
+	/* Make sure secrets are not there */
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_PSK) == NULL,
+	        "setting-to-hash-no-secrets", "unexpectedly present " NM_SETTING_WIRELESS_SECURITY_PSK);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_WEP_KEY0) == NULL,
+	        "setting-to-hash-no-secrets", "unexpectedly present " NM_SETTING_WIRELESS_SECURITY_WEP_KEY0);
+
+	g_hash_table_destroy (hash);
+	g_object_unref (s_wsec);
+}
+
+static void
+test_setting_to_hash_only_secrets (void)
+{
+	NMSettingWirelessSecurity *s_wsec;
+	GHashTable *hash;
+
+	s_wsec = make_test_wsec_setting ("setting-to-hash-only-secrets");
+
+	hash = nm_setting_to_hash (NM_SETTING (s_wsec), NM_SETTING_HASH_FLAG_ONLY_SECRETS);
+
+	/* Make sure non-secret keys are there */
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT) == NULL,
+	        "setting-to-hash-only-secrets", "unexpectedly present " NM_SETTING_WIRELESS_SECURITY_KEY_MGMT);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME) == NULL,
+	        "setting-to-hash-only-secrets", "unexpectedly present " NM_SETTING_WIRELESS_SECURITY_LEAP_USERNAME);
+
+	/* Make sure secrets are not there */
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_PSK),
+	        "setting-to-hash-only-secrets", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_PSK);
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_WEP_KEY0),
+	        "setting-to-hash-only-secrets", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_WEP_KEY0);
+
+	g_hash_table_destroy (hash);
+	g_object_unref (s_wsec);
+}
+
+static void
+test_connection_to_hash_setting_name (void)
+{
+	NMConnection *connection;
+	NMSettingWirelessSecurity *s_wsec;
+	GHashTable *hash;
+
+	connection = nm_connection_new ();
+	s_wsec = make_test_wsec_setting ("connection-to-hash-setting-name");
+	nm_connection_add_setting (connection, NM_SETTING (s_wsec));
+
+	hash = nm_connection_to_hash (connection, NM_SETTING_HASH_FLAG_ALL);
+
+	/* Make sure the keys of the first level hash are setting names, not
+	 * the GType name of the setting objects.
+	 */
+	ASSERT (g_hash_table_lookup (hash, NM_SETTING_WIRELESS_SECURITY_SETTING_NAME) != NULL,
+	        "connection-to-hash-setting-name", "unexpectedly missing " NM_SETTING_WIRELESS_SECURITY_SETTING_NAME);
+
+	g_hash_table_destroy (hash);
+	g_object_unref (connection);
+}
+
+static void
+check_permission (NMSettingConnection *s_con,
+                  guint32 idx,
+                  const char *expected_uname,
+                  const char *tag)
+{
+	gboolean success;
+	const char *ptype = NULL, *pitem = NULL, *detail = NULL;
+
+	success = nm_setting_connection_get_permission (s_con, 0, &ptype, &pitem, &detail);
+	ASSERT (success == TRUE, tag, "unexpected failure getting added permission");
+
+	/* Permission type */
+	ASSERT (ptype != NULL, tag, "unexpected failure getting permission type");
+	ASSERT (strcmp (ptype, "user") == 0, tag, "retrieved unexpected permission type");
+
+	/* Permission item */
+	ASSERT (pitem != NULL, tag, "unexpected failure getting permission item");
+	ASSERT (strcmp (pitem, expected_uname) == 0, tag, "retrieved unexpected permission item");
+
+	ASSERT (detail == NULL, tag, "unexpected success getting permission detail");
+}
+
+#define TEST_UNAME "asdfasfasdf"
+
+static void
+test_setting_connection_permissions_helpers (void)
+{
+	NMSettingConnection *s_con;
+	gboolean success;
+	char buf[9] = { 0x61, 0x62, 0x63, 0xff, 0xfe, 0xfd, 0x23, 0x01, 0x00 };
+	GSList *list = NULL;
+	const char *expected_perm = "user:" TEST_UNAME ":";
+
+	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
+
+	/* Ensure a bad [type] is rejected */
+	success = nm_setting_connection_add_permission (s_con, "foobar", "blah", NULL);
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad permission type #1");
+
+	/* Ensure a bad [type] is rejected */
+	success = nm_setting_connection_add_permission (s_con, NULL, "blah", NULL);
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad permission type #2");
+
+	/* Ensure a bad [item] is rejected */
+	success = nm_setting_connection_add_permission (s_con, "user", NULL, NULL);
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad permission item #1");
+
+	/* Ensure a bad [item] is rejected */
+	success = nm_setting_connection_add_permission (s_con, "user", "", NULL);
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad permission item #2");
+
+	/* Ensure an [item] with ':' is rejected */
+	success = nm_setting_connection_add_permission (s_con, "user", "ad:asdf", NULL);
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad permission item #3");
+
+	/* Ensure a non-UTF-8 [item] is rejected */
+	success = nm_setting_connection_add_permission (s_con, "user", buf, NULL);
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad permission item #4");
+
+	/* Ensure a non-NULL [detail] is rejected */
+	success = nm_setting_connection_add_permission (s_con, "user", "dafasdf", "asdf");
+	ASSERT (success == FALSE,
+	        "setting-connection-permissions-helpers", "unexpected success adding bad detail");
+
+	/* Ensure a valid call results in success */
+	success = nm_setting_connection_add_permission (s_con, "user", TEST_UNAME, NULL);
+	ASSERT (success == TRUE,
+	        "setting-connection-permissions-helpers", "unexpected failure adding valid user permisson");
+
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 1,
+	        "setting-connection-permissions-helpers", "unexpected failure getting number of permissions");
+
+	check_permission (s_con, 0, TEST_UNAME, "setting-connection-permissions-helpers");
+
+	/* Check the actual GObject property just to be paranoid */
+	g_object_get (G_OBJECT (s_con), NM_SETTING_CONNECTION_PERMISSIONS, &list, NULL);
+	ASSERT (list != NULL,
+	        "setting-connection-permissions-helpers", "unexpected failure getting permissions list");
+	ASSERT (g_slist_length (list) == 1,
+	        "setting-connection-permissions-helpers", "unexpected failure getting number of permissions in list");
+	ASSERT (strcmp (list->data, expected_perm) == 0,
+	        "setting-connection-permissions-helpers", "unexpected permission property data");
+
+	/* Now remove that permission and ensure we have 0 permissions */
+	nm_setting_connection_remove_permission (s_con, 0);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-helpers", "unexpected failure removing permission");
+
+	g_object_unref (s_con);
+}
+
+static void
+add_permission_property (NMSettingConnection *s_con,
+                         const char *ptype,
+                         const char *pitem,
+                         int pitem_len,
+                         const char *detail)
+{
+	GString *str;
+	GSList *list = NULL;
+
+	str = g_string_sized_new (50);
+	if (ptype)
+		g_string_append (str, ptype);
+	g_string_append_c (str, ':');
+
+	if (pitem) {
+		if (pitem_len >= 0)
+			g_string_append_len (str, pitem, pitem_len);
+		else
+			g_string_append (str, pitem);
+	}
+
+	g_string_append_c (str, ':');
+
+	if (detail)
+		g_string_append (str, detail);
+
+	list = g_slist_append (list, str->str);
+	g_object_set (G_OBJECT (s_con), NM_SETTING_CONNECTION_PERMISSIONS, list, NULL);
+
+	g_string_free (str, TRUE);
+	g_slist_free (list);
+}
+
+static void
+test_setting_connection_permissions_property (void)
+{
+	NMSettingConnection *s_con;
+	gboolean success;
+	char buf[9] = { 0x61, 0x62, 0x63, 0xff, 0xfe, 0xfd, 0x23, 0x01, 0x00 };
+
+	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
+
+	/* Ensure a bad [type] is rejected */
+	add_permission_property (s_con, "foobar", "blah", -1, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission type #1");
+
+	/* Ensure a bad [type] is rejected */
+	add_permission_property (s_con, NULL, "blah", -1, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission type #2");
+
+	/* Ensure a bad [item] is rejected */
+	add_permission_property (s_con, "user", NULL, -1, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission item #1");
+
+	/* Ensure a bad [item] is rejected */
+	add_permission_property (s_con, "user", "", -1, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission item #2");
+
+	/* Ensure an [item] with ':' in the middle is rejected */
+	add_permission_property (s_con, "user", "ad:asdf", -1, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission item #3");
+
+	/* Ensure an [item] with ':' at the end is rejected */
+	add_permission_property (s_con, "user", "adasdfaf:", -1, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission item #4");
+
+	/* Ensure a non-UTF-8 [item] is rejected */
+	add_permission_property (s_con, "user", buf, (int) sizeof (buf), NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad permission item #5");
+
+	/* Ensure a non-NULL [detail] is rejected */
+	add_permission_property (s_con, "user", "dafasdf", -1, "asdf");
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected success adding bad detail");
+
+	/* Ensure a valid call results in success */
+	success = nm_setting_connection_add_permission (s_con, "user", TEST_UNAME, NULL);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 1,
+	        "setting-connection-permissions-property", "unexpected failure adding valid user permisson");
+
+	check_permission (s_con, 0, TEST_UNAME, "setting-connection-permissions-property");
+
+	/* Now remove that permission and ensure we have 0 permissions */
+	nm_setting_connection_remove_permission (s_con, 0);
+	ASSERT (nm_setting_connection_get_num_permissions (s_con) == 0,
+	        "setting-connection-permissions-property", "unexpected failure removing permission");
+
+	g_object_unref (s_con);
+}
+
 static NMConnection *
 new_test_connection (void)
 {
@@ -385,6 +760,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_CONNECTION_TIMESTAMP,   NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_AUTOCONNECT, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_READ_ONLY,   NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_CONNECTION_PERMISSIONS, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NULL, NM_SETTING_DIFF_RESULT_UNKNOWN }
 		} },
 		{ NM_SETTING_WIRED_SETTING_NAME, {
@@ -526,6 +902,221 @@ test_connection_diff_no_secrets (void)
 	g_object_unref (b);
 }
 
+static void
+add_generic_settings (NMConnection *connection, const char *ctype)
+{
+	NMSetting *setting;
+	char *uuid;
+
+	uuid = nm_utils_uuid_generate ();
+
+	setting = nm_setting_connection_new ();
+	g_object_set (setting,
+	              NM_SETTING_CONNECTION_ID, "asdfasdfadf",
+	              NM_SETTING_CONNECTION_TYPE, ctype,
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NULL);
+	nm_connection_add_setting (connection, setting);
+
+	g_free (uuid);
+
+	setting = nm_setting_ip4_config_new ();
+	g_object_set (setting, NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_AUTO, NULL);
+	nm_connection_add_setting (connection, setting);
+
+	setting = nm_setting_ip6_config_new ();
+	g_object_set (setting, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_AUTO, NULL);
+	nm_connection_add_setting (connection, setting);
+}
+
+static void
+test_connection_good_base_types (void)
+{
+	NMConnection *connection;
+	NMSetting *setting;
+	gboolean success;
+	GError *error = NULL;
+	GByteArray *array;
+	const guint8 bdaddr[] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 };
+
+	/* Try a basic wired connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_WIRED_SETTING_NAME);
+	setting = nm_setting_wired_new ();
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_object_unref (connection);
+
+	/* Try a wired PPPoE connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_PPPOE_SETTING_NAME);
+	setting = nm_setting_pppoe_new ();
+	g_object_set (setting, NM_SETTING_PPPOE_USERNAME, "bob smith", NULL);
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_object_unref (connection);
+
+	/* Wifi connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_WIRELESS_SETTING_NAME);
+
+	setting = nm_setting_wireless_new ();
+	array = g_byte_array_new ();
+	g_byte_array_append (array, (const guint8 *) "1234567", 7);
+	g_object_set (setting,
+	              NM_SETTING_WIRELESS_SSID, array,
+	              NM_SETTING_WIRELESS_MODE, "infrastructure",
+	              NULL);
+	g_byte_array_free (array, TRUE);
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_object_unref (connection);
+
+	/* Bluetooth connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_BLUETOOTH_SETTING_NAME);
+
+	setting = nm_setting_bluetooth_new ();
+	array = g_byte_array_new ();
+	g_byte_array_append (array, bdaddr, sizeof (bdaddr));
+	g_object_set (setting,
+	              NM_SETTING_BLUETOOTH_BDADDR, array,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_BLUETOOTH_TYPE_PANU,
+	              NULL);
+	g_byte_array_free (array, TRUE);
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_object_unref (connection);
+
+	/* WiMAX connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_WIMAX_SETTING_NAME);
+	setting = nm_setting_wimax_new ();
+	g_object_set (setting, NM_SETTING_WIMAX_NETWORK_NAME, "CLEAR", NULL);
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_object_unref (connection);
+
+	/* GSM connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_GSM_SETTING_NAME);
+
+	setting = nm_setting_gsm_new ();
+	g_object_set (setting,
+	              NM_SETTING_GSM_NUMBER, "*99#",
+	              NM_SETTING_GSM_APN, "metered.billing.sucks",
+	              NULL);
+	nm_connection_add_setting (connection, setting);
+
+	/* CDMA connection */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_CDMA_SETTING_NAME);
+
+	setting = nm_setting_cdma_new ();
+	g_object_set (setting,
+	              NM_SETTING_CDMA_NUMBER, "#777",
+	              NM_SETTING_CDMA_USERNAME, "foobar@vzw.com",
+	              NULL);
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_object_unref (connection);
+}
+
+static void
+test_connection_bad_base_types (void)
+{
+	NMConnection *connection;
+	NMSetting *setting;
+	gboolean success;
+	GError *error = NULL;
+
+	/* Test various non-base connection types to make sure they are rejected;
+	 * using a fake 'wired' connection so the rest of it verifies
+	 */
+
+	/* Connection setting */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_CONNECTION_SETTING_NAME);
+	setting = nm_setting_wired_new ();
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID);
+	g_assert (success == FALSE);
+	g_object_unref (connection);
+	g_clear_error (&error);
+
+	/* PPP setting */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_PPP_SETTING_NAME);
+	setting = nm_setting_wired_new ();
+	nm_connection_add_setting (connection, setting);
+	setting = nm_setting_ppp_new ();
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID);
+	g_assert (success == FALSE);
+	g_object_unref (connection);
+	g_clear_error (&error);
+
+	/* Serial setting */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_SERIAL_SETTING_NAME);
+	setting = nm_setting_wired_new ();
+	nm_connection_add_setting (connection, setting);
+	setting = nm_setting_serial_new ();
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID);
+	g_assert (success == FALSE);
+	g_object_unref (connection);
+	g_clear_error (&error);
+
+	/* IP4 setting */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_IP4_CONFIG_SETTING_NAME);
+	setting = nm_setting_wired_new ();
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID);
+	g_assert (success == FALSE);
+	g_object_unref (connection);
+	g_clear_error (&error);
+
+	/* IP6 setting */
+	connection = nm_connection_new ();
+	add_generic_settings (connection, NM_SETTING_IP6_CONFIG_SETTING_NAME);
+	setting = nm_setting_wired_new ();
+	nm_connection_add_setting (connection, setting);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID);
+	g_assert (success == FALSE);
+	g_object_unref (connection);
+	g_clear_error (&error);
+}
+
 int main (int argc, char **argv)
 {
 	GError *error = NULL;
@@ -540,13 +1131,22 @@ int main (int argc, char **argv)
 
 	/* The tests */
 	test_setting_vpn_items ();
+	test_setting_vpn_update_secrets ();
 	test_setting_ip6_config_old_address_array ();
 	test_setting_gsm_apn_spaces ();
 	test_setting_gsm_apn_bad_chars ();
+	test_setting_to_hash_all ();
+	test_setting_to_hash_no_secrets ();
+	test_setting_to_hash_only_secrets ();
+	test_connection_to_hash_setting_name ();
+	test_setting_connection_permissions_helpers ();
+	test_setting_connection_permissions_property ();
 	test_connection_diff_a_only ();
 	test_connection_diff_same ();
 	test_connection_diff_different ();
 	test_connection_diff_no_secrets ();
+	test_connection_good_base_types ();
+	test_connection_bad_base_types ();
 
 	base = g_path_get_basename (argv[0]);
 	fprintf (stdout, "%s: SUCCESS\n", base);

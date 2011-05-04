@@ -10,32 +10,42 @@ SUBDIRS= \
 	dnsmasq-manager \
 	modem-manager \
 	bluez-manager \
-	system-settings \
-	. \
-	tests
+	settings
 
-INCLUDES = -I${top_srcdir}                   \
-           -I${top_srcdir}/include           \
-           -I${top_builddir}/marshallers   \
+if WITH_WIMAX
+SUBDIRS += wimax
+endif
+
+SUBDIRS += . tests
+
+INCLUDES = -I${top_srcdir} \
+           -I${top_srcdir}/include \
+           -I${top_builddir}/marshallers \
            -I${top_srcdir}/src/logging \
            -I${top_srcdir}/src/dns-manager \
-           -I${top_srcdir}/src/vpn-manager   \
-           -I${top_srcdir}/src/dhcp-manager  \
-           -I${top_srcdir}/src/ip6-manager  \
-           -I${top_srcdir}/src/supplicant-manager  \
-           -I${top_srcdir}/src/dnsmasq-manager  \
-           -I${top_srcdir}/src/modem-manager  \
+           -I${top_srcdir}/src/vpn-manager \
+           -I${top_srcdir}/src/dhcp-manager \
+           -I${top_srcdir}/src/ip6-manager \
+           -I${top_srcdir}/src/supplicant-manager \
+           -I${top_srcdir}/src/dnsmasq-manager \
+           -I${top_srcdir}/src/modem-manager \
            -I$(top_srcdir)/src/bluez-manager \
-           -I$(top_srcdir)/src/system-settings \
+           -I$(top_srcdir)/src/settings \
            -I${top_srcdir}/libnm-util \
-           -I${top_srcdir}/libnm-glib \
            -I${top_srcdir}/callouts
+
+if WITH_WIMAX
+INCLUDES += -I$(top_srcdir)/src/wimax
+endif
 
 ###########################################
 # Test libraries
 ###########################################
 
-noinst_LTLIBRARIES = libtest-dhcp.la libtest-policy-hosts.la
+noinst_LTLIBRARIES = \
+	libtest-dhcp.la \
+	libtest-policy-hosts.la \
+	libtest-wifi-ap-utils.la
 
 ###########################################
 # DHCP test library
@@ -77,6 +87,22 @@ libtest_policy_hosts_la_LIBADD = \
 
 
 ###########################################
+# Wifi ap utils
+###########################################
+
+libtest_wifi_ap_utils_la_SOURCES = \
+	nm-wifi-ap-utils.c \
+	nm-wifi-ap-utils.h
+
+libtest_wifi_ap_utils_la_CPPFLAGS = \
+	$(GLIB_CFLAGS)
+
+libtest_wifi_ap_utils_la_LIBADD = \
+	${top_builddir}/libnm-util/libnm-util.la \
+	$(GLIB_LIBS)
+
+
+###########################################
 # NetworkManager
 ###########################################
 
@@ -100,12 +126,10 @@ NetworkManager_SOURCES = \
 		nm-device-bt.h \
 		nm-device-modem.h \
 		nm-device-modem.c \
-		nm-device-cdma.c \
-		nm-device-cdma.h \
-		nm-device-gsm.c \
-		nm-device-gsm.h \
 		nm-wifi-ap.c \
 		nm-wifi-ap.h \
+		nm-wifi-ap-utils.c \
+		nm-wifi-ap-utils.h \
 		nm-dbus-manager.h \
 		nm-dbus-manager.c \
 		nm-udev-manager.c \
@@ -116,8 +140,6 @@ NetworkManager_SOURCES = \
 		nm-ip4-config.h \
 		nm-ip6-config.c \
 		nm-ip6-config.h \
-		nm-secrets-provider-interface.c \
-		nm-secrets-provider-interface.h \
 		nm-active-connection.h \
 		nm-active-connection.c \
 		main.c \
@@ -147,7 +169,9 @@ NetworkManager_SOURCES = \
 		nm-dhcp4-config.h \
 		nm-dhcp6-config.c \
 		nm-dhcp6-config.h \
-		nm-rfkill.h
+		nm-rfkill.h \
+		nm-session-monitor.c \
+		nm-session-monitor.h
 
 nm-access-point-glue.h: $(top_srcdir)/introspection/nm-access-point.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_access_point --mode=glib-server --output=$@ $<
@@ -185,11 +209,8 @@ nm-dhcp4-config-glue.h: $(top_srcdir)/introspection/nm-dhcp4-config.xml
 nm-dhcp6-config-glue.h: $(top_srcdir)/introspection/nm-dhcp6-config.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dhcp6_config --mode=glib-server --output=$@ $<
 
-nm-device-cdma-glue.h: $(top_srcdir)/introspection/nm-device-cdma.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_cdma --mode=glib-server --output=$@ $<
-
-nm-device-gsm-glue.h: $(top_srcdir)/introspection/nm-device-gsm.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_gsm --mode=glib-server --output=$@ $<
+nm-device-modem-glue.h: $(top_srcdir)/introspection/nm-device-modem.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_modem --mode=glib-server --output=$@ $<
 
 BUILT_SOURCES = \
 	nm-access-point-glue.h \
@@ -199,8 +220,7 @@ BUILT_SOURCES = \
 	nm-device-wifi-glue.h \
 	nm-device-olpc-mesh-glue.h \
 	nm-device-bt-glue.h \
-	nm-device-cdma-glue.h \
-	nm-device-gsm-glue.h \
+	nm-device-modem-glue.h \
 	nm-ip4-config-glue.h \
 	nm-ip6-config-glue.h \
 	nm-active-connection-glue.h \
@@ -225,6 +245,12 @@ NetworkManager_CPPFLAGS = \
 	-DNMLOCALEDIR=\"$(datadir)/locale\" \
 	-DARP_DEBUG
 
+
+WIMAX_LIBS=
+if WITH_WIMAX
+WIMAX_LIBS += ./wimax/libwimax.la
+endif
+
 NetworkManager_LDADD = \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	./logging/libnm-logging.la \
@@ -237,7 +263,8 @@ NetworkManager_LDADD = \
 	./ppp-manager/libppp-manager.la \
 	./modem-manager/libmodem-manager.la \
 	./bluez-manager/libbluez-manager.la \
-	./system-settings/libsystem-settings.la \
+	./settings/libsettings.la \
+	$(WIMAX_LIBS) \
 	./backends/libnmbackend.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(DBUS_LIBS) \

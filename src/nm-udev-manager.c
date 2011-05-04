@@ -15,9 +15,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2010 Red Hat, Inc.
+ * Copyright (C) 2009 - 2011 Red Hat, Inc.
  */
 
+#include <config.h>
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -28,7 +29,6 @@
 
 #include "wireless-helper.h"
 
-#define G_UDEV_API_IS_SUBJECT_TO_CHANGE
 #include <gudev/gudev.h>
 
 #include "nm-udev-manager.h"
@@ -38,6 +38,9 @@
 #include "nm-device-wifi.h"
 #include "nm-device-olpc-mesh.h"
 #include "nm-device-ethernet.h"
+#if WITH_WIMAX
+#include "nm-device-wimax.h"
+#endif
 
 typedef struct {
 	GUdevClient *client;
@@ -71,6 +74,7 @@ typedef struct {
 	char *driver;
 	RfKillType rtype;
 	gint state;
+	gboolean platform;
 } Killswitch;
 
 RfKillState
@@ -110,8 +114,8 @@ static Killswitch *
 killswitch_new (GUdevDevice *device, RfKillType rtype)
 {
 	Killswitch *ks;
-	GUdevDevice *parent = NULL;
-	const char *driver;
+	GUdevDevice *parent = NULL, *grandparent = NULL;
+	const char *driver, *subsys, *parent_subsys = NULL;
 
 	ks = g_malloc0 (sizeof (Killswitch));
 	ks->name = g_strdup (g_udev_device_get_name (device));
@@ -120,17 +124,33 @@ killswitch_new (GUdevDevice *device, RfKillType rtype)
 	ks->rtype = rtype;
 
 	driver = g_udev_device_get_property (device, "DRIVER");
-	if (!driver) {
-		parent = g_udev_device_get_parent (device);
-		if (parent)
-			driver = g_udev_device_get_property (parent, "DRIVER");
-	}
-	if (driver)
-		ks->driver = g_strdup (driver);
+	subsys = g_udev_device_get_subsystem (device);
 
+	/* Check parent for various attributes */
+	parent = g_udev_device_get_parent (device);
+	if (parent) {
+		parent_subsys = g_udev_device_get_subsystem (parent);
+		if (!driver)
+			driver = g_udev_device_get_property (parent, "DRIVER");
+		if (!driver) {
+			/* Sigh; try the grandparent */
+			grandparent = g_udev_device_get_parent (parent);
+			if (grandparent)
+				driver = g_udev_device_get_property (parent, "DRIVER");
+		}
+	}
+
+	if (!driver)
+		driver = "(unknown)";
+	ks->driver = g_strdup (driver);
+
+	if (g_strcmp0 (subsys, "platform") == 0 || g_strcmp0 (parent_subsys, "platform") == 0)
+		ks->platform = TRUE;
+
+	if (grandparent)
+		g_object_unref (grandparent);
 	if (parent)
 		g_object_unref (parent);
-
 	return ks;
 }
 
@@ -175,28 +195,77 @@ recheck_killswitches (NMUdevManager *self)
 	NMUdevManagerPrivate *priv = NM_UDEV_MANAGER_GET_PRIVATE (self);
 	GSList *iter;
 	RfKillState poll_states[RFKILL_TYPE_MAX];
+	gboolean platform_checked[RFKILL_TYPE_MAX];
 	int i;
 
 	/* Default state is unblocked */
-	for (i = 0; i < RFKILL_TYPE_MAX; i++)
+	for (i = 0; i < RFKILL_TYPE_MAX; i++) {
 		poll_states[i] = RFKILL_UNBLOCKED;
+		platform_checked[i] = FALSE;
+	}
 
+	/* Perform two passes here; the first pass is for non-platform switches,
+	 * which typically if hardkilled cannot be changed except by a physical
+	 * hardware switch.  The second pass checks platform killswitches, which
+	 * take precedence over device killswitches, because typically platform
+	 * killswitches control device killswitches.  That is, a hardblocked device
+	 * switch can often be unblocked by a platform switch.  Thus if we have
+	 * a hardblocked device switch and a softblocked platform switch, the
+	 * combined state should be softblocked since the platform switch can be
+	 * unblocked to change the device switch.
+	 */
+
+	/* Device switches first */
 	for (iter = priv->killswitches; iter; iter = g_slist_next (iter)) {
 		Killswitch *ks = iter->data;
 		GUdevDevice *device;
 		RfKillState dev_state;
+		int sysfs_state;
 
-		device = g_udev_client_query_by_subsystem_and_name (priv->client, "rfkill", ks->name);
-		if (!device)
-			continue;
-
-		dev_state = sysfs_state_to_nm_state (g_udev_device_get_property_as_int (device, "RFKILL_STATE"));
-		if (dev_state > poll_states[ks->rtype])
-			poll_states[ks->rtype] = dev_state;
-
-		g_object_unref (device);
+		if (ks->platform == FALSE) {
+			device = g_udev_client_query_by_subsystem_and_name (priv->client, "rfkill", ks->name);
+			if (device) {
+				sysfs_state = g_udev_device_get_property_as_int (device, "RFKILL_STATE");
+				dev_state = sysfs_state_to_nm_state (sysfs_state);
+				if (dev_state > poll_states[ks->rtype])
+					poll_states[ks->rtype] = dev_state;
+				g_object_unref (device);
+			}
+		}
 	}
 
+	/* Platform switches next; their state overwrites device state */
+	for (iter = priv->killswitches; iter; iter = g_slist_next (iter)) {
+		Killswitch *ks = iter->data;
+		GUdevDevice *device;
+		RfKillState dev_state;
+		int sysfs_state;
+
+		if (ks->platform == TRUE) {
+			device = g_udev_client_query_by_subsystem_and_name (priv->client, "rfkill", ks->name);
+			if (device) {
+				sysfs_state = g_udev_device_get_property_as_int (device, "RFKILL_STATE");
+				dev_state = sysfs_state_to_nm_state (sysfs_state);
+
+				if (platform_checked[ks->rtype] == FALSE) {
+					/* Overwrite device state with platform state for first
+					 * platform switch found.
+					 */
+					poll_states[ks->rtype] = dev_state;
+					platform_checked[ks->rtype] = TRUE;
+				} else {
+					/* If there are multiple platform switches of the same type,
+					 * take the "worst" state for all of that type.
+					 */
+					if (dev_state > poll_states[ks->rtype])
+						poll_states[ks->rtype] = dev_state;
+				}
+				g_object_unref (device);
+			}
+		}
+	}
+
+	/* Log and emit change signal for final rfkill states */
 	for (i = 0; i < RFKILL_TYPE_MAX; i++) {
 		if (poll_states[i] != priv->rfkill_states[i]) {
 			nm_log_dbg (LOGD_RFKILL, "%s rfkill state now '%s'",
@@ -335,6 +404,15 @@ is_olpc_mesh (GUdevDevice *device)
 	return (prop != NULL);
 }
 
+static gboolean
+is_wimax (const char *driver)
+{
+	/* FIXME: check 'DEVTYPE' instead; but since we only support Intel
+	 * WiMAX devices for now this is appropriate.
+	 */
+	return g_strcmp0 (driver, "i2400m_usb") == 0;
+}
+
 static GObject *
 device_creator (NMUdevManager *manager,
                 GUdevDevice *udev_device,
@@ -391,7 +469,11 @@ device_creator (NMUdevManager *manager,
 		device = (GObject *) nm_device_olpc_mesh_new (path, ifname, driver);
 	else if (is_wireless (udev_device))
 		device = (GObject *) nm_device_wifi_new (path, ifname, driver);
-	else
+	else if (is_wimax (driver)) {
+#if WITH_WIMAX
+		device = (GObject *) nm_device_wimax_new (path, ifname, driver);
+#endif
+	} else
 		device = (GObject *) nm_device_ethernet_new (path, ifname, driver);
 
 out:
@@ -408,6 +490,7 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 	gint etype;
 	const char *iface;
 	const char *tmp;
+	gboolean is_ctc;
 
 	g_return_if_fail (device != NULL);
 
@@ -417,12 +500,14 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 		return;
 	}
 
+	etype = g_udev_device_get_sysfs_attr_as_int (device, "type");
+	is_ctc = (strncmp (iface, "ctc", 3) == 0) && (etype == 256);
+
 	/* Ignore devices that don't report Ethernet encapsulation, except for
 	 * s390 CTC-type devices that report 256 for some reason.
 	 * FIXME: use something other than interface name to detect CTC here.
 	 */
-	etype = g_udev_device_get_sysfs_attr_as_int (device, "type");
-	if ((etype != 1) && (!strncmp (iface, "ctc", 3) && (etype != 256))) {
+	if ((etype != 1) && (is_ctc == FALSE)) {
 		nm_log_dbg (LOGD_HW, "ignoring interface with type %d", etype);
 		return;
 	}

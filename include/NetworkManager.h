@@ -1,3 +1,4 @@
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /* NetworkManager -- Network link manager
  *
  * Dan Williams <dcbw@redhat.com>
@@ -16,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2004 - 2010 Red Hat, Inc.
+ * (C) Copyright 2004 - 2011 Red Hat, Inc.
  */
 
 #ifndef NETWORK_MANAGER_H
@@ -37,9 +38,10 @@
 #define NM_DBUS_INTERFACE_DEVICE_BLUETOOTH  NM_DBUS_INTERFACE_DEVICE ".Bluetooth"
 #define NM_DBUS_PATH_ACCESS_POINT           NM_DBUS_PATH "/AccessPoint"
 #define NM_DBUS_INTERFACE_ACCESS_POINT      NM_DBUS_INTERFACE ".AccessPoint"
-#define NM_DBUS_INTERFACE_SERIAL_DEVICE     NM_DBUS_INTERFACE_DEVICE ".Serial"
-#define NM_DBUS_INTERFACE_GSM_DEVICE        NM_DBUS_INTERFACE_DEVICE ".Gsm"
-#define NM_DBUS_INTERFACE_CDMA_DEVICE       NM_DBUS_INTERFACE_DEVICE ".Cdma"
+#define NM_DBUS_INTERFACE_DEVICE_MODEM      NM_DBUS_INTERFACE_DEVICE ".Modem"
+#define NM_DBUS_INTERFACE_DEVICE_WIMAX      NM_DBUS_INTERFACE_DEVICE ".WiMax"
+#define NM_DBUS_INTERFACE_WIMAX_NSP         NM_DBUS_INTERFACE ".WiMax.Nsp"
+#define NM_DBUS_PATH_WIMAX_NSP              NM_DBUS_PATH "/Nsp"
 #define NM_DBUS_INTERFACE_ACTIVE_CONNECTION NM_DBUS_INTERFACE ".Connection.Active"
 #define NM_DBUS_INTERFACE_IP4_CONFIG        NM_DBUS_INTERFACE ".IP4Config"
 #define NM_DBUS_INTERFACE_DHCP4_CONFIG      NM_DBUS_INTERFACE ".DHCP4Config"
@@ -47,77 +49,99 @@
 #define NM_DBUS_INTERFACE_DHCP6_CONFIG      NM_DBUS_INTERFACE ".DHCP6Config"
 
 
-#define NM_DBUS_SERVICE_USER_SETTINGS     "org.freedesktop.NetworkManagerUserSettings"
-#define NM_DBUS_SERVICE_SYSTEM_SETTINGS   "org.freedesktop.NetworkManagerSystemSettings"
-#define NM_DBUS_IFACE_SETTINGS            "org.freedesktop.NetworkManagerSettings"
-#define NM_DBUS_IFACE_SETTINGS_SYSTEM     "org.freedesktop.NetworkManagerSettings.System"
-#define NM_DBUS_PATH_SETTINGS             "/org/freedesktop/NetworkManagerSettings"
+#define NM_DBUS_IFACE_SETTINGS            "org.freedesktop.NetworkManager.Settings"
+#define NM_DBUS_PATH_SETTINGS             "/org/freedesktop/NetworkManager/Settings"
 
-#define NM_DBUS_IFACE_SETTINGS_CONNECTION "org.freedesktop.NetworkManagerSettings.Connection"
-#define NM_DBUS_PATH_SETTINGS_CONNECTION  "/org/freedesktop/NetworkManagerSettings/Connection"
-#define NM_DBUS_IFACE_SETTINGS_CONNECTION_SECRETS "org.freedesktop.NetworkManagerSettings.Connection.Secrets"
+#define NM_DBUS_IFACE_SETTINGS_CONNECTION "org.freedesktop.NetworkManager.Settings.Connection"
+#define NM_DBUS_PATH_SETTINGS_CONNECTION  "/org/freedesktop/NetworkManager/Settings/Connection"
+#define NM_DBUS_IFACE_SETTINGS_CONNECTION_SECRETS "org.freedesktop.NetworkManager.Settings.Connection.Secrets"
 
+#define NM_DBUS_INTERFACE_AGENT_MANAGER   NM_DBUS_INTERFACE ".AgentManager"
+#define NM_DBUS_PATH_AGENT_MANAGER        "/org/freedesktop/NetworkManager/AgentManager"
 
-/*
- * Types of NetworkManager states
+#define NM_DBUS_INTERFACE_SECRET_AGENT    NM_DBUS_INTERFACE ".SecretAgent"
+#define NM_DBUS_PATH_SECRET_AGENT         "/org/freedesktop/NetworkManager/SecretAgent"
+
+/**
+ * NMState:
+ * @NM_STATE_UNKNOWN: networking state is unknown
+ * @NM_STATE_ASLEEP: networking is not enabled
+ * @NM_STATE_DISCONNECTED: there is no active network connection
+ * @NM_STATE_DISCONNECTING: network connections are being cleaned up
+ * @NM_STATE_CONNECTING: a network connection is being started
+ * @NM_STATE_CONNECTED_LOCAL: there is only local IPv4 and/or IPv6 connectivity
+ * @NM_STATE_CONNECTED_SITE: there is only site-wide IPv4 and/or IPv6 connectivity
+ * @NM_STATE_CONNECTED_GLOBAL: there is global IPv4 and/or IPv6 Internet connectivity
+ *
+ * #NMState values indicate the current overall networking state.
  */
-typedef enum NMState
-{
-	NM_STATE_UNKNOWN = 0,
-	NM_STATE_ASLEEP,
-	NM_STATE_CONNECTING,
-	NM_STATE_CONNECTED,
-	NM_STATE_DISCONNECTED
+typedef enum {
+	NM_STATE_UNKNOWN          = 0,
+	NM_STATE_ASLEEP           = 10,
+	NM_STATE_DISCONNECTED     = 20,
+	NM_STATE_DISCONNECTING    = 30,
+	NM_STATE_CONNECTING       = 40,
+	NM_STATE_CONNECTED_LOCAL  = 50,
+	NM_STATE_CONNECTED_SITE   = 60,
+	NM_STATE_CONNECTED_GLOBAL = 70
 } NMState;
 
+/* For backwards compat */
+#define NM_STATE_CONNECTED NM_STATE_CONNECTED_GLOBAL
 
-/*
- * Types of NetworkManager devices
+/**
+ * NMDeviceType:
+ * @NM_DEVICE_TYPE_UNKNOWN: unknown device
+ * @NM_DEVICE_TYPE_ETHERNET: a wired ethernet device
+ * @NM_DEVICE_TYPE_WIFI: an 802.11 WiFi device
+ * @NM_DEVICE_TYPE_UNUSED1: not used
+ * @NM_DEVICE_TYPE_UNUSED2: not used
+ * @NM_DEVICE_TYPE_BT: a Bluetooth device supporting PAN or DUN access protocols
+ * @NM_DEVICE_TYPE_OLPC_MESH: an OLPC XO mesh networking device
+ * @NM_DEVICE_TYPE_WIMAX: an 802.16e Mobile WiMAX broadband device
+ * @NM_DEVICE_TYPE_MODEM: a modem supporting analog telephone, CDMA/EVDO,
+ * GSM/UMTS, or LTE network access protocols
+ *
+ * #NMState values indicate the current overall networking state.
  */
-typedef enum NMDeviceType
-{
-	NM_DEVICE_TYPE_UNKNOWN = 0,
-	NM_DEVICE_TYPE_ETHERNET,
-	NM_DEVICE_TYPE_WIFI,
-	NM_DEVICE_TYPE_GSM,
-	NM_DEVICE_TYPE_CDMA,
-	NM_DEVICE_TYPE_BT,  /* Bluetooth */
-	NM_DEVICE_TYPE_OLPC_MESH
+typedef enum {
+	NM_DEVICE_TYPE_UNKNOWN   = 0,
+	NM_DEVICE_TYPE_ETHERNET  = 1,
+	NM_DEVICE_TYPE_WIFI      = 2,
+	NM_DEVICE_TYPE_UNUSED1   = 3,
+	NM_DEVICE_TYPE_UNUSED2   = 4,
+	NM_DEVICE_TYPE_BT        = 5,  /* Bluetooth */
+	NM_DEVICE_TYPE_OLPC_MESH = 6,
+	NM_DEVICE_TYPE_WIMAX     = 7,
+	NM_DEVICE_TYPE_MODEM     = 8,
 } NMDeviceType;
 
-/* DEPRECATED TYPE NAMES */
-#define DEVICE_TYPE_UNKNOWN          NM_DEVICE_TYPE_UNKNOWN
-#define DEVICE_TYPE_802_3_ETHERNET   NM_DEVICE_TYPE_ETHERNET
-#define DEVICE_TYPE_802_11_WIRELESS  NM_DEVICE_TYPE_WIFI
-#define DEVICE_TYPE_GSM              NM_DEVICE_TYPE_GSM
-#define DEVICE_TYPE_CDMA             NM_DEVICE_TYPE_CDMA
+/* General device capability flags */
+typedef enum {
+	NM_DEVICE_CAP_NONE           = 0x00000000,
+	NM_DEVICE_CAP_NM_SUPPORTED   = 0x00000001,
+	NM_DEVICE_CAP_CARRIER_DETECT = 0x00000002
+} NMDeviceCapabilities;
 
 
-/*
- * General device capability bits
- *
- */
-#define NM_DEVICE_CAP_NONE               0x00000000
-#define NM_DEVICE_CAP_NM_SUPPORTED       0x00000001
-#define NM_DEVICE_CAP_CARRIER_DETECT     0x00000002
+/* 802.11 Wifi device capabilities */
+typedef enum {
+	NM_WIFI_DEVICE_CAP_NONE          = 0x00000000,
+	NM_WIFI_DEVICE_CAP_CIPHER_WEP40  = 0x00000001,
+	NM_WIFI_DEVICE_CAP_CIPHER_WEP104 = 0x00000002,
+	NM_WIFI_DEVICE_CAP_CIPHER_TKIP   = 0x00000004,
+	NM_WIFI_DEVICE_CAP_CIPHER_CCMP   = 0x00000008,
+	NM_WIFI_DEVICE_CAP_WPA           = 0x00000010,
+	NM_WIFI_DEVICE_CAP_RSN           = 0x00000020
+} NMDeviceWifiCapabilities;
 
 
-/* 802.11 wireless device-specific capabilities */
-#define NM_WIFI_DEVICE_CAP_NONE          0x00000000
-#define NM_WIFI_DEVICE_CAP_CIPHER_WEP40  0x00000001
-#define NM_WIFI_DEVICE_CAP_CIPHER_WEP104 0x00000002
-#define NM_WIFI_DEVICE_CAP_CIPHER_TKIP   0x00000004
-#define NM_WIFI_DEVICE_CAP_CIPHER_CCMP   0x00000008
-#define NM_WIFI_DEVICE_CAP_WPA           0x00000010
-#define NM_WIFI_DEVICE_CAP_RSN           0x00000020
-
-
-/*
- * 802.11 Access Point flags
- *
- */
-#define NM_802_11_AP_FLAGS_NONE          0x00000000
-#define NM_802_11_AP_FLAGS_PRIVACY       0x00000001
+/* 802.11 Access Point flags */
+typedef enum {
+	/*< flags >*/
+	NM_802_11_AP_FLAGS_NONE    = 0x00000000,
+	NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
+} NM80211ApFlags;
 
 /*
  * 802.11 Access Point security flags
@@ -126,17 +150,20 @@ typedef enum NMDeviceType
  * from various pieces of beacon information, like beacon flags and various
  * information elements.
  */
-#define NM_802_11_AP_SEC_NONE            0x00000000
-#define NM_802_11_AP_SEC_PAIR_WEP40      0x00000001
-#define NM_802_11_AP_SEC_PAIR_WEP104     0x00000002
-#define NM_802_11_AP_SEC_PAIR_TKIP       0x00000004
-#define NM_802_11_AP_SEC_PAIR_CCMP       0x00000008
-#define NM_802_11_AP_SEC_GROUP_WEP40     0x00000010
-#define NM_802_11_AP_SEC_GROUP_WEP104    0x00000020
-#define NM_802_11_AP_SEC_GROUP_TKIP      0x00000040
-#define NM_802_11_AP_SEC_GROUP_CCMP      0x00000080
-#define NM_802_11_AP_SEC_KEY_MGMT_PSK    0x00000100
-#define NM_802_11_AP_SEC_KEY_MGMT_802_1X 0x00000200
+typedef enum {
+	/*< flags >*/
+	NM_802_11_AP_SEC_NONE            = 0x00000000,
+	NM_802_11_AP_SEC_PAIR_WEP40      = 0x00000001,
+	NM_802_11_AP_SEC_PAIR_WEP104     = 0x00000002,
+	NM_802_11_AP_SEC_PAIR_TKIP       = 0x00000004,
+	NM_802_11_AP_SEC_PAIR_CCMP       = 0x00000008,
+	NM_802_11_AP_SEC_GROUP_WEP40     = 0x00000010,
+	NM_802_11_AP_SEC_GROUP_WEP104    = 0x00000020,
+	NM_802_11_AP_SEC_GROUP_TKIP      = 0x00000040,
+	NM_802_11_AP_SEC_GROUP_CCMP      = 0x00000080,
+	NM_802_11_AP_SEC_KEY_MGMT_PSK    = 0x00000100,
+	NM_802_11_AP_SEC_KEY_MGMT_802_1X = 0x00000200
+} NM80211ApSecurityFlags;
 
 /*
  * 802.11 AP and Station modes
@@ -152,86 +179,97 @@ typedef enum {
  * NMBluetoothCapabilities:
  * @NM_BT_CAPABILITY_NONE: device has no usable capabilities
  * @NM_BT_CAPABILITY_DUN: device provides Dial-Up Networking capability
- * @NM_BT_CAPABILITY_PAN: device provides Personal Area Networking capability
+ * @NM_BT_CAPABILITY_NAP: device provides Network Access Point capability
  *
  * #NMBluetoothCapabilities values indicate the usable capabilities of a
  * Bluetooth device.
  */
 typedef enum {
+	/*< flags >*/
 	NM_BT_CAPABILITY_NONE = 0x00000000,
 	NM_BT_CAPABILITY_DUN  = 0x00000001,
 	NM_BT_CAPABILITY_NAP  = 0x00000002,
 } NMBluetoothCapabilities;
 
-
-/*
- * Device states
+/**
+ * NMDeviceModemCapabilities:
+ * @NM_DEVICE_MODEM_CAPABILITY_NONE: modem has no usable capabilities
+ * @NM_DEVICE_MODEM_CAPABILITY_POTS: modem uses the analog wired telephone
+ * network and is not a wireless/cellular device
+ * @NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO: modem supports at least one of CDMA
+ * 1xRTT, EVDO revision 0, EVDO revision A, or EVDO revision B
+ * @NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS: modem supports at least one of GSM,
+ * GPRS, EDGE, UMTS, HSDPA, HSUPA, or HSPA+ packet switched data capability
+ * @NM_DEVICE_MODEM_CAPABILITY_LTE: modem has LTE data capability
+ *
+ * #NMDeviceModemCapabilities values indicate the generic radio access
+ * technology families a modem device supports.  For more information on the
+ * specific access technologies the device supports use the ModemManager D-Bus
+ * API.
  */
-typedef enum
-{
-	NM_DEVICE_STATE_UNKNOWN = 0,
+typedef enum {
+	/*< flags >*/
+	NM_DEVICE_MODEM_CAPABILITY_NONE      = 0x00000000,
+	NM_DEVICE_MODEM_CAPABILITY_POTS      = 0x00000001,
+	NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO = 0x00000002,
+	NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS  = 0x00000004,
+	NM_DEVICE_MODEM_CAPABILITY_LTE       = 0x00000008,
+} NMDeviceModemCapabilities;
 
-	/* Initial state of all devices and the only state for devices not
-	 * managed by NetworkManager.
-	 *
-	 * Allowed next states:
-	 *   UNAVAILABLE:  the device is now managed by NetworkManager
-	 */
-	NM_DEVICE_STATE_UNMANAGED = 1,
 
-	/* Indicates the device is not yet ready for use, but is managed by
-	 * NetworkManager.  For Ethernet devices, the device may not have an
-	 * active carrier.  For WiFi devices, the device may not have it's radio
-	 * enabled.
-	 *
-	 * Allowed next states:
-	 *   UNMANAGED:  the device is no longer managed by NetworkManager
-	 *   DISCONNECTED:  the device is now ready for use
-	 */
-	NM_DEVICE_STATE_UNAVAILABLE = 2,
-
-	/* Indicates the device does not have an activate connection to anything.
-	 *
-	 * Allowed next states:
-	 *   UNMANAGED:  the device is no longer managed by NetworkManager
-	 *   UNAVAILABLE:  the device is no longer ready for use (rfkill, no carrier, etc)
-	 *   PREPARE:  the device has started activation
-	 */
-	NM_DEVICE_STATE_DISCONNECTED = 3,
-
-	/* Indicate states in device activation.
-	 *
-	 * Allowed next states:
-	 *   UNMANAGED:  the device is no longer managed by NetworkManager
-	 *   UNAVAILABLE:  the device is no longer ready for use (rfkill, no carrier, etc)
-	 *   FAILED:  an error ocurred during activation
-	 *   NEED_AUTH:  authentication/secrets are needed
-	 *   ACTIVATED:  (IP_CONFIG only) activation was successful
-	 *   DISCONNECTED:  the device's connection is no longer valid, or NetworkManager went to sleep
-	 */
-	NM_DEVICE_STATE_PREPARE = 4,
-	NM_DEVICE_STATE_CONFIG = 5,
-	NM_DEVICE_STATE_NEED_AUTH = 6,
-	NM_DEVICE_STATE_IP_CONFIG = 7,
-
-	/* Indicates the device is part of an active network connection.
-	 *
-	 * Allowed next states:
-	 *   UNMANAGED:  the device is no longer managed by NetworkManager
-	 *   UNAVAILABLE:  the device is no longer ready for use (rfkill, no carrier, etc)
-	 *   FAILED:  a DHCP lease was not renewed, or another error
-	 *   DISCONNECTED:  the device's connection is no longer valid, or NetworkManager went to sleep
-	 */
-	NM_DEVICE_STATE_ACTIVATED = 8,
-
-	/* Indicates the device's activation failed.
-	 *
-	 * Allowed next states:
-	 *   UNMANAGED:  the device is no longer managed by NetworkManager
-	 *   UNAVAILABLE:  the device is no longer ready for use (rfkill, no carrier, etc)
-	 *   DISCONNECTED:  the device's connection is ready for activation, or NetworkManager went to sleep
-	 */
-	NM_DEVICE_STATE_FAILED = 9
+/**
+ * NMDeviceState:
+ * @NM_DEVICE_STATE_UNKNOWN: the device's state is unknown
+ * @NM_DEVICE_STATE_UNMANAGED: the device is recognized, but not managed by
+ *   NetworkManager
+ * @NM_DEVICE_STATE_UNAVAILABLE: the device is managed by NetworkManager, but
+ *   is not available for use.  Reasons may include the wireless switched off,
+ *   missing firmware, no ethernet carrier, missing supplicant or modem manager,
+ *   etc.
+ * @NM_DEVICE_STATE_DISCONNECTED: the device can be activated, but is currently
+ *   idle and not connected to a network.
+ * @NM_DEVICE_STATE_PREPARE: the device is preparing the connection to the
+ *   network.  This may include operations like changing the MAC address,
+ *   setting physical link properties, and anything else required to connect
+ *   to the requested network.
+ * @NM_DEVICE_STATE_CONFIG: the device is connecting to the requested network.
+ *   This may include operations like associating with the WiFi AP, dialing
+ *   the modem, connecting to the remote Bluetooth device, etc.
+ * @NM_DEVICE_STATE_NEED_AUTH: the device requires more information to continue
+ *   connecting to the requested network.  This includes secrets like WiFi
+ *   passphrases, login passwords, PIN codes, etc.
+ * @NM_DEVICE_STATE_IP_CONFIG: the device is requesting IPv4 and/or IPv6
+ *   addresses and routing information from the network.
+ * @NM_DEVICE_STATE_IP_CHECK: the device is checking whether further action is
+ *   required for the requested network connection.  This may include checking
+ *   whether only local network access is available, whether a captive portal
+ *   is blocking access to the Internet, etc.
+ * @NM_DEVICE_STATE_SECONDARIES: the device is waiting for a secondary
+ *   connection (like a VPN) which must activated before the device can be
+ *   activated
+ * @NM_DEVICE_STATE_ACTIVATED: the device has a network connection, either local
+ *   or global.
+ * @NM_DEVICE_STATE_DEACTIVATING: a disconnection from the current network
+ *   connection was requested, and the device is cleaning up resources used for
+ *   that connection.  The network connection may still be valid.
+ * @NM_DEVICE_STATE_FAILED: the device failed to connect to the requested
+ *   network and is cleaning up the connection request
+ *
+ **/
+typedef enum {
+	NM_DEVICE_STATE_UNKNOWN      = 0,
+	NM_DEVICE_STATE_UNMANAGED    = 10,
+	NM_DEVICE_STATE_UNAVAILABLE  = 20,
+	NM_DEVICE_STATE_DISCONNECTED = 30,
+	NM_DEVICE_STATE_PREPARE      = 40,
+	NM_DEVICE_STATE_CONFIG       = 50,
+	NM_DEVICE_STATE_NEED_AUTH    = 60,
+	NM_DEVICE_STATE_IP_CONFIG    = 70,
+	NM_DEVICE_STATE_IP_CHECK     = 80,
+	NM_DEVICE_STATE_SECONDARIES  = 90,
+	NM_DEVICE_STATE_ACTIVATED    = 100,
+	NM_DEVICE_STATE_DEACTIVATING = 110,
+	NM_DEVICE_STATE_FAILED       = 120
 } NMDeviceState;
 
 
@@ -379,14 +417,23 @@ typedef enum {
 } NMDeviceStateReason;
 
 
+/**
+ * NMActiveConnectionState:
+ * @NM_ACTIVE_CONNECTION_STATE_UNKNOWN: the state of the connection is unknown
+ * @NM_ACTIVE_CONNECTION_STATE_ACTIVATING: a network connection is being prepared
+ * @NM_ACTIVE_CONNECTION_STATE_ACTIVATED: there is a connection to the network
+ * @NM_ACTIVE_CONNECTION_STATE_DEACTIVATING: the network connection is being
+ *   torn down and cleaned up
+ *
+ * #NMActiveConnectionState values indicate the state of a connection to a
+ * specific network while it is starting, connected, or disconnecting from that
+ * network.
+ */
 typedef enum {
 	NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0,
-
-	/* Indicates the connection is activating */
 	NM_ACTIVE_CONNECTION_STATE_ACTIVATING,
-
-	/* Indicates the connection is currently active */
-	NM_ACTIVE_CONNECTION_STATE_ACTIVATED
+	NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+	NM_ACTIVE_CONNECTION_STATE_DEACTIVATING
 } NMActiveConnectionState;
 
 #endif /* NETWORK_MANAGER_H */

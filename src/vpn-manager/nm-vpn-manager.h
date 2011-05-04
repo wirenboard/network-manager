@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include "nm-vpn-connection.h"
+
 #define NM_TYPE_VPN_MANAGER            (nm_vpn_manager_get_type ())
 #define NM_VPN_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_VPN_MANAGER, NMVPNManager))
 #define NM_VPN_MANAGER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), NM_TYPE_VPN_MANAGER, NMVPNManagerClass))
@@ -68,6 +69,8 @@ NMVPNManager *nm_vpn_manager_get (void);
 NMVPNConnection *nm_vpn_manager_activate_connection (NMVPNManager *manager,
                                                      NMConnection *connection,
                                                      NMDevice *device,
+                                                     gboolean user_requested,
+                                                     gulong user_uid,
                                                      GError **error);
 
 gboolean nm_vpn_manager_deactivate_connection (NMVPNManager *manager,
