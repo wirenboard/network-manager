@@ -1,4 +1,4 @@
-network-manager (0.8.999-1) UNRELEASED; urgency=low
+network-manager (0.8.999-1) experimental; urgency=low
 
   * New upstream release (0.9 rc2).
   * Refresh debian/patches/03-systemd.patch.
@@ -9,9 +9,7 @@ network-manager (0.8.999-1) UNRELEASED; urgency=low
     by default. This unit can be used to delay network.target until the
     network is actually up.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 21 Apr 2011 17:31:46 +0200
-
- -- Michael Biebl <biebl@debian.org>  Wed, 04 May 2011 21:36:00 +0200
+ -- Michael Biebl <biebl@debian.org>  Wed, 04 May 2011 22:56:20 +0200
 
 network-manager (0.8.998-1) experimental; urgency=low
 
