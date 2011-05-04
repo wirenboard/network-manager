@@ -65,6 +65,7 @@
  */
 static NMManager *manager = NULL;
 static GMainLoop *main_loop = NULL;
+static int quit_pipe[2] = { -1, -1 };
 
 typedef struct {
 	time_t time;
@@ -145,62 +146,62 @@ static gboolean quit_early = FALSE;
 static void
 nm_signal_handler (int signo)
 {
-	static int in_fatal = 0;
+	static int in_fatal = 0, x;
 
 	/* avoid loops */
 	if (in_fatal > 0)
 		return;
 	++in_fatal;
 
-	switch (signo)
-	{
-		case SIGSEGV:
-		case SIGBUS:
-		case SIGILL:
-		case SIGABRT:
-			nm_log_warn (LOGD_CORE, "caught signal %d. Generating backtrace...", signo);
-			nm_logging_backtrace ();
-			exit (1);
-			break;
-
-		case SIGFPE:
-		case SIGPIPE:
-			/* let the fatal signals interrupt us */
-			--in_fatal;
-
-			nm_log_warn (LOGD_CORE, "caught signal %d, shutting down abnormally. Generating backtrace...", signo);
-			nm_logging_backtrace ();
-			g_main_loop_quit (main_loop);
-			break;
-
-		case SIGINT:
-		case SIGTERM:
-			/* let the fatal signals interrupt us */
-			--in_fatal;
-
-			nm_log_info (LOGD_CORE, "caught signal %d, shutting down normally.", signo);
-			quit_early = TRUE;
-			g_main_loop_quit (main_loop);
-			break;
-
-		case SIGHUP:
-			--in_fatal;
-			/* FIXME:
-			 * Reread config stuff like system config files, VPN service files, etc
-			 */
-			break;
-
-		case SIGUSR1:
-			--in_fatal;
-			/* FIXME:
-			 * Play with log levels or something
-			 */
-			break;
-
-		default:
-			signal (signo, nm_signal_handler);
-			break;
+	switch (signo) {
+	case SIGSEGV:
+	case SIGBUS:
+	case SIGILL:
+	case SIGABRT:
+		nm_log_warn (LOGD_CORE, "caught signal %d. Generating backtrace...", signo);
+		nm_logging_backtrace ();
+		exit (1);
+		break;
+	case SIGFPE:
+	case SIGPIPE:
+		/* let the fatal signals interrupt us */
+		--in_fatal;
+		nm_log_warn (LOGD_CORE, "caught signal %d, shutting down abnormally. Generating backtrace...", signo);
+		nm_logging_backtrace ();
+		x = write (quit_pipe[1], "X", 1);
+		break;
+	case SIGINT:
+	case SIGTERM:
+		/* let the fatal signals interrupt us */
+		--in_fatal;
+		nm_log_info (LOGD_CORE, "caught signal %d, shutting down normally.", signo);
+		quit_early = TRUE;
+		x = write (quit_pipe[1], "X", 1);
+		break;
+	case SIGHUP:
+		--in_fatal;
+		/* Reread config stuff like system config files, VPN service files, etc */
+		break;
+	case SIGUSR1:
+		--in_fatal;
+		/* Play with log levels or something */
+		break;
+	default:
+		signal (signo, nm_signal_handler);
+		break;
 	}
+}
+
+static gboolean
+quit_watch (GIOChannel *src, GIOCondition condition, gpointer user_data)
+{
+
+	if (condition & G_IO_IN) {
+		nm_log_warn (LOGD_CORE, "quit request received, terminating...");
+		g_main_loop_quit (main_loop);
+	}
+
+	return FALSE;
 }
 
 static void
@@ -208,6 +209,17 @@ setup_signals (void)
 {
 	struct sigaction action;
 	sigset_t mask;
+	GIOChannel *quit_channel;
+
+	/* Set up our quit pipe */
+	if (pipe (quit_pipe) < 0) {
+		fprintf (stderr, "Failed to initialze SIGTERM pipe: %d", errno);
+		exit (1);
+	}
+	fcntl (quit_pipe[1], F_SETFL, O_NONBLOCK | fcntl (quit_pipe[1], F_GETFL));
+
+	quit_channel = g_io_channel_unix_new (quit_pipe[0]);
+	g_io_add_watch_full (quit_channel, G_PRIORITY_HIGH, G_IO_IN | G_IO_ERR, quit_watch, NULL, NULL);
 
 	sigemptyset (&mask);
 	action.sa_handler = nm_signal_handler;
@@ -462,7 +474,7 @@ main (int argc, char *argv[])
 	char *log_level = NULL, *log_domains = NULL;
 	char **dns = NULL;
 	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE, wimax_enabled = TRUE;
-	gboolean success;
+	gboolean success, show_version = FALSE;
 	NMPolicy *policy = NULL;
 	NMVPNManager *vpn_manager = NULL;
 	NMDnsManager *dns_mgr = NULL;
@@ -475,6 +487,7 @@ main (int argc, char *argv[])
 	char *cfg_log_level = NULL, *cfg_log_domains = NULL;
 
 	GOptionEntry options[] = {
+		{ "version", 0, 0, G_OPTION_ARG_NONE, &show_version, "Print NetworkManager version and exit", NULL },
 		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &become_daemon, "Don't become a daemon", NULL },
 		{ "g-fatal-warnings", 0, 0, G_OPTION_ARG_NONE, &g_fatal_warnings, "Make all warnings fatal", NULL },
 		{ "pid-file", 0, 0, G_OPTION_ARG_FILENAME, &pidfile, "Specify the location of a PID file", "filename" },
@@ -483,15 +496,13 @@ main (int argc, char *argv[])
 		{ "plugins", 0, 0, G_OPTION_ARG_STRING, &plugins, "List of plugins separated by ','", "plugin1,plugin2" },
 		{ "log-level", 0, 0, G_OPTION_ARG_STRING, &log_level, "Log level: one of [ERR, WARN, INFO, DEBUG]", "INFO" },
 		{ "log-domains", 0, 0, G_OPTION_ARG_STRING, &log_domains,
-		        "Log domains separated by ',': any combination of [NONE,HW,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,WIFI_SCAN,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,SUPPLICANT,USER_SET,SYS_SET,SUSPEND,CORE,DEVICE,OLPC]",
+		        "Log domains separated by ',': any combination of\n"
+		        "                                          [NONE,HW,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,\n"
+		        "                                           WIFI_SCAN,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,SUPPLICANT,\n"
+		        "                                           AGENTS,SETTINGS,SUSPEND,CORE,DEVICE,OLPC,WIMAX]",
 		        "HW,RFKILL,WIFI" },
 		{NULL}
 	};
-
-	if (getuid () != 0) {
-		fprintf (stderr, "You must be root to run NetworkManager!\n");
-		exit (1);
-	}
 
 	if (!g_module_supported ()) {
 		fprintf (stderr, "GModules are not supported on your platform!\n");
@@ -517,6 +528,16 @@ main (int argc, char *argv[])
 
 	if (!success) {
 		fprintf (stderr, _("Invalid option.  Please use --help to see a list of valid options.\n"));
+		exit (1);
+	}
+
+	if (show_version) {
+		fprintf (stdout, NM_DIST_VERSION "\n");
+		exit (0);
+	}
+
+	if (getuid () != 0) {
+		fprintf (stderr, "You must be root to run NetworkManager!\n");
 		exit (1);
 	}
 

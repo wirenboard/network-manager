@@ -113,6 +113,10 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
+CXXDEPMODE = @CXXDEPMODE@
+CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
@@ -230,6 +234,8 @@ POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+QT_CFLAGS = @QT_CFLAGS@
+QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 RESOLVCONF_PATH = @RESOLVCONF_PATH@
 SED = @SED@
@@ -251,6 +257,7 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
+ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -304,8 +311,7 @@ INCLUDES = \
 	-I${top_srcdir}/libnm-util \
 	-I${top_srcdir}/src \
 	-I${top_srcdir}/src/logging \
-	-I${top_builddir}/marshallers \
-	-I$(top_srcdir)/src/nm-bluez-manager
+	-I${top_builddir}/marshallers
 
 noinst_LTLIBRARIES = libbluez-manager.la
 libbluez_manager_la_SOURCES = \

@@ -174,6 +174,10 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
+CXXDEPMODE = @CXXDEPMODE@
+CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
@@ -291,6 +295,8 @@ POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+QT_CFLAGS = @QT_CFLAGS@
+QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 RESOLVCONF_PATH = @RESOLVCONF_PATH@
 SED = @SED@
@@ -312,6 +318,7 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
+ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -942,6 +949,9 @@ uninstall-am:
 
 # Another CA certificate
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_ca_cert.pem
+
+# Normal CA certificate (DER format)
+@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.der
 
 # CA certificate without an ending newline
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/ca-no-ending-newline.pem

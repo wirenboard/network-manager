@@ -58,6 +58,10 @@ EXTRA_DIST = \
 	route-test-wired-static-routes \
 	ifcfg-test-wired-static-routes-legacy \
 	route-test-wired-static-routes-legacy \
+	ifcfg-test-wired-ipv4-manual-1 \
+	ifcfg-test-wired-ipv4-manual-2 \
+	ifcfg-test-wired-ipv4-manual-3 \
+	ifcfg-test-wired-ipv4-manual-4 \
 	ifcfg-test-wired-ipv6-manual \
 	route6-test-wired-ipv6-manual \
 	ifcfg-test-wired-static-no-prefix-8 \
@@ -71,6 +75,7 @@ EXTRA_DIST = \
 	ifcfg-test-wifi-wep-104-ascii \
 	keys-test-wifi-wep-104-ascii \
 	ifcfg-test-wired-qeth-static \
+	ifcfg-test-wired-ctc-static \
 	ifcfg-test-bridge-main \
 	ifcfg-test-bridge-component \
 	ifcfg-test-vlan-interface \

@@ -2,6 +2,7 @@
 <FILE>nm-active-connection</FILE>
 <TITLE>NMActiveConnection</TITLE>
 NM_ACTIVE_CONNECTION_CONNECTION
+NM_ACTIVE_CONNECTION_UUID
 NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT
 NM_ACTIVE_CONNECTION_DEVICES
 NM_ACTIVE_CONNECTION_STATE
@@ -11,6 +12,7 @@ NMActiveConnection
 NMActiveConnectionClass
 nm_active_connection_new
 nm_active_connection_get_connection
+nm_active_connection_get_uuid
 nm_active_connection_get_specific_object
 nm_active_connection_get_devices
 nm_active_connection_get_state
@@ -47,6 +49,7 @@ nm_remote_settings_get_type
 nm_remote_settings_new
 nm_remote_settings_list_connections
 nm_remote_settings_get_connection_by_path
+nm_remote_settings_get_connection_by_uuid
 nm_remote_settings_add_connection
 nm_remote_settings_save_hostname
 <SUBSECTION Standard>
@@ -271,6 +274,7 @@ nm_access_point_get_mode
 nm_access_point_get_max_bitrate
 nm_access_point_get_strength
 nm_access_point_filter_connections
+nm_access_point_connection_valid
 nm_access_point_get_hw_address
 <SUBSECTION Standard>
 NM_ACCESS_POINT
@@ -321,6 +325,7 @@ nm_device_get_vendor
 NMDeviceDeactivateFn
 nm_device_disconnect
 nm_device_filter_connections
+nm_device_connection_valid
 <SUBSECTION Standard>
 NM_DEVICE
 NM_IS_DEVICE
@@ -469,6 +474,7 @@ nm_wimax_nsp_get_name
 nm_wimax_nsp_get_signal_quality
 nm_wimax_nsp_get_network_type
 nm_wimax_nsp_filter_connections
+nm_wimax_nsp_connection_valid
 <SUBSECTION Standard>
 NM_WIMAX_NSP
 NM_IS_WIMAX_NSP

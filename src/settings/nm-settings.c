@@ -91,6 +91,11 @@ static gboolean impl_settings_list_connections (NMSettings *self,
                                                 GPtrArray **connections,
                                                 GError **error);
 
+static gboolean impl_settings_get_connection_by_uuid (NMSettings *self,
+                                                      const char *uuid,
+                                                      char **out_object_path,
+                                                      GError **error);
+
 static void impl_settings_add_connection (NMSettings *self,
                                           GHashTable *settings,
                                           DBusGMethodInvocation *context);
@@ -220,6 +225,38 @@ impl_settings_list_connections (NMSettings *self,
 	while (g_hash_table_iter_next (&iter, &key, NULL))
 		g_ptr_array_add (*connections, g_strdup ((const char *) key));
 	return TRUE;
+}
+
+static gboolean
+impl_settings_get_connection_by_uuid (NMSettings *self,
+                                      const char *uuid,
+                                      char **out_object_path,
+                                      GError **error)
+{
+	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+	GHashTableIter iter;
+	NMConnection *candidate = NULL;
+	gboolean found = FALSE;
+
+	load_connections (self);
+
+	g_hash_table_iter_init (&iter, priv->connections);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &candidate)) {
+		if (g_strcmp0 (uuid, nm_connection_get_uuid (candidate)) == 0) {
+			*out_object_path = g_strdup (nm_connection_get_path (candidate));
+			found = TRUE;
+			break;
+		}
+	}
+
+	if (!found) {
+		g_set_error_literal (error,
+		                     NM_SETTINGS_ERROR,
+		                     NM_SETTINGS_ERROR_INVALID_CONNECTION,
+		                     "No connection with the UUID was found.");
+	}
+
+	return found;
 }
 
 static int
@@ -1099,19 +1136,19 @@ have_connection_for_device (NMSettings *self, GByteArray *mac)
 	g_hash_table_iter_init (&iter, priv->connections);
 	while (g_hash_table_iter_next (&iter, NULL, &data)) {
 		NMConnection *connection = NM_CONNECTION (data);
-		const char *connection_type;
+		const char *ctype;
 
-		s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
-		connection_type = nm_setting_connection_get_connection_type (s_con);
+		s_con = nm_connection_get_setting_connection (connection);
+		ctype = nm_setting_connection_get_connection_type (s_con);
 
-		if (   strcmp (connection_type, NM_SETTING_WIRED_SETTING_NAME)
-		    && strcmp (connection_type, NM_SETTING_PPPOE_SETTING_NAME))
+		if (   strcmp (ctype, NM_SETTING_WIRED_SETTING_NAME)
+		    && strcmp (ctype, NM_SETTING_PPPOE_SETTING_NAME))
 			continue;
 
-		s_wired = (NMSettingWired *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRED);
+		s_wired = nm_connection_get_setting_wired (connection);
 
 		/* No wired setting; therefore the PPPoE connection applies to any device */
-		if (!s_wired && !strcmp (connection_type, NM_SETTING_PPPOE_SETTING_NAME)) {
+		if (!s_wired && !strcmp (ctype, NM_SETTING_PPPOE_SETTING_NAME)) {
 			ret = TRUE;
 			break;
 		}

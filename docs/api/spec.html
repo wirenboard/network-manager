@@ -121,6 +121,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </div><div><h4>Returns</h4><dl><dt><code>devices</code> -
       <code>ao</code></dt><dd>
           List of object paths of network devices known to the system.
+        </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.GetDeviceByIpIface" id="org.freedesktop.NetworkManager.GetDeviceByIpIface">GetDeviceByIpIface</a> (
+        s: iface
+        ) &#8594;
+        o</h3><div class="docstring">
+        Return the object path of the network device referenced by its IP
+        interface name.  Note that some devices (usually modems) only have an
+        IP interface name when they are connected.
+      </div><div><h4>Parameters</h4><dl><dt><code>iface</code> -
+      <code>s</code></dt><dd>
+          Interface name of the device to find.
+        </dd></dl></div><div><h4>Returns</h4><dl><dt><code>device</code> -
+      <code>o</code></dt><dd>
+          Object path of the network device.
         </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.ActivateConnection" id="org.freedesktop.NetworkManager.ActivateConnection">ActivateConnection</a> (
         o: connection, o: device, o: specific_object
         ) &#8594;
@@ -960,6 +973,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       </div><div><h4>Returns</h4><dl><dt><code>connections</code> -
       <code>ao</code></dt><dd>
           List of connections.
+        </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.Settings.GetConnectionByUuid" id="org.freedesktop.NetworkManager.Settings.GetConnectionByUuid">GetConnectionByUuid</a> (
+        s: uuid
+        ) &#8594;
+        o</h3><div class="docstring">
+        Retrieve the object path of a connection, given that connection's UUID.
+      </div><div><h4>Parameters</h4><dl><dt><code>uuid</code> -
+      <code>s</code></dt><dd>
+          The UUID to find the connection object path for.
+        </dd></dl></div><div><h4>Returns</h4><dl><dt><code>connection</code> -
+      <code>o</code></dt><dd>
+          The connection's object path.
         </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.Settings.AddConnection" id="org.freedesktop.NetworkManager.Settings.AddConnection">AddConnection</a> (
         a{sa{sv}}: connection
         ) &#8594;
@@ -1080,7 +1104,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>o</code> -
       <code>(read)</code></dt><dd>The path of the connection.</dd><dt><code>SpecificObject</code> -
       <code>o</code> -
-      <code>(read)</code></dt><dd>A specific object associated with the active connection.</dd><dt><code>Devices</code> -
+      <code>(read)</code></dt><dd>A specific object associated with the active connection.</dd><dt><code>Uuid</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The UUID of the connection, provided as a convenience so that clients
+        do not have to retrieve all connection details.
+      </dd><dt><code>Devices</code> -
       <code>ao</code> -
       <code>(read)</code></dt><dd>Array of object paths representing devices which are part of this active connection.</dd><dt><code>State</code> -
       <code>u</code> -

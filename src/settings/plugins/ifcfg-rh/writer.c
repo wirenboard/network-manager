@@ -354,6 +354,7 @@ write_object (NMSetting8021x *s_8021x,
 		success = write_secret_file (new_file, (const char *) blob->data, blob->len, &write_error);
 		if (success) {
 			svSetValue (ifcfg, objtype->ifcfg_key, new_file, FALSE);
+			g_free (new_file);
 			return TRUE;
 		} else {
 			g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
@@ -884,6 +885,38 @@ write_wireless_setting (NMConnection *connection,
 	if (nm_setting_wireless_get_security (s_wireless)) {
 		if (!write_wireless_security_setting (connection, ifcfg, adhoc, no_8021x, error))
 			return FALSE;
+	} else {
+		char *keys_path;
+
+		/* Clear out wifi security keys */
+		svSetValue (ifcfg, "KEY_MGMT", NULL, FALSE);
+		svSetValue (ifcfg, "IEEE_8021X_IDENTITY", NULL, FALSE);
+		set_secret (ifcfg, "IEEE_8021X_PASSWORD", NULL, "IEEE_8021X_PASSWORD_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
+		svSetValue (ifcfg, "SECURITYMODE", NULL, FALSE);
+
+		/* Clear existing keys */
+		set_secret (ifcfg, "KEY", NULL, "WEP_KEY_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
+		for (i = 0; i < 4; i++) {
+			tmp = g_strdup_printf ("KEY_PASSPHRASE%d", i + 1);
+			set_secret (ifcfg, tmp, NULL, "WEP_KEY_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
+			g_free (tmp);
+	
+			tmp = g_strdup_printf ("KEY%d", i + 1);
+			set_secret (ifcfg, tmp, NULL, "WEP_KEY_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
+			g_free (tmp);
+		}
+
+		svSetValue (ifcfg, "DEFAULTKEY", NULL, FALSE);
+		svSetValue (ifcfg, "WPA_ALLOW_WPA", NULL, FALSE);
+		svSetValue (ifcfg, "WPA_ALLOW_WPA2", NULL, FALSE);
+		svSetValue (ifcfg, "CIPHER_PAIRWISE", NULL, FALSE);
+		svSetValue (ifcfg, "CIPHER_GROUP", NULL, FALSE);
+		set_secret (ifcfg, "WPA_PSK", NULL, "WPA_PSK_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
+
+		/* Kill any old keys file */
+		keys_path = utils_get_keys_path (ifcfg->fileName);
+		(void) unlink (keys_path);
+		g_free (keys_path);
 	}
 
 	svSetValue (ifcfg, "TYPE", TYPE_WIRELESS, FALSE);
@@ -897,7 +930,7 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	NMSettingWired *s_wired;
 	const GByteArray *device_mac, *cloned_mac;
 	char *tmp;
-	const char *nettype, *portname, *s390_key, *s390_val;
+	const char *nettype, *portname, *ctcprot, *s390_key, *s390_val;
 	guint32 mtu, num_opts, i;
 	const GPtrArray *s390_subchannels;
 	GString *str;
@@ -964,6 +997,11 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	if (portname)
 		svSetValue (ifcfg, "PORTNAME", portname, FALSE);
 
+	svSetValue (ifcfg, "CTCPROT", NULL, FALSE);
+	ctcprot = nm_setting_wired_get_s390_option_by_key (s_wired, "ctcprot");
+	if (ctcprot)
+		svSetValue (ifcfg, "CTCPROT", ctcprot, FALSE);
+
 	svSetValue (ifcfg, "OPTIONS", NULL, FALSE);
 	num_opts = nm_setting_wired_get_num_s390_options (s_wired);
 	if (s390_subchannels && num_opts) {
@@ -972,7 +1010,7 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 			nm_setting_wired_get_s390_option (s_wired, i, &s390_key, &s390_val);
 
 			/* portname is handled separately */
-			if (!strcmp (s390_key, "portname"))
+			if (!strcmp (s390_key, "portname") || !strcmp (s390_key, "ctcprot"))
 				continue;
 
 			if (str->len)
@@ -1090,6 +1128,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	const char *value;
 	char *addr_key, *prefix_key, *netmask_key, *gw_key, *metric_key, *tmp;
 	char *route_path = NULL;
+	gint32 j;
 	guint32 i, num;
 	GString *searches;
 	gboolean success = FALSE;
@@ -1109,20 +1148,28 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 
 		/* IPv4 disabled, clear IPv4 related parameters */
 		svSetValue (ifcfg, "BOOTPROTO", NULL, FALSE);
-		for (i = 0; i < 254; i++) {
-			if (i == 0) {
+		for (j = -1; j < 256; j++) {
+			if (j == -1) {
 				addr_key = g_strdup ("IPADDR");
 				prefix_key = g_strdup ("PREFIX");
+				netmask_key = g_strdup ("NETMASK");
 				gw_key = g_strdup ("GATEWAY");
 			} else {
-				addr_key = g_strdup_printf ("IPADDR%d", i + 1);
-				prefix_key = g_strdup_printf ("PREFIX%d", i + 1);
-				gw_key = g_strdup_printf ("GATEWAY%d", i + 1);
+				addr_key = g_strdup_printf ("IPADDR%d", j);
+				prefix_key = g_strdup_printf ("PREFIX%d", j);
+				netmask_key = g_strdup_printf ("NETMASK%d", j);
+				gw_key = g_strdup_printf ("GATEWAY%d", j);
 			}
 
 			svSetValue (ifcfg, addr_key, NULL, FALSE);
 			svSetValue (ifcfg, prefix_key, NULL, FALSE);
+			svSetValue (ifcfg, netmask_key, NULL, FALSE);
 			svSetValue (ifcfg, gw_key, NULL, FALSE);
+
+			g_free (addr_key);
+			g_free (prefix_key);
+			g_free (netmask_key);
+			g_free (gw_key);
 		}
 
 		route_path = utils_get_route_path (ifcfg->fileName);
@@ -1146,25 +1193,27 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	else if (!strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED))
 		svSetValue (ifcfg, "BOOTPROTO", "shared", FALSE);
 
+	/* Write out IPADDR0 .. IPADDR255, PREFIX0 .. PREFIX255, GATEWAY0 .. GATEWAY255
+	 * Possible NETMASK<n> is removed only (it's obsolete) */
 	num = nm_setting_ip4_config_get_num_addresses (s_ip4);
-	for (i = 0; i < 254; i++) {
-		char buf[INET_ADDRSTRLEN + 1];
+	svSetValue (ifcfg, "IPADDR", NULL, FALSE);
+	svSetValue (ifcfg, "PREFIX", NULL, FALSE);
+	svSetValue (ifcfg, "NETMASK", NULL, FALSE);
+	svSetValue (ifcfg, "GATEWAY", NULL, FALSE);
+	for (i = 0; i < 256; i++) {
+		char buf[INET_ADDRSTRLEN];
 		NMIP4Address *addr;
 		guint32 ip;
 
-		if (i == 0) {
-			addr_key = g_strdup ("IPADDR");
-			prefix_key = g_strdup ("PREFIX");
-			gw_key = g_strdup ("GATEWAY");
-		} else {
-			addr_key = g_strdup_printf ("IPADDR%d", i + 1);
-			prefix_key = g_strdup_printf ("PREFIX%d", i + 1);
-			gw_key = g_strdup_printf ("GATEWAY%d", i + 1);
-		}
+		addr_key = g_strdup_printf ("IPADDR%d", i);
+		prefix_key = g_strdup_printf ("PREFIX%d", i);
+		netmask_key = g_strdup_printf ("NETMASK%d", i);
+		gw_key = g_strdup_printf ("GATEWAY%d", i);
 
 		if (i >= num) {
 			svSetValue (ifcfg, addr_key, NULL, FALSE);
 			svSetValue (ifcfg, prefix_key, NULL, FALSE);
+			svSetValue (ifcfg, netmask_key, NULL, FALSE);
 			svSetValue (ifcfg, gw_key, NULL, FALSE);
 		} else {
 			addr = nm_setting_ip4_config_get_address (s_ip4, i);
@@ -1189,6 +1238,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 
 		g_free (addr_key);
 		g_free (prefix_key);
+		g_free (netmask_key);
 		g_free (gw_key);
 	}
 

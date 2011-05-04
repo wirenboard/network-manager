@@ -69,6 +69,9 @@ struct              <a class="link" href="NMRemoteSettings.html#NMRemoteSettings
 <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> *  <a class="link" href="NMRemoteSettings.html#nm-remote-settings-get-connection-by-path" title="nm_remote_settings_get_connection_by_path ()">nm_remote_settings_get_connection_by_path</a>
                                                         (<em class="parameter"><code><a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> *settings</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
+<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> * <a class="link" href="NMRemoteSettings.html#nm-remote-settings-get-connection-by-uuid" title="nm_remote_settings_get_connection_by_uuid ()">nm_remote_settings_get_connection_by_uuid</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> *settings</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *uuid</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMRemoteSettings.html#nm-remote-settings-add-connection" title="nm_remote_settings_add_connection ()">nm_remote_settings_add_connection</a>   (<em class="parameter"><code><a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> *settings</code></em>,
                                                          <em class="parameter"><code><span class="type">NMConnection</span> *connection</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMRemoteSettings.html#NMRemoteSettingsAddConnectionFunc" title="NMRemoteSettingsAddConnectionFunc ()"><span class="type">NMRemoteSettingsAddConnectionFunc</span></a> callback</code></em>,
@@ -347,6 +350,36 @@ Returns the <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnec
 <tr>
 <td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
 <td>the D-Bus object path of the remote connection</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the remote connection object on success, or NULL if the object was
+not known. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-remote-settings-get-connection-by-uuid"></a><h3>nm_remote_settings_get_connection_by_uuid ()</h3>
+<pre class="programlisting"><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> * nm_remote_settings_get_connection_by_uuid
+                                                        (<em class="parameter"><code><a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> *settings</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *uuid</code></em>);</pre>
+<p>
+Returns the <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><code class="literal">NMRemoteConnection</code></a> identified by <em class="parameter"><code>uuid</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>settings</code></em> :</span></p></td>
+<td>the <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><code class="literal">NMRemoteSettings</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>uuid</code></em> :</span></p></td>
+<td>the UUID of the remote connection</td>
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>

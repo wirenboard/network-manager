@@ -162,7 +162,7 @@ setting_register (const char *name, GType type)
 	g_hash_table_insert (registered_settings, g_strdup (name), g_strdup (g_type_name (type)));
 }
 
-#if UNUSED
+#if 0
 static void
 setting_unregister (const char *name)
 {
@@ -897,7 +897,7 @@ nm_connection_need_secrets (NMConnection *connection,
 	NMConnectionPrivate *priv;
 	GSList *settings = NULL;
 	GSList *iter;
-	char *name = NULL;
+	const char *name = NULL;
 
 	g_return_val_if_fail (connection != NULL, NULL);
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
@@ -923,7 +923,7 @@ nm_connection_need_secrets (NMConnection *connection,
 			else
 				g_ptr_array_free (secrets, TRUE);
 
-			name = (char *) nm_setting_get_name (setting);
+			name = nm_setting_get_name (setting);
 			break;
 		}
 	}

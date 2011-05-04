@@ -87,6 +87,7 @@
     <keyword type="signal" name="The &quot;device-removed&quot; signal" link="NMClient.html#NMClient-device-removed"/>
     <keyword type="signal" name="The &quot;permission-changed&quot; signal" link="NMClient.html#NMClient-permission-changed"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_CONNECTION" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_ACTIVE_CONNECTION_UUID" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-UUID:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_DEVICES" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEVICES:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_STATE" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-STATE:CAPS"/>
@@ -96,6 +97,7 @@
     <keyword type="struct" name="NMActiveConnectionClass" link="NMActiveConnection.html#NMActiveConnectionClass"/>
     <keyword type="function" name="nm_active_connection_new ()" link="NMActiveConnection.html#nm-active-connection-new"/>
     <keyword type="function" name="nm_active_connection_get_connection ()" link="NMActiveConnection.html#nm-active-connection-get-connection"/>
+    <keyword type="function" name="nm_active_connection_get_uuid ()" link="NMActiveConnection.html#nm-active-connection-get-uuid"/>
     <keyword type="function" name="nm_active_connection_get_specific_object ()" link="NMActiveConnection.html#nm-active-connection-get-specific-object"/>
     <keyword type="function" name="nm_active_connection_get_devices ()" link="NMActiveConnection.html#nm-active-connection-get-devices"/>
     <keyword type="function" name="nm_active_connection_get_state ()" link="NMActiveConnection.html#nm-active-connection-get-state"/>
@@ -143,6 +145,7 @@
     <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
     <keyword type="function" name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
     <keyword type="function" name="nm_device_filter_connections ()" link="NMDevice.html#nm-device-filter-connections"/>
+    <keyword type="function" name="nm_device_connection_valid ()" link="NMDevice.html#nm-device-connection-valid"/>
     <keyword type="property" name="The &quot;capabilities&quot; property" link="NMDevice.html#NMDevice--capabilities"/>
     <keyword type="property" name="The &quot;device-type&quot; property" link="NMDevice.html#NMDevice--device-type"/>
     <keyword type="property" name="The &quot;dhcp4-config&quot; property" link="NMDevice.html#NMDevice--dhcp4-config"/>
@@ -258,6 +261,7 @@
     <keyword type="function" name="nm_wimax_nsp_get_signal_quality ()" link="NMWimaxNsp.html#nm-wimax-nsp-get-signal-quality"/>
     <keyword type="function" name="nm_wimax_nsp_get_network_type ()" link="NMWimaxNsp.html#nm-wimax-nsp-get-network-type"/>
     <keyword type="function" name="nm_wimax_nsp_filter_connections ()" link="NMWimaxNsp.html#nm-wimax-nsp-filter-connections"/>
+    <keyword type="function" name="nm_wimax_nsp_connection_valid ()" link="NMWimaxNsp.html#nm-wimax-nsp-connection-valid"/>
     <keyword type="property" name="The &quot;name&quot; property" link="NMWimaxNsp.html#NMWimaxNsp--name"/>
     <keyword type="property" name="The &quot;network-type&quot; property" link="NMWimaxNsp.html#NMWimaxNsp--network-type"/>
     <keyword type="property" name="The &quot;signal-quality&quot; property" link="NMWimaxNsp.html#NMWimaxNsp--signal-quality"/>
@@ -284,6 +288,7 @@
     <keyword type="function" name="nm_access_point_get_max_bitrate ()" link="NMAccessPoint.html#nm-access-point-get-max-bitrate"/>
     <keyword type="function" name="nm_access_point_get_strength ()" link="NMAccessPoint.html#nm-access-point-get-strength"/>
     <keyword type="function" name="nm_access_point_filter_connections ()" link="NMAccessPoint.html#nm-access-point-filter-connections"/>
+    <keyword type="function" name="nm_access_point_connection_valid ()" link="NMAccessPoint.html#nm-access-point-connection-valid"/>
     <keyword type="function" name="nm_access_point_get_hw_address ()" link="NMAccessPoint.html#nm-access-point-get-hw-address" deprecated="0.9: Use nm_access_point_get_bssid() instead."/>
     <keyword type="property" name="The &quot;bssid&quot; property" link="NMAccessPoint.html#NMAccessPoint--bssid"/>
     <keyword type="property" name="The &quot;flags&quot; property" link="NMAccessPoint.html#NMAccessPoint--flags"/>
@@ -384,6 +389,7 @@
     <keyword type="function" name="nm_remote_settings_new ()" link="NMRemoteSettings.html#nm-remote-settings-new"/>
     <keyword type="function" name="nm_remote_settings_list_connections ()" link="NMRemoteSettings.html#nm-remote-settings-list-connections"/>
     <keyword type="function" name="nm_remote_settings_get_connection_by_path ()" link="NMRemoteSettings.html#nm-remote-settings-get-connection-by-path"/>
+    <keyword type="function" name="nm_remote_settings_get_connection_by_uuid ()" link="NMRemoteSettings.html#nm-remote-settings-get-connection-by-uuid"/>
     <keyword type="function" name="nm_remote_settings_add_connection ()" link="NMRemoteSettings.html#nm-remote-settings-add-connection"/>
     <keyword type="function" name="nm_remote_settings_save_hostname ()" link="NMRemoteSettings.html#nm-remote-settings-save-hostname"/>
     <keyword type="property" name="The &quot;bus&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--bus"/>

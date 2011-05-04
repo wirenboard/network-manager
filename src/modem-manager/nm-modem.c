@@ -86,14 +86,6 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-NMPPPManager *
-nm_modem_get_ppp_manager (NMModem *self)
-{
-	g_return_val_if_fail (NM_IS_MODEM (self), NULL);
-
-	return NM_MODEM_GET_PRIVATE (self)->ppp_manager;
-}
-
 gboolean
 nm_modem_get_mm_enabled (NMModem *self)
 {
@@ -666,12 +658,13 @@ real_deactivate (NMModem *self, NMDevice *device)
 
 	priv->in_bytes = priv->out_bytes = 0;
 
+	if (priv->ppp_manager) {
+		g_object_unref (priv->ppp_manager);
+		priv->ppp_manager = NULL;
+	}
+
 	switch (priv->ip_method) {
 	case MM_MODEM_IP_METHOD_PPP:
-		if (priv->ppp_manager) {
-			g_object_unref (priv->ppp_manager);
-			priv->ppp_manager = NULL;
-		}
 		break;
 	case MM_MODEM_IP_METHOD_STATIC:
 	case MM_MODEM_IP_METHOD_DHCP:

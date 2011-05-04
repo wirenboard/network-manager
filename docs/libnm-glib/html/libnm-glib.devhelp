@@ -87,6 +87,7 @@
     <function name="The &quot;device-removed&quot; signal" link="NMClient.html#NMClient-device-removed"/>
     <function name="The &quot;permission-changed&quot; signal" link="NMClient.html#NMClient-permission-changed"/>
     <function name="NM_ACTIVE_CONNECTION_CONNECTION" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-CONNECTION:CAPS"/>
+    <function name="NM_ACTIVE_CONNECTION_UUID" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-UUID:CAPS"/>
     <function name="NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS"/>
     <function name="NM_ACTIVE_CONNECTION_DEVICES" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEVICES:CAPS"/>
     <function name="NM_ACTIVE_CONNECTION_STATE" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-STATE:CAPS"/>
@@ -96,6 +97,7 @@
     <function name="NMActiveConnectionClass" link="NMActiveConnection.html#NMActiveConnectionClass"/>
     <function name="nm_active_connection_new ()" link="NMActiveConnection.html#nm-active-connection-new"/>
     <function name="nm_active_connection_get_connection ()" link="NMActiveConnection.html#nm-active-connection-get-connection"/>
+    <function name="nm_active_connection_get_uuid ()" link="NMActiveConnection.html#nm-active-connection-get-uuid"/>
     <function name="nm_active_connection_get_specific_object ()" link="NMActiveConnection.html#nm-active-connection-get-specific-object"/>
     <function name="nm_active_connection_get_devices ()" link="NMActiveConnection.html#nm-active-connection-get-devices"/>
     <function name="nm_active_connection_get_state ()" link="NMActiveConnection.html#nm-active-connection-get-state"/>
@@ -143,6 +145,7 @@
     <function name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
     <function name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
     <function name="nm_device_filter_connections ()" link="NMDevice.html#nm-device-filter-connections"/>
+    <function name="nm_device_connection_valid ()" link="NMDevice.html#nm-device-connection-valid"/>
     <function name="The &quot;capabilities&quot; property" link="NMDevice.html#NMDevice--capabilities"/>
     <function name="The &quot;device-type&quot; property" link="NMDevice.html#NMDevice--device-type"/>
     <function name="The &quot;dhcp4-config&quot; property" link="NMDevice.html#NMDevice--dhcp4-config"/>
@@ -258,6 +261,7 @@
     <function name="nm_wimax_nsp_get_signal_quality ()" link="NMWimaxNsp.html#nm-wimax-nsp-get-signal-quality"/>
     <function name="nm_wimax_nsp_get_network_type ()" link="NMWimaxNsp.html#nm-wimax-nsp-get-network-type"/>
     <function name="nm_wimax_nsp_filter_connections ()" link="NMWimaxNsp.html#nm-wimax-nsp-filter-connections"/>
+    <function name="nm_wimax_nsp_connection_valid ()" link="NMWimaxNsp.html#nm-wimax-nsp-connection-valid"/>
     <function name="The &quot;name&quot; property" link="NMWimaxNsp.html#NMWimaxNsp--name"/>
     <function name="The &quot;network-type&quot; property" link="NMWimaxNsp.html#NMWimaxNsp--network-type"/>
     <function name="The &quot;signal-quality&quot; property" link="NMWimaxNsp.html#NMWimaxNsp--signal-quality"/>
@@ -284,6 +288,7 @@
     <function name="nm_access_point_get_max_bitrate ()" link="NMAccessPoint.html#nm-access-point-get-max-bitrate"/>
     <function name="nm_access_point_get_strength ()" link="NMAccessPoint.html#nm-access-point-get-strength"/>
     <function name="nm_access_point_filter_connections ()" link="NMAccessPoint.html#nm-access-point-filter-connections"/>
+    <function name="nm_access_point_connection_valid ()" link="NMAccessPoint.html#nm-access-point-connection-valid"/>
     <function name="nm_access_point_get_hw_address ()" link="NMAccessPoint.html#nm-access-point-get-hw-address"/>
     <function name="The &quot;bssid&quot; property" link="NMAccessPoint.html#NMAccessPoint--bssid"/>
     <function name="The &quot;flags&quot; property" link="NMAccessPoint.html#NMAccessPoint--flags"/>
@@ -384,6 +389,7 @@
     <function name="nm_remote_settings_new ()" link="NMRemoteSettings.html#nm-remote-settings-new"/>
     <function name="nm_remote_settings_list_connections ()" link="NMRemoteSettings.html#nm-remote-settings-list-connections"/>
     <function name="nm_remote_settings_get_connection_by_path ()" link="NMRemoteSettings.html#nm-remote-settings-get-connection-by-path"/>
+    <function name="nm_remote_settings_get_connection_by_uuid ()" link="NMRemoteSettings.html#nm-remote-settings-get-connection-by-uuid"/>
     <function name="nm_remote_settings_add_connection ()" link="NMRemoteSettings.html#nm-remote-settings-add-connection"/>
     <function name="nm_remote_settings_save_hostname ()" link="NMRemoteSettings.html#nm-remote-settings-save-hostname"/>
     <function name="The &quot;bus&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--bus"/>

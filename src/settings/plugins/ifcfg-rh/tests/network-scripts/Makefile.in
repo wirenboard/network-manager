@@ -76,6 +76,10 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
+CXXDEPMODE = @CXXDEPMODE@
+CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
@@ -193,6 +197,8 @@ POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+QT_CFLAGS = @QT_CFLAGS@
+QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 RESOLVCONF_PATH = @RESOLVCONF_PATH@
 SED = @SED@
@@ -214,6 +220,7 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
+ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
@@ -321,6 +328,10 @@ EXTRA_DIST = \
 	route-test-wired-static-routes \
 	ifcfg-test-wired-static-routes-legacy \
 	route-test-wired-static-routes-legacy \
+	ifcfg-test-wired-ipv4-manual-1 \
+	ifcfg-test-wired-ipv4-manual-2 \
+	ifcfg-test-wired-ipv4-manual-3 \
+	ifcfg-test-wired-ipv4-manual-4 \
 	ifcfg-test-wired-ipv6-manual \
 	route6-test-wired-ipv6-manual \
 	ifcfg-test-wired-static-no-prefix-8 \
@@ -334,6 +345,7 @@ EXTRA_DIST = \
 	ifcfg-test-wifi-wep-104-ascii \
 	keys-test-wifi-wep-104-ascii \
 	ifcfg-test-wired-qeth-static \
+	ifcfg-test-wired-ctc-static \
 	ifcfg-test-bridge-main \
 	ifcfg-test-bridge-component \
 	ifcfg-test-vlan-interface \

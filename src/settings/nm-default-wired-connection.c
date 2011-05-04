@@ -43,14 +43,6 @@ typedef struct {
 } NMDefaultWiredConnectionPrivate;
 
 enum {
-	PROP_0,
-	PROP_MAC,
-	PROP_DEVICE,
-	PROP_READ_ONLY,
-	LAST_PROP
-};
-
-enum {
 	TRY_UPDATE,
 	DELETED,
 	LAST_SIGNAL
@@ -120,7 +112,7 @@ nm_default_wired_connection_new (const GByteArray *mac,
 	self = (NMDefaultWiredConnection *) g_object_new (NM_TYPE_DEFAULT_WIRED_CONNECTION, NULL);
 	if (self) {
 		priv = NM_DEFAULT_WIRED_CONNECTION_GET_PRIVATE (self);
-		priv->device = device;
+		priv->device = g_object_ref (device);
 		priv->mac = g_byte_array_sized_new (ETH_ALEN);
 		g_byte_array_append (priv->mac, mac->data, mac->len);
 
