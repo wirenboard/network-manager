@@ -19,4 +19,5 @@ debian/tmp/etc/dbus-1/system.d/nm-avahi-autoipd.conf
 debian/tmp/etc/NetworkManager/dispatcher.d/
 debian/tmp/lib/udev/rules.d/*.rules
 debian/tmp/lib/systemd/system/NetworkManager.service
+debian/tmp/lib/systemd/system/NetworkManager-wait-online.service
 debian/NetworkManager.conf etc/NetworkManager/
