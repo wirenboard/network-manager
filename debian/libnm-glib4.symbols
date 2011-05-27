@@ -65,6 +65,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_ethernet_get_type@Base 0.7.999
  nm_device_ethernet_new@Base 0.7.999
  nm_device_filter_connections@Base 0.8.998
+ nm_device_get_active_connection@Base 0.8.9997
  nm_device_get_capabilities@Base 0.7.999
  nm_device_get_device_type@Base 0.8.998
  nm_device_get_dhcp4_config@Base 0.7.999
@@ -74,6 +75,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_get_iface@Base 0.7.999
  nm_device_get_ip4_config@Base 0.7.999
  nm_device_get_ip6_config@Base 0.7.999
+ nm_device_get_ip_iface@Base 0.8.9997
  nm_device_get_managed@Base 0.7.999
  nm_device_get_product@Base 0.7.999
  nm_device_get_state@Base 0.7.999

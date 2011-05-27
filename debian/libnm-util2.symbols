@@ -129,6 +129,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_get_phase2_private_key_path@Base 0.7.999
  nm_setting_802_1x_get_phase2_private_key_scheme@Base 0.7.999
  nm_setting_802_1x_get_pin@Base 0.7.0
+ nm_setting_802_1x_get_pin_flags@Base 0.8.9997
  nm_setting_802_1x_get_private_key_blob@Base 0.7.999
  nm_setting_802_1x_get_private_key_format@Base 0.7.999
  nm_setting_802_1x_get_private_key_password@Base 0.7.0

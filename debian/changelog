@@ -1,6 +1,8 @@
 network-manager (0.8.9997-1) UNRELEASED; urgency=low
 
   * New upstream release (0.9 rc3).
+  * Update debian/libnm-glib4.symbols and debian/libnm-util2.symbols for new
+    API additions.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 27 May 2011 19:57:47 +0200
 
