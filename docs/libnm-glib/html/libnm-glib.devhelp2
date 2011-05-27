@@ -122,6 +122,7 @@
     <keyword type="macro" name="NM_DEVICE_IP6_CONFIG" link="NMDevice.html#NM-DEVICE-IP6-CONFIG:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DHCP6_CONFIG" link="NMDevice.html#NM-DEVICE-DHCP6-CONFIG:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_STATE" link="NMDevice.html#NM-DEVICE-STATE:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_ACTIVE_CONNECTION" link="NMDevice.html#NM-DEVICE-ACTIVE-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_VENDOR" link="NMDevice.html#NM-DEVICE-VENDOR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_PRODUCT" link="NMDevice.html#NM-DEVICE-PRODUCT:CAPS"/>
     <keyword type="struct" name="NMDevice" link="NMDevice.html#NMDevice-struct"/>
@@ -140,12 +141,14 @@
     <keyword type="function" name="nm_device_get_ip6_config ()" link="NMDevice.html#nm-device-get-ip6-config"/>
     <keyword type="function" name="nm_device_get_dhcp6_config ()" link="NMDevice.html#nm-device-get-dhcp6-config"/>
     <keyword type="function" name="nm_device_get_state ()" link="NMDevice.html#nm-device-get-state"/>
+    <keyword type="function" name="nm_device_get_active_connection ()" link="NMDevice.html#nm-device-get-active-connection"/>
     <keyword type="function" name="nm_device_get_product ()" link="NMDevice.html#nm-device-get-product"/>
     <keyword type="function" name="nm_device_get_vendor ()" link="NMDevice.html#nm-device-get-vendor"/>
     <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
     <keyword type="function" name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
     <keyword type="function" name="nm_device_filter_connections ()" link="NMDevice.html#nm-device-filter-connections"/>
     <keyword type="function" name="nm_device_connection_valid ()" link="NMDevice.html#nm-device-connection-valid"/>
+    <keyword type="property" name="The &quot;active-connection&quot; property" link="NMDevice.html#NMDevice--active-connection"/>
     <keyword type="property" name="The &quot;capabilities&quot; property" link="NMDevice.html#NMDevice--capabilities"/>
     <keyword type="property" name="The &quot;device-type&quot; property" link="NMDevice.html#NMDevice--device-type"/>
     <keyword type="property" name="The &quot;dhcp4-config&quot; property" link="NMDevice.html#NMDevice--dhcp4-config"/>

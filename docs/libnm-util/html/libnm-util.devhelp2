@@ -3,6 +3,7 @@
 <book xmlns="http://www.devhelp.net/book" title="libnm-util Reference Manual" link="index.html" author="" name="libnm-util" version="2" language="c">
   <chapters>
     <sub name="libnm-util API Reference" link="ch01.html">
+      <sub name="NMConnection" link="NMConnection.html"/>
       <sub name="NMSetting" link="NMSetting.html"/>
       <sub name="NMSettingConnection" link="NMSettingConnection.html"/>
       <sub name="NMSettingWired" link="NMSettingWired.html"/>
@@ -26,6 +27,55 @@
     <sub name="Annotation Glossary" link="annotation-glossary.html"/>
   </chapters>
   <functions>
+    <keyword type="enum" name="enum NMConnectionError" link="NMConnection.html#NMConnectionError"/>
+    <keyword type="macro" name="NM_TYPE_CONNECTION_ERROR" link="NMConnection.html#NM-TYPE-CONNECTION-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_CONNECTION_ERROR" link="NMConnection.html#NM-CONNECTION-ERROR:CAPS"/>
+    <keyword type="function" name="nm_connection_error_quark ()" link="NMConnection.html#nm-connection-error-quark"/>
+    <keyword type="macro" name="NM_CONNECTION_PATH" link="NMConnection.html#NM-CONNECTION-PATH:CAPS"/>
+    <keyword type="struct" name="NMConnection" link="NMConnection.html#NMConnection-struct"/>
+    <keyword type="struct" name="NMConnectionClass" link="NMConnection.html#NMConnectionClass"/>
+    <keyword type="function" name="nm_connection_get_type ()" link="NMConnection.html#nm-connection-get-type"/>
+    <keyword type="function" name="nm_connection_new ()" link="NMConnection.html#nm-connection-new"/>
+    <keyword type="function" name="nm_connection_new_from_hash ()" link="NMConnection.html#nm-connection-new-from-hash"/>
+    <keyword type="function" name="nm_connection_duplicate ()" link="NMConnection.html#nm-connection-duplicate"/>
+    <keyword type="function" name="nm_connection_create_setting ()" link="NMConnection.html#nm-connection-create-setting"/>
+    <keyword type="function" name="nm_connection_add_setting ()" link="NMConnection.html#nm-connection-add-setting"/>
+    <keyword type="function" name="nm_connection_remove_setting ()" link="NMConnection.html#nm-connection-remove-setting"/>
+    <keyword type="function" name="nm_connection_get_setting ()" link="NMConnection.html#nm-connection-get-setting"/>
+    <keyword type="function" name="nm_connection_get_setting_by_name ()" link="NMConnection.html#nm-connection-get-setting-by-name"/>
+    <keyword type="function" name="nm_connection_replace_settings ()" link="NMConnection.html#nm-connection-replace-settings"/>
+    <keyword type="function" name="nm_connection_compare ()" link="NMConnection.html#nm-connection-compare"/>
+    <keyword type="function" name="nm_connection_diff ()" link="NMConnection.html#nm-connection-diff"/>
+    <keyword type="function" name="nm_connection_verify ()" link="NMConnection.html#nm-connection-verify"/>
+    <keyword type="function" name="nm_connection_need_secrets ()" link="NMConnection.html#nm-connection-need-secrets"/>
+    <keyword type="function" name="nm_connection_clear_secrets ()" link="NMConnection.html#nm-connection-clear-secrets"/>
+    <keyword type="function" name="nm_connection_update_secrets ()" link="NMConnection.html#nm-connection-update-secrets"/>
+    <keyword type="function" name="nm_connection_set_path ()" link="NMConnection.html#nm-connection-set-path"/>
+    <keyword type="function" name="nm_connection_get_path ()" link="NMConnection.html#nm-connection-get-path"/>
+    <keyword type="function" name="nm_connection_for_each_setting_value ()" link="NMConnection.html#nm-connection-for-each-setting-value"/>
+    <keyword type="function" name="nm_connection_to_hash ()" link="NMConnection.html#nm-connection-to-hash"/>
+    <keyword type="function" name="nm_connection_dump ()" link="NMConnection.html#nm-connection-dump"/>
+    <keyword type="function" name="nm_connection_lookup_setting_type ()" link="NMConnection.html#nm-connection-lookup-setting-type"/>
+    <keyword type="function" name="nm_connection_lookup_setting_type_by_quark ()" link="NMConnection.html#nm-connection-lookup-setting-type-by-quark"/>
+    <keyword type="function" name="nm_connection_get_uuid ()" link="NMConnection.html#nm-connection-get-uuid"/>
+    <keyword type="function" name="nm_connection_get_id ()" link="NMConnection.html#nm-connection-get-id"/>
+    <keyword type="function" name="nm_connection_get_setting_802_1x ()" link="NMConnection.html#nm-connection-get-setting-802-1x"/>
+    <keyword type="function" name="nm_connection_get_setting_bluetooth ()" link="NMConnection.html#nm-connection-get-setting-bluetooth"/>
+    <keyword type="function" name="nm_connection_get_setting_cdma ()" link="NMConnection.html#nm-connection-get-setting-cdma"/>
+    <keyword type="function" name="nm_connection_get_setting_connection ()" link="NMConnection.html#nm-connection-get-setting-connection"/>
+    <keyword type="function" name="nm_connection_get_setting_gsm ()" link="NMConnection.html#nm-connection-get-setting-gsm"/>
+    <keyword type="function" name="nm_connection_get_setting_ip4_config ()" link="NMConnection.html#nm-connection-get-setting-ip4-config"/>
+    <keyword type="function" name="nm_connection_get_setting_ip6_config ()" link="NMConnection.html#nm-connection-get-setting-ip6-config"/>
+    <keyword type="function" name="nm_connection_get_setting_olpc_mesh ()" link="NMConnection.html#nm-connection-get-setting-olpc-mesh"/>
+    <keyword type="function" name="nm_connection_get_setting_ppp ()" link="NMConnection.html#nm-connection-get-setting-ppp"/>
+    <keyword type="function" name="nm_connection_get_setting_pppoe ()" link="NMConnection.html#nm-connection-get-setting-pppoe"/>
+    <keyword type="function" name="nm_connection_get_setting_vpn ()" link="NMConnection.html#nm-connection-get-setting-vpn"/>
+    <keyword type="function" name="nm_connection_get_setting_wimax ()" link="NMConnection.html#nm-connection-get-setting-wimax"/>
+    <keyword type="function" name="nm_connection_get_setting_wired ()" link="NMConnection.html#nm-connection-get-setting-wired"/>
+    <keyword type="function" name="nm_connection_get_setting_wireless ()" link="NMConnection.html#nm-connection-get-setting-wireless"/>
+    <keyword type="function" name="nm_connection_get_setting_wireless_security ()" link="NMConnection.html#nm-connection-get-setting-wireless-security"/>
+    <keyword type="property" name="The &quot;path&quot; property" link="NMConnection.html#NMConnection--path"/>
+    <keyword type="signal" name="The &quot;secrets-updated&quot; signal" link="NMConnection.html#NMConnection-secrets-updated"/>
     <keyword type="enum" name="enum NMSettingError" link="NMSetting.html#NMSettingError"/>
     <keyword type="macro" name="NM_TYPE_SETTING_ERROR" link="NMSetting.html#NM-TYPE-SETTING-ERROR:CAPS"/>
     <keyword type="macro" name="NM_SETTING_ERROR" link="NMSetting.html#NM-SETTING-ERROR:CAPS"/>
@@ -810,6 +860,9 @@
     <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
     <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
     <keyword type="function" name="nm_utils_wifi_is_channel_valid ()" link="libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_UNKNOWN" link="NMConnection.html#NM-CONNECTION-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-SETTING-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-TYPE-INVALID:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_UNKNOWN" link="NMSetting.html#NM-SETTING-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_FOUND" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_SECRET" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-SECRET:CAPS"/>

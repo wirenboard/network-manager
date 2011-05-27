@@ -941,6 +941,9 @@ uninstall-am:
 # Private key by itself (PEM)
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-key-only.pem "test"
 
+# PKCS#8 private key by itself (PEM)
+@WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/pkcs8-enc-key.pem "1234567890"
+
 # Private key and CA certificate in the same file (pkcs12)
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-cert.p12 "test"
 
@@ -982,6 +985,11 @@ uninstall-am:
 
 # Another PKCS#12 file
 @WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test2-cert.p12 "12345testing"
+
+# PKCS#8 encrypted private key
+@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --pkcs8 \
+@WITH_TESTS_TRUE@		$(srcdir)/certs/pkcs8-enc-key.pem \
+@WITH_TESTS_TRUE@		"1234567890"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

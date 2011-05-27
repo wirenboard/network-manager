@@ -59,7 +59,8 @@ am__DEPENDENCIES_1 =
 libip6_manager_la_DEPENDENCIES =  \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_libip6_manager_la_OBJECTS = libip6_manager_la-nm-ip6-manager.lo
 libip6_manager_la_OBJECTS = $(am_libip6_manager_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
@@ -316,6 +317,7 @@ libip6_manager_la_SOURCES = \
 	nm-ip6-manager.h
 
 libip6_manager_la_CPPFLAGS = \
+	$(LIBNL_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	-DG_DISABLE_DEPRECATED
@@ -323,6 +325,7 @@ libip6_manager_la_CPPFLAGS = \
 libip6_manager_la_LIBADD = \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
+	$(LIBNL_LIBS) \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
 

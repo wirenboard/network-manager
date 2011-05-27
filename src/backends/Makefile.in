@@ -71,7 +71,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libnmbackend_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/logging/libnm-logging.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__libnmbackend_la_SOURCES_DIST = NetworkManagerGeneric.c \
 	NetworkManagerGeneric.h NetworkManagerRedHat.c \
 	NetworkManagerSuSE.c NetworkManagerGentoo.c \
@@ -362,9 +363,10 @@ libnmbackend_la_SOURCES = NetworkManagerGeneric.c \
 	$(am__append_10) $(am__append_11) $(am__append_12) \
 	$(am__append_13)
 libnmbackend_la_LIBADD = $(am__append_9) \
-	$(top_builddir)/src/logging/libnm-logging.la $(DBUS_LIBS) \
-	$(GLIB_LIBS)
+	$(top_builddir)/src/logging/libnm-logging.la $(LIBNL_LIBS) \
+	$(DBUS_LIBS) $(GLIB_LIBS)
 libnmbackend_la_CPPFLAGS = \
+	$(LIBNL_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	-DG_DISABLE_DEPRECATED \

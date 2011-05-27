@@ -60,7 +60,7 @@ libvpn_manager_la_DEPENDENCIES =  \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libvpn_manager_la_OBJECTS = libvpn_manager_la-nm-vpn-manager.lo \
 	libvpn_manager_la-nm-vpn-service.lo \
 	libvpn_manager_la-nm-vpn-connection-base.lo \
@@ -328,6 +328,7 @@ libvpn_manager_la_SOURCES = \
 	nm-vpn-connection.h
 
 libvpn_manager_la_CPPFLAGS = \
+	$(LIBNL_CFLAGS)		\
 	$(DBUS_CFLAGS)		\
 	$(GLIB_CFLAGS)		\
 	-DG_DISABLE_DEPRECATED
@@ -336,6 +337,7 @@ libvpn_manager_la_LIBADD = \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
+	$(LIBNL_LIBS) \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
 

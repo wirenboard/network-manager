@@ -112,6 +112,7 @@
 <ANCHOR id="NM-DEVICE-IP6-CONFIG:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-IP6-CONFIG:CAPS">
 <ANCHOR id="NM-DEVICE-DHCP6-CONFIG:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-DHCP6-CONFIG:CAPS">
 <ANCHOR id="NM-DEVICE-STATE:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-STATE:CAPS">
+<ANCHOR id="NM-DEVICE-ACTIVE-CONNECTION:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-ACTIVE-CONNECTION:CAPS">
 <ANCHOR id="NM-DEVICE-VENDOR:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-VENDOR:CAPS">
 <ANCHOR id="NM-DEVICE-PRODUCT:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-PRODUCT:CAPS">
 <ANCHOR id="NMDevice-struct" href="libnm-glib/NMDevice.html#NMDevice-struct">
@@ -130,6 +131,7 @@
 <ANCHOR id="nm-device-get-ip6-config" href="libnm-glib/NMDevice.html#nm-device-get-ip6-config">
 <ANCHOR id="nm-device-get-dhcp6-config" href="libnm-glib/NMDevice.html#nm-device-get-dhcp6-config">
 <ANCHOR id="nm-device-get-state" href="libnm-glib/NMDevice.html#nm-device-get-state">
+<ANCHOR id="nm-device-get-active-connection" href="libnm-glib/NMDevice.html#nm-device-get-active-connection">
 <ANCHOR id="nm-device-get-product" href="libnm-glib/NMDevice.html#nm-device-get-product">
 <ANCHOR id="nm-device-get-vendor" href="libnm-glib/NMDevice.html#nm-device-get-vendor">
 <ANCHOR id="NMDeviceDeactivateFn" href="libnm-glib/NMDevice.html#NMDeviceDeactivateFn">
@@ -137,6 +139,7 @@
 <ANCHOR id="nm-device-filter-connections" href="libnm-glib/NMDevice.html#nm-device-filter-connections">
 <ANCHOR id="nm-device-connection-valid" href="libnm-glib/NMDevice.html#nm-device-connection-valid">
 <ANCHOR id="NMDevice.property-details" href="libnm-glib/NMDevice.html#NMDevice.property-details">
+<ANCHOR id="NMDevice--active-connection" href="libnm-glib/NMDevice.html#NMDevice--active-connection">
 <ANCHOR id="NMDevice--capabilities" href="libnm-glib/NMDevice.html#NMDevice--capabilities">
 <ANCHOR id="NMDevice--device-type" href="libnm-glib/NMDevice.html#NMDevice--device-type">
 <ANCHOR id="NMDevice--dhcp4-config" href="libnm-glib/NMDevice.html#NMDevice--dhcp4-config">

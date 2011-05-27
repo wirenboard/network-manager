@@ -6,7 +6,7 @@
 <meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
-<link rel="prev" href="ch01.html" title="libnm-util API Reference">
+<link rel="prev" href="NMConnection.html" title="NMConnection">
 <link rel="next" href="NMSettingConnection.html" title="NMSettingConnection">
 <meta name="generator" content="GTK-Doc V1.17 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
@@ -14,7 +14,7 @@
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
 <tr valign="middle">
-<td><a accesskey="p" href="ch01.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="NMConnection.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
 <td><a accesskey="u" href="ch01.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-util Reference Manual</th>
@@ -140,7 +140,7 @@ enum                <a class="link" href="NMSetting.html#NMSettingDiffResult" ti
 Each <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> contains properties that describe configuration that applies
 to a specific network layer (like IPv4 or IPv6 configuration) or device type
 (like Ethernet, or WiFi).  A collection of individual settings together
-make up an <span class="type">NMConnection</span>. Each property is strongly typed and usually has
+make up an <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>. Each property is strongly typed and usually has
 a number of allowed values.  See each <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> subclass for a description
 of properties and allowed values.
 </p>
@@ -420,7 +420,7 @@ when calling <a class="link" href="NMSetting.html#nm-setting-to-hash" title="nm_
 <p>
 Converts the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> into a <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> mapping each setting property
 name to a GValue describing that property, suitable for marshalling over
-D-Bus or serializing.  The mapping is string:GValue.
+D-Bus or serializing.  The mapping is string to GValue.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -437,7 +437,8 @@ D-Bus or serializing.  The mapping is string:GValue.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>a new <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> describing the setting's properties. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GObject.Value]</span>
+<td>a new <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a>
+describing the setting's properties. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GObject.Value]</span>
 </td>
 </tr>
 </tbody>
@@ -465,8 +466,9 @@ property names and value types.
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>hash</code></em> :</span></p></td>
-<td>the <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing a string:GValue mapping of properties
-that apply to the setting</td>
+<td>the <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> containing a
+string to GValue mapping of properties that apply to the setting. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GObject.Value]</span>
+</td>
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
@@ -709,10 +711,11 @@ be set to <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Ma
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>results</code></em> :</span></p></td>
-<td>if the settings differ, on return a
-hash table mapping the differing keys to one or more <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult"><span class="type">NMSettingDiffResult</span></a>
-values OR-ed together.  If the settings do not differ, any hash table passed
-in is unmodified.  If no hash table is passed in, a new one is created. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 guint32]</span>
+<td>if the
+settings differ, on return a hash table mapping the differing keys to one or
+more <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult"><code class="literal">NMSettingDiffResult</code></a> values OR-ed together.  If the settings do not
+differ, any hash table passed in is unmodified.  If no hash table is passed
+in and the settings differ, a new one is created and returned. <span class="annotation">[<acronym title="Parameter for input and for returning results. Default is transfer full."><span class="acronym">inout</span></acronym>][<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 guint32]</span>
 </td>
 </tr>
 <tr>
@@ -847,8 +850,9 @@ setting (deserialized from D-Bus for example).
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>secrets</code></em> :</span></p></td>
-<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> mapping string:<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> of setting property names and
-secrets</td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> mapping
+string to <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> of setting property names and secrets. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GObject.Value]</span>
+</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>

@@ -66,6 +66,7 @@ global:
 	nm_device_ethernet_get_type;
 	nm_device_ethernet_new;
 	nm_device_filter_connections;
+	nm_device_get_active_connection;
 	nm_device_get_capabilities;
 	nm_device_get_device_type;
 	nm_device_get_dhcp4_config;
@@ -75,6 +76,7 @@ global:
 	nm_device_get_iface;
 	nm_device_get_ip4_config;
 	nm_device_get_ip6_config;
+	nm_device_get_ip_iface;
 	nm_device_get_managed;
 	nm_device_get_product;
 	nm_device_get_state;

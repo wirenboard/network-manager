@@ -56,7 +56,6 @@
 #include "nm-dbus-glib-types.h"
 #include "nm-settings.h"
 #include "nm-settings-connection.h"
-#include "nm-polkit-helpers.h"
 #include "nm-settings-error.h"
 #include "nm-default-wired-connection.h"
 #include "nm-logging.h"
@@ -114,8 +113,6 @@ typedef struct {
 
 	NMAgentManager *agent_mgr;
 
-	PolkitAuthority *authority;
-	guint auth_changed_id;
 	char *config_file;
 
 	NMSessionMonitor *session_monitor;
@@ -702,6 +699,46 @@ connection_visibility_changed (NMSettingsConnection *connection,
 	               connection);
 }
 
+#define NM_DBUS_SERVICE_OPENCONNECT    "org.freedesktop.NetworkManager.openconnect"
+#define NM_OPENCONNECT_KEY_GATEWAY "gateway"
+#define NM_OPENCONNECT_KEY_COOKIE "cookie"
+#define NM_OPENCONNECT_KEY_GWCERT "gwcert"
+#define NM_OPENCONNECT_KEY_XMLCONFIG "xmlconfig"
+#define NM_OPENCONNECT_KEY_LASTHOST "lasthost"
+#define NM_OPENCONNECT_KEY_AUTOCONNECT "autoconnect"
+#define NM_OPENCONNECT_KEY_CERTSIGS "certsigs"
+
+static void
+openconnect_migrate_hack (NMConnection *connection)
+{
+	NMSettingVPN *s_vpn;
+	NMSettingSecretFlags flags = NM_SETTING_SECRET_FLAG_NOT_SAVED;
+
+	/* Huge hack.  There were some openconnect changes that needed to happen
+	 * pretty late, too late to get into distros.  Migration has already
+	 * happened for many people, and their secret flags are wrong.  But we
+	 * don't want to requrie re-migration, so we have to fix it up here. Ugh.
+	 */
+
+	s_vpn = nm_connection_get_setting_vpn (connection);
+	if (s_vpn == NULL)
+		return;
+
+	if (g_strcmp0 (nm_setting_vpn_get_service_type (s_vpn), NM_DBUS_SERVICE_OPENCONNECT) == 0) {
+		/* These are different for every login session, and should not be stored */
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_GATEWAY, flags, NULL);
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_COOKIE, flags, NULL);
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_GWCERT, flags, NULL);
+
+		/* These are purely internal data for the auth-dialog, and should be stored */
+		flags = 0;
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_XMLCONFIG, flags, NULL);
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_LASTHOST, flags, NULL);
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_AUTOCONNECT, flags, NULL);
+		nm_setting_set_secret_flags (NM_SETTING (s_vpn), NM_OPENCONNECT_KEY_CERTSIGS, flags, NULL);
+	}
+}
+
 static void
 claim_connection (NMSettings *self,
                   NMSettingsConnection *connection,
@@ -738,6 +775,9 @@ claim_connection (NMSettings *self,
 
 	/* Ensure it's initial visibility is up-to-date */
 	nm_settings_connection_recheck_visibility (connection);
+
+	/* Evil openconnect migration hack */
+	openconnect_migrate_hack (NM_CONNECTION (connection));
 
 	id = g_signal_connect (connection, NM_SETTINGS_CONNECTION_REMOVED,
 	                       G_CALLBACK (connection_removed),
@@ -999,7 +1039,7 @@ nm_settings_add_connection (NMSettings *self,
 		perm = NM_AUTH_PERMISSION_SETTINGS_MODIFY_SYSTEM;
 
 	/* Otherwise validate the user request */
-	chain = nm_auth_chain_new (priv->authority, context, NULL, pk_add_cb, self);
+	chain = nm_auth_chain_new (context, NULL, pk_add_cb, self);
 	g_assert (chain);
 	priv->auths = g_slist_append (priv->auths, chain);
 	nm_auth_chain_add_call (chain, perm, TRUE);
@@ -1111,7 +1151,7 @@ impl_settings_save_hostname (NMSettings *self,
 	}
 
 	/* Otherwise validate the user request */
-	chain = nm_auth_chain_new (priv->authority, context, NULL, pk_hostname_cb, self);
+	chain = nm_auth_chain_new (context, NULL, pk_hostname_cb, self);
 	g_assert (chain);
 	priv->auths = g_slist_append (priv->auths, chain);
 	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_SETTINGS_MODIFY_HOSTNAME, TRUE);
@@ -1476,17 +1516,8 @@ static void
 nm_settings_init (NMSettings *self)
 {
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
-	GError *error = NULL;
 
 	priv->connections = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
-
-	priv->authority = polkit_authority_get_sync (NULL, &error);
-	if (!priv->authority) {
-		nm_log_warn (LOGD_SETTINGS, "failed to create PolicyKit authority: (%d) %s",
-		             error ? error->code : -1,
-		             error && error->message ? error->message : "(unknown)");
-		g_clear_error (&error);
-	}
 
 	priv->session_monitor = nm_session_monitor_get ();
 
@@ -1504,11 +1535,6 @@ dispose (GObject *object)
 	NMSettings *self = NM_SETTINGS (object);
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
 	GSList *iter;
-
-	if (priv->auth_changed_id) {
-		g_signal_handler_disconnect (priv->authority, priv->auth_changed_id);
-		priv->auth_changed_id = 0;
-	}
 
 	for (iter = priv->auths; iter; iter = g_slist_next (iter))
 		nm_auth_chain_unref ((NMAuthChain *) iter->data);
