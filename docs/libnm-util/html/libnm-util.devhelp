@@ -3,6 +3,7 @@
 <book xmlns="http://www.devhelp.net/book" title="libnm-util Reference Manual" link="index.html" author="" name="libnm-util">
   <chapters>
     <sub name="libnm-util API Reference" link="ch01.html">
+      <sub name="NMConnection" link="NMConnection.html"/>
       <sub name="NMSetting" link="NMSetting.html"/>
       <sub name="NMSettingConnection" link="NMSettingConnection.html"/>
       <sub name="NMSettingWired" link="NMSettingWired.html"/>
@@ -26,6 +27,55 @@
     <sub name="Annotation Glossary" link="annotation-glossary.html"/>
   </chapters>
   <functions>
+    <function name="enum NMConnectionError" link="NMConnection.html#NMConnectionError"/>
+    <function name="NM_TYPE_CONNECTION_ERROR" link="NMConnection.html#NM-TYPE-CONNECTION-ERROR:CAPS"/>
+    <function name="NM_CONNECTION_ERROR" link="NMConnection.html#NM-CONNECTION-ERROR:CAPS"/>
+    <function name="nm_connection_error_quark ()" link="NMConnection.html#nm-connection-error-quark"/>
+    <function name="NM_CONNECTION_PATH" link="NMConnection.html#NM-CONNECTION-PATH:CAPS"/>
+    <function name="NMConnection" link="NMConnection.html#NMConnection-struct"/>
+    <function name="NMConnectionClass" link="NMConnection.html#NMConnectionClass"/>
+    <function name="nm_connection_get_type ()" link="NMConnection.html#nm-connection-get-type"/>
+    <function name="nm_connection_new ()" link="NMConnection.html#nm-connection-new"/>
+    <function name="nm_connection_new_from_hash ()" link="NMConnection.html#nm-connection-new-from-hash"/>
+    <function name="nm_connection_duplicate ()" link="NMConnection.html#nm-connection-duplicate"/>
+    <function name="nm_connection_create_setting ()" link="NMConnection.html#nm-connection-create-setting"/>
+    <function name="nm_connection_add_setting ()" link="NMConnection.html#nm-connection-add-setting"/>
+    <function name="nm_connection_remove_setting ()" link="NMConnection.html#nm-connection-remove-setting"/>
+    <function name="nm_connection_get_setting ()" link="NMConnection.html#nm-connection-get-setting"/>
+    <function name="nm_connection_get_setting_by_name ()" link="NMConnection.html#nm-connection-get-setting-by-name"/>
+    <function name="nm_connection_replace_settings ()" link="NMConnection.html#nm-connection-replace-settings"/>
+    <function name="nm_connection_compare ()" link="NMConnection.html#nm-connection-compare"/>
+    <function name="nm_connection_diff ()" link="NMConnection.html#nm-connection-diff"/>
+    <function name="nm_connection_verify ()" link="NMConnection.html#nm-connection-verify"/>
+    <function name="nm_connection_need_secrets ()" link="NMConnection.html#nm-connection-need-secrets"/>
+    <function name="nm_connection_clear_secrets ()" link="NMConnection.html#nm-connection-clear-secrets"/>
+    <function name="nm_connection_update_secrets ()" link="NMConnection.html#nm-connection-update-secrets"/>
+    <function name="nm_connection_set_path ()" link="NMConnection.html#nm-connection-set-path"/>
+    <function name="nm_connection_get_path ()" link="NMConnection.html#nm-connection-get-path"/>
+    <function name="nm_connection_for_each_setting_value ()" link="NMConnection.html#nm-connection-for-each-setting-value"/>
+    <function name="nm_connection_to_hash ()" link="NMConnection.html#nm-connection-to-hash"/>
+    <function name="nm_connection_dump ()" link="NMConnection.html#nm-connection-dump"/>
+    <function name="nm_connection_lookup_setting_type ()" link="NMConnection.html#nm-connection-lookup-setting-type"/>
+    <function name="nm_connection_lookup_setting_type_by_quark ()" link="NMConnection.html#nm-connection-lookup-setting-type-by-quark"/>
+    <function name="nm_connection_get_uuid ()" link="NMConnection.html#nm-connection-get-uuid"/>
+    <function name="nm_connection_get_id ()" link="NMConnection.html#nm-connection-get-id"/>
+    <function name="nm_connection_get_setting_802_1x ()" link="NMConnection.html#nm-connection-get-setting-802-1x"/>
+    <function name="nm_connection_get_setting_bluetooth ()" link="NMConnection.html#nm-connection-get-setting-bluetooth"/>
+    <function name="nm_connection_get_setting_cdma ()" link="NMConnection.html#nm-connection-get-setting-cdma"/>
+    <function name="nm_connection_get_setting_connection ()" link="NMConnection.html#nm-connection-get-setting-connection"/>
+    <function name="nm_connection_get_setting_gsm ()" link="NMConnection.html#nm-connection-get-setting-gsm"/>
+    <function name="nm_connection_get_setting_ip4_config ()" link="NMConnection.html#nm-connection-get-setting-ip4-config"/>
+    <function name="nm_connection_get_setting_ip6_config ()" link="NMConnection.html#nm-connection-get-setting-ip6-config"/>
+    <function name="nm_connection_get_setting_olpc_mesh ()" link="NMConnection.html#nm-connection-get-setting-olpc-mesh"/>
+    <function name="nm_connection_get_setting_ppp ()" link="NMConnection.html#nm-connection-get-setting-ppp"/>
+    <function name="nm_connection_get_setting_pppoe ()" link="NMConnection.html#nm-connection-get-setting-pppoe"/>
+    <function name="nm_connection_get_setting_vpn ()" link="NMConnection.html#nm-connection-get-setting-vpn"/>
+    <function name="nm_connection_get_setting_wimax ()" link="NMConnection.html#nm-connection-get-setting-wimax"/>
+    <function name="nm_connection_get_setting_wired ()" link="NMConnection.html#nm-connection-get-setting-wired"/>
+    <function name="nm_connection_get_setting_wireless ()" link="NMConnection.html#nm-connection-get-setting-wireless"/>
+    <function name="nm_connection_get_setting_wireless_security ()" link="NMConnection.html#nm-connection-get-setting-wireless-security"/>
+    <function name="The &quot;path&quot; property" link="NMConnection.html#NMConnection--path"/>
+    <function name="The &quot;secrets-updated&quot; signal" link="NMConnection.html#NMConnection-secrets-updated"/>
     <function name="enum NMSettingError" link="NMSetting.html#NMSettingError"/>
     <function name="NM_TYPE_SETTING_ERROR" link="NMSetting.html#NM-TYPE-SETTING-ERROR:CAPS"/>
     <function name="NM_SETTING_ERROR" link="NMSetting.html#NM-SETTING-ERROR:CAPS"/>

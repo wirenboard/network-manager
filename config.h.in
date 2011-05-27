@@ -53,9 +53,6 @@
 /* Define to 1 if you have the <paths.h> header file. */
 #undef HAVE_PATHS_H
 
-/* Define if you have a polkit with polkit_authority_get_sync() */
-#undef HAVE_POLKIT_AUTHORITY_GET_SYNC
-
 /* Define to 1 if you have the <pppd/pppd.h> header file. */
 #undef HAVE_PPPD_PPPD_H
 
@@ -213,6 +210,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if you have PolicyKit support */
+#undef WITH_POLKIT
 
 /* Define if you have PPP support */
 #undef WITH_PPP

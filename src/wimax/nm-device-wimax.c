@@ -278,6 +278,8 @@ remove_all_nsps (NMDeviceWimax *self)
 {
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
 
+	set_current_nsp (self, NULL);
+
 	while (g_slist_length (priv->nsp_list)) {
 		NMWimaxNsp *nsp = NM_WIMAX_NSP (priv->nsp_list->data);
 
@@ -717,29 +719,43 @@ real_act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	NMActRequest *req;
 	GSList *iter;
 	const char *path;
+	NMWimaxNsp *nsp = NULL;
 
 	clear_link_timeout (NM_DEVICE_WIMAX (device));
 
+	*reason = NM_DEVICE_STATE_REASON_NONE;
+
 	req = nm_device_get_act_request (device);
 	if (!req)
-		goto err;
+		return NM_ACT_STAGE_RETURN_FAILURE;
 
 	path = nm_act_request_get_specific_object (req);
 	if (!path)
-		goto err;
+		return NM_ACT_STAGE_RETURN_FAILURE;
 
+	/* Find the NSP in the scan list */
 	for (iter = priv->nsp_list; iter; iter = iter->next) {
-		NMWimaxNsp *nsp = NM_WIMAX_NSP (iter->data);
+		NMWimaxNsp *candidate = NM_WIMAX_NSP (iter->data);
 
-		if (!strcmp (path, nm_wimax_nsp_get_dbus_path (nsp))) {
-			set_current_nsp (NM_DEVICE_WIMAX (device), nsp);
-			return NM_ACT_STAGE_RETURN_SUCCESS;
+		if (!strcmp (path, nm_wimax_nsp_get_dbus_path (candidate))) {
+			nsp = candidate;
+			break;
 		}
 	}
 
- err:
-	*reason = NM_DEVICE_STATE_REASON_NONE;
-	return NM_ACT_STAGE_RETURN_FAILURE;
+	/* Couldn't find the NSP for some reason */
+	if (nsp == NULL)
+		return NM_ACT_STAGE_RETURN_FAILURE;
+
+	set_current_nsp (NM_DEVICE_WIMAX (device), nsp);
+
+	/* If the device is scanning, it won't connect, so we have to wait until
+	 * it's not scanning to proceed to stage 2.
+	 */
+	if (priv->status == WIMAX_API_DEVICE_STATUS_Scanning)
+		return NM_ACT_STAGE_RETURN_POSTPONE;
+
+	return NM_ACT_STAGE_RETURN_SUCCESS;
 }
 
 static NMActStageReturn
@@ -857,11 +873,11 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
 	if (priv->current_nsp)
 		nsp_name = nm_wimax_nsp_get_name (priv->current_nsp);
 
-	nm_log_dbg (LOGD_WIMAX, "(%s): wimax state change %s -> %s (reason %d)",
-	            iface,
-	            iwmx_sdk_dev_status_to_str (old_status),
-	            iwmx_sdk_dev_status_to_str (new_status),
-	            reason);
+	nm_log_info (LOGD_WIMAX, "(%s): wimax state change %s -> %s (reason %d)",
+	             iface,
+	             iwmx_sdk_dev_status_to_str (old_status),
+	             iwmx_sdk_dev_status_to_str (new_status),
+	             reason);
 
 	switch (new_status) {
 	case WIMAX_API_DEVICE_STATUS_UnInitialized:
@@ -914,6 +930,18 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
 			                         NM_DEVICE_STATE_FAILED,
 			                         NM_DEVICE_STATE_REASON_CONFIG_FAILED);
 			return;
+		}
+
+		/* If stage2 was postponed because the device was scanning or something,
+		 * then check if we need to move to stage2 now that the device might be
+		 * ready.
+		 */
+		if (state == NM_DEVICE_STATE_PREPARE) {
+			if (   new_status == WIMAX_API_DEVICE_STATUS_Ready
+			    || new_status == WIMAX_API_DEVICE_STATUS_Connecting) {
+				nm_device_activate_schedule_stage2_device_config (NM_DEVICE (self));
+				return;
+			}
 		}
 	}
 
@@ -1252,15 +1280,17 @@ device_state_changed (NMDevice *device,
 	if (new_state < NM_DEVICE_STATE_DISCONNECTED)
 		remove_all_nsps (self);
 
-	/* Request initial NSP list */
+	/* Request initial NSP list when device is first started */
 	if (   new_state == NM_DEVICE_STATE_DISCONNECTED
 	    && old_state < NM_DEVICE_STATE_DISCONNECTED) {
 		if (priv->sdk)
 			iwmx_sdk_get_networks (priv->sdk);
 	}
 
-	if (new_state == NM_DEVICE_STATE_FAILED || new_state <= NM_DEVICE_STATE_DISCONNECTED)
+	if (new_state == NM_DEVICE_STATE_FAILED || new_state <= NM_DEVICE_STATE_DISCONNECTED) {
+		set_current_nsp (self, NULL);
 		clear_activation_timeout (self);
+	}
 
 	if (new_state == NM_DEVICE_STATE_ACTIVATED) {
 		/* poll link quality and BSID */

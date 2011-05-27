@@ -42,7 +42,7 @@
     <message xml:lang="da">Systempolitik forhindrer aktivering eller deaktivering af systemnetværk</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung von System-Netzwerken</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει ενεργοποίηση ή απενεργοποίηση της δικτύωσης του συστήματος</message>
-    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ malŝalton de sistema retkonektado</message>
+    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ elŝalton de sistema retkonektado</message>
     <message xml:lang="es">La política del sistema evita activar o desactivar la red del sistema</message>
     <message xml:lang="gl">A normativa do sistema evita a activación ou desactivación da rede do sistema</message>
     <message xml:lang="hi">तंत्र संजालन के युक्ति के सक्रियण या निष्क्रियण को तंत्र नीति रोकता है</message>
@@ -160,7 +160,7 @@
     <message xml:lang="da">Systempolitik forhindrer aktivering eller deaktivering af WiFi-enheder</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung von WLAN-Geräten</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει ενεργοποίηση ή απενεργοποίηση συσκευών ανοιχτού ασύρματου δικτύου (WiFi)</message>
-    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ malŝalton de WiFi-aparatoj</message>
+    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ elŝalton de WiFi-aparatoj</message>
     <message xml:lang="es">La política de sistema evita activar o desactivar los dispositivos inalámbricos</message>
     <message xml:lang="gl">A normativa do sistema evita a activación e desactivación dos dispositivos WiFi</message>
     <message xml:lang="hi">WiFi युक्ति के सक्रियण या निष्क्रियण को तंत्र नीति रोकता है</message>
@@ -219,7 +219,7 @@
     <message xml:lang="da">Systempolitik forhindrer aktivering eller deaktivering af mobile bredbåndsenheder</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung mobiler Breitbandgeräte</message>
     <message xml:lang="el">Η πολιτική του συστήματος δεν επιτρέπει την ενεργοποίηση ή απενεργοποίηση συσκευών ευρυζωνικότητας κινητής τηλεφωνίας</message>
-    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ malŝalton de poŝtelefonaj larĝkapacitaj aparatoj</message>
+    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ elŝalton de poŝtelefonaj larĝkapacitaj aparatoj</message>
     <message xml:lang="es">La política del sistema evita activar o desactivar los dispositivos de banda ancha móvil</message>
     <message xml:lang="gl">A normativa do sistema evita a activación ou desactivación dos dispositivos de banda ancha.</message>
     <message xml:lang="hi">मोबाइल ब्रॉडबैंड युक्ति के सक्रियण या निष्क्रियण को तंत्र नीति रोकता है</message>
@@ -249,6 +249,7 @@
     <description xml:lang="bg">Включване и изключване на устройства за достъп до мобилни мрежи по WiMAX</description>
     <description xml:lang="ca">Habilita o inhabilita els dispositius de banda ampla mòbil WiMAX</description>
     <description xml:lang="de">Mobile WiMAX-Breitbandgeräte aktivieren oder deaktivieren</description>
+    <description xml:lang="eo">Enŝalti aŭ elŝalti WiMAX-larĝkapacitajn aparatojn</description>
     <description xml:lang="es">Activar o desactivar los dispositivos de banda ancha móvil WiMAX</description>
     <description xml:lang="hu">WiMAX mobil széles sávú eszközök be- és kikapcsolása</description>
     <description xml:lang="ko">와이맥스 모바일 광대역 장치 사용 여부</description>
@@ -258,6 +259,7 @@
     <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за мобилни мрежи по WiMAX</message>
     <message xml:lang="ca">La política del sistema impedeix habilitar o inhabilitar els dispositius de banda ampla mòbil WiMAX</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung mobiler WiMAX-Breitbandgeräte</message>
+    <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ elŝalton de larĝkapacitaj WiMAX-aparatoj</message>
     <message xml:lang="es">La política del sistema evita activar o desactivar los dispositivos de banda ancha móvil WiMAX</message>
     <message xml:lang="hu">A rendszer házirendje megakadályozza a WiMAX mobil széles sávú eszközök be- vagy kikapcsolását</message>
     <message xml:lang="ko">시스템 정책이 와이맥스 모바일 광대역 장치의 사용 여부 설정을 금지합니다</message>
@@ -378,7 +380,7 @@
     <message xml:lang="de">Die Systemrichtlinien verhindern Verbindungsfreigaben über ein geschütztes WLAN-Netzwerk</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει κοινή χρήση συνδέσεων μέσω προστατευμένου ασύρματου δικτύου</message>
     <message xml:lang="en_GB">System policy prevents sharing connections via a protected Wi-Fi network</message>
-    <message xml:lang="eo">Sistempolico preventas kundividon de konektoj per protektita WiFi-reto</message>
+    <message xml:lang="eo">Sistempolitiko preventas kundividon de konektoj per protektita WiFi-reto</message>
     <message xml:lang="es">La política del sistema evita compartir conexiones a través de una red WiFi protegida</message>
     <message xml:lang="eu">Sistemako arauek babestutako haririk gabeko sareen bidez konexioak partekatzea saihesten dute</message>
     <message xml:lang="fr">La stratégie du système empêche tout partage des connexions via un réseau WiFi protégé</message>
@@ -501,6 +503,7 @@
   <action id="org.freedesktop.NetworkManager.settings.modify.own">
     <description>Modify personal network connections</description>
     <description xml:lang="de">Eigene Netzwerkverbindungen bearbeiten</description>
+    <description xml:lang="eo">Modifi proprajn retkonektojn</description>
     <description xml:lang="es">Modificar las conexiones de red personales</description>
     <description xml:lang="hu">Személyes hálózati kapcsolatok módosítása</description>
     <description xml:lang="ko">개인 네트워크 연결을 수정합니다</description>
@@ -508,6 +511,7 @@
     <description xml:lang="pl">Modyfikacja osobistych połączeń sieciowych</description>
     <message>System policy prevents modification of personal network settings</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten von eigenen Netzwerkeinstellungen</message>
+    <message xml:lang="eo">Sistempolitiko preventas modifadon de propraj retagordoj</message>
     <message xml:lang="es">La política del sistema evita la modificación de la configuración personal de la red</message>
     <message xml:lang="hu">A rendszer házirendje megakadályozza a személyes hálózati beállítások módosítását</message>
     <message xml:lang="ko">시스템 정책이 개인 네트워크 설정의 수정을 금지합니다</message>
@@ -522,6 +526,7 @@
   <action id="org.freedesktop.NetworkManager.settings.modify.system">
     <description>Modify network connections for all users</description>
     <description xml:lang="de">Netzwerkverbindungen für alle Benutzer bearbeiten</description>
+    <description xml:lang="eo">Modifi retkonektojn por ĉiuj uzantoj</description>
     <description xml:lang="es">Modificar las conexiones de red para todos los usuarios</description>
     <description xml:lang="hu">Hálózati kapcsolatok módosítása minden felhasználó számára</description>
     <description xml:lang="ko">모든 사용자의 네트워크 연결을 수정합니다</description>
@@ -529,6 +534,7 @@
     <description xml:lang="pl">Modyfikacja połączeń sieciowych dla wszystkich użytkowników</description>
     <message>System policy prevents modification of network settings for all users</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten von Netzwerkeinstellungen für alle Benutzer</message>
+    <message xml:lang="eo">Sistempolitiko preventas modifadon de retagordoj por ĉiuj uzantoj</message>
     <message xml:lang="es">La política del sistema evita la modificación de la configuración de la red para todos los usuarios</message>
     <message xml:lang="hu">A rendszer házirendje megakadályozza a hálózati beállítások módosítását minden felhasználó számára</message>
     <message xml:lang="ko">시스템 정책이 모든 사용자의 네트워크 설정의 수정을 금지합니다</message>
@@ -590,7 +596,7 @@
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten des ständigen Rechnernamens des Systems</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει τροποποίηση του πάγιου ονόματος συστήματος</message>
     <message xml:lang="en_GB">System policy prevents modification of the persistent system hostname</message>
-    <message xml:lang="eo">Sistempolico preventas modifadon de la konstanta sistem-gastnomo</message>
+    <message xml:lang="eo">Sistempolitiko preventas modifadon de la konstanta sistem-gastnomo</message>
     <message xml:lang="es">La política del sistema evita la modificación del nombre persistente del sistema</message>
     <message xml:lang="eu">Sistemako arauek sistemako ostalari-izen iraunkorra aldatzea saihesten dute</message>
     <message xml:lang="fr">La stratégie du système empêche toute modification du nom d'hôte du système persistant</message>

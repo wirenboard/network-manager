@@ -302,6 +302,7 @@ NM_DEVICE_DHCP4_CONFIG
 NM_DEVICE_IP6_CONFIG
 NM_DEVICE_DHCP6_CONFIG
 NM_DEVICE_STATE
+NM_DEVICE_ACTIVE_CONNECTION
 NM_DEVICE_VENDOR
 NM_DEVICE_PRODUCT
 NMDevice
@@ -320,6 +321,7 @@ nm_device_get_dhcp4_config
 nm_device_get_ip6_config
 nm_device_get_dhcp6_config
 nm_device_get_state
+nm_device_get_active_connection
 nm_device_get_product
 nm_device_get_vendor
 NMDeviceDeactivateFn

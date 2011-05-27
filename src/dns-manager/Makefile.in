@@ -58,7 +58,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libdns_manager_la_DEPENDENCIES =  \
 	$(top_builddir)/src/logging/libnm-logging.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_libdns_manager_la_OBJECTS = libdns_manager_la-nm-dns-manager.lo \
 	libdns_manager_la-nm-dns-plugin.lo \
 	libdns_manager_la-nm-dns-dnsmasq.lo \
@@ -325,12 +326,14 @@ libdns_manager_la_SOURCES = \
 	nm-dns-utils.c
 
 libdns_manager_la_CPPFLAGS = \
+	$(LIBNL_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	-DLOCALSTATEDIR=\"$(localstatedir)\"
 
 libdns_manager_la_LIBADD = \
 	$(top_builddir)/src/logging/libnm-logging.la \
+	$(LIBNL_LIBS) \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
 

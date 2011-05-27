@@ -59,7 +59,7 @@ am__DEPENDENCIES_1 =
 libmodem_manager_la_DEPENDENCIES =  \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libmodem_manager_la_OBJECTS = libmodem_manager_la-nm-modem.lo \
 	libmodem_manager_la-nm-modem-cdma.lo \
 	libmodem_manager_la-nm-modem-gsm.lo \
@@ -325,11 +325,13 @@ libmodem_manager_la_SOURCES = \
 	nm-modem-types.h
 
 libmodem_manager_la_CPPFLAGS = \
+	$(LIBNL_CFLAGS) \
 	$(DBUS_CFLAGS)
 
 libmodem_manager_la_LIBADD = \
 	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
+	$(LIBNL_LIBS) \
 	$(DBUS_LIBS)
 
 all: all-am

@@ -1460,6 +1460,26 @@ real_complete_connection (NMDevice *device,
 	if (ap) {
 		ssid = nm_ap_get_ssid (ap);
 
+		if (ssid == NULL) {
+			/* The AP must be hidden.  Connecting to a WiFi AP requires the SSID
+			 * as part of the initial handshake, so check the connection details
+			 * for the SSID.  The AP object will still be used for encryption
+			 * settings and such.
+			 */
+			ssid = nm_setting_wireless_get_ssid (s_wifi);
+		}
+
+		if (ssid == NULL) {
+			/* If there's no SSID on the AP itself, and no SSID in the
+			 * connection data, then we cannot connect at all.  Return an error.
+			 */
+			g_set_error_literal (error,
+			                     NM_WIFI_ERROR,
+			                     NM_WIFI_ERROR_CONNECTION_INVALID,
+			                     "A 'wireless' setting with a valid SSID is required for hidden access points.");
+			return FALSE;
+		}
+
 		/* If the SSID is a well-known SSID, lock the connection to the AP's
 		 * specific BSSID so NM doesn't autoconnect to some random wifi net.
 		 */
@@ -2851,7 +2871,7 @@ remove_supplicant_timeouts (NMDeviceWifi *self)
 }
 
 static guint32
-find_supported_frequency (NMDeviceWifi *self, guint32 *freqs)
+find_supported_frequency (NMDeviceWifi *self, const guint32 *freqs)
 {
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	int i;
@@ -2887,25 +2907,25 @@ build_supplicant_config (NMDeviceWifi *self,
 	if (!config)
 		return NULL;
 
-	/* Figure out the Ad-Hoc frequency to use if creating an adhoc network; if
-	 * nothing was specified then pick something usable.
+	/* Supplicant requires an initial frequency for Ad-Hoc networks; if the user
+	 * didn't specify one and we didn't find an AP that matched the connection,
+	 * just pick a frequency the device supports.
 	 */
-	if ((nm_ap_get_mode (ap) == NM_802_11_MODE_ADHOC) && nm_ap_get_user_created (ap)) {
+	if (nm_ap_get_mode (ap) == NM_802_11_MODE_ADHOC) {
 		const char *band = nm_setting_wireless_get_band (s_wireless);
+		const guint32 a_freqs[] = { 5180, 5200, 5220, 5745, 5765, 5785, 5805, 0 };
+		const guint32 bg_freqs[] = { 2412, 2437, 2462, 2472, 0 };
 
 		adhoc_freq = nm_ap_get_freq (ap);
 		if (!adhoc_freq) {
-			if (band && !strcmp (band, "a")) {
-				guint32 a_freqs[] = {5180, 5200, 5220, 5745, 5765, 5785, 5805, 0};
+			if (g_strcmp0 (band, "a") == 0)
 				adhoc_freq = find_supported_frequency (self, a_freqs);
-			} else {
-				guint32 bg_freqs[] = {2412, 2437, 2462, 2472, 0};
+			else
 				adhoc_freq = find_supported_frequency (self, bg_freqs);
-			}
 		}
 
 		if (!adhoc_freq) {
-			if (band && !strcmp (band, "a"))
+			if (g_strcmp0 (band, "a") == 0)
 				adhoc_freq = 5180;
 			else
 				adhoc_freq = 2462;
@@ -3098,15 +3118,8 @@ real_act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 		ap = nm_ap_new_fake_from_connection (connection);
 		g_return_val_if_fail (ap != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
-		switch (nm_ap_get_mode (ap)) {
-			case NM_802_11_MODE_ADHOC:
-				nm_ap_set_user_created (ap, TRUE);
-				break;
-			case NM_802_11_MODE_INFRA:
-			default:
-				nm_ap_set_broadcast (ap, FALSE);
-				break;
-		}
+		if (nm_ap_get_mode (ap) == NM_802_11_MODE_INFRA)
+			nm_ap_set_broadcast (ap, FALSE);
 
 		priv->ap_list = g_slist_prepend (priv->ap_list, ap);
 		nm_ap_export_to_dbus (ap);
@@ -3399,7 +3412,7 @@ activation_success_handler (NMDevice *dev)
 		nm_ap_set_address (ap, &bssid);
 	if (!nm_ap_get_freq (ap))
 		nm_ap_set_freq (ap, nm_device_wifi_get_frequency (self));
-	if (!nm_ap_get_max_bitrate (ap) && nm_ap_get_user_created (ap))
+	if (!nm_ap_get_max_bitrate (ap))
 		nm_ap_set_max_bitrate (ap, nm_device_wifi_get_bitrate (self));
 
 	tmp_ap = get_active_ap (self, ap, TRUE);
