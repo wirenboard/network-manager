@@ -1,4 +1,4 @@
-network-manager (0.8.9997-1) UNRELEASED; urgency=low
+network-manager (0.8.9997-1) experimental; urgency=low
 
   * New upstream release (0.9 rc3).
     - Correctly pass iface parameter to dispatcher scripts. (Closes: #627610)
@@ -9,7 +9,7 @@ network-manager (0.8.9997-1) UNRELEASED; urgency=low
       prevents the 01ifupdown dispatcher script from logging an error on DHCP
       lease changes. (Closes: #628154)
 
- -- Michael Biebl <biebl@debian.org>  Fri, 27 May 2011 19:57:47 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 29 May 2011 21:54:09 +0200
 
 network-manager (0.8.999-1) experimental; urgency=low
 
