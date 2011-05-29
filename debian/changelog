@@ -1,6 +1,7 @@
 network-manager (0.8.9997-1) UNRELEASED; urgency=low
 
   * New upstream release (0.9 rc3).
+    - Correctly pass iface parameter to dispatcher scripts. (Closes: #627610)
   * Update debian/libnm-glib4.symbols and debian/libnm-util2.symbols for new
     API additions.
 
