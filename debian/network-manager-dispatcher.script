@@ -40,7 +40,8 @@ case "$2" in
 #	export PHASE="pre-down"
 #	exec run-parts /etc/network/if-down.d
 #	;;
-    hostname)
+    hostname|dhcp4-change|dhcp6-change)
+        # Do nothing
 	;;
     *)
 	echo "$0: called with unknown action \`$2'" 1>&2
