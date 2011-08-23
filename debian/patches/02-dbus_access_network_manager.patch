@@ -3,11 +3,11 @@ Description: Add D-Bus policy for group netdev
 Author: Michael Biebl <biebl@debian.org>
 Index: network-manager/src/NetworkManager.conf
 ===================================================================
---- network-manager.orig/src/NetworkManager.conf	2011-04-09 05:49:01.955585032 +0200
-+++ network-manager/src/NetworkManager.conf	2011-04-09 06:12:26.525927194 +0200
-@@ -11,6 +11,70 @@
- 
-                 <allow send_interface="org.freedesktop.NetworkManager.SecretAgent"/>
+--- network-manager.orig/src/NetworkManager.conf	2011-08-23 19:17:04.091746773 +0200
++++ network-manager/src/NetworkManager.conf	2011-08-24 00:01:25.010444356 +0200
+@@ -24,6 +24,70 @@
+                 <allow send_destination="org.freedesktop.NetworkManager.pptp"/>
+                 <allow send_destination="org.freedesktop.NetworkManager.vpnc"/>
          </policy>
 +        <policy group="netdev">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>
