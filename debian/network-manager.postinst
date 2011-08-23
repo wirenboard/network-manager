@@ -33,9 +33,8 @@ mv_conffile() {
 case "$1" in
     configure)
 
-        if ! getent group netdev > /dev/null; then
-            addgroup --quiet --system netdev
-        fi
+        # Create netdev group that is used in the D-Bus policy file
+        addgroup --quiet --system netdev
 
         if [ -x "/etc/init.d/dbus" ]; then
             invoke-rc.d dbus force-reload || true
