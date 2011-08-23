@@ -852,16 +852,17 @@ test_connection_diff_a_only (void)
 			{ NULL, NM_SETTING_DIFF_RESULT_UNKNOWN }
 		} },
 		{ NM_SETTING_WIRED_SETTING_NAME, {
-			{ NM_SETTING_WIRED_PORT,               NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_SPEED,              NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_DUPLEX,             NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_AUTO_NEGOTIATE,     NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_MAC_ADDRESS,        NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_CLONED_MAC_ADDRESS, NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_MTU,                NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_S390_SUBCHANNELS,   NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_S390_NETTYPE,       NM_SETTING_DIFF_RESULT_IN_A },
-			{ NM_SETTING_WIRED_S390_OPTIONS,       NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_PORT,                  NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_SPEED,                 NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_DUPLEX,                NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_AUTO_NEGOTIATE,        NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_MAC_ADDRESS,           NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_CLONED_MAC_ADDRESS,    NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST, NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_MTU,                   NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_S390_SUBCHANNELS,      NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_S390_NETTYPE,          NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_S390_OPTIONS,          NM_SETTING_DIFF_RESULT_IN_A },
 			{ NULL, NM_SETTING_DIFF_RESULT_UNKNOWN },
 		} },
 		{ NM_SETTING_IP4_CONFIG_SETTING_NAME, {
@@ -1205,14 +1206,101 @@ test_connection_bad_base_types (void)
 	g_clear_error (&error);
 }
 
+static void
+test_setting_compare_id (void)
+{
+	NMSetting *old, *new;
+	gboolean success;
+
+	old = nm_setting_connection_new ();
+	g_object_set (old,
+	              NM_SETTING_CONNECTION_ID, "really awesome cool connection",
+	              NM_SETTING_CONNECTION_UUID, "fbbd59d5-acab-4e30-8f86-258d272617e7",
+	              NM_SETTING_CONNECTION_AUTOCONNECT, FALSE,
+	              NULL);
+
+	new = nm_setting_duplicate (old);
+	g_object_set (new, NM_SETTING_CONNECTION_ID, "some different connection id", NULL);
+
+	/* First make sure they are different */
+	success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (success == FALSE);
+
+	success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_IGNORE_ID);
+	g_assert (success);
+}
+
+static void
+test_setting_compare_secrets (NMSettingSecretFlags secret_flags,
+                              NMSettingCompareFlags comp_flags,
+                              gboolean remove_secret)
+{
+	NMSetting *old, *new;
+	gboolean success;
+
+	/* Make sure that a connection with transient/unsaved secrets compares
+	 * successfully to the same connection without those secrets.
+	 */
+
+	old = nm_setting_wireless_security_new ();
+	g_object_set (old,
+	              NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-psk",
+	              NM_SETTING_WIRELESS_SECURITY_PSK, "really cool psk",
+	              NULL);
+	nm_setting_set_secret_flags (old, NM_SETTING_WIRELESS_SECURITY_PSK, secret_flags, NULL);
+
+	/* Clear the PSK from the duplicated setting */
+	new = nm_setting_duplicate (old);
+	if (remove_secret) {
+		g_object_set (new, NM_SETTING_WIRELESS_SECURITY_PSK, NULL, NULL);
+
+		success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+		g_assert (success == FALSE);
+	}
+
+	success = nm_setting_compare (old, new, comp_flags);
+	g_assert (success);
+}
+
+static void
+test_setting_compare_vpn_secrets (NMSettingSecretFlags secret_flags,
+                                  NMSettingCompareFlags comp_flags,
+                                  gboolean remove_secret)
+{
+	NMSetting *old, *new;
+	gboolean success;
+
+	/* Make sure that a connection with transient/unsaved secrets compares
+	 * successfully to the same connection without those secrets.
+	 */
+
+	old = nm_setting_vpn_new ();
+	nm_setting_vpn_add_secret (NM_SETTING_VPN (old), "foobarbaz", "really secret password");
+	nm_setting_vpn_add_secret (NM_SETTING_VPN (old), "asdfasdfasdf", "really adfasdfasdfasdf");
+	nm_setting_vpn_add_secret (NM_SETTING_VPN (old), "0123456778", "abcdefghijklmnpqrstuvqxyz");
+	nm_setting_vpn_add_secret (NM_SETTING_VPN (old), "borkbork", "yet another really secret password");
+	nm_setting_set_secret_flags (old, "borkbork", secret_flags, NULL);
+
+	/* Clear "borkbork" from the duplicated setting */
+	new = nm_setting_duplicate (old);
+	if (remove_secret) {
+		nm_setting_vpn_remove_secret (NM_SETTING_VPN (new), "borkbork");
+
+		/* First make sure they are different */
+		success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+		g_assert (success == FALSE);
+	}
+
+	success = nm_setting_compare (old, new, comp_flags);
+	g_assert (success);
+}
+
 int main (int argc, char **argv)
 {
 	GError *error = NULL;
-	DBusGConnection *bus;
 	char *base;
 
 	g_type_init ();
-	bus = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
 
 	if (!nm_utils_init (&error))
 		FAIL ("nm-utils-init", "failed to initialize libnm-util: %s", error->message);
@@ -1228,6 +1316,16 @@ int main (int argc, char **argv)
 	test_setting_to_hash_all ();
 	test_setting_to_hash_no_secrets ();
 	test_setting_to_hash_only_secrets ();
+	test_setting_compare_id ();
+	test_setting_compare_secrets (NM_SETTING_SECRET_FLAG_AGENT_OWNED, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS, TRUE);
+	test_setting_compare_secrets (NM_SETTING_SECRET_FLAG_NOT_SAVED, NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS, TRUE);
+	test_setting_compare_secrets (NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS, TRUE);
+	test_setting_compare_secrets (NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_EXACT, FALSE);
+	test_setting_compare_vpn_secrets (NM_SETTING_SECRET_FLAG_AGENT_OWNED, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS, TRUE);
+	test_setting_compare_vpn_secrets (NM_SETTING_SECRET_FLAG_NOT_SAVED, NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS, TRUE);
+	test_setting_compare_vpn_secrets (NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS, TRUE);
+	test_setting_compare_vpn_secrets (NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_EXACT, FALSE);
+
 	test_connection_to_hash_setting_name ();
 	test_setting_connection_permissions_helpers ();
 	test_setting_connection_permissions_property ();

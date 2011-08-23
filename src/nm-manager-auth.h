@@ -70,6 +70,8 @@ NMAuthChain *nm_auth_chain_new_dbus_sender (const char *dbus_sender,
 
 gpointer nm_auth_chain_get_data (NMAuthChain *chain, const char *tag);
 
+gpointer nm_auth_chain_steal_data (NMAuthChain *chain, const char *tag);
+
 void nm_auth_chain_set_data (NMAuthChain *chain,
                              const char *tag,
                              gpointer data,
@@ -102,7 +104,9 @@ gboolean nm_auth_uid_in_acl (NMConnection *connection,
                              gulong uid,
                              char **out_error_desc);
 
-void nm_auth_set_changed_func (GDestroyNotify callback, gpointer callback_data);
+void nm_auth_changed_func_register (GDestroyNotify callback, gpointer callback_data);
+
+void nm_auth_changed_func_unregister (GDestroyNotify callback, gpointer callback_data);
 
 #endif /* NM_MANAGER_AUTH_H */
 

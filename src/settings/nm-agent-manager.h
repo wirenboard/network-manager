@@ -25,6 +25,7 @@
 #include <glib-object.h>
 #include <nm-connection.h>
 #include "nm-settings-flags.h"
+#include "nm-secret-agent.h"
 
 #define NM_TYPE_AGENT_MANAGER            (nm_agent_manager_get_type ())
 #define NM_AGENT_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_AGENT_MANAGER, NMAgentManager))
@@ -39,6 +40,9 @@ typedef struct {
 
 typedef struct {
 	GObjectClass parent;
+
+	/* Signals */
+	void (*agent_registered)   (NMAgentManager *agent_mgr, NMSecretAgent *agent);
 } NMAgentManagerClass;
 
 GType nm_agent_manager_get_type (void);
@@ -84,5 +88,8 @@ guint32 nm_agent_manager_delete_secrets (NMAgentManager *manager,
                                          NMConnection *connection,
                                          gboolean filter_by_uid,
                                          gulong uid_filter);
+
+NMSecretAgent *nm_agent_manager_get_agent_by_user (NMAgentManager *manager,
+                                                   const char *username);
 
 #endif /* NM_AGENT_MANAGER_H */

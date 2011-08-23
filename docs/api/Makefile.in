@@ -333,7 +333,7 @@ AUTOMAKE_OPTIONS = 1.7
 @WITH_DOCS_TRUE@XSLTPROC = xsltproc --xinclude --nonet
 @WITH_DOCS_TRUE@XMLS = $(wildcard $(top_srcdir)/introspection/nm-*.xml)
 @WITH_DOCS_TRUE@OTHER_FILES = \
-@WITH_DOCS_TRUE@	$(top_srcdir)/introspection/all.xml \
+@WITH_DOCS_TRUE@	$(top_builddir)/introspection/all.xml \
 @WITH_DOCS_TRUE@	$(top_srcdir)/introspection/generic-types.xml \
 @WITH_DOCS_TRUE@	$(top_srcdir)/introspection/errors.xml \
 @WITH_DOCS_TRUE@	$(top_srcdir)/introspection/vpn-errors.xml \
@@ -732,7 +732,7 @@ uninstall-am: uninstall-local
 
 
 @WITH_DOCS_TRUE@spec.html: $(XMLS) $(OTHER_FILES) html-build.stamp
-@WITH_DOCS_TRUE@	$(XSLTPROC) $(top_srcdir)/tools/doc-generator.xsl $(top_srcdir)/introspection/all.xml > $@
+@WITH_DOCS_TRUE@	$(XSLTPROC) $(top_srcdir)/tools/doc-generator.xsl $(top_builddir)/introspection/all.xml > $@
 @WITH_DOCS_TRUE@	mkdir -p $(builddir)/html/
 @WITH_DOCS_TRUE@	cp $@ $(builddir)/html/
 

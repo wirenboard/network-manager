@@ -2707,6 +2707,7 @@ test_read_wired_8021x_peap_mschapv2 (void)
 	GError *error = NULL;
 	const char *tmp;
 	const char *expected_identity = "David Smith";
+	const char *expected_anon_identity = "somebody";
 	const char *expected_password = "foobar baz";
 	gboolean success = FALSE;
 	const char *expected_ca_cert_path;
@@ -2792,6 +2793,19 @@ test_read_wired_8021x_peap_mschapv2 (void)
 	        TEST_IFCFG_WIRED_8021x_PEAP_MSCHAPV2,
 	        NM_SETTING_802_1X_SETTING_NAME,
 	        NM_SETTING_802_1X_IDENTITY);
+
+	/* Anonymous Identity */
+	tmp = nm_setting_802_1x_get_anonymous_identity (s_8021x);
+	ASSERT (tmp != NULL,
+	        "wired-8021x-peap-mschapv2-verify-8021x", "failed to verify %s: missing %s / %s key",
+	        TEST_IFCFG_WIRED_8021x_PEAP_MSCHAPV2,
+	        NM_SETTING_802_1X_SETTING_NAME,
+	        NM_SETTING_802_1X_ANONYMOUS_IDENTITY);
+	ASSERT (strcmp (tmp, expected_anon_identity) == 0,
+	        "wired-8021x-peap-mschapv2-verify-8021x", "failed to verify %s: unexpected %s / %s key value",
+	        TEST_IFCFG_WIRED_8021x_PEAP_MSCHAPV2,
+	        NM_SETTING_802_1X_SETTING_NAME,
+	        NM_SETTING_802_1X_ANONYMOUS_IDENTITY);
 
 	/* Password */
 	tmp = nm_setting_802_1x_get_password (s_8021x);
@@ -6491,7 +6505,7 @@ test_write_wired_static (void)
 	struct in6_addr ip6, ip6_1, ip6_2;
 	struct in6_addr route1_dest, route2_dest, route1_nexthop, route2_nexthop;
 	struct in6_addr dns6_1, dns6_2;
-	const guint32 route1_prefix = 64, route2_prefix = 0;
+	const guint32 route1_prefix = 64, route2_prefix = 128;
 	const guint32 route1_metric = 99, route2_metric = 1;
 	NMIP4Address *addr;
 	NMIP6Address *addr6;
@@ -6774,6 +6788,7 @@ test_write_wired_dhcp (void)
 
 	g_object_set (s_ip6,
 	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
 	              NULL);
 
 	/* Save the ifcfg */
@@ -7234,7 +7249,10 @@ test_write_wired_static_routes (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wired-static-routes-write", "failed to verify connection: %s",
@@ -7350,7 +7368,10 @@ test_write_wired_dhcp_8021x_peap_mschapv2 (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	/* 802.1x setting */
 	s_8021x = (NMSetting8021x *) nm_setting_802_1x_new ();
@@ -7361,6 +7382,7 @@ test_write_wired_dhcp_8021x_peap_mschapv2 (void)
 
 	g_object_set (s_8021x,
 	              NM_SETTING_802_1X_IDENTITY, "Bob Saget",
+	              NM_SETTING_802_1X_ANONYMOUS_IDENTITY, "barney",
 	              NM_SETTING_802_1X_PASSWORD, "Kids, it was back in October 2008...",
 	              NM_SETTING_802_1X_PHASE1_PEAPVER, "1",
 	              NM_SETTING_802_1X_PHASE1_PEAPLABEL, "1",
@@ -7508,7 +7530,10 @@ test_write_wired_8021x_tls (NMSetting8021xCKScheme scheme,
 	/* IP6 setting */
 	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
 	g_assert (s_ip6);
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
 	/* 802.1x setting */
@@ -7753,7 +7778,10 @@ test_write_wifi_open (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-open-write", "failed to verify connection: %s",
@@ -7892,7 +7920,10 @@ test_write_wifi_open_hex_ssid (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-open-hex-ssid-write", "failed to verify connection: %s",
@@ -8035,7 +8066,10 @@ test_write_wifi_wep (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wep-write", "failed to verify connection: %s",
@@ -8198,7 +8232,10 @@ test_write_wifi_wep_adhoc (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wep-adhoc-write", "failed to verify connection: %s",
@@ -8351,7 +8388,10 @@ test_write_wifi_wep_passphrase (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wep-passphrase-write", "failed to verify connection: %s",
@@ -8506,7 +8546,10 @@ test_write_wifi_wep_40_ascii (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wep-40-ascii-write", "failed to verify connection: %s",
@@ -8661,7 +8704,10 @@ test_write_wifi_wep_104_ascii (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wep-104-ascii-write", "failed to verify connection: %s",
@@ -8813,7 +8859,10 @@ test_write_wifi_leap (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-leap-write", "failed to verify connection: %s",
@@ -8949,7 +8998,11 @@ test_write_wifi_leap_secret_flags (NMSettingSecretFlags flags)
 	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
 	g_assert (s_ip6);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	success = nm_connection_verify (connection, &error);
 	g_assert_no_error (error);
@@ -9114,7 +9167,10 @@ test_write_wifi_wpa_psk (const char *name,
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        test_name, "failed to verify connection: %s",
@@ -9277,7 +9333,10 @@ test_write_wifi_wpa_psk_adhoc (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wpa-psk-adhoc-write", "failed to verify connection: %s",
@@ -9458,7 +9517,10 @@ test_write_wifi_wpa_eap_tls (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wpa-eap-tls-write", "failed to verify connection: %s",
@@ -9657,7 +9719,10 @@ test_write_wifi_wpa_eap_ttls_tls (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wpa-eap-ttls-tls-write", "failed to verify connection: %s",
@@ -9828,7 +9893,10 @@ test_write_wifi_wpa_eap_ttls_mschapv2 (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	ASSERT (nm_connection_verify (connection, &error) == TRUE,
 	        "wifi-wpa-eap-ttls-mschapv2-write", "failed to verify connection: %s",
@@ -9970,7 +10038,10 @@ test_write_wifi_wpa_then_open (void)
 	g_assert (s_ip6);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	success = nm_connection_verify (connection, &error);
 	g_assert_no_error (error);
@@ -10154,8 +10225,12 @@ test_write_wifi_dynamic_wep_leap (void)
 	/* IP6 setting */
 	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
 	g_assert (s_ip6);
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
+
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	success = nm_connection_verify (connection, &error);
 	g_assert_no_error (error);
@@ -10688,6 +10763,7 @@ test_write_wired_qeth_dhcp (void)
 
 	g_object_set (s_ip6,
 	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
 	              NULL);
 
 	/* Verify */
@@ -10804,7 +10880,11 @@ test_write_wired_ctc_dhcp (void)
 	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
 	g_assert (s_ip6);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	/* Verify */
 	success = nm_connection_verify (connection, &error);
@@ -10939,6 +11019,7 @@ test_write_permissions (void)
 
 	g_object_set (s_ip6,
 	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
 	              NULL);
 
 	/* Verify */
@@ -11040,7 +11121,11 @@ test_write_wifi_wep_agent_keys (void)
 	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
 	g_assert (s_ip6);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
-	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE, NULL);
+
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
 
 	/* Wifi setting */
 	s_wifi = (NMSettingWireless *) nm_setting_wireless_new ();

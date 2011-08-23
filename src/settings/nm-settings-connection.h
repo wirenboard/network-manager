@@ -24,6 +24,7 @@
 
 #include <nm-connection.h>
 #include "nm-settings-flags.h"
+#include <net/ethernet.h>
 
 G_BEGIN_DECLS
 
@@ -116,6 +117,9 @@ gboolean nm_settings_connection_is_visible (NMSettingsConnection *self);
 
 void nm_settings_connection_recheck_visibility (NMSettingsConnection *self);
 
+gboolean nm_settings_connection_check_permission (NMSettingsConnection *self,
+                                                  const char *permission);
+
 void nm_settings_connection_signal_remove (NMSettingsConnection *self);
 
 guint64 nm_settings_connection_get_timestamp (NMSettingsConnection *connection);
@@ -123,6 +127,14 @@ guint64 nm_settings_connection_get_timestamp (NMSettingsConnection *connection);
 void nm_settings_connection_update_timestamp (NMSettingsConnection *connection, guint64 timestamp);
 
 void nm_settings_connection_read_and_fill_timestamp (NMSettingsConnection *connection);
+
+gboolean nm_settings_connection_has_seen_bssid (NMSettingsConnection *connection,
+                                                const struct ether_addr *bssid);
+
+void nm_settings_connection_add_seen_bssid (NMSettingsConnection *connection,
+                                            const struct ether_addr *seen_bssid);
+
+void nm_settings_connection_read_and_fill_seen_bssids (NMSettingsConnection *connection);
 
 G_END_DECLS
 

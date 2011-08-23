@@ -63,6 +63,7 @@
 #include "nm-settings-connection.h"
 #include "nm-manager-auth.h"
 #include "NetworkManagerUtils.h"
+#include "nm-utils.h"
 
 #define NM_AUTOIP_DBUS_SERVICE "org.freedesktop.nm_avahi_autoipd"
 #define NM_AUTOIP_DBUS_IFACE   "org.freedesktop.nm_avahi_autoipd"
@@ -172,6 +173,7 @@ struct PendingActivation {
 	DBusGMethodInvocation *context;
 	PendingActivationFunc callback;
 	NMAuthChain *chain;
+	const char *wifi_shared_permission;
 
 	char *connection_path;
 	NMConnection *connection;
@@ -739,16 +741,14 @@ pending_activation_new (NMManager *manager,
 }
 
 static void
-pending_auth_net_done (NMAuthChain *chain,
-                       GError *error,
-                       DBusGMethodInvocation *context,
-                       gpointer user_data)
+pending_auth_done (NMAuthChain *chain,
+                   GError *error,
+                   DBusGMethodInvocation *context,
+                   gpointer user_data)
 {
 	PendingActivation *pending = user_data;
 	NMAuthCallResult result;
 	GError *tmp_error = NULL;
-
-	pending->chain = NULL;
 
 	/* Caller has had a chance to obtain authorization, so we only need to
 	 * check for 'yes' here.
@@ -758,10 +758,23 @@ pending_auth_net_done (NMAuthChain *chain,
 		tmp_error = g_error_new_literal (NM_MANAGER_ERROR,
 		                                 NM_MANAGER_ERROR_PERMISSION_DENIED,
 		                                 "Not authorized to control networking.");
+		goto out;
 	}
 
+	if (pending->wifi_shared_permission) {
+		result = nm_auth_chain_get_result (chain, pending->wifi_shared_permission);
+		if (result != NM_AUTH_CALL_RESULT_YES) {
+			tmp_error = g_error_new_literal (NM_MANAGER_ERROR,
+			                                 NM_MANAGER_ERROR_PERMISSION_DENIED,
+			                                 "Not authorized to share connections via wifi.");
+			goto out;
+		}
+	}
+
+	/* Otherwise authorized and available to activate */
+
+out:
 	pending->callback (pending, tmp_error);
-	nm_auth_chain_unref (chain);
 	g_clear_error (&tmp_error);
 }
 
@@ -772,12 +785,15 @@ pending_activation_check_authorized (PendingActivation *pending,
 	char *error_desc = NULL;
 	gulong sender_uid = G_MAXULONG;
 	GError *error;
+	const char *wifi_permission = NULL;
+	NMConnection *connection;
+	NMSettings *settings;
 
 	g_return_if_fail (pending != NULL);
 	g_return_if_fail (dbus_mgr != NULL);
 
 	if (!nm_auth_get_caller_uid (pending->context, 
-		                         dbus_mgr,
+	                             dbus_mgr,
 	                             &sender_uid,
 	                             &error_desc)) {
 		error = g_error_new_literal (NM_MANAGER_ERROR,
@@ -795,17 +811,40 @@ pending_activation_check_authorized (PendingActivation *pending,
 		return;
 	}
 
+	/* By this point we have an auto-completed connection (for AddAndActivate)
+	 * or an existing connection (for Activate).
+	 */
+	connection = pending->connection;
+	if (!connection) {
+		settings = NM_MANAGER_GET_PRIVATE (pending->manager)->settings;
+		connection = (NMConnection *) nm_settings_get_connection_by_path (settings, pending->connection_path);
+	}
+
+	if (!connection) {
+		error = g_error_new_literal (NM_MANAGER_ERROR,
+		                             NM_MANAGER_ERROR_UNKNOWN_CONNECTION,
+		                             "Connection could not be found.");
+		pending->callback (pending, error);
+		g_error_free (error);
+		return;
+	}
+
 	/* First check if the user is allowed to use networking at all, giving
 	 * the user a chance to authenticate to gain the permission.
 	 */
 	pending->chain = nm_auth_chain_new (pending->context,
 	                                    NULL,
-	                                    pending_auth_net_done,
+	                                    pending_auth_done,
 	                                    pending);
 	g_assert (pending->chain);
-	nm_auth_chain_add_call (pending->chain,
-	                        NM_AUTH_PERMISSION_NETWORK_CONTROL,
-	                        TRUE);
+	nm_auth_chain_add_call (pending->chain, NM_AUTH_PERMISSION_NETWORK_CONTROL, TRUE);
+
+	/* Shared wifi connections require special permissions too */
+	wifi_permission = nm_utils_get_shared_wifi_permission (connection);
+	if (wifi_permission) {
+		pending->wifi_shared_permission = wifi_permission;
+		nm_auth_chain_add_call (pending->chain, wifi_permission, TRUE);
+	}
 }
 
 static void
@@ -1040,52 +1079,27 @@ manager_hidden_ap_found (NMDeviceInterface *device,
 {
 	NMManager *manager = NM_MANAGER (user_data);
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-	const struct ether_addr *ap_addr;
-	const GByteArray *ap_ssid;
+	const struct ether_addr *bssid;
 	GSList *iter;
 	GSList *connections;
 	gboolean done = FALSE;
 
-	ap_ssid = nm_ap_get_ssid (ap);
-	if (ap_ssid && ap_ssid->len)
-		return;
+	g_return_if_fail (nm_ap_get_ssid (ap) == NULL);
 
-	ap_addr = nm_ap_get_address (ap);
-	g_assert (ap_addr);
+	bssid = nm_ap_get_address (ap);
+	g_assert (bssid);
 
 	/* Look for this AP's BSSID in the seen-bssids list of a connection,
 	 * and if a match is found, copy over the SSID */
 	connections = nm_settings_get_connections (priv->settings);
-
 	for (iter = connections; iter && !done; iter = g_slist_next (iter)) {
 		NMConnection *connection = NM_CONNECTION (iter->data);
-		NMSettingWireless *s_wireless;
-		const GByteArray *ssid;
-		guint32 num_bssids;
-		guint32 i;
+		NMSettingWireless *s_wifi;
 
-		s_wireless = (NMSettingWireless *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRELESS);
-		if (!s_wireless)
-			continue;
-
-		num_bssids = nm_setting_wireless_get_num_seen_bssids (s_wireless);
-		if (num_bssids < 1)
-			continue;
-
-		ssid = nm_setting_wireless_get_ssid (s_wireless);
-		g_assert (ssid);
-
-		for (i = 0; i < num_bssids && !done; i++) {
-			const char *seen_bssid = nm_setting_wireless_get_seen_bssid (s_wireless, i);
-			struct ether_addr seen_addr;
-
-			if (ether_aton_r (seen_bssid, &seen_addr)) {
-				if (memcmp (ap_addr, &seen_addr, sizeof (struct ether_addr)) == 0) {
-					/* Copy the SSID from the connection to the AP */
-					nm_ap_set_ssid (ap, ssid);
-					done = TRUE;
-				}
-			}
+		s_wifi = nm_connection_get_setting_wireless (connection);
+		if (s_wifi) {
+			if (nm_settings_connection_has_seen_bssid (NM_SETTINGS_CONNECTION (connection), bssid))
+				nm_ap_set_ssid (ap, nm_setting_wireless_get_ssid (s_wifi));
 		}
 	}
 	g_slist_free (connections);
@@ -1667,12 +1681,11 @@ bluez_manager_bdaddr_removed_cb (NMBluezManager *bluez_mgr,
 	g_return_if_fail (bdaddr != NULL);
 	g_return_if_fail (object_path != NULL);
 
-	nm_log_info (LOGD_HW, "BT device %s removed", bdaddr);
-
 	for (iter = priv->devices; iter; iter = iter->next) {
 		NMDevice *device = NM_DEVICE (iter->data);
 
 		if (!strcmp (nm_device_get_udi (device), object_path)) {
+			nm_log_info (LOGD_HW, "BT device %s removed", bdaddr);
 			priv->devices = remove_one_device (self, priv->devices, device, FALSE);
 			break;
 		}
@@ -1866,6 +1879,8 @@ internal_activate_device (NMManager *manager,
 
 	/* Tear down any existing connection */
 	if (nm_device_get_act_request (device)) {
+		nm_log_info (LOGD_DEVICE, "(%s): disconnecting for new activation request.",
+		             nm_device_get_iface (device));
 		nm_device_state_changed (device,
 		                         NM_DEVICE_STATE_DISCONNECTED,
 		                         NM_DEVICE_STATE_REASON_NONE);
@@ -2040,7 +2055,9 @@ pending_activate (NMManager *self, PendingActivation *pending)
 
 	if (!path) {
 		nm_log_warn (LOGD_CORE, "connection %s failed to activate: (%d) %s",
-		             pending->connection_path, error->code, error->message);
+		             pending->connection_path,
+		             error ? error->code : -1,
+		             error && error->message ? error->message : "(unknown)");
 	} else
 		g_object_notify (G_OBJECT (pending->manager), NM_MANAGER_ACTIVE_CONNECTIONS);
 
@@ -3105,6 +3122,13 @@ nm_manager_get (NMSettings *settings,
 }
 
 static void
+authority_changed_cb (gpointer user_data)
+{
+	/* Let clients know they should re-check their authorization */
+	g_signal_emit (NM_MANAGER (user_data), signals[CHECK_PERMISSIONS], 0);
+}
+
+static void
 dispose (GObject *object)
 {
 	NMManager *manager = NM_MANAGER (object);
@@ -3121,7 +3145,7 @@ dispose (GObject *object)
 	g_slist_foreach (priv->auth_chains, (GFunc) nm_auth_chain_unref, NULL);
 	g_slist_free (priv->auth_chains);
 
-	nm_auth_set_changed_func (NULL, NULL);
+	nm_auth_changed_func_unregister (authority_changed_cb, manager);
 
 	while (g_slist_length (priv->devices)) {
 		priv->devices = remove_one_device (manager,
@@ -3398,13 +3422,6 @@ periodic_update_active_connection_timestamps (gpointer user_data)
 }
 
 static void
-authority_changed_cb (gpointer user_data)
-{
-	/* Let clients know they should re-check their authorization */
-	g_signal_emit (NM_MANAGER (user_data), signals[CHECK_PERMISSIONS], 0);
-}
-
-static void
 nm_manager_init (NMManager *manager)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
@@ -3502,7 +3519,7 @@ nm_manager_init (NMManager *manager)
 		nm_log_warn (LOGD_SUSPEND, "could not initialize UPower D-Bus proxy");
 
 	/* Listen for authorization changes */
-	nm_auth_set_changed_func (authority_changed_cb, manager);
+	nm_auth_changed_func_register (authority_changed_cb, manager);
 
 	/* Monitor the firmware directory */
 	if (strlen (KERNEL_FIRMWARE_DIR)) {

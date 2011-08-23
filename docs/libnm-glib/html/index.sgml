@@ -24,6 +24,7 @@
 <ANCHOR id="nm-client-new" href="libnm-glib/NMClient.html#nm-client-new">
 <ANCHOR id="nm-client-get-devices" href="libnm-glib/NMClient.html#nm-client-get-devices">
 <ANCHOR id="nm-client-get-device-by-path" href="libnm-glib/NMClient.html#nm-client-get-device-by-path">
+<ANCHOR id="nm-client-get-device-by-iface" href="libnm-glib/NMClient.html#nm-client-get-device-by-iface">
 <ANCHOR id="NMClientActivateFn" href="libnm-glib/NMClient.html#NMClientActivateFn">
 <ANCHOR id="nm-client-activate-connection" href="libnm-glib/NMClient.html#nm-client-activate-connection">
 <ANCHOR id="NMClientAddActivateFn" href="libnm-glib/NMClient.html#NMClientAddActivateFn">
@@ -622,6 +623,12 @@
 <ANCHOR id="nm-vpn-plugin-ui-widget-interface-get-widget" href="libnm-glib/libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-get-widget">
 <ANCHOR id="nm-vpn-plugin-ui-widget-interface-update-connection" href="libnm-glib/libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-update-connection">
 <ANCHOR id="nm-vpn-plugin-ui-widget-interface-save-secrets" href="libnm-glib/libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-save-secrets">
+<ANCHOR id="libnm-glib-nm-vpn-plugin-utils" href="libnm-glib/libnm-glib-nm-vpn-plugin-utils.html">
+<ANCHOR id="libnm-glib-nm-vpn-plugin-utils.synopsis" href="libnm-glib/libnm-glib-nm-vpn-plugin-utils.html#libnm-glib-nm-vpn-plugin-utils.synopsis">
+<ANCHOR id="libnm-glib-nm-vpn-plugin-utils.description" href="libnm-glib/libnm-glib-nm-vpn-plugin-utils.html#libnm-glib-nm-vpn-plugin-utils.description">
+<ANCHOR id="libnm-glib-nm-vpn-plugin-utils.details" href="libnm-glib/libnm-glib-nm-vpn-plugin-utils.html#libnm-glib-nm-vpn-plugin-utils.details">
+<ANCHOR id="nm-vpn-plugin-utils-read-vpn-details" href="libnm-glib/libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-read-vpn-details">
+<ANCHOR id="nm-vpn-plugin-utils-get-secret-flags" href="libnm-glib/libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-get-secret-flags">
 <ANCHOR id="annotation-glossterm-out" href="libnm-glib/annotation-glossary.html#annotation-glossterm-out">
 <ANCHOR id="annotation-glossterm-scope async" href="libnm-glib/annotation-glossary.html#annotation-glossterm-scope async">
 <ANCHOR id="annotation-glossterm-allow-none" href="libnm-glib/annotation-glossary.html#annotation-glossterm-allow-none">

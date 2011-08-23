@@ -400,6 +400,7 @@ show_connection (NMConnection *data, gpointer user_data)
 	NmCli *nmc = (NmCli *) user_data;
 	NMSettingConnection *s_con;
 	guint64 timestamp;
+	time_t timestamp_real;
 	char *timestamp_str;
 	char timestamp_real_str[64];
 
@@ -408,7 +409,8 @@ show_connection (NMConnection *data, gpointer user_data)
 		/* Obtain field values */
 		timestamp = nm_setting_connection_get_timestamp (s_con);
 		timestamp_str = g_strdup_printf ("%" G_GUINT64_FORMAT, timestamp);
-		strftime (timestamp_real_str, sizeof (timestamp_real_str), "%c", localtime ((time_t *) &timestamp));
+		timestamp_real = timestamp;
+		strftime (timestamp_real_str, sizeof (timestamp_real_str), "%c", localtime (&timestamp_real));
 
 		nmc->allowed_fields[0].value = nm_setting_connection_get_id (s_con);
 		nmc->allowed_fields[1].value = nm_setting_connection_get_uuid (s_con);
@@ -1075,22 +1077,10 @@ find_device_for_connection (NmCli *nmc,
 		/* VPN connections */
 		NMActiveConnection *active = NULL;
 		if (iface) {
-			const GPtrArray *connections = nm_client_get_active_connections (nmc->client);
-			for (i = 0; connections && (i < connections->len) && !active; i++) {
-				NMActiveConnection *candidate = g_ptr_array_index (connections, i);
-				const GPtrArray *devices = nm_active_connection_get_devices (candidate);
-				if (!devices || !devices->len)
-					continue;
+			*device = nm_client_get_device_by_iface (nmc->client, iface);
+			if (*device)
+				active = nm_device_get_active_connection (*device);
 
-				for (j = 0; devices && (j < devices->len); j++) {
-					NMDevice *dev = g_ptr_array_index (devices, j);
-					if (!strcmp (iface, nm_device_get_iface (dev))) {
-						active = candidate;
-						*device = dev;
-						break;
-					}
-				}
-			}
 			if (!active) {
 				g_set_error (error, 0, 0, _("no active connection on device '%s'"), iface);
 				return FALSE;

@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = add-connection-wired$(EXEEXT) \
-	list-connections$(EXEEXT)
+	list-connections$(EXEEXT) change-ipv4-addresses$(EXEEXT)
 subdir = examples/C/qt
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -65,6 +65,10 @@ add_connection_wired_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
+am_change_ipv4_addresses_OBJECTS = change-ipv4-addresses.$(OBJEXT)
+change_ipv4_addresses_OBJECTS = $(am_change_ipv4_addresses_OBJECTS)
+change_ipv4_addresses_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_list_connections_OBJECTS = list-connections.$(OBJEXT)
 list_connections_OBJECTS = $(am_list_connections_OBJECTS)
 list_connections_DEPENDENCIES = $(am__DEPENDENCIES_1) \
@@ -95,9 +99,10 @@ am__v_CXXLD_0 = @echo "  CXXLD " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(add_connection_wired_SOURCES) $(list_connections_SOURCES)
+SOURCES = $(add_connection_wired_SOURCES) \
+	$(change_ipv4_addresses_SOURCES) $(list_connections_SOURCES)
 DIST_SOURCES = $(add_connection_wired_SOURCES) \
-	$(list_connections_SOURCES)
+	$(change_ipv4_addresses_SOURCES) $(list_connections_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -322,9 +327,15 @@ list_connections_LDADD = \
 	$(DBUS_LIBS) \
 	$(QT_LIBS)
 
+change_ipv4_addresses_SOURCES = change-ipv4-addresses.cpp
+change_ipv4_addresses_LDADD = \
+	$(DBUS_LIBS) \
+	$(QT_LIBS)
+
 EXTRA_DIST = \
 	add-connection-wired.cpp \
-	list-connections.cpp
+	list-connections.cpp \
+	change-ipv4-addresses.cpp
 
 all: all-am
 
@@ -372,6 +383,9 @@ clean-noinstPROGRAMS:
 add-connection-wired$(EXEEXT): $(add_connection_wired_OBJECTS) $(add_connection_wired_DEPENDENCIES) 
 	@rm -f add-connection-wired$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(add_connection_wired_OBJECTS) $(add_connection_wired_LDADD) $(LIBS)
+change-ipv4-addresses$(EXEEXT): $(change_ipv4_addresses_OBJECTS) $(change_ipv4_addresses_DEPENDENCIES) 
+	@rm -f change-ipv4-addresses$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(change_ipv4_addresses_OBJECTS) $(change_ipv4_addresses_LDADD) $(LIBS)
 list-connections$(EXEEXT): $(list_connections_OBJECTS) $(list_connections_DEPENDENCIES) 
 	@rm -f list-connections$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(list_connections_OBJECTS) $(list_connections_LDADD) $(LIBS)
@@ -383,6 +397,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/add-connection-wired.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/change-ipv4-addresses.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list-connections.Po@am__quote@
 
 .cpp.o:

@@ -2,8 +2,8 @@ AC_PREREQ([2.63])
 
 dnl The NM version number
 m4_define([nm_major_version], [0])
-m4_define([nm_minor_version], [8])
-m4_define([nm_micro_version], [9997])
+m4_define([nm_minor_version], [9])
+m4_define([nm_micro_version], [0])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 
@@ -15,7 +15,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
-AM_INIT_AUTOMAKE([1.10 subdir-objects tar-ustar no-dist-gzip dist-bzip2])
+AM_INIT_AUTOMAKE([1.10 subdir-objects tar-ustar no-dist-gzip dist-bzip2 -Wno-portability])
 AM_MAINTAINER_MODE([enable])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([no])])
@@ -225,7 +225,7 @@ AC_COMPILE_IFELSE(
         [ac_have_iwevgenie=no])
 AC_MSG_RESULT($ac_have_iwevgenie)
 if test "$ac_have_iwevgenie" = no; then
-	AC_MSG_ERROR(wireless-tools library and development headers >= 28pre9 not installed or not functional)
+	AC_MSG_ERROR(wireless-tools or libiw development headers >= 28pre9 not installed or not functional)
 fi
 
 dnl
@@ -268,7 +268,7 @@ AC_SUBST(GIO_LIBS)
 GOBJECT_INTROSPECTION_CHECK([0.9.6])
 
 # Qt4
-PKG_CHECK_MODULES(QT, [Qt >= 4 QtCore QtDBus], [have_qt=yes],[have_qt=no])
+PKG_CHECK_MODULES(QT, [Qt >= 4 QtCore QtDBus QtNetwork], [have_qt=yes],[have_qt=no])
 AC_ARG_ENABLE(qt, AS_HELP_STRING([--enable-qt], [enable Qt examples]),
                      [enable_qt=${enableval}], [enable_qt=${have_qt}])
 if (test "${enable_qt}" = "yes"); then
@@ -664,6 +664,7 @@ initscript/Mandriva/networkmanager
 initscript/linexa/Makefile
 initscript/linexa/networkmanager
 introspection/Makefile
+introspection/all.xml
 man/Makefile
 man/NetworkManager.8
 man/NetworkManager.conf.5

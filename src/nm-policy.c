@@ -46,6 +46,7 @@
 #include "nm-dns-manager.h"
 #include "nm-vpn-manager.h"
 #include "nm-policy-hostname.h"
+#include "nm-manager-auth.h"
 
 struct NMPolicy {
 	NMManager *manager;
@@ -66,12 +67,17 @@ struct NMPolicy {
 
 	HostnameThread *lookup;
 
+	gint reset_retries_id;  /* idle handler for resetting the retries count */
+
 	char *orig_hostname; /* hostname at NM start time */
 	char *cur_hostname;  /* hostname we want to assign */
 };
 
 #define RETRIES_TAG "autoconnect-retries"
 #define RETRIES_DEFAULT	4
+#define RESET_RETRIES_TIMESTAMP_TAG "reset-retries-timestamp-tag"
+#define RESET_RETRIES_TIMER 300
+#define FAILURE_REASON_TAG "failure-reason"
 
 static NMDevice *
 get_best_ip4_device (NMManager *manager, NMActRequest **out_req)
@@ -316,36 +322,36 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
 		/* Grab a hostname out of the device's DHCP4 config */
 		dhcp4_config = nm_device_get_dhcp4_config (best4);
 		if (dhcp4_config) {
-			p = dhcp_hostname = nm_dhcp4_config_get_option (dhcp4_config, "host_name");
+			p = dhcp_hostname = nm_dhcp4_config_get_option (dhcp4_config, "new_host_name");
 			if (dhcp_hostname && strlen (dhcp_hostname)) {
 				/* Sanity check; strip leading spaces */
 				while (*p) {
 					if (!isblank (*p++)) {
-						_set_hostname (policy, TRUE, dhcp_hostname, "from DHCPv4");
+						_set_hostname (policy, TRUE, p-1, "from DHCPv4");
 						return;
 					}
 				}
 				nm_log_warn (LOGD_DNS, "DHCPv4-provided hostname '%s' looks invalid; ignoring it",
-					         dhcp_hostname);
+				             dhcp_hostname);
 			}
 		}
 	} else if (best6) {
 		NMDHCP6Config *dhcp6_config;
 
-		/* Grab a hostname out of the device's DHCP4 config */
+		/* Grab a hostname out of the device's DHCP6 config */
 		dhcp6_config = nm_device_get_dhcp6_config (best6);
 		if (dhcp6_config) {
-			p = dhcp_hostname = nm_dhcp6_config_get_option (dhcp6_config, "host_name");
+			p = dhcp_hostname = nm_dhcp6_config_get_option (dhcp6_config, "new_host_name");
 			if (dhcp_hostname && strlen (dhcp_hostname)) {
 				/* Sanity check; strip leading spaces */
 				while (*p) {
 					if (!isblank (*p++)) {
-						_set_hostname (policy, TRUE, dhcp_hostname, "from DHCPv6");
+						_set_hostname (policy, TRUE, p-1, "from DHCPv6");
 						return;
 					}
 				}
 				nm_log_warn (LOGD_DNS, "DHCPv6-provided hostname '%s' looks invalid; ignoring it",
-					         dhcp_hostname);
+				             dhcp_hostname);
 			}
 		}
 	}
@@ -722,16 +728,29 @@ auto_activate_device (gpointer user_data)
 
 	/* Remove connections that shouldn't be auto-activated */
 	while (iter) {
-		NMConnection *candidate = NM_CONNECTION (iter->data);
+		NMSettingsConnection *candidate = NM_SETTINGS_CONNECTION (iter->data);
+		gboolean remove_it = FALSE;
+		const char *permission;
 
 		/* Grab next item before we possibly delete the current item */
 		iter = g_slist_next (iter);
 
 		/* Ignore connections that were tried too many times or are not visible
-		 * to any logged-in users.
+		 * to any logged-in users.  Also ignore shared wifi connections for
+		 * which no user has the shared wifi permission.
 		 */
-		if (   get_connection_auto_retries (candidate) == 0
-		    || nm_settings_connection_is_visible (NM_SETTINGS_CONNECTION (candidate)) == FALSE)
+		if (   get_connection_auto_retries (NM_CONNECTION (candidate)) == 0
+		    || nm_settings_connection_is_visible (candidate) == FALSE)
+			remove_it = TRUE;
+		else {
+			permission = nm_utils_get_shared_wifi_permission (NM_CONNECTION (candidate));
+			if (permission) {
+				if (nm_settings_connection_check_permission (candidate, permission) == FALSE)
+					remove_it = TRUE;
+			}
+		}
+
+		if (remove_it)
 			connections = g_slist_remove (connections, candidate);
 	}
 
@@ -739,6 +758,8 @@ auto_activate_device (gpointer user_data)
 	if (best_connection) {
 		GError *error = NULL;
 
+		nm_log_info (LOGD_DEVICE, "Auto-activating connection '%s'.",
+		             nm_connection_get_id (best_connection));
 		if (!nm_manager_activate_connection (policy->manager,
 		                                     best_connection,
 		                                     specific_object,
@@ -817,13 +838,34 @@ hostname_changed (NMManager *manager, GParamSpec *pspec, gpointer user_data)
 }
 
 static void
-reset_retries_all (NMSettings *settings)
+reset_retries_all (NMSettings *settings, NMDevice *device)
+{
+	GSList *connections, *iter;
+	GError *error = NULL;
+
+	connections = nm_settings_get_connections (settings);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		if (!device || nm_device_interface_check_connection_compatible (NM_DEVICE_INTERFACE (device), iter->data, &error))
+			set_connection_auto_retries (NM_CONNECTION (iter->data), RETRIES_DEFAULT);
+		g_clear_error (&error);
+	}
+	g_slist_free (connections);
+}
+
+static void
+reset_retries_for_failed_secrets (NMSettings *settings)
 {
 	GSList *connections, *iter;
 
 	connections = nm_settings_get_connections (settings);
-	for (iter = connections; iter; iter = g_slist_next (iter))
-		set_connection_auto_retries (NM_CONNECTION (iter->data), RETRIES_DEFAULT);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMDeviceStateReason reason = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (iter->data), FAILURE_REASON_TAG));
+
+		if (reason == NM_DEVICE_STATE_REASON_NO_SECRETS) {
+			set_connection_auto_retries (NM_CONNECTION (iter->data), RETRIES_DEFAULT);
+			g_object_set_data (G_OBJECT (iter->data), FAILURE_REASON_TAG, GUINT_TO_POINTER (0));
+		}
+	}
 	g_slist_free (connections);
 }
 
@@ -838,7 +880,7 @@ sleeping_changed (NMManager *manager, GParamSpec *pspec, gpointer user_data)
 
 	/* Reset retries on all connections so they'll checked on wakeup */
 	if (sleeping || !enabled)
-		reset_retries_all (policy->settings);
+		reset_retries_all (policy->settings, NULL);
 }
 
 static void
@@ -854,6 +896,9 @@ schedule_activate_check (NMPolicy *policy, NMDevice *device, guint delay_seconds
 	if (state < NM_DEVICE_STATE_DISCONNECTED)
 		return;
 
+	if (!nm_device_interface_get_enabled (NM_DEVICE_INTERFACE (device)))
+		return;
+
 	if (!nm_device_autoconnect_allowed (device))
 		return;
 
@@ -862,6 +907,37 @@ schedule_activate_check (NMPolicy *policy, NMDevice *device, guint delay_seconds
 		data = activate_data_new (policy, device, delay_seconds);
 		policy->pending_activation_checks = g_slist_append (policy->pending_activation_checks, data);
 	}
+}
+
+static gboolean
+reset_connections_retries (gpointer user_data)
+{
+	NMPolicy *policy = (NMPolicy *) user_data;
+	GSList *connections, *iter;
+	time_t con_stamp, min_stamp, now;
+
+	policy->reset_retries_id = 0;
+
+	min_stamp = now = time (NULL);
+	connections = nm_settings_get_connections (policy->settings);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		con_stamp = GPOINTER_TO_SIZE (g_object_get_data (G_OBJECT (iter->data), RESET_RETRIES_TIMESTAMP_TAG));
+		if (con_stamp == 0)
+			continue;
+		if (con_stamp + RESET_RETRIES_TIMER <= now) {
+			set_connection_auto_retries (NM_CONNECTION (iter->data), RETRIES_DEFAULT);
+			g_object_set_data (G_OBJECT (iter->data), RESET_RETRIES_TIMESTAMP_TAG, GSIZE_TO_POINTER (0));
+			continue;
+		}
+		if (con_stamp < min_stamp)
+			min_stamp = con_stamp;
+	}
+	g_slist_free (connections);
+
+	/* Schedule the handler again if there are some stamps left */
+	if (min_stamp != now)
+		policy->reset_retries_id = g_timeout_add_seconds (RESET_RETRIES_TIMER - (now - min_stamp), reset_connections_retries, policy);
+	return FALSE;
 }
 
 static NMConnection *
@@ -886,6 +962,9 @@ device_state_changed (NMDevice *device,
 	NMPolicy *policy = (NMPolicy *) user_data;
 	NMConnection *connection = get_device_connection (device);
 
+	if (connection)
+		g_object_set_data (G_OBJECT (connection), FAILURE_REASON_TAG, GUINT_TO_POINTER (0));
+
 	switch (new_state) {
 	case NM_DEVICE_STATE_FAILED:
 		/* Mark the connection invalid if it failed during activation so that
@@ -900,6 +979,11 @@ device_state_changed (NMDevice *device,
 				 * automatically retrying because it's just going to fail anyway.
 				 */
 				set_connection_auto_retries (connection, 0);
+
+				/* Mark the connection as failed due to missing secrets so that we can reset
+				 * RETRIES_TAG and automatically re-try when an secret agent registers.
+				 */
+				g_object_set_data (G_OBJECT (connection), FAILURE_REASON_TAG, GUINT_TO_POINTER (NM_DEVICE_STATE_REASON_NO_SECRETS));
 			} else if (tries > 0) {
 				/* Otherwise if it's a random failure, just decrease the number
 				 * of automatic retries so that the connection gets tried again
@@ -908,8 +992,13 @@ device_state_changed (NMDevice *device,
 				set_connection_auto_retries (connection, tries - 1);
 			}
 
-			if (get_connection_auto_retries (connection) == 0)
+			if (get_connection_auto_retries (connection) == 0) {
 				nm_log_info (LOGD_DEVICE, "Marking connection '%s' invalid.", nm_connection_get_id (connection));
+				/* Schedule a handler to reset retries count */
+				g_object_set_data (G_OBJECT (connection), RESET_RETRIES_TIMESTAMP_TAG, GSIZE_TO_POINTER ((gsize) time (NULL)));
+				if (!policy->reset_retries_id)
+					policy->reset_retries_id = g_timeout_add_seconds (RESET_RETRIES_TIMER, reset_connections_retries, policy);
+			}
 			nm_connection_clear_secrets (connection);
 		}
 		schedule_activate_check (policy, device, 3);
@@ -932,6 +1021,11 @@ device_state_changed (NMDevice *device,
 		update_routing_and_dns (policy, FALSE);
 		break;
 	case NM_DEVICE_STATE_DISCONNECTED:
+		/* Reset RETRIES_TAG when carrier on. If cable was unplugged
+		 * and plugged again, we should try to reconnect */
+		if (reason == NM_DEVICE_STATE_REASON_CARRIER && old_state == NM_DEVICE_STATE_UNAVAILABLE)
+			reset_retries_all (policy->settings, device);
+
 		/* Device is now available for auto-activation */
 		update_routing_and_dns (policy, FALSE);
 		schedule_activate_check (policy, device, 0);
@@ -962,6 +1056,12 @@ nsps_changed (NMDeviceWimax *device, NMWimaxNsp *nsp, gpointer user_data)
 	schedule_activate_check ((NMPolicy *) user_data, NM_DEVICE (device), 0);
 }
 #endif
+
+static void
+modem_enabled_changed (NMDeviceModem *device, gpointer user_data)
+{
+	schedule_activate_check ((NMPolicy *) (user_data), NM_DEVICE (device), 0);
+}
 
 typedef struct {
 	gulong id;
@@ -997,6 +1097,8 @@ device_added (NMManager *manager, NMDevice *device, gpointer user_data)
 		_connect_device_signal (policy, device, "nsp-added", nsps_changed);
 		_connect_device_signal (policy, device, "nsp-removed", nsps_changed);
 #endif
+	} else if (NM_IS_DEVICE_MODEM (device)) {
+		_connect_device_signal (policy, device, NM_DEVICE_MODEM_ENABLE_CHANGED, modem_enabled_changed);
 	}
 }
 
@@ -1058,7 +1160,7 @@ connections_loaded (NMSettings *settings, gpointer user_data)
 	// that by calling reset_retries_all() in nm_policy_new()
 	
 	/* Initialize connections' auto-retries */
-	reset_retries_all (settings);
+	reset_retries_all (settings, NULL);
 
 	schedule_activate_all ((NMPolicy *) user_data);
 }
@@ -1122,6 +1224,19 @@ connection_visibility_changed (NMSettings *settings,
 }
 
 static void
+secret_agent_registered (NMSettings *settings,
+                         NMSecretAgent *agent,
+                         gpointer user_data)
+{
+	/* The registered secret agent may provide some missing secrets. Thus we
+	 * reset retries count here and schedule activation, so that the
+	 * connections failed due to missing secrets may re-try auto-connection.
+	 */
+	reset_retries_for_failed_secrets (settings);
+	schedule_activate_all ((NMPolicy *) user_data);
+}
+
+static void
 _connect_manager_signal (NMPolicy *policy, const char *name, gpointer callback)
 {
 	guint id;
@@ -1161,7 +1276,10 @@ nm_policy_new (NMManager *manager,
 	memset (hostname, 0, sizeof (hostname));
 	if (gethostname (&hostname[0], HOST_NAME_MAX) == 0) {
 		/* only cache it if it's a valid hostname */
-		if (strlen (hostname) && strcmp (hostname, "localhost") && strcmp (hostname, "localhost.localdomain"))
+		if (   strlen (hostname)
+		    && strcmp (hostname, "localhost")
+		    && strcmp (hostname, "localhost.localdomain")
+		    && strcmp (hostname, "(none)"))
 			policy->orig_hostname = g_strdup (hostname);
 	}
 
@@ -1186,9 +1304,10 @@ nm_policy_new (NMManager *manager,
 	_connect_settings_signal (policy, NM_SETTINGS_SIGNAL_CONNECTION_REMOVED, connection_removed);
 	_connect_settings_signal (policy, NM_SETTINGS_SIGNAL_CONNECTION_VISIBILITY_CHANGED,
 	                          connection_visibility_changed);
+	_connect_settings_signal (policy, NM_SETTINGS_SIGNAL_AGENT_REGISTERED, secret_agent_registered);
 
 	/* Initialize connections' auto-retries */
-	reset_retries_all (policy->settings);
+	reset_retries_all (policy->settings, NULL);
 
 	initialized = TRUE;
 	return policy;
@@ -1231,6 +1350,9 @@ nm_policy_destroy (NMPolicy *policy)
 		g_slice_free (DeviceSignalId, data);
 	}
 	g_slist_free (policy->dev_ids);
+
+	if (policy->reset_retries_id)
+		g_source_remove (policy->reset_retries_id);
 
 	g_free (policy->orig_hostname);
 	g_free (policy->cur_hostname);

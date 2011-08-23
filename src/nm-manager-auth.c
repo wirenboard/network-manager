@@ -173,6 +173,37 @@ nm_auth_chain_get_data (NMAuthChain *self, const char *tag)
 	return tmp ? tmp->data : NULL;
 }
 
+/**
+ * nm_auth_chain_steal_data:
+ * @self: A #NMAuthChain.
+ * @tag: A "tag" uniquely identifying the data to steal.
+ *
+ * Removes the datum assocated with @tag from the chain's data associations,
+ * without invoking the association's destroy handler.  The caller assumes
+ * ownership over the returned value.
+ *
+ * Returns: the datum originally associated with @tag
+ */
+gpointer
+nm_auth_chain_steal_data (NMAuthChain *self, const char *tag)
+{
+	ChainData *tmp;
+	gpointer value = NULL;
+
+	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (tag != NULL, NULL);
+
+	tmp = g_hash_table_lookup (self->data, tag);
+	if (tmp) {
+		g_hash_table_steal (self->data, tag);
+		value = tmp->data;
+		/* Make sure the destroy handler isn't called when freeing */
+		tmp->destroy = NULL;
+		free_data (tmp);
+	}
+	return value;
+}
+
 void
 nm_auth_chain_set_data (NMAuthChain *self,
                         const char *tag,
@@ -309,7 +340,8 @@ auth_call_schedule_early_finish (AuthCall *call, GError *error)
 {
 	if (!call->chain->error)
 		call->chain->error = error;
-	call->idle_id = g_idle_add ((GSourceFunc) auth_call_complete, call);
+	if (!call->idle_id)
+		call->idle_id = g_idle_add ((GSourceFunc) auth_call_complete, call);
 }
 
 #if WITH_POLKIT
@@ -544,45 +576,82 @@ typedef struct {
 	gpointer changed_data;
 } PkChangedInfo;
 
+static GSList *funcs = NULL;
+
 #if WITH_POLKIT
 static void
-pk_authority_changed_cb (GObject *object, PkChangedInfo *info)
+pk_authority_changed_cb (GObject *object, gpointer unused)
 {
-	info->changed_callback (info->changed_data);
+	GSList *iter;
+
+	for (iter = funcs; iter; iter = g_slist_next (iter)) {
+		PkChangedInfo *info = iter->data;
+
+		info->changed_callback (info->changed_data);
+	}
 }
 #endif
 
 void
-nm_auth_set_changed_func (GDestroyNotify callback, gpointer callback_data)
+nm_auth_changed_func_register (GDestroyNotify callback, gpointer callback_data)
 {
 #if WITH_POLKIT
-	static PkChangedInfo info = { NULL, NULL };
-	static guint32 changed_id = 0;
 	PolkitAuthority *authority;
+	static guint32 changed_id = 0;
+#endif
+	PkChangedInfo *info;
+	GSList *iter;
+	gboolean found = FALSE;
 
+#if WITH_POLKIT
 	authority = pk_authority_get ();
 	if (!authority)
 		return;
 
-	if (callback == NULL) {
-		/* Clearing the callback */
-		info.changed_callback = NULL;
-		info.changed_data = NULL;
-		g_signal_handler_disconnect (authority, changed_id);
-		changed_id = 0;
-	} else {
-		info.changed_callback = callback;
-		info.changed_data= callback_data;
+	/* Hook up the changed signal the first time a callback is registered */
+	if (changed_id == 0) {
+		changed_id = g_signal_connect (authority,
+		                               "changed",
+		                               G_CALLBACK (pk_authority_changed_cb),
+		                               &funcs);
+	}
+#endif
 
-		if (changed_id == 0) {
-			changed_id = g_signal_connect (authority,
-			                               "changed",
-			                               G_CALLBACK (pk_authority_changed_cb),
-			                               &info);
+	/* No duplicates */
+	for (iter = funcs; iter; iter = g_slist_next (iter)) {
+		info = iter->data;
+		if ((callback == info->changed_callback) && (callback_data == info->changed_data)) {
+			found = TRUE;
+			break;
 		}
 	}
 
+	g_warn_if_fail (found == FALSE);
+	if (found == FALSE) {
+		info = g_malloc0 (sizeof (*info));
+		info->changed_callback = callback;
+		info->changed_data = callback_data;
+		funcs = g_slist_append (funcs, info);
+	}
+
+#if WITH_POLKIT
 	g_object_unref (authority);
 #endif
+}
+
+void
+nm_auth_changed_func_unregister (GDestroyNotify callback, gpointer callback_data)
+{
+	GSList *iter;
+
+	for (iter = funcs; iter; iter = g_slist_next (iter)) {
+		PkChangedInfo *info = iter->data;
+
+		if ((callback == info->changed_callback) && (callback_data == info->changed_data)) {
+			g_free (info);
+			funcs = g_slist_delete_link (funcs, iter);
+			break;
+		}
+	}
 }
 

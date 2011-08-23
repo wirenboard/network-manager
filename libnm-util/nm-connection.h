@@ -66,6 +66,8 @@ G_BEGIN_DECLS
  *   'connection' setting did not point to a valid connection base type; ie
  *   it was not a hardware-related setting like #NMSettingWired or
  *   #NMSettingWireless.
+ * @NM_CONNECTION_ERROR_SETTING_NOT_FOUND: the #NMConnection object
+ *   did not contain the specified #NMSetting object
  *
  * Describes errors that may result from operations involving a #NMConnection.
  *
@@ -74,7 +76,8 @@ typedef enum
 {
 	NM_CONNECTION_ERROR_UNKNOWN = 0,
 	NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND,
-	NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID
+	NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID,
+	NM_CONNECTION_ERROR_SETTING_NOT_FOUND
 } NMConnectionError;
 
 #define NM_TYPE_CONNECTION_ERROR (nm_connection_error_get_type ()) 
@@ -146,7 +149,7 @@ void          nm_connection_clear_secrets (NMConnection *connection);
 
 gboolean      nm_connection_update_secrets (NMConnection *connection,
                                             const char *setting_name,
-                                            GHashTable *setting_secrets,
+                                            GHashTable *secrets,
                                             GError **error);
 
 void          nm_connection_set_path      (NMConnection *connection,

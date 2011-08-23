@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2010 Red Hat, Inc.
+ * (C) Copyright 2007 - 2011 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <net/ethernet.h>
 #include <dbus/dbus-glib.h>
+#include <netinet/ether.h>
 
 #include "nm-setting-wired.h"
 #include "nm-param-spec-specialized.h"
@@ -34,6 +35,22 @@
 #include "nm-utils-private.h"
 #include "nm-dbus-glib-types.h"
 
+/**
+ * SECTION:nm-setting-wired
+ * @short_description: Describes connection properties for Ethernet-based networks
+ * @include: nm-setting-wired.h
+ *
+ * The #NMSettingWired object is a #NMSetting subclass that describes properties
+ * necessary for connection to Ethernet networks.
+ **/
+
+/**
+ * nm_setting_wired_error_quark:
+ *
+ * Registers an error quark for #NMSettingWired if necessary.
+ *
+ * Returns: the error quark used for #NMSettingWired errors.
+ **/
 GQuark
 nm_setting_wired_error_quark (void)
 {
@@ -79,6 +96,7 @@ typedef struct {
 	gboolean auto_negotiate;
 	GByteArray *device_mac_address;
 	GByteArray *cloned_mac_address;
+	GSList *mac_address_blacklist;
 	guint32 mtu;
 	GPtrArray *s390_subchannels;
 	char *s390_nettype;
@@ -93,6 +111,7 @@ enum {
 	PROP_AUTO_NEGOTIATE,
 	PROP_MAC_ADDRESS,
 	PROP_CLONED_MAC_ADDRESS,
+	PROP_MAC_ADDRESS_BLACKLIST,
 	PROP_MTU,
 	PROP_S390_SUBCHANNELS,
 	PROP_S390_NETTYPE,
@@ -111,12 +130,25 @@ static const char *valid_s390_opts[] = {
 	NULL
 };
 
+/**
+ * nm_setting_wired_new:
+ *
+ * Creates a new #NMSettingWired object with default values.
+ *
+ * Returns: (transfer full): the new empty #NMSettingWired object
+ **/
 NMSetting *
 nm_setting_wired_new (void)
 {
 	return (NMSetting *) g_object_new (NM_TYPE_SETTING_WIRED, NULL);
 }
 
+/**
+ * nm_setting_wired_get_port:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:port property of the setting
+ **/
 const char *
 nm_setting_wired_get_port (NMSettingWired *setting)
 {
@@ -125,6 +157,12 @@ nm_setting_wired_get_port (NMSettingWired *setting)
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->port;
 }
 
+/**
+ * nm_setting_wired_get_speed:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:speed property of the setting
+ **/
 guint32
 nm_setting_wired_get_speed (NMSettingWired *setting)
 {
@@ -133,6 +171,12 @@ nm_setting_wired_get_speed (NMSettingWired *setting)
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->speed;
 }
 
+/**
+ * nm_setting_wired_get_duplex:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:duplex property of the setting
+ **/
 const char *
 nm_setting_wired_get_duplex (NMSettingWired *setting)
 {
@@ -141,6 +185,12 @@ nm_setting_wired_get_duplex (NMSettingWired *setting)
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->duplex;
 }
 
+/**
+ * nm_setting_wired_get_auto_negotiate:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:auto-negotiate property of the setting
+ **/
 gboolean
 nm_setting_wired_get_auto_negotiate (NMSettingWired *setting)
 {
@@ -149,6 +199,12 @@ nm_setting_wired_get_auto_negotiate (NMSettingWired *setting)
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->auto_negotiate;
 }
 
+/**
+ * nm_setting_wired_get_mac_address:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:mac-address property of the setting
+ **/
 const GByteArray *
 nm_setting_wired_get_mac_address (NMSettingWired *setting)
 {
@@ -157,6 +213,12 @@ nm_setting_wired_get_mac_address (NMSettingWired *setting)
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->device_mac_address;
 }
 
+/**
+ * nm_setting_wired_get_cloned_mac_address:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:cloned-mac-address property of the setting
+ **/
 const GByteArray *
 nm_setting_wired_get_cloned_mac_address (NMSettingWired *setting)
 {
@@ -165,6 +227,27 @@ nm_setting_wired_get_cloned_mac_address (NMSettingWired *setting)
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->cloned_mac_address;
 }
 
+/**
+ * nm_setting_wired_get_mac_address_blacklist:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: (element-type GLib.ByteArray): the #NMSettingWired:mac-address-blacklist
+ * property of the setting
+ **/
+const GSList *
+nm_setting_wired_get_mac_address_blacklist (NMSettingWired *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_WIRED (setting), NULL);
+
+	return NM_SETTING_WIRED_GET_PRIVATE (setting)->mac_address_blacklist;
+}
+
+/**
+ * nm_setting_wired_get_mtu:
+ * @setting: the #NMSettingWired
+ *
+ * Returns: the #NMSettingWired:mtu property of the setting
+ **/
 guint32
 nm_setting_wired_get_mtu (NMSettingWired *setting)
 {
@@ -181,8 +264,8 @@ nm_setting_wired_get_mtu (NMSettingWired *setting)
  * connection is applicable to.  The connection should only be used in
  * conjunction with that device.
  *
- * Returns: a #GPtrArray of strings, each specifying one subchannel the
- * s390 device uses to communicate to the host.
+ * Returns: (element-type utf8): #GPtrArray of strings, each specifying one
+ * subchannel the s390 device uses to communicate to the host.
  **/
 const GPtrArray *
 nm_setting_wired_get_s390_subchannels (NMSettingWired *setting)
@@ -232,10 +315,10 @@ nm_setting_wired_get_num_s390_options (NMSettingWired *setting)
  * @setting: the #NMSettingWired
  * @idx: index of the desired option, from 0 to
  * nm_setting_wired_get_num_s390_options() - 1
- * @out_key: on return, the key name of the s390 specific option; this value is
- * owned by the setting and should not be modified
- * @out_value: on return, the value of the key of the s390 specific option; this
+ * @out_key: (out): on return, the key name of the s390 specific option; this
  * value is owned by the setting and should not be modified
+ * @out_value: (out): on return, the value of the key of the s390 specific
+ * option; this value is owned by the setting and should not be modified
  *
  * Given an index, return the value of the s390 option at that index.  indexes
  * are *not* guaranteed to be static across modifications to options done by
@@ -363,6 +446,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	const char *valid_duplex[] = { "half", "full", NULL };
 	const char *valid_nettype[] = { "qeth", "lcs", "ctc", NULL };
 	GHashTableIter iter;
+	GSList* mac_blacklist_iter;
 	const char *key, *value;
 
 	if (priv->port && !_nm_utils_string_in_list (priv->port, valid_ports)) {
@@ -387,6 +471,19 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		             NM_SETTING_WIRED_ERROR_INVALID_PROPERTY,
 		             NM_SETTING_WIRED_MAC_ADDRESS);
 		return FALSE;
+	}
+
+	for (mac_blacklist_iter = priv->mac_address_blacklist; mac_blacklist_iter;
+	     mac_blacklist_iter = mac_blacklist_iter->next) {
+		struct ether_addr addr;
+
+		if (!ether_aton_r (mac_blacklist_iter->data, &addr)) {
+			g_set_error (error,
+			             NM_SETTING_WIRED_ERROR,
+			             NM_SETTING_WIRED_ERROR_INVALID_PROPERTY,
+			             NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST);
+			return FALSE;
+		}
 	}
 
 	if (   priv->s390_subchannels
@@ -456,6 +553,8 @@ finalize (GObject *object)
 	if (priv->cloned_mac_address)
 		g_byte_array_free (priv->cloned_mac_address, TRUE);
 
+	nm_utils_slist_free (priv->mac_address_blacklist, g_free);
+
 	G_OBJECT_CLASS (nm_setting_wired_parent_class)->finalize (object);
 }
 
@@ -496,6 +595,10 @@ set_property (GObject *object, guint prop_id,
 		if (priv->cloned_mac_address)
 			g_byte_array_free (priv->cloned_mac_address, TRUE);
 		priv->cloned_mac_address = g_value_dup_boxed (value);
+		break;
+	case PROP_MAC_ADDRESS_BLACKLIST:
+		nm_utils_slist_free (priv->mac_address_blacklist, g_free);
+		priv->mac_address_blacklist = g_value_dup_boxed (value);
 		break;
 	case PROP_MTU:
 		priv->mtu = g_value_get_uint (value);
@@ -549,6 +652,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_CLONED_MAC_ADDRESS:
 		g_value_set_boxed (value, nm_setting_wired_get_cloned_mac_address (setting));
+		break;
+	case PROP_MAC_ADDRESS_BLACKLIST:
+		g_value_set_boxed (value, nm_setting_wired_get_mac_address_blacklist (setting));
 		break;
 	case PROP_MTU:
 		g_value_set_uint (value, nm_setting_wired_get_mtu (setting));
@@ -685,6 +791,25 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	                                     "This is known as MAC cloning or spoofing.",
 	                                     DBUS_TYPE_G_UCHAR_ARRAY,
 	                                     G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+    
+	/**
+	 * NMSettingWired:mac-address-blacklist:
+	 *
+	 * If specified, this connection will never apply to the ethernet device
+	 * whose permanent MAC address matches an address in the list.  Each
+	 * MAC address is in the standard hex-digits-and-colons notation
+	 * (00:11:22:33:44:55).
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_MAC_ADDRESS_BLACKLIST,
+		 _nm_param_spec_specialized (NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST,
+		                             "MAC Address Blacklist",
+		                             "If specified, this connection will never apply to "
+		                             "the ethernet device whose permanent MAC address matches "
+		                             "an address in the list.  Each MAC address is in the "
+		                             "standard hex-digits-and-colons notation (00:11:22:33:44:55).",
+		                             DBUS_TYPE_G_LIST_OF_STRING,
+		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingWired:mtu:

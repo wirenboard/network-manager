@@ -530,6 +530,7 @@ NMClientClass
 nm_client_new
 nm_client_get_devices
 nm_client_get_device_by_path
+nm_client_get_device_by_iface
 NMClientActivateFn
 nm_client_activate_connection
 NMClientAddActivateFn

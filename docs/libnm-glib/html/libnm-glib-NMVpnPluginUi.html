@@ -7,7 +7,7 @@
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="libnm-glib-NMVPNPlugin.html" title="NMVPNPlugin">
-<link rel="next" href="object-tree.html" title="Object Hierarchy">
+<link rel="next" href="libnm-glib-nm-vpn-plugin-utils.html" title="nm-vpn-plugin-utils">
 <meta name="generator" content="GTK-Doc V1.17 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -18,7 +18,7 @@
 <td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
-<td><a accesskey="n" href="object-tree.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="libnm-glib-nm-vpn-plugin-utils.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
 <a href="#libnm-glib-NMVpnPluginUi.synopsis" class="shortcut">Top</a>
@@ -212,11 +212,7 @@ struct              <a class="link" href="libnm-glib-NMVpnPluginUi.html#NMVpnPlu
 	 */
 	char * (*get_suggested_name) (NMVpnPluginUiInterface *iface, NMConnection *connection);
 
-	/* Called when the user has chosen to remove the connection (for user
-	 * connections only; system connections are handled by the system
-	 * settings service).  Should clear out any VPN-specific secrets or data
-	 * related to the connection.
-	 */
+	/* Deprecated and no longer used */
 	gboolean (*delete_connection) (NMVpnPluginUiInterface *iface, NMConnection *connection, GError **error);
 
 	/* Padding for future expansion */
@@ -339,11 +335,7 @@ struct              <a class="link" href="libnm-glib-NMVpnPluginUi.html#NMVpnPlu
 	                               NMConnection *connection,
 	                               GError **error);
 
-	/* Called when the user has chosen to save the connection (for user
-	 * connections only; system connections are handled by the system
-	 * settings service).  Should save VPN-specific connection secrets in
-	 * a way that the auth-dialog can read them.
-	 */
+	/* Deprecated and no longer used */
 	gboolean (*save_secrets) (NMVpnPluginUiWidgetInterface *iface,
 	                          NMConnection *connection,
 	                          GError **error);

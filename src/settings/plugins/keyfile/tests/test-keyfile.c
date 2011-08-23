@@ -1438,6 +1438,131 @@ test_write_string_ssid (void)
 	g_object_unref (connection);
 }
 
+#define TEST_INTLIST_SSID_FILE TEST_KEYFILES_DIR"/Test_Intlist_SSID"
+
+static void
+test_read_intlist_ssid (void)
+{
+	NMConnection *connection;
+	NMSettingWireless *s_wifi;
+	GError *error = NULL;
+	gboolean success;
+	const GByteArray *array;
+	const char *expected_ssid = "blah1234";
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_INTLIST_SSID_FILE, &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* SSID */
+	s_wifi = nm_connection_get_setting_wireless (connection);
+	g_assert (s_wifi);
+
+	array = nm_setting_wireless_get_ssid (s_wifi);
+	g_assert (array != NULL);
+	g_assert_cmpint (array->len, ==, strlen (expected_ssid));
+	g_assert_cmpint (memcmp (array->data, expected_ssid, strlen (expected_ssid)), ==, 0);
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_intlist_ssid (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingWireless *s_wifi;
+	NMSettingIP4Config *s_ip4;
+	char *uuid, *testfile = NULL;
+	GByteArray *ssid;
+	unsigned char tmpssid[] = { 65, 49, 50, 51, 0, 50, 50 };
+	gboolean success;
+	NMConnection *reread;
+	GError *error = NULL;
+	pid_t owner_grp;
+	uid_t owner_uid;
+	GKeyFile *keyfile;
+	gint *intlist;
+	gsize len = 0, i;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+
+	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Intlist SSID Test",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRELESS_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wireless setting */
+	s_wifi = NM_SETTING_WIRELESS (nm_setting_wireless_new ());
+	g_assert (s_wifi);
+	nm_connection_add_setting (connection, NM_SETTING (s_wifi));
+
+	ssid = g_byte_array_sized_new (sizeof (tmpssid));
+	g_byte_array_append (ssid, &tmpssid[0], sizeof (tmpssid));
+	g_object_set (s_wifi, NM_SETTING_WIRELESS_SSID, ssid, NULL);
+	g_byte_array_free (ssid, TRUE);
+
+	/* IP4 setting */
+	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
+	g_assert (s_ip4);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
+	g_object_set (s_ip4, NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_AUTO, NULL);
+
+	/* Write out the connection */
+	owner_uid = geteuid ();
+	owner_grp = getegid ();
+	success = nm_keyfile_plugin_write_test_connection (connection, TEST_SCRATCH_DIR, owner_uid, owner_grp, &testfile, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (testfile != NULL);
+
+	/* Ensure the SSID was written out as an int list */
+	keyfile = g_key_file_new ();
+	success = g_key_file_load_from_file (keyfile, testfile, 0, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	intlist = g_key_file_get_integer_list (keyfile, NM_SETTING_WIRELESS_SETTING_NAME, NM_SETTING_WIRELESS_SSID, &len, &error);
+	g_assert_no_error (error);
+	g_assert (intlist);
+	g_assert_cmpint (len, ==, sizeof (tmpssid));
+
+	for (i = 0; i < len; i++)
+		g_assert_cmpint (intlist[i], ==, tmpssid[i]);
+	g_free (intlist);
+
+	g_key_file_free (keyfile);
+
+	/* Read the connection back in and compare it to the one we just wrote out */
+	reread = nm_keyfile_plugin_connection_from_file (testfile, &error);
+	g_assert_no_error (error);
+	g_assert (reread);
+
+	success = nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (success);
+
+	g_clear_error (&error);
+	unlink (testfile);
+	g_free (testfile);
+
+	g_object_unref (reread);
+	g_object_unref (connection);
+}
+
 #define TEST_BT_DUN_FILE TEST_KEYFILES_DIR"/ATT_Data_Connect_BT"
 
 static void
@@ -1953,6 +2078,133 @@ test_write_gsm_connection (void)
 	g_object_unref (connection);
 }
 
+#define TEST_WIRED_TLS_BLOB_FILE TEST_KEYFILES_DIR"/Test_Wired_TLS_Blob"
+
+static void
+test_read_wired_8021x_tls_blob_connection (void)
+{
+	NMConnection *connection;
+	NMSetting *s_wired;
+	NMSetting8021x *s_8021x;
+	GError *error = NULL;
+	const char *tmp;
+	gboolean success;
+	const GByteArray *array;
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_TLS_BLOB_FILE, &error);
+	if (connection == NULL) {
+		g_assert (error);
+		g_warning ("Failed to read %s: %s", TEST_WIRED_TLS_BLOB_FILE, error->message);
+		g_assert (connection);
+	}
+
+	success = nm_connection_verify (connection, &error);
+	if (!success) {
+		g_assert (error);
+		g_warning ("Failed to verify %s: %s", TEST_WIRED_TLS_BLOB_FILE, error->message);
+		g_assert (success);
+	}
+
+	/* ===== Wired Setting ===== */
+	s_wired = nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRED);
+	g_assert (s_wired != NULL);
+
+	/* ===== 802.1x Setting ===== */
+	s_8021x = (NMSetting8021x *) nm_connection_get_setting (connection, NM_TYPE_SETTING_802_1X);
+	g_assert (s_8021x != NULL);
+
+	g_assert (nm_setting_802_1x_get_num_eap_methods (s_8021x) == 1);
+	tmp = nm_setting_802_1x_get_eap_method (s_8021x, 0);
+	g_assert (g_strcmp0 (tmp, "tls") == 0);
+
+	tmp = nm_setting_802_1x_get_identity (s_8021x);
+	g_assert (g_strcmp0 (tmp, "Bill Smith") == 0);
+
+	tmp = nm_setting_802_1x_get_private_key_password (s_8021x);
+	g_assert (g_strcmp0 (tmp, "12345testing") == 0);
+
+	g_assert_cmpint (nm_setting_802_1x_get_ca_cert_scheme (s_8021x), ==, NM_SETTING_802_1X_CK_SCHEME_BLOB);
+
+	/* Make sure it's not a path, since it's a blob */
+	tmp = nm_setting_802_1x_get_ca_cert_path (s_8021x);
+	g_assert (tmp == NULL);
+
+	/* Validate the path */
+	array = nm_setting_802_1x_get_ca_cert_blob (s_8021x);
+	g_assert (array != NULL);
+	g_assert_cmpint (array->len, ==, 568);
+
+	tmp = nm_setting_802_1x_get_client_cert_path (s_8021x);
+	g_assert_cmpstr (tmp, ==, "/home/dcbw/Desktop/certinfra/client.pem");
+
+	tmp = nm_setting_802_1x_get_private_key_path (s_8021x);
+	g_assert_cmpstr (tmp, ==, "/home/dcbw/Desktop/certinfra/client.pem");
+
+	g_object_unref (connection);
+}
+
+#define TEST_WIRED_TLS_PATH_MISSING_FILE TEST_KEYFILES_DIR"/Test_Wired_TLS_Path_Missing"
+
+static void
+test_read_wired_8021x_tls_bad_path_connection (void)
+{
+	NMConnection *connection;
+	NMSetting *s_wired;
+	NMSetting8021x *s_8021x;
+	GError *error = NULL;
+	const char *tmp;
+	char *tmp2;
+	gboolean success;
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_TLS_PATH_MISSING_FILE, &error);
+	if (connection == NULL) {
+		g_assert (error);
+		g_warning ("Failed to read %s: %s", TEST_WIRED_TLS_PATH_MISSING_FILE, error->message);
+		g_assert (connection);
+	}
+
+	success = nm_connection_verify (connection, &error);
+	if (!success) {
+		g_assert (error);
+		g_warning ("Failed to verify %s: %s", TEST_WIRED_TLS_BLOB_FILE, error->message);
+		g_assert (success);
+	}
+
+	/* ===== Wired Setting ===== */
+	s_wired = nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRED);
+	g_assert (s_wired != NULL);
+
+	/* ===== 802.1x Setting ===== */
+	s_8021x = (NMSetting8021x *) nm_connection_get_setting (connection, NM_TYPE_SETTING_802_1X);
+	g_assert (s_8021x != NULL);
+
+	g_assert (nm_setting_802_1x_get_num_eap_methods (s_8021x) == 1);
+	tmp = nm_setting_802_1x_get_eap_method (s_8021x, 0);
+	g_assert (g_strcmp0 (tmp, "tls") == 0);
+
+	tmp = nm_setting_802_1x_get_identity (s_8021x);
+	g_assert (g_strcmp0 (tmp, "Bill Smith") == 0);
+
+	tmp = nm_setting_802_1x_get_private_key_password (s_8021x);
+	g_assert (g_strcmp0 (tmp, "12345testing") == 0);
+
+	g_assert_cmpint (nm_setting_802_1x_get_ca_cert_scheme (s_8021x), ==, NM_SETTING_802_1X_CK_SCHEME_PATH);
+
+	tmp = nm_setting_802_1x_get_ca_cert_path (s_8021x);
+	g_assert_cmpstr (tmp, ==, "/some/random/cert/path.pem");
+
+	tmp2 = g_strdup_printf (TEST_KEYFILES_DIR "/test-key-and-cert.pem");
+
+	tmp = nm_setting_802_1x_get_client_cert_path (s_8021x);
+	g_assert_cmpstr (tmp, ==, tmp2);
+
+	tmp = nm_setting_802_1x_get_private_key_path (s_8021x);
+	g_assert_cmpstr (tmp, ==, tmp2);
+
+	g_free (tmp2);
+	g_object_unref (connection);
+}
+
 #define TEST_WIRED_TLS_OLD_FILE TEST_KEYFILES_DIR"/Test_Wired_TLS_Old"
 
 static void
@@ -2019,6 +2271,7 @@ test_read_wired_8021x_tls_new_connection (void)
 	NMSetting8021x *s_8021x;
 	GError *error = NULL;
 	const char *tmp;
+	char *tmp2;
 	gboolean success;
 
 	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_TLS_NEW_FILE, &error);
@@ -2053,15 +2306,20 @@ test_read_wired_8021x_tls_new_connection (void)
 	tmp = nm_setting_802_1x_get_private_key_password (s_8021x);
 	g_assert (g_strcmp0 (tmp, "12345testing") == 0);
 
+	tmp2 = g_strdup_printf (TEST_KEYFILES_DIR "/test-ca-cert.pem");
 	tmp = nm_setting_802_1x_get_ca_cert_path (s_8021x);
-	g_assert (g_strcmp0 (tmp, "test-ca-cert.pem") == 0);
+	g_assert_cmpstr (tmp, ==, tmp2);
+	g_free (tmp2);
+
+	tmp2 = g_strdup_printf (TEST_KEYFILES_DIR "/test-key-and-cert.pem");
 
 	tmp = nm_setting_802_1x_get_client_cert_path (s_8021x);
-	g_assert (g_strcmp0 (tmp, "test-key-and-cert.pem") == 0);
+	g_assert_cmpstr (tmp, ==, tmp2);
 
 	tmp = nm_setting_802_1x_get_private_key_path (s_8021x);
-	g_assert (g_strcmp0 (tmp, "test-key-and-cert.pem") == 0);
+	g_assert_cmpstr (tmp, ==, tmp2);
 
+	g_free (tmp2);
 	g_object_unref (connection);
 }
 
@@ -2153,16 +2411,23 @@ create_wired_tls_connection (NMSetting8021xCKScheme scheme)
 	return connection;
 }
 
+static char *
+get_path (const char *file, gboolean relative)
+{
+	return relative ? g_path_get_basename (file) : g_strdup (file);
+}
+
 static void
 test_write_wired_8021x_tls_connection_path (void)
 {
 	NMConnection *connection;
-	char *tmp;
+	char *tmp, *tmp2;
 	gboolean success;
 	NMConnection *reread;
 	char *testfile = NULL;
 	GError *error = NULL;
 	GKeyFile *keyfile;
+	gboolean relative = FALSE;
 
 	connection = create_wired_tls_connection (NM_SETTING_802_1X_CK_SCHEME_PATH);
 	g_assert (connection != NULL);
@@ -2200,12 +2465,22 @@ test_write_wired_8021x_tls_connection_path (void)
 		g_assert (success);
 	}
 
+	/* Depending on whether this test is being run from 'make check' or
+	 * 'make distcheck' we might be using relative paths (check) or
+	 * absolute ones (distcheck).
+	 */
+	tmp2 = g_path_get_dirname (testfile);
+	if (g_strcmp0 (tmp2, TEST_KEYFILES_DIR) == 0)
+		relative = TRUE;
+
 	/* CA cert */
 	tmp = g_key_file_get_string (keyfile,
 	                             NM_SETTING_802_1X_SETTING_NAME,
 	                             NM_SETTING_802_1X_CA_CERT,
 	                             NULL);
-	g_assert (g_strcmp0 (tmp, TEST_WIRED_TLS_CA_CERT) == 0);
+	tmp2 = get_path (TEST_WIRED_TLS_CA_CERT, relative);
+	g_assert_cmpstr (tmp, ==, tmp2);
+	g_free (tmp2);
 	g_free (tmp);
 
 	/* Client cert */
@@ -2213,7 +2488,9 @@ test_write_wired_8021x_tls_connection_path (void)
 	                             NM_SETTING_802_1X_SETTING_NAME,
 	                             NM_SETTING_802_1X_CLIENT_CERT,
 	                             NULL);
-	g_assert (g_strcmp0 (tmp, TEST_WIRED_TLS_CLIENT_CERT) == 0);
+	tmp2 = get_path (TEST_WIRED_TLS_CLIENT_CERT, relative);
+	g_assert_cmpstr (tmp, ==, tmp2);
+	g_free (tmp2);
 	g_free (tmp);
 
 	/* Private key */
@@ -2221,7 +2498,9 @@ test_write_wired_8021x_tls_connection_path (void)
 	                             NM_SETTING_802_1X_SETTING_NAME,
 	                             NM_SETTING_802_1X_PRIVATE_KEY,
 	                             NULL);
-	g_assert (g_strcmp0 (tmp, TEST_WIRED_TLS_PRIVKEY) == 0);
+	tmp2 = get_path (TEST_WIRED_TLS_PRIVKEY, relative);
+	g_assert_cmpstr (tmp, ==, tmp2);
+	g_free (tmp2);
 	g_free (tmp);
 
 	g_key_file_free (keyfile);
@@ -2334,11 +2613,17 @@ int main (int argc, char **argv)
 	test_read_string_ssid ();
 	test_write_string_ssid ();
 
+	test_read_intlist_ssid ();
+	test_write_intlist_ssid ();
+
 	test_read_bt_dun_connection ();
 	test_write_bt_dun_connection ();
 
 	test_read_gsm_connection ();
 	test_write_gsm_connection ();
+
+	test_read_wired_8021x_tls_blob_connection ();
+	test_read_wired_8021x_tls_bad_path_connection ();
 
 	test_read_wired_8021x_tls_old_connection ();
 	test_read_wired_8021x_tls_new_connection ();

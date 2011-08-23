@@ -62,6 +62,8 @@ enum                <a class="link" href="NMClient.html#NMClientPermissionResult
 const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   <a class="link" href="NMClient.html#nm-client-get-devices" title="nm_client_get_devices ()">nm_client_get_devices</a>               (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>);
 <a class="link" href="NMDevice.html" title="NMDevice"><span class="returnvalue">NMDevice</span></a> *          <a class="link" href="NMClient.html#nm-client-get-device-by-path" title="nm_client_get_device_by_path ()">nm_client_get_device_by_path</a>        (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *object_path</code></em>);
+<a class="link" href="NMDevice.html" title="NMDevice"><span class="returnvalue">NMDevice</span></a> *          <a class="link" href="NMClient.html#nm-client-get-device-by-iface" title="nm_client_get_device_by_iface ()">nm_client_get_device_by_iface</a>       (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *iface</code></em>);
 <span class="returnvalue">void</span>                (<a class="link" href="NMClient.html#NMClientActivateFn" title="NMClientActivateFn ()">*NMClientActivateFn</a>)               (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> *active_connection</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
@@ -370,7 +372,35 @@ Gets a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> for the given <em class="parameter"><code>object_path</code></em> or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is found. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+<td>the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> for the given <em class="parameter"><code>object_path</code></em> or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is found. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-client-get-device-by-iface"></a><h3>nm_client_get_device_by_iface ()</h3>
+<pre class="programlisting"><a class="link" href="NMDevice.html" title="NMDevice"><span class="returnvalue">NMDevice</span></a> *          nm_client_get_device_by_iface       (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *iface</code></em>);</pre>
+<p>
+Gets a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> from a <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
+<td>a <a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>iface</code></em> :</span></p></td>
+<td>the interface name to search for</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> for the given <em class="parameter"><code>iface</code></em> or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a> if none is found. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>

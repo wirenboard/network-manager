@@ -758,6 +758,7 @@ write_wireless_setting (NMConnection *connection,
 	char buf[33];
 	guint32 mtu, chan, i;
 	gboolean adhoc = FALSE, hex_ssid = FALSE;
+	const GSList *macaddr_blacklist;
 
 	s_wireless = (NMSettingWireless *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRELESS);
 	if (!s_wireless) {
@@ -784,6 +785,23 @@ write_wireless_setting (NMConnection *connection,
 		                       cloned_mac->data[3], cloned_mac->data[4], cloned_mac->data[5]);
 		svSetValue (ifcfg, "MACADDR", tmp, FALSE);
 		g_free (tmp);
+	}
+
+	svSetValue (ifcfg, "HWADDR_BLACKLIST", NULL, FALSE);
+	macaddr_blacklist = nm_setting_wireless_get_mac_address_blacklist (s_wireless);
+	if (macaddr_blacklist) {
+		const GSList *iter;
+		GString *blacklist_str = g_string_new (NULL);
+
+		for (iter = macaddr_blacklist; iter; iter = g_slist_next (iter)) {
+			g_string_append (blacklist_str, iter->data);
+			g_string_append_c (blacklist_str, ' ');
+
+		}
+		if (blacklist_str->len > 0)
+			g_string_truncate (blacklist_str, blacklist_str->len - 1);
+		svSetValue (ifcfg, "HWADDR_BLACKLIST", blacklist_str->str, FALSE);
+		g_string_free (blacklist_str, TRUE);
 	}
 
 	svSetValue (ifcfg, "MTU", NULL, FALSE);
@@ -934,6 +952,7 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	guint32 mtu, num_opts, i;
 	const GPtrArray *s390_subchannels;
 	GString *str;
+	const GSList *macaddr_blacklist;
 
 	s_wired = (NMSettingWired *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRED);
 	if (!s_wired) {
@@ -959,6 +978,23 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		                       cloned_mac->data[3], cloned_mac->data[4], cloned_mac->data[5]);
 		svSetValue (ifcfg, "MACADDR", tmp, FALSE);
 		g_free (tmp);
+	}
+
+	svSetValue (ifcfg, "HWADDR_BLACKLIST", NULL, FALSE);
+	macaddr_blacklist = nm_setting_wired_get_mac_address_blacklist (s_wired);
+	if (macaddr_blacklist) {
+		const GSList *iter;
+		GString *blacklist_str = g_string_new (NULL);
+
+		for (iter = macaddr_blacklist; iter; iter = g_slist_next (iter)) {
+			g_string_append (blacklist_str, iter->data);
+			g_string_append_c (blacklist_str, ' ');
+
+		}
+		if (blacklist_str->len > 0)
+			g_string_truncate (blacklist_str, blacklist_str->len - 1);
+		svSetValue (ifcfg, "HWADDR_BLACKLIST", blacklist_str->str, FALSE);
+		g_string_free (blacklist_str, TRUE);
 	}
 
 	svSetValue (ifcfg, "MTU", NULL, FALSE);
@@ -1316,13 +1352,14 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	if (utils_has_route_file_new_syntax (route_path)) {
 		shvarFile *routefile;
 
-		g_free (route_path);
 		routefile = utils_get_route_ifcfg (ifcfg->fileName, TRUE);
 		if (!routefile) {
 			g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
-			             "Could not create route file '%s'", routefile->fileName);
+			             "Could not create route file '%s'", route_path);
+			g_free (route_path);
 			goto out;
 		}
+		g_free (route_path);
 
 		num = nm_setting_ip4_config_get_num_routes (s_ip4);
 		for (i = 0; i < 256; i++) {

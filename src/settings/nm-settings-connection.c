@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <netinet/ether.h>
 
 #include <NetworkManager.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -38,8 +39,10 @@
 #include "nm-manager-auth.h"
 #include "nm-marshal.h"
 #include "nm-agent-manager.h"
+#include "NetworkManagerUtils.h"
 
 #define SETTINGS_TIMESTAMPS_FILE  LOCALSTATEDIR"/lib/NetworkManager/timestamps"
+#define SETTINGS_SEEN_BSSIDS_FILE LOCALSTATEDIR"/lib/NetworkManager/seen-bssids"
 
 static void impl_settings_connection_get_settings (NMSettingsConnection *connection,
                                                    DBusGMethodInvocation *context);
@@ -91,7 +94,8 @@ typedef struct {
 	NMSessionMonitor *session_monitor;
 	guint session_changed_id;
 
-	guint64 timestamp; /* Up-to-date timestamp of connection use */
+	guint64 timestamp;   /* Up-to-date timestamp of connection use */
+	GHashTable *seen_bssids; /* Up-to-date BSSIDs that's been seen for the connection */
 } NMSettingsConnectionPrivate;
 
 /**************************************************************/
@@ -238,6 +242,58 @@ session_changed_cb (NMSessionMonitor *self, gpointer user_data)
 
 /**************************************************************/
 
+/* Return TRUE if any active user in the connection's ACL has the given
+ * permission without having to authorize for it via PolicyKit.  Connections
+ * visible to everyone automatically pass the check.
+ */
+gboolean
+nm_settings_connection_check_permission (NMSettingsConnection *self,
+                                         const char *permission)
+{
+	NMSettingsConnectionPrivate *priv;
+	NMSettingConnection *s_con;
+	guint32 num, i;
+	const char *puser;
+
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (NM_IS_SETTINGS_CONNECTION (self), FALSE);
+
+	priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (self);
+
+	if (priv->visible == FALSE)
+		return FALSE;
+
+	s_con = nm_connection_get_setting_connection (NM_CONNECTION (self));
+	g_assert (s_con);
+
+	/* Check every user in the ACL for a session */
+	num = nm_setting_connection_get_num_permissions (s_con);
+	if (num == 0) {
+		/* Visible to all so it's OK to auto-activate */
+		return TRUE;
+	}
+
+	for (i = 0; i < num; i++) {
+		/* For each user get their secret agent and check if that agent has the
+		 * required permission.
+		 *
+		 * FIXME: what if the user isn't running an agent?  PolKit needs a bus
+		 * name or a PID but if the user isn't running an agent they won't have
+		 * either.
+		 */
+		if (nm_setting_connection_get_permission (s_con, i, NULL, &puser, NULL)) {
+			NMSecretAgent *agent = nm_agent_manager_get_agent_by_user (priv->agent_mgr, puser);
+
+			if (agent && nm_secret_agent_has_permission (agent, permission))
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+/**************************************************************/
+
 static void
 only_system_secrets_cb (NMSetting *setting,
                         const char *key,
@@ -326,25 +382,14 @@ nm_settings_connection_replace_settings (NMSettingsConnection *self,
 	new_settings = nm_connection_to_hash (new, NM_SETTING_HASH_FLAG_ALL);
 	g_assert (new_settings);
 	if (nm_connection_replace_settings (NM_CONNECTION (self), new_settings, error)) {
-		GHashTableIter iter;
-		NMSetting *setting;
-		const char *setting_name;
-		GHashTable *setting_hash;
-
 		/* Copy the connection to keep its secrets around even if NM
 		 * calls nm_connection_clear_secrets().
 		 */
 		update_secrets_cache (self);
 
 		/* And add the transient secrets back */
-		if (transient_secrets) {
-			g_hash_table_iter_init (&iter, transient_secrets);
-			while (g_hash_table_iter_next (&iter, (gpointer) &setting_name, (gpointer) &setting_hash)) {
-				setting = nm_connection_get_setting_by_name (NM_CONNECTION (self), setting_name);
-				if (setting)
-					nm_setting_update_secrets (setting, setting_hash, NULL);
-			}
-		}
+		if (transient_secrets)
+			nm_connection_update_secrets (NM_CONNECTION (self), NULL, transient_secrets, NULL);
 
 		nm_settings_connection_recheck_visibility (self);
 		success = TRUE;
@@ -455,12 +500,20 @@ commit_changes (NMSettingsConnection *connection,
 }
 
 static void
-remove_timestamp_from_db (NMSettingsConnection *connection)
+remove_entry_from_db (NMSettingsConnection *connection, const char* db_name)
 {
-	GKeyFile *timestamps_file;
+	GKeyFile *key_file;
+	const char *db_file;
 
-	timestamps_file = g_key_file_new ();
-	if (g_key_file_load_from_file (timestamps_file, SETTINGS_TIMESTAMPS_FILE, G_KEY_FILE_KEEP_COMMENTS, NULL)) {
+	if (strcmp (db_name, "timestamps") == 0)
+		db_file = SETTINGS_TIMESTAMPS_FILE;
+	else if (strcmp (db_name, "seen-bssids") == 0)
+		db_file = SETTINGS_SEEN_BSSIDS_FILE;
+	else
+		return;
+
+	key_file = g_key_file_new ();
+	if (g_key_file_load_from_file (key_file, db_file, G_KEY_FILE_KEEP_COMMENTS, NULL)) {
 		const char *connection_uuid;
 		char *data;
 		gsize len;
@@ -468,18 +521,18 @@ remove_timestamp_from_db (NMSettingsConnection *connection)
 
 		connection_uuid = nm_connection_get_uuid (NM_CONNECTION (connection));
 
-		g_key_file_remove_key (timestamps_file, "timestamps", connection_uuid, NULL);
-		data = g_key_file_to_data (timestamps_file, &len, &error);
+		g_key_file_remove_key (key_file, db_name, connection_uuid, NULL);
+		data = g_key_file_to_data (key_file, &len, &error);
 		if (data) {
-			g_file_set_contents (SETTINGS_TIMESTAMPS_FILE, data, len, &error);
+			g_file_set_contents (db_file, data, len, &error);
 			g_free (data);
 		}
 		if (error) {
-			nm_log_warn (LOGD_SETTINGS, "error writing timestamps file '%s': %s", SETTINGS_TIMESTAMPS_FILE, error->message);
+			nm_log_warn (LOGD_SETTINGS, "error writing %s file '%s': %s", db_name, db_file, error->message);
 			g_error_free (error);
 		}
 	}
-	g_key_file_free (timestamps_file);
+	g_key_file_free (key_file);
 }
 
 static void
@@ -499,7 +552,10 @@ do_delete (NMSettingsConnection *connection,
 	nm_agent_manager_delete_secrets (priv->agent_mgr, for_agents, FALSE, 0);
 
 	/* Remove timestamp from timestamps database file */
-	remove_timestamp_from_db (connection);
+	remove_entry_from_db (connection, "timestamps");
+
+	/* Remove connection from seen-bssids database file */
+	remove_entry_from_db (connection, "seen-bssids");
 
 	/* Signal the connection is removed and deleted */
 	g_signal_emit (connection, signals[REMOVED], 0);
@@ -980,21 +1036,21 @@ check_writable (NMConnection *connection, GError **error)
 
 static void
 get_settings_auth_cb (NMSettingsConnection *self, 
-	                  DBusGMethodInvocation *context,
-	                  gulong sender_uid,
-	                  GError *error,
-	                  gpointer data)
+                      DBusGMethodInvocation *context,
+                      gulong sender_uid,
+                      GError *error,
+                      gpointer data)
 {
 	if (error)
 		dbus_g_method_return_error (context, error);
 	else {
 		GHashTable *settings;
-	 	NMConnection *dupl_con;
+		NMConnection *dupl_con;
 		NMSettingConnection *s_con;
 		guint64 timestamp;
 
-	 	dupl_con = nm_connection_duplicate (NM_CONNECTION (self));
- 		g_assert (dupl_con);
+		dupl_con = nm_connection_duplicate (NM_CONNECTION (self));
+		g_assert (dupl_con);
 
 		/* Timestamp is not updated in connection's 'timestamp' property,
 		 * because it would force updating the connection and in turn
@@ -1004,7 +1060,7 @@ get_settings_auth_cb (NMSettingsConnection *self,
 		 */
 		timestamp = nm_settings_connection_get_timestamp (self);
 		if (timestamp) {
-			s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (NM_CONNECTION (dupl_con), NM_TYPE_SETTING_CONNECTION));
+			s_con = nm_connection_get_setting_connection (NM_CONNECTION (dupl_con));
 			g_assert (s_con);
 			g_object_set (s_con, NM_SETTING_CONNECTION_TIMESTAMP, timestamp, NULL);
 		}
@@ -1017,7 +1073,7 @@ get_settings_auth_cb (NMSettingsConnection *self,
 		g_assert (settings);
 		dbus_g_method_return (context, settings);
 		g_hash_table_destroy (settings);
- 		g_object_unref (dupl_con);
+		g_object_unref (dupl_con);
 	}
 }
 
@@ -1042,31 +1098,30 @@ con_update_cb (NMSettingsConnection *connection,
 }
 
 static void
-only_agent_secrets_cb (NMSetting *setting,
-                       const char *key,
-                       const GValue *value,
-                       GParamFlags flags,
-                       gpointer user_data)
+secrets_filter_cb (NMSetting *setting,
+                   const char *key,
+                   const GValue *value,
+                   GParamFlags flags,
+                   gpointer user_data)
 {
+	NMSettingSecretFlags filter_flags = GPOINTER_TO_UINT (user_data);
+	NMSettingSecretFlags secret_flags = NM_SETTING_SECRET_FLAG_NONE;
+	const char *secret_name = NULL;
+	GHashTableIter iter;
+
 	if (flags & NM_SETTING_PARAM_SECRET) {
-		NMSettingSecretFlags secret_flags = NM_SETTING_SECRET_FLAG_NONE;
-
-		/* Clear out system-owned or always-ask secrets */
 		if (NM_IS_SETTING_VPN (setting) && !strcmp (key, NM_SETTING_VPN_SECRETS)) {
-			GHashTableIter iter;
-			const char *secret_name = NULL;
-
 			/* VPNs are special; need to handle each secret separately */
 			g_hash_table_iter_init (&iter, (GHashTable *) g_value_get_boxed (value));
-			while (g_hash_table_iter_next (&iter, (gpointer *) &secret_name, NULL)) {
+			while (g_hash_table_iter_next (&iter, (gpointer) &secret_name, NULL)) {
 				secret_flags = NM_SETTING_SECRET_FLAG_NONE;
 				nm_setting_get_secret_flags (setting, secret_name, &secret_flags, NULL);
-				if (secret_flags != NM_SETTING_SECRET_FLAG_AGENT_OWNED)
+				if (!(secret_flags & filter_flags))
 					nm_setting_vpn_remove_secret (NM_SETTING_VPN (setting), secret_name);
 			}
 		} else {
 			nm_setting_get_secret_flags (setting, key, &secret_flags, NULL);
-			if (secret_flags != NM_SETTING_SECRET_FLAG_AGENT_OWNED)
+			if (!(secret_flags & filter_flags))
 				g_object_set (G_OBJECT (setting), key, NULL, NULL);
 		}
 	}
@@ -1081,23 +1136,52 @@ update_auth_cb (NMSettingsConnection *self,
 {
 	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (self);
 	NMConnection *new_settings = data;
-	NMConnection *for_agent;
+	NMConnection *for_agent, *dup;
+	NMSettingSecretFlags filter_flags;
+	GHashTable *hash;
+	GError *local = NULL;
 
 	if (error)
 		dbus_g_method_return_error (context, error);
 	else {
+		/* Cache the new secrets since they may get overwritten by the replace
+		 * when transient secrets are copied back.
+		 */
+		dup = nm_connection_duplicate (new_settings);
+
 		/* Update and commit our settings. */
 		nm_settings_connection_replace_and_commit (self,
 		                                           new_settings,
 		                                           con_update_cb,
 		                                           context);
 
+		/* Copy new agent secrets back to the connection */
+		filter_flags = NM_SETTING_SECRET_FLAG_AGENT_OWNED | NM_SETTING_SECRET_FLAG_NOT_SAVED;
+		nm_connection_for_each_setting_value (dup,
+		                                      secrets_filter_cb,
+		                                      GUINT_TO_POINTER (filter_flags));
+		hash = nm_connection_to_hash (dup, NM_SETTING_HASH_FLAG_ONLY_SECRETS);
+		g_object_unref (dup);
+
+		if (hash) {
+			if (!nm_connection_update_secrets (NM_CONNECTION (self), NULL, hash, &local)) {
+				nm_log_warn (LOGD_SETTINGS, "Failed to update connection secrets: (%d) %s",
+				             local ? local->code : -1,
+				             local && local->message ? local->message : "(unknown)");
+				g_clear_error (&local);
+			}
+			g_hash_table_destroy (hash);
+		}
+
 		/* Dupe the connection and clear out non-agent-owned secrets so we can
 		 * send the agent-owned ones to agents to be saved.  Only send them to
 		 * agents of the same UID as the Update() request sender.
 		 */
 		for_agent = nm_connection_duplicate (NM_CONNECTION (self));
-		nm_connection_for_each_setting_value (for_agent, only_agent_secrets_cb, NULL);
+		filter_flags = NM_SETTING_SECRET_FLAG_AGENT_OWNED;
+		nm_connection_for_each_setting_value (for_agent,
+		                                      secrets_filter_cb,
+		                                      GUINT_TO_POINTER (filter_flags));
 		nm_agent_manager_save_secrets (priv->agent_mgr, for_agent, TRUE, sender_uid);
 		g_object_unref (for_agent);
 	}
@@ -1272,6 +1356,8 @@ dbus_get_agent_secrets_cb (NMSettingsConnection *self,
 		update_secrets_cache (self);
 
 		hash = nm_connection_to_hash (NM_CONNECTION (self), NM_SETTING_HASH_FLAG_ONLY_SECRETS);
+		if (!hash)
+			hash = g_hash_table_new (NULL, NULL);
 		dbus_g_method_return (context, hash);
 		g_hash_table_destroy (hash);
 	}
@@ -1440,6 +1526,181 @@ nm_settings_connection_read_and_fill_timestamp (NMSettingsConnection *connection
 	g_key_file_free (timestamps_file);
 }
 
+static guint
+mac_hash (gconstpointer v)
+{
+	const guint8 *p = v;
+	guint32 i, h = 5381;
+
+	for (i = 0; i < ETH_ALEN; i++)
+		h = (h << 5) + h + p[i];
+	return h;
+}
+
+static gboolean
+mac_equal (gconstpointer a, gconstpointer b)
+{
+	return memcmp (a, b, ETH_ALEN) == 0;
+}
+
+static guint8 *
+mac_dup (const struct ether_addr *old)
+{
+	guint8 *new;
+
+	g_return_val_if_fail (old != NULL, NULL);
+
+	new = g_malloc0 (ETH_ALEN);
+	memcpy (new, old, ETH_ALEN);
+	return new;
+}
+
+/**
+ * nm_settings_connection_has_seen_bssid:
+ * @connection: the #NMSettingsConnection
+ * @bssid: the BSSID to check the seen BSSID list for
+ *
+ * Returns: TRUE if the given @bssid is in the seen BSSIDs list
+ **/
+gboolean
+nm_settings_connection_has_seen_bssid (NMSettingsConnection *connection,
+                                       const struct ether_addr *bssid)
+{
+	g_return_val_if_fail (connection != NULL, FALSE);
+	g_return_val_if_fail (NM_IS_SETTINGS_CONNECTION (connection), FALSE);
+	g_return_val_if_fail (bssid != NULL, FALSE);
+
+	return !!g_hash_table_lookup (NM_SETTINGS_CONNECTION_GET_PRIVATE (connection)->seen_bssids, bssid);
+}
+
+/**
+ * nm_settings_connection_add_seen_bssid:
+ * @connection: the #NMSettingsConnection
+ * @seen_bssid: BSSID to set into the connection and to store into
+ * the seen-bssids database
+ *
+ * Updates the connection and seen-bssids database with the provided BSSID.
+ **/
+void
+nm_settings_connection_add_seen_bssid (NMSettingsConnection *connection,
+                                       const struct ether_addr *seen_bssid)
+{
+	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection);
+	const char *connection_uuid;
+	GKeyFile *seen_bssids_file;
+	char *data, *bssid_str;
+	const char **list;
+	gsize len;
+	GError *error = NULL;
+	GHashTableIter iter;
+	guint n;
+
+	g_return_if_fail (seen_bssid != NULL);
+
+	if (g_hash_table_lookup (priv->seen_bssids, seen_bssid))
+		return;  /* Already in the list */
+
+	/* Add the new BSSID; let the hash take ownership of the allocated BSSID string */
+	bssid_str = nm_ether_ntop (seen_bssid);
+	g_return_if_fail (bssid_str != NULL);
+	g_hash_table_insert (priv->seen_bssids, mac_dup (seen_bssid), bssid_str);
+
+	/* Build up a list of all the BSSIDs in string form */
+	n = 0;
+	list = g_malloc0 (g_hash_table_size (priv->seen_bssids) * sizeof (char *));
+	g_hash_table_iter_init (&iter, priv->seen_bssids);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &bssid_str))
+		list[n++] = bssid_str;
+
+	/* Save BSSID to seen-bssids file */
+	seen_bssids_file = g_key_file_new ();
+	g_key_file_set_list_separator (seen_bssids_file, ',');
+	if (!g_key_file_load_from_file (seen_bssids_file, SETTINGS_SEEN_BSSIDS_FILE, G_KEY_FILE_KEEP_COMMENTS, &error)) {
+		if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
+			nm_log_warn (LOGD_SETTINGS, "error parsing seen-bssids file '%s': %s",
+			             SETTINGS_SEEN_BSSIDS_FILE, error->message);
+		}
+		g_clear_error (&error);
+	}
+
+	connection_uuid = nm_connection_get_uuid (NM_CONNECTION (connection));
+	g_key_file_set_string_list (seen_bssids_file, "seen-bssids", connection_uuid, list, n);
+	g_free (list);
+
+	data = g_key_file_to_data (seen_bssids_file, &len, &error);
+	if (data) {
+		g_file_set_contents (SETTINGS_SEEN_BSSIDS_FILE, data, len, &error);
+		g_free (data);
+	}
+	g_key_file_free (seen_bssids_file);
+
+	if (error) {
+		nm_log_warn (LOGD_SETTINGS, "error saving seen-bssids to file '%s': %s",
+		             SETTINGS_SEEN_BSSIDS_FILE, error->message);
+		g_error_free (error);
+	}
+}
+
+static void
+add_seen_bssid_string (NMSettingsConnection *self, const char *bssid)
+{
+	struct ether_addr mac;
+
+	g_return_if_fail (bssid != NULL);
+	if (ether_aton_r (bssid, &mac)) {
+		g_hash_table_insert (NM_SETTINGS_CONNECTION_GET_PRIVATE (self)->seen_bssids,
+		                     mac_dup (&mac),
+		                     g_strdup (bssid));
+	}
+}
+
+/**
+ * nm_settings_connection_read_and_fill_seen_bssids:
+ * @connection: the #NMSettingsConnection
+ *
+ * Retrieves seen BSSIDs of the connection from database file and stores then into the
+ * connection private data.
+ **/
+void
+nm_settings_connection_read_and_fill_seen_bssids (NMSettingsConnection *connection)
+{
+	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection);
+	const char *connection_uuid;
+	GKeyFile *seen_bssids_file;
+	char **tmp_strv = NULL;
+	gsize i, len = 0;
+	NMSettingWireless *s_wifi;
+
+	/* Get seen BSSIDs from database file */
+	seen_bssids_file = g_key_file_new ();
+	g_key_file_set_list_separator (seen_bssids_file, ',');
+	if (g_key_file_load_from_file (seen_bssids_file, SETTINGS_SEEN_BSSIDS_FILE, G_KEY_FILE_KEEP_COMMENTS, NULL)) {
+		connection_uuid = nm_connection_get_uuid (NM_CONNECTION (connection));
+		tmp_strv = g_key_file_get_string_list (seen_bssids_file, "seen-bssids", connection_uuid, &len, NULL);
+	}
+	g_key_file_free (seen_bssids_file);
+
+	/* Update connection's seen-bssids */
+	if (tmp_strv) {
+		g_hash_table_remove_all (priv->seen_bssids);
+		for (i = 0; i < len; i++)
+			add_seen_bssid_string (connection, tmp_strv[i]);
+		g_strfreev (tmp_strv);
+	} else {
+		/* If this connection didn't have an entry in the seen-bssids database,
+		 * maybe this is the first time we've read it in, so populate the
+		 * seen-bssids list from the deprecated seen-bssids property of the
+		 * wifi setting.
+		 */
+		s_wifi = nm_connection_get_setting_wireless (NM_CONNECTION (connection));
+		if (s_wifi) {
+			len = nm_setting_wireless_get_num_seen_bssids (s_wifi);
+			for (i = 0; i < len; i++)
+				add_seen_bssid_string (connection, nm_setting_wireless_get_seen_bssid (s_wifi, i));
+		}
+	}
+}
+
 /**************************************************************/
 
 static void
@@ -1463,6 +1724,8 @@ nm_settings_connection_init (NMSettingsConnection *self)
 	                                             self);
 
 	priv->agent_mgr = nm_agent_manager_get ();
+
+	priv->seen_bssids = g_hash_table_new_full (mac_hash, mac_equal, g_free, g_free);
 }
 
 static void
@@ -1489,6 +1752,8 @@ dispose (GObject *object)
 	for (iter = priv->reqs; iter; iter = g_slist_next (iter))
 		nm_agent_manager_cancel_secrets (priv->agent_mgr, GPOINTER_TO_UINT (iter->data));
 	g_slist_free (priv->reqs);
+
+	g_hash_table_destroy (priv->seen_bssids);
 
 	set_visible (self, FALSE);
 
