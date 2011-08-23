@@ -93,10 +93,15 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_ip6_route_set_next_hop@Base 0.7.999
  nm_ip6_route_set_prefix@Base 0.7.999
  nm_ip6_route_unref@Base 0.7.999
+ nm_setting_802_1x_add_altsubject_match@Base 0.9.0
  nm_setting_802_1x_add_eap_method@Base 0.7.0
+ nm_setting_802_1x_add_phase2_altsubject_match@Base 0.9.0
+ nm_setting_802_1x_clear_altsubject_matches@Base 0.9.0
  nm_setting_802_1x_clear_eap_methods@Base 0.7.0
+ nm_setting_802_1x_clear_phase2_altsubject_matches@Base 0.9.0
  nm_setting_802_1x_error_get_type@Base 0.7.0
  nm_setting_802_1x_error_quark@Base 0.7.0
+ nm_setting_802_1x_get_altsubject_match@Base 0.9.0
  nm_setting_802_1x_get_anonymous_identity@Base 0.7.0
  nm_setting_802_1x_get_ca_cert_blob@Base 0.7.999
  nm_setting_802_1x_get_ca_cert_path@Base 0.7.999
@@ -107,12 +112,15 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_get_client_cert_scheme@Base 0.7.999
  nm_setting_802_1x_get_eap_method@Base 0.7.0
  nm_setting_802_1x_get_identity@Base 0.7.0
+ nm_setting_802_1x_get_num_altsubject_matches@Base 0.9.0
  nm_setting_802_1x_get_num_eap_methods@Base 0.7.0
+ nm_setting_802_1x_get_num_phase2_altsubject_matches@Base 0.9.0
  nm_setting_802_1x_get_password@Base 0.7.0
  nm_setting_802_1x_get_password_flags@Base 0.8.998
  nm_setting_802_1x_get_phase1_fast_provisioning@Base 0.7.0
  nm_setting_802_1x_get_phase1_peaplabel@Base 0.7.0
  nm_setting_802_1x_get_phase1_peapver@Base 0.7.0
+ nm_setting_802_1x_get_phase2_altsubject_match@Base 0.9.0
  nm_setting_802_1x_get_phase2_auth@Base 0.7.0
  nm_setting_802_1x_get_phase2_autheap@Base 0.7.0
  nm_setting_802_1x_get_phase2_ca_cert_blob@Base 0.7.999
@@ -128,6 +136,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_get_phase2_private_key_password_flags@Base 0.8.998
  nm_setting_802_1x_get_phase2_private_key_path@Base 0.7.999
  nm_setting_802_1x_get_phase2_private_key_scheme@Base 0.7.999
+ nm_setting_802_1x_get_phase2_subject_match@Base 0.9.0
  nm_setting_802_1x_get_pin@Base 0.7.0
  nm_setting_802_1x_get_pin_flags@Base 0.8.9997
  nm_setting_802_1x_get_private_key_blob@Base 0.7.999
@@ -136,10 +145,13 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_get_private_key_password_flags@Base 0.8.998
  nm_setting_802_1x_get_private_key_path@Base 0.7.999
  nm_setting_802_1x_get_private_key_scheme@Base 0.7.999
+ nm_setting_802_1x_get_subject_match@Base 0.9.0
  nm_setting_802_1x_get_system_ca_certs@Base 0.7.0
  nm_setting_802_1x_get_type@Base 0.7.0
  nm_setting_802_1x_new@Base 0.7.0
+ nm_setting_802_1x_remove_altsubject_match@Base 0.9.0
  nm_setting_802_1x_remove_eap_method@Base 0.7.0
+ nm_setting_802_1x_remove_phase2_altsubject_match@Base 0.9.0
  nm_setting_802_1x_set_ca_cert@Base 0.7.999
  nm_setting_802_1x_set_client_cert@Base 0.7.999
  nm_setting_802_1x_set_phase2_ca_cert@Base 0.7.999
@@ -341,6 +353,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_wired_get_cloned_mac_address@Base 0.8.2
  nm_setting_wired_get_duplex@Base 0.7.0
  nm_setting_wired_get_mac_address@Base 0.7.0
+ nm_setting_wired_get_mac_address_blacklist@Base 0.9.0
  nm_setting_wired_get_mtu@Base 0.7.0
  nm_setting_wired_get_num_s390_options@Base 0.8.2
  nm_setting_wired_get_port@Base 0.7.0
@@ -361,6 +374,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_wireless_get_channel@Base 0.7.0
  nm_setting_wireless_get_cloned_mac_address@Base 0.8.2
  nm_setting_wireless_get_mac_address@Base 0.7.0
+ nm_setting_wireless_get_mac_address_blacklist@Base 0.9.0
  nm_setting_wireless_get_mode@Base 0.7.0
  nm_setting_wireless_get_mtu@Base 0.7.0
  nm_setting_wireless_get_num_seen_bssids@Base 0.7.0
