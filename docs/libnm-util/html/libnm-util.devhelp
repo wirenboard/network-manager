@@ -13,6 +13,7 @@
       <sub name="NMSettingSerial" link="NMSettingSerial.html"/>
       <sub name="NMSettingCdma" link="NMSettingCdma.html"/>
       <sub name="NMSettingGsm" link="NMSettingGsm.html"/>
+      <sub name="NMSettingWimax" link="NMSettingWimax.html"/>
       <sub name="NMSettingOlpcMesh" link="NMSettingOlpcMesh.html"/>
       <sub name="NMSetting8021x" link="NMSetting8021x.html"/>
       <sub name="NMSettingIP4Config" link="NMSettingIP4Config.html"/>
@@ -86,6 +87,7 @@
     <function name="NM_SETTING_PARAM_FUZZY_IGNORE" link="NMSetting.html#NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"/>
     <function name="NM_SETTING_NAME" link="NMSetting.html#NM-SETTING-NAME:CAPS"/>
     <function name="enum NMSettingSecretFlags" link="NMSetting.html#NMSettingSecretFlags"/>
+    <function name="enum NMSettingCompareFlags" link="NMSetting.html#NMSettingCompareFlags"/>
     <function name="NMSetting" link="NMSetting.html#NMSetting-struct"/>
     <function name="NMSettingClass" link="NMSetting.html#NMSettingClass"/>
     <function name="NMSettingValueIterFn ()" link="NMSetting.html#NMSettingValueIterFn"/>
@@ -96,7 +98,6 @@
     <function name="nm_setting_duplicate ()" link="NMSetting.html#nm-setting-duplicate"/>
     <function name="nm_setting_get_name ()" link="NMSetting.html#nm-setting-get-name"/>
     <function name="nm_setting_verify ()" link="NMSetting.html#nm-setting-verify"/>
-    <function name="enum NMSettingCompareFlags" link="NMSetting.html#NMSettingCompareFlags"/>
     <function name="nm_setting_compare ()" link="NMSetting.html#nm-setting-compare"/>
     <function name="enum NMSettingDiffResult" link="NMSetting.html#NMSettingDiffResult"/>
     <function name="nm_setting_diff ()" link="NMSetting.html#nm-setting-diff"/>
@@ -153,6 +154,7 @@
     <function name="NM_SETTING_WIRED_AUTO_NEGOTIATE" link="NMSettingWired.html#NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS"/>
     <function name="NM_SETTING_WIRED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS:CAPS"/>
     <function name="NM_SETTING_WIRED_CLONED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS"/>
+    <function name="NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST" link="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS-BLACKLIST:CAPS"/>
     <function name="NM_SETTING_WIRED_MTU" link="NMSettingWired.html#NM-SETTING-WIRED-MTU:CAPS"/>
     <function name="NM_SETTING_WIRED_S390_SUBCHANNELS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS"/>
     <function name="NM_SETTING_WIRED_S390_NETTYPE" link="NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS"/>
@@ -167,6 +169,7 @@
     <function name="nm_setting_wired_get_auto_negotiate ()" link="NMSettingWired.html#nm-setting-wired-get-auto-negotiate"/>
     <function name="nm_setting_wired_get_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-mac-address"/>
     <function name="nm_setting_wired_get_cloned_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-cloned-mac-address"/>
+    <function name="nm_setting_wired_get_mac_address_blacklist ()" link="NMSettingWired.html#nm-setting-wired-get-mac-address-blacklist"/>
     <function name="nm_setting_wired_get_mtu ()" link="NMSettingWired.html#nm-setting-wired-get-mtu"/>
     <function name="nm_setting_wired_get_s390_subchannels ()" link="NMSettingWired.html#nm-setting-wired-get-s390-subchannels"/>
     <function name="nm_setting_wired_get_s390_nettype ()" link="NMSettingWired.html#nm-setting-wired-get-s390-nettype"/>
@@ -179,6 +182,7 @@
     <function name="The &quot;cloned-mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--cloned-mac-address"/>
     <function name="The &quot;duplex&quot; property" link="NMSettingWired.html#NMSettingWired--duplex"/>
     <function name="The &quot;mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--mac-address"/>
+    <function name="The &quot;mac-address-blacklist&quot; property" link="NMSettingWired.html#NMSettingWired--mac-address-blacklist"/>
     <function name="The &quot;mtu&quot; property" link="NMSettingWired.html#NMSettingWired--mtu"/>
     <function name="The &quot;port&quot; property" link="NMSettingWired.html#NMSettingWired--port"/>
     <function name="The &quot;s390-nettype&quot; property" link="NMSettingWired.html#NMSettingWired--s390-nettype"/>
@@ -199,6 +203,7 @@
     <function name="NM_SETTING_WIRELESS_TX_POWER" link="NMSettingWireless.html#NM-SETTING-WIRELESS-TX-POWER:CAPS"/>
     <function name="NM_SETTING_WIRELESS_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS"/>
     <function name="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"/>
+    <function name="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS"/>
     <function name="NM_SETTING_WIRELESS_MTU" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS"/>
     <function name="NM_SETTING_WIRELESS_SEEN_BSSIDS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS"/>
     <function name="NM_SETTING_WIRELESS_SEC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS"/>
@@ -217,6 +222,7 @@
     <function name="nm_setting_wireless_get_tx_power ()" link="NMSettingWireless.html#nm-setting-wireless-get-tx-power"/>
     <function name="nm_setting_wireless_get_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address"/>
     <function name="nm_setting_wireless_get_cloned_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address"/>
+    <function name="nm_setting_wireless_get_mac_address_blacklist ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address-blacklist"/>
     <function name="nm_setting_wireless_get_mtu ()" link="NMSettingWireless.html#nm-setting-wireless-get-mtu"/>
     <function name="nm_setting_wireless_get_security ()" link="NMSettingWireless.html#nm-setting-wireless-get-security"/>
     <function name="nm_setting_wireless_add_seen_bssid ()" link="NMSettingWireless.html#nm-setting-wireless-add-seen-bssid"/>
@@ -228,6 +234,7 @@
     <function name="The &quot;channel&quot; property" link="NMSettingWireless.html#NMSettingWireless--channel"/>
     <function name="The &quot;cloned-mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--cloned-mac-address"/>
     <function name="The &quot;mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address"/>
+    <function name="The &quot;mac-address-blacklist&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address-blacklist"/>
     <function name="The &quot;mode&quot; property" link="NMSettingWireless.html#NMSettingWireless--mode"/>
     <function name="The &quot;mtu&quot; property" link="NMSettingWireless.html#NMSettingWireless--mtu"/>
     <function name="The &quot;rate&quot; property" link="NMSettingWireless.html#NMSettingWireless--rate"/>
@@ -412,6 +419,21 @@
     <function name="The &quot;pin&quot; property" link="NMSettingGsm.html#NMSettingGsm--pin"/>
     <function name="The &quot;pin-flags&quot; property" link="NMSettingGsm.html#NMSettingGsm--pin-flags"/>
     <function name="The &quot;username&quot; property" link="NMSettingGsm.html#NMSettingGsm--username"/>
+    <function name="NM_SETTING_WIMAX_SETTING_NAME" link="NMSettingWimax.html#NM-SETTING-WIMAX-SETTING-NAME:CAPS"/>
+    <function name="enum NMSettingWimaxError" link="NMSettingWimax.html#NMSettingWimaxError"/>
+    <function name="NM_TYPE_SETTING_WIMAX_ERROR" link="NMSettingWimax.html#NM-TYPE-SETTING-WIMAX-ERROR:CAPS"/>
+    <function name="NM_SETTING_WIMAX_ERROR" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR:CAPS"/>
+    <function name="nm_setting_wimax_error_quark ()" link="NMSettingWimax.html#nm-setting-wimax-error-quark"/>
+    <function name="NM_SETTING_WIMAX_NETWORK_NAME" link="NMSettingWimax.html#NM-SETTING-WIMAX-NETWORK-NAME:CAPS"/>
+    <function name="NM_SETTING_WIMAX_MAC_ADDRESS" link="NMSettingWimax.html#NM-SETTING-WIMAX-MAC-ADDRESS:CAPS"/>
+    <function name="NMSettingWimax" link="NMSettingWimax.html#NMSettingWimax-struct"/>
+    <function name="NMSettingWimaxClass" link="NMSettingWimax.html#NMSettingWimaxClass"/>
+    <function name="nm_setting_wimax_get_type ()" link="NMSettingWimax.html#nm-setting-wimax-get-type"/>
+    <function name="nm_setting_wimax_new ()" link="NMSettingWimax.html#nm-setting-wimax-new"/>
+    <function name="nm_setting_wimax_get_network_name ()" link="NMSettingWimax.html#nm-setting-wimax-get-network-name"/>
+    <function name="nm_setting_wimax_get_mac_address ()" link="NMSettingWimax.html#nm-setting-wimax-get-mac-address"/>
+    <function name="The &quot;mac-address&quot; property" link="NMSettingWimax.html#NMSettingWimax--mac-address"/>
+    <function name="The &quot;network-name&quot; property" link="NMSettingWimax.html#NMSettingWimax--network-name"/>
     <function name="NM_SETTING_OLPC_MESH_SETTING_NAME" link="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-SETTING-NAME:CAPS"/>
     <function name="enum NMSettingOlpcMeshError" link="NMSettingOlpcMesh.html#NMSettingOlpcMeshError"/>
     <function name="NM_TYPE_SETTING_OLPC_MESH_ERROR" link="NMSettingOlpcMesh.html#NM-TYPE-SETTING-OLPC-MESH-ERROR:CAPS"/>
@@ -442,6 +464,8 @@
     <function name="NM_SETTING_802_1X_ANONYMOUS_IDENTITY" link="NMSetting8021x.html#NM-SETTING-802-1X-ANONYMOUS-IDENTITY:CAPS"/>
     <function name="NM_SETTING_802_1X_CA_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-CA-CERT:CAPS"/>
     <function name="NM_SETTING_802_1X_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CA-PATH:CAPS"/>
+    <function name="NM_SETTING_802_1X_SUBJECT_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-SUBJECT-MATCH:CAPS"/>
+    <function name="NM_SETTING_802_1X_ALTSUBJECT_MATCHES" link="NMSetting8021x.html#NM-SETTING-802-1X-ALTSUBJECT-MATCHES:CAPS"/>
     <function name="NM_SETTING_802_1X_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-CLIENT-CERT:CAPS"/>
     <function name="NM_SETTING_802_1X_PHASE1_PEAPVER" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPVER:CAPS"/>
     <function name="NM_SETTING_802_1X_PHASE1_PEAPLABEL" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPLABEL:CAPS"/>
@@ -450,6 +474,8 @@
     <function name="NM_SETTING_802_1X_PHASE2_AUTHEAP" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-AUTHEAP:CAPS"/>
     <function name="NM_SETTING_802_1X_PHASE2_CA_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-CERT:CAPS"/>
     <function name="NM_SETTING_802_1X_PHASE2_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS"/>
+    <function name="NM_SETTING_802_1X_PHASE2_SUBJECT_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-SUBJECT-MATCH:CAPS"/>
+    <function name="NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-ALTSUBJECT-MATCHES:CAPS"/>
     <function name="NM_SETTING_802_1X_PHASE2_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS"/>
     <function name="NM_SETTING_802_1X_PASSWORD" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD:CAPS"/>
     <function name="NM_SETTING_802_1X_PASSWORD_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD-FLAGS:CAPS"/>
@@ -480,6 +506,12 @@
     <function name="nm_setting_802_1x_get_ca_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-blob"/>
     <function name="nm_setting_802_1x_get_ca_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-path"/>
     <function name="nm_setting_802_1x_set_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-ca-cert"/>
+    <function name="nm_setting_802_1x_get_subject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-subject-match"/>
+    <function name="nm_setting_802_1x_get_num_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-get-num-altsubject-matches"/>
+    <function name="nm_setting_802_1x_get_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-altsubject-match"/>
+    <function name="nm_setting_802_1x_add_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-add-altsubject-match"/>
+    <function name="nm_setting_802_1x_remove_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-altsubject-match"/>
+    <function name="nm_setting_802_1x_clear_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-clear-altsubject-matches"/>
     <function name="nm_setting_802_1x_get_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-scheme"/>
     <function name="nm_setting_802_1x_get_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob"/>
     <function name="nm_setting_802_1x_get_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path"/>
@@ -493,6 +525,12 @@
     <function name="nm_setting_802_1x_get_phase2_ca_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-blob"/>
     <function name="nm_setting_802_1x_get_phase2_ca_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-path"/>
     <function name="nm_setting_802_1x_set_phase2_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-ca-cert"/>
+    <function name="nm_setting_802_1x_get_phase2_subject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-subject-match"/>
+    <function name="nm_setting_802_1x_get_num_phase2_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-get-num-phase2-altsubject-matches"/>
+    <function name="nm_setting_802_1x_get_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-altsubject-match"/>
+    <function name="nm_setting_802_1x_add_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-add-phase2-altsubject-match"/>
+    <function name="nm_setting_802_1x_remove_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-phase2-altsubject-match"/>
+    <function name="nm_setting_802_1x_clear_phase2_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-clear-phase2-altsubject-matches"/>
     <function name="nm_setting_802_1x_get_phase2_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-scheme"/>
     <function name="nm_setting_802_1x_get_phase2_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-blob"/>
     <function name="nm_setting_802_1x_get_phase2_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-path"/>
@@ -515,6 +553,7 @@
     <function name="nm_setting_802_1x_get_phase2_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password"/>
     <function name="nm_setting_802_1x_get_phase2_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password-flags"/>
     <function name="nm_setting_802_1x_get_phase2_private_key_format ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-format"/>
+    <function name="The &quot;altsubject-matches&quot; property" link="NMSetting8021x.html#NMSetting8021x--altsubject-matches"/>
     <function name="The &quot;anonymous-identity&quot; property" link="NMSetting8021x.html#NMSetting8021x--anonymous-identity"/>
     <function name="The &quot;ca-cert&quot; property" link="NMSetting8021x.html#NMSetting8021x--ca-cert"/>
     <function name="The &quot;ca-path&quot; property" link="NMSetting8021x.html#NMSetting8021x--ca-path"/>
@@ -526,6 +565,7 @@
     <function name="The &quot;phase1-fast-provisioning&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-fast-provisioning"/>
     <function name="The &quot;phase1-peaplabel&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-peaplabel"/>
     <function name="The &quot;phase1-peapver&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-peapver"/>
+    <function name="The &quot;phase2-altsubject-matches&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-altsubject-matches"/>
     <function name="The &quot;phase2-auth&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-auth"/>
     <function name="The &quot;phase2-autheap&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-autheap"/>
     <function name="The &quot;phase2-ca-cert&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-ca-cert"/>
@@ -534,9 +574,11 @@
     <function name="The &quot;phase2-private-key&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key"/>
     <function name="The &quot;phase2-private-key-password&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password"/>
     <function name="The &quot;phase2-private-key-password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password-flags"/>
+    <function name="The &quot;phase2-subject-match&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-subject-match"/>
     <function name="The &quot;private-key&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key"/>
     <function name="The &quot;private-key-password&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key-password"/>
     <function name="The &quot;private-key-password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key-password-flags"/>
+    <function name="The &quot;subject-match&quot; property" link="NMSetting8021x.html#NMSetting8021x--subject-match"/>
     <function name="The &quot;system-ca-certs&quot; property" link="NMSetting8021x.html#NMSetting8021x--system-ca-certs"/>
     <function name="NM_SETTING_IP4_CONFIG_SETTING_NAME" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-SETTING-NAME:CAPS"/>
     <function name="enum NMSettingIP4ConfigError" link="NMSettingIP4Config.html#NMSettingIP4ConfigError"/>

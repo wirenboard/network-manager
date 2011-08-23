@@ -13,6 +13,7 @@
       <sub name="NMSettingSerial" link="NMSettingSerial.html"/>
       <sub name="NMSettingCdma" link="NMSettingCdma.html"/>
       <sub name="NMSettingGsm" link="NMSettingGsm.html"/>
+      <sub name="NMSettingWimax" link="NMSettingWimax.html"/>
       <sub name="NMSettingOlpcMesh" link="NMSettingOlpcMesh.html"/>
       <sub name="NMSetting8021x" link="NMSetting8021x.html"/>
       <sub name="NMSettingIP4Config" link="NMSettingIP4Config.html"/>
@@ -86,6 +87,7 @@
     <keyword type="macro" name="NM_SETTING_PARAM_FUZZY_IGNORE" link="NMSetting.html#NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_NAME" link="NMSetting.html#NM-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingSecretFlags" link="NMSetting.html#NMSettingSecretFlags"/>
+    <keyword type="enum" name="enum NMSettingCompareFlags" link="NMSetting.html#NMSettingCompareFlags"/>
     <keyword type="struct" name="NMSetting" link="NMSetting.html#NMSetting-struct"/>
     <keyword type="struct" name="NMSettingClass" link="NMSetting.html#NMSettingClass"/>
     <keyword type="function" name="NMSettingValueIterFn ()" link="NMSetting.html#NMSettingValueIterFn"/>
@@ -96,7 +98,6 @@
     <keyword type="function" name="nm_setting_duplicate ()" link="NMSetting.html#nm-setting-duplicate"/>
     <keyword type="function" name="nm_setting_get_name ()" link="NMSetting.html#nm-setting-get-name"/>
     <keyword type="function" name="nm_setting_verify ()" link="NMSetting.html#nm-setting-verify"/>
-    <keyword type="enum" name="enum NMSettingCompareFlags" link="NMSetting.html#NMSettingCompareFlags"/>
     <keyword type="function" name="nm_setting_compare ()" link="NMSetting.html#nm-setting-compare"/>
     <keyword type="enum" name="enum NMSettingDiffResult" link="NMSetting.html#NMSettingDiffResult"/>
     <keyword type="function" name="nm_setting_diff ()" link="NMSetting.html#nm-setting-diff"/>
@@ -153,6 +154,7 @@
     <keyword type="macro" name="NM_SETTING_WIRED_AUTO_NEGOTIATE" link="NMSettingWired.html#NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_CLONED_MAC_ADDRESS" link="NMSettingWired.html#NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST" link="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS-BLACKLIST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_MTU" link="NMSettingWired.html#NM-SETTING-WIRED-MTU:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_S390_SUBCHANNELS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_S390_NETTYPE" link="NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS"/>
@@ -167,6 +169,7 @@
     <keyword type="function" name="nm_setting_wired_get_auto_negotiate ()" link="NMSettingWired.html#nm-setting-wired-get-auto-negotiate"/>
     <keyword type="function" name="nm_setting_wired_get_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-mac-address"/>
     <keyword type="function" name="nm_setting_wired_get_cloned_mac_address ()" link="NMSettingWired.html#nm-setting-wired-get-cloned-mac-address"/>
+    <keyword type="function" name="nm_setting_wired_get_mac_address_blacklist ()" link="NMSettingWired.html#nm-setting-wired-get-mac-address-blacklist"/>
     <keyword type="function" name="nm_setting_wired_get_mtu ()" link="NMSettingWired.html#nm-setting-wired-get-mtu"/>
     <keyword type="function" name="nm_setting_wired_get_s390_subchannels ()" link="NMSettingWired.html#nm-setting-wired-get-s390-subchannels"/>
     <keyword type="function" name="nm_setting_wired_get_s390_nettype ()" link="NMSettingWired.html#nm-setting-wired-get-s390-nettype"/>
@@ -179,6 +182,7 @@
     <keyword type="property" name="The &quot;cloned-mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--cloned-mac-address"/>
     <keyword type="property" name="The &quot;duplex&quot; property" link="NMSettingWired.html#NMSettingWired--duplex"/>
     <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWired.html#NMSettingWired--mac-address"/>
+    <keyword type="property" name="The &quot;mac-address-blacklist&quot; property" link="NMSettingWired.html#NMSettingWired--mac-address-blacklist"/>
     <keyword type="property" name="The &quot;mtu&quot; property" link="NMSettingWired.html#NMSettingWired--mtu"/>
     <keyword type="property" name="The &quot;port&quot; property" link="NMSettingWired.html#NMSettingWired--port"/>
     <keyword type="property" name="The &quot;s390-nettype&quot; property" link="NMSettingWired.html#NMSettingWired--s390-nettype"/>
@@ -199,6 +203,7 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_TX_POWER" link="NMSettingWireless.html#NM-SETTING-WIRELESS-TX-POWER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MTU" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SEEN_BSSIDS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEEN-BSSIDS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_SEC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-SEC:CAPS"/>
@@ -217,6 +222,7 @@
     <keyword type="function" name="nm_setting_wireless_get_tx_power ()" link="NMSettingWireless.html#nm-setting-wireless-get-tx-power"/>
     <keyword type="function" name="nm_setting_wireless_get_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address"/>
     <keyword type="function" name="nm_setting_wireless_get_cloned_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address"/>
+    <keyword type="function" name="nm_setting_wireless_get_mac_address_blacklist ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address-blacklist"/>
     <keyword type="function" name="nm_setting_wireless_get_mtu ()" link="NMSettingWireless.html#nm-setting-wireless-get-mtu"/>
     <keyword type="function" name="nm_setting_wireless_get_security ()" link="NMSettingWireless.html#nm-setting-wireless-get-security"/>
     <keyword type="function" name="nm_setting_wireless_add_seen_bssid ()" link="NMSettingWireless.html#nm-setting-wireless-add-seen-bssid"/>
@@ -228,6 +234,7 @@
     <keyword type="property" name="The &quot;channel&quot; property" link="NMSettingWireless.html#NMSettingWireless--channel"/>
     <keyword type="property" name="The &quot;cloned-mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--cloned-mac-address"/>
     <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address"/>
+    <keyword type="property" name="The &quot;mac-address-blacklist&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address-blacklist"/>
     <keyword type="property" name="The &quot;mode&quot; property" link="NMSettingWireless.html#NMSettingWireless--mode"/>
     <keyword type="property" name="The &quot;mtu&quot; property" link="NMSettingWireless.html#NMSettingWireless--mtu"/>
     <keyword type="property" name="The &quot;rate&quot; property" link="NMSettingWireless.html#NMSettingWireless--rate"/>
@@ -412,6 +419,21 @@
     <keyword type="property" name="The &quot;pin&quot; property" link="NMSettingGsm.html#NMSettingGsm--pin"/>
     <keyword type="property" name="The &quot;pin-flags&quot; property" link="NMSettingGsm.html#NMSettingGsm--pin-flags"/>
     <keyword type="property" name="The &quot;username&quot; property" link="NMSettingGsm.html#NMSettingGsm--username"/>
+    <keyword type="macro" name="NM_SETTING_WIMAX_SETTING_NAME" link="NMSettingWimax.html#NM-SETTING-WIMAX-SETTING-NAME:CAPS"/>
+    <keyword type="enum" name="enum NMSettingWimaxError" link="NMSettingWimax.html#NMSettingWimaxError"/>
+    <keyword type="macro" name="NM_TYPE_SETTING_WIMAX_ERROR" link="NMSettingWimax.html#NM-TYPE-SETTING-WIMAX-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIMAX_ERROR" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR:CAPS"/>
+    <keyword type="function" name="nm_setting_wimax_error_quark ()" link="NMSettingWimax.html#nm-setting-wimax-error-quark"/>
+    <keyword type="macro" name="NM_SETTING_WIMAX_NETWORK_NAME" link="NMSettingWimax.html#NM-SETTING-WIMAX-NETWORK-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIMAX_MAC_ADDRESS" link="NMSettingWimax.html#NM-SETTING-WIMAX-MAC-ADDRESS:CAPS"/>
+    <keyword type="struct" name="NMSettingWimax" link="NMSettingWimax.html#NMSettingWimax-struct"/>
+    <keyword type="struct" name="NMSettingWimaxClass" link="NMSettingWimax.html#NMSettingWimaxClass"/>
+    <keyword type="function" name="nm_setting_wimax_get_type ()" link="NMSettingWimax.html#nm-setting-wimax-get-type"/>
+    <keyword type="function" name="nm_setting_wimax_new ()" link="NMSettingWimax.html#nm-setting-wimax-new"/>
+    <keyword type="function" name="nm_setting_wimax_get_network_name ()" link="NMSettingWimax.html#nm-setting-wimax-get-network-name"/>
+    <keyword type="function" name="nm_setting_wimax_get_mac_address ()" link="NMSettingWimax.html#nm-setting-wimax-get-mac-address"/>
+    <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWimax.html#NMSettingWimax--mac-address"/>
+    <keyword type="property" name="The &quot;network-name&quot; property" link="NMSettingWimax.html#NMSettingWimax--network-name"/>
     <keyword type="macro" name="NM_SETTING_OLPC_MESH_SETTING_NAME" link="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingOlpcMeshError" link="NMSettingOlpcMesh.html#NMSettingOlpcMeshError"/>
     <keyword type="macro" name="NM_TYPE_SETTING_OLPC_MESH_ERROR" link="NMSettingOlpcMesh.html#NM-TYPE-SETTING-OLPC-MESH-ERROR:CAPS"/>
@@ -442,6 +464,8 @@
     <keyword type="macro" name="NM_SETTING_802_1X_ANONYMOUS_IDENTITY" link="NMSetting8021x.html#NM-SETTING-802-1X-ANONYMOUS-IDENTITY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_CA_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-CA-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CA-PATH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_SUBJECT_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-SUBJECT-MATCH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_ALTSUBJECT_MATCHES" link="NMSetting8021x.html#NM-SETTING-802-1X-ALTSUBJECT-MATCHES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-CLIENT-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE1_PEAPVER" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPVER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE1_PEAPLABEL" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPLABEL:CAPS"/>
@@ -450,6 +474,8 @@
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_AUTHEAP" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-AUTHEAP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CA_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_SUBJECT_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-SUBJECT-MATCH:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-ALTSUBJECT-MATCHES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PASSWORD" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PASSWORD_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD-FLAGS:CAPS"/>
@@ -480,6 +506,12 @@
     <keyword type="function" name="nm_setting_802_1x_get_ca_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_ca_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-path"/>
     <keyword type="function" name="nm_setting_802_1x_set_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-ca-cert"/>
+    <keyword type="function" name="nm_setting_802_1x_get_subject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-subject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_get_num_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-get-num-altsubject-matches"/>
+    <keyword type="function" name="nm_setting_802_1x_get_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-altsubject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_add_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-add-altsubject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_remove_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-altsubject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_clear_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-clear-altsubject-matches"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path"/>
@@ -493,6 +525,12 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_ca_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-ca-cert-path"/>
     <keyword type="function" name="nm_setting_802_1x_set_phase2_ca_cert ()" link="NMSetting8021x.html#nm-setting-802-1x-set-phase2-ca-cert"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_subject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-subject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_get_num_phase2_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-get-num-phase2-altsubject-matches"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-altsubject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_add_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-add-phase2-altsubject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_remove_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-phase2-altsubject-match"/>
+    <keyword type="function" name="nm_setting_802_1x_clear_phase2_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-clear-phase2-altsubject-matches"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-path"/>
@@ -515,6 +553,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_format ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-format"/>
+    <keyword type="property" name="The &quot;altsubject-matches&quot; property" link="NMSetting8021x.html#NMSetting8021x--altsubject-matches"/>
     <keyword type="property" name="The &quot;anonymous-identity&quot; property" link="NMSetting8021x.html#NMSetting8021x--anonymous-identity"/>
     <keyword type="property" name="The &quot;ca-cert&quot; property" link="NMSetting8021x.html#NMSetting8021x--ca-cert"/>
     <keyword type="property" name="The &quot;ca-path&quot; property" link="NMSetting8021x.html#NMSetting8021x--ca-path"/>
@@ -526,6 +565,7 @@
     <keyword type="property" name="The &quot;phase1-fast-provisioning&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-fast-provisioning"/>
     <keyword type="property" name="The &quot;phase1-peaplabel&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-peaplabel"/>
     <keyword type="property" name="The &quot;phase1-peapver&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase1-peapver"/>
+    <keyword type="property" name="The &quot;phase2-altsubject-matches&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-altsubject-matches"/>
     <keyword type="property" name="The &quot;phase2-auth&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-auth"/>
     <keyword type="property" name="The &quot;phase2-autheap&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-autheap"/>
     <keyword type="property" name="The &quot;phase2-ca-cert&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-ca-cert"/>
@@ -534,9 +574,11 @@
     <keyword type="property" name="The &quot;phase2-private-key&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key"/>
     <keyword type="property" name="The &quot;phase2-private-key-password&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password"/>
     <keyword type="property" name="The &quot;phase2-private-key-password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password-flags"/>
+    <keyword type="property" name="The &quot;phase2-subject-match&quot; property" link="NMSetting8021x.html#NMSetting8021x--phase2-subject-match"/>
     <keyword type="property" name="The &quot;private-key&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key"/>
     <keyword type="property" name="The &quot;private-key-password&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key-password"/>
     <keyword type="property" name="The &quot;private-key-password-flags&quot; property" link="NMSetting8021x.html#NMSetting8021x--private-key-password-flags"/>
+    <keyword type="property" name="The &quot;subject-match&quot; property" link="NMSetting8021x.html#NMSetting8021x--subject-match"/>
     <keyword type="property" name="The &quot;system-ca-certs&quot; property" link="NMSetting8021x.html#NMSetting8021x--system-ca-certs"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_SETTING_NAME" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingIP4ConfigError" link="NMSettingIP4Config.html#NMSettingIP4ConfigError"/>
@@ -863,6 +905,7 @@
     <keyword type="constant" name="NM_CONNECTION_ERROR_UNKNOWN" link="NMConnection.html#NM-CONNECTION-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-SETTING-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-TYPE-INVALID:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-SETTING-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_UNKNOWN" link="NMSetting.html#NM-SETTING-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_FOUND" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_SECRET" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-SECRET:CAPS"/>
@@ -871,13 +914,15 @@
     <keyword type="constant" name="NM_SETTING_SECRET_FLAG_AGENT_OWNED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-AGENT-OWNED:CAPS"/>
     <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NOT_SAVED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NOT-SAVED:CAPS"/>
     <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NOT_REQUIRED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NOT-REQUIRED:CAPS"/>
-    <keyword type="constant" name="NM_SETTING_HASH_FLAG_ALL" link="NMSetting.html#NM-SETTING-HASH-FLAG-ALL:CAPS"/>
-    <keyword type="constant" name="NM_SETTING_HASH_FLAG_NO_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-NO-SECRETS:CAPS"/>
-    <keyword type="constant" name="NM_SETTING_HASH_FLAG_ONLY_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-ONLY-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_EXACT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-EXACT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_FUZZY" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-FUZZY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_ID" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-ID:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-AGENT-OWNED-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-NOT-SAVED-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_HASH_FLAG_ALL" link="NMSetting.html#NM-SETTING-HASH-FLAG-ALL:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_HASH_FLAG_NO_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_HASH_FLAG_ONLY_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-ONLY-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DIFF_RESULT_UNKNOWN" link="NMSetting.html#NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_A" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_B" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B:CAPS"/>
@@ -885,6 +930,64 @@
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_INVALID_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-INVALID-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_MISSING_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-MISSING-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_TYPE_SETTING_NOT_FOUND" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-TYPE-SETTING-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_ERROR_UNKNOWN" link="NMSettingWired.html#NM-SETTING-WIRED-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_ERROR_INVALID_PROPERTY" link="NMSettingWired.html#NM-SETTING-WIRED-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_ERROR_MISSING_PROPERTY" link="NMSettingWired.html#NM-SETTING-WIRED-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_ERROR_UNKNOWN" link="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_ERROR_INVALID_PROPERTY" link="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_ERROR_MISSING_PROPERTY" link="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_ERROR_MISSING_SECURITY_SETTING" link="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR-MISSING-SECURITY-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_ERROR_CHANNEL_REQUIRES_BAND" link="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR-CHANNEL-REQUIRES-BAND:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_UNKNOWN" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_INVALID_PROPERTY" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_MISSING_PROPERTY" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_MISSING_802_1X_SETTING" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-MISSING-802-1X-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_LEAP_REQUIRES_802_1X" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-LEAP-REQUIRES-802-1X:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_LEAP_REQUIRES_USERNAME" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-LEAP-REQUIRES-USERNAME:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRELESS_SECURITY_ERROR_SHARED_KEY_REQUIRES_WEP" link="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR-SHARED-KEY-REQUIRES-WEP:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_UNKNOWN" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_KEY" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-KEY:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_PASSPHRASE" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-PASSPHRASE:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_LAST" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-LAST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BLUETOOTH_ERROR_UNKNOWN" link="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BLUETOOTH_ERROR_INVALID_PROPERTY" link="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BLUETOOTH_ERROR_MISSING_PROPERTY" link="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BLUETOOTH_ERROR_TYPE_SETTING_NOT_FOUND" link="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-ERROR-TYPE-SETTING-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_ERROR_UNKNOWN" link="NMSettingSerial.html#NM-SETTING-SERIAL-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY" link="NMSettingSerial.html#NM-SETTING-SERIAL-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY" link="NMSettingSerial.html#NM-SETTING-SERIAL-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING" link="NMSettingSerial.html#NM-SETTING-SERIAL-ERROR-MISSING-PPP-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CDMA_ERROR_UNKNOWN" link="NMSettingCdma.html#NM-SETTING-CDMA-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CDMA_ERROR_INVALID_PROPERTY" link="NMSettingCdma.html#NM-SETTING-CDMA-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CDMA_ERROR_MISSING_PROPERTY" link="NMSettingCdma.html#NM-SETTING-CDMA-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CDMA_ERROR_MISSING_SERIAL_SETTING" link="NMSettingCdma.html#NM-SETTING-CDMA-ERROR-MISSING-SERIAL-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_ERROR_UNKNOWN" link="NMSettingGsm.html#NM-SETTING-GSM-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_ERROR_INVALID_PROPERTY" link="NMSettingGsm.html#NM-SETTING-GSM-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_ERROR_MISSING_PROPERTY" link="NMSettingGsm.html#NM-SETTING-GSM-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_ERROR_MISSING_SERIAL_SETTING" link="NMSettingGsm.html#NM-SETTING-GSM-ERROR-MISSING-SERIAL-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_NETWORK_TYPE_ANY" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-TYPE-ANY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_NETWORK_TYPE_UMTS_HSPA" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-TYPE-UMTS-HSPA:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_NETWORK_TYPE_GPRS_EDGE" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-TYPE-GPRS-EDGE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_NETWORK_TYPE_PREFER_UMTS_HSPA" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-TYPE-PREFER-UMTS-HSPA:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE" link="NMSettingGsm.html#NM-SETTING-GSM-NETWORK-TYPE-PREFER-GPRS-EDGE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_UNKNOWN" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_ANY" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-ANY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_EGSM" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-EGSM:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_DCS" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-DCS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_PCS" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-PCS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_G850" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-G850:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U2100" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U2100:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U1800" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U1800:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U17IV" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U17IV:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U800" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U800:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U850" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U850:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U900" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U900:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U17IX" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U17IX:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U1900" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U1900:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_GSM_BAND_U2600" link="NMSettingGsm.html#NM-SETTING-GSM-BAND-U2600:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIMAX_ERROR_UNKNOWN" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR-MISSING-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_X509" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-X509:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_RAW_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-RAW-KEY:CAPS"/>
@@ -892,5 +995,36 @@
     <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_BLOB" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_ERROR_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_ERROR_INVALID_PROPERTY" link="NMSetting8021x.html#NM-SETTING-802-1X-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_ERROR_MISSING_PROPERTY" link="NMSetting8021x.html#NM-SETTING-802-1X-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP4_CONFIG_ERROR_UNKNOWN" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP4_CONFIG_ERROR_INVALID_PROPERTY" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP4_CONFIG_ERROR_MISSING_PROPERTY" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP4_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ERROR-NOT-ALLOWED-FOR-METHOD:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_ERROR_UNKNOWN" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_ERROR_MISSING_PROPERTY" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ERROR-NOT-ALLOWED-FOR-METHOD:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPP_ERROR_UNKNOWN" link="NMSettingPPP.html#NM-SETTING-PPP-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPP_ERROR_INVALID_PROPERTY" link="NMSettingPPP.html#NM-SETTING-PPP-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPP_ERROR_MISSING_PROPERTY" link="NMSettingPPP.html#NM-SETTING-PPP-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPP_ERROR_REQUIRE_MPPE_NOT_ALLOWED" link="NMSettingPPP.html#NM-SETTING-PPP-ERROR-REQUIRE-MPPE-NOT-ALLOWED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPPOE_ERROR_UNKNOWN" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPPOE_ERROR_INVALID_PROPERTY" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPPOE_ERROR_MISSING_PROPERTY" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_PPPOE_ERROR_MISSING_PPP_SETTING" link="NMSettingPPPOE.html#NM-SETTING-PPPOE-ERROR-MISSING-PPP-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_VPN_ERROR_UNKNOWN" link="NMSettingVPN.html#NM-SETTING-VPN-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_VPN_ERROR_INVALID_PROPERTY" link="NMSettingVPN.html#NM-SETTING-VPN-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_VPN_ERROR_MISSING_PROPERTY" link="NMSettingVPN.html#NM-SETTING-VPN-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_INVALID" link="libnm-util-nm-utils.html#NMU-SEC-INVALID:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_NONE" link="libnm-util-nm-utils.html#NMU-SEC-NONE:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_STATIC_WEP" link="libnm-util-nm-utils.html#NMU-SEC-STATIC-WEP:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_LEAP" link="libnm-util-nm-utils.html#NMU-SEC-LEAP:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_DYNAMIC_WEP" link="libnm-util-nm-utils.html#NMU-SEC-DYNAMIC-WEP:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA_PSK" link="libnm-util-nm-utils.html#NMU-SEC-WPA-PSK:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA_ENTERPRISE" link="libnm-util-nm-utils.html#NMU-SEC-WPA-ENTERPRISE:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA2_PSK" link="libnm-util-nm-utils.html#NMU-SEC-WPA2-PSK:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA2_ENTERPRISE" link="libnm-util-nm-utils.html#NMU-SEC-WPA2-ENTERPRISE:CAPS"/>
   </functions>
 </book>

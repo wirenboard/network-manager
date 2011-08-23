@@ -32,6 +32,27 @@
 #include "nm-dbus-glib-types.h"
 #include "nm-setting-private.h"
 
+/**
+ * SECTION:nm-setting-vpn
+ * @short_description: Describes connection properties for Virtual Private Networks
+ * @include: nm-setting-vpn.h
+ *
+ * The #NMSettingVPN object is a #NMSetting subclass that describes properties
+ * necessary for connection to Virtual Private Networks.  NetworkManager uses
+ * a plugin architecture to allow easier use of new VPN types, and this
+ * setting abstracts the configuration for those plugins.  Since the configuration
+ * options are only known to the VPN plugins themselves, the VPN configuration
+ * options are stored as key/value pairs of strings rather than GObject
+ * properties.
+ **/
+
+/**
+ * nm_setting_vpn_error_quark:
+ *
+ * Registers an error quark for #NMSettingVPN if necessary.
+ *
+ * Returns: the error quark used for #NMSettingVPN errors.
+ **/
 GQuark
 nm_setting_vpn_error_quark (void)
 {
@@ -108,12 +129,28 @@ enum {
 	LAST_PROP
 };
 
+/**
+ * nm_setting_vpn_new:
+ *
+ * Creates a new #NMSettingVPN object with default values.
+ *
+ * Returns: (transfer full): the new empty #NMSettingVPN object
+ **/
 NMSetting *
 nm_setting_vpn_new (void)
 {
 	return (NMSetting *) g_object_new (NM_TYPE_SETTING_VPN, NULL);
 }
 
+/**
+ * nm_setting_vpn_get_service_type:
+ * @setting: the #NMSettingVPN
+ *
+ * Returns the service name of the VPN, which identifies the specific VPN
+ * plugin that should be used to connect to this VPN.
+ *
+ * Returns: the VPN plugin's service name
+ **/
 const char *
 nm_setting_vpn_get_service_type (NMSettingVPN *setting)
 {
@@ -122,6 +159,12 @@ nm_setting_vpn_get_service_type (NMSettingVPN *setting)
 	return NM_SETTING_VPN_GET_PRIVATE (setting)->service_type;
 }
 
+/**
+ * nm_setting_vpn_get_user_name:
+ * @setting: the #NMSettingVPN
+ *
+ * Returns: the #NMSettingVPN:user-name property of the setting
+ **/
 const char *
 nm_setting_vpn_get_user_name (NMSettingVPN *setting)
 {
@@ -130,6 +173,16 @@ nm_setting_vpn_get_user_name (NMSettingVPN *setting)
 	return NM_SETTING_VPN_GET_PRIVATE (setting)->user_name;
 }
 
+/**
+ * nm_setting_vpn_add_data_item:
+ * @setting: the #NMSettingVPN
+ * @key: a name that uniquely identifies the given value @item
+ * @item: the value to be referenced by @key
+ *
+ * Establishes a relationship between @key and @item internally in the
+ * setting which may be retrieved later.  Should not be used to store passwords
+ * or other secrets, which is what nm_setting_vpn_add_secret() is for.
+ **/
 void
 nm_setting_vpn_add_data_item (NMSettingVPN *setting,
                               const char *key,
@@ -145,6 +198,16 @@ nm_setting_vpn_add_data_item (NMSettingVPN *setting,
 	                     g_strdup (key), g_strdup (item));
 }
 
+/**
+ * nm_setting_vpn_get_data_item:
+ * @setting: the #NMSettingVPN
+ * @key: the name of the data item to retrieve
+ *
+ * Retrieves the data item of a key/value relationship previously established
+ * by nm_setting_vpn_add_data_item().
+ *
+ * Returns: the data item, if any
+ **/
 const char *
 nm_setting_vpn_get_data_item (NMSettingVPN *setting, const char *key)
 {
@@ -153,6 +216,14 @@ nm_setting_vpn_get_data_item (NMSettingVPN *setting, const char *key)
 	return (const char *) g_hash_table_lookup (NM_SETTING_VPN_GET_PRIVATE (setting)->data, key);
 }
 
+/**
+ * nm_setting_vpn_remove_data_item:
+ * @setting: the #NMSettingVPN
+ * @key: the name of the data item to remove
+ *
+ * Deletes a key/value relationship previously established by
+ * nm_setting_vpn_add_data_item().
+ **/
 void
 nm_setting_vpn_remove_data_item (NMSettingVPN *setting, const char *key)
 {
@@ -212,6 +283,15 @@ nm_setting_vpn_foreach_data_item (NMSettingVPN *setting,
 	foreach_item_helper (NM_SETTING_VPN_GET_PRIVATE (setting)->data, func, user_data);
 }
 
+/**
+ * nm_setting_vpn_add_secret:
+ * @setting: the #NMSettingVPN
+ * @key: a name that uniquely identifies the given secret @secret
+ * @secret: the secret to be referenced by @key
+ *
+ * Establishes a relationship between @key and @secret internally in the
+ * setting which may be retrieved later.
+ **/
 void
 nm_setting_vpn_add_secret (NMSettingVPN *setting,
                            const char *key,
@@ -227,6 +307,16 @@ nm_setting_vpn_add_secret (NMSettingVPN *setting,
 	                     g_strdup (key), g_strdup (secret));
 }
 
+/**
+ * nm_setting_vpn_get_secret:
+ * @setting: the #NMSettingVPN
+ * @key: the name of the secret to retrieve
+ *
+ * Retrieves the secret of a key/value relationship previously established
+ * by nm_setting_vpn_add_secret().
+ *
+ * Returns: the secret, if any
+ **/
 const char *
 nm_setting_vpn_get_secret (NMSettingVPN *setting, const char *key)
 {
@@ -235,6 +325,14 @@ nm_setting_vpn_get_secret (NMSettingVPN *setting, const char *key)
 	return (const char *) g_hash_table_lookup (NM_SETTING_VPN_GET_PRIVATE (setting)->secrets, key);
 }
 
+/**
+ * nm_setting_vpn_remove_secret:
+ * @setting: the #NMSettingVPN
+ * @key: the name of the secret to remove
+ *
+ * Deletes a key/value relationship previously established by
+ * nm_setting_vpn_add_secret().
+ **/
 void
 nm_setting_vpn_remove_secret (NMSettingVPN *setting, const char *key)
 {
@@ -451,6 +549,68 @@ need_secrets (NMSetting *setting)
 	return g_ptr_array_sized_new (1);
 }
 
+static gboolean
+compare_one_secret (NMSettingVPN *a,
+                    NMSettingVPN *b,
+                    NMSettingCompareFlags flags)
+{
+	GHashTable *a_secrets, *b_secrets;
+	GHashTableIter iter;
+	const char *key, *val;
+
+	a_secrets = NM_SETTING_VPN_GET_PRIVATE (a)->secrets;
+	b_secrets = NM_SETTING_VPN_GET_PRIVATE (b)->secrets;
+
+	g_hash_table_iter_init (&iter, a_secrets);
+	while (g_hash_table_iter_next (&iter, (gpointer) &key, (gpointer) &val)) {
+		NMSettingSecretFlags a_secret_flags = NM_SETTING_SECRET_FLAG_NONE;
+		NMSettingSecretFlags b_secret_flags = NM_SETTING_SECRET_FLAG_NONE;
+
+		nm_setting_get_secret_flags (NM_SETTING (a), key, &a_secret_flags, NULL);
+		nm_setting_get_secret_flags (NM_SETTING (b), key, &b_secret_flags, NULL);
+
+		/* If the secret flags aren't the same, the settings aren't the same */
+		if (a_secret_flags != b_secret_flags)
+			return FALSE;
+
+		if (   (flags & NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS)
+		    && (a_secret_flags & NM_SETTING_SECRET_FLAG_AGENT_OWNED))
+			continue;
+
+		if (   (flags & NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS)
+		    && (a_secret_flags & NM_SETTING_SECRET_FLAG_NOT_SAVED))
+			continue;
+
+		/* Now compare the values themselves */
+		if (g_strcmp0 (val, nm_setting_vpn_get_secret (b, key)) != 0)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
+compare_property (NMSetting *setting,
+                  NMSetting *other,
+                  const GParamSpec *prop_spec,
+                  NMSettingCompareFlags flags)
+{
+	gboolean same;
+
+	/* We only need to treat the 'secrets' property specially */
+	if (g_strcmp0 (prop_spec->name, NM_SETTING_VPN_SECRETS) != 0)
+		return NM_SETTING_CLASS (nm_setting_vpn_parent_class)->compare_property (setting, other, prop_spec, flags);
+
+	/* Compare A to B to ensure everything in A is found in B */
+	same = compare_one_secret (NM_SETTING_VPN (setting), NM_SETTING_VPN (other), flags);
+	if (same) {
+		/* And then B to A to ensure everything in B is also found in A */
+		same = compare_one_secret (NM_SETTING_VPN (other), NM_SETTING_VPN (setting), flags);
+	}
+
+	return same;
+}
+
 static void
 destroy_one_secret (gpointer data)
 {
@@ -572,6 +732,7 @@ nm_setting_vpn_class_init (NMSettingVPNClass *setting_class)
 	parent_class->get_secret_flags  = get_secret_flags;
 	parent_class->set_secret_flags  = set_secret_flags;
 	parent_class->need_secrets      = need_secrets;
+	parent_class->compare_property  = compare_property;
 
 	/* Properties */
 	/**
@@ -595,23 +756,27 @@ nm_setting_vpn_class_init (NMSettingVPNClass *setting_class)
 	/**
 	 * NMSettinVPN:user-name:
 	 *
-	 * User name of the currently logged in user for connections provided by the
-	 * user settings service.  This name is provided to the VPN plugin to use in
-	 * lieu of a custom username provided by that VPN plugins specific
-	 * configuration.  The VPN plugin itself decides which user name to use.
+	 * If the VPN connection requires a user name for authentication, that name
+	 * should be provided here.  If the connection is available to more than
+	 * one user, and the VPN requires each user to supply a different name, then
+	 * leave this property empty.  If this property is empty, NetworkManager
+	 * will automatically supply the username of the user which requested the
+	 * VPN connection.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_USER_NAME,
 		 g_param_spec_string (NM_SETTING_VPN_USER_NAME,
-						  "User name",
-						  "User name of the currently logged in user for "
-						  "connections provided by the user settings service.  "
-						  "This name is provided to the VPN plugin to use in "
-						  "lieu of a custom username provided by that VPN "
-						  "plugins specific configuration.  The VPN plugin "
-						  "itself decides which user name to use.",
-						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                      "User name",
+		                      "If the VPN connection requires a user name for "
+		                      "authentication, that name should be provided here.  "
+		                      "If the connection is available to more than one "
+		                      "user, and the VPN requires each user to supply a "
+		                      "different name, then leave this property empty.  If "
+		                      "this property is empty, NetworkManager will "
+		                      "automatically supply the username of the user which "
+		                      "requested the VPN connection.",
+		                      NULL,
+		                      G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
 
 	/**
 	 * NMSettingVPN:data:

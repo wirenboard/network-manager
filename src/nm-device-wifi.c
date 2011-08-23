@@ -33,6 +33,7 @@
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
 #include <sys/ioctl.h>
+#include <netinet/ether.h>
 
 #include "nm-glib-compat.h"
 #include "nm-device.h"
@@ -55,6 +56,7 @@
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-ip6-config.h"
 #include "nm-system.h"
+#include "nm-settings-connection.h"
 
 static gboolean impl_device_get_access_points (NMDeviceWifi *device,
                                                GPtrArray **aps,
@@ -153,7 +155,6 @@ struct _NMDeviceWifiPrivate {
 	guint             link_timeout_id;
 
 	/* Static options from driver */
-	guint8            we_version;
 	guint32           capabilities;
 	gboolean          has_scan_capa_ssid;
 };
@@ -503,29 +504,14 @@ static guint32
 real_get_generic_capabilities (NMDevice *dev)
 {
 	int fd, err;
-	guint32 caps = NM_DEVICE_CAP_NONE, response_len = 0;
+	guint32 caps = NM_DEVICE_CAP_NONE;
 	struct iwreq wrq;
-	struct iw_range range;
 	const char *iface = nm_device_get_iface (dev);
-	gboolean success;
-
-	memset (&range, 0, sizeof (struct iw_range));
-	success = wireless_get_range (NM_DEVICE_WIFI (dev), &range, &response_len);
-	if (!success)
-		return NM_DEVICE_CAP_NONE;
-
-	/* Check for Wireless Extensions support >= 16 for wireless devices */
-	if ((response_len < 300) || (range.we_version_compiled < 16)) {
-		nm_log_err (LOGD_HW | LOGD_WIFI,
-		            "(%s): driver's Wireless Extensions version (%d) is too old.",
-					iface, range.we_version_compiled);
-		return NM_DEVICE_CAP_NONE;
-	}
 
 	fd = socket (PF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
 		nm_log_err (LOGD_HW, "(%s): couldn't open control socket.", iface);
-		goto out;
+		return NM_DEVICE_CAP_NONE;
 	}
 
 	/* Cards that don't scan aren't supported */
@@ -538,7 +524,6 @@ real_get_generic_capabilities (NMDevice *dev)
 	else
 		caps |= NM_DEVICE_CAP_NM_SUPPORTED;
 
-out:
 	return caps;
 }
 
@@ -548,11 +533,8 @@ out:
                   NM_WIFI_DEVICE_CAP_RSN)
 
 static guint32
-get_wireless_capabilities (NMDeviceWifi *self,
-                           iwrange * range,
-                           guint32 data_len)
+get_wireless_capabilities (NMDeviceWifi *self, iwrange *range)
 {
-	guint32 minlen;
 	guint32 caps = NM_WIFI_DEVICE_CAP_NONE;
 	const char * iface;
 
@@ -561,39 +543,35 @@ get_wireless_capabilities (NMDeviceWifi *self,
 
 	iface = nm_device_get_iface (NM_DEVICE (self));
 
-	minlen = ((char *) &range->enc_capa) - (char *) range + sizeof (range->enc_capa);
-
 	/* All drivers should support WEP by default */
 	caps |= NM_WIFI_DEVICE_CAP_CIPHER_WEP40 | NM_WIFI_DEVICE_CAP_CIPHER_WEP104;
 
-	if ((data_len >= minlen) && range->we_version_compiled >= 18) {
-		if (range->enc_capa & IW_ENC_CAPA_CIPHER_TKIP)
-			caps |= NM_WIFI_DEVICE_CAP_CIPHER_TKIP;
+	if (range->enc_capa & IW_ENC_CAPA_CIPHER_TKIP)
+		caps |= NM_WIFI_DEVICE_CAP_CIPHER_TKIP;
 
-		if (range->enc_capa & IW_ENC_CAPA_CIPHER_CCMP)
-			caps |= NM_WIFI_DEVICE_CAP_CIPHER_CCMP;
+	if (range->enc_capa & IW_ENC_CAPA_CIPHER_CCMP)
+		caps |= NM_WIFI_DEVICE_CAP_CIPHER_CCMP;
 
-		if (range->enc_capa & IW_ENC_CAPA_WPA)
-			caps |= NM_WIFI_DEVICE_CAP_WPA;
+	if (range->enc_capa & IW_ENC_CAPA_WPA)
+		caps |= NM_WIFI_DEVICE_CAP_WPA;
 
-		if (range->enc_capa & IW_ENC_CAPA_WPA2)
-			caps |= NM_WIFI_DEVICE_CAP_RSN;
+	if (range->enc_capa & IW_ENC_CAPA_WPA2)
+		caps |= NM_WIFI_DEVICE_CAP_RSN;
 
-		/* Check for cipher support but not WPA support */
-		if (    (caps & (NM_WIFI_DEVICE_CAP_CIPHER_TKIP | NM_WIFI_DEVICE_CAP_CIPHER_CCMP))
-		    && !(caps & (NM_WIFI_DEVICE_CAP_WPA | NM_WIFI_DEVICE_CAP_RSN))) {
-			nm_log_warn (LOGD_WIFI, "%s: device supports WPA ciphers but not WPA protocol; "
-			             "WPA unavailable.", iface);
-			caps &= ~WPA_CAPS;
-		}
+	/* Check for cipher support but not WPA support */
+	if (    (caps & (NM_WIFI_DEVICE_CAP_CIPHER_TKIP | NM_WIFI_DEVICE_CAP_CIPHER_CCMP))
+	    && !(caps & (NM_WIFI_DEVICE_CAP_WPA | NM_WIFI_DEVICE_CAP_RSN))) {
+		nm_log_warn (LOGD_WIFI, "%s: device supports WPA ciphers but not WPA protocol; "
+		             "WPA unavailable.", iface);
+		caps &= ~WPA_CAPS;
+	}
 
-		/* Check for WPA support but not cipher support */
-		if (    (caps & (NM_WIFI_DEVICE_CAP_WPA | NM_WIFI_DEVICE_CAP_RSN))
-		    && !(caps & (NM_WIFI_DEVICE_CAP_CIPHER_TKIP | NM_WIFI_DEVICE_CAP_CIPHER_CCMP))) {
-			nm_log_warn (LOGD_WIFI, "%s: device supports WPA protocol but not WPA ciphers; "
-			             "WPA unavailable.", iface);
-			caps &= ~WPA_CAPS;
-		}
+	/* Check for WPA support but not cipher support */
+	if (    (caps & (NM_WIFI_DEVICE_CAP_WPA | NM_WIFI_DEVICE_CAP_RSN))
+	    && !(caps & (NM_WIFI_DEVICE_CAP_CIPHER_TKIP | NM_WIFI_DEVICE_CAP_CIPHER_CCMP))) {
+		nm_log_warn (LOGD_WIFI, "%s: device supports WPA protocol but not WPA ciphers; "
+		             "WPA unavailable.", iface);
+		caps &= ~WPA_CAPS;
 	}
 
 	return caps;
@@ -665,8 +643,19 @@ constructor (GType type,
 
 	memset (&range, 0, sizeof (struct iw_range));
 	success = wireless_get_range (NM_DEVICE_WIFI (object), &range, &response_len);
-	if (!success)
+	if (!success) {
+		nm_log_info (LOGD_HW | LOGD_WIFI, "(%s): driver WEXT range request failed",
+		             nm_device_get_iface (NM_DEVICE (self)));
 		goto error;
+	}
+
+	if ((response_len < 300) || (range.we_version_compiled < 21)) {
+		nm_log_info (LOGD_HW | LOGD_WIFI,
+		             "(%s): driver WEXT version too old (got %d, expected >= 21)",
+		             nm_device_get_iface (NM_DEVICE (self)),
+		             range.we_version_compiled);
+		goto error;
+	}
 
 	priv->max_qual.qual = range.max_qual.qual;
 	priv->max_qual.level = range.max_qual.level;
@@ -676,8 +665,6 @@ constructor (GType type,
 	priv->num_freqs = MIN (range.num_frequency, IW_MAX_FREQUENCIES);
 	for (i = 0; i < priv->num_freqs; i++)
 		priv->freqs[i] = iw_freq_to_uint32 (&range.freq[i]);
-
-	priv->we_version = range.we_version_compiled;
 
 	/* Check for the ability to scan specific SSIDs.  Until the scan_capa
 	 * field gets added to wireless-tools, need to work around that by casting
@@ -698,7 +685,7 @@ constructor (GType type,
 	}
 
 	/* 802.11 wireless-specific capabilities */
-	priv->capabilities = get_wireless_capabilities (self, &range, response_len);
+	priv->capabilities = get_wireless_capabilities (self, &range);
 
 	/* Connect to the supplicant manager */
 	priv->supplicant.mgr = nm_supplicant_manager_get ();
@@ -978,6 +965,31 @@ get_active_ap (NMDeviceWifi *self,
 }
 
 static void
+update_seen_bssids_cache (NMDeviceWifi *self, NMAccessPoint *ap)
+{
+	NMActRequest *req;
+	NMConnection *connection;
+
+	g_return_if_fail (NM_IS_DEVICE_WIFI (self));
+	
+	if (ap == NULL)
+		return;
+
+	/* Don't cache the BSSID for Ad-Hoc APs */
+	if (nm_ap_get_mode (ap) != NM_802_11_MODE_INFRA)
+		return;
+
+	if (nm_device_get_state (NM_DEVICE (self)) == NM_DEVICE_STATE_ACTIVATED) {
+		req = nm_device_get_act_request (NM_DEVICE (self));
+		if (req) {
+			connection = nm_act_request_get_connection (req);
+			nm_settings_connection_add_seen_bssid (NM_SETTINGS_CONNECTION (connection),
+			                                       nm_ap_get_address (ap));
+		}
+	}
+}
+
+static void
 set_current_ap (NMDeviceWifi *self, NMAccessPoint *new_ap)
 {
 	NMDeviceWifiPrivate *priv;
@@ -1003,6 +1015,9 @@ set_current_ap (NMDeviceWifi *self, NMAccessPoint *new_ap)
 		 */
 		priv->ap_list = g_slist_remove (priv->ap_list, new_ap);
 		priv->ap_list = g_slist_prepend (priv->ap_list, new_ap);
+
+		/* Update seen BSSIDs cache */
+		update_seen_bssids_cache (self, priv->current_ap);
 	}
 
 	/* Unref old AP here to ensure object lives if new_ap == old_ap */
@@ -1303,6 +1318,7 @@ real_check_connection_compatible (NMDevice *device,
 	NMSettingConnection *s_con;
 	NMSettingWireless *s_wireless;
 	const GByteArray *mac;
+	const GSList *mac_blacklist, *mac_blacklist_iter;
 
 	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
 	g_assert (s_con);
@@ -1328,6 +1344,25 @@ real_check_connection_compatible (NMDevice *device,
 		             NM_WIFI_ERROR, NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE,
 		             "The connection's MAC address did not match this device.");
 		return FALSE;
+	}
+
+	/* Check for MAC address blacklist */
+	mac_blacklist = nm_setting_wireless_get_mac_address_blacklist (s_wireless);
+	for (mac_blacklist_iter = mac_blacklist; mac_blacklist_iter;
+	     mac_blacklist_iter = g_slist_next (mac_blacklist_iter)) {
+		struct ether_addr addr;
+
+		if (!ether_aton_r (mac_blacklist_iter->data, &addr)) {
+			g_warn_if_reached ();
+			continue;
+		}
+		if (memcmp (&addr, &priv->perm_hw_addr, ETH_ALEN) == 0) {
+			g_set_error (error,
+			             NM_WIFI_ERROR, NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE,
+			             "The connection's MAC address (%s) is blacklisted in %s.",
+			             (char *) mac_blacklist_iter->data, NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST);
+			return FALSE;
+		}
 	}
 
 	// FIXME: check channel/freq/band against bands the hardware supports
@@ -1574,6 +1609,8 @@ real_get_best_auto_connection (NMDevice *dev,
 		NMSettingConnection *s_con;
 		NMSettingWireless *s_wireless;
 		const GByteArray *mac;
+		const GSList *mac_blacklist, *mac_blacklist_iter;
+		gboolean mac_blacklist_found = FALSE;
 		NMSettingIP4Config *s_ip4;
 		const char *method = NULL;
 
@@ -1591,7 +1628,26 @@ real_get_best_auto_connection (NMDevice *dev,
 
 		mac = nm_setting_wireless_get_mac_address (s_wireless);
 		if (mac && memcmp (mac->data, &priv->perm_hw_addr, ETH_ALEN))
+			continue;
+
+		/* Check for MAC address blacklist */
+		mac_blacklist = nm_setting_wireless_get_mac_address_blacklist (s_wireless);
+		for (mac_blacklist_iter = mac_blacklist; mac_blacklist_iter;
+		     mac_blacklist_iter = g_slist_next (mac_blacklist_iter)) {
+			struct ether_addr addr;
+
+			if (!ether_aton_r (mac_blacklist_iter->data, &addr)) {
+				g_warn_if_reached ();
 				continue;
+			}
+			if (memcmp (&addr, &priv->perm_hw_addr, ETH_ALEN) == 0) {
+				mac_blacklist_found = TRUE;
+				break;
+			}
+		}
+		/* Found device MAC address in the blacklist - do not use this connection */
+		if (mac_blacklist_found)
+			continue;
 
 		/* Use the connection if it's a shared connection */
 		s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
@@ -1820,7 +1876,7 @@ nm_device_wifi_get_ssid (NMDeviceWifi *self)
 	priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 
 	sk = socket (AF_INET, SOCK_DGRAM, 0);
-	if (!sk) {
+	if (sk == -1) {
 		nm_log_err (LOGD_HW, "couldn't create socket: %d.", errno);
 		return NULL;
 	}
@@ -1844,13 +1900,6 @@ nm_device_wifi_get_ssid (NMDeviceWifi *self)
 
 	len = wrq.u.essid.length;
 	if (!nm_utils_is_empty_ssid ((guint8 *) ssid, len)) {
-		/* Some drivers include nul termination in the SSID, so let's
-		 * remove it here before further processing. WE-21 changes this
-		 * to explicitly require the length _not_ to include nul
-		 * termination. */
-		if (len > 0 && ssid[len - 1] == '\0' && priv->we_version < 21)
-			len--;
-
 		priv->ssid = g_byte_array_sized_new (len);
 		g_byte_array_append (priv->ssid, (const guint8 *) ssid, len);
 	}
@@ -2446,88 +2495,86 @@ remove_link_timeout (NMDeviceWifi *self)
 static gboolean
 link_timeout_cb (gpointer user_data)
 {
-	NMDevice *              dev = NM_DEVICE (user_data);
-	NMDeviceWifi * self = NM_DEVICE_WIFI (dev);
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-	NMActRequest *          req = NULL;
-	NMAccessPoint *         ap = NULL;
-	NMConnection *          connection;
-	const char *            setting_name;
-	gboolean                auth_enforced, encrypted = FALSE;
+	NMDevice *dev = NM_DEVICE (user_data);
 
-	g_assert (dev);
+	nm_log_warn (LOGD_WIFI, "(%s): link timed out.", nm_device_get_iface (dev));
 
-	priv->link_timeout_id = 0;
-
-	req = nm_device_get_act_request (dev);
-	ap = nm_device_wifi_get_activation_ap (self);
-	if (req == NULL || ap == NULL) {
-		/* shouldn't ever happen */
-		nm_log_err (LOGD_WIFI, "couldn't get activation request or activation AP.");
-		if (nm_device_is_activating (dev)) {
-			cleanup_association_attempt (self, TRUE);
-			nm_device_state_changed (dev, NM_DEVICE_STATE_FAILED, NM_DEVICE_STATE_REASON_NONE);
-		}
-		return FALSE;
-	}
+	NM_DEVICE_WIFI_GET_PRIVATE (dev)->link_timeout_id = 0;
 
 	/* Disconnect event while activated; the supplicant hasn't been able
 	 * to reassociate within the timeout period, so the connection must
 	 * fail.
 	 */
-	if (nm_device_get_state (dev) == NM_DEVICE_STATE_ACTIVATED) {
+	if (nm_device_get_state (dev) == NM_DEVICE_STATE_ACTIVATED)
 		nm_device_state_changed (dev, NM_DEVICE_STATE_DISCONNECTED, NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT);
-		return FALSE;
-	}
 
-	/* Disconnect event during initial authentication and credentials
-	 * ARE checked - we are likely to have wrong key.  Ask the user for
-	 * another one.
+	return FALSE;
+}
+
+static gboolean
+handle_authenticate_fail (NMDeviceWifi *self, guint32 new_state, guint32 old_state)
+{
+	NMDevice *device = NM_DEVICE (self);
+	NMSetting8021x *s_8021x;
+	NMSettingWirelessSecurity *s_wsec;
+	NMSettingSecretFlags secret_flags = NM_SETTING_SECRET_FLAG_NONE;
+	NMActRequest *req;
+	NMConnection *connection;
+	const char *setting_name = NULL;
+	gboolean handled = FALSE;
+
+	g_return_val_if_fail (new_state == NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED, FALSE);
+
+	/* Only care about ASSOCIATED -> DISCONNECTED transitions since 802.1x stuff
+	 * happens between the ASSOCIATED and AUTHENTICATED states.
 	 */
-	if (nm_device_get_state (dev) != NM_DEVICE_STATE_CONFIG)
-		goto time_out;
+	if (old_state != NM_SUPPLICANT_INTERFACE_STATE_ASSOCIATED)
+		return FALSE;
+
+	req = nm_device_get_act_request (NM_DEVICE (self));
+	g_return_val_if_fail (req != NULL, FALSE);
 
 	connection = nm_act_request_get_connection (req);
-	if (!connection)
-		goto time_out;
+	g_return_val_if_fail (connection != NULL, FALSE);
 
-	auth_enforced = ap_auth_enforced (connection, ap, &encrypted);
-	if (!encrypted || !auth_enforced)
-		goto time_out;
-
-	/* Drivers are still just too crappy, and emit too many disassociation
-	 * events during connection.  So for now, just let the driver and supplicant
-	 * keep trying to associate, and don't ask for new secrets when we get
-	 * disconnected during association.
+	/* If it's an 802.1x or LEAP connection with "always ask"/unsaved secrets
+	 * then we need to ask again because it might be an OTP token and the PIN
+	 * may have changed.
 	 */
-	if (0) {
-		nm_connection_clear_secrets (connection);
-		setting_name = nm_connection_need_secrets (connection, NULL);
-		if (!setting_name)
-			goto time_out;
+	s_8021x = nm_connection_get_setting_802_1x (connection);
+	s_wsec = nm_connection_get_setting_wireless_security (connection);
 
-		/* Association/authentication failed during association, probably have a 
-		 * bad encryption key and the authenticating entity (AP, RADIUS server, etc)
-		 * denied the association due to bad credentials.
-		 */
-		nm_log_info (LOGD_DEVICE | LOGD_WIFI,
-		             "Activation (%s/wireless): disconnected during association,"
-		             " asking for new key.", nm_device_get_iface (dev));
-		cleanup_association_attempt (self, TRUE);
-		nm_device_state_changed (dev, NM_DEVICE_STATE_NEED_AUTH, NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT);
-		nm_act_request_get_secrets (req,
-		                            setting_name,
-		                            NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW,
-		                            NULL,
-		                            wifi_secrets_cb,
-		                            self);
-
-		return FALSE;
+	if (s_8021x) {
+		nm_setting_get_secret_flags (NM_SETTING (s_8021x),
+		                             NM_SETTING_802_1X_PASSWORD,
+		                             &secret_flags,
+		                             NULL);
+		setting_name = NM_SETTING_802_1X_SETTING_NAME;
+	} else if (s_wsec) {
+		nm_setting_get_secret_flags (NM_SETTING (s_wsec),
+		                             NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD,
+		                             &secret_flags,
+		                             NULL);
+		setting_name = NM_SETTING_WIRELESS_SECURITY_SETTING_NAME;
 	}
 
-time_out:
-	nm_log_warn (LOGD_WIFI, "(%s): link timed out.", nm_device_get_iface (dev));
-	return FALSE;
+	if (setting_name && (secret_flags & NM_SETTING_SECRET_FLAG_NOT_SAVED)) {
+		NMSettingsGetSecretsFlags flags =   NM_SETTINGS_GET_SECRETS_FLAG_ALLOW_INTERACTION
+		                                  | NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW;
+
+		nm_connection_clear_secrets (connection);
+
+		nm_log_info (LOGD_DEVICE | LOGD_WIFI,
+		             "Activation (%s/wireless): disconnected during association,"
+		             " asking for new key.", nm_device_get_iface (device));
+
+		cleanup_association_attempt (self, TRUE);
+		nm_device_state_changed (device, NM_DEVICE_STATE_NEED_AUTH, NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT);
+		nm_act_request_get_secrets (req, setting_name, flags, NULL, wifi_secrets_cb, self);
+		handled = TRUE;
+	}
+
+	return handled;
 }
 
 static void
@@ -2596,14 +2643,20 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 		break;
 	case NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED:
 		if ((devstate == NM_DEVICE_STATE_ACTIVATED) || nm_device_is_activating (device)) {
-			/* Start the link timeout so we allow some time for reauthentication,
-			 * use a longer timeout if we are scanning since some cards take a
-			 * while to scan.
+			/* Disconnect during authentication means the 802.1x password is wrong */
+			if (handle_authenticate_fail (self, new_state, old_state))
+				break;
+		}
+
+		if (devstate == NM_DEVICE_STATE_ACTIVATED) {
+			/* If it's a disconnect while activated then start the link timer
+			 * to let the supplicant reconnect for a bit and if that doesn't
+			 * work kill the connection and try something else.  Allow a bit
+			 * more time if the card is scanning since sometimes the link will
+			 * drop while scanning and come back when the scan is done.
 			 */
-			if (!priv->link_timeout_id) {
-				priv->link_timeout_id = g_timeout_add_seconds (scanning ? 30 : 15,
-					                                           link_timeout_cb, self);
-			}
+			if (priv->link_timeout_id == 0)
+				priv->link_timeout_id = g_timeout_add_seconds (scanning ? 30 : 15, link_timeout_cb, self);
 		}
 		break;
 	case NM_SUPPLICANT_INTERFACE_STATE_DOWN:
@@ -3436,10 +3489,12 @@ activation_success_handler (NMDevice *dev)
 done:
 	periodic_update (self);
 
+	/* Update seen BSSIDs cache with the connected AP */
+	update_seen_bssids_cache (self, priv->current_ap);
+
 	/* Reset scan interval to something reasonable */
 	priv->scan_interval = SCAN_INTERVAL_MIN + (SCAN_INTERVAL_STEP * 2);
 }
-
 
 static void
 activation_failure_handler (NMDevice *dev)
@@ -3564,6 +3619,10 @@ device_state_changed (NMDevice *device,
 				supplicant_interface_acquire (self);
 		}
 		clear_aps = TRUE;
+		break;
+	case NM_DEVICE_STATE_NEED_AUTH:
+		if (priv->supplicant.iface)
+			nm_supplicant_interface_disconnect (priv->supplicant.iface);
 		break;
 	case NM_DEVICE_STATE_ACTIVATED:
 		activation_success_handler (device);

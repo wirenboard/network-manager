@@ -176,9 +176,9 @@ read_mac_address (shvarFile *ifcfg, const char *key, GByteArray **array, GError 
 
 	mac = ether_aton (value);
 	if (!mac) {
-		g_free (value);
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "%s: the MAC address '%s' was invalid.", key, value);
+		g_free (value);
 		return FALSE;
 	}
 
@@ -574,7 +574,8 @@ read_full_ip4_address (shvarFile *ifcfg,
 	if (!nm_ip4_address_get_prefix (addr)) {
 		if (!read_ip4_address (ifcfg, netmask_tag, &tmp, error))
 			goto error;
-		nm_ip4_address_set_prefix (addr, nm_utils_ip4_netmask_to_prefix (tmp));
+		if (tmp)
+			nm_ip4_address_set_prefix (addr, nm_utils_ip4_netmask_to_prefix (tmp));
 	}
 
 	/* Try to autodetermine the prefix for the address' class */
@@ -661,7 +662,8 @@ read_one_ip4_route (shvarFile *ifcfg,
 	/* Prefix */
 	if (!read_ip4_address (ifcfg, netmask_tag, &tmp, error))
 		goto out;
-	nm_ip4_route_set_prefix (route, nm_utils_ip4_netmask_to_prefix (tmp));
+	if (tmp)
+		nm_ip4_route_set_prefix (route, nm_utils_ip4_netmask_to_prefix (tmp));
 
 	/* Validate the prefix */
 	if (  !nm_ip4_route_get_prefix (route)
@@ -788,7 +790,7 @@ read_route_file_legacy (const char *filename, NMSettingIP4Config *s_ip4, GError 
 		if (prefix) {
 			errno = 0;
 			prefix_int = strtol (prefix, NULL, 10);
-			if (errno || prefix_int < 0 || prefix_int > 32) {
+			if (errno || prefix_int <= 0 || prefix_int > 32) {
 				g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 					     "Invalid IP4 route destination prefix '%s'", prefix);
 				g_free (prefix);
@@ -973,9 +975,9 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 
 	const char *pattern_empty = "^\\s*(\\#.*)?$";
 	const char *pattern_to1 = "^\\s*(" IPV6_ADDR_REGEX "|default)"  /* IPv6 or 'default' keyword */
-	                          "(?:/(\\d{1,2}))?";                   /* optional prefix */
+	                          "(?:/(\\d{1,3}))?";                   /* optional prefix */
 	const char *pattern_to2 = "to\\s+(" IPV6_ADDR_REGEX "|default)" /* IPv6 or 'default' keyword */
-	                          "(?:/(\\d{1,2}))?";                   /* optional prefix */
+	                          "(?:/(\\d{1,3}))?";                   /* optional prefix */
 	const char *pattern_via = "via\\s+(" IPV6_ADDR_REGEX ")";       /* IPv6 of gateway */
 	const char *pattern_metric = "metric\\s+(\\d+)";                /* metric */
 
@@ -1041,7 +1043,7 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 		if (prefix) {
 			errno = 0;
 			prefix_int = strtol (prefix, NULL, 10);
-			if (errno || prefix_int < 0 || prefix_int > 128) {
+			if (errno || prefix_int <= 0 || prefix_int > 128) {
 				g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 					     "Invalid IP6 route destination prefix '%s'", prefix);
 				g_free (prefix);
@@ -1228,15 +1230,11 @@ make_ip4_setting (shvarFile *ifcfg,
 		    && !tmp_ip4_0 && !tmp_prefix_0 && !tmp_netmask_0
 		    && !tmp_ip4_1 && !tmp_prefix_1 && !tmp_netmask_1
 		    && !tmp_ip4_2 && !tmp_prefix_2 && !tmp_netmask_2) {
-			if (valid_ip6_config) {
+			if (valid_ip6_config)
 				/* Nope, no IPv4 */
-				g_object_set (s_ip4,
-				              NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_DISABLED,
-				              NULL);
-				return NM_SETTING (s_ip4);
-			}
-
-			method = NM_SETTING_IP4_CONFIG_METHOD_AUTO;
+				method = NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
+			else
+				method = NM_SETTING_IP4_CONFIG_METHOD_AUTO;
 		}
 		g_free (tmp_ip4);
 		g_free (tmp_prefix);
@@ -1259,6 +1257,9 @@ make_ip4_setting (shvarFile *ifcfg,
 	              NM_SETTING_IP4_CONFIG_NEVER_DEFAULT, never_default,
 	              NM_SETTING_IP4_CONFIG_MAY_FAIL, !svTrueValue (ifcfg, "IPV4_FAILURE_FATAL", TRUE),
 	              NULL);
+
+	if (strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) == 0)
+		return NM_SETTING (s_ip4);
 
 	/* Handle manual settings */
 	if (!strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_MANUAL)) {
@@ -1418,7 +1419,7 @@ make_ip6_setting (shvarFile *ifcfg,
 	char *value = NULL;
 	char *str_value;
 	char *route6_path = NULL;
-	gboolean bool_value, ipv6forwarding, ipv6_autoconf, dhcp6 = FALSE;
+	gboolean ipv6init, ipv6forwarding, ipv6_autoconf, dhcp6 = FALSE;
 	char *method = NM_SETTING_IP6_CONFIG_METHOD_MANUAL;
 	guint32 i;
 	shvarFile *network_ifcfg;
@@ -1429,26 +1430,6 @@ make_ip6_setting (shvarFile *ifcfg,
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "Could not allocate IP6 setting");
 		return NULL;
-	}
-
-	/* Is IPV6 enabled? Set method to "ignored", when not enabled */
-	str_value = svGetValue (ifcfg, "IPV6INIT", FALSE);
-	bool_value = svTrueValue (ifcfg, "IPV6INIT", FALSE);
-	if (!str_value) {
-		network_ifcfg = svNewFile (network_file);
-		if (network_ifcfg) {
-			bool_value = svTrueValue (network_ifcfg, "IPV6INIT", FALSE);
-			svCloseFile (network_ifcfg);
-		}
-	}
-	g_free (str_value);
-
-	if (!bool_value) {
-		/* IPv6 is disabled */
-		g_object_set (s_ip6,
-		              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
-		              NULL);
-		return NM_SETTING (s_ip6);
 	}
 
 	/* First check if IPV6_DEFROUTE is set for this device; IPV6_DEFROUTE has the
@@ -1493,23 +1474,39 @@ make_ip6_setting (shvarFile *ifcfg,
 	}
 
 	/* Find out method property */
-	ipv6forwarding = svTrueValue (ifcfg, "IPV6FORWARDING", FALSE);
-	ipv6_autoconf = svTrueValue (ifcfg, "IPV6_AUTOCONF", !ipv6forwarding);
-	dhcp6 = svTrueValue (ifcfg, "DHCPV6C", FALSE);
+	/* Is IPV6 enabled? Set method to "ignored", when not enabled */
+	str_value = svGetValue (ifcfg, "IPV6INIT", FALSE);
+	ipv6init = svTrueValue (ifcfg, "IPV6INIT", FALSE);
+	if (!str_value) {
+		network_ifcfg = svNewFile (network_file);
+		if (network_ifcfg) {
+			ipv6init = svTrueValue (network_ifcfg, "IPV6INIT", FALSE);
+			svCloseFile (network_ifcfg);
+		}
+	}
+	g_free (str_value);
 
-	if (ipv6_autoconf)
-		method = NM_SETTING_IP6_CONFIG_METHOD_AUTO;
-	else if (dhcp6)
-		method = NM_SETTING_IP6_CONFIG_METHOD_DHCP;
+	if (!ipv6init)
+		method = NM_SETTING_IP6_CONFIG_METHOD_IGNORE;  /* IPv6 is disabled */
 	else {
-		/* IPV6_AUTOCONF=no and no IPv6 address -> method 'link-local' */
-		str_value = svGetValue (ifcfg, "IPV6ADDR", FALSE);
-		if (!str_value)
-			str_value = svGetValue (ifcfg, "IPV6ADDR_SECONDARIES", FALSE);
+		ipv6forwarding = svTrueValue (ifcfg, "IPV6FORWARDING", FALSE);
+		ipv6_autoconf = svTrueValue (ifcfg, "IPV6_AUTOCONF", !ipv6forwarding);
+		dhcp6 = svTrueValue (ifcfg, "DHCPV6C", FALSE);
 
-		if (!str_value)
-			method = NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL;
-		g_free (str_value);
+		if (ipv6_autoconf)
+			method = NM_SETTING_IP6_CONFIG_METHOD_AUTO;
+		else if (dhcp6)
+			method = NM_SETTING_IP6_CONFIG_METHOD_DHCP;
+		else {
+			/* IPV6_AUTOCONF=no and no IPv6 address -> method 'link-local' */
+			str_value = svGetValue (ifcfg, "IPV6ADDR", FALSE);
+			if (!str_value)
+				str_value = svGetValue (ifcfg, "IPV6ADDR_SECONDARIES", FALSE);
+
+			if (!str_value)
+				method = NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL;
+			g_free (str_value);
+		}
 	}
 	/* TODO - handle other methods */
 
@@ -1520,6 +1517,10 @@ make_ip6_setting (shvarFile *ifcfg,
 	              NM_SETTING_IP6_CONFIG_NEVER_DEFAULT, never_default,
 	              NM_SETTING_IP6_CONFIG_MAY_FAIL, !svTrueValue (ifcfg, "IPV6_FAILURE_FATAL", FALSE),
 	              NULL);
+
+	/* Don't bother to read IP, DNS and routes when IPv6 is disabled */
+	if (strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE) == 0)
+		return NM_SETTING (s_ip6);
 
 	if (!strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_MANUAL)) {
 		NMIP6Address *addr;
@@ -2234,6 +2235,7 @@ eap_peap_reader (const char *eap_method,
                  gboolean phase2,
                  GError **error)
 {
+	char *anon_ident = NULL;
 	char *ca_cert = NULL;
 	char *real_cert_path = NULL;
 	char *inner_auth = NULL;
@@ -2274,6 +2276,10 @@ eap_peap_reader (const char *eap_method,
 
 	if (svTrueValue (ifcfg, "IEEE_8021X_PEAP_FORCE_NEW_LABEL", FALSE))
 		g_object_set (s_8021x, NM_SETTING_802_1X_PHASE1_PEAPLABEL, "1", NULL);
+
+	anon_ident = svGetValue (ifcfg, "IEEE_8021X_ANON_IDENTITY", FALSE);
+	if (anon_ident && strlen (anon_ident))
+		g_object_set (s_8021x, NM_SETTING_802_1X_ANONYMOUS_IDENTITY, anon_ident, NULL);
 
 	inner_auth = svGetValue (ifcfg, "IEEE_8021X_INNER_AUTH_METHODS", FALSE);
 	if (!inner_auth) {
@@ -2324,6 +2330,7 @@ done:
 	g_free (peapver);
 	g_free (real_cert_path);
 	g_free (ca_cert);
+	g_free (anon_ident);
 	return success;
 }
 
@@ -2737,6 +2744,7 @@ make_wireless_setting (shvarFile *ifcfg,
 {
 	NMSettingWireless *s_wireless;
 	GByteArray *array = NULL;
+	GSList *macaddr_blacklist = NULL;
 	char *value;
 
 	s_wireless = NM_SETTING_WIRELESS (nm_setting_wireless_new ());
@@ -2770,6 +2778,33 @@ make_wireless_setting (shvarFile *ifcfg,
 			g_object_set (s_wireless, NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, array, NULL);
 			g_byte_array_free (array, TRUE);
 		}
+	} else {
+		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: %s", (*error)->message);
+		g_clear_error (error);
+	}
+
+	value = svGetValue (ifcfg, "HWADDR_BLACKLIST", FALSE);
+	if (value) {
+		char **list = NULL, **iter;
+		struct ether_addr addr;
+
+		list = g_strsplit_set (value, " \t", 0);
+		for (iter = list; iter && *iter; iter++) {
+			if (**iter == '\0')
+				continue;
+			if (!ether_aton_r (*iter, &addr)) {
+				PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: invalid MAC in HWADDR_BLACKLIST '%s'", *iter);
+				continue;
+			}
+			macaddr_blacklist = g_slist_prepend (macaddr_blacklist, *iter);
+		}
+		if (macaddr_blacklist) {
+			macaddr_blacklist = g_slist_reverse (macaddr_blacklist);
+			g_object_set (s_wireless, NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST, macaddr_blacklist, NULL);
+			g_slist_free (macaddr_blacklist);
+		}
+		g_free (value);
+		g_strfreev (list);
 	}
 
 	value = svGetValue (ifcfg, "ESSID", TRUE);
@@ -3030,6 +3065,7 @@ make_wired_setting (shvarFile *ifcfg,
 	char *value = NULL;
 	int mtu;
 	GByteArray *mac = NULL;
+	GSList *macaddr_blacklist = NULL;
 	char *nettype;
 
 	s_wired = NM_SETTING_WIRED (nm_setting_wired_new ());
@@ -3162,6 +3198,33 @@ make_wired_setting (shvarFile *ifcfg,
 			g_object_set (s_wired, NM_SETTING_WIRED_CLONED_MAC_ADDRESS, mac, NULL);
 			g_byte_array_free (mac, TRUE);
 		}
+	} else {
+		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: %s", (*error)->message);
+		g_clear_error (error);
+	}
+
+	value = svGetValue (ifcfg, "HWADDR_BLACKLIST", FALSE);
+	if (value) {
+		char **list = NULL, **iter;
+		struct ether_addr addr;
+
+		list = g_strsplit_set (value, " \t", 0);
+		for (iter = list; iter && *iter; iter++) {
+			if (**iter == '\0')
+				continue;
+			if (!ether_aton_r (*iter, &addr)) {
+				PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: invalid MAC in HWADDR_BLACKLIST '%s'", *iter);
+				continue;
+			}
+			macaddr_blacklist = g_slist_prepend (macaddr_blacklist, *iter);
+		}
+		if (macaddr_blacklist) {
+			macaddr_blacklist = g_slist_reverse (macaddr_blacklist);
+			g_object_set (s_wired, NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST, macaddr_blacklist, NULL);
+			g_slist_free (macaddr_blacklist);
+		}
+		g_free (value);
+		g_strfreev (list);
 	}
 
 	value = svGetValue (ifcfg, "KEY_MGMT", FALSE);
@@ -3246,7 +3309,7 @@ is_wireless_device (const char *iface)
 	g_return_val_if_fail (iface != NULL, FALSE);
 
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (!fd)
+	if (fd == -1)
 		return FALSE;
 
 	memset (&wrq, 0, sizeof (struct iwreq));

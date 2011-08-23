@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2010 Red Hat, Inc.
+ * (C) Copyright 2007 - 2011 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -37,6 +37,22 @@
 #include "nm-dbus-glib-types.h"
 #include "nm-utils-private.h"
 
+/**
+ * SECTION:nm-setting-wireless
+ * @short_description: Describes connection properties for 802.11 WiFi networks
+ * @include: nm-setting-wireless.h
+ *
+ * The #NMSettingWireless object is a #NMSetting subclass that describes properties
+ * necessary for connection to 802.11 WiFi networks.
+ **/
+
+/**
+ * nm_setting_wireless_error_quark:
+ *
+ * Registers an error quark for #NMSettingWireless if necessary.
+ *
+ * Returns: the error quark used for #NMSettingWireless errors.
+ **/
 GQuark
 nm_setting_wireless_error_quark (void)
 {
@@ -89,6 +105,7 @@ typedef struct {
 	guint32 tx_power;
 	GByteArray *device_mac_address;
 	GByteArray *cloned_mac_address;
+	GSList *mac_address_blacklist;
 	guint32 mtu;
 	GSList *seen_bssids;
 	char *security;
@@ -105,6 +122,7 @@ enum {
 	PROP_TX_POWER,
 	PROP_MAC_ADDRESS,
 	PROP_CLONED_MAC_ADDRESS,
+	PROP_MAC_ADDRESS_BLACKLIST,
 	PROP_MTU,
 	PROP_SEEN_BSSIDS,
 	PROP_SEC,
@@ -128,6 +146,27 @@ match_cipher (const char *cipher,
 	return TRUE;
 }
 
+/**
+ * nm_setting_wireless_ap_security_compatible:
+ * @s_wireless: a #NMSettingWireless
+ * @s_wireless_sec: a #NMSettingWirelessSecurity or %NULL
+ * @ap_flags: the %NM80211ApFlags of the given access point
+ * @ap_wpa: the %NM80211ApSecurityFlags of the given access point's WPA
+ * capabilities
+ * @ap_rsn: the %NM80211ApSecurityFlags of the given access point's WPA2/RSN
+ * capabilities
+ * @ap_mode: the 802.11 mode of the AP, either Ad-Hoc or Infrastructure
+ *
+ * Given a #NMSettingWireless and an optional #NMSettingWirelessSecurity,
+ * determine if the configuration given by the settings is compatible with
+ * the security of an access point using that access point's capability flags
+ * and mode.  Useful for clients that wish to filter a set of connections
+ * against a set of access points and determine which connections are
+ * compatible with which access points.
+ *
+ * Returns: %TRUE if the given settings are compatible with the access point's
+ * security flags and mode, %FALSE if they are not.
+ */ 
 gboolean
 nm_setting_wireless_ap_security_compatible (NMSettingWireless *s_wireless,
                                             NMSettingWirelessSecurity *s_wireless_sec,
@@ -289,12 +328,25 @@ nm_setting_wireless_ap_security_compatible (NMSettingWireless *s_wireless,
 	return FALSE;
 }
 
+/**
+ * nm_setting_wireless_new:
+ *
+ * Creates a new #NMSettingWireless object with default values.
+ *
+ * Returns: (transfer full): the new empty #NMSettingWireless object
+ **/
 NMSetting *
 nm_setting_wireless_new (void)
 {
 	return (NMSetting *) g_object_new (NM_TYPE_SETTING_WIRELESS, NULL);
 }
 
+/**
+ * nm_setting_wireless_get_ssid:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:ssid property of the setting
+ **/
 const GByteArray *
 nm_setting_wireless_get_ssid (NMSettingWireless *setting)
 {
@@ -303,6 +355,12 @@ nm_setting_wireless_get_ssid (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->ssid;
 }
 
+/**
+ * nm_setting_wireless_get_mode:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:mode property of the setting
+ **/
 const char *
 nm_setting_wireless_get_mode (NMSettingWireless *setting)
 {
@@ -311,6 +369,12 @@ nm_setting_wireless_get_mode (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->mode;
 }
 
+/**
+ * nm_setting_wireless_get_band:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:band property of the setting
+ **/
 const char *
 nm_setting_wireless_get_band (NMSettingWireless *setting)
 {
@@ -319,6 +383,12 @@ nm_setting_wireless_get_band (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->band;
 }
 
+/**
+ * nm_setting_wireless_get_channel:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:channel property of the setting
+ **/
 guint32
 nm_setting_wireless_get_channel (NMSettingWireless *setting)
 {
@@ -327,6 +397,12 @@ nm_setting_wireless_get_channel (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->channel;
 }
 
+/**
+ * nm_setting_wireless_get_bssid:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:bssid property of the setting
+ **/
 const GByteArray *
 nm_setting_wireless_get_bssid (NMSettingWireless *setting)
 {
@@ -335,6 +411,12 @@ nm_setting_wireless_get_bssid (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->bssid;
 }
 
+/**
+ * nm_setting_wireless_get_rate:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:rate property of the setting
+ **/
 guint32
 nm_setting_wireless_get_rate (NMSettingWireless *setting)
 {
@@ -343,6 +425,12 @@ nm_setting_wireless_get_rate (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->rate;
 }
 
+/**
+ * nm_setting_wireless_get_tx_power:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:tx-power property of the setting
+ **/
 guint32
 nm_setting_wireless_get_tx_power (NMSettingWireless *setting)
 {
@@ -351,6 +439,12 @@ nm_setting_wireless_get_tx_power (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->tx_power;
 }
 
+/**
+ * nm_setting_wireless_get_mac_address:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:mac-address property of the setting
+ **/
 const GByteArray *
 nm_setting_wireless_get_mac_address (NMSettingWireless *setting)
 {
@@ -359,6 +453,12 @@ nm_setting_wireless_get_mac_address (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->device_mac_address;
 }
 
+/**
+ * nm_setting_wireless_get_cloned_mac_address:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:cloned-mac-address property of the setting
+ **/
 const GByteArray *
 nm_setting_wireless_get_cloned_mac_address (NMSettingWireless *setting)
 {
@@ -367,6 +467,27 @@ nm_setting_wireless_get_cloned_mac_address (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->cloned_mac_address;
 }
 
+/**
+ * nm_setting_wireless_get_mac_address_blacklist:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: (element-type GLib.ByteArray): the
+ * #NMSettingWireless:mac-address-blacklist property of the setting
+ **/
+const GSList *
+nm_setting_wireless_get_mac_address_blacklist (NMSettingWireless *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_WIRELESS (setting), NULL);
+
+	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->mac_address_blacklist;
+}
+
+/**
+ * nm_setting_wireless_get_mtu:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:mtu property of the setting
+ **/
 guint32
 nm_setting_wireless_get_mtu (NMSettingWireless *setting)
 {
@@ -375,6 +496,12 @@ nm_setting_wireless_get_mtu (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->mtu;
 }
 
+/**
+ * nm_setting_wireless_get_security:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:security property of the setting
+ **/
 const char *
 nm_setting_wireless_get_security (NMSettingWireless *setting)
 {
@@ -383,6 +510,17 @@ nm_setting_wireless_get_security (NMSettingWireless *setting)
 	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->security;
 }
 
+/**
+ * nm_setting_wireless_add_seen_bssid:
+ * @setting: the #NMSettingWireless
+ * @bssid: the new BSSID to add to the list
+ *
+ * Adds a new WiFi AP's BSSID to the previously seen BSSID list of the setting.
+ * NetworkManager tracks previously seen BSSIDs internally so this function
+ * no longer has much use.
+ *
+ * Returns: %TRUE if @bssid was already known, %FALSE if not
+ **/
 gboolean
 nm_setting_wireless_add_seen_bssid (NMSettingWireless *setting,
 									const char *bssid)
@@ -416,6 +554,12 @@ nm_setting_wireless_add_seen_bssid (NMSettingWireless *setting,
 	return !found;
 }
 
+/**
+ * nm_setting_wireless_get_num_seen_bssids:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the number of BSSIDs in the previously seen BSSID list
+ **/
 guint32
 nm_setting_wireless_get_num_seen_bssids (NMSettingWireless *setting)
 {
@@ -424,6 +568,13 @@ nm_setting_wireless_get_num_seen_bssids (NMSettingWireless *setting)
 	return g_slist_length (NM_SETTING_WIRELESS_GET_PRIVATE (setting)->seen_bssids);
 }
 
+/**
+ * nm_setting_wireless_get_seen_bssid:
+ * @setting: the #NMSettingWireless
+ * @i: index of a BSSID in the previously seen BSSID list
+ *
+ * Returns: the BSSID at index @i
+ **/
 const char *
 nm_setting_wireless_get_seen_bssid (NMSettingWireless *setting,
 									guint32 i)
@@ -524,6 +675,18 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		return FALSE;
 	}
 
+	for (iter = priv->mac_address_blacklist; iter; iter = iter->next) {
+		struct ether_addr addr;
+
+		if (!ether_aton_r (iter->data, &addr)) {
+			g_set_error (error,
+			             NM_SETTING_WIRELESS_ERROR,
+			             NM_SETTING_WIRELESS_ERROR_INVALID_PROPERTY,
+			             NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST);
+			return FALSE;
+		}
+	}
+
 	for (iter = priv->seen_bssids; iter; iter = iter->next) {
 		struct ether_addr addr;
 
@@ -571,7 +734,7 @@ finalize (GObject *object)
 		g_byte_array_free (priv->device_mac_address, TRUE);
 	if (priv->cloned_mac_address)
 		g_byte_array_free (priv->cloned_mac_address, TRUE);
-
+	nm_utils_slist_free (priv->mac_address_blacklist, g_free);
 	nm_utils_slist_free (priv->seen_bssids, g_free);
 
 	G_OBJECT_CLASS (nm_setting_wireless_parent_class)->finalize (object);
@@ -620,6 +783,10 @@ set_property (GObject *object, guint prop_id,
 		if (priv->cloned_mac_address)
 			g_byte_array_free (priv->cloned_mac_address, TRUE);
 		priv->cloned_mac_address = g_value_dup_boxed (value);
+		break;
+	case PROP_MAC_ADDRESS_BLACKLIST:
+		nm_utils_slist_free (priv->mac_address_blacklist, g_free);
+		priv->mac_address_blacklist = g_value_dup_boxed (value);
 		break;
 	case PROP_MTU:
 		priv->mtu = g_value_get_uint (value);
@@ -671,6 +838,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_CLONED_MAC_ADDRESS:
 		g_value_set_boxed (value, nm_setting_wireless_get_cloned_mac_address (setting));
+		break;
+	case PROP_MAC_ADDRESS_BLACKLIST:
+		g_value_set_boxed (value, nm_setting_wireless_get_mac_address_blacklist (setting));
 		break;
 	case PROP_MTU:
 		g_value_set_uint (value, nm_setting_wireless_get_mtu (setting));
@@ -869,31 +1039,41 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_class)
 	                                     G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
 
 	/**
+	 * NMSettingWireless:mac-address-blacklist:
+	 *
+	 * If specified, this connection will never apply to the WiFi device
+	 * whose permanent MAC address matches an address in the list.  Each
+	 * MAC address is in the standard hex-digits-and-colons notation.
+	 * (00:11:22:33:44:55).
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_MAC_ADDRESS_BLACKLIST,
+		 _nm_param_spec_specialized (NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST,
+		                             "MAC Address Blacklist",
+		                             "If specified, this connection will never apply to "
+		                             "the WiFi device whose permanent MAC address matches "
+		                             "an address in the list.  Each MAC address is in the "
+		                             "standard hex-digits-and-colons notation (00:11:22:33:44:55).",
+		                             DBUS_TYPE_G_LIST_OF_STRING,
+		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+
+	/**
 	 * NMSettingWireless:seen-bssids:
 	 *
 	 * A list of BSSIDs (each BSSID formatted as a MAC address like
 	 * '00:11:22:33:44:55') that have been detected as part of the WiFI network.
-	 * The settings service will usually populate this property by periodically
-	 * asking NetworkManager what the device's current AP is while connected
-	 * to the network (or monitoring the device's 'active-ap' property) and
-	 * adding the current AP'sBSSID to this list.  This list helps NetworkManager
-	 * find hidden APs by matching up scan results with the BSSIDs in this list.
+	 * NetworkManager internally tracks previously seen BSSIDs so this property
+	 * is no longer of much use.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_SEEN_BSSIDS,
 		 _nm_param_spec_specialized (NM_SETTING_WIRELESS_SEEN_BSSIDS,
 							   "Seen BSSIDS",
 							   "A list of BSSIDs (each BSSID formatted as a MAC "
-							   "address like '00:11:22:33:44:55') that have been "
-							   "detected as part of the WiFI network.  The "
-							   "settings service will usually populate this "
-							   "property by periodically asking NetworkManager "
-							   "what the device's current AP is while connected "
-							   "to the network (or monitoring the device's "
-							   "'active-ap' property) and adding the current AP's "
-							   "BSSID to this list.  This list helps NetworkManager "
-							   "find hidden APs by matching up scan results with "
-							   "the BSSIDs in this list.",
+							   "address like 00:11:22:33:44:55') that have been "
+							   "detected as part of the WiFI network. "
+							   "NetworkManager internally tracks previously seen "
+							   "BSSIDs so this property is no longer of much use.",
 							   DBUS_TYPE_G_LIST_OF_STRING,
 							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
 

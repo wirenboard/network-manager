@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2010 Red Hat, Inc.
+ * (C) Copyright 2007 - 2011 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -41,8 +41,18 @@ G_BEGIN_DECLS
 
 #define NM_SETTING_WIRELESS_SETTING_NAME "802-11-wireless"
 
-typedef enum
-{
+/**
+ * NMSettingWirelessError:
+ * @NM_SETTING_WIRELESS_ERROR_UNKNOWN: unknown or unclassified error
+ * @NM_SETTING_WIRELESS_ERROR_INVALID_PROPERTY: the property was invalid
+ * @NM_SETTING_WIRELESS_ERROR_MISSING_PROPERTY: the property was missing and is
+ * required
+ * @NM_SETTING_WIRELESS_ERROR_MISSING_SECURITY_SETTING: property values require
+ * the presence of an #NMSettingWirelessSecurity object in the connection
+ * @NM_SETTING_WIRELESS_ERROR_CHANNEL_REQUIRES_BAND: the property channel was
+ * set to a value that requires the #NMSettingWireless:band property to be set
+ */
+typedef enum {
 	NM_SETTING_WIRELESS_ERROR_UNKNOWN = 0,
 	NM_SETTING_WIRELESS_ERROR_INVALID_PROPERTY,
 	NM_SETTING_WIRELESS_ERROR_MISSING_PROPERTY,
@@ -65,11 +75,24 @@ GQuark nm_setting_wireless_error_quark (void);
 #define NM_SETTING_WIRELESS_TX_POWER    "tx-power"
 #define NM_SETTING_WIRELESS_MAC_ADDRESS "mac-address"
 #define NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS "cloned-mac-address"
+#define NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST "mac-address-blacklist"
 #define NM_SETTING_WIRELESS_MTU         "mtu"
 #define NM_SETTING_WIRELESS_SEEN_BSSIDS "seen-bssids"
 #define NM_SETTING_WIRELESS_SEC         "security"
 
+/**
+ * NM_SETTING_WIRELESS_MODE_ADHOC:
+ *
+ * Indicates Ad-Hoc mode where no access point is expected to be present.
+ */
 #define NM_SETTING_WIRELESS_MODE_ADHOC  "adhoc"
+
+/**
+ * NM_SETTING_WIRELESS_MODE_INFRA
+ *
+ * Indicates infrastructure mode where an access point is expected to be present
+ * for this connection.
+ */
 #define NM_SETTING_WIRELESS_MODE_INFRA  "infrastructure"
 
 typedef struct {
@@ -99,6 +122,7 @@ guint32           nm_setting_wireless_get_rate               (NMSettingWireless 
 guint32           nm_setting_wireless_get_tx_power           (NMSettingWireless *setting);
 const GByteArray *nm_setting_wireless_get_mac_address        (NMSettingWireless *setting);
 const GByteArray *nm_setting_wireless_get_cloned_mac_address (NMSettingWireless *setting);
+const GSList     *nm_setting_wireless_get_mac_address_blacklist (NMSettingWireless *setting);
 guint32           nm_setting_wireless_get_mtu                (NMSettingWireless *setting);
 const char       *nm_setting_wireless_get_security           (NMSettingWireless *setting);
 

@@ -20,6 +20,9 @@
 
 #include <config.h>
 
+#include <sys/types.h>
+#include <pwd.h>
+
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -41,7 +44,10 @@ typedef struct {
 	char *owner;
 	char *identifier;
 	uid_t owner_uid;
+	char *owner_username;
 	guint32 hash;
+
+	GSList *permissions;
 
 	NMDBusManager *dbus_mgr;
 	DBusGProxy *proxy;
@@ -134,6 +140,15 @@ nm_secret_agent_get_owner_uid  (NMSecretAgent *agent)
 	return NM_SECRET_AGENT_GET_PRIVATE (agent)->owner_uid;
 }
 
+const char *
+nm_secret_agent_get_owner_username(NMSecretAgent *agent)
+{
+	g_return_val_if_fail (agent != NULL, NULL);
+	g_return_val_if_fail (NM_IS_SECRET_AGENT (agent), NULL);
+
+	return NM_SECRET_AGENT_GET_PRIVATE (agent)->owner_username;
+}
+
 guint32
 nm_secret_agent_get_hash  (NMSecretAgent *agent)
 {
@@ -141,6 +156,76 @@ nm_secret_agent_get_hash  (NMSecretAgent *agent)
 	g_return_val_if_fail (NM_IS_SECRET_AGENT (agent), 0);
 
 	return NM_SECRET_AGENT_GET_PRIVATE (agent)->hash;
+}
+
+/**
+ * nm_secret_agent_add_permission:
+ * @agent: A #NMSecretAgent.
+ * @permission: The name of the permission
+ *
+ * Records whether or not the agent has a given permission.
+ */
+void
+nm_secret_agent_add_permission (NMSecretAgent *agent,
+                                const char *permission,
+                                gboolean allowed)
+{
+	NMSecretAgentPrivate *priv;
+	GSList *iter;
+
+	g_return_if_fail (agent != NULL);
+	g_return_if_fail (permission != NULL);
+
+	priv = NM_SECRET_AGENT_GET_PRIVATE (agent);
+
+	/* Check if the permission is already in the list */
+	for (iter = priv->permissions; iter; iter = g_slist_next (iter)) {
+		if (g_strcmp0 (permission, iter->data) == 0) {
+			/* If the permission is no longer allowed, remove it from the
+			 * list.  If it is now allowed, do nothing since it's already
+			 * in the list.
+			 */
+			if (allowed == FALSE) {
+				g_free (iter->data);
+				priv->permissions = g_slist_delete_link (priv->permissions, iter);
+			}
+			return;
+		}
+	}
+
+	/* New permission that's allowed */
+	if (allowed)
+		priv->permissions = g_slist_prepend (priv->permissions, g_strdup (permission));
+}
+
+/**
+ * nm_secret_agent_has_permission:
+ * @agent: A #NMSecretAgent.
+ * @permission: The name of the permission to check for
+ *
+ * Returns whether or not the agent has the given permission.
+ * 
+ * Returns: %TRUE if the agent has the given permission, %FALSE if it does not
+ * or if the permission was not previous recorded with
+ * nm_secret_agent_add_permission().
+ */
+gboolean
+nm_secret_agent_has_permission (NMSecretAgent *agent, const char *permission)
+{
+	NMSecretAgentPrivate *priv;
+	GSList *iter;
+
+	g_return_val_if_fail (agent != NULL, FALSE);
+	g_return_val_if_fail (permission != NULL, FALSE);
+
+	priv = NM_SECRET_AGENT_GET_PRIVATE (agent);
+
+	/* Check if the permission is already in the list */
+	for (iter = priv->permissions; iter; iter = g_slist_next (iter)) {
+		if (g_strcmp0 (permission, iter->data) == 0)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 /*************************************************************/
@@ -188,6 +273,9 @@ nm_secret_agent_get_secrets (NMSecretAgent *self,
 	priv = NM_SECRET_AGENT_GET_PRIVATE (self);
 
 	hash = nm_connection_to_hash (connection, NM_SETTING_HASH_FLAG_ALL);
+
+	/* Mask off the private ONLY_SYSTEM flag if present */
+	flags &= ~NM_SETTINGS_GET_SECRETS_FLAG_ONLY_SYSTEM;
 
 	r = request_new (self, nm_connection_get_path (connection), setting_name, callback, callback_data);
 	r->call = dbus_g_proxy_begin_call_with_timeout (priv->proxy,
@@ -327,10 +415,16 @@ nm_secret_agent_new (NMDBusManager *dbus_mgr,
 	NMSecretAgent *self;
 	NMSecretAgentPrivate *priv;
 	DBusGConnection *bus;
-	char *hash_str;
+	char *hash_str, *username;
+	struct passwd *pw;
 
 	g_return_val_if_fail (owner != NULL, NULL);
 	g_return_val_if_fail (identifier != NULL, NULL);
+
+	pw = getpwuid (owner_uid);
+	g_return_val_if_fail (pw != NULL, NULL);
+	g_return_val_if_fail (pw->pw_name[0] != '\0', NULL);
+	username = g_strdup (pw->pw_name);
 
 	self = (NMSecretAgent *) g_object_new (NM_TYPE_SECRET_AGENT, NULL);
 	if (self) {
@@ -339,6 +433,7 @@ nm_secret_agent_new (NMDBusManager *dbus_mgr,
 		priv->owner = g_strdup (owner);
 		priv->identifier = g_strdup (identifier);
 		priv->owner_uid = owner_uid;
+		priv->owner_username = g_strdup (username);
 
 		hash_str = g_strdup_printf ("%08u%s", owner_uid, identifier);
 		priv->hash = g_str_hash (hash_str);
@@ -353,6 +448,7 @@ nm_secret_agent_new (NMDBusManager *dbus_mgr,
 		g_assert (priv->proxy);
 	}
 
+	g_free (username);
 	return self;
 }
 
@@ -376,6 +472,10 @@ dispose (GObject *object)
 		g_free (priv->description);
 		g_free (priv->owner);
 		g_free (priv->identifier);
+		g_free (priv->owner_username);
+
+		g_slist_foreach (priv->permissions, (GFunc) g_free, NULL);
+		g_slist_free (priv->permissions);
 
 		g_hash_table_destroy (priv->requests);
 		g_object_unref (priv->proxy);

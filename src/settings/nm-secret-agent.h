@@ -60,7 +60,16 @@ const char *nm_secret_agent_get_identifier (NMSecretAgent *agent);
 
 uid_t       nm_secret_agent_get_owner_uid  (NMSecretAgent *agent);
 
+const char *nm_secret_agent_get_owner_username (NMSecretAgent *agent);
+
 guint32     nm_secret_agent_get_hash       (NMSecretAgent *agent);
+
+void        nm_secret_agent_add_permission (NMSecretAgent *agent,
+                                            const char *permission,
+                                            gboolean allowed);
+
+gboolean    nm_secret_agent_has_permission (NMSecretAgent *agent,
+                                            const char *permission);
 
 typedef void (*NMSecretAgentCallback) (NMSecretAgent *agent,
                                        gconstpointer call,

@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2008 - 2010 Red Hat, Inc.
+ * Copyright (C) 2008 - 2011 Red Hat, Inc.
  */
 
 #include <string.h>
@@ -181,12 +181,13 @@ nm_ifcfg_connection_get_unmanaged_spec (NMIfcfgConnection *self)
 static void
 commit_changes (NMSettingsConnection *connection,
                 NMSettingsConnectionCommitFunc callback,
-	            gpointer user_data)
+                gpointer user_data)
 {
 	NMIfcfgConnectionPrivate *priv = NM_IFCFG_CONNECTION_GET_PRIVATE (connection);
 	GError *error = NULL;
 	NMConnection *reread;
 	char *unmanaged = NULL, *keyfile = NULL, *routefile = NULL, *route6file = NULL;
+	gboolean same = FALSE;
 
 	/* To ensure we don't rewrite files that are only changed from other
 	 * processes on-disk, read the existing connection back in and only rewrite
@@ -200,28 +201,36 @@ commit_changes (NMSettingsConnection *connection,
 	g_free (routefile);
 	g_free (route6file);
 
-	if (reread && nm_connection_compare (NM_CONNECTION (connection),
-	                                     reread,
-	                                     NM_SETTING_COMPARE_FLAG_EXACT))
-		goto out;
+	if (reread) {
+		same = nm_connection_compare (NM_CONNECTION (connection),
+		                              reread,
+		                              NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS |
+		                                NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS);
+		g_object_unref (reread);
 
-	if (!writer_update_connection (NM_CONNECTION (connection),
-	                               IFCFG_DIR,
-	                               priv->path,
-	                               priv->keyfile,
-	                               &error)) {
-		callback (connection, error, user_data);
-		g_error_free (error);
-		return;
+		/* Don't bother writing anything out if in-memory and on-disk data are the same */
+		if (same) {
+			/* But chain up to parent to handle success - emits updated signal */
+			NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, callback, user_data);
+			return;
+		}
 	}
 
-out:
-	if (reread)
-		g_object_unref (reread);
-	NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, callback, user_data);
+	if (writer_update_connection (NM_CONNECTION (connection),
+	                              IFCFG_DIR,
+	                              priv->path,
+	                              priv->keyfile,
+	                              &error)) {
+		/* Chain up to parent to handle success */
+		NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, callback, user_data);
+	} else {
+		/* Otherwise immediate error */
+		callback (connection, error, user_data);
+		g_error_free (error);
+	}
 }
 
-static void 
+static void
 do_delete (NMSettingsConnection *connection,
 	       NMSettingsConnectionDeleteFunc callback,
 	       gpointer user_data)

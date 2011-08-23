@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2008 - 2009 Novell, Inc.
- * Copyright (C) 2008 - 2010 Red Hat, Inc.
+ * Copyright (C) 2008 - 2011 Red Hat, Inc.
  */
 
 #include <errno.h>
@@ -40,6 +40,7 @@
 #include <ctype.h>
 
 #include "nm-dbus-glib-types.h"
+#include "nm-system-config-interface.h"
 #include "reader.h"
 #include "common.h"
 
@@ -735,29 +736,27 @@ get_uchar_array (GKeyFile *keyfile,
                  const char *key)
 {
 	GByteArray *array = NULL;
-	char *p, *tmp_string;
+	char *tmp_string;
 	gint *tmp_list;
 	gsize length;
 	int i;
 
-	/* New format: just a string.  We try parsing the new format if there are
-	 * no ';' in the string or it's not just numbers.
+	/* New format: just a string
+	 * Old format: integer list; e.g. 11;25;38
 	 */
-	p = tmp_string = g_key_file_get_string (keyfile, setting_name, key, NULL);
+	tmp_string = g_key_file_get_string (keyfile, setting_name, key, NULL);
 	if (tmp_string) {
 		gboolean new_format = FALSE;
+		GRegex *regex;
+		GMatchInfo *match_info;
+		const char *pattern = "^[[:space:]]*[[:digit:]]{1,3}[[:space:]]*(;[[:space:]]*[[:digit:]]{1,3}[[:space:]]*)*(;[[:space:]]*)?$";
 
-		if (strchr (p, ';') == NULL)
+		regex = g_regex_new (pattern, 0, 0, NULL);
+		g_regex_match (regex, tmp_string, 0, &match_info);
+		if (!g_match_info_matches (match_info))
 			new_format = TRUE;
-		else {
-			new_format = TRUE;
-			while (p && *p) {
-				if (!isdigit (*p++)) {
-					new_format = FALSE;
-					break;
-				}
-			}
-		}
+		g_match_info_free (match_info);
+		g_regex_unref (regex);
 
 		if (new_format) {
 			array = g_byte_array_sized_new (strlen (tmp_string));
@@ -835,6 +834,24 @@ get_cert_path (const char *keyfile_path, GByteArray *cert_path)
 
 #define SCHEME_PATH "file://"
 
+static const char *certext[] = { ".pem", ".cert", ".crt", ".cer", ".p12", ".der", ".key" };
+
+static gboolean
+has_cert_ext (GByteArray *array)
+{
+	int i;
+
+	for (i = 0; i < G_N_ELEMENTS (certext); i++) {
+		guint32 extlen = strlen (certext[i]);
+
+		if (array->len <= extlen)
+			continue;
+		if (memcmp (&array->data[array->len - extlen], certext[i], extlen) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 static void
 cert_parser (NMSetting *setting, const char *key, GKeyFile *keyfile, const char *keyfile_path)
 {
@@ -859,17 +876,31 @@ cert_parser (NMSetting *setting, const char *key, GKeyFile *keyfile, const char 
 		           && g_utf8_validate ((const char *) array->data, array->len, NULL)) {
 			GByteArray *val;
 			char *path;
+			gboolean exists;
+
+			/* Might be a bare path without the file:// prefix; in that case
+			 * if it's an absolute path, use that, otherwise treat it as a
+			 * relative path to the current directory.
+			 */
 
 			path = get_cert_path (keyfile_path, array);
-			if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+			exists = g_file_test (path, G_FILE_TEST_EXISTS);
+			if (   exists
+			    || memchr (array->data, '/', array->len)
+			    || has_cert_ext (array)) {
 				/* Construct the proper value as required for the PATH scheme */
 				val = g_byte_array_sized_new (strlen (SCHEME_PATH) + array->len + 1);
 				g_byte_array_append (val, (const guint8 *) SCHEME_PATH, strlen (SCHEME_PATH));
-				g_byte_array_append (val, array->data, array->len);
+				g_byte_array_append (val, (const guint8 *) path, strlen (path));
 				g_byte_array_append (val, (const guint8 *) "\0", 1);
 				g_object_set (setting, key, val, NULL);
 				g_byte_array_free (val, TRUE);
 				success = TRUE;
+
+				/* Warn if the certificate didn't exist */
+				if (exists == FALSE) {
+					PLUGIN_WARN (KEYFILE_PLUGIN_NAME, "   certificate or key %s does not exist", path);
+				}
 			}
 			g_free (path);
 		}
@@ -881,7 +912,7 @@ cert_parser (NMSetting *setting, const char *key, GKeyFile *keyfile, const char 
 
 		g_byte_array_free (array, TRUE);
 	} else {
-		g_warning ("%s: ignoring invalid SSID for %s / %s",
+		g_warning ("%s: ignoring invalid key/cert value for %s / %s",
 		           __func__, setting_name, key);
 	}
 }

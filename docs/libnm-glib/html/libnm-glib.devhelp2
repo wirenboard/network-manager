@@ -26,6 +26,7 @@
       <sub name="NMVPNConnection" link="NMVPNConnection.html"/>
       <sub name="NMVPNPlugin" link="libnm-glib-NMVPNPlugin.html"/>
       <sub name="NMVpnPluginUi" link="libnm-glib-NMVpnPluginUi.html"/>
+      <sub name="nm-vpn-plugin-utils" link="libnm-glib-nm-vpn-plugin-utils.html"/>
     </sub>
     <sub name="Object Hierarchy" link="object-tree.html"/>
     <sub name="API Index" link="api-index-full.html"/>
@@ -50,6 +51,7 @@
     <keyword type="function" name="nm_client_new ()" link="NMClient.html#nm-client-new"/>
     <keyword type="function" name="nm_client_get_devices ()" link="NMClient.html#nm-client-get-devices"/>
     <keyword type="function" name="nm_client_get_device_by_path ()" link="NMClient.html#nm-client-get-device-by-path"/>
+    <keyword type="function" name="nm_client_get_device_by_iface ()" link="NMClient.html#nm-client-get-device-by-iface"/>
     <keyword type="function" name="NMClientActivateFn ()" link="NMClient.html#NMClientActivateFn"/>
     <keyword type="function" name="nm_client_activate_connection ()" link="NMClient.html#nm-client-activate-connection"/>
     <keyword type="function" name="NMClientAddActivateFn ()" link="NMClient.html#NMClientAddActivateFn"/>
@@ -488,6 +490,8 @@
     <keyword type="function" name="nm_vpn_plugin_ui_widget_interface_get_widget ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-get-widget"/>
     <keyword type="function" name="nm_vpn_plugin_ui_widget_interface_update_connection ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-update-connection"/>
     <keyword type="function" name="nm_vpn_plugin_ui_widget_interface_save_secrets ()" link="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-save-secrets"/>
+    <keyword type="function" name="nm_vpn_plugin_utils_read_vpn_details ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-read-vpn-details"/>
+    <keyword type="function" name="nm_vpn_plugin_utils_get_secret_flags ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-get-secret-flags"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_UNKNOWN" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-CONNECTION-REMOVED:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-CONNECTION-UNAVAILABLE:CAPS"/>

@@ -63,7 +63,6 @@ am_nmcli_OBJECTS = nmcli-connections.$(OBJEXT) nmcli-devices.$(OBJEXT) \
 nmcli_OBJECTS = $(am_nmcli_OBJECTS)
 am__DEPENDENCIES_1 =
 nmcli_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(top_builddir)/libnm-glib/libnm-glib.la
 AM_V_lt = $(am__v_lt_$(V))
@@ -309,7 +308,6 @@ top_srcdir = @top_srcdir@
 INCLUDES = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/marshallers \
 	-I${top_srcdir}/libnm-util \
 	-I${top_srcdir}/libnm-glib
 
@@ -336,7 +334,6 @@ nmcli_CPPFLAGS = \
 nmcli_LDADD = \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS) \
-	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(top_builddir)/libnm-glib/libnm-glib.la
 
