@@ -48,11 +48,13 @@ Recommends:
  modemmanager
 Suggests: avahi-autoipd
 Breaks:
- network-manager-gnome (<< 0.8.99),
- network-manager-kde (<< 1:0.9~~),
- network-manager-openvpn (<< 0.8.99),
- network-manager-vpnc (<< 0.8.99),
- network-manager-pptp (<< 0.8.99),
+ network-manager-gnome (<< 0.9),
+ network-manager-openvpn (<< 0.9),
+ network-manager-vpnc (<< 0.9),
+ network-manager-pptp (<< 0.9),
+ network-manager-openconnect (<< 0.9),
+ network-manager-kde (<< 1:0.9),
+ plasma-widget-networkmanagement (<< 0.9~),
  ppp (<< 2.4.5)
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices

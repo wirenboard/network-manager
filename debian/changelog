@@ -1,3 +1,10 @@
+network-manager (0.9.0-2) UNRELEASED; urgency=low
+
+  * Add Breaks against network-manager-openconnect (<< 0.9) and
+    plasma-widget-networkmanagement (<< 0.9~) to avoid partial upgrades.
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 16 Sep 2011 02:27:26 +0200
+
 network-manager (0.9.0-1) experimental; urgency=low
 
   * New upstream release.
