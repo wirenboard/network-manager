@@ -73,6 +73,16 @@ network-manager (0.8.998-1) experimental; urgency=low
 
  -- Michael Biebl <biebl@debian.org>  Sat, 09 Apr 2011 06:49:57 +0200
 
+network-manager (0.8.4.0-2) unstable; urgency=low
+
+  * Update package descriptions.
+  * debian/network-manager-dispatcher.script
+    - Handle dhcp4-change and dhcp6-change events (by doing nothing). This
+      prevents the 01ifupdown dispatcher script from logging an error on DHCP
+      lease changes. (Closes: #628154)
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 29 May 2011 22:22:08 +0200
+
 network-manager (0.8.4.0-1) unstable; urgency=low
 
   * New upstream release.
