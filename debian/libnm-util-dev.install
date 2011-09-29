@@ -1,8 +1,8 @@
-debian/tmp/usr/lib/pkgconfig/libnm-util.pc
-debian/tmp/usr/lib/libnm-util.so
-debian/tmp/usr/include/NetworkManager/nm-connection.h
-debian/tmp/usr/include/NetworkManager/nm-utils.h
-debian/tmp/usr/include/NetworkManager/nm-setting.h
-debian/tmp/usr/include/NetworkManager/nm-setting-*.h
-debian/tmp/usr/share/gtk-doc/html/libnm-util/
-debian/tmp/usr/share/gir-1.0/NetworkManager-1.0.gir
+usr/lib/pkgconfig/libnm-util.pc
+usr/lib/libnm-util.so
+usr/include/NetworkManager/nm-connection.h
+usr/include/NetworkManager/nm-utils.h
+usr/include/NetworkManager/nm-setting.h
+usr/include/NetworkManager/nm-setting-*.h
+usr/share/gtk-doc/html/libnm-util/
+usr/share/gir-1.0/NetworkManager-1.0.gir
