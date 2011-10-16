@@ -1,3 +1,9 @@
+network-manager (0.9.0-3) UNRELEASED; urgency=low
+
+  * debian/watch: Track .xz tarballs.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 16 Oct 2011 08:48:29 +0200
+
 network-manager (0.9.0-2) unstable; urgency=low
 
   * Add Breaks against network-manager-openconnect (<< 0.9) and
