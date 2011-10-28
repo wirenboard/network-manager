@@ -1,6 +1,7 @@
 libnm-util.so.2 libnm-util2 #MINVER#
  nm_connection_add_setting@Base 0.7.0
  nm_connection_clear_secrets@Base 0.7.0
+ nm_connection_clear_secrets_with_flags@Base 0.9.1.95
  nm_connection_compare@Base 0.7.0
  nm_connection_create_setting@Base 0.7.0
  nm_connection_diff@Base 0.8.3.998
@@ -30,6 +31,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_connection_get_setting_wireless_security@Base 0.8.998
  nm_connection_get_type@Base 0.7.0
  nm_connection_get_uuid@Base 0.8.998
+ nm_connection_is_type@Base 0.9.1.95
  nm_connection_lookup_setting_type@Base 0.7.0
  nm_connection_lookup_setting_type_by_quark@Base 0.7.0
  nm_connection_need_secrets@Base 0.7.0
@@ -173,6 +175,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_cdma_get_username@Base 0.7.0
  nm_setting_cdma_new@Base 0.7.0
  nm_setting_clear_secrets@Base 0.7.0
+ nm_setting_clear_secrets_with_flags@Base 0.9.1.95
  nm_setting_compare@Base 0.7.0
  nm_setting_connection_add_permission@Base 0.8.998
  nm_setting_connection_error_get_type@Base 0.7.0
