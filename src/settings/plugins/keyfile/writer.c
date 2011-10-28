@@ -44,6 +44,7 @@
 #include <ctype.h>
 
 #include "nm-dbus-glib-types.h"
+#include "nm-glib-compat.h"
 #include "writer.h"
 #include "common.h"
 
@@ -483,6 +484,7 @@ ssid_writer (GKeyFile *file,
 	GByteArray *array;
 	const char *setting_name = nm_setting_get_name (setting);
 	gboolean new_format = TRUE;
+	unsigned int semicolons = 0;
 	int i, *tmp_array;
 	char *ssid;
 
@@ -501,11 +503,24 @@ ssid_writer (GKeyFile *file,
 			new_format = FALSE;
 			break;
 		}
+		if (c == ';')
+			semicolons++;
 	}
 
 	if (new_format) {
-		ssid = g_malloc0 (array->len + 1);
-		memcpy (ssid, array->data, array->len);
+		ssid = g_malloc0 (array->len + semicolons + 1);
+		if (semicolons == 0)
+			memcpy (ssid, array->data, array->len);
+		else {
+			/* Escape semicolons with backslashes to make strings
+			 * containing ';', such as '16;17;' unambiguous */
+			int j = 0;
+			for (i = 0; i < array->len; i++) {
+				if (array->data[i] == ';')
+					ssid[j++] = '\\';
+				ssid[j++] = array->data[i];
+			}
+		}
 		g_key_file_set_string (file, setting_name, key, ssid);
 		g_free (ssid);
 	} else {
@@ -876,7 +891,7 @@ write_setting_value (NMSetting *setting,
 	} else if (type == G_TYPE_BOOLEAN) {
 		g_key_file_set_boolean (info->keyfile, setting_name, key, g_value_get_boolean (value));
 	} else if (type == G_TYPE_CHAR) {
-		g_key_file_set_integer (info->keyfile, setting_name, key, (int) g_value_get_char (value));
+		g_key_file_set_integer (info->keyfile, setting_name, key, (int) g_value_get_schar (value));
 	} else if (type == DBUS_TYPE_G_UCHAR_ARRAY) {
 		GByteArray *array;
 
@@ -993,14 +1008,26 @@ _internal_write_connection (NMConnection *connection,
 
 		path = g_strdup_printf ("%s/%s-%s", keyfile_dir, filename, nm_connection_get_uuid (connection));
 		if (g_file_test (path, G_FILE_TEST_EXISTS)) {
-			/* Hmm, this is odd. Give up. */
-			g_set_error (error, KEYFILE_PLUGIN_ERROR, 0,
-				         "%s.%d: could not find suitable keyfile file name (%s already used)",
-				         __FILE__, __LINE__, path);
-			g_free (path);
-			goto out;
+			if (existing_path == NULL || g_strcmp0 (path, existing_path) != 0) {
+				/* This should not happen. But, it actually occurs when
+				 * two connections have the same UUID, and one of the connections
+				 * is edited to contain the same ID as the other one.
+				 * Give up.
+				 */
+				g_set_error (error, KEYFILE_PLUGIN_ERROR, 0,
+				                    "%s.%d: could not find suitable keyfile file name (%s already used)",
+				                    __FILE__, __LINE__, path);
+				g_free (path);
+				goto out;
+			}
 		}
 	}
+
+	/* In case of updating the connection and changing the file path,
+	 * we need to remove the old one, not to end up with two connections.
+	 */
+	if (existing_path != NULL && strcmp (path, existing_path) != 0)
+		unlink (existing_path);
 
 	g_file_set_contents (path, data, len, error);
 	if (chown (path, owner_uid, owner_grp) < 0) {

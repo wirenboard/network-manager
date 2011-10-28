@@ -46,6 +46,7 @@
 #include "NetworkManagerUtils.h"
 #include "nm-dns-manager.h"
 #include "nm-netlink-monitor.h"
+#include "nm-netlink-utils.h"
 #include "nm-glib-compat.h"
 #include "settings/nm-settings-connection.h"
 
@@ -86,6 +87,7 @@ typedef struct {
 	NMIP4Config *ip4_config;
 	guint32 ip4_internal_gw;
 	char *ip_iface;
+	int ip_ifindex;
 	char *banner;
 
 	struct rtnl_route *gw_route;
@@ -219,6 +221,7 @@ device_ip4_config_changed (NMDevice *device,
 NMVPNConnection *
 nm_vpn_connection_new (NMConnection *connection,
                        NMDevice *parent_device,
+                       const char *specific_object,
                        gboolean user_requested,
                        gulong user_uid)
 {
@@ -247,7 +250,7 @@ nm_vpn_connection_new (NMConnection *connection,
 	                                     G_CALLBACK (device_ip4_config_changed),
 	                                     self);
 
-	nm_vpn_connection_base_export (NM_VPN_CONNECTION_BASE (self), connection);
+	nm_vpn_connection_base_export (NM_VPN_CONNECTION_BASE (self), connection, specific_object);
 
 	return self;
 }
@@ -283,6 +286,28 @@ plugin_failed (DBusGProxy *proxy,
 	}
 }
 
+static const char *
+vpn_state_to_string (NMVPNServiceState state)
+{
+	switch (state) {
+	case NM_VPN_SERVICE_STATE_INIT:
+		return "init";
+	case NM_VPN_SERVICE_STATE_SHUTDOWN:
+		return "shutdown";
+	case NM_VPN_SERVICE_STATE_STARTING:
+		return "starting";
+	case NM_VPN_SERVICE_STATE_STARTED:
+		return "started";
+	case NM_VPN_SERVICE_STATE_STOPPING:
+		return "stopping";
+	case NM_VPN_SERVICE_STATE_STOPPED:
+		return "stopped";
+	default:
+		break;
+	}
+	return "unknown";
+}
+
 static void
 plugin_state_changed (DBusGProxy *proxy,
                       NMVPNServiceState state,
@@ -291,7 +316,8 @@ plugin_state_changed (DBusGProxy *proxy,
 	NMVPNConnection *connection = NM_VPN_CONNECTION (user_data);
 	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (connection);
 
-	nm_log_info (LOGD_VPN, "VPN plugin state changed: %d", state);
+	nm_log_info (LOGD_VPN, "VPN plugin state changed: %s (%d)",
+	             vpn_state_to_string (state), state);
 
 	if (state == NM_VPN_SERVICE_STATE_STOPPED) {
 		/* Clear connection secrets to ensure secrets get requested each time the
@@ -424,6 +450,13 @@ nm_vpn_connection_ip4_config_get (DBusGProxy *proxy,
 		goto error;
 	}
 
+	/* Grab the interface index for address/routing operations */
+	priv->ip_ifindex = nm_netlink_iface_to_index (priv->ip_iface);
+	if (!priv->ip_ifindex) {
+		nm_log_err (LOGD_VPN, "(%s): failed to look up VPN interface index", priv->ip_iface);
+		goto error;
+	}
+
 	addr = nm_ip4_address_new ();
 	nm_ip4_address_set_prefix (addr, 24); /* default to class C */
 
@@ -529,9 +562,9 @@ nm_vpn_connection_ip4_config_get (DBusGProxy *proxy,
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_connection_get_setting (priv->connection, NM_TYPE_SETTING_IP4_CONFIG));
 	nm_utils_merge_ip4_config (config, s_ip4);
 
-	nm_system_device_set_up_down_with_iface (priv->ip_iface, TRUE, NULL);
+	nm_system_iface_set_up (priv->ip_ifindex, TRUE, NULL);
 
-	if (nm_system_apply_ip4_config (priv->ip_iface, config, 0, NM_IP4_COMPARE_FLAG_ALL)) {
+	if (nm_system_apply_ip4_config (priv->ip_ifindex, config, 0, NM_IP4_COMPARE_FLAG_ALL)) {
 		NMDnsManager *dns_mgr;
 
 		/* Add any explicit route to the VPN gateway through the parent device */
@@ -765,6 +798,14 @@ nm_vpn_connection_get_ip_iface (NMVPNConnection *connection)
 	return NM_VPN_CONNECTION_GET_PRIVATE (connection)->ip_iface;
 }
 
+int
+nm_vpn_connection_get_ip_ifindex (NMVPNConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_VPN_CONNECTION (connection), -1);
+
+	return NM_VPN_CONNECTION_GET_PRIVATE (connection)->ip_ifindex;
+}
+
 NMDevice *
 nm_vpn_connection_get_parent_device (NMVPNConnection *connection)
 {
@@ -940,11 +981,11 @@ vpn_cleanup (NMVPNConnection *connection)
 {
 	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (connection);
 
-	if (priv->ip_iface) {
-		nm_system_device_set_up_down_with_iface (priv->ip_iface, FALSE, NULL);
+	if (priv->ip_ifindex) {
+		nm_system_iface_set_up (priv->ip_ifindex, FALSE, NULL);
 		/* FIXME: use AF_UNSPEC here when we have IPv6 support */
-		nm_system_device_flush_routes_with_iface (priv->ip_iface, AF_INET);
-		nm_system_device_flush_addresses_with_iface (priv->ip_iface);
+		nm_system_iface_flush_routes (priv->ip_ifindex, AF_INET);
+		nm_system_iface_flush_addresses (priv->ip_ifindex, AF_UNSPEC);
 	}
 
 	if (priv->ip4_config) {
@@ -958,12 +999,12 @@ vpn_cleanup (NMVPNConnection *connection)
 
 		/* Remove any previously added VPN gateway host route */
 		if (priv->gw_route)
-			rtnl_route_del (nm_netlink_get_default_handle (), priv->gw_route, 0);
+			nm_netlink_route_delete (priv->gw_route);
 
 		/* Reset routes and addresses of the currently active device */
 		parent_config = nm_device_get_ip4_config (priv->parent_dev);
 		if (parent_config) {
-			if (!nm_system_apply_ip4_config (nm_device_get_ip_iface (priv->parent_dev),
+			if (!nm_system_apply_ip4_config (nm_device_get_ip_ifindex (priv->parent_dev),
 			                                 nm_device_get_ip4_config (priv->parent_dev),
 			                                 nm_device_get_priority (priv->parent_dev),
 			                                 NM_IP4_COMPARE_FLAG_ADDRESSES | NM_IP4_COMPARE_FLAG_ROUTES)) {
@@ -982,6 +1023,7 @@ vpn_cleanup (NMVPNConnection *connection)
 
 	g_free (priv->ip_iface);
 	priv->ip_iface = NULL;
+	priv->ip_ifindex = 0;
 
 	/* Clear out connection secrets to ensure that the settings service
 	 * gets asked for them next time the connection is activated.

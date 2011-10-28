@@ -195,78 +195,50 @@ recheck_killswitches (NMUdevManager *self)
 	NMUdevManagerPrivate *priv = NM_UDEV_MANAGER_GET_PRIVATE (self);
 	GSList *iter;
 	RfKillState poll_states[RFKILL_TYPE_MAX];
+	RfKillState platform_states[RFKILL_TYPE_MAX];
 	gboolean platform_checked[RFKILL_TYPE_MAX];
 	int i;
 
 	/* Default state is unblocked */
 	for (i = 0; i < RFKILL_TYPE_MAX; i++) {
 		poll_states[i] = RFKILL_UNBLOCKED;
+		platform_states[i] = RFKILL_UNBLOCKED;
 		platform_checked[i] = FALSE;
 	}
 
-	/* Perform two passes here; the first pass is for non-platform switches,
-	 * which typically if hardkilled cannot be changed except by a physical
-	 * hardware switch.  The second pass checks platform killswitches, which
-	 * take precedence over device killswitches, because typically platform
-	 * killswitches control device killswitches.  That is, a hardblocked device
-	 * switch can often be unblocked by a platform switch.  Thus if we have
-	 * a hardblocked device switch and a softblocked platform switch, the
-	 * combined state should be softblocked since the platform switch can be
-	 * unblocked to change the device switch.
-	 */
-
-	/* Device switches first */
+	/* Poll the states of all killswitches */
 	for (iter = priv->killswitches; iter; iter = g_slist_next (iter)) {
 		Killswitch *ks = iter->data;
 		GUdevDevice *device;
 		RfKillState dev_state;
 		int sysfs_state;
 
-		if (ks->platform == FALSE) {
-			device = g_udev_client_query_by_subsystem_and_name (priv->client, "rfkill", ks->name);
-			if (device) {
-				sysfs_state = g_udev_device_get_property_as_int (device, "RFKILL_STATE");
-				dev_state = sysfs_state_to_nm_state (sysfs_state);
+		device = g_udev_client_query_by_subsystem_and_name (priv->client, "rfkill", ks->name);
+		if (device) {
+			sysfs_state = g_udev_device_get_property_as_int (device, "RFKILL_STATE");
+			dev_state = sysfs_state_to_nm_state (sysfs_state);
+			if (ks->platform == FALSE) {
 				if (dev_state > poll_states[ks->rtype])
 					poll_states[ks->rtype] = dev_state;
-				g_object_unref (device);
+			} else {
+				platform_checked[ks->rtype] = TRUE;
+				if (dev_state > platform_states[ks->rtype])
+					platform_states[ks->rtype] = dev_state;
 			}
-		}
-	}
-
-	/* Platform switches next; their state overwrites device state */
-	for (iter = priv->killswitches; iter; iter = g_slist_next (iter)) {
-		Killswitch *ks = iter->data;
-		GUdevDevice *device;
-		RfKillState dev_state;
-		int sysfs_state;
-
-		if (ks->platform == TRUE) {
-			device = g_udev_client_query_by_subsystem_and_name (priv->client, "rfkill", ks->name);
-			if (device) {
-				sysfs_state = g_udev_device_get_property_as_int (device, "RFKILL_STATE");
-				dev_state = sysfs_state_to_nm_state (sysfs_state);
-
-				if (platform_checked[ks->rtype] == FALSE) {
-					/* Overwrite device state with platform state for first
-					 * platform switch found.
-					 */
-					poll_states[ks->rtype] = dev_state;
-					platform_checked[ks->rtype] = TRUE;
-				} else {
-					/* If there are multiple platform switches of the same type,
-					 * take the "worst" state for all of that type.
-					 */
-					if (dev_state > poll_states[ks->rtype])
-						poll_states[ks->rtype] = dev_state;
-				}
-				g_object_unref (device);
-			}
+			g_object_unref (device);
 		}
 	}
 
 	/* Log and emit change signal for final rfkill states */
 	for (i = 0; i < RFKILL_TYPE_MAX; i++) {
+		if (platform_checked[i] == TRUE) {
+			/* blocked platform switch state overrides device state, otherwise
+			 * let the device state stand. (bgo #655773)
+			 */
+			if (platform_states[i] != RFKILL_UNBLOCKED)
+				poll_states[i] = platform_states[i];
+		}
+
 		if (poll_states[i] != priv->rfkill_states[i]) {
 			nm_log_dbg (LOGD_RFKILL, "%s rfkill state now '%s'",
 			            rfkill_type_to_desc (i),
@@ -515,7 +487,7 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 	 * FIXME: use something other than interface name to detect CTC here.
 	 */
 	if ((etype != 1) && (is_ctc == FALSE)) {
-		nm_log_dbg (LOGD_HW, "ignoring interface with type %d", etype);
+		nm_log_dbg (LOGD_HW, "(%s): ignoring interface with type %d", iface, etype);
 		return;
 	}
 
@@ -528,7 +500,7 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 	 */
 	tmp = g_udev_device_get_property (device, "DEVTYPE");
 	if (g_strcmp0 (tmp, "wwan") == 0) {
-		nm_log_dbg (LOGD_HW, "ignoring interface with devtype '%s'", tmp);
+		nm_log_dbg (LOGD_HW, "(%s): ignoring interface with devtype '%s'", iface, tmp);
 		return;
 	}
 
@@ -539,7 +511,7 @@ net_add (NMUdevManager *self, GUdevDevice *device)
 	if (g_strcmp0 (tmp, "0421") == 0) { /* Nokia vendor ID */
 		tmp = g_udev_device_get_property (device, "ID_MODEL");
 		if (tmp && (strstr (tmp, "PC-Suite") || strstr (tmp, "PC Suite"))) {
-			nm_log_dbg (LOGD_HW, "ignoring Nokia PC-Suite ethernet interface");
+			nm_log_dbg (LOGD_HW, "(%s): ignoring Nokia PC-Suite ethernet interface", iface);
 			return;
 		}
 	}

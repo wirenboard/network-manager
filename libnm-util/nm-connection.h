@@ -147,6 +147,10 @@ const char *  nm_connection_need_secrets  (NMConnection *connection,
 
 void          nm_connection_clear_secrets (NMConnection *connection);
 
+void          nm_connection_clear_secrets_with_flags (NMConnection *connection,
+                                                      NMSettingClearSecretsWithFlagsFn func,
+                                                      gpointer user_data);
+
 gboolean      nm_connection_update_secrets (NMConnection *connection,
                                             const char *setting_name,
                                             GHashTable *secrets,
@@ -156,6 +160,8 @@ void          nm_connection_set_path      (NMConnection *connection,
                                            const char *path);
 
 const char *  nm_connection_get_path      (NMConnection *connection);
+
+gboolean      nm_connection_is_type (NMConnection *connection, const char *type);
 
 void          nm_connection_for_each_setting_value (NMConnection *connection,
                                                     NMSettingValueIterFn func,

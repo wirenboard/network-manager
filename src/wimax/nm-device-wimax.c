@@ -23,7 +23,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <net/ethernet.h>
-#include <net/if.h>
+#include <sys/socket.h>
+#include <linux/if.h>
 
 #include <WiMaxAPI.h>
 #include <WiMaxAPIEx.h>
@@ -90,6 +91,9 @@ typedef struct {
 	gboolean wimaxd_enabled;
 	struct ether_addr hw_addr;
 	guint activation_timeout_id;
+
+	/* Track whether stage1 (Prepare) is completed yet or not */
+	gboolean prepare_done;
 
 	guint sdk_action_defer_id;
 
@@ -231,27 +235,25 @@ set_current_nsp (NMDeviceWimax *self, NMWimaxNsp *new_nsp)
 {
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
 	NMWimaxNsp *old_nsp;
-	char *old_path = NULL;
+	gboolean path_changed = FALSE;
 
 	old_nsp = priv->current_nsp;
-	if (old_nsp) {
-		old_path = g_strdup (nm_wimax_nsp_get_dbus_path (old_nsp));
-		priv->current_nsp = NULL;
-	}
+	priv->current_nsp = NULL;
 
 	if (new_nsp)
 		priv->current_nsp = g_object_ref (new_nsp);
 
-	if (old_nsp)
-		g_object_unref (old_nsp);
+	if (old_nsp && new_nsp) {
+		path_changed = (g_strcmp0 (nm_wimax_nsp_get_dbus_path (old_nsp),
+		                           nm_wimax_nsp_get_dbus_path (new_nsp)) != 0);
+	}
 
 	/* Only notify if it's really changed */
-	if (   (!old_path && new_nsp)
-		|| (old_path && !new_nsp)
-	    || (old_path && new_nsp && strcmp (old_path, nm_wimax_nsp_get_dbus_path (new_nsp))))
+	if (old_nsp != new_nsp || path_changed)
 		g_object_notify (G_OBJECT (self), NM_DEVICE_WIMAX_ACTIVE_NSP);
 
-	g_free (old_path);
+	if (old_nsp)
+		g_object_unref (old_nsp);
 }
 
 NMWimaxNsp *
@@ -390,7 +392,7 @@ real_take_down (NMDevice *device)
 static gboolean
 real_hw_is_up (NMDevice *device)
 {
-	return nm_system_device_is_up (device);
+	return nm_system_iface_is_up (nm_device_get_ip_ifindex (device));
 }
 
 static gboolean
@@ -401,13 +403,13 @@ real_hw_bring_up (NMDevice *dev, gboolean *no_firmware)
 	if (!priv->enabled || !priv->wimaxd_enabled)
 		return FALSE;
 
-	return nm_system_device_set_up_down (dev, TRUE, no_firmware);
+	return nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), TRUE, no_firmware);
 }
 
 static void
 real_hw_take_down (NMDevice *dev)
 {
-	nm_system_device_set_up_down (dev, FALSE, NULL);
+	nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), FALSE, NULL);
 }
 
 static void
@@ -749,6 +751,8 @@ real_act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 
 	set_current_nsp (NM_DEVICE_WIMAX (device), nsp);
 
+	priv->prepare_done = TRUE;
+
 	/* If the device is scanning, it won't connect, so we have to wait until
 	 * it's not scanning to proceed to stage 2.
 	 */
@@ -853,6 +857,7 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
                      WIMAX_API_DEVICE_STATUS new_status,
                      WIMAX_API_DEVICE_STATUS old_status,
                      WIMAX_API_STATUS_REASON reason,
+                     WIMAX_API_CONNECTION_PROGRESS_INFO progress,
                      void *user_data)
 {
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (user_data);
@@ -862,22 +867,23 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
 	gboolean old_available = FALSE;
 	const char *nsp_name = NULL;
 
+	iface = nm_device_get_iface (NM_DEVICE (self));
+	nm_log_info (LOGD_WIMAX, "(%s): wimax state change %s -> %s (%s (%d))",
+	             iface,
+	             iwmx_sdk_dev_status_to_str (old_status),
+	             iwmx_sdk_dev_status_to_str (new_status),
+	             iwmx_sdk_con_progress_to_str (progress),
+	             progress);
+
 	if (new_status == old_status)
 		return;
 
-	iface = nm_device_get_iface (NM_DEVICE (self));
 	state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (self));
 	old_available = nm_device_is_available (NM_DEVICE (self));
 
 	priv->status = new_status;
 	if (priv->current_nsp)
 		nsp_name = nm_wimax_nsp_get_name (priv->current_nsp);
-
-	nm_log_info (LOGD_WIMAX, "(%s): wimax state change %s -> %s (reason %d)",
-	             iface,
-	             iwmx_sdk_dev_status_to_str (old_status),
-	             iwmx_sdk_dev_status_to_str (new_status),
-	             reason);
 
 	switch (new_status) {
 	case WIMAX_API_DEVICE_STATUS_UnInitialized:
@@ -936,7 +942,7 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
 		 * then check if we need to move to stage2 now that the device might be
 		 * ready.
 		 */
-		if (state == NM_DEVICE_STATE_PREPARE) {
+		if (state == NM_DEVICE_STATE_PREPARE && priv->prepare_done) {
 			if (   new_status == WIMAX_API_DEVICE_STATUS_Ready
 			    || new_status == WIMAX_API_DEVICE_STATUS_Connecting) {
 				nm_device_activate_schedule_stage2_device_config (NM_DEVICE (self));
@@ -1003,7 +1009,7 @@ wmx_media_status_cb (struct wmxsdk *wmxsdk,
 		break;
 	case WIMAX_API_MEDIA_STATUS_LINK_DOWN:
 		nm_log_dbg (LOGD_WIMAX, "(%s): starting link timeout", iface);
-		priv->link_timeout_id = g_timeout_add (15, link_timeout_cb, self);
+		priv->link_timeout_id = g_timeout_add_seconds (15, link_timeout_cb, self);
 		break;
 	case WIMAX_API_MEDIA_STATUS_LINK_RENEW:
 		nm_log_dbg (LOGD_WIMAX, "(%s): renewing DHCP lease", iface);
@@ -1130,18 +1136,22 @@ wmx_removed_cb (struct wmxsdk *wmxsdk, void *user_data)
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (user_data);
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
 
-	if (priv->sdk) {
-		/* Clear callbacks just in case we don't hold the last reference */
-		iwmx_sdk_set_callbacks (priv->sdk, NULL, NULL, NULL, NULL, NULL, NULL);
-
-		wmxsdk_unref (priv->sdk);
-		priv->sdk = NULL;
-
-		priv->status = WIMAX_API_DEVICE_STATUS_UnInitialized;
-		nm_device_state_changed (NM_DEVICE (self),
-								 NM_DEVICE_STATE_UNAVAILABLE,
-								 NM_DEVICE_STATE_REASON_NONE);
+	if (!priv->sdk) {
+		nm_log_dbg (LOGD_WIMAX, "(%s): removed unhandled WiMAX interface", wmxsdk->ifname);
+		return;
 	}
+
+	nm_log_dbg (LOGD_WIMAX, "(%s): removed WiMAX interface", wmxsdk->ifname);
+
+	/* Clear callbacks just in case we don't hold the last reference */
+	iwmx_sdk_set_callbacks (priv->sdk, NULL, NULL, NULL, NULL, NULL, NULL);
+	wmxsdk_unref (priv->sdk);
+	priv->sdk = NULL;
+
+	priv->status = WIMAX_API_DEVICE_STATUS_UnInitialized;
+	nm_device_state_changed (NM_DEVICE (self),
+							 NM_DEVICE_STATE_UNAVAILABLE,
+							 NM_DEVICE_STATE_REASON_NONE);
 }
 
 /*************************************************************************/
@@ -1277,6 +1287,9 @@ device_state_changed (NMDevice *device,
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (device);
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
 
+	/* Reset our stage1 (Prepare) done marker since it's only valid while in stage1 */
+	priv->prepare_done = FALSE;
+
 	if (new_state < NM_DEVICE_STATE_DISCONNECTED)
 		remove_all_nsps (self);
 
@@ -1323,21 +1336,27 @@ wmx_new_sdk_cb (struct wmxsdk *sdk, void *user_data)
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (user_data);
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
 
-	/* If we now have the SDK, schedule an idle handler to start the device up */
-	if (!priv->sdk) {
-		priv->sdk = wmxsdk_ref (sdk);
-		iwmx_sdk_set_callbacks(priv->sdk,
-		                       wmx_state_change_cb,
-		                       wmx_media_status_cb,
-		                       wmx_connect_result_cb,
-		                       wmx_scan_result_cb,
-		                       wmx_removed_cb,
-		                       self);
-		iwmx_sdk_set_fast_reconnect_enabled (priv->sdk, 0);
-
-		if (!priv->sdk_action_defer_id)
-			priv->sdk_action_defer_id = g_idle_add (sdk_action_defer_cb, self);
+	/* We only track one wmxsdk at a time because the WiMAX SDK is pretty stupid */
+	if (priv->sdk) {
+		nm_log_dbg (LOGD_WIMAX, "(%s): WiMAX interface already known", sdk->ifname);
+		return;
 	}
+
+	nm_log_dbg (LOGD_WIMAX, "(%s): new WiMAX interface (%s)", sdk->ifname, sdk->name);
+
+	/* Now that we have an SDK, schedule an idle handler to start the device up */
+	priv->sdk = wmxsdk_ref (sdk);
+	iwmx_sdk_set_callbacks(priv->sdk,
+	                       wmx_state_change_cb,
+	                       wmx_media_status_cb,
+	                       wmx_connect_result_cb,
+	                       wmx_scan_result_cb,
+	                       wmx_removed_cb,
+	                       self);
+	iwmx_sdk_set_fast_reconnect_enabled (priv->sdk, 0);
+
+	if (!priv->sdk_action_defer_id)
+		priv->sdk_action_defer_id = g_idle_add (sdk_action_defer_cb, self);
 }
 
 /*************************************************************************/

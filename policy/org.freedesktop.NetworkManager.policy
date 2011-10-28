@@ -146,6 +146,7 @@
     <description xml:lang="es">Activar o desactivar los dispositivos inalámbricos</description>
     <description xml:lang="gl">Activar ou desactivar os dispositivos WiFi</description>
     <description xml:lang="hi">WiFi युक्तियाँ सक्रिय या निष्क्रिय करें</description>
+    <description xml:lang="hr">Omogućuje ili onemogućuje WiFi uređaje</description>
     <description xml:lang="hu">WiFi eszközök be- és kikapcsolása</description>
     <description xml:lang="id">Aktifkan atau matikan perangkat WiFi</description>
     <description xml:lang="kn">WiFi ಸಾಧನಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
@@ -209,6 +210,7 @@
     <description xml:lang="es">Activar o desactivar los dispositivos de banda ancha móvil</description>
     <description xml:lang="gl">Activar ou desactivar os dispositivos de banda ancha móbiles</description>
     <description xml:lang="hi">मोबाइल ब्राडबैंड युक्तियाँ सक्रिय या निष्क्रिय करें</description>
+    <description xml:lang="hr">Omogućuje ili onemogućuje mobilne širokopojasne uređaje</description>
     <description xml:lang="hu">Mobil széles sávú eszközök be- és kikapcsolása</description>
     <description xml:lang="id">Aktifkan atau matikan perangkat broadband bergerak</description>
     <description xml:lang="kn">ಮೊಬೈಲ್ ಬ್ರಾಡ್‌ಬ್ಯಾಂಡ್ ಸಾಧನಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
@@ -267,12 +269,15 @@
     <description xml:lang="de">Mobile WiMAX-Breitbandgeräte aktivieren oder deaktivieren</description>
     <description xml:lang="eo">Enŝalti aŭ elŝalti WiMAX-larĝkapacitajn aparatojn</description>
     <description xml:lang="es">Activar o desactivar los dispositivos de banda ancha móvil WiMAX</description>
+    <description xml:lang="gl">Activar ou desactivar os dispositivos de banda larga móbil WIMAX</description>
+    <description xml:lang="hr">Omogućuje ili onemogućuje WiMAX mobilne širokopojasne uređaje</description>
     <description xml:lang="hu">WiMAX mobil széles sávú eszközök be- és kikapcsolása</description>
     <description xml:lang="id">Aktifkan atau matikan perangkat broadband bergerak WiMAX</description>
     <description xml:lang="ko">와이맥스 모바일 광대역 장치 사용 여부</description>
     <description xml:lang="mr">WiMAX मोबाईल ब्रॉडबँड साधने सुरू किंवा बंद करा</description>
     <description xml:lang="pl">Włączenie lub wyłączenie urządzeń komórkowych WiMAX</description>
     <description xml:lang="ru">Включить или выключить устройства мобильных сетей WiMax</description>
+    <description xml:lang="sl">Omogoči ali onemogoči mobilne širokopasovne naprave WiMAX</description>
     <description xml:lang="uk">Увімкнути або вимкнути пристрої широкосмугових мобільних мереж WiMAX</description>
     <message>System policy prevents enabling or disabling WiMAX mobile broadband devices</message>
     <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за мобилни мрежи по WiMAX</message>
@@ -280,12 +285,14 @@
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung mobiler WiMAX-Breitbandgeräte</message>
     <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ elŝalton de larĝkapacitaj WiMAX-aparatoj</message>
     <message xml:lang="es">La política del sistema evita activar o desactivar los dispositivos de banda ancha móvil WiMAX</message>
+    <message xml:lang="gl">A normativa do sistema evita activar ou desactivar os dispositivos de banda larga móbil WIMAX.</message>
     <message xml:lang="hu">A rendszer házirendje megakadályozza a WiMAX mobil széles sávú eszközök be- vagy kikapcsolását</message>
     <message xml:lang="id">Kebijakan sistem mencegah mengaktifkan atau mematikan perangkat broadband bergerak WiMAX</message>
     <message xml:lang="ko">시스템 정책이 와이맥스 모바일 광대역 장치의 사용 여부 설정을 금지합니다</message>
     <message xml:lang="mr">प्रणाली करार WiMAX मोबाईल ब्रॉडबँड साधनांना सुरू किंवा बंद होण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje włączenie lub wyłączenie urządzeń komórkowych WiMAX</message>
     <message xml:lang="ru">Системная политика запрещает включение или выключение устройств мобильной связи WiMAX</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo omogočanje ali onemogočanje mobilnih širokopasovnih naprav WiMAX</message>
     <message xml:lang="uk">Правила системи забороняють вмикання або вимикання пристроїв широкосмугових мобільних мереж WiMAX</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
@@ -305,6 +312,7 @@
     <description xml:lang="es">Permitir controlar las conexiones de red</description>
     <description xml:lang="gl">Permitir o control das conexións de rede</description>
     <description xml:lang="hi">संजाल कनेक्शन के नियंत्रण स्वीकार करें</description>
+    <description xml:lang="hr">Dozvoli upravljanje mrežnim vezama</description>
     <description xml:lang="hu">Hálózati kapcsolatok felügyeletének engedélyezése</description>
     <description xml:lang="id">Ijinkan pengendalian sambungan jaringan</description>
     <description xml:lang="kn">ಜಾಲಬಂಧ ಸಂಪರ್ಕಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದನ್ನು ಅನುಮತಿಸಿ</description>
@@ -370,10 +378,12 @@
     <description xml:lang="eo">Kundivido de konektoj per protektita WiFi-reto</description>
     <description xml:lang="es">Compartir conexión a través de una red WIFI protegida</description>
     <description xml:lang="eu">Konexio partekatua babestutako haririk gabeko sarearen bidez</description>
+    <description xml:lang="fi">Yhteyden jakaminen suojatun langattoman verkon kautta</description>
     <description xml:lang="fr">Partage de connexion via un réseau WiFi protégé</description>
     <description xml:lang="gl">Conexión compartida a través dunha rede WiFi protexida</description>
     <description xml:lang="gu">સુરક્ષિત થયેલ WiFi નેટવર્ક મારફતે જોડાણ વહેંચણી</description>
     <description xml:lang="hi">किसी संरक्षित WiFi संजाल के द्वारा कनेक्शन साझा</description>
+    <description xml:lang="hr">Dijeljenje veze korištenjem zaštićene WiFi mreže</description>
     <description xml:lang="hu">Kapcsolatmegosztás védett WiFi hálózaton</description>
     <description xml:lang="id">Berbagi koneksi melalui jaringan WiFi terlindung.</description>
     <description xml:lang="it">Condivide connessione attraverso una rete WiFi protetta</description>
@@ -410,6 +420,7 @@
     <message xml:lang="eo">Sistempolitiko preventas kundividon de konektoj per protektita WiFi-reto</message>
     <message xml:lang="es">La política del sistema evita compartir conexiones a través de una red WiFi protegida</message>
     <message xml:lang="eu">Sistemako arauek babestutako haririk gabeko sareen bidez konexioak partekatzea saihesten dute</message>
+    <message xml:lang="fi">Tietoturvakäytäntö estää yhteyksien jakamisen suojatun langattoman verkon kautta</message>
     <message xml:lang="fr">La stratégie du système empêche tout partage des connexions via un réseau WiFi protégé</message>
     <message xml:lang="gl">A política do sistema impide compartir conexións a través dunha rede WiFi protexida</message>
     <message xml:lang="gu">સિસ્ટમ પોલિસી એ સુરક્ષિત થયેલ WiFi નેટવર્ક મારફતે વહેંચણી જોડાણોને રોકી રહ્યા છે</message>
@@ -457,10 +468,12 @@
     <description xml:lang="eo">Kundivido de konektoj per malferma WiFi-reto</description>
     <description xml:lang="es">Compartir conexión a través de una red WIFI abierta</description>
     <description xml:lang="eu">Konexio partekatua irekitako haririk gabeko sarearen bidez</description>
+    <description xml:lang="fi">Yhteyden jakaminen avoimen langattoman verkon kautta</description>
     <description xml:lang="fr">Partage de connexion via un réseau WiFi ouvert</description>
     <description xml:lang="gl">Conexión compartida a través dunha rede WiFi aberta</description>
     <description xml:lang="gu">ખુલ્લા WiFi નેટવર્ક મારફતે જોડાણ વહેંચણી</description>
     <description xml:lang="hi">किसी खुले WiFi संजाल के द्वारा कनेक्शन साझा</description>
+    <description xml:lang="hr">Dijeljenje veze korištenjem otvorene WiFi mreže</description>
     <description xml:lang="hu">Kapcsolatmegosztás nyílt WiFi hálózaton</description>
     <description xml:lang="id">Berbagi koneksi melalui jaringan WiFi terbuka</description>
     <description xml:lang="it">Condivide connessione attraverso una rete WiFi aperta</description>
@@ -497,6 +510,7 @@
     <message xml:lang="eo">Sistempolitiko preventas kundividon de konektoj per malferma WiFi-reto</message>
     <message xml:lang="es">La política del sistema evita compartir conexiones a través de una red WiFi abierta</message>
     <message xml:lang="eu">Sistemako arauek irakitako haririk gabeko sareen bidez konexioak partekatzea saihesten dute</message>
+    <message xml:lang="fi">Tietoturvakäytäntö estää yhteyksien jakamisen avoimen langattoman verkon kautta</message>
     <message xml:lang="fr">La stratégie du système empêche tout partage des connexions via un réseau WiFi ouvert</message>
     <message xml:lang="gl">A política do sistema impide compartir conexións a través dunha rede WiFi aberta</message>
     <message xml:lang="gu">સિસ્ટમ પોલિસી એ ખુલ્લા WiFi નેટવર્ક મારફતે વહેંચણી જોડાણોને રોકી રહ્યા છે</message>
@@ -535,23 +549,27 @@
     <description xml:lang="de">Eigene Netzwerkverbindungen bearbeiten</description>
     <description xml:lang="eo">Modifi proprajn retkonektojn</description>
     <description xml:lang="es">Modificar las conexiones de red personales</description>
+    <description xml:lang="gl">Modificar as conexións de rede persoais</description>
     <description xml:lang="hu">Személyes hálózati kapcsolatok módosítása</description>
     <description xml:lang="id">Ubah koneksi jaringan personal</description>
     <description xml:lang="ko">개인 네트워크 연결을 수정합니다</description>
     <description xml:lang="mr">वैयक्तिक नेटवर्क जोडणी संपादित करा</description>
     <description xml:lang="pl">Modyfikacja osobistych połączeń sieciowych</description>
     <description xml:lang="ru">Редактировать личные настройки подключения</description>
+    <description xml:lang="sl">Spremeni osebne omrežne povezave</description>
     <description xml:lang="uk">Змінити параметри особистих з’єднань з мережею</description>
     <message>System policy prevents modification of personal network settings</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten von eigenen Netzwerkeinstellungen</message>
     <message xml:lang="eo">Sistempolitiko preventas modifadon de propraj retagordoj</message>
     <message xml:lang="es">La política del sistema evita la modificación de la configuración personal de la red</message>
+    <message xml:lang="gl">A política do sistema impide a modificación da configuración persoal da rede</message>
     <message xml:lang="hu">A rendszer házirendje megakadályozza a személyes hálózati beállítások módosítását</message>
     <message xml:lang="id">Kebijakan sistem mencegah pengubahan tatanan jaringan pribadi</message>
     <message xml:lang="ko">시스템 정책이 개인 네트워크 설정의 수정을 금지합니다</message>
     <message xml:lang="mr">प्रणाली करार, व्यक्तिगत नेटवर्क सेटिंग्स् संपादीत करण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje modyfikację osobistych ustawień systemowych</message>
     <message xml:lang="ru">Системная политика запрещает изменение персональных настроек сети</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo spreminjanje osebnih omrežnih nastavitev</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до особистих параметрів мережі</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
@@ -564,23 +582,27 @@
     <description xml:lang="de">Netzwerkverbindungen für alle Benutzer bearbeiten</description>
     <description xml:lang="eo">Modifi retkonektojn por ĉiuj uzantoj</description>
     <description xml:lang="es">Modificar las conexiones de red para todos los usuarios</description>
+    <description xml:lang="gl">Modificar as conexións de rede para tódolos usuarios</description>
     <description xml:lang="hu">Hálózati kapcsolatok módosítása minden felhasználó számára</description>
     <description xml:lang="id">Ubah koneksi jaringan bagi semua pengguna</description>
     <description xml:lang="ko">모든 사용자의 네트워크 연결을 수정합니다</description>
     <description xml:lang="mr">सर्व वापरकर्त्यांकरीता नेटवर्क जोडणी संपादित करा</description>
     <description xml:lang="pl">Modyfikacja połączeń sieciowych dla wszystkich użytkowników</description>
     <description xml:lang="ru">Изменить подключения доступные всем пользователям</description>
+    <description xml:lang="sl">Spremeni omrežne povezave za vse uporabnike</description>
     <description xml:lang="uk">Внести зміни до мережевих з’єднань всіх користувачів</description>
     <message>System policy prevents modification of network settings for all users</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten von Netzwerkeinstellungen für alle Benutzer</message>
     <message xml:lang="eo">Sistempolitiko preventas modifadon de retagordoj por ĉiuj uzantoj</message>
     <message xml:lang="es">La política del sistema evita la modificación de la configuración de la red para todos los usuarios</message>
+    <message xml:lang="gl">A política do sistema impide a modificación da configuración da rede para tódolos usuarios</message>
     <message xml:lang="hu">A rendszer házirendje megakadályozza a hálózati beállítások módosítását minden felhasználó számára</message>
     <message xml:lang="id">Kebijakan sistem mencegah pengubahan tatanan sistem bagi semua pengguna</message>
     <message xml:lang="ko">시스템 정책이 모든 사용자의 네트워크 설정의 수정을 금지합니다</message>
     <message xml:lang="mr">प्रणाली करार सर्व वापरकर्त्यांना नेटवर्क सेटिंग्स् संपादीत करण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje modyfikację ustawień sieciowych dla wszystkich użytkowników</message>
     <message xml:lang="ru">Системная политика запрещает изменение настроек для всех пользователей</message>
+    <message xml:lang="sl">Sistemska določila preprečujejo spreminjanje sistemskih nastavitev za vse uporabnike</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до параметрів мережі для всіх користувачів</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
@@ -602,6 +624,7 @@
     <description xml:lang="eo">Modifi permanentan sisteman gastigan nomon</description>
     <description xml:lang="es">Modificar nombre de host de sistema persistente</description>
     <description xml:lang="eu">Aldatu sistemako ostalari-izen iraunkorra</description>
+    <description xml:lang="fi">Muuta järjestelmän verkkonimeä</description>
     <description xml:lang="fr">Modifier le nom d'hôte du système persistant</description>
     <description xml:lang="gl">Modificar o nome persistente do anfitrión do sistema</description>
     <description xml:lang="gu">નિરંતર સિસ્ટમ યજમાનનામને બદલો</description>
@@ -642,6 +665,7 @@
     <message xml:lang="eo">Sistempolitiko preventas modifadon de la konstanta sistem-gastnomo</message>
     <message xml:lang="es">La política del sistema evita la modificación del nombre persistente del sistema</message>
     <message xml:lang="eu">Sistemako arauek sistemako ostalari-izen iraunkorra aldatzea saihesten dute</message>
+    <message xml:lang="fi">Tietoturvakäytäntö estää tietokoneen nimen muuttamisen</message>
     <message xml:lang="fr">La stratégie du système empêche toute modification du nom d'hôte du système persistant</message>
     <message xml:lang="gl">A política do sistema impide a modificación do nome do anfitrión do sistema</message>
     <message xml:lang="gu">સિસ્ટમ પોલિસી એ નિરંતર સિસ્ટમ યજમાનનામનાં બદલાવને અટકાવે છે</message>
