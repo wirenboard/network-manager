@@ -127,7 +127,7 @@ enum {
 
 enum {
 	SECRETS_UPDATED,
-
+	SECRETS_CLEARED,
 	LAST_SIGNAL
 };
 
@@ -950,12 +950,6 @@ nm_connection_need_secrets (NMConnection *connection,
 	return name;
 }
 
-static void
-clear_setting_secrets (gpointer key, gpointer data, gpointer user_data)
-{
-	nm_setting_clear_secrets (NM_SETTING (data));
-}
-
 /**
  * nm_connection_clear_secrets:
  * @connection: the #NMConnection
@@ -966,12 +960,42 @@ clear_setting_secrets (gpointer key, gpointer data, gpointer user_data)
 void
 nm_connection_clear_secrets (NMConnection *connection)
 {
-	NMConnectionPrivate *priv;
+	GHashTableIter iter;
+	NMSetting *setting;
 
 	g_return_if_fail (NM_IS_CONNECTION (connection));
 
-	priv = NM_CONNECTION_GET_PRIVATE (connection);
-	g_hash_table_foreach (priv->settings, clear_setting_secrets, NULL);
+	g_hash_table_iter_init (&iter, NM_CONNECTION_GET_PRIVATE (connection)->settings);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &setting))
+		nm_setting_clear_secrets (setting);
+
+	g_signal_emit (connection, signals[SECRETS_CLEARED], 0);
+}
+
+/**
+ * nm_connection_clear_secrets_with_flags:
+ * @connection: the #NMConnection
+ * @func: (scope call): function to be called to determine whether a
+ *     specific secret should be cleared or not
+ * @user_data: caller-supplied data passed to @func
+ *
+ * Clears and frees secrets determined by @func.
+ **/
+void
+nm_connection_clear_secrets_with_flags (NMConnection *connection,
+                                        NMSettingClearSecretsWithFlagsFn func,
+                                        gpointer user_data)
+{
+	GHashTableIter iter;
+	NMSetting *setting;
+
+	g_return_if_fail (NM_IS_CONNECTION (connection));
+
+	g_hash_table_iter_init (&iter, NM_CONNECTION_GET_PRIVATE (connection)->settings);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &setting))
+		nm_setting_clear_secrets_with_flags (setting, func, user_data);
+
+	g_signal_emit (connection, signals[SECRETS_CLEARED], 0);
 }
 
 /**
@@ -1024,6 +1048,37 @@ nm_connection_to_hash (NMConnection *connection, NMSettingHashFlags flags)
 	}
 
 	return ret;
+}
+
+/**
+ * nm_connection_is_type:
+ * @connection: the #NMConnection
+ * @type: a setting name to check the connection's type against (like 
+ * %NM_SETTING_WIRELESS_SETTING_NAME or %NM_SETTING_WIRED_SETTING_NAME)
+ *
+ * A convenience function to check if the given @connection is a particular
+ * type (ie wired, wifi, ppp, etc). Checks the #NMSettingConnection:type
+ * property of the connection and matches that against @type.
+ *
+ * Returns: %TRUE if the connection is of the given @type, %FALSE if not
+ **/
+gboolean
+nm_connection_is_type (NMConnection *connection, const char *type)
+{
+	NMSettingConnection *s_con;
+	const char *type2;
+
+	g_return_val_if_fail (connection != NULL, FALSE);
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), FALSE);
+	g_return_val_if_fail (type != NULL, FALSE);
+
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+
+	type2 = nm_setting_connection_get_connection_type (s_con);
+	g_assert (type2);
+
+	return !strcmp (type2, type);
 }
 
 /**
@@ -1609,5 +1664,20 @@ nm_connection_class_init (NMConnectionClass *klass)
 					  g_cclosure_marshal_VOID__STRING,
 					  G_TYPE_NONE, 1,
 					  G_TYPE_STRING);
+
+	/**
+	* NMConnection::secrets-cleared:
+	* @connection: the object on which the signal is emitted
+	*
+	* The ::secrets-cleared signal is emitted when the secrets of a connection
+	* are cleared.
+	*/
+	signals[SECRETS_CLEARED] =
+		g_signal_new ("secrets-cleared",
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL,
+		              g_cclosure_marshal_VOID__VOID,
+		              G_TYPE_NONE, 0);
 }
 

@@ -8,6 +8,8 @@ KEYFILES = \
 	ATT_Data_Connect_Plain \
 	Test_String_SSID \
 	Test_Intlist_SSID \
+	Test_Intlike_SSID \
+	Test_Intlike_SSID_2 \
 	Test_Wired_TLS_Old \
 	Test_Wired_TLS_New \
 	Test_Wired_TLS_Blob \

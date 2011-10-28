@@ -3,9 +3,10 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
-m4_define([nm_micro_version], [0])
+m4_define([nm_micro_version], [1])
+m4_define([nm_nano_version],  [95])
 m4_define([nm_version],
-          [nm_major_version.nm_minor_version.nm_micro_version])
+          [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
 
 AC_INIT([NetworkManager], [nm_version],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=NetworkManager],
@@ -312,10 +313,44 @@ else
 fi
 AC_DEFINE_UNQUOTED(NO_CONSOLEKIT, $no_ck, [Define to disable use of ConsoleKit])
 
-PKG_CHECK_MODULES(LIBNL, libnl-1 >= 1.0-pre8)
+have_libnl="no"
+PKG_CHECK_MODULES(LIBNL3, libnl-3.0, [have_libnl3=yes], [have_libnl3=no])
+PKG_CHECK_MODULES(LIBNL_ROUTE3, libnl-route-3.0, [have_libnl_route3=yes], [have_libnl_route3=no])
+if (test "${have_libnl3}" = "yes" -a "${have_libnl_route3}" = "yes"); then
+	AC_DEFINE(HAVE_LIBNL3, 1, [Define if you require specific libnl-3 support])
+	LIBNL_CFLAGS="$LIBNL3_CFLAGS $LIBNL_ROUTE3_CFLAGS"
+	LIBNL_LIBS="$LIBNL3_LIBS $LIBNL_ROUTE3_LIBS"
+	libnl_version="3"
+	have_libnl="yes"
+else
+	PKG_CHECK_MODULES(LIBNL2, libnl-2.0, [have_libnl2=yes], [have_libnl2=no])
+	if (test "${have_libnl2}" = "yes"); then
+		AC_DEFINE(HAVE_LIBNL2, 1, [Define if you require specific libnl-2 support])
+		LIBNL_CFLAGS="$LIBNL2_CFLAGS"
+		LIBNL_LIBS="$LIBNL2_LIBS"
+		libnl_version="2"
+		have_libnl="yes"
+	else
+		PKG_CHECK_MODULES(LIBNL1, libnl-1 >= 1.0-pre8, [have_libnl1=yes], [have_libnl1=no])
+		if (test "${have_libnl1}" = "yes"); then
+			AC_DEFINE(HAVE_LIBNL1, 1, [Define if you require libnl-1 legacy support])
+			LIBNL_CFLAGS="$LIBNL1_CFLAGS"
+			LIBNL_LIBS="$LIBNL1_LIBS"
+			libnl_version="1"
+			have_libnl="yes"
+		fi
+	fi
+fi
+
+if (test "${have_libnl}" = "no"); then
+	AC_MSG_ERROR([libnl development header are required])
+fi
 AC_SUBST(LIBNL_CFLAGS)
 AC_SUBST(LIBNL_LIBS)
-NM_LIBNL_CHECK
+
+if (test "${libnl_version}" = "1"); then
+	NM_LIBNL_CHECK
+fi
 
 PKG_CHECK_MODULES(UUID, uuid)
 AC_SUBST(UUID_CFLAGS)
@@ -576,6 +611,13 @@ fi
 AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path of the kernel firmware directory])
 AC_SUBST(KERNEL_FIRMWARE_DIR)
 
+AC_ARG_ENABLE(crashtrace,
+              AS_HELP_STRING([--disable-crashtrace], [Disable GNU backtrace extensions]),
+              [enable_crashtrace=${enableval}], [enable_crashtrace=yes])
+if test x"$enable_crashtrace" = xyes; then
+  AC_DEFINE(ENABLE_CRASHTRACE, 1, [Define if you have GNU backtrace extensions])
+fi
+
 NM_COMPILER_WARNINGS
 
 GTK_DOC_CHECK(1.0)
@@ -737,6 +779,8 @@ if test "${enable_ppp}" = "yes"; then
 else
 	echo PPP support: no
 fi
+
+echo libnl version: ${libnl_version}
 
 echo
 echo Building documentation: ${with_docs}

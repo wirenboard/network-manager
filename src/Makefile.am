@@ -142,6 +142,8 @@ NetworkManager_SOURCES = \
 		nm-ip6-config.h \
 		nm-active-connection.h \
 		nm-active-connection.c \
+		nm-config.h \
+		nm-config.c \
 		main.c \
 		nm-policy.c \
 		nm-policy.h \
@@ -159,6 +161,10 @@ NetworkManager_SOURCES = \
 		nm-manager-auth.h \
 		nm-netlink-monitor.c \
 		nm-netlink-monitor.h \
+		nm-netlink-utils.c \
+		nm-netlink-utils.h \
+		nm-netlink-compat.h \
+		nm-netlink-compat.c \
 		nm-activation-request.c \
 		nm-activation-request.h \
 		nm-properties-changed-signal.c \

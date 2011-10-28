@@ -24,7 +24,6 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <time.h>
 #include "NetworkManager.h"
 #include "nm-connection.h"
 
@@ -64,9 +63,6 @@ NMAccessPoint * nm_ap_new_fake_from_connection (NMConnection *connection);
 void            nm_ap_export_to_dbus    (NMAccessPoint *ap);
 
 const char *		nm_ap_get_dbus_path (NMAccessPoint *ap);
-const GTimeVal *	nm_ap_get_timestamp				(const NMAccessPoint *ap);
-void				nm_ap_set_timestamp				(NMAccessPoint *ap, glong sec, glong usec);
-void				nm_ap_set_timestamp_via_timestamp	(NMAccessPoint *ap, const GTimeVal *timestamp);
 
 const GByteArray *	nm_ap_get_ssid (const NMAccessPoint * ap);
 void				nm_ap_set_ssid (NMAccessPoint * ap, const GByteArray * ssid);
@@ -104,9 +100,6 @@ void				nm_ap_set_broadcast		(NMAccessPoint *ap, gboolean broadcast);
 glong			nm_ap_get_last_seen		(const NMAccessPoint *ap);
 void				nm_ap_set_last_seen		(NMAccessPoint *ap, const glong last_seen);
 
-GSList *			nm_ap_get_user_addresses	(const NMAccessPoint *ap);
-void				nm_ap_set_user_addresses (NMAccessPoint *ap, GSList *list);
-
 gboolean			nm_ap_check_compatible (NMAccessPoint *self,
                                             NMConnection *connection);
 
@@ -119,6 +112,6 @@ NMAccessPoint *     nm_ap_match_in_list (NMAccessPoint *find_ap,
                                          GSList *ap_list,
                                          gboolean strict_match);
 
-void				nm_ap_print_self (NMAccessPoint *ap, const char * prefix);
+void				nm_ap_dump (NMAccessPoint *ap, const char *prefix);
 
 #endif /* NM_ACCESS_POINT_H */

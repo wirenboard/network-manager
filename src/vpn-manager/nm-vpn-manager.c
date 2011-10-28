@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2005 - 2010 Red Hat, Inc.
+ * Copyright (C) 2005 - 2011 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
@@ -162,6 +162,7 @@ NMVPNConnection *
 nm_vpn_manager_activate_connection (NMVPNManager *manager,
                                     NMConnection *connection,
                                     NMDevice *device,
+                                    const char *specific_object,
                                     gboolean user_requested,
                                     gulong user_uid,
                                     GError **error)
@@ -209,7 +210,7 @@ nm_vpn_manager_activate_connection (NMVPNManager *manager,
 		return NULL;
 	}
 
-	vpn = nm_vpn_service_activate (service, connection, device, user_requested, user_uid, error);
+	vpn = nm_vpn_service_activate (service, connection, device, specific_object, user_requested, user_uid, error);
 	if (vpn) {
 		g_signal_connect (vpn, "vpn-state-changed",
 		                  G_CALLBACK (connection_vpn_state_changed),
@@ -306,9 +307,9 @@ nm_vpn_manager_get_active_connections (NMVPNManager *self)
 	return list;
 }
 
-NMConnection *
-nm_vpn_manager_get_connection_for_active (NMVPNManager *manager,
-                                          const char *active_path)
+NMVPNConnection *
+nm_vpn_manager_get_vpn_connection_for_active (NMVPNManager *manager,
+                                              const char *active_path)
 {
 	NMVPNManagerPrivate *priv;
 	GHashTableIter iter;
@@ -327,11 +328,22 @@ nm_vpn_manager_get_connection_for_active (NMVPNManager *manager,
 
 			ac_path = nm_vpn_connection_get_active_connection_path (vpn);
 			if (ac_path && !strcmp (ac_path, active_path))
-				return nm_vpn_connection_get_connection (vpn);
+				return vpn;
 		}
 	}
 
 	return NULL;
+}
+
+NMConnection *
+nm_vpn_manager_get_connection_for_active (NMVPNManager *manager,
+                                          const char *active_path)
+{
+	NMVPNConnection *vpn_con;
+
+	vpn_con = nm_vpn_manager_get_vpn_connection_for_active (manager, active_path);
+
+	return vpn_con ? nm_vpn_connection_get_connection (vpn_con) : NULL;
 }
 
 static char *

@@ -1133,7 +1133,7 @@ out:
 static gboolean
 real_hw_is_up (NMDevice *device)
 {
-	return nm_system_device_is_up (device);
+	return nm_system_iface_is_up (nm_device_get_ip_ifindex (device));
 }
 
 static gboolean
@@ -1142,13 +1142,13 @@ real_hw_bring_up (NMDevice *device, gboolean *no_firmware)
 	if (!NM_DEVICE_WIFI_GET_PRIVATE (device)->enabled)
 		return FALSE;
 
-	return nm_system_device_set_up_down (device, TRUE, no_firmware);
+	return nm_system_iface_set_up (nm_device_get_ip_ifindex (device), TRUE, no_firmware);
 }
 
 static void
-real_hw_take_down (NMDevice *dev)
+real_hw_take_down (NMDevice *device)
 {
-	nm_system_device_set_up_down (dev, FALSE, NULL);
+	nm_system_iface_set_up (nm_device_get_ip_ifindex (device), FALSE, NULL);
 }
 
 static gboolean
@@ -1209,7 +1209,7 @@ _set_hw_addr (NMDeviceWifi *self, const guint8 *addr, const char *detail)
 	/* Can't change MAC address while device is up */
 	real_hw_take_down (dev);
 
-	success = nm_system_device_set_mac (iface, (struct ether_addr *) addr);
+	success = nm_system_iface_set_mac (nm_device_get_ip_ifindex (dev), (struct ether_addr *) addr);
 	if (success) {
 		/* MAC address succesfully changed; update the current MAC to match */
 		_update_hw_addr (self, addr);
@@ -1690,7 +1690,7 @@ nm_device_wifi_get_address (NMDeviceWifi *self,
 }
 
 static void
-nm_device_wifi_ap_list_print (NMDeviceWifi *self)
+ap_list_dump (NMDeviceWifi *self)
 {
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	GSList * elt;
@@ -1701,7 +1701,7 @@ nm_device_wifi_ap_list_print (NMDeviceWifi *self)
 	nm_log_dbg (LOGD_WIFI_SCAN, "Current AP list:");
 	for (elt = priv->ap_list; elt; elt = g_slist_next (elt), i++) {
 		NMAccessPoint * ap = NM_AP (elt->data);
-		nm_ap_print_self (ap, "AP: ");
+		nm_ap_dump (ap, "List AP: ");
 	}
 	nm_log_dbg (LOGD_WIFI_SCAN, "Current AP list: done");
 }
@@ -2180,83 +2180,9 @@ supplicant_iface_scan_done_cb (NMSupplicantInterface *iface,
 		 * happens when there are actual scan results to process.
 		 */
 		cull_scan_list (self);
-		nm_device_wifi_ap_list_print (self);
+		ap_list_dump (self);
 	}
 #endif
-}
-
-static gboolean
-is_encrypted (guint32 flags, guint32 wpa_flags, guint32 rsn_flags)
-{
-	if (flags & NM_802_11_AP_FLAGS_PRIVACY)
-		return TRUE;
-	if (wpa_flags & (NM_802_11_AP_SEC_KEY_MGMT_PSK | NM_802_11_AP_SEC_KEY_MGMT_802_1X))
-		return TRUE;
-	if (rsn_flags & (NM_802_11_AP_SEC_KEY_MGMT_PSK | NM_802_11_AP_SEC_KEY_MGMT_802_1X))
-		return TRUE;
-
-	return FALSE;
-}
-
-/*
- * ap_auth_enforced
- *
- * Checks whether or not there is an encryption key present for
- * this connection, and whether or not the authentication method
- * in use will result in an authentication rejection if the key
- * is wrong.  For example, Ad Hoc mode networks don't have a
- * master node and therefore nothing exists to reject the station.
- * Similarly, Open System WEP access points don't reject a station
- * when the key is wrong.  Shared Key WEP access points will.
- *
- */
-static gboolean
-ap_auth_enforced (NMConnection *connection,
-                  NMAccessPoint *ap,
-                  gboolean *encrypted)
-{
-	guint32 flags, wpa_flags, rsn_flags;
-	gboolean enforced = FALSE;
-
-	g_return_val_if_fail (NM_IS_AP (ap), FALSE);
-	g_return_val_if_fail (NM_IS_CONNECTION (connection), FALSE);
-	g_return_val_if_fail (encrypted != NULL, FALSE);
-
-	flags = nm_ap_get_flags (ap);
-	wpa_flags = nm_ap_get_wpa_flags (ap);
-	rsn_flags = nm_ap_get_rsn_flags (ap);
-
-	if (nm_ap_get_mode (ap) == NM_802_11_MODE_ADHOC)
-		goto out;
-
-	/* Static WEP */
-	if (   (flags & NM_802_11_AP_FLAGS_PRIVACY)
-        && (wpa_flags == NM_802_11_AP_SEC_NONE)
-        && (rsn_flags == NM_802_11_AP_SEC_NONE)) {
-		NMSettingWirelessSecurity *s_wireless_sec;
-		const char *auth_alg;
-
-		/* No way to tell if the key is wrong with Open System
-		 * auth mode in WEP.  Auth is not enforced like Shared Key.
-		 */
-		s_wireless_sec = (NMSettingWirelessSecurity *) nm_connection_get_setting (connection, 
-																    NM_TYPE_SETTING_WIRELESS_SECURITY);
-		if (s_wireless_sec) {
-			auth_alg = nm_setting_wireless_security_get_auth_alg (s_wireless_sec);
-			if (!auth_alg || !strcmp (auth_alg, "open"))
-				goto out;
-		}
-
-		enforced = TRUE;
-	} else if (wpa_flags != NM_802_11_AP_SEC_NONE) { /* WPA */
-		enforced = TRUE;
-	} else if (rsn_flags != NM_802_11_AP_SEC_NONE) { /* WPA2 */
-		enforced = TRUE;
-	}
-
-out:
-	*encrypted = is_encrypted (flags, wpa_flags, rsn_flags);
-	return enforced;
 }
 
 
@@ -2264,6 +2190,9 @@ out:
  * WPA Supplicant control stuff
  *
  */
+
+#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
+#define MAC_ARG(x) ((guint8*)(x))[0],((guint8*)(x))[1],((guint8*)(x))[2],((guint8*)(x))[3],((guint8*)(x))[4],((guint8*)(x))[5]
 
 /*
  * merge_scanned_ap
@@ -2284,16 +2213,33 @@ merge_scanned_ap (NMDeviceWifi *self,
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	NMAccessPoint *found_ap = NULL;
 	const GByteArray *ssid;
+	const struct ether_addr *bssid;
 	gboolean strict_match = TRUE;
 	NMAccessPoint *current_ap = NULL;
 
 	/* Let the manager try to fill in the SSID from seen-bssids lists
 	 * if it can
 	 */
+	bssid = nm_ap_get_address (merge_ap);
 	ssid = nm_ap_get_ssid (merge_ap);
 	if (!ssid || nm_utils_is_empty_ssid (ssid->data, ssid->len)) {
+		/* Let the manager try to fill the AP's SSID from the database */
 		g_signal_emit (self, signals[HIDDEN_AP_FOUND], 0, merge_ap);
-		nm_ap_set_broadcast (merge_ap, FALSE);
+
+		ssid = nm_ap_get_ssid (merge_ap);
+		if (ssid && (nm_utils_is_empty_ssid (ssid->data, ssid->len) == FALSE)) {
+			/* Yay, matched it, no longer treat as hidden */
+			nm_log_dbg (LOGD_WIFI_SCAN, "(%s): matched hidden AP " MAC_FMT " => '%s'",
+			            nm_device_get_iface (NM_DEVICE (self)),
+			            MAC_ARG (bssid->ether_addr_octet),
+			            nm_utils_escape_ssid (ssid->data, ssid->len));
+			nm_ap_set_broadcast (merge_ap, FALSE);
+		} else {
+			/* Didn't have an entry for this AP in the database */
+			nm_log_dbg (LOGD_WIFI_SCAN, "(%s): failed to match hidden AP " MAC_FMT,
+			            nm_device_get_iface (NM_DEVICE (self)),
+			            MAC_ARG (bssid->ether_addr_octet));
+		}
 	}
 
 	/* If the incoming scan result matches the hidden AP that NM is currently
@@ -2308,6 +2254,13 @@ merge_scanned_ap (NMDeviceWifi *self,
 
 	found_ap = nm_ap_match_in_list (merge_ap, priv->ap_list, strict_match);
 	if (found_ap) {
+		nm_log_dbg (LOGD_WIFI_SCAN, "(%s): merging AP '%s' " MAC_FMT " (%p) with existing (%p)",
+		            nm_device_get_iface (NM_DEVICE (self)),
+		            ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(none)",
+		            MAC_ARG (bssid->ether_addr_octet),
+		            merge_ap,
+		            found_ap);
+
 		nm_ap_set_flags (found_ap, nm_ap_get_flags (merge_ap));
 		nm_ap_set_wpa_flags (found_ap, nm_ap_get_wpa_flags (merge_ap));
 		nm_ap_set_rsn_flags (found_ap, nm_ap_get_rsn_flags (merge_ap));
@@ -2323,7 +2276,12 @@ merge_scanned_ap (NMDeviceWifi *self,
 		nm_ap_set_fake (found_ap, FALSE);
 	} else {
 		/* New entry in the list */
-		// FIXME: figure out if reference counts are correct here for AP objects
+		nm_log_dbg (LOGD_WIFI_SCAN, "(%s): adding new AP '%s' " MAC_FMT " (%p)",
+		            nm_device_get_iface (NM_DEVICE (self)),
+		            ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(none)",
+		            MAC_ARG (bssid->ether_addr_octet),
+		            merge_ap);
+
 		g_object_ref (merge_ap);
 		priv->ap_list = g_slist_prepend (priv->ap_list, merge_ap);
 		nm_ap_export_to_dbus (merge_ap);
@@ -2421,7 +2379,7 @@ supplicant_iface_new_bss_cb (NMSupplicantInterface *iface,
 
 	ap = nm_ap_new_from_properties (properties);
 	if (ap) {
-		nm_ap_print_self (ap, "AP: ");
+		nm_ap_dump (ap, "New AP: ");
 
 		/* Add the AP to the device's AP list */
 		merge_scanned_ap (self, ap);
@@ -2430,7 +2388,7 @@ supplicant_iface_new_bss_cb (NMSupplicantInterface *iface,
 		/* Remove outdated access points */
 		cull_scan_list (self);
 
-		nm_device_wifi_ap_list_print (self);
+		ap_list_dump (self);
 	} else {
 		nm_log_warn (LOGD_WIFI_SCAN, "(%s): invalid AP properties received",
 		             nm_device_get_iface (NM_DEVICE (self)));
@@ -2512,7 +2470,7 @@ link_timeout_cb (gpointer user_data)
 }
 
 static gboolean
-handle_authenticate_fail (NMDeviceWifi *self, guint32 new_state, guint32 old_state)
+handle_8021x_auth_fail (NMDeviceWifi *self, guint32 new_state, guint32 old_state)
 {
 	NMDevice *device = NM_DEVICE (self);
 	NMSetting8021x *s_8021x;
@@ -2643,18 +2601,21 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 		break;
 	case NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED:
 		if ((devstate == NM_DEVICE_STATE_ACTIVATED) || nm_device_is_activating (device)) {
-			/* Disconnect during authentication means the 802.1x password is wrong */
-			if (handle_authenticate_fail (self, new_state, old_state))
+			/* Disconnect of an 802.1x/LEAP connection during authentication
+			 * means secrets might be wrong. Not always the case, but until we
+			 * have more information from wpa_supplicant about why the
+			 * disconnect happened this is the best we can do.
+			 */
+			if (handle_8021x_auth_fail (self, new_state, old_state))
 				break;
 		}
 
+		/* Otherwise it might be a stupid driver or some transient error, so
+		 * let the supplicant try to reconnect a few more times.  Give it more
+		 * time if a scan is in progress since the link might be dropped during
+		 * the scan but will be re-established when the scan is done.
+		 */
 		if (devstate == NM_DEVICE_STATE_ACTIVATED) {
-			/* If it's a disconnect while activated then start the link timer
-			 * to let the supplicant reconnect for a bit and if that doesn't
-			 * work kill the connection and try something else.  Allow a bit
-			 * more time if the card is scanning since sometimes the link will
-			 * drop while scanning and come back when the scan is done.
-			 */
 			if (priv->link_timeout_id == 0)
 				priv->link_timeout_id = g_timeout_add_seconds (scanning ? 30 : 15, link_timeout_cb, self);
 		}
@@ -2756,7 +2717,7 @@ supplicant_iface_notify_scanning_cb (NMSupplicantInterface *iface,
 	scanning = nm_supplicant_interface_get_scanning (iface);
 	nm_log_dbg (LOGD_WIFI_SCAN, "(%s): now %s",
 	            nm_device_get_iface (NM_DEVICE (self)),
-	            scanning ? "scanning" : "not scanning");
+	            scanning ? "scanning" : "idle");
 
 	g_object_notify (G_OBJECT (self), "scanning");
 }
@@ -2826,6 +2787,29 @@ handle_auth_or_fail (NMDeviceWifi *self,
 	return ret;
 }
 
+static gboolean
+is_encrypted (NMAccessPoint *ap, NMConnection *connection)
+{
+	NM80211ApFlags flags;
+	NM80211ApSecurityFlags wpa_flags, rsn_flags;
+
+	g_return_val_if_fail (ap != NULL, FALSE);
+	g_return_val_if_fail (connection != NULL, FALSE);
+
+	flags = nm_ap_get_flags (ap);
+	wpa_flags = nm_ap_get_wpa_flags (ap);
+	rsn_flags = nm_ap_get_rsn_flags (ap);
+
+	if (flags & NM_802_11_AP_FLAGS_PRIVACY)
+		return TRUE;
+	if (wpa_flags & (NM_802_11_AP_SEC_KEY_MGMT_PSK | NM_802_11_AP_SEC_KEY_MGMT_802_1X))
+		return TRUE;
+	if (rsn_flags & (NM_802_11_AP_SEC_KEY_MGMT_PSK | NM_802_11_AP_SEC_KEY_MGMT_802_1X))
+		return TRUE;
+
+	return FALSE;
+}
+
 /*
  * supplicant_connection_timeout_cb
  *
@@ -2835,11 +2819,10 @@ handle_auth_or_fail (NMDeviceWifi *self,
 static gboolean
 supplicant_connection_timeout_cb (gpointer user_data)
 {
-	NMDevice *              dev = NM_DEVICE (user_data);
-	NMDeviceWifi * self = NM_DEVICE_WIFI (user_data);
-	NMAccessPoint *         ap;
-	NMActRequest *          req;
-	gboolean                auth_enforced = FALSE, encrypted = FALSE;
+	NMDevice *dev = NM_DEVICE (user_data);
+	NMDeviceWifi *self = NM_DEVICE_WIFI (user_data);
+	NMAccessPoint *ap;
+	NMActRequest *req;
 	NMConnection *connection;
 
 	cleanup_association_attempt (self, TRUE);
@@ -2847,10 +2830,10 @@ supplicant_connection_timeout_cb (gpointer user_data)
 	if (!nm_device_is_activating (dev))
 		return FALSE;
 
-	/* Timed out waiting for authentication success; if the security in use
-	 * does not require access point side authentication (Open System
-	 * WEP, for example) then we are likely using the wrong authentication
-	 * algorithm or key.  Request new one from the user.
+	/* Timed out waiting for a successful connection to the AP; if the AP's
+	 * security requires network-side authentication (like WPA or 802.1x)
+	 * and the connection attempt timed out then it's likely the authentication
+	 * information (passwords, pin codes, etc) are wrong.
 	 */
 
 	req = nm_device_get_act_request (dev);
@@ -2862,16 +2845,24 @@ supplicant_connection_timeout_cb (gpointer user_data)
 	ap = nm_device_wifi_get_activation_ap (self);
 	g_assert (ap);
 
-	auth_enforced = ap_auth_enforced (connection, ap, &encrypted);
-	if (!encrypted) {
+	if (nm_ap_get_mode (ap) == NM_802_11_MODE_ADHOC) {
+		/* In Ad-Hoc mode there's nothing to check the encryption key (if any)
+		 * so supplicant timeouts here are almost certainly the wifi driver
+		 * being really stupid.
+		 */
 		nm_log_warn (LOGD_DEVICE | LOGD_WIFI,
-		             "Activation (%s/wireless): association took too long, "
-		             "failing activation.",
+		             "Activation (%s/wireless): Ad-Hoc network creation took "
+		             "too long, failing activation.",
 		             nm_device_get_iface (dev));
 		nm_device_state_changed (dev, NM_DEVICE_STATE_FAILED,
 		                         NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT);
-	} else {
-		/* Authentication failed, encryption key is probably bad */
+		return FALSE;
+	}
+
+	if (is_encrypted (ap, connection)) {
+		/* Connection failed; either driver problems, the encryption key is
+		 * wrong, or the passwords or certificates were wrong.
+		 */
 		nm_log_warn (LOGD_DEVICE | LOGD_WIFI,
 		             "Activation (%s/wireless): association took too long.",
 		             nm_device_get_iface (dev));
@@ -2884,6 +2875,13 @@ supplicant_connection_timeout_cb (gpointer user_data)
 			nm_device_state_changed (dev, NM_DEVICE_STATE_FAILED,
 			                         NM_DEVICE_STATE_REASON_NO_SECRETS);
 		}
+	} else {
+		nm_log_warn (LOGD_DEVICE | LOGD_WIFI,
+		             "Activation (%s/wireless): association took too long, "
+		             "failing activation.",
+		             nm_device_get_iface (dev));
+		nm_device_state_changed (dev, NM_DEVICE_STATE_FAILED,
+		                         NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT);
 	}
 
 	return FALSE;
@@ -3323,6 +3321,34 @@ real_act_stage4_get_ip4_config (NMDevice *dev,
 	return ret;
 }
 
+static gboolean
+is_static_wep (NMAccessPoint *ap, NMConnection *connection)
+{
+	NM80211ApFlags flags;
+	NM80211ApSecurityFlags wpa_flags, rsn_flags;
+	NMSettingWirelessSecurity *s_wsec;
+	const char *key_mgmt;
+
+	g_return_val_if_fail (ap != NULL, FALSE);
+	g_return_val_if_fail (connection != NULL, FALSE);
+
+	flags = nm_ap_get_flags (ap);
+	wpa_flags = nm_ap_get_wpa_flags (ap);
+	rsn_flags = nm_ap_get_rsn_flags (ap);
+
+	if (   (flags & NM_802_11_AP_FLAGS_PRIVACY)
+	    && (wpa_flags == NM_802_11_AP_SEC_NONE)
+	    && (rsn_flags == NM_802_11_AP_SEC_NONE)) {
+		s_wsec = nm_connection_get_setting_wireless_security (connection);
+		if (s_wsec) {
+			key_mgmt = nm_setting_wireless_security_get_key_mgmt (s_wsec);
+			if (g_strcmp0 (key_mgmt, "none") == 0)
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
 
 static NMActStageReturn
 handle_ip_config_timeout (NMDeviceWifi *self,
@@ -3333,20 +3359,20 @@ handle_ip_config_timeout (NMDeviceWifi *self,
 {
 	NMAccessPoint *ap;
 	NMActStageReturn ret = NM_ACT_STAGE_RETURN_FAILURE;
-	gboolean auth_enforced = FALSE, encrypted = FALSE;
 
 	g_return_val_if_fail (connection != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
 	ap = nm_device_wifi_get_activation_ap (self);
 	g_assert (ap);
 
-	/* If nothing checks the security authentication information (as in
-	 * Open System WEP for example), and DHCP times out, then
-	 * the encryption key is likely wrong.  Ask the user for a new one.
-	 * Otherwise the failure likely happened after a successful authentication.
+	/* If IP configuration times out and it's a static WEP connection, that
+	 * usually means the WEP key is wrong.  WEP's Open System auth mode has
+	 * no provision for figuring out if the WEP key is wrong, so you just have
+	 * to wait for DHCP to fail to figure it out.  For all other WiFi security
+	 * types (open, WPA, 802.1x, etc) if the secrets/certs were wrong the
+	 * connection would have failed before IP configuration.
 	 */
-	auth_enforced = ap_auth_enforced (connection, ap, &encrypted);
-	if (encrypted && !auth_enforced && !may_fail) {
+	if (is_static_wep (ap, connection) && (may_fail == FALSE)) {
 		/* Activation failed, we must have bad encryption key */
 		nm_log_warn (LOGD_DEVICE | LOGD_WIFI,
 		             "Activation (%s/wireless): could not get IP configuration for "
@@ -3363,10 +3389,7 @@ handle_ip_config_timeout (NMDeviceWifi *self,
 			*reason = NM_DEVICE_STATE_REASON_NO_SECRETS;
 		}
 	} else {
-		/* Non-encrypted network or authentication is enforced by some
-		 * entity (AP, RADIUS server, etc), but IP configure failed. Let the
-		 * superclass handle it.
-		 */
+		/* Not static WEP or failure allowed; let superclass handle it */
 		*chain_up = TRUE;
 	}
 
