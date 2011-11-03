@@ -10,6 +10,9 @@ network-manager (0.9.1.95-1) UNRELEASED; urgency=low
       any devices. (Closes: #546893, #624159, #637005, #641904)
   * debian/control: Add Build-Depends on libglib2.0-doc for proper
     cross-references in the gtk-doc API documentation.
+  * Enable default hardening options from dpkg-buildflags.
+    - Use buildflags.mk snippet in debian/rules.
+    - Add Build-Depends on dpkg-dev (>= 1.6.1).
 
  -- Michael Biebl <biebl@debian.org>  Fri, 28 Oct 2011 23:04:35 +0200
 
