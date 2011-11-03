@@ -1,0 +1,216 @@
+From 32bcbf867f219e5c13107e191a43bb3da308ba20 Mon Sep 17 00:00:00 2001
+From: Mathieu Trudel-Lapierre <mathieu.tl@gmail.com>
+Date: Wed, 2 Nov 2011 15:05:43 -0500
+Subject: [PATCH] dns: don't update routing and DNS if no devices were ever
+ managed (lp:862134)
+
+Avoids blowing away existing routes and resolv.conf if NM never
+managed any devices.
+
+dns: remove unused parameter
+
+policy: don't update DNS if the hostname hasn't actually changed
+
+This was causing spurious rewrites of resolv.conf.
+---
+ src/dns-manager/nm-dns-manager.c |   21 +++++++----
+ src/nm-policy.c                  |   66 +++++++++++++++++++++++++++-----------
+ 2 files changed, 60 insertions(+), 27 deletions(-)
+
+diff --git a/src/dns-manager/nm-dns-manager.c b/src/dns-manager/nm-dns-manager.c
+index 0203f2b..ddfd47c 100644
+--- a/src/dns-manager/nm-dns-manager.c
++++ b/src/dns-manager/nm-dns-manager.c
+@@ -1097,15 +1097,20 @@ dispose (GObject *object)
+ 		g_slist_free (priv->plugins);
+ 		priv->plugins = NULL;
+ 
+-		/* If we're quitting leave a valid resolv.conf in place, not one
+-		 * pointing to 127.0.0.1 if any plugins were active.  Thus update
+-		 * DNS after disposing of all plugins.
++		/* If last_iface is NULL, this means we haven't done a DNS update before,
++		 * so no reason to try and take down entries from resolv.conf.
+ 		 */
+-		if (!update_dns (self, priv->last_iface, TRUE, &error)) {
+-			nm_log_warn (LOGD_DNS, "could not commit DNS changes on shutdown: (%d) %s",
+-					     error ? error->code : -1,
+-					     error && error->message ? error->message : "(unknown)");
+-			g_clear_error (&error);
++		if (priv->last_iface != NULL) {
++			/* If we're quitting leave a valid resolv.conf in place, not one
++			 * pointing to 127.0.0.1 if any plugins were active.  Thus update
++			 * DNS after disposing of all plugins.
++			 */
++			if (!update_dns (self, priv->last_iface, TRUE, &error)) {
++				nm_log_warn (LOGD_DNS, "could not commit DNS changes on shutdown: (%d) %s",
++				             error ? error->code : -1,
++				             error && error->message ? error->message : "(unknown)");
++				g_clear_error (&error);
++			}
+ 		}
+ 
+ 		g_slist_foreach (priv->configs, (GFunc) g_object_unref, NULL);
+diff --git a/src/nm-policy.c b/src/nm-policy.c
+index 5c4059e..669db28 100644
+--- a/src/nm-policy.c
++++ b/src/nm-policy.c
+@@ -71,6 +71,7 @@ struct NMPolicy {
+ 
+ 	char *orig_hostname; /* hostname at NM start time */
+ 	char *cur_hostname;  /* hostname we want to assign */
++	gboolean hostname_changed;  /* TRUE if NM ever set the hostname */
+ };
+ 
+ #define RETRIES_TAG "autoconnect-retries"
+@@ -228,20 +229,38 @@ get_best_ip6_device (NMManager *manager, NMActRequest **out_req)
+ 
+ static void
+ _set_hostname (NMPolicy *policy,
+-               gboolean change_hostname,
+                const char *new_hostname,
+                const char *msg)
+ {
+-	if (change_hostname) {
+-		NMDnsManager *dns_mgr;
++	NMDnsManager *dns_mgr;
+ 
+-		g_free (policy->cur_hostname);
+-		policy->cur_hostname = g_strdup (new_hostname);
++	/* The incoming hostname *can* be NULL, which will get translated to
++	 * 'localhost.localdomain' or such in the hostname policy code, but we
++	 * keep cur_hostname = NULL in the case because we need to know that
++	 * there was no valid hostname to start with.
++	 */
+ 
+-		dns_mgr = nm_dns_manager_get (NULL);
+-		nm_dns_manager_set_hostname (dns_mgr, policy->cur_hostname);
+-		g_object_unref (dns_mgr);
+-	}
++	/* Don't change the hostname or update DNS this is the first time we're
++	 * trying to change the hostname, and it's not actually changing.
++	 */
++	if (   policy->orig_hostname
++	    && (policy->hostname_changed == FALSE)
++	    && g_strcmp0 (policy->orig_hostname, new_hostname) == 0)
++		return;
++
++	/* Don't change the hostname or update DNS if the hostname isn't actually
++	 * going to change.
++	 */
++	if (g_strcmp0 (policy->cur_hostname, new_hostname) == 0)
++		return;
++
++	g_free (policy->cur_hostname);
++	policy->cur_hostname = g_strdup (new_hostname);
++	policy->hostname_changed = TRUE;
++
++	dns_mgr = nm_dns_manager_get (NULL);
++	nm_dns_manager_set_hostname (dns_mgr, policy->cur_hostname);
++	g_object_unref (dns_mgr);
+ 
+ 	if (nm_policy_set_system_hostname (policy->cur_hostname, msg))
+ 		nm_utils_call_dispatcher ("hostname", NULL, NULL, NULL, NULL, NULL);
+@@ -262,10 +281,10 @@ lookup_callback (HostnameThread *thread,
+ 		if (!hostname) {
+ 			/* Fall back to localhost.localdomain */
+ 			msg = g_strdup_printf ("address lookup failed: %d", result);
+-			_set_hostname (policy, TRUE, NULL, msg);
++			_set_hostname (policy, NULL, msg);
+ 			g_free (msg);
+ 		} else
+-			_set_hostname (policy, TRUE, hostname, "from address lookup");
++			_set_hostname (policy, hostname, "from address lookup");
+ 	}
+ 	hostname_thread_free (thread);
+ }
+@@ -297,7 +316,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 	/* Try a persistent hostname first */
+ 	g_object_get (G_OBJECT (policy->manager), NM_MANAGER_HOSTNAME, &configured_hostname, NULL);
+ 	if (configured_hostname) {
+-		_set_hostname (policy, TRUE, configured_hostname, "from system configuration");
++		_set_hostname (policy, configured_hostname, "from system configuration");
+ 		g_free (configured_hostname);
+ 		return;
+ 	}
+@@ -312,7 +331,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 		/* No best device; fall back to original hostname or if there wasn't
+ 		 * one, 'localhost.localdomain'
+ 		 */
+-		_set_hostname (policy, TRUE, policy->orig_hostname, "no default device");
++		_set_hostname (policy, policy->orig_hostname, "no default device");
+ 		return;
+ 	}
+ 
+@@ -327,7 +346,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 				/* Sanity check; strip leading spaces */
+ 				while (*p) {
+ 					if (!isblank (*p++)) {
+-						_set_hostname (policy, TRUE, p-1, "from DHCPv4");
++						_set_hostname (policy, p-1, "from DHCPv4");
+ 						return;
+ 					}
+ 				}
+@@ -346,7 +365,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 				/* Sanity check; strip leading spaces */
+ 				while (*p) {
+ 					if (!isblank (*p++)) {
+-						_set_hostname (policy, TRUE, p-1, "from DHCPv6");
++						_set_hostname (policy, p-1, "from DHCPv6");
+ 						return;
+ 					}
+ 				}
+@@ -360,7 +379,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 	 * when NM started up.
+ 	 */
+ 	if (policy->orig_hostname) {
+-		_set_hostname (policy, TRUE, policy->orig_hostname, "from system startup");
++		_set_hostname (policy, policy->orig_hostname, "from system startup");
+ 		return;
+ 	}
+ 
+@@ -376,7 +395,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 		    || (nm_ip4_config_get_num_nameservers (ip4_config) == 0)
+ 		    || (nm_ip4_config_get_num_addresses (ip4_config) == 0)) {
+ 			/* No valid IP4 config (!!); fall back to localhost.localdomain */
+-			_set_hostname (policy, TRUE, NULL, "no IPv4 config");
++			_set_hostname (policy, NULL, "no IPv4 config");
+ 			return;
+ 		}
+ 
+@@ -394,7 +413,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 		    || (nm_ip6_config_get_num_nameservers (ip6_config) == 0)
+ 		    || (nm_ip6_config_get_num_addresses (ip6_config) == 0)) {
+ 			/* No valid IP6 config (!!); fall back to localhost.localdomain */
+-			_set_hostname (policy, TRUE, NULL, "no IPv6 config");
++			_set_hostname (policy, NULL, "no IPv6 config");
+ 			return;
+ 		}
+ 
+@@ -407,7 +426,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
+ 
+ 	if (!policy->lookup) {
+ 		/* Fall back to 'localhost.localdomain' */
+-		_set_hostname (policy, TRUE, NULL, "error starting hostname thread");
++		_set_hostname (policy, NULL, "error starting hostname thread");
+ 	}
+ }
+ 
+@@ -1023,6 +1042,15 @@ device_state_changed (NMDevice *device,
+ 		update_routing_and_dns (policy, FALSE);
+ 		break;
+ 	case NM_DEVICE_STATE_UNMANAGED:
++		if (   old_state == NM_DEVICE_STATE_UNAVAILABLE
++		    || old_state == NM_DEVICE_STATE_DISCONNECTED) {
++			/* If the device was never activated, there's no point in
++			 * updating routing or DNS.  This allows us to keep the previous
++			 * resolv.conf or routes from before NM started if no device was
++			 * ever managed by NM.
++			 */
++			break;
++		}
+ 	case NM_DEVICE_STATE_UNAVAILABLE:
+ 		update_routing_and_dns (policy, FALSE);
+ 		break;
+-- 
+1.7.7.1
+

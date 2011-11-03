@@ -1,3 +1,4 @@
 # Debian patches for network-manager
 02-dbus_access_network_manager.patch
 03-systemd.patch
+04-dont-update-routing-and-dns-for-unmanaged-devices.patch
