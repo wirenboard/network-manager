@@ -8,7 +8,7 @@
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMObject.html" title="NMObject">
 <link rel="next" href="NMRemoteSettings.html" title="NMRemoteSettings">
-<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -43,9 +43,7 @@
 </tr></table></div>
 <div class="refsynopsisdiv">
 <a name="NMRemoteConnection.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis">#define             <a class="link" href="NMRemoteConnection.html#NM-REMOTE-CONNECTION-UPDATED:CAPS" title="NM_REMOTE_CONNECTION_UPDATED">NM_REMOTE_CONNECTION_UPDATED</a>
-#define             <a class="link" href="NMRemoteConnection.html#NM-REMOTE-CONNECTION-REMOVED:CAPS" title="NM_REMOTE_CONNECTION_REMOVED">NM_REMOTE_CONNECTION_REMOVED</a>
-                    <a class="link" href="NMRemoteConnection.html#NMRemoteConnection-struct" title="NMRemoteConnection">NMRemoteConnection</a>;
+<pre class="synopsis">                    <a class="link" href="NMRemoteConnection.html#NMRemoteConnection-struct" title="NMRemoteConnection">NMRemoteConnection</a>;
                     <a class="link" href="NMRemoteConnection.html#NMRemoteConnectionClass" title="NMRemoteConnectionClass">NMRemoteConnectionClass</a>;
 <span class="returnvalue">void</span>                (<a class="link" href="NMRemoteConnection.html#NMRemoteConnectionCommitFunc" title="NMRemoteConnectionCommitFunc ()">*NMRemoteConnectionCommitFunc</a>)     (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
@@ -57,8 +55,8 @@
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *secrets</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
-<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> * <a class="link" href="NMRemoteConnection.html#nm-remote-connection-new" title="nm_remote_connection_new ()">nm_remote_connection_new</a>           (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *bus</code></em>,
-                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
+#define             <a class="link" href="NMRemoteConnection.html#NM-REMOTE-CONNECTION-REMOVED:CAPS" title="NM_REMOTE_CONNECTION_REMOVED">NM_REMOTE_CONNECTION_REMOVED</a>
+#define             <a class="link" href="NMRemoteConnection.html#NM-REMOTE-CONNECTION-UPDATED:CAPS" title="NM_REMOTE_CONNECTION_UPDATED">NM_REMOTE_CONNECTION_UPDATED</a>
 <span class="returnvalue">void</span>                <a class="link" href="NMRemoteConnection.html#nm-remote-connection-commit-changes" title="nm_remote_connection_commit_changes ()">nm_remote_connection_commit_changes</a> (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionCommitFunc" title="NMRemoteConnectionCommitFunc ()"><span class="type">NMRemoteConnectionCommitFunc</span></a> callback</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
@@ -69,6 +67,8 @@
                                                          <em class="parameter"><code>const <span class="type">char</span> *setting_name</code></em>,
                                                          <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionGetSecretsFunc" title="NMRemoteConnectionGetSecretsFunc ()"><span class="type">NMRemoteConnectionGetSecretsFunc</span></a> callback</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> * <a class="link" href="NMRemoteConnection.html#nm-remote-connection-new" title="nm_remote_connection_new ()">nm_remote_connection_new</a>           (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *bus</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
 </pre>
 </div>
 <div class="refsect1">
@@ -101,22 +101,6 @@
 </div>
 <div class="refsect1">
 <a name="NMRemoteConnection.details"></a><h2>Details</h2>
-<div class="refsect2">
-<a name="NM-REMOTE-CONNECTION-UPDATED:CAPS"></a><h3>NM_REMOTE_CONNECTION_UPDATED</h3>
-<pre class="programlisting">#define NM_REMOTE_CONNECTION_UPDATED         "updated"
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-REMOTE-CONNECTION-REMOVED:CAPS"></a><h3>NM_REMOTE_CONNECTION_REMOVED</h3>
-<pre class="programlisting">#define NM_REMOTE_CONNECTION_REMOVED         "removed"
-</pre>
-<p>
-</p>
-</div>
-<hr>
 <div class="refsect2">
 <a name="NMRemoteConnection-struct"></a><h3>NMRemoteConnection</h3>
 <pre class="programlisting">typedef struct _NMRemoteConnection NMRemoteConnection;</pre>
@@ -177,29 +161,19 @@
 </div>
 <hr>
 <div class="refsect2">
-<a name="nm-remote-connection-new"></a><h3>nm_remote_connection_new ()</h3>
-<pre class="programlisting"><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> * nm_remote_connection_new           (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *bus</code></em>,
-                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
+<a name="NM-REMOTE-CONNECTION-REMOVED:CAPS"></a><h3>NM_REMOTE_CONNECTION_REMOVED</h3>
+<pre class="programlisting">#define NM_REMOTE_CONNECTION_REMOVED         "removed"
+</pre>
 <p>
-Creates a new object representing the remote connection.
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>bus</code></em> :</span></p></td>
-<td>a valid and connected D-Bus connection</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
-<td>the D-Bus path of the connection as exported by the settings service</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the new remote connection object on success, or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure</td>
-</tr>
-</tbody>
-</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-REMOTE-CONNECTION-UPDATED:CAPS"></a><h3>NM_REMOTE_CONNECTION_UPDATED</h3>
+<pre class="programlisting">#define NM_REMOTE_CONNECTION_UPDATED         "updated"
+</pre>
+<p>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -222,7 +196,7 @@ save them in the settings service.
 <tr>
 <td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
 <td>a function to be called when the
-commit completes. <span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>][allow none]</span>
+commit completes. <span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
 </td>
 </tr>
 <tr>
@@ -295,6 +269,32 @@ must not be NULL. <span class="annotation">[<acronym title="The callback is vali
 <td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
 <td>caller-specific data to be passed to <em class="parameter"><code>callback</code></em>. <span class="annotation">[<acronym title="This parameter is a 'user_data', for callbacks; many bindings can pass NULL here."><span class="acronym">closure</span></acronym>]</span>
 </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-remote-connection-new"></a><h3>nm_remote_connection_new ()</h3>
+<pre class="programlisting"><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="returnvalue">NMRemoteConnection</span></a> * nm_remote_connection_new           (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *bus</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
+<p>
+Creates a new object representing the remote connection.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus</code></em> :</span></p></td>
+<td>a valid and connected D-Bus connection</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
+<td>the D-Bus path of the connection as exported by the settings service</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new remote connection object on success, or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure</td>
 </tr>
 </tbody>
 </table></div>
@@ -391,6 +391,6 @@ still visible to the user.
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.17</div>
+          Generated by GTK-Doc V1.18</div>
 </body>
 </html>
