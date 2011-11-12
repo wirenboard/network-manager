@@ -1,10 +1,10 @@
-network-manager (0.9.2.0-1) UNRELEASED; urgency=low
+network-manager (0.9.2.0-1) unstable; urgency=low
 
   * New upstream release.
   * debian/patches/04-dont-update-routing-and-dns-for-unmanaged-devices.patch
     - Removed, applied upstream.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 12 Nov 2011 01:37:19 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 12 Nov 2011 05:50:39 +0100
 
 network-manager (0.9.1.95-1) unstable; urgency=low
 
