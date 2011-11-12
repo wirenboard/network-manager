@@ -1,0 +1,85 @@
+<!-- ##### SECTION Title ##### -->
+NMDeviceModem
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT NMDeviceModem ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceModem:current-capabilities ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceModem:modem-capabilities ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceModemClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
+<!-- ##### MACRO NM_DEVICE_MODEM_CURRENT_CAPABILITIES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_MODEM_MODEM_CAPABILITIES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_device_modem_get_current_capabilities ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_modem_get_modem_capabilities ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+

@@ -8,7 +8,7 @@
 <link rel="up" href="index.html" title="libnm-glib Reference Manual">
 <link rel="prev" href="object-tree.html" title="Object Hierarchy">
 <link rel="next" href="annotation-glossary.html" title="Annotation Glossary">
-<meta name="generator" content="GTK-Doc V1.17 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -36,10 +36,6 @@
                    <a class="shortcut" href="#idxR">R</a>
                       | 
                    <a class="shortcut" href="#idxS">S</a>
-                      | 
-                   <a class="shortcut" href="#idxT">T</a>
-                      | 
-                   <a class="shortcut" href="#idxU">U</a>
                       | 
                    <a class="shortcut" href="#idxV">V</a>
                       | 
@@ -526,6 +522,10 @@ dbus_glib_marshal_nm_secret_agent_VOID__BOXED_BOXED_STRING_BOXED_UINT_POINTER, f
 <dd></dd>
 <dt>
 dbus_glib_marshal_nm_secret_agent_VOID__BOXED_STRING_POINTER, function in nm-secret-agent-glue
+</dt>
+<dd></dd>
+<dt>
+dbus_glib_nm_secret_agent_object_info, variable in nm-secret-agent-glue
 </dt>
 <dd></dd>
 <dt>
@@ -1335,14 +1335,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-ip6-address-array-get-type" title="nm_ip6_address_array_get_type ()">nm_ip6_address_array_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-ip6-address-object-array-get-type" title="nm_ip6_address_object_array_get_type ()">nm_ip6_address_object_array_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
 <a class="link" href="NMIP6Config.html#NM-IP6-CONFIG-ADDRESSES:CAPS" title="NM_IP6_CONFIG_ADDRESSES">NM_IP6_CONFIG_ADDRESSES</a>, macro in <a class="link" href="NMIP6Config.html" title="NMIP6Config">NMIP6Config</a>
 </dt>
 <dd></dd>
@@ -1378,14 +1370,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 <a class="link" href="NMIP6Config.html#NM-IP6-CONFIG-ROUTES:CAPS" title="NM_IP6_CONFIG_ROUTES">NM_IP6_CONFIG_ROUTES</a>, macro in <a class="link" href="NMIP6Config.html" title="NMIP6Config">NMIP6Config</a>
 </dt>
 <dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-ip6-route-object-array-get-type" title="nm_ip6_route_object_array_get_type ()">nm_ip6_route_object_array_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-IS-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS" title="NM_IS_VPN_PLUGIN_UI_WIDGET_INTERFACE()">NM_IS_VPN_PLUGIN_UI_WIDGET_INTERFACE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
-</dt>
-<dd></dd>
 <a name="idxO"></a><h3 class="title">O</h3>
 <dt>
 <a class="link" href="NMObject.html#NMObject-struct" title="NMObject">NMObject</a>, struct in <a class="link" href="NMObject.html" title="NMObject">NMObject</a>
@@ -1401,10 +1385,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 <dd></dd>
 <dt>
 <a class="link" href="NMObject.html#NMObjectClass" title="NMObjectClass">NMObjectClass</a>, struct in <a class="link" href="NMObject.html" title="NMObject">NMObject</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-object-array-get-type" title="nm_object_array_get_type ()">nm_object_array_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1549,10 +1529,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR:CAPS" title="NM_REMOTE_SETTINGS_ERROR">NM_REMOTE_SETTINGS_ERROR</a>, macro in <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings">NMRemoteSettings</a>
-</dt>
-<dd></dd>
-<dt>
 <a class="link" href="NMRemoteSettings.html#nm-remote-settings-error-quark" title="nm_remote_settings_error_quark ()">nm_remote_settings_error_quark</a>, function in <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings">NMRemoteSettings</a>
 </dt>
 <dd></dd>
@@ -1562,10 +1538,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 <dd></dd>
 <dt>
 <a class="link" href="NMRemoteSettings.html#nm-remote-settings-get-connection-by-uuid" title="nm_remote_settings_get_connection_by_uuid ()">nm_remote_settings_get_connection_by_uuid</a>, function in <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings">NMRemoteSettings</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="NMRemoteSettings.html#nm-remote-settings-get-type" title="nm_remote_settings_get_type ()">nm_remote_settings_get_type</a>, function in <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings">NMRemoteSettings</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1642,19 +1614,11 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="NMSecretAgent.html#NM-SECRET-AGENT-ERROR:CAPS" title="NM_SECRET_AGENT_ERROR">NM_SECRET_AGENT_ERROR</a>, macro in <a class="link" href="NMSecretAgent.html" title="NMSecretAgent">NMSecretAgent</a>
-</dt>
-<dd></dd>
-<dt>
 <a class="link" href="NMSecretAgent.html#nm-secret-agent-error-quark" title="nm_secret_agent_error_quark ()">nm_secret_agent_error_quark</a>, function in <a class="link" href="NMSecretAgent.html" title="NMSecretAgent">NMSecretAgent</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSecretAgent.html#nm-secret-agent-get-secrets" title="nm_secret_agent_get_secrets ()">nm_secret_agent_get_secrets</a>, function in <a class="link" href="NMSecretAgent.html" title="NMSecretAgent">NMSecretAgent</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="NMSecretAgent.html#nm-secret-agent-get-type" title="nm_secret_agent_get_type ()">nm_secret_agent_get_type</a>, function in <a class="link" href="NMSecretAgent.html" title="NMSecretAgent">NMSecretAgent</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1675,64 +1639,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 <dd></dd>
 <dt>
 <a class="link" href="NMSecretAgent.html#nm-secret-agent-unregister" title="nm_secret_agent_unregister ()">nm_secret_agent_unregister</a>, function in <a class="link" href="NMSecretAgent.html" title="NMSecretAgent">NMSecretAgent</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-ssid-get-type" title="nm_ssid_get_type ()">nm_ssid_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-string-array-get-type" title="nm_string_array_get_type ()">nm_string_array_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<a name="idxT"></a><h3 class="title">T</h3>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-IP6-ADDRESS-ARRAY:CAPS" title="NM_TYPE_IP6_ADDRESS_ARRAY">NM_TYPE_IP6_ADDRESS_ARRAY</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-IP6-ADDRESS-OBJECT-ARRAY:CAPS" title="NM_TYPE_IP6_ADDRESS_OBJECT_ARRAY">NM_TYPE_IP6_ADDRESS_OBJECT_ARRAY</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-IP6-ROUTE-OBJECT-ARRAY:CAPS" title="NM_TYPE_IP6_ROUTE_OBJECT_ARRAY">NM_TYPE_IP6_ROUTE_OBJECT_ARRAY</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-OBJECT-ARRAY:CAPS" title="NM_TYPE_OBJECT_ARRAY">NM_TYPE_OBJECT_ARRAY</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="NMRemoteSettings.html#NM-TYPE-REMOTE-SETTINGS-ERROR:CAPS" title="NM_TYPE_REMOTE_SETTINGS_ERROR">NM_TYPE_REMOTE_SETTINGS_ERROR</a>, macro in <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings">NMRemoteSettings</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="NMSecretAgent.html#NM-TYPE-SECRET-AGENT-ERROR:CAPS" title="NM_TYPE_SECRET_AGENT_ERROR">NM_TYPE_SECRET_AGENT_ERROR</a>, macro in <a class="link" href="NMSecretAgent.html" title="NMSecretAgent">NMSecretAgent</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-SSID:CAPS" title="NM_TYPE_SSID">NM_TYPE_SSID</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-STRING-ARRAY:CAPS" title="NM_TYPE_STRING_ARRAY">NM_TYPE_STRING_ARRAY</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#NM-TYPE-UINT-ARRAY:CAPS" title="NM_TYPE_UINT_ARRAY">NM_TYPE_UINT_ARRAY</a>, macro in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVPNPlugin.html#NM-TYPE-VPN-PLUGIN-ERROR:CAPS" title="NM_TYPE_VPN_PLUGIN_ERROR">NM_TYPE_VPN_PLUGIN_ERROR</a>, macro in <a class="link" href="libnm-glib-NMVPNPlugin.html" title="NMVPNPlugin">NMVPNPlugin</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-TYPE-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS" title="NM_TYPE_VPN_PLUGIN_UI_WIDGET_INTERFACE">NM_TYPE_VPN_PLUGIN_UI_WIDGET_INTERFACE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
-</dt>
-<dd></dd>
-<a name="idxU"></a><h3 class="title">U</h3>
-<dt>
-<a class="link" href="libnm-glib-nm-types.html#nm-uint-array-get-type" title="nm_uint_array_get_type ()">nm_uint_array_get_type</a>, function in <a class="link" href="libnm-glib-nm-types.html" title="nm-types">nm-types</a>
 </dt>
 <dd></dd>
 <a name="idxV"></a><h3 class="title">V</h3>
@@ -1769,19 +1675,19 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiFactory" title="NMVpnPluginUiFactory ()">NMVpnPluginUiFactory</a>, user_function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiFactory" title="NMVpnPluginUiFactory ()">NMVpnPluginUiFactory</a>, user_function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiInterface" title="struct NMVpnPluginUiInterface">NMVpnPluginUiInterface</a>, struct in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterface" title="struct NMVpnPluginUiInterface">NMVpnPluginUiInterface</a>, struct in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiInterfaceProp" title="enum NMVpnPluginUiInterfaceProp">NMVpnPluginUiInterfaceProp</a>, enum in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterfaceProp" title="enum NMVpnPluginUiInterfaceProp">NMVpnPluginUiInterfaceProp</a>, enum in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NMVpnPluginUiWidgetInterface" title="struct NMVpnPluginUiWidgetInterface">NMVpnPluginUiWidgetInterface</a>, struct in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiWidgetInterface" title="struct NMVpnPluginUiWidgetInterface">NMVpnPluginUiWidgetInterface</a>, struct in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1810,14 +1716,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 <dd></dd>
 <dt>
 <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-disconnect" title="nm_vpn_plugin_disconnect ()">nm_vpn_plugin_disconnect</a>, function in <a class="link" href="libnm-glib-NMVPNPlugin.html" title="NMVPNPlugin">NMVPNPlugin</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR:CAPS" title="NM_VPN_PLUGIN_ERROR">NM_VPN_PLUGIN_ERROR</a>, macro in <a class="link" href="libnm-glib-NMVPNPlugin.html" title="NMVPNPlugin">NMVPNPlugin</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-error-get-type" title="nm_vpn_plugin_error_get_type ()">nm_vpn_plugin_error_get_type</a>, function in <a class="link" href="libnm-glib-NMVPNPlugin.html" title="NMVPNPlugin">NMVPNPlugin</a>
 </dt>
 <dd></dd>
 <dt>
@@ -1853,79 +1751,67 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT">NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT">NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT">NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT">NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_NONE">NM_VPN_PLUGIN_UI_CAPABILITY_NONE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_NONE">NM_VPN_PLUGIN_UI_CAPABILITY_NONE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-factory" title="nm_vpn_plugin_ui_factory ()">nm_vpn_plugin_ui_factory</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-factory" title="nm_vpn_plugin_ui_factory ()">nm_vpn_plugin_ui_factory</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-delete-connection" title="nm_vpn_plugin_ui_interface_delete_connection ()">nm_vpn_plugin_ui_interface_delete_connection</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-interface-delete-connection" title="nm_vpn_plugin_ui_interface_delete_connection ()">nm_vpn_plugin_ui_interface_delete_connection</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_DESC">NM_VPN_PLUGIN_UI_INTERFACE_DESC</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_DESC">NM_VPN_PLUGIN_UI_INTERFACE_DESC</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-export" title="nm_vpn_plugin_ui_interface_export ()">nm_vpn_plugin_ui_interface_export</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-interface-export" title="nm_vpn_plugin_ui_interface_export ()">nm_vpn_plugin_ui_interface_export</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-get-capabilities" title="nm_vpn_plugin_ui_interface_get_capabilities ()">nm_vpn_plugin_ui_interface_get_capabilities</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-interface-get-capabilities" title="nm_vpn_plugin_ui_interface_get_capabilities ()">nm_vpn_plugin_ui_interface_get_capabilities</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-get-suggested-name" title="nm_vpn_plugin_ui_interface_get_suggested_name ()">nm_vpn_plugin_ui_interface_get_suggested_name</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-interface-get-suggested-name" title="nm_vpn_plugin_ui_interface_get_suggested_name ()">nm_vpn_plugin_ui_interface_get_suggested_name</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-import" title="nm_vpn_plugin_ui_interface_import ()">nm_vpn_plugin_ui_interface_import</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-interface-import" title="nm_vpn_plugin_ui_interface_import ()">nm_vpn_plugin_ui_interface_import</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_NAME">NM_VPN_PLUGIN_UI_INTERFACE_NAME</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_NAME">NM_VPN_PLUGIN_UI_INTERFACE_NAME</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-INTERFACE-SERVICE:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_SERVICE">NM_VPN_PLUGIN_UI_INTERFACE_SERVICE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-SERVICE:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_SERVICE">NM_VPN_PLUGIN_UI_INTERFACE_SERVICE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-interface-ui-factory" title="nm_vpn_plugin_ui_interface_ui_factory ()">nm_vpn_plugin_ui_interface_ui_factory</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-interface-ui-factory" title="nm_vpn_plugin_ui_interface_ui_factory ()">nm_vpn_plugin_ui_interface_ui_factory</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-WIDGET-INTERFACE:CAPS" title="NM_VPN_PLUGIN_UI_WIDGET_INTERFACE()">NM_VPN_PLUGIN_UI_WIDGET_INTERFACE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-widget-interface-get-widget" title="nm_vpn_plugin_ui_widget_interface_get_widget ()">nm_vpn_plugin_ui_widget_interface_get_widget</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#NM-VPN-PLUGIN-UI-WIDGET-INTERFACE-GET-INTERFACE:CAPS" title="NM_VPN_PLUGIN_UI_WIDGET_INTERFACE_GET_INTERFACE()">NM_VPN_PLUGIN_UI_WIDGET_INTERFACE_GET_INTERFACE</a>, macro in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-widget-interface-save-secrets" title="nm_vpn_plugin_ui_widget_interface_save_secrets ()">nm_vpn_plugin_ui_widget_interface_save_secrets</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-get-type" title="nm_vpn_plugin_ui_widget_interface_get_type ()">nm_vpn_plugin_ui_widget_interface_get_type</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-get-widget" title="nm_vpn_plugin_ui_widget_interface_get_widget ()">nm_vpn_plugin_ui_widget_interface_get_widget</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-save-secrets" title="nm_vpn_plugin_ui_widget_interface_save_secrets ()">nm_vpn_plugin_ui_widget_interface_save_secrets</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="libnm-glib-NMVpnPluginUi.html#nm-vpn-plugin-ui-widget-interface-update-connection" title="nm_vpn_plugin_ui_widget_interface_update_connection ()">nm_vpn_plugin_ui_widget_interface_update_connection</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUi.html" title="NMVpnPluginUi">NMVpnPluginUi</a>
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-widget-interface-update-connection" title="nm_vpn_plugin_ui_widget_interface_update_connection ()">nm_vpn_plugin_ui_widget_interface_update_connection</a>, function in <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">NMVpnPluginUiWidget</a>
 </dt>
 <dd></dd>
 <dt>
@@ -2000,6 +1886,6 @@ g_marshal_value_peek_variant, macro in nm-secret-agent-glue
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.17</div>
+          Generated by GTK-Doc V1.18</div>
 </body>
 </html>
