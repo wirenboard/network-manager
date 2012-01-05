@@ -1,3 +1,9 @@
+network-manager (0.9.2.0-2) UNRELEASED; urgency=low
+
+  * Build against libnl3.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 05 Jan 2012 14:15:12 +0100
+
 network-manager (0.9.2.0-1) unstable; urgency=low
 
   * New upstream release.
