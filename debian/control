@@ -48,7 +48,8 @@ Recommends:
  ppp (>= 2.4.5),
  dnsmasq-base,
  iptables,
- modemmanager
+ modemmanager,
+ crda
 Suggests: avahi-autoipd
 Breaks:
  network-manager-gnome (<< 0.9),
