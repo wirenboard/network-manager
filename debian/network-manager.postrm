@@ -18,9 +18,11 @@ set -e
 
 case "$1" in
     purge)
-        # Clean up state file on purge
+        # Clean up state files on purge
         if [ -d /var/lib/NetworkManager ]; then
             rm -f /var/lib/NetworkManager/NetworkManager.state
+            rm -f /var/lib/NetworkManager/seen-bssids
+            rm -f /var/lib/NetworkManager/timestamps
             rmdir --ignore-fail-on-non-empty /var/lib/NetworkManager
         fi
         ;;
