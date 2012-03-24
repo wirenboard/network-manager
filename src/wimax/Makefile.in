@@ -54,17 +54,48 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__installdirs = "$(DESTDIR)$(pkglibdir)"
+LTLIBRARIES = $(pkglib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libwimax_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(top_builddir)/marshallers/libmarshallers.la
-am_libwimax_la_OBJECTS = libwimax_la-nm-device-wimax.lo \
-	libwimax_la-nm-wimax-nsp.lo libwimax_la-nm-wimax-util.lo \
-	libwimax_la-iwmxsdk.lo
-libwimax_la_OBJECTS = $(am_libwimax_la_OBJECTS)
+libnm_device_plugin_wimax_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/generated/libnm-generated.la
+am_libnm_device_plugin_wimax_la_OBJECTS =  \
+	libnm_device_plugin_wimax_la-nm-wimax-factory.lo \
+	libnm_device_plugin_wimax_la-nm-device-wimax.lo \
+	libnm_device_plugin_wimax_la-nm-wimax-nsp.lo \
+	libnm_device_plugin_wimax_la-nm-wimax-util.lo \
+	libnm_device_plugin_wimax_la-iwmxsdk.lo
+libnm_device_plugin_wimax_la_OBJECTS =  \
+	$(am_libnm_device_plugin_wimax_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
+libnm_device_plugin_wimax_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libnm_device_plugin_wimax_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -91,8 +122,8 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libwimax_la_SOURCES)
-DIST_SOURCES = $(libwimax_la_SOURCES)
+SOURCES = $(libnm_device_plugin_wimax_la_SOURCES)
+DIST_SOURCES = $(libnm_device_plugin_wimax_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -141,6 +172,8 @@ GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
+GLIB_MAKEFILE = @GLIB_MAKEFILE@
+GLIB_MKENUMS = @GLIB_MKENUMS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
@@ -195,11 +228,15 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
+LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
+LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
 LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
+LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -210,6 +247,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
@@ -249,6 +287,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS = @SYSTEMD_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -314,13 +354,14 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = \
 	-I${top_srcdir}/src \
+	-I${top_srcdir}/src/generated \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/include \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/marshallers
+	-I${top_srcdir}/libnm-util
 
-noinst_LTLIBRARIES = libwimax.la
-libwimax_la_SOURCES = \
+pkglib_LTLIBRARIES = libnm-device-plugin-wimax.la
+libnm_device_plugin_wimax_la_SOURCES = \
+	nm-wimax-factory.c \
 	nm-device-wimax.c \
 	nm-device-wimax.h \
 	nm-wimax-nsp.c \
@@ -331,14 +372,18 @@ libwimax_la_SOURCES = \
 	iwmxsdk.c \
 	iwmxsdk.h
 
-libwimax_la_CPPFLAGS = \
+libnm_device_plugin_wimax_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
-	$(IWMX_SDK_CFLAGS)
+	$(IWMX_SDK_CFLAGS) \
+	$(LIBNL_CFLAGS) \
+	$(GUDEV_CFLAGS)
 
-libwimax_la_LIBADD = \
+libnm_device_plugin_wimax_la_LDFLAGS = -module -avoid-version
+libnm_device_plugin_wimax_la_LIBADD = \
 	$(DBUS_LIBS) \
 	$(IWMX_SDK_LIBS) \
-	$(top_builddir)/marshallers/libmarshallers.la
+	$(GUDEV_LIBS) \
+	$(top_builddir)/src/generated/libnm-generated.la
 
 BUILT_SOURCES = \
 	nm-wimax-nsp-glue.h \
@@ -380,17 +425,39 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+install-pkglibLTLIBRARIES: $(pkglib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkglibdir)" || $(MKDIR_P) "$(DESTDIR)$(pkglibdir)"
+	@list='$(pkglib_LTLIBRARIES)'; test -n "$(pkglibdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(pkglibdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(pkglibdir)"; \
+	}
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
+uninstall-pkglibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkglib_LTLIBRARIES)'; test -n "$(pkglibdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(pkglibdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(pkglibdir)/$$f"; \
+	done
+
+clean-pkglibLTLIBRARIES:
+	-test -z "$(pkglib_LTLIBRARIES)" || rm -f $(pkglib_LTLIBRARIES)
+	@list='$(pkglib_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libwimax.la: $(libwimax_la_OBJECTS) $(libwimax_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libwimax_la_OBJECTS) $(libwimax_la_LIBADD) $(LIBS)
+libnm-device-plugin-wimax.la: $(libnm_device_plugin_wimax_la_OBJECTS) $(libnm_device_plugin_wimax_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libnm_device_plugin_wimax_la_LINK) -rpath $(pkglibdir) $(libnm_device_plugin_wimax_la_OBJECTS) $(libnm_device_plugin_wimax_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -398,10 +465,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwimax_la-iwmxsdk.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwimax_la-nm-device-wimax.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwimax_la-nm-wimax-nsp.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwimax_la-nm-wimax-util.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_device_plugin_wimax_la-iwmxsdk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_device_plugin_wimax_la-nm-device-wimax.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-factory.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-nsp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-util.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -430,37 +498,45 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-libwimax_la-nm-device-wimax.lo: nm-device-wimax.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libwimax_la-nm-device-wimax.lo -MD -MP -MF $(DEPDIR)/libwimax_la-nm-device-wimax.Tpo -c -o libwimax_la-nm-device-wimax.lo `test -f 'nm-device-wimax.c' || echo '$(srcdir)/'`nm-device-wimax.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libwimax_la-nm-device-wimax.Tpo $(DEPDIR)/libwimax_la-nm-device-wimax.Plo
+libnm_device_plugin_wimax_la-nm-wimax-factory.lo: nm-wimax-factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_device_plugin_wimax_la-nm-wimax-factory.lo -MD -MP -MF $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-factory.Tpo -c -o libnm_device_plugin_wimax_la-nm-wimax-factory.lo `test -f 'nm-wimax-factory.c' || echo '$(srcdir)/'`nm-wimax-factory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-factory.Tpo $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-factory.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-wimax.c' object='libwimax_la-nm-device-wimax.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-wimax-factory.c' object='libnm_device_plugin_wimax_la-nm-wimax-factory.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libwimax_la-nm-device-wimax.lo `test -f 'nm-device-wimax.c' || echo '$(srcdir)/'`nm-device-wimax.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_device_plugin_wimax_la-nm-wimax-factory.lo `test -f 'nm-wimax-factory.c' || echo '$(srcdir)/'`nm-wimax-factory.c
 
-libwimax_la-nm-wimax-nsp.lo: nm-wimax-nsp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libwimax_la-nm-wimax-nsp.lo -MD -MP -MF $(DEPDIR)/libwimax_la-nm-wimax-nsp.Tpo -c -o libwimax_la-nm-wimax-nsp.lo `test -f 'nm-wimax-nsp.c' || echo '$(srcdir)/'`nm-wimax-nsp.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libwimax_la-nm-wimax-nsp.Tpo $(DEPDIR)/libwimax_la-nm-wimax-nsp.Plo
+libnm_device_plugin_wimax_la-nm-device-wimax.lo: nm-device-wimax.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_device_plugin_wimax_la-nm-device-wimax.lo -MD -MP -MF $(DEPDIR)/libnm_device_plugin_wimax_la-nm-device-wimax.Tpo -c -o libnm_device_plugin_wimax_la-nm-device-wimax.lo `test -f 'nm-device-wimax.c' || echo '$(srcdir)/'`nm-device-wimax.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_device_plugin_wimax_la-nm-device-wimax.Tpo $(DEPDIR)/libnm_device_plugin_wimax_la-nm-device-wimax.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-wimax-nsp.c' object='libwimax_la-nm-wimax-nsp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-wimax.c' object='libnm_device_plugin_wimax_la-nm-device-wimax.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libwimax_la-nm-wimax-nsp.lo `test -f 'nm-wimax-nsp.c' || echo '$(srcdir)/'`nm-wimax-nsp.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_device_plugin_wimax_la-nm-device-wimax.lo `test -f 'nm-device-wimax.c' || echo '$(srcdir)/'`nm-device-wimax.c
 
-libwimax_la-nm-wimax-util.lo: nm-wimax-util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libwimax_la-nm-wimax-util.lo -MD -MP -MF $(DEPDIR)/libwimax_la-nm-wimax-util.Tpo -c -o libwimax_la-nm-wimax-util.lo `test -f 'nm-wimax-util.c' || echo '$(srcdir)/'`nm-wimax-util.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libwimax_la-nm-wimax-util.Tpo $(DEPDIR)/libwimax_la-nm-wimax-util.Plo
+libnm_device_plugin_wimax_la-nm-wimax-nsp.lo: nm-wimax-nsp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_device_plugin_wimax_la-nm-wimax-nsp.lo -MD -MP -MF $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-nsp.Tpo -c -o libnm_device_plugin_wimax_la-nm-wimax-nsp.lo `test -f 'nm-wimax-nsp.c' || echo '$(srcdir)/'`nm-wimax-nsp.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-nsp.Tpo $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-nsp.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-wimax-util.c' object='libwimax_la-nm-wimax-util.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-wimax-nsp.c' object='libnm_device_plugin_wimax_la-nm-wimax-nsp.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libwimax_la-nm-wimax-util.lo `test -f 'nm-wimax-util.c' || echo '$(srcdir)/'`nm-wimax-util.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_device_plugin_wimax_la-nm-wimax-nsp.lo `test -f 'nm-wimax-nsp.c' || echo '$(srcdir)/'`nm-wimax-nsp.c
 
-libwimax_la-iwmxsdk.lo: iwmxsdk.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libwimax_la-iwmxsdk.lo -MD -MP -MF $(DEPDIR)/libwimax_la-iwmxsdk.Tpo -c -o libwimax_la-iwmxsdk.lo `test -f 'iwmxsdk.c' || echo '$(srcdir)/'`iwmxsdk.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libwimax_la-iwmxsdk.Tpo $(DEPDIR)/libwimax_la-iwmxsdk.Plo
+libnm_device_plugin_wimax_la-nm-wimax-util.lo: nm-wimax-util.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_device_plugin_wimax_la-nm-wimax-util.lo -MD -MP -MF $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-util.Tpo -c -o libnm_device_plugin_wimax_la-nm-wimax-util.lo `test -f 'nm-wimax-util.c' || echo '$(srcdir)/'`nm-wimax-util.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-util.Tpo $(DEPDIR)/libnm_device_plugin_wimax_la-nm-wimax-util.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='iwmxsdk.c' object='libwimax_la-iwmxsdk.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-wimax-util.c' object='libnm_device_plugin_wimax_la-nm-wimax-util.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libwimax_la-iwmxsdk.lo `test -f 'iwmxsdk.c' || echo '$(srcdir)/'`iwmxsdk.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_device_plugin_wimax_la-nm-wimax-util.lo `test -f 'nm-wimax-util.c' || echo '$(srcdir)/'`nm-wimax-util.c
+
+libnm_device_plugin_wimax_la-iwmxsdk.lo: iwmxsdk.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_device_plugin_wimax_la-iwmxsdk.lo -MD -MP -MF $(DEPDIR)/libnm_device_plugin_wimax_la-iwmxsdk.Tpo -c -o libnm_device_plugin_wimax_la-iwmxsdk.lo `test -f 'iwmxsdk.c' || echo '$(srcdir)/'`iwmxsdk.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_device_plugin_wimax_la-iwmxsdk.Tpo $(DEPDIR)/libnm_device_plugin_wimax_la-iwmxsdk.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='iwmxsdk.c' object='libnm_device_plugin_wimax_la-iwmxsdk.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_device_plugin_wimax_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_device_plugin_wimax_la-iwmxsdk.lo `test -f 'iwmxsdk.c' || echo '$(srcdir)/'`iwmxsdk.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -555,6 +631,9 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
+	for dir in "$(DESTDIR)$(pkglibdir)"; do \
+	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+	done
 install: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
@@ -585,7 +664,7 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-pkglibLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -612,7 +691,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-pkglibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -652,22 +731,23 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-pkglibLTLIBRARIES
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES ctags distclean \
+	clean-libtool clean-pkglibLTLIBRARIES ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am
+	install-pdf install-pdf-am install-pkglibLTLIBRARIES \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-pkglibLTLIBRARIES
 
 
 nm-wimax-nsp-glue.h: $(top_srcdir)/introspection/nm-wimax-nsp.xml

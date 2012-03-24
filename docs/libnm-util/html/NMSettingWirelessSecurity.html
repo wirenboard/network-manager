@@ -42,14 +42,15 @@ use WEP, LEAP, WPA or WPA2/RSN security</p>
 </tr></table></div>
 <div class="refsynopsisdiv">
 <a name="NMSettingWirelessSecurity.synopsis"></a><h2>Synopsis</h2>
-<a name="NMSettingWirelessSecurityError"></a><pre class="synopsis">
+<a name="NMSettingWirelessSecurityError"></a><a name="NMWepKeyType"></a><pre class="synopsis">
 #include &lt;nm-setting-wireless-security.h&gt;
 
                     <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity-struct" title="NMSettingWirelessSecurity">NMSettingWirelessSecurity</a>;
                     <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityClass" title="NMSettingWirelessSecurityClass">NMSettingWirelessSecurityClass</a>;
 enum                <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurityError-enum" title="enum NMSettingWirelessSecurityError">NMSettingWirelessSecurityError</a>;
-enum                <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType">NMWepKeyType</a>;
+enum                <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType-enum" title="enum NMWepKeyType">NMWepKeyType</a>;
 #define             <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-AUTH-ALG:CAPS" title="NM_SETTING_WIRELESS_SECURITY_AUTH_ALG">NM_SETTING_WIRELESS_SECURITY_AUTH_ALG</a>
+#define             <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-ERROR:CAPS" title="NM_SETTING_WIRELESS_SECURITY_ERROR">NM_SETTING_WIRELESS_SECURITY_ERROR</a>
 #define             <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-GROUP:CAPS" title="NM_SETTING_WIRELESS_SECURITY_GROUP">NM_SETTING_WIRELESS_SECURITY_GROUP</a>
 #define             <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-KEY-MGMT:CAPS" title="NM_SETTING_WIRELESS_SECURITY_KEY_MGMT">NM_SETTING_WIRELESS_SECURITY_KEY_MGMT</a>
 #define             <a class="link" href="NMSettingWirelessSecurity.html#NM-SETTING-WIRELESS-SECURITY-LEAP-PASSWORD:CAPS" title="NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD">NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD</a>
@@ -93,7 +94,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-password" title="nm_setting_wireless_security_get_leap_password ()">nm_setting_wireless_security_get_leap_password</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
-<a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-password-flags" title="nm_setting_wireless_security_get_leap_password_flags ()">nm_setting_wireless_security_get_leap_password_flags</a>
+<a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-password-flags" title="nm_setting_wireless_security_get_leap_password_flags ()">nm_setting_wireless_security_get_leap_password_flags</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-leap-username" title="nm_setting_wireless_security_get_leap_username ()">nm_setting_wireless_security_get_leap_username</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
@@ -111,14 +112,14 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> i</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-psk" title="nm_setting_wireless_security_get_psk ()">nm_setting_wireless_security_get_psk</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
-<a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-psk-flags" title="nm_setting_wireless_security_get_psk_flags ()">nm_setting_wireless_security_get_psk_flags</a>
+<a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-psk-flags" title="nm_setting_wireless_security_get_psk_flags ()">nm_setting_wireless_security_get_psk_flags</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key" title="nm_setting_wireless_security_get_wep_key ()">nm_setting_wireless_security_get_wep_key</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="type">guint32</span></a> idx</code></em>);
-<a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key-flags" title="nm_setting_wireless_security_get_wep_key_flags ()">nm_setting_wireless_security_get_wep_key_flags</a>
+<a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key-flags" title="nm_setting_wireless_security_get_wep_key_flags ()">nm_setting_wireless_security_get_wep_key_flags</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
-<a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType"><span class="returnvalue">NMWepKeyType</span></a>        <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key-type" title="nm_setting_wireless_security_get_wep_key_type ()">nm_setting_wireless_security_get_wep_key_type</a>
+<a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType"><span class="returnvalue">NMWepKeyType</span></a>        <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-key-type" title="nm_setting_wireless_security_get_wep_key_type ()">nm_setting_wireless_security_get_wep_key_type</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingWirelessSecurity.html#nm-setting-wireless-security-get-wep-tx-keyidx" title="nm_setting_wireless_security_get_wep_tx_keyidx ()">nm_setting_wireless_security_get_wep_tx_keyidx</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);
@@ -148,6 +149,10 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
 <pre class="synopsis">
   GEnum
    +----NMSettingWirelessSecurityError
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NMWepKeyType
 </pre>
 </div>
 <div class="refsect1">
@@ -223,13 +228,13 @@ of how WiFi security works, you may want to get copies of the following books.
 <div class="refsect2">
 <a name="NMSettingWirelessSecurityError-enum"></a><h3>enum NMSettingWirelessSecurityError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_WIRELESS_SECURITY_ERROR_UNKNOWN = 0,
-	NM_SETTING_WIRELESS_SECURITY_ERROR_INVALID_PROPERTY,
-	NM_SETTING_WIRELESS_SECURITY_ERROR_MISSING_PROPERTY,
-	NM_SETTING_WIRELESS_SECURITY_ERROR_MISSING_802_1X_SETTING,
-	NM_SETTING_WIRELESS_SECURITY_ERROR_LEAP_REQUIRES_802_1X,
-	NM_SETTING_WIRELESS_SECURITY_ERROR_LEAP_REQUIRES_USERNAME,
-	NM_SETTING_WIRELESS_SECURITY_ERROR_SHARED_KEY_REQUIRES_WEP
+	NM_SETTING_WIRELESS_SECURITY_ERROR_UNKNOWN = 0,            /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_WIRELESS_SECURITY_ERROR_INVALID_PROPERTY,       /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_WIRELESS_SECURITY_ERROR_MISSING_PROPERTY,       /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_WIRELESS_SECURITY_ERROR_MISSING_802_1X_SETTING, /*&lt; nick=Missing8021xSetting &gt;*/
+	NM_SETTING_WIRELESS_SECURITY_ERROR_LEAP_REQUIRES_802_1X,   /*&lt; nick=LEAPRequires8021x &gt;*/
+	NM_SETTING_WIRELESS_SECURITY_ERROR_LEAP_REQUIRES_USERNAME, /*&lt; nick=LEAPRequiresUsername &gt;*/
+	NM_SETTING_WIRELESS_SECURITY_ERROR_SHARED_KEY_REQUIRES_WEP /*&lt; nick=SharedKeyRequiresWEP &gt;*/
 } NMSettingWirelessSecurityError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -281,7 +286,7 @@ encryption protocol
 </div>
 <hr>
 <div class="refsect2">
-<a name="NMWepKeyType"></a><h3>enum NMWepKeyType</h3>
+<a name="NMWepKeyType-enum"></a><h3>enum NMWepKeyType</h3>
 <pre class="programlisting">typedef enum {
 	NM_WEP_KEY_TYPE_UNKNOWN = 0,
 	NM_WEP_KEY_TYPE_KEY = 1,          /* Hex or ASCII */
@@ -291,7 +296,7 @@ encryption protocol
 } NMWepKeyType;
 </pre>
 <p>
-The <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType"><span class="type">NMWepKeyType</span></a> values specify how any WEP keys present in the setting
+The <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType"><span class="type">NMWepKeyType</span></a> values specify how any WEP keys present in the setting
 are intepreted.  There are no standards governing how to hash the various WEP
 key/passphrase formats into the actual WEP key.  Unfortunately some WEP keys
 can be interpreted in multiple ways, requring the setting to specify how to
@@ -337,6 +342,14 @@ the actual WEP key using the MD5 hash algorithm.
 <div class="refsect2">
 <a name="NM-SETTING-WIRELESS-SECURITY-AUTH-ALG:CAPS"></a><h3>NM_SETTING_WIRELESS_SECURITY_AUTH_ALG</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_SECURITY_AUTH_ALG "auth-alg"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIRELESS-SECURITY-ERROR:CAPS"></a><h3>NM_SETTING_WIRELESS_SECURITY_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_SECURITY_ERROR nm_setting_wireless_security_error_quark ()
 </pre>
 <p>
 </p>
@@ -735,7 +748,7 @@ list.
 <hr>
 <div class="refsect2">
 <a name="nm-setting-wireless-security-get-leap-password-flags"></a><h3>nm_setting_wireless_security_get_leap_password_flags ()</h3>
-<pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_wireless_security_get_leap_password_flags
+<pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_wireless_security_get_leap_password_flags
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -747,7 +760,7 @@ list.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
+<td>the <a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-password" title='The "leap-password" property'><span class="type">"leap-password"</span></a>
 </td>
 </tr>
@@ -914,7 +927,7 @@ list.
 <hr>
 <div class="refsect2">
 <a name="nm-setting-wireless-security-get-psk-flags"></a><h3>nm_setting_wireless_security_get_psk_flags ()</h3>
-<pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_wireless_security_get_psk_flags
+<pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_wireless_security_get_psk_flags
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -926,7 +939,7 @@ list.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
+<td>the <a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--psk" title='The "psk" property'><span class="type">"psk"</span></a>
 </td>
 </tr>
@@ -961,7 +974,7 @@ list.
 <hr>
 <div class="refsect2">
 <a name="nm-setting-wireless-security-get-wep-key-flags"></a><h3>nm_setting_wireless_security_get_wep_key_flags ()</h3>
-<pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_wireless_security_get_wep_key_flags
+<pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_wireless_security_get_wep_key_flags
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -973,7 +986,7 @@ list.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the all WEP keys</td>
+<td>the <a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the all WEP keys</td>
 </tr>
 </tbody>
 </table></div>
@@ -981,7 +994,7 @@ list.
 <hr>
 <div class="refsect2">
 <a name="nm-setting-wireless-security-get-wep-key-type"></a><h3>nm_setting_wireless_security_get_wep_key_type ()</h3>
-<pre class="programlisting"><a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType"><span class="returnvalue">NMWepKeyType</span></a>        nm_setting_wireless_security_get_wep_key_type
+<pre class="programlisting"><a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType"><span class="returnvalue">NMWepKeyType</span></a>        nm_setting_wireless_security_get_wep_key_type
                                                         (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -1266,7 +1279,7 @@ Flags indicating how to handle <a class="link" href="NMSettingWirelessSecurity.h
 <pre class="programlisting">  "wep-key-type"             <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read / Write / Construct</pre>
 <p>
 Controls the interpretation of WEP keys.  Allowed values are those given
-by <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType" title="enum NMWepKeyType"><code class="literal">NMWepKeyType</code></a>.  If set to 1 and the keys are hexadecimal, they must be
+by <a class="link" href="NMSettingWirelessSecurity.html#NMWepKeyType"><code class="literal">NMWepKeyType</code></a>.  If set to 1 and the keys are hexadecimal, they must be
 either 10 or 26 characters in length.  If set to 1 and the keys are
 ASCII keys, they must be either 5 or 13 characters in length.  If set to
 2, the passphrase is hashed using the de-facto MD5 method to derive the

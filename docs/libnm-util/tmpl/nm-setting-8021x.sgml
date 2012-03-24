@@ -9,12 +9,10 @@ NMSetting8021x
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -63,12 +61,27 @@ NMSetting8021x
 
 </para>
 
+<!-- ##### ARG NMSetting8021x:pac-file ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMSetting8021x:password ##### -->
 <para>
 
 </para>
 
 <!-- ##### ARG NMSetting8021x:password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:password-raw ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:password-raw-flags ##### -->
 <para>
 
 </para>
@@ -244,7 +257,21 @@ NMSetting8021x
 
 
 
+<!-- ##### MACRO NM_SETTING_802_1X_ERROR ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_802_1X_IDENTITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_802_1X_PAC_FILE ##### -->
 <para>
 
 </para>
@@ -259,6 +286,20 @@ NMSetting8021x
 
 
 <!-- ##### MACRO NM_SETTING_802_1X_PASSWORD_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_802_1X_PASSWORD_RAW ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_802_1X_PASSWORD_RAW_FLAGS ##### -->
 <para>
 
 </para>
@@ -603,6 +644,15 @@ NMSetting8021x
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_setting_802_1x_get_pac_file ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_setting_802_1x_get_password ##### -->
 <para>
 
@@ -613,6 +663,24 @@ NMSetting8021x
 
 
 <!-- ##### FUNCTION nm_setting_802_1x_get_password_flags ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_802_1x_get_password_raw ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_802_1x_get_password_raw_flags ##### -->
 <para>
 
 </para>

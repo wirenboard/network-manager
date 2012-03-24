@@ -28,16 +28,25 @@
 #include "nm-object-private.h"
 #include "nm-types-private.h"
 #include "nm-device.h"
+#include "nm-device-private.h"
 #include "nm-connection.h"
+#include "nm-vpn-connection.h"
+#include "nm-glib-compat.h"
 
-#include "nm-active-connection-bindings.h"
+static GType _nm_active_connection_type_for_path (DBusGConnection *connection,
+                                                  const char *path);
+static void  _nm_active_connection_type_for_path_async (DBusGConnection *connection,
+                                                        const char *path,
+                                                        NMObjectTypeCallbackFunc callback,
+                                                        gpointer user_data);
 
-G_DEFINE_TYPE (NMActiveConnection, nm_active_connection, NM_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_CODE (NMActiveConnection, nm_active_connection, NM_TYPE_OBJECT,
+                         _nm_object_register_type_func (g_define_type_id,
+                                                        _nm_active_connection_type_for_path,
+                                                        _nm_active_connection_type_for_path_async);
+                         )
 
 #define NM_ACTIVE_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_ACTIVE_CONNECTION, NMActiveConnectionPrivate))
-
-static gboolean demarshal_devices (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field);
-
 
 typedef struct {
 	gboolean disposed;
@@ -50,6 +59,7 @@ typedef struct {
 	NMActiveConnectionState state;
 	gboolean is_default;
 	gboolean is_default6;
+	char *master;
 } NMActiveConnectionPrivate;
 
 enum {
@@ -61,6 +71,7 @@ enum {
 	PROP_STATE,
 	PROP_DEFAULT,
 	PROP_DEFAULT6,
+	PROP_MASTER,
 
 	LAST_PROP
 };
@@ -72,6 +83,7 @@ enum {
 #define DBUS_PROP_STATE "State"
 #define DBUS_PROP_DEFAULT "Default"
 #define DBUS_PROP_DEFAULT6 "Default6"
+#define DBUS_PROP_MASTER "Master"
 
 /**
  * nm_active_connection_new:
@@ -94,6 +106,104 @@ nm_active_connection_new (DBusGConnection *connection, const char *path)
 						 NULL);
 }
 
+static GType
+_nm_active_connection_type_for_path (DBusGConnection *connection,
+                                     const char *path)
+{
+	DBusGProxy *proxy;
+	GError *error = NULL;
+	GValue value = {0,};
+	GType type;
+
+	proxy = dbus_g_proxy_new_for_name (connection,
+	                                   NM_DBUS_SERVICE,
+	                                   path,
+	                                   "org.freedesktop.DBus.Properties");
+	if (!proxy) {
+		g_warning ("%s: couldn't create D-Bus object proxy.", __func__);
+		return G_TYPE_INVALID;
+	}
+
+	/* Have to create an NMVPNConnection if it's a VPN connection, otherwise
+	 * a plain NMActiveConnection.
+	 */
+	if (dbus_g_proxy_call (proxy,
+	                       "Get", &error,
+	                       G_TYPE_STRING, NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
+	                       G_TYPE_STRING, "Vpn",
+	                       G_TYPE_INVALID,
+	                       G_TYPE_VALUE, &value, G_TYPE_INVALID)) {
+		if (g_value_get_boolean (&value))
+			type = NM_TYPE_VPN_CONNECTION;
+		else
+			type = NM_TYPE_ACTIVE_CONNECTION;
+	} else {
+		g_warning ("Error in getting active connection 'Vpn' property: (%d) %s",
+		           error->code, error->message);
+		g_error_free (error);
+		type = G_TYPE_INVALID;
+	}
+
+	g_object_unref (proxy);
+	return type;
+}
+
+typedef struct {
+	DBusGConnection *connection;
+	NMObjectTypeCallbackFunc callback;
+	gpointer user_data;
+} NMActiveConnectionAsyncData;
+
+static void
+async_got_type (DBusGProxy *proxy, DBusGProxyCall *call, gpointer user_data)
+{
+	NMActiveConnectionAsyncData *async_data = user_data;
+	GValue value = G_VALUE_INIT;
+	const char *path = dbus_g_proxy_get_path (proxy);
+	GError *error = NULL;
+	GType type;
+
+	if (dbus_g_proxy_end_call (proxy, call, &error,
+	                           G_TYPE_VALUE, &value,
+	                           G_TYPE_INVALID)) {
+		if (g_value_get_boolean (&value))
+			type = NM_TYPE_VPN_CONNECTION;
+		else
+			type = NM_TYPE_ACTIVE_CONNECTION;
+	} else {
+		g_warning ("%s: could not read properties for %s: %s", __func__, path, error->message);
+		type = G_TYPE_INVALID;
+	}
+
+	async_data->callback (type, async_data->user_data);
+
+	g_object_unref (proxy);
+	g_slice_free (NMActiveConnectionAsyncData, async_data);
+}
+
+static void
+_nm_active_connection_type_for_path_async (DBusGConnection *connection,
+                                           const char *path,
+                                           NMObjectTypeCallbackFunc callback,
+                                           gpointer user_data)
+{
+	NMActiveConnectionAsyncData *async_data;
+	DBusGProxy *proxy;
+
+	async_data = g_slice_new (NMActiveConnectionAsyncData);
+	async_data->connection = connection;
+	async_data->callback = callback;
+	async_data->user_data = user_data;
+
+	proxy = dbus_g_proxy_new_for_name (connection, NM_DBUS_SERVICE, path,
+	                                   "org.freedesktop.DBus.Properties");
+	dbus_g_proxy_begin_call (proxy, "Get",
+	                         async_got_type, async_data, NULL,
+	                         G_TYPE_STRING, NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
+	                         G_TYPE_STRING, "Vpn",
+	                         G_TYPE_INVALID);
+}
+
 /**
  * nm_active_connection_get_connection:
  * @connection: a #NMActiveConnection
@@ -106,19 +216,10 @@ nm_active_connection_new (DBusGConnection *connection, const char *path)
 const char *
 nm_active_connection_get_connection (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (!priv->connection) {
-		priv->connection = _nm_object_get_string_property (NM_OBJECT (connection),
-		                                                  NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                  DBUS_PROP_CONNECTION,
-		                                                  NULL);
-	}
-
-	return priv->connection;
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->connection;
 }
 
 /**
@@ -133,19 +234,10 @@ nm_active_connection_get_connection (NMActiveConnection *connection)
 const char *
 nm_active_connection_get_uuid (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (!priv->uuid) {
-		priv->uuid = _nm_object_get_string_property (NM_OBJECT (connection),
-		                                             NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                             DBUS_PROP_UUID,
-		                                             NULL);
-	}
-
-	return priv->uuid;
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->uuid;
 }
 
 /**
@@ -160,19 +252,10 @@ nm_active_connection_get_uuid (NMActiveConnection *connection)
 const char *
 nm_active_connection_get_specific_object (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (!priv->specific_object) {
-		priv->specific_object = _nm_object_get_string_property (NM_OBJECT (connection),
-		                                                       NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                       DBUS_PROP_SPECIFIC_OBJECT,
-		                                                       NULL);
-	}
-
-	return priv->specific_object;
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->specific_object;
 }
 
 /**
@@ -187,27 +270,10 @@ nm_active_connection_get_specific_object (NMActiveConnection *connection)
 const GPtrArray *
 nm_active_connection_get_devices (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-	GValue value = { 0, };
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (priv->devices)
-		return handle_ptr_array_return (priv->devices);
-
-	if (!_nm_object_get_property (NM_OBJECT (connection),
-	                             NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-	                             DBUS_PROP_DEVICES,
-	                             &value,
-	                             NULL)) {
-		return NULL;
-	}
-
-	demarshal_devices (NM_OBJECT (connection), NULL, &value, &priv->devices);
-	g_value_unset (&value);
-
-	return handle_ptr_array_return (priv->devices);
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return handle_ptr_array_return (NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->devices);
 }
 
 /**
@@ -221,19 +287,10 @@ nm_active_connection_get_devices (NMActiveConnection *connection)
 NMActiveConnectionState
 nm_active_connection_get_state (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NM_ACTIVE_CONNECTION_STATE_UNKNOWN);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (!priv->state) {
-		priv->state = _nm_object_get_uint_property (NM_OBJECT (connection),
-		                                           NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                           DBUS_PROP_STATE,
-		                                           NULL);
-	}
-
-	return priv->state;
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->state;
 }
 
 /**
@@ -248,19 +305,10 @@ nm_active_connection_get_state (NMActiveConnection *connection)
 gboolean
 nm_active_connection_get_default (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), FALSE);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (!priv->is_default) {
-		priv->is_default = _nm_object_get_boolean_property (NM_OBJECT (connection),
-		                                                    NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                    DBUS_PROP_DEFAULT,
-		                                                    NULL);
-	}
-
-	return priv->is_default;
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->is_default;
 }
 
 /**
@@ -275,19 +323,28 @@ nm_active_connection_get_default (NMActiveConnection *connection)
 gboolean
 nm_active_connection_get_default6 (NMActiveConnection *connection)
 {
-	NMActiveConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), FALSE);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	if (!priv->is_default6) {
-		priv->is_default6 = _nm_object_get_boolean_property (NM_OBJECT (connection),
-		                                                     NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-		                                                     DBUS_PROP_DEFAULT6,
-		                                                     NULL);
-	}
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->is_default6;
+}
 
-	return priv->is_default6;
+/**
+ * nm_active_connection_get_master:
+ * @connection: a #NMActiveConnection
+ *
+ * Gets the path to the master #NMDevice of the connection.
+ *
+ * Returns: the path of the master #NMDevice of the #NMActiveConnection.
+ * This is the internal string used by the connection, and must not be modified.
+ **/
+const char *
+nm_active_connection_get_master (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->master;
 }
 
 static void
@@ -324,6 +381,7 @@ finalize (GObject *object)
 	g_free (priv->connection);
 	g_free (priv->uuid);
 	g_free (priv->specific_object);
+	g_free (priv->master);
 
 	G_OBJECT_CLASS (nm_active_connection_parent_class)->finalize (object);
 }
@@ -340,6 +398,9 @@ get_property (GObject *object,
 	case PROP_CONNECTION:
 		g_value_set_string (value, nm_active_connection_get_connection (self));
 		break;
+	case PROP_UUID:
+		g_value_set_string (value, nm_active_connection_get_uuid (self));
+		break;
 	case PROP_SPECIFIC_OBJECT:
 		g_value_set_boxed (value, nm_active_connection_get_specific_object (self));
 		break;
@@ -355,68 +416,55 @@ get_property (GObject *object,
 	case PROP_DEFAULT6:
 		g_value_set_boolean (value, nm_active_connection_get_default6 (self));
 		break;
+	case PROP_MASTER:
+		g_value_set_string (value, nm_active_connection_get_master (self));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
 }
 
-static gboolean
-demarshal_devices (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field)
-{
-	DBusGConnection *connection;
-
-	connection = nm_object_get_connection (object);
-	if (!_nm_object_array_demarshal (value, (GPtrArray **) field, connection, nm_device_new))
-		return FALSE;
-
-	_nm_object_queue_notify (object, NM_ACTIVE_CONNECTION_DEVICES);
-	return TRUE;
-}
-
 static void
-register_for_property_changed (NMActiveConnection *connection)
+register_properties (NMActiveConnection *connection)
 {
 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_ACTIVE_CONNECTION_CONNECTION,          _nm_object_demarshal_generic, &priv->connection },
-		{ NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT,     _nm_object_demarshal_generic, &priv->specific_object },
-		{ NM_ACTIVE_CONNECTION_DEVICES,             demarshal_devices,           &priv->devices },
-		{ NM_ACTIVE_CONNECTION_STATE,               _nm_object_demarshal_generic, &priv->state },
-		{ NM_ACTIVE_CONNECTION_DEFAULT,             _nm_object_demarshal_generic, &priv->is_default },
-		{ NM_ACTIVE_CONNECTION_DEFAULT6,            _nm_object_demarshal_generic, &priv->is_default6 },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_ACTIVE_CONNECTION_CONNECTION,          &priv->connection },
+		{ NM_ACTIVE_CONNECTION_UUID,                &priv->uuid },
+		{ NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT,     &priv->specific_object },
+		{ NM_ACTIVE_CONNECTION_DEVICES,             &priv->devices, NULL, NM_TYPE_DEVICE },
+		{ NM_ACTIVE_CONNECTION_STATE,               &priv->state },
+		{ NM_ACTIVE_CONNECTION_DEFAULT,             &priv->is_default },
+		{ NM_ACTIVE_CONNECTION_DEFAULT6,            &priv->is_default6 },
+		{ NM_ACTIVE_CONNECTION_MASTER,              &priv->master },
+
+		/* not tracked after construction time */
+		{ "vpn", NULL },
+
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (connection),
-	                                     priv->proxy,
-	                                     property_changed_info);
+	_nm_object_register_properties (NM_OBJECT (connection),
+	                                priv->proxy,
+	                                property_info);
 }
 
-static GObject*
-constructor (GType type,
-			 guint n_construct_params,
-			 GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	NMObject *object;
 	NMActiveConnectionPrivate *priv;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_active_connection_parent_class)->constructor (type,
-																	  n_construct_params,
-																	  construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_active_connection_parent_class)->constructed (object);
 
 	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
 
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (object),
+	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
 									    NM_DBUS_SERVICE,
-									    nm_object_get_path (object),
+									    nm_object_get_path (NM_OBJECT (object)),
 									    NM_DBUS_INTERFACE_ACTIVE_CONNECTION);
 
-	register_for_property_changed (NM_ACTIVE_CONNECTION (object));
-
-	return G_OBJECT (object);
+	register_properties (NM_ACTIVE_CONNECTION (object));
 }
 
 
@@ -428,7 +476,7 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 	g_type_class_add_private (ap_class, sizeof (NMActiveConnectionPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
@@ -445,6 +493,19 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 		 g_param_spec_string (NM_ACTIVE_CONNECTION_CONNECTION,
 						      "Connection",
 						      "Connection",
+						      NULL,
+						      G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:uuid:
+	 *
+	 * The active connection's UUID
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_UUID,
+		 g_param_spec_string (NM_ACTIVE_CONNECTION_UUID,
+						      "UUID",
+						      "UUID",
 						      NULL,
 						      G_PARAM_READABLE));
 
@@ -514,4 +575,17 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 							   "Is the default IPv6 active connection",
 							   FALSE,
 							   G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:master:
+	 *
+	 * The path of the master device if one exists.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_MASTER,
+		 g_param_spec_string (NM_ACTIVE_CONNECTION_MASTER,
+						      "Master",
+						      "Path of the master device",
+						      NULL,
+						      G_PARAM_READABLE));
 }

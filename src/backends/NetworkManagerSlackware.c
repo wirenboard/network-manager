@@ -16,7 +16,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2004 RedHat, Inc.
+ * (C) Copyright 2004 - 2012 RedHat, Inc.
  * (C) Copyright 2004 Narayan Newton
  */
 
@@ -24,34 +24,19 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include "NetworkManagerGeneric.h"
-#include "nm-system.h"
 
-/*
- * nm_system_enable_loopback
- *
- * Bring up the loopback interface
- *
- */
-void nm_system_enable_loopback (void)
+void nm_backend_enable_loopback (void)
 {
 	nm_generic_enable_loopback ();
 }
 
-
-/*
- * nm_system_update_dns
- *
- * Make glibc/nscd aware of any changes to the resolv.conf file by
- * restarting nscd.
- *
- */
-void nm_system_update_dns (void)
+void nm_backend_update_dns (void)
 {
-	/* I'm not running nscd */
+}
+
+int nm_backend_ipv6_use_tempaddr (void)
+{
+	return nm_generic_ipv6_use_tempaddr ();
 }
 

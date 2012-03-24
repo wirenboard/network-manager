@@ -9,12 +9,10 @@ NMSettingBluetooth
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -60,6 +58,13 @@ NMSettingBluetooth
 @NM_SETTING_BLUETOOTH_ERROR_TYPE_SETTING_NOT_FOUND: 
 
 <!-- ##### MACRO NM_SETTING_BLUETOOTH_BDADDR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BLUETOOTH_ERROR ##### -->
 <para>
 
 </para>

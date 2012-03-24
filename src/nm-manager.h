@@ -26,7 +26,6 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include "nm-device.h"
-#include "nm-device-interface.h"
 #include "nm-settings.h"
 
 #define NM_TYPE_MANAGER            (nm_manager_get_type ())
@@ -35,6 +34,19 @@
 #define NM_IS_MANAGER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MANAGER))
 #define NM_IS_MANAGER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((obj), NM_TYPE_MANAGER))
 #define NM_MANAGER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_MANAGER, NMManagerClass))
+
+typedef enum {
+	NM_MANAGER_ERROR_UNKNOWN_CONNECTION = 0,      /*< nick=UnknownConnection >*/
+	NM_MANAGER_ERROR_UNKNOWN_DEVICE,              /*< nick=UnknownDevice >*/
+	NM_MANAGER_ERROR_UNMANAGED_DEVICE,            /*< nick=UnmanagedDevice >*/
+	NM_MANAGER_ERROR_SYSTEM_CONNECTION,           /*< nick=SystemConnection >*/
+	NM_MANAGER_ERROR_PERMISSION_DENIED,           /*< nick=PermissionDenied >*/
+	NM_MANAGER_ERROR_CONNECTION_NOT_ACTIVE,       /*< nick=ConnectionNotActive >*/
+	NM_MANAGER_ERROR_ALREADY_ASLEEP_OR_AWAKE,     /*< nick=AlreadyAsleepOrAwake >*/
+	NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED, /*< nick=AlreadyEnabledOrDisabled >*/
+	NM_MANAGER_ERROR_UNSUPPORTED_CONNECTION_TYPE, /*< nick=UnsupportedConnectionType >*/
+	NM_MANAGER_ERROR_DEPENDENCY_FAILED,           /*< nick=DependencyFailed >*/
+} NMManagerError;
 
 #define NM_MANAGER_VERSION "version"
 #define NM_MANAGER_STATE "state"
@@ -73,7 +85,10 @@ NMManager *nm_manager_new (NMSettings *settings,
                            gboolean initial_net_enabled,
                            gboolean initial_wifi_enabled,
                            gboolean initial_wwan_enabled,
-						   gboolean initial_wimax_enabled,
+                           gboolean initial_wimax_enabled,
+                           const gchar *connectivity_uri,
+                           gint connectivity_interval,
+                           const gchar *connectivity_response,
                            GError **error);
 
 NMManager *nm_manager_get (void);
@@ -84,12 +99,16 @@ void nm_manager_start (NMManager *manager);
 
 GSList *nm_manager_get_devices (NMManager *manager);
 
-const char * nm_manager_activate_connection (NMManager *manager,
-                                             NMConnection *connection,
-                                             const char *specific_object,
-                                             const char *device_path,
-                                             const char *dbus_sender, /* NULL if automatic */
-                                             GError **error);
+NMDevice *nm_manager_get_device_by_master (NMManager *manager,
+					   const char *master,
+					   const char *driver);
+
+NMActiveConnection *nm_manager_activate_connection (NMManager *manager,
+                                                    NMConnection *connection,
+                                                    const char *specific_object,
+                                                    const char *device_path,
+                                                    const char *dbus_sender, /* NULL if automatic */
+                                                    GError **error);
 
 gboolean nm_manager_deactivate_connection (NMManager *manager,
                                            const char *connection_path,

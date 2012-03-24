@@ -90,18 +90,10 @@ nm_wimax_nsp_new (DBusGConnection *connection, const char *path)
 const char *
 nm_wimax_nsp_get_name (NMWimaxNsp *nsp)
 {
-	NMWimaxNspPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_WIMAX_NSP (nsp), NULL);
 
-	priv = NM_WIMAX_NSP_GET_PRIVATE (nsp);
-	if (!priv->name)
-		priv->name = _nm_object_get_string_property (NM_OBJECT (nsp),
-		                                             NM_DBUS_INTERFACE_WIMAX_NSP,
-		                                             DBUS_PROP_NAME,
-		                                             NULL);
-
-	return priv->name;
+	_nm_object_ensure_inited (NM_OBJECT (nsp));
+	return NM_WIMAX_NSP_GET_PRIVATE (nsp)->name;
 }
 
 /**
@@ -115,19 +107,10 @@ nm_wimax_nsp_get_name (NMWimaxNsp *nsp)
 guint32
 nm_wimax_nsp_get_signal_quality (NMWimaxNsp *nsp)
 {
-	NMWimaxNspPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_WIMAX_NSP (nsp), 0);
 
-	priv = NM_WIMAX_NSP_GET_PRIVATE (nsp);
-	if (!priv->signal_quality) {
-		priv->signal_quality = _nm_object_get_uint_property (NM_OBJECT (nsp),
-		                                                     NM_DBUS_INTERFACE_WIMAX_NSP,
-		                                                     DBUS_PROP_SIGNAL_QUALITY,
-		                                                     NULL);
-	}
-
-	return priv->signal_quality;
+	_nm_object_ensure_inited (NM_OBJECT (nsp));
+	return NM_WIMAX_NSP_GET_PRIVATE (nsp)->signal_quality;
 }
 
 /**
@@ -141,19 +124,10 @@ nm_wimax_nsp_get_signal_quality (NMWimaxNsp *nsp)
 NMWimaxNspNetworkType
 nm_wimax_nsp_get_network_type (NMWimaxNsp *nsp)
 {
-	NMWimaxNspPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_WIMAX_NSP (nsp), NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN);
 
-	priv = NM_WIMAX_NSP_GET_PRIVATE (nsp);
-	if (!priv->network_type) {
-		priv->network_type = _nm_object_get_uint_property (NM_OBJECT (nsp),
-		                                                   NM_DBUS_INTERFACE_WIMAX_NSP,
-		                                                   DBUS_PROP_NETWORK_TYPE,
-		                                                   NULL);
-	}
-
-	return priv->network_type;
+	_nm_object_ensure_inited (NM_OBJECT (nsp));
+	return NM_WIMAX_NSP_GET_PRIVATE (nsp)->network_type;
 }
 
 /**
@@ -290,43 +264,36 @@ get_property (GObject *object,
 }
 
 static void
-register_for_property_changed (NMWimaxNsp *nsp)
+register_properties (NMWimaxNsp *nsp)
 {
 	NMWimaxNspPrivate *priv = NM_WIMAX_NSP_GET_PRIVATE (nsp);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_WIMAX_NSP_SIGNAL_QUALITY, _nm_object_demarshal_generic, &priv->signal_quality },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_WIMAX_NSP_NAME,           &priv->name },
+		{ NM_WIMAX_NSP_SIGNAL_QUALITY, &priv->signal_quality },
+		{ NM_WIMAX_NSP_NETWORK_TYPE,   &priv->network_type },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (nsp),
-										  priv->proxy,
-										  property_changed_info);
+	_nm_object_register_properties (NM_OBJECT (nsp),
+	                                priv->proxy,
+	                                property_info);
 }
 
-static GObject*
-constructor (GType type,
-			 guint n_construct_params,
-			 GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	NMObject *object;
 	NMWimaxNspPrivate *priv;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_wimax_nsp_parent_class)->constructor (type,
-																				   n_construct_params,
-																				   construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_wimax_nsp_parent_class)->constructed (object);
 
 	priv = NM_WIMAX_NSP_GET_PRIVATE (object);
 
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (object),
+	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
 											 NM_DBUS_SERVICE,
-											 nm_object_get_path (object),
+											 nm_object_get_path (NM_OBJECT (object)),
 											 NM_DBUS_INTERFACE_WIMAX_NSP);
 
-	register_for_property_changed (NM_WIMAX_NSP (object));
-
-	return G_OBJECT (object);
+	register_properties (NM_WIMAX_NSP (object));
 }
 
 
@@ -338,7 +305,7 @@ nm_wimax_nsp_class_init (NMWimaxNspClass *nsp_class)
 	g_type_class_add_private (nsp_class, sizeof (NMWimaxNspPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;

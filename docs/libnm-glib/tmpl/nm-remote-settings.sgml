@@ -9,12 +9,10 @@ NMRemoteSettings
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -129,6 +127,13 @@ NMRemoteSettings
 
 
 
+<!-- ##### MACRO NM_REMOTE_SETTINGS_ERROR ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_REMOTE_SETTINGS_HOSTNAME ##### -->
 <para>
 
@@ -206,6 +211,27 @@ NMRemoteSettings
 </para>
 
 @bus: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_remote_settings_new_async ##### -->
+<para>
+
+</para>
+
+@bus: 
+@cancellable: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION nm_remote_settings_new_finish ##### -->
+<para>
+
+</para>
+
+@result: 
+@error: 
 @Returns: 
 
 

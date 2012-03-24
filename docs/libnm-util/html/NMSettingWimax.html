@@ -47,6 +47,7 @@
                     <a class="link" href="NMSettingWimax.html#NMSettingWimax-struct" title="NMSettingWimax">NMSettingWimax</a>;
                     <a class="link" href="NMSettingWimax.html#NMSettingWimaxClass" title="NMSettingWimaxClass">NMSettingWimaxClass</a>;
 enum                <a class="link" href="NMSettingWimax.html#NMSettingWimaxError-enum" title="enum NMSettingWimaxError">NMSettingWimaxError</a>;
+#define             <a class="link" href="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR:CAPS" title="NM_SETTING_WIMAX_ERROR">NM_SETTING_WIMAX_ERROR</a>
 #define             <a class="link" href="NMSettingWimax.html#NM-SETTING-WIMAX-MAC-ADDRESS:CAPS" title="NM_SETTING_WIMAX_MAC_ADDRESS">NM_SETTING_WIMAX_MAC_ADDRESS</a>
 #define             <a class="link" href="NMSettingWimax.html#NM-SETTING-WIMAX-NETWORK-NAME:CAPS" title="NM_SETTING_WIMAX_NETWORK_NAME">NM_SETTING_WIMAX_NETWORK_NAME</a>
 #define             <a class="link" href="NMSettingWimax.html#NM-SETTING-WIMAX-SETTING-NAME:CAPS" title="NM_SETTING_WIMAX_SETTING_NAME">NM_SETTING_WIMAX_SETTING_NAME</a>
@@ -104,9 +105,9 @@ necessary for connection to 802.16e Mobile WiMAX networks.
 <div class="refsect2">
 <a name="NMSettingWimaxError-enum"></a><h3>enum NMSettingWimaxError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_WIMAX_ERROR_UNKNOWN = 0,
-	NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
-	NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY
+	NM_SETTING_WIMAX_ERROR_UNKNOWN = 0,      /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY, /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY  /*&lt; nick=MissingProperty &gt;*/
 } NMSettingWimaxError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -130,6 +131,14 @@ required
 </tr>
 </tbody>
 </table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIMAX-ERROR:CAPS"></a><h3>NM_SETTING_WIMAX_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_WIMAX_ERROR nm_setting_wimax_error_quark ()
+</pre>
+<p>
+</p>
 </div>
 <hr>
 <div class="refsect2">

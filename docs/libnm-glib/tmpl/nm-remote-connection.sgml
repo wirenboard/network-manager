@@ -9,12 +9,10 @@ NMRemoteConnection
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -51,11 +49,6 @@ NMRemoteConnection
 @arg1: 
 
 <!-- ##### ARG NMRemoteConnection:bus ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMRemoteConnection:init-result ##### -->
 <para>
 
 </para>

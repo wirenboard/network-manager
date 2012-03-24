@@ -24,7 +24,7 @@
 #ifndef NM_REMOTE_SETTINGS_H
 #define NM_REMOTE_SETTINGS_H
 
-#include <glib.h>
+#include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <nm-connection.h>
 #include <nm-remote-connection.h>
@@ -50,13 +50,10 @@ G_BEGIN_DECLS
  *
  **/
 typedef enum {
-	NM_REMOTE_SETTINGS_ERROR_UNKNOWN = 0,
-	NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED,
-	NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE,
+	NM_REMOTE_SETTINGS_ERROR_UNKNOWN = 0,            /*< nick=UnknownError >*/
+	NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED,     /*< nick=ConnectionRemoved >*/
+	NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE, /*< nick=ConnectionUnavailable >*/
 } NMRemoteSettingsError;
-
-#define NM_TYPE_REMOTE_SETTINGS_ERROR (nm_remote_settings_error_get_type ()) 
-GType nm_remote_settings_error_get_type (void);
 
 #define NM_REMOTE_SETTINGS_ERROR nm_remote_settings_error_quark ()
 GQuark nm_remote_settings_error_quark (void);
@@ -109,6 +106,13 @@ struct _NMRemoteSettingsClass {
 GType nm_remote_settings_get_type (void);
 
 NMRemoteSettings *nm_remote_settings_new (DBusGConnection *bus);
+
+void              nm_remote_settings_new_async  (DBusGConnection      *bus,
+                                                 GCancellable         *cancellable,
+                                                 GAsyncReadyCallback   callback,
+                                                 gpointer              user_data);
+NMRemoteSettings *nm_remote_settings_new_finish (GAsyncResult         *result,
+                                                 GError              **error);
 
 GSList *nm_remote_settings_list_connections (NMRemoteSettings *settings);
 

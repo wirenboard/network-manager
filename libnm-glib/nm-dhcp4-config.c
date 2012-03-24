@@ -77,47 +77,38 @@ demarshal_dhcp4_options (NMObject *object, GParamSpec *pspec, GValue *value, gpo
 }
 
 static void
-register_for_property_changed (NMDHCP4Config *config)
+register_properties (NMDHCP4Config *config)
 {
 	NMDHCP4ConfigPrivate *priv = NM_DHCP4_CONFIG_GET_PRIVATE (config);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_DHCP4_CONFIG_OPTIONS,   demarshal_dhcp4_options,  &priv->options },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_DHCP4_CONFIG_OPTIONS,   &priv->options, demarshal_dhcp4_options },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (config),
-	                                     priv->proxy,
-	                                     property_changed_info);
+	_nm_object_register_properties (NM_OBJECT (config),
+	                                priv->proxy,
+	                                property_info);
 }
 
-static GObject*
-constructor (GType type,
-		   guint n_construct_params,
-		   GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	NMObject *object;
 	DBusGConnection *connection;
 	NMDHCP4ConfigPrivate *priv;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_dhcp4_config_parent_class)->constructor (type,
-																 n_construct_params,
-																 construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_dhcp4_config_parent_class)->constructed (object);
 
 	priv = NM_DHCP4_CONFIG_GET_PRIVATE (object);
 	priv->options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
-	connection = nm_object_get_connection (object);
+	connection = nm_object_get_connection (NM_OBJECT (object));
 
 	priv->proxy = dbus_g_proxy_new_for_name (connection,
 										   NM_DBUS_SERVICE,
-										   nm_object_get_path (object),
+										   nm_object_get_path (NM_OBJECT (object)),
 										   NM_DBUS_INTERFACE_DHCP4_CONFIG);
 
-	register_for_property_changed (NM_DHCP4_CONFIG (object));
-
-	return G_OBJECT (object);
+	register_properties (NM_DHCP4_CONFIG (object));
 }
 
 static void
@@ -159,7 +150,7 @@ nm_dhcp4_config_class_init (NMDHCP4ConfigClass *config_class)
 	g_type_class_add_private (config_class, sizeof (NMDHCP4ConfigPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->finalize = finalize;
 
@@ -212,24 +203,10 @@ nm_dhcp4_config_new (DBusGConnection *connection, const char *object_path)
 GHashTable *
 nm_dhcp4_config_get_options (NMDHCP4Config *config)
 {
-	NMDHCP4ConfigPrivate *priv = NM_DHCP4_CONFIG_GET_PRIVATE (config);
-	GValue value = { 0, };
+	g_return_val_if_fail (NM_IS_DHCP4_CONFIG (config), NULL);
 
-	if (g_hash_table_size (priv->options))
-		return priv->options;
-
-	if (!_nm_object_get_property (NM_OBJECT (config),
-	                              NM_DBUS_INTERFACE_DHCP4_CONFIG,
-	                              "Options",
-	                              &value,
-	                              NULL))
-		goto out;
-
-	demarshal_dhcp4_options (NM_OBJECT (config), NULL, &value, &priv->options);	
-	g_value_unset (&value);
-
-out:
-	return priv->options;
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return NM_DHCP4_CONFIG_GET_PRIVATE (config)->options;
 }
 
 /**

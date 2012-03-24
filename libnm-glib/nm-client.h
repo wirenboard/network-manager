@@ -26,6 +26,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <NetworkManager.h>
 #include "nm-object.h"
@@ -106,6 +107,12 @@ GType nm_client_get_type (void);
 
 NMClient *nm_client_new (void);
 
+void      nm_client_new_async  (GCancellable         *cancellable,
+                                GAsyncReadyCallback   callback,
+                                gpointer              user_data);
+NMClient *nm_client_new_finish (GAsyncResult         *result,
+                                GError              **error);
+
 const GPtrArray *nm_client_get_devices    (NMClient *client);
 NMDevice *nm_client_get_device_by_path    (NMClient *client, const char *object_path);
 NMDevice *nm_client_get_device_by_iface   (NMClient *client, const char *iface);
@@ -156,7 +163,7 @@ const char *nm_client_get_version        (NMClient *client);
 NMState   nm_client_get_state            (NMClient *client);
 gboolean  nm_client_get_manager_running  (NMClient *client);
 const GPtrArray *nm_client_get_active_connections (NMClient *client);
-void      nm_client_sleep                (NMClient *client, gboolean sleep);
+void      nm_client_sleep                (NMClient *client, gboolean sleep_);
 
 NMClientPermissionResult nm_client_get_permission_result (NMClient *client,
                                                           NMClientPermission permission);

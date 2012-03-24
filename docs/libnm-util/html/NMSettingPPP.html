@@ -50,6 +50,7 @@ that require PPP to deliver IP capability</p>
 enum                <a class="link" href="NMSettingPPP.html#NMSettingPPPError-enum" title="enum NMSettingPPPError">NMSettingPPPError</a>;
 #define             <a class="link" href="NMSettingPPP.html#NM-SETTING-PPP-BAUD:CAPS" title="NM_SETTING_PPP_BAUD">NM_SETTING_PPP_BAUD</a>
 #define             <a class="link" href="NMSettingPPP.html#NM-SETTING-PPP-CRTSCTS:CAPS" title="NM_SETTING_PPP_CRTSCTS">NM_SETTING_PPP_CRTSCTS</a>
+#define             <a class="link" href="NMSettingPPP.html#NM-SETTING-PPP-ERROR:CAPS" title="NM_SETTING_PPP_ERROR">NM_SETTING_PPP_ERROR</a>
 #define             <a class="link" href="NMSettingPPP.html#NM-SETTING-PPP-LCP-ECHO-FAILURE:CAPS" title="NM_SETTING_PPP_LCP_ECHO_FAILURE">NM_SETTING_PPP_LCP_ECHO_FAILURE</a>
 #define             <a class="link" href="NMSettingPPP.html#NM-SETTING-PPP-LCP-ECHO-INTERVAL:CAPS" title="NM_SETTING_PPP_LCP_ECHO_INTERVAL">NM_SETTING_PPP_LCP_ECHO_INTERVAL</a>
 #define             <a class="link" href="NMSettingPPP.html#NM-SETTING-PPP-MPPE-STATEFUL:CAPS" title="NM_SETTING_PPP_MPPE_STATEFUL">NM_SETTING_PPP_MPPE_STATEFUL</a>
@@ -161,10 +162,10 @@ cable and DSL modems and some mobile broadband devices.
 <div class="refsect2">
 <a name="NMSettingPPPError-enum"></a><h3>enum NMSettingPPPError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_PPP_ERROR_UNKNOWN = 0,
-	NM_SETTING_PPP_ERROR_INVALID_PROPERTY,
-	NM_SETTING_PPP_ERROR_MISSING_PROPERTY,
-	NM_SETTING_PPP_ERROR_REQUIRE_MPPE_NOT_ALLOWED
+	NM_SETTING_PPP_ERROR_UNKNOWN = 0,             /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_PPP_ERROR_INVALID_PROPERTY,        /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_PPP_ERROR_MISSING_PROPERTY,        /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_PPP_ERROR_REQUIRE_MPPE_NOT_ALLOWED /*&lt; nick=RequireMPPENotAllowed &gt;*/
 } NMSettingPPPError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -207,6 +208,14 @@ with other setting configuration parameters
 <div class="refsect2">
 <a name="NM-SETTING-PPP-CRTSCTS:CAPS"></a><h3>NM_SETTING_PPP_CRTSCTS</h3>
 <pre class="programlisting">#define NM_SETTING_PPP_CRTSCTS           "crtscts"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-PPP-ERROR:CAPS"></a><h3>NM_SETTING_PPP_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_PPP_ERROR nm_setting_ppp_error_quark ()
 </pre>
 <p>
 </p>

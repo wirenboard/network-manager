@@ -100,18 +100,19 @@ AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
 libnm_glib_test_la_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/marshallers/libmarshallers.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__objects_1 =
 am__objects_2 = libnm_glib_test_la-nm-object.lo \
 	libnm_glib_test_la-nm-client.lo \
-	libnm_glib_test_la-nm-dbus-utils.lo \
 	libnm_glib_test_la-nm-device.lo \
 	libnm_glib_test_la-nm-device-ethernet.lo \
+	libnm_glib_test_la-nm-device-infiniband.lo \
 	libnm_glib_test_la-nm-device-wifi.lo \
 	libnm_glib_test_la-nm-device-bt.lo \
+	libnm_glib_test_la-nm-device-olpc-mesh.lo \
+	libnm_glib_test_la-nm-device-bond.lo \
+	libnm_glib_test_la-nm-device-vlan.lo \
 	libnm_glib_test_la-nm-access-point.lo \
 	libnm_glib_test_la-nm-ip4-config.lo \
 	libnm_glib_test_la-nm-device-modem.lo \
@@ -126,7 +127,9 @@ am__objects_2 = libnm_glib_test_la-nm-object.lo \
 	libnm_glib_test_la-nm-remote-settings.lo \
 	libnm_glib_test_la-nm-secret-agent.lo \
 	libnm_glib_test_la-nm-device-wimax.lo \
-	libnm_glib_test_la-nm-wimax-nsp.lo
+	libnm_glib_test_la-nm-wimax-nsp.lo \
+	libnm_glib_test_la-nm-glib-enum-types.lo \
+	libnm_glib_test_la-nm-glib-marshal.lo
 am__objects_3 = $(am__objects_2) $(am__objects_1)
 am_libnm_glib_test_la_OBJECTS = $(am__objects_1) $(am__objects_3)
 libnm_glib_test_la_OBJECTS = $(am_libnm_glib_test_la_OBJECTS)
@@ -139,20 +142,23 @@ libnm_glib_vpn_la_DEPENDENCIES =  \
 	$(am__DEPENDENCIES_1)
 am_libnm_glib_vpn_la_OBJECTS = libnm_glib_vpn_la-nm-vpn-plugin.lo \
 	libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.lo \
-	libnm_glib_vpn_la-nm-vpn-plugin-utils.lo
+	libnm_glib_vpn_la-nm-vpn-plugin-utils.lo \
+	libnm_glib_vpn_la-nm-vpn-enum-types.lo
 libnm_glib_vpn_la_OBJECTS = $(am_libnm_glib_vpn_la_OBJECTS)
 libnm_glib_vpn_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) \
 	$(libnm_glib_vpn_la_LDFLAGS) $(LDFLAGS) -o $@
 libnm_glib_la_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/marshallers/libmarshallers.la \
 	$(builddir)/libdeprecated-nm-glib.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__objects_4 = libnm_glib_la-nm-object.lo libnm_glib_la-nm-client.lo \
-	libnm_glib_la-nm-dbus-utils.lo libnm_glib_la-nm-device.lo \
-	libnm_glib_la-nm-device-ethernet.lo \
+	libnm_glib_la-nm-device.lo libnm_glib_la-nm-device-ethernet.lo \
+	libnm_glib_la-nm-device-infiniband.lo \
 	libnm_glib_la-nm-device-wifi.lo libnm_glib_la-nm-device-bt.lo \
+	libnm_glib_la-nm-device-olpc-mesh.lo \
+	libnm_glib_la-nm-device-bond.lo \
+	libnm_glib_la-nm-device-vlan.lo \
 	libnm_glib_la-nm-access-point.lo \
 	libnm_glib_la-nm-ip4-config.lo \
 	libnm_glib_la-nm-device-modem.lo \
@@ -165,7 +171,9 @@ am__objects_4 = libnm_glib_la-nm-object.lo libnm_glib_la-nm-client.lo \
 	libnm_glib_la-nm-remote-connection.lo \
 	libnm_glib_la-nm-remote-settings.lo \
 	libnm_glib_la-nm-secret-agent.lo \
-	libnm_glib_la-nm-device-wimax.lo libnm_glib_la-nm-wimax-nsp.lo
+	libnm_glib_la-nm-device-wimax.lo libnm_glib_la-nm-wimax-nsp.lo \
+	libnm_glib_la-nm-glib-enum-types.lo \
+	libnm_glib_la-nm-glib-marshal.lo
 am_libnm_glib_la_OBJECTS = $(am__objects_4) $(am__objects_1)
 libnm_glib_la_OBJECTS = $(am_libnm_glib_la_OBJECTS)
 libnm_glib_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -303,6 +311,8 @@ GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
+GLIB_MAKEFILE = @GLIB_MAKEFILE@
+GLIB_MKENUMS = @GLIB_MKENUMS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
@@ -357,11 +367,15 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
+LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
+LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
 LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
+LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -372,6 +386,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
@@ -411,6 +426,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS = @SYSTEMD_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -477,29 +494,13 @@ top_srcdir = @top_srcdir@
 SUBDIRS = . tests
 INCLUDES = \
 	-I$(top_srcdir)/include \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
+	-I$(top_builddir)/libnm-util \
 	-I$(top_builddir)/marshallers
 
-BUILT_SOURCES = \
-	nm-access-point-bindings.h \
-	nm-client-bindings.h \
-	nm-device-bindings.h \
-	nm-device-ethernet-bindings.h \
-	nm-device-wifi-bindings.h \
-	nm-device-bt-bindings.h \
-	nm-settings-connection-bindings.h \
-	nm-device-wimax-bindings.h \
-	nm-device-modem-bindings.h \
-	nm-settings-bindings.h \
-	nm-vpn-connection-bindings.h \
-	nm-vpn-plugin-glue.h \
-	nm-active-connection-bindings.h \
-	nm-ip4-config-bindings.h \
-	nm-dhcp4-config-bindings.h \
-	nm-ip6-config-bindings.h \
-	nm-dhcp6-config-bindings.h \
-	nm-secret-agent-glue.h
-
+BUILT_SOURCES = nm-vpn-plugin-glue.h nm-secret-agent-glue.h \
+	$(GLIB_GENERATED)
 noinst_LTLIBRARIES = \
 	libdeprecated-nm-glib.la \
 	libnm-glib-test.la
@@ -530,7 +531,7 @@ libdeprecated_HEADERS = libnm_glib.h
 #####################################################
 lib_LTLIBRARIES = libnm-glib.la libnm-glib-vpn.la
 libnm_glib_la_CFLAGS = \
-	$(GLIB_CFLAGS) \
+	$(GIO_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GUDEV_CFLAGS)
 
@@ -541,8 +542,12 @@ libnminclude_HEADERS = \
 	nm-client.h \
 	nm-device.h \
 	nm-device-ethernet.h \
+	nm-device-infiniband.h \
 	nm-device-wifi.h \
 	nm-device-bt.h \
+	nm-device-olpc-mesh.h \
+	nm-device-bond.h \
+	nm-device-vlan.h \
 	nm-access-point.h \
 	nm-ip4-config.h \
 	nm-device-modem.h \
@@ -556,21 +561,26 @@ libnminclude_HEADERS = \
 	nm-remote-settings.h \
 	nm-secret-agent.h \
 	nm-device-wimax.h \
-	nm-wimax-nsp.h
+	nm-wimax-nsp.h \
+	nm-glib-enum-types.h
 
 libnmvpn_HEADERS = \
 	nm-vpn-plugin.h \
 	nm-vpn-plugin-ui-interface.h \
-	nm-vpn-plugin-utils.h
+	nm-vpn-plugin-utils.h \
+	nm-vpn-enum-types.h
 
 libnm_glib_la_csources = \
 	nm-object.c \
 	nm-client.c \
-	nm-dbus-utils.c \
 	nm-device.c \
 	nm-device-ethernet.c \
+	nm-device-infiniband.c \
 	nm-device-wifi.c \
 	nm-device-bt.c \
+	nm-device-olpc-mesh.c \
+	nm-device-bond.c \
+	nm-device-vlan.c \
 	nm-access-point.c \
 	nm-ip4-config.c \
 	nm-device-modem.c \
@@ -585,42 +595,52 @@ libnm_glib_la_csources = \
 	nm-remote-settings.c \
 	nm-secret-agent.c \
 	nm-device-wimax.c \
-	nm-wimax-nsp.c
+	nm-wimax-nsp.c \
+	nm-glib-enum-types.c \
+	nm-glib-marshal.c
 
 libnm_glib_la_private_headers = \
 	nm-object-private.h \
-	nm-dbus-utils.h \
 	nm-device-private.h \
 	nm-types-private.h \
 	nm-object-cache.h \
-	nm-remote-connection-private.h
+	nm-remote-connection-private.h \
+	nm-glib-marshal.h
 
 libnm_glib_la_SOURCES = \
 	$(libnm_glib_la_csources) \
 	$(libnm_glib_la_private_headers)
 
+GLIB_GENERATED = nm-glib-enum-types.h nm-glib-enum-types.c \
+	nm-glib-marshal.h nm-glib-marshal.c nm-vpn-enum-types.h \
+	nm-vpn-enum-types.c
+nm_glib_enum_types_sources = $(libnminclude_HEADERS)
+GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
+GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
+nm_glib_marshal_sources = $(libnm_glib_la_SOURCES)
 libnm_glib_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/marshallers/libmarshallers.la \
 	$(builddir)/libdeprecated-nm-glib.la \
-	$(GLIB_LIBS) \
+	$(GIO_LIBS) \
 	$(DBUS_LIBS) \
 	$(GUDEV_LIBS)
 
 SYMBOL_VIS_FILE = $(srcdir)/libnm-glib.ver
 libnm_glib_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "6:0:2"
+	-version-info "7:0:3"
 
 libnm_glib_test_SOURCES = libnm-glib-test.c
-libnm_glib_test_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
-libnm_glib_test_LDADD = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
+libnm_glib_test_CFLAGS = $(GIO_CFLAGS) $(DBUS_CFLAGS)
+libnm_glib_test_LDADD = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la $(GIO_LIBS) $(DBUS_LIBS)
 libnm_glib_vpn_la_SOURCES = \
 	nm-vpn-plugin.c \
 	nm-vpn-plugin-ui-interface.c \
-	nm-vpn-plugin-utils.c
+	nm-vpn-plugin-utils.c \
+	nm-vpn-enum-types.c
 
-libnm_glib_vpn_la_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
-libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
+nm_vpn_enum_types_sources = $(libnmvpn_HEADERS)
+libnm_glib_vpn_la_CFLAGS = $(GIO_CFLAGS) $(DBUS_CFLAGS)
+libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GIO_LIBS) $(DBUS_LIBS)
 libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib-vpn.ver \
 	-version-info "2:0:1"
 
@@ -629,7 +649,7 @@ libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib-vpn.ver \
 # Test libnm-glib stuff
 #####################################################
 libnm_glib_test_la_CFLAGS = \
-	$(GLIB_CFLAGS) \
+	$(GIO_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GUDEV_CFLAGS) \
 	-DLIBNM_GLIB_TEST
@@ -640,8 +660,7 @@ libnm_glib_test_la_SOURCES = \
 
 libnm_glib_test_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/marshallers/libmarshallers.la \
-	$(GLIB_LIBS) \
+	$(GIO_LIBS) \
 	$(DBUS_LIBS) \
 	$(GUDEV_LIBS)
 
@@ -649,12 +668,12 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnm-glib.pc libnm-glib-vpn.pc
 DISTCLEANFILES = libnm-glib.pc libnm-glib.pc
 EXTRA_DIST = libnm-glib.pc.in libnm-glib-vpn.pc.in libnm-glib.ver libnm-glib-vpn.ver
-CLEANFILES = $(BUILT_SOURCES) *-bindings.h *-glue.h $(am__append_2)
+CLEANFILES = $(BUILT_SOURCES) $(am__append_2)
 INTROSPECTION_GIRS = $(am__append_1)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(top_builddir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@introspection_sources = $(libnminclude_HEADERS) $(libnm_glib_la_csources)
-@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
-@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1 gudev-1.0
+@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_INCLUDES = Gio-2.0 DBusGLib-1.0
+@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_PACKAGES = gio-2.0 dbus-glib-1 gudev-1.0
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-glib -I$(top_srcdir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_LIBS = libnm-glib.la
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_FILES = $(introspection_sources)
@@ -773,15 +792,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-access-point.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-active-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-client.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-dbus-utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-bt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-ethernet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-infiniband.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-modem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-olpc-mesh.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-vlan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-wifi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-wimax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-dhcp4-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-dhcp6-config.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-glib-enum-types.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-glib-marshal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-ip4-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-ip6-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-object-cache.Plo@am__quote@
@@ -796,15 +820,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-access-point.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-active-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-client.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-dbus-utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-bt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-ethernet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-infiniband.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-modem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-olpc-mesh.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-vlan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-wifi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-wimax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-dhcp4-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-dhcp6-config.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-glib-enum-types.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-glib-marshal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-ip4-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-ip6-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-object-cache.Plo@am__quote@
@@ -815,6 +844,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-types.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-vpn-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-wimax-nsp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_vpn_la-nm-vpn-enum-types.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-ui-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Plo@am__quote@
@@ -870,14 +900,6 @@ libnm_glib_test_la-nm-client.lo: nm-client.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-client.lo `test -f 'nm-client.c' || echo '$(srcdir)/'`nm-client.c
 
-libnm_glib_test_la-nm-dbus-utils.lo: nm-dbus-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-dbus-utils.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-dbus-utils.Tpo -c -o libnm_glib_test_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-dbus-utils.Tpo $(DEPDIR)/libnm_glib_test_la-nm-dbus-utils.Plo
-@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dbus-utils.c' object='libnm_glib_test_la-nm-dbus-utils.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
-
 libnm_glib_test_la-nm-device.lo: nm-device.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device.Tpo -c -o libnm_glib_test_la-nm-device.lo `test -f 'nm-device.c' || echo '$(srcdir)/'`nm-device.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device.Plo
@@ -894,6 +916,14 @@ libnm_glib_test_la-nm-device-ethernet.lo: nm-device-ethernet.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-ethernet.lo `test -f 'nm-device-ethernet.c' || echo '$(srcdir)/'`nm-device-ethernet.c
 
+libnm_glib_test_la-nm-device-infiniband.lo: nm-device-infiniband.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-infiniband.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-infiniband.Tpo -c -o libnm_glib_test_la-nm-device-infiniband.lo `test -f 'nm-device-infiniband.c' || echo '$(srcdir)/'`nm-device-infiniband.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device-infiniband.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device-infiniband.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-infiniband.c' object='libnm_glib_test_la-nm-device-infiniband.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-infiniband.lo `test -f 'nm-device-infiniband.c' || echo '$(srcdir)/'`nm-device-infiniband.c
+
 libnm_glib_test_la-nm-device-wifi.lo: nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-wifi.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-wifi.Tpo -c -o libnm_glib_test_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device-wifi.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device-wifi.Plo
@@ -909,6 +939,30 @@ libnm_glib_test_la-nm-device-bt.lo: nm-device-bt.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-bt.c' object='libnm_glib_test_la-nm-device-bt.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-bt.lo `test -f 'nm-device-bt.c' || echo '$(srcdir)/'`nm-device-bt.c
+
+libnm_glib_test_la-nm-device-olpc-mesh.lo: nm-device-olpc-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-olpc-mesh.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-olpc-mesh.Tpo -c -o libnm_glib_test_la-nm-device-olpc-mesh.lo `test -f 'nm-device-olpc-mesh.c' || echo '$(srcdir)/'`nm-device-olpc-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device-olpc-mesh.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device-olpc-mesh.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-olpc-mesh.c' object='libnm_glib_test_la-nm-device-olpc-mesh.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-olpc-mesh.lo `test -f 'nm-device-olpc-mesh.c' || echo '$(srcdir)/'`nm-device-olpc-mesh.c
+
+libnm_glib_test_la-nm-device-bond.lo: nm-device-bond.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-bond.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-bond.Tpo -c -o libnm_glib_test_la-nm-device-bond.lo `test -f 'nm-device-bond.c' || echo '$(srcdir)/'`nm-device-bond.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device-bond.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device-bond.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-bond.c' object='libnm_glib_test_la-nm-device-bond.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-bond.lo `test -f 'nm-device-bond.c' || echo '$(srcdir)/'`nm-device-bond.c
+
+libnm_glib_test_la-nm-device-vlan.lo: nm-device-vlan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-vlan.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-vlan.Tpo -c -o libnm_glib_test_la-nm-device-vlan.lo `test -f 'nm-device-vlan.c' || echo '$(srcdir)/'`nm-device-vlan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device-vlan.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device-vlan.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-vlan.c' object='libnm_glib_test_la-nm-device-vlan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-vlan.lo `test -f 'nm-device-vlan.c' || echo '$(srcdir)/'`nm-device-vlan.c
 
 libnm_glib_test_la-nm-access-point.lo: nm-access-point.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-access-point.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-access-point.Tpo -c -o libnm_glib_test_la-nm-access-point.lo `test -f 'nm-access-point.c' || echo '$(srcdir)/'`nm-access-point.c
@@ -1030,6 +1084,22 @@ libnm_glib_test_la-nm-wimax-nsp.lo: nm-wimax-nsp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-wimax-nsp.lo `test -f 'nm-wimax-nsp.c' || echo '$(srcdir)/'`nm-wimax-nsp.c
 
+libnm_glib_test_la-nm-glib-enum-types.lo: nm-glib-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-glib-enum-types.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-glib-enum-types.Tpo -c -o libnm_glib_test_la-nm-glib-enum-types.lo `test -f 'nm-glib-enum-types.c' || echo '$(srcdir)/'`nm-glib-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-glib-enum-types.Tpo $(DEPDIR)/libnm_glib_test_la-nm-glib-enum-types.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-glib-enum-types.c' object='libnm_glib_test_la-nm-glib-enum-types.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-glib-enum-types.lo `test -f 'nm-glib-enum-types.c' || echo '$(srcdir)/'`nm-glib-enum-types.c
+
+libnm_glib_test_la-nm-glib-marshal.lo: nm-glib-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-glib-marshal.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-glib-marshal.Tpo -c -o libnm_glib_test_la-nm-glib-marshal.lo `test -f 'nm-glib-marshal.c' || echo '$(srcdir)/'`nm-glib-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-glib-marshal.Tpo $(DEPDIR)/libnm_glib_test_la-nm-glib-marshal.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-glib-marshal.c' object='libnm_glib_test_la-nm-glib-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-glib-marshal.lo `test -f 'nm-glib-marshal.c' || echo '$(srcdir)/'`nm-glib-marshal.c
+
 libnm_glib_vpn_la-nm-vpn-plugin.lo: nm-vpn-plugin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -MT libnm_glib_vpn_la-nm-vpn-plugin.lo -MD -MP -MF $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Tpo -c -o libnm_glib_vpn_la-nm-vpn-plugin.lo `test -f 'nm-vpn-plugin.c' || echo '$(srcdir)/'`nm-vpn-plugin.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Tpo $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-plugin.Plo
@@ -1054,6 +1124,14 @@ libnm_glib_vpn_la-nm-vpn-plugin-utils.lo: nm-vpn-plugin-utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_vpn_la-nm-vpn-plugin-utils.lo `test -f 'nm-vpn-plugin-utils.c' || echo '$(srcdir)/'`nm-vpn-plugin-utils.c
 
+libnm_glib_vpn_la-nm-vpn-enum-types.lo: nm-vpn-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -MT libnm_glib_vpn_la-nm-vpn-enum-types.lo -MD -MP -MF $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-enum-types.Tpo -c -o libnm_glib_vpn_la-nm-vpn-enum-types.lo `test -f 'nm-vpn-enum-types.c' || echo '$(srcdir)/'`nm-vpn-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-enum-types.Tpo $(DEPDIR)/libnm_glib_vpn_la-nm-vpn-enum-types.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-vpn-enum-types.c' object='libnm_glib_vpn_la-nm-vpn-enum-types.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_vpn_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_vpn_la-nm-vpn-enum-types.lo `test -f 'nm-vpn-enum-types.c' || echo '$(srcdir)/'`nm-vpn-enum-types.c
+
 libnm_glib_la-nm-object.lo: nm-object.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-object.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-object.Tpo -c -o libnm_glib_la-nm-object.lo `test -f 'nm-object.c' || echo '$(srcdir)/'`nm-object.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-object.Tpo $(DEPDIR)/libnm_glib_la-nm-object.Plo
@@ -1069,14 +1147,6 @@ libnm_glib_la-nm-client.lo: nm-client.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-client.c' object='libnm_glib_la-nm-client.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-client.lo `test -f 'nm-client.c' || echo '$(srcdir)/'`nm-client.c
-
-libnm_glib_la-nm-dbus-utils.lo: nm-dbus-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-dbus-utils.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Tpo -c -o libnm_glib_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Tpo $(DEPDIR)/libnm_glib_la-nm-dbus-utils.Plo
-@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-dbus-utils.c' object='libnm_glib_la-nm-dbus-utils.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-dbus-utils.lo `test -f 'nm-dbus-utils.c' || echo '$(srcdir)/'`nm-dbus-utils.c
 
 libnm_glib_la-nm-device.lo: nm-device.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device.Tpo -c -o libnm_glib_la-nm-device.lo `test -f 'nm-device.c' || echo '$(srcdir)/'`nm-device.c
@@ -1094,6 +1164,14 @@ libnm_glib_la-nm-device-ethernet.lo: nm-device-ethernet.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-ethernet.lo `test -f 'nm-device-ethernet.c' || echo '$(srcdir)/'`nm-device-ethernet.c
 
+libnm_glib_la-nm-device-infiniband.lo: nm-device-infiniband.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-infiniband.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-infiniband.Tpo -c -o libnm_glib_la-nm-device-infiniband.lo `test -f 'nm-device-infiniband.c' || echo '$(srcdir)/'`nm-device-infiniband.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-infiniband.Tpo $(DEPDIR)/libnm_glib_la-nm-device-infiniband.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-infiniband.c' object='libnm_glib_la-nm-device-infiniband.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-infiniband.lo `test -f 'nm-device-infiniband.c' || echo '$(srcdir)/'`nm-device-infiniband.c
+
 libnm_glib_la-nm-device-wifi.lo: nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-wifi.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo -c -o libnm_glib_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo $(DEPDIR)/libnm_glib_la-nm-device-wifi.Plo
@@ -1109,6 +1187,30 @@ libnm_glib_la-nm-device-bt.lo: nm-device-bt.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-bt.c' object='libnm_glib_la-nm-device-bt.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-bt.lo `test -f 'nm-device-bt.c' || echo '$(srcdir)/'`nm-device-bt.c
+
+libnm_glib_la-nm-device-olpc-mesh.lo: nm-device-olpc-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-olpc-mesh.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-olpc-mesh.Tpo -c -o libnm_glib_la-nm-device-olpc-mesh.lo `test -f 'nm-device-olpc-mesh.c' || echo '$(srcdir)/'`nm-device-olpc-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-olpc-mesh.Tpo $(DEPDIR)/libnm_glib_la-nm-device-olpc-mesh.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-olpc-mesh.c' object='libnm_glib_la-nm-device-olpc-mesh.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-olpc-mesh.lo `test -f 'nm-device-olpc-mesh.c' || echo '$(srcdir)/'`nm-device-olpc-mesh.c
+
+libnm_glib_la-nm-device-bond.lo: nm-device-bond.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-bond.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-bond.Tpo -c -o libnm_glib_la-nm-device-bond.lo `test -f 'nm-device-bond.c' || echo '$(srcdir)/'`nm-device-bond.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-bond.Tpo $(DEPDIR)/libnm_glib_la-nm-device-bond.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-bond.c' object='libnm_glib_la-nm-device-bond.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-bond.lo `test -f 'nm-device-bond.c' || echo '$(srcdir)/'`nm-device-bond.c
+
+libnm_glib_la-nm-device-vlan.lo: nm-device-vlan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-vlan.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-vlan.Tpo -c -o libnm_glib_la-nm-device-vlan.lo `test -f 'nm-device-vlan.c' || echo '$(srcdir)/'`nm-device-vlan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-vlan.Tpo $(DEPDIR)/libnm_glib_la-nm-device-vlan.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-vlan.c' object='libnm_glib_la-nm-device-vlan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-vlan.lo `test -f 'nm-device-vlan.c' || echo '$(srcdir)/'`nm-device-vlan.c
 
 libnm_glib_la-nm-access-point.lo: nm-access-point.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-access-point.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-access-point.Tpo -c -o libnm_glib_la-nm-access-point.lo `test -f 'nm-access-point.c' || echo '$(srcdir)/'`nm-access-point.c
@@ -1229,6 +1331,22 @@ libnm_glib_la-nm-wimax-nsp.lo: nm-wimax-nsp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-wimax-nsp.c' object='libnm_glib_la-nm-wimax-nsp.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-wimax-nsp.lo `test -f 'nm-wimax-nsp.c' || echo '$(srcdir)/'`nm-wimax-nsp.c
+
+libnm_glib_la-nm-glib-enum-types.lo: nm-glib-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-glib-enum-types.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-glib-enum-types.Tpo -c -o libnm_glib_la-nm-glib-enum-types.lo `test -f 'nm-glib-enum-types.c' || echo '$(srcdir)/'`nm-glib-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-glib-enum-types.Tpo $(DEPDIR)/libnm_glib_la-nm-glib-enum-types.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-glib-enum-types.c' object='libnm_glib_la-nm-glib-enum-types.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-glib-enum-types.lo `test -f 'nm-glib-enum-types.c' || echo '$(srcdir)/'`nm-glib-enum-types.c
+
+libnm_glib_la-nm-glib-marshal.lo: nm-glib-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-glib-marshal.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-glib-marshal.Tpo -c -o libnm_glib_la-nm-glib-marshal.lo `test -f 'nm-glib-marshal.c' || echo '$(srcdir)/'`nm-glib-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-glib-marshal.Tpo $(DEPDIR)/libnm_glib_la-nm-glib-marshal.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-glib-marshal.c' object='libnm_glib_la-nm-glib-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-glib-marshal.lo `test -f 'nm-glib-marshal.c' || echo '$(srcdir)/'`nm-glib-marshal.c
 
 libnm_glib_test-libnm-glib-test.o: libnm-glib-test.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -MT libnm_glib_test-libnm-glib-test.o -MD -MP -MF $(DEPDIR)/libnm_glib_test-libnm-glib-test.Tpo -c -o libnm_glib_test-libnm-glib-test.o `test -f 'libnm-glib-test.c' || echo '$(srcdir)/'`libnm-glib-test.c
@@ -1707,62 +1825,15 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	uninstall-libnmvpnHEADERS uninstall-pkgconfigDATA \
 	uninstall-typelibDATA
 
+include $(GLIB_MAKEFILE)
 
 #####################################################
-
-nm-client-bindings.h: $(top_srcdir)/introspection/nm-manager.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_client --mode=glib-client --output=$@ $<
-
-nm-device-bindings.h: $(top_srcdir)/introspection/nm-device.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device --mode=glib-client --output=$@ $<
-
-nm-device-ethernet-bindings.h: $(top_srcdir)/introspection/nm-device-ethernet.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_ethernet --mode=glib-client --output=$@ $<
-
-nm-device-wifi-bindings.h: $(top_srcdir)/introspection/nm-device-wifi.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_wifi --mode=glib-client --output=$@ $<
-
-nm-device-bt-bindings.h: $(top_srcdir)/introspection/nm-device-bt.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_bt --mode=glib-client --output=$@ $<
-
-nm-access-point-bindings.h: $(top_srcdir)/introspection/nm-access-point.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_access_point --mode=glib-client --output=$@ $<
-
-nm-settings-bindings.h: $(top_srcdir)/introspection/nm-settings.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_settings --mode=glib-client --output=$@ $<
-
-nm-settings-connection-bindings.h: $(top_srcdir)/introspection/nm-settings-connection.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_settings_connection --mode=glib-client --output=$@ $<
-
-nm-vpn-connection-bindings.h: $(top_srcdir)/introspection/nm-vpn-connection.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_vpn_connection --mode=glib-client --output=$@ $<
 
 nm-vpn-plugin-glue.h: $(top_srcdir)/introspection/nm-vpn-plugin.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_vpn_plugin --mode=glib-server --output=$@ $<
 
-nm-active-connection-bindings.h: $(top_srcdir)/introspection/nm-active-connection.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_active_connection --mode=glib-client --output=$@ $<
-
-nm-ip4-config-bindings.h: $(top_srcdir)/introspection/nm-ip4-config.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ip4_config --mode=glib-client --output=$@ $<
-
-nm-dhcp4-config-bindings.h: $(top_srcdir)/introspection/nm-dhcp4-config.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dhcp4_config --mode=glib-client --output=$@ $<
-
-nm-ip6-config-bindings.h: $(top_srcdir)/introspection/nm-ip6-config.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ip6_config --mode=glib-client --output=$@ $<
-
-nm-dhcp6-config-bindings.h: $(top_srcdir)/introspection/nm-dhcp6-config.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dhcp6_config --mode=glib-client --output=$@ $<
-
 nm-secret-agent-glue.h: $(top_srcdir)/introspection/nm-secret-agent.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_secret_agent --mode=glib-server --output=$@ $<
-
-nm-device-wimax-bindings.h: $(top_srcdir)/introspection/nm-device-wimax.xml
-	dbus-binding-tool --prefix=nm_device_wimax --mode=glib-client --output=$@ $<
-
-nm-device-modem-bindings.h: $(top_srcdir)/introspection/nm-device-modem.xml
-	dbus-binding-tool --prefix=nm_device_modem --mode=glib-client --output=$@ $<
 
 -include $(INTROSPECTION_MAKEFILE)
 

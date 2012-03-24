@@ -1,4 +1,5 @@
 SUBDIRS= \
+	generated \
 	logging \
 	dns-manager \
 	vpn-manager \
@@ -10,6 +11,8 @@ SUBDIRS= \
 	dnsmasq-manager \
 	modem-manager \
 	bluez-manager \
+	firewall-manager \
+	wifi \
 	settings
 
 if WITH_WIMAX
@@ -20,7 +23,9 @@ SUBDIRS += . tests
 
 INCLUDES = -I${top_srcdir} \
            -I${top_srcdir}/include \
-           -I${top_builddir}/marshallers \
+           -I${top_builddir}/include \
+           -I${top_srcdir}/src/generated \
+           -I${top_builddir}/src/generated \
            -I${top_srcdir}/src/logging \
            -I${top_srcdir}/src/dns-manager \
            -I${top_srcdir}/src/vpn-manager \
@@ -30,13 +35,12 @@ INCLUDES = -I${top_srcdir} \
            -I${top_srcdir}/src/dnsmasq-manager \
            -I${top_srcdir}/src/modem-manager \
            -I$(top_srcdir)/src/bluez-manager \
+           -I$(top_srcdir)/src/firewall-manager \
            -I$(top_srcdir)/src/settings \
+           -I$(top_srcdir)/src/wifi \
            -I${top_srcdir}/libnm-util \
+           -I${top_builddir}/libnm-util \
            -I${top_srcdir}/callouts
-
-if WITH_WIMAX
-INCLUDES += -I$(top_srcdir)/src/wimax
-endif
 
 ###########################################
 # Test libraries
@@ -63,7 +67,7 @@ libtest_dhcp_la_CPPFLAGS = \
 	$(LIBNL_CFLAGS)
 
 libtest_dhcp_la_LIBADD = \
-	$(top_builddir)/marshallers/libmarshallers.la \
+	$(top_builddir)/src/generated/libnm-generated.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
@@ -113,19 +117,25 @@ NetworkManager_SOURCES = \
 		nm-call-store.h \
 		nm-device.c \
 		nm-device.h \
-		nm-device-interface.c \
-		nm-device-interface.h \
 		nm-device-private.h \
 		nm-device-ethernet.c \
 		nm-device-ethernet.h \
 		nm-device-wifi.c \
 		nm-device-wifi.h \
+		nm-device-wired.c \
+		nm-device-wired.h \
 		nm-device-olpc-mesh.c	\
 		nm-device-olpc-mesh.h	\
 		nm-device-bt.c \
 		nm-device-bt.h \
 		nm-device-modem.h \
 		nm-device-modem.c \
+		nm-device-infiniband.c \
+		nm-device-infiniband.h \
+		nm-device-bond.c \
+		nm-device-bond.h \
+		nm-device-vlan.c \
+		nm-device-vlan.h \
 		nm-wifi-ap.c \
 		nm-wifi-ap.h \
 		nm-wifi-ap-utils.c \
@@ -134,6 +144,7 @@ NetworkManager_SOURCES = \
 		nm-dbus-manager.c \
 		nm-udev-manager.c \
 		nm-udev-manager.h \
+		nm-device-factory.h \
 		nm-hostname-provider.c \
 		nm-hostname-provider.h \
 		nm-ip4-config.c \
@@ -169,15 +180,28 @@ NetworkManager_SOURCES = \
 		nm-activation-request.h \
 		nm-properties-changed-signal.c \
 		nm-properties-changed-signal.h \
-		wpa.c \
-		wpa.h \
 		nm-dhcp4-config.c \
 		nm-dhcp4-config.h \
 		nm-dhcp6-config.c \
 		nm-dhcp6-config.h \
 		nm-rfkill.h \
-		nm-session-monitor.c \
-		nm-session-monitor.h
+		nm-session-monitor.h \
+		nm-session-utils.c \
+		nm-session-utils.h
+
+if WITH_CONCHECK
+NetworkManager_SOURCES += nm-connectivity.c nm-connectivity.h
+endif
+
+if SESSION_TRACKING_SYSTEMD
+NetworkManager_SOURCES += nm-session-monitor-systemd.c
+else
+if SESSION_TRACKING_CK
+NetworkManager_SOURCES += nm-session-monitor-ck.c
+else
+NetworkManager_SOURCES += nm-session-monitor-null.c
+endif
+endif
 
 nm-access-point-glue.h: $(top_srcdir)/introspection/nm-access-point.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_access_point --mode=glib-server --output=$@ $<
@@ -191,6 +215,9 @@ nm-device-interface-glue.h: $(top_srcdir)/introspection/nm-device.xml
 nm-device-ethernet-glue.h: $(top_srcdir)/introspection/nm-device-ethernet.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_ethernet --mode=glib-server --output=$@ $<
 
+nm-device-infiniband-glue.h: $(top_srcdir)/introspection/nm-device-infiniband.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_infiniband --mode=glib-server --output=$@ $<
+
 nm-device-wifi-glue.h: $(top_srcdir)/introspection/nm-device-wifi.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_wifi --mode=glib-server --output=$@ $<
 
@@ -199,6 +226,12 @@ nm-device-bt-glue.h: $(top_srcdir)/introspection/nm-device-bt.xml
 
 nm-device-olpc-mesh-glue.h: $(top_srcdir)/introspection/nm-device-olpc-mesh.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_olpc_mesh --mode=glib-server --output=$@ $<
+
+nm-device-bond-glue.h: $(top_srcdir)/introspection/nm-device-bond.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_bond --mode=glib-server --output=$@ $<
+
+nm-device-vlan-glue.h: $(top_srcdir)/introspection/nm-device-vlan.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_vlan --mode=glib-server --output=$@ $<
 
 nm-ip4-config-glue.h: $(top_srcdir)/introspection/nm-ip4-config.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ip4_config --mode=glib-server --output=$@ $<
@@ -223,6 +256,9 @@ BUILT_SOURCES = \
 	nm-manager-glue.h \
 	nm-device-interface-glue.h \
 	nm-device-ethernet-glue.h \
+	nm-device-infiniband-glue.h \
+	nm-device-bond-glue.h \
+	nm-device-vlan-glue.h \
 	nm-device-wifi-glue.h \
 	nm-device-olpc-mesh-glue.h \
 	nm-device-bt-glue.h \
@@ -240,6 +276,7 @@ NetworkManager_CPPFLAGS = \
 	$(LIBNL_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	$(POLKIT_CFLAGS) \
+	$(SYSTEMD_CFLAGS) \
 	-DG_DISABLE_DEPRECATED \
 	-DBINDIR=\"$(bindir)\" \
 	-DSBINDIR=\"$(sbindir)\" \
@@ -249,16 +286,15 @@ NetworkManager_CPPFLAGS = \
 	-DLOCALSTATEDIR=\"$(localstatedir)\" \
 	-DNM_RUN_DIR=\"$(rundir)\" \
 	-DNMLOCALEDIR=\"$(datadir)/locale\" \
+	-DNMPLUGINDIR=\"$(pkglibdir)\"
 	-DARP_DEBUG
 
-
-WIMAX_LIBS=
-if WITH_WIMAX
-WIMAX_LIBS += ./wimax/libwimax.la
+if WITH_CONCHECK
+NetworkManager_CPPFLAGS += $(LIBSOUP_CFLAGS)
 endif
 
 NetworkManager_LDADD = \
-	$(top_builddir)/marshallers/libmarshallers.la \
+	./generated/libnm-generated.la \
 	./logging/libnm-logging.la \
 	./dns-manager/libdns-manager.la \
 	./vpn-manager/libvpn-manager.la \
@@ -269,8 +305,9 @@ NetworkManager_LDADD = \
 	./ppp-manager/libppp-manager.la \
 	./modem-manager/libmodem-manager.la \
 	./bluez-manager/libbluez-manager.la \
+	./wifi/libwifi-utils.la \
+	./firewall-manager/libfirewall-manager.la \
 	./settings/libsettings.la \
-	$(WIMAX_LIBS) \
 	./backends/libnmbackend.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(DBUS_LIBS) \
@@ -279,8 +316,13 @@ NetworkManager_LDADD = \
 	$(LIBNL_LIBS) \
 	$(GMODULE_LIBS) \
 	$(POLKIT_LIBS) \
+	$(SYSTEMD_LIBS) \
 	$(LIBM) \
 	$(LIBDL)
+
+if WITH_CONCHECK
+NetworkManager_LDADD += $(LIBSOUP_LIBS)
+endif
 
 NetworkManager_LDFLAGS = -rdynamic
 
@@ -301,7 +343,7 @@ NetworkManagerdir = $(datadir)/NetworkManager
 NetworkManager_DATA = gdb-cmd
 
 dbusservicedir = $(DBUS_SYS_DIR)
-dbusservice_DATA = NetworkManager.conf
+dbusservice_DATA = org.freedesktop.NetworkManager.conf
 
 EXTRA_DIST = \
 	$(dbusservice_DATA) \

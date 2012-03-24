@@ -39,7 +39,10 @@ noinst_PROGRAMS = add-connection-dbus-glib$(EXEEXT) \
 	get-active-connections-dbus-glib$(EXEEXT) \
 	list-connections-dbus-glib$(EXEEXT) \
 	list-connections-libnm-glib$(EXEEXT) \
-	get-ap-info-libnm-glib$(EXEEXT)
+	get-ap-info-libnm-glib$(EXEEXT) \
+	monitor-nm-running-dbus-glib$(EXEEXT) \
+	monitor-nm-running-GDBus$(EXEEXT) \
+	monitor-nm-state-GDBus$(EXEEXT)
 subdir = examples/C/glib
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -108,6 +111,20 @@ list_connections_libnm_glib_DEPENDENCIES =  \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(top_builddir)/libnm-glib/libnm-glib.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
+am_monitor_nm_running_GDBus_OBJECTS =  \
+	monitor-nm-running-GDBus.$(OBJEXT)
+monitor_nm_running_GDBus_OBJECTS =  \
+	$(am_monitor_nm_running_GDBus_OBJECTS)
+monitor_nm_running_GDBus_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_monitor_nm_running_dbus_glib_OBJECTS =  \
+	monitor-nm-running-dbus-glib.$(OBJEXT)
+monitor_nm_running_dbus_glib_OBJECTS =  \
+	$(am_monitor_nm_running_dbus_glib_OBJECTS)
+monitor_nm_running_dbus_glib_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_monitor_nm_state_GDBus_OBJECTS = monitor-nm-state-GDBus.$(OBJEXT)
+monitor_nm_state_GDBus_OBJECTS = $(am_monitor_nm_state_GDBus_OBJECTS)
+monitor_nm_state_GDBus_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -139,13 +156,19 @@ SOURCES = $(add_connection_dbus_glib_SOURCES) \
 	$(get_active_connections_dbus_glib_SOURCES) \
 	$(get_ap_info_libnm_glib_SOURCES) \
 	$(list_connections_dbus_glib_SOURCES) \
-	$(list_connections_libnm_glib_SOURCES)
+	$(list_connections_libnm_glib_SOURCES) \
+	$(monitor_nm_running_GDBus_SOURCES) \
+	$(monitor_nm_running_dbus_glib_SOURCES) \
+	$(monitor_nm_state_GDBus_SOURCES)
 DIST_SOURCES = $(add_connection_dbus_glib_SOURCES) \
 	$(add_connection_libnm_glib_SOURCES) \
 	$(get_active_connections_dbus_glib_SOURCES) \
 	$(get_ap_info_libnm_glib_SOURCES) \
 	$(list_connections_dbus_glib_SOURCES) \
-	$(list_connections_libnm_glib_SOURCES)
+	$(list_connections_libnm_glib_SOURCES) \
+	$(monitor_nm_running_GDBus_SOURCES) \
+	$(monitor_nm_running_dbus_glib_SOURCES) \
+	$(monitor_nm_state_GDBus_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -194,6 +217,8 @@ GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
+GLIB_MAKEFILE = @GLIB_MAKEFILE@
+GLIB_MKENUMS = @GLIB_MKENUMS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
@@ -248,11 +273,15 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
+LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
+LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
 LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
+LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -263,6 +292,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
@@ -302,6 +332,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS = @SYSTEMD_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -366,8 +398,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = -I${top_srcdir}/libnm-util         \
+	   -I${top_builddir}/libnm-util         \
            -I${top_srcdir}/libnm-glib         \
-           -I${top_srcdir}/include
+           -I${top_srcdir}/include	      \
+           -I${top_builddir}/include
 
 AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
@@ -412,13 +446,29 @@ get_ap_info_libnm_glib_LDADD = \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
 
+monitor_nm_running_dbus_glib_SOURCES = monitor-nm-running-dbus-glib.c
+monitor_nm_running_dbus_glib_LDADD = \
+	$(DBUS_LIBS) \
+	$(GLIB_LIBS)
+
+monitor_nm_running_GDBus_SOURCES = monitor-nm-running-GDBus.c
+monitor_nm_running_GDBus_LDADD = \
+	$(GIO_LIBS)
+
+monitor_nm_state_GDBus_SOURCES = monitor-nm-state-GDBus.c
+monitor_nm_state_GDBus_LDADD = \
+	$(GIO_LIBS)
+
 EXTRA_DIST = \
 	add-connection-dbus-glib.c \
 	add-connection-libnm-glib.c \
 	get-active-connections-dbus-glib.c \
 	list-connections-dbus-glib.c \
 	list-connections-libnm-glib.c \
-	get-ap-info-libnm-glib.c
+	get-ap-info-libnm-glib.c \
+	monitor-nm-running-dbus-glib.c \
+	monitor-nm-running-GDBus.c \
+	monitor-nm-state-GDBus.c
 
 all: all-am
 
@@ -481,6 +531,15 @@ list-connections-dbus-glib$(EXEEXT): $(list_connections_dbus_glib_OBJECTS) $(lis
 list-connections-libnm-glib$(EXEEXT): $(list_connections_libnm_glib_OBJECTS) $(list_connections_libnm_glib_DEPENDENCIES) 
 	@rm -f list-connections-libnm-glib$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(list_connections_libnm_glib_OBJECTS) $(list_connections_libnm_glib_LDADD) $(LIBS)
+monitor-nm-running-GDBus$(EXEEXT): $(monitor_nm_running_GDBus_OBJECTS) $(monitor_nm_running_GDBus_DEPENDENCIES) 
+	@rm -f monitor-nm-running-GDBus$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(monitor_nm_running_GDBus_OBJECTS) $(monitor_nm_running_GDBus_LDADD) $(LIBS)
+monitor-nm-running-dbus-glib$(EXEEXT): $(monitor_nm_running_dbus_glib_OBJECTS) $(monitor_nm_running_dbus_glib_DEPENDENCIES) 
+	@rm -f monitor-nm-running-dbus-glib$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(monitor_nm_running_dbus_glib_OBJECTS) $(monitor_nm_running_dbus_glib_LDADD) $(LIBS)
+monitor-nm-state-GDBus$(EXEEXT): $(monitor_nm_state_GDBus_OBJECTS) $(monitor_nm_state_GDBus_DEPENDENCIES) 
+	@rm -f monitor-nm-state-GDBus$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(monitor_nm_state_GDBus_OBJECTS) $(monitor_nm_state_GDBus_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -494,6 +553,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get-ap-info-libnm-glib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list-connections-dbus-glib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list-connections-libnm-glib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/monitor-nm-running-GDBus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/monitor-nm-running-dbus-glib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/monitor-nm-state-GDBus.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\

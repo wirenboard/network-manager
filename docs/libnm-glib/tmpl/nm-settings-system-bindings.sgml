@@ -1,0 +1,120 @@
+<!-- ##### SECTION Title ##### -->
+nm-settings-system-bindings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManagerSettings_System ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION dbus_g_proxy_begin_call ##### -->
+<para>
+
+</para>
+
+@Param1: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_System_get_permissions ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_permissions: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_System_get_permissions_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_System_get_permissions_async_callback ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@call: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManagerSettings_System_get_permissions_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_permissions: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_System_save_hostname ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_hostname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_System_save_hostname_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_hostname: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_System_save_hostname_async_callback ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@call: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManagerSettings_System_save_hostname_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@error: 
+@userdata: 
+
+

@@ -48,6 +48,7 @@
 typedef struct {
 	GHashTable *config_connections;
 	gchar *hostname;
+	char *conf_file;
 	gboolean unmanaged_well_known;
 
 	GFileMonitor *hostname_monitor;
@@ -180,7 +181,7 @@ monitor_file_changes (const char *filename,
 /* Callback for nm_settings_connection_replace_and_commit. Report any errors
  * encountered when commiting connection settings updates. */
 static void
-commit_cb (NMSettingsConnection *connection, GError *error, gpointer unused) 
+commit_cb (NMSettingsConnection *connection, GError *error, gpointer unused)
 {
 	if (error) {
 		PLUGIN_WARN (IFNET_PLUGIN_NAME, "    error updating: %s",
@@ -188,8 +189,7 @@ commit_cb (NMSettingsConnection *connection, GError *error, gpointer unused)
 	} else {
 		NMSettingConnection *s_con;
 
-		s_con = (NMSettingConnection *) nm_connection_get_setting (NM_CONNECTION (connection),
-		                                                           NM_TYPE_SETTING_CONNECTION);
+		s_con = nm_connection_get_setting_connection (NM_CONNECTION (connection));
 		g_assert (s_con);
 		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Connection %s updated",
 		              nm_setting_connection_get_id (s_con));
@@ -317,6 +317,26 @@ reload_connections (gpointer config)
 	g_list_free (conn_names);
 }
 
+static void
+check_flagged_secrets (NMSetting  *setting,
+                       const char *key,
+                       const GValue *value,
+                       GParamFlags flags,
+                       gpointer user_data)
+{
+	gboolean *is_system_secret = user_data;
+
+	if (flags & NM_SETTING_PARAM_SECRET) {
+		NMSettingSecretFlags secret_flags = NM_SETTING_SECRET_FLAG_NONE;
+
+		nm_setting_get_secret_flags (setting, key, &secret_flags, NULL);
+
+		if (secret_flags != NM_SETTING_SECRET_FLAG_NONE) {
+			*is_system_secret = TRUE;
+		}
+	}
+}
+
 static NMSettingsConnection *
 add_connection (NMSystemConfigInterface *config,
                 NMConnection *source,
@@ -324,11 +344,28 @@ add_connection (NMSystemConfigInterface *config,
 {
 	NMIfnetConnection *connection = NULL;
 	char *conn_name;
+	gboolean has_flagged_secrets = FALSE;
+	NMSettingConnection *s_con;
 
-	conn_name = ifnet_add_new_connection (source, CONF_NET_FILE, WPA_SUPPLICANT_CONF, error);
-	if (conn_name)
-		connection = nm_ifnet_connection_new (conn_name, source);
-	reload_connections (config);
+	s_con = nm_connection_get_setting_connection (source);
+	g_assert (s_con);
+
+	/* If the connection is not available for all users, ignore
+	 * it as this plugin only deals with System Connections */
+	if (nm_setting_connection_get_num_permissions (s_con))
+		return NULL;
+
+	/* If the connection has flagged secrets, ignore
+	 * it as this plugin does not deal with user agent service */
+	nm_connection_for_each_setting_value (source, check_flagged_secrets, &has_flagged_secrets);
+
+	if (!has_flagged_secrets) {
+		conn_name = ifnet_add_new_connection (source, CONF_NET_FILE, WPA_SUPPLICANT_CONF, error);
+		if (conn_name)
+			connection = nm_ifnet_connection_new (conn_name, source);
+		reload_connections (config);
+	}
+
 	return connection ? NM_SETTINGS_CONNECTION (connection) : NULL;
 }
 
@@ -494,6 +531,7 @@ dispose (GObject * object)
 	}
 
 	g_free (priv->hostname);
+	g_free (priv->conf_file);
 	ifnet_destroy ();
 	wpa_parser_destroy ();
 	G_OBJECT_CLASS (sc_plugin_ifnet_parent_class)->dispose (object);
@@ -527,16 +565,37 @@ sc_plugin_ifnet_class_init (SCPluginIfnetClass * req_class)
 					  NM_SYSTEM_CONFIG_INTERFACE_HOSTNAME);
 }
 
+const char *
+ifnet_plugin_get_conf_file (void)
+{
+	SCPluginIfnet *ifnet_plugin;
+	SCPluginIfnetPrivate *priv;
+
+	/* Get config file name. Plugin's singleton has already been created
+	 * with correct config file path, so the string passed here has no efect
+	 * and we get the valid file name.
+	 */
+	ifnet_plugin = SC_PLUGIN_IFNET (nm_system_config_factory ("fake string"));
+	priv = SC_PLUGIN_IFNET_GET_PRIVATE (ifnet_plugin);
+	g_object_unref (ifnet_plugin);
+
+	return priv->conf_file;
+}
+
 G_MODULE_EXPORT GObject *
-nm_system_config_factory (void)
+nm_system_config_factory (const char *config_file)
 {
 	static SCPluginIfnet *singleton = NULL;
+	SCPluginIfnetPrivate *priv;
 
-	if (!singleton)
-		singleton
-		    =
-		    SC_PLUGIN_IFNET (g_object_new (SC_TYPE_PLUGIN_IFNET, NULL));
-	else
+	if (!singleton) {
+		singleton = SC_PLUGIN_IFNET (g_object_new (SC_TYPE_PLUGIN_IFNET, NULL));
+		if (singleton) {
+			priv = SC_PLUGIN_IFNET_GET_PRIVATE (singleton);
+			priv->conf_file = strdup (config_file);
+		}
+	} else
 		g_object_ref (singleton);
+
 	return G_OBJECT (singleton);
 }

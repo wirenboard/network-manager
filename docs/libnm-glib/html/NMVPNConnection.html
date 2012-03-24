@@ -27,6 +27,8 @@
                    | 
                   <a href="#NMVPNConnection.object-hierarchy" class="shortcut">Object Hierarchy</a>
                    | 
+                  <a href="#NMVPNConnection.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
                   <a href="#NMVPNConnection.properties" class="shortcut">Properties</a>
                    | 
                   <a href="#NMVPNConnection.signals" class="shortcut">Signals</a>
@@ -61,6 +63,12 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMVPN
          +----<a class="link" href="NMActiveConnection.html" title="NMActiveConnection">NMActiveConnection</a>
                +----NMVPNConnection
 </pre>
+</div>
+<div class="refsect1">
+<a name="NMVPNConnection.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+NMVPNConnection implements
+ <a href="http://library.gnome.org/devel/gio/unstable/GInitable.html">GInitable</a> and  <a href="http://library.gnome.org/devel/gio/unstable/GAsyncInitable.html">GAsyncInitable</a>.</p>
 </div>
 <div class="refsect1">
 <a name="NMVPNConnection.properties"></a><h2>Properties</h2>
@@ -132,14 +140,45 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMVPN
 <a name="nm-vpn-connection-get-banner"></a><h3>nm_vpn_connection_get_banner ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *        nm_vpn_connection_get_banner        (<em class="parameter"><code><a class="link" href="NMVPNConnection.html" title="NMVPNConnection"><span class="type">NMVPNConnection</span></a> *vpn</code></em>);</pre>
 <p>
+Gets the VPN login banner of the active <a class="link" href="NMVPNConnection.html" title="NMVPNConnection"><span class="type">NMVPNConnection</span></a>.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vpn</code></em> :</span></p></td>
+<td>a <a class="link" href="NMVPNConnection.html" title="NMVPNConnection"><span class="type">NMVPNConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the VPN login banner of the VPN connection. This is the internal
+string used by the connection, and must not be modified.</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
 <a name="nm-vpn-connection-get-vpn-state"></a><h3>nm_vpn_connection_get_vpn_state ()</h3>
 <pre class="programlisting"><span class="returnvalue">NMVPNConnectionState</span> nm_vpn_connection_get_vpn_state    (<em class="parameter"><code><a class="link" href="NMVPNConnection.html" title="NMVPNConnection"><span class="type">NMVPNConnection</span></a> *vpn</code></em>);</pre>
 <p>
+Gets the current <a class="link" href="NMVPNConnection.html" title="NMVPNConnection"><span class="type">NMVPNConnection</span></a> state.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>vpn</code></em> :</span></p></td>
+<td>a <a class="link" href="NMVPNConnection.html" title="NMVPNConnection"><span class="type">NMVPNConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the VPN state of the active VPN connection.</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

@@ -50,6 +50,7 @@ serial communications</p>
 enum                <a class="link" href="NMSettingSerial.html#NMSettingSerialError-enum" title="enum NMSettingSerialError">NMSettingSerialError</a>;
 #define             <a class="link" href="NMSettingSerial.html#NM-SETTING-SERIAL-BAUD:CAPS" title="NM_SETTING_SERIAL_BAUD">NM_SETTING_SERIAL_BAUD</a>
 #define             <a class="link" href="NMSettingSerial.html#NM-SETTING-SERIAL-BITS:CAPS" title="NM_SETTING_SERIAL_BITS">NM_SETTING_SERIAL_BITS</a>
+#define             <a class="link" href="NMSettingSerial.html#NM-SETTING-SERIAL-ERROR:CAPS" title="NM_SETTING_SERIAL_ERROR">NM_SETTING_SERIAL_ERROR</a>
 #define             <a class="link" href="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY:CAPS" title="NM_SETTING_SERIAL_PARITY">NM_SETTING_SERIAL_PARITY</a>
 #define             <a class="link" href="NMSettingSerial.html#NM-SETTING-SERIAL-SEND-DELAY:CAPS" title="NM_SETTING_SERIAL_SEND_DELAY">NM_SETTING_SERIAL_SEND_DELAY</a>
 #define             <a class="link" href="NMSettingSerial.html#NM-SETTING-SERIAL-SETTING-NAME:CAPS" title="NM_SETTING_SERIAL_SETTING_NAME">NM_SETTING_SERIAL_SETTING_NAME</a>
@@ -121,10 +122,10 @@ such as mobile broadband or analog telephone connections.
 <div class="refsect2">
 <a name="NMSettingSerialError-enum"></a><h3>enum NMSettingSerialError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_SERIAL_ERROR_UNKNOWN = 0,
-	NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY,
-	NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY,
-	NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING
+	NM_SETTING_SERIAL_ERROR_UNKNOWN = 0,        /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY,   /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY,   /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING /*&lt; nick=MissingPPPSetting &gt;*/
 } NMSettingSerialError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -167,6 +168,14 @@ setting requires the connection to contain an <a class="link" href="NMSettingPPP
 <div class="refsect2">
 <a name="NM-SETTING-SERIAL-BITS:CAPS"></a><h3>NM_SETTING_SERIAL_BITS</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_BITS "bits"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-SERIAL-ERROR:CAPS"></a><h3>NM_SETTING_SERIAL_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_SERIAL_ERROR nm_setting_serial_error_quark ()
 </pre>
 <p>
 </p>

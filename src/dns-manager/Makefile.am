@@ -1,8 +1,10 @@
 INCLUDES = \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/libnm-util \
+	-I${top_builddir}/libnm-util \
 	-I${top_srcdir}/src \
-	-I${top_srcdir}/include
+	-I${top_srcdir}/include \
+	-I${top_builddir}/include
 
 noinst_LTLIBRARIES = libdns-manager.la
 

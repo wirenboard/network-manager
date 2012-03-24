@@ -9,12 +9,10 @@ NMSettingIP4Config
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -157,6 +155,13 @@ NMSettingIP4Config
 
 
 <!-- ##### MACRO NM_SETTING_IP4_CONFIG_DNS_SEARCH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_ERROR ##### -->
 <para>
 
 </para>

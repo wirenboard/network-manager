@@ -32,8 +32,6 @@
 #include "nm-utils.h"
 #include "nm-logging.h"
 #include "nm-device.h"
-#include "nm-device-wifi.h"
-#include "nm-device-ethernet.h"
 #include "nm-dbus-manager.h"
 #include "nm-dispatcher-action.h"
 #include "nm-dbus-glib-types.h"
@@ -159,22 +157,11 @@ nm_utils_ip4_prefix_to_netmask (guint32 prefix)
 	return (guint32) htonl (netmask);
 }
 
-char *
-nm_ether_ntop (const struct ether_addr *mac)
-{
-	/* we like leading zeros and all-caps, instead
-	 * of what glibc's ether_ntop() gives us
-	 */
-	return g_strdup_printf ("%02X:%02X:%02X:%02X:%02X:%02X",
-	                        mac->ether_addr_octet[0], mac->ether_addr_octet[1],
-	                        mac->ether_addr_octet[2], mac->ether_addr_octet[3],
-	                        mac->ether_addr_octet[4], mac->ether_addr_octet[5]);
-}
-
 void
 nm_utils_merge_ip4_config (NMIP4Config *ip4_config, NMSettingIP4Config *setting)
 {
 	int i, j;
+	gboolean setting_never_default;
 
 	if (!setting)
 		return; /* Defaults are just fine */
@@ -264,8 +251,14 @@ nm_utils_merge_ip4_config (NMIP4Config *ip4_config, NMSettingIP4Config *setting)
 			nm_ip4_config_add_route (ip4_config, setting_route);
 	}
 
-	if (nm_setting_ip4_config_get_never_default (setting))
-		nm_ip4_config_set_never_default (ip4_config, TRUE);
+	setting_never_default = nm_setting_ip4_config_get_never_default (setting);
+
+	if (nm_setting_ip4_config_get_ignore_auto_routes (setting))
+		nm_ip4_config_set_never_default (ip4_config, setting_never_default);
+	else {
+		if (setting_never_default)
+			nm_ip4_config_set_never_default (ip4_config, TRUE);
+	}
 }
 
 static inline gboolean
@@ -862,7 +855,7 @@ nm_utils_do_sysctl (const char *path, const char *value)
 gboolean
 nm_utils_get_proc_sys_net_value (const char *path,
                                  const char *iface,
-                                 guint32 *out_value)
+                                 gint32 *out_value)
 {
 	GError *error = NULL;
 	char *contents = NULL;
@@ -878,14 +871,36 @@ nm_utils_get_proc_sys_net_value (const char *path,
 	} else {
 		errno = 0;
 		tmp = strtol (contents, NULL, 10);
-		if ((errno == 0) && (tmp == 0 || tmp == 1)) {
-			*out_value = (guint32) tmp;
+		if (errno == 0) {
+			*out_value = (gint32) tmp;
 			success = TRUE;
 		}
 		g_free (contents);
 	}
 
 	return success;
+}
+
+gboolean
+nm_utils_get_proc_sys_net_value_with_bounds (const char *path,
+                                             const char *iface,
+                                             gint32 *out_value,
+                                             gint32 valid_min,
+                                             gint32 valid_max)
+{
+	gboolean result;
+	gint32 val;
+
+	result = nm_utils_get_proc_sys_net_value (path, iface, &val);
+
+	if (result) {
+		if (val >= valid_min && val <= valid_max)
+			*out_value = val;
+		else
+			result = FALSE;
+	}
+
+	return result;
 }
 
 static char *
@@ -955,7 +970,7 @@ nm_utils_complete_generic (NMConnection *connection,
 	const char *method;
 	char *id, *uuid;
 
-	s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+	s_con = nm_connection_get_setting_connection (connection);
 	if (!s_con) {
 		s_con = (NMSettingConnection *) nm_setting_connection_new ();
 		nm_connection_add_setting (connection, NM_SETTING (s_con));
@@ -976,7 +991,7 @@ nm_utils_complete_generic (NMConnection *connection,
 	}
 
 	/* Add an 'auto' IPv4 connection if present */
-	s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
 	if (!s_ip4) {
 		s_ip4 = (NMSettingIP4Config *) nm_setting_ip4_config_new ();
 		nm_connection_add_setting (connection, NM_SETTING (s_ip4));
@@ -989,7 +1004,7 @@ nm_utils_complete_generic (NMConnection *connection,
 	}
 
 	/* Add an 'auto' IPv6 setting if allowed and not preset */
-	s_ip6 = (NMSettingIP6Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP6_CONFIG);
+	s_ip6 = nm_connection_get_setting_ip6_config (connection);
 	if (!s_ip6 && default_enable_ipv6) {
 		s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
 		nm_connection_add_setting (connection, NM_SETTING (s_ip6));
@@ -1000,5 +1015,28 @@ nm_utils_complete_generic (NMConnection *connection,
 		              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
 		              NULL);
 	}
+}
+
+gboolean
+nm_utils_is_uuid (const char *str)
+{
+	const char *p = str;
+	int num_dashes = 0;
+
+	while (*p) {
+		if (*p == '-')
+			num_dashes++;
+		else if (!isxdigit (*p))
+			return FALSE;
+		p++;
+	}
+
+	return (num_dashes == 4) && (p - str == 36);
+}
+
+char *
+nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id)
+{
+	return g_strdup_printf ("%s.%d", parent_iface, vlan_id);
 }
 

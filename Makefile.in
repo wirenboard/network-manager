@@ -190,6 +190,8 @@ GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
+GLIB_MAKEFILE = @GLIB_MAKEFILE@
+GLIB_MKENUMS = @GLIB_MKENUMS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
@@ -244,11 +246,15 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
+LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
+LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
 LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
+LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -259,6 +265,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
@@ -298,6 +305,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS = @SYSTEMD_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -362,7 +371,6 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = \
-	marshallers \
 	include \
 	libnm-util \
 	libnm-glib \
@@ -385,19 +393,22 @@ EXTRA_DIST = \
 	NetworkManager.pc.in \
 	intltool-extract.in \
 	intltool-merge.in \
-	intltool-update.in		
+	intltool-update.in \
+	Makefile.glib
 
 DISTCHECK_CONFIGURE_FLAGS = \
 	--with-tests=yes \
 	--with-docs=yes \
 	--enable-more-warnings=yes \
 	--with-udev-dir=$$dc_install_base/lib/udev \
-	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
+	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir) \
+	--with-wext=no
 
 DISTCLEANFILES = intltool-extract intltool-merge intltool-update
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = NetworkManager.pc
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+CLEANFILES = cscope.in.out cscope.out cscope.po.out
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -819,6 +830,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -918,6 +930,11 @@ uninstall-am: uninstall-pkgconfigDATA
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-pkgconfigDATA
 
+include $(GLIB_MAKEFILE)
+
+.PHONY: cscope
+cscope:
+	cscope -b -q -R -Iinclude -ssrc -slibnm-glib -slibnm-util -scli/src;
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

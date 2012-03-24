@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2012 Red Hat, Inc.
  */
 
 #ifndef NM_DEVICE_H
@@ -58,6 +58,7 @@ G_BEGIN_DECLS
 #define NM_DEVICE_IP6_CONFIG "ip6-config"
 #define NM_DEVICE_DHCP6_CONFIG "dhcp6-config"
 #define NM_DEVICE_STATE "state"
+#define NM_DEVICE_STATE_REASON "state-reason"
 #define NM_DEVICE_ACTIVE_CONNECTION "active-connection"
 #define NM_DEVICE_VENDOR "vendor"
 #define NM_DEVICE_PRODUCT "product"
@@ -75,8 +76,9 @@ typedef struct {
 	                       NMDeviceState old_state,
 	                       NMDeviceStateReason reason);
 
-	gboolean (*connection_valid)   (NMDevice *device,
-	                                NMConnection *connection);
+	gboolean (*connection_compatible) (NMDevice *device,
+	                                   NMConnection *connection,
+	                                   GError **error);
 
 	/* Padding for future expansion */
 	void (*_reserved1) (void);
@@ -104,6 +106,7 @@ NMDHCP4Config *      nm_device_get_dhcp4_config     (NMDevice *device);
 NMIP6Config *        nm_device_get_ip6_config       (NMDevice *device);
 NMDHCP6Config *      nm_device_get_dhcp6_config     (NMDevice *device);
 NMDeviceState        nm_device_get_state            (NMDevice *device);
+NMDeviceState        nm_device_get_state_reason     (NMDevice *device, NMDeviceStateReason *reason);
 NMActiveConnection * nm_device_get_active_connection(NMDevice *device);
 const char *         nm_device_get_product          (NMDevice *device);
 const char *         nm_device_get_vendor           (NMDevice *device);
@@ -119,6 +122,10 @@ GSList *             nm_device_filter_connections   (NMDevice *device,
 
 gboolean             nm_device_connection_valid     (NMDevice *device,
                                                      NMConnection *connection);
+
+gboolean             nm_device_connection_compatible (NMDevice *device,
+                                                      NMConnection *connection,
+                                                      GError **error);
 
 G_END_DECLS
 

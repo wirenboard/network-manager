@@ -9,12 +9,10 @@ NMConnection
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -65,6 +63,13 @@ NMConnection
 @NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND: 
 @NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID: 
 @NM_CONNECTION_ERROR_SETTING_NOT_FOUND: 
+
+<!-- ##### MACRO NM_CONNECTION_ERROR ##### -->
+<para>
+
+</para>
+
+
 
 <!-- ##### MACRO NM_CONNECTION_PATH ##### -->
 <para>
@@ -214,6 +219,15 @@ NMConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_connection_get_setting_bond ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_connection_get_setting_by_name ##### -->
 <para>
 
@@ -243,6 +257,15 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_setting_gsm ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_infiniband ##### -->
 <para>
 
 </para>
@@ -288,6 +311,24 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_setting_pppoe ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_serial ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_vlan ##### -->
 <para>
 
 </para>
@@ -342,6 +383,15 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_uuid ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_virtual_iface_name ##### -->
 <para>
 
 </para>

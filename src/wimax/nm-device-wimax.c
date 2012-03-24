@@ -25,6 +25,7 @@
 #include <net/ethernet.h>
 #include <sys/socket.h>
 #include <linux/if.h>
+#include <netinet/ether.h>
 
 #include <WiMaxAPI.h>
 #include <WiMaxAPIEx.h>
@@ -32,7 +33,6 @@
 #include "nm-device-wimax.h"
 #include "nm-wimax-util.h"
 #include "nm-logging.h"
-#include "nm-device-interface.h"
 #include "nm-device-private.h"
 #include "nm-system.h"
 #include "NetworkManagerUtils.h"
@@ -43,15 +43,13 @@
 #include "nm-utils.h"
 #include "nm-rfkill.h"
 #include "iwmxsdk.h"
+#include "nm-enum-types.h"
 
 static gboolean impl_device_get_nsp_list (NMDeviceWimax *device, GPtrArray **list, GError **error);
 
 #include "nm-device-wimax-glue.h"
 
-static void device_interface_init (NMDeviceInterface *iface_class);
-
-G_DEFINE_TYPE_EXTENDED (NMDeviceWimax, nm_device_wimax, NM_TYPE_DEVICE, 0,
-						G_IMPLEMENT_INTERFACE (NM_TYPE_DEVICE_INTERFACE, device_interface_init))
+G_DEFINE_TYPE (NMDeviceWimax, nm_device_wimax, NM_TYPE_DEVICE)
 
 enum {
 	PROP_0,
@@ -113,16 +111,7 @@ typedef struct {
 
 /***********************************************************/
 
-typedef enum
-{
-	NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX = 0,
-	NM_WIMAX_ERROR_CONNECTION_INVALID,
-	NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE,
-	NM_WIMAX_ERROR_NSP_NOT_FOUND,
-} NMWimaxError;
-
 #define NM_WIMAX_ERROR (nm_wimax_error_quark ())
-#define NM_TYPE_WIMAX_ERROR (nm_wimax_error_get_type ()) 
 
 static GQuark
 nm_wimax_error_quark (void)
@@ -131,31 +120,6 @@ nm_wimax_error_quark (void)
 	if (!quark)
 		quark = g_quark_from_static_string ("nm-wimax-error");
 	return quark;
-}
-
-/* This should really be standard. */
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-
-static GType
-nm_wimax_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] = {
-			/* Connection was not a wired connection. */
-			ENUM_ENTRY (NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX, "ConnectionNotWimax"),
-			/* Connection was not a valid wired connection. */
-			ENUM_ENTRY (NM_WIMAX_ERROR_CONNECTION_INVALID, "ConnectionInvalid"),
-			/* Connection does not apply to this device. */
-			ENUM_ENTRY (NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE, "ConnectionIncompatible"),
-			/* NSP not found in the scan list. */
-			ENUM_ENTRY (NM_WIMAX_ERROR_NSP_NOT_FOUND, "NspNotFound"),
-			{ 0, 0, 0 }
-		};
-		etype = g_enum_register_static ("NMWimaxError", values);
-	}
-	return etype;
 }
 
 /***********************************************************/
@@ -321,7 +285,7 @@ update_availability (NMDeviceWimax *self, gboolean old_available)
 	if (new_available == old_available)
 		return FALSE;
 
-	state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (self));
+	state = nm_device_get_state (device);
 	if (state == NM_DEVICE_STATE_UNAVAILABLE) {
 		if (new_available == TRUE) {
 			nm_device_state_changed (device,
@@ -344,7 +308,7 @@ update_availability (NMDeviceWimax *self, gboolean old_available)
 /* NMDeviceInterface interface */
 
 static void
-real_set_enabled (NMDeviceInterface *device, gboolean enabled)
+real_set_enabled (NMDevice *device, gboolean enabled)
 {
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (device);
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
@@ -443,6 +407,35 @@ real_update_hw_address (NMDevice *dev)
 	}
 
 	close (fd);
+}
+
+static gboolean
+hwaddr_matches (NMDevice *device,
+                NMConnection *connection,
+                const guint8 *other_hwaddr,
+                guint other_hwaddr_len,
+                gboolean fail_if_no_hwaddr)
+{
+	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (device);
+	NMSettingWimax *s_wimax;
+	const GByteArray *mac = NULL;
+
+	s_wimax = nm_connection_get_setting_wimax (connection);
+	if (s_wimax)
+		mac = nm_setting_wimax_get_mac_address (s_wimax);
+
+	if (mac) {
+		g_return_val_if_fail (mac->len == ETH_ALEN, FALSE);
+		if (other_hwaddr) {
+			g_return_val_if_fail (other_hwaddr_len == ETH_ALEN, FALSE);
+			if (memcmp (mac->data, other_hwaddr, mac->len) == 0)
+				return TRUE;
+		} else if (memcmp (mac->data, priv->hw_addr.ether_addr_octet, mac->len) == 0)
+			return TRUE;
+	} else if (fail_if_no_hwaddr == FALSE)
+		return TRUE;
+
+	return FALSE;
 }
 
 static gboolean
@@ -731,7 +724,7 @@ real_act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	if (!req)
 		return NM_ACT_STAGE_RETURN_FAILURE;
 
-	path = nm_act_request_get_specific_object (req);
+	path = nm_active_connection_get_specific_object (NM_ACTIVE_CONNECTION (req));
 	if (!path)
 		return NM_ACT_STAGE_RETURN_FAILURE;
 
@@ -774,7 +767,7 @@ real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	iface = nm_device_get_iface (device);
 	g_assert (iface);
 
-	connection = nm_act_request_get_connection (nm_device_get_act_request (device));
+	connection = nm_device_get_connection (device);
 	g_assert (connection);
 
 	s_wimax = nm_connection_get_setting_wimax (connection);
@@ -878,7 +871,7 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
 	if (new_status == old_status)
 		return;
 
-	state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (self));
+	state = nm_device_get_state (NM_DEVICE (self));
 	old_available = nm_device_is_available (NM_DEVICE (self));
 
 	priv->status = new_status;
@@ -917,7 +910,7 @@ wmx_state_change_cb (struct wmxsdk *wmxsdk,
 	}
 
 	/* Handle activation success and failure */
-	if (IS_ACTIVATING_STATE (state)) {
+	if (nm_device_is_activating (NM_DEVICE (self))) {
 	    if (new_status == WIMAX_API_DEVICE_STATUS_Data_Connected) {
 			/* Success */
 			clear_activation_timeout (self);
@@ -993,7 +986,7 @@ wmx_media_status_cb (struct wmxsdk *wmxsdk,
 	const char *iface;
 
 	iface = nm_device_get_iface (NM_DEVICE (self));
-	state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (self));
+	state = nm_device_get_state (NM_DEVICE (self));
 
 	nm_log_dbg (LOGD_WIMAX, "(%s): media status change to %s",
 	            iface, iwmx_sdk_media_status_to_str (new_status));
@@ -1032,10 +1025,8 @@ wmx_connect_result_cb (struct wmxsdk *wmxsdk,
 {
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (user_data);
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
-	NMDeviceState state;
 
-	state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (self));
-	if (IS_ACTIVATING_STATE (state)) {
+	if (nm_device_is_activating (NM_DEVICE (self))) {
 		priv->connect_failed = (result == WIMAX_API_CONNECTION_SUCCESS);
 		/* Wait for the state change so we can get the reason code; we
 		 * cache the connect failure so we don't have to wait for the
@@ -1373,12 +1364,12 @@ nm_device_wimax_new (const char *udi,
 	g_return_val_if_fail (driver != NULL, NULL);
 
 	device = (NMDevice *) g_object_new (NM_TYPE_DEVICE_WIMAX,
-	                                    NM_DEVICE_INTERFACE_UDI, udi,
-	                                    NM_DEVICE_INTERFACE_IFACE, iface,
-	                                    NM_DEVICE_INTERFACE_DRIVER, driver,
-	                                    NM_DEVICE_INTERFACE_TYPE_DESC, "WiMAX",
-	                                    NM_DEVICE_INTERFACE_DEVICE_TYPE, NM_DEVICE_TYPE_WIMAX,
-	                                    NM_DEVICE_INTERFACE_RFKILL_TYPE, RFKILL_TYPE_WIMAX,
+	                                    NM_DEVICE_UDI, udi,
+	                                    NM_DEVICE_IFACE, iface,
+	                                    NM_DEVICE_DRIVER, driver,
+	                                    NM_DEVICE_TYPE_DESC, "WiMAX",
+	                                    NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_WIMAX,
+	                                    NM_DEVICE_RFKILL_TYPE, RFKILL_TYPE_WIMAX,
 	                                    NULL);
 	if (device) {
 		struct wmxsdk *sdk;
@@ -1396,12 +1387,6 @@ nm_device_wimax_new (const char *udi,
 	}
 
 	return device;
-}
-
-static void
-device_interface_init (NMDeviceInterface *iface_class)
-{
-    iface_class->set_enabled = real_set_enabled;
 }
 
 static void
@@ -1434,7 +1419,7 @@ get_property (GObject *object, guint prop_id,
 	switch (prop_id) {
 	case PROP_HW_ADDRESS:
 		nm_device_wimax_get_hw_address (self, &hw_addr);
-		g_value_take_string (value, nm_ether_ntop (&hw_addr));
+		g_value_take_string (value, nm_utils_hwaddr_ntoa (&hw_addr, ARPHRD_ETHER));
 		break;
 	case PROP_ACTIVE_NSP:
 		if (priv->current_nsp)
@@ -1526,6 +1511,8 @@ nm_device_wimax_class_init (NMDeviceWimaxClass *klass)
 	device_class->act_stage1_prepare = real_act_stage1_prepare;
 	device_class->act_stage2_config = real_act_stage2_config;
 	device_class->deactivate = real_deactivate;
+    device_class->set_enabled = real_set_enabled;
+    device_class->hwaddr_matches = hwaddr_matches;
 
 	/* Properties */
 	g_object_class_install_property

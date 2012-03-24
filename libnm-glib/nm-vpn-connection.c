@@ -18,15 +18,14 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2012 Red Hat, Inc.
  */
 
 #include <string.h>
 #include "nm-vpn-connection.h"
 #include "NetworkManager.h"
 #include "nm-utils.h"
-#include "nm-vpn-connection-bindings.h"
-#include "nm-marshal.h"
+#include "nm-glib-marshal.h"
 #include "nm-object-private.h"
 #include "nm-active-connection.h"
 
@@ -81,6 +80,15 @@ nm_vpn_connection_new (DBusGConnection *connection, const char *path)
 	                     NULL);
 }
 
+/**
+ * nm_vpn_connection_get_banner:
+ * @vpn: a #NMVPNConnection
+ *
+ * Gets the VPN login banner of the active #NMVPNConnection.
+ *
+ * Returns: the VPN login banner of the VPN connection. This is the internal
+ * string used by the connection, and must not be modified.
+ **/
 const char *
 nm_vpn_connection_get_banner (NMVPNConnection *vpn)
 {
@@ -89,37 +97,31 @@ nm_vpn_connection_get_banner (NMVPNConnection *vpn)
 	g_return_val_if_fail (NM_IS_VPN_CONNECTION (vpn), NULL);
 
 	priv = NM_VPN_CONNECTION_GET_PRIVATE (vpn);
+
+	/* We need to update vpn_state first in case it's unknown. */
+	_nm_object_ensure_inited (NM_OBJECT (vpn));
+
 	if (priv->vpn_state != NM_VPN_CONNECTION_STATE_ACTIVATED)
 		return NULL;
 
-	if (!priv->banner) {
-		priv->banner = _nm_object_get_string_property (NM_OBJECT (vpn),
-		                                               NM_DBUS_INTERFACE_VPN_CONNECTION,
-		                                               DBUS_PROP_BANNER,
-		                                               NULL);
-		if (priv->banner && !strlen (priv->banner)) {
-			g_free (priv->banner);
-			priv->banner = NULL;
-		}
-	}
 	return priv->banner;
 }
 
+/**
+ * nm_vpn_connection_get_vpn_state:
+ * @vpn: a #NMVPNConnection
+ *
+ * Gets the current #NMVPNConnection state.
+ *
+ * Returns: the VPN state of the active VPN connection.
+ **/
 NMVPNConnectionState
 nm_vpn_connection_get_vpn_state (NMVPNConnection *vpn)
 {
-	NMVPNConnectionPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_VPN_CONNECTION (vpn), NM_VPN_CONNECTION_STATE_UNKNOWN);
 
-	priv = NM_VPN_CONNECTION_GET_PRIVATE (vpn);
-	if (priv->vpn_state == NM_VPN_CONNECTION_STATE_UNKNOWN) {
-		priv->vpn_state = _nm_object_get_uint_property (NM_OBJECT (vpn),
-		                                                NM_DBUS_INTERFACE_VPN_CONNECTION,
-		                                                DBUS_PROP_VPN_STATE,
-		                                                NULL);
-	}
-	return priv->vpn_state;
+	_nm_object_ensure_inited (NM_OBJECT (vpn));
+	return NM_VPN_CONNECTION_GET_PRIVATE (vpn)->vpn_state;
 }
 
 static void
@@ -147,28 +149,36 @@ nm_vpn_connection_init (NMVPNConnection *connection)
 	priv->vpn_state = NM_VPN_CONNECTION_STATE_UNKNOWN;
 }
 
-static GObject*
-constructor (GType type,
-		   guint n_construct_params,
-		   GObjectConstructParam *construct_params)
+static void
+register_properties (NMVPNConnection *connection)
 {
-	NMObject *object;
+	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (connection);
+	const NMPropertiesInfo property_info[] = {
+		{ NM_VPN_CONNECTION_BANNER,    &priv->banner },
+		{ NM_VPN_CONNECTION_VPN_STATE, &priv->vpn_state },
+		{ NULL },
+	};
+
+	_nm_object_register_properties (NM_OBJECT (connection),
+	                                priv->proxy,
+	                                property_info);
+}
+
+static void
+constructed (GObject *object)
+{
 	NMVPNConnectionPrivate *priv;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_vpn_connection_parent_class)->constructor (type,
-																	    n_construct_params,
-																	    construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_vpn_connection_parent_class)->constructed (object);
 
 	priv = NM_VPN_CONNECTION_GET_PRIVATE (object);
 
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (object),
+	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
 									 NM_DBUS_SERVICE,
-									 nm_object_get_path (object),
+									 nm_object_get_path (NM_OBJECT (object)),
 									 NM_DBUS_INTERFACE_VPN_CONNECTION);
 
-	dbus_g_object_register_marshaller (_nm_marshal_VOID__UINT_UINT,
+	dbus_g_object_register_marshaller (_nm_glib_marshal_VOID__UINT_UINT,
 	                                   G_TYPE_NONE,
 	                                   G_TYPE_UINT, G_TYPE_UINT,
 	                                   G_TYPE_INVALID);
@@ -178,7 +188,8 @@ constructor (GType type,
 						    G_CALLBACK (vpn_state_changed_proxy),
 						    object,
 						    NULL);
-	return G_OBJECT (object);
+
+	register_properties (NM_VPN_CONNECTION (object));
 }
 
 static void
@@ -221,7 +232,7 @@ nm_vpn_connection_class_init (NMVPNConnectionClass *connection_class)
 	g_type_class_add_private (connection_class, sizeof (NMVPNConnectionPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->finalize = finalize;
 
@@ -260,7 +271,7 @@ nm_vpn_connection_class_init (NMVPNConnectionClass *connection_class)
 				    G_SIGNAL_RUN_FIRST,
 				    G_STRUCT_OFFSET (NMVPNConnectionClass, vpn_state_changed),
 				    NULL, NULL,
-				    _nm_marshal_VOID__UINT_UINT,
+				    _nm_glib_marshal_VOID__UINT_UINT,
 				    G_TYPE_NONE, 2,
 				    G_TYPE_UINT, G_TYPE_UINT);
 }

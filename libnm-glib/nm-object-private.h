@@ -23,82 +23,61 @@
 #ifndef NM_OBJECT_PRIVATE_H
 #define NM_OBJECT_PRIVATE_H
 
-#include <glib.h>
-#include <glib-object.h>
+#include <gio/gio.h>
 #include "nm-object.h"
 
-typedef gboolean (*PropChangedMarshalFunc) (NMObject *, GParamSpec *, GValue *, gpointer);
+void _nm_object_ensure_inited (NMObject *object);
+
+typedef gboolean (*PropertyMarshalFunc) (NMObject *, GParamSpec *, GValue *, gpointer);
+
 typedef GObject * (*NMObjectCreatorFunc) (DBusGConnection *, const char *);
 
 typedef struct {
 	const char *name;
-	PropChangedMarshalFunc func;
 	gpointer field;
-} NMPropertiesChangedInfo;
+	PropertyMarshalFunc func;
+	GType object_type;
+} NMPropertiesInfo;
 
 
-void _nm_object_handle_properties_changed (NMObject *object,
-                                           DBusGProxy *proxy,
-                                           const NMPropertiesChangedInfo *info);
+void _nm_object_register_properties (NMObject *object,
+									 DBusGProxy *proxy,
+									 const NMPropertiesInfo *info);
 
-void _nm_object_process_properties_changed (NMObject *self, GHashTable *properties);
+gboolean _nm_object_reload_properties (NMObject *object, GError **error);
 
-gboolean _nm_object_demarshal_generic (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field);
+void     _nm_object_reload_properties_async  (NMObject *object,
+                                              GAsyncReadyCallback callback,
+                                              gpointer user_data);
+gboolean _nm_object_reload_properties_finish (NMObject *object,
+                                              GAsyncResult *result,
+                                              GError **error);
+
+typedef void (*NMPseudoPropertyChangedFunc) (NMObject *self, NMObject *changed);
+void _nm_object_register_pseudo_property (NMObject *object,
+                                          DBusGProxy *proxy,
+                                          const char *name,
+                                          gpointer field,
+                                          GType object_type,
+                                          NMPseudoPropertyChangedFunc added_func,
+                                          NMPseudoPropertyChangedFunc removed_func);
+void _nm_object_reload_pseudo_property   (NMObject *object,
+                                          const char *name);
 
 void _nm_object_queue_notify (NMObject *object, const char *property);
 
+void _nm_object_suppress_property_updates (NMObject *object, gboolean suppress);
+
 /* DBus property accessors */
 
-gboolean _nm_object_get_property (NMObject *object,
-                                  const char *interface,
-                                  const char *prop_name,
-                                  GValue *value,
-                                  GError **error);
+void _nm_object_reload_property (NMObject *object,
+                                 const char *interface,
+                                 const char *prop_name);
 
 void _nm_object_set_property (NMObject *object,
                               const char *interface,
                               const char *prop_name,
                               GValue *value);
-
-char *_nm_object_get_string_property (NMObject *object,
-                                      const char *interface,
-                                      const char *prop_name,
-                                      GError **error);
-
-char *_nm_object_get_object_path_property (NMObject *object,
-                                           const char *interface,
-                                           const char *prop_name,
-                                           GError **error);
-
-gint32 _nm_object_get_int_property (NMObject *object,
-                                    const char *interface,
-                                    const char *prop_name,
-                                    GError **error);
-
-guint32 _nm_object_get_uint_property (NMObject *object,
-                                      const char *interface,
-                                      const char *prop_name,
-                                      GError **error);
-
-gboolean _nm_object_get_boolean_property (NMObject *object,
-                                          const char *interface,
-                                          const char *prop_name,
-                                          GError **error);
-
-gint8 _nm_object_get_byte_property (NMObject *object,
-                                    const char *interface,
-                                    const char *prop_name,
-                                    GError **error);
-
-gdouble _nm_object_get_double_property (NMObject *object,
-                                        const char *interface,
-                                        const char *prop_name,
-                                        GError **error);
-
-GByteArray *_nm_object_get_byte_array_property (NMObject *object,
-                                                const char *interface,
-                                                const char *prop_name,
-                                                GError **error);
 
 static inline const GPtrArray *
 handle_ptr_array_return (GPtrArray *array)
@@ -108,5 +87,13 @@ handle_ptr_array_return (GPtrArray *array)
 		return NULL;
 	return array;
 }
+
+/* object demarshalling support */
+typedef GType (*NMObjectTypeFunc) (DBusGConnection *, const char *);
+typedef void (*NMObjectTypeCallbackFunc) (GType, gpointer);
+typedef void (*NMObjectTypeAsyncFunc) (DBusGConnection *, const char *, NMObjectTypeCallbackFunc, gpointer);
+
+void _nm_object_register_type_func (GType base_type, NMObjectTypeFunc type_func,
+                                    NMObjectTypeAsyncFunc type_async_func);
 
 #endif /* NM_OBJECT_PRIVATE_H */

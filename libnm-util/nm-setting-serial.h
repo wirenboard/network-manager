@@ -49,14 +49,11 @@ G_BEGIN_DECLS
  * setting requires the connection to contain an #NMSettingPPP setting
  */
 typedef enum {
-	NM_SETTING_SERIAL_ERROR_UNKNOWN = 0,
-	NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY,
-	NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY,
-	NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING
+	NM_SETTING_SERIAL_ERROR_UNKNOWN = 0,        /*< nick=UnknownError >*/
+	NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY,   /*< nick=InvalidProperty >*/
+	NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY,   /*< nick=MissingProperty >*/
+	NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING /*< nick=MissingPPPSetting >*/
 } NMSettingSerialError;
-
-#define NM_TYPE_SETTING_SERIAL_ERROR (nm_setting_serial_error_get_type ()) 
-GType nm_setting_serial_error_get_type (void);
 
 #define NM_SETTING_SERIAL_ERROR nm_setting_serial_error_quark ()
 GQuark nm_setting_serial_error_quark (void);

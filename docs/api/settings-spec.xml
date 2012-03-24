@@ -41,6 +41,12 @@
         <entry>Anonymous identity string for EAP authentication methods.  Used as the unencrypted identity with EAP types that support different tunneled identity like EAP-TTLS.</entry>
       </row>
       <row>
+        <entry><screen>pac-file</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>UTF-8 encoded file path containing PAC for EAP-FAST.</entry>
+      </row>
+      <row>
         <entry><screen>ca-cert</screen></entry>
         <entry><screen>byte array</screen></entry>
         <entry><screen>[]</screen></entry>
@@ -143,6 +149,18 @@
         <entry>Flags indicating how to handle the 802.1x password. (see <xref linkend="secrets-flags"/> for flag values)</entry>
       </row>
       <row>
+        <entry><screen>password-raw</screen></entry>
+        <entry><screen>byte array</screen></entry>
+        <entry><screen>[]</screen></entry>
+        <entry>Password used for EAP authentication methods as a byte array</entry>
+      </row>
+      <row>
+        <entry><screen>password-raw-flags</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>Flags indicating how to handle the 802.1x password byte array. (see <xref linkend="secrets-flags"/> for flag values)</entry>
+      </row>
+      <row>
         <entry><screen>private-key</screen></entry>
         <entry><screen>byte array</screen></entry>
         <entry><screen>[]</screen></entry>
@@ -216,6 +234,39 @@
         <entry><screen>string</screen></entry>
         <entry><screen></screen></entry>
         <entry>Either 'dun' for Dial-Up Networking connections or 'panu' for Personal Area Networking connections.</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<table>
+  <title>bond setting</title>
+  <tgroup cols="4">
+    <thead>
+      <row>
+        <entry>Key Name</entry>
+        <entry>Value Type</entry>
+        <entry>Default Value</entry>
+        <entry>Value Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><screen>name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen>bond</screen></entry>
+        <entry>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</entry>
+      </row>
+      <row>
+        <entry><screen>interface-name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>The name of the virtual in-kernel bonding network interface</entry>
+      </row>
+      <row>
+        <entry><screen>options</screen></entry>
+        <entry><screen>dict of (string::string)</screen></entry>
+        <entry><screen>[ ]</screen></entry>
+        <entry>Dictionary of key/value pairs of bonding options.  Both keys and values must be strings.  Option names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</entry>
       </row>
     </tbody>
   </tgroup>
@@ -325,6 +376,24 @@
         <entry><screen>FALSE</screen></entry>
         <entry>If TRUE, the connection is read-only and cannot be changed by the user or any other mechanism.  This is normally set for system connections whose plugin cannot yet write updated connections back out.</entry>
       </row>
+      <row>
+        <entry><screen>zone</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>The trust level of a the connection.Free form case-insensitive string (for example "Home", "Work", "Public").  NULL or unspecified zone means the connection will be placed in the default zone as defined by the firewall.</entry>
+      </row>
+      <row>
+        <entry><screen>master</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>Interface name of the master device or UUID of the master connection</entry>
+      </row>
+      <row>
+        <entry><screen>slave-type</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>Setting name describing the type of slave this connection is (ie, 'bond') or NULL if this connection is not a slave.</entry>
+      </row>
     </tbody>
   </tgroup>
 </table>
@@ -416,6 +485,45 @@
   </tgroup>
 </table>
 <table>
+  <title>infiniband setting</title>
+  <tgroup cols="4">
+    <thead>
+      <row>
+        <entry>Key Name</entry>
+        <entry>Value Type</entry>
+        <entry>Default Value</entry>
+        <entry>Value Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><screen>name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen>infiniband</screen></entry>
+        <entry>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</entry>
+      </row>
+      <row>
+        <entry><screen>mac-address</screen></entry>
+        <entry><screen>byte array</screen></entry>
+        <entry><screen>[]</screen></entry>
+        <entry>If specified, this connection will only apply to the IPoIB device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</entry>
+      </row>
+      <row>
+        <entry><screen>mtu</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple frames.</entry>
+      </row>
+      <row>
+        <entry><screen>transport-mode</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>The IPoIB transport mode. Either 'datagram' or 'connected'.</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<table>
   <title>ipv4 setting</title>
   <tgroup cols="4">
     <thead>
@@ -502,7 +610,7 @@
       <row>
         <entry><screen>may-fail</screen></entry>
         <entry><screen>boolean</screen></entry>
-        <entry><screen>FALSE</screen></entry>
+        <entry><screen>TRUE</screen></entry>
         <entry>If TRUE, allow overall network configuration to proceed even if IPv4 configuration times out. Note that at least one IP configuration must succeed or overall network configuration will still fail.  For example, in IPv6-only networks, setting this property to TRUE allows the overall network configuration to succeed if IPv4 configuration fails but IPv6 configuration completes successfully.</entry>
       </row>
     </tbody>
@@ -579,6 +687,12 @@
         <entry><screen>boolean</screen></entry>
         <entry><screen>TRUE</screen></entry>
         <entry>If TRUE, allow overall network configuration to proceed even if IPv6 configuration times out. Note that at least one IP configuration must succeed or overall network configuration will still fail.  For example, in IPv4-only networks, setting this property to TRUE allows the overall network configuration to succeed if IPv6 configuration fails but IPv4 configuration completes successfully.</entry>
+      </row>
+      <row>
+        <entry><screen>ip6-privacy</screen></entry>
+        <entry><screen>int32</screen></entry>
+        <entry><screen>-1</screen></entry>
+        <entry>Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941.  If enabled, it makes the kernel generate a temporary IPv6 address in addition to the public one generated from MAC address via modified EUI-64.  This enhances privacy, but could cause problems in some applications, on the other hand.  The permitted values are: 0: disabled, 1: enabled (prefer public address), 2: enabled (prefer temporary addresses).</entry>
       </row>
     </tbody>
   </tgroup>
@@ -843,6 +957,63 @@
         <entry><screen>uint64</screen></entry>
         <entry><screen>0</screen></entry>
         <entry>Time to delay between each byte sent to the modem, in microseconds.</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<table>
+  <title>vlan setting</title>
+  <tgroup cols="4">
+    <thead>
+      <row>
+        <entry>Key Name</entry>
+        <entry>Value Type</entry>
+        <entry>Default Value</entry>
+        <entry>Value Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><screen>name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen>vlan</screen></entry>
+        <entry>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</entry>
+      </row>
+      <row>
+        <entry><screen>interface-name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>If given, specifies the kernel name of the VLAN interface. If not given, a default name will be constructed from the interface described by the parent interface and the 'id' property, ex 'eth2.1'. The parent interface may be given by the 'parent' property or by a hardware address property, eg the 'wired' or 'infiniband' settings' 'mac-address' property.</entry>
+      </row>
+      <row>
+        <entry><screen>parent</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>If given, specifies the parent interface name or parent connection UUID from which this VLAN interface should be created.  If this property is not specified, the connection must contain a hardware address in a hardware-specific setting, like the 'wired' or 'infiniband' settings' 'mac-address' property.</entry>
+      </row>
+      <row>
+        <entry><screen>id</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>The VLAN indentifier the interface created by this connection should be assigned.</entry>
+      </row>
+      <row>
+        <entry><screen>flags</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>One or more flags which control the behavior and features of the VLAN interface.  Flags include reordering of output packet headers (0x01), use of the GVRP protocol (0x02), and loose binding of the interface to its master device's operating state (0x04).</entry>
+      </row>
+      <row>
+        <entry><screen>ingress-priority-map</screen></entry>
+        <entry><screen>array of string</screen></entry>
+        <entry><screen>[]</screen></entry>
+        <entry>For incoming packets, a list of mappings from 802.1p priorities to Linux SKB priorities.  The mapping is given in the format 'from:to' where both 'from' and 'to' are unsigned integers, ie '7:3'.</entry>
+      </row>
+      <row>
+        <entry><screen>egress-priority-map</screen></entry>
+        <entry><screen>array of string</screen></entry>
+        <entry><screen>[]</screen></entry>
+        <entry>For outgoing packets, a list of mappings from Linux SKB priorities to 802.1p priorities.  The mapping is given in the format 'from:to' where both 'from' and 'to' are unsigned integers, ie '7:3'.</entry>
       </row>
     </tbody>
   </tgroup>

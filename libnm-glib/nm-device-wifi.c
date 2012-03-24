@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2012 Red Hat, Inc.
  */
 
 #include <config.h>
@@ -36,13 +36,9 @@
 #include "nm-dbus-glib-types.h"
 #include "nm-types-private.h"
 
-#include "nm-device-wifi-bindings.h"
-
 G_DEFINE_TYPE (NMDeviceWifi, nm_device_wifi, NM_TYPE_DEVICE)
 
 #define NM_DEVICE_WIFI_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DEVICE_WIFI, NMDeviceWifiPrivate))
-
-static gboolean demarshal_active_ap (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field);
 
 void _nm_device_wifi_set_wireless_enabled (NMDeviceWifi *device, gboolean enabled);
 
@@ -55,7 +51,6 @@ typedef struct {
 	NM80211Mode mode;
 	guint32 rate;
 	NMAccessPoint *active_ap;
-	gboolean got_active_ap;
 	NMDeviceWifiCapabilities wireless_caps;
 	GPtrArray *aps;
 
@@ -91,6 +86,23 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 /**
+ * nm_device_wifi_error_quark:
+ *
+ * Registers an error quark for #NMDeviceWifi if necessary.
+ *
+ * Returns: the error quark used for #NMDeviceWifi errors.
+ **/
+GQuark
+nm_device_wifi_error_quark (void)
+{
+	static GQuark quark = 0;
+
+	if (G_UNLIKELY (quark == 0))
+		quark = g_quark_from_static_string ("nm-device-wifi-error-quark");
+	return quark;
+}
+
+/**
  * nm_device_wifi_new:
  * @connection: the #DBusGConnection
  * @path: the DBus object path of the device
@@ -102,13 +114,17 @@ static guint signals[LAST_SIGNAL] = { 0 };
 GObject *
 nm_device_wifi_new (DBusGConnection *connection, const char *path)
 {
+	GObject *device;
+
 	g_return_val_if_fail (connection != NULL, NULL);
 	g_return_val_if_fail (path != NULL, NULL);
 
-	return g_object_new (NM_TYPE_DEVICE_WIFI,
-	                     NM_OBJECT_DBUS_CONNECTION, connection,
-	                     NM_OBJECT_DBUS_PATH, path,
-	                     NULL);
+	device = g_object_new (NM_TYPE_DEVICE_WIFI,
+	                       NM_OBJECT_DBUS_CONNECTION, connection,
+	                       NM_OBJECT_DBUS_PATH, path,
+	                       NULL);
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return device;
 }
 
 /**
@@ -123,19 +139,10 @@ nm_device_wifi_new (DBusGConnection *connection, const char *path)
 const char *
 nm_device_wifi_get_hw_address (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), NULL);
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (!priv->hw_address) {
-		priv->hw_address = _nm_object_get_string_property (NM_OBJECT (device),
-		                                                  NM_DBUS_INTERFACE_DEVICE_WIRELESS,
-		                                                  DBUS_PROP_HW_ADDRESS,
-		                                                  NULL);
-	}
-
-	return priv->hw_address;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_WIFI_GET_PRIVATE (device)->hw_address;
 }
 
 /**
@@ -150,19 +157,10 @@ nm_device_wifi_get_hw_address (NMDeviceWifi *device)
 const char *
 nm_device_wifi_get_permanent_hw_address (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), NULL);
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (!priv->perm_hw_address) {
-		priv->perm_hw_address = _nm_object_get_string_property (NM_OBJECT (device),
-		                                                        NM_DBUS_INTERFACE_DEVICE_WIRELESS,
-		                                                        DBUS_PROP_PERM_HW_ADDRESS,
-		                                                        NULL);
-	}
-
-	return priv->perm_hw_address;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_WIFI_GET_PRIVATE (device)->perm_hw_address;
 }
 
 /**
@@ -176,19 +174,10 @@ nm_device_wifi_get_permanent_hw_address (NMDeviceWifi *device)
 NM80211Mode
 nm_device_wifi_get_mode (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), 0);
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (!priv->mode) {
-		priv->mode = _nm_object_get_uint_property (NM_OBJECT (device),
-		                                          NM_DBUS_INTERFACE_DEVICE_WIRELESS,
-		                                          DBUS_PROP_MODE,
-		                                          NULL);
-	}
-
-	return priv->mode;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_WIFI_GET_PRIVATE (device)->mode;
 }
 
 /**
@@ -202,7 +191,6 @@ nm_device_wifi_get_mode (NMDeviceWifi *device)
 guint32
 nm_device_wifi_get_bitrate (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
 	NMDeviceState state;
 
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), 0);
@@ -219,15 +207,8 @@ nm_device_wifi_get_bitrate (NMDeviceWifi *device)
 		return 0;
 	}
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (!priv->rate) {
-		priv->rate = _nm_object_get_uint_property (NM_OBJECT (device),
-		                                         NM_DBUS_INTERFACE_DEVICE_WIRELESS,
-		                                         DBUS_PROP_BITRATE,
-		                                         NULL);
-	}
-
-	return priv->rate;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_WIFI_GET_PRIVATE (device)->rate;
 }
 
 /**
@@ -241,19 +222,10 @@ nm_device_wifi_get_bitrate (NMDeviceWifi *device)
 NMDeviceWifiCapabilities
 nm_device_wifi_get_capabilities (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), 0);
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (!priv->wireless_caps) {
-		priv->wireless_caps = _nm_object_get_uint_property (NM_OBJECT (device),
-		                                                   NM_DBUS_INTERFACE_DEVICE_WIRELESS,
-		                                                   DBUS_PROP_WIRELESS_CAPABILITIES,
-		                                                   NULL);
-	}
-
-	return priv->wireless_caps;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_WIFI_GET_PRIVATE (device)->wireless_caps;
 }
 
 /**
@@ -267,11 +239,7 @@ nm_device_wifi_get_capabilities (NMDeviceWifi *device)
 NMAccessPoint *
 nm_device_wifi_get_active_access_point (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
 	NMDeviceState state;
-	char *path;
-	GValue value = { 0, };
-	GError *error = NULL;
 
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), NULL);
 
@@ -291,23 +259,8 @@ nm_device_wifi_get_active_access_point (NMDeviceWifi *device)
 		break;
 	}
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (priv->got_active_ap == TRUE)
-		return priv->active_ap;
-
-	path = _nm_object_get_object_path_property (NM_OBJECT (device),
-	                                            NM_DBUS_INTERFACE_DEVICE_WIRELESS,
-	                                            DBUS_PROP_ACTIVE_ACCESS_POINT,
-	                                            &error);
-	if (error == NULL) {
-		g_value_init (&value, DBUS_TYPE_G_OBJECT_PATH);
-		g_value_take_boxed (&value, path);
-		demarshal_active_ap (NM_OBJECT (device), NULL, &value, &priv->active_ap);
-		g_value_unset (&value);
-	}
-	g_clear_error (&error);
-
-	return priv->active_ap;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_WIFI_GET_PRIVATE (device)->active_ap;
 }
 
 /**
@@ -323,31 +276,10 @@ nm_device_wifi_get_active_access_point (NMDeviceWifi *device)
 const GPtrArray *
 nm_device_wifi_get_access_points (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv;
-	DBusGConnection *connection;
-	GValue value = { 0, };
-	GError *error = NULL;
-	GPtrArray *temp;
-
 	g_return_val_if_fail (NM_IS_DEVICE_WIFI (device), NULL);
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	if (priv->aps)
-		return handle_ptr_array_return (priv->aps);
-
-	if (!org_freedesktop_NetworkManager_Device_Wireless_get_access_points (priv->proxy, &temp, &error)) {
-		g_warning ("%s: error getting access points: %s", __func__, error->message);
-		g_error_free (error);
-		return NULL;
-	}
-
-	g_value_init (&value, DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH);
-	g_value_take_boxed (&value, temp);
-	connection = nm_object_get_connection (NM_OBJECT (device));
-	_nm_object_array_demarshal (&value, &priv->aps, connection, nm_access_point_new);
-	g_value_unset (&value);
-
-	return handle_ptr_array_return (priv->aps);
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return handle_ptr_array_return (NM_DEVICE_WIFI_GET_PRIVATE (device)->aps);
 }
 
 /**
@@ -386,57 +318,28 @@ nm_device_wifi_get_access_point_by_path (NMDeviceWifi *device,
 }
 
 static void
-access_point_added_proxy (DBusGProxy *proxy, char *path, gpointer user_data)
+access_point_added (NMObject *self, NMObject *ap)
 {
-	NMDeviceWifi *self = NM_DEVICE_WIFI (user_data);
-	NMDeviceWifiPrivate *priv;
-	GObject *ap;
-
-	g_return_if_fail (self != NULL);
-
-	ap = G_OBJECT (nm_device_wifi_get_access_point_by_path (self, path));
-	if (!ap) {
-		DBusGConnection *connection = nm_object_get_connection (NM_OBJECT (self));
-
-		priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-		ap = G_OBJECT (_nm_object_cache_get (path));
-		if (ap) {
-			g_ptr_array_add (priv->aps, ap);
-		} else {
-			ap = G_OBJECT (nm_access_point_new (connection, path));
-			if (ap)
-				g_ptr_array_add (priv->aps, ap);
-		}
-	}
-
-	if (ap)
-		g_signal_emit (self, signals[ACCESS_POINT_ADDED], 0, NM_ACCESS_POINT (ap));
+	g_signal_emit (self, signals[ACCESS_POINT_ADDED], 0, ap);
 }
 
 static void
-access_point_removed_proxy (DBusGProxy *proxy, char *path, gpointer user_data)
+access_point_removed (NMObject *self_obj, NMObject *ap_obj)
 {
-	NMDeviceWifi *self = NM_DEVICE_WIFI (user_data);
+	NMDeviceWifi *self = NM_DEVICE_WIFI (self_obj);
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-	NMAccessPoint *ap;
+	NMAccessPoint *ap = NM_ACCESS_POINT (ap_obj);
 
-	g_return_if_fail (self != NULL);
+	if (ap == priv->active_ap) {
+		g_object_unref (priv->active_ap);
+		priv->active_ap = NULL;
+		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT);
 
-	ap = nm_device_wifi_get_access_point_by_path (self, path);
-	if (ap) {
-		if (ap == priv->active_ap) {
-			g_object_unref (priv->active_ap);
-			priv->active_ap = NULL;
-			_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT);
-
-			priv->rate = 0;
-			_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_BITRATE);
-		}
-
-		g_signal_emit (self, signals[ACCESS_POINT_REMOVED], 0, ap);
-		g_ptr_array_remove (priv->aps, ap);
-		g_object_unref (G_OBJECT (ap));
+		priv->rate = 0;
+		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_BITRATE);
 	}
+
+	g_signal_emit (self, signals[ACCESS_POINT_REMOVED], 0, ap);
 }
 
 static void
@@ -504,7 +407,7 @@ has_proto (NMSettingWirelessSecurity *s_wsec, const char *proto)
 }
 
 static gboolean
-connection_valid (NMDevice *device, NMConnection *connection)
+connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
 {
 	NMSettingConnection *s_con;
 	NMSettingWireless *s_wifi;
@@ -516,24 +419,40 @@ connection_valid (NMDevice *device, NMConnection *connection)
 	NMDeviceWifiCapabilities wifi_caps;
 	const char *key_mgmt;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
 	ctype = nm_setting_connection_get_connection_type (s_con);
-	if (strcmp (ctype, NM_SETTING_WIRELESS_SETTING_NAME) != 0)
+	if (strcmp (ctype, NM_SETTING_WIRELESS_SETTING_NAME) != 0) {
+		g_set_error (error, NM_DEVICE_WIFI_ERROR, NM_DEVICE_WIFI_ERROR_NOT_WIFI_CONNECTION,
+		             "The connection was not a Wi-Fi connection.");
 		return FALSE;
+	}
 
 	s_wifi = nm_connection_get_setting_wireless (connection);
-	if (!s_wifi)
+	if (!s_wifi) {
+		g_set_error (error, NM_DEVICE_WIFI_ERROR, NM_DEVICE_WIFI_ERROR_INVALID_WIFI_CONNECTION,
+		             "The connection was not a valid Wi-Fi connection.");
 		return FALSE;
+	}
 
 	/* Check MAC address */
 	hw_str = nm_device_wifi_get_permanent_hw_address (NM_DEVICE_WIFI (device));
 	if (hw_str) {
 		hw_mac = ether_aton (hw_str);
-		mac = nm_setting_wireless_get_mac_address (s_wifi);
-		if (mac && hw_mac && memcmp (mac->data, hw_mac->ether_addr_octet, ETH_ALEN))
+		if (!hw_mac) {
+			g_set_error (error, NM_DEVICE_WIFI_ERROR, NM_DEVICE_WIFI_ERROR_INVALID_DEVICE_MAC,
+			             "Invalid device MAC address.");
 			return FALSE;
+		}
+		mac = nm_setting_wireless_get_mac_address (s_wifi);
+		if (mac && hw_mac && memcmp (mac->data, hw_mac->ether_addr_octet, ETH_ALEN)) {
+			g_set_error (error, NM_DEVICE_WIFI_ERROR, NM_DEVICE_WIFI_ERROR_MAC_MISMATCH,
+			             "The MACs of the device and the connection didn't match.");
+			return FALSE;
+		}
 	}
 
 	/* Check device capabilities; we assume all devices can do WEP at least */
@@ -548,12 +467,18 @@ connection_valid (NMDevice *device, NMConnection *connection)
 		    || !g_strcmp0 (key_mgmt, "wpa-eap")) {
 
 			/* Is device only WEP capable? */
-			if (!(wifi_caps & WPA_CAPS))
+			if (!(wifi_caps & WPA_CAPS)) {
+				g_set_error (error, NM_DEVICE_WIFI_ERROR, NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_WPA_CAPS,
+				             "The device missed WPA capabilities required by the connection.");
 				return FALSE;
+			}
 
 			/* Make sure WPA2/RSN-only connections don't get chosen for WPA-only cards */
-			if (has_proto (s_wsec, "rsn") && !has_proto (s_wsec, "wpa") && !(wifi_caps & RSN_CAPS))
+			if (has_proto (s_wsec, "rsn") && !has_proto (s_wsec, "wpa") && !(wifi_caps & RSN_CAPS)) {
+				g_set_error (error, NM_DEVICE_WIFI_ERROR, NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_RSN_CAPS,
+				             "The device missed WPA2/RSN capabilities required by the connection.");
 				return FALSE;
+			}
 		}
 	}
 
@@ -565,9 +490,7 @@ connection_valid (NMDevice *device, NMConnection *connection)
 static void
 nm_device_wifi_init (NMDeviceWifi *device)
 {
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-
-	priv->disposed = FALSE;
+	_nm_device_set_device_type (NM_DEVICE (device), NM_DEVICE_TYPE_WIFI);
 }
 
 static void
@@ -629,74 +552,39 @@ state_changed_cb (NMDevice *device, GParamSpec *pspec, gpointer user_data)
 	}
 }
 
-static gboolean
-demarshal_active_ap (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field)
-{
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (object);
-	const char *path;
-	NMAccessPoint *ap = NULL;
-	DBusGConnection *connection;
-
-	if (value) {
-		if (!G_VALUE_HOLDS (value, DBUS_TYPE_G_OBJECT_PATH))
-			return FALSE;
-
-		path = g_value_get_boxed (value);
-		if (path) {
-			ap = NM_ACCESS_POINT (_nm_object_cache_get (path));
-			if (!ap) {
-				connection = nm_object_get_connection (object);
-				ap = NM_ACCESS_POINT (nm_access_point_new (connection, path));
-			}
-		}
-	}
-
-	priv->got_active_ap = TRUE;
-
-	if (priv->active_ap) {
-		g_object_unref (priv->active_ap);
-		priv->active_ap = NULL;
-	}
-
-	if (ap)
-		priv->active_ap = ap;
-
-	_nm_object_queue_notify (object, NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT);
-	return TRUE;
-}
-
 static void
-register_for_property_changed (NMDeviceWifi *device)
+register_properties (NMDeviceWifi *device)
 {
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_DEVICE_WIFI_HW_ADDRESS,           _nm_object_demarshal_generic, &priv->hw_address },
-		{ NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS, _nm_object_demarshal_generic, &priv->perm_hw_address },
-		{ NM_DEVICE_WIFI_MODE,                 _nm_object_demarshal_generic, &priv->mode },
-		{ NM_DEVICE_WIFI_BITRATE,              _nm_object_demarshal_generic, &priv->rate },
-		{ NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT,  demarshal_active_ap,         &priv->active_ap },
-		{ NM_DEVICE_WIFI_CAPABILITIES,         _nm_object_demarshal_generic, &priv->wireless_caps },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_DEVICE_WIFI_HW_ADDRESS,           &priv->hw_address },
+		{ NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS, &priv->perm_hw_address },
+		{ NM_DEVICE_WIFI_MODE,                 &priv->mode },
+		{ NM_DEVICE_WIFI_BITRATE,              &priv->rate },
+		{ NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT,  &priv->active_ap, NULL, NM_TYPE_ACCESS_POINT },
+		{ NM_DEVICE_WIFI_CAPABILITIES,         &priv->wireless_caps },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (device),
+	_nm_object_register_properties (NM_OBJECT (device),
+	                                priv->proxy,
+	                                property_info);
+
+	_nm_object_register_pseudo_property (NM_OBJECT (device),
 	                                     priv->proxy,
-	                                     property_changed_info);
+	                                     "AccessPoints",
+	                                     &priv->aps,
+	                                     NM_TYPE_ACCESS_POINT,
+	                                     access_point_added,
+	                                     access_point_removed);
 }
 
-static GObject*
-constructor (GType type,
-		   guint n_construct_params,
-		   GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	GObject *object;
 	NMDeviceWifiPrivate *priv;
 
-	object = G_OBJECT_CLASS (nm_device_wifi_parent_class)->constructor (type,
-																    n_construct_params,
-																    construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_device_wifi_parent_class)->constructed (object);
 
 	priv = NM_DEVICE_WIFI_GET_PRIVATE (object);
 
@@ -705,28 +593,12 @@ constructor (GType type,
 											nm_object_get_path (NM_OBJECT (object)),
 											NM_DBUS_INTERFACE_DEVICE_WIRELESS);
 
-	dbus_g_proxy_add_signal (priv->proxy, "AccessPointAdded",
-	                         DBUS_TYPE_G_OBJECT_PATH,
-	                         G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (priv->proxy, "AccessPointAdded",
-						    G_CALLBACK (access_point_added_proxy),
-						    object, NULL);
-
-	dbus_g_proxy_add_signal (priv->proxy, "AccessPointRemoved",
-	                         DBUS_TYPE_G_OBJECT_PATH,
-	                         G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (priv->proxy, "AccessPointRemoved",
-						    G_CALLBACK (access_point_removed_proxy),
-						    object, NULL);
-
-	register_for_property_changed (NM_DEVICE_WIFI (object));
+	register_properties (NM_DEVICE_WIFI (object));
 
 	g_signal_connect (NM_DEVICE (object),
 	                  "notify::" NM_DEVICE_STATE,
 	                  G_CALLBACK (state_changed_cb),
 	                  NULL);
-
-	return object;
 }
 
 static void
@@ -767,11 +639,11 @@ nm_device_wifi_class_init (NMDeviceWifiClass *wifi_class)
 	g_type_class_add_private (wifi_class, sizeof (NMDeviceWifiPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
-	device_class->connection_valid = connection_valid;
+	device_class->connection_compatible = connection_compatible;
 
 	/* properties */
 

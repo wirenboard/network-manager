@@ -1,6 +1,8 @@
+include $(GLIB_MAKEFILE)
+
 SUBDIRS=. tests
 
-INCLUDES = -I${top_srcdir} -I${top_srcdir}/include
+INCLUDES = -I${top_srcdir} -I${top_srcdir}/include -I${top_builddir}/include
 
 lib_LTLIBRARIES=libnm-util.la
 
@@ -15,8 +17,11 @@ libnm_util_include_HEADERS = 		\
 	nm-setting.h			\
 	nm-setting-8021x.h		\
 	nm-setting-bluetooth.h		\
+	nm-setting-bond.h		\
 	nm-setting-connection.h		\
+	nm-setting-infiniband.h		\
 	nm-setting-ip4-config.h		\
+	nm-setting-vlan.h		\
 	nm-setting-ip6-config.h		\
 	nm-setting-ppp.h		\
 	nm-setting-pppoe.h		\
@@ -29,6 +34,7 @@ libnm_util_include_HEADERS = 		\
 	nm-setting-wireless.h		\
 	nm-setting-wireless-security.h	\
 	nm-setting-vpn.h		\
+	nm-utils-enum-types.h		\
 	nm-utils.h
 
 libnm_util_la_private_headers = \
@@ -44,8 +50,11 @@ libnm_util_la_csources = \
 	nm-setting.c			\
 	nm-setting-8021x.c		\
 	nm-setting-bluetooth.c		\
+	nm-setting-bond.c		\
 	nm-setting-connection.c		\
+	nm-setting-infiniband.c		\
 	nm-setting-ip4-config.c		\
+	nm-setting-vlan.c		\
 	nm-setting-ip6-config.c		\
 	nm-setting-ppp.c		\
 	nm-setting-pppoe.c		\
@@ -58,18 +67,25 @@ libnm_util_la_csources = \
 	nm-setting-wireless.c		\
 	nm-setting-wireless-security.c	\
 	nm-setting-vpn.c		\
+	nm-utils-enum-types.c		\
 	nm-utils.c
 
 libnm_util_la_SOURCES = \
 	$(libnm_util_la_csources) \
 	$(libnm_util_la_private_headers)
 
+GLIB_GENERATED = nm-utils-enum-types.h nm-utils-enum-types.c
+BUILT_SOURCES = $(GLIB_GENERATED)
+nm_utils_enum_types_sources = $(libnm_util_include_HEADERS)
+GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
+GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
+
 libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS)
 
 SYMBOL_VIS_FILE=$(srcdir)/libnm-util.ver
 
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "4:0:2"
+	-version-info "5:0:3"
 
 if WITH_GNUTLS
 libnm_util_la_SOURCES += crypto_gnutls.c

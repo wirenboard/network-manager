@@ -9,12 +9,10 @@ NMSettingWimax
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -53,6 +51,13 @@ NMSettingWimax
 @NM_SETTING_WIMAX_ERROR_UNKNOWN: 
 @NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY: 
 @NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY: 
+
+<!-- ##### MACRO NM_SETTING_WIMAX_ERROR ##### -->
+<para>
+
+</para>
+
+
 
 <!-- ##### MACRO NM_SETTING_WIMAX_MAC_ADDRESS ##### -->
 <para>

@@ -9,12 +9,10 @@ NMSettingGsm
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -144,6 +142,13 @@ NMSettingGsm
 
 
 <!-- ##### MACRO NM_SETTING_GSM_APN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_GSM_ERROR ##### -->
 <para>
 
 </para>

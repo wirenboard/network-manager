@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
-m4_define([nm_micro_version], [2])
+m4_define([nm_micro_version], [4])
 m4_define([nm_nano_version],  [0])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
@@ -132,12 +132,17 @@ if test "z$with_distro" = "z"; then
 	exit 1
 else
 	case $with_distro in
-		redhat|suse|gentoo|debian|slackware|arch|paldo|frugalware|mandriva|pardus|linexa|exherbo) ;;
+		redhat|suse|gentoo|debian|slackware|arch|paldo|frugalware|mandriva|pardus|linexa|exherbo|generic) ;;
 		*)
 			echo "Your distribution (${with_distro}) is not yet supported!  (patches welcome)"
 			exit 1
 			;;
 	esac
+fi
+
+AM_CONDITIONAL(TARGET_GENERIC, test x"$with_distro" = xgeneric)
+if test x"$with_distro" = xgeneric; then
+  AC_DEFINE(TARGET_GENERIC, 1, [Define for a general unknown Linux system])
 fi
 
 AM_CONDITIONAL(TARGET_REDHAT, test x"$with_distro" = xredhat)
@@ -208,7 +213,37 @@ if ! test x"$ac_distver" = x""; then
   AC_DEFINE_UNQUOTED(NM_DIST_VERSION, "$ac_distver", [Define the distribution version string])
 fi
 
-AC_MSG_CHECKING([Linux Wireless Extensions >= 18])
+dnl
+dnl Default to using WEXT but allow it to be disabled
+dnl
+AC_ARG_WITH(wext, AS_HELP_STRING([--with-wext=yes], [Enable or disable Linux Wireless Extensions]), ac_with_wext=$withval, ac_with_wext="yes")
+if test x"$ac_with_wext" = x"yes"; then
+	AC_MSG_CHECKING([Linux kernel WEXT headers])
+	AC_COMPILE_IFELSE(
+		[AC_LANG_PROGRAM(
+		      [[#ifndef __user
+		        #define __user
+		        #endif
+		        #include <sys/types.h>
+		        #include <linux/types.h>
+		        #include <sys/socket.h>
+		        #include <linux/wireless.h>]],
+		      [[#ifndef IWEVGENIE
+		        #error "not found"
+		        #endif]])],
+		[ac_have_iwevgenie=yes],
+		[ac_have_iwevgenie=no])
+	AC_MSG_RESULT($ac_have_iwevgenie)
+	if test "$ac_have_iwevgenie" = no; then
+	       AC_MSG_ERROR(Linux kernel development header linux/wireless.h not installed or not functional)
+	fi
+	AC_DEFINE(HAVE_WEXT, 1, [Define if you have Linux Wireless Extensions support])
+else
+	AC_DEFINE(HAVE_WEXT, 0, [Define if you have Linux Wireless Extensions support])
+fi
+AM_CONDITIONAL(WITH_WEXT, test x"${ac_with_wext}" = x"yes")
+
+AC_MSG_CHECKING([Linux kernel nl80211 headers])
 AC_COMPILE_IFELSE(
 	[AC_LANG_PROGRAM(
               [[#ifndef __user
@@ -217,16 +252,35 @@ AC_COMPILE_IFELSE(
                 #include <sys/types.h>
                 #include <linux/types.h>
                 #include <sys/socket.h>
-                #include <net/if.h>
-                #include <wireless.h>]],
-              [[#ifndef IWEVGENIE
-                #error "not found"
-                #endif]])],
-        [ac_have_iwevgenie=yes],
-        [ac_have_iwevgenie=no])
-AC_MSG_RESULT($ac_have_iwevgenie)
-if test "$ac_have_iwevgenie" = no; then
-	AC_MSG_ERROR(wireless-tools or libiw development headers >= 28pre9 not installed or not functional)
+                #include <linux/nl80211.h>]],
+              [[int a = NL80211_RATE_INFO_BITRATE;]])],
+        [ac_have_nl80211=yes],
+        [ac_have_nl80211=no])
+AC_MSG_RESULT($ac_have_nl80211)
+if test "$ac_have_nl80211" = no; then
+	AC_MSG_ERROR(Linux kernel development header linux/nl80211.h not installed or not functional)
+fi
+
+dnl
+dnl Default to using WEXT but allow it to be disabled
+dnl
+AC_MSG_CHECKING([Linux kernel VLAN_FLAG_LOOSE_BINDING enum value])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+              [[#ifndef __user
+                #define __user
+                #endif
+                #include <sys/types.h>
+                #include <linux/types.h>
+                #include <linux/if_vlan.h>]],
+              [[unsigned int a = VLAN_FLAG_LOOSE_BINDING;]])],
+	[ac_have_vlan_flag_loose_binding=yes],
+	[ac_have_vlan_flag_loose_binding=no])
+AC_MSG_RESULT($ac_have_vlan_flag_loose_binding)
+if test "$ac_have_vlan_flag_loose_binding" = yes; then
+	AC_DEFINE(HAVE_VLAN_FLAG_LOOSE_BINDING, 1, [Define if you have VLAN_FLAG_LOOSE_BINDING])
+else
+	AC_DEFINE(HAVE_VLAN_FLAG_LOOSE_BINDING, 0, [Define if you have VLAN_FLAG_LOOSE_BINDING])
 fi
 
 dnl
@@ -278,6 +332,9 @@ if (test "${enable_qt}" = "yes"); then
 	fi
 	AC_SUBST(QT_CFLAGS)
 	AC_SUBST(QT_LIBS)
+	# Check for moc-qt4 and if not found then moc
+	QT4_BINDIR=`$PKG_CONFIG Qt --variable bindir`
+	AC_CHECK_PROGS(MOC, [moc-qt4 moc],, [$QT4_BINDIR:$PATH])
 fi
 AM_CONDITIONAL(WITH_QT, test "${enable_qt}" = "yes")
 
@@ -290,7 +347,7 @@ else
 fi
 AC_SUBST(UDEV_BASE_DIR)
 
-# systemd
+# systemd unit support
 AC_ARG_WITH([systemdsystemunitdir],
  AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
  [],
@@ -300,26 +357,35 @@ if test "x$with_systemdsystemunitdir" != xno; then
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
-dnl
-dnl Disable ConsoleKit support
-dnl
-AC_ARG_WITH(ck, AS_HELP_STRING([--without-ck], [Build NetworkManager without ConsoleKit session tracking support]))
-AM_CONDITIONAL(WITH_CONSOLEKIT, test x"$with_ck" != xno)
-no_ck=0
-if test x"$with_ck" = x"no"; then
-	no_ck="1"
-else
-	with_ck="yes"
+AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd], [Build NetworkManager with specific session tracking support]))
+if test "z$with_session_tracking" = "z"; then
+    # Default to ConsoleKit session tracking like we used before
+    with_session_tracking=ck
 fi
-AC_DEFINE_UNQUOTED(NO_CONSOLEKIT, $no_ck, [Define to disable use of ConsoleKit])
+
+case $with_session_tracking in
+    ck|none) ;;
+    systemd)
+        PKG_CHECK_MODULES(SYSTEMD, [libsystemd-login])
+        ;;
+    *)
+	AC_MSG_ERROR(--with-session-tracking must be one of [none, ck, systemd])
+        ;;
+esac
+AC_SUBST(SYSTEMD_CFLAGS)
+AC_SUBST(SYSTEMD_LIBS)
+AM_CONDITIONAL(SESSION_TRACKING_CK, test "x$with_session_tracking" = "xck")
+AM_CONDITIONAL(SESSION_TRACKING_SYSTEMD, test "x$with_session_tracking" = "xsystemd")
+
 
 have_libnl="no"
 PKG_CHECK_MODULES(LIBNL3, libnl-3.0, [have_libnl3=yes], [have_libnl3=no])
 PKG_CHECK_MODULES(LIBNL_ROUTE3, libnl-route-3.0, [have_libnl_route3=yes], [have_libnl_route3=no])
-if (test "${have_libnl3}" = "yes" -a "${have_libnl_route3}" = "yes"); then
+PKG_CHECK_MODULES(LIBNL_GENL3, libnl-genl-3.0, [have_libnl_genl3=yes], [have_libnl_genl3=no])
+if (test "${have_libnl3}" = "yes" -a "${have_libnl_route3}" = "yes" -a "${have_libnl_genl3}" = "yes"); then
 	AC_DEFINE(HAVE_LIBNL3, 1, [Define if you require specific libnl-3 support])
-	LIBNL_CFLAGS="$LIBNL3_CFLAGS $LIBNL_ROUTE3_CFLAGS"
-	LIBNL_LIBS="$LIBNL3_LIBS $LIBNL_ROUTE3_LIBS"
+	LIBNL_CFLAGS="$LIBNL3_CFLAGS $LIBNL_ROUTE3_CFLAGS $LIBNL_GENL3_CFLAGS"
+	LIBNL_LIBS="$LIBNL3_LIBS $LIBNL_ROUTE3_LIBS $LIBNL_GENL3_LIBS"
 	libnl_version="3"
 	have_libnl="yes"
 else
@@ -433,8 +499,12 @@ if test x"$ac_nss" = xno -a x"$ac_gnutls" = xno; then
   AC_MSG_ERROR([Could not find required development headers and libraries for '$ac_crypto'])
 fi
 
+GLIB_MAKEFILE='$(top_srcdir)/Makefile.glib'
+AC_SUBST(GLIB_MAKEFILE)
 GLIB_GENMARSHAL=`pkg-config --variable=glib_genmarshal glib-2.0`
 AC_SUBST(GLIB_GENMARSHAL)
+GLIB_MKENUMS='$(top_srcdir)/tools/glib-mkenums'
+AC_SUBST(GLIB_MKENUMS)
 
 AC_ARG_WITH(dbus-sys-dir, AS_HELP_STRING([--with-dbus-sys-dir=DIR], [where D-BUS system.d directory is]))
 
@@ -618,6 +688,21 @@ if test x"$enable_crashtrace" = xyes; then
   AC_DEFINE(ENABLE_CRASHTRACE, 1, [Define if you have GNU backtrace extensions])
 fi
 
+PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libsoup=no])
+AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
+                     [enable_concheck=${enableval}], [enable_concheck=${have_libsoup}])
+if (test "${enable_concheck}" = "yes"); then
+	if test x"$have_concheck" = x"no"; then
+		AC_MSG_ERROR(Connectivity checking requires libsoup development headers)
+	fi
+	AC_SUBST(LIBSOUP_CFLAGS)
+	AC_SUBST(LIBSOUP_LIBS)
+	AC_DEFINE(WITH_CONCHECK, 1, [Define if you want connectivity checking support])
+else
+	AC_DEFINE(WITH_CONCHECK, 0, [Define if you want connectivity checking support])
+fi
+AM_CONDITIONAL(WITH_CONCHECK, test "${enable_concheck}" = "yes")
+
 NM_COMPILER_WARNINGS
 
 GTK_DOC_CHECK(1.0)
@@ -643,7 +728,7 @@ include/Makefile
 include/nm-version.h
 src/Makefile
 src/tests/Makefile
-marshallers/Makefile
+src/generated/Makefile
 src/logging/Makefile
 src/dns-manager/Makefile
 src/vpn-manager/Makefile
@@ -656,6 +741,8 @@ src/ppp-manager/Makefile
 src/dnsmasq-manager/Makefile
 src/modem-manager/Makefile
 src/bluez-manager/Makefile
+src/wifi/Makefile
+src/firewall-manager/Makefile
 src/settings/Makefile
 src/settings/plugins/Makefile
 src/settings/plugins/ifupdown/Makefile
@@ -724,7 +811,9 @@ docs/libnm-glib/Makefile
 docs/libnm-util/Makefile
 NetworkManager.pc
 examples/Makefile
+examples/shell/Makefile
 examples/python/Makefile
+examples/ruby/Makefile
 examples/C/Makefile
 examples/C/glib/Makefile
 examples/C/qt/Makefile
@@ -751,9 +840,9 @@ else
 fi
 
 if test -n "${with_systemdsystemunitdir}"; then
-	echo systemd support: ${with_systemdsystemunitdir}
+	echo systemd unit support: ${with_systemdsystemunitdir}
 else
-	echo systemd support: no
+	echo systemd unit support: no
 fi
 
 if test "${enable_polkit}" = "yes"; then
@@ -762,11 +851,7 @@ else
 	echo PolicyKit support: no
 fi
 
-if test -n "${with_ck}"; then
-	echo ConsoleKit support: ${with_ck}
-else
-	echo ConsoleKit support: no
-fi
+        echo Session tracking: ${with_session_tracking}
 
 if test "${enable_wimax}" = "yes"; then
 	echo WiMAX support: yes
@@ -778,6 +863,12 @@ if test "${enable_ppp}" = "yes"; then
 	echo PPP support: yes
 else
 	echo PPP support: no
+fi
+
+if test "${enable_concheck}" = "yes"; then
+	echo Connectivity checking support: yes
+else
+	echo Connectivity checking support: no
 fi
 
 echo libnl version: ${libnl_version}

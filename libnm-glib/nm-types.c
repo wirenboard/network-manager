@@ -172,9 +172,9 @@ nm_string_array_get_type (void)
 gboolean
 _nm_string_array_demarshal (GValue *value, GPtrArray **dest)
 {
-	GPtrArray *array;
+	char **array;
 
-	if (!G_VALUE_HOLDS (value, DBUS_TYPE_G_ARRAY_OF_STRING))
+	if (!G_VALUE_HOLDS (value, G_TYPE_STRV))
 		return FALSE;
 
 	if (*dest) {
@@ -182,13 +182,13 @@ _nm_string_array_demarshal (GValue *value, GPtrArray **dest)
 		*dest = NULL;
 	}
 
-	array = (GPtrArray *) g_value_get_boxed (value);
-	if (array && array->len) {
+	array = (char **) g_value_get_boxed (value);
+	if (array && array[0]) {
 		int i;
 
-		*dest = g_ptr_array_sized_new (array->len);
-		for (i = 0; i < array->len; i++)
-			g_ptr_array_add (*dest, g_strdup (g_ptr_array_index (array, i)));
+		*dest = g_ptr_array_new ();
+		for (i = 0; array[i]; i++)
+			g_ptr_array_add (*dest, g_strdup (array[i]));
 	}
 
 	return TRUE;
@@ -323,11 +323,11 @@ _nm_ip6_address_array_copy (GPtrArray *src)
 	dest = g_ptr_array_sized_new (src->len);
 	for (i = 0; i < src->len; i++) {
 		struct in6_addr *addr = g_ptr_array_index (src, i);
-		struct in6_addr *dup;
+		struct in6_addr *copy;
 
-		dup = g_malloc0 (sizeof (struct in6_addr));
-		memcpy (dup, addr, sizeof (struct in6_addr));
-		g_ptr_array_add (dest, dup);
+		copy = g_malloc0 (sizeof (struct in6_addr));
+		memcpy (copy, addr, sizeof (struct in6_addr));
+		g_ptr_array_add (dest, copy);
 	}
 	return dest;
 }

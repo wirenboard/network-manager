@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2011 Red Hat, Inc.
+ * Copyright (C) 2011 - 2012 Red Hat, Inc.
  * Copyright (C) 2008 Novell, Inc.
  */
 
@@ -31,7 +31,7 @@
 #include "nm-device-modem.h"
 #include "nm-device-private.h"
 #include "nm-object-private.h"
-#include "nm-marshal.h"
+#include "nm-glib-marshal.h"
 
 G_DEFINE_TYPE (NMDeviceModem, nm_device_modem, NM_TYPE_DEVICE)
 
@@ -59,6 +59,23 @@ enum {
 #define DBUS_PROP_CURRENT_CAPS "CurrentCapabilities"
 
 /**
+ * nm_device_modem_error_quark:
+ *
+ * Registers an error quark for #NMDeviceModem if necessary.
+ *
+ * Returns: the error quark used for #NMDeviceModem errors.
+ **/
+GQuark
+nm_device_modem_error_quark (void)
+{
+	static GQuark quark = 0;
+
+	if (G_UNLIKELY (quark == 0))
+		quark = g_quark_from_static_string ("nm-device-modem-error-quark");
+	return quark;
+}
+
+/**
  * nm_device_modem_get_modem_capabilities:
  * @self: a #NMDeviceModem
  *
@@ -71,20 +88,11 @@ enum {
 NMDeviceModemCapabilities
 nm_device_modem_get_modem_capabilities (NMDeviceModem *self)
 {
-	NMDeviceModemPrivate *priv;
-
 	g_return_val_if_fail (self != NULL, NM_DEVICE_MODEM_CAPABILITY_NONE);
 	g_return_val_if_fail (NM_IS_DEVICE_MODEM (self), NM_DEVICE_MODEM_CAPABILITY_NONE);
 
-	priv = NM_DEVICE_MODEM_GET_PRIVATE (self);
-	if (!priv->caps) {
-		priv->caps = _nm_object_get_uint_property (NM_OBJECT (self),
-		                                           NM_DBUS_INTERFACE_DEVICE_MODEM,
-		                                           DBUS_PROP_MODEM_CAPS,
-		                                           NULL);
-	}
-
-	return priv->caps;
+	_nm_object_ensure_inited (NM_OBJECT (self));
+	return NM_DEVICE_MODEM_GET_PRIVATE (self)->caps;
 }
 
 /**
@@ -101,24 +109,15 @@ nm_device_modem_get_modem_capabilities (NMDeviceModem *self)
 NMDeviceModemCapabilities
 nm_device_modem_get_current_capabilities (NMDeviceModem *self)
 {
-	NMDeviceModemPrivate *priv;
-
 	g_return_val_if_fail (self != NULL, NM_DEVICE_MODEM_CAPABILITY_NONE);
 	g_return_val_if_fail (NM_IS_DEVICE_MODEM (self), NM_DEVICE_MODEM_CAPABILITY_NONE);
 
-	priv = NM_DEVICE_MODEM_GET_PRIVATE (self);
-	if (!priv->current_caps) {
-		priv->current_caps = _nm_object_get_uint_property (NM_OBJECT (self),
-		                                                   NM_DBUS_INTERFACE_DEVICE_MODEM,
-		                                                   DBUS_PROP_CURRENT_CAPS,
-		                                                   NULL);
-	}
-
-	return priv->current_caps;
+	_nm_object_ensure_inited (NM_OBJECT (self));
+	return NM_DEVICE_MODEM_GET_PRIVATE (self)->current_caps;
 }
 
 static gboolean
-connection_valid (NMDevice *device, NMConnection *connection)
+connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
 {
 	NMSettingConnection *s_con;
 	NMSettingGsm *s_gsm;
@@ -126,22 +125,32 @@ connection_valid (NMDevice *device, NMConnection *connection)
 	const char *ctype;
 	NMDeviceModemCapabilities current_caps;
 
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
 	ctype = nm_setting_connection_get_connection_type (s_con);
 	if (   strcmp (ctype, NM_SETTING_GSM_SETTING_NAME) != 0
-	    && strcmp (ctype, NM_SETTING_CDMA_SETTING_NAME) != 0)
+	    && strcmp (ctype, NM_SETTING_CDMA_SETTING_NAME) != 0) {
+		g_set_error (error, NM_DEVICE_MODEM_ERROR, NM_DEVICE_MODEM_ERROR_NOT_MODEM_CONNECTION,
+		             "The connection was not a modem connection.");
 		return FALSE;
+	}
 
 	s_gsm = nm_connection_get_setting_gsm (connection);
 	s_cdma = nm_connection_get_setting_cdma (connection);
-	if (!s_cdma && !s_gsm)
+	if (!s_cdma && !s_gsm) {
+		g_set_error (error, NM_DEVICE_MODEM_ERROR, NM_DEVICE_MODEM_ERROR_INVALID_MODEM_CONNECTION,
+		             "The connection was not a valid modem connection.");
 		return FALSE;
+	}
 
 	current_caps = nm_device_modem_get_current_capabilities (NM_DEVICE_MODEM (device));
 	if (   !(s_gsm && (current_caps & NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS))
 	    && !(s_cdma && (current_caps & NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO))) {
+		g_set_error (error, NM_DEVICE_MODEM_ERROR, NM_DEVICE_MODEM_ERROR_MISSING_DEVICE_CAPS,
+		             "The device missed capabilities required by the GSM/CDMA connection.");
 		return FALSE;
 	}
 
@@ -151,48 +160,41 @@ connection_valid (NMDevice *device, NMConnection *connection)
 /*******************************************************************/
 
 static void
-register_for_property_changed (NMDeviceModem *device)
+nm_device_modem_init (NMDeviceModem *device)
 {
-	NMDeviceModemPrivate *priv = NM_DEVICE_MODEM_GET_PRIVATE (device);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_DEVICE_MODEM_MODEM_CAPABILITIES,   _nm_object_demarshal_generic, &priv->caps },
-		{ NM_DEVICE_MODEM_CURRENT_CAPABILITIES, _nm_object_demarshal_generic, &priv->current_caps },
-		{ NULL },
-	};
-
-	_nm_object_handle_properties_changed (NM_OBJECT (device),
-	                                      priv->proxy,
-	                                      property_changed_info);
-}
-
-static GObject*
-constructor (GType type,
-             guint n_construct_params,
-             GObjectConstructParam *construct_params)
-{
-	GObject *object;
-	NMDeviceModemPrivate *priv;
-
-	object = G_OBJECT_CLASS (nm_device_modem_parent_class)->constructor (type,
-	                                                                     n_construct_params,
-	                                                                     construct_params);
-	if (object) {
-		priv = NM_DEVICE_MODEM_GET_PRIVATE (object);
-
-		priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-		                                         NM_DBUS_SERVICE,
-		                                         nm_object_get_path (NM_OBJECT (object)),
-		                                         NM_DBUS_INTERFACE_DEVICE_MODEM);
-
-		register_for_property_changed (NM_DEVICE_MODEM (object));
-	}
-
-	return object;
+	_nm_device_set_device_type (NM_DEVICE (device), NM_DEVICE_TYPE_MODEM);
 }
 
 static void
-nm_device_modem_init (NMDeviceModem *device)
+register_properties (NMDeviceModem *device)
 {
+	NMDeviceModemPrivate *priv = NM_DEVICE_MODEM_GET_PRIVATE (device);
+	const NMPropertiesInfo property_info[] = {
+		{ NM_DEVICE_MODEM_MODEM_CAPABILITIES,   &priv->caps },
+		{ NM_DEVICE_MODEM_CURRENT_CAPABILITIES, &priv->current_caps },
+		{ NULL },
+	};
+
+	_nm_object_register_properties (NM_OBJECT (device),
+	                                priv->proxy,
+	                                property_info);
+}
+
+static void
+constructed (GObject *object)
+{
+	NMDeviceModemPrivate *priv;
+
+	G_OBJECT_CLASS (nm_device_modem_parent_class)->constructed (object);
+
+	priv = NM_DEVICE_MODEM_GET_PRIVATE (object);
+
+	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
+	                                         NM_DBUS_SERVICE,
+	                                         nm_object_get_path (NM_OBJECT (object)),
+	                                         NM_DBUS_INTERFACE_DEVICE_MODEM);
+
+	register_properties (NM_DEVICE_MODEM (object));
 }
 
 static void
@@ -242,10 +244,10 @@ nm_device_modem_class_init (NMDeviceModemClass *modem_class)
 	g_type_class_add_private (modem_class, sizeof (NMDeviceModemPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
-	device_class->connection_valid = connection_valid;
+	device_class->connection_compatible = connection_compatible;
 
 	/**
 	 * NMDeviceModem:modem-capabilities:

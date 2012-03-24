@@ -1,5 +1,6 @@
+include $(GLIB_MAKEFILE)
+
 SUBDIRS = \
-	marshallers \
 	include \
 	libnm-util \
 	libnm-glib \
@@ -22,14 +23,16 @@ EXTRA_DIST = \
 	NetworkManager.pc.in \
 	intltool-extract.in \
 	intltool-merge.in \
-	intltool-update.in		
+	intltool-update.in \
+	Makefile.glib
 
 DISTCHECK_CONFIGURE_FLAGS = \
 	--with-tests=yes \
 	--with-docs=yes \
 	--enable-more-warnings=yes \
 	--with-udev-dir=$$dc_install_base/lib/udev \
-	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir)
+	--with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir) \
+	--with-wext=no
 
 DISTCLEANFILES = intltool-extract intltool-merge intltool-update
 
@@ -38,3 +41,8 @@ pkgconfig_DATA = NetworkManager.pc
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+CLEANFILES = cscope.in.out cscope.out cscope.po.out
+
+.PHONY: cscope
+cscope:
+	cscope -b -q -R -Iinclude -ssrc -slibnm-glib -slibnm-util -scli/src;

@@ -31,18 +31,20 @@
     <description xml:lang="or">ତନ୍ତ୍ର ନେଟୱର୍କିଙ୍ଗକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରନ୍ତୁ</description>
     <description xml:lang="pa">ਸਿਸਟਮ ਨੈੱਟਵਰਕਿੰਗ ਚਾਲੂ ਜਾਂ ਬੰਦ</description>
     <description xml:lang="pl">Włączenie lub wyłączenie sieci systemowej</description>
+    <description xml:lang="pt_BR">Habilita ou desabilita o sistema de redes</description>
     <description xml:lang="ru">Включить или выключить системные соединения</description>
     <description xml:lang="sl">Omogoči ali onemogoči sistemske omrežne povezave</description>
     <description xml:lang="sr">Омогући или онемогући умрежавање на систему</description>
     <description xml:lang="sr@latin">Omogući ili onemogući umrežavanje na sistemu</description>
     <description xml:lang="sv">Aktivera eller inaktivera systemnätverk</description>
     <description xml:lang="te">సిస్టమ్ నెట్వర్కింగ్‌ను చేతనము లేదా అచేతనము చేయుము</description>
+    <description xml:lang="tr">Sistem ağını etkinleştir ya da etkisizleştir</description>
     <description xml:lang="uk">Увімкнути або вимкнути системну роботу у мережі</description>
     <description xml:lang="zh_CN">启用或禁用系统网络</description>
     <message>System policy prevents enabling or disabling system networking</message>
     <message xml:lang="bg">Политиката на системата не позволява включване и изключване на мрежата на системно ниво</message>
     <message xml:lang="ca">La política del sistema impedeix habilitar o inhabilitar la xarxa del sistema</message>
-    <message xml:lang="cs">Systémová politika zamezuje povolit nebo zakázat systémovou síť</message>
+    <message xml:lang="cs">Systémová zásada zamezuje povolit nebo zakázat systémovou síť</message>
     <message xml:lang="da">Systempolitik forhindrer aktivering eller deaktivering af systemnetværk</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung von System-Netzwerken</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει ενεργοποίηση ή απενεργοποίηση της δικτύωσης του συστήματος</message>
@@ -57,16 +59,19 @@
     <message xml:lang="kn">ವ್ಯವಸ್ಥೆಯ ಜಾಲಬಂಧವನ್ನು ಶಕ್ತ ಅಥವ ಅಶಕ್ತಗೊಳಿಸದಂತೆ ವ್ಯವಸ್ಥೆಯ ಪಾಲಿಸಿಯು ತಡೆಯುತ್ತಿದೆ</message>
     <message xml:lang="ko">시스템 정책이 시스템 네트워크의 사용 여부 설정을 금지합니다</message>
     <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti sistemos prieigos prie tinklo</message>
+    <message xml:lang="ml"> സിസ്റ്റം നെറ്റ്​വര്‍ക്കിങ് പ്രവര്‍ത്തനസജ്ജമാക്കുന്നതും പ്രവര്‍ത്തനരഹിതമാക്കുന്നതും സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार प्रणाली नेटवर्किंगसा सुरू किंवा बंद होण्यापासून रोखते</message>
     <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ତନ୍ତ୍ର ନେଟୱର୍କିଙ୍ଗକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ ହେବାରୁ ବାରଣ କରିଥାଏ</message>
     <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਸਿਸਟਮ ਨੈੱਟਵਰਕਿੰਗ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje włączanie lub wyłączanie sieci systemowej</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem habilitação ou desabilitação do sistema de redes</message>
     <message xml:lang="ru">Системная политика запрещает включение и выключение системных подключений</message>
     <message xml:lang="sl">Sistemska določila preprečujejo omogočanje ali onemogočanje omrežnih povezav.</message>
     <message xml:lang="sr">Овлашћења система онемогућавају управљање мрежом на систему</message>
     <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upravljanje mrežom na sistemu</message>
     <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av systemnätverk</message>
     <message xml:lang="te">సిస్టమ్ నెట్వర్కింగ్‌ను చేతనము చేయుటకు లేదా అచేతనము చేయుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, sistem ağını etkinleştirmeyi ya da etkisizleştirmeyi engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють вмикання або вимикання з’єднань з мережею на системному рівні</message>
     <message xml:lang="zh_CN">系统策略阻止启用或禁用系统网络</message>
     <defaults>
@@ -98,18 +103,20 @@
     <description xml:lang="or">NetworkManager କୁ ସୁପ୍ତ କିମ୍ବା ଜାଗ୍ରତ ରଖନ୍ତୁ (କେବଳ ତନ୍ତ୍ର ଶକ୍ତି ପରିଚାଳନା ଦ୍ୱାରା ବ୍ୟବହାର ହେବା ଉଚିତ)</description>
     <description xml:lang="pa">ਨੈੱਟਵਰਕਮੈਨਜੇਰ ਨੂੰ ਸਲੀਪ ਕਰੋ ਜਾਂ ਵੇਕ ਅੱਪ ਕਰੋ (ਕੇਵਲ ਸਿਸਟਮ ਪਾਵਰ ਮੈਨਜੇਮੈਂਟ ਰਾਹੀਂ ਵਰਤਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ)</description>
     <description xml:lang="pl">Umieszczenie usługi NetworkManager w stanie uśpienia lub przebudzenie go (powinno być używane tylko przez systemowe zarządzanie zasilaniem)</description>
+    <description xml:lang="pt_BR">Põe o NetworkManager para dormir ou acordar (deve ser usado somente pelo sistema de gerenciamento de energia</description>
     <description xml:lang="ru">Перевести NetworkManager в режим сна или пробудить его (должно использоваться только системой управления питанием)</description>
     <description xml:lang="sl">Postavi program NetworkManager v mirovanje ali iz njega (možnost je namenjena upravljanju napajanja)</description>
     <description xml:lang="sr">Омогућава успављивање Управника мреже (користи се са Управником потрошње на систему)</description>
     <description xml:lang="sr@latin">Omogućava uspavljivanje Upravnika mreže (koristi se sa Upravnikom potrošnje na sistemu)</description>
     <description xml:lang="sv">Försätt Nätverkshanterare i vänteläge eller återställ efter det (bör endast användas av systemets strömhantering)</description>
     <description xml:lang="te">నెట్వర్కుమేనేజర్‌ను స్లీప్‌నకు లేదా దానిని మెల్కొలుపుటకు వుంచండి (సిస్టమ్ పవర్ నిర్వహణ చేత మాత్రమే వుపయోగించబడాలి)</description>
+    <description xml:lang="tr">NetworkManager'i uykuda konumuna getir veya uyandır (yalnızca sistem güç yönetimi tarafından kullanılmalıdır)</description>
     <description xml:lang="uk">Призупинити або поновити роботу NetworkManager (має використовуватися лише інструментами керування живленням системи)</description>
     <description xml:lang="zh_CN">挂起或唤醒 NetworkManager (应仅用于系统电源管理)</description>
     <message>System policy prevents putting NetworkManager to sleep or waking it up</message>
     <message xml:lang="bg">Политиката на системата не позволява приспиване и събуждане на NetworkManager</message>
     <message xml:lang="ca">La política del sistema impedeix posar el NetworkManager a dormir o despertar-lo</message>
-    <message xml:lang="cs">Systémová politika zamezuje NetworkManager uspat nebo probudit</message>
+    <message xml:lang="cs">Systémová zásada zamezuje NetworkManager uspat nebo probudit</message>
     <message xml:lang="da">Systempolitik forhindrer at sætte NetworkManager i hvile eller at vække den</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das in den Schlaf versetzen oder Aufwecken von NetworkManager</message>
     <message xml:lang="el">Η πολιτική του συστήματος δεν επιτρέπει να τίθεται η διαχείριση δικτύου σε αδράνεια ή να ενεργοποιείται.</message>
@@ -124,16 +131,19 @@
     <message xml:lang="kn">NetworkManager ಅನ್ನು ನಿದ್ರಾಸ್ಥಿತಿಗೆ ಅಥವ ಎಚ್ಚರಸ್ಥಿತಿಗೆ ಕಳುಹಿಸುವುದನ್ನು ವ್ಯವಸ್ಥೆಯ ನಿಯಮವು ತಡೆಯುತ್ತಿದೆ</message>
     <message xml:lang="ko">시스템 정책이 네트워크 관리 프로그램의 일시 중지나 다시 시작을 금지합니다</message>
     <message xml:lang="lt">Sistemos politika neleidžia užmigdyti arba pažadinti NetworkManager</message>
+    <message xml:lang="ml">നെറ്റ്​വര്‍ക്ക് മാനേജറിനെ ഉറക്കുന്നതും ഉണര്‍ത്തുന്നതും സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार NetworkManager ला स्लीप किंवा वेकअप मध्ये जाण्यापासून रोखते</message>
     <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ NetworkManager କୁ ସୁପ୍ତ କିମ୍ବା ଜାଗ୍ରତ ରହିବାରୁ ବାରଣ କରିଥାଏ</message>
     <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਨੈੱਟਵਰਕਮੈਨੇਜਰ ਨੂੰ ਸਲੀਪ ਜਾਂ ਵੇਕਅੱਪ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje umieszczenie usługi NetworkManager w stanie uśpienia lub przebudzenie go</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem que se coloque o NetworkManager para dormir ou acordar</message>
     <message xml:lang="ru">Системная политика не разрешает переводить NetworkManager в режим сна или пробуждать его</message>
     <message xml:lang="sl">Sistemska določila preprečujejo postavitev programa NetworkManager v mirovanje ali iz njega.</message>
     <message xml:lang="sr">Овлашћења система онемогућавају успављивање Управника мрежом</message>
     <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju uspavljivanje Upravnika mrežom</message>
     <message xml:lang="sv">Systemets policy förhindrar att Nätverkshanterare försätts i vänteläge eller återställs efter det</message>
     <message xml:lang="te">నెట్వర్కుమేనేజర్‌ను స్లీప్‌నకు లేదా దానిని మెల్కొలుపుటకు వుంచుటను సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, NetworkManager'ı uykuda konumuna getirmeyi veya uyandırmayı engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють присипляння та поновлення роботи NetworkManager</message>
     <message xml:lang="zh_CN">系统策略阻止挂起或唤醒 NetworkManager</message>
     <defaults>
@@ -162,22 +172,25 @@
     <description xml:lang="kn">WiFi ಸಾಧನಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
     <description xml:lang="ko">WiFi 장치 사용 여부</description>
     <description xml:lang="lt">Įjungti arba išjungti WiFi įrenginius</description>
+    <description xml:lang="ml"> WiFi ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുക</description>
     <description xml:lang="mr">WiFi साधने सुरू किंवा बंद करा</description>
     <description xml:lang="or">WiFi ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରନ୍ତୁ</description>
     <description xml:lang="pa">ਵਾਈ-ਫਾਈ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰੋ</description>
     <description xml:lang="pl">Włączenie lub wyłączenie urządzeń WiFi</description>
+    <description xml:lang="pt_BR">Habilita ou desabilita dispositivos WiFi</description>
     <description xml:lang="ru">Включить или выключить устройства WiFi</description>
     <description xml:lang="sl">Omogoči ali onemogoči naprave WiFi</description>
     <description xml:lang="sr">Омогући или онемогући бежичне уређаје</description>
     <description xml:lang="sr@latin">Omogući ili onemogući bežične uređaje</description>
     <description xml:lang="sv">Aktivera eller inaktivera WiFi-enheter</description>
     <description xml:lang="te">WiFi పరికరములను చేతనము లేదా అచేతనము చేయుము</description>
+    <description xml:lang="tr">WiFi aygıtlarını etkinleştir ya da etkisizleştir</description>
     <description xml:lang="uk">Увімкнути або вимкнути пристрої WiFi</description>
     <description xml:lang="zh_CN">启用或禁用 WiFi 设备</description>
     <message>System policy prevents enabling or disabling WiFi devices</message>
     <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за безжични мрежи</message>
     <message xml:lang="ca">La política del sistema impedeix habilitar o inhabilitar els dispositius Wi-Fi</message>
-    <message xml:lang="cs">Systémová politika zamezuje povolit nebo zakázat zařízení WiFi</message>
+    <message xml:lang="cs">Systémová zásada zamezuje povolit nebo zakázat zařízení WiFi</message>
     <message xml:lang="da">Systempolitik forhindrer aktivering eller deaktivering af WiFi-enheder</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung von WLAN-Geräten</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει ενεργοποίηση ή απενεργοποίηση συσκευών ανοιχτού ασύρματου δικτύου (WiFi)</message>
@@ -192,16 +205,19 @@
     <message xml:lang="kn">WiFi ಸಾಧನವನ್ನು ಶಕ್ತ ಅಥವ ಅಶಕ್ತಗೊಳಿಸದಂತೆ ವ್ಯವಸ್ಥೆಯ ನಿಯಮಗಳು ತಡೆಯುತ್ತಿವೆ</message>
     <message xml:lang="ko">시스템 정책이 WiFi 장치 사용 여부 설정을 금지합니다</message>
     <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti WiFi įrenginių</message>
+    <message xml:lang="ml">WiFi ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുന്നത് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार WiFi साधनांना सुरू किंवा बंद होण्यापासून रोखते</message>
     <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ WiFi ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ ହେବାରୁ ବାରଣ କରିଥାଏ</message>
     <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਵਾਈ-ਫਾਈ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨੋਂ ਰੋਕਦੀ ਹੈ</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje włączanie lub wyłączanie urządzeń WiFi</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem a habilitação ou desabilitação de dispositivos WiFi</message>
     <message xml:lang="ru">Системная политика запрещает включение и выключение WiFi устройств</message>
     <message xml:lang="sl">Sistemska določila preprečujejo omogočanja ali onemogočanje WiFi naprav</message>
     <message xml:lang="sr">Овлашћења система онемогућавају управљање бежичним уређајима</message>
     <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upravljanje bežičnim uređajima</message>
     <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av WiFi-enheter</message>
     <message xml:lang="te">WiFi పరికరములను చేతనము చేయుటకు లేదా అచేతనము చేయుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, WiFi aygıtlarını etkinleştirmeyi ya da etkisizleştirmeyi engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють вмикання або вимикання пристроїв WiFi</message>
     <message xml:lang="zh_CN">系统策略阻止启用或禁用 WiFi 设备</message>
     <defaults>
@@ -230,22 +246,25 @@
     <description xml:lang="kn">ಮೊಬೈಲ್ ಬ್ರಾಡ್‌ಬ್ಯಾಂಡ್ ಸಾಧನಗಳನ್ನು ಶಕ್ತಗೊಳಿಸಿ ಅಥವ ಅಶಕ್ತಗೊಳಿಸಿ</description>
     <description xml:lang="ko">모바일 광대역 장치 사용 여부</description>
     <description xml:lang="lt">Įjungti arba išjungti mobiliojo plačiajuosčio ryšio įrenginius</description>
+    <description xml:lang="ml">മുബൈല്‍ ബ്രോഡ്ബാന്റ് ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുക</description>
     <description xml:lang="mr">मोबाईल ब्रॉडबँड साधने सुरू किंवा बंद करा</description>
     <description xml:lang="or">ମୋବାଇଲ ବ୍ରୋଡବ୍ୟାଣ୍ଡ ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ କରନ୍ତୁ</description>
     <description xml:lang="pa">ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ</description>
     <description xml:lang="pl">Włączenie lub wyłączenie urządzeń komórkowych</description>
+    <description xml:lang="pt_BR">Habilita ou desabilita dispositivos móveis de banda larga</description>
     <description xml:lang="ru">Включить или выключить устройства мобильных сетей</description>
     <description xml:lang="sl">Omogoči ali onemogoči naprave mobilnih širokopasovnih storitev</description>
     <description xml:lang="sr">Омогући или онемогући мобилне широкопојасне уређаје</description>
     <description xml:lang="sr@latin">Omogući ili onemogući mobilne širokopojasne uređaje</description>
     <description xml:lang="sv">Aktivera eller inaktivera mobila bredbandsenheter</description>
     <description xml:lang="te">మొబైల్ బ్రాడ్‌బాండ్ పరికరములను చేతనము లేదా అచేతనము చేయుము</description>
+    <description xml:lang="tr">Mobil genişbant aygıtlarını etkinleştir ya da etkisizleştir</description>
     <description xml:lang="uk">Увімкнути або вимкнути пристрої широкосмугових мобільних мереж</description>
     <description xml:lang="zh_CN">启用或禁用移动宽带设备</description>
     <message>System policy prevents enabling or disabling mobile broadband devices</message>
     <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за мобилни мрежи</message>
     <message xml:lang="ca">La política del sistema impedeix habilitar o inhabilitar els dispositius de banda ampla mòbil</message>
-    <message xml:lang="cs">Systémová politika zamezuje povolení nebo zakázání mobilních širokopásmových zařízení</message>
+    <message xml:lang="cs">Systémová zásada zamezuje povolení nebo zakázání mobilních širokopásmových zařízení</message>
     <message xml:lang="da">Systempolitik forhindrer aktivering eller deaktivering af mobile bredbåndsenheder</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung mobiler Breitbandgeräte</message>
     <message xml:lang="el">Η πολιτική του συστήματος δεν επιτρέπει την ενεργοποίηση ή απενεργοποίηση συσκευών ευρυζωνικότητας κινητής τηλεφωνίας</message>
@@ -260,16 +279,19 @@
     <message xml:lang="kn">ಮೊಬೈಲ್ ಬ್ರಾಡ್‌ಬ್ಯಾಂಡ್ ಸಾಧನಗಳನ್ನು ಶಕ್ತ ಅಥವ ಅಶಕ್ತಗೊಳಿಸದಂತೆ ವ್ಯವಸ್ಥೆಯ ನಿಯಮಗಳು ತಡೆಯುತ್ತಿವೆ</message>
     <message xml:lang="ko">시스템 정책이 모바일 광대역 장치의 사용 여부 설정을 금지합니다</message>
     <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti mobiliojo plačiajuosčio ryšio įrenginių</message>
+    <message xml:lang="ml">മുബൈല്‍ ബ്രോഡ്ബാന്റ് ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുന്നത് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार मोबाईल ब्रॉडबँड साधनांना सुरू किंवा बंद होण्यापासून रोखते</message>
     <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ମୋବାଇଲ ବ୍ରୋଡବ୍ୟାଣ୍ଡ ଉପକରଣଗୁଡ଼ିକୁ ସକ୍ରିୟ କିମ୍ବା ନିଷ୍କ୍ରିୟ ହେବାରୁ ବାରଣ କରିଥାଏ</message>
     <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ ਜੰਤਰ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje włączenie lub wyłączenie urządzeń komórkowych</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem a habilitação ou desabilitação de dispositivos móveis de banda larga</message>
     <message xml:lang="ru">Системная политика запрещает включение или выключение устройств мобильной связи</message>
     <message xml:lang="sl">Sistemska določila preprečuje omogočanja ali onemogočanje mobilne širokopasovne naprave</message>
     <message xml:lang="sr">Овлашћења система онемогућавају управљање мобилним широкопојасним уређајима</message>
     <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju upravljanje mobilnim širokopojasnim uređajima</message>
     <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av mobila bredbandsenheter</message>
     <message xml:lang="te">మొబైల్ బ్రాడ్‌బాండ్ పరికరములను చేతనముచేయుటకు లేదా అచేతనముచేయుటకు సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, mobil genişbant aygıtlarını etkinleştirmeyi ya da etkisizleştirmeyi engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють вмикання або вимикання пристроїв широкосмугових мобільних мереж</message>
     <message xml:lang="zh_CN">系统策略阻止启用或禁用移动宽带设备</message>
     <defaults>
@@ -282,6 +304,7 @@
     <description>Enable or disable WiMAX mobile broadband devices</description>
     <description xml:lang="bg">Включване и изключване на устройства за достъп до мобилни мрежи по WiMAX</description>
     <description xml:lang="ca">Habilita o inhabilita els dispositius de banda ampla mòbil WiMAX</description>
+    <description xml:lang="cs">Povolit nebo zakázat mobilní širokopásmová zařízení WiMAX</description>
     <description xml:lang="de">Mobile WiMAX-Breitbandgeräte aktivieren oder deaktivieren</description>
     <description xml:lang="eo">Enŝalti aŭ elŝalti WiMAX-larĝkapacitajn aparatojn</description>
     <description xml:lang="es">Activar o desactivar los dispositivos de banda ancha móvil WiMAX</description>
@@ -292,14 +315,18 @@
     <description xml:lang="id">Aktifkan atau matikan perangkat broadband bergerak WiMAX</description>
     <description xml:lang="it">Abilitare o disabilitare dispositivi WiMAX a banda larga mobile</description>
     <description xml:lang="ko">와이맥스 모바일 광대역 장치 사용 여부</description>
+    <description xml:lang="ml">WiMAX മുബൈല്‍ ബ്രോഡ്ബാന്റ് ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുക</description>
     <description xml:lang="mr">WiMAX मोबाईल ब्रॉडबँड साधने सुरू किंवा बंद करा</description>
     <description xml:lang="pl">Włączenie lub wyłączenie urządzeń komórkowych WiMAX</description>
+    <description xml:lang="pt_BR">Habilita ou desabilita dispositivos móveis WiMAX</description>
     <description xml:lang="ru">Включить или выключить устройства мобильных сетей WiMax</description>
     <description xml:lang="sl">Omogoči ali onemogoči mobilne širokopasovne naprave WiMAX</description>
+    <description xml:lang="tr">WiMAX mobil genişbant aygıtlarını etkinleştir ya da etkisizleştir</description>
     <description xml:lang="uk">Увімкнути або вимкнути пристрої широкосмугових мобільних мереж WiMAX</description>
     <message>System policy prevents enabling or disabling WiMAX mobile broadband devices</message>
     <message xml:lang="bg">Политиката на системата не позволява включване и изключване на устройства за мобилни мрежи по WiMAX</message>
     <message xml:lang="ca">La política del sistema impedeix habilitar o inhabilitar els dispositius de banda ampla mòbil WiMAX</message>
+    <message xml:lang="cs">Systémová zásada zamezuje povolení nebo zakázání mobilních širokopásmových zařízení WiMAX</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Aktivierung oder Deaktivierung mobiler WiMAX-Breitbandgeräte</message>
     <message xml:lang="eo">Sistempolitiko preventas enŝalton aŭ elŝalton de larĝkapacitaj WiMAX-aparatoj</message>
     <message xml:lang="es">La política del sistema evita activar o desactivar los dispositivos de banda ancha móvil WiMAX</message>
@@ -309,10 +336,13 @@
     <message xml:lang="id">Kebijakan sistem mencegah mengaktifkan atau mematikan perangkat broadband bergerak WiMAX</message>
     <message xml:lang="it">La politica di sistema impedisce di abilitare o disabilitare i dispositivi WiMAX a banda larga mobile</message>
     <message xml:lang="ko">시스템 정책이 와이맥스 모바일 광대역 장치의 사용 여부 설정을 금지합니다</message>
+    <message xml:lang="ml">iMAX മുബൈല്‍ ബ്രോഡ്ബാന്റ് ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുന്നത് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार WiMAX मोबाईल ब्रॉडबँड साधनांना सुरू किंवा बंद होण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje włączenie lub wyłączenie urządzeń komórkowych WiMAX</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem a habilitação ou desabilitação de dispositivos móveis de banda larga WiMAX</message>
     <message xml:lang="ru">Системная политика запрещает включение или выключение устройств мобильной связи WiMAX</message>
     <message xml:lang="sl">Sistemska določila preprečujejo omogočanje ali onemogočanje mobilnih širokopasovnih naprav WiMAX</message>
+    <message xml:lang="tr">Sistem kuralları, WiMAX mobil genişbant aygıtlarını etkinleştirmeyi ya da etkisizleştirmeyi engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють вмикання або вимикання пристроїв широкосмугових мобільних мереж WiMAX</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
@@ -340,22 +370,25 @@
     <description xml:lang="kn">ಜಾಲಬಂಧ ಸಂಪರ್ಕಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದನ್ನು ಅನುಮತಿಸಿ</description>
     <description xml:lang="ko">네트워크 연결 조작 허용</description>
     <description xml:lang="lt">Leisti valdyti tinklo ryšius</description>
+    <description xml:lang="ml">നെറ്റ്​വര്‍ക്ക് കണക്ഷനുകളെ നിയന്ത്രിക്കുന്നത് അനുവദിക്കുക</description>
     <description xml:lang="mr">नेटवर्क जोडणींचे नियंत्रण स्वीकारा</description>
     <description xml:lang="or">ନେଟୱର୍କ ସଂଯୋଗଗୁଡ଼ିକ ପାଇଁ ନିୟନ୍ତ୍ରଣକୁ ଅନୁମତି ଦିଅନ୍ତୁ</description>
     <description xml:lang="pa">ਨੈੱਟਵਰਕ ਕੁਨੈਕਸ਼ਨਾਂ ਲਈ ਕੰਟਰੋਲ ਮਨਜ਼ੂਰ</description>
     <description xml:lang="pl">Umożliwienie kontroli połączeń sieciowych</description>
+    <description xml:lang="pt_BR">Permite o controle de conexões de rede</description>
     <description xml:lang="ru">Разрешить контроль сетевых подключений</description>
     <description xml:lang="sl">Dovoli nadzor omrežnih povezav</description>
     <description xml:lang="sr">Дозволи контролу мрежних веза</description>
     <description xml:lang="sr@latin">Dozvoli kontrolu mrežnih veza</description>
     <description xml:lang="sv">Tillåt kontroll av nätverksanslutningar</description>
     <description xml:lang="te">నెట్వర్కు అనుసంధానముల యొక్క నియంత్రణ అనుమతించుము</description>
+    <description xml:lang="tr">Ağ bağlantılarının denetimine izin ver</description>
     <description xml:lang="uk">Дозволити керування з’єднаннями мережею</description>
     <description xml:lang="zh_CN">允许控制网络连接</description>
     <message>System policy prevents control of network connections</message>
     <message xml:lang="bg">Политиката на системата не позволява управляване на мрежовите връзки</message>
     <message xml:lang="ca">La política del sistema impedeix el control de les connexions de xarxa</message>
-    <message xml:lang="cs">Systémová politika zamezuje ovládání síťových připojení</message>
+    <message xml:lang="cs">Systémová zásada zamezuje ovládání síťových připojení</message>
     <message xml:lang="da">Systempolitik forhindrer kontrol af netværksforbindelser</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern die Kontrolle von Netzwerkverbindungen</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει τον έλεγχο των συνδέσεων δικτύου</message>
@@ -370,16 +403,19 @@
     <message xml:lang="kn">ಜಾಲಬಂಧ ಸಂಪರ್ಕಗಳನ್ನು ನಿಯಂತ್ರಿಸುವುದನ್ನು ವ್ಯವಸ್ಥೆಯ ನಿಯಮಗಳು ತಡೆಯುತ್ತಿವೆ</message>
     <message xml:lang="ko">시스템 정책이 네트워크 연결 조작을 금지합니다</message>
     <message xml:lang="lt">Sistemos politika neleidžia valdyti tinklo ryšių</message>
+    <message xml:lang="ml"> നെറ്റ്​വര്‍ക്ക് കണക്ഷനുകളെ നിയന്ത്രിക്കുന്നത് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार नेटवर्क जोडणीचे नियंत्रण रोखते</message>
     <message xml:lang="or">ତନ୍ତ୍ର ନିତୀ ନେଟୱର୍କ ସଂଯୋଗଗୁଡ଼ିକର ନିୟନ୍ତ୍ରଣକୁ ବାରଣ କରିଥାଏ</message>
     <message xml:lang="pa">ਸਿਸਟਮ ਪਾਲਸੀ ਨੈੱਟਵਰਕ ਕੁਨੈਕਸ਼ਨ ਕੰਟਰੋਲ ਕਰਨ ਤੋਂ ਸੋਧ ਤੋਂ ਰੋਕਦੀ ਹੈ</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje kontrolę połączeń sieciowych</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem o controle de conexões de rede</message>
     <message xml:lang="ru">Системная политика запрещает управление подключениями.</message>
     <message xml:lang="sl">Sistemska določila preprečujejo nadzor omrežnih povezav</message>
     <message xml:lang="sr">Овлашћења система онемогућавају контролу мрежних веза</message>
     <message xml:lang="sr@latin">Ovlašćenja sistema onemogućavaju kontrolu mrežnih veza</message>
     <message xml:lang="sv">Systemets policy förhindrar kontroll av nätverksanslutningar</message>
     <message xml:lang="te">నెట్వర్కు అనుసంధానముల నియంత్రణను సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, ağ bağlantılarını denetlemeyi engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють керування з’єднаннями</message>
     <message xml:lang="zh_CN">系统策略阻止更改网络连接</message>
     <defaults>
@@ -428,6 +464,7 @@
     <description xml:lang="sv">Anslutningsdelning via ett skyddat trådlöst nätverk</description>
     <description xml:lang="ta">ஒரு பாதுகாக்கப்ப WiFi நெட்வொர்க்கின் வழியாக இணைப்பு பகிரப்படுகிறது</description>
     <description xml:lang="te">రక్షిత WiFi నెట్వర్కు ద్వారా అనుసంధానపు భాగస్వామ్యము.</description>
+    <description xml:lang="tr">Korumalı bir WiFi ağı yoluyla bağlantı paylaşımı</description>
     <description xml:lang="uk">Спільне використання з’єднання на основі захищеної мережі WiFi</description>
     <description xml:lang="zh_CN">通过受保护的 WiFi 网络共享连接</description>
     <description xml:lang="zh_TW">透過受保護的 WiFi 網路共享連線</description>
@@ -436,7 +473,7 @@
     <message xml:lang="bg">Политиката на системата не позволява споделяне на връзки през защитена безжична мрежа</message>
     <message xml:lang="bn_IN">সিস্টেমের নিয়মনীতির কারণে, নিরাপদ ওয়াই-ফাই নেটওয়ার্কের মাধ্যমে সংযোগের যৌথ ব্যবহার প্রতিরোধ করা হয়েছে</message>
     <message xml:lang="ca">La política del sistema impedeix compartir connexions mitjançant una xarxa Wi-Fi protegida</message>
-    <message xml:lang="cs">Systémová politika zabránila sdílení připojení přes chráněnou síť WiFi</message>
+    <message xml:lang="cs">Systémová zásada zabránila sdílení připojení přes chráněnou síť WiFi</message>
     <message xml:lang="da">Systempolitikken forhindrer deling af forbindelser via et beskyttet WiFi-netværk</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern Verbindungsfreigaben über ein geschütztes WLAN-Netzwerk</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει κοινή χρήση συνδέσεων μέσω προστατευμένου ασύρματου δικτύου</message>
@@ -469,6 +506,7 @@
     <message xml:lang="sv">Systemets policy förhindrar delning av anslutningar via ett skyddat trådlöst nätverk</message>
     <message xml:lang="ta">பாதுகாக்கப்பட்ட WiFi நெட்வொர்க்கின் வழியாக இணைப்புகளை பகிருவதை கணினி பாலிசி தடுக்கிறது</message>
     <message xml:lang="te">రక్షిత WiFi నెట్వర్కు ద్వారా అనుసంధానములను భాగస్వామ్యపరచుట సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, korumalı kablosuz ağ yoluyla bağlantı paylaşımını önlüyor</message>
     <message xml:lang="uk">Правила системи забороняють спільне використання з’єднань за допомогою захищеної мережі WiFi</message>
     <message xml:lang="zh_CN">系统策略阻止使用受保护的 WiFi 网络共享连接</message>
     <message xml:lang="zh_TW">系統政策讓您無法透過受保護的 WiFi 網路共享連結</message>
@@ -518,6 +556,7 @@
     <description xml:lang="sv">Anslutningsdelning via ett öppet trådlöst nätverk</description>
     <description xml:lang="ta">ஒரு திறந்த WiFi நெட்வொர்க்கின் வழியாக இணைப்பு பகிரப்படுகிறது</description>
     <description xml:lang="te">ఓపెన్ WiFi నెట్వర్కు ద్వారా అనుసంధానపు భాగస్వామ్యము</description>
+    <description xml:lang="tr">Açık bir Wfi ağı yoluyla bağlantı paylaşımı</description>
     <description xml:lang="uk">Спільне використання з’єднання на основі відкритої мережі WiFi</description>
     <description xml:lang="zh_CN">通过公开 WiFi 网络共享连接</description>
     <description xml:lang="zh_TW">透過開放的 WiFi 網路共享連線</description>
@@ -526,7 +565,7 @@
     <message xml:lang="bg">Политиката на системата не позволява споделяне на връзки през отворена безжична мрежа</message>
     <message xml:lang="bn_IN">সিস্টেমের নিয়মনীতির কারণে, উন্মুক্ত ওয়াই-ফাই নেটওয়ার্কের মাধ্যমে সংযোগের যৌথ ব্যবহার প্রতিরোধ করা হয়েছে</message>
     <message xml:lang="ca">La política del sistema impedeix compartir connexions mitjançant una xarxa Wi-Fi oberta</message>
-    <message xml:lang="cs">Systémová politika zabránila sdílení připojení přes otevřenou síť WiFi</message>
+    <message xml:lang="cs">Systémová zásada zabránila sdílení připojení přes otevřenou síť WiFi</message>
     <message xml:lang="da">Systempolitikken forhindrer deling af forbindelser via et åbent WiFi-netværk</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern Verbindungsfreigaben über ein offenes WLAN-Netzwerk</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει κοινή χρήση συνδέσεων μέσω ανοιχτού ασύρματου δικτύου</message>
@@ -559,6 +598,7 @@
     <message xml:lang="sv">Systemets policy förhindrar delning av anslutningar via ett öppet trådlöst nätverk</message>
     <message xml:lang="ta">திறந்த WiFi நெட்வொர்க்கின் வழியாக இணைப்புகளை பகிருவதை கணினி பாலிசி தடுக்கிறது</message>
     <message xml:lang="te">ఓపెన్ WiFi నెట్వర్కు ద్వారా అనుసంధానములను భాగస్వామ్యపరచుట సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, korumasız kablosuz ağ yoluyla bağlantı paylaşımını önlüyor</message>
     <message xml:lang="uk">Правила системи забороняють спільне використання з’єднань за допомогою відкритої мережі WiFi</message>
     <message xml:lang="zh_CN">系统策略阻止使用公开 WiFi 网络共享连接</message>
     <message xml:lang="zh_TW">系統政策讓您無法透過開放的 WiFi 網路共享連線</message>
@@ -570,6 +610,7 @@
 
   <action id="org.freedesktop.NetworkManager.settings.modify.own">
     <description>Modify personal network connections</description>
+    <description xml:lang="cs">Měnit osobní síťová připojení</description>
     <description xml:lang="de">Eigene Netzwerkverbindungen bearbeiten</description>
     <description xml:lang="eo">Modifi proprajn retkonektojn</description>
     <description xml:lang="es">Modificar las conexiones de red personales</description>
@@ -579,12 +620,16 @@
     <description xml:lang="id">Ubah koneksi jaringan personal</description>
     <description xml:lang="it">Modificare le connessioni personali</description>
     <description xml:lang="ko">개인 네트워크 연결을 수정합니다</description>
+    <description xml:lang="ml">സ്വന്തമായ നെറ്റ്​വര്‍ക്ക് കണക്ഷനുകളില്‍ മാറ്റം വരുത്തുക</description>
     <description xml:lang="mr">वैयक्तिक नेटवर्क जोडणी संपादित करा</description>
     <description xml:lang="pl">Modyfikacja osobistych połączeń sieciowych</description>
+    <description xml:lang="pt_BR">Modificar conexões pessoais de rede</description>
     <description xml:lang="ru">Редактировать личные настройки подключения</description>
     <description xml:lang="sl">Spremeni osebne omrežne povezave</description>
+    <description xml:lang="tr">Kişisel ağ bağlantılarını düzenle</description>
     <description xml:lang="uk">Змінити параметри особистих з’єднань з мережею</description>
     <message>System policy prevents modification of personal network settings</message>
+    <message xml:lang="cs">Systémová zásada zabránila změně osobního síťového nastavení</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten von eigenen Netzwerkeinstellungen</message>
     <message xml:lang="eo">Sistempolitiko preventas modifadon de propraj retagordoj</message>
     <message xml:lang="es">La política del sistema evita la modificación de la configuración personal de la red</message>
@@ -594,10 +639,13 @@
     <message xml:lang="id">Kebijakan sistem mencegah pengubahan tatanan jaringan pribadi</message>
     <message xml:lang="it">La politica di sistema impedisce di modificare le impostazioni di rete personali</message>
     <message xml:lang="ko">시스템 정책이 개인 네트워크 설정의 수정을 금지합니다</message>
+    <message xml:lang="ml"> സ്വന്തമായ നെറ്റ്​വര്‍ക്ക് സജ്ജീകരണങ്ങള്‍ മാറ്റം വരുത്തുന്നതു് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार, व्यक्तिगत नेटवर्क सेटिंग्स् संपादीत करण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje modyfikację osobistych ustawień systemowych</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem modificação das configurações pessoais de redes</message>
     <message xml:lang="ru">Системная политика запрещает изменение персональных настроек сети</message>
     <message xml:lang="sl">Sistemska določila preprečujejo spreminjanje osebnih omrežnih nastavitev</message>
+    <message xml:lang="tr">Sistem kuralları, kişisel ağ ayarlarının değiştirilmesine izin vermiyor</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до особистих параметрів мережі</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
@@ -607,6 +655,7 @@
 
   <action id="org.freedesktop.NetworkManager.settings.modify.system">
     <description>Modify network connections for all users</description>
+    <description xml:lang="cs">Měnit síťová připojení pro všechny uživatele</description>
     <description xml:lang="de">Netzwerkverbindungen für alle Benutzer bearbeiten</description>
     <description xml:lang="eo">Modifi retkonektojn por ĉiuj uzantoj</description>
     <description xml:lang="es">Modificar las conexiones de red para todos los usuarios</description>
@@ -618,10 +667,13 @@
     <description xml:lang="ko">모든 사용자의 네트워크 연결을 수정합니다</description>
     <description xml:lang="mr">सर्व वापरकर्त्यांकरीता नेटवर्क जोडणी संपादित करा</description>
     <description xml:lang="pl">Modyfikacja połączeń sieciowych dla wszystkich użytkowników</description>
+    <description xml:lang="pt_BR">Modificar conexões de rede para todos os usuários</description>
     <description xml:lang="ru">Изменить подключения доступные всем пользователям</description>
     <description xml:lang="sl">Spremeni omrežne povezave za vse uporabnike</description>
+    <description xml:lang="tr">Tüm kullanıcılar için ağ bağlantılarını düzenle</description>
     <description xml:lang="uk">Внести зміни до мережевих з’єднань всіх користувачів</description>
     <message>System policy prevents modification of network settings for all users</message>
+    <message xml:lang="cs">Systémová zásada zabránila změně síťového nastavení pro všechny uživatele</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten von Netzwerkeinstellungen für alle Benutzer</message>
     <message xml:lang="eo">Sistempolitiko preventas modifadon de retagordoj por ĉiuj uzantoj</message>
     <message xml:lang="es">La política del sistema evita la modificación de la configuración de la red para todos los usuarios</message>
@@ -633,8 +685,10 @@
     <message xml:lang="ko">시스템 정책이 모든 사용자의 네트워크 설정의 수정을 금지합니다</message>
     <message xml:lang="mr">प्रणाली करार सर्व वापरकर्त्यांना नेटवर्क सेटिंग्स् संपादीत करण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje modyfikację ustawień sieciowych dla wszystkich użytkowników</message>
+    <message xml:lang="pt_BR">Políticas de sistema previnem modificação das configurações de rede para todos os usuários</message>
     <message xml:lang="ru">Системная политика запрещает изменение настроек для всех пользователей</message>
     <message xml:lang="sl">Sistemska določila preprečujejo spreminjanje sistemskih nastavitev za vse uporabnike</message>
+    <message xml:lang="tr">Sistem kuralları, tüm kullanıcılar için ağ ayarlarının değiştirilmesine izin vermiyor</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до параметрів мережі для всіх користувачів</message>
     <defaults>
       <allow_inactive>no</allow_inactive>
@@ -681,6 +735,7 @@
     <description xml:lang="sv">Ändra bestående värdnamn för systemet</description>
     <description xml:lang="ta">நிலையான கணினி புரவலப்பெயரை மாற்றியமை</description>
     <description xml:lang="te">నిరంతర సిస్టమ్ హోస్టునామము మార్చుము</description>
+    <description xml:lang="tr">Direşken sistemin adını değiştir</description>
     <description xml:lang="uk">Змінити постійну назву вузла у мережі</description>
     <description xml:lang="zh_CN">更改系统固有主机名</description>
     <description xml:lang="zh_TW">修改永久系統的主機名稱</description>
@@ -689,7 +744,7 @@
     <message xml:lang="bg">Политиката на системата не позволява промяна на името на хоста</message>
     <message xml:lang="bn_IN">সিস্টেমে ব্যবহৃত নিয়ম-নীতির বিধিনিষেধের কারণে সিস্টেমের স্থায়ী হোস্ট-নেম পরিবর্তন করা সম্ভব নয়</message>
     <message xml:lang="ca">La política del sistema impedeix la modificació del nom de l'ordinador de forma permanent</message>
-    <message xml:lang="cs">Systémová politika zabránila změně trvalého systémového názvu počítače</message>
+    <message xml:lang="cs">Systémová zásada zabránila změně trvalého systémového názvu počítače</message>
     <message xml:lang="da">Systempolitikken forhindrer ændring af det faste systemværtsnavn</message>
     <message xml:lang="de">Die Systemrichtlinien verhindern das Bearbeiten des ständigen Rechnernamens des Systems</message>
     <message xml:lang="el">Η πολιτική συστήματος δεν επιτρέπει τροποποίηση του πάγιου ονόματος συστήματος</message>
@@ -722,6 +777,7 @@
     <message xml:lang="sv">Systemets policy förhindrar ändring av bestående värdnamn för systemet</message>
     <message xml:lang="ta">நிலையான கணினி புரவலபெயர் மாற்றியமைப்பதை கணினி பாலிசி தடுக்கிறது</message>
     <message xml:lang="te">నిరంతర సిస్టమ్ హోస్టునామమును సవరించుటను సిస్టమ్ విధానము నిరోధించుచున్నది</message>
+    <message xml:lang="tr">Sistem kuralları, direşken sistemin adının değiştirilmesini önlüyor</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до постійної назви вузла у мережі</message>
     <message xml:lang="zh_CN">系统策略阻止更改系统固有主机名</message>
     <message xml:lang="zh_TW">系統政策讓您無法修改永久的系統主機名稱</message>

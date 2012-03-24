@@ -18,13 +18,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2004 Red Hat, Inc.
+ * (C) Copyright 2004 - 2012 Red Hat, Inc.
  */
 
-#ifndef NETWORK_MANAGER_GENERIC_H
-#define NETWORK_MANAGER_GENERIC_H
+#ifndef NM_GENERIC_H
+#define NM_GENERIC_H
 
-void nm_generic_enable_loopback	(void);
-void nm_generic_update_dns		(void);
+#include "nm-backend.h"
 
-#endif
+void nm_generic_enable_loopback (void);
+void nm_generic_update_dns      (void);
+int nm_generic_ipv6_use_tempaddr (void);
+
+#endif  /* NM_GENERIC_H */

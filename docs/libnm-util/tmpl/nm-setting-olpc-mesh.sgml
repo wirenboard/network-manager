@@ -9,12 +9,10 @@ NMSettingOlpcMesh
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -71,6 +69,13 @@ NMSettingOlpcMesh
 
 
 <!-- ##### MACRO NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_OLPC_MESH_ERROR ##### -->
 <para>
 
 </para>

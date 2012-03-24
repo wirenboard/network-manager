@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2011 Red Hat, Inc.
+ * Copyright (C) 2009 - 2012 Red Hat, Inc.
  */
 
 #include <ctype.h>
@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <netinet/ether.h>
 
 #include <nm-setting-connection.h>
 #include <nm-setting-wired.h>
@@ -36,6 +37,7 @@
 #include <nm-setting-ip4-config.h>
 #include <nm-setting-ip6-config.h>
 #include <nm-setting-pppoe.h>
+#include <nm-setting-vlan.h>
 #include <nm-utils.h>
 
 #include "common.h"
@@ -456,7 +458,7 @@ write_8021x_setting (NMConnection *connection,
 	gboolean success = FALSE;
 	GString *phase2_auth;
 
-	s_8021x = (NMSetting8021x *) nm_connection_get_setting (connection, NM_TYPE_SETTING_802_1X);
+	s_8021x = nm_connection_get_setting_802_1x (connection);
 	if (!s_8021x) {
 		/* If wired, clear KEY_MGMT */
 		if (wired)
@@ -503,6 +505,24 @@ write_8021x_setting (NMConnection *connection,
 	svSetValue (ifcfg, "IEEE_8021X_PEAP_FORCE_NEW_LABEL", NULL, FALSE);
 	if (value && !strcmp (value, "1"))
 		svSetValue (ifcfg, "IEEE_8021X_PEAP_FORCE_NEW_LABEL", "yes", FALSE);
+
+	/* PAC file */
+	value = nm_setting_802_1x_get_pac_file (s_8021x);
+	svSetValue (ifcfg, "IEEE_8021X_PAC_FILE", NULL, FALSE);
+	if (value)
+		svSetValue (ifcfg, "IEEE_8021X_PAC_FILE", value, FALSE);
+
+	/* FAST PAC provisioning */
+	value = nm_setting_802_1x_get_phase1_fast_provisioning (s_8021x);
+	svSetValue (ifcfg, "IEEE_8021X_FAST_PROVISIONING", NULL, FALSE);
+	if (value) {
+		if (strcmp (value, "1") == 0)
+			svSetValue (ifcfg, "IEEE_8021X_FAST_PROVISIONING", "allow-unauth", FALSE);
+		else if (strcmp (value, "2") == 0)
+			svSetValue (ifcfg, "IEEE_8021X_FAST_PROVISIONING", "allow-auth", FALSE);
+		else if (strcmp (value, "3") == 0)
+			svSetValue (ifcfg, "IEEE_8021X_FAST_PROVISIONING", "allow-unauth allow-auth", FALSE);
+	}
 
 	/* Phase2 auth methods */
 	svSetValue (ifcfg, "IEEE_8021X_INNER_AUTH_METHODS", NULL, FALSE);
@@ -554,7 +574,7 @@ write_wireless_security_setting (NMConnection *connection,
 	guint32 i, num;
 	GString *str;
 
-	s_wsec = (NMSettingWirelessSecurity *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRELESS_SECURITY);
+	s_wsec = nm_connection_get_setting_wireless_security (connection);
 	if (!s_wsec) {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "Missing '%s' setting", NM_SETTING_WIRELESS_SECURITY_SETTING_NAME);
@@ -716,24 +736,20 @@ write_wireless_security_setting (NMConnection *connection,
 
 	/* WPA Passphrase */
 	if (wpa) {
-		GString *quoted = NULL;
+		char *quoted = NULL;
 
 		psk = nm_setting_wireless_security_get_psk (s_wsec);
 		if (psk && (strlen (psk) != 64)) {
 			/* Quote the PSK since it's a passphrase */
-			quoted = g_string_sized_new (strlen (psk) + 2); /* 2 for quotes */
-			g_string_append_c (quoted, '"');
-			g_string_append (quoted, psk);
-			g_string_append_c (quoted, '"');
+			quoted = utils_single_quote_string (psk);
 		}
 		set_secret (ifcfg,
 		            "WPA_PSK",
-		            quoted ? quoted->str : psk,
+		            quoted ? quoted : psk,
 		            "WPA_PSK_FLAGS",
 		            nm_setting_wireless_security_get_psk_flags (s_wsec),
 		            TRUE);
-		if (quoted)
-			g_string_free (quoted, TRUE);
+		g_free (quoted);
 	} else {
 		set_secret (ifcfg,
 		            "WPA_PSK",
@@ -761,7 +777,7 @@ write_wireless_setting (NMConnection *connection,
 	gboolean adhoc = FALSE, hex_ssid = FALSE;
 	const GSList *macaddr_blacklist;
 
-	s_wireless = (NMSettingWireless *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRELESS);
+	s_wireless = nm_connection_get_setting_wireless (connection);
 	if (!s_wireless) {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "Missing '%s' setting", NM_SETTING_WIRELESS_SETTING_NAME);
@@ -944,6 +960,48 @@ write_wireless_setting (NMConnection *connection,
 }
 
 static gboolean
+write_infiniband_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+{
+	NMSettingInfiniband *s_infiniband;
+	const GByteArray *mac;
+	char *tmp;
+	const char *transport_mode;
+	guint32 mtu;
+
+	s_infiniband = nm_connection_get_setting_infiniband (connection);
+	if (!s_infiniband) {
+		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
+		             "Missing '%s' setting", NM_SETTING_INFINIBAND_SETTING_NAME);
+		return FALSE;
+	}
+
+	svSetValue (ifcfg, "HWADDR", NULL, FALSE);
+	mac = nm_setting_infiniband_get_mac_address (s_infiniband);
+	if (mac) {
+		tmp = nm_utils_hwaddr_ntoa (mac->data, ARPHRD_INFINIBAND);
+		svSetValue (ifcfg, "HWADDR", tmp, FALSE);
+		g_free (tmp);
+	}
+
+	svSetValue (ifcfg, "MTU", NULL, FALSE);
+	mtu = nm_setting_infiniband_get_mtu (s_infiniband);
+	if (mtu) {
+		tmp = g_strdup_printf ("%u", mtu);
+		svSetValue (ifcfg, "MTU", tmp, FALSE);
+		g_free (tmp);
+	}
+
+	transport_mode = nm_setting_infiniband_get_transport_mode (s_infiniband);
+	svSetValue (ifcfg, "CONNECTED_MODE",
+	            strcmp (transport_mode, "connected") == 0 ? "yes" : "no",
+	            FALSE);
+
+	svSetValue (ifcfg, "TYPE", TYPE_INFINIBAND, FALSE);
+
+	return TRUE;
+}
+
+static gboolean
 write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 {
 	NMSettingWired *s_wired;
@@ -955,7 +1013,7 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	GString *str;
 	const GSList *macaddr_blacklist;
 
-	s_wired = (NMSettingWired *) nm_connection_get_setting (connection, NM_TYPE_SETTING_WIRED);
+	s_wired = nm_connection_get_setting_wired (connection);
 	if (!s_wired) {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "Missing '%s' setting", NM_SETTING_WIRED_SETTING_NAME);
@@ -1064,11 +1122,143 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	return TRUE;
 }
 
+static GString *vlan_priority_maplist_to_stringlist (NMSettingVlan *s_vlan, NMVlanPriorityMap map)
+{
+	GSList *strlist = NULL, *iter;
+	GString *value = NULL;
+
+	if (map == NM_VLAN_INGRESS_MAP)
+		g_object_get (G_OBJECT (s_vlan), NM_SETTING_VLAN_INGRESS_PRIORITY_MAP, &strlist, NULL);
+	else if (map == NM_VLAN_EGRESS_MAP)
+		g_object_get (G_OBJECT (s_vlan), NM_SETTING_VLAN_EGRESS_PRIORITY_MAP, &strlist, NULL);
+	else
+		return NULL;
+
+	value = g_string_new ("");
+	for (iter = strlist; iter; iter = g_slist_next (iter))
+		g_string_append_printf (value, "%s%s", value->len ? "," : "", (const char *) iter->data);
+
+	nm_utils_slist_free (strlist, g_free);
+
+	return value;
+}
+
+static gboolean
+write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+{
+	NMSettingVlan *s_vlan;
+	NMSettingConnection *s_con;
+	char *tmp;
+	guint32 vlan_flags = 0;
+	GString *text = NULL;
+
+	s_con = nm_connection_get_setting_connection (connection);
+	if (!s_con) {
+		g_set_error_literal (error, IFCFG_PLUGIN_ERROR, 0, "Missing connection setting");
+		return FALSE;
+	}
+
+	s_vlan = nm_connection_get_setting_vlan (connection);
+	if (!s_vlan) {
+		g_set_error_literal (error, IFCFG_PLUGIN_ERROR, 0, "Missing VLAN setting");
+		return FALSE;
+	}
+
+	svSetValue (ifcfg, "VLAN", "yes", FALSE);
+	svSetValue (ifcfg, "TYPE", TYPE_VLAN, FALSE);
+	svSetValue (ifcfg, "DEVICE", nm_setting_vlan_get_interface_name (s_vlan), FALSE);
+	svSetValue (ifcfg, "PHYSDEV", nm_setting_vlan_get_parent (s_vlan), FALSE);
+	svSetValue (ifcfg, "MASTER", nm_setting_connection_get_master (s_con), FALSE);
+
+	tmp = g_strdup_printf ("%d", nm_setting_vlan_get_id (s_vlan));
+	svSetValue (ifcfg, "VLAN_ID", tmp, FALSE);
+	g_free (tmp);
+
+	vlan_flags = nm_setting_vlan_get_flags (s_vlan);
+	if (vlan_flags & NM_VLAN_FLAG_REORDER_HEADERS)
+		svSetValue (ifcfg, "REORDER_HDR", "1", FALSE);
+	else
+		svSetValue (ifcfg, "REORDER_HDR", "0", FALSE);
+
+	svSetValue (ifcfg, "VLAN_FLAGS", NULL, FALSE);
+	if (vlan_flags & NM_VLAN_FLAG_GVRP) {
+		if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
+			svSetValue (ifcfg, "VLAN_FLAGS", "GVRP,LOOSE_BINDING", FALSE);
+		else
+			svSetValue (ifcfg, "VLAN_FLAGS", "GVRP", FALSE);
+	} else if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
+		svSetValue (ifcfg, "VLAN_FLAGS", "LOOSE_BINDING", FALSE);
+
+	text = vlan_priority_maplist_to_stringlist (s_vlan, NM_VLAN_INGRESS_MAP);
+	svSetValue (ifcfg, "VLAN_INGRESS_PRIORITY_MAP", text ? text->str : NULL, FALSE);
+	if (text)
+		g_string_free (text, TRUE);
+
+	text = vlan_priority_maplist_to_stringlist (s_vlan, NM_VLAN_EGRESS_MAP);
+	svSetValue (ifcfg, "VLAN_EGRESS_PRIORITY_MAP", text ? text->str : NULL, FALSE);
+	if (text)
+		g_string_free (text, TRUE);
+
+	return TRUE;
+}
+
+static gboolean
+write_bonding_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+{
+	NMSettingBond *s_bond;
+	const char *iface;
+	guint32 i, num_opts;
+
+	s_bond = nm_connection_get_setting_bond (connection);
+	if (!s_bond) {
+		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
+		             "Missing '%s' setting", NM_SETTING_BOND_SETTING_NAME);
+		return FALSE;
+	}
+
+	iface = nm_setting_bond_get_interface_name (s_bond);
+	if (!iface) {
+		g_set_error (error, IFCFG_PLUGIN_ERROR, 0, "Missing interface name");
+		return FALSE;
+	}
+
+	svSetValue (ifcfg, "DEVICE", iface, FALSE);
+	svSetValue (ifcfg, "BONDING_OPTS", NULL, FALSE);
+
+	num_opts = nm_setting_bond_get_num_options (s_bond);
+	if (num_opts > 0) {
+		GString *str = g_string_sized_new (64);
+
+		for (i = 0; i < nm_setting_bond_get_num_options (s_bond); i++) {
+			const char *key, *value;
+
+			if (!nm_setting_bond_get_option (s_bond, i, &key, &value))
+				continue;
+
+			if (str->len)
+				g_string_append_c (str, ' ');
+
+			g_string_append_printf (str, "%s=%s", key, value);
+		}
+
+		if (str->len)
+			svSetValue (ifcfg, "BONDING_OPTS", str->str, FALSE);
+
+		g_string_free (str, TRUE);
+	}
+
+	svSetValue (ifcfg, "TYPE", TYPE_BOND, FALSE);
+	svSetValue (ifcfg, "BONDING_MASTER", "yes", FALSE);
+
+	return TRUE;
+}
+
 static void
 write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 {
 	guint32 n, i;
 	GString *str;
+	const char *master;
 
 	svSetValue (ifcfg, "NAME", nm_setting_connection_get_id (s_con), FALSE);
 	svSetValue (ifcfg, "UUID", nm_setting_connection_get_uuid (s_con), FALSE);
@@ -1096,6 +1286,14 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 		}
 		svSetValue (ifcfg, "USERS", str->str, FALSE);
 		g_string_free (str, TRUE);
+	}
+
+	svSetValue (ifcfg, "ZONE", nm_setting_connection_get_zone(s_con), FALSE);
+
+	master = nm_setting_connection_get_master (s_con);
+	if (master) {
+		if (nm_setting_connection_is_slave_type (s_con, NM_SETTING_BOND_SETTING_NAME))
+			svSetValue (ifcfg, "MASTER", master, FALSE);
 	}
 }
 
@@ -1172,7 +1370,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	gboolean fake_ip4 = FALSE;
 	const char *method = NULL;
 
-	s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
 	if (s_ip4)
 		method = nm_setting_ip4_config_get_method (s_ip4);
 
@@ -1509,7 +1707,7 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	GString *ip_str1, *ip_str2, *ip_ptr;
 	char *route6_path;
 
-	s_ip6 = (NMSettingIP6Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP6_CONFIG);
+	s_ip6 = nm_connection_get_setting_ip6_config (connection);
 	if (!s_ip6) {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "Missing '%s' setting", NM_SETTING_IP6_CONFIG_SETTING_NAME);
@@ -1587,7 +1785,7 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	}
 
 	/* Write out DNS - 'DNS' key is used both for IPv4 and IPv6 */
-	s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
 	num4 = s_ip4 ? nm_setting_ip4_config_get_num_dns (s_ip4) : 0; /* from where to start with IPv6 entries */
 	num = nm_setting_ip6_config_get_num_dns (s_ip6);
 	for (i = 0; i < 254; i++) {
@@ -1644,6 +1842,24 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	            nm_setting_ip6_config_get_may_fail (s_ip6) ? "no" : "yes",
 	            FALSE);
 
+	/* IPv6 Privacy Extensions */
+	svSetValue (ifcfg, "IPV6_PRIVACY", NULL, FALSE);
+	svSetValue (ifcfg, "IPV6_PRIVACY_PREFER_PUBLIC_IP", NULL, FALSE);
+	switch (nm_setting_ip6_config_get_ip6_privacy (s_ip6)){
+	case NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED:
+		svSetValue (ifcfg, "IPV6_PRIVACY", "no", FALSE);
+	break;
+	case NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR:
+		svSetValue (ifcfg, "IPV6_PRIVACY", "rfc3041", FALSE);
+		svSetValue (ifcfg, "IPV6_PRIVACY_PREFER_PUBLIC_IP", "yes", FALSE);
+	break;
+	case NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR:
+		svSetValue (ifcfg, "IPV6_PRIVACY", "rfc3041", FALSE);
+	break;
+	default:
+	break;
+	}
+
 	/* Static routes go to route6-<dev> file */
 	route6_path = utils_get_route6_path (ifcfg->fileName);
 	if (!route6_path) {
@@ -1665,6 +1881,7 @@ error:
 static char *
 escape_id (const char *id)
 {
+	static const char const as_dash[] = "\\][|/=()!";
 	char *escaped = g_strdup (id);
 	char *p = escaped;
 
@@ -1672,9 +1889,7 @@ escape_id (const char *id)
 	while (*p) {
 		if (*p == ' ')
 			*p = '_';
-		else if (*p == '/')
-			*p = '-';
-		else if (*p == '\\')
+		else if (strchr (as_dash, *p))
 			*p = '-';
 		p++;
 	}
@@ -1691,6 +1906,7 @@ write_connection (NMConnection *connection,
                   GError **error)
 {
 	NMSettingConnection *s_con;
+	NMSettingIP4Config *s_ip4;
 	NMSettingIP6Config *s_ip6;
 	gboolean success = FALSE;
 	shvarFile *ifcfg = NULL;
@@ -1699,7 +1915,7 @@ write_connection (NMConnection *connection,
 	gboolean no_8021x = FALSE;
 	gboolean wired = FALSE;
 
-	s_con = NM_SETTING_CONNECTION (nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION));
+	s_con = nm_connection_get_setting_connection (connection);
 	if (!s_con) {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 		             "Missing '%s' setting", NM_SETTING_CONNECTION_SETTING_NAME);
@@ -1759,7 +1975,7 @@ write_connection (NMConnection *connection,
 
 	if (!strcmp (type, NM_SETTING_WIRED_SETTING_NAME)) {
 		// FIXME: can't write PPPoE at this time
-		if (nm_connection_get_setting (connection, NM_TYPE_SETTING_PPPOE)) {
+		if (nm_connection_get_setting_pppoe (connection)) {
 			g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 			             "Can't write connection type '%s'",
 			             NM_SETTING_PPPOE_SETTING_NAME);
@@ -1769,8 +1985,17 @@ write_connection (NMConnection *connection,
 		if (!write_wired_setting (connection, ifcfg, error))
 			goto out;
 		wired = TRUE;
+	} else if (!strcmp (type, NM_SETTING_VLAN_SETTING_NAME)) {
+		if (!write_vlan_setting (connection, ifcfg, error))
+			goto out;
 	} else if (!strcmp (type, NM_SETTING_WIRELESS_SETTING_NAME)) {
 		if (!write_wireless_setting (connection, ifcfg, &no_8021x, error))
+			goto out;
+	} else if (!strcmp (type, NM_SETTING_INFINIBAND_SETTING_NAME)) {
+		if (!write_infiniband_setting (connection, ifcfg, error))
+			goto out;
+	} else if (!strcmp (type, NM_SETTING_BOND_SETTING_NAME)) {
+		if (!write_bonding_setting (connection, ifcfg, error))
 			goto out;
 	} else {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
@@ -1783,10 +2008,13 @@ write_connection (NMConnection *connection,
 			goto out;
 	}
 
-	if (!write_ip4_setting (connection, ifcfg, error))
-		goto out;
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+	if (s_ip4 || !utils_disabling_ip4_config_allowed (connection)) {
+		if (!write_ip4_setting (connection, ifcfg, error))
+			goto out;
+	}
 
-	s_ip6 = (NMSettingIP6Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP6_CONFIG);
+	s_ip6 = nm_connection_get_setting_ip6_config (connection);
 	if (s_ip6) {
 		if (!write_ip6_setting (connection, ifcfg, error))
 			goto out;

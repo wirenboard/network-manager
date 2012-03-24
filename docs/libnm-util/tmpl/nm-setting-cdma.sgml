@@ -9,12 +9,10 @@ NMSettingCdma
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -68,6 +66,13 @@ NMSettingCdma
 @NM_SETTING_CDMA_ERROR_INVALID_PROPERTY: 
 @NM_SETTING_CDMA_ERROR_MISSING_PROPERTY: 
 @NM_SETTING_CDMA_ERROR_MISSING_SERIAL_SETTING: 
+
+<!-- ##### MACRO NM_SETTING_CDMA_ERROR ##### -->
+<para>
+
+</para>
+
+
 
 <!-- ##### MACRO NM_SETTING_CDMA_NUMBER ##### -->
 <para>

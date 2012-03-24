@@ -25,7 +25,8 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "nm-secret-agent.h"
-#include "nm-marshal.h"
+#include "nm-glib-enum-types.h"
+#include "nm-glib-marshal.h"
 #include "NetworkManager.h"
 
 static void impl_secret_agent_get_secrets (NMSecretAgent *self,
@@ -86,6 +87,7 @@ enum {
 	PROP_0,
 	PROP_IDENTIFIER,
 	PROP_AUTO_REGISTER,
+	PROP_REGISTERED,
 
 	LAST_PROP
 };
@@ -109,34 +111,6 @@ nm_secret_agent_error_quark (void)
 	if (G_UNLIKELY (ret == 0))
 		ret = g_quark_from_static_string ("nm-secret-agent-error");
 	return ret;
-}
-
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-
-GType
-nm_secret_agent_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] = {
-			/* Sender is not authorized to make this request */
-			ENUM_ENTRY (NM_SECRET_AGENT_ERROR_NOT_AUTHORIZED, "NotAuthorized"),
-			/* Given connection details do not make a valid connection */
-			ENUM_ENTRY (NM_SECRET_AGENT_ERROR_INVALID_CONNECTION, "InvalidConnection"),
-			/* The request was canceled explicitly by the user */
-			ENUM_ENTRY (NM_SECRET_AGENT_ERROR_USER_CANCELED, "UserCanceled"),
-			/* The request was canceled, but not by the user */
-			ENUM_ENTRY (NM_SECRET_AGENT_ERROR_AGENT_CANCELED, "AgentCanceled"),
-			/* Some internal error prevented returning secrets */
-			ENUM_ENTRY (NM_SECRET_AGENT_ERROR_INTERNAL_ERROR, "InternalError"),
-			/* No secrets could be found to fulfill the request */
-			ENUM_ENTRY (NM_SECRET_AGENT_ERROR_NO_SECRETS, "NoSecrets"),
-			{ 0, 0, 0 }
-		};
-		etype = g_enum_register_static ("NMSecretAgentError", values);
-	}
-	return etype;
 }
 
 /*************************************************************/
@@ -172,6 +146,7 @@ _internal_unregister (NMSecretAgent *self)
 	if (priv->registered) {
 		dbus_g_connection_unregister_g_object (priv->bus, G_OBJECT (self));
 		priv->registered = FALSE;
+		g_object_notify (G_OBJECT (self), NM_SECRET_AGENT_REGISTERED);
 	}
 }
 
@@ -536,9 +511,10 @@ reg_request_cb (DBusGProxy *proxy,
 
 	priv->reg_call = NULL;
 
-	if (dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID))
+	if (dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID)) {
 		priv->registered = TRUE;
-	else {
+		g_object_notify (G_OBJECT (self), NM_SECRET_AGENT_REGISTERED);
+	} else {
 		/* If registration failed we shouldn't expose ourselves on the bus */
 		_internal_unregister (self);
 	}
@@ -634,6 +610,21 @@ nm_secret_agent_unregister (NMSecretAgent *self)
 	return TRUE;
 }
 
+/**
+ * nm_secret_agent_get_registered:
+ * @self: a #NMSecretAgent
+ *
+ * Returns: a %TRUE if the agent is registered, %FALSE if it is not.
+ **/
+gboolean
+nm_secret_agent_get_registered (NMSecretAgent *self)
+{
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (NM_IS_SECRET_AGENT (self), FALSE);
+
+	return NM_SECRET_AGENT_GET_PRIVATE (self)->registered;
+}
+
 static gboolean
 auto_register_cb (gpointer user_data)
 {
@@ -655,7 +646,7 @@ auto_register_cb (gpointer user_data)
  * @setting_name: the name of the secret setting
  * @hints: (array zero-terminated=1): hints to the agent
  * @flags: flags that modify the behavior of the request
- * @callback: (scope async): a callback, invoked when the operation is done
+ * @callback: (scope async): a callback, to be invoked when the operation is done
  * @user_data: (closure): caller-specific data to be passed to @callback
  *
  * Asyncronously retrieve secrets belonging to @connection for the
@@ -698,7 +689,7 @@ nm_secret_agent_get_secrets (NMSecretAgent *self,
  * nm_secret_agent_save_secrets:
  * @self: a #NMSecretAgent
  * @connection: a #NMConnection
- * @callback: (scope async): a callback, invoked when the operation is done
+ * @callback: (scope async): a callback, to be invoked when the operation is done
  * @user_data: (closure): caller-specific data to be passed to @callback
  *
  * Asyncronously ensure that all secrets inside @connection
@@ -729,7 +720,7 @@ nm_secret_agent_save_secrets (NMSecretAgent *self,
  * nm_secret_agent_delete_secrets:
  * @self: a #NMSecretAgent
  * @connection: a #NMConnection
- * @callback: (scope async): a callback, invoked when the operation is done
+ * @callback: (scope async): a callback, to be invoked when the operation is done
  * @user_data: (closure): caller-specific data to be passed to @callback
  *
  * Asynchronously ask the agent to delete all saved secrets belonging to
@@ -806,7 +797,7 @@ nm_secret_agent_init (NMSecretAgent *self)
 		return;
 	}
 
-	dbus_g_object_register_marshaller (_nm_marshal_VOID__STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (_nm_glib_marshal_VOID__STRING_STRING_STRING,
 	                                   G_TYPE_NONE,
 	                                   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 	                                   G_TYPE_INVALID);
@@ -844,6 +835,9 @@ get_property (GObject *object,
 		break;
 	case PROP_AUTO_REGISTER:
 		g_value_set_boolean (value, priv->auto_register);
+		break;
+	case PROP_REGISTERED:
+		g_value_set_boolean (value, priv->registered);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -961,6 +955,19 @@ nm_secret_agent_class_init (NMSecretAgentClass *class)
 						       "Auto Register",
 						       TRUE,
 						       G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	/**
+	 * NMSecretAgent:registered:
+	 *
+	 * %TRUE if the agent is registered with NetworkManager, %FALSE if not.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_REGISTERED,
+		 g_param_spec_boolean (NM_SECRET_AGENT_REGISTERED,
+		                       "Registered",
+		                       "Registered",
+		                       FALSE,
+		                       G_PARAM_READABLE));
 
 	/**
 	 * NMSecretAgent::registration-result:

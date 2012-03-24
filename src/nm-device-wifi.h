@@ -41,6 +41,12 @@ G_BEGIN_DECLS
 #define NM_IS_DEVICE_WIFI_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass),  NM_TYPE_DEVICE_WIFI))
 #define NM_DEVICE_WIFI_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_DEVICE_WIFI, NMDeviceWifiClass))
 
+typedef enum {
+	NM_WIFI_ERROR_CONNECTION_NOT_WIRELESS = 0, /*< nick=ConnectionNotWireless >*/
+	NM_WIFI_ERROR_CONNECTION_INVALID,          /*< nick=ConnectionInvalid >*/
+	NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE,     /*< nick=ConnectionIncompatible >*/
+	NM_WIFI_ERROR_ACCESS_POINT_NOT_FOUND,      /*< nick=AccessPointNotFound >*/
+} NMWifiError;
 
 #define NM_DEVICE_WIFI_HW_ADDRESS          "hw-address"
 #define NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS "perm-hw-address"
@@ -87,14 +93,6 @@ NMDevice *nm_device_wifi_new (const char *udi,
                               const char *driver);
 
 void nm_device_wifi_get_address (NMDeviceWifi *dev, struct ether_addr *addr);
-
-void nm_device_wifi_get_bssid (NMDeviceWifi *dev, struct ether_addr *bssid);
-
-const GByteArray * nm_device_wifi_get_ssid (NMDeviceWifi *self);
-
-gboolean nm_device_wifi_set_mode (NMDeviceWifi *self, const NM80211Mode mode);
-
-NM80211Mode nm_device_wifi_get_mode (NMDeviceWifi *self);
 
 NMAccessPoint * nm_device_wifi_get_activation_ap (NMDeviceWifi *self);
 

@@ -115,49 +115,40 @@ demarshal_ip4_routes_array (NMObject *object, GParamSpec *pspec, GValue *value, 
 }
 
 static void
-register_for_property_changed (NMIP4Config *config)
+register_properties (NMIP4Config *config)
 {
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_IP4_CONFIG_ADDRESSES,    demarshal_ip4_address_array,  &priv->addresses },
-		{ NM_IP4_CONFIG_NAMESERVERS,  demarshal_ip4_array,          &priv->nameservers },
-		{ NM_IP4_CONFIG_DOMAINS,      demarshal_domains,            &priv->domains },
-		{ NM_IP4_CONFIG_ROUTES,       demarshal_ip4_routes_array,   &priv->routes },
-		{ NM_IP4_CONFIG_WINS_SERVERS, demarshal_ip4_array,          &priv->wins },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_IP4_CONFIG_ADDRESSES,    &priv->addresses, demarshal_ip4_address_array },
+		{ NM_IP4_CONFIG_NAMESERVERS,  &priv->nameservers, demarshal_ip4_array },
+		{ NM_IP4_CONFIG_DOMAINS,      &priv->domains, demarshal_domains },
+		{ NM_IP4_CONFIG_ROUTES,       &priv->routes, demarshal_ip4_routes_array },
+		{ NM_IP4_CONFIG_WINS_SERVERS, &priv->wins, demarshal_ip4_array },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (config),
-	                                     priv->proxy,
-	                                     property_changed_info);
+	_nm_object_register_properties (NM_OBJECT (config),
+	                                priv->proxy,
+	                                property_info);
 }
 
-static GObject*
-constructor (GType type,
-		   guint n_construct_params,
-		   GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	NMObject *object;
 	DBusGConnection *connection;
 	NMIP4ConfigPrivate *priv;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_ip4_config_parent_class)->constructor (type,
-																 n_construct_params,
-																 construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_ip4_config_parent_class)->constructed (object);
 
 	priv = NM_IP4_CONFIG_GET_PRIVATE (object);
-	connection = nm_object_get_connection (object);
+	connection = nm_object_get_connection (NM_OBJECT (object));
 
 	priv->proxy = dbus_g_proxy_new_for_name (connection,
 										   NM_DBUS_SERVICE,
-										   nm_object_get_path (object),
+										   nm_object_get_path (NM_OBJECT (object)),
 										   NM_DBUS_INTERFACE_IP4_CONFIG);
 
-	register_for_property_changed (NM_IP4_CONFIG (object));
-
-	return G_OBJECT (object);
+	register_properties (NM_IP4_CONFIG (object));
 }
 
 static void
@@ -226,7 +217,7 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	g_type_class_add_private (config_class, sizeof (NMIP4ConfigPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->finalize = finalize;
 
@@ -326,27 +317,10 @@ nm_ip4_config_new (DBusGConnection *connection, const char *object_path)
 const GSList *
 nm_ip4_config_get_addresses (NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv;
-	GValue value = { 0, };
-
 	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
 
-	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
-	if (priv->addresses)
-		return priv->addresses;
-
-	if (!_nm_object_get_property (NM_OBJECT (config),
-	                              NM_DBUS_INTERFACE_IP4_CONFIG,
-	                              "Addresses",
-	                              &value,
-	                              NULL)) {
-		return NULL;
-	}
-
-	demarshal_ip4_address_array (NM_OBJECT (config), NULL, &value, &priv->addresses);	
-	g_value_unset (&value);
-
-	return priv->addresses;
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return NM_IP4_CONFIG_GET_PRIVATE (config)->addresses;
 }
 
 /**
@@ -361,29 +335,10 @@ nm_ip4_config_get_addresses (NMIP4Config *config)
 const GArray *
 nm_ip4_config_get_nameservers (NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv;
-	GArray *array = NULL;
-	GValue value = {0,};
-
 	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
 
-	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
-	if (!priv->nameservers) {
-		if (_nm_object_get_property (NM_OBJECT (config),
-		                             NM_DBUS_INTERFACE_IP4_CONFIG,
-		                             "Nameservers",
-		                             &value,
-		                             NULL)) {
-			array = (GArray *) g_value_get_boxed (&value);
-			if (array && array->len) {
-				priv->nameservers = g_array_sized_new (FALSE, TRUE, sizeof (guint32), array->len);
-				g_array_append_vals (priv->nameservers, array->data, array->len);
-			}
-			g_value_unset (&value);
-		}
-	}
-
-	return priv->nameservers;
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return NM_IP4_CONFIG_GET_PRIVATE (config)->nameservers;
 }
 
 /**
@@ -398,32 +353,10 @@ nm_ip4_config_get_nameservers (NMIP4Config *config)
 const GPtrArray *
 nm_ip4_config_get_domains (NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv;
-	GValue value = {0,};
-
 	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
 
-	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
-	if (priv->domains)
-		return handle_ptr_array_return (priv->domains);
-
-	if (_nm_object_get_property (NM_OBJECT (config),
-	                             NM_DBUS_INTERFACE_IP4_CONFIG,
-	                             "Domains",
-	                             &value,
-	                             NULL)) {
-		char **array = NULL, **p;
-
-		array = (char **) g_value_get_boxed (&value);
-		if (array && g_strv_length (array)) {
-			priv->domains = g_ptr_array_sized_new (g_strv_length (array));
-			for (p = array; *p; p++)
-				g_ptr_array_add (priv->domains, g_strdup (*p));
-		}
-		g_value_unset (&value);
-	}
-
-	return handle_ptr_array_return (priv->domains);
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return handle_ptr_array_return (NM_IP4_CONFIG_GET_PRIVATE (config)->domains);
 }
 
 /**
@@ -438,29 +371,10 @@ nm_ip4_config_get_domains (NMIP4Config *config)
 const GArray *
 nm_ip4_config_get_wins_servers (NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv;
-	GArray *array = NULL;
-	GValue value = {0,};
-
 	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
 
-	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
-	if (!priv->wins) {
-		if (_nm_object_get_property (NM_OBJECT (config),
-		                             NM_DBUS_INTERFACE_IP4_CONFIG,
-		                             "WinsServers",
-		                             &value,
-		                             NULL)) {
-			array = (GArray *) g_value_get_boxed (&value);
-			if (array && array->len) {
-				priv->wins = g_array_sized_new (FALSE, TRUE, sizeof (guint32), array->len);
-				g_array_append_vals (priv->wins, array->data, array->len);
-			}
-			g_value_unset (&value);
-		}
-	}
-
-	return priv->wins;
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return NM_IP4_CONFIG_GET_PRIVATE (config)->wins;
 }
 
 /**
@@ -476,26 +390,9 @@ nm_ip4_config_get_wins_servers (NMIP4Config *config)
 const GSList *
 nm_ip4_config_get_routes (NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv;
-	GValue value = { 0, };
-
 	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
 
-	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
-	if (priv->routes)
-		return priv->routes;
-
-	if (!_nm_object_get_property (NM_OBJECT (config),
-	                              NM_DBUS_INTERFACE_IP4_CONFIG,
-	                              "Routes",
-	                              &value,
-	                              NULL)) {
-		return NULL;
-	}
-
-	demarshal_ip4_routes_array (NM_OBJECT (config), NULL, &value, &priv->routes);
-	g_value_unset (&value);
-
-	return priv->routes;
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return NM_IP4_CONFIG_GET_PRIVATE (config)->routes;
 }
 

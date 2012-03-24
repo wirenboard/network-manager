@@ -2,6 +2,7 @@ SUBDIRS=network-scripts
 
 INCLUDES = \
 	-I$(top_srcdir)/include \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
 	-I$(top_srcdir)/libnm-glib \
 	-I$(srcdir)/../
@@ -20,7 +21,9 @@ test_ifcfg_rh_CPPFLAGS = \
 test_ifcfg_rh_LDADD = \
 	$(top_builddir)/libnm-glib/libnm-glib.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
+	$(top_builddir)/src/wifi/libwifi-utils.la \
 	$(builddir)/../libifcfg-rh-io.la \
+	$(LIBM)
 	$(DBUS_LIBS)
 
 test_ifcfg_rh_utils_SOURCES = \

@@ -9,12 +9,10 @@ NMSettingPPP
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -147,6 +145,13 @@ NMSettingPPP
 
 
 <!-- ##### MACRO NM_SETTING_PPP_CRTSCTS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_ERROR ##### -->
 <para>
 
 </para>

@@ -22,6 +22,7 @@
  */
 
 #include <string.h>
+#include <gio/gio.h>
 
 #include <NetworkManager.h>
 #include <nm-utils.h>
@@ -29,16 +30,21 @@
 #include "nm-remote-connection.h"
 #include "nm-remote-connection-private.h"
 #include "nm-dbus-glib-types.h"
-#include "nm-settings-connection-bindings.h"
+#include "nm-glib-compat.h"
 
 #define NM_REMOTE_CONNECTION_BUS "bus"
 
-G_DEFINE_TYPE (NMRemoteConnection, nm_remote_connection, NM_TYPE_CONNECTION)
+static void nm_remote_connection_initable_iface_init (GInitableIface *iface);
+static void nm_remote_connection_async_initable_iface_init (GAsyncInitableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (NMRemoteConnection, nm_remote_connection, NM_TYPE_CONNECTION,
+                         G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE, nm_remote_connection_initable_iface_init);
+                         G_IMPLEMENT_INTERFACE (G_TYPE_ASYNC_INITABLE, nm_remote_connection_async_initable_iface_init);
+                         )
 
 enum {
 	PROP_0,
 	PROP_BUS,
-	PROP_INIT_RESULT,
 
 	LAST_PROP
 };
@@ -65,7 +71,6 @@ typedef struct {
 	DBusGProxy *proxy;
 	GSList *calls;
 
-	NMRemoteConnectionInitResult init_result;
 	gboolean visible;
 	gboolean disposed;
 } NMRemoteConnectionPrivate;
@@ -89,13 +94,17 @@ remote_call_complete (NMRemoteConnection *self, RemoteCall *call)
 }
 
 static void
-update_cb (DBusGProxy *proxy, GError *error, gpointer user_data)
+update_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_data)
 {
 	RemoteCall *call = user_data;
 	NMRemoteConnectionCommitFunc func = (NMRemoteConnectionCommitFunc) call->callback;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, proxy_call, &error,
+	                       G_TYPE_INVALID);
 	if (func != NULL)
 		(*func)(call->self, error, call->user_data);
+	g_clear_error (&error);
 	remote_call_complete (call->self, call);
 }
 
@@ -131,10 +140,10 @@ nm_remote_connection_commit_changes (NMRemoteConnection *self,
 
 	settings = nm_connection_to_hash (NM_CONNECTION (self), NM_SETTING_HASH_FLAG_ALL);
 
-	call->call = org_freedesktop_NetworkManager_Settings_Connection_update_async (priv->proxy,
-	                                                                              settings,
-	                                                                              update_cb,
-	                                                                              call);
+	call->call = dbus_g_proxy_begin_call (priv->proxy, "Update",
+	                                      update_cb, call, NULL,
+	                                      DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, settings,
+	                                      G_TYPE_INVALID);
 	g_assert (call->call);
 	priv->calls = g_slist_append (priv->calls, call);
 
@@ -142,13 +151,17 @@ nm_remote_connection_commit_changes (NMRemoteConnection *self,
 }
 
 static void
-delete_cb (DBusGProxy *proxy, GError *error, gpointer user_data)
+delete_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_data)
 {
 	RemoteCall *call = user_data;
 	NMRemoteConnectionDeleteFunc func = (NMRemoteConnectionDeleteFunc) call->callback;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, proxy_call, &error,
+	                       G_TYPE_INVALID);
 	if (func != NULL)
 		(*func)(call->self, error, call->user_data);
+	g_clear_error (&error);
 	remote_call_complete (call->self, call);
 }
 
@@ -178,20 +191,26 @@ nm_remote_connection_delete (NMRemoteConnection *self,
 	call->callback = (GFunc) callback;
 	call->user_data = user_data;
 
-	call->call = org_freedesktop_NetworkManager_Settings_Connection_delete_async (priv->proxy,
-	                                                                              delete_cb,
-	                                                                              call);
+	call->call = dbus_g_proxy_begin_call (priv->proxy, "Delete",
+	                                      delete_cb, call, NULL,
+	                                      G_TYPE_INVALID);
 	g_assert (call->call);
 	priv->calls = g_slist_append (priv->calls, call);
 }
 
 static void
-get_secrets_cb (DBusGProxy *proxy, GHashTable *secrets, GError *error, gpointer user_data)
+get_secrets_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_data)
 {
 	RemoteCall *call = user_data;
 	NMRemoteConnectionGetSecretsFunc func = (NMRemoteConnectionGetSecretsFunc) call->callback;
+	GHashTable *secrets;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, proxy_call, &error,
+	                       DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, &secrets,
+	                       G_TYPE_INVALID);
 	(*func)(call->self, error ? NULL : secrets, error, call->user_data);
+	g_clear_error (&error);
 	remote_call_complete (call->self, call);
 }
 
@@ -225,10 +244,10 @@ nm_remote_connection_get_secrets (NMRemoteConnection *self,
 	call->callback = (GFunc) callback;
 	call->user_data = user_data;
 
-	call->call = org_freedesktop_NetworkManager_Settings_Connection_get_secrets_async (priv->proxy,
-	                                                                                   setting_name,
-	                                                                                   get_secrets_cb,
-	                                                                                   call);
+	call->call = dbus_g_proxy_begin_call (priv->proxy, "GetSecrets",
+	                                      get_secrets_cb, call, NULL,
+	                                      G_TYPE_STRING, setting_name,
+	                                      G_TYPE_INVALID);
 	g_assert (call->call);
 	priv->calls = g_slist_append (priv->calls, call);
 }
@@ -255,42 +274,22 @@ replace_settings (NMRemoteConnection *self, GHashTable *new_settings)
 }
 
 static void
-init_get_settings_cb (DBusGProxy *proxy,
-                      GHashTable *new_settings,
-                      GError *error,
-                      gpointer user_data)
-{
-	NMRemoteConnection *self = user_data;
-	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
-
-	if (error) {
-		/* Connection doesn't exist, or isn't visible to this user */
-		if (dbus_g_error_has_name (error, "org.freedesktop.NetworkManager.Settings.PermissionDenied"))
-			priv->init_result = NM_REMOTE_CONNECTION_INIT_RESULT_INVISIBLE;
-		else
-			priv->init_result = NM_REMOTE_CONNECTION_INIT_RESULT_ERROR;
-
-		g_object_notify (G_OBJECT (self), NM_REMOTE_CONNECTION_INIT_RESULT);
-	} else {
-		priv->visible = TRUE;
-		replace_settings (self, new_settings);
-		g_hash_table_destroy (new_settings);
-		priv->init_result = NM_REMOTE_CONNECTION_INIT_RESULT_SUCCESS;
-		g_object_notify (G_OBJECT (self), NM_REMOTE_CONNECTION_INIT_RESULT);
-	}
-}
-
-static void
 updated_get_settings_cb (DBusGProxy *proxy,
-                         GHashTable *new_settings,
-                         GError *error,
+                         DBusGProxyCall *call,
                          gpointer user_data)
 {
 	NMRemoteConnection *self = user_data;
 	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
+	GHashTable *new_settings;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, call, &error,
+	                       DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, &new_settings,
+	                       G_TYPE_INVALID);
 	if (error) {
 		GHashTable *hash;
+
+		g_error_free (error);
 
 		/* Connection is no longer visible to this user.  Let the settings
 		 * service handle this via 'visible'.  The settings service will emit
@@ -322,9 +321,9 @@ updated_cb (DBusGProxy *proxy, gpointer user_data)
 	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
 
 	/* The connection got updated; request the replacement settings */
-	org_freedesktop_NetworkManager_Settings_Connection_get_settings_async (priv->proxy,
-	                                                                       updated_get_settings_cb,
-	                                                                       self);
+	dbus_g_proxy_begin_call (priv->proxy, "GetSettings",
+	                         updated_get_settings_cb, self, NULL,
+	                         G_TYPE_INVALID);
 }
 
 static void
@@ -357,17 +356,10 @@ nm_remote_connection_new (DBusGConnection *bus,
 	                                            NULL);
 }
 
-static GObject *
-constructor (GType type,
-             guint n_construct_params,
-             GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	GObject *object;
 	NMRemoteConnectionPrivate *priv;
-
-	object = G_OBJECT_CLASS (nm_remote_connection_parent_class)->constructor (type, n_construct_params, construct_params);
-	if (!object)
-		return NULL;
 
 	priv = NM_REMOTE_CONNECTION_GET_PRIVATE (object);
 	g_assert (priv->bus);
@@ -385,11 +377,76 @@ constructor (GType type,
 
 	dbus_g_proxy_add_signal (priv->proxy, "Removed", G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (priv->proxy, "Removed", G_CALLBACK (removed_cb), object, NULL);
+}
 
-	org_freedesktop_NetworkManager_Settings_Connection_get_settings_async (priv->proxy,
-	                                                                       init_get_settings_cb,
-	                                                                       object);
-	return object;
+static gboolean
+init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
+{
+	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (initable);
+	GHashTable *settings;
+
+	if (!dbus_g_proxy_call (priv->proxy, "GetSettings", error,
+	                        G_TYPE_STRING, NM_DBUS_IFACE_SETTINGS,
+	                        G_TYPE_INVALID,
+	                        DBUS_TYPE_G_MAP_OF_VARIANT, &settings,
+	                        G_TYPE_INVALID))
+		return FALSE;
+
+	priv->visible = TRUE;
+	replace_settings (NM_REMOTE_CONNECTION (initable), settings);
+	g_hash_table_destroy (settings);
+	return TRUE;
+}
+
+typedef struct {
+	NMRemoteConnection *connection;
+	GSimpleAsyncResult *result;
+} NMRemoteConnectionInitData;
+
+static void
+init_get_settings_cb (DBusGProxy *proxy,
+                      DBusGProxyCall *call,
+                      gpointer user_data)
+{
+	NMRemoteConnectionInitData *init_data = user_data;
+	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (init_data->connection);
+	GHashTable *settings;
+	GError *error = NULL;
+
+	dbus_g_proxy_end_call (proxy, call, &error,
+	                       DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, &settings,
+	                       G_TYPE_INVALID);
+	if (error) {
+		g_simple_async_result_take_error (init_data->result, error);
+	} else {
+		priv->visible = TRUE;
+		replace_settings (init_data->connection, settings);
+		g_hash_table_destroy (settings);
+		g_simple_async_result_set_op_res_gboolean (init_data->result, TRUE);
+	}
+
+	g_simple_async_result_complete (init_data->result);
+	g_slice_free (NMRemoteConnectionInitData, init_data);
+}
+
+static void
+init_async (GAsyncInitable *initable, int io_priority,
+			GCancellable *cancellable, GAsyncReadyCallback callback,
+			gpointer user_data)
+{
+	NMRemoteConnectionInitData *init_data;
+	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (initable);
+
+
+	init_data = g_slice_new0 (NMRemoteConnectionInitData);
+	init_data->connection = NM_REMOTE_CONNECTION (initable);
+	init_data->result = g_simple_async_result_new (G_OBJECT (initable), callback,
+	                                               user_data, init_async);
+
+	dbus_g_proxy_begin_call (priv->proxy, "GetSettings",
+	                         init_get_settings_cb, init_data, NULL,
+	                         G_TYPE_INVALID);
+
 }
 
 static void
@@ -407,23 +464,6 @@ set_property (GObject *object, guint prop_id,
 	case PROP_BUS:
 		/* Construct only */
 		priv->bus = dbus_g_connection_ref ((DBusGConnection *) g_value_get_boxed (value));
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static void
-get_property (GObject *object, guint prop_id,
-              GValue *value, GParamSpec *pspec)
-{
-	NMRemoteConnection *self = NM_REMOTE_CONNECTION (object);
-	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (self);
-
-	switch (prop_id) {
-	case PROP_INIT_RESULT:
-		g_value_set_uint (value, priv->init_result);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -459,9 +499,8 @@ nm_remote_connection_class_init (NMRemoteConnectionClass *remote_class)
 
 	/* virtual methods */
 	object_class->set_property = set_property;
-	object_class->get_property = get_property;
 	object_class->dispose = dispose;
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 
 	/* Properties */
 	g_object_class_install_property
@@ -471,16 +510,6 @@ nm_remote_connection_class_init (NMRemoteConnectionClass *remote_class)
 						 "DBusGConnection",
 						 DBUS_TYPE_G_CONNECTION,
 						 G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-	g_object_class_install_property
-		(object_class, PROP_INIT_RESULT,
-		 g_param_spec_uint (NM_REMOTE_CONNECTION_INIT_RESULT,
-		                    "Initialization result (PRIVATE)",
-		                    "Initialization result (PRIVATE)",
-		                    NM_REMOTE_CONNECTION_INIT_RESULT_UNKNOWN,
-		                    NM_REMOTE_CONNECTION_INIT_RESULT_ERROR,
-		                    NM_REMOTE_CONNECTION_INIT_RESULT_UNKNOWN,
-		                    G_PARAM_READABLE));
 
 	/* Signals */
 	/**
@@ -523,4 +552,16 @@ nm_remote_connection_class_init (NMRemoteConnectionClass *remote_class)
 		              0, NULL, NULL,
 		              g_cclosure_marshal_VOID__BOOLEAN,
 		              G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+}
+
+static void
+nm_remote_connection_initable_iface_init (GInitableIface *iface)
+{
+	iface->init = init_sync;
+}
+
+static void
+nm_remote_connection_async_initable_iface_init (GAsyncInitableIface *iface)
+{
+	iface->init_async = init_async;
 }
