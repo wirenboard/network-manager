@@ -12,12 +12,13 @@ network-manager (0.9.4.0-1) UNRELEASED; urgency=low
   * Refresh patches.
   * Rewrite and update debian/copyright using the machine-readable copyright
     format 1.0. (Closes: #652882)
+  * Bump Standards-Version to 3.9.3.
   * Clean up seen-bssids and timestamps state file on purge.
   * Update symbols files for libnm-glib and libnm-util.
   * Install new nm-*-enum-types.h header files.
   * Add Build-Depends on libnl-genl-3-dev.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 14:05:56 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 14:06:41 +0100
 
 network-manager (0.9.2.0-2) unstable; urgency=low
 
