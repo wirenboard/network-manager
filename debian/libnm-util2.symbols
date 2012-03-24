@@ -15,15 +15,19 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_connection_get_setting@Base 0.7.0
  nm_connection_get_setting_802_1x@Base 0.8.998
  nm_connection_get_setting_bluetooth@Base 0.8.998
+ nm_connection_get_setting_bond@Base 0.9.4.0
  nm_connection_get_setting_by_name@Base 0.7.0
  nm_connection_get_setting_cdma@Base 0.8.998
  nm_connection_get_setting_connection@Base 0.8.998
  nm_connection_get_setting_gsm@Base 0.8.998
+ nm_connection_get_setting_infiniband@Base 0.9.4.0
  nm_connection_get_setting_ip4_config@Base 0.8.998
  nm_connection_get_setting_ip6_config@Base 0.8.998
  nm_connection_get_setting_olpc_mesh@Base 0.8.998
  nm_connection_get_setting_ppp@Base 0.8.998
  nm_connection_get_setting_pppoe@Base 0.8.998
+ nm_connection_get_setting_serial@Base 0.9.4.0
+ nm_connection_get_setting_vlan@Base 0.9.4.0
  nm_connection_get_setting_vpn@Base 0.8.998
  nm_connection_get_setting_wimax@Base 0.8.998
  nm_connection_get_setting_wired@Base 0.8.998
@@ -31,6 +35,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_connection_get_setting_wireless_security@Base 0.8.998
  nm_connection_get_type@Base 0.7.0
  nm_connection_get_uuid@Base 0.8.998
+ nm_connection_get_virtual_iface_name@Base 0.9.4.0
  nm_connection_is_type@Base 0.9.1.95
  nm_connection_lookup_setting_type@Base 0.7.0
  nm_connection_lookup_setting_type_by_quark@Base 0.7.0
@@ -98,6 +103,8 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_add_altsubject_match@Base 0.9.0
  nm_setting_802_1x_add_eap_method@Base 0.7.0
  nm_setting_802_1x_add_phase2_altsubject_match@Base 0.9.0
+ nm_setting_802_1x_ck_format_get_type@Base 0.9.4.0
+ nm_setting_802_1x_ck_scheme_get_type@Base 0.9.4.0
  nm_setting_802_1x_clear_altsubject_matches@Base 0.9.0
  nm_setting_802_1x_clear_eap_methods@Base 0.7.0
  nm_setting_802_1x_clear_phase2_altsubject_matches@Base 0.9.0
@@ -117,8 +124,11 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_get_num_altsubject_matches@Base 0.9.0
  nm_setting_802_1x_get_num_eap_methods@Base 0.7.0
  nm_setting_802_1x_get_num_phase2_altsubject_matches@Base 0.9.0
+ nm_setting_802_1x_get_pac_file@Base 0.9.4.0
  nm_setting_802_1x_get_password@Base 0.7.0
  nm_setting_802_1x_get_password_flags@Base 0.8.998
+ nm_setting_802_1x_get_password_raw@Base 0.9.4.0
+ nm_setting_802_1x_get_password_raw_flags@Base 0.9.4.0
  nm_setting_802_1x_get_phase1_fast_provisioning@Base 0.7.0
  nm_setting_802_1x_get_phase1_peaplabel@Base 0.7.0
  nm_setting_802_1x_get_phase1_peapver@Base 0.7.0
@@ -166,6 +176,18 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_bluetooth_get_connection_type@Base 0.7.999
  nm_setting_bluetooth_get_type@Base 0.7.999
  nm_setting_bluetooth_new@Base 0.7.999
+ nm_setting_bond_add_option@Base 0.9.4.0
+ nm_setting_bond_error_get_type@Base 0.9.4.0
+ nm_setting_bond_error_quark@Base 0.9.4.0
+ nm_setting_bond_get_interface_name@Base 0.9.4.0
+ nm_setting_bond_get_num_options@Base 0.9.4.0
+ nm_setting_bond_get_option@Base 0.9.4.0
+ nm_setting_bond_get_option_by_name@Base 0.9.4.0
+ nm_setting_bond_get_option_default@Base 0.9.4.0
+ nm_setting_bond_get_type@Base 0.9.4.0
+ nm_setting_bond_get_valid_options@Base 0.9.4.0
+ nm_setting_bond_new@Base 0.9.4.0
+ nm_setting_bond_remove_option@Base 0.9.4.0
  nm_setting_cdma_error_get_type@Base 0.7.0
  nm_setting_cdma_error_quark@Base 0.7.0
  nm_setting_cdma_get_number@Base 0.7.0
@@ -177,22 +199,28 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_clear_secrets@Base 0.7.0
  nm_setting_clear_secrets_with_flags@Base 0.9.1.95
  nm_setting_compare@Base 0.7.0
+ nm_setting_compare_flags_get_type@Base 0.9.4.0
  nm_setting_connection_add_permission@Base 0.8.998
  nm_setting_connection_error_get_type@Base 0.7.0
  nm_setting_connection_error_quark@Base 0.7.0
  nm_setting_connection_get_autoconnect@Base 0.7.0
  nm_setting_connection_get_connection_type@Base 0.7.0
  nm_setting_connection_get_id@Base 0.7.0
+ nm_setting_connection_get_master@Base 0.9.4.0
  nm_setting_connection_get_num_permissions@Base 0.8.998
  nm_setting_connection_get_permission@Base 0.8.998
  nm_setting_connection_get_read_only@Base 0.7.0
+ nm_setting_connection_get_slave_type@Base 0.9.4.0
  nm_setting_connection_get_timestamp@Base 0.7.0
  nm_setting_connection_get_type@Base 0.7.0
  nm_setting_connection_get_uuid@Base 0.7.0
+ nm_setting_connection_get_zone@Base 0.9.4.0
+ nm_setting_connection_is_slave_type@Base 0.9.4.0
  nm_setting_connection_new@Base 0.7.0
  nm_setting_connection_permissions_user_allowed@Base 0.8.998
  nm_setting_connection_remove_permission@Base 0.8.998
  nm_setting_diff@Base 0.8.3.998
+ nm_setting_diff_result_get_type@Base 0.9.4.0
  nm_setting_duplicate@Base 0.7.0
  nm_setting_enumerate_values@Base 0.7.0
  nm_setting_error_get_type@Base 0.7.0
@@ -200,6 +228,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_get_name@Base 0.7.0
  nm_setting_get_secret_flags@Base 0.8.998
  nm_setting_get_type@Base 0.7.0
+ nm_setting_get_virtual_iface_name@Base 0.9.4.0
  nm_setting_gsm_error_get_type@Base 0.7.0
  nm_setting_gsm_error_quark@Base 0.7.0
  nm_setting_gsm_get_allowed_bands@Base 0.8.0.999
@@ -214,7 +243,17 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_gsm_get_pin_flags@Base 0.8.998
  nm_setting_gsm_get_type@Base 0.7.0
  nm_setting_gsm_get_username@Base 0.7.0
+ nm_setting_gsm_network_band_get_type@Base 0.9.4.0
+ nm_setting_gsm_network_type_get_type@Base 0.9.4.0
  nm_setting_gsm_new@Base 0.7.0
+ nm_setting_hash_flags_get_type@Base 0.9.4.0
+ nm_setting_infiniband_error_get_type@Base 0.9.4.0
+ nm_setting_infiniband_error_quark@Base 0.9.4.0
+ nm_setting_infiniband_get_mac_address@Base 0.9.4.0
+ nm_setting_infiniband_get_mtu@Base 0.9.4.0
+ nm_setting_infiniband_get_transport_mode@Base 0.9.4.0
+ nm_setting_infiniband_get_type@Base 0.9.4.0
+ nm_setting_infiniband_new@Base 0.9.4.0
  nm_setting_ip4_config_add_address@Base 0.7.0
  nm_setting_ip4_config_add_dns@Base 0.7.0
  nm_setting_ip4_config_add_dns_search@Base 0.7.0
@@ -262,6 +301,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_ip6_config_get_dns_search@Base 0.7.999
  nm_setting_ip6_config_get_ignore_auto_dns@Base 0.7.999
  nm_setting_ip6_config_get_ignore_auto_routes@Base 0.7.999
+ nm_setting_ip6_config_get_ip6_privacy@Base 0.9.4.0
  nm_setting_ip6_config_get_may_fail@Base 0.8.0.999
  nm_setting_ip6_config_get_method@Base 0.7.999
  nm_setting_ip6_config_get_never_default@Base 0.7.999
@@ -272,6 +312,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_ip6_config_get_route@Base 0.7.999
  nm_setting_ip6_config_get_type@Base 0.7.999
  nm_setting_ip6_config_new@Base 0.7.999
+ nm_setting_ip6_config_privacy_get_type@Base 0.9.4.0
  nm_setting_ip6_config_remove_address@Base 0.7.999
  nm_setting_ip6_config_remove_dns@Base 0.7.999
  nm_setting_ip6_config_remove_dns_search@Base 0.7.999
@@ -315,6 +356,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_pppoe_get_type@Base 0.7.0
  nm_setting_pppoe_get_username@Base 0.7.0
  nm_setting_pppoe_new@Base 0.7.0
+ nm_setting_secret_flags_get_type@Base 0.9.4.0
  nm_setting_serial_error_get_type@Base 0.7.0
  nm_setting_serial_error_quark@Base 0.7.0
  nm_setting_serial_get_baud@Base 0.7.0
@@ -329,6 +371,20 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_to_string@Base 0.7.0
  nm_setting_update_secrets@Base 0.7.0
  nm_setting_verify@Base 0.7.0
+ nm_setting_vlan_add_priority@Base 0.9.4.0
+ nm_setting_vlan_add_priority_str@Base 0.9.4.0
+ nm_setting_vlan_clear_priorities@Base 0.9.4.0
+ nm_setting_vlan_error_get_type@Base 0.9.4.0
+ nm_setting_vlan_error_quark@Base 0.9.4.0
+ nm_setting_vlan_get_flags@Base 0.9.4.0
+ nm_setting_vlan_get_id@Base 0.9.4.0
+ nm_setting_vlan_get_interface_name@Base 0.9.4.0
+ nm_setting_vlan_get_num_priorities@Base 0.9.4.0
+ nm_setting_vlan_get_parent@Base 0.9.4.0
+ nm_setting_vlan_get_priority@Base 0.9.4.0
+ nm_setting_vlan_get_type@Base 0.9.4.0
+ nm_setting_vlan_new@Base 0.9.4.0
+ nm_setting_vlan_remove_priority@Base 0.9.4.0
  nm_setting_vpn_add_data_item@Base 0.7.0
  nm_setting_vpn_add_secret@Base 0.7.0
  nm_setting_vpn_error_get_type@Base 0.7.0
@@ -336,6 +392,8 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_vpn_foreach_data_item@Base 0.7.0
  nm_setting_vpn_foreach_secret@Base 0.7.0
  nm_setting_vpn_get_data_item@Base 0.7.0
+ nm_setting_vpn_get_num_data_items@Base 0.9.4.0
+ nm_setting_vpn_get_num_secrets@Base 0.9.4.0
  nm_setting_vpn_get_secret@Base 0.7.0
  nm_setting_vpn_get_service_type@Base 0.7.0
  nm_setting_vpn_get_type@Base 0.7.0
@@ -422,6 +480,11 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_utils_deinit@Base 0.7.0
  nm_utils_escape_ssid@Base 0.7.0
  nm_utils_gvalue_hash_dup@Base 0.7.0
+ nm_utils_hwaddr_atoba@Base 0.9.4.0
+ nm_utils_hwaddr_aton@Base 0.9.4.0
+ nm_utils_hwaddr_len@Base 0.9.4.0
+ nm_utils_hwaddr_ntoa@Base 0.9.4.0
+ nm_utils_hwaddr_type@Base 0.9.4.0
  nm_utils_init@Base 0.7.0
  nm_utils_ip4_addresses_from_gvalue@Base 0.7.0
  nm_utils_ip4_addresses_to_gvalue@Base 0.7.0
@@ -439,6 +502,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_utils_is_empty_ssid@Base 0.7.0
  nm_utils_rsa_key_encrypt@Base 0.7.999
  nm_utils_same_ssid@Base 0.7.0
+ nm_utils_security_type_get_type@Base 0.9.4.0
  nm_utils_security_valid@Base 0.7.0
  nm_utils_slist_free@Base 0.7.0
  nm_utils_ssid_to_utf8@Base 0.7.0
@@ -448,3 +512,6 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_utils_wifi_find_next_channel@Base 0.8.2
  nm_utils_wifi_freq_to_channel@Base 0.8.2
  nm_utils_wifi_is_channel_valid@Base 0.8.2
+ nm_vlan_flags_get_type@Base 0.9.4.0
+ nm_vlan_priority_map_get_type@Base 0.9.4.0
+ nm_wep_key_type_get_type@Base 0.9.4.0

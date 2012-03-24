@@ -22,6 +22,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_active_connection_get_default6@Base 0.8.0.999
  nm_active_connection_get_default@Base 0.7.999
  nm_active_connection_get_devices@Base 0.7.999
+ nm_active_connection_get_master@Base 0.9.4.0
  nm_active_connection_get_specific_object@Base 0.7.999
  nm_active_connection_get_state@Base 0.7.999
  nm_active_connection_get_type@Base 0.7.999
@@ -42,6 +43,10 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_client_networking_get_enabled@Base 0.8.0.999
  nm_client_networking_set_enabled@Base 0.8.0.999
  nm_client_new@Base 0.7.999
+ nm_client_new_async@Base 0.9.4.0
+ nm_client_new_finish@Base 0.9.4.0
+ nm_client_permission_get_type@Base 0.9.4.0
+ nm_client_permission_result_get_type@Base 0.9.4.0
  nm_client_sleep@Base 0.7.999
  nm_client_wimax_get_enabled@Base 0.8.998
  nm_client_wimax_hardware_get_enabled@Base 0.8.998
@@ -52,13 +57,24 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_client_wwan_get_enabled@Base 0.7.999
  nm_client_wwan_hardware_get_enabled@Base 0.7.999
  nm_client_wwan_set_enabled@Base 0.7.999
+ nm_device_bond_error_get_type@Base 0.9.4.0
+ nm_device_bond_error_quark@Base 0.9.4.0
+ nm_device_bond_get_carrier@Base 0.9.4.0
+ nm_device_bond_get_hw_address@Base 0.9.4.0
+ nm_device_bond_get_type@Base 0.9.4.0
+ nm_device_bond_new@Base 0.9.4.0
+ nm_device_bt_error_get_type@Base 0.9.4.0
+ nm_device_bt_error_quark@Base 0.9.4.0
  nm_device_bt_get_capabilities@Base 0.7.999
  nm_device_bt_get_hw_address@Base 0.7.999
  nm_device_bt_get_name@Base 0.7.999
  nm_device_bt_get_type@Base 0.7.999
  nm_device_bt_new@Base 0.7.999
+ nm_device_connection_compatible@Base 0.9.4.0
  nm_device_connection_valid@Base 0.8.999
  nm_device_disconnect@Base 0.7.999
+ nm_device_ethernet_error_get_type@Base 0.9.4.0
+ nm_device_ethernet_error_quark@Base 0.9.4.0
  nm_device_ethernet_get_carrier@Base 0.7.999
  nm_device_ethernet_get_hw_address@Base 0.7.999
  nm_device_ethernet_get_permanent_hw_address@Base 0.8.2
@@ -80,13 +96,38 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_get_managed@Base 0.7.999
  nm_device_get_product@Base 0.7.999
  nm_device_get_state@Base 0.7.999
+ nm_device_get_state_reason@Base 0.9.4.0
  nm_device_get_type@Base 0.7.999
  nm_device_get_udi@Base 0.7.999
  nm_device_get_vendor@Base 0.7.999
+ nm_device_infiniband_error_get_type@Base 0.9.4.0
+ nm_device_infiniband_error_quark@Base 0.9.4.0
+ nm_device_infiniband_get_carrier@Base 0.9.4.0
+ nm_device_infiniband_get_hw_address@Base 0.9.4.0
+ nm_device_infiniband_get_type@Base 0.9.4.0
+ nm_device_infiniband_new@Base 0.9.4.0
+ nm_device_modem_error_get_type@Base 0.9.4.0
+ nm_device_modem_error_quark@Base 0.9.4.0
  nm_device_modem_get_current_capabilities@Base 0.8.998
  nm_device_modem_get_modem_capabilities@Base 0.8.998
  nm_device_modem_get_type@Base 0.8.998
  nm_device_new@Base 0.7.999
+ nm_device_olpc_mesh_error_get_type@Base 0.9.4.0
+ nm_device_olpc_mesh_error_quark@Base 0.9.4.0
+ nm_device_olpc_mesh_get_active_channel@Base 0.9.4.0
+ nm_device_olpc_mesh_get_companion@Base 0.9.4.0
+ nm_device_olpc_mesh_get_hw_address@Base 0.9.4.0
+ nm_device_olpc_mesh_get_type@Base 0.9.4.0
+ nm_device_olpc_mesh_new@Base 0.9.4.0
+ nm_device_vlan_error_get_type@Base 0.9.4.0
+ nm_device_vlan_error_quark@Base 0.9.4.0
+ nm_device_vlan_get_carrier@Base 0.9.4.0
+ nm_device_vlan_get_hw_address@Base 0.9.4.0
+ nm_device_vlan_get_type@Base 0.9.4.0
+ nm_device_vlan_get_vlan_id@Base 0.9.4.0
+ nm_device_vlan_new@Base 0.9.4.0
+ nm_device_wifi_error_get_type@Base 0.9.4.0
+ nm_device_wifi_error_quark@Base 0.9.4.0
  nm_device_wifi_get_access_point_by_path@Base 0.7.999
  nm_device_wifi_get_access_points@Base 0.7.999
  nm_device_wifi_get_active_access_point@Base 0.7.999
@@ -97,6 +138,8 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_wifi_get_permanent_hw_address@Base 0.8.2
  nm_device_wifi_get_type@Base 0.7.999
  nm_device_wifi_new@Base 0.7.999
+ nm_device_wimax_error_get_type@Base 0.9.4.0
+ nm_device_wimax_error_quark@Base 0.9.4.0
  nm_device_wimax_get_active_nsp@Base 0.8.998
  nm_device_wimax_get_bsid@Base 0.8.998
  nm_device_wimax_get_center_frequency@Base 0.8.998
@@ -149,11 +192,15 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_remote_settings_get_type@Base 0.7.999
  nm_remote_settings_list_connections@Base 0.8.998
  nm_remote_settings_new@Base 0.7.999
+ nm_remote_settings_new_async@Base 0.9.4.0
+ nm_remote_settings_new_finish@Base 0.9.4.0
  nm_remote_settings_save_hostname@Base 0.8.998
  nm_secret_agent_delete_secrets@Base 0.8.998
  nm_secret_agent_error_get_type@Base 0.8.998
  nm_secret_agent_error_quark@Base 0.8.998
+ nm_secret_agent_get_registered@Base 0.9.4.0
  nm_secret_agent_get_secrets@Base 0.8.998
+ nm_secret_agent_get_secrets_flags_get_type@Base 0.9.4.0
  nm_secret_agent_get_type@Base 0.8.998
  nm_secret_agent_register@Base 0.8.998
  nm_secret_agent_save_secrets@Base 0.8.998
@@ -171,4 +218,5 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_wimax_nsp_get_network_type@Base 0.8.998
  nm_wimax_nsp_get_signal_quality@Base 0.8.998
  nm_wimax_nsp_get_type@Base 0.8.998
+ nm_wimax_nsp_network_type_get_type@Base 0.9.4.0
  nm_wimax_nsp_new@Base 0.8.998
