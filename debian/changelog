@@ -1,13 +1,17 @@
 network-manager (0.9.4.0-1) UNRELEASED; urgency=low
 
   * New upstream release.
+    - IP configuration is now non-blocking; waiting for IPv6 RA no longer
+      blocks the device from activating if IPv4 is ready and vice versa.
+      (Closes: #653076)
+    - Set the correct default route for IPv6. (Closes: #657109)
   * debian/patches/04-ifupdown-support-dns-search-entries.patch: Removed,
     merged upstream.
   * debian/patches/10-format-security.patch: Fix format string vulnerability
     by using g_set_error_literal().
   * Refresh patches.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 13:17:55 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 13:21:42 +0100
 
 network-manager (0.9.2.0-2) unstable; urgency=low
 
