@@ -18,18 +18,6 @@ set -e
 # If prerm fails during replacement due to conflict:
 #	<postinst> abort-remove in-favour <new-package> <version>
 
-# Move a conffile without triggering a dpkg question
-mv_conffile() {
-    local OLDCONFFILE="$1"
-    local NEWCONFFILE="$2"
-
-    [ -e "$OLDCONFFILE" ] || return 0
-
-    echo "Preserving user changes to $NEWCONFFILE ..."
-    mv -f "$NEWCONFFILE" "$NEWCONFFILE".dpkg-new
-    mv -f "$OLDCONFFILE" "$NEWCONFFILE"
-}
-
 case "$1" in
     configure)
 
@@ -52,10 +40,6 @@ case "$1" in
         # Kill nm-system-settings service as in 0.8 it is no longer a separate process
         if dpkg --compare-versions "$2" lt "0.7.999-1"; then
             kill `pidof /usr/sbin/nm-system-settings` 2>/dev/null || true
-        fi
-
-        if dpkg --compare-versions "$2" lt "0.8.1-2"; then
-            mv_conffile "/etc/NetworkManager/nm-system-settings.conf" "/etc/NetworkManager/NetworkManager.conf"
         fi
 
         if [ -z "$2" ] || dpkg --compare-versions "$2" lt-nl "0.8.1-4"; then

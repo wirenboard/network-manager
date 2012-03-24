@@ -17,43 +17,6 @@ set -e
 # If postrm fails during upgrade or fails on failed upgrade:
 #	<old-preinst> abort-upgrade <new-version>
 
-
-# Remove a no-longer used conffile
-rm_conffile()
-{
-    local PKGNAME="$1"
-    local CONFFILE="$2"
-
-    [ -e "$CONFFILE" ] || return 0
-
-    local md5sum="`md5sum \"$CONFFILE\" | sed -e \"s/ .*//\"`"
-    local old_md5sum="`dpkg-query -W -f='${Conffiles}' $PKGNAME | \
-            sed -n -e \"\\\\' $CONFFILE'{s/ obsolete$//;s/.* //p}\"`"
-    if [ "$md5sum" != "$old_md5sum" ]; then
-        echo "Obsolete conffile $CONFFILE has been modified by you."
-        echo "Saving as $CONFFILE.dpkg-bak ..."
-        mv -f "$CONFFILE" "$CONFFILE".dpkg-bak
-    else
-        echo "Removing obsolete conffile $CONFFILE ..."
-        rm -f "$CONFFILE"
-    fi
-}
-
-# Prepare to move a conffile without triggering a dpkg question
-prep_mv_conffile() {
-    local PKGNAME="$1"
-    local CONFFILE="$2"
-
-    [ -e "$CONFFILE" ] || return 0
-
-    local md5sum="$(md5sum $CONFFILE | sed -e 's/ .*//')"
-    local old_md5sum="$(dpkg-query -W -f='${Conffiles}' $PKGNAME | \
-            sed -n -e "\' $CONFFILE ' { s/ obsolete$//; s/.* //; p }")"
-    if [ "$md5sum" = "$old_md5sum" ]; then
-        rm -f "$CONFFILE"
-    fi
-}
-
 case "$1" in
     install|upgrade)
 	# Upgrade from previous versions
@@ -61,22 +24,14 @@ case "$1" in
 	    if [ -x "/etc/init.d/network-manager-dispatcher" ]; then
 	        invoke-rc.d network-manager-dispatcher stop
 	    fi
-	    rm_conffile network-manager /etc/init.d/network-manager-dispatcher
 	    update-rc.d network-manager-dispatcher remove >/dev/null
 	fi
 	if dpkg --compare-versions "$2" lt "0.7.0.100-1"; then
-	    rm_conffile network-manager /etc/udev/rules.d/77-nm-probe-modem-capabilities.rules
 	    # Move old pid file to /var/run, so /var/run/NetworkManager can be removed
 	    # cleanly on upgrades and the daemon can be stopped correctly in postinst
 	    if [ -f /var/run/NetworkManager/NetworkManager.pid ]; then
 	        mv /var/run/NetworkManager/NetworkManager.pid /var/run/
 	    fi
-	fi
-	if dpkg --compare-versions "$2" lt "0.7.999-1"; then
-	    rm_conffile network-manager /etc/dbus-1/system.d/nm-system-settings.conf
-	fi
-	if dpkg --compare-versions "$2" lt "0.8.1-2"; then
-	    prep_mv_conffile network-manager /etc/NetworkManager/nm-system-settings.conf
 	fi
 	;;
 

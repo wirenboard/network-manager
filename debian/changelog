@@ -22,8 +22,9 @@ network-manager (0.9.4.0-1) UNRELEASED; urgency=low
     and use the dh_install maintscript facility to move the conffile on
     upgrades. This requires a newer debhelper, so bump the Build-Depends
     accordingly.
+  * Use dh_install maintscript to handle the other conffiles as well.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 14:10:28 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 14:26:08 +0100
 
 network-manager (0.9.2.0-2) unstable; urgency=low
 
