@@ -31,14 +31,7 @@
 #include "nm-wifi-ap.h"
 #include "nm-activation-request.h"
 #include "nm-logging.h"
-#include "nm-device-interface.h"
 #include "nm-device.h"
-#include "nm-device-wifi.h"
-#include "nm-device-ethernet.h"
-#include "nm-device-modem.h"
-#if WITH_WIMAX
-#include "nm-device-wimax.h"
-#endif
 #include "nm-dbus-manager.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-connection.h"
@@ -47,6 +40,7 @@
 #include "nm-vpn-manager.h"
 #include "nm-policy-hostname.h"
 #include "nm-manager-auth.h"
+#include "nm-firewall-manager.h"
 
 struct NMPolicy {
 	NMManager *manager;
@@ -59,6 +53,9 @@ struct NMPolicy {
 	NMVPNManager *vpn_manager;
 	gulong vpn_activated_id;
 	gulong vpn_deactivated_id;
+
+	NMFirewallManager *fw_manager;
+	gulong fw_started_id;
 
 	NMSettings *settings;
 
@@ -80,6 +77,9 @@ struct NMPolicy {
 #define RESET_RETRIES_TIMER 300
 #define FAILURE_REASON_TAG "failure-reason"
 
+static void schedule_activate_all (NMPolicy *policy);
+
+
 static NMDevice *
 get_best_ip4_device (NMManager *manager, NMActRequest **out_req)
 {
@@ -95,6 +95,7 @@ get_best_ip4_device (NMManager *manager, NMActRequest **out_req)
 	devices = nm_manager_get_devices (manager);
 	for (iter = devices; iter; iter = g_slist_next (iter)) {
 		NMDevice *dev = NM_DEVICE (iter->data);
+		NMDeviceType devtype = nm_device_get_device_type (dev);
 		NMActRequest *req;
 		NMConnection *connection;
 		NMIP4Config *ip4_config;
@@ -117,7 +118,7 @@ get_best_ip4_device (NMManager *manager, NMActRequest **out_req)
 		g_assert (connection);
 
 		/* Never set the default route through an IPv4LL-addressed device */
-		s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
+		s_ip4 = nm_connection_get_setting_ip4_config (connection);
 		if (s_ip4)
 			method = nm_setting_ip4_config_get_method (s_ip4);
 
@@ -135,7 +136,7 @@ get_best_ip4_device (NMManager *manager, NMActRequest **out_req)
 			}
 		}
 
-		if (!can_default && !NM_IS_DEVICE_MODEM (dev))
+		if (!can_default && (devtype != NM_DEVICE_TYPE_MODEM))
 			continue;
 
 		/* 'never-default' devices can't ever be the default */
@@ -169,6 +170,7 @@ get_best_ip6_device (NMManager *manager, NMActRequest **out_req)
 	devices = nm_manager_get_devices (manager);
 	for (iter = devices; iter; iter = g_slist_next (iter)) {
 		NMDevice *dev = NM_DEVICE (iter->data);
+		NMDeviceType devtype = nm_device_get_device_type (dev);
 		NMActRequest *req;
 		NMConnection *connection;
 		NMIP6Config *ip6_config;
@@ -191,7 +193,7 @@ get_best_ip6_device (NMManager *manager, NMActRequest **out_req)
 		g_assert (connection);
 
 		/* Never set the default route through an IPv4LL-addressed device */
-		s_ip6 = (NMSettingIP6Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP6_CONFIG);
+		s_ip6 = nm_connection_get_setting_ip6_config (connection);
 		if (s_ip6)
 			method = nm_setting_ip6_config_get_method (s_ip6);
 
@@ -209,7 +211,7 @@ get_best_ip6_device (NMManager *manager, NMActRequest **out_req)
 			}
 		}
 
-		if (!can_default && !NM_IS_DEVICE_MODEM (dev))
+		if (!can_default && (devtype != NM_DEVICE_TYPE_MODEM))
 			continue;
 
 		/* 'never-default' devices can't ever be the default */
@@ -471,7 +473,7 @@ update_ip4_routing_and_dns (NMPolicy *policy, gboolean force_update)
 			can_default = FALSE;
 
 		/* Check the user's preference from the NMConnection */
-		s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (vpn_connection, NM_TYPE_SETTING_IP4_CONFIG);
+		s_ip4 = nm_connection_get_setting_ip4_config (vpn_connection);
 		if (s_ip4 && nm_setting_ip4_config_get_never_default (s_ip4))
 			can_default = FALSE;
 
@@ -533,7 +535,7 @@ update_ip4_routing_and_dns (NMPolicy *policy, gboolean force_update)
 
 		req = nm_device_get_act_request (dev);
 		if (req && (req != best_req))
-			nm_act_request_set_default (req, FALSE);
+			nm_active_connection_set_default (NM_ACTIVE_CONNECTION (req), FALSE);
 	}
 
 	dns_mgr = nm_dns_manager_get (NULL);
@@ -544,10 +546,10 @@ update_ip4_routing_and_dns (NMPolicy *policy, gboolean force_update)
 	 * if the connection is shared dnsmasq picks up the right stuff.
 	 */
 	if (best_req)
-		nm_act_request_set_default (best_req, TRUE);
+		nm_active_connection_set_default (NM_ACTIVE_CONNECTION (best_req), TRUE);
 
 	if (connection)
-		s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+		s_con = nm_connection_get_setting_connection (connection);
 
 	connection_id = s_con ? nm_setting_connection_get_id (s_con) : NULL;
 	if (connection_id) {
@@ -598,7 +600,7 @@ update_ip6_routing_and_dns (NMPolicy *policy, gboolean force_update)
 		/* If it's marked 'never-default', don't make it default */
 		vpn_connection = nm_vpn_connection_get_connection (candidate);
 		g_assert (vpn_connection);
-		s_ip6 = (NMSettingIP6Config *) nm_connection_get_setting (vpn_connection, NM_TYPE_SETTING_IP6_CONFIG);
+		s_ip6 = nm_connection_get_setting_ip6_config (vpn_connection);
 		if (s_ip6 && nm_setting_ip6_config_get_never_default (s_ip6))
 			can_default = FALSE;
 
@@ -660,7 +662,7 @@ update_ip6_routing_and_dns (NMPolicy *policy, gboolean force_update)
 
 		req = nm_device_get_act_request (dev);
 		if (req && (req != best_req))
-			nm_act_request_set_default6 (req, FALSE);
+			nm_active_connection_set_default6 (NM_ACTIVE_CONNECTION (req), FALSE);
 	}
 
 	dns_mgr = nm_dns_manager_get (NULL);
@@ -671,10 +673,10 @@ update_ip6_routing_and_dns (NMPolicy *policy, gboolean force_update)
 	 * if the connection is shared dnsmasq picks up the right stuff.
 	 */
 	if (best_req)
-		nm_act_request_set_default6 (best_req, TRUE);
+		nm_active_connection_set_default6 (NM_ACTIVE_CONNECTION (best_req), TRUE);
 
 	if (connection)
-		s_con = (NMSettingConnection *) nm_connection_get_setting (connection, NM_TYPE_SETTING_CONNECTION);
+		s_con = nm_connection_get_setting_connection (connection);
 
 	connection_id = s_con ? nm_setting_connection_get_id (s_con) : NULL;
 	if (connection_id) {
@@ -792,7 +794,9 @@ auto_activate_device (gpointer user_data)
 		                                     NULL,
 		                                     &error)) {
 			nm_log_info (LOGD_DEVICE, "Connection '%s' auto-activation failed: (%d) %s",
-			             nm_connection_get_id (best_connection), error->code, error->message);
+			             nm_connection_get_id (best_connection),
+			             error ? error->code : -1,
+			             error ? error->message : "(none)");
 			g_error_free (error);
 		}
 	}
@@ -870,7 +874,7 @@ reset_retries_all (NMSettings *settings, NMDevice *device)
 
 	connections = nm_settings_get_connections (settings);
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
-		if (!device || nm_device_interface_check_connection_compatible (NM_DEVICE_INTERFACE (device), iter->data, &error))
+		if (!device || nm_device_check_connection_compatible (device, iter->data, &error))
 			set_connection_auto_retries (NM_CONNECTION (iter->data), RETRIES_DEFAULT);
 		g_clear_error (&error);
 	}
@@ -917,11 +921,11 @@ schedule_activate_check (NMPolicy *policy, NMDevice *device, guint delay_seconds
 	if (nm_manager_get_state (policy->manager) == NM_STATE_ASLEEP)
 		return;
 
-	state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (device));
+	state = nm_device_get_state (device);
 	if (state < NM_DEVICE_STATE_DISCONNECTED)
 		return;
 
-	if (!nm_device_interface_get_enabled (NM_DEVICE_INTERFACE (device)))
+	if (!nm_device_get_enabled (device))
 		return;
 
 	if (!nm_device_autoconnect_allowed (device))
@@ -940,6 +944,7 @@ reset_connections_retries (gpointer user_data)
 	NMPolicy *policy = (NMPolicy *) user_data;
 	GSList *connections, *iter;
 	time_t con_stamp, min_stamp, now;
+	gboolean changed = FALSE;
 
 	policy->reset_retries_id = 0;
 
@@ -952,6 +957,7 @@ reset_connections_retries (gpointer user_data)
 		if (con_stamp + RESET_RETRIES_TIMER <= now) {
 			set_connection_auto_retries (NM_CONNECTION (iter->data), RETRIES_DEFAULT);
 			g_object_set_data (G_OBJECT (iter->data), RESET_RETRIES_TIMESTAMP_TAG, GSIZE_TO_POINTER (0));
+			changed = TRUE;
 			continue;
 		}
 		if (con_stamp < min_stamp)
@@ -962,19 +968,53 @@ reset_connections_retries (gpointer user_data)
 	/* Schedule the handler again if there are some stamps left */
 	if (min_stamp != now)
 		policy->reset_retries_id = g_timeout_add_seconds (RESET_RETRIES_TIMER - (now - min_stamp), reset_connections_retries, policy);
+
+	/* If anything changed, try to activate the newly re-enabled connections */
+	if (changed)
+		schedule_activate_all (policy);
+
 	return FALSE;
 }
 
 static NMConnection *
 get_device_connection (NMDevice *device)
 {
-	NMActRequest *req;
+	NMActRequest *req = NULL;
 
 	req = nm_device_get_act_request (device);
-	if (!req)
-		return NULL;
+	return req ? nm_act_request_get_connection (req) : NULL;
+}
 
-	return nm_act_request_get_connection (req);
+static void schedule_activate_all (NMPolicy *policy);
+
+static void
+activate_slave_connections (NMPolicy *policy, NMConnection *connection,
+                            NMDevice *device)
+{
+	const char *master_device;
+	GSList *connections, *iter;
+
+	master_device = nm_device_get_iface (device);
+	g_assert (master_device);
+
+	connections = nm_settings_get_connections (policy->settings);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMConnection *slave;
+		NMSettingConnection *s_slave_con;
+
+		slave = NM_CONNECTION (iter->data);
+		g_assert (slave);
+
+		s_slave_con = nm_connection_get_setting_connection (slave);
+		g_assert (s_slave_con);
+
+		if (!g_strcmp0 (nm_setting_connection_get_master (s_slave_con), master_device))
+			set_connection_auto_retries (slave, RETRIES_DEFAULT);
+	}
+
+	g_slist_free (connections);
+
+	schedule_activate_all (policy);
 }
 
 static void
@@ -995,7 +1035,9 @@ device_state_changed (NMDevice *device,
 		/* Mark the connection invalid if it failed during activation so that
 		 * it doesn't get automatically chosen over and over and over again.
 		 */
-		if (connection && IS_ACTIVATING_STATE (old_state)) {
+		if (   connection
+		    && old_state >= NM_DEVICE_STATE_PREPARE
+		    && old_state <= NM_DEVICE_STATE_ACTIVATED) {
 			guint32 tries = get_connection_auto_retries (connection);
 
 			if (reason == NM_DEVICE_STATE_REASON_NO_SECRETS) {
@@ -1064,6 +1106,13 @@ device_state_changed (NMDevice *device,
 		update_routing_and_dns (policy, FALSE);
 		schedule_activate_check (policy, device, 0);
 		break;
+
+	case NM_DEVICE_STATE_PREPARE:
+		/* Reset auto-connect retries of all slaves and schedule them for
+		 * activation. */
+		activate_slave_connections (policy, connection, device);
+		break;
+
 	default:
 		break;
 	}
@@ -1078,23 +1127,21 @@ device_ip_config_changed (NMDevice *device,
 }
 
 static void
-wireless_networks_changed (NMDeviceWifi *device, NMAccessPoint *ap, gpointer user_data)
+wireless_networks_changed (NMDevice *device, GObject *ap, gpointer user_data)
 {
-	schedule_activate_check ((NMPolicy *) user_data, NM_DEVICE (device), 0);
+	schedule_activate_check ((NMPolicy *) user_data, device, 0);
 }
 
-#if WITH_WIMAX
 static void
-nsps_changed (NMDeviceWimax *device, NMWimaxNsp *nsp, gpointer user_data)
+nsps_changed (NMDevice *device, GObject *nsp, gpointer user_data)
 {
-	schedule_activate_check ((NMPolicy *) user_data, NM_DEVICE (device), 0);
+	schedule_activate_check ((NMPolicy *) user_data, device, 0);
 }
-#endif
 
 static void
-modem_enabled_changed (NMDeviceModem *device, gpointer user_data)
+modem_enabled_changed (NMDevice *device, gpointer user_data)
 {
-	schedule_activate_check ((NMPolicy *) (user_data), NM_DEVICE (device), 0);
+	schedule_activate_check ((NMPolicy *) (user_data), device, 0);
 }
 
 typedef struct {
@@ -1120,19 +1167,23 @@ device_added (NMManager *manager, NMDevice *device, gpointer user_data)
 	NMPolicy *policy = (NMPolicy *) user_data;
 
 	_connect_device_signal (policy, device, "state-changed", device_state_changed);
-	_connect_device_signal (policy, device, "notify::" NM_DEVICE_INTERFACE_IP4_CONFIG, device_ip_config_changed);
-	_connect_device_signal (policy, device, "notify::" NM_DEVICE_INTERFACE_IP6_CONFIG, device_ip_config_changed);
+	_connect_device_signal (policy, device, "notify::" NM_DEVICE_IP4_CONFIG, device_ip_config_changed);
+	_connect_device_signal (policy, device, "notify::" NM_DEVICE_IP6_CONFIG, device_ip_config_changed);
 
-	if (NM_IS_DEVICE_WIFI (device)) {
+	switch (nm_device_get_device_type (device)) {
+	case NM_DEVICE_TYPE_WIFI:
 		_connect_device_signal (policy, device, "access-point-added", wireless_networks_changed);
 		_connect_device_signal (policy, device, "access-point-removed", wireless_networks_changed);
-#if WITH_WIMAX
-	} else if (NM_IS_DEVICE_WIMAX (device)) {
+		break;
+	case NM_DEVICE_TYPE_WIMAX:
 		_connect_device_signal (policy, device, "nsp-added", nsps_changed);
 		_connect_device_signal (policy, device, "nsp-removed", nsps_changed);
-#endif
-	} else if (NM_IS_DEVICE_MODEM (device)) {
-		_connect_device_signal (policy, device, NM_DEVICE_MODEM_ENABLE_CHANGED, modem_enabled_changed);
+		break;
+	case NM_DEVICE_TYPE_MODEM:
+		_connect_device_signal (policy, device, "enable-changed", modem_enabled_changed);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -1200,14 +1251,80 @@ connections_loaded (NMSettings *settings, gpointer user_data)
 }
 
 static void
+add_or_change_zone_cb (GError *error, gpointer user_data)
+{
+	NMDevice *device = NM_DEVICE (user_data);
+
+	if (error) {
+		/* FIXME: what do we do here? */
+	}
+
+	g_object_unref (device);
+}
+
+static void
+firewall_update_zone (NMPolicy *policy, NMConnection *connection)
+{
+	NMSettingConnection *s_con = nm_connection_get_setting_connection (connection);
+	GSList *iter, *devices;
+
+	devices = nm_manager_get_devices (policy->manager);
+	/* find dev with passed connection and change zone its interface belongs to */
+	for (iter = devices; iter; iter = g_slist_next (iter)) {
+		NMDevice *dev = NM_DEVICE (iter->data);
+
+		if (   (get_device_connection (dev) == connection)
+		    && (nm_device_get_state (dev) == NM_DEVICE_STATE_ACTIVATED)) {
+			nm_firewall_manager_add_or_change_zone (policy->fw_manager,
+			                                        nm_device_get_ip_iface (dev),
+			                                        nm_setting_connection_get_zone (s_con),
+			                                        FALSE, /* change zone */
+			                                        add_or_change_zone_cb,
+			                                        g_object_ref (dev));
+		}
+	}
+}
+
+static void
+firewall_started (NMFirewallManager *manager,
+                  gpointer user_data)
+{
+	NMPolicy *policy = (NMPolicy *) user_data;
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	GSList *iter, *devices;
+
+	devices = nm_manager_get_devices (policy->manager);
+	/* add interface of each device to correct zone */
+	for (iter = devices; iter; iter = g_slist_next (iter)) {
+		NMDevice *dev = NM_DEVICE (iter->data);
+
+		connection = get_device_connection (dev);
+		s_con = nm_connection_get_setting_connection (connection);
+		if (nm_device_get_state (dev) == NM_DEVICE_STATE_ACTIVATED) {
+			nm_firewall_manager_add_or_change_zone (policy->fw_manager,
+			                                        nm_device_get_ip_iface (dev),
+			                                        nm_setting_connection_get_zone (s_con),
+			                                        TRUE, /* add zone */
+			                                        add_or_change_zone_cb,
+			                                        g_object_ref (dev));
+		}
+	}
+}
+
+static void
 connection_updated (NMSettings *settings,
                     NMConnection *connection,
                     gpointer user_data)
 {
+	NMPolicy *policy = (NMPolicy *) user_data;
+
+	firewall_update_zone (policy, connection);
+
 	/* Reset auto retries back to default since connection was updated */
 	set_connection_auto_retries (connection, RETRIES_DEFAULT);
 
-	schedule_activate_all ((NMPolicy *) user_data);
+	schedule_activate_all (policy);
 }
 
 static void
@@ -1325,6 +1442,11 @@ nm_policy_new (NMManager *manager,
 	                       G_CALLBACK (vpn_connection_deactivated), policy);
 	policy->vpn_deactivated_id = id;
 
+	policy->fw_manager = nm_firewall_manager_get();
+	id = g_signal_connect (policy->fw_manager, "started",
+	                       G_CALLBACK (firewall_started), policy);
+	policy->fw_started_id = id;
+
 	_connect_manager_signal (policy, "state-changed", global_state_changed);
 	_connect_manager_signal (policy, "notify::" NM_MANAGER_HOSTNAME, hostname_changed);
 	_connect_manager_signal (policy, "notify::" NM_MANAGER_SLEEPING, sleeping_changed);
@@ -1368,6 +1490,9 @@ nm_policy_destroy (NMPolicy *policy)
 	g_signal_handler_disconnect (policy->vpn_manager, policy->vpn_activated_id);
 	g_signal_handler_disconnect (policy->vpn_manager, policy->vpn_deactivated_id);
 	g_object_unref (policy->vpn_manager);
+
+	g_signal_handler_disconnect (policy->fw_manager, policy->fw_started_id);
+	g_object_unref (policy->fw_manager);
 
 	for (iter = policy->manager_ids; iter; iter = g_slist_next (iter))
 		g_signal_handler_disconnect (policy->manager, GPOINTER_TO_UINT (iter->data));

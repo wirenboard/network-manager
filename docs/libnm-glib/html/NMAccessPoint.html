@@ -27,6 +27,8 @@
                    | 
                   <a href="#NMAccessPoint.object-hierarchy" class="shortcut">Object Hierarchy</a>
                    | 
+                  <a href="#NMAccessPoint.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
                   <a href="#NMAccessPoint.properties" class="shortcut">Properties</a>
 </td></tr>
 </table>
@@ -78,6 +80,12 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.htm
    +----<a class="link" href="NMObject.html" title="NMObject">NMObject</a>
          +----NMAccessPoint
 </pre>
+</div>
+<div class="refsect1">
+<a name="NMAccessPoint.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+NMAccessPoint implements
+ <a href="http://library.gnome.org/devel/gio/unstable/GInitable.html">GInitable</a> and  <a href="http://library.gnome.org/devel/gio/unstable/GAsyncInitable.html">GAsyncInitable</a>.</p>
 </div>
 <div class="refsect1">
 <a name="NMAccessPoint.properties"></a><h2>Properties</h2>
@@ -211,7 +219,31 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.htm
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_access_point_connection_valid    (<em class="parameter"><code><a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> *ap</code></em>,
                                                          <em class="parameter"><code><a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/09/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
+Validates a given connection against a given WiFi access point to ensure that
+the connection may be activated with that AP.  The connection must match the
+<em class="parameter"><code>ap</code></em>'s SSID, (if given) BSSID, and other attributes like security settings,
+channel, band, etc.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>ap</code></em> :</span></p></td>
+<td>an <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> to validate <em class="parameter"><code>connection</code></em> against</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>an <a href="http://projects.gnome.org/NetworkManager/developers/libnm-util/09/NMConnection.html"><span class="type">NMConnection</span></a> to validate against <em class="parameter"><code>ap</code></em>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the connection may be activated with this WiFi AP,
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it cannot be.</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
@@ -223,6 +255,12 @@ Filters a given list of connections for a given <a class="link" href="NMAccessPo
 return connections which may be activated with the access point.  Any
 returned connections will match the <em class="parameter"><code>ap</code></em>'s SSID and (if given) BSSID and
 other attributes like security settings, channel, etc.
+</p>
+<p>
+To obtain the list of connections that are compatible with this access point,
+use <a class="link" href="NMRemoteSettings.html#nm-remote-settings-list-connections" title="nm_remote_settings_list_connections ()"><code class="function">nm_remote_settings_list_connections()</code></a> and then filter the returned list
+for a given <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> using <a class="link" href="NMDevice.html#nm-device-filter-connections" title="nm_device_filter_connections ()"><code class="function">nm_device_filter_connections()</code></a> and finally
+filter that list with this function.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">

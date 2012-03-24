@@ -23,9 +23,8 @@
 #define NM_DEVICE_ETHERNET_H
 
 #include <glib-object.h>
-#include <net/ethernet.h>
 
-#include "nm-device.h"
+#include "nm-device-wired.h"
 
 G_BEGIN_DECLS
 
@@ -36,17 +35,24 @@ G_BEGIN_DECLS
 #define NM_IS_DEVICE_ETHERNET_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass),  NM_TYPE_DEVICE_ETHERNET))
 #define NM_DEVICE_ETHERNET_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_DEVICE_ETHERNET, NMDeviceEthernetClass))
 
+typedef enum
+{
+	NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED = 0, /*< nick=ConnectionNotWired >*/
+	NM_ETHERNET_ERROR_CONNECTION_INVALID,       /*< nick=ConnectionInvalid >*/
+	NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE,  /*< nick=ConnectionIncompatible >*/
+} NMEthernetError;
+
 #define NM_DEVICE_ETHERNET_HW_ADDRESS "hw-address"
 #define NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS "perm-hw-address"
 #define NM_DEVICE_ETHERNET_SPEED "speed"
 #define NM_DEVICE_ETHERNET_CARRIER "carrier"
 
 typedef struct {
-	NMDevice parent;
+	NMDeviceWired parent;
 } NMDeviceEthernet;
 
 typedef struct {
-	NMDeviceClass parent;
+	NMDeviceWiredClass parent;
 
 	/* Signals */
 	void (*properties_changed) (NMDeviceEthernet *device, GHashTable *properties);
@@ -59,9 +65,6 @@ GType nm_device_ethernet_get_type (void);
 NMDevice *nm_device_ethernet_new (const char *udi,
                                   const char *iface,
                                   const char *driver);
-
-void nm_device_ethernet_get_address (NMDeviceEthernet *dev,
-                                     struct ether_addr *addr);
 
 G_END_DECLS
 

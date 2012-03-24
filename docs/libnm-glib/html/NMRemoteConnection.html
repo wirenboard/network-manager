@@ -27,6 +27,8 @@
                    | 
                   <a href="#NMRemoteConnection.object-hierarchy" class="shortcut">Object Hierarchy</a>
                    | 
+                  <a href="#NMRemoteConnection.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+                   | 
                   <a href="#NMRemoteConnection.properties" class="shortcut">Properties</a>
                    | 
                   <a href="#NMRemoteConnection.signals" class="shortcut">Signals</a>
@@ -80,10 +82,15 @@
 </pre>
 </div>
 <div class="refsect1">
+<a name="NMRemoteConnection.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+NMRemoteConnection implements
+ <a href="http://library.gnome.org/devel/gio/unstable/GInitable.html">GInitable</a> and  <a href="http://library.gnome.org/devel/gio/unstable/GAsyncInitable.html">GAsyncInitable</a>.</p>
+</div>
+<div class="refsect1">
 <a name="NMRemoteConnection.properties"></a><h2>Properties</h2>
 <pre class="synopsis">
   "<a class="link" href="NMRemoteConnection.html#NMRemoteConnection--bus" title='The "bus" property'>bus</a>"                      <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a>*      : Write / Construct Only
-  "<a class="link" href="NMRemoteConnection.html#NMRemoteConnection--init-result" title='The "init-result" property'>init-result</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read
 </pre>
 </div>
 <div class="refsect1">
@@ -306,14 +313,6 @@ Creates a new object representing the remote connection.
 <a name="NMRemoteConnection--bus"></a><h3>The <code class="literal">"bus"</code> property</h3>
 <pre class="programlisting">  "bus"                      <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a>*      : Write / Construct Only</pre>
 <p>DBusGConnection.</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NMRemoteConnection--init-result"></a><h3>The <code class="literal">"init-result"</code> property</h3>
-<pre class="programlisting">  "init-result"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read</pre>
-<p>Initialization result (PRIVATE).</p>
-<p>Allowed values: &lt;= 2</p>
-<p>Default value: 0</p>
 </div>
 </div>
 <div class="refsect1">

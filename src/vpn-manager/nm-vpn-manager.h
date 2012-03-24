@@ -35,14 +35,13 @@
 
 typedef enum
 {
-	NM_VPN_MANAGER_ERROR_DEVICE_NOT_ACTIVE = 0,
-	NM_VPN_MANAGER_ERROR_CONNECTION_INVALID,
-	NM_VPN_MANAGER_ERROR_SERVICE_INVALID,
-	NM_VPN_MANAGER_ERROR_SERVICE_START_FAILED,
+	NM_VPN_MANAGER_ERROR_DEVICE_NOT_ACTIVE = 0, /*< nick=BaseDeviceNotActive >*/
+	NM_VPN_MANAGER_ERROR_CONNECTION_INVALID,    /*< nick=ConnectionInvalid >*/
+	NM_VPN_MANAGER_ERROR_SERVICE_INVALID,       /*< nick=ServiceInvalid >*/
+	NM_VPN_MANAGER_ERROR_SERVICE_START_FAILED,  /*< nick=ServiceStartFailed >*/
 } NMVPNManagerError;
 
 #define NM_VPN_MANAGER_ERROR (nm_vpn_manager_error_quark ())
-#define NM_TYPE_VPN_MANAGER_ERROR (nm_vpn_manager_error_get_type ()) 
 
 GQuark nm_vpn_manager_error_quark (void);
 GType nm_vpn_manager_error_get_type (void);
@@ -66,13 +65,13 @@ GType nm_vpn_manager_get_type (void);
 
 NMVPNManager *nm_vpn_manager_get (void);
 
-NMVPNConnection *nm_vpn_manager_activate_connection (NMVPNManager *manager,
-                                                     NMConnection *connection,
-                                                     NMDevice *device,
-                                                     const char *specific_object,
-                                                     gboolean user_requested,
-                                                     gulong user_uid,
-                                                     GError **error);
+NMActiveConnection *nm_vpn_manager_activate_connection (NMVPNManager *manager,
+                                                        NMConnection *connection,
+                                                        NMDevice *device,
+                                                        const char *specific_object,
+                                                        gboolean user_requested,
+                                                        gulong user_uid,
+                                                        GError **error);
 
 gboolean nm_vpn_manager_deactivate_connection (NMVPNManager *manager,
                                                const char *path,

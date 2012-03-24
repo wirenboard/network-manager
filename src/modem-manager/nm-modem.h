@@ -40,6 +40,7 @@ G_BEGIN_DECLS
 #define NM_MODEM_DEVICE    "device"
 #define NM_MODEM_IFACE     "iface"
 #define NM_MODEM_IP_METHOD "ip-method"
+#define NM_MODEM_IP_TIMEOUT "ip-timeout"
 #define NM_MODEM_ENABLED   "enabled"
 
 #define NM_MODEM_PPP_STATS         "ppp-stats"
@@ -129,11 +130,10 @@ NMActStageReturn nm_modem_stage3_ip4_config_start (NMModem *modem,
                                                    NMDeviceClass *device_class,
                                                    NMDeviceStateReason *reason);
 
-NMActStageReturn nm_modem_stage4_get_ip4_config (NMModem *modem,
-                                                 NMDevice *device,
-                                                 NMDeviceClass *device_class,
-                                                 NMIP4Config **config,
-                                                 NMDeviceStateReason *reason);
+NMActStageReturn nm_modem_stage3_ip6_config_start (NMModem *modem,
+                                                   NMDevice *device,
+                                                   NMDeviceClass *device_class,
+                                                   NMDeviceStateReason *reason);
 
 gboolean nm_modem_get_secrets (NMModem *modem,
                                const char *setting_name,

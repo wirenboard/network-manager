@@ -9,12 +9,10 @@ NMSettingWired
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -118,6 +116,13 @@ NMSettingWired
 
 
 <!-- ##### MACRO NM_SETTING_WIRED_DUPLEX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_ERROR ##### -->
 <para>
 
 </para>

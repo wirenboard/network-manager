@@ -41,7 +41,7 @@
 </tr></table></div>
 <div class="refsynopsisdiv">
 <a name="NMSettingIP6Config.synopsis"></a><h2>Synopsis</h2>
-<a name="NMIP6Address"></a><a name="NMIP6Route"></a><a name="NMSettingIP6ConfigError"></a><pre class="synopsis">
+<a name="NMIP6Address"></a><a name="NMIP6Route"></a><a name="NMSettingIP6ConfigError"></a><a name="NMSettingIP6ConfigPrivacy"></a><pre class="synopsis">
 #include &lt;nm-setting-ip6-config.h&gt;
 
 typedef             <a class="link" href="NMSettingIP6Config.html#NMIP6Address">NMIP6Address</a>;
@@ -49,11 +49,14 @@ typedef             <a class="link" href="NMSettingIP6Config.html#NMIP6Route">NM
                     <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config-struct" title="NMSettingIP6Config">NMSettingIP6Config</a>;
                     <a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigClass" title="NMSettingIP6ConfigClass">NMSettingIP6ConfigClass</a>;
 enum                <a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigError-enum" title="enum NMSettingIP6ConfigError">NMSettingIP6ConfigError</a>;
+enum                <a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy-enum" title="enum NMSettingIP6ConfigPrivacy">NMSettingIP6ConfigPrivacy</a>;
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ADDRESSES:CAPS" title="NM_SETTING_IP6_CONFIG_ADDRESSES">NM_SETTING_IP6_CONFIG_ADDRESSES</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-DNS:CAPS" title="NM_SETTING_IP6_CONFIG_DNS">NM_SETTING_IP6_CONFIG_DNS</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-DNS-SEARCH:CAPS" title="NM_SETTING_IP6_CONFIG_DNS_SEARCH">NM_SETTING_IP6_CONFIG_DNS_SEARCH</a>
+#define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ERROR:CAPS" title="NM_SETTING_IP6_CONFIG_ERROR">NM_SETTING_IP6_CONFIG_ERROR</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-IGNORE-AUTO-DNS:CAPS" title="NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS">NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-IGNORE-AUTO-ROUTES:CAPS" title="NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES">NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES</a>
+#define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-IP6-PRIVACY:CAPS" title="NM_SETTING_IP6_CONFIG_IP6_PRIVACY">NM_SETTING_IP6_CONFIG_IP6_PRIVACY</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-MAY-FAIL:CAPS" title="NM_SETTING_IP6_CONFIG_MAY_FAIL">NM_SETTING_IP6_CONFIG_MAY_FAIL</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD:CAPS" title="NM_SETTING_IP6_CONFIG_METHOD">NM_SETTING_IP6_CONFIG_METHOD</a>
 #define             <a class="link" href="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-METHOD-AUTO:CAPS" title="NM_SETTING_IP6_CONFIG_METHOD_AUTO">NM_SETTING_IP6_CONFIG_METHOD_AUTO</a>
@@ -125,6 +128,8 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
                                                         (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingIP6Config.html#nm-setting-ip6-config-get-ignore-auto-routes" title="nm_setting_ip6_config_get_ignore_auto_routes ()">nm_setting_ip6_config_get_ignore_auto_routes</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);
+<a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy"><span class="returnvalue">NMSettingIP6ConfigPrivacy</span></a> <a class="link" href="NMSettingIP6Config.html#nm-setting-ip6-config-get-ip6-privacy" title="nm_setting_ip6_config_get_ip6_privacy ()">nm_setting_ip6_config_get_ip6_privacy</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingIP6Config.html#nm-setting-ip6-config-get-may-fail" title="nm_setting_ip6_config_get_may_fail ()">nm_setting_ip6_config_get_may_fail</a>  (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingIP6Config.html#nm-setting-ip6-config-get-method" title="nm_setting_ip6_config_get_method ()">nm_setting_ip6_config_get_method</a>    (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingIP6Config.html#nm-setting-ip6-config-get-never-default" title="nm_setting_ip6_config_get_never_default ()">nm_setting_ip6_config_get_never_default</a>
@@ -170,6 +175,10 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
   GEnum
    +----NMSettingIP6ConfigError
 </pre>
+<pre class="synopsis">
+  GEnum
+   +----NMSettingIP6ConfigPrivacy
+</pre>
 </div>
 <div class="refsect1">
 <a name="NMSettingIP6Config.properties"></a><h2>Properties</h2>
@@ -179,6 +188,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMSet
   "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--dns-search" title='The "dns-search" property'>dns-search</a>"               <span class="type">GSList_gchararray_</span>*   : Read / Write
   "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ignore-auto-dns" title='The "ignore-auto-dns" property'>ignore-auto-dns</a>"          <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write / Construct
   "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ignore-auto-routes" title='The "ignore-auto-routes" property'>ignore-auto-routes</a>"       <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write / Construct
+  "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ip6-privacy" title='The "ip6-privacy" property'>ip6-privacy</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>                  : Read / Write / Construct
   "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--may-fail" title='The "may-fail" property'>may-fail</a>"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write / Construct
   "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--method" title='The "method" property'>method</a>"                   <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write
   "<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--never-default" title='The "never-default" property'>never-default</a>"            <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write / Construct
@@ -236,10 +246,10 @@ properties related to IPv6 addressing, routing, and Domain Name Service
 <div class="refsect2">
 <a name="NMSettingIP6ConfigError-enum"></a><h3>enum NMSettingIP6ConfigError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_IP6_CONFIG_ERROR_UNKNOWN = 0,
-	NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY,
-	NM_SETTING_IP6_CONFIG_ERROR_MISSING_PROPERTY,
-	NM_SETTING_IP6_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD
+	NM_SETTING_IP6_CONFIG_ERROR_UNKNOWN = 0,           /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY,      /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_IP6_CONFIG_ERROR_MISSING_PROPERTY,      /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_IP6_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD /*&lt; nick=NotAllowedForMethod &gt;*/
 } NMSettingIP6ConfigError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -272,6 +282,48 @@ not valid with the given IPv6 method
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMSettingIP6ConfigPrivacy-enum"></a><h3>enum NMSettingIP6ConfigPrivacy</h3>
+<pre class="programlisting">typedef enum {
+	NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN = -1,
+	NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED = 0,
+	NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR = 1,
+	NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR = 2
+} NMSettingIP6ConfigPrivacy;
+</pre>
+<p>
+<a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy"><span class="type">NMSettingIP6ConfigPrivacy</span></a> values indicate if and how IPv6 Privacy
+Extensions are used (RFC4941).
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-SETTING-IP6-CONFIG-PRIVACY-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN</code></span></p></td>
+<td>unknown or no value specified
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-IP6-CONFIG-PRIVACY-DISABLED:CAPS"></a><span class="term"><code class="literal">NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED</code></span></p></td>
+<td>IPv6 Privacy Extensions are disabled
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-IP6-CONFIG-PRIVACY-PREFER-PUBLIC-ADDR:CAPS"></a><span class="term"><code class="literal">NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR</code></span></p></td>
+<td>IPv6 Privacy Extensions
+are enabled, but public addresses are preferred over temporary addresses
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-IP6-CONFIG-PRIVACY-PREFER-TEMP-ADDR:CAPS"></a><span class="term"><code class="literal">NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR</code></span></p></td>
+<td>IPv6 Privacy Extensions
+are enabled and temporary addresses are preferred over public addresses
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-ADDRESSES:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_ADDRESSES</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_ADDRESSES          "addresses"
 </pre>
@@ -296,6 +348,14 @@ not valid with the given IPv6 method
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-SETTING-IP6-CONFIG-ERROR:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_IP6_CONFIG_ERROR nm_setting_ip6_config_error_quark ()
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-IGNORE-AUTO-DNS:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS    "ignore-auto-dns"
 </pre>
@@ -306,6 +366,14 @@ not valid with the given IPv6 method
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-IGNORE-AUTO-ROUTES:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES "ignore-auto-routes"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-IP6-CONFIG-IP6-PRIVACY:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_IP6_PRIVACY</h3>
+<pre class="programlisting">#define NM_SETTING_IP6_CONFIG_IP6_PRIVACY        "ip6-privacy"
 </pre>
 <p>
 </p>
@@ -1262,6 +1330,30 @@ ignored.</td>
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-setting-ip6-config-get-ip6-privacy"></a><h3>nm_setting_ip6_config_get_ip6_privacy ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy"><span class="returnvalue">NMSettingIP6ConfigPrivacy</span></a> nm_setting_ip6_config_get_ip6_privacy
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
+<p>
+Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ip6-privacy" title='The "ip6-privacy" property'><span class="type">"ip6-privacy"</span></a>
+property.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>IPv6 Privacy Extensions configuration value (<a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy"><span class="type">NMSettingIP6ConfigPrivacy</span></a>).</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-setting-ip6-config-get-may-fail"></a><h3>nm_setting_ip6_config_get_may_fail ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_ip6_config_get_may_fail  (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <p>
@@ -1612,6 +1704,22 @@ TRUE, automatically configured routes are ignored and only routes
 specified in <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--routes" title='The "routes" property'><span class="type">"routes"</span></a>, if any, are used.
 </p>
 <p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingIP6Config--ip6-privacy"></a><h3>The <code class="literal">"ip6-privacy"</code> property</h3>
+<pre class="programlisting">  "ip6-privacy"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gint"><span class="type">gint</span></a>                  : Read / Write / Construct</pre>
+<p>
+Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941.
+If enabled, it makes the kernel generate a temporary IPv6 address
+in addition to the public one generated from MAC address via
+modified EUI-64.  This enhances privacy, but could cause problems
+in some applications, on the other hand.  The permitted values
+are: 0: disabled, 1: enabled (prefer public address),
+2: enabled (prefer temporary addresses).
+</p>
+<p>Allowed values: [G_MAXULONG,2]</p>
+<p>Default value: -1</p>
 </div>
 <hr>
 <div class="refsect2">

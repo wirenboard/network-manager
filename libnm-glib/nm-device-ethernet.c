@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2012 Red Hat, Inc.
  */
 
 #include <config.h>
@@ -33,8 +33,6 @@
 #include "nm-device-private.h"
 #include "nm-object-private.h"
 
-#include "nm-device-ethernet-bindings.h"
-
 G_DEFINE_TYPE (NMDeviceEthernet, nm_device_ethernet, NM_TYPE_DEVICE)
 
 #define NM_DEVICE_ETHERNET_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DEVICE_ETHERNET, NMDeviceEthernetPrivate))
@@ -46,7 +44,6 @@ typedef struct {
 	char *perm_hw_address;
 	guint32 speed;
 	gboolean carrier;
-	gboolean carrier_valid;
 
 	gboolean disposed;
 } NMDeviceEthernetPrivate;
@@ -67,6 +64,23 @@ enum {
 #define DBUS_PROP_CARRIER "Carrier"
 
 /**
+ * nm_device_ethernet_error_quark:
+ *
+ * Registers an error quark for #NMDeviceEthernet if necessary.
+ *
+ * Returns: the error quark used for #NMDeviceEthernet errors.
+ **/
+GQuark
+nm_device_ethernet_error_quark (void)
+{
+	static GQuark quark = 0;
+
+	if (G_UNLIKELY (quark == 0))
+		quark = g_quark_from_static_string ("nm-device-ethernet-error-quark");
+	return quark;
+}
+
+/**
  * nm_device_ethernet_new:
  * @connection: the #DBusGConnection
  * @path: the DBus object path of the device
@@ -78,13 +92,17 @@ enum {
 GObject *
 nm_device_ethernet_new (DBusGConnection *connection, const char *path)
 {
+	GObject *device;
+
 	g_return_val_if_fail (connection != NULL, NULL);
 	g_return_val_if_fail (path != NULL, NULL);
 
-	return g_object_new (NM_TYPE_DEVICE_ETHERNET,
-	                     NM_OBJECT_DBUS_CONNECTION, connection,
-	                     NM_OBJECT_DBUS_PATH, path,
-	                     NULL);
+	device = g_object_new (NM_TYPE_DEVICE_ETHERNET,
+						   NM_OBJECT_DBUS_CONNECTION, connection,
+						   NM_OBJECT_DBUS_PATH, path,
+						   NULL);
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return device;
 }
 
 /**
@@ -99,19 +117,10 @@ nm_device_ethernet_new (DBusGConnection *connection, const char *path)
 const char *
 nm_device_ethernet_get_hw_address (NMDeviceEthernet *device)
 {
-	NMDeviceEthernetPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_ETHERNET (device), NULL);
 
-	priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
-	if (!priv->hw_address) {
-		priv->hw_address = _nm_object_get_string_property (NM_OBJECT (device),
-		                                                  NM_DBUS_INTERFACE_DEVICE_WIRED,
-		                                                  DBUS_PROP_HW_ADDRESS,
-		                                                  NULL);
-	}
-
-	return priv->hw_address;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_ETHERNET_GET_PRIVATE (device)->hw_address;
 }
 
 /**
@@ -126,19 +135,10 @@ nm_device_ethernet_get_hw_address (NMDeviceEthernet *device)
 const char *
 nm_device_ethernet_get_permanent_hw_address (NMDeviceEthernet *device)
 {
-	NMDeviceEthernetPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_ETHERNET (device), NULL);
 
-	priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
-	if (!priv->perm_hw_address) {
-		priv->perm_hw_address = _nm_object_get_string_property (NM_OBJECT (device),
-		                                                        NM_DBUS_INTERFACE_DEVICE_WIRED,
-		                                                        DBUS_PROP_PERM_HW_ADDRESS,
-		                                                        NULL);
-	}
-
-	return priv->perm_hw_address;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_ETHERNET_GET_PRIVATE (device)->perm_hw_address;
 }
 
 /**
@@ -152,19 +152,10 @@ nm_device_ethernet_get_permanent_hw_address (NMDeviceEthernet *device)
 guint32
 nm_device_ethernet_get_speed (NMDeviceEthernet *device)
 {
-	NMDeviceEthernetPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_ETHERNET (device), 0);
 
-	priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
-	if (!priv->speed) {
-		priv->speed = _nm_object_get_uint_property (NM_OBJECT (device),
-		                                           NM_DBUS_INTERFACE_DEVICE_WIRED,
-		                                           DBUS_PROP_SPEED,
-		                                           NULL);
-	}
-
-	return priv->speed;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_ETHERNET_GET_PRIVATE (device)->speed;
 }
 
 /**
@@ -178,29 +169,21 @@ nm_device_ethernet_get_speed (NMDeviceEthernet *device)
 gboolean
 nm_device_ethernet_get_carrier (NMDeviceEthernet *device)
 {
-	NMDeviceEthernetPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_DEVICE_ETHERNET (device), FALSE);
 
-	priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
-	if (!priv->carrier_valid) {
-		priv->carrier = _nm_object_get_boolean_property (NM_OBJECT (device),
-		                                                NM_DBUS_INTERFACE_DEVICE_WIRED,
-		                                                DBUS_PROP_CARRIER,
-		                                                NULL);
-		priv->carrier_valid = TRUE;
-	}
-
-	return priv->carrier;
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_ETHERNET_GET_PRIVATE (device)->carrier;
 }
 
 static gboolean
-connection_valid (NMDevice *device, NMConnection *connection)
+connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
 {
 	NMSettingConnection *s_con;
 	NMSettingWired *s_wired;
 	const char *ctype;
 	gboolean is_pppoe = FALSE;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
@@ -208,13 +191,19 @@ connection_valid (NMDevice *device, NMConnection *connection)
 	ctype = nm_setting_connection_get_connection_type (s_con);
 	if (!strcmp (ctype, NM_SETTING_PPPOE_SETTING_NAME))
 		is_pppoe = TRUE;
-	else if (strcmp (ctype, NM_SETTING_WIRED_SETTING_NAME) != 0)
+	else if (strcmp (ctype, NM_SETTING_WIRED_SETTING_NAME) != 0) {
+		g_set_error (error, NM_DEVICE_ETHERNET_ERROR, NM_DEVICE_ETHERNET_ERROR_NOT_ETHERNET_CONNECTION,
+		             "The connection was not a wired or PPPoE connection.");
 		return FALSE;
+	}
 
 	s_wired = nm_connection_get_setting_wired (connection);
 	/* Wired setting optional for PPPoE */
-	if (!is_pppoe && !s_wired)
+	if (!is_pppoe && !s_wired) {
+		g_set_error (error, NM_DEVICE_ETHERNET_ERROR, NM_DEVICE_ETHERNET_ERROR_INVALID_ETHERNET_CONNECTION,
+		             "The connection was not a valid ethernet connection.");
 		return FALSE;
+	}
 
 	if (s_wired) {
 		const GByteArray *mac;
@@ -227,9 +216,17 @@ connection_valid (NMDevice *device, NMConnection *connection)
 		perm_str = nm_device_ethernet_get_permanent_hw_address (NM_DEVICE_ETHERNET (device));
 		if (perm_str) {
 			perm_mac = ether_aton (perm_str);
-			mac = nm_setting_wired_get_mac_address (s_wired);
-			if (mac && perm_mac && memcmp (mac->data, perm_mac->ether_addr_octet, ETH_ALEN))
+			if (!perm_mac) {
+				g_set_error (error, NM_DEVICE_ETHERNET_ERROR, NM_DEVICE_ETHERNET_ERROR_INVALID_DEVICE_MAC,
+				             "Invalid device MAC address.");
 				return FALSE;
+			}
+			mac = nm_setting_wired_get_mac_address (s_wired);
+			if (mac && perm_mac && memcmp (mac->data, perm_mac->ether_addr_octet, ETH_ALEN)) {
+				g_set_error (error, NM_DEVICE_ETHERNET_ERROR, NM_DEVICE_ETHERNET_ERROR_MAC_MISMATCH,
+				             "The MACs of the device and the connection didn't match.");
+				return FALSE;
+			}
 		}
 	}
 
@@ -241,43 +238,32 @@ connection_valid (NMDevice *device, NMConnection *connection)
 static void
 nm_device_ethernet_init (NMDeviceEthernet *device)
 {
-	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
-
-	priv->disposed = FALSE;
-	priv->carrier = FALSE;
-	priv->carrier_valid = FALSE;
+	_nm_device_set_device_type (NM_DEVICE (device), NM_DEVICE_TYPE_ETHERNET);
 }
 
 static void
-register_for_property_changed (NMDeviceEthernet *device)
+register_properties (NMDeviceEthernet *device)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_DEVICE_ETHERNET_HW_ADDRESS,           _nm_object_demarshal_generic, &priv->hw_address },
-		{ NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS, _nm_object_demarshal_generic, &priv->perm_hw_address },
-		{ NM_DEVICE_ETHERNET_SPEED,                _nm_object_demarshal_generic, &priv->speed },
-		{ NM_DEVICE_ETHERNET_CARRIER,              _nm_object_demarshal_generic, &priv->carrier },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_DEVICE_ETHERNET_HW_ADDRESS,           &priv->hw_address },
+		{ NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS, &priv->perm_hw_address },
+		{ NM_DEVICE_ETHERNET_SPEED,                &priv->speed },
+		{ NM_DEVICE_ETHERNET_CARRIER,              &priv->carrier },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (device),
-	                                     priv->proxy,
-	                                     property_changed_info);
+	_nm_object_register_properties (NM_OBJECT (device),
+	                                priv->proxy,
+	                                property_info);
 }
 
-static GObject*
-constructor (GType type,
-			 guint n_construct_params,
-			 GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	GObject *object;
 	NMDeviceEthernetPrivate *priv;
 
-	object = G_OBJECT_CLASS (nm_device_ethernet_parent_class)->constructor (type,
-																				  n_construct_params,
-																				  construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_device_ethernet_parent_class)->constructed (object);
 
 	priv = NM_DEVICE_ETHERNET_GET_PRIVATE (object);
 
@@ -286,9 +272,7 @@ constructor (GType type,
 	                                         nm_object_get_path (NM_OBJECT (object)),
 	                                         NM_DBUS_INTERFACE_DEVICE_WIRED);
 
-	register_for_property_changed (NM_DEVICE_ETHERNET (object));
-
-	return object;
+	register_properties (NM_DEVICE_ETHERNET (object));
 }
 
 static void
@@ -355,11 +339,11 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *eth_class)
 	g_type_class_add_private (eth_class, sizeof (NMDeviceEthernetPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 	object_class->get_property = get_property;
-	device_class->connection_valid = connection_valid;
+	device_class->connection_compatible = connection_compatible;
 
 	/* properties */
 

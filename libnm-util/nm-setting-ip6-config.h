@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2010 Red Hat, Inc.
+ * (C) Copyright 2007 - 2012 Red Hat, Inc.
  */
 
 #ifndef NM_SETTING_IP6_CONFIG_H
@@ -50,14 +50,11 @@ G_BEGIN_DECLS
  * not valid with the given IPv6 method
  */
 typedef enum {
-	NM_SETTING_IP6_CONFIG_ERROR_UNKNOWN = 0,
-	NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY,
-	NM_SETTING_IP6_CONFIG_ERROR_MISSING_PROPERTY,
-	NM_SETTING_IP6_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD
+	NM_SETTING_IP6_CONFIG_ERROR_UNKNOWN = 0,           /*< nick=UnknownError >*/
+	NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY,      /*< nick=InvalidProperty >*/
+	NM_SETTING_IP6_CONFIG_ERROR_MISSING_PROPERTY,      /*< nick=MissingProperty >*/
+	NM_SETTING_IP6_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD /*< nick=NotAllowedForMethod >*/
 } NMSettingIP6ConfigError;
-
-#define NM_TYPE_SETTING_IP6_CONFIG_ERROR (nm_setting_ip6_config_error_get_type ()) 
-GType nm_setting_ip6_config_error_get_type (void);
 
 #define NM_SETTING_IP6_CONFIG_ERROR nm_setting_ip6_config_error_quark ()
 GQuark nm_setting_ip6_config_error_quark (void);
@@ -71,6 +68,7 @@ GQuark nm_setting_ip6_config_error_quark (void);
 #define NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS    "ignore-auto-dns"
 #define NM_SETTING_IP6_CONFIG_NEVER_DEFAULT      "never-default"
 #define NM_SETTING_IP6_CONFIG_MAY_FAIL           "may-fail"
+#define NM_SETTING_IP6_CONFIG_IP6_PRIVACY        "ip6-privacy"
 
 /**
  * NM_SETTING_IP6_CONFIG_METHOD_IGNORE:
@@ -125,6 +123,25 @@ GQuark nm_setting_ip6_config_error_quark (void);
  * supported for IPv6)
  */
 #define NM_SETTING_IP6_CONFIG_METHOD_SHARED     "shared"
+
+/**
+ * NMSettingIP6ConfigPrivacy:
+ * @NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN: unknown or no value specified
+ * @NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED: IPv6 Privacy Extensions are disabled
+ * @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR: IPv6 Privacy Extensions
+ * are enabled, but public addresses are preferred over temporary addresses
+ * @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR: IPv6 Privacy Extensions
+ * are enabled and temporary addresses are preferred over public addresses
+ *
+ * #NMSettingIP6ConfigPrivacy values indicate if and how IPv6 Privacy
+ * Extensions are used (RFC4941).
+ */
+typedef enum {
+	NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN = -1,
+	NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED = 0,
+	NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR = 1,
+	NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR = 2
+} NMSettingIP6ConfigPrivacy;
 
 
 typedef struct NMIP6Address NMIP6Address;
@@ -224,6 +241,7 @@ gboolean               nm_setting_ip6_config_get_ignore_auto_routes (NMSettingIP
 gboolean               nm_setting_ip6_config_get_ignore_auto_dns    (NMSettingIP6Config *setting);
 gboolean               nm_setting_ip6_config_get_never_default      (NMSettingIP6Config *setting);
 gboolean               nm_setting_ip6_config_get_may_fail           (NMSettingIP6Config *setting);
+NMSettingIP6ConfigPrivacy nm_setting_ip6_config_get_ip6_privacy (NMSettingIP6Config *setting);
 
 G_END_DECLS
 

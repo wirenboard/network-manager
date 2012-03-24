@@ -1,0 +1,213 @@
+<!-- ##### SECTION Title ##### -->
+nm-exported-connection-bindings
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManagerSettings_Connection ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO DBUS_GLIB_CLIENT_WRAPPERS_org_freedesktop_NetworkManagerSettings_Connection_Secrets ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION dbus_g_proxy_begin_call ##### -->
+<para>
+
+</para>
+
+@Param1: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_Secrets_get_secrets ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_setting_name: 
+@IN_hints: 
+@IN_request_new: 
+@OUT_secrets: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_Secrets_get_secrets_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_setting_name: 
+@IN_hints: 
+@IN_request_new: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_Secrets_get_secrets_async_callback ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@call: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManagerSettings_Connection_Secrets_get_secrets_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_secrets: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_delete ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_delete_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_delete_async_callback ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@call: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManagerSettings_Connection_delete_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_get_settings ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_settings: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_get_settings_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_get_settings_async_callback ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@call: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManagerSettings_Connection_get_settings_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@OUT_settings: 
+@error: 
+@userdata: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_update ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_properties: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_update_async ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@IN_properties: 
+@callback: 
+@Returns: 
+
+
+<!-- ##### FUNCTION org_freedesktop_NetworkManagerSettings_Connection_update_async_callback ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@call: 
+@user_data: 
+
+
+<!-- ##### USER_FUNCTION org_freedesktop_NetworkManagerSettings_Connection_update_reply ##### -->
+<para>
+
+</para>
+
+@proxy: 
+@error: 
+@userdata: 
+
+

@@ -51,6 +51,7 @@ enum                <a class="link" href="NMSettingVPN.html#NMSettingVpnError-en
                                                          <em class="parameter"><code>const <span class="type">char</span> *value</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
 #define             <a class="link" href="NMSettingVPN.html#NM-SETTING-VPN-DATA:CAPS" title="NM_SETTING_VPN_DATA">NM_SETTING_VPN_DATA</a>
+#define             <a class="link" href="NMSettingVPN.html#NM-SETTING-VPN-ERROR:CAPS" title="NM_SETTING_VPN_ERROR">NM_SETTING_VPN_ERROR</a>
 #define             <a class="link" href="NMSettingVPN.html#NM-SETTING-VPN-SECRETS:CAPS" title="NM_SETTING_VPN_SECRETS">NM_SETTING_VPN_SECRETS</a>
 #define             <a class="link" href="NMSettingVPN.html#NM-SETTING-VPN-SERVICE-TYPE:CAPS" title="NM_SETTING_VPN_SERVICE_TYPE">NM_SETTING_VPN_SERVICE_TYPE</a>
 #define             <a class="link" href="NMSettingVPN.html#NM-SETTING-VPN-SETTING-NAME:CAPS" title="NM_SETTING_VPN_SETTING_NAME">NM_SETTING_VPN_SETTING_NAME</a>
@@ -70,6 +71,8 @@ enum                <a class="link" href="NMSettingVPN.html#NMSettingVpnError-en
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingVPN.html#nm-setting-vpn-get-data-item" title="nm_setting_vpn_get_data_item ()">nm_setting_vpn_get_data_item</a>        (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingVPN.html#nm-setting-vpn-get-num-data-items" title="nm_setting_vpn_get_num_data_items ()">nm_setting_vpn_get_num_data_items</a>   (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             <a class="link" href="NMSettingVPN.html#nm-setting-vpn-get-num-secrets" title="nm_setting_vpn_get_num_secrets ()">nm_setting_vpn_get_num_secrets</a>      (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingVPN.html#nm-setting-vpn-get-secret" title="nm_setting_vpn_get_secret ()">nm_setting_vpn_get_secret</a>           (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingVPN.html#nm-setting-vpn-get-service-type" title="nm_setting_vpn_get_service_type ()">nm_setting_vpn_get_service_type</a>     (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>);
@@ -142,9 +145,9 @@ properties.
 <div class="refsect2">
 <a name="NMSettingVpnError-enum"></a><h3>enum NMSettingVpnError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_VPN_ERROR_UNKNOWN = 0,
-	NM_SETTING_VPN_ERROR_INVALID_PROPERTY,
-	NM_SETTING_VPN_ERROR_MISSING_PROPERTY,
+	NM_SETTING_VPN_ERROR_UNKNOWN = 0,      /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_VPN_ERROR_INVALID_PROPERTY, /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_VPN_ERROR_MISSING_PROPERTY, /*&lt; nick=MissingProperty &gt;*/
 } NMSettingVpnError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -199,6 +202,14 @@ required
 <div class="refsect2">
 <a name="NM-SETTING-VPN-DATA:CAPS"></a><h3>NM_SETTING_VPN_DATA</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_DATA         "data"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-VPN-ERROR:CAPS"></a><h3>NM_SETTING_VPN_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_VPN_ERROR nm_setting_vpn_error_quark ()
 </pre>
 <p>
 </p>
@@ -407,6 +418,50 @@ by <a class="link" href="NMSettingVPN.html#nm-setting-vpn-add-data-item" title="
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-setting-vpn-get-num-data-items"></a><h3>nm_setting_vpn_get_num_data_items ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_vpn_get_num_data_items   (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>);</pre>
+<p>
+Gets number of key/value pairs of VPN configuration data.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the number of VPN plugin specific configuration data items</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-vpn-get-num-secrets"></a><h3>nm_setting_vpn_get_num_secrets ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint32"><span class="returnvalue">guint32</span></a>             nm_setting_vpn_get_num_secrets      (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>);</pre>
+<p>
+Gets number of VPN plugin specific secrets in the setting.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the number of VPN plugin specific secrets</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-setting-vpn-get-secret"></a><h3>nm_setting_vpn_get_secret ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_vpn_get_secret           (<em class="parameter"><code><a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> *setting</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
@@ -574,7 +629,14 @@ plugin.
 <div class="refsect2">
 <a name="NMSettingVPN--user-name"></a><h3>The <code class="literal">"user-name"</code> property</h3>
 <pre class="programlisting">  "user-name"                <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
-<p>If the VPN connection requires a user name for authentication, that name should be provided here.  If the connection is available to more than one user, and the VPN requires each user to supply a different name, then leave this property empty.  If this property is empty, NetworkManager will automatically supply the username of the user which requested the VPN connection.</p>
+<p>
+If the VPN connection requires a user name for authentication, that name
+should be provided here.  If the connection is available to more than
+one user, and the VPN requires each user to supply a different name, then
+leave this property empty.  If this property is empty, NetworkManager
+will automatically supply the username of the user which requested the
+VPN connection.
+</p>
 <p>Default value: NULL</p>
 </div>
 </div>

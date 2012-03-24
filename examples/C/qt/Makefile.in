@@ -35,7 +35,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = add-connection-wired$(EXEEXT) \
-	list-connections$(EXEEXT) change-ipv4-addresses$(EXEEXT)
+	list-connections$(EXEEXT) change-ipv4-addresses$(EXEEXT) \
+	monitor-nm-running$(EXEEXT)
 subdir = examples/C/qt
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -73,6 +74,10 @@ am_list_connections_OBJECTS = list-connections.$(OBJEXT)
 list_connections_OBJECTS = $(am_list_connections_OBJECTS)
 list_connections_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
+am_monitor_nm_running_OBJECTS = monitor-nm-running.$(OBJEXT)
+monitor_nm_running_OBJECTS = $(am_monitor_nm_running_OBJECTS)
+monitor_nm_running_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -100,9 +105,11 @@ AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(add_connection_wired_SOURCES) \
-	$(change_ipv4_addresses_SOURCES) $(list_connections_SOURCES)
+	$(change_ipv4_addresses_SOURCES) $(list_connections_SOURCES) \
+	$(monitor_nm_running_SOURCES)
 DIST_SOURCES = $(add_connection_wired_SOURCES) \
-	$(change_ipv4_addresses_SOURCES) $(list_connections_SOURCES)
+	$(change_ipv4_addresses_SOURCES) $(list_connections_SOURCES) \
+	$(monitor_nm_running_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -151,6 +158,8 @@ GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
+GLIB_MAKEFILE = @GLIB_MAKEFILE@
+GLIB_MKENUMS = @GLIB_MKENUMS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
@@ -205,11 +214,15 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
+LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
+LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
 LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
+LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -220,6 +233,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
@@ -259,6 +273,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS = @SYSTEMD_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -322,7 +338,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I${top_srcdir}/include
+INCLUDES = -I${top_srcdir}/include \
+	   -I${top_builddir}/include
+
 AM_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(QT_CFLAGS)
@@ -342,12 +360,23 @@ change_ipv4_addresses_LDADD = \
 	$(DBUS_LIBS) \
 	$(QT_LIBS)
 
+monitor_nm_running_SOURCES = monitor-nm-running.cpp
+monitor_nm_running_LDADD = \
+	$(DBUS_LIBS) \
+	$(QT_LIBS)
+
+BUILT_SOURCES = \
+	monitor-nm-running.moc
+
 EXTRA_DIST = \
 	add-connection-wired.cpp \
 	list-connections.cpp \
-	change-ipv4-addresses.cpp
+	change-ipv4-addresses.cpp \
+	monitor-nm-running.cpp
 
-all: all-am
+CLEANFILES = $(BUILT_SOURCES)
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
@@ -399,6 +428,9 @@ change-ipv4-addresses$(EXEEXT): $(change_ipv4_addresses_OBJECTS) $(change_ipv4_a
 list-connections$(EXEEXT): $(list_connections_OBJECTS) $(list_connections_DEPENDENCIES) 
 	@rm -f list-connections$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(list_connections_OBJECTS) $(list_connections_LDADD) $(LIBS)
+monitor-nm-running$(EXEEXT): $(monitor_nm_running_OBJECTS) $(monitor_nm_running_DEPENDENCIES) 
+	@rm -f monitor-nm-running$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(monitor_nm_running_OBJECTS) $(monitor_nm_running_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -409,6 +441,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/add-connection-wired.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/change-ipv4-addresses.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list-connections.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/monitor-nm-running.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -526,10 +559,12 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(PROGRAMS)
 installdirs:
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -546,6 +581,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -554,6 +590,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
@@ -625,7 +662,7 @@ ps-am:
 
 uninstall-am:
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-noinstPROGRAMS ctags distclean \
@@ -640,6 +677,9 @@ uninstall-am:
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	pdf pdf-am ps ps-am tags uninstall uninstall-am
 
+
+monitor-nm-running.moc: monitor-nm-running.cpp
+	$(AM_V_GEN) $(MOC) -i $< -o $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -9,12 +9,10 @@ NMDevice
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -108,6 +106,11 @@ NMDevice
 
 </para>
 
+<!-- ##### ARG NMDevice:state-reason ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMDevice:udi ##### -->
 <para>
 
@@ -125,7 +128,7 @@ NMDevice
 
 @parent: 
 @state_changed: 
-@connection_valid: 
+@connection_compatible: 
 @_reserved1: 
 @_reserved2: 
 @_reserved3: 
@@ -235,6 +238,13 @@ NMDevice
 
 
 <!-- ##### MACRO NM_DEVICE_STATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_STATE_REASON ##### -->
 <para>
 
 </para>
@@ -408,6 +418,16 @@ NMDevice
 </para>
 
 @device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_get_state_reason ##### -->
+<para>
+
+</para>
+
+@device: 
+@reason: 
 @Returns: 
 
 

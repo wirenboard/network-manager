@@ -60,27 +60,6 @@ nm_setting_error_quark (void)
 	return quark;
 }
 
-/* This should really be standard. */
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-
-GType
-nm_setting_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] = {
-			ENUM_ENTRY (NM_SETTING_ERROR_UNKNOWN, "UnknownError"),
-			ENUM_ENTRY (NM_SETTING_ERROR_PROPERTY_NOT_FOUND, "PropertyNotFound"),
-			ENUM_ENTRY (NM_SETTING_ERROR_PROPERTY_NOT_SECRET, "PropertyNotSecret"),
-			ENUM_ENTRY (NM_SETTING_ERROR_PROPERTY_TYPE_MISMATCH, "PropertyTypeMismatch"),
-			{ 0, 0, 0 }
-		};
-		etype = g_enum_register_static ("NMSettingError", values);
-	}
-	return etype;
-}
-
 G_DEFINE_ABSTRACT_TYPE (NMSetting, nm_setting, G_TYPE_OBJECT)
 
 #define NM_SETTING_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING, NMSettingPrivate))
@@ -990,6 +969,27 @@ nm_setting_to_string (NMSetting *setting)
 	g_string_append_c (string, '\n');
 
 	return g_string_free (string, FALSE);
+}
+
+/**
+ * nm_setting_get_virtual_iface_name:
+ * @setting: the #NMSetting
+ *
+ * Returns the name of the virtual kernel interface which the connection
+ * needs to use if specified in the settings.
+ *
+ * Returns: Name of the virtual interface or %NULL if the setting does not
+ * support this feature
+ **/
+const char *
+nm_setting_get_virtual_iface_name (NMSetting *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING (setting), NULL);
+
+	if (NM_SETTING_GET_CLASS (setting)->get_virtual_iface_name)
+		return NM_SETTING_GET_CLASS (setting)->get_virtual_iface_name (setting);
+
+	return NULL;
 }
 
 /*****************************************************************************/

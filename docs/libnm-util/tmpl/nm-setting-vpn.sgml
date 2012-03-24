@@ -9,12 +9,10 @@ NMSettingVPN
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -79,6 +77,13 @@ NMSettingVPN
 
 
 <!-- ##### MACRO NM_SETTING_VPN_DATA ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_VPN_ERROR ##### -->
 <para>
 
 </para>
@@ -169,6 +174,24 @@ NMSettingVPN
 
 @setting: 
 @key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vpn_get_num_data_items ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vpn_get_num_secrets ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

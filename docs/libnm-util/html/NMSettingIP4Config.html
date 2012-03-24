@@ -55,6 +55,7 @@ enum                <a class="link" href="NMSettingIP4Config.html#NMSettingIP4Co
 #define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DHCP-SEND-HOSTNAME:CAPS" title="NM_SETTING_IP4_CONFIG_DHCP_SEND_HOSTNAME">NM_SETTING_IP4_CONFIG_DHCP_SEND_HOSTNAME</a>
 #define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DNS:CAPS" title="NM_SETTING_IP4_CONFIG_DNS">NM_SETTING_IP4_CONFIG_DNS</a>
 #define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DNS-SEARCH:CAPS" title="NM_SETTING_IP4_CONFIG_DNS_SEARCH">NM_SETTING_IP4_CONFIG_DNS_SEARCH</a>
+#define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ERROR:CAPS" title="NM_SETTING_IP4_CONFIG_ERROR">NM_SETTING_IP4_CONFIG_ERROR</a>
 #define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-IGNORE-AUTO-DNS:CAPS" title="NM_SETTING_IP4_CONFIG_IGNORE_AUTO_DNS">NM_SETTING_IP4_CONFIG_IGNORE_AUTO_DNS</a>
 #define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-IGNORE-AUTO-ROUTES:CAPS" title="NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES">NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES</a>
 #define             <a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-MAY-FAIL:CAPS" title="NM_SETTING_IP4_CONFIG_MAY_FAIL">NM_SETTING_IP4_CONFIG_MAY_FAIL</a>
@@ -247,10 +248,10 @@ properties related to IPv4 addressing, routing, and Domain Name Service
 <div class="refsect2">
 <a name="NMSettingIP4ConfigError-enum"></a><h3>enum NMSettingIP4ConfigError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_IP4_CONFIG_ERROR_UNKNOWN = 0,
-	NM_SETTING_IP4_CONFIG_ERROR_INVALID_PROPERTY,
-	NM_SETTING_IP4_CONFIG_ERROR_MISSING_PROPERTY,
-	NM_SETTING_IP4_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD
+	NM_SETTING_IP4_CONFIG_ERROR_UNKNOWN = 0,           /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_IP4_CONFIG_ERROR_INVALID_PROPERTY,      /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_IP4_CONFIG_ERROR_MISSING_PROPERTY,      /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_IP4_CONFIG_ERROR_NOT_ALLOWED_FOR_METHOD /*&lt; nick=NotAllowedForMethod &gt;*/
 } NMSettingIP4ConfigError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -325,6 +326,14 @@ not valid with the given IP4 method
 <div class="refsect2">
 <a name="NM-SETTING-IP4-CONFIG-DNS-SEARCH:CAPS"></a><h3>NM_SETTING_IP4_CONFIG_DNS_SEARCH</h3>
 <pre class="programlisting">#define NM_SETTING_IP4_CONFIG_DNS_SEARCH         "dns-search"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-IP4-CONFIG-ERROR:CAPS"></a><h3>NM_SETTING_IP4_CONFIG_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_IP4_CONFIG_ERROR nm_setting_ip4_config_error_quark ()
 </pre>
 <p>
 </p>
@@ -1753,7 +1762,7 @@ example, in IPv6-only networks, setting this property to TRUE allows
 the overall network configuration to succeed if IPv4 configuration fails
 but IPv6 configuration completes successfully.
 </p>
-<p>Default value: FALSE</p>
+<p>Default value: TRUE</p>
 </div>
 <hr>
 <div class="refsect2">

@@ -2,6 +2,7 @@
 <ANCHOR id="NMClient" href="libnm-glib/NMClient.html">
 <ANCHOR id="NMClient.synopsis" href="libnm-glib/NMClient.html#NMClient.synopsis">
 <ANCHOR id="NMClient.object-hierarchy" href="libnm-glib/NMClient.html#NMClient.object-hierarchy">
+<ANCHOR id="NMClient.implemented-interfaces" href="libnm-glib/NMClient.html#NMClient.implemented-interfaces">
 <ANCHOR id="NMClient.properties" href="libnm-glib/NMClient.html#NMClient.properties">
 <ANCHOR id="NMClient.signals" href="libnm-glib/NMClient.html#NMClient.signals">
 <ANCHOR id="NMClient.description" href="libnm-glib/NMClient.html#NMClient.description">
@@ -37,6 +38,8 @@
 <ANCHOR id="nm-client-networking-get-enabled" href="libnm-glib/NMClient.html#nm-client-networking-get-enabled">
 <ANCHOR id="nm-client-networking-set-enabled" href="libnm-glib/NMClient.html#nm-client-networking-set-enabled">
 <ANCHOR id="nm-client-new" href="libnm-glib/NMClient.html#nm-client-new">
+<ANCHOR id="nm-client-new-async" href="libnm-glib/NMClient.html#nm-client-new-async">
+<ANCHOR id="nm-client-new-finish" href="libnm-glib/NMClient.html#nm-client-new-finish">
 <ANCHOR id="nm-client-sleep" href="libnm-glib/NMClient.html#nm-client-sleep">
 <ANCHOR id="nm-client-wimax-get-enabled" href="libnm-glib/NMClient.html#nm-client-wimax-get-enabled">
 <ANCHOR id="nm-client-wimax-hardware-get-enabled" href="libnm-glib/NMClient.html#nm-client-wimax-hardware-get-enabled">
@@ -66,6 +69,7 @@
 <ANCHOR id="NMActiveConnection" href="libnm-glib/NMActiveConnection.html">
 <ANCHOR id="NMActiveConnection.synopsis" href="libnm-glib/NMActiveConnection.html#NMActiveConnection.synopsis">
 <ANCHOR id="NMActiveConnection.object-hierarchy" href="libnm-glib/NMActiveConnection.html#NMActiveConnection.object-hierarchy">
+<ANCHOR id="NMActiveConnection.implemented-interfaces" href="libnm-glib/NMActiveConnection.html#NMActiveConnection.implemented-interfaces">
 <ANCHOR id="NMActiveConnection.properties" href="libnm-glib/NMActiveConnection.html#NMActiveConnection.properties">
 <ANCHOR id="NMActiveConnection.description" href="libnm-glib/NMActiveConnection.html#NMActiveConnection.description">
 <ANCHOR id="NMActiveConnection.details" href="libnm-glib/NMActiveConnection.html#NMActiveConnection.details">
@@ -75,6 +79,7 @@
 <ANCHOR id="NM-ACTIVE-CONNECTION-DEFAULT:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEFAULT:CAPS">
 <ANCHOR id="NM-ACTIVE-CONNECTION-DEFAULT6:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEFAULT6:CAPS">
 <ANCHOR id="NM-ACTIVE-CONNECTION-DEVICES:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEVICES:CAPS">
+<ANCHOR id="NM-ACTIVE-CONNECTION-MASTER:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-MASTER:CAPS">
 <ANCHOR id="NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS">
 <ANCHOR id="NM-ACTIVE-CONNECTION-STATE:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-STATE:CAPS">
 <ANCHOR id="NM-ACTIVE-CONNECTION-UUID:CAPS" href="libnm-glib/NMActiveConnection.html#NM-ACTIVE-CONNECTION-UUID:CAPS">
@@ -82,6 +87,7 @@
 <ANCHOR id="nm-active-connection-get-default" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-default">
 <ANCHOR id="nm-active-connection-get-default6" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-default6">
 <ANCHOR id="nm-active-connection-get-devices" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-devices">
+<ANCHOR id="nm-active-connection-get-master" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-master">
 <ANCHOR id="nm-active-connection-get-specific-object" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-specific-object">
 <ANCHOR id="nm-active-connection-get-state" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-state">
 <ANCHOR id="nm-active-connection-get-uuid" href="libnm-glib/NMActiveConnection.html#nm-active-connection-get-uuid">
@@ -91,11 +97,14 @@
 <ANCHOR id="NMActiveConnection--default" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--default">
 <ANCHOR id="NMActiveConnection--default6" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--default6">
 <ANCHOR id="NMActiveConnection--devices" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--devices">
+<ANCHOR id="NMActiveConnection--master" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--master">
 <ANCHOR id="NMActiveConnection--specific-object" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--specific-object">
 <ANCHOR id="NMActiveConnection--state" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--state">
+<ANCHOR id="NMActiveConnection--uuid" href="libnm-glib/NMActiveConnection.html#NMActiveConnection--uuid">
 <ANCHOR id="NMDevice" href="libnm-glib/NMDevice.html">
 <ANCHOR id="NMDevice.synopsis" href="libnm-glib/NMDevice.html#NMDevice.synopsis">
 <ANCHOR id="NMDevice.object-hierarchy" href="libnm-glib/NMDevice.html#NMDevice.object-hierarchy">
+<ANCHOR id="NMDevice.implemented-interfaces" href="libnm-glib/NMDevice.html#NMDevice.implemented-interfaces">
 <ANCHOR id="NMDevice.properties" href="libnm-glib/NMDevice.html#NMDevice.properties">
 <ANCHOR id="NMDevice.signals" href="libnm-glib/NMDevice.html#NMDevice.signals">
 <ANCHOR id="NMDevice.description" href="libnm-glib/NMDevice.html#NMDevice.description">
@@ -117,6 +126,7 @@
 <ANCHOR id="NM-DEVICE-MANAGED:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-MANAGED:CAPS">
 <ANCHOR id="NM-DEVICE-PRODUCT:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-PRODUCT:CAPS">
 <ANCHOR id="NM-DEVICE-STATE:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-STATE:CAPS">
+<ANCHOR id="NM-DEVICE-STATE-REASON:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-STATE-REASON:CAPS">
 <ANCHOR id="NM-DEVICE-UDI:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-UDI:CAPS">
 <ANCHOR id="NM-DEVICE-VENDOR:CAPS" href="libnm-glib/NMDevice.html#NM-DEVICE-VENDOR:CAPS">
 <ANCHOR id="nm-device-connection-valid" href="libnm-glib/NMDevice.html#nm-device-connection-valid">
@@ -136,6 +146,7 @@
 <ANCHOR id="nm-device-get-managed" href="libnm-glib/NMDevice.html#nm-device-get-managed">
 <ANCHOR id="nm-device-get-product" href="libnm-glib/NMDevice.html#nm-device-get-product">
 <ANCHOR id="nm-device-get-state" href="libnm-glib/NMDevice.html#nm-device-get-state">
+<ANCHOR id="nm-device-get-state-reason" href="libnm-glib/NMDevice.html#nm-device-get-state-reason">
 <ANCHOR id="nm-device-get-udi" href="libnm-glib/NMDevice.html#nm-device-get-udi">
 <ANCHOR id="nm-device-get-vendor" href="libnm-glib/NMDevice.html#nm-device-get-vendor">
 <ANCHOR id="nm-device-new" href="libnm-glib/NMDevice.html#nm-device-new">
@@ -154,6 +165,7 @@
 <ANCHOR id="NMDevice--managed" href="libnm-glib/NMDevice.html#NMDevice--managed">
 <ANCHOR id="NMDevice--product" href="libnm-glib/NMDevice.html#NMDevice--product">
 <ANCHOR id="NMDevice--state" href="libnm-glib/NMDevice.html#NMDevice--state">
+<ANCHOR id="NMDevice--state-reason" href="libnm-glib/NMDevice.html#NMDevice--state-reason">
 <ANCHOR id="NMDevice--udi" href="libnm-glib/NMDevice.html#NMDevice--udi">
 <ANCHOR id="NMDevice--vendor" href="libnm-glib/NMDevice.html#NMDevice--vendor">
 <ANCHOR id="NMDevice.signal-details" href="libnm-glib/NMDevice.html#NMDevice.signal-details">
@@ -161,6 +173,7 @@
 <ANCHOR id="NMDeviceEthernet" href="libnm-glib/NMDeviceEthernet.html">
 <ANCHOR id="NMDeviceEthernet.synopsis" href="libnm-glib/NMDeviceEthernet.html#NMDeviceEthernet.synopsis">
 <ANCHOR id="NMDeviceEthernet.object-hierarchy" href="libnm-glib/NMDeviceEthernet.html#NMDeviceEthernet.object-hierarchy">
+<ANCHOR id="NMDeviceEthernet.implemented-interfaces" href="libnm-glib/NMDeviceEthernet.html#NMDeviceEthernet.implemented-interfaces">
 <ANCHOR id="NMDeviceEthernet.properties" href="libnm-glib/NMDeviceEthernet.html#NMDeviceEthernet.properties">
 <ANCHOR id="NMDeviceEthernet.description" href="libnm-glib/NMDeviceEthernet.html#NMDeviceEthernet.description">
 <ANCHOR id="NMDeviceEthernet.details" href="libnm-glib/NMDeviceEthernet.html#NMDeviceEthernet.details">
@@ -183,6 +196,7 @@
 <ANCHOR id="NMDeviceWifi" href="libnm-glib/NMDeviceWifi.html">
 <ANCHOR id="NMDeviceWifi.synopsis" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.synopsis">
 <ANCHOR id="NMDeviceWifi.object-hierarchy" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.object-hierarchy">
+<ANCHOR id="NMDeviceWifi.implemented-interfaces" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.implemented-interfaces">
 <ANCHOR id="NMDeviceWifi.properties" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.properties">
 <ANCHOR id="NMDeviceWifi.signals" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.signals">
 <ANCHOR id="NMDeviceWifi.description" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.description">
@@ -217,6 +231,7 @@
 <ANCHOR id="NMDeviceModem" href="libnm-glib/NMDeviceModem.html">
 <ANCHOR id="NMDeviceModem.synopsis" href="libnm-glib/NMDeviceModem.html#NMDeviceModem.synopsis">
 <ANCHOR id="NMDeviceModem.object-hierarchy" href="libnm-glib/NMDeviceModem.html#NMDeviceModem.object-hierarchy">
+<ANCHOR id="NMDeviceModem.implemented-interfaces" href="libnm-glib/NMDeviceModem.html#NMDeviceModem.implemented-interfaces">
 <ANCHOR id="NMDeviceModem.properties" href="libnm-glib/NMDeviceModem.html#NMDeviceModem.properties">
 <ANCHOR id="NMDeviceModem.description" href="libnm-glib/NMDeviceModem.html#NMDeviceModem.description">
 <ANCHOR id="NMDeviceModem.details" href="libnm-glib/NMDeviceModem.html#NMDeviceModem.details">
@@ -232,6 +247,7 @@
 <ANCHOR id="NMDeviceBt" href="libnm-glib/NMDeviceBt.html">
 <ANCHOR id="NMDeviceBt.synopsis" href="libnm-glib/NMDeviceBt.html#NMDeviceBt.synopsis">
 <ANCHOR id="NMDeviceBt.object-hierarchy" href="libnm-glib/NMDeviceBt.html#NMDeviceBt.object-hierarchy">
+<ANCHOR id="NMDeviceBt.implemented-interfaces" href="libnm-glib/NMDeviceBt.html#NMDeviceBt.implemented-interfaces">
 <ANCHOR id="NMDeviceBt.properties" href="libnm-glib/NMDeviceBt.html#NMDeviceBt.properties">
 <ANCHOR id="NMDeviceBt.description" href="libnm-glib/NMDeviceBt.html#NMDeviceBt.description">
 <ANCHOR id="NMDeviceBt.details" href="libnm-glib/NMDeviceBt.html#NMDeviceBt.details">
@@ -251,6 +267,7 @@
 <ANCHOR id="NMDeviceWimax" href="libnm-glib/NMDeviceWimax.html">
 <ANCHOR id="NMDeviceWimax.synopsis" href="libnm-glib/NMDeviceWimax.html#NMDeviceWimax.synopsis">
 <ANCHOR id="NMDeviceWimax.object-hierarchy" href="libnm-glib/NMDeviceWimax.html#NMDeviceWimax.object-hierarchy">
+<ANCHOR id="NMDeviceWimax.implemented-interfaces" href="libnm-glib/NMDeviceWimax.html#NMDeviceWimax.implemented-interfaces">
 <ANCHOR id="NMDeviceWimax.properties" href="libnm-glib/NMDeviceWimax.html#NMDeviceWimax.properties">
 <ANCHOR id="NMDeviceWimax.signals" href="libnm-glib/NMDeviceWimax.html#NMDeviceWimax.signals">
 <ANCHOR id="NMDeviceWimax.description" href="libnm-glib/NMDeviceWimax.html#NMDeviceWimax.description">
@@ -288,6 +305,7 @@
 <ANCHOR id="NMWimaxNsp" href="libnm-glib/NMWimaxNsp.html">
 <ANCHOR id="NMWimaxNsp.synopsis" href="libnm-glib/NMWimaxNsp.html#NMWimaxNsp.synopsis">
 <ANCHOR id="NMWimaxNsp.object-hierarchy" href="libnm-glib/NMWimaxNsp.html#NMWimaxNsp.object-hierarchy">
+<ANCHOR id="NMWimaxNsp.implemented-interfaces" href="libnm-glib/NMWimaxNsp.html#NMWimaxNsp.implemented-interfaces">
 <ANCHOR id="NMWimaxNsp.properties" href="libnm-glib/NMWimaxNsp.html#NMWimaxNsp.properties">
 <ANCHOR id="NMWimaxNsp.description" href="libnm-glib/NMWimaxNsp.html#NMWimaxNsp.description">
 <ANCHOR id="NMWimaxNsp.details" href="libnm-glib/NMWimaxNsp.html#NMWimaxNsp.details">
@@ -310,6 +328,7 @@
 <ANCHOR id="NMAccessPoint" href="libnm-glib/NMAccessPoint.html">
 <ANCHOR id="NMAccessPoint.synopsis" href="libnm-glib/NMAccessPoint.html#NMAccessPoint.synopsis">
 <ANCHOR id="NMAccessPoint.object-hierarchy" href="libnm-glib/NMAccessPoint.html#NMAccessPoint.object-hierarchy">
+<ANCHOR id="NMAccessPoint.implemented-interfaces" href="libnm-glib/NMAccessPoint.html#NMAccessPoint.implemented-interfaces">
 <ANCHOR id="NMAccessPoint.properties" href="libnm-glib/NMAccessPoint.html#NMAccessPoint.properties">
 <ANCHOR id="NMAccessPoint.description" href="libnm-glib/NMAccessPoint.html#NMAccessPoint.description">
 <ANCHOR id="NMAccessPoint.details" href="libnm-glib/NMAccessPoint.html#NMAccessPoint.details">
@@ -352,6 +371,7 @@
 <ANCHOR id="NMIP4Config" href="libnm-glib/NMIP4Config.html">
 <ANCHOR id="NMIP4Config.synopsis" href="libnm-glib/NMIP4Config.html#NMIP4Config.synopsis">
 <ANCHOR id="NMIP4Config.object-hierarchy" href="libnm-glib/NMIP4Config.html#NMIP4Config.object-hierarchy">
+<ANCHOR id="NMIP4Config.implemented-interfaces" href="libnm-glib/NMIP4Config.html#NMIP4Config.implemented-interfaces">
 <ANCHOR id="NMIP4Config.properties" href="libnm-glib/NMIP4Config.html#NMIP4Config.properties">
 <ANCHOR id="NMIP4Config.description" href="libnm-glib/NMIP4Config.html#NMIP4Config.description">
 <ANCHOR id="NMIP4Config.details" href="libnm-glib/NMIP4Config.html#NMIP4Config.details">
@@ -377,6 +397,7 @@
 <ANCHOR id="NMIP6Config" href="libnm-glib/NMIP6Config.html">
 <ANCHOR id="NMIP6Config.synopsis" href="libnm-glib/NMIP6Config.html#NMIP6Config.synopsis">
 <ANCHOR id="NMIP6Config.object-hierarchy" href="libnm-glib/NMIP6Config.html#NMIP6Config.object-hierarchy">
+<ANCHOR id="NMIP6Config.implemented-interfaces" href="libnm-glib/NMIP6Config.html#NMIP6Config.implemented-interfaces">
 <ANCHOR id="NMIP6Config.properties" href="libnm-glib/NMIP6Config.html#NMIP6Config.properties">
 <ANCHOR id="NMIP6Config.description" href="libnm-glib/NMIP6Config.html#NMIP6Config.description">
 <ANCHOR id="NMIP6Config.details" href="libnm-glib/NMIP6Config.html#NMIP6Config.details">
@@ -399,6 +420,7 @@
 <ANCHOR id="NMDHCP4Config" href="libnm-glib/NMDHCP4Config.html">
 <ANCHOR id="NMDHCP4Config.synopsis" href="libnm-glib/NMDHCP4Config.html#NMDHCP4Config.synopsis">
 <ANCHOR id="NMDHCP4Config.object-hierarchy" href="libnm-glib/NMDHCP4Config.html#NMDHCP4Config.object-hierarchy">
+<ANCHOR id="NMDHCP4Config.implemented-interfaces" href="libnm-glib/NMDHCP4Config.html#NMDHCP4Config.implemented-interfaces">
 <ANCHOR id="NMDHCP4Config.properties" href="libnm-glib/NMDHCP4Config.html#NMDHCP4Config.properties">
 <ANCHOR id="NMDHCP4Config.description" href="libnm-glib/NMDHCP4Config.html#NMDHCP4Config.description">
 <ANCHOR id="NMDHCP4Config.details" href="libnm-glib/NMDHCP4Config.html#NMDHCP4Config.details">
@@ -413,6 +435,7 @@
 <ANCHOR id="NMDHCP6Config" href="libnm-glib/NMDHCP6Config.html">
 <ANCHOR id="NMDHCP6Config.synopsis" href="libnm-glib/NMDHCP6Config.html#NMDHCP6Config.synopsis">
 <ANCHOR id="NMDHCP6Config.object-hierarchy" href="libnm-glib/NMDHCP6Config.html#NMDHCP6Config.object-hierarchy">
+<ANCHOR id="NMDHCP6Config.implemented-interfaces" href="libnm-glib/NMDHCP6Config.html#NMDHCP6Config.implemented-interfaces">
 <ANCHOR id="NMDHCP6Config.properties" href="libnm-glib/NMDHCP6Config.html#NMDHCP6Config.properties">
 <ANCHOR id="NMDHCP6Config.description" href="libnm-glib/NMDHCP6Config.html#NMDHCP6Config.description">
 <ANCHOR id="NMDHCP6Config.details" href="libnm-glib/NMDHCP6Config.html#NMDHCP6Config.details">
@@ -427,6 +450,7 @@
 <ANCHOR id="NMObject" href="libnm-glib/NMObject.html">
 <ANCHOR id="NMObject.synopsis" href="libnm-glib/NMObject.html#NMObject.synopsis">
 <ANCHOR id="NMObject.object-hierarchy" href="libnm-glib/NMObject.html#NMObject.object-hierarchy">
+<ANCHOR id="NMObject.implemented-interfaces" href="libnm-glib/NMObject.html#NMObject.implemented-interfaces">
 <ANCHOR id="NMObject.properties" href="libnm-glib/NMObject.html#NMObject.properties">
 <ANCHOR id="NMObject.description" href="libnm-glib/NMObject.html#NMObject.description">
 <ANCHOR id="NMObject.details" href="libnm-glib/NMObject.html#NMObject.details">
@@ -442,6 +466,7 @@
 <ANCHOR id="NMRemoteConnection" href="libnm-glib/NMRemoteConnection.html">
 <ANCHOR id="NMRemoteConnection.synopsis" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.synopsis">
 <ANCHOR id="NMRemoteConnection.object-hierarchy" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.object-hierarchy">
+<ANCHOR id="NMRemoteConnection.implemented-interfaces" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.implemented-interfaces">
 <ANCHOR id="NMRemoteConnection.properties" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.properties">
 <ANCHOR id="NMRemoteConnection.signals" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.signals">
 <ANCHOR id="NMRemoteConnection.description" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.description">
@@ -459,7 +484,6 @@
 <ANCHOR id="nm-remote-connection-new" href="libnm-glib/NMRemoteConnection.html#nm-remote-connection-new">
 <ANCHOR id="NMRemoteConnection.property-details" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.property-details">
 <ANCHOR id="NMRemoteConnection--bus" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection--bus">
-<ANCHOR id="NMRemoteConnection--init-result" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection--init-result">
 <ANCHOR id="NMRemoteConnection.signal-details" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection.signal-details">
 <ANCHOR id="NMRemoteConnection-removed" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection-removed">
 <ANCHOR id="NMRemoteConnection-updated" href="libnm-glib/NMRemoteConnection.html#NMRemoteConnection-updated">
@@ -467,6 +491,7 @@
 <ANCHOR id="NMRemoteSettings" href="libnm-glib/NMRemoteSettings.html">
 <ANCHOR id="NMRemoteSettings.synopsis" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.synopsis">
 <ANCHOR id="NMRemoteSettings.object-hierarchy" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.object-hierarchy">
+<ANCHOR id="NMRemoteSettings.implemented-interfaces" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.implemented-interfaces">
 <ANCHOR id="NMRemoteSettings.properties" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.properties">
 <ANCHOR id="NMRemoteSettings.signals" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.signals">
 <ANCHOR id="NMRemoteSettings.description" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.description">
@@ -482,6 +507,7 @@
 <ANCHOR id="NM-REMOTE-SETTINGS-BUS:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-BUS:CAPS">
 <ANCHOR id="NM-REMOTE-SETTINGS-CAN-MODIFY:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-CAN-MODIFY:CAPS">
 <ANCHOR id="NM-REMOTE-SETTINGS-CONNECTIONS-READ:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-CONNECTIONS-READ:CAPS">
+<ANCHOR id="NM-REMOTE-SETTINGS-ERROR:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR:CAPS">
 <ANCHOR id="NM-REMOTE-SETTINGS-HOSTNAME:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-HOSTNAME:CAPS">
 <ANCHOR id="NM-REMOTE-SETTINGS-NEW-CONNECTION:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-NEW-CONNECTION:CAPS">
 <ANCHOR id="NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS" href="libnm-glib/NMRemoteSettings.html#NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS">
@@ -491,6 +517,8 @@
 <ANCHOR id="nm-remote-settings-get-connection-by-uuid" href="libnm-glib/NMRemoteSettings.html#nm-remote-settings-get-connection-by-uuid">
 <ANCHOR id="nm-remote-settings-list-connections" href="libnm-glib/NMRemoteSettings.html#nm-remote-settings-list-connections">
 <ANCHOR id="nm-remote-settings-new" href="libnm-glib/NMRemoteSettings.html#nm-remote-settings-new">
+<ANCHOR id="nm-remote-settings-new-async" href="libnm-glib/NMRemoteSettings.html#nm-remote-settings-new-async">
+<ANCHOR id="nm-remote-settings-new-finish" href="libnm-glib/NMRemoteSettings.html#nm-remote-settings-new-finish">
 <ANCHOR id="nm-remote-settings-save-hostname" href="libnm-glib/NMRemoteSettings.html#nm-remote-settings-save-hostname">
 <ANCHOR id="NMRemoteSettings.property-details" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings.property-details">
 <ANCHOR id="NMRemoteSettings--bus" href="libnm-glib/NMRemoteSettings.html#NMRemoteSettings--bus">
@@ -522,6 +550,7 @@
 <ANCHOR id="NMSecretAgentGetSecretsFunc" href="libnm-glib/NMSecretAgent.html#NMSecretAgentGetSecretsFunc">
 <ANCHOR id="NMSecretAgentSaveSecretsFunc" href="libnm-glib/NMSecretAgent.html#NMSecretAgentSaveSecretsFunc">
 <ANCHOR id="NM-SECRET-AGENT-AUTO-REGISTER:CAPS" href="libnm-glib/NMSecretAgent.html#NM-SECRET-AGENT-AUTO-REGISTER:CAPS">
+<ANCHOR id="NM-SECRET-AGENT-ERROR:CAPS" href="libnm-glib/NMSecretAgent.html#NM-SECRET-AGENT-ERROR:CAPS">
 <ANCHOR id="NM-SECRET-AGENT-IDENTIFIER:CAPS" href="libnm-glib/NMSecretAgent.html#NM-SECRET-AGENT-IDENTIFIER:CAPS">
 <ANCHOR id="NM-SECRET-AGENT-REGISTRATION-RESULT:CAPS" href="libnm-glib/NMSecretAgent.html#NM-SECRET-AGENT-REGISTRATION-RESULT:CAPS">
 <ANCHOR id="nm-secret-agent-delete-secrets" href="libnm-glib/NMSecretAgent.html#nm-secret-agent-delete-secrets">
@@ -533,11 +562,13 @@
 <ANCHOR id="NMSecretAgent.property-details" href="libnm-glib/NMSecretAgent.html#NMSecretAgent.property-details">
 <ANCHOR id="NMSecretAgent--auto-register" href="libnm-glib/NMSecretAgent.html#NMSecretAgent--auto-register">
 <ANCHOR id="NMSecretAgent--identifier" href="libnm-glib/NMSecretAgent.html#NMSecretAgent--identifier">
+<ANCHOR id="NMSecretAgent--registered" href="libnm-glib/NMSecretAgent.html#NMSecretAgent--registered">
 <ANCHOR id="NMSecretAgent.signal-details" href="libnm-glib/NMSecretAgent.html#NMSecretAgent.signal-details">
 <ANCHOR id="NMSecretAgent-registration-result" href="libnm-glib/NMSecretAgent.html#NMSecretAgent-registration-result">
 <ANCHOR id="NMVPNConnection" href="libnm-glib/NMVPNConnection.html">
 <ANCHOR id="NMVPNConnection.synopsis" href="libnm-glib/NMVPNConnection.html#NMVPNConnection.synopsis">
 <ANCHOR id="NMVPNConnection.object-hierarchy" href="libnm-glib/NMVPNConnection.html#NMVPNConnection.object-hierarchy">
+<ANCHOR id="NMVPNConnection.implemented-interfaces" href="libnm-glib/NMVPNConnection.html#NMVPNConnection.implemented-interfaces">
 <ANCHOR id="NMVPNConnection.properties" href="libnm-glib/NMVPNConnection.html#NMVPNConnection.properties">
 <ANCHOR id="NMVPNConnection.signals" href="libnm-glib/NMVPNConnection.html#NMVPNConnection.signals">
 <ANCHOR id="NMVPNConnection.description" href="libnm-glib/NMVPNConnection.html#NMVPNConnection.description">

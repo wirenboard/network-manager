@@ -1,13 +1,14 @@
 INCLUDES = \
 	-I${top_srcdir}/src \
+	-I${top_srcdir}/src/generated \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/include \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/marshallers
+	-I${top_srcdir}/libnm-util
 
-noinst_LTLIBRARIES = libwimax.la
+pkglib_LTLIBRARIES = libnm-device-plugin-wimax.la
 
-libwimax_la_SOURCES = \
+libnm_device_plugin_wimax_la_SOURCES = \
+	nm-wimax-factory.c \
 	nm-device-wimax.c \
 	nm-device-wimax.h \
 	nm-wimax-nsp.c \
@@ -18,14 +19,18 @@ libwimax_la_SOURCES = \
 	iwmxsdk.c \
 	iwmxsdk.h
 
-libwimax_la_CPPFLAGS = \
+libnm_device_plugin_wimax_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
-	$(IWMX_SDK_CFLAGS)
+	$(IWMX_SDK_CFLAGS) \
+	$(LIBNL_CFLAGS) \
+	$(GUDEV_CFLAGS)
 
-libwimax_la_LIBADD = \
+libnm_device_plugin_wimax_la_LDFLAGS = -module -avoid-version
+libnm_device_plugin_wimax_la_LIBADD = \
 	$(DBUS_LIBS) \
 	$(IWMX_SDK_LIBS) \
-	$(top_builddir)/marshallers/libmarshallers.la
+	$(GUDEV_LIBS) \
+	$(top_builddir)/src/generated/libnm-generated.la
 
 nm-wimax-nsp-glue.h: $(top_srcdir)/introspection/nm-wimax-nsp.xml
 	dbus-binding-tool --prefix=nm_wimax_nsp --mode=glib-server --output=$@ $<

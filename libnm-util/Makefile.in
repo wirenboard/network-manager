@@ -105,20 +105,25 @@ libnm_util_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
 am__libnm_util_la_SOURCES_DIST = crypto.c nm-connection.c \
 	nm-param-spec-specialized.c nm-setting.c nm-setting-8021x.c \
-	nm-setting-bluetooth.c nm-setting-connection.c \
-	nm-setting-ip4-config.c nm-setting-ip6-config.c \
-	nm-setting-ppp.c nm-setting-pppoe.c nm-setting-serial.c \
-	nm-setting-gsm.c nm-setting-cdma.c nm-setting-olpc-mesh.c \
-	nm-setting-wimax.c nm-setting-wired.c nm-setting-wireless.c \
-	nm-setting-wireless-security.c nm-setting-vpn.c nm-utils.c \
-	crypto.h nm-param-spec-specialized.h nm-utils-private.h \
+	nm-setting-bluetooth.c nm-setting-bond.c \
+	nm-setting-connection.c nm-setting-infiniband.c \
+	nm-setting-ip4-config.c nm-setting-vlan.c \
+	nm-setting-ip6-config.c nm-setting-ppp.c nm-setting-pppoe.c \
+	nm-setting-serial.c nm-setting-gsm.c nm-setting-cdma.c \
+	nm-setting-olpc-mesh.c nm-setting-wimax.c nm-setting-wired.c \
+	nm-setting-wireless.c nm-setting-wireless-security.c \
+	nm-setting-vpn.c nm-utils-enum-types.c nm-utils.c crypto.h \
+	nm-param-spec-specialized.h nm-utils-private.h \
 	nm-setting-private.h crypto_gnutls.c crypto_nss.c
 am__objects_1 = libnm_util_la-crypto.lo libnm_util_la-nm-connection.lo \
 	libnm_util_la-nm-param-spec-specialized.lo \
 	libnm_util_la-nm-setting.lo libnm_util_la-nm-setting-8021x.lo \
 	libnm_util_la-nm-setting-bluetooth.lo \
+	libnm_util_la-nm-setting-bond.lo \
 	libnm_util_la-nm-setting-connection.lo \
+	libnm_util_la-nm-setting-infiniband.lo \
 	libnm_util_la-nm-setting-ip4-config.lo \
+	libnm_util_la-nm-setting-vlan.lo \
 	libnm_util_la-nm-setting-ip6-config.lo \
 	libnm_util_la-nm-setting-ppp.lo \
 	libnm_util_la-nm-setting-pppoe.lo \
@@ -130,7 +135,8 @@ am__objects_1 = libnm_util_la-crypto.lo libnm_util_la-nm-connection.lo \
 	libnm_util_la-nm-setting-wired.lo \
 	libnm_util_la-nm-setting-wireless.lo \
 	libnm_util_la-nm-setting-wireless-security.lo \
-	libnm_util_la-nm-setting-vpn.lo libnm_util_la-nm-utils.lo
+	libnm_util_la-nm-setting-vpn.lo \
+	libnm_util_la-nm-utils-enum-types.lo libnm_util_la-nm-utils.lo
 am__objects_2 =
 @WITH_GNUTLS_TRUE@am__objects_3 = libnm_util_la-crypto_gnutls.lo
 @WITH_NSS_TRUE@am__objects_4 = libnm_util_la-crypto_nss.lo
@@ -269,6 +275,8 @@ GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
+GLIB_MAKEFILE = @GLIB_MAKEFILE@
+GLIB_MKENUMS = @GLIB_MKENUMS@
 GMODULE_CFLAGS = @GMODULE_CFLAGS@
 GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
@@ -323,11 +331,15 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
+LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
+LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
 LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
+LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -338,6 +350,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
@@ -377,6 +390,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS = @SYSTEMD_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -441,7 +456,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = . tests
-INCLUDES = -I${top_srcdir} -I${top_srcdir}/include
+INCLUDES = -I${top_srcdir} -I${top_srcdir}/include -I${top_builddir}/include
 lib_LTLIBRARIES = libnm-util.la
 libnm_util_la_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS) $(UUID_CFLAGS) \
 	-DG_DISABLE_DEPRECATED $(am__append_2) $(am__append_5)
@@ -450,8 +465,11 @@ libnm_util_include_HEADERS = \
 	nm-setting.h			\
 	nm-setting-8021x.h		\
 	nm-setting-bluetooth.h		\
+	nm-setting-bond.h		\
 	nm-setting-connection.h		\
+	nm-setting-infiniband.h		\
 	nm-setting-ip4-config.h		\
+	nm-setting-vlan.h		\
 	nm-setting-ip6-config.h		\
 	nm-setting-ppp.h		\
 	nm-setting-pppoe.h		\
@@ -464,6 +482,7 @@ libnm_util_include_HEADERS = \
 	nm-setting-wireless.h		\
 	nm-setting-wireless-security.h	\
 	nm-setting-vpn.h		\
+	nm-utils-enum-types.h		\
 	nm-utils.h
 
 libnm_util_la_private_headers = \
@@ -479,8 +498,11 @@ libnm_util_la_csources = \
 	nm-setting.c			\
 	nm-setting-8021x.c		\
 	nm-setting-bluetooth.c		\
+	nm-setting-bond.c		\
 	nm-setting-connection.c		\
+	nm-setting-infiniband.c		\
 	nm-setting-ip4-config.c		\
+	nm-setting-vlan.c		\
 	nm-setting-ip6-config.c		\
 	nm-setting-ppp.c		\
 	nm-setting-pppoe.c		\
@@ -493,16 +515,22 @@ libnm_util_la_csources = \
 	nm-setting-wireless.c		\
 	nm-setting-wireless-security.c	\
 	nm-setting-vpn.c		\
+	nm-utils-enum-types.c		\
 	nm-utils.c
 
 libnm_util_la_SOURCES = $(libnm_util_la_csources) \
 	$(libnm_util_la_private_headers) $(am__append_1) \
 	$(am__append_4)
+GLIB_GENERATED = nm-utils-enum-types.h nm-utils-enum-types.c
+BUILT_SOURCES = $(GLIB_GENERATED)
+nm_utils_enum_types_sources = $(libnm_util_include_HEADERS)
+GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
+GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
 libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS) \
 	$(am__append_3) $(am__append_6)
 SYMBOL_VIS_FILE = $(srcdir)/libnm-util.ver
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "4:0:2"
+	-version-info "5:0:3"
 
 libnm_util_includedir = $(includedir)/NetworkManager
 
@@ -534,7 +562,8 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
 @HAVE_INTROSPECTION_TRUE@typelibdir = $(libdir)/girepository-1.0
 @HAVE_INTROSPECTION_TRUE@typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
-all: all-recursive
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -628,21 +657,25 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-8021x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-cdma.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-gsm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-infiniband.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-olpc-mesh.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-ppp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-pppoe.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-serial.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-vlan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-vpn.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wimax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wired.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wireless-security.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-wireless.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-utils-enum-types.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_crypto_la-crypto.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_crypto_la-crypto_gnutls.Plo@am__quote@
@@ -723,6 +756,14 @@ libnm_util_la-nm-setting-bluetooth.lo: nm-setting-bluetooth.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-bluetooth.lo `test -f 'nm-setting-bluetooth.c' || echo '$(srcdir)/'`nm-setting-bluetooth.c
 
+libnm_util_la-nm-setting-bond.lo: nm-setting-bond.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-bond.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-bond.Tpo -c -o libnm_util_la-nm-setting-bond.lo `test -f 'nm-setting-bond.c' || echo '$(srcdir)/'`nm-setting-bond.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-bond.Tpo $(DEPDIR)/libnm_util_la-nm-setting-bond.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-bond.c' object='libnm_util_la-nm-setting-bond.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-bond.lo `test -f 'nm-setting-bond.c' || echo '$(srcdir)/'`nm-setting-bond.c
+
 libnm_util_la-nm-setting-connection.lo: nm-setting-connection.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-connection.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-connection.Tpo -c -o libnm_util_la-nm-setting-connection.lo `test -f 'nm-setting-connection.c' || echo '$(srcdir)/'`nm-setting-connection.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-connection.Tpo $(DEPDIR)/libnm_util_la-nm-setting-connection.Plo
@@ -731,6 +772,14 @@ libnm_util_la-nm-setting-connection.lo: nm-setting-connection.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-connection.lo `test -f 'nm-setting-connection.c' || echo '$(srcdir)/'`nm-setting-connection.c
 
+libnm_util_la-nm-setting-infiniband.lo: nm-setting-infiniband.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-infiniband.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-infiniband.Tpo -c -o libnm_util_la-nm-setting-infiniband.lo `test -f 'nm-setting-infiniband.c' || echo '$(srcdir)/'`nm-setting-infiniband.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-infiniband.Tpo $(DEPDIR)/libnm_util_la-nm-setting-infiniband.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-infiniband.c' object='libnm_util_la-nm-setting-infiniband.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-infiniband.lo `test -f 'nm-setting-infiniband.c' || echo '$(srcdir)/'`nm-setting-infiniband.c
+
 libnm_util_la-nm-setting-ip4-config.lo: nm-setting-ip4-config.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ip4-config.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Tpo -c -o libnm_util_la-nm-setting-ip4-config.lo `test -f 'nm-setting-ip4-config.c' || echo '$(srcdir)/'`nm-setting-ip4-config.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Tpo $(DEPDIR)/libnm_util_la-nm-setting-ip4-config.Plo
@@ -738,6 +787,14 @@ libnm_util_la-nm-setting-ip4-config.lo: nm-setting-ip4-config.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-ip4-config.c' object='libnm_util_la-nm-setting-ip4-config.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-ip4-config.lo `test -f 'nm-setting-ip4-config.c' || echo '$(srcdir)/'`nm-setting-ip4-config.c
+
+libnm_util_la-nm-setting-vlan.lo: nm-setting-vlan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-vlan.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-vlan.Tpo -c -o libnm_util_la-nm-setting-vlan.lo `test -f 'nm-setting-vlan.c' || echo '$(srcdir)/'`nm-setting-vlan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-vlan.Tpo $(DEPDIR)/libnm_util_la-nm-setting-vlan.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-vlan.c' object='libnm_util_la-nm-setting-vlan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-vlan.lo `test -f 'nm-setting-vlan.c' || echo '$(srcdir)/'`nm-setting-vlan.c
 
 libnm_util_la-nm-setting-ip6-config.lo: nm-setting-ip6-config.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-ip6-config.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-ip6-config.Tpo -c -o libnm_util_la-nm-setting-ip6-config.lo `test -f 'nm-setting-ip6-config.c' || echo '$(srcdir)/'`nm-setting-ip6-config.c
@@ -834,6 +891,14 @@ libnm_util_la-nm-setting-vpn.lo: nm-setting-vpn.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-vpn.c' object='libnm_util_la-nm-setting-vpn.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-vpn.lo `test -f 'nm-setting-vpn.c' || echo '$(srcdir)/'`nm-setting-vpn.c
+
+libnm_util_la-nm-utils-enum-types.lo: nm-utils-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-utils-enum-types.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-utils-enum-types.Tpo -c -o libnm_util_la-nm-utils-enum-types.lo `test -f 'nm-utils-enum-types.c' || echo '$(srcdir)/'`nm-utils-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-utils-enum-types.Tpo $(DEPDIR)/libnm_util_la-nm-utils-enum-types.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-utils-enum-types.c' object='libnm_util_la-nm-utils-enum-types.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-utils-enum-types.lo `test -f 'nm-utils-enum-types.c' || echo '$(srcdir)/'`nm-utils-enum-types.c
 
 libnm_util_la-nm-utils.lo: nm-utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-utils.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-utils.Tpo -c -o libnm_util_la-nm-utils.lo `test -f 'nm-utils.c' || echo '$(srcdir)/'`nm-utils.c
@@ -1165,14 +1230,16 @@ distdir: $(DISTFILES)
 @WITH_TESTS_FALSE@check-local:
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-local
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(typelibdir)" "$(DESTDIR)$(libnm_util_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -1199,6 +1266,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -1273,8 +1341,9 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA \
 	uninstall-typelibDATA
 
-.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) check-am \
-	ctags-recursive install-am install-strip tags-recursive
+.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all check \
+	check-am ctags-recursive install install-am install-strip \
+	tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am check check-am check-local clean clean-generic \
@@ -1296,6 +1365,7 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA \
 	uninstall-typelibDATA
 
+include $(GLIB_MAKEFILE)
 
 -include $(INTROSPECTION_MAKEFILE)
 

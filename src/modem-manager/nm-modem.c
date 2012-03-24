@@ -30,7 +30,6 @@
 #include "nm-logging.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
-#include "nm-device-interface.h"
 #include "nm-dbus-glib-types.h"
 
 G_DEFINE_TYPE (NMModem, nm_modem, G_TYPE_OBJECT)
@@ -43,6 +42,7 @@ enum {
 	PROP_IFACE,
 	PROP_PATH,
 	PROP_IP_METHOD,
+	PROP_IP_TIMEOUT,
 	PROP_ENABLED,
 
 	LAST_PROP
@@ -55,7 +55,6 @@ typedef struct {
 
 	char *path;
 	NMPPPManager *ppp_manager;
-	NMIP4Config	 *pending_ip4_config;
 	guint32 ip_method;
 	char *device;
 	char *iface;
@@ -67,6 +66,7 @@ typedef struct {
 	DBusGProxyCall *call;
 
 	gboolean mm_enabled;
+	guint32 mm_ip_timeout;
 
 	/* PPP stats */
 	guint32 in_bytes;
@@ -129,21 +129,6 @@ nm_modem_get_proxy (NMModem *self,
 	return priv->proxy;
 }
 
-static void
-merge_ip4_config (NMActRequest *req, NMIP4Config *config)
-{
-	NMConnection *connection;
-	NMSettingIP4Config *s_ip4;
-
-	/* Merge user-defined overrides into the IP4Config to be applied */
-	connection = nm_act_request_get_connection (req);
-	g_assert (connection);
-
-	s_ip4 = (NMSettingIP4Config *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
-	if (s_ip4)
-		nm_utils_merge_ip4_config (config, s_ip4);
-}
-
 /*****************************************************************************/
 /* IP method PPP */
 
@@ -169,7 +154,6 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 				gpointer user_data)
 {
 	NMModem *self = NM_MODEM (user_data);
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 	guint32 i, num;
 	guint32 bad_dns1 = htonl (0x0A0B0C0D);
 	guint32 good_dns1 = htonl (0x04020201);  /* GTE nameserver */
@@ -213,7 +197,6 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 		nm_ip4_config_add_nameserver (config, good_dns2);
 	}
 
-	priv->pending_ip4_config = g_object_ref (config);
 	g_signal_emit (self, signals[IP4_CONFIG_RESULT], 0, iface, config, NULL);
 }
 
@@ -243,6 +226,7 @@ ppp_stage3_ip4_config_start (NMModem *self,
 	const char *ppp_name = NULL;
 	GError *error = NULL;
 	NMActStageReturn ret;
+	guint ip_timeout = 20;
 
 	g_return_val_if_fail (self != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 	g_return_val_if_fail (NM_IS_MODEM (self), NM_ACT_STAGE_RETURN_FAILURE);
@@ -258,8 +242,16 @@ ppp_stage3_ip4_config_start (NMModem *self,
 			return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
+	/* Check if ModemManager requested a specific IP timeout to be used. If 0 reported,
+	 * use the default one (20s) */
+	if (priv->mm_ip_timeout > 0) {
+		nm_log_info (LOGD_PPP, "using modem-specified IP timeout: %u seconds",
+		             priv->mm_ip_timeout);
+		ip_timeout = priv->mm_ip_timeout;
+	}
+
 	priv->ppp_manager = nm_ppp_manager_new (priv->iface);
-	if (nm_ppp_manager_start (priv->ppp_manager, req, ppp_name, 20, &error)) {
+	if (nm_ppp_manager_start (priv->ppp_manager, req, ppp_name, ip_timeout, &error)) {
 		g_signal_connect (priv->ppp_manager, "state-changed",
 						  G_CALLBACK (ppp_state_changed),
 						  self);
@@ -285,22 +277,6 @@ ppp_stage3_ip4_config_start (NMModem *self,
 	}
 
 	return ret;
-}
-
-static NMActStageReturn
-ppp_stage4 (NMModem *self,
-            NMActRequest *req,
-            NMIP4Config **config,
-            NMDeviceStateReason *reason)
-{
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-
-	*config = priv->pending_ip4_config;
-	priv->pending_ip4_config = NULL;
-
-	merge_ip4_config (req, *config);
-
-	return NM_ACT_STAGE_RETURN_SUCCESS;
 }
 
 /*****************************************************************************/
@@ -336,9 +312,6 @@ static_stage3_done (DBusGProxy *proxy, DBusGProxyCall *call, gpointer user_data)
 			nm_ip4_config_add_nameserver (config, g_value_get_uint (value));
 		}
 		g_value_array_free (ret_array);
-
-		priv->pending_ip4_config = g_object_ref (config);
-		g_signal_emit (self, signals[IP4_CONFIG_RESULT], 0, NULL, config, NULL);
 	}
 
 	g_signal_emit (self, signals[IP4_CONFIG_RESULT], 0, NULL, config, error);
@@ -366,32 +339,6 @@ static_stage3_ip4_config_start (NMModem *self,
 	                                      G_TYPE_INVALID);
 
 	return NM_ACT_STAGE_RETURN_POSTPONE;
-}
-
-static NMActStageReturn
-static_stage4 (NMModem *self,
-               NMActRequest *req,
-               NMDevice *device,
-               NMIP4Config **config,
-               NMDeviceStateReason *reason)
-{
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-	gboolean no_firmware = FALSE;
-
-	if (!nm_device_hw_bring_up (device, TRUE, &no_firmware)) {
-		if (no_firmware)
-			*reason = NM_DEVICE_STATE_REASON_FIRMWARE_MISSING;
-		else
-			*reason = NM_DEVICE_STATE_REASON_CONFIG_FAILED;
-		return NM_ACT_STAGE_RETURN_FAILURE;
-	}
-
-	*config = priv->pending_ip4_config;
-	priv->pending_ip4_config = NULL;
-
-	merge_ip4_config (req, *config);
-
-	return NM_ACT_STAGE_RETURN_SUCCESS;
 }
 
 /*****************************************************************************/
@@ -426,7 +373,7 @@ nm_modem_stage3_ip4_config_start (NMModem *self,
 		ret = static_stage3_ip4_config_start (self, req, reason);
 		break;
 	case MM_MODEM_IP_METHOD_DHCP:
-		ret = device_class->act_stage3_ip4_config_start (device, reason);
+		ret = device_class->act_stage3_ip4_config_start (device, NULL, reason);
 		break;
 	default:
 		nm_log_err (LOGD_MB, "unknown IP method %d", priv->ip_method);
@@ -438,45 +385,14 @@ nm_modem_stage3_ip4_config_start (NMModem *self,
 }
 
 NMActStageReturn
-nm_modem_stage4_get_ip4_config (NMModem *self,
-                                NMDevice *device,
-                                NMDeviceClass *device_class,
-								NMIP4Config **config,
-								NMDeviceStateReason *reason)
+nm_modem_stage3_ip6_config_start (NMModem *self,
+                                  NMDevice *device,
+                                  NMDeviceClass *device_class,
+                                  NMDeviceStateReason *reason)
 {
-	NMModemPrivate *priv;
-	NMActRequest *req;
-	NMActStageReturn ret;
-
-	g_return_val_if_fail (self != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (NM_IS_MODEM (self), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (device != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (NM_IS_DEVICE (device), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (device_class != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (NM_IS_DEVICE_CLASS (device_class), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (reason != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	req = nm_device_get_act_request (device);
-	g_assert (req);
-
-	priv = NM_MODEM_GET_PRIVATE (self);
-	switch (priv->ip_method) {
-	case MM_MODEM_IP_METHOD_PPP:
-		ret = ppp_stage4 (self, req, config, reason);
-		break;
-	case MM_MODEM_IP_METHOD_STATIC:
-		ret = static_stage4 (self, req, device, config, reason);
-		break;
-	case MM_MODEM_IP_METHOD_DHCP:
-		ret = device_class->act_stage4_get_ip4_config (device, config, reason);
-		break;
-	default:
-		nm_log_err (LOGD_MB, "unknown IP method %d", priv->ip_method);
-		ret = NM_ACT_STAGE_RETURN_FAILURE;
-		break;
-	}
-
-	return ret;
+	/* FIXME: We don't support IPv6 on modems quite yet... */
+	nm_device_activate_schedule_ip6_config_timeout (device);
+	return NM_ACT_STAGE_RETURN_POSTPONE;
 }
 
 static void
@@ -586,7 +502,7 @@ nm_modem_act_stage1_prepare (NMModem *self,
 		if (hints)
 			g_ptr_array_free (hints, TRUE);
 	}
-	
+
 	return ret;
 }
 
@@ -662,11 +578,6 @@ real_deactivate (NMModem *self, NMDevice *device)
 		priv->call = NULL;
 	}
 
-	if (priv->pending_ip4_config) {
-		g_object_unref (priv->pending_ip4_config);
-		priv->pending_ip4_config = NULL;
-	}
-
 	priv->in_bytes = priv->out_bytes = 0;
 
 	if (priv->ppp_manager) {
@@ -680,10 +591,12 @@ real_deactivate (NMModem *self, NMDevice *device)
 	case MM_MODEM_IP_METHOD_STATIC:
 	case MM_MODEM_IP_METHOD_DHCP:
 		ifindex = nm_device_get_ip_ifindex (device);
-		/* FIXME: use AF_UNSPEC here when we have IPv6 support */
-		nm_system_iface_flush_routes (ifindex, AF_INET);
-		nm_system_iface_flush_addresses (ifindex, AF_UNSPEC);
-		nm_system_iface_set_up (ifindex, FALSE, NULL);
+		if (ifindex >= 0) {
+			/* FIXME: use AF_UNSPEC here when we have IPv6 support */
+			nm_system_iface_flush_routes (ifindex, AF_INET);
+			nm_system_iface_flush_addresses (ifindex, AF_UNSPEC);
+			nm_system_iface_set_up (ifindex, FALSE, NULL);
+		}
 		break;
 	default:
 		nm_log_err (LOGD_MB, "unknown IP method %d", priv->ip_method);
@@ -721,7 +634,7 @@ nm_modem_device_state_changed (NMModem *self,
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_MODEM (self));
 
-	if (IS_ACTIVATING_STATE (old_state) || (old_state == NM_DEVICE_STATE_ACTIVATED))
+	if (old_state >= NM_DEVICE_STATE_PREPARE && old_state <= NM_DEVICE_STATE_ACTIVATED)
 		was_connected = TRUE;
 
 	priv = NM_MODEM_GET_PRIVATE (self);
@@ -758,44 +671,20 @@ nm_modem_device_state_changed (NMModem *self,
 	}
 }
 
-static gboolean
-_state_is_active (NMDeviceState state)
-{
-	return (state >= NM_DEVICE_STATE_IP_CONFIG && state <= NM_DEVICE_STATE_DEACTIVATING);
-}
-
 gboolean
 nm_modem_hw_is_up (NMModem *self, NMDevice *device)
 {
-	guint32 ip_method = NM_MODEM_GET_PRIVATE (self)->ip_method;
+	int ifindex = nm_device_get_ip_ifindex (device);
 
-	if (ip_method == MM_MODEM_IP_METHOD_STATIC || ip_method == MM_MODEM_IP_METHOD_DHCP) {
-		NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-		NMDeviceState state;
-
-		state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (device));
-		if (priv->pending_ip4_config || _state_is_active (state))
-			return nm_system_iface_is_up (nm_device_get_ip_ifindex (device));
-	}
-
-	return TRUE;
+	return ifindex > 0 ? nm_system_iface_is_up (ifindex) : TRUE;
 }
 
 gboolean
 nm_modem_hw_bring_up (NMModem *self, NMDevice *device, gboolean *no_firmware)
 {
-	guint32 ip_method = NM_MODEM_GET_PRIVATE (self)->ip_method;
+	int ifindex = nm_device_get_ip_ifindex (device);
 
-	if (ip_method == MM_MODEM_IP_METHOD_STATIC || ip_method == MM_MODEM_IP_METHOD_DHCP) {
-		NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-		NMDeviceState state;
-
-		state = nm_device_interface_get_state (NM_DEVICE_INTERFACE (device));
-		if (priv->pending_ip4_config || _state_is_active (state))
-			return nm_system_iface_set_up (nm_device_get_ip_ifindex (device), TRUE, no_firmware);
-	}
-
-	return TRUE;
+	return ifindex > 0 ? nm_system_iface_set_up (ifindex, TRUE, no_firmware) : TRUE;
 }
 
 const char *
@@ -1013,6 +902,9 @@ get_property (GObject *object, guint prop_id,
 	case PROP_IP_METHOD:
 		g_value_set_uint (value, priv->ip_method);
 		break;
+	case PROP_IP_TIMEOUT:
+		g_value_set_uint (value, priv->mm_ip_timeout);
+		break;
 	case PROP_ENABLED:
 		g_value_set_boolean (value, priv->mm_enabled);
 		break;
@@ -1045,6 +937,9 @@ set_property (GObject *object, guint prop_id,
 	case PROP_IP_METHOD:
 		/* Construct only */
 		priv->ip_method = g_value_get_uint (value);
+		break;
+	case PROP_IP_TIMEOUT:
+		priv->mm_ip_timeout = g_value_get_uint (value);
 		break;
 	case PROP_ENABLED:
 		break;
@@ -1127,6 +1022,14 @@ nm_modem_class_init (NMModemClass *klass)
 							MM_MODEM_IP_METHOD_DHCP,
 							MM_MODEM_IP_METHOD_PPP,
 							G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property
+		(object_class, PROP_IP_TIMEOUT,
+		 g_param_spec_uint (NM_MODEM_IP_TIMEOUT,
+		                    "IP timeout",
+		                    "IP timeout",
+		                    0, 360, 20,
+		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	g_object_class_install_property
 		(object_class, PROP_ENABLED,

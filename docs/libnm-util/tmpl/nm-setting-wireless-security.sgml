@@ -9,12 +9,10 @@ NMSettingWirelessSecurity
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -148,6 +146,13 @@ NMSettingWirelessSecurity
 @NM_WEP_KEY_TYPE_LAST: 
 
 <!-- ##### MACRO NM_SETTING_WIRELESS_SECURITY_AUTH_ALG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRELESS_SECURITY_ERROR ##### -->
 <para>
 
 </para>

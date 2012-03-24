@@ -57,8 +57,11 @@ enum {
 #define NM_SUPPLICANT_INTERFACE_STATE            "state"
 #define NM_SUPPLICANT_INTERFACE_REMOVED          "removed"
 #define NM_SUPPLICANT_INTERFACE_NEW_BSS          "new-bss"
+#define NM_SUPPLICANT_INTERFACE_BSS_UPDATED      "bss-updated"
+#define NM_SUPPLICANT_INTERFACE_BSS_REMOVED      "bss-removed"
 #define NM_SUPPLICANT_INTERFACE_SCAN_DONE        "scan-done"
 #define NM_SUPPLICANT_INTERFACE_CONNECTION_ERROR "connection-error"
+#define NM_SUPPLICANT_INTERFACE_CREDENTIALS_REQUEST "credentials-request"
 
 struct _NMSupplicantInterface {
 	GObject parent;
@@ -79,7 +82,17 @@ typedef struct {
 
 	/* interface saw a new BSS */
 	void (*new_bss)          (NMSupplicantInterface *iface,
+	                          const char *object_path,
 	                          GHashTable *props);
+
+	/* a BSS property changed */
+	void (*bss_updated)      (NMSupplicantInterface *iface,
+	                          const char *object_path,
+	                          GHashTable *props);
+
+	/* supplicant removed a BSS from its scan list */
+	void (*bss_removed)      (NMSupplicantInterface *iface,
+	                          const char *object_path);
 
 	/* wireless scan is done */
 	void (*scan_done)        (NMSupplicantInterface *iface,
@@ -89,6 +102,11 @@ typedef struct {
 	void (*connection_error) (NMSupplicantInterface * iface,
 	                          const char * name,
 	                          const char * message);
+
+	/* 802.1x credentials requested */
+	void (*credentials_request) (NMSupplicantInterface *iface,
+	                             const char *field,
+	                             const char *message);
 } NMSupplicantInterfaceClass;
 
 
@@ -97,6 +115,7 @@ GType nm_supplicant_interface_get_type (void);
 NMSupplicantInterface * nm_supplicant_interface_new (NMSupplicantManager * smgr,
                                                      const char *ifname,
                                                      gboolean is_wireless,
+                                                     gboolean fast_supported,
                                                      gboolean start_now);
 
 gboolean nm_supplicant_interface_set_config (NMSupplicantInterface * iface,
@@ -117,5 +136,12 @@ const char *nm_supplicant_interface_state_to_string (guint32 state);
 gboolean nm_supplicant_interface_get_scanning (NMSupplicantInterface *self);
 
 const char *nm_supplicant_interface_get_ifname (NMSupplicantInterface *self);
+
+gboolean nm_supplicant_interface_get_has_credentials_request (NMSupplicantInterface *self);
+
+gboolean nm_supplicant_interface_credentials_reply (NMSupplicantInterface *self,
+                                                    const char *field,
+                                                    const char *value,
+                                                    GError **error);
 
 #endif	/* NM_SUPPLICANT_INTERFACE_H */

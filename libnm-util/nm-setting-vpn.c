@@ -18,7 +18,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2012 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -61,29 +61,6 @@ nm_setting_vpn_error_quark (void)
 	if (G_UNLIKELY (!quark))
 		quark = g_quark_from_static_string ("nm-setting-vpn-error-quark");
 	return quark;
-}
-
-/* This should really be standard. */
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-
-GType
-nm_setting_vpn_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] = {
-			/* Unknown error. */
-			ENUM_ENTRY (NM_SETTING_VPN_ERROR_UNKNOWN, "UnknownError"),
-			/* The specified property was invalid. */
-			ENUM_ENTRY (NM_SETTING_VPN_ERROR_INVALID_PROPERTY, "InvalidProperty"),
-			/* The specified property was missing and is required. */
-			ENUM_ENTRY (NM_SETTING_VPN_ERROR_MISSING_PROPERTY, "MissingProperty"),
-			{ 0, 0, 0 }
-		};
-		etype = g_enum_register_static ("NMSettingVpnError", values);
-	}
-	return etype;
 }
 
 
@@ -171,6 +148,22 @@ nm_setting_vpn_get_user_name (NMSettingVPN *setting)
 	g_return_val_if_fail (NM_IS_SETTING_VPN (setting), NULL);
 
 	return NM_SETTING_VPN_GET_PRIVATE (setting)->user_name;
+}
+
+/**
+ * nm_setting_vpn_get_num_data_items:
+ * @setting: the #NMSettingVPN
+ *
+ * Gets number of key/value pairs of VPN configuration data.
+ *
+ * Returns: the number of VPN plugin specific configuration data items
+ **/
+guint32
+nm_setting_vpn_get_num_data_items (NMSettingVPN *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_VPN (setting), 0);
+
+	return g_hash_table_size (NM_SETTING_VPN_GET_PRIVATE (setting)->data);
 }
 
 /**
@@ -281,6 +274,22 @@ nm_setting_vpn_foreach_data_item (NMSettingVPN *setting,
 	g_return_if_fail (NM_IS_SETTING_VPN (setting));
 
 	foreach_item_helper (NM_SETTING_VPN_GET_PRIVATE (setting)->data, func, user_data);
+}
+
+/**
+ * nm_setting_vpn_get_num_secrets:
+ * @setting: the #NMSettingVPN
+ *
+ * Gets number of VPN plugin specific secrets in the setting.
+ *
+ * Returns: the number of VPN plugin specific secrets
+ **/
+guint32
+nm_setting_vpn_get_num_secrets (NMSettingVPN *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_VPN (setting), 0);
+
+	return g_hash_table_size (NM_SETTING_VPN_GET_PRIVATE (setting)->secrets);
 }
 
 /**
@@ -779,7 +788,7 @@ nm_setting_vpn_class_init (NMSettingVPNClass *setting_class)
 						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
 
 	/**
-	 * NMSettinVPN:user-name:
+	 * NMSettingVPN:user-name:
 	 *
 	 * If the VPN connection requires a user name for authentication, that name
 	 * should be provided here.  If the connection is available to more than

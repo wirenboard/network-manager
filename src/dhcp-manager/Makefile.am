@@ -3,9 +3,12 @@ SUBDIRS=. tests
 INCLUDES = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/marshallers \
+	-I${top_builddir}/include \
+	-I${top_srcdir}/src/generated \
+	-I${top_builddir}/src/generated \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/libnm-util \
+	-I${top_builddir}/libnm-util \
 	-I${top_srcdir}/src
 
 noinst_LTLIBRARIES = libdhcp-manager.la libdhcp-dhclient.la
@@ -29,7 +32,6 @@ libdhcp_dhclient_la_CPPFLAGS = \
 	-DDHCLIENT_V$(DHCLIENT_VERSION)
 
 libdhcp_dhclient_la_LIBADD = \
-	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(DBUS_LIBS) \
@@ -55,7 +57,6 @@ libdhcp_manager_la_CPPFLAGS = \
 	-DDHCPCD_PATH=\"$(DHCPCD_PATH)\"
 
 libdhcp_manager_la_LIBADD = \
-	$(top_builddir)/marshallers/libmarshallers.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
 	$(builddir)/libdhcp-dhclient.la \
 	$(DBUS_LIBS) \

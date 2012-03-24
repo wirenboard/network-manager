@@ -9,12 +9,10 @@ nm-utils
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -36,6 +34,13 @@ nm-utils
 @NMU_SEC_WPA_ENTERPRISE: 
 @NMU_SEC_WPA2_PSK: 
 @NMU_SEC_WPA2_ENTERPRISE: 
+
+<!-- ##### MACRO NM_UTILS_HWADDR_LEN_MAX ##### -->
+<para>
+
+</para>
+
+
 
 <!-- ##### FUNCTION nm_utils_deinit ##### -->
 <para>
@@ -61,6 +66,55 @@ nm-utils
 </para>
 
 @hash: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_atoba ##### -->
+<para>
+
+</para>
+
+@asc: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_aton ##### -->
+<para>
+
+</para>
+
+@asc: 
+@type: 
+@buffer: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_len ##### -->
+<para>
+
+</para>
+
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_ntoa ##### -->
+<para>
+
+</para>
+
+@addr: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_type ##### -->
+<para>
+
+</para>
+
+@len: 
 @Returns: 
 
 

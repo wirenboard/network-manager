@@ -21,6 +21,7 @@
  * Copyright (C) January, 1998 Sergei Viznyuk <sv@phystech.com>
  */
 
+#include <config.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -41,6 +42,8 @@
 #include <glib.h>
 #include <ctype.h>
 #include <linux/if.h>
+#include <linux/sockios.h>
+#include <linux/if_bonding.h>
 
 #include "nm-system.h"
 #include "nm-device.h"
@@ -56,6 +59,16 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
+
+#ifdef HAVE_LIBNL3
+#include <netlink/route/link/bonding.h>
+#include <netlink/route/link/vlan.h>
+#endif
+
+#if !HAVE_VLAN_FLAG_LOOSE_BINDING
+/* Older kernels don't have this flag */
+#define VLAN_FLAG_LOOSE_BINDING 0x04
+#endif
 
 static void nm_system_device_set_priority (int ifindex,
                                            NMIP4Config *config,
@@ -108,7 +121,7 @@ nm_system_device_set_ip4_route (int ifindex,
 	g_return_val_if_fail (route != NULL, NULL);
 
 	/* Add the route */
-	err = nm_netlink_route_add(route, AF_INET, &ip4_dest, ip4_prefix, &ip4_gateway, 0);
+	err = nm_netlink_route4_add (route, &ip4_dest, ip4_prefix, &ip4_gateway, 0);
 	if (err == -NLE_OBJ_NOTFOUND && ip4_gateway) {
 		/* Gateway might be over a bridge; try adding a route to gateway first */
 		struct rtnl_route *route2;
@@ -116,9 +129,9 @@ nm_system_device_set_ip4_route (int ifindex,
 		route2 = nm_netlink_route_new (ifindex, AF_INET, mss, NULL);
 		if (route2) {
 			/* Add route to gateway over bridge */
-			err = nm_netlink_route_add(route2, AF_INET, &ip4_gateway, 32, NULL, 0);
+			err = nm_netlink_route4_add (route2, &ip4_gateway, 32, NULL, 0);
 			if (!err) {
-				err = nm_netlink_route_add(route, AF_INET, &ip4_dest, ip4_prefix, &ip4_gateway, 0);
+				err = nm_netlink_route4_add (route, &ip4_dest, ip4_prefix, &ip4_gateway, 0);
 				if (err)
 					nm_netlink_route_delete (route2);
 			}
@@ -233,7 +246,7 @@ sync_addresses (int ifindex,
 
 		if (buf_valid) {
 			nm_log_dbg (log_domain, "(%s): removing address '%s/%d'",
-			            iface, buf, nl_addr_get_prefixlen (nladdr));
+			            iface, buf, rtnl_addr_get_prefixlen (match_addr));
 		}
 
 		/* Otherwise, match_addr should be removed from the interface. */
@@ -479,18 +492,18 @@ nm_system_set_ip6_route (int ifindex,
 	g_return_val_if_fail (route != NULL, -1);
 
 	/* Add the route */
-	err = nm_netlink_route_add(route, AF_INET6, &ip6_dest, ip6_prefix, &ip6_gateway, 0);
+	err = nm_netlink_route6_add (route, ip6_dest, ip6_prefix, ip6_gateway, 0);
 	if (err == -NLE_OBJ_NOTFOUND && ip6_gateway) {
 		/* Gateway might be over a bridge; try adding a route to gateway first */
 		struct rtnl_route *route2;
 
 		route2 = nm_netlink_route_new (ifindex, AF_INET6, mss, NULL);
 		if (route2) {
-			err = nm_netlink_route_add(route, AF_INET6, &ip6_gateway, 128, NULL, 0);
+			err = nm_netlink_route6_add (route, ip6_gateway, 128, NULL, 0);
 			/* Add route to gateway over bridge */
 			if (!err) {
 				/* Try adding the route again */
-				err = nm_netlink_route_add(route, AF_INET6, &ip6_dest, ip6_prefix, &ip6_gateway, 0);
+				err = nm_netlink_route6_add (route, ip6_dest, ip6_prefix, ip6_gateway, 0);
 				if (err)
 					nm_netlink_route_delete (route2);
 			}
@@ -588,7 +601,7 @@ nm_system_apply_ip6_config (int ifindex,
 			                               RTPROT_UNSPEC,
 			                               RT_TABLE_UNSPEC,
 			                               NULL);
-			if (err) {
+			if (err && (err != -NLE_EXIST)) {
 				nm_log_err (LOGD_DEVICE | LOGD_IP6,
 				            "(%s): failed to set IPv6 route: %s",
 				            iface ? iface : "unknown",
@@ -657,15 +670,8 @@ nm_system_iface_set_up (int ifindex,
 	return success;
 }
 
-/**
- * nm_system_iface_is_up:
- * @ifindex: interface index
- *
- * Returns: %TRUE if the interface is up, %FALSE if it was down or the check
- * failed.
- **/
-gboolean
-nm_system_iface_is_up (int ifindex)
+guint32
+nm_system_iface_get_flags (int ifindex)
 {
 	struct rtnl_link *l;
 	guint32 flags;
@@ -686,7 +692,20 @@ nm_system_iface_is_up (int ifindex)
 	flags = rtnl_link_get_flags (l);
 	rtnl_link_put (l);
 
-	return flags & IFF_UP;
+	return flags;
+}
+
+/**
+ * nm_system_iface_is_up:
+ * @ifindex: interface index
+ *
+ * Returns: %TRUE if the interface is up, %FALSE if it was down or the check
+ * failed.
+ **/
+gboolean
+nm_system_iface_is_up (int ifindex)
+{
+	return nm_system_iface_get_flags (ifindex) & IFF_UP;
 }
 
 /**
@@ -812,7 +831,7 @@ add_ip4_route_to_gateway (int ifindex, guint32 gw, guint32 mss)
 	g_return_val_if_fail (route != NULL, NULL);
 
 	/* Add direct route to the gateway */
-	err = nm_netlink_route_add(route, AF_INET, &gw, 32, NULL, 0);
+	err = nm_netlink_route4_add (route, &gw, 32, NULL, 0);
 	if (err) {
 		char *iface = nm_netlink_index_to_iface (ifindex);
 
@@ -836,7 +855,7 @@ replace_default_ip4_route (int ifindex, guint32 gw, guint32 mss)
 	struct rtnl_route *route = NULL;
 	struct nl_sock *nlh;
 	int err = -1;
-	int dst=0;
+	guint32 dst = 0;
 
 	g_return_val_if_fail (ifindex > 0, -ENODEV);
 
@@ -850,7 +869,9 @@ replace_default_ip4_route (int ifindex, guint32 gw, guint32 mss)
 	g_return_val_if_fail (route != NULL, -ENOMEM);
 
 	/* Add the new default route */
-	err = nm_netlink_route_add (route, AF_INET, &dst, 0, &gw, NLM_F_REPLACE);
+	err = nm_netlink_route4_add (route, &dst, 0, &gw, NLM_F_REPLACE);
+	if (err == -NLE_EXIST)
+		err = 0;
 
 	rtnl_route_put (route);
 	return err;
@@ -985,7 +1006,7 @@ add_ip6_route_to_gateway (int ifindex, const struct in6_addr *gw)
 	g_return_val_if_fail (route != NULL, NULL);
 
 	/* Add direct route to the gateway */
-	err = nm_netlink_route_add(route, AF_INET, gw, 128, NULL, 0);
+	err = nm_netlink_route6_add (route, gw, 128, NULL, 0);
 	if (err) {
 		char *iface = nm_netlink_index_to_iface (ifindex);
 
@@ -1020,11 +1041,10 @@ replace_default_ip6_route (int ifindex, const struct in6_addr *gw)
 	g_return_val_if_fail (route != NULL, -ENOMEM);
 
 	/* Add the new default route */
-	nm_netlink_route_add(route, AF_INET6, NULL, 0, gw, NLM_F_REPLACE);
+	err = nm_netlink_route6_add (route, &in6addr_any, 0, gw, NLM_F_REPLACE);
 	if (err == -NLE_EXIST) {
 		/* FIXME: even though we use NLM_F_REPLACE the kernel won't replace
-		 * the route if it's the same.  Should try to remove it first, then
-		 * add the new one again here.
+		 * the route if it's the same.  Suppress the pointless error.
 		 */
 		err = 0;
 	}
@@ -1049,6 +1069,9 @@ nm_system_replace_default_ip6_route (int ifindex, const struct in6_addr *gw)
 
 	err = replace_default_ip6_route (ifindex, gw);
 	if (err == 0)
+		return TRUE;
+
+	if (err == -NLE_EXIST)
 		return TRUE;
 
 	iface = nm_netlink_index_to_iface (ifindex);
@@ -1201,4 +1224,763 @@ nm_system_device_set_priority (int ifindex,
 		rtnl_route_add (nlh, found, 0);
 		rtnl_route_put (found);
 	}
+}
+
+static const struct {
+	const char *option;
+	const char *default_value;
+} bonding_defaults[] = {
+	{ "mode", "balance-rr" },
+	{ "arp_interval", "0" },
+	{ "miimon", "0" },
+
+	{ "ad_select", "stable" },
+	{ "arp_validate", "none" },
+	{ "downdelay", "0" },
+	{ "fail_over_mac", "none" },
+	{ "lacp_rate", "slow" },
+	{ "min_links", "0" },
+	{ "num_grat_arp", "1" },
+	{ "num_unsol_na", "1" },
+	{ "primary", "" },
+	{ "primary_reselect", "always" },
+	{ "resend_igmp", "1" },
+	{ "updelay", "0" },
+	{ "use_carrier", "1" },
+	{ "xmit_hash_policy", "layer2" },
+	{ NULL, NULL }
+};
+
+static void
+remove_bonding_entries (const char *iface, const char *path)
+{
+	char cmd[20];
+	char *value, **entries;
+	gboolean ret;
+	int i;
+
+	if (!g_file_get_contents (path, &value, NULL, NULL))
+		return;
+
+	entries = g_strsplit (value, " ", -1);
+	for (i = 0; entries[i]; i++) {
+		snprintf (cmd, sizeof (cmd), "-%s", g_strstrip (entries[i]));
+		ret = nm_utils_do_sysctl (path, cmd);
+		if (!ret) {
+			nm_log_warn (LOGD_HW, "(%s): failed to remove entry '%s' from '%s'",
+			             iface, entries[i], path);
+		}
+	}
+	g_strfreev (entries);
+}
+
+static gboolean
+option_valid_for_nm_setting (const char *option, const char **valid_opts)
+{
+	while (*valid_opts) {
+		if (strcmp (option, *valid_opts) == 0)
+			return TRUE;
+		valid_opts++;
+	}
+	return FALSE;
+}
+
+gboolean
+nm_system_apply_bonding_config (const char *iface, NMSettingBond *s_bond)
+{
+	const char **valid_opts;
+	const char *option, *value;
+	char path[FILENAME_MAX];
+	char *current, *space;
+	gboolean ret;
+	int i;
+
+	g_return_val_if_fail (iface != NULL, FALSE);
+
+	/* Remove old slaves and arp_ip_targets */
+	snprintf (path, sizeof (path), "/sys/class/net/%s/bonding/arp_ip_target", iface);
+	remove_bonding_entries (iface, path);
+	snprintf (path, sizeof (path), "/sys/class/net/%s/bonding/slaves", iface);
+	remove_bonding_entries (iface, path);
+
+	/* Apply config/defaults */
+	valid_opts = nm_setting_bond_get_valid_options (s_bond);
+	for (i = 0; bonding_defaults[i].option; i++) {
+		option = bonding_defaults[i].option;
+		if (option_valid_for_nm_setting (option, valid_opts))
+			value = nm_setting_bond_get_option_by_name (s_bond, option);
+		else
+			value = NULL;
+		if (!value)
+			value = bonding_defaults[i].default_value;
+
+		snprintf (path, sizeof (path), "/sys/class/net/%s/bonding/%s", iface, option);
+		if (g_file_get_contents (path, &current, NULL, NULL)) {
+			g_strstrip (current);
+			space = strchr (current, ' ');
+			if (space)
+				*space = '\0';
+			if (strcmp (current, value) != 0) {
+				ret = nm_utils_do_sysctl (path, value);
+				if (!ret) {
+					nm_log_warn (LOGD_HW, "(%s): failed to set bonding attribute "
+					             "'%s' to '%s'", iface, option, value);
+				}
+			}
+		}
+	}
+
+	/* Handle arp_ip_target */
+	value = nm_setting_bond_get_option_by_name (s_bond, "arp_ip_target");
+	if (value) {
+		char **addresses, cmd[20];
+
+		snprintf (path, sizeof (path), "/sys/class/net/%s/bonding/arp_ip_target", iface);
+		addresses = g_strsplit (value, ",", -1);
+		for (i = 0; addresses[i]; i++) {
+			snprintf (cmd, sizeof (cmd), "+%s", g_strstrip (addresses[i]));
+			ret = nm_utils_do_sysctl (path, cmd);
+			if (!ret) {
+				nm_log_warn (LOGD_HW, "(%s): failed to add arp_ip_target '%s'",
+				             iface, addresses[i]);
+			}
+		}
+		g_strfreev (addresses);
+	}
+
+	return TRUE;
+}
+
+/**
+ * nm_system_add_bonding_master:
+ * @iface: the interface name for the new bond master
+ *
+ * Adds a virtual bonding device if it does not exist yet.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
+gboolean
+nm_system_add_bonding_master (const char *iface)
+{
+	struct nl_sock *sock;
+	int err;
+
+	g_return_val_if_fail (iface != NULL, FALSE);
+
+	sock = nm_netlink_get_default_handle ();
+
+	/* Existing bonding devices with matching name will be reused */
+	err = rtnl_link_bond_add (sock, iface, NULL);
+	if (err < 0) {
+		nm_log_err (LOGD_DEVICE, "(%s): error %d returned from "
+		            "rtnl_link_bond_add(): %s",
+		            iface, err, nl_geterror (err));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static gboolean
+nm_system_iface_compat_enslave (const char *master_iface, const char *slave_iface)
+{
+	struct ifreq ifr;
+	int fd;
+	gboolean ret = FALSE;
+
+	memset (&ifr, 0, sizeof (ifr));
+
+	fd = socket (PF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return FALSE;
+	}
+
+	strncpy (ifr.ifr_name, master_iface, IFNAMSIZ);
+	strncpy (ifr.ifr_slave, slave_iface, IFNAMSIZ);
+
+	if (ioctl (fd, SIOCBONDENSLAVE, &ifr) < 0 &&
+	    ioctl (fd, BOND_ENSLAVE_OLD, &ifr) < 0) {
+		nm_log_err (LOGD_DEVICE, "(%s): error enslaving %s: %d (%s)",
+		            master_iface, slave_iface, errno, strerror (errno));
+	} else
+		ret = TRUE;
+
+	close (fd);
+
+	return ret;
+}
+
+/**
+ * nm_system_iface_enslave:
+ * @master_ifindex: master device interface index
+ * @master_iface: master device interface name
+ * @slave_ifindex: slave device interface index
+ * @slave_iface: slave device interface name
+ *
+ * Enslaves the 'slave' to 'master. This function targets implementing a
+ * generic interface to attaching all kinds of slaves to masters. Currently
+ * only bonding is properly supported due to the backwards compatibility
+ * function being bonding specific.
+ *
+ * The slave device needs to be down as a prerequisite.
+ *
+ * Returns: %TRUE on success, or %FALSE
+ */
+gboolean
+nm_system_iface_enslave (gint master_ifindex,
+                         const char *master_iface,
+                         gint slave_ifindex,
+                         const char *slave_iface)
+{
+	struct nl_sock *sock;
+	int err;
+
+	g_return_val_if_fail (master_ifindex >= 0, FALSE);
+	g_return_val_if_fail (master_iface != NULL, FALSE);
+	g_return_val_if_fail (slave_ifindex >= 0, FALSE);
+	g_return_val_if_fail (slave_iface != NULL, FALSE);
+
+	sock = nm_netlink_get_default_handle ();
+
+	if (!(nm_system_iface_get_flags (master_ifindex) & IFF_MASTER)) {
+		nm_log_err (LOGD_DEVICE, "(%s): interface is not a master", master_iface);
+		return FALSE;
+	}
+
+	g_assert (!nm_system_iface_is_up (slave_ifindex));
+
+	if (nm_system_iface_get_flags (slave_ifindex) & IFF_SLAVE) {
+		nm_log_err (LOGD_DEVICE, "(%s): %s is already a slave",
+		            master_iface, slave_iface);
+		return FALSE;
+	}
+
+	err = rtnl_link_bond_enslave_ifindex (sock, master_ifindex, slave_ifindex);
+	if (err == -NLE_OPNOTSUPP)
+		return nm_system_iface_compat_enslave (master_iface, slave_iface);
+
+	if (err < 0) {
+		nm_log_err (LOGD_DEVICE, "(%s): error enslaving %s: %d (%s)",
+		            master_iface, slave_iface, err, nl_geterror (err));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
+nm_system_iface_compat_release (const char *master_iface, const char *slave_iface)
+{
+	struct ifreq ifr;
+	int fd;
+	gboolean ret = FALSE;
+
+	memset (&ifr, 0, sizeof (ifr));
+
+	fd = socket (PF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return FALSE;
+	}
+
+	strncpy (ifr.ifr_name, master_iface, IFNAMSIZ);
+	strncpy (ifr.ifr_slave, slave_iface, IFNAMSIZ);
+
+	if (ioctl (fd, SIOCBONDRELEASE, &ifr) < 0 &&
+	    ioctl (fd, BOND_RELEASE_OLD, &ifr) < 0) {
+		nm_log_err (LOGD_DEVICE, "(%s): error releasing slave %s: %d (%s)",
+		            master_iface, slave_iface, errno, strerror (errno));
+	} else
+		ret = TRUE;
+
+	close (fd);
+	return ret;
+}
+
+/**
+ * nm_system_iface_release:
+ * @master_ifindex: master device interface index
+ * @master_iface: master device interface name
+ * @slave_ifindex: slave device interface index
+ * @slave_iface: slave device interface name
+ *
+ * Releases the 'slave' which is attached to 'master. This function targets
+ * implementing a generic interface to releasing all kinds of slaves. Currently
+ * only bonding is properly supported due to the backwards compatibility
+ * function being bonding specific.
+ *
+ * Returns: %TRUE on success, or %FALSE
+ */
+gboolean
+nm_system_iface_release (gint master_ifindex,
+                         const char *master_iface,
+                         gint slave_ifindex,
+                         const char *slave_iface)
+{
+	struct nl_sock *sock;
+	int err;
+
+	g_return_val_if_fail (master_ifindex >= 0, FALSE);
+	g_return_val_if_fail (master_iface != NULL, FALSE);
+	g_return_val_if_fail (slave_ifindex >= 0, FALSE);
+	g_return_val_if_fail (slave_iface != NULL, FALSE);
+
+	sock = nm_netlink_get_default_handle ();
+
+	/* Only release if this is actually a slave */
+	if (!(nm_system_iface_get_flags (slave_ifindex) & IFF_SLAVE))
+		return TRUE;
+
+	err = rtnl_link_bond_release_ifindex (sock, slave_ifindex);
+	if (err == -NLE_OPNOTSUPP)
+		return nm_system_iface_compat_release (master_iface, slave_iface);
+	else if (err < 0) {
+		nm_log_err (LOGD_DEVICE, "(%s): error releasing slave %s: %d (%s)",
+		            master_iface, slave_iface, err, nl_geterror (err));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * nm_system_get_iface_type:
+ * @ifindex: interface index
+ * @name: name of interface
+ *
+ * Lookup the type of an interface.  At least one of @ifindex or @name must
+ * be provided.
+ *
+ * Returns: Interface type (NM_IFACE_TYPE_*) or NM_IFACE_TYPE_UNSPEC.
+ **/
+int
+nm_system_get_iface_type (int ifindex, const char *name)
+{
+	struct rtnl_link *result;
+	struct nl_sock *nlh;
+	char *type;
+	int res = NM_IFACE_TYPE_UNSPEC;
+
+	g_return_val_if_fail (ifindex >= 0 || name, NM_IFACE_TYPE_UNSPEC);
+
+	nlh = nm_netlink_get_default_handle ();
+	if (!nlh)
+		goto out;
+
+	/* Prefer interface indexes to names */
+	if (rtnl_link_get_kernel (nlh, ifindex, ifindex < 0 ? name : NULL, &result) < 0)
+		goto out;
+
+	type = rtnl_link_get_type (result);
+
+	if (!g_strcmp0 (type, "bond"))
+		res = NM_IFACE_TYPE_BOND;
+	else if (!g_strcmp0 (type, "vlan"))
+		res = NM_IFACE_TYPE_VLAN;
+	else if (!g_strcmp0 (type, "dummy"))
+		res = NM_IFACE_TYPE_DUMMY;
+
+	rtnl_link_put (result);
+out:
+	return res;
+}
+
+/**
+ * nm_system_get_iface_vlan_info:
+ * @ifindex: the VLAN interface index
+ * @out_parent_ifindex: on success, the interface index of the parent interface of
+ *   @iface
+ * @out_vlan_id: on success, the VLAN ID of @iface
+ *
+ * Gets the VLAN parent interface name and VLAN ID.
+ *
+ * Returns: %TRUE if the interface is a VLAN device and no error occurred;
+ *   %FALSE if the interface was not a VLAN interface or an error occurred
+ **/
+gboolean
+nm_system_get_iface_vlan_info (int ifindex,
+                               int *out_parent_ifindex,
+                               int *out_vlan_id)
+{
+	struct nl_sock *nlh;
+	struct rtnl_link *lk;
+	struct nl_cache *cache = NULL;
+	gboolean success = FALSE;
+	int ret;
+
+	if (nm_system_get_iface_type (ifindex, NULL) != NM_IFACE_TYPE_VLAN)
+		return FALSE;
+
+	nlh = nm_netlink_get_default_handle ();
+	if (!nlh)
+		return FALSE;
+
+	ret = rtnl_link_alloc_cache (nlh, &cache);
+	g_return_val_if_fail (ret == 0, FALSE);
+	g_return_val_if_fail (cache != NULL, FALSE);
+
+	lk = rtnl_link_get (cache, ifindex);
+	if (lk) {
+		if (out_parent_ifindex)
+			*out_parent_ifindex = rtnl_link_get_link (lk);
+		if (out_vlan_id)
+			*out_vlan_id = rtnl_link_vlan_get_id (lk);
+
+		rtnl_link_put (lk);
+		success = TRUE;
+	}
+
+	nl_cache_free (cache);
+	return success;
+}
+
+static gboolean
+nm_system_iface_compat_set_name (const char *old_name, const char *new_name)
+{
+	int fd;
+	struct ifreq ifr;
+
+	if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -1;
+	}
+
+	memset (&ifr, 0, sizeof (struct ifreq));
+	strncpy (ifr.ifr_name, old_name, sizeof (ifr.ifr_name));
+	strncpy (ifr.ifr_newname, new_name, sizeof (ifr.ifr_newname));
+
+	if (ioctl (fd, SIOCSIFNAME, &ifr) < 0) {
+		nm_log_err (LOGD_DEVICE, "cann't change %s with %s.", old_name, new_name);
+		close (fd);
+		return FALSE;
+	}
+
+	close (fd);
+	return TRUE;
+}
+
+static gboolean
+nm_system_iface_compat_set_vlan_name_type (int name_type)
+{
+	int fd;
+	struct vlan_ioctl_args if_request;
+
+	if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -1;
+	}
+
+	memset (&if_request, 0, sizeof (struct vlan_ioctl_args));
+	if_request.cmd = SET_VLAN_NAME_TYPE_CMD;
+	if_request.u.name_type = name_type;
+
+	if (ioctl (fd, SIOCSIFVLAN, &if_request) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't set name type.");
+		close (fd);
+		return FALSE;
+	}
+
+	close (fd);
+	return TRUE;
+}
+
+static gboolean
+nm_system_iface_compat_add_vlan_device (const char *master, int vid)
+{
+	int fd;
+	struct vlan_ioctl_args if_request;
+
+	g_return_val_if_fail (master, FALSE);
+	g_return_val_if_fail (vid < 4096, FALSE);
+
+	/*
+	 * use VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD as default,
+	 * we will overwrite it with rtnl_link_set_name() later.
+	 */
+	if (!nm_system_iface_compat_set_vlan_name_type (VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD))
+		return FALSE;
+
+	if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -1;
+	}
+
+	memset (&if_request, 0, sizeof (struct vlan_ioctl_args));
+	strcpy (if_request.device1, master);
+	if_request.cmd = ADD_VLAN_CMD;
+	if_request.u.VID = vid;
+
+	if (ioctl (fd, SIOCSIFVLAN, &if_request) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't add vlan device %s vid %d.", master, vid);
+		close (fd);
+		return FALSE;
+	}
+
+	close (fd);
+	return TRUE;
+}
+
+static gboolean
+nm_system_iface_compat_rem_vlan_device (const char *iface)
+{
+	int fd;
+	struct vlan_ioctl_args if_request;
+
+	if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -1;
+	}
+
+	memset (&if_request, 0, sizeof (struct vlan_ioctl_args));
+        strcpy (if_request.device1, iface);
+	if_request.cmd = DEL_VLAN_CMD;
+
+	if (ioctl (fd, SIOCSIFVLAN, &if_request) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't rem vlan device %s.", iface);
+		close (fd);
+		return FALSE;
+	}
+
+	close (fd);
+	return TRUE;
+}
+
+static gboolean
+nm_system_iface_compat_add_vlan (NMConnection *connection,
+				const char *iface,
+				int master_ifindex)
+{
+	NMSettingVlan *s_vlan;
+	int vlan_id;
+	guint32 vlan_flags = 0;
+	guint32 num, i, from, to;
+	int ifindex;
+	struct rtnl_link *new_link = NULL;
+	char *master = nm_netlink_index_to_iface (master_ifindex);
+	char *name = NULL;
+
+	s_vlan = nm_connection_get_setting_vlan (connection);
+	g_return_val_if_fail (s_vlan, FALSE);
+
+	vlan_id = nm_setting_vlan_get_id (s_vlan);
+
+	if (!iface) {
+		iface = nm_connection_get_virtual_iface_name (connection);
+		g_return_val_if_fail (iface != NULL, FALSE);
+	}
+
+	/*
+	 * Use VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD as default,
+	 * we will overwrite it with rtnl_link_set_name() later.
+	 */
+	name = nm_utils_new_vlan_name(master, vlan_id);
+
+	/*
+	 * vconfig add
+	 */
+
+	if (!nm_system_iface_compat_add_vlan_device (master, vlan_id))
+		goto err_out;
+
+	/*
+	 * get corresponding rtnl_link
+	 */
+
+	if (!nm_system_iface_compat_set_name (name, iface))
+		goto err_out_delete_vlan_with_default_name;
+
+	ifindex = nm_netlink_iface_to_index (iface);
+	if (ifindex <= 0)
+		goto err_out;
+
+	new_link = nm_netlink_index_to_rtnl_link (ifindex);
+	if (!new_link)
+		goto err_out_delete_vlan_with_default_name;
+
+	/*
+	 * vconfig set_flag
+	 */
+	vlan_flags = nm_setting_vlan_get_flags (s_vlan);
+	if (vlan_flags)
+		if (rtnl_link_vlan_set_flags (new_link, vlan_flags))
+			goto err_out_delete_vlan_with_new_name;
+
+	/*
+	 * vconfig set_ingress_map
+	 */
+	num = nm_setting_vlan_get_num_priorities (s_vlan, NM_VLAN_INGRESS_MAP);
+	for (i = 0; i < num; i++) {
+		if (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_INGRESS_MAP, i, &from, &to))
+			if (rtnl_link_vlan_set_ingress_map (new_link, from, to))
+				goto err_out_delete_vlan_with_new_name;
+	}
+
+	/*
+	 * vconfig set_egress_map
+	 */
+	num = nm_setting_vlan_get_num_priorities (s_vlan, NM_VLAN_EGRESS_MAP);
+	for (i = 0; i < num; i++) {
+		if (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, i, &from, &to))
+			if (rtnl_link_vlan_set_egress_map (new_link, from, to))
+				goto err_out_delete_vlan_with_new_name;
+	}
+
+	rtnl_link_put (new_link);
+	return TRUE;
+
+err_out:
+	g_free (name);
+	return FALSE;
+
+err_out_delete_vlan_with_default_name:
+	nm_system_iface_compat_rem_vlan_device (name);
+	g_free (name);
+	return FALSE;
+
+err_out_delete_vlan_with_new_name:
+	rtnl_link_put (new_link);
+	nm_system_iface_compat_rem_vlan_device (iface);
+	g_free (name);
+	return FALSE;
+}
+
+/**
+ * nm_system_add_vlan_iface:
+ * @connection: the #NMConnection that describes the VLAN interface
+ * @iface: the interface name of the new VLAN interface
+ * @parent_ifindex: the interface index of the new VLAN interface's master
+ *  interface
+ *
+ * Add a VLAN device named @iface and specified in @connection.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
+gboolean
+nm_system_add_vlan_iface (NMConnection *connection,
+                          const char *iface,
+                          int parent_ifindex)
+{
+	NMSettingVlan *s_vlan;
+	int ret = -1;
+	struct rtnl_link *new_link = NULL;
+	struct nl_sock *nlh = NULL;
+	guint32 vlan_id = 0;
+	guint32 vlan_flags = 0;
+	guint32 num, i, from, to;
+
+	g_return_val_if_fail (parent_ifindex >= 0, FALSE);
+
+	nlh = nm_netlink_get_default_handle ();
+	g_return_val_if_fail (nlh != NULL, FALSE);
+
+	s_vlan = nm_connection_get_setting_vlan (connection);
+	g_return_val_if_fail (s_vlan, FALSE);
+
+	vlan_id = nm_setting_vlan_get_id (s_vlan);
+
+	if (!iface) {
+		iface = nm_connection_get_virtual_iface_name (connection);
+		g_return_val_if_fail (iface != NULL, FALSE);
+	}
+
+	new_link = rtnl_link_alloc ();
+	if (!new_link) {
+		g_warn_if_fail (new_link != NULL);
+		goto out;
+	}
+
+	ret = rtnl_link_set_type (new_link, "vlan");
+	if (ret == -NLE_OPNOTSUPP) {
+		/*
+		 * There is no linbl3, try ioctl.
+		 */
+		ret = -1;
+		if (nm_system_iface_compat_add_vlan (connection, iface, parent_ifindex))
+			ret = 0;
+		goto out;
+	}
+
+	rtnl_link_set_link (new_link, parent_ifindex);
+	rtnl_link_set_name (new_link, iface);
+	rtnl_link_vlan_set_id (new_link, vlan_id);
+
+	vlan_flags = nm_setting_vlan_get_flags (s_vlan);
+	if (vlan_flags) {
+		guint kernel_flags = 0;
+
+		if (vlan_flags & NM_VLAN_FLAG_REORDER_HEADERS)
+			kernel_flags |= VLAN_FLAG_REORDER_HDR;
+		if (vlan_flags & NM_VLAN_FLAG_GVRP)
+			kernel_flags |= VLAN_FLAG_GVRP;
+		if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
+			kernel_flags |= VLAN_FLAG_LOOSE_BINDING;
+
+		rtnl_link_vlan_set_flags (new_link, kernel_flags);
+	}
+
+	num = nm_setting_vlan_get_num_priorities (s_vlan, NM_VLAN_INGRESS_MAP);
+	for (i = 0; i < num; i++) {
+		if (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_INGRESS_MAP, i, &from, &to))
+			rtnl_link_vlan_set_ingress_map (new_link, (int) from, (int) to);
+	}
+
+	num = nm_setting_vlan_get_num_priorities (s_vlan, NM_VLAN_EGRESS_MAP);
+	for (i = 0; i < num; i++) {
+		if (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, i, &from, &to))
+			rtnl_link_vlan_set_egress_map (new_link, (int) from, (int) to);
+	}
+
+	ret = rtnl_link_add (nlh, new_link, NLM_F_CREATE);
+
+out:
+	if (new_link)
+		rtnl_link_put (new_link);
+	return (ret == 0);
+}
+
+/**
+ * nm_system_del_vlan_iface:
+ * @iface: the interface name
+ *
+ * Delete a VLAN interface specified by @iface.
+ *
+ * Returns: %TRUE on success, or %FALSE
+ */
+gboolean
+nm_system_del_vlan_iface (const char *iface)
+{
+	int ret = 0;
+	struct nl_sock *nlh = NULL;
+	struct nl_cache *cache = NULL;
+	struct rtnl_link *new_link = NULL;
+	int itype;
+
+	g_return_val_if_fail (iface != NULL, FALSE);
+
+	itype = nm_system_get_iface_type (-1, iface);
+	g_return_val_if_fail (itype == NM_IFACE_TYPE_VLAN, FALSE);
+
+	nlh = nm_netlink_get_default_handle ();
+	g_return_val_if_fail (nlh != NULL, FALSE);
+
+	ret = rtnl_link_alloc_cache (nlh, &cache);
+	g_return_val_if_fail (ret == 0, FALSE);
+	g_return_val_if_fail (cache != NULL, FALSE);
+
+	new_link = rtnl_link_get_by_name (cache, iface);
+	if (new_link) {
+		ret = rtnl_link_delete (nlh, new_link);
+		if (ret == -NLE_OPNOTSUPP) {
+			/*
+			 * There is no linbl3, try ioctl.
+			 */
+			ret = -1;
+			if (nm_system_iface_compat_rem_vlan_device (iface))
+				ret = 0;
+		}
+	}
+
+	rtnl_link_put (new_link);
+	nl_cache_free (cache);
+	return (ret == 0) ? TRUE : FALSE;
 }

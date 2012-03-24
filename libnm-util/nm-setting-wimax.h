@@ -43,13 +43,10 @@ G_BEGIN_DECLS
  * required
  */
 typedef enum {
-	NM_SETTING_WIMAX_ERROR_UNKNOWN = 0,
-	NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
-	NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY
+	NM_SETTING_WIMAX_ERROR_UNKNOWN = 0,      /*< nick=UnknownError >*/
+	NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY, /*< nick=InvalidProperty >*/
+	NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY  /*< nick=MissingProperty >*/
 } NMSettingWimaxError;
-
-#define NM_TYPE_SETTING_WIMAX_ERROR (nm_setting_wimax_error_get_type ()) 
-GType nm_setting_wimax_error_get_type (void);
 
 #define NM_SETTING_WIMAX_ERROR nm_setting_wimax_error_quark ()
 GQuark nm_setting_wimax_error_quark (void);

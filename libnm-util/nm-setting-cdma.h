@@ -49,14 +49,11 @@ G_BEGIN_DECLS
  * is missing in the connection
  */
 typedef enum {
-	NM_SETTING_CDMA_ERROR_UNKNOWN = 0,
-	NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
-	NM_SETTING_CDMA_ERROR_MISSING_PROPERTY,
-	NM_SETTING_CDMA_ERROR_MISSING_SERIAL_SETTING
+	NM_SETTING_CDMA_ERROR_UNKNOWN = 0,           /*< nick=UnknownError >*/
+	NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,      /*< nick=InvalidProperty >*/
+	NM_SETTING_CDMA_ERROR_MISSING_PROPERTY,      /*< nick=MissingProperty >*/
+	NM_SETTING_CDMA_ERROR_MISSING_SERIAL_SETTING /*< nick=MissingSerialSetting >*/
 } NMSettingCdmaError;
-
-#define NM_TYPE_SETTING_CDMA_ERROR (nm_setting_cdma_error_get_type ()) 
-GType nm_setting_cdma_error_get_type (void);
 
 #define NM_SETTING_CDMA_ERROR nm_setting_cdma_error_quark ()
 GQuark nm_setting_cdma_error_quark (void);

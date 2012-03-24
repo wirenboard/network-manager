@@ -52,6 +52,8 @@ enum {
 	LOGD_DEVICE     = 0x00200000, /* Device state and activation */
 	LOGD_OLPC_MESH  = 0x00400000,
 	LOGD_WIMAX      = 0x00800000,
+	LOGD_INFINIBAND = 0x01000000,
+	LOGD_FIREWALL   = 0x02000000,
 };
 
 #define LOGD_DHCP (LOGD_DHCP4 | LOGD_DHCP6)
@@ -64,10 +66,13 @@ enum {
 	LOGL_DEBUG = 0x00000008
 };
 
+typedef enum {
+	NM_LOGGING_ERROR_UNKNOWN_LEVEL = 0,  /*< nick=UnknownLevel >*/
+	NM_LOGGING_ERROR_UNKNOWN_DOMAIN = 1, /*< nick=UnknownDomain >*/
+} NMLoggingError;
+
 #define NM_LOGGING_ERROR (nm_logging_error_quark ())
-#define NM_TYPE_LOGGING_ERROR (nm_logging_error_get_type ())
 GQuark nm_logging_error_quark    (void);
-GType  nm_logging_error_get_type (void);
 
 
 #define nm_log_err(domain, ...) \

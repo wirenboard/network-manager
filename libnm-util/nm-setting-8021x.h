@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2012 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -42,7 +42,7 @@ G_BEGIN_DECLS
  * #NMSetting8021xCKFormat values indicate the general type of a certificate
  * or private key
  */
-typedef enum {
+typedef enum { /*< underscore_name=nm_setting_802_1x_ck_format >*/
 	NM_SETTING_802_1X_CK_FORMAT_UNKNOWN = 0,
 	NM_SETTING_802_1X_CK_FORMAT_X509,
 	NM_SETTING_802_1X_CK_FORMAT_RAW_KEY,
@@ -62,7 +62,7 @@ typedef enum {
  * stored in the setting properties, either as a blob of the item's data, or as
  * a path to a certificate or private key file on the filesystem
  */
-typedef enum {
+typedef enum { /*< underscore_name=nm_setting_802_1x_ck_scheme >*/
 	NM_SETTING_802_1X_CK_SCHEME_UNKNOWN = 0,
 	NM_SETTING_802_1X_CK_SCHEME_BLOB,
 	NM_SETTING_802_1X_CK_SCHEME_PATH
@@ -85,14 +85,11 @@ typedef enum {
  * @NM_SETTING_802_1X_ERROR_MISSING_PROPERTY: the property was missing and is
  * required
  */
-typedef enum {
-	NM_SETTING_802_1X_ERROR_UNKNOWN = 0,
-	NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-	NM_SETTING_802_1X_ERROR_MISSING_PROPERTY
+typedef enum { /*< underscore_name=nm_setting_802_1x_error >*/
+	NM_SETTING_802_1X_ERROR_UNKNOWN = 0,      /*< nick=UnknownError >*/
+	NM_SETTING_802_1X_ERROR_INVALID_PROPERTY, /*< nick=InvalidProperty >*/
+	NM_SETTING_802_1X_ERROR_MISSING_PROPERTY  /*< nick=MissingProperty >*/
 } NMSetting8021xError;
-
-#define NM_TYPE_SETTING_802_1X_ERROR (nm_setting_802_1x_error_get_type ()) 
-GType nm_setting_802_1x_error_get_type (void);
 
 #define NM_SETTING_802_1X_ERROR nm_setting_802_1x_error_quark ()
 GQuark nm_setting_802_1x_error_quark (void);
@@ -101,6 +98,7 @@ GQuark nm_setting_802_1x_error_quark (void);
 #define NM_SETTING_802_1X_EAP "eap"
 #define NM_SETTING_802_1X_IDENTITY "identity"
 #define NM_SETTING_802_1X_ANONYMOUS_IDENTITY "anonymous-identity"
+#define NM_SETTING_802_1X_PAC_FILE "pac-file"
 #define NM_SETTING_802_1X_CA_CERT "ca-cert"
 #define NM_SETTING_802_1X_CA_PATH "ca-path"
 #define NM_SETTING_802_1X_SUBJECT_MATCH "subject-match"
@@ -118,6 +116,8 @@ GQuark nm_setting_802_1x_error_quark (void);
 #define NM_SETTING_802_1X_PHASE2_CLIENT_CERT "phase2-client-cert"
 #define NM_SETTING_802_1X_PASSWORD "password"
 #define NM_SETTING_802_1X_PASSWORD_FLAGS "password-flags"
+#define NM_SETTING_802_1X_PASSWORD_RAW "password-raw"
+#define NM_SETTING_802_1X_PASSWORD_RAW_FLAGS "password-raw-flags"
 #define NM_SETTING_802_1X_PRIVATE_KEY "private-key"
 #define NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD "private-key-password"
 #define NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD_FLAGS "private-key-password-flags"
@@ -175,6 +175,8 @@ void              nm_setting_802_1x_clear_eap_methods                (NMSetting8
 const char *      nm_setting_802_1x_get_identity                     (NMSetting8021x *setting);
 
 const char *      nm_setting_802_1x_get_anonymous_identity           (NMSetting8021x *setting);
+
+const char *      nm_setting_802_1x_get_pac_file                     (NMSetting8021x *setting);
 
 gboolean          nm_setting_802_1x_get_system_ca_certs              (NMSetting8021x *setting);
 const char *      nm_setting_802_1x_get_ca_path                      (NMSetting8021x *setting);
@@ -250,6 +252,8 @@ gboolean               nm_setting_802_1x_set_phase2_client_cert          (NMSett
 
 const char *      nm_setting_802_1x_get_password                     (NMSetting8021x *setting);
 NMSettingSecretFlags nm_setting_802_1x_get_password_flags            (NMSetting8021x *setting);
+const GByteArray *   nm_setting_802_1x_get_password_raw              (NMSetting8021x *setting);
+NMSettingSecretFlags nm_setting_802_1x_get_password_raw_flags        (NMSetting8021x *setting);
 
 const char *      nm_setting_802_1x_get_pin                          (NMSetting8021x *setting);
 NMSettingSecretFlags nm_setting_802_1x_get_pin_flags                 (NMSetting8021x *setting);

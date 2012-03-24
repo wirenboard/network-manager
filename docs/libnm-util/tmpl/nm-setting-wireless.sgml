@@ -9,12 +9,10 @@ NMSettingWireless
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -137,6 +135,13 @@ NMSettingWireless
 
 
 <!-- ##### MACRO NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRELESS_ERROR ##### -->
 <para>
 
 </para>

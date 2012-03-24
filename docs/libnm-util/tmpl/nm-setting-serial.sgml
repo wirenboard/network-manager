@@ -9,12 +9,10 @@ NMSettingSerial
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -82,6 +80,13 @@ NMSettingSerial
 
 
 <!-- ##### MACRO NM_SETTING_SERIAL_BITS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_ERROR ##### -->
 <para>
 
 </para>

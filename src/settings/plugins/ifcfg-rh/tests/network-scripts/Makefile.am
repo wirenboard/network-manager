@@ -36,6 +36,8 @@ EXTRA_DIST = \
 	ifcfg-test-wifi-leap-always-ask \
 	ifcfg-test-wifi-wpa-psk \
 	keys-test-wifi-wpa-psk \
+	ifcfg-test-wifi-wpa-psk-2 \
+	keys-test-wifi-wpa-psk-2 \
 	ifcfg-test-wifi-wpa-psk-unquoted \
 	keys-test-wifi-wpa-psk-unquoted \
 	ifcfg-test-wifi-wpa-psk-unquoted2 \
@@ -79,11 +81,16 @@ EXTRA_DIST = \
 	ifcfg-test-bridge-main \
 	ifcfg-test-bridge-component \
 	ifcfg-test-vlan-interface \
+	ifcfg-test-vlan-only-vlanid \
+	ifcfg-test-vlan-only-device \
 	ifcfg-test-wifi-wep-no-keys \
 	ifcfg-test-permissions \
 	ifcfg-test-wifi-wep-agent-keys \
 	ifcfg-test-wifi-dynamic-wep-leap \
-	keys-test-wifi-dynamic-wep-leap
+	keys-test-wifi-dynamic-wep-leap \
+	ifcfg-test-infiniband \
+	ifcfg-test-bond-main \
+	ifcfg-test-bond-slave
 
 check-local:
 	@for f in $(EXTRA_DIST); do \

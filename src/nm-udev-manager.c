@@ -15,32 +15,19 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2009 - 2011 Red Hat, Inc.
+ * Copyright (C) 2009 - 2012 Red Hat, Inc.
  */
 
 #include <config.h>
-#include <signal.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
+#include <net/if_arp.h>
 
-#include "wireless-helper.h"
-
+#include <gmodule.h>
 #include <gudev/gudev.h>
 
 #include "nm-udev-manager.h"
 #include "nm-marshal.h"
 #include "nm-logging.h"
-#include "NetworkManagerUtils.h"
-#include "nm-device-wifi.h"
-#include "nm-device-olpc-mesh.h"
-#include "nm-device-ethernet.h"
-#if WITH_WIMAX
-#include "nm-device-wimax.h"
-#endif
+#include "nm-system.h"
 
 typedef struct {
 	GUdevClient *client;
@@ -342,69 +329,52 @@ rfkill_remove (NMUdevManager *self,
 	}
 }
 
-static gboolean
-is_wireless (GUdevDevice *device)
+static void
+net_add (NMUdevManager *self, GUdevDevice *udev_device)
 {
-	char phy80211_path[255];
-	struct stat s;
-	int fd;
-	struct iwreq iwr;
-	const char *ifname, *path;
-	gboolean is_wifi = FALSE;
-
-	ifname = g_udev_device_get_name (device);
-	g_assert (ifname);
-
-	fd = socket (PF_INET, SOCK_DGRAM, 0);
-	if (fd == -1)
-		return FALSE;
-
-	strncpy (iwr.ifr_ifrn.ifrn_name, ifname, IFNAMSIZ);
-
-	path = g_udev_device_get_sysfs_path (device);
-	snprintf (phy80211_path, sizeof (phy80211_path), "%s/phy80211", path);
-
-	if (   (ioctl (fd, SIOCGIWNAME, &iwr) == 0)
-	    || (stat (phy80211_path, &s) == 0 && (s.st_mode & S_IFDIR)))
-		is_wifi = TRUE;
-
-	close (fd);
-	return is_wifi;
-}
-
-static gboolean
-is_olpc_mesh (GUdevDevice *device)
-{
-	const gchar *prop = g_udev_device_get_property (device, "ID_NM_OLPC_MESH");
-	return (prop != NULL);
-}
-
-static gboolean
-is_wimax (const char *driver)
-{
-	/* FIXME: check 'DEVTYPE' instead; but since we only support Intel
-	 * WiMAX devices for now this is appropriate.
-	 */
-	return g_strcmp0 (driver, "i2400m_usb") == 0;
-}
-
-static GObject *
-device_creator (NMUdevManager *manager,
-                GUdevDevice *udev_device,
-                gboolean sleeping)
-{
-	GObject *device = NULL;
-	const char *ifname, *driver, *path, *subsys;
 	GUdevDevice *parent = NULL, *grandparent = NULL;
 	gint ifindex;
+	gint etype;
+	const char *ifname, *driver, *path, *subsys, *tmp;
+	gboolean is_ctc;
+
+	g_return_if_fail (udev_device != NULL);
 
 	ifname = g_udev_device_get_name (udev_device);
-	g_assert (ifname);
+	if (!ifname) {
+		nm_log_dbg (LOGD_HW, "failed to get device's interface");
+		return;
+	}
+
+	etype = g_udev_device_get_sysfs_attr_as_int (udev_device, "type");
+	is_ctc = (strncmp (ifname, "ctc", 3) == 0) && (etype == 256);
+
+	/* Ignore devices that don't report Ethernet encapsulation, except for
+	 * s390 CTC-type devices that report 256 for some reason.
+	 * FIXME: use something other than interface name to detect CTC here.
+	 */
+	if ((etype != ARPHRD_ETHER) && (etype != ARPHRD_INFINIBAND) && (is_ctc == FALSE)) {
+		nm_log_dbg (LOGD_HW, "(%s): ignoring interface with type %d", ifname, etype);
+		return;
+	}
+
+	/* Not all ethernet devices are immediately usable; newer mobile broadband
+	 * devices (Ericsson, Option, Sierra) require setup on the tty before the
+	 * ethernet device is usable.  2.6.33 and later kernels set the 'DEVTYPE'
+	 * uevent variable which we can use to ignore the interface as a NMDevice
+	 * subclass.  ModemManager will pick it up though and so we'll handle it
+	 * through the mobile broadband stuff.
+	 */
+	tmp = g_udev_device_get_property (udev_device, "DEVTYPE");
+	if (g_strcmp0 (tmp, "wwan") == 0) {
+		nm_log_dbg (LOGD_HW, "(%s): ignoring interface with devtype '%s'", ifname, tmp);
+		return;
+	}
 
 	path = g_udev_device_get_sysfs_path (udev_device);
 	if (!path) {
 		nm_log_warn (LOGD_HW, "couldn't determine device path; ignoring...");
-		return NULL;
+		return;
 	}
 
 	driver = g_udev_device_get_driver (udev_device);
@@ -429,94 +399,39 @@ device_creator (NMUdevManager *manager,
 		}
 	}
 
-	if (!driver) {
-		if (g_str_has_prefix (ifname, "easytether")) {
-			driver = "easytether";
-		} else {
-			nm_log_warn (LOGD_HW, "%s: couldn't determine device driver; ignoring...", path);
-			goto out;
-		}
-	}
-
 	ifindex = g_udev_device_get_sysfs_attr_as_int (udev_device, "ifindex");
 	if (ifindex <= 0) {
 		nm_log_warn (LOGD_HW, "%s: device had invalid ifindex %d; ignoring...", path, (guint32) ifindex);
 		goto out;
 	}
 
-	if (is_olpc_mesh (udev_device)) /* must be before is_wireless */
-		device = (GObject *) nm_device_olpc_mesh_new (path, ifname, driver);
-	else if (is_wireless (udev_device))
-		device = (GObject *) nm_device_wifi_new (path, ifname, driver);
-	else if (is_wimax (driver)) {
-#if WITH_WIMAX
-		device = (GObject *) nm_device_wimax_new (path, ifname, driver);
-#endif
-	} else
-		device = (GObject *) nm_device_ethernet_new (path, ifname, driver);
+	if (!driver) {
+		switch (nm_system_get_iface_type (ifindex, ifname)) {
+		case NM_IFACE_TYPE_BOND:
+			driver = "bonding";
+			break;
+		case NM_IFACE_TYPE_VLAN:
+			driver = "8021q";
+			break;
+		default:
+			if (g_str_has_prefix (ifname, "easytether"))
+				driver = "easytether";
+			break;
+		}
+		
+		if (!driver) {
+			nm_log_warn (LOGD_HW, "%s: couldn't determine device driver; ignoring...", path);
+			goto out;
+		}
+	}
+
+	g_signal_emit (self, signals[DEVICE_ADDED], 0, udev_device, ifname, path, driver, ifindex);
 
 out:
 	if (grandparent)
 		g_object_unref (grandparent);
 	if (parent)
 		g_object_unref (parent);
-	return device;
-}
-
-static void
-net_add (NMUdevManager *self, GUdevDevice *device)
-{
-	gint etype;
-	const char *iface;
-	const char *tmp;
-	gboolean is_ctc;
-
-	g_return_if_fail (device != NULL);
-
-	iface = g_udev_device_get_name (device);
-	if (!iface) {
-		nm_log_dbg (LOGD_HW, "failed to get device's interface");
-		return;
-	}
-
-	etype = g_udev_device_get_sysfs_attr_as_int (device, "type");
-	is_ctc = (strncmp (iface, "ctc", 3) == 0) && (etype == 256);
-
-	/* Ignore devices that don't report Ethernet encapsulation, except for
-	 * s390 CTC-type devices that report 256 for some reason.
-	 * FIXME: use something other than interface name to detect CTC here.
-	 */
-	if ((etype != 1) && (is_ctc == FALSE)) {
-		nm_log_dbg (LOGD_HW, "(%s): ignoring interface with type %d", iface, etype);
-		return;
-	}
-
-	/* Not all ethernet devices are immediately usable; newer mobile broadband
-	 * devices (Ericsson, Option, Sierra) require setup on the tty before the
-	 * ethernet device is usable.  2.6.33 and later kernels set the 'DEVTYPE'
-	 * uevent variable which we can use to ignore the interface as a NMDevice
-	 * subclass.  ModemManager will pick it up though and so we'll handle it
-	 * through the mobile broadband stuff.
-	 */
-	tmp = g_udev_device_get_property (device, "DEVTYPE");
-	if (g_strcmp0 (tmp, "wwan") == 0) {
-		nm_log_dbg (LOGD_HW, "(%s): ignoring interface with devtype '%s'", iface, tmp);
-		return;
-	}
-
-	/* Ignore Nokia cdc-ether interfaces in PC-Suite mode since we need to
-	 * talk phonet to use them, which ModemManager doesn't do yet.
-	 */
-	tmp = g_udev_device_get_property (device, "ID_VENDOR_ID");
-	if (g_strcmp0 (tmp, "0421") == 0) { /* Nokia vendor ID */
-		tmp = g_udev_device_get_property (device, "ID_MODEL");
-		if (tmp && (strstr (tmp, "PC-Suite") || strstr (tmp, "PC Suite"))) {
-			nm_log_dbg (LOGD_HW, "(%s): ignoring Nokia PC-Suite ethernet interface", iface);
-			return;
-		}
-	}
-
-	g_signal_emit (self, signals[DEVICE_ADDED], 0, device, device_creator);
 }
 
 static void
@@ -638,8 +553,8 @@ nm_udev_manager_class_init (NMUdevManagerClass *klass)
 					  G_SIGNAL_RUN_FIRST,
 					  G_STRUCT_OFFSET (NMUdevManagerClass, device_added),
 					  NULL, NULL,
-					  _nm_marshal_VOID__POINTER_POINTER,
-					  G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_POINTER);
+					  _nm_marshal_VOID__POINTER_POINTER_POINTER_POINTER_INT,
+					  G_TYPE_NONE, 5, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_INT);
 
 	signals[DEVICE_REMOVED] =
 		g_signal_new ("device-removed",

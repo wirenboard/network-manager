@@ -9,12 +9,10 @@ NMSetting
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -46,8 +44,8 @@ NMSetting
 @set_secret_flags: 
 @compare_property: 
 @clear_secrets_with_flags: 
+@get_virtual_iface_name: 
 @_reserved1: 
-@_reserved2: 
 
 <!-- ##### USER_FUNCTION NMSettingClearSecretsWithFlagsFn ##### -->
 <para>
@@ -121,6 +119,13 @@ NMSetting
 @value: 
 @flags: 
 @user_data: 
+
+
+<!-- ##### MACRO NM_SETTING_ERROR ##### -->
+<para>
+
+</para>
+
 
 
 <!-- ##### MACRO NM_SETTING_NAME ##### -->
@@ -246,6 +251,15 @@ NMSetting
 @secret_name: 
 @out_flags: 
 @error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_get_virtual_iface_name ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

@@ -36,8 +36,6 @@
 #include "nm-types-private.h"
 #include "nm-object-private.h"
 
-#include "nm-access-point-bindings.h"
-
 G_DEFINE_TYPE (NMAccessPoint, nm_access_point, NM_TYPE_OBJECT)
 
 #define NM_ACCESS_POINT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_ACCESS_POINT, NMAccessPointPrivate))
@@ -115,19 +113,10 @@ nm_access_point_new (DBusGConnection *connection, const char *path)
 NM80211ApFlags
 nm_access_point_get_flags (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NM_802_11_AP_FLAGS_NONE);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->flags) {
-		priv->flags = _nm_object_get_uint_property (NM_OBJECT (ap),
-		                                           NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                           DBUS_PROP_FLAGS,
-		                                           NULL);
-	}
-
-	return priv->flags;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->flags;
 }
 
 /**
@@ -141,19 +130,10 @@ nm_access_point_get_flags (NMAccessPoint *ap)
 NM80211ApSecurityFlags
 nm_access_point_get_wpa_flags (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NM_802_11_AP_SEC_NONE);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->wpa_flags) {
-		priv->wpa_flags = _nm_object_get_uint_property (NM_OBJECT (ap),
-		                                               NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                               DBUS_PROP_WPA_FLAGS,
-		                                               NULL);
-	}
-
-	return priv->wpa_flags;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->wpa_flags;
 }
 
 /**
@@ -168,19 +148,10 @@ nm_access_point_get_wpa_flags (NMAccessPoint *ap)
 NM80211ApSecurityFlags
 nm_access_point_get_rsn_flags (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NM_802_11_AP_SEC_NONE);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->rsn_flags) {
-		priv->rsn_flags = _nm_object_get_uint_property (NM_OBJECT (ap),
-		                                               NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                               DBUS_PROP_RSN_FLAGS,
-		                                               NULL);
-	}
-
-	return priv->rsn_flags;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->rsn_flags;
 }
 
 /**
@@ -195,19 +166,10 @@ nm_access_point_get_rsn_flags (NMAccessPoint *ap)
 const GByteArray *
 nm_access_point_get_ssid (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NULL);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->ssid) {
-		priv->ssid = _nm_object_get_byte_array_property (NM_OBJECT (ap),
-		                                                NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                                DBUS_PROP_SSID,
-		                                                NULL);
-	}
-
-	return priv->ssid;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->ssid;
 }
 
 /**
@@ -221,19 +183,10 @@ nm_access_point_get_ssid (NMAccessPoint *ap)
 guint32
 nm_access_point_get_frequency (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), 0);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->frequency) {
-		priv->frequency = _nm_object_get_uint_property (NM_OBJECT (ap),
-		                                               NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                               DBUS_PROP_FREQUENCY,
-		                                               NULL);
-	}
-
-	return priv->frequency;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->frequency;
 }
 
 /**
@@ -248,19 +201,10 @@ nm_access_point_get_frequency (NMAccessPoint *ap)
 const char *
 nm_access_point_get_bssid (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), NULL);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->bssid) {
-		priv->bssid = _nm_object_get_string_property (NM_OBJECT (ap),
-		                                              NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                              DBUS_PROP_HW_ADDRESS,
-		                                              NULL);
-	}
-
-	return priv->bssid;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->bssid;
 }
 
 /**
@@ -291,19 +235,10 @@ nm_access_point_get_hw_address (NMAccessPoint *ap)
 NM80211Mode
 nm_access_point_get_mode (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), 0);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->mode) {
-		priv->mode = _nm_object_get_uint_property (NM_OBJECT (ap),
-		                                          NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                          DBUS_PROP_MODE,
-		                                          NULL);
-	}
-
-	return priv->mode;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->mode;
 }
 
 /**
@@ -317,19 +252,10 @@ nm_access_point_get_mode (NMAccessPoint *ap)
 guint32
 nm_access_point_get_max_bitrate (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), 0);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->max_bitrate) {
-		priv->max_bitrate = _nm_object_get_uint_property (NM_OBJECT (ap),
-		                                              NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                              DBUS_PROP_MAX_BITRATE,
-		                                              NULL);
-	}
-
-	return priv->max_bitrate;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->max_bitrate;
 }
 
 /**
@@ -343,25 +269,16 @@ nm_access_point_get_max_bitrate (NMAccessPoint *ap)
 guint8
 nm_access_point_get_strength (NMAccessPoint *ap)
 {
-	NMAccessPointPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), 0);
 
-	priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	if (!priv->strength) {
-		priv->strength = _nm_object_get_byte_property (NM_OBJECT (ap),
-		                                              NM_DBUS_INTERFACE_ACCESS_POINT,
-		                                              DBUS_PROP_STRENGTH,
-		                                              NULL);
-	}
-
-	return priv->strength;
+	_nm_object_ensure_inited (NM_OBJECT (ap));
+	return NM_ACCESS_POINT_GET_PRIVATE (ap)->strength;
 }
 
 /**
- * nm_access_point_filter_connections:
+ * nm_access_point_connection_valid:
  * @ap: an #NMAccessPoint to validate @connection against
- * @connections: an #NMConnection to validate against @ap
+ * @connection: an #NMConnection to validate against @ap
  *
  * Validates a given connection against a given WiFi access point to ensure that
  * the connection may be activated with that AP.  The connection must match the
@@ -474,6 +391,11 @@ nm_access_point_connection_valid (NMAccessPoint *ap, NMConnection *connection)
  * return connections which may be activated with the access point.  Any
  * returned connections will match the @ap's SSID and (if given) BSSID and
  * other attributes like security settings, channel, etc.
+ *
+ * To obtain the list of connections that are compatible with this access point,
+ * use nm_remote_settings_list_connections() and then filter the returned list
+ * for a given #NMDevice using nm_device_filter_connections() and finally
+ * filter that list with this function.
  *
  * Returns: (transfer container) (element-type NetworkManager.Connection): a
  * list of #NMConnection objects that could be activated with the given @ap.
@@ -590,51 +512,42 @@ demarshal_ssid (NMObject *object, GParamSpec *pspec, GValue *value, gpointer fie
 }
 
 static void
-register_for_property_changed (NMAccessPoint *ap)
+register_properties (NMAccessPoint *ap)
 {
 	NMAccessPointPrivate *priv = NM_ACCESS_POINT_GET_PRIVATE (ap);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_ACCESS_POINT_FLAGS,       _nm_object_demarshal_generic, &priv->flags },
-		{ NM_ACCESS_POINT_WPA_FLAGS,   _nm_object_demarshal_generic, &priv->wpa_flags },
-		{ NM_ACCESS_POINT_RSN_FLAGS,   _nm_object_demarshal_generic, &priv->rsn_flags },
-		{ NM_ACCESS_POINT_SSID,        demarshal_ssid,               &priv->ssid },
-		{ NM_ACCESS_POINT_FREQUENCY,   _nm_object_demarshal_generic, &priv->frequency },
-		{ NM_ACCESS_POINT_HW_ADDRESS,  _nm_object_demarshal_generic, &priv->bssid },
-		{ NM_ACCESS_POINT_MODE,        _nm_object_demarshal_generic, &priv->mode },
-		{ NM_ACCESS_POINT_MAX_BITRATE, _nm_object_demarshal_generic, &priv->max_bitrate },
-		{ NM_ACCESS_POINT_STRENGTH,    _nm_object_demarshal_generic, &priv->strength },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_ACCESS_POINT_FLAGS,       &priv->flags },
+		{ NM_ACCESS_POINT_WPA_FLAGS,   &priv->wpa_flags },
+		{ NM_ACCESS_POINT_RSN_FLAGS,   &priv->rsn_flags },
+		{ NM_ACCESS_POINT_SSID,        &priv->ssid, demarshal_ssid },
+		{ NM_ACCESS_POINT_FREQUENCY,   &priv->frequency },
+		{ NM_ACCESS_POINT_HW_ADDRESS,  &priv->bssid },
+		{ NM_ACCESS_POINT_MODE,        &priv->mode },
+		{ NM_ACCESS_POINT_MAX_BITRATE, &priv->max_bitrate },
+		{ NM_ACCESS_POINT_STRENGTH,    &priv->strength },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (ap),
-	                                     priv->proxy,
-	                                     property_changed_info);
+	_nm_object_register_properties (NM_OBJECT (ap),
+	                                priv->proxy,
+	                                property_info);
 }
 
-static GObject*
-constructor (GType type,
-			 guint n_construct_params,
-			 GObjectConstructParam *construct_params)
+static void
+constructed (GObject *object)
 {
-	NMObject *object;
 	NMAccessPointPrivate *priv;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_access_point_parent_class)->constructor (type,
-																	  n_construct_params,
-																	  construct_params);
-	if (!object)
-		return NULL;
+	G_OBJECT_CLASS (nm_access_point_parent_class)->constructed (object);
 
 	priv = NM_ACCESS_POINT_GET_PRIVATE (object);
 
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (object),
+	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
 									    NM_DBUS_SERVICE,
-									    nm_object_get_path (object),
+									    nm_object_get_path (NM_OBJECT (object)),
 									    NM_DBUS_INTERFACE_ACCESS_POINT);
 
-	register_for_property_changed (NM_ACCESS_POINT (object));
-
-	return G_OBJECT (object);
+	register_properties (NM_ACCESS_POINT (object));
 }
 
 
@@ -646,7 +559,7 @@ nm_access_point_class_init (NMAccessPointClass *ap_class)
 	g_type_class_add_private (ap_class, sizeof (NMAccessPointPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2012 Red Hat, Inc.
  */
 
 #include <dbus/dbus-glib.h>
@@ -29,19 +29,26 @@
 #include "nm-device-ethernet.h"
 #include "nm-device-wifi.h"
 #include "nm-device-private.h"
-#include "nm-marshal.h"
+#include "nm-glib-marshal.h"
 #include "nm-types-private.h"
 #include "nm-object-private.h"
 #include "nm-active-connection.h"
 #include "nm-vpn-connection.h"
 #include "nm-object-cache.h"
 #include "nm-dbus-glib-types.h"
-
-#include "nm-client-bindings.h"
+#include "nm-glib-compat.h"
 
 void _nm_device_wifi_set_wireless_enabled (NMDeviceWifi *device, gboolean enabled);
 
-G_DEFINE_TYPE (NMClient, nm_client, NM_TYPE_OBJECT)
+static void nm_client_initable_iface_init (GInitableIface *iface);
+static void nm_client_async_initable_iface_init (GAsyncInitableIface *iface);
+static GInitableIface *nm_client_parent_initable_iface;
+static GAsyncInitableIface *nm_client_parent_async_initable_iface;
+
+G_DEFINE_TYPE_WITH_CODE (NMClient, nm_client, NM_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE, nm_client_initable_iface_init);
+                         G_IMPLEMENT_INTERFACE (G_TYPE_ASYNC_INITABLE, nm_client_async_initable_iface_init);
+                         )
 
 #define NM_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_CLIENT, NMClientPrivate))
 
@@ -64,7 +71,6 @@ typedef struct {
 	 */
 	GSList *pending_activations;
 
-	gboolean have_networking_enabled;
 	gboolean networking_enabled;
 	gboolean wireless_enabled;
 	gboolean wireless_hw_enabled;
@@ -109,20 +115,8 @@ static void proxy_name_owner_changed (DBusGProxy *proxy,
 									  const char *new_owner,
 									  gpointer user_data);
 
-static void client_device_added_proxy (DBusGProxy *proxy, char *path, gpointer user_data);
-static void client_device_removed_proxy (DBusGProxy *proxy, char *path, gpointer user_data);
-
-static void
-handle_net_enabled_changed (GObject *object,
-                            GParamSpec *pspec,
-                            GValue *value,
-                            gpointer user_data)
-{
-	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (object);
-
-	/* Update the cache flag when it changes */
-	priv->have_networking_enabled = TRUE;
-}
+static void client_device_added (NMObject *client, NMObject *device);
+static void client_device_removed (NMObject *client, NMObject *device);
 
 static void
 nm_client_init (NMClient *client)
@@ -132,11 +126,6 @@ nm_client_init (NMClient *client)
 	priv->state = NM_STATE_UNKNOWN;
 
 	priv->permissions = g_hash_table_new (g_direct_hash, g_direct_equal);
-
-	g_signal_connect (client,
-	                  "notify::" NM_CLIENT_NETWORKING_ENABLED,
-	                  G_CALLBACK (handle_net_enabled_changed),
-	                  client);
 }
 
 static void
@@ -154,188 +143,40 @@ poke_wireless_devices_with_rf_status (NMClient *client)
 }
 
 static void
-update_wireless_status (NMClient *client, gboolean notify)
-{
-	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
-	gboolean val;
-	gboolean poke = FALSE;
-
-	val = _nm_object_get_boolean_property (NM_OBJECT (client),
-	                                       NM_DBUS_INTERFACE,
-	                                       "WirelessHardwareEnabled",
-	                                       NULL);
-	if (val != priv->wireless_hw_enabled) {
-		priv->wireless_hw_enabled = val;
-		poke = TRUE;
-		if (notify)
-			_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_WIRELESS_HARDWARE_ENABLED);
-	}
-
-	if (priv->wireless_hw_enabled == FALSE)
-		val = FALSE;
-	else
-		val = _nm_object_get_boolean_property (NM_OBJECT (client),
-		                                       NM_DBUS_INTERFACE,
-		                                       "WirelessEnabled",
-		                                       NULL);
-	if (val != priv->wireless_enabled) {
-		priv->wireless_enabled = val;
-		poke = TRUE;
-		if (notify)
-			_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_WIRELESS_ENABLED);
-	}
-
-	if (poke)
-		poke_wireless_devices_with_rf_status (client);
-}
-
-static void
 wireless_enabled_cb (GObject *object, GParamSpec *pspec, gpointer user_data)
 {
 	poke_wireless_devices_with_rf_status (NM_CLIENT (object));
 }
 
 static void
-update_wwan_status (NMClient *client, gboolean notify)
+register_properties (NMClient *client)
 {
 	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
-	gboolean val;
-
-	val = _nm_object_get_boolean_property (NM_OBJECT (client),
-	                                       NM_DBUS_INTERFACE,
-	                                       "WwanHardwareEnabled",
-	                                       NULL);
-	if (val != priv->wwan_hw_enabled) {
-		priv->wwan_hw_enabled = val;
-		if (notify)
-			_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_WWAN_HARDWARE_ENABLED);
-	}
-
-	if (priv->wwan_hw_enabled == FALSE)
-		val = FALSE;
-	else {
-		val = _nm_object_get_boolean_property (NM_OBJECT (client),
-		                                       NM_DBUS_INTERFACE,
-		                                       "WwanEnabled",
-		                                       NULL);
-	}
-
-	if (val != priv->wwan_enabled) {
-		priv->wwan_enabled = val;
-		if (notify)
-			_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_WWAN_ENABLED);
-	}
-}
-
-static void
-update_wimax_status (NMClient *client, gboolean notify)
-{
-	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
-	gboolean val;
-
-	val = _nm_object_get_boolean_property (NM_OBJECT (client),
-	                                       NM_DBUS_INTERFACE,
-	                                       "WimaxHardwareEnabled",
-	                                       NULL);
-	if (val != priv->wimax_hw_enabled) {
-		priv->wimax_hw_enabled = val;
-		if (notify)
-			_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_WIMAX_HARDWARE_ENABLED);
-	}
-
-	if (priv->wimax_hw_enabled == FALSE)
-		val = FALSE;
-	else {
-		val = _nm_object_get_boolean_property (NM_OBJECT (client),
-		                                       NM_DBUS_INTERFACE,
-		                                       "WimaxEnabled",
-		                                       NULL);
-	}
-
-	if (val != priv->wimax_enabled) {
-		priv->wimax_enabled = val;
-		if (notify)
-			_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_WIMAX_ENABLED);
-	}
-}
-
-static GObject *
-new_active_connection (DBusGConnection *connection, const char *path)
-{
-	DBusGProxy *proxy;
-	GError *error = NULL;
-	GValue value = {0,};
-	GObject *object = NULL;
-
-	proxy = dbus_g_proxy_new_for_name (connection,
-									   NM_DBUS_SERVICE,
-									   path,
-									   "org.freedesktop.DBus.Properties");
-	if (!proxy) {
-		g_warning ("%s: couldn't create D-Bus object proxy.", __func__);
-		return NULL;
-	}
-
-	/* Have to create an NMVPNConnection if it's a VPN connection, otherwise
-	 * a plain NMActiveConnection.
-	 */
-	if (dbus_g_proxy_call (proxy,
-	                       "Get", &error,
-	                       G_TYPE_STRING, NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
-	                       G_TYPE_STRING, "Vpn",
-	                       G_TYPE_INVALID,
-	                       G_TYPE_VALUE, &value, G_TYPE_INVALID)) {
-		if (g_value_get_boolean (&value))
-			object = nm_vpn_connection_new (connection, path);
-		else
-			object = nm_active_connection_new (connection, path);
-	} else {
-		g_warning ("Error in getting active connection 'Vpn' property: (%d) %s",
-		           error->code, error->message);
-		g_error_free (error);
-	}
-
-	g_object_unref (proxy);
-	return object;
-}
-
-static gboolean
-demarshal_active_connections (NMObject *object,
-                              GParamSpec *pspec,
-                              GValue *value,
-                              gpointer field)
-{
-	DBusGConnection *connection;
-
-	connection = nm_object_get_connection (object);
-	if (!_nm_object_array_demarshal (value, (GPtrArray **) field, connection, new_active_connection))
-		return FALSE;
-
-	_nm_object_queue_notify (object, NM_CLIENT_ACTIVE_CONNECTIONS);
-	return TRUE;
-}
-
-static void
-register_for_property_changed (NMClient *client)
-{
-	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
-	const NMPropertiesChangedInfo property_changed_info[] = {
-		{ NM_CLIENT_VERSION,                   _nm_object_demarshal_generic,  &priv->version },
-		{ NM_CLIENT_STATE,                     _nm_object_demarshal_generic,  &priv->state },
-		{ NM_CLIENT_NETWORKING_ENABLED,        _nm_object_demarshal_generic,  &priv->networking_enabled },
-		{ NM_CLIENT_WIRELESS_ENABLED,          _nm_object_demarshal_generic,  &priv->wireless_enabled },
-		{ NM_CLIENT_WIRELESS_HARDWARE_ENABLED, _nm_object_demarshal_generic,  &priv->wireless_hw_enabled },
-		{ NM_CLIENT_WWAN_ENABLED,              _nm_object_demarshal_generic,  &priv->wwan_enabled },
-		{ NM_CLIENT_WWAN_HARDWARE_ENABLED,     _nm_object_demarshal_generic,  &priv->wwan_hw_enabled },
-		{ NM_CLIENT_WIMAX_ENABLED,             _nm_object_demarshal_generic,  &priv->wimax_enabled },
-		{ NM_CLIENT_WIMAX_HARDWARE_ENABLED,    _nm_object_demarshal_generic,  &priv->wimax_hw_enabled },
-		{ NM_CLIENT_ACTIVE_CONNECTIONS,        demarshal_active_connections, &priv->active_connections },
+	const NMPropertiesInfo property_info[] = {
+		{ NM_CLIENT_VERSION,                   &priv->version },
+		{ NM_CLIENT_STATE,                     &priv->state },
+		{ NM_CLIENT_NETWORKING_ENABLED,        &priv->networking_enabled },
+		{ NM_CLIENT_WIRELESS_ENABLED,          &priv->wireless_enabled },
+		{ NM_CLIENT_WIRELESS_HARDWARE_ENABLED, &priv->wireless_hw_enabled },
+		{ NM_CLIENT_WWAN_ENABLED,              &priv->wwan_enabled },
+		{ NM_CLIENT_WWAN_HARDWARE_ENABLED,     &priv->wwan_hw_enabled },
+		{ NM_CLIENT_WIMAX_ENABLED,             &priv->wimax_enabled },
+		{ NM_CLIENT_WIMAX_HARDWARE_ENABLED,    &priv->wimax_hw_enabled },
+		{ NM_CLIENT_ACTIVE_CONNECTIONS,        &priv->active_connections, NULL, NM_TYPE_ACTIVE_CONNECTION },
 		{ NULL },
 	};
 
-	_nm_object_handle_properties_changed (NM_OBJECT (client),
+	_nm_object_register_properties (NM_OBJECT (client),
+	                                priv->client_proxy,
+	                                property_info);
+
+	_nm_object_register_pseudo_property (NM_OBJECT (client),
 	                                     priv->client_proxy,
-	                                     property_changed_info);
+	                                     "Devices",
+	                                     &priv->devices,
+	                                     NM_TYPE_DEVICE,
+	                                     client_device_added,
+	                                     client_device_removed);
 }
 
 #define NM_AUTH_PERMISSION_ENABLE_DISABLE_NETWORK     "org.freedesktop.NetworkManager.enable-disable-network"
@@ -444,31 +285,38 @@ update_permissions (NMClient *self, GHashTable *permissions)
 	g_list_free (keys);
 }
 
-static void
-get_permissions_sync (NMClient *self)
+static gboolean
+get_permissions_sync (NMClient *self, GError **error)
 {
 	gboolean success;
 	GHashTable *permissions = NULL;
 
 	success = dbus_g_proxy_call_with_timeout (NM_CLIENT_GET_PRIVATE (self)->client_proxy,
-	                                          "GetPermissions", 3000, NULL,
+	                                          "GetPermissions", 3000, error,
 	                                          G_TYPE_INVALID,
 	                                          DBUS_TYPE_G_MAP_OF_STRING, &permissions, G_TYPE_INVALID);
 	update_permissions (self, success ? permissions : NULL);
 	if (permissions)
 		g_hash_table_destroy (permissions);
+
+	return success;
 }
 
 static void
 get_permissions_reply (DBusGProxy *proxy,
-                       GHashTable *permissions,
-                       GError *error,
+                       DBusGProxyCall *call,
                        gpointer user_data)
 {
 	NMClient *self = NM_CLIENT (user_data);
+	GHashTable *permissions;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, call, &error,
+	                       DBUS_TYPE_G_MAP_OF_STRING, &permissions,
+	                       G_TYPE_INVALID);
 	NM_CLIENT_GET_PRIVATE (self)->perm_call = NULL;
 	update_permissions (NM_CLIENT (user_data), error ? NULL : permissions);
+	g_clear_error (&error);
 }
 
 static void
@@ -478,9 +326,9 @@ client_recheck_permissions (DBusGProxy *proxy, gpointer user_data)
 	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (self);
 
 	if (!priv->perm_call) {
-		priv->perm_call = org_freedesktop_NetworkManager_get_permissions_async (NM_CLIENT_GET_PRIVATE (self)->client_proxy,
-	                                                                            get_permissions_reply,
-	                                                                            self);
+		priv->perm_call = dbus_g_proxy_begin_call (NM_CLIENT_GET_PRIVATE (self)->client_proxy, "GetPermissions",
+		                                           get_permissions_reply, self, NULL,
+		                                           G_TYPE_INVALID);
 	}
 }
 
@@ -496,31 +344,11 @@ client_recheck_permissions (DBusGProxy *proxy, gpointer user_data)
 const GPtrArray *
 nm_client_get_devices (NMClient *client)
 {
-	NMClientPrivate *priv;
-	DBusGConnection *connection;
-	GValue value = { 0, };
-	GError *error = NULL;
-	GPtrArray *temp;
-
 	g_return_val_if_fail (NM_IS_CLIENT (client), NULL);
 
-	priv = NM_CLIENT_GET_PRIVATE (client);
-	if (priv->devices)
-		return handle_ptr_array_return (priv->devices);
+	_nm_object_ensure_inited (NM_OBJECT (client));
 
-	if (!org_freedesktop_NetworkManager_get_devices (priv->client_proxy, &temp, &error)) {
-		g_warning ("%s: error getting devices: %s\n", __func__, error->message);
-		g_error_free (error);
-		return NULL;
-	}
-
-	g_value_init (&value, DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH);
-	g_value_take_boxed (&value, temp);
-	connection = nm_object_get_connection (NM_OBJECT (client));
-	_nm_object_array_demarshal (&value, &priv->devices, connection, nm_device_new);
-	g_value_unset (&value);
-
-	return handle_ptr_array_return (priv->devices);
+	return handle_ptr_array_return (NM_CLIENT_GET_PRIVATE (client)->devices);
 }
 
 /**
@@ -664,17 +492,22 @@ recheck_pending_activations (NMClient *self)
 
 static void
 activate_cb (DBusGProxy *proxy,
-             char *path,
-             GError *error,
+             DBusGProxyCall *call,
              gpointer user_data)
 {
 	ActivateInfo *info = user_data;
+	char *path;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, call, &error,
+	                       DBUS_TYPE_G_OBJECT_PATH, &path,
+	                       G_TYPE_INVALID);
 	if (error) {
 		activate_info_complete (info, NULL, error);
 		activate_info_free (info);
+		g_clear_error (&error);
 	} else {
-		info->active_path = g_strdup (path);
+		info->active_path = path;
 		recheck_pending_activations (info->client);
 	}
 }
@@ -726,29 +559,34 @@ nm_client_activate_connection (NMClient *client,
 	priv = NM_CLIENT_GET_PRIVATE (client);
 	priv->pending_activations = g_slist_prepend (priv->pending_activations, info);
 
-	org_freedesktop_NetworkManager_activate_connection_async (priv->client_proxy,
-	                                                          nm_connection_get_path (connection),
-	                                                          device ? nm_object_get_path (NM_OBJECT (device)) : "/",
-	                                                          specific_object ? specific_object : "/",
-	                                                          activate_cb,
-	                                                          info);
+	dbus_g_proxy_begin_call (priv->client_proxy, "ActivateConnection",
+	                         activate_cb, info, NULL,
+	                         DBUS_TYPE_G_OBJECT_PATH, nm_connection_get_path (connection),
+	                         DBUS_TYPE_G_OBJECT_PATH, device ? nm_object_get_path (NM_OBJECT (device)) : "/",
+	                         DBUS_TYPE_G_OBJECT_PATH, specific_object ? specific_object : "/",
+	                         G_TYPE_INVALID);
 }
 
 static void
 add_activate_cb (DBusGProxy *proxy,
-                 char *connection_path,
-                 char *active_path,
-                 GError *error,
+                 DBusGProxyCall *call,
                  gpointer user_data)
 {
 	ActivateInfo *info = user_data;
+	char *connection_path;
+	char *active_path;
+	GError *error = NULL;
 
+	dbus_g_proxy_end_call (proxy, call, &error,
+	                       DBUS_TYPE_G_OBJECT_PATH, &connection_path,
+	                       DBUS_TYPE_G_OBJECT_PATH, &active_path,
+	                       G_TYPE_INVALID);
 	if (error) {
 		activate_info_complete (info, NULL, error);
 		activate_info_free (info);
 	} else {
-		info->new_connection_path = g_strdup (connection_path);
-		info->active_path = g_strdup (active_path);
+		info->new_connection_path = connection_path;
+		info->active_path = active_path;
 		recheck_pending_activations (info->client);
 	}
 }
@@ -803,12 +641,12 @@ nm_client_add_and_activate_connection (NMClient *client,
 	priv = NM_CLIENT_GET_PRIVATE (client);
 	priv->pending_activations = g_slist_prepend (priv->pending_activations, info);
 
-	org_freedesktop_NetworkManager_add_and_activate_connection_async (priv->client_proxy,
-	                                                                  hash,
-	                                                                  nm_object_get_path (NM_OBJECT (device)),
-	                                                                  specific_object ? specific_object : "/",
-	                                                                  add_activate_cb,
-	                                                                  info);
+	dbus_g_proxy_begin_call (priv->client_proxy, "AddAndActivateConnection",
+	                         add_activate_cb, info, NULL,
+	                         DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, hash,
+	                         DBUS_TYPE_G_OBJECT_PATH, nm_object_get_path (NM_OBJECT (device)),
+	                         DBUS_TYPE_G_OBJECT_PATH, specific_object ? specific_object : "/",
+	                         G_TYPE_INVALID);
 	g_hash_table_unref (hash);
 }
 
@@ -838,7 +676,10 @@ nm_client_deactivate_connection (NMClient *client, NMActiveConnection *active)
 	// FIXME: return errors
 	priv = NM_CLIENT_GET_PRIVATE (client);
 	path = nm_object_get_path (NM_OBJECT (active));
-	if (!org_freedesktop_NetworkManager_deactivate_connection (priv->client_proxy, path, &error)) {
+	if (!dbus_g_proxy_call (priv->client_proxy, "DeactivateConnection", &error,
+	                        DBUS_TYPE_G_OBJECT_PATH, path,
+	                        G_TYPE_INVALID,
+	                        G_TYPE_INVALID)) {
 		g_warning ("Could not deactivate connection '%s': %s", path, error->message);
 		g_error_free (error);
 	}
@@ -858,27 +699,14 @@ const GPtrArray *
 nm_client_get_active_connections (NMClient *client)
 {
 	NMClientPrivate *priv;
-	GValue value = { 0, };
 
 	g_return_val_if_fail (NM_IS_CLIENT (client), NULL);
 
-	priv = NM_CLIENT_GET_PRIVATE (client);
-	if (priv->active_connections)
-		return handle_ptr_array_return (priv->active_connections);
+	_nm_object_ensure_inited (NM_OBJECT (client));
 
+	priv = NM_CLIENT_GET_PRIVATE (client);
 	if (!priv->manager_running)
 		return NULL;
-
-	if (!_nm_object_get_property (NM_OBJECT (client),
-	                             "org.freedesktop.NetworkManager",
-	                             "ActiveConnections",
-	                             &value,
-	                             NULL)) {
-		return NULL;
-	}
-
-	demarshal_active_connections (NM_OBJECT (client), NULL, &value, &priv->active_connections);
-	g_value_unset (&value);
 
 	return handle_ptr_array_return (priv->active_connections);
 }
@@ -896,6 +724,7 @@ nm_client_wireless_get_enabled (NMClient *client)
 {
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
+	_nm_object_ensure_inited (NM_OBJECT (client));
 	return NM_CLIENT_GET_PRIVATE (client)->wireless_enabled;
 }
 
@@ -935,6 +764,7 @@ nm_client_wireless_hardware_get_enabled (NMClient *client)
 {
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
+	_nm_object_ensure_inited (NM_OBJECT (client));
 	return NM_CLIENT_GET_PRIVATE (client)->wireless_hw_enabled;
 }
 
@@ -951,6 +781,7 @@ nm_client_wwan_get_enabled (NMClient *client)
 {
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
+	_nm_object_ensure_inited (NM_OBJECT (client));
 	return NM_CLIENT_GET_PRIVATE (client)->wwan_enabled;
 }
 
@@ -990,6 +821,7 @@ nm_client_wwan_hardware_get_enabled (NMClient *client)
 {
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
+	_nm_object_ensure_inited (NM_OBJECT (client));
 	return NM_CLIENT_GET_PRIVATE (client)->wwan_hw_enabled;
 }
 
@@ -1006,6 +838,7 @@ nm_client_wimax_get_enabled (NMClient *client)
 {
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
+	_nm_object_ensure_inited (NM_OBJECT (client));
 	return NM_CLIENT_GET_PRIVATE (client)->wimax_enabled;
 }
 
@@ -1045,6 +878,7 @@ nm_client_wimax_hardware_get_enabled (NMClient *client)
 {
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
+	_nm_object_ensure_inited (NM_OBJECT (client));
 	return NM_CLIENT_GET_PRIVATE (client)->wimax_hw_enabled;
 }
 
@@ -1060,23 +894,14 @@ const char *
 nm_client_get_version (NMClient *client)
 {
 	NMClientPrivate *priv;
-	GError *err = NULL;
 
 	g_return_val_if_fail (NM_IS_CLIENT (client), NULL);
 
 	priv = NM_CLIENT_GET_PRIVATE (client);
 
-	if (!priv->manager_running)
-		return NULL;
+	_nm_object_ensure_inited (NM_OBJECT (client));
 
-	if (!priv->version)
-		priv->version = _nm_object_get_string_property (NM_OBJECT (client), NM_DBUS_INTERFACE, "Version", &err);
-
-	/* TODO: we don't pass the error to the caller yet, maybe later */
-	if (err)
-		g_error_free (err);
-
-	return priv->version;
+	return priv->manager_running ? priv->version : NULL;
 }
 
 /**
@@ -1090,19 +915,11 @@ nm_client_get_version (NMClient *client)
 NMState
 nm_client_get_state (NMClient *client)
 {
-	NMClientPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_CLIENT (client), NM_STATE_UNKNOWN);
 
-	priv = NM_CLIENT_GET_PRIVATE (client);
+	_nm_object_ensure_inited (NM_OBJECT (client));
 
-	if (!priv->manager_running)
-		return NM_STATE_UNKNOWN;
-
-	if (priv->state == NM_STATE_UNKNOWN)
-		priv->state = _nm_object_get_uint_property (NM_OBJECT (client), NM_DBUS_INTERFACE, "State", NULL);
-
-	return priv->state;
+	return NM_CLIENT_GET_PRIVATE (client)->state;
 }
 
 /**
@@ -1116,23 +933,10 @@ nm_client_get_state (NMClient *client)
 gboolean
 nm_client_networking_get_enabled (NMClient *client)
 {
-	NMClientPrivate *priv;
-
 	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
 
-	priv = NM_CLIENT_GET_PRIVATE (client);
-	if (!priv->have_networking_enabled) {
-		priv = NM_CLIENT_GET_PRIVATE (client);
-		if (!priv->networking_enabled) {
-			priv->networking_enabled = _nm_object_get_boolean_property (NM_OBJECT (client),
-			                                                            NM_DBUS_INTERFACE,
-			                                                            "NetworkingEnabled",
-			                                                            NULL);
-			priv->have_networking_enabled = TRUE;
-		}
-	}
-
-	return priv->networking_enabled;
+	_nm_object_ensure_inited (NM_OBJECT (client));
+	return NM_CLIENT_GET_PRIVATE (client)->networking_enabled;
 }
 
 /**
@@ -1151,7 +955,10 @@ nm_client_networking_set_enabled (NMClient *client, gboolean enable)
 
 	g_return_if_fail (NM_IS_CLIENT (client));
 
-	if (!org_freedesktop_NetworkManager_enable (NM_CLIENT_GET_PRIVATE (client)->client_proxy, enable, &err)) {
+	if (!dbus_g_proxy_call (NM_CLIENT_GET_PRIVATE (client)->client_proxy, "Enable", &err,
+	                        G_TYPE_BOOLEAN, enable,
+	                        G_TYPE_INVALID,
+	                        G_TYPE_INVALID)) {
 		g_warning ("Error enabling/disabling networking: %s", err->message);
 		g_error_free (err);
 	}
@@ -1160,14 +967,14 @@ nm_client_networking_set_enabled (NMClient *client, gboolean enable)
 /**
  * nm_client_sleep:
  * @client: a #NMClient
- * @sleep: %TRUE to put the daemon to sleep
+ * @sleep_: %TRUE to put the daemon to sleep
  *
  * Deprecated; use nm_client_networking_set_enabled() instead.
  **/
 void
-nm_client_sleep (NMClient *client, gboolean sleep)
+nm_client_sleep (NMClient *client, gboolean sleep_)
 {
-	nm_client_networking_set_enabled (client, !sleep);
+	nm_client_networking_set_enabled (client, !sleep_);
 }
 
 /**
@@ -1223,6 +1030,35 @@ free_object_array (GPtrArray **array)
 }
 
 static void
+dispose_and_free_object_array (GPtrArray **array)
+{
+	g_return_if_fail (array != NULL);
+
+	if (*array) {
+		/* The objects in the array may have circular refs with other
+		 * objects, which the caller will need to know to break by
+		 * calling this function rather than free_object_array().
+		 */
+		g_ptr_array_foreach (*array, (GFunc) g_object_run_dispose, NULL);
+		free_object_array (array);
+	}
+}
+
+static void
+updated_properties (GObject *object, GAsyncResult *result, gpointer user_data)
+{
+	NMClient *client = NM_CLIENT (user_data);
+	GError *error = NULL;
+
+	if (!_nm_object_reload_properties_finish (NM_OBJECT (object), result, &error)) {
+		g_warning ("%s: error reading NMClient properties: %s", __func__, error->message);
+		g_error_free (error);
+	}
+
+	_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_MANAGER_RUNNING);
+}
+
+static void
 proxy_name_owner_changed (DBusGProxy *proxy,
 						  const char *name,
 						  const char *old_owner,
@@ -1250,61 +1086,34 @@ proxy_name_owner_changed (DBusGProxy *proxy,
 	if (!priv->manager_running) {
 		priv->state = NM_STATE_UNKNOWN;
 		_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_MANAGER_RUNNING);
+		_nm_object_suppress_property_updates (NM_OBJECT (client), TRUE);
 		poke_wireless_devices_with_rf_status (client);
 		free_object_array (&priv->devices);
-		free_object_array (&priv->active_connections);
+		dispose_and_free_object_array (&priv->active_connections);
 		priv->wireless_enabled = FALSE;
 		priv->wireless_hw_enabled = FALSE;
 		priv->wwan_enabled = FALSE;
 		priv->wwan_hw_enabled = FALSE;
 		priv->wimax_enabled = FALSE;
 		priv->wimax_hw_enabled = FALSE;
+		g_free (priv->version);
+		priv->version = NULL;
 	} else {
-		_nm_object_queue_notify (NM_OBJECT (client), NM_CLIENT_MANAGER_RUNNING);
-		update_wireless_status (client, TRUE);
-		update_wwan_status (client, TRUE);
-		update_wimax_status (client, TRUE);
+		_nm_object_suppress_property_updates (NM_OBJECT (client), FALSE);
+		_nm_object_reload_properties_async (NM_OBJECT (client), updated_properties, client);
 	}
 }
 
 static void
-client_device_added_proxy (DBusGProxy *proxy, char *path, gpointer user_data)
+client_device_added (NMObject *client, NMObject *device)
 {
-	NMClient *client = NM_CLIENT (user_data);
-	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
-	GObject *device;
-
-	device = G_OBJECT (nm_client_get_device_by_path (client, path));
-	if (!device) {
-		DBusGConnection *connection = nm_object_get_connection (NM_OBJECT (client));
-
-		device = G_OBJECT (_nm_object_cache_get (path));
-		if (device) {
-			g_ptr_array_add (priv->devices, device);
-		} else {
-			device = G_OBJECT (nm_device_new (connection, path));
-			if (device)
-				g_ptr_array_add (priv->devices, device);
-		}
-	}
-
-	if (device)
-		g_signal_emit (client, signals[DEVICE_ADDED], 0, device);
+	g_signal_emit (client, signals[DEVICE_ADDED], 0, device);
 }
 
 static void
-client_device_removed_proxy (DBusGProxy *proxy, char *path, gpointer user_data)
+client_device_removed (NMObject *client, NMObject *device)
 {
-	NMClient *client = NM_CLIENT (user_data);
-	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
-	NMDevice *device;
-
-	device = nm_client_get_device_by_path (client, path);
-	if (device) {
-		g_signal_emit (client, signals[DEVICE_REMOVED], 0, device);
-		g_ptr_array_remove (priv->devices, device);
-		g_object_unref (device);
-	}
+	g_signal_emit (client, signals[DEVICE_REMOVED], 0, device);
 }
 
 /****************************************************************/
@@ -1314,6 +1123,14 @@ client_device_removed_proxy (DBusGProxy *proxy, char *path, gpointer user_data)
  *
  * Creates a new #NMClient.
  *
+ * Note that this will do blocking D-Bus calls to initialize the
+ * client. You can use nm_client_new_async() if you want to avoid
+ * that.
+ *
+ * NOTE: #NMClient provides information about devices and a mechanism to
+ * control them.  To access and modify network configuration data, use the
+ * #NMRemoteSettings object.
+ *
  * Returns: a new #NMClient
  **/
 NMClient *
@@ -1321,6 +1138,7 @@ nm_client_new (void)
 {
 	DBusGConnection *connection;
 	GError *err = NULL;
+	NMClient *client;
 
 #ifdef LIBNM_GLIB_TEST
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &err);
@@ -1333,51 +1151,115 @@ nm_client_new (void)
 		return NULL;
 	}
 
-	return (NMClient *) g_object_new (NM_TYPE_CLIENT,
-									  NM_OBJECT_DBUS_CONNECTION, connection,
-									  NM_OBJECT_DBUS_PATH, NM_DBUS_PATH,
-									  NULL);
+	client = g_object_new (NM_TYPE_CLIENT,
+	                       NM_OBJECT_DBUS_CONNECTION, connection,
+	                       NM_OBJECT_DBUS_PATH, NM_DBUS_PATH,
+	                       NULL);
+	_nm_object_ensure_inited (NM_OBJECT (client));
+	return client;
 }
 
-static GObject*
-constructor (GType type,
-		   guint n_construct_params,
-		   GObjectConstructParam *construct_params)
+static void
+client_inited (GObject *source, GAsyncResult *result, gpointer user_data)
 {
-	NMObject *object;
+	GSimpleAsyncResult *simple = user_data;
+	GError *error = NULL;
+
+	if (!g_async_initable_init_finish (G_ASYNC_INITABLE (source), result, &error))
+		g_simple_async_result_take_error (simple, error);
+	else
+		g_simple_async_result_set_op_res_gpointer (simple, source, g_object_unref);
+	g_simple_async_result_complete (simple);
+	g_object_unref (simple);
+}
+
+/**
+ * nm_client_new_async:
+ * @cancellable: a #GCancellable, or %NULL
+ * @callback: callback to call when the client is created
+ * @user_data: data for @callback
+ *
+ * Creates a new #NMClient and begins asynchronously initializing it.
+ * @callback will be called when it is done; use
+ * nm_client_new_finish() to get the result.
+ *
+ * NOTE: #NMClient provides information about devices and a mechanism to
+ * control them.  To access and modify network configuration data, use the
+ * #NMRemoteSettings object.
+ **/
+void
+nm_client_new_async (GCancellable *cancellable, GAsyncReadyCallback callback,
+                     gpointer user_data)
+{
+	DBusGConnection *connection;
+	GError *err = NULL;
+	NMClient *client;
+	GSimpleAsyncResult *simple;
+
+	simple = g_simple_async_result_new (NULL, callback, user_data, nm_client_new_async);
+
+#ifdef LIBNM_GLIB_TEST
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &err);
+#else
+	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &err);
+#endif
+	if (!connection) {
+		g_simple_async_result_take_error (simple, err);
+		g_simple_async_result_complete_in_idle (simple);
+		g_object_unref (simple);
+		return;
+	}
+
+	client = g_object_new (NM_TYPE_CLIENT,
+	                       NM_OBJECT_DBUS_CONNECTION, connection,
+	                       NM_OBJECT_DBUS_PATH, NM_DBUS_PATH,
+	                       NULL);
+	g_async_initable_init_async (G_ASYNC_INITABLE (client), G_PRIORITY_DEFAULT,
+	                             cancellable, client_inited, simple);
+}
+
+/**
+ * nm_client_new_finish:
+ * @result: a #GAsyncResult
+ * @error: location for a #GError, or %NULL
+ *
+ * Gets the result of an nm_client_new_async() call.
+ *
+ * Returns: a new #NMClient, or %NULL on error
+ **/
+NMClient *
+nm_client_new_finish (GAsyncResult *result, GError **error)
+{
+	GSimpleAsyncResult *simple;
+
+	g_return_val_if_fail (g_simple_async_result_is_valid (result, NULL, nm_client_new_async), NULL);
+
+	simple = G_SIMPLE_ASYNC_RESULT (result);
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NULL;
+	else
+		return g_object_ref (g_simple_async_result_get_op_res_gpointer (simple));
+}
+
+static void
+constructed (GObject *object)
+{
 	DBusGConnection *connection;
 	NMClientPrivate *priv;
-	GError *err = NULL;
 
-	object = (NMObject *) G_OBJECT_CLASS (nm_client_parent_class)->constructor (type,
-																 n_construct_params,
-																 construct_params);
-	if (!object)
-		return NULL;
+	nm_utils_init (NULL);
+
+	G_OBJECT_CLASS (nm_client_parent_class)->constructed (object);
 
 	priv = NM_CLIENT_GET_PRIVATE (object);
-	connection = nm_object_get_connection (object);
+	connection = nm_object_get_connection (NM_OBJECT (object));
 
 	priv->client_proxy = dbus_g_proxy_new_for_name (connection,
 										   NM_DBUS_SERVICE,
-										   nm_object_get_path (object),
+										   nm_object_get_path (NM_OBJECT (object)),
 										   NM_DBUS_INTERFACE);
 
-	register_for_property_changed (NM_CLIENT (object));
-
-	dbus_g_proxy_add_signal (priv->client_proxy, "DeviceAdded", DBUS_TYPE_G_OBJECT_PATH, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (priv->client_proxy,
-						    "DeviceAdded",
-						    G_CALLBACK (client_device_added_proxy),
-						    object,
-						    NULL);
-
-	dbus_g_proxy_add_signal (priv->client_proxy, "DeviceRemoved", DBUS_TYPE_G_OBJECT_PATH, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (priv->client_proxy,
-						    "DeviceRemoved",
-						    G_CALLBACK (client_device_removed_proxy),
-						    object,
-						    NULL);
+	register_properties (NM_CLIENT (object));
 
 	/* Permissions */
 	dbus_g_proxy_add_signal (priv->client_proxy, "CheckPermissions", G_TYPE_INVALID);
@@ -1386,7 +1268,6 @@ constructor (GType type,
 	                             G_CALLBACK (client_recheck_permissions),
 	                             object,
 	                             NULL);
-	get_permissions_sync (NM_CLIENT (object));
 
 	priv->bus_proxy = dbus_g_proxy_new_for_name (connection,
 	                                             DBUS_SERVICE_DBUS,
@@ -1401,30 +1282,136 @@ constructor (GType type,
 						    G_CALLBACK (proxy_name_owner_changed),
 						    object, NULL);
 
-	if (!dbus_g_proxy_call (priv->bus_proxy,
-					    "NameHasOwner", &err,
-					    G_TYPE_STRING, NM_DBUS_SERVICE,
-					    G_TYPE_INVALID,
-					    G_TYPE_BOOLEAN, &priv->manager_running,
-					    G_TYPE_INVALID)) {
-		g_warning ("Error on NameHasOwner DBUS call: %s", err->message);
-		g_error_free (err);
-	}
-
-	if (priv->manager_running) {
-		update_wireless_status (NM_CLIENT (object), FALSE);
-		update_wwan_status (NM_CLIENT (object), FALSE);
-		update_wimax_status (NM_CLIENT (object), FALSE);
-		nm_client_get_state (NM_CLIENT (object));
-	}
-
-	g_signal_connect (G_OBJECT (object), "notify::" NM_CLIENT_WIRELESS_ENABLED,
+	g_signal_connect (object, "notify::" NM_CLIENT_WIRELESS_ENABLED,
 	                  G_CALLBACK (wireless_enabled_cb), NULL);
 
 	g_signal_connect (object, "notify::" NM_CLIENT_ACTIVE_CONNECTIONS,
 	                  G_CALLBACK (active_connections_changed_cb), NULL);
+}
 
-	return G_OBJECT (object);
+static gboolean
+init_sync (GInitable *initable, GCancellable *cancellable, GError **error)
+{
+	NMClient *client = NM_CLIENT (initable);
+	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (client);
+
+	if (!nm_client_parent_initable_iface->init (initable, cancellable, error))
+		return FALSE;
+
+	if (!dbus_g_proxy_call (priv->bus_proxy,
+	                        "NameHasOwner", error,
+	                        G_TYPE_STRING, NM_DBUS_SERVICE,
+	                        G_TYPE_INVALID,
+	                        G_TYPE_BOOLEAN, &priv->manager_running,
+	                        G_TYPE_INVALID))
+		return FALSE;
+
+	if (priv->manager_running && !get_permissions_sync (client, error))
+		return FALSE;
+
+	return TRUE;
+}
+
+typedef struct {
+	NMClient *client;
+	GSimpleAsyncResult *result;
+	gboolean properties_pending;
+	gboolean permissions_pending;
+} NMClientInitData;
+
+static void
+init_async_complete (NMClientInitData *init_data)
+{
+	if (init_data->properties_pending || init_data->permissions_pending)
+		return;
+
+	g_simple_async_result_complete (init_data->result);
+	g_object_unref (init_data->result);
+	g_slice_free (NMClientInitData, init_data);
+}
+
+static void
+init_async_got_permissions (DBusGProxy *proxy, DBusGProxyCall *call, gpointer user_data)
+{
+	NMClientInitData *init_data = user_data;
+	GHashTable *permissions;
+	GError *error = NULL;
+
+	dbus_g_proxy_end_call (proxy, call, &error,
+	                       DBUS_TYPE_G_MAP_OF_STRING, &permissions,
+	                       G_TYPE_INVALID);
+	update_permissions (init_data->client, error ? NULL : permissions);
+	g_clear_error (&error);
+
+	init_data->permissions_pending = FALSE;
+	init_async_complete (init_data);
+}
+
+static void
+init_async_got_properties (GObject *source, GAsyncResult *result, gpointer user_data)
+{
+	NMClientInitData *init_data = user_data;
+	GError *error = NULL;
+
+	if (!nm_client_parent_async_initable_iface->init_finish (G_ASYNC_INITABLE (source), result, &error))
+		g_simple_async_result_take_error (init_data->result, error);
+
+	init_data->properties_pending = FALSE;
+	init_async_complete (init_data);
+}
+
+static void
+init_async_got_manager_running (DBusGProxy *proxy, DBusGProxyCall *call,
+                                gpointer user_data)
+{
+	NMClientInitData *init_data = user_data;
+	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (init_data->client);
+	GError *error = NULL;
+
+	if (!dbus_g_proxy_end_call (proxy, call, &error,
+	                            G_TYPE_BOOLEAN, &priv->manager_running,
+	                            G_TYPE_INVALID)) {
+		g_simple_async_result_take_error (init_data->result, error);
+		init_async_complete (init_data);
+		return;
+	}
+
+	if (!priv->manager_running) {
+		init_async_complete (init_data);
+		return;
+	}
+
+	nm_client_parent_async_initable_iface->init_async (G_ASYNC_INITABLE (init_data->client),
+	                                                   G_PRIORITY_DEFAULT, NULL, /* FIXME cancellable */
+	                                                   init_async_got_properties, init_data);
+	init_data->properties_pending = TRUE;
+
+	dbus_g_proxy_begin_call (priv->client_proxy, "GetPermissions",
+	                         init_async_got_permissions, init_data, NULL,
+	                         G_TYPE_INVALID);
+	init_data->permissions_pending = TRUE;
+}
+
+static void
+init_async (GAsyncInitable *initable, int io_priority,
+			GCancellable *cancellable, GAsyncReadyCallback callback,
+			gpointer user_data)
+{
+	NMClientInitData *init_data;
+	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (initable);
+
+	init_data = g_slice_new0 (NMClientInitData);
+	init_data->client = NM_CLIENT (initable);
+	init_data->result = g_simple_async_result_new (G_OBJECT (initable), callback,
+	                                               user_data, init_async);
+	g_simple_async_result_set_op_res_gboolean (init_data->result, TRUE);
+
+	/* Check if NM is running */
+	dbus_g_proxy_begin_call (priv->bus_proxy, "NameHasOwner",
+	                         init_async_got_manager_running,
+	                         init_data, NULL,
+	                         G_TYPE_STRING, NM_DBUS_SERVICE,
+	                         G_TYPE_INVALID);
 }
 
 static void
@@ -1444,7 +1431,7 @@ dispose (GObject *object)
 	g_object_unref (priv->bus_proxy);
 
 	free_object_array (&priv->devices);
-	free_object_array (&priv->active_connections);
+	dispose_and_free_object_array (&priv->active_connections);
 
 	g_slist_foreach (priv->pending_activations, (GFunc) activate_info_free, NULL);
 	g_slist_free (priv->pending_activations);
@@ -1563,7 +1550,7 @@ nm_client_class_init (NMClientClass *client_class)
 	g_type_class_add_private (client_class, sizeof (NMClientPrivate));
 
 	/* virtual methods */
-	object_class->constructor = constructor;
+	object_class->constructed = constructed;
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
@@ -1763,7 +1750,22 @@ nm_client_class_init (NMClientClass *client_class)
 					  G_OBJECT_CLASS_TYPE (object_class),
 					  G_SIGNAL_RUN_FIRST,
 					  0, NULL, NULL,
-					  _nm_marshal_VOID__UINT_UINT,
+					  _nm_glib_marshal_VOID__UINT_UINT,
 					  G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 }
 
+static void
+nm_client_initable_iface_init (GInitableIface *iface)
+{
+	nm_client_parent_initable_iface = g_type_interface_peek_parent (iface);
+
+	iface->init = init_sync;
+}
+
+static void
+nm_client_async_initable_iface_init (GAsyncInitableIface *iface)
+{
+	nm_client_parent_async_initable_iface = g_type_interface_peek_parent (iface);
+
+	iface->init_async = init_async;
+}

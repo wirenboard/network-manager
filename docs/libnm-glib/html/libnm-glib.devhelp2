@@ -64,6 +64,8 @@
     <keyword type="function" name="nm_client_networking_get_enabled ()" link="NMClient.html#nm-client-networking-get-enabled"/>
     <keyword type="function" name="nm_client_networking_set_enabled ()" link="NMClient.html#nm-client-networking-set-enabled"/>
     <keyword type="function" name="nm_client_new ()" link="NMClient.html#nm-client-new"/>
+    <keyword type="function" name="nm_client_new_async ()" link="NMClient.html#nm-client-new-async"/>
+    <keyword type="function" name="nm_client_new_finish ()" link="NMClient.html#nm-client-new-finish"/>
     <keyword type="function" name="nm_client_sleep ()" link="NMClient.html#nm-client-sleep"/>
     <keyword type="function" name="nm_client_wimax_get_enabled ()" link="NMClient.html#nm-client-wimax-get-enabled"/>
     <keyword type="function" name="nm_client_wimax_hardware_get_enabled ()" link="NMClient.html#nm-client-wimax-hardware-get-enabled"/>
@@ -94,6 +96,7 @@
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_DEFAULT" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEFAULT:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_DEFAULT6" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEFAULT6:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_DEVICES" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-DEVICES:CAPS"/>
+    <keyword type="macro" name="NM_ACTIVE_CONNECTION_MASTER" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-MASTER:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-SPECIFIC-OBJECT:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_STATE" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-STATE:CAPS"/>
     <keyword type="macro" name="NM_ACTIVE_CONNECTION_UUID" link="NMActiveConnection.html#NM-ACTIVE-CONNECTION-UUID:CAPS"/>
@@ -101,6 +104,7 @@
     <keyword type="function" name="nm_active_connection_get_default ()" link="NMActiveConnection.html#nm-active-connection-get-default"/>
     <keyword type="function" name="nm_active_connection_get_default6 ()" link="NMActiveConnection.html#nm-active-connection-get-default6"/>
     <keyword type="function" name="nm_active_connection_get_devices ()" link="NMActiveConnection.html#nm-active-connection-get-devices"/>
+    <keyword type="function" name="nm_active_connection_get_master ()" link="NMActiveConnection.html#nm-active-connection-get-master"/>
     <keyword type="function" name="nm_active_connection_get_specific_object ()" link="NMActiveConnection.html#nm-active-connection-get-specific-object"/>
     <keyword type="function" name="nm_active_connection_get_state ()" link="NMActiveConnection.html#nm-active-connection-get-state"/>
     <keyword type="function" name="nm_active_connection_get_uuid ()" link="NMActiveConnection.html#nm-active-connection-get-uuid"/>
@@ -109,8 +113,10 @@
     <keyword type="property" name="The &quot;default&quot; property" link="NMActiveConnection.html#NMActiveConnection--default"/>
     <keyword type="property" name="The &quot;default6&quot; property" link="NMActiveConnection.html#NMActiveConnection--default6"/>
     <keyword type="property" name="The &quot;devices&quot; property" link="NMActiveConnection.html#NMActiveConnection--devices"/>
+    <keyword type="property" name="The &quot;master&quot; property" link="NMActiveConnection.html#NMActiveConnection--master"/>
     <keyword type="property" name="The &quot;specific-object&quot; property" link="NMActiveConnection.html#NMActiveConnection--specific-object"/>
     <keyword type="property" name="The &quot;state&quot; property" link="NMActiveConnection.html#NMActiveConnection--state"/>
+    <keyword type="property" name="The &quot;uuid&quot; property" link="NMActiveConnection.html#NMActiveConnection--uuid"/>
     <keyword type="struct" name="NMDevice" link="NMDevice.html#NMDevice-struct"/>
     <keyword type="struct" name="NMDeviceClass" link="NMDevice.html#NMDeviceClass"/>
     <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
@@ -128,6 +134,7 @@
     <keyword type="macro" name="NM_DEVICE_MANAGED" link="NMDevice.html#NM-DEVICE-MANAGED:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_PRODUCT" link="NMDevice.html#NM-DEVICE-PRODUCT:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_STATE" link="NMDevice.html#NM-DEVICE-STATE:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_STATE_REASON" link="NMDevice.html#NM-DEVICE-STATE-REASON:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_UDI" link="NMDevice.html#NM-DEVICE-UDI:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_VENDOR" link="NMDevice.html#NM-DEVICE-VENDOR:CAPS"/>
     <keyword type="function" name="nm_device_connection_valid ()" link="NMDevice.html#nm-device-connection-valid"/>
@@ -147,6 +154,7 @@
     <keyword type="function" name="nm_device_get_managed ()" link="NMDevice.html#nm-device-get-managed"/>
     <keyword type="function" name="nm_device_get_product ()" link="NMDevice.html#nm-device-get-product"/>
     <keyword type="function" name="nm_device_get_state ()" link="NMDevice.html#nm-device-get-state"/>
+    <keyword type="function" name="nm_device_get_state_reason ()" link="NMDevice.html#nm-device-get-state-reason"/>
     <keyword type="function" name="nm_device_get_udi ()" link="NMDevice.html#nm-device-get-udi"/>
     <keyword type="function" name="nm_device_get_vendor ()" link="NMDevice.html#nm-device-get-vendor"/>
     <keyword type="function" name="nm_device_new ()" link="NMDevice.html#nm-device-new"/>
@@ -164,6 +172,7 @@
     <keyword type="property" name="The &quot;managed&quot; property" link="NMDevice.html#NMDevice--managed"/>
     <keyword type="property" name="The &quot;product&quot; property" link="NMDevice.html#NMDevice--product"/>
     <keyword type="property" name="The &quot;state&quot; property" link="NMDevice.html#NMDevice--state"/>
+    <keyword type="property" name="The &quot;state-reason&quot; property" link="NMDevice.html#NMDevice--state-reason"/>
     <keyword type="property" name="The &quot;udi&quot; property" link="NMDevice.html#NMDevice--udi"/>
     <keyword type="property" name="The &quot;vendor&quot; property" link="NMDevice.html#NMDevice--vendor"/>
     <keyword type="signal" name="The &quot;state-changed&quot; signal" link="NMDevice.html#NMDevice-state-changed"/>
@@ -372,7 +381,6 @@
     <keyword type="function" name="nm_remote_connection_get_secrets ()" link="NMRemoteConnection.html#nm-remote-connection-get-secrets"/>
     <keyword type="function" name="nm_remote_connection_new ()" link="NMRemoteConnection.html#nm-remote-connection-new"/>
     <keyword type="property" name="The &quot;bus&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--bus"/>
-    <keyword type="property" name="The &quot;init-result&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--init-result"/>
     <keyword type="signal" name="The &quot;removed&quot; signal" link="NMRemoteConnection.html#NMRemoteConnection-removed"/>
     <keyword type="signal" name="The &quot;updated&quot; signal" link="NMRemoteConnection.html#NMRemoteConnection-updated"/>
     <keyword type="signal" name="The &quot;visible&quot; signal" link="NMRemoteConnection.html#NMRemoteConnection-visible"/>
@@ -384,6 +392,7 @@
     <keyword type="macro" name="NM_REMOTE_SETTINGS_BUS" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-BUS:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_SETTINGS_CAN_MODIFY" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-CAN-MODIFY:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_SETTINGS_CONNECTIONS_READ" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-CONNECTIONS-READ:CAPS"/>
+    <keyword type="macro" name="NM_REMOTE_SETTINGS_ERROR" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_SETTINGS_HOSTNAME" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-HOSTNAME:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_SETTINGS_NEW_CONNECTION" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-NEW-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_REMOTE_SETTINGS_SERVICE_RUNNING" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS"/>
@@ -393,6 +402,8 @@
     <keyword type="function" name="nm_remote_settings_get_connection_by_uuid ()" link="NMRemoteSettings.html#nm-remote-settings-get-connection-by-uuid"/>
     <keyword type="function" name="nm_remote_settings_list_connections ()" link="NMRemoteSettings.html#nm-remote-settings-list-connections"/>
     <keyword type="function" name="nm_remote_settings_new ()" link="NMRemoteSettings.html#nm-remote-settings-new"/>
+    <keyword type="function" name="nm_remote_settings_new_async ()" link="NMRemoteSettings.html#nm-remote-settings-new-async"/>
+    <keyword type="function" name="nm_remote_settings_new_finish ()" link="NMRemoteSettings.html#nm-remote-settings-new-finish"/>
     <keyword type="function" name="nm_remote_settings_save_hostname ()" link="NMRemoteSettings.html#nm-remote-settings-save-hostname"/>
     <keyword type="property" name="The &quot;bus&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--bus"/>
     <keyword type="property" name="The &quot;can-modify&quot; property" link="NMRemoteSettings.html#NMRemoteSettings--can-modify"/>
@@ -408,6 +419,7 @@
     <keyword type="function" name="NMSecretAgentGetSecretsFunc ()" link="NMSecretAgent.html#NMSecretAgentGetSecretsFunc"/>
     <keyword type="function" name="NMSecretAgentSaveSecretsFunc ()" link="NMSecretAgent.html#NMSecretAgentSaveSecretsFunc"/>
     <keyword type="macro" name="NM_SECRET_AGENT_AUTO_REGISTER" link="NMSecretAgent.html#NM-SECRET-AGENT-AUTO-REGISTER:CAPS"/>
+    <keyword type="macro" name="NM_SECRET_AGENT_ERROR" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR:CAPS"/>
     <keyword type="macro" name="NM_SECRET_AGENT_IDENTIFIER" link="NMSecretAgent.html#NM-SECRET-AGENT-IDENTIFIER:CAPS"/>
     <keyword type="macro" name="NM_SECRET_AGENT_REGISTRATION_RESULT" link="NMSecretAgent.html#NM-SECRET-AGENT-REGISTRATION-RESULT:CAPS"/>
     <keyword type="function" name="nm_secret_agent_delete_secrets ()" link="NMSecretAgent.html#nm-secret-agent-delete-secrets"/>
@@ -418,6 +430,7 @@
     <keyword type="function" name="nm_secret_agent_unregister ()" link="NMSecretAgent.html#nm-secret-agent-unregister"/>
     <keyword type="property" name="The &quot;auto-register&quot; property" link="NMSecretAgent.html#NMSecretAgent--auto-register"/>
     <keyword type="property" name="The &quot;identifier&quot; property" link="NMSecretAgent.html#NMSecretAgent--identifier"/>
+    <keyword type="property" name="The &quot;registered&quot; property" link="NMSecretAgent.html#NMSecretAgent--registered"/>
     <keyword type="signal" name="The &quot;registration-result&quot; signal" link="NMSecretAgent.html#NMSecretAgent-registration-result"/>
     <keyword type="struct" name="NMVPNConnection" link="NMVPNConnection.html#NMVPNConnection-struct"/>
     <keyword type="struct" name="NMVPNConnectionClass" link="NMVPNConnection.html#NMVPNConnectionClass"/>

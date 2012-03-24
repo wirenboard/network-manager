@@ -54,14 +54,11 @@ G_BEGIN_DECLS
  **/
 typedef enum
 {
-	NM_SETTING_ERROR_UNKNOWN = 0,
-	NM_SETTING_ERROR_PROPERTY_NOT_FOUND,
-	NM_SETTING_ERROR_PROPERTY_NOT_SECRET,
-	NM_SETTING_ERROR_PROPERTY_TYPE_MISMATCH
+	NM_SETTING_ERROR_UNKNOWN = 0,           /*< nick=UnknownError >*/
+	NM_SETTING_ERROR_PROPERTY_NOT_FOUND,    /*< nick=PropertyNotFound >*/
+	NM_SETTING_ERROR_PROPERTY_NOT_SECRET,   /*< nick=PropertyNotSecret >*/
+	NM_SETTING_ERROR_PROPERTY_TYPE_MISMATCH /*< nick=PropertyTypeMismatch >*/
 } NMSettingError;
-
-#define NM_TYPE_SETTING_ERROR (nm_setting_error_get_type ()) 
-GType nm_setting_error_get_type (void);
 
 #define NM_SETTING_ERROR nm_setting_error_quark ()
 GQuark nm_setting_error_quark (void);
@@ -203,9 +200,10 @@ typedef struct {
 	                                         NMSettingClearSecretsWithFlagsFn func,
 	                                         gpointer user_data);
 
+	const char *(*get_virtual_iface_name) (NMSetting *setting);
+
 	/* Padding for future expansion */
 	void (*_reserved1) (void);
-	void (*_reserved2) (void);
 } NMSettingClass;
 
 /**
@@ -307,6 +305,8 @@ gboolean    nm_setting_set_secret_flags (NMSetting *setting,
                                          const char *secret_name,
                                          NMSettingSecretFlags flags,
                                          GError **error);
+
+const char *nm_setting_get_virtual_iface_name (NMSetting *setting);
 
 G_END_DECLS
 

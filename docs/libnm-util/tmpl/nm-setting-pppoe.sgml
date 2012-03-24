@@ -9,12 +9,10 @@ NMSettingPPPOE
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -68,6 +66,13 @@ NMSettingPPPOE
 @NM_SETTING_PPPOE_ERROR_INVALID_PROPERTY: 
 @NM_SETTING_PPPOE_ERROR_MISSING_PROPERTY: 
 @NM_SETTING_PPPOE_ERROR_MISSING_PPP_SETTING: 
+
+<!-- ##### MACRO NM_SETTING_PPPOE_ERROR ##### -->
+<para>
+
+</para>
+
+
 
 <!-- ##### MACRO NM_SETTING_PPPOE_PASSWORD ##### -->
 <para>

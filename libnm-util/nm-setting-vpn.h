@@ -47,13 +47,10 @@ G_BEGIN_DECLS
  * required
  */
 typedef enum {
-	NM_SETTING_VPN_ERROR_UNKNOWN = 0,
-	NM_SETTING_VPN_ERROR_INVALID_PROPERTY,
-	NM_SETTING_VPN_ERROR_MISSING_PROPERTY,
+	NM_SETTING_VPN_ERROR_UNKNOWN = 0,      /*< nick=UnknownError >*/
+	NM_SETTING_VPN_ERROR_INVALID_PROPERTY, /*< nick=InvalidProperty >*/
+	NM_SETTING_VPN_ERROR_MISSING_PROPERTY, /*< nick=MissingProperty >*/
 } NMSettingVpnError;
-
-#define NM_TYPE_SETTING_VPN_ERROR (nm_setting_vpn_error_get_type ()) 
-GType nm_setting_vpn_error_get_type (void);
 
 #define NM_SETTING_VPN_ERROR nm_setting_vpn_error_quark ()
 GQuark nm_setting_vpn_error_quark (void);
@@ -92,6 +89,7 @@ NMSetting        *nm_setting_vpn_new               (void);
 const char       *nm_setting_vpn_get_service_type  (NMSettingVPN *setting);
 const char       *nm_setting_vpn_get_user_name     (NMSettingVPN *setting);
 
+guint32           nm_setting_vpn_get_num_data_items (NMSettingVPN *setting);
 void              nm_setting_vpn_add_data_item     (NMSettingVPN *setting,
                                                     const char *key,
                                                     const char *item);
@@ -103,6 +101,7 @@ void              nm_setting_vpn_foreach_data_item (NMSettingVPN *setting,
                                                     NMVPNIterFunc func,
                                                     gpointer user_data);
 
+guint32           nm_setting_vpn_get_num_secrets   (NMSettingVPN *setting);
 void              nm_setting_vpn_add_secret        (NMSettingVPN *setting,
                                                     const char *key,
                                                     const char *secret);

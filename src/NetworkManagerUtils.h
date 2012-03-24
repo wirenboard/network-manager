@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2004 - 2010 Red Hat, Inc.
+ * Copyright (C) 2004 - 2011 Red Hat, Inc.
  * Copyright (C) 2005 - 2008 Novell, Inc.
  */
 
@@ -36,8 +36,6 @@
 gboolean nm_ethernet_address_is_valid (const struct ether_addr *test_addr);
 
 int nm_spawn_process (const char *args);
-
-char *nm_ether_ntop (const struct ether_addr *mac);
 
 void nm_utils_merge_ip4_config (NMIP4Config *ip4_config, NMSettingIP4Config *setting);
 void nm_utils_merge_ip6_config (NMIP6Config *ip6_config, NMSettingIP6Config *setting);
@@ -85,7 +83,13 @@ gboolean nm_utils_do_sysctl (const char *path, const char *value);
 
 gboolean nm_utils_get_proc_sys_net_value (const char *path,
                                           const char *iface,
-                                          guint32 *out_value);
+                                          gint32 *out_value);
+
+gboolean nm_utils_get_proc_sys_net_value_with_bounds (const char *path,
+                                                      const char *iface,
+                                                      gint32 *out_value,
+                                                      gint32 valid_min,
+                                                      gint32 valid_max);
 
 void nm_utils_complete_generic (NMConnection *connection,
                                 const char *ctype,
@@ -93,5 +97,9 @@ void nm_utils_complete_generic (NMConnection *connection,
                                 const char *format,
                                 const char *preferred,
                                 gboolean default_enable_ipv6);
+
+gboolean nm_utils_is_uuid (const char *str);
+
+char *nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id);
 
 #endif /* NETWORK_MANAGER_UTILS_H */

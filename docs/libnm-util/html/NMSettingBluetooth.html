@@ -48,6 +48,7 @@
                     <a class="link" href="NMSettingBluetooth.html#NMSettingBluetoothClass" title="NMSettingBluetoothClass">NMSettingBluetoothClass</a>;
 enum                <a class="link" href="NMSettingBluetooth.html#NMSettingBluetoothError-enum" title="enum NMSettingBluetoothError">NMSettingBluetoothError</a>;
 #define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-BDADDR:CAPS" title="NM_SETTING_BLUETOOTH_BDADDR">NM_SETTING_BLUETOOTH_BDADDR</a>
+#define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-ERROR:CAPS" title="NM_SETTING_BLUETOOTH_ERROR">NM_SETTING_BLUETOOTH_ERROR</a>
 #define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-SETTING-NAME:CAPS" title="NM_SETTING_BLUETOOTH_SETTING_NAME">NM_SETTING_BLUETOOTH_SETTING_NAME</a>
 #define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-TYPE:CAPS" title="NM_SETTING_BLUETOOTH_TYPE">NM_SETTING_BLUETOOTH_TYPE</a>
 #define             <a class="link" href="NMSettingBluetooth.html#NM-SETTING-BLUETOOTH-TYPE-DUN:CAPS" title="NM_SETTING_BLUETOOTH_TYPE_DUN">NM_SETTING_BLUETOOTH_TYPE_DUN</a>
@@ -115,10 +116,10 @@ Point (NAP) profiles.
 <div class="refsect2">
 <a name="NMSettingBluetoothError-enum"></a><h3>enum NMSettingBluetoothError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_BLUETOOTH_ERROR_UNKNOWN = 0,
-	NM_SETTING_BLUETOOTH_ERROR_INVALID_PROPERTY,
-	NM_SETTING_BLUETOOTH_ERROR_MISSING_PROPERTY,
-	NM_SETTING_BLUETOOTH_ERROR_TYPE_SETTING_NOT_FOUND,
+	NM_SETTING_BLUETOOTH_ERROR_UNKNOWN = 0,            /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_BLUETOOTH_ERROR_INVALID_PROPERTY,       /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_BLUETOOTH_ERROR_MISSING_PROPERTY,       /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_BLUETOOTH_ERROR_TYPE_SETTING_NOT_FOUND, /*&lt; nick=TypeSettingNotFound &gt;*/
 } NMSettingBluetoothError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -154,6 +155,14 @@ must also contain an <a class="link" href="NMSettingGsm.html" title="NMSettingGs
 <div class="refsect2">
 <a name="NM-SETTING-BLUETOOTH-BDADDR:CAPS"></a><h3>NM_SETTING_BLUETOOTH_BDADDR</h3>
 <pre class="programlisting">#define NM_SETTING_BLUETOOTH_BDADDR    "bdaddr"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-BLUETOOTH-ERROR:CAPS"></a><h3>NM_SETTING_BLUETOOTH_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_BLUETOOTH_ERROR nm_setting_bluetooth_error_quark ()
 </pre>
 <p>
 </p>

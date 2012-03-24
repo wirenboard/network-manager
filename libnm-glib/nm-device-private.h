@@ -17,20 +17,12 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2007 - 2008 Red Hat, Inc.
+ * Copyright (C) 2007 - 2012 Red Hat, Inc.
  */
 
 #ifndef NM_DEVICE_PRIVATE_H
 #define NM_DEVICE_PRIVATE_H
 
-#include <dbus/dbus-glib.h>
-
-DBusGConnection *nm_device_get_connection       (NMDevice *device);
-const char      *nm_device_get_path             (NMDevice *device);
-DBusGProxy      *nm_device_get_properties_proxy (NMDevice *device);
-
-/* static methods */
-NMDeviceType     nm_device_type_for_path (DBusGConnection *connection,
-										  const char *path);
+void _nm_device_set_device_type (NMDevice *device, NMDeviceType dtype);
 
 #endif /* NM_DEVICE_PRIVATE_H */

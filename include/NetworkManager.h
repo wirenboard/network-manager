@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2004 - 2011 Red Hat, Inc.
+ * (C) Copyright 2004 - 2012 Red Hat, Inc.
  */
 
 #ifndef NETWORK_MANAGER_H
@@ -36,6 +36,7 @@
 #define NM_DBUS_INTERFACE_DEVICE_WIRED      NM_DBUS_INTERFACE_DEVICE ".Wired"
 #define NM_DBUS_INTERFACE_DEVICE_WIRELESS   NM_DBUS_INTERFACE_DEVICE ".Wireless"
 #define NM_DBUS_INTERFACE_DEVICE_BLUETOOTH  NM_DBUS_INTERFACE_DEVICE ".Bluetooth"
+#define NM_DBUS_INTERFACE_DEVICE_OLPC_MESH  NM_DBUS_INTERFACE_DEVICE ".OlpcMesh"
 #define NM_DBUS_PATH_ACCESS_POINT           NM_DBUS_PATH "/AccessPoint"
 #define NM_DBUS_INTERFACE_ACCESS_POINT      NM_DBUS_INTERFACE ".AccessPoint"
 #define NM_DBUS_INTERFACE_DEVICE_MODEM      NM_DBUS_INTERFACE_DEVICE ".Modem"
@@ -47,6 +48,9 @@
 #define NM_DBUS_INTERFACE_DHCP4_CONFIG      NM_DBUS_INTERFACE ".DHCP4Config"
 #define NM_DBUS_INTERFACE_IP6_CONFIG        NM_DBUS_INTERFACE ".IP6Config"
 #define NM_DBUS_INTERFACE_DHCP6_CONFIG      NM_DBUS_INTERFACE ".DHCP6Config"
+#define NM_DBUS_INTERFACE_DEVICE_INFINIBAND NM_DBUS_INTERFACE_DEVICE ".Infiniband"
+#define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
+#define NM_DBUS_INTERFACE_DEVICE_VLAN       NM_DBUS_INTERFACE_DEVICE ".Vlan"
 
 
 #define NM_DBUS_IFACE_SETTINGS            "org.freedesktop.NetworkManager.Settings"
@@ -101,19 +105,25 @@ typedef enum {
  * @NM_DEVICE_TYPE_WIMAX: an 802.16e Mobile WiMAX broadband device
  * @NM_DEVICE_TYPE_MODEM: a modem supporting analog telephone, CDMA/EVDO,
  * GSM/UMTS, or LTE network access protocols
+ * @NM_DEVICE_TYPE_INFINIBAND: an IP-over-InfiniBand device
+ * @NM_DEVICE_TYPE_BOND: a bond master interface
  *
- * #NMState values indicate the current overall networking state.
+ * #NMDeviceType values indicate the type of hardware represented by
+ * an #NMDevice.
  **/
 typedef enum {
-	NM_DEVICE_TYPE_UNKNOWN   = 0,
-	NM_DEVICE_TYPE_ETHERNET  = 1,
-	NM_DEVICE_TYPE_WIFI      = 2,
-	NM_DEVICE_TYPE_UNUSED1   = 3,
-	NM_DEVICE_TYPE_UNUSED2   = 4,
-	NM_DEVICE_TYPE_BT        = 5,  /* Bluetooth */
-	NM_DEVICE_TYPE_OLPC_MESH = 6,
-	NM_DEVICE_TYPE_WIMAX     = 7,
-	NM_DEVICE_TYPE_MODEM     = 8,
+	NM_DEVICE_TYPE_UNKNOWN    = 0,
+	NM_DEVICE_TYPE_ETHERNET   = 1,
+	NM_DEVICE_TYPE_WIFI       = 2,
+	NM_DEVICE_TYPE_UNUSED1    = 3,
+	NM_DEVICE_TYPE_UNUSED2    = 4,
+	NM_DEVICE_TYPE_BT         = 5,  /* Bluetooth */
+	NM_DEVICE_TYPE_OLPC_MESH  = 6,
+	NM_DEVICE_TYPE_WIMAX      = 7,
+	NM_DEVICE_TYPE_MODEM      = 8,
+	NM_DEVICE_TYPE_INFINIBAND = 9,
+	NM_DEVICE_TYPE_BOND       = 10,
+	NM_DEVICE_TYPE_VLAN       = 11,
 } NMDeviceType;
 
 /**
@@ -141,6 +151,7 @@ typedef enum {
  * @NM_WIFI_DEVICE_CAP_CIPHER_CCMP: device supports AES/CCMP encryption
  * @NM_WIFI_DEVICE_CAP_WPA: device supports WPA1 authentication
  * @NM_WIFI_DEVICE_CAP_RSN: device supports WPA2/RSN authentication
+ * @NM_WIFI_DEVICE_CAP_AP: device supports Access Point mode
  *
  * 802.11 specific device encryption and authentication capabilities.
  **/
@@ -152,7 +163,8 @@ typedef enum {
 	NM_WIFI_DEVICE_CAP_CIPHER_TKIP   = 0x00000004,
 	NM_WIFI_DEVICE_CAP_CIPHER_CCMP   = 0x00000008,
 	NM_WIFI_DEVICE_CAP_WPA           = 0x00000010,
-	NM_WIFI_DEVICE_CAP_RSN           = 0x00000020
+	NM_WIFI_DEVICE_CAP_RSN           = 0x00000020,
+	NM_WIFI_DEVICE_CAP_AP            = 0x00000040
 } NMDeviceWifiCapabilities;
 
 
@@ -460,6 +472,24 @@ typedef enum {
 
 	/* The Bluetooth connection failed or timed out */
 	NM_DEVICE_STATE_REASON_BT_FAILED = 44,
+
+	/* GSM Modem's SIM Card not inserted */
+	NM_DEVICE_STATE_REASON_GSM_SIM_NOT_INSERTED = 45,
+
+	/* GSM Modem's SIM Pin required */
+	NM_DEVICE_STATE_REASON_GSM_SIM_PIN_REQUIRED = 46,
+
+	/* GSM Modem's SIM Puk required */
+	NM_DEVICE_STATE_REASON_GSM_SIM_PUK_REQUIRED = 47,
+
+	/* GSM Modem's SIM wrong */
+	NM_DEVICE_STATE_REASON_GSM_SIM_WRONG = 48,
+
+	/* InfiniBand device does not support connected mode */
+	NM_DEVICE_STATE_REASON_INFINIBAND_MODE = 49,
+
+	/* A dependency of the connection failed */
+	NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED = 50,
 
 	/* Unused */
 	NM_DEVICE_STATE_REASON_LAST = 0xFFFF

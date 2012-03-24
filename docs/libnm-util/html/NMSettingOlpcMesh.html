@@ -46,6 +46,7 @@
 enum                <a class="link" href="NMSettingOlpcMesh.html#NMSettingOlpcMeshError-enum" title="enum NMSettingOlpcMeshError">NMSettingOlpcMeshError</a>;
 #define             <a class="link" href="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-CHANNEL:CAPS" title="NM_SETTING_OLPC_MESH_CHANNEL">NM_SETTING_OLPC_MESH_CHANNEL</a>
 #define             <a class="link" href="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-DHCP-ANYCAST-ADDRESS:CAPS" title="NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS">NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS</a>
+#define             <a class="link" href="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-ERROR:CAPS" title="NM_SETTING_OLPC_MESH_ERROR">NM_SETTING_OLPC_MESH_ERROR</a>
 #define             <a class="link" href="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-SETTING-NAME:CAPS" title="NM_SETTING_OLPC_MESH_SETTING_NAME">NM_SETTING_OLPC_MESH_SETTING_NAME</a>
 #define             <a class="link" href="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-SSID:CAPS" title="NM_SETTING_OLPC_MESH_SSID">NM_SETTING_OLPC_MESH_SSID</a>
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingOlpcMesh.html#nm-setting-olpc-mesh-error-quark" title="nm_setting_olpc_mesh_error_quark ()">nm_setting_olpc_mesh_error_quark</a>    (<em class="parameter"><code><span class="type">void</span></code></em>);
@@ -109,9 +110,9 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.htm
 <div class="refsect2">
 <a name="NMSettingOlpcMeshError-enum"></a><h3>enum NMSettingOlpcMeshError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_OLPC_MESH_ERROR_UNKNOWN = 0,
-	NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY,
-	NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY
+	NM_SETTING_OLPC_MESH_ERROR_UNKNOWN = 0,      /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY, /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY  /*&lt; nick=MissingProperty &gt;*/
 } NMSettingOlpcMeshError;
 </pre>
 <p>
@@ -129,6 +130,14 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.htm
 <div class="refsect2">
 <a name="NM-SETTING-OLPC-MESH-DHCP-ANYCAST-ADDRESS:CAPS"></a><h3>NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS</h3>
 <pre class="programlisting">#define NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS "dhcp-anycast-address"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-OLPC-MESH-ERROR:CAPS"></a><h3>NM_SETTING_OLPC_MESH_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_OLPC_MESH_ERROR nm_setting_olpc_mesh_error_quark ()
 </pre>
 <p>
 </p>

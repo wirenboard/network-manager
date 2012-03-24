@@ -9,12 +9,10 @@ NMActiveConnection
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -48,12 +46,22 @@ NMActiveConnection
 
 </para>
 
+<!-- ##### ARG NMActiveConnection:master ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMActiveConnection:specific-object ##### -->
 <para>
 
 </para>
 
 <!-- ##### ARG NMActiveConnection:state ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:uuid ##### -->
 <para>
 
 </para>
@@ -93,6 +101,13 @@ NMActiveConnection
 
 
 <!-- ##### MACRO NM_ACTIVE_CONNECTION_DEVICES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_MASTER ##### -->
 <para>
 
 </para>
@@ -148,6 +163,15 @@ NMActiveConnection
 
 
 <!-- ##### FUNCTION nm_active_connection_get_devices ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_active_connection_get_master ##### -->
 <para>
 
 </para>

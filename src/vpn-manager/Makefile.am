@@ -1,10 +1,13 @@
 INCLUDES = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/include \
+	-I${top_builddir}/include \
 	-I${top_srcdir}/libnm-util \
+	-I${top_builddir}/libnm-util \
+	-I${top_srcdir}/src/generated \
+	-I${top_builddir}/src/generated \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/src \
-	-I${top_builddir}/marshallers \
 	-I${top_srcdir}/src/dns-manager \
 	-DVPN_NAME_FILES_DIR=\""$(sysconfdir)/NetworkManager/VPN"\"
 
@@ -16,8 +19,6 @@ libvpn_manager_la_SOURCES = \
 	nm-vpn-manager.h \
 	nm-vpn-service.c \
 	nm-vpn-service.h \
-	nm-vpn-connection-base.c \
-	nm-vpn-connection-base.h \
 	nm-vpn-connection.c \
 	nm-vpn-connection.h
 
@@ -28,15 +29,12 @@ libvpn_manager_la_CPPFLAGS =	\
 	-DG_DISABLE_DEPRECATED
 
 libvpn_manager_la_LIBADD = \
-	$(top_builddir)/marshallers/libmarshallers.la \
+	$(top_builddir)/src/generated/libnm-generated.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(LIBNL_LIBS) \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
-
-nm-vpn-connection-base-glue.h: $(top_srcdir)/introspection/nm-active-connection.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_vpn_connection_base --mode=glib-server --output=$@ $<
 
 nm-vpn-connection-glue.h: $(top_srcdir)/introspection/nm-vpn-connection.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_vpn_connection --mode=glib-server --output=$@ $<
@@ -46,7 +44,6 @@ nm-vpn-plugin-bindings.h: $(top_srcdir)/introspection/nm-vpn-plugin.xml
 
 
 BUILT_SOURCES = \
-	nm-vpn-connection-base-glue.h \
 	nm-vpn-connection-glue.h \
 	nm-vpn-plugin-bindings.h
 

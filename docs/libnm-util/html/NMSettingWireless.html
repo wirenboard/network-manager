@@ -51,6 +51,7 @@ enum                <a class="link" href="NMSettingWireless.html#NMSettingWirele
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-BSSID:CAPS" title="NM_SETTING_WIRELESS_BSSID">NM_SETTING_WIRELESS_BSSID</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-CHANNEL:CAPS" title="NM_SETTING_WIRELESS_CHANNEL">NM_SETTING_WIRELESS_CHANNEL</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS" title="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS">NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS</a>
+#define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR:CAPS" title="NM_SETTING_WIRELESS_ERROR">NM_SETTING_WIRELESS_ERROR</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS" title="NM_SETTING_WIRELESS_MAC_ADDRESS">NM_SETTING_WIRELESS_MAC_ADDRESS</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS" title="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST">NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE:CAPS" title="NM_SETTING_WIRELESS_MODE">NM_SETTING_WIRELESS_MODE</a>
@@ -159,11 +160,11 @@ necessary for connection to 802.11 WiFi networks.
 <div class="refsect2">
 <a name="NMSettingWirelessError-enum"></a><h3>enum NMSettingWirelessError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_WIRELESS_ERROR_UNKNOWN = 0,
-	NM_SETTING_WIRELESS_ERROR_INVALID_PROPERTY,
-	NM_SETTING_WIRELESS_ERROR_MISSING_PROPERTY,
-	NM_SETTING_WIRELESS_ERROR_MISSING_SECURITY_SETTING,
-	NM_SETTING_WIRELESS_ERROR_CHANNEL_REQUIRES_BAND
+	NM_SETTING_WIRELESS_ERROR_UNKNOWN = 0,              /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_WIRELESS_ERROR_INVALID_PROPERTY,         /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_WIRELESS_ERROR_MISSING_PROPERTY,         /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_WIRELESS_ERROR_MISSING_SECURITY_SETTING, /*&lt; nick=MissingSecuritySetting &gt;*/
+	NM_SETTING_WIRELESS_ERROR_CHANNEL_REQUIRES_BAND     /*&lt; nick=ChannelRequiresBand &gt;*/
 } NMSettingWirelessError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -228,6 +229,14 @@ set to a value that requires the <a class="link" href="NMSettingWireless.html#NM
 <div class="refsect2">
 <a name="NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"></a><h3>NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS "cloned-mac-address"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIRELESS-ERROR:CAPS"></a><h3>NM_SETTING_WIRELESS_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_ERROR nm_setting_wireless_error_quark ()
 </pre>
 <p>
 </p>

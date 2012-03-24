@@ -29,6 +29,7 @@
 #include "nm-dbus-manager.h"
 #include "NetworkManagerVPN.h"
 #include "nm-marshal.h"
+#include "nm-enum-types.h"
 #include "nm-logging.h"
 
 G_DEFINE_TYPE (NMVPNManager, nm_vpn_manager, G_TYPE_OBJECT)
@@ -59,31 +60,6 @@ nm_vpn_manager_error_quark (void)
 	if (!quark)
 		quark = g_quark_from_static_string ("nm-vpn-manager-error");
 	return quark;
-}
-
-/* This should really be standard. */
-#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-
-GType
-nm_vpn_manager_error_get_type (void)
-{
-	static GType etype = 0;
-
-	if (etype == 0) {
-		static const GEnumValue values[] = {
-			/* The base device for the VPN connection is not active. */
-			ENUM_ENTRY (NM_VPN_MANAGER_ERROR_DEVICE_NOT_ACTIVE, "BaseDeviceNotActive"),
-			/* The requested VPN connection was invalid. */
-			ENUM_ENTRY (NM_VPN_MANAGER_ERROR_CONNECTION_INVALID, "ConnectionInvalid"),
-			/* The VPN service required by this VPN connection did not exist or was invalid. */
-			ENUM_ENTRY (NM_VPN_MANAGER_ERROR_SERVICE_INVALID, "ServiceInvalid"),
-			/* The VPN service required by this VPN connection could not be started. */
-			ENUM_ENTRY (NM_VPN_MANAGER_ERROR_SERVICE_START_FAILED, "ServiceStartFailed"),
-			{ 0, 0, 0 }
-		};
-		etype = g_enum_register_static ("NMVPNManagerError", values);
-	}
-	return etype;
 }
 
 
@@ -158,7 +134,7 @@ connection_vpn_state_changed (NMVPNConnection *connection,
 	}
 }
 
-NMVPNConnection *
+NMActiveConnection *
 nm_vpn_manager_activate_connection (NMVPNManager *manager,
                                     NMConnection *connection,
                                     NMDevice *device,
@@ -185,7 +161,7 @@ nm_vpn_manager_activate_connection (NMVPNManager *manager,
 		return NULL;
 	}
 
-	vpn_setting = (NMSettingVPN *) nm_connection_get_setting (connection, NM_TYPE_SETTING_VPN);
+	vpn_setting = nm_connection_get_setting_vpn (connection);
 	if (!vpn_setting) {
 		g_set_error (error,
 		             NM_VPN_MANAGER_ERROR, NM_VPN_MANAGER_ERROR_CONNECTION_INVALID,
@@ -217,7 +193,7 @@ nm_vpn_manager_activate_connection (NMVPNManager *manager,
 		                  manager);
 	}
 
-	return vpn;
+	return (NMActiveConnection *) vpn;
 }
 
 gboolean
@@ -243,7 +219,7 @@ nm_vpn_manager_deactivate_connection (NMVPNManager *self,
 			NMVPNConnection *vpn = NM_VPN_CONNECTION (aiter->data);
 			const char *vpn_path;
 
-			vpn_path = nm_vpn_connection_get_active_connection_path (vpn);
+			vpn_path = nm_active_connection_get_path (NM_ACTIVE_CONNECTION (vpn));
 			if (!strcmp (path, vpn_path)) {
 				nm_vpn_connection_disconnect (vpn, reason);
 				success = TRUE;
@@ -279,7 +255,7 @@ nm_vpn_manager_add_active_connections (NMVPNManager *self,
 			const char *path;
 
 			if (!filter || (nm_vpn_connection_get_connection (vpn) == filter)) {
-				path = nm_vpn_connection_get_active_connection_path (vpn);
+				path = nm_active_connection_get_path (NM_ACTIVE_CONNECTION (vpn));
 				g_ptr_array_add (array, g_strdup (path));
 			}
 		}
@@ -326,7 +302,7 @@ nm_vpn_manager_get_vpn_connection_for_active (NMVPNManager *manager,
 			NMVPNConnection *vpn = NM_VPN_CONNECTION (elt->data);
 			const char *ac_path;
 
-			ac_path = nm_vpn_connection_get_active_connection_path (vpn);
+			ac_path = nm_active_connection_get_path (NM_ACTIVE_CONNECTION (vpn));
 			if (ac_path && !strcmp (ac_path, active_path))
 				return vpn;
 		}

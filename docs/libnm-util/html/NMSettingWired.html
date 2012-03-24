@@ -50,6 +50,7 @@ enum                <a class="link" href="NMSettingWired.html#NMSettingWiredErro
 #define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-AUTO-NEGOTIATE:CAPS" title="NM_SETTING_WIRED_AUTO_NEGOTIATE">NM_SETTING_WIRED_AUTO_NEGOTIATE</a>
 #define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-CLONED-MAC-ADDRESS:CAPS" title="NM_SETTING_WIRED_CLONED_MAC_ADDRESS">NM_SETTING_WIRED_CLONED_MAC_ADDRESS</a>
 #define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-DUPLEX:CAPS" title="NM_SETTING_WIRED_DUPLEX">NM_SETTING_WIRED_DUPLEX</a>
+#define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-ERROR:CAPS" title="NM_SETTING_WIRED_ERROR">NM_SETTING_WIRED_ERROR</a>
 #define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS:CAPS" title="NM_SETTING_WIRED_MAC_ADDRESS">NM_SETTING_WIRED_MAC_ADDRESS</a>
 #define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-MAC-ADDRESS-BLACKLIST:CAPS" title="NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST">NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST</a>
 #define             <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-MTU:CAPS" title="NM_SETTING_WIRED_MTU">NM_SETTING_WIRED_MTU</a>
@@ -153,9 +154,9 @@ necessary for connection to Ethernet networks.
 <div class="refsect2">
 <a name="NMSettingWiredError-enum"></a><h3>enum NMSettingWiredError</h3>
 <pre class="programlisting">typedef enum {
-	NM_SETTING_WIRED_ERROR_UNKNOWN = 0,
-	NM_SETTING_WIRED_ERROR_INVALID_PROPERTY,
-	NM_SETTING_WIRED_ERROR_MISSING_PROPERTY
+	NM_SETTING_WIRED_ERROR_UNKNOWN = 0,      /*&lt; nick=UnknownError &gt;*/
+	NM_SETTING_WIRED_ERROR_INVALID_PROPERTY, /*&lt; nick=InvalidProperty &gt;*/
+	NM_SETTING_WIRED_ERROR_MISSING_PROPERTY  /*&lt; nick=MissingProperty &gt;*/
 } NMSettingWiredError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -200,6 +201,14 @@ required
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-DUPLEX:CAPS"></a><h3>NM_SETTING_WIRED_DUPLEX</h3>
 <pre class="programlisting">#define NM_SETTING_WIRED_DUPLEX "duplex"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIRED-ERROR:CAPS"></a><h3>NM_SETTING_WIRED_ERROR</h3>
+<pre class="programlisting">#define NM_SETTING_WIRED_ERROR nm_setting_wired_error_quark ()
 </pre>
 <p>
 </p>
