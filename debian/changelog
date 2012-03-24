@@ -3,8 +3,9 @@ network-manager (0.9.4.0-1) UNRELEASED; urgency=low
   * New upstream release.
   * debian/patches/04-ifupdown-support-dns-search-entries.patch: Removed,
     merged upstream.
+  * Refresh patches.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 01:39:48 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 01:40:55 +0100
 
 network-manager (0.9.2.0-2) unstable; urgency=low
 

@@ -6,8 +6,8 @@ Description: Debian specific tweaks for NetworkManager systemd service file
 Author: Michael Biebl <biebl@debian.org>
 Index: network-manager/data/NetworkManager.service.in
 ===================================================================
---- network-manager.orig/data/NetworkManager.service.in	2011-05-04 21:35:57.000000000 +0200
-+++ network-manager/data/NetworkManager.service.in	2011-05-04 22:27:37.411911227 +0200
+--- network-manager.orig/data/NetworkManager.service.in	2012-03-02 21:43:15.458064485 +0100
++++ network-manager/data/NetworkManager.service.in	2012-03-02 21:43:20.242064316 +0100
 @@ -1,8 +1,6 @@
  [Unit]
  Description=Network Manager
@@ -17,7 +17,7 @@ Index: network-manager/data/NetworkManager.service.in
  
  [Service]
  Type=dbus
-@@ -12,3 +10,4 @@
+@@ -16,3 +14,4 @@
  [Install]
  WantedBy=multi-user.target
  Alias=dbus-org.freedesktop.NetworkManager.service

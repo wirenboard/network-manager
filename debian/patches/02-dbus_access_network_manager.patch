@@ -1,13 +1,13 @@
 Description: Add D-Bus policy for group netdev
  It is more or less a copy of the at_console section.
 Author: Michael Biebl <biebl@debian.org>
-Index: network-manager/src/NetworkManager.conf
+Index: network-manager/src/org.freedesktop.NetworkManager.conf
 ===================================================================
---- network-manager.orig/src/NetworkManager.conf	2011-08-23 19:17:04.091746773 +0200
-+++ network-manager/src/NetworkManager.conf	2011-08-24 00:01:25.010444356 +0200
-@@ -24,6 +24,70 @@
-                 <allow send_destination="org.freedesktop.NetworkManager.pptp"/>
-                 <allow send_destination="org.freedesktop.NetworkManager.vpnc"/>
+--- network-manager.orig/src/org.freedesktop.NetworkManager.conf	2012-03-24 01:37:02.186720578 +0100
++++ network-manager/src/org.freedesktop.NetworkManager.conf	2012-03-24 01:38:09.726722510 +0100
+@@ -88,6 +88,70 @@
+                        send_interface="org.freedesktop.NetworkManager"
+                        send_member="wake"/>
          </policy>
 +        <policy group="netdev">
 +                <allow send_destination="org.freedesktop.NetworkManager"/>
@@ -73,6 +73,6 @@ Index: network-manager/src/NetworkManager.conf
 +                       send_interface="org.freedesktop.NetworkManager"
 +                       send_member="wake"/>
 +        </policy>
-         <policy at_console="true">
-                 <allow send_destination="org.freedesktop.NetworkManager"/>
+         <policy context="default">
+                 <deny own="org.freedesktop.NetworkManager"/>
  
