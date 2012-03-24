@@ -17,8 +17,13 @@ network-manager (0.9.4.0-1) UNRELEASED; urgency=low
   * Update symbols files for libnm-glib and libnm-util.
   * Install new nm-*-enum-types.h header files.
   * Add Build-Depends on libnl-genl-3-dev.
+  * The D-Bus policy file /etc/dbus-1/system.d/NetworkManager.conf has been
+    renamed to org.freedesktop.NetworkManager.conf. Update the .install file
+    and use the dh_install maintscript facility to move the conffile on
+    upgrades. This requires a newer debhelper, so bump the Build-Depends
+    accordingly.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 14:06:41 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 24 Mar 2012 14:10:28 +0100
 
 network-manager (0.9.2.0-2) unstable; urgency=low
 
