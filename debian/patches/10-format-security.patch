@@ -1,0 +1,21 @@
+Description: Fix a format string vulnerability
+Author: Michael Biebl <biebl@debian.org>
+diff --git a/libnm-util/nm-setting-bond.c b/libnm-util/nm-setting-bond.c
+index 9f9f438..fe874ab 100644
+--- a/libnm-util/nm-setting-bond.c
++++ b/libnm-util/nm-setting-bond.c
+@@ -402,10 +402,10 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
+ 		    || !value[0]
+ 		    || (strlen (value) > 200)
+ 		    || strchr (value, ' ')) {
+-			g_set_error (error,
+-			             NM_SETTING_BOND_ERROR,
+-			             NM_SETTING_BOND_ERROR_INVALID_OPTION,
+-			             key);
++			g_set_error_literal (error,
++			                     NM_SETTING_BOND_ERROR,
++			                     NM_SETTING_BOND_ERROR_INVALID_OPTION,
++			                     key);
+ 			return FALSE;
+ 		}
+ 	}
