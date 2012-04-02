@@ -1,3 +1,11 @@
+network-manager (0.9.4.0-2) UNRELEASED; urgency=low
+
+  * debian/patches/11-initialize-nm-remote-settings.patch: Cherry-pick patch
+    from upstream Git which fixes a regression when initializing
+    NMRemoteSettings. (Closes: #665752)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 02 Apr 2012 07:14:47 +0200
+
 network-manager (0.9.4.0-1) unstable; urgency=low
 
   * New upstream release.
