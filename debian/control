@@ -22,10 +22,8 @@ Build-Depends:
  uuid-dev,
  libudev-dev (>= 147),
  libgudev-1.0-dev,
- libgirepository1.0-dev (>= 0.9.12),
+ libgirepository1.0-dev (>= 0.10.7-1~),
  gobject-introspection (>= 0.9.12-4~),
- gir1.2-glib-2.0,
- gir1.2-freedesktop,
  gtk-doc-tools,
  libglib2.0-doc
 Standards-Version: 3.9.3

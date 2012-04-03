@@ -4,8 +4,10 @@ network-manager (0.9.4.0-3) UNRELEASED; urgency=low
     free() crash can occur. Fixes a crash in gnome-shell if NetworkManager is
     not running. Patch cherry-picked from upstream Git. (Closes: #665791)
     Thank a lot to Antti-Juhani Kaijanaho for tracking down this problem!
+  * Remove explicit Build-Depends on gir1.2-glib-2.0 and gir1.2-freedesktop,
+    let libgirepository1.0-dev pull those dependencies.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2012 20:12:19 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2012 20:18:48 +0200
 
 network-manager (0.9.4.0-2) unstable; urgency=low
 
