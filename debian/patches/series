@@ -3,3 +3,4 @@
 03-systemd.patch
 10-format-security.patch
 11-initialize-nm-remote-settings.patch
+12-initialize-gerror.patch
