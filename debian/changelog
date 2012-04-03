@@ -1,4 +1,4 @@
-network-manager (0.9.4.0-3) UNRELEASED; urgency=low
+network-manager (0.9.4.0-3) unstable; urgency=low
 
   * debian/patches/12-initialize-gerror.patch: Initialize GError, else invalid
     free() crash can occur. Fixes a crash in gnome-shell if NetworkManager is
@@ -7,7 +7,7 @@ network-manager (0.9.4.0-3) UNRELEASED; urgency=low
   * Remove explicit Build-Depends on gir1.2-glib-2.0 and gir1.2-freedesktop,
     let libgirepository1.0-dev pull those dependencies.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2012 20:18:48 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 03 Apr 2012 20:20:13 +0200
 
 network-manager (0.9.4.0-2) unstable; urgency=low
 
