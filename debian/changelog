@@ -7,6 +7,8 @@ network-manager (0.9.4.0-4) UNRELEASED; urgency=low
   * debian/network-manager.maintscript: Use new versioning scheme as
     recommended by dpkg-maintscript-helper which better handles local
     modifications and (bin)NMUs.
+  * debian/patches/13-dont-replace-kernel-default-route-for-IPv6.patch: Don't
+    fight with the kernel over the default IPv6 route. (Closes: #670818)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 15 May 2012 01:46:40 +0200
 
