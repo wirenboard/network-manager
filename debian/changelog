@@ -4,6 +4,9 @@ network-manager (0.9.4.0-4) UNRELEASED; urgency=low
     This directory needs to exist so NetworkManager can monitor it for changes
     (via inotify) to automatically detect newly installed VPN plugins.
     (Closes: #672963)
+  * debian/network-manager.maintscript: Use new versioning scheme as
+    recommended by dpkg-maintscript-helper which better handles local
+    modifications and (bin)NMUs.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 15 May 2012 01:46:40 +0200
 
