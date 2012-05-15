@@ -1,4 +1,4 @@
-network-manager (0.9.4.0-4) UNRELEASED; urgency=low
+network-manager (0.9.4.0-4) unstable; urgency=low
 
   * debian/network-manager.dirs: Install /etc/NetworkManager/VPN/ directory.
     This directory needs to exist so NetworkManager can monitor it for changes
@@ -10,7 +10,7 @@ network-manager (0.9.4.0-4) UNRELEASED; urgency=low
   * debian/patches/13-dont-replace-kernel-default-route-for-IPv6.patch: Don't
     fight with the kernel over the default IPv6 route. (Closes: #670818)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 15 May 2012 01:46:40 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 15 May 2012 01:59:39 +0200
 
 network-manager (0.9.4.0-3) unstable; urgency=low
 
