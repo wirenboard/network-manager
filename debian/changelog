@@ -1,3 +1,13 @@
+network-manager (0.9.4.0-5) UNRELEASED; urgency=low
+
+  * debian/patches/14-use-same-kernel-API-as-wpa_supplicant.patch: Some
+    drivers (ipw2x00) have an incomplete nl80211 implementation and only
+    report capabilities which made NM chose the wrong API to talk to the
+    device. Instead, match the logic that wpa_supplicant uses to determine
+    whether to stick with nl80211 or fall back to WEXT. (Closes: #673705)
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 29 May 2012 12:20:24 +0200
+
 network-manager (0.9.4.0-4) unstable; urgency=low
 
   * debian/network-manager.dirs: Install /etc/NetworkManager/VPN/ directory.
