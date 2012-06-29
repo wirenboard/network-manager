@@ -3,6 +3,8 @@ network-manager (0.9.5.95-1) UNRELEASED; urgency=low
   * New upstream release (0.9.6 rc1).
     - Remove 'max_replies_per_connection' limit from D-Bus configuration.
       (Closes: #678965)
+  * debian/patches/02-dbus_access_network_manager.patch: Updated.
+  * Remove patches which have been merged upstream.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 29 Jun 2012 20:13:03 +0200
 

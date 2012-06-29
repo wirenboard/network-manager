@@ -3,9 +3,9 @@ Description: Add D-Bus policy for group netdev
 Author: Michael Biebl <biebl@debian.org>
 Index: network-manager/src/org.freedesktop.NetworkManager.conf
 ===================================================================
---- network-manager.orig/src/org.freedesktop.NetworkManager.conf	2012-03-24 01:37:02.186720578 +0100
-+++ network-manager/src/org.freedesktop.NetworkManager.conf	2012-03-24 01:38:09.726722510 +0100
-@@ -88,6 +88,70 @@
+--- network-manager.orig/src/org.freedesktop.NetworkManager.conf	2012-06-29 20:12:59.056208718 +0200
++++ network-manager/src/org.freedesktop.NetworkManager.conf	2012-06-29 20:17:00.479762828 +0200
+@@ -85,6 +85,67 @@
                         send_interface="org.freedesktop.NetworkManager"
                         send_member="wake"/>
          </policy>
@@ -28,13 +28,10 @@ Index: network-manager/src/org.freedesktop.NetworkManager.conf
 +                       send_interface="org.freedesktop.NetworkManager.Connection.Active"/>
 +
 +                <allow send_destination="org.freedesktop.NetworkManager"
-+                       send_interface="org.freedesktop.NetworkManager.Device.Cdma"/>
++                       send_interface="org.freedesktop.NetworkManager.Device.Modem"/>
 +
 +                <allow send_destination="org.freedesktop.NetworkManager"
 +                       send_interface="org.freedesktop.NetworkManager.Device.Wired"/>
-+
-+                <allow send_destination="org.freedesktop.NetworkManager"
-+                       send_interface="org.freedesktop.NetworkManager.Device.Gsm"/>
 +
 +                <allow send_destination="org.freedesktop.NetworkManager"
 +                       send_interface="org.freedesktop.NetworkManager.Device.Serial"/>

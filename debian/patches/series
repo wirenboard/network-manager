@@ -1,8 +1,3 @@
 # Debian patches for network-manager
 02-dbus_access_network_manager.patch
 03-systemd.patch
-10-format-security.patch
-11-initialize-nm-remote-settings.patch
-12-initialize-gerror.patch
-13-dont-replace-kernel-default-route-for-IPv6.patch
-14-use-same-kernel-API-as-wpa_supplicant.patch
