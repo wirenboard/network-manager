@@ -315,12 +315,14 @@
     <description xml:lang="id">Aktifkan atau matikan perangkat broadband bergerak WiMAX</description>
     <description xml:lang="it">Abilitare o disabilitare dispositivi WiMAX a banda larga mobile</description>
     <description xml:lang="ko">와이맥스 모바일 광대역 장치 사용 여부</description>
+    <description xml:lang="lt">Įjungti arba išjungti WiMAX mobiliojo plačiajuosčio ryšio įrenginius</description>
     <description xml:lang="ml">WiMAX മുബൈല്‍ ബ്രോഡ്ബാന്റ് ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുക</description>
     <description xml:lang="mr">WiMAX मोबाईल ब्रॉडबँड साधने सुरू किंवा बंद करा</description>
     <description xml:lang="pl">Włączenie lub wyłączenie urządzeń komórkowych WiMAX</description>
     <description xml:lang="pt_BR">Habilita ou desabilita dispositivos móveis WiMAX</description>
     <description xml:lang="ru">Включить или выключить устройства мобильных сетей WiMax</description>
     <description xml:lang="sl">Omogoči ali onemogoči mobilne širokopasovne naprave WiMAX</description>
+    <description xml:lang="sv">Aktivera eller inaktivera mobila WiMAX-bredbandsenheter</description>
     <description xml:lang="tr">WiMAX mobil genişbant aygıtlarını etkinleştir ya da etkisizleştir</description>
     <description xml:lang="uk">Увімкнути або вимкнути пристрої широкосмугових мобільних мереж WiMAX</description>
     <message>System policy prevents enabling or disabling WiMAX mobile broadband devices</message>
@@ -336,12 +338,14 @@
     <message xml:lang="id">Kebijakan sistem mencegah mengaktifkan atau mematikan perangkat broadband bergerak WiMAX</message>
     <message xml:lang="it">La politica di sistema impedisce di abilitare o disabilitare i dispositivi WiMAX a banda larga mobile</message>
     <message xml:lang="ko">시스템 정책이 와이맥스 모바일 광대역 장치의 사용 여부 설정을 금지합니다</message>
+    <message xml:lang="lt">Sistemos politika neleidžia įjungti arba išjungti WiMAX mobiliojo plačiajuosčio ryšio įrenginių</message>
     <message xml:lang="ml">iMAX മുബൈല്‍ ബ്രോഡ്ബാന്റ് ഡിവൈസുകള്‍ പ്രവര്‍ത്തനസജ്ജമാക്കുകയോ പ്രവര്‍ത്തനരഹിതമാക്കുകയോ ചെയ്യുന്നത് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार WiMAX मोबाईल ब्रॉडबँड साधनांना सुरू किंवा बंद होण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje włączenie lub wyłączenie urządzeń komórkowych WiMAX</message>
     <message xml:lang="pt_BR">Políticas de sistema previnem a habilitação ou desabilitação de dispositivos móveis de banda larga WiMAX</message>
     <message xml:lang="ru">Системная политика запрещает включение или выключение устройств мобильной связи WiMAX</message>
     <message xml:lang="sl">Sistemska določila preprečujejo omogočanje ali onemogočanje mobilnih širokopasovnih naprav WiMAX</message>
+    <message xml:lang="sv">Systemets policy förhindrar aktivering eller inaktivering av mobila WiMAX-bredbandsenheter</message>
     <message xml:lang="tr">Sistem kuralları, WiMAX mobil genişbant aygıtlarını etkinleştirmeyi ya da etkisizleştirmeyi engelliyor</message>
     <message xml:lang="uk">Правила системи забороняють вмикання або вимикання пристроїв широкосмугових мобільних мереж WiMAX</message>
     <defaults>
@@ -620,12 +624,14 @@
     <description xml:lang="id">Ubah koneksi jaringan personal</description>
     <description xml:lang="it">Modificare le connessioni personali</description>
     <description xml:lang="ko">개인 네트워크 연결을 수정합니다</description>
+    <description xml:lang="lt">Keisti asmeninius tinklo ryšius</description>
     <description xml:lang="ml">സ്വന്തമായ നെറ്റ്​വര്‍ക്ക് കണക്ഷനുകളില്‍ മാറ്റം വരുത്തുക</description>
     <description xml:lang="mr">वैयक्तिक नेटवर्क जोडणी संपादित करा</description>
     <description xml:lang="pl">Modyfikacja osobistych połączeń sieciowych</description>
     <description xml:lang="pt_BR">Modificar conexões pessoais de rede</description>
     <description xml:lang="ru">Редактировать личные настройки подключения</description>
     <description xml:lang="sl">Spremeni osebne omrežne povezave</description>
+    <description xml:lang="sv">Ändra personliga nätverksanslutningar</description>
     <description xml:lang="tr">Kişisel ağ bağlantılarını düzenle</description>
     <description xml:lang="uk">Змінити параметри особистих з’єднань з мережею</description>
     <message>System policy prevents modification of personal network settings</message>
@@ -639,12 +645,14 @@
     <message xml:lang="id">Kebijakan sistem mencegah pengubahan tatanan jaringan pribadi</message>
     <message xml:lang="it">La politica di sistema impedisce di modificare le impostazioni di rete personali</message>
     <message xml:lang="ko">시스템 정책이 개인 네트워크 설정의 수정을 금지합니다</message>
+    <message xml:lang="lt">Sistemos politika neleidžia keisti asmeninių tinklų nustatymų</message>
     <message xml:lang="ml"> സ്വന്തമായ നെറ്റ്​വര്‍ക്ക് സജ്ജീകരണങ്ങള്‍ മാറ്റം വരുത്തുന്നതു് സിസ്റ്റം പോളിസി തടയുന്നു</message>
     <message xml:lang="mr">प्रणाली करार, व्यक्तिगत नेटवर्क सेटिंग्स् संपादीत करण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje modyfikację osobistych ustawień systemowych</message>
     <message xml:lang="pt_BR">Políticas de sistema previnem modificação das configurações pessoais de redes</message>
     <message xml:lang="ru">Системная политика запрещает изменение персональных настроек сети</message>
     <message xml:lang="sl">Sistemska določila preprečujejo spreminjanje osebnih omrežnih nastavitev</message>
+    <message xml:lang="sv">Systemets policy förhindrar ändring av personliga nätverksinställningar</message>
     <message xml:lang="tr">Sistem kuralları, kişisel ağ ayarlarının değiştirilmesine izin vermiyor</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до особистих параметрів мережі</message>
     <defaults>
@@ -665,11 +673,13 @@
     <description xml:lang="id">Ubah koneksi jaringan bagi semua pengguna</description>
     <description xml:lang="it">Modifica le connessioni di sistema per tutti gli utenti</description>
     <description xml:lang="ko">모든 사용자의 네트워크 연결을 수정합니다</description>
+    <description xml:lang="lt">Keisti visų naudotojų tinklo ryšius</description>
     <description xml:lang="mr">सर्व वापरकर्त्यांकरीता नेटवर्क जोडणी संपादित करा</description>
     <description xml:lang="pl">Modyfikacja połączeń sieciowych dla wszystkich użytkowników</description>
     <description xml:lang="pt_BR">Modificar conexões de rede para todos os usuários</description>
     <description xml:lang="ru">Изменить подключения доступные всем пользователям</description>
     <description xml:lang="sl">Spremeni omrežne povezave za vse uporabnike</description>
+    <description xml:lang="sv">Ändra nätverksanslutningar för alla användare</description>
     <description xml:lang="tr">Tüm kullanıcılar için ağ bağlantılarını düzenle</description>
     <description xml:lang="uk">Внести зміни до мережевих з’єднань всіх користувачів</description>
     <message>System policy prevents modification of network settings for all users</message>
@@ -683,11 +693,13 @@
     <message xml:lang="id">Kebijakan sistem mencegah pengubahan tatanan sistem bagi semua pengguna</message>
     <message xml:lang="it">La politica di sistema impedisce di modificare le impostazioni di rete per tutti gli utenti</message>
     <message xml:lang="ko">시스템 정책이 모든 사용자의 네트워크 설정의 수정을 금지합니다</message>
+    <message xml:lang="lt">Sistemos politika neleidžia keisti tinklo nustatymų, skirtų visiems naudotojams</message>
     <message xml:lang="mr">प्रणाली करार सर्व वापरकर्त्यांना नेटवर्क सेटिंग्स् संपादीत करण्यापासून रोखते</message>
     <message xml:lang="pl">Polityka systemu powstrzymuje modyfikację ustawień sieciowych dla wszystkich użytkowników</message>
     <message xml:lang="pt_BR">Políticas de sistema previnem modificação das configurações de rede para todos os usuários</message>
     <message xml:lang="ru">Системная политика запрещает изменение настроек для всех пользователей</message>
     <message xml:lang="sl">Sistemska določila preprečujejo spreminjanje sistemskih nastavitev za vse uporabnike</message>
+    <message xml:lang="sv">Systemets policy förhindrar ändring av nätverksinställningar för alla användare</message>
     <message xml:lang="tr">Sistem kuralları, tüm kullanıcılar için ağ ayarlarının değiştirilmesine izin vermiyor</message>
     <message xml:lang="uk">Правила системи забороняють внесення змін до параметрів мережі для всіх користувачів</message>
     <defaults>

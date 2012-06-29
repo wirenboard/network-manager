@@ -143,11 +143,17 @@ nm_ip4_config_add_address (NMIP4Config *config,
                            NMIP4Address *address)
 {
 	NMIP4ConfigPrivate *priv;
+	GSList *iter;
 
 	g_return_if_fail (NM_IS_IP4_CONFIG (config));
 	g_return_if_fail (address != NULL);
 
 	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	for (iter = priv->addresses; iter; iter = g_slist_next (iter)) {
+		if (nm_ip4_address_compare ((NMIP4Address *) iter->data, address))
+			return;
+	}
+
 	priv->addresses = g_slist_append (priv->addresses, nm_ip4_address_dup (address));
 }
 
@@ -210,7 +216,8 @@ void nm_ip4_config_add_nameserver (NMIP4Config *config, guint32 nameserver)
 		guint32 s = g_array_index (priv->nameservers, guint32, i);
 
 		/* No dupes */
-		g_return_if_fail (nameserver != s);
+		if (nameserver == s)
+			return;
 	}
 
 	g_array_append_val (priv->nameservers, nameserver);
@@ -254,7 +261,8 @@ void nm_ip4_config_add_wins (NMIP4Config *config, guint32 wins)
 		guint32 s = g_array_index (priv->wins, guint32, i);
 
 		/* No dupes */
-		g_return_if_fail (wins != s);
+		if (wins == s)
+			return;
 	}
 
 	g_array_append_val (priv->wins, wins);
@@ -301,11 +309,17 @@ void
 nm_ip4_config_add_route (NMIP4Config *config, NMIP4Route *route)
 {
 	NMIP4ConfigPrivate *priv;
+	GSList *iter;
 
 	g_return_if_fail (NM_IS_IP4_CONFIG (config));
 	g_return_if_fail (route != NULL);
 
 	priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	for (iter = priv->routes; iter; iter = g_slist_next (iter)) {
+		if (nm_ip4_route_compare ((NMIP4Route *) iter->data, route))
+			return;
+	}
+
 	priv->routes = g_slist_append (priv->routes, nm_ip4_route_dup (route));
 }
 
@@ -743,7 +757,7 @@ nm_ip4_config_diff (NMIP4Config *a, NMIP4Config *b)
 	NMIP4ConfigCompareFlags flags = NM_IP4_COMPARE_FLAG_NONE;
 
 	if ((a && !b) || (b && !a))
-		return 0xFFFFFFFF;
+		return NM_IP4_COMPARE_FLAG_ALL;
 	if (!a && !b)
 		return NM_IP4_COMPARE_FLAG_NONE;
 
@@ -797,6 +811,68 @@ nm_ip4_config_diff (NMIP4Config *a, NMIP4Config *b)
 		flags |= NM_IP4_COMPARE_FLAG_MSS;
 
 	return flags;
+}
+
+static inline void
+hash_u32 (GChecksum *sum, guint32 n)
+{
+	g_checksum_update (sum, (const guint8 *) &n, sizeof (n));
+}
+
+void
+nm_ip4_config_hash (NMIP4Config *config, GChecksum *sum, gboolean dns_only)
+{
+	guint32 i, n;
+	const char *s;
+
+	g_return_if_fail (config != NULL);
+	g_return_if_fail (sum != NULL);
+
+	if (dns_only == FALSE) {
+		for (i = 0; i < nm_ip4_config_get_num_addresses (config); i++) {
+			NMIP4Address *a = nm_ip4_config_get_address (config, i);
+
+			hash_u32 (sum, nm_ip4_address_get_address (a));
+			hash_u32 (sum, nm_ip4_address_get_prefix (a));
+			hash_u32 (sum, nm_ip4_address_get_gateway (a));
+		}
+
+		for (i = 0; i < nm_ip4_config_get_num_routes (config); i++) {
+			NMIP4Route *r = nm_ip4_config_get_route (config, i);
+
+			hash_u32 (sum, nm_ip4_route_get_dest (r));
+			hash_u32 (sum, nm_ip4_route_get_prefix (r));
+			hash_u32 (sum, nm_ip4_route_get_next_hop (r));
+			hash_u32 (sum, nm_ip4_route_get_metric (r));
+		}
+
+		n = nm_ip4_config_get_ptp_address (config);
+		if (n)
+			hash_u32 (sum, n);
+
+		for (i = 0; i < nm_ip4_config_get_num_nis_servers (config); i++)
+			hash_u32 (sum, nm_ip4_config_get_nis_server (config, i));
+
+		s = nm_ip4_config_get_nis_domain (config);
+		if (s)
+			g_checksum_update (sum, (const guint8 *) s, strlen (s));
+	}
+
+	for (i = 0; i < nm_ip4_config_get_num_nameservers (config); i++)
+		hash_u32 (sum, nm_ip4_config_get_nameserver (config, i));
+
+	for (i = 0; i < nm_ip4_config_get_num_wins (config); i++)
+		hash_u32 (sum, nm_ip4_config_get_wins (config, i));
+
+	for (i = 0; i < nm_ip4_config_get_num_domains (config); i++) {
+		s = nm_ip4_config_get_domain (config, i);
+		g_checksum_update (sum, (const guint8 *) s, strlen (s));
+	}
+
+	for (i = 0; i < nm_ip4_config_get_num_searches (config); i++) {
+		s = nm_ip4_config_get_search (config, i);
+		g_checksum_update (sum, (const guint8 *) s, strlen (s));
+	}
 }
 
 static void

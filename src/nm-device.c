@@ -27,6 +27,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <linux/sockios.h>
+#include <linux/ethtool.h>
 #include <sys/ioctl.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -43,7 +45,6 @@
 #include "nm-system.h"
 #include "nm-dhcp-manager.h"
 #include "nm-dbus-manager.h"
-#include "nm-dns-manager.h"
 #include "nm-utils.h"
 #include "nm-logging.h"
 #include "nm-netlink-monitor.h"
@@ -61,6 +62,9 @@
 #include "nm-properties-changed-signal.h"
 #include "nm-enum-types.h"
 #include "nm-settings-connection.h"
+#include "nm-connection-provider.h"
+#include "nm-posix-signals.h"
+#include "nm-manager-auth.h"
 
 static void impl_device_disconnect (NMDevice *device, DBusGMethodInvocation *context);
 
@@ -87,8 +91,10 @@ nm_device_error_quark (void)
 
 enum {
 	STATE_CHANGED,
-	DISCONNECT_REQUEST,
 	AUTOCONNECT_ALLOWED,
+	AUTH_REQUEST,
+	IP4_CONFIG_CHANGED,
+	IP6_CONFIG_CHANGED,
 	LAST_SIGNAL,
 };
 static guint signals[LAST_SIGNAL] = { 0 };
@@ -99,6 +105,8 @@ enum {
 	PROP_IFACE,
 	PROP_IP_IFACE,
 	PROP_DRIVER,
+	PROP_DRIVER_VERSION,
+	PROP_FIRMWARE_VERSION,
 	PROP_CAPABILITIES,
 	PROP_IP4_ADDRESS,
 	PROP_IP4_CONFIG,
@@ -110,12 +118,15 @@ enum {
 	PROP_ACTIVE_CONNECTION,
 	PROP_DEVICE_TYPE,
 	PROP_MANAGED,
+	PROP_AUTOCONNECT,
 	PROP_FIRMWARE_MISSING,
 	PROP_TYPE_DESC,
 	PROP_RFKILL_TYPE,
 	PROP_IFINDEX,
 	LAST_PROP
 };
+
+#define DEFAULT_AUTOCONNECT TRUE
 
 /***********************************************************/
 
@@ -153,6 +164,8 @@ typedef struct {
 	char *        type_desc;
 	guint32       capabilities;
 	char *        driver;
+	char *        driver_version;
+	char *        firmware_version;
 	gboolean      managed; /* whether managed by NM or not */
 	RfKillType    rfkill_type;
 	gboolean      firmware_missing;
@@ -221,11 +234,13 @@ typedef struct {
 	/* IP6 config from DHCP */
 	NMIP6Config *   dhcp6_ip6_config;
 
-	/* inhibit autoconnect feature */
-	gboolean	autoconnect_inhibit;
+	/* allow autoconnect feature */
+	gboolean        autoconnect;
 
 	/* master interface for bridge, bond, vlan, etc */
 	NMDevice *	master;
+
+	NMConnectionProvider *con_provider;
 } NMDevicePrivate;
 
 static void nm_device_take_down (NMDevice *dev, gboolean wait, NMDeviceStateReason reason);
@@ -239,7 +254,6 @@ static gboolean nm_device_set_ip4_config (NMDevice *dev,
                                           NMDeviceStateReason *reason);
 static gboolean nm_device_set_ip6_config (NMDevice *dev,
                                           NMIP6Config *config,
-                                          gboolean assumed,
                                           NMDeviceStateReason *reason);
 
 static gboolean nm_device_activate_ip6_config_commit (gpointer user_data);
@@ -259,6 +273,7 @@ nm_device_init (NMDevice *self)
 	priv->state_reason = NM_DEVICE_STATE_REASON_NONE;
 	priv->dhcp_timeout = 0;
 	priv->rfkill_type = RFKILL_TYPE_UNKNOWN;
+	priv->autoconnect = DEFAULT_AUTOCONNECT;
 }
 
 static void
@@ -332,18 +347,57 @@ update_ip6_privacy_save (NMDevice *self)
 	}
 }
 
+/*
+ * Get driver info from SIOCETHTOOL ioctl() for 'iface'
+ * Returns driver and firmware versions to 'driver_version and' 'firmware_version'
+ */
+static gboolean
+device_get_driver_info (const char *iface, char **driver_version, char **firmware_version)
+{
+	struct ethtool_drvinfo drvinfo;
+	struct ifreq req;
+	int fd;
+
+	fd = socket (PF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) {
+		nm_log_warn (LOGD_HW, "couldn't open control socket.");
+		return FALSE;
+	}
+
+	/* Get driver and firmware version info */
+	memset (&req, 0, sizeof (struct ifreq));
+	strncpy (req.ifr_name, iface, IFNAMSIZ);
+	drvinfo.cmd = ETHTOOL_GDRVINFO;
+	req.ifr_data = &drvinfo;
+
+	errno = 0;
+	if (ioctl (fd, SIOCETHTOOL, &req) < 0) {
+		nm_log_dbg (LOGD_HW, "SIOCETHTOOL ioctl() failed: cmd=ETHTOOL_GDRVINFO, iface=%s, errno=%d",
+		            iface, errno);
+		close (fd);
+		return FALSE;
+	}
+	if (driver_version)
+		*driver_version = g_strdup (drvinfo.version);
+	if (firmware_version)
+		*firmware_version = g_strdup (drvinfo.fw_version);
+
+	close (fd);
+	return TRUE;
+}
+
 static GObject*
 constructor (GType type,
-			 guint n_construct_params,
-			 GObjectConstructParam *construct_params)
+             guint n_construct_params,
+             GObjectConstructParam *construct_params)
 {
 	GObject *object;
 	NMDevice *dev;
 	NMDevicePrivate *priv;
 
 	object = G_OBJECT_CLASS (nm_device_parent_class)->constructor (type,
-													   n_construct_params,
-													   construct_params);
+	                         n_construct_params,
+	                         construct_params);
 	if (!object)
 		return NULL;
 
@@ -369,6 +423,8 @@ constructor (GType type,
 	priv->dhcp_manager = nm_dhcp_manager_get ();
 
 	priv->fw_manager = nm_firewall_manager_get ();
+
+	device_get_driver_info (priv->iface, &priv->driver_version, &priv->firmware_version);
 
 	update_accept_ra_save (dev);
 	update_ip6_privacy_save (dev);
@@ -503,7 +559,8 @@ nm_device_set_ip_iface (NMDevice *self, const char *iface)
 	priv->ip_iface = g_strdup (iface);
 	if (priv->ip_iface) {
 		priv->ip_ifindex = nm_netlink_iface_to_index (priv->ip_iface);
-		if (priv->ip_ifindex < 0) {
+		if (priv->ip_ifindex <= 0) {
+			/* Device IP interface must always be a kernel network interface */
 			nm_log_warn (LOGD_HW, "(%s): failed to look up interface index", iface);
 		}
 	}
@@ -526,6 +583,22 @@ nm_device_get_driver (NMDevice *self)
 	return NM_DEVICE_GET_PRIVATE (self)->driver;
 }
 
+const char *
+nm_device_get_driver_version (NMDevice *self)
+{
+	g_return_val_if_fail (self != NULL, NULL);
+
+	return NM_DEVICE_GET_PRIVATE (self)->driver_version;
+}
+
+const char *
+nm_device_get_firmware_version (NMDevice *self)
+{
+	g_return_val_if_fail (self != NULL, NULL);
+
+	return NM_DEVICE_GET_PRIVATE (self)->firmware_version;
+}
+
 
 /*
  * Get/set functions for type
@@ -539,12 +612,52 @@ nm_device_get_device_type (NMDevice *self)
 }
 
 
+/**
+ * nm_device_get_priority():
+ * @dev: the #NMDevice
+ *
+ * Returns: the device's routing priority.  Lower numbers means a "better"
+ *  device, eg higher priority.
+ */
 int
 nm_device_get_priority (NMDevice *dev)
 {
-	g_return_val_if_fail (NM_IS_DEVICE (dev), -1);
+	g_return_val_if_fail (NM_IS_DEVICE (dev), 100);
 
-	return (int) nm_device_get_device_type (dev);
+	/* Device 'priority' is used for two things:
+	 *
+	 * a) two devices on the same IP subnet: the "better" (ie, lower number)
+	 *     device is the default outgoing device for that subnet
+	 * b) default route: the "better" device gets the default route.  This can
+	 *     always be modified by setting a connection to never-default=TRUE, in
+	 *     which case that device will never take the default route when
+	 *     it's using that connection.
+	 */
+
+	switch (nm_device_get_device_type (dev)) {
+	case NM_DEVICE_TYPE_ETHERNET:
+		return 1;
+	case NM_DEVICE_TYPE_INFINIBAND:
+		return 2;
+	case NM_DEVICE_TYPE_ADSL:
+		return 3;
+	case NM_DEVICE_TYPE_WIMAX:
+		return 4;
+	case NM_DEVICE_TYPE_BOND:
+		return 5;
+	case NM_DEVICE_TYPE_VLAN:
+		return 6;
+	case NM_DEVICE_TYPE_MODEM:
+		return 7;
+	case NM_DEVICE_TYPE_BT:
+		return 8;
+	case NM_DEVICE_TYPE_WIFI:
+		return 9;
+	case NM_DEVICE_TYPE_OLPC_MESH:
+		return 10;
+	default:
+		return 20;
+	}
 }
 
 
@@ -583,6 +696,30 @@ nm_device_get_type_desc (NMDevice *self)
 	g_return_val_if_fail (self != NULL, NULL);
 
 	return NM_DEVICE_GET_PRIVATE (self)->type_desc;
+}
+
+void
+nm_device_set_connection_provider (NMDevice *device,
+                                   NMConnectionProvider *provider)
+{
+	NMDevicePrivate *priv;
+
+	g_return_if_fail (device != NULL);
+	g_return_if_fail (provider != NULL);
+	g_return_if_fail (NM_IS_CONNECTION_PROVIDER (provider));
+
+	priv = NM_DEVICE_GET_PRIVATE (device);
+	g_return_if_fail (priv->con_provider == NULL);
+
+	priv->con_provider = provider;
+}
+
+NMConnectionProvider *
+nm_device_get_connection_provider (NMDevice *device)
+{
+	g_return_val_if_fail (device != NULL, NULL);
+
+	return NM_DEVICE_GET_PRIVATE (device)->con_provider;
 }
 
 /**
@@ -716,10 +853,10 @@ nm_device_autoconnect_allowed (NMDevice *self)
 	g_value_take_object (&instance, self);
 
 	g_value_init (&retval, G_TYPE_BOOLEAN);
-	if (priv->autoconnect_inhibit)
-		g_value_set_boolean (&retval, FALSE);
-	else
+	if (priv->autoconnect)
 		g_value_set_boolean (&retval, TRUE);
+	else
+		g_value_set_boolean (&retval, FALSE);
 
 	/* Use g_signal_emitv() rather than g_signal_emit() to avoid the return
 	 * value being changed if no handlers are connected */
@@ -775,14 +912,6 @@ nm_device_complete_connection (NMDevice *self,
 	                                                           error);
 	if (success)
 		success = nm_connection_verify (connection, error);
-
-	/* If ip6-privacy is unknown, enable it with temporary address preferred */
-	if (success) {
-		NMSettingIP6Config *s_ip6 = nm_connection_get_setting_ip6_config (connection);
-		if (s_ip6 && nm_setting_ip6_config_get_ip6_privacy (s_ip6) == NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN)
-			g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_IP6_PRIVACY,
-			              NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR, NULL);
-	}
 
 	return success;
 }
@@ -1311,6 +1440,12 @@ aipd_child_setup (gpointer user_data G_GNUC_UNUSED)
 	 */
 	pid_t pid = getpid ();
 	setpgid (pid, pid);
+
+	/*
+	 * We blocked signals in main(). We need to restore original signal
+	 * mask for avahi-autoipd here so that it can receive signals.
+	 */
+	nm_unblock_posix_signals (NULL);
 }
 
 static NMActStageReturn
@@ -1715,6 +1850,10 @@ merge_ip6_configs (NMIP6Config *dst, NMIP6Config *src)
 	for (i = 0; i < nm_ip6_config_get_num_nameservers (src); i++)
 		nm_ip6_config_add_nameserver (dst, nm_ip6_config_get_nameserver (src, i));
 
+	/* default gateway */
+	if (!nm_ip6_config_get_gateway (dst))
+		nm_ip6_config_set_gateway (dst, nm_ip6_config_get_gateway (src));
+
 	/* routes */
 	for (i = 0; i < nm_ip6_config_get_num_routes (src); i++)
 		nm_ip6_config_add_route (dst, nm_ip6_config_get_route (src, i));
@@ -1738,7 +1877,7 @@ ip6_config_merge_and_apply (NMDevice *self,
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	NMConnection *connection;
-	gboolean assumed, success;
+	gboolean success;
 	NMIP6Config *composite;
 
 	connection = nm_device_get_connection (self);
@@ -1761,8 +1900,7 @@ ip6_config_merge_and_apply (NMDevice *self,
 	/* Merge user overrides into the composite config */
 	nm_utils_merge_ip6_config (composite, nm_connection_get_setting_ip6_config (connection));
 
-	assumed = nm_act_request_get_assumed (priv->act_request);
-	success = nm_device_set_ip6_config (self, composite, assumed, out_reason);
+	success = nm_device_set_ip6_config (self, composite, out_reason);
 	g_object_unref (composite);
 	return success;
 }
@@ -2532,6 +2670,8 @@ share_child_setup (gpointer user_data G_GNUC_UNUSED)
 	/* We are in the child process at this point */
 	pid_t pid = getpid ();
 	setpgid (pid, pid);
+
+	nm_unblock_posix_signals (NULL);
 }
 
 static gboolean
@@ -3092,7 +3232,7 @@ nm_device_deactivate (NMDevice *self, NMDeviceStateReason reason)
 	/* Take out any entries in the routing table and any IP address the device had. */
 	ifindex = nm_device_get_ip_ifindex (self);
 	family = tried_ipv6 ? AF_UNSPEC : AF_INET;
-	if (ifindex >= 0) {
+	if (ifindex > 0) {
 		nm_system_iface_flush_routes (ifindex, family);
 		nm_system_iface_flush_addresses (ifindex, family);
 	}
@@ -3100,35 +3240,59 @@ nm_device_deactivate (NMDevice *self, NMDeviceStateReason reason)
 
 	/* Clean up nameservers and addresses */
 	nm_device_set_ip4_config (self, NULL, FALSE, &ignored);
-	nm_device_set_ip6_config (self, NULL, FALSE, &ignored);
+	nm_device_set_ip6_config (self, NULL, &ignored);
 }
 
-gboolean
-nm_device_disconnect (NMDevice *device, GError **error)
+static void
+disconnect_cb (NMDevice *device,
+               DBusGMethodInvocation *context,
+               GError *error,
+               gpointer user_data)
 {
-	NMDevicePrivate *priv;
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
+	GError *local = NULL;
 
-	g_return_val_if_fail (device != NULL, FALSE);
-	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
-
-	priv = NM_DEVICE_GET_PRIVATE (device);
-	if (priv->state <= NM_DEVICE_STATE_DISCONNECTED) {
-		g_set_error_literal (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_NOT_ACTIVE,
-		                     "Cannot disconnect an inactive device.");
-		return FALSE;
+	if (error)
+		dbus_g_method_return_error (context, error);
+	else {
+		/* Authorized */
+		if (priv->state <= NM_DEVICE_STATE_DISCONNECTED) {
+			local = g_error_new_literal (NM_DEVICE_ERROR,
+			                             NM_DEVICE_ERROR_NOT_ACTIVE,
+			                             "Device is not active");
+			dbus_g_method_return_error (context, local);
+			g_error_free (local);
+		} else {
+			priv->autoconnect = FALSE;
+			nm_device_state_changed (device,
+			                         NM_DEVICE_STATE_DISCONNECTED,
+			                         NM_DEVICE_STATE_REASON_USER_REQUESTED);
+			dbus_g_method_return (context);
+		}
 	}
-
-	priv->autoconnect_inhibit = TRUE;	
-	nm_device_state_changed (device,
-	                         NM_DEVICE_STATE_DISCONNECTED,
-	                         NM_DEVICE_STATE_REASON_USER_REQUESTED);
-	return TRUE;
 }
 
 static void
 impl_device_disconnect (NMDevice *device, DBusGMethodInvocation *context)
 {
-	g_signal_emit (device, signals[DISCONNECT_REQUEST], 0, context);
+	GError *error = NULL;
+
+	if (NM_DEVICE_GET_PRIVATE (device)->act_request == NULL) {
+		error = g_error_new_literal (NM_DEVICE_ERROR,
+		                             NM_DEVICE_ERROR_NOT_ACTIVE,
+		                             "This device is not active");
+		dbus_g_method_return_error (context, error);
+		g_error_free (error);
+		return;
+	}
+
+	/* Ask the manager to authenticate this request for us */
+	g_signal_emit (device, signals[AUTH_REQUEST], 0,
+	               context,
+	               NM_AUTH_PERMISSION_NETWORK_CONTROL,
+	               TRUE,
+	               disconnect_cb,
+	               NULL);
 }
 
 static gboolean
@@ -3222,6 +3386,7 @@ nm_device_activate (NMDevice *self, NMActRequest *req, GError **error)
 	}
 
 	priv->act_request = g_object_ref (req);
+	g_object_notify (G_OBJECT (self), NM_DEVICE_ACTIVE_CONNECTION);
 
 	if (!nm_act_request_get_assumed (req)) {
 		NMActiveConnection *dep_ac;
@@ -3345,7 +3510,6 @@ nm_device_set_ip4_config (NMDevice *self,
 	NMIP4Config *old_config = NULL;
 	gboolean success = TRUE;
 	NMIP4ConfigCompareFlags diff = NM_IP4_COMPARE_FLAG_ALL;
-	NMDnsManager *dns_mgr;
 	int ip_ifindex;
 
 	g_return_val_if_fail (NM_IS_DEVICE (self), FALSE);
@@ -3353,23 +3517,18 @@ nm_device_set_ip4_config (NMDevice *self,
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
 	ip_iface = nm_device_get_ip_iface (self);
+	ip_ifindex = nm_device_get_ip_ifindex (self);
 
 	old_config = priv->ip4_config;
 
-	if (new_config && old_config)
+	if (new_config && old_config) {
 		diff = nm_ip4_config_diff (new_config, old_config);
-
-	/* No actual change, do nothing */
-	if (diff == NM_IP4_COMPARE_FLAG_NONE)
+		if (diff == NM_IP4_COMPARE_FLAG_NONE)
+			return TRUE;  /* no actual change */
+	} else if (!new_config && !old_config)
 		return TRUE;
 
-	dns_mgr = nm_dns_manager_get (NULL);
-	if (old_config) {
-		/* Remove any previous IP4 Config from the DNS manager */
-		nm_dns_manager_remove_ip4_config (dns_mgr, ip_iface, old_config);
-		g_object_unref (old_config);
-		priv->ip4_config = NULL;
-	}
+	priv->ip4_config = NULL;
 
 	if (new_config) {
 		priv->ip4_config = g_object_ref (new_config);
@@ -3377,25 +3536,22 @@ nm_device_set_ip4_config (NMDevice *self,
 		/* Don't touch the device's actual IP config if the connection is
 		 * assumed when NM starts.
 		 */
-		if (!assumed) {
-			ip_ifindex = nm_device_get_ip_ifindex (self);
+		if (!assumed)
 			success = nm_system_apply_ip4_config (ip_ifindex, new_config, nm_device_get_priority (self), diff);
-		}
 
 		if (success || assumed) {
 			/* Export over D-Bus */
 			if (!nm_ip4_config_get_dbus_path (new_config))
 				nm_ip4_config_export (new_config);
-
-			/* Add the DNS information to the DNS manager */
-			nm_dns_manager_add_ip4_config (dns_mgr, ip_iface, new_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
-
 			_update_ip4_address (self);
 		}
 	}
-	g_object_unref (dns_mgr);
 
 	g_object_notify (G_OBJECT (self), NM_DEVICE_IP4_CONFIG);
+	g_signal_emit (self, signals[IP4_CONFIG_CHANGED], 0, priv->ip4_config, old_config);
+
+	if (old_config)
+		g_object_unref (old_config);
 
 	return success;
 }
@@ -3403,7 +3559,6 @@ nm_device_set_ip4_config (NMDevice *self,
 static gboolean
 nm_device_set_ip6_config (NMDevice *self,
                           NMIP6Config *new_config,
-                          gboolean assumed,
                           NMDeviceStateReason *reason)
 {
 	NMDevicePrivate *priv;
@@ -3411,7 +3566,6 @@ nm_device_set_ip6_config (NMDevice *self,
 	NMIP6Config *old_config = NULL;
 	gboolean success = TRUE;
 	NMIP6ConfigCompareFlags diff = NM_IP6_COMPARE_FLAG_ALL;
-	NMDnsManager *dns_mgr;
 	int ip_ifindex;
 
 	g_return_val_if_fail (NM_IS_DEVICE (self), FALSE);
@@ -3423,42 +3577,32 @@ nm_device_set_ip6_config (NMDevice *self,
 
 	old_config = priv->ip6_config;
 
-	if (new_config && old_config)
+	if (new_config && old_config) {
 		diff = nm_ip6_config_diff (new_config, old_config);
-
-	/* No actual change, do nothing */
-	if (diff == NM_IP6_COMPARE_FLAG_NONE)
+		if (diff == NM_IP6_COMPARE_FLAG_NONE)
+			return TRUE;  /* no actual change */
+	} else if (!new_config && !old_config)
 		return TRUE;
 
-	dns_mgr = nm_dns_manager_get (NULL);
-	if (old_config) {
-		/* Remove any previous IP6 Config from the DNS manager */
-		nm_dns_manager_remove_ip6_config (dns_mgr, ip_iface, old_config);
-		g_object_unref (old_config);
-		priv->ip6_config = NULL;
-	}
+	priv->ip6_config = NULL;
 
 	if (new_config) {
 		priv->ip6_config = g_object_ref (new_config);
 
-		/* Don't touch the device's actual IP config if the connection is
-		 * assumed when NM starts.
-		 */
-		if (!assumed)
-			success = nm_system_apply_ip6_config (ip_ifindex, new_config, nm_device_get_priority (self), diff);
+		success = nm_system_apply_ip6_config (ip_ifindex, new_config, nm_device_get_priority (self), diff);
 
-		if (success || assumed) {
+		if (success) {
 			/* Export over D-Bus */
 			if (!nm_ip6_config_get_dbus_path (new_config))
 				nm_ip6_config_export (new_config);
-
-			/* Add the DNS information to the DNS manager */
-			nm_dns_manager_add_ip6_config (dns_mgr, ip_iface, new_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
 		}
 	}
-	g_object_unref (dns_mgr);
 
 	g_object_notify (G_OBJECT (self), NM_DEVICE_IP6_CONFIG);
+	g_signal_emit (self, signals[IP6_CONFIG_CHANGED], 0, priv->ip6_config, old_config);
+
+	if (old_config)
+		g_object_unref (old_config);
 
 	return success;
 }
@@ -3683,6 +3827,8 @@ finalize (GObject *object)
 	g_free (priv->iface);
 	g_free (priv->ip_iface);
 	g_free (priv->driver);
+	g_free (priv->driver_version);
+	g_free (priv->firmware_version);
 	g_free (priv->type_desc);
 	if (priv->dhcp_anycast_address)
 		g_byte_array_free (priv->dhcp_anycast_address, TRUE);
@@ -3710,17 +3856,30 @@ set_property (GObject *object, guint prop_id,
 		g_free (priv->iface);
 		priv->ifindex = 0;
 		priv->iface = g_value_dup_string (value);
-		if (priv->iface) {
+
+		/* Only look up the ifindex if it appears to be an actual kernel
+		 * interface name.  eg Bluetooth devices won't have one until we know
+		 * the IP interface.
+		 */
+		if (priv->iface && !strchr (priv->iface, ':')) {
 			priv->ifindex = nm_netlink_iface_to_index (priv->iface);
-			if (priv->ifindex <= 0) {
+			if (priv->ifindex <= 0)
 				nm_log_warn (LOGD_HW, "(%s): failed to look up interface index", priv->iface);
-			}
 		}
 		break;
 	case PROP_IP_IFACE:
 		break;
 	case PROP_DRIVER:
+		g_free (priv->driver);
 		priv->driver = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_DRIVER_VERSION:
+		g_free (priv->driver_version);
+		priv->driver_version = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_FIRMWARE_VERSION:
+		g_free (priv->firmware_version);
+		priv->firmware_version = g_strdup (g_value_get_string (value));
 		break;
 	case PROP_CAPABILITIES:
 		priv->capabilities = g_value_get_uint (value);
@@ -3730,6 +3889,9 @@ set_property (GObject *object, guint prop_id,
 		break;
 	case PROP_MANAGED:
 		priv->managed = g_value_get_boolean (value);
+		break;
+	case PROP_AUTOCONNECT:
+		priv->autoconnect = g_value_get_boolean (value);
 		break;
 	case PROP_FIRMWARE_MISSING:
 		priv->firmware_missing = g_value_get_boolean (value);
@@ -3787,6 +3949,12 @@ get_property (GObject *object, guint prop_id,
 	case PROP_DRIVER:
 		g_value_set_string (value, priv->driver);
 		break;
+	case PROP_DRIVER_VERSION:
+		g_value_set_string (value, priv->driver_version);
+		break;
+	case PROP_FIRMWARE_VERSION:
+		g_value_set_string (value, priv->firmware_version);
+		break;
 	case PROP_CAPABILITIES:
 		g_value_set_uint (value, priv->capabilities);
 		break;
@@ -3838,6 +4006,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_MANAGED:
 		g_value_set_boolean (value, priv->managed);
+		break;
+	case PROP_AUTOCONNECT:
+		g_value_set_boolean (value, priv->autoconnect);
 		break;
 	case PROP_FIRMWARE_MISSING:
 		g_value_set_boolean (value, priv->firmware_missing);
@@ -3909,6 +4080,22 @@ nm_device_class_init (NMDeviceClass *klass)
 		 g_param_spec_string (NM_DEVICE_DRIVER,
 		                      "Driver",
 		                      "Driver",
+		                      NULL,
+		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property
+		(object_class, PROP_DRIVER_VERSION,
+		 g_param_spec_string (NM_DEVICE_DRIVER_VERSION,
+		                      "Driver Version",
+		                      "Driver Version",
+		                      NULL,
+		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property
+		(object_class, PROP_FIRMWARE_VERSION,
+		 g_param_spec_string (NM_DEVICE_FIRMWARE_VERSION,
+		                      "Firmware Version",
+		                      "Firmware Version",
 		                      NULL,
 		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
@@ -4000,6 +4187,14 @@ nm_device_class_init (NMDeviceClass *klass)
 		                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
 	g_object_class_install_property
+		(object_class, PROP_AUTOCONNECT,
+		 g_param_spec_boolean (NM_DEVICE_AUTOCONNECT,
+		                       "Autoconnect",
+		                       "Autoconnect",
+		                       DEFAULT_AUTOCONNECT,
+		                       G_PARAM_READWRITE));
+
+	g_object_class_install_property
 		(object_class, PROP_FIRMWARE_MISSING,
 		 g_param_spec_boolean (NM_DEVICE_FIRMWARE_MISSING,
 		                       "FirmwareMissing",
@@ -4043,14 +4238,6 @@ nm_device_class_init (NMDeviceClass *klass)
 		              G_TYPE_NONE, 3,
 		              G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 
-	signals[DISCONNECT_REQUEST] =
-		g_signal_new (NM_DEVICE_DISCONNECT_REQUEST,
-		              G_OBJECT_CLASS_TYPE (object_class),
-		              G_SIGNAL_RUN_FIRST,
-		              0, NULL, NULL,
-		              g_cclosure_marshal_VOID__POINTER,
-		              G_TYPE_NONE, 1, G_TYPE_POINTER);
-
 	signals[AUTOCONNECT_ALLOWED] =
 		g_signal_new ("autoconnect-allowed",
 		              G_OBJECT_CLASS_TYPE (object_class),
@@ -4059,6 +4246,31 @@ nm_device_class_init (NMDeviceClass *klass)
 		              autoconnect_allowed_accumulator, NULL,
 		              _nm_marshal_BOOLEAN__VOID,
 		              G_TYPE_BOOLEAN, 0);
+
+	signals[AUTH_REQUEST] =
+		g_signal_new (NM_DEVICE_AUTH_REQUEST,
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL,
+		              /* dbus-glib context, permission, allow_interaction, callback, user_data */
+		              _nm_marshal_VOID__POINTER_STRING_BOOLEAN_POINTER_POINTER,
+		              G_TYPE_NONE, 5, G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_POINTER, G_TYPE_POINTER);
+
+	signals[IP4_CONFIG_CHANGED] =
+		g_signal_new (NM_DEVICE_IP4_CONFIG_CHANGED,
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL,
+		              _nm_marshal_VOID__OBJECT_OBJECT,
+		              G_TYPE_NONE, 2, G_TYPE_OBJECT, G_TYPE_OBJECT);
+
+	signals[IP6_CONFIG_CHANGED] =
+		g_signal_new (NM_DEVICE_IP6_CONFIG_CHANGED,
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL,
+		              _nm_marshal_VOID__OBJECT_OBJECT,
+		              G_TYPE_NONE, 2, G_TYPE_OBJECT, G_TYPE_OBJECT);
 
 	dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (klass),
 	                                 &dbus_glib_nm_device_interface_object_info);
@@ -4225,6 +4437,8 @@ reason_to_string (NMDeviceStateReason reason)
 		return "infiniband-mode";
 	case NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED:
 		return "dependency-failed";
+	case NM_DEVICE_STATE_REASON_BR2684_FAILED:
+		return "br2684 bridge failed";
 	default:
 		break;
 	}
@@ -4307,7 +4521,7 @@ nm_device_state_changed (NMDevice *device,
 			nm_device_deactivate (device, reason);
 		break;
 	default:
-		priv->autoconnect_inhibit = FALSE;
+		priv->autoconnect = TRUE;
 		break;
 	}
 
@@ -4627,12 +4841,11 @@ nm_device_set_dhcp_anycast_address (NMDevice *device, guint8 *addr)
 	}
 }
 
-
-void
-nm_device_clear_autoconnect_inhibit (NMDevice *device)
+gboolean
+nm_device_get_autoconnect (NMDevice *device)
 {
-	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
-	g_return_if_fail (priv);
-	priv->autoconnect_inhibit = FALSE;
+	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+
+	return NM_DEVICE_GET_PRIVATE (device)->autoconnect;
 }
 

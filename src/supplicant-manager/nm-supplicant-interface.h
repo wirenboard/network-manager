@@ -34,6 +34,7 @@ enum {
 	NM_SUPPLICANT_INTERFACE_STATE_INIT = 0,
 	NM_SUPPLICANT_INTERFACE_STATE_STARTING,
 	NM_SUPPLICANT_INTERFACE_STATE_READY,
+	NM_SUPPLICANT_INTERFACE_STATE_DISABLED,
 	NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED,
 	NM_SUPPLICANT_INTERFACE_STATE_INACTIVE,
 	NM_SUPPLICANT_INTERFACE_STATE_SCANNING,
@@ -127,7 +128,7 @@ const char * nm_supplicant_interface_get_device (NMSupplicantInterface * iface);
 
 const char *nm_supplicant_interface_get_object_path (NMSupplicantInterface * iface);
 
-gboolean nm_supplicant_interface_request_scan (NMSupplicantInterface * self);
+gboolean nm_supplicant_interface_request_scan (NMSupplicantInterface * self, const GPtrArray *ssids);
 
 guint32 nm_supplicant_interface_get_state (NMSupplicantInterface * self);
 
@@ -135,7 +136,11 @@ const char *nm_supplicant_interface_state_to_string (guint32 state);
 
 gboolean nm_supplicant_interface_get_scanning (NMSupplicantInterface *self);
 
+time_t nm_supplicant_interface_get_last_scan_time (NMSupplicantInterface *self);
+
 const char *nm_supplicant_interface_get_ifname (NMSupplicantInterface *self);
+
+guint nm_supplicant_interface_get_max_scan_ssids (NMSupplicantInterface *self);
 
 gboolean nm_supplicant_interface_get_has_credentials_request (NMSupplicantInterface *self);
 

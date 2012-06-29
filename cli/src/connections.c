@@ -33,6 +33,7 @@
 
 #include <nm-client.h>
 #include <nm-device-ethernet.h>
+#include <nm-device-adsl.h>
 #include <nm-device-wifi.h>
 #if WITH_WIMAX
 #include <nm-device-wimax.h>
@@ -92,6 +93,7 @@ static NmcOutputField nmc_fields_settings_names[] = {
 	SETTING_FIELD (NM_SETTING_INFINIBAND_SETTING_NAME, 0),            /* 16 */
 	SETTING_FIELD (NM_SETTING_BOND_SETTING_NAME, 0),                  /* 17 */
 	SETTING_FIELD (NM_SETTING_VLAN_SETTING_NAME, 0),                  /* 18 */
+	SETTING_FIELD (NM_SETTING_ADSL_SETTING_NAME, 0),                  /* 19 */
 	{NULL, NULL, 0, NULL, 0}
 };
 #define NMC_FIELDS_SETTINGS_NAMES_ALL_X  NM_SETTING_CONNECTION_SETTING_NAME","\
@@ -104,6 +106,7 @@ static NmcOutputField nmc_fields_settings_names[] = {
                                          NM_SETTING_SERIAL_SETTING_NAME","\
                                          NM_SETTING_PPP_SETTING_NAME","\
                                          NM_SETTING_PPPOE_SETTING_NAME","\
+                                         NM_SETTING_ADSL_SETTING_NAME","\
                                          NM_SETTING_GSM_SETTING_NAME","\
                                          NM_SETTING_CDMA_SETTING_NAME","\
                                          NM_SETTING_BLUETOOTH_SETTING_NAME","\
@@ -178,6 +181,7 @@ typedef struct {
 extern GMainLoop *loop;
 
 static ArgsInfo args_info;
+static guint progress_id = 0;  /* ID of event source for displaying progress */
 
 static void
 usage (void)
@@ -210,6 +214,11 @@ static const char *real_con_commands[] = {
 static void
 quit (void)
 {
+	if (progress_id) {
+		g_source_remove (progress_id);
+		nmc_terminal_erase_line ();
+	}
+
 	g_main_loop_quit (loop);  /* quit main loop */
 }
 
@@ -428,6 +437,15 @@ nmc_connection_detail (NMConnection *connection, NmCli *nmc)
 			NMSettingVlan *s_vlan = nm_connection_get_setting_vlan (connection);
 			if (s_vlan) {
 				setting_vlan_details (s_vlan, nmc);
+				was_output = TRUE;
+				continue;
+			}
+		}
+
+		if (!strcasecmp (nmc_fields_settings_names[section_idx].name, nmc_fields_settings_names[19].name)) {
+			NMSettingAdsl *s_adsl = nm_connection_get_setting_adsl (connection);
+			if (s_adsl) {
+				setting_adsl_details (s_adsl, nmc);
 				was_output = TRUE;
 				continue;
 			}
@@ -687,6 +705,21 @@ fill_in_fields_con_status (NMActiveConnection *active, GSList *con_list)
 	if (dev_str->len > 0)
 		g_string_truncate (dev_str, dev_str->len - 1);  /* Cut off last ',' */
 
+	/* Fill field values */
+	nmc_fields_con_status[0].value = nmc_fields_status_details_groups[0].name;
+	nmc_fields_con_status[1].value = _("N/A");
+	nmc_fields_con_status[2].value = nm_active_connection_get_uuid (active);
+	nmc_fields_con_status[3].value = dev_str->str;
+	nmc_fields_con_status[4].value = active_connection_state_to_string (state);
+	nmc_fields_con_status[5].value = nm_active_connection_get_default (active) ? _("yes") : _("no");
+	nmc_fields_con_status[6].value = nm_active_connection_get_default6 (active) ? _("yes") : _("no");
+	nmc_fields_con_status[7].value = nm_active_connection_get_specific_object (active);
+	nmc_fields_con_status[8].value = NM_IS_VPN_CONNECTION (active) ? _("yes") : _("no");
+	nmc_fields_con_status[9].value = nm_object_get_path (NM_OBJECT (active));
+	nmc_fields_con_status[10].value = nm_active_connection_get_connection (active);
+	nmc_fields_con_status[11].value = _("N/A");
+	nmc_fields_con_status[12].value = nm_active_connection_get_master (active);
+
 	for (iter = con_list; iter; iter = g_slist_next (iter)) {
 		NMConnection *connection = (NMConnection *) iter->data;
 		const char *con_path = nm_connection_get_path (connection);
@@ -696,20 +729,9 @@ fill_in_fields_con_status (NMActiveConnection *active, GSList *con_list)
 			s_con = nm_connection_get_setting_connection (connection);
 			g_assert (s_con != NULL);
 
-			/* Fill field values */
-			nmc_fields_con_status[0].value = nmc_fields_status_details_groups[0].name;
+			/* Fill field values that depend on NMConnection */
 			nmc_fields_con_status[1].value = nm_setting_connection_get_id (s_con);
-			nmc_fields_con_status[2].value = nm_setting_connection_get_uuid (s_con);
-			nmc_fields_con_status[3].value = dev_str->str;
-			nmc_fields_con_status[4].value = active_connection_state_to_string (state);
-			nmc_fields_con_status[5].value = nm_active_connection_get_default (active) ? _("yes") : _("no");
-			nmc_fields_con_status[6].value = nm_active_connection_get_default6 (active) ? _("yes") : _("no");
-			nmc_fields_con_status[7].value = nm_active_connection_get_specific_object (active);
-			nmc_fields_con_status[8].value = NM_IS_VPN_CONNECTION (active) ? _("yes") : _("no");
-			nmc_fields_con_status[9].value = nm_object_get_path (NM_OBJECT (active));
-			nmc_fields_con_status[10].value = nm_active_connection_get_connection (active);
 			nmc_fields_con_status[11].value = nm_setting_connection_get_zone (s_con);
-			nmc_fields_con_status[12].value = nm_active_connection_get_master (active);
 
 			success = TRUE;
 			break;
@@ -1336,10 +1358,12 @@ active_connection_state_cb (NMActiveConnection *active, GParamSpec *pspec, gpoin
 
 	state = nm_active_connection_get_state (active);
 
-	printf (_("state: %s\n"), active_connection_state_to_string (state));
-
 	if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
-		printf (_("Connection activated\n"));
+		if (nmc->print_output == NMC_PRINT_PRETTY) {
+			nmc_terminal_erase_line ();
+			printf (_("Connection successfully activated (D-Bus active path: %s)\n"),
+			        nm_object_get_path (NM_OBJECT (active)));
+		}
 		quit ();
 	} else if (state == NM_ACTIVE_CONNECTION_STATE_UNKNOWN) {
 		g_string_printf (nmc->return_text, _("Error: Connection activation failed."));
@@ -1361,17 +1385,22 @@ vpn_connection_state_cb (NMVPNConnection *vpn,
 	case NM_VPN_CONNECTION_STATE_NEED_AUTH:
 	case NM_VPN_CONNECTION_STATE_CONNECT:
 	case NM_VPN_CONNECTION_STATE_IP_CONFIG_GET:
-		printf (_("state: %s (%d)\n"), vpn_connection_state_to_string (state), state);
+		/* no operation */
 		break;
 
 	case NM_VPN_CONNECTION_STATE_ACTIVATED:
-		printf (_("Connection activated\n"));
+		if (nmc->print_output == NMC_PRINT_PRETTY) {
+			nmc_terminal_erase_line ();
+			printf (_("VPN connection successfully activated (D-Bus active path: %s)\n"),
+			        nm_object_get_path (NM_OBJECT (vpn)));
+		}
 		quit ();
 		break;
 
 	case NM_VPN_CONNECTION_STATE_FAILED:
 	case NM_VPN_CONNECTION_STATE_DISCONNECTED:
-		g_string_printf (nmc->return_text, _("Error: Connection activation failed: %s."), vpn_connection_state_reason_to_string (reason));
+		g_string_printf (nmc->return_text, _("Error: Connection activation failed: %s."),
+		                 vpn_connection_state_reason_to_string (reason));
 		nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
 		quit ();
 		break;
@@ -1380,6 +1409,85 @@ vpn_connection_state_cb (NMVPNConnection *vpn,
 		break;
 	}
 }
+
+/* --- VPN state workaround BEGIN --- */
+static NMVPNConnectionState
+dbus_get_vpn_state (const char *path)
+{
+	DBusGConnection *connection;
+	DBusGProxy *proxy;
+	GError *error = NULL;
+	GValue value = {0,};
+	NMVPNConnectionState state = NM_VPN_CONNECTION_STATE_UNKNOWN;
+
+	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
+	proxy = dbus_g_proxy_new_for_name (connection,
+	                                   NM_DBUS_SERVICE,
+	                                   path,
+	                                   "org.freedesktop.DBus.Properties");
+	if (!proxy) {
+		g_warning ("%s: couldn't create D-Bus object proxy.", __func__);
+		dbus_g_connection_unref (connection);
+		return NM_VPN_CONNECTION_STATE_UNKNOWN;
+	}
+
+	/* Get VpnState property for object 'path' through D-Bus Get() call. */
+	if (dbus_g_proxy_call (proxy,
+	                       "Get", &error,
+	                       G_TYPE_STRING, NM_DBUS_INTERFACE_VPN_CONNECTION,
+	                       G_TYPE_STRING, "VpnState",
+	                       G_TYPE_INVALID,
+	                       G_TYPE_VALUE, &value, G_TYPE_INVALID)) {
+
+		state = g_value_get_uint (&value);
+	} else {
+		g_warning ("Error in getting active connection 'Vpn' property: (%d) %s",
+		           error->code, error->message);
+		g_error_free (error);
+	}
+
+	g_object_unref (proxy);
+	dbus_g_connection_unref (connection);
+
+	return state;
+}
+
+typedef struct {
+	NmCli *nmc;
+	NMVPNConnection *vpn;
+} VpnGetStateInfo;
+
+static gboolean
+get_vpn_state_cb (gpointer user_data)
+{
+	VpnGetStateInfo *info = (VpnGetStateInfo *) user_data;
+	NmCli *nmc = info->nmc;
+	NMVPNConnection *vpn = info->vpn;
+	NMVPNConnectionState state;
+
+	if (!NM_IS_OBJECT (vpn)) {
+		/* Active connection failed and dissapeared, quit. */
+		g_string_printf (nmc->return_text, _("Error: Connection activation failed."));
+		nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
+		quit ();
+		g_free (info);
+		return FALSE;
+	}
+
+	state = dbus_get_vpn_state (nm_object_get_path (NM_OBJECT (vpn)));
+
+	vpn_connection_state_cb (vpn, state, NM_VPN_CONNECTION_STATE_REASON_UNKNOWN, nmc);
+
+	if (   state == NM_VPN_CONNECTION_STATE_ACTIVATED
+	    || state == NM_VPN_CONNECTION_STATE_FAILED
+	    || state == NM_VPN_CONNECTION_STATE_DISCONNECTED) {
+
+		g_free (info);
+		return FALSE;
+	} else
+		return TRUE;
+}
+/* --- VPN state workaround END --- */
 
 static gboolean
 timeout_cb (gpointer user_data)
@@ -1394,10 +1502,58 @@ timeout_cb (gpointer user_data)
 	return FALSE;
 }
 
+static gboolean
+progress_cb (gpointer user_data)
+{
+	const char *str = (const char *) user_data;
+
+	nmc_terminal_show_progress (str);
+
+	return TRUE;
+}
+
+static gboolean
+progress_device_cb (gpointer user_data)
+{
+	NMDevice *device = (NMDevice *) user_data;
+
+	nmc_terminal_show_progress (device ? nmc_device_state_to_string (nm_device_get_state (device)) : "");
+
+	return TRUE;
+}
+
+static gboolean
+progress_vpn_cb (gpointer user_data)
+{
+	NMVPNConnection *vpn = (NMVPNConnection *) user_data;
+	const char *str;
+
+	/* VPN state workaround */
+#if 0
+	str = NM_IS_VPN_CONNECTION (vpn) ?
+	        vpn_connection_state_to_string (nm_vpn_connection_get_vpn_state (vpn)) :
+	        "";
+#endif
+	str = NM_IS_OBJECT (vpn) ?
+	        vpn_connection_state_to_string (dbus_get_vpn_state (nm_object_get_path (NM_OBJECT (vpn)))) :
+	        "";
+
+	nmc_terminal_show_progress (str);
+
+	return TRUE;
+}
+
+typedef struct {
+	NmCli *nmc;
+	NMDevice *device;
+} ActivateConnectionInfo;
+
 static void
 activate_connection_cb (NMClient *client, NMActiveConnection *active, GError *error, gpointer user_data)
 {
-	NmCli *nmc = (NmCli *) user_data;
+	ActivateConnectionInfo *info = (ActivateConnectionInfo *) user_data;
+	NmCli *nmc = info->nmc;
+	NMDevice *device = info->device;
 	NMActiveConnectionState state;
 
 	if (error) {
@@ -1407,27 +1563,61 @@ activate_connection_cb (NMClient *client, NMActiveConnection *active, GError *er
 	} else {
 		state = nm_active_connection_get_state (active);
 
-		printf (_("Active connection state: %s\n"), active_connection_state_to_string (state));
-		printf (_("Active connection path: %s\n"), nm_object_get_path (NM_OBJECT (active)));
-
 		if (nmc->nowait_flag || state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED) {
-			/* don't want to wait or already activated */
+			/* User doesn't want to wait or already activated */
+			if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED && nmc->print_output == NMC_PRINT_PRETTY) {
+				printf (_("Connection successfully activated (D-Bus active path: %s)\n"),
+				        nm_object_get_path (NM_OBJECT (active)));
+			}
 			quit ();
 		} else {
-			if (NM_IS_VPN_CONNECTION (active))
-				g_signal_connect (NM_VPN_CONNECTION (active), "vpn-state-changed", G_CALLBACK (vpn_connection_state_cb), nmc);
-			else
+			if (NM_IS_VPN_CONNECTION (active)) {
+				VpnGetStateInfo *vpn_info;
+
+				/* Monitor VPN state */
+				g_signal_connect (G_OBJECT (active), "vpn-state-changed", G_CALLBACK (vpn_connection_state_cb), nmc);
+
+				/* Start progress indication showing VPN states */
+				if (nmc->print_output == NMC_PRINT_PRETTY) {
+					if (progress_id)
+						g_source_remove (progress_id);
+					progress_id = g_timeout_add (120, progress_vpn_cb, NM_VPN_CONNECTION (active));
+				}
+
+				/* --- workaround BEGIN --- */
+				/* There is a bug in libnm-glib or dbus-glib - 'vpn-state-changed' signal
+				 * is never issued. After inspection it appears that PropertiesChanged and
+				 * VpnStateChanged D-Bus signals are not processed, even if they are seen
+				 * on D-Bus (checked via dbus-monitor). Until the bug is identified and
+				 * fixed, we check the VPN state every second.
+				 */
+				vpn_info = g_malloc0 (sizeof (VpnGetStateInfo));
+				vpn_info->nmc = nmc;
+				vpn_info->vpn = NM_VPN_CONNECTION (active);
+				g_timeout_add_seconds (1, get_vpn_state_cb, vpn_info);
+				/* --- workaround END --- */
+			} else {
 				g_signal_connect (active, "notify::state", G_CALLBACK (active_connection_state_cb), nmc);
+
+				/* Start progress indication showing device states */
+				if (nmc->print_output == NMC_PRINT_PRETTY) {
+					if (progress_id)
+						g_source_remove (progress_id);
+					progress_id = g_timeout_add (120, progress_device_cb, device);
+				}
+			}
 
 			/* Start timer not to loop forever when signals are not emitted */
 			g_timeout_add_seconds (nmc->timeout, timeout_cb, nmc);
 		}
 	}
+	g_free (info);
 }
 
 static NMCResultCode
 do_connection_up (NmCli *nmc, int argc, char **argv)
 {
+	ActivateConnectionInfo *info;
 	NMDevice *device = NULL;
 	const char *spec_object = NULL;
 	gboolean device_found;
@@ -1566,12 +1756,21 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 	 */
 	nmc->nowait_flag = !wait;
 	nmc->should_wait = TRUE;
+
+	info = g_malloc0 (sizeof (ActivateConnectionInfo));
+	info->nmc = nmc;
+	info->device = device;
+
 	nm_client_activate_connection (nmc->client,
 	                               connection,
 	                               device,
 	                               spec_object,
 	                               activate_connection_cb,
-	                               nmc);
+	                               info);
+
+	/* Start progress indication */
+	if (nmc->print_output == NMC_PRINT_PRETTY)
+		progress_id = g_timeout_add (120, progress_cb, "preparing");
 
 	return nmc->return_value;
 error:
@@ -1769,7 +1968,7 @@ parse_cmd (NmCli *nmc, int argc, char **argv)
 		nmc->return_value = do_connections_list (nmc, argc, argv);
 	} else {
 
-	 	if (matches (*argv, "list") == 0) {
+		if (matches (*argv, "list") == 0) {
 			nmc->return_value = do_connections_list (nmc, argc-1, argv+1);
 		}
 		else if (matches(*argv, "status") == 0) {
@@ -1836,7 +2035,7 @@ do_connections (NmCli *nmc, int argc, char **argv)
 	else {
 		while (real_con_commands[i] && matches (*argv, real_con_commands[i]) != 0)
 			i++;
- 		if (real_con_commands[i] != NULL)
+		if (real_con_commands[i] != NULL)
 			real_cmd = TRUE;
 	}
 
@@ -1846,6 +2045,9 @@ do_connections (NmCli *nmc, int argc, char **argv)
 	} else {
 		if (!nmc_versions_match (nmc))
 			return nmc->return_value;
+
+		/* Get NMClient object early */
+		nmc->get_client (nmc);
 
 		nmc->should_wait = TRUE;
 

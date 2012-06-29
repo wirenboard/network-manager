@@ -88,6 +88,7 @@ typedef struct {
 
 /**
  * nm_setting_vlan_new:
+ *
  * Creates a new #NMSettingVlan object with default values.
  *
  * Returns: (transfer full): the new empty #NMSettingVlan object
@@ -220,7 +221,7 @@ set_map (NMSettingVlan *self, NMVlanPriorityMap map, GSList *list)
 }
 
 /**
- * nm_setting_vlan_add_priority_str
+ * nm_setting_vlan_add_priority_str:
  * @setting: the #NMSettingVlan
  * @map: the type of priority map
  * @str: the string which contains a priority map, like "3:7"
@@ -460,7 +461,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		return FALSE;
 	}
 
-	if (priv->flags & !(NM_VLAN_FLAG_REORDER_HEADERS |
+	if (priv->flags & ~(NM_VLAN_FLAG_REORDER_HEADERS |
 	                    NM_VLAN_FLAG_GVRP |
 	                    NM_VLAN_FLAG_LOOSE_BINDING)) {
 		g_set_error (error,

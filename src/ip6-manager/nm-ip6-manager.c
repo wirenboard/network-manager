@@ -18,8 +18,12 @@
  * Copyright (C) 2009 - 2010 Red Hat, Inc.
  */
 
+#define _GNU_SOURCE /* for struct in6_pktinfo */
+
 #include <errno.h>
+#include <unistd.h>
 #include <netinet/icmp6.h>
+#include <netinet/in.h>
 
 #include <netlink/route/addr.h>
 #include <netlink/route/rtnl.h>
@@ -32,6 +36,7 @@
 #include "NetworkManagerUtils.h"
 #include "nm-marshal.h"
 #include "nm-logging.h"
+#include "nm-utils.h"
 
 /* Pre-DHCP addrconf timeout, in seconds */
 #define NM_IP6_TIMEOUT 20
@@ -89,6 +94,10 @@ typedef struct {
 	char *iface;
 	int ifindex;
 
+	gboolean has_linklocal;
+	gboolean has_nonlinklocal;
+	guint dhcp_opts;
+
 	char *disable_ip6_path;
 	gboolean disable_ip6_save_valid;
 	gint32 disable_ip6_save;
@@ -102,9 +111,13 @@ typedef struct {
 
 	GArray *rdnss_servers;
 	guint rdnss_timeout_id;
+	guint32 rdnss_timeout;
 
 	GArray *dnssl_domains;
 	guint dnssl_timeout_id;
+	guint32 dnssl_timeout;
+
+	time_t last_solicitation;
 
 	guint ip6flags_poll_id;
 
@@ -209,11 +222,221 @@ nm_ip6_manager_get_device (NMIP6Manager *manager, int ifindex)
 	return g_hash_table_lookup (priv->devices, GINT_TO_POINTER (ifindex));
 }
 
+static int
+get_hwaddr (int ifindex, guint8 *buf)
+{
+	struct rtnl_link *lk;
+	struct nl_addr *addr;
+	int len;
+
+	lk = nm_netlink_index_to_rtnl_link (ifindex);
+	if (!lk)
+		return -1;
+
+	addr = rtnl_link_get_addr (lk);
+	len = nl_addr_get_len (addr);
+	if (len > NM_UTILS_HWADDR_LEN_MAX)
+		len = -1;
+	else
+		memcpy (buf, nl_addr_get_binary_addr (addr), len);
+
+	rtnl_link_put (lk);
+	return len;
+}
+
+static void
+device_send_router_solicitation (NMIP6Device *device, const char *why)
+{
+	int sock, hops;
+	struct sockaddr_in6 sin6;
+	struct nd_router_solicit rs;
+	struct nd_opt_hdr lladdr_hdr;
+	guint8 hwaddr[NM_UTILS_HWADDR_LEN_MAX + 7];
+	int hwaddr_len;
+	static const guint8 local_routers_addr[] =
+		{ 0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 };
+	struct msghdr mhdr;
+	struct iovec iov[3];
+	struct cmsghdr *cmsg;
+	struct in6_pktinfo *ipi;
+	guint8 cmsgbuf[128];
+	int cmsglen = 0;
+	time_t now;
+
+	now = time (NULL);
+	if (device->last_solicitation > now - 5)
+		return;
+	device->last_solicitation = now;
+
+	nm_log_dbg (LOGD_IP6, "(%s): %s: sending router solicitation",
+	            device->iface, why);
+
+	sock = socket (AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
+	if (sock < 0) {
+		nm_log_dbg (LOGD_IP6, "(%s): could not create ICMPv6 socket: %s",
+		            device->iface, g_strerror (errno));
+		return;
+	}
+
+	hops = 255;
+	if (   setsockopt (sock, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &hops, sizeof (hops)) == -1
+	    || setsockopt (sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, &hops, sizeof (hops)) == -1) {
+		nm_log_dbg (LOGD_IP6, "(%s): could not set hop limit on ICMPv6 socket: %s",
+		            device->iface, g_strerror (errno));
+		close (sock);
+		return;
+	}
+
+	/* Use the "all link-local routers" multicast address */
+	memset (&sin6, 0, sizeof (sin6));
+	memcpy (&sin6.sin6_addr, local_routers_addr, sizeof (sin6.sin6_addr));
+	mhdr.msg_name = &sin6;
+	mhdr.msg_namelen = sizeof (sin6);
+
+	/* Build the router solicitation */
+	mhdr.msg_iov = iov;
+	memset (&rs, 0, sizeof (rs));
+	rs.nd_rs_type = ND_ROUTER_SOLICIT;
+	iov[0].iov_len  = sizeof (rs);
+	iov[0].iov_base = &rs;
+
+	memset (hwaddr, 0, sizeof (hwaddr));
+	hwaddr_len = get_hwaddr (device->ifindex, hwaddr);
+
+	if (hwaddr_len > 0) {
+		memset (&lladdr_hdr, 0, sizeof (lladdr_hdr));
+		lladdr_hdr.nd_opt_type = ND_OPT_SOURCE_LINKADDR;
+		lladdr_hdr.nd_opt_len = (sizeof (lladdr_hdr) + hwaddr_len + 7) % 8;
+		iov[1].iov_len  = sizeof (lladdr_hdr);
+		iov[1].iov_base = &lladdr_hdr;
+
+		iov[2].iov_len  = (lladdr_hdr.nd_opt_len * 8) - 2;
+		iov[2].iov_base = hwaddr;
+
+		mhdr.msg_iovlen = 3;
+	} else
+		mhdr.msg_iovlen = 1;
+
+	/* Force this to go on the right device */
+	memset (cmsgbuf, 0, sizeof (cmsgbuf));
+	cmsg = (struct cmsghdr *) cmsgbuf;
+	cmsglen = CMSG_SPACE (sizeof (*ipi));
+	cmsg->cmsg_len = CMSG_LEN (sizeof (*ipi));
+	cmsg->cmsg_level = SOL_IPV6;
+	cmsg->cmsg_type = IPV6_PKTINFO;
+	ipi = (struct in6_pktinfo *) CMSG_DATA (cmsg);
+	ipi->ipi6_ifindex = device->ifindex;
+
+	mhdr.msg_control = cmsg;
+	mhdr.msg_controllen = cmsglen;
+
+	if (sendmsg (sock, &mhdr, 0) == -1) {
+		nm_log_dbg (LOGD_IP6, "(%s): could not send router solicitation: %s",
+		            device->iface, g_strerror (errno));
+	}
+
+	close (sock);
+}
+
+static char *
+device_get_iface (NMIP6Device *device)
+{
+	return device ? device->iface : "unknown";
+}
+
+static const char *
+state_to_string (NMIP6DeviceState state)
+{
+	switch (state) {
+	case NM_IP6_DEVICE_UNCONFIGURED:
+		return "unconfigured";
+	case NM_IP6_DEVICE_GOT_LINK_LOCAL:
+		return "got-link-local";
+	case NM_IP6_DEVICE_GOT_ROUTER_ADVERTISEMENT:
+		return "got-ra";
+	case NM_IP6_DEVICE_GOT_ADDRESS:
+		return "got-address";
+	case NM_IP6_DEVICE_TIMED_OUT:
+		return "timed-out";
+	default:
+		return "unknown";
+	}
+}
+
+static gboolean
+device_set_state (NMIP6Device *device, NMIP6DeviceState state)
+{
+	NMIP6DeviceState old_state;
+
+	g_return_val_if_fail (device != NULL, FALSE);
+
+	if (state == device->state)
+		return FALSE;
+
+	old_state = device->state;
+	device->state = state;
+	nm_log_dbg (LOGD_IP6, "(%s) IP6 device state: %s -> %s",
+	            device_get_iface (device),
+	            state_to_string (old_state),
+	            state_to_string (state));
+	return TRUE;
+}
+
+static char *
+ra_flags_to_string (guint32 ra_flags)
+{
+	GString *s = g_string_sized_new (20);
+
+	g_string_append (s, " (");
+	if (ra_flags & IF_RS_SENT)
+		g_string_append_c (s, 'S');
+
+	if (ra_flags & IF_RA_RCVD)
+		g_string_append_c (s, 'R');
+
+	if (ra_flags & IF_RA_MANAGED)
+		g_string_append_c (s, 'M');
+
+	if (ra_flags & IF_RA_OTHERCONF)
+		g_string_append_c (s, 'O');
+
+	g_string_append_c (s, ')');
+	return g_string_free (s, FALSE);
+}
+
+static gboolean
+device_set_ra_flags (NMIP6Device *device, guint ra_flags)
+{
+	guint old_ra_flags;
+	gchar *ra_flags_str, *old_ra_flags_str;
+
+	g_return_val_if_fail (device != NULL, FALSE);
+
+	if (ra_flags == device->ra_flags)
+		return FALSE;
+
+	old_ra_flags = device->ra_flags;
+	device->ra_flags = ra_flags;
+
+	if (nm_logging_level_enabled (LOGL_DEBUG)) {
+		ra_flags_str = ra_flags_to_string (ra_flags);
+		old_ra_flags_str = ra_flags_to_string (old_ra_flags);
+		nm_log_dbg (LOGD_IP6, "(%s) IP6 device ra_flags: 0x%08x %s -> 0x%08x %s",
+		            device_get_iface (device),
+		            old_ra_flags, old_ra_flags_str,
+		            ra_flags, ra_flags_str);
+		g_free (ra_flags_str);
+		g_free (old_ra_flags_str);
+	}
+
+	return TRUE;
+}
+
 /******************************************************************/
 
 typedef struct {
 	NMIP6Device *device;
-	guint dhcp_opts;
 	gboolean success;
 } CallbackInfo;
 
@@ -238,14 +461,14 @@ finish_addrconf (gpointer user_data)
 	/* And tell listeners that addrconf is complete */
 	if (info->success) {
 		g_signal_emit (manager, signals[ADDRCONF_COMPLETE], 0,
-		               ifindex, info->dhcp_opts, TRUE);
+		               ifindex, device->dhcp_opts, TRUE);
 	} else {
 		nm_log_info (LOGD_IP6, "(%s): IP6 addrconf timed out or failed.",
 		             device->iface);
 
 		nm_ip6_manager_cancel_addrconf (manager, ifindex);
 		g_signal_emit (manager, signals[ADDRCONF_COMPLETE], 0,
-		               ifindex, info->dhcp_opts, FALSE);
+		               ifindex, device->dhcp_opts, FALSE);
 	}
 
 	return FALSE;
@@ -261,7 +484,7 @@ emit_config_changed (gpointer user_data)
 	device->config_changed_id = 0;
 	g_signal_emit (manager, signals[CONFIG_CHANGED], 0,
 	               device->ifindex,
-	               info->dhcp_opts,
+	               device->dhcp_opts,
 	               info->success);
 	return FALSE;
 }
@@ -272,13 +495,29 @@ static gboolean
 rdnss_expired (gpointer user_data)
 {
 	NMIP6Device *device = user_data;
-	CallbackInfo info = { device, IP6_DHCP_OPT_NONE, FALSE };
+	CallbackInfo info = { device, FALSE };
 
 	nm_log_dbg (LOGD_IP6, "(%s): IPv6 RDNSS information expired", device->iface);
 
 	set_rdnss_timeout (device);
 	clear_config_changed (device);
 	emit_config_changed (&info);
+	return FALSE;
+}
+
+static gboolean
+rdnss_needs_refresh (gpointer user_data)
+{
+	NMIP6Device *device = user_data;
+	gchar *msg;
+
+	msg = g_strdup_printf ("IPv6 RDNSS due to expire in %d seconds",
+	                       device->rdnss_timeout);
+	device_send_router_solicitation (device, msg);
+	g_free (msg);
+
+	set_rdnss_timeout (device);
+
 	return FALSE;
 }
 
@@ -320,9 +559,23 @@ set_rdnss_timeout (NMIP6Device *device)
 	}
 
 	if (expires) {
-		device->rdnss_timeout_id = g_timeout_add_seconds (MIN (expires - now, G_MAXUINT32 - 1),
-		                                                  rdnss_expired,
-		                                                  device);
+		gchar *msg;
+
+		device->rdnss_timeout = MIN (expires - now, G_MAXUINT32 - 1);
+
+		if (device->rdnss_timeout <= 5) {
+			msg = g_strdup_printf ("IPv6 RDNSS about to expire in %d seconds",
+			                       device->rdnss_timeout);
+			device_send_router_solicitation (device, msg);
+			g_free (msg);
+			device->rdnss_timeout_id = g_timeout_add_seconds (device->rdnss_timeout,
+			                                                  rdnss_expired,
+			                                                  device);
+		} else {
+			device->rdnss_timeout_id = g_timeout_add_seconds (device->rdnss_timeout / 2,
+			                                                  rdnss_needs_refresh,
+			                                                  device);
+		}
 	}
 }
 
@@ -332,13 +585,29 @@ static gboolean
 dnssl_expired (gpointer user_data)
 {
 	NMIP6Device *device = user_data;
-	CallbackInfo info = { device, IP6_DHCP_OPT_NONE, FALSE };
+	CallbackInfo info = { device, FALSE };
 
 	nm_log_dbg (LOGD_IP6, "(%s): IPv6 DNSSL information expired", device->iface);
 
 	set_dnssl_timeout (device);
 	clear_config_changed (device);
 	emit_config_changed (&info);
+	return FALSE;
+}
+
+static gboolean
+dnssl_needs_refresh (gpointer user_data)
+{
+	NMIP6Device *device = user_data;
+	gchar *msg;
+
+	msg = g_strdup_printf ("IPv6 DNSSL due to expire in %d seconds",
+	                       device->dnssl_timeout);
+	device_send_router_solicitation (device, msg);
+	g_free (msg);
+
+	set_dnssl_timeout (device);
+
 	return FALSE;
 }
 
@@ -376,59 +645,49 @@ set_dnssl_timeout (NMIP6Device *device)
 	}
 
 	if (expires) {
-		device->dnssl_timeout_id = g_timeout_add_seconds (MIN (expires - now, G_MAXUINT32 - 1),
-		                                                  dnssl_expired,
-		                                                  device);
+		gchar *msg;
+
+		device->dnssl_timeout = MIN (expires - now, G_MAXUINT32 - 1);
+
+		if (device->dnssl_timeout <= 5) {
+			msg = g_strdup_printf ("IPv6 DNSSL about to expire in %d seconds",
+			                       device->dnssl_timeout);
+			device_send_router_solicitation (device, msg);
+			g_free (msg);
+			device->dnssl_timeout_id = g_timeout_add_seconds (device->dnssl_timeout,
+			                                                  dnssl_expired,
+			                                                  device);
+		} else {
+			device->dnssl_timeout_id = g_timeout_add_seconds (device->dnssl_timeout / 2,
+			                                                  dnssl_needs_refresh,
+			                                                  device);
+		}
 	}
 }
 
 static CallbackInfo *
-callback_info_new (NMIP6Device *device, guint dhcp_opts, gboolean success)
+callback_info_new (NMIP6Device *device, gboolean success)
 {
 	CallbackInfo *info;
 
 	info = g_malloc0 (sizeof (CallbackInfo));
 	info->device = device;
-	info->dhcp_opts = dhcp_opts;
 	info->success = success;
 	return info;
 }
 
-static const char *
-state_to_string (NMIP6DeviceState state)
-{
-	switch (state) {
-	case NM_IP6_DEVICE_UNCONFIGURED:
-		return "unconfigured";
-	case NM_IP6_DEVICE_GOT_LINK_LOCAL:
-		return "got-link-local";
-	case NM_IP6_DEVICE_GOT_ROUTER_ADVERTISEMENT:
-		return "got-ra";
-	case NM_IP6_DEVICE_GOT_ADDRESS:
-		return "got-address";
-	case NM_IP6_DEVICE_TIMED_OUT:
-		return "timed-out";
-	default:
-		return "unknown";
-	}
-}
-
 static void
-nm_ip6_device_sync_from_netlink (NMIP6Device *device, gboolean config_changed)
+check_addresses (NMIP6Device *device)
 {
 	NMIP6Manager *manager = device->manager;
 	NMIP6ManagerPrivate *priv = NM_IP6_MANAGER_GET_PRIVATE (manager);
 	struct rtnl_addr *rtnladdr;
 	struct nl_addr *nladdr;
 	struct in6_addr *addr;
-	CallbackInfo *info;
-	guint dhcp_opts = IP6_DHCP_OPT_NONE;
-	gboolean found_linklocal = FALSE, found_other = FALSE;
 
-	nm_log_dbg (LOGD_IP6, "(%s): syncing with netlink (ra_flags 0x%X) (state/target '%s'/'%s')",
-	            device->iface, device->ra_flags,
-	            state_to_string (device->state),
-	            state_to_string (device->target_state));
+	/* Reset address information */
+	device->has_linklocal = FALSE;
+	device->has_nonlinklocal = FALSE;
 
 	/* Look for any IPv6 addresses the kernel may have set for the device */
 	for (rtnladdr = (struct rtnl_addr *) nl_cache_get_first (priv->addr_cache);
@@ -453,12 +712,12 @@ nm_ip6_device_sync_from_netlink (NMIP6Device *device, gboolean config_changed)
 
 		if (IN6_IS_ADDR_LINKLOCAL (addr)) {
 			if (device->state == NM_IP6_DEVICE_UNCONFIGURED)
-				device->state = NM_IP6_DEVICE_GOT_LINK_LOCAL;
-			found_linklocal = TRUE;
+				device_set_state (device, NM_IP6_DEVICE_GOT_LINK_LOCAL);
+			device->has_linklocal = TRUE;
 		} else {
 			if (device->state < NM_IP6_DEVICE_GOT_ADDRESS)
-				device->state = NM_IP6_DEVICE_GOT_ADDRESS;
-			found_other = TRUE;
+				device_set_state (device, NM_IP6_DEVICE_GOT_ADDRESS);
+			device->has_nonlinklocal = TRUE;
 		}
 	}
 
@@ -466,27 +725,41 @@ nm_ip6_device_sync_from_netlink (NMIP6Device *device, gboolean config_changed)
 	 * before in the initial run, but if it goes away later, make sure we
 	 * regress from GOT_LINK_LOCAL back to UNCONFIGURED.
 	 */
-	if ((device->state == NM_IP6_DEVICE_GOT_LINK_LOCAL) && !found_linklocal)
-		device->state = NM_IP6_DEVICE_UNCONFIGURED;
+	if ((device->state == NM_IP6_DEVICE_GOT_LINK_LOCAL) && !device->has_linklocal)
+		device_set_state (device, NM_IP6_DEVICE_UNCONFIGURED);
 
-	nm_log_dbg (LOGD_IP6, "(%s): addresses synced (state %s)",
-	            device->iface, state_to_string (device->state));
+	nm_log_dbg (LOGD_IP6, "(%s): addresses checked (state %s)",
+		    device->iface, state_to_string (device->state));
+}
+
+static void
+check_ra_flags (NMIP6Device *device)
+{
+	device->dhcp_opts = IP6_DHCP_OPT_NONE;
 
 	/* We only care about router advertisements if we want a real IPv6 address */
 	if (   (device->target_state == NM_IP6_DEVICE_GOT_ADDRESS)
 	    && (device->ra_flags & IF_RA_RCVD)) {
 
 		if (device->state < NM_IP6_DEVICE_GOT_ROUTER_ADVERTISEMENT)
-			device->state = NM_IP6_DEVICE_GOT_ROUTER_ADVERTISEMENT;
+			device_set_state (device, NM_IP6_DEVICE_GOT_ROUTER_ADVERTISEMENT);
 
 		if (device->ra_flags & IF_RA_MANAGED) {
-			dhcp_opts = IP6_DHCP_OPT_MANAGED;
+			device->dhcp_opts = IP6_DHCP_OPT_MANAGED;
 			nm_log_dbg (LOGD_IP6, "router advertisement deferred to DHCPv6");
 		} else if (device->ra_flags & IF_RA_OTHERCONF) {
-			dhcp_opts = IP6_DHCP_OPT_OTHERCONF;
+			device->dhcp_opts = IP6_DHCP_OPT_OTHERCONF;
 			nm_log_dbg (LOGD_IP6, "router advertisement requests parallel DHCPv6");
 		}
 	}
+	nm_log_dbg (LOGD_IP6, "(%s): router advertisement checked (state %s)",
+		    device->iface, state_to_string (device->state));
+}
+
+static void
+check_addrconf_complete (NMIP6Device *device)
+{
+	CallbackInfo *info;
 
 	if (!device->addrconf_complete) {
 		/* Managed mode (ie DHCP only) short-circuits automatic addrconf, so
@@ -494,7 +767,7 @@ nm_ip6_device_sync_from_netlink (NMIP6Device *device, gboolean config_changed)
 		 * when the RA requests managed mode.
 		 */
 		if (   (device->state >= device->target_state)
-		    || (dhcp_opts == IP6_DHCP_OPT_MANAGED)) {
+		    || (device->dhcp_opts == IP6_DHCP_OPT_MANAGED)) {
 			/* device->finish_addrconf_id may currently be a timeout
 			 * rather than an idle, so we remove the existing source.
 			 */
@@ -503,15 +776,15 @@ nm_ip6_device_sync_from_netlink (NMIP6Device *device, gboolean config_changed)
 
 			nm_log_dbg (LOGD_IP6, "(%s): reached target state or Managed-mode requested (state '%s') (dhcp opts 0x%X)",
 			            device->iface, state_to_string (device->state),
-			            dhcp_opts);
+			            device->dhcp_opts);
 
-			info = callback_info_new (device, dhcp_opts, TRUE);
+			info = callback_info_new (device, TRUE);
 			device->finish_addrconf_id = g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
 			                                              finish_addrconf,
 			                                              info,
 			                                              (GDestroyNotify) g_free);
 		}
-	} else if (config_changed) {
+	} else {
 		if (!device->config_changed_id) {
 			gboolean success = TRUE;
 
@@ -520,19 +793,35 @@ nm_ip6_device_sync_from_netlink (NMIP6Device *device, gboolean config_changed)
 			 */
 			if (   (device->state == NM_IP6_DEVICE_GOT_ADDRESS)
 			    && (device->target_state == NM_IP6_DEVICE_GOT_ADDRESS)
-			    && !found_other) {
-				nm_log_dbg (LOGD_IP6, "(%s): RA-provided address no longer valid",
+			    && !device->has_nonlinklocal) {
+				nm_log_dbg (LOGD_IP6, "(%s): RA-provided address no longer found",
 				            device->iface);
 				success = FALSE;
 			}
 
-			info = callback_info_new (device, dhcp_opts, success);
+			info = callback_info_new (device, success);
 			device->config_changed_id = g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
 			                                             emit_config_changed,
 			                                             info,
 			                                             (GDestroyNotify) g_free);
 		}
 	}
+
+	nm_log_dbg (LOGD_IP6, "(%s): dhcp_opts checked (state %s)",
+		    device->iface, state_to_string (device->state));
+}
+
+static void
+nm_ip6_device_sync_from_netlink (NMIP6Device *device)
+{
+	nm_log_dbg (LOGD_IP6, "(%s): syncing with netlink (ra_flags 0x%X) (state/target '%s'/'%s')",
+	            device->iface, device->ra_flags,
+	            state_to_string (device->state),
+	            state_to_string (device->target_state));
+
+	check_addresses (device);
+	check_ra_flags (device);
+	check_addrconf_complete (device);
 }
 
 static void
@@ -544,16 +833,51 @@ ref_object (struct nl_object *obj, void *data)
 	*out = obj;
 }
 
+static void
+dump_address_change (NMIP6Device *device, struct nlmsghdr *hdr, struct rtnl_addr *rtnladdr)
+{
+	char *event;
+	struct nl_addr *addr;
+	char addr_str[40] = "none";
+
+	event = hdr->nlmsg_type == RTM_NEWADDR ? "new" : "lost";
+	addr = rtnl_addr_get_local (rtnladdr);
+	if (addr)
+		nl_addr2str (addr, addr_str, 40);
+
+	nm_log_dbg (LOGD_IP6, "(%s) %s address: %s", device_get_iface (device), event, addr_str);
+}
+
+static void
+dump_route_change (NMIP6Device *device, struct nlmsghdr *hdr, struct rtnl_route *rtnlroute)
+{
+	char *event;
+	struct nl_addr *dst;
+	char dst_str[40] = "none";
+	struct nl_addr *gateway;
+	char gateway_str[40] = "none";
+
+	event = hdr->nlmsg_type == RTM_NEWROUTE ? "new" : "lost";
+	dst = rtnl_route_get_dst (rtnlroute);
+	gateway = rtnl_route_get_gateway (rtnlroute);
+	if (dst)
+		nl_addr2str (dst, dst_str, 40);
+	if (gateway)
+		nl_addr2str (gateway, gateway_str, 40);
+
+	nm_log_dbg (LOGD_IP6, "(%s) %s route: %s via %s",device_get_iface (device), event, dst_str, gateway_str);
+}
+
 static NMIP6Device *
-process_addr (NMIP6Manager *manager, struct nl_msg *msg)
+process_address_change (NMIP6Manager *manager, struct nl_msg *msg)
 {
 	NMIP6ManagerPrivate *priv = NM_IP6_MANAGER_GET_PRIVATE (manager);
 	NMIP6Device *device;
+	struct nlmsghdr *hdr;
 	struct rtnl_addr *rtnladdr;
 	int old_size;
 
-	nm_log_dbg (LOGD_IP6, "processing netlink new/del address message");
-
+	hdr = nlmsg_hdr (msg);
 	rtnladdr = NULL;
 	nl_msg_parse (msg, ref_object, &rtnladdr);
 	if (!rtnladdr) {
@@ -562,39 +886,34 @@ process_addr (NMIP6Manager *manager, struct nl_msg *msg)
 	}
 
 	device = nm_ip6_manager_get_device (manager, rtnl_addr_get_ifindex (rtnladdr));
-	if (!device) {
-		nm_log_dbg (LOGD_IP6, "ignoring message for unknown device");
-		rtnl_addr_put (rtnladdr);
-		return NULL;
-	}
 
 	old_size = nl_cache_nitems (priv->addr_cache);
 	nl_cache_include (priv->addr_cache, (struct nl_object *)rtnladdr, NULL, NULL);
-	rtnl_addr_put (rtnladdr);
 
 	/* The kernel will re-notify us of automatically-added addresses
 	 * every time it gets another router advertisement. We only want
 	 * to notify higher levels if we actually changed something.
 	 */
-	if (nl_cache_nitems (priv->addr_cache) == old_size) {
-		nm_log_dbg (LOGD_IP6, "(%s): address cache unchanged, ignoring message",
-		            device->iface);
+	nm_log_dbg (LOGD_IP6, "(%s): address cache size: %d -> %d:",
+		    device_get_iface (device), old_size, nl_cache_nitems (priv->addr_cache));
+	dump_address_change (device, hdr, rtnladdr);
+	rtnl_addr_put (rtnladdr);
+	if (nl_cache_nitems (priv->addr_cache) == old_size)
 		return NULL;
-	}
 
 	return device;
 }
 
 static NMIP6Device *
-process_route (NMIP6Manager *manager, struct nl_msg *msg)
+process_route_change (NMIP6Manager *manager, struct nl_msg *msg)
 {
 	NMIP6ManagerPrivate *priv = NM_IP6_MANAGER_GET_PRIVATE (manager);
 	NMIP6Device *device;
+	struct nlmsghdr *hdr;
 	struct rtnl_route *rtnlroute;
 	int old_size;
 
-	nm_log_dbg (LOGD_IP6, "processing netlink new/del route message");
-
+	hdr = nlmsg_hdr (msg);
 	rtnlroute = NULL;
 	nl_msg_parse (msg, ref_object, &rtnlroute);
 	if (!rtnlroute) {
@@ -603,53 +922,17 @@ process_route (NMIP6Manager *manager, struct nl_msg *msg)
 	}
 
 	device = nm_ip6_manager_get_device (manager, rtnl_route_get_oif (rtnlroute));
-	if (!device) {
-		nm_log_dbg (LOGD_IP6, "ignoring message for unknown device");
-		rtnl_route_put (rtnlroute);
-		return NULL;
-	}
 
 	old_size = nl_cache_nitems (priv->route_cache);
 	nl_cache_include (priv->route_cache, (struct nl_object *)rtnlroute, NULL, NULL);
+
+	/* As above in process_address_change */
+	nm_log_dbg (LOGD_IP6, "(%s): route cache size: %d -> %d:",
+		    device_get_iface (device), old_size, nl_cache_nitems (priv->route_cache));
+	dump_route_change (device, hdr, rtnlroute);
 	rtnl_route_put (rtnlroute);
-
-	/* As above in process_addr */
-	if (nl_cache_nitems (priv->route_cache) == old_size) {
-		nm_log_dbg (LOGD_IP6, "(%s): route cache unchanged, ignoring message",
-		            device->iface);
+	if (nl_cache_nitems (priv->route_cache) == old_size)
 		return NULL;
-	}
-
-	return device;
-}
-
-static NMIP6Device *
-process_prefix (NMIP6Manager *manager, struct nl_msg *msg)
-{
-	struct prefixmsg *pmsg;
-	NMIP6Device *device;
-
-	/* We don't care about the prefix itself, but if we receive a
-	 * router advertisement telling us to use DHCP, we might not
-	 * get any RTM_NEWADDRs or RTM_NEWROUTEs, so this is our only
-	 * way to notice immediately that an RA was received.
-	 */
-
-	nm_log_dbg (LOGD_IP6, "processing netlink new prefix message");
-
-	if (!nlmsg_valid_hdr (nlmsg_hdr (msg), sizeof(*pmsg))) {
-		nm_log_dbg (LOGD_IP6, "ignoring invalid prefix message");
-		return NULL;
-	}
-
-	pmsg = (struct prefixmsg *) NLMSG_DATA (nlmsg_hdr (msg));
-	device = nm_ip6_manager_get_device (manager, pmsg->prefix_ifindex);
-
-	if (!device || device->addrconf_complete) {
-		nm_log_dbg (LOGD_IP6, "(%s): ignoring unknown or completed device",
-		            device ? device->iface : "(none)");
-		return NULL;
-	}
 
 	return device;
 }
@@ -705,7 +988,9 @@ process_nduseropt_rdnss (NMIP6Device *device, struct nd_opt_hdr *opt)
 	 */
 	server.expires = ntohl (rdnss_opt->nd_opt_rdnss_lifetime);
 	if (server.expires > 0)
-		server.expires += now + 10;
+		if (server.expires < 7200)
+			server.expires = 7200;
+		server.expires += now;
 
 	for (addr = (struct in6_addr *) (rdnss_opt + 1); opt_len >= 2; addr++, opt_len -= 2) {
 		char buf[INET6_ADDRSTRLEN + 1];
@@ -836,7 +1121,9 @@ process_nduseropt_dnssl (NMIP6Device *device, struct nd_opt_hdr *opt)
 	 */
 	domain.expires = ntohl (dnssl_opt->nd_opt_dnssl_lifetime);
 	if (domain.expires > 0)
-		domain.expires += now + 10;
+		if (domain.expires < 7200)
+			domain.expires = 7200;
+		domain.expires += now;
 
 	while (opt_len) {
 		const char *domain_str;
@@ -985,28 +1272,6 @@ static struct nla_policy link_prot_policy[IFLA_INET6_MAX + 1] = {
 	[IFLA_INET6_FLAGS]	= { .type = NLA_U32 },
 };
 
-static char *
-ra_flags_to_string (guint32 ra_flags)
-{
-	GString *s = g_string_sized_new (20);
-
-	g_string_append (s, " (");
-	if (ra_flags & IF_RS_SENT)
-		g_string_append_c (s, 'S');
-
-	if (ra_flags & IF_RA_RCVD)
-		g_string_append_c (s, 'R');
-
-	if (ra_flags & IF_RA_OTHERCONF)
-		g_string_append_c (s, 'O');
-
-	if (ra_flags & IF_RA_MANAGED)
-		g_string_append_c (s, 'M');
-
-	g_string_append_c (s, ')');
-	return g_string_free (s, FALSE);
-}
-
 static NMIP6Device *
 process_newlink (NMIP6Manager *manager, struct nl_msg *msg)
 {
@@ -1016,7 +1281,6 @@ process_newlink (NMIP6Manager *manager, struct nl_msg *msg)
 	struct nlattr *tb[IFLA_MAX + 1];
 	struct nlattr *pi[IFLA_INET6_MAX + 1];
 	int err;
-	char *flags_str = NULL;
 
 	/* FIXME: we have to do this manually for now since libnl doesn't yet
 	 * support the IFLA_PROTINFO attribute of NEWLINK messages.  When it does,
@@ -1059,13 +1323,7 @@ process_newlink (NMIP6Manager *manager, struct nl_msg *msg)
 		return NULL;
 	}
 
-	device->ra_flags = nla_get_u32 (pi[IFLA_INET6_FLAGS]);
-
-	if (nm_logging_level_enabled (LOGL_DEBUG))
-		flags_str = ra_flags_to_string (device->ra_flags);
-	nm_log_dbg (LOGD_IP6, "(%s): got IPv6 flags 0x%X%s",
-	            device->iface, device->ra_flags, flags_str ? flags_str : "");
-	g_free (flags_str);
+	device_set_ra_flags (device, nla_get_u32 (pi[IFLA_INET6_FLAGS]));
 
 	return device;
 }
@@ -1076,39 +1334,30 @@ netlink_notification (NMNetlinkMonitor *monitor, struct nl_msg *msg, gpointer us
 	NMIP6Manager *manager = (NMIP6Manager *) user_data;
 	NMIP6Device *device;
 	struct nlmsghdr *hdr;
-	gboolean config_changed = FALSE;
 
 	hdr = nlmsg_hdr (msg);
 	nm_log_dbg (LOGD_HW, "netlink event type %d", hdr->nlmsg_type);
 	switch (hdr->nlmsg_type) {
 	case RTM_NEWADDR:
 	case RTM_DELADDR:
-		device = process_addr (manager, msg);
-		config_changed = TRUE;
+		device = process_address_change (manager, msg);
 		break;
 	case RTM_NEWROUTE:
 	case RTM_DELROUTE:
-		device = process_route (manager, msg);
-		config_changed = TRUE;
-		break;
-	case RTM_NEWPREFIX:
-		device = process_prefix (manager, msg);
+		device = process_route_change (manager, msg);
 		break;
 	case RTM_NEWNDUSEROPT:
 		device = process_nduseropt (manager, msg);
-		config_changed = TRUE;
 		break;
 	case RTM_NEWLINK:
 		device = process_newlink (manager, msg);
-		config_changed = TRUE;
 		break;
 	default:
 		return;
 	}
 
 	if (device) {
-		nm_log_dbg (LOGD_IP6, "(%s): syncing device with netlink changes", device->iface);
-		nm_ip6_device_sync_from_netlink (device, config_changed);
+		nm_ip6_device_sync_from_netlink (device);
 	}
 }
 
@@ -1179,7 +1428,7 @@ nm_ip6_manager_begin_addrconf (NMIP6Manager *manager, int ifindex)
 	device->ra_flags = 0;
 
 	/* Set up a timeout on the transaction to kill it after the timeout */
-	info = callback_info_new (device, 0, FALSE);
+	info = callback_info_new (device, FALSE);
 	device->finish_addrconf_id = g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
 	                                                         NM_IP6_TIMEOUT,
 	                                                         finish_addrconf,
@@ -1204,7 +1453,7 @@ nm_ip6_manager_begin_addrconf (NMIP6Manager *manager, int ifindex)
 	 * device is already fully configured and schedule the
 	 * ADDRCONF_COMPLETE signal in that case.
 	 */
-	nm_ip6_device_sync_from_netlink (device, FALSE);
+	nm_ip6_device_sync_from_netlink (device);
 }
 
 void
@@ -1235,9 +1484,7 @@ nm_ip6_manager_get_ip6_config (NMIP6Manager *manager, int ifindex)
 	NMIP6Address *ip6addr;
 	struct rtnl_route *rtnlroute;
 	struct nl_addr *nldest, *nlgateway;
-	struct in6_addr *dest, *gateway;
-	gboolean defgw_set = FALSE;
-	struct in6_addr defgw;
+	const struct in6_addr *dest, *gateway;
 	uint32_t metric;
 	NMIP6Route *ip6route;
 	int i;
@@ -1287,11 +1534,9 @@ nm_ip6_manager_get_ip6_config (NMIP6Manager *manager, int ifindex)
 		gateway = nl_addr_get_binary_addr (nlgateway);
 
 		if (rtnl_route_get_dst_len (rtnlroute) == 0) {
-			/* Default gateway route; don't add to normal routes but to each address */
-			if (!defgw_set) {
-				memcpy (&defgw, gateway, sizeof (defgw));
-				defgw_set = TRUE;
-			}
+			/* Default gateway route; cache the router's address for later */
+			if (!nm_ip6_config_get_gateway (config))
+				nm_ip6_config_set_gateway (config, gateway);
 			continue;
 		}
 
@@ -1326,8 +1571,9 @@ nm_ip6_manager_get_ip6_config (NMIP6Manager *manager, int ifindex)
 		nm_ip6_address_set_prefix (ip6addr, rtnl_addr_get_prefixlen (rtnladdr));
 		nm_ip6_address_set_address (ip6addr, addr);
 		nm_ip6_config_take_address (config, ip6addr);
-		if (defgw_set)
-			nm_ip6_address_set_gateway (ip6addr, &defgw);
+		gateway = nm_ip6_config_get_gateway (config);
+		if (gateway)
+			nm_ip6_address_set_gateway (ip6addr, gateway);
 	}
 
 	/* Add DNS servers */

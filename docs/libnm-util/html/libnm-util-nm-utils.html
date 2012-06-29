@@ -664,7 +664,25 @@ which should be unset by the caller (when no longer needed) with
 <a name="nm-utils-ip6-dns-from-gvalue"></a><h3>nm_utils_ip6_dns_from_gvalue ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="returnvalue">GSList</span></a> *            nm_utils_ip6_dns_from_gvalue        (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
 <p>
+Converts a <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> containing a <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> of IP6 DNS, represented as
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Byte-Arrays.html#GByteArray"><span class="type">GByteArray</span></a>s into a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of <span class="type">in6_addr</span>s.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of IP6
+addresses. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> Posix.in6_addr]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
@@ -672,7 +690,26 @@ which should be unset by the caller (when no longer needed) with
 <pre class="programlisting"><span class="returnvalue">void</span>                nm_utils_ip6_dns_to_gvalue          (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> *list</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> *value</code></em>);</pre>
 <p>
+Utility function to convert a <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> of 'struct in6_addr' structs into a
+GPtrArray of GByteArrays representing each server's IPv6 addresses in
+network byte order.  The specific format of this serialization is not
+guaranteed to be stable and may be extended in the future.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a list of <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> objects</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>value</code></em> :</span></p></td>
+<td>a pointer to a <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a> into which to place the converted DNS server
+addresses, which should be unset by the caller (when no longer needed) with
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#g-value-unset"><code class="function">g_value_unset()</code></a>.</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

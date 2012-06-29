@@ -22,7 +22,14 @@
 #include <string.h>
 #include <nm-system-config-interface.h>
 #include <stdio.h>
+
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <unistd.h>
+
 #include "plugin.h"
+#include "wifi-utils.h"
+
 #include "net_parser.h"
 #include "net_utils.h"
 
@@ -122,6 +129,24 @@ is_global_setting (char *key)
 	return 0;
 }
 
+/* Find out whether the 'iface' is an interface */
+static gboolean
+name_is_interface (const char *iface)
+{
+	int fd;
+	struct ifreq ifr;
+	gboolean is_iface = FALSE;
+
+	fd = socket (PF_INET, SOCK_DGRAM, 0);
+	if (fd >= 0) {
+		strncpy (ifr.ifr_name, iface, IFNAMSIZ);
+		if (ioctl (fd, SIOCGIFHWADDR, &ifr) == 0)
+			is_iface = TRUE;
+		close (fd);
+	}
+	return is_iface;
+}
+
 /* Parse a complete line */
 /* Connection type is determined here */
 static void
@@ -143,12 +168,13 @@ init_block_by_line (gchar * buf)
 	pos = g_strrstr (key_value[0], "_");
 	if (pos == NULL || is_global_setting (key_value[0])) {
 		/* global data */
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "global:%s-%s\n", key_value[0],
-			      key_value[1]);
-		g_hash_table_insert (global_settings_table,
-				     g_strdup (key_value[0]),
-				     g_strdup (key_value[1]));
+		data = g_strdup (key_value[1]);
+		tmp = strip_string (data, '"');
+		strip_string (tmp, '\'');
+		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "global:%s-%s\n", key_value[0], tmp);
+		g_hash_table_insert (global_settings_table, g_strdup (key_value[0]), g_strdup (tmp));
 		g_strfreev (key_value);
+		g_free (data);
 		return;
 	}
 	*pos++ = '\0';
@@ -165,8 +191,12 @@ init_block_by_line (gchar * buf)
 			/* ignored connection */
 			conn = add_new_connection_config ("ignore", pos);
 		} else
-			/* wireless connection */
-			conn = add_new_connection_config ("wireless", pos);
+			if (name_is_interface (pos) && !wifi_utils_is_wifi (pos, NULL))
+				/* wired connection */
+				conn = add_new_connection_config ("wired", pos);
+			else
+				/* wireless connection */
+				conn = add_new_connection_config ("wireless", pos);
 	}
 	data = g_strdup (key_value[1]);
 	tmp = strip_string (data, '"');
@@ -593,7 +623,7 @@ ifnet_flush_to_file (const char *config_file)
 	/* Writing global data */
 	while (g_hash_table_iter_next (&iter, &key, &value)) {
 		out_line =
-		    g_strdup_printf ("%s=%s\n", (gchar *) key, (gchar *) value);
+		    g_strdup_printf ("%s=\"%s\"\n", (gchar *) key, (gchar *) value);
 		g_io_channel_write_chars (channel, out_line, -1,
 					  &bytes_written, error);
 		if (bytes_written == 0 || (error && *error))

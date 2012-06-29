@@ -162,6 +162,7 @@ set_carrier (NMDeviceWired *self,
 {
 	NMDeviceWiredPrivate *priv;
 	NMDeviceState state;
+	guint32 caps;
 
 	g_return_if_fail (NM_IS_DEVICE (self));
 
@@ -172,16 +173,25 @@ set_carrier (NMDeviceWired *self,
 	/* Clear any previous deferred action */
 	carrier_action_defer_clear (self);
 
+	/* Warn if we try to set carrier down on a device that
+	 * doesn't support carrier detect.  These devices assume
+	 * the carrier is always up.
+	 */
+	caps = nm_device_get_capabilities (NM_DEVICE (self));
+	g_return_if_fail (caps & NM_DEVICE_CAP_CARRIER_DETECT);
+
 	priv->carrier = carrier;
 	g_object_notify (G_OBJECT (self), "carrier");
 
 	state = nm_device_get_state (NM_DEVICE (self));
-	nm_log_info (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (NM_DEVICE (self)),
-	             "(%s): carrier now %s (device state %d%s)",
-	             nm_device_get_iface (NM_DEVICE (self)),
-	             carrier ? "ON" : "OFF",
-	             state,
-	             defer_action ? ", deferring action for 4 seconds" : "");
+	if (state >= NM_DEVICE_STATE_UNAVAILABLE) {
+		nm_log_info (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (NM_DEVICE (self)),
+		             "(%s): carrier now %s (device state %d%s)",
+		             nm_device_get_iface (NM_DEVICE (self)),
+		             carrier ? "ON" : "OFF",
+		             state,
+		             defer_action ? ", deferring action for 4 seconds" : "");
+	}
 
 	if (defer_action)
 		priv->carrier_action_defer_id = g_timeout_add_seconds (4, carrier_action_defer_cb, self);
@@ -200,10 +210,8 @@ carrier_on (NMNetlinkMonitor *monitor,
 
 	/* Make sure signal is for us */
 	if (idx == nm_device_get_ifindex (device)) {
-		/* Ignore spurious netlink messages */
 		caps = nm_device_get_capabilities (device);
-		if (!(caps & NM_DEVICE_CAP_CARRIER_DETECT))
-			return;
+		g_return_if_fail (caps & NM_DEVICE_CAP_CARRIER_DETECT);
 
 		set_carrier (self, TRUE, FALSE);
 		set_speed (self, ethtool_get_speed (self));
@@ -224,10 +232,8 @@ carrier_off (NMNetlinkMonitor *monitor,
 		NMDeviceState state;
 		gboolean defer = FALSE;
 
-		/* Ignore spurious netlink messages */
 		caps = nm_device_get_capabilities (device);
-		if (!(caps & NM_DEVICE_CAP_CARRIER_DETECT))
-			return;
+		g_return_if_fail (caps & NM_DEVICE_CAP_CARRIER_DETECT);
 
 		/* Defer carrier-off event actions while connected by a few seconds
 		 * so that tripping over a cable, power-cycling a switch, or breaking
@@ -350,11 +356,15 @@ static gboolean
 real_hw_bring_up (NMDevice *dev, gboolean *no_firmware)
 {
 	gboolean success, carrier;
+	guint32 caps;
 
 	success = nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), TRUE, no_firmware);
 	if (success) {
-		carrier = get_carrier_sync (NM_DEVICE_WIRED (dev));
-		set_carrier (NM_DEVICE_WIRED (dev), carrier, carrier ? FALSE : TRUE);
+		caps = nm_device_get_capabilities (dev);
+		if (caps & NM_DEVICE_CAP_CARRIER_DETECT) {
+			carrier = get_carrier_sync (NM_DEVICE_WIRED (dev));
+			set_carrier (NM_DEVICE_WIRED (dev), carrier, carrier ? FALSE : TRUE);
+		}
 	}
 	return success;
 }

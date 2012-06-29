@@ -7,7 +7,7 @@
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMDeviceBt.html" title="NMDeviceBt">
-<link rel="next" href="NMWimaxNsp.html" title="NMWimaxNsp">
+<link rel="next" href="NMDeviceBond.html" title="NMDeviceBond">
 <meta name="generator" content="GTK-Doc V1.18 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -18,7 +18,7 @@
 <td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
 <th width="100%" align="center">libnm-glib Reference Manual</th>
-<td><a accesskey="n" href="NMWimaxNsp.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<td><a accesskey="n" href="NMDeviceBond.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr>
 <tr><td colspan="5" class="shortcuts">
 <a href="#NMDeviceWimax.synopsis" class="shortcut">Top</a>
@@ -47,13 +47,16 @@
 <a name="NMDeviceWimax.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMDeviceWimax.html#NMDeviceWimax-struct" title="NMDeviceWimax">NMDeviceWimax</a>;
                     <a class="link" href="NMDeviceWimax.html#NMDeviceWimaxClass" title="NMDeviceWimaxClass">NMDeviceWimaxClass</a>;
+enum                <a class="link" href="NMDeviceWimax.html#NMDeviceWimaxError" title="enum NMDeviceWimaxError">NMDeviceWimaxError</a>;
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-ACTIVE-NSP:CAPS" title="NM_DEVICE_WIMAX_ACTIVE_NSP">NM_DEVICE_WIMAX_ACTIVE_NSP</a>
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-BSID:CAPS" title="NM_DEVICE_WIMAX_BSID">NM_DEVICE_WIMAX_BSID</a>
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-CENTER-FREQUENCY:CAPS" title="NM_DEVICE_WIMAX_CENTER_FREQUENCY">NM_DEVICE_WIMAX_CENTER_FREQUENCY</a>
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-CINR:CAPS" title="NM_DEVICE_WIMAX_CINR">NM_DEVICE_WIMAX_CINR</a>
+#define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR:CAPS" title="NM_DEVICE_WIMAX_ERROR">NM_DEVICE_WIMAX_ERROR</a>
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-HW-ADDRESS:CAPS" title="NM_DEVICE_WIMAX_HW_ADDRESS">NM_DEVICE_WIMAX_HW_ADDRESS</a>
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-RSSI:CAPS" title="NM_DEVICE_WIMAX_RSSI">NM_DEVICE_WIMAX_RSSI</a>
 #define             <a class="link" href="NMDeviceWimax.html#NM-DEVICE-WIMAX-TX-POWER:CAPS" title="NM_DEVICE_WIMAX_TX_POWER">NM_DEVICE_WIMAX_TX_POWER</a>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMDeviceWimax.html#nm-device-wimax-error-quark" title="nm_device_wimax_error_quark ()">nm_device_wimax_error_quark</a>         (<em class="parameter"><code><span class="type">void</span></code></em>);
 <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="returnvalue">NMWimaxNsp</span></a> *        <a class="link" href="NMDeviceWimax.html#nm-device-wimax-get-active-nsp" title="nm_device_wimax_get_active_nsp ()">nm_device_wimax_get_active_nsp</a>      (<em class="parameter"><code><a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a> *wimax</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMDeviceWimax.html#nm-device-wimax-get-bsid" title="nm_device_wimax_get_bsid ()">nm_device_wimax_get_bsid</a>            (<em class="parameter"><code><a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a> *self</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="NMDeviceWimax.html#nm-device-wimax-get-center-frequency" title="nm_device_wimax_get_center_frequency ()">nm_device_wimax_get_center_frequency</a>
@@ -132,6 +135,48 @@ NMDeviceWimax implements
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMDeviceWimaxError"></a><h3>enum NMDeviceWimaxError</h3>
+<pre class="programlisting">typedef enum {
+	NM_DEVICE_WIMAX_ERROR_UNKNOWN = 0,              /*&lt; nick=UnknownError &gt;*/
+	NM_DEVICE_WIMAX_ERROR_NOT_WIMAX_CONNECTION,     /*&lt; nick=NotWimaxConnection &gt;*/
+	NM_DEVICE_WIMAX_ERROR_INVALID_WIMAX_CONNECTION, /*&lt; nick=InvalidWimaxConnection &gt;*/
+	NM_DEVICE_WIMAX_ERROR_INVALID_DEVICE_MAC,       /*&lt; nick=InvalidDeviceMac &gt;*/
+	NM_DEVICE_WIMAX_ERROR_MAC_MISMATCH,             /*&lt; nick=MacMismatch &gt;*/
+} NMDeviceWimaxError;
+</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-WIMAX-ERROR-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIMAX_ERROR_UNKNOWN</code></span></p></td>
+<td>unknown or unclassified error
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIMAX-ERROR-NOT-WIMAX-CONNECTION:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIMAX_ERROR_NOT_WIMAX_CONNECTION</code></span></p></td>
+<td>the connection was not of WiMax type
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIMAX-ERROR-INVALID-WIMAX-CONNECTION:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIMAX_ERROR_INVALID_WIMAX_CONNECTION</code></span></p></td>
+<td>the WiMax connection was invalid
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIMAX-ERROR-INVALID-DEVICE-MAC:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIMAX_ERROR_INVALID_DEVICE_MAC</code></span></p></td>
+<td>the device's MAC was invalid
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIMAX-ERROR-MAC-MISMATCH:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIMAX_ERROR_MAC_MISMATCH</code></span></p></td>
+<td>the MACs of the connection and the device mismatched
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-DEVICE-WIMAX-ACTIVE-NSP:CAPS"></a><h3>NM_DEVICE_WIMAX_ACTIVE_NSP</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_ACTIVE_NSP       "active-nsp"
 </pre>
@@ -164,6 +209,14 @@ NMDeviceWimax implements
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-DEVICE-WIMAX-ERROR:CAPS"></a><h3>NM_DEVICE_WIMAX_ERROR</h3>
+<pre class="programlisting">#define NM_DEVICE_WIMAX_ERROR nm_device_wimax_error_quark ()
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-DEVICE-WIMAX-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_WIMAX_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_HW_ADDRESS       "hw-address"
 </pre>
@@ -185,6 +238,21 @@ NMDeviceWimax implements
 </pre>
 <p>
 </p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-device-wimax-error-quark"></a><h3>nm_device_wimax_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_device_wimax_error_quark         (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Registers an error quark for <a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a> if necessary.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the error quark used for <a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a> errors.</td>
+</tr></tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

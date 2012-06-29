@@ -47,12 +47,15 @@
 <a name="NMDeviceWifi.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMDeviceWifi.html#NMDeviceWifi-struct" title="NMDeviceWifi">NMDeviceWifi</a>;
                     <a class="link" href="NMDeviceWifi.html#NMDeviceWifiClass" title="NMDeviceWifiClass">NMDeviceWifiClass</a>;
+enum                <a class="link" href="NMDeviceWifi.html#NMDeviceWifiError" title="enum NMDeviceWifiError">NMDeviceWifiError</a>;
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS" title="NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT">NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT</a>
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-BITRATE:CAPS" title="NM_DEVICE_WIFI_BITRATE">NM_DEVICE_WIFI_BITRATE</a>
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-CAPABILITIES:CAPS" title="NM_DEVICE_WIFI_CAPABILITIES">NM_DEVICE_WIFI_CAPABILITIES</a>
+#define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR:CAPS" title="NM_DEVICE_WIFI_ERROR">NM_DEVICE_WIFI_ERROR</a>
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS" title="NM_DEVICE_WIFI_HW_ADDRESS">NM_DEVICE_WIFI_HW_ADDRESS</a>
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-MODE:CAPS" title="NM_DEVICE_WIFI_MODE">NM_DEVICE_WIFI_MODE</a>
 #define             <a class="link" href="NMDeviceWifi.html#NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS" title="NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS">NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS</a>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMDeviceWifi.html#nm-device-wifi-error-quark" title="nm_device_wifi_error_quark ()">nm_device_wifi_error_quark</a>          (<em class="parameter"><code><span class="type">void</span></code></em>);
 <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="returnvalue">NMAccessPoint</span></a> *     <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path" title="nm_device_wifi_get_access_point_by_path ()">nm_device_wifi_get_access_point_by_path</a>
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
@@ -140,6 +143,62 @@ NMDeviceWifi implements
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMDeviceWifiError"></a><h3>enum NMDeviceWifiError</h3>
+<pre class="programlisting">typedef enum {
+	NM_DEVICE_WIFI_ERROR_UNKNOWN = 0,             /*&lt; nick=UnknownError &gt;*/
+	NM_DEVICE_WIFI_ERROR_NOT_WIFI_CONNECTION,     /*&lt; nick=NotWifiConnection &gt;*/
+	NM_DEVICE_WIFI_ERROR_INVALID_WIFI_CONNECTION, /*&lt; nick=InvalidWifiConnection &gt;*/
+	NM_DEVICE_WIFI_ERROR_INVALID_DEVICE_MAC,      /*&lt; nick=InvalidDeviceMac &gt;*/
+	NM_DEVICE_WIFI_ERROR_MAC_MISMATCH,            /*&lt; nick=MacMismatch &gt;*/
+	NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_WPA_CAPS, /*&lt; nick=MissingDeviceWpaCaps &gt;*/
+	NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_RSN_CAPS, /*&lt; nick=MissingDeviceRsnCaps &gt;*/
+} NMDeviceWifiError;
+</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_UNKNOWN</code></span></p></td>
+<td>unknown or unclassified error
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-NOT-WIFI-CONNECTION:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_NOT_WIFI_CONNECTION</code></span></p></td>
+<td>the connection was not of Wi-Fi type
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-INVALID-WIFI-CONNECTION:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_INVALID_WIFI_CONNECTION</code></span></p></td>
+<td>the Wi-Fi connection was invalid
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-INVALID-DEVICE-MAC:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_INVALID_DEVICE_MAC</code></span></p></td>
+<td>the device's MAC was invalid
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-MAC-MISMATCH:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_MAC_MISMATCH</code></span></p></td>
+<td>the MACs of the connection and the device mismatched
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-WPA-CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_WPA_CAPS</code></span></p></td>
+<td>the device missed WPA capabilities
+required by the connection
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-RSN-CAPS"></a><span class="term"><code class="literal">NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_RSN_CAPS</code></span></p></td>
+<td>the device missed RSN capabilities
+required by the connection
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"></a><h3>NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT "active-access-point"
 </pre>
@@ -158,6 +217,14 @@ NMDeviceWifi implements
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-CAPABILITIES:CAPS"></a><h3>NM_DEVICE_WIFI_CAPABILITIES</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_CAPABILITIES        "wireless-capabilities"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DEVICE-WIFI-ERROR:CAPS"></a><h3>NM_DEVICE_WIFI_ERROR</h3>
+<pre class="programlisting">#define NM_DEVICE_WIFI_ERROR nm_device_wifi_error_quark ()
 </pre>
 <p>
 </p>
@@ -185,6 +252,21 @@ NMDeviceWifi implements
 </pre>
 <p>
 </p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-device-wifi-error-quark"></a><h3>nm_device_wifi_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_device_wifi_error_quark          (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Registers an error quark for <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> if necessary.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the error quark used for <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> errors.</td>
+</tr></tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

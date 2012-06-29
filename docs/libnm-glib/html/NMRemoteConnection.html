@@ -145,7 +145,27 @@ NMRemoteConnection implements
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
 <p>
+Called when NetworkManager has committed outstanding changes to a connection
+to backing storage as a result of <a class="link" href="NMRemoteConnection.html#nm-remote-connection-commit-changes" title="nm_remote_connection_commit_changes ()"><code class="function">nm_remote_connection_commit_changes()</code></a>.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the connection for which updates are to be committed</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>on failure, a descriptive error</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data passed to <a class="link" href="NMRemoteConnection.html#nm-remote-connection-commit-changes" title="nm_remote_connection_commit_changes ()"><code class="function">nm_remote_connection_commit_changes()</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
@@ -154,7 +174,27 @@ NMRemoteConnection implements
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
 <p>
+Called when NetworkManager has deleted a connection as a result of
+<a class="link" href="NMRemoteConnection.html#nm-remote-connection-delete" title="nm_remote_connection_delete ()"><code class="function">nm_remote_connection_delete()</code></a>.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the connection to be deleted</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>on failure, a descriptive error</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data passed to <a class="link" href="NMRemoteConnection.html#nm-remote-connection-delete" title="nm_remote_connection_delete ()"><code class="function">nm_remote_connection_delete()</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
@@ -164,7 +204,34 @@ NMRemoteConnection implements
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
 <p>
+Called when NetworkManager returns secrets in response to a request for
+secrets via <a class="link" href="NMRemoteConnection.html#nm-remote-connection-get-secrets" title="nm_remote_connection_get_secrets ()"><code class="function">nm_remote_connection_get_secrets()</code></a>.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the connection for which secrets were requested</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>secrets</code></em> :</span></p></td>
+<td>on success, a hash table of
+hash tables, with each inner hash mapping a setting property to a <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>
+containing that property's value. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GLib.HashTable]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>on failure, a descriptive error</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data passed to <a class="link" href="NMRemoteConnection.html#nm-remote-connection-get-secrets" title="nm_remote_connection_get_secrets ()"><code class="function">nm_remote_connection_get_secrets()</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

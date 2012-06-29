@@ -64,7 +64,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
 	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
 	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -105,7 +105,7 @@ libnm_util_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
 am__libnm_util_la_SOURCES_DIST = crypto.c nm-connection.c \
 	nm-param-spec-specialized.c nm-setting.c nm-setting-8021x.c \
-	nm-setting-bluetooth.c nm-setting-bond.c \
+	nm-setting-adsl.c nm-setting-bluetooth.c nm-setting-bond.c \
 	nm-setting-connection.c nm-setting-infiniband.c \
 	nm-setting-ip4-config.c nm-setting-vlan.c \
 	nm-setting-ip6-config.c nm-setting-ppp.c nm-setting-pppoe.c \
@@ -118,6 +118,7 @@ am__libnm_util_la_SOURCES_DIST = crypto.c nm-connection.c \
 am__objects_1 = libnm_util_la-crypto.lo libnm_util_la-nm-connection.lo \
 	libnm_util_la-nm-param-spec-specialized.lo \
 	libnm_util_la-nm-setting.lo libnm_util_la-nm-setting-8021x.lo \
+	libnm_util_la-nm-setting-adsl.lo \
 	libnm_util_la-nm-setting-bluetooth.lo \
 	libnm_util_la-nm-setting-bond.lo \
 	libnm_util_la-nm-setting-connection.lo \
@@ -302,6 +303,10 @@ INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
 INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTLTOOL_V_MERGE = @INTLTOOL_V_MERGE@
+INTLTOOL_V_MERGE_OPTIONS = @INTLTOOL_V_MERGE_OPTIONS@
+INTLTOOL__v_MERGE_ = @INTLTOOL__v_MERGE_@
+INTLTOOL__v_MERGE_0 = @INTLTOOL__v_MERGE_0@
 INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 INTROSPECTION_CFLAGS = @INTROSPECTION_CFLAGS@
 INTROSPECTION_COMPILER = @INTROSPECTION_COMPILER@
@@ -397,6 +402,9 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VAPIGEN = @VAPIGEN@
+VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
+VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
@@ -435,6 +443,8 @@ htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
+intltool__v_merge_options_ = @intltool__v_merge_options_@
+intltool__v_merge_options_0 = @intltool__v_merge_options_0@
 libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
@@ -464,6 +474,7 @@ libnm_util_include_HEADERS = \
 	nm-connection.h			\
 	nm-setting.h			\
 	nm-setting-8021x.h		\
+	nm-setting-adsl.h		\
 	nm-setting-bluetooth.h		\
 	nm-setting-bond.h		\
 	nm-setting-connection.h		\
@@ -497,6 +508,7 @@ libnm_util_la_csources = \
 	nm-param-spec-specialized.c	\
 	nm-setting.c			\
 	nm-setting-8021x.c		\
+	nm-setting-adsl.c		\
 	nm-setting-bluetooth.c		\
 	nm-setting-bond.c		\
 	nm-setting-connection.c		\
@@ -554,10 +566,11 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 @HAVE_INTROSPECTION_TRUE@introspection_sources = $(libnm_util_include_HEADERS) $(libnm_util_la_csources) $(top_srcdir)/include/NetworkManager.h $(top_srcdir)/include/NetworkManagerVPN.h
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_EXPORT_PACKAGES = libnm-util
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_LIBS = libnm-util.la
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_FILES = $(introspection_sources)
-@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm_
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm
 @HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/gir-1.0
 @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
 @HAVE_INTROSPECTION_TRUE@typelibdir = $(libdir)/girepository-1.0
@@ -656,6 +669,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-param-spec-specialized.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-8021x.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-adsl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_util_la-nm-setting-cdma.Plo@am__quote@
@@ -747,6 +761,14 @@ libnm_util_la-nm-setting-8021x.lo: nm-setting-8021x.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-8021x.c' object='libnm_util_la-nm-setting-8021x.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-8021x.lo `test -f 'nm-setting-8021x.c' || echo '$(srcdir)/'`nm-setting-8021x.c
+
+libnm_util_la-nm-setting-adsl.lo: nm-setting-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-adsl.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-adsl.Tpo -c -o libnm_util_la-nm-setting-adsl.lo `test -f 'nm-setting-adsl.c' || echo '$(srcdir)/'`nm-setting-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_util_la-nm-setting-adsl.Tpo $(DEPDIR)/libnm_util_la-nm-setting-adsl.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-setting-adsl.c' object='libnm_util_la-nm-setting-adsl.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnm_util_la-nm-setting-adsl.lo `test -f 'nm-setting-adsl.c' || echo '$(srcdir)/'`nm-setting-adsl.c
 
 libnm_util_la-nm-setting-bluetooth.lo: nm-setting-bluetooth.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnm_util_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnm_util_la-nm-setting-bluetooth.lo -MD -MP -MF $(DEPDIR)/libnm_util_la-nm-setting-bluetooth.Tpo -c -o libnm_util_la-nm-setting-bluetooth.lo `test -f 'nm-setting-bluetooth.c' || echo '$(srcdir)/'`nm-setting-bluetooth.c

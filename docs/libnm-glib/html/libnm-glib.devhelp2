@@ -12,6 +12,10 @@
       <sub name="NMDeviceModem" link="NMDeviceModem.html"/>
       <sub name="NMDeviceBt" link="NMDeviceBt.html"/>
       <sub name="NMDeviceWimax" link="NMDeviceWimax.html"/>
+      <sub name="NMDeviceBond" link="NMDeviceBond.html"/>
+      <sub name="NMDeviceInfiniband" link="NMDeviceInfiniband.html"/>
+      <sub name="NMDeviceVlan" link="NMDeviceVlan.html"/>
+      <sub name="NMDeviceOlpcMesh" link="NMDeviceOlpcMesh.html"/>
       <sub name="NMWimaxNsp" link="NMWimaxNsp.html"/>
       <sub name="NMAccessPoint" link="NMAccessPoint.html"/>
       <sub name="NMIP4Config" link="NMIP4Config.html"/>
@@ -121,12 +125,15 @@
     <keyword type="struct" name="NMDeviceClass" link="NMDevice.html#NMDeviceClass"/>
     <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
     <keyword type="macro" name="NM_DEVICE_ACTIVE_CONNECTION" link="NMDevice.html#NM-DEVICE-ACTIVE-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_AUTOCONNECT" link="NMDevice.html#NM-DEVICE-AUTOCONNECT:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_CAPABILITIES" link="NMDevice.html#NM-DEVICE-CAPABILITIES:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DEVICE_TYPE" link="NMDevice.html#NM-DEVICE-DEVICE-TYPE:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DHCP4_CONFIG" link="NMDevice.html#NM-DEVICE-DHCP4-CONFIG:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DHCP6_CONFIG" link="NMDevice.html#NM-DEVICE-DHCP6-CONFIG:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DRIVER" link="NMDevice.html#NM-DEVICE-DRIVER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_DRIVER_VERSION" link="NMDevice.html#NM-DEVICE-DRIVER-VERSION:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_FIRMWARE_MISSING" link="NMDevice.html#NM-DEVICE-FIRMWARE-MISSING:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_FIRMWARE_VERSION" link="NMDevice.html#NM-DEVICE-FIRMWARE-VERSION:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_INTERFACE" link="NMDevice.html#NM-DEVICE-INTERFACE:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_IP4_CONFIG" link="NMDevice.html#NM-DEVICE-IP4-CONFIG:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_IP6_CONFIG" link="NMDevice.html#NM-DEVICE-IP6-CONFIG:CAPS"/>
@@ -137,16 +144,20 @@
     <keyword type="macro" name="NM_DEVICE_STATE_REASON" link="NMDevice.html#NM-DEVICE-STATE-REASON:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_UDI" link="NMDevice.html#NM-DEVICE-UDI:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_VENDOR" link="NMDevice.html#NM-DEVICE-VENDOR:CAPS"/>
+    <keyword type="function" name="nm_device_connection_compatible ()" link="NMDevice.html#nm-device-connection-compatible"/>
     <keyword type="function" name="nm_device_connection_valid ()" link="NMDevice.html#nm-device-connection-valid"/>
     <keyword type="function" name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
     <keyword type="function" name="nm_device_filter_connections ()" link="NMDevice.html#nm-device-filter-connections"/>
     <keyword type="function" name="nm_device_get_active_connection ()" link="NMDevice.html#nm-device-get-active-connection"/>
+    <keyword type="function" name="nm_device_get_autoconnect ()" link="NMDevice.html#nm-device-get-autoconnect"/>
     <keyword type="function" name="nm_device_get_capabilities ()" link="NMDevice.html#nm-device-get-capabilities"/>
     <keyword type="function" name="nm_device_get_device_type ()" link="NMDevice.html#nm-device-get-device-type"/>
     <keyword type="function" name="nm_device_get_dhcp4_config ()" link="NMDevice.html#nm-device-get-dhcp4-config"/>
     <keyword type="function" name="nm_device_get_dhcp6_config ()" link="NMDevice.html#nm-device-get-dhcp6-config"/>
     <keyword type="function" name="nm_device_get_driver ()" link="NMDevice.html#nm-device-get-driver"/>
+    <keyword type="function" name="nm_device_get_driver_version ()" link="NMDevice.html#nm-device-get-driver-version"/>
     <keyword type="function" name="nm_device_get_firmware_missing ()" link="NMDevice.html#nm-device-get-firmware-missing"/>
+    <keyword type="function" name="nm_device_get_firmware_version ()" link="NMDevice.html#nm-device-get-firmware-version"/>
     <keyword type="function" name="nm_device_get_iface ()" link="NMDevice.html#nm-device-get-iface"/>
     <keyword type="function" name="nm_device_get_ip4_config ()" link="NMDevice.html#nm-device-get-ip4-config"/>
     <keyword type="function" name="nm_device_get_ip6_config ()" link="NMDevice.html#nm-device-get-ip6-config"/>
@@ -158,13 +169,17 @@
     <keyword type="function" name="nm_device_get_udi ()" link="NMDevice.html#nm-device-get-udi"/>
     <keyword type="function" name="nm_device_get_vendor ()" link="NMDevice.html#nm-device-get-vendor"/>
     <keyword type="function" name="nm_device_new ()" link="NMDevice.html#nm-device-new"/>
+    <keyword type="function" name="nm_device_set_autoconnect ()" link="NMDevice.html#nm-device-set-autoconnect"/>
     <keyword type="property" name="The &quot;active-connection&quot; property" link="NMDevice.html#NMDevice--active-connection"/>
+    <keyword type="property" name="The &quot;autoconnect&quot; property" link="NMDevice.html#NMDevice--autoconnect"/>
     <keyword type="property" name="The &quot;capabilities&quot; property" link="NMDevice.html#NMDevice--capabilities"/>
     <keyword type="property" name="The &quot;device-type&quot; property" link="NMDevice.html#NMDevice--device-type"/>
     <keyword type="property" name="The &quot;dhcp4-config&quot; property" link="NMDevice.html#NMDevice--dhcp4-config"/>
     <keyword type="property" name="The &quot;dhcp6-config&quot; property" link="NMDevice.html#NMDevice--dhcp6-config"/>
     <keyword type="property" name="The &quot;driver&quot; property" link="NMDevice.html#NMDevice--driver"/>
+    <keyword type="property" name="The &quot;driver-version&quot; property" link="NMDevice.html#NMDevice--driver-version"/>
     <keyword type="property" name="The &quot;firmware-missing&quot; property" link="NMDevice.html#NMDevice--firmware-missing"/>
+    <keyword type="property" name="The &quot;firmware-version&quot; property" link="NMDevice.html#NMDevice--firmware-version"/>
     <keyword type="property" name="The &quot;interface&quot; property" link="NMDevice.html#NMDevice--interface"/>
     <keyword type="property" name="The &quot;ip-interface&quot; property" link="NMDevice.html#NMDevice--ip-interface"/>
     <keyword type="property" name="The &quot;ip4-config&quot; property" link="NMDevice.html#NMDevice--ip4-config"/>
@@ -178,10 +193,13 @@
     <keyword type="signal" name="The &quot;state-changed&quot; signal" link="NMDevice.html#NMDevice-state-changed"/>
     <keyword type="struct" name="NMDeviceEthernet" link="NMDeviceEthernet.html#NMDeviceEthernet-struct"/>
     <keyword type="struct" name="NMDeviceEthernetClass" link="NMDeviceEthernet.html#NMDeviceEthernetClass"/>
+    <keyword type="enum" name="enum NMDeviceEthernetError" link="NMDeviceEthernet.html#NMDeviceEthernetError"/>
     <keyword type="macro" name="NM_DEVICE_ETHERNET_CARRIER" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_ETHERNET_ERROR" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_ETHERNET_HW_ADDRESS" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-PERMANENT-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_ETHERNET_SPEED" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-SPEED:CAPS"/>
+    <keyword type="function" name="nm_device_ethernet_error_quark ()" link="NMDeviceEthernet.html#nm-device-ethernet-error-quark"/>
     <keyword type="function" name="nm_device_ethernet_get_carrier ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-carrier"/>
     <keyword type="function" name="nm_device_ethernet_get_hw_address ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-hw-address"/>
     <keyword type="function" name="nm_device_ethernet_get_permanent_hw_address ()" link="NMDeviceEthernet.html#nm-device-ethernet-get-permanent-hw-address"/>
@@ -193,12 +211,15 @@
     <keyword type="property" name="The &quot;speed&quot; property" link="NMDeviceEthernet.html#NMDeviceEthernet--speed"/>
     <keyword type="struct" name="NMDeviceWifi" link="NMDeviceWifi.html#NMDeviceWifi-struct"/>
     <keyword type="struct" name="NMDeviceWifiClass" link="NMDeviceWifi.html#NMDeviceWifiClass"/>
+    <keyword type="enum" name="enum NMDeviceWifiError" link="NMDeviceWifi.html#NMDeviceWifiError"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_BITRATE" link="NMDeviceWifi.html#NM-DEVICE-WIFI-BITRATE:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_CAPABILITIES" link="NMDeviceWifi.html#NM-DEVICE-WIFI-CAPABILITIES:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_WIFI_ERROR" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_HW_ADDRESS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_MODE" link="NMDeviceWifi.html#NM-DEVICE-WIFI-MODE:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS"/>
+    <keyword type="function" name="nm_device_wifi_error_quark ()" link="NMDeviceWifi.html#nm-device-wifi-error-quark"/>
     <keyword type="function" name="nm_device_wifi_get_access_point_by_path ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path"/>
     <keyword type="function" name="nm_device_wifi_get_access_points ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-points"/>
     <keyword type="function" name="nm_device_wifi_get_active_access_point ()" link="NMDeviceWifi.html#nm-device-wifi-get-active-access-point"/>
@@ -218,17 +239,23 @@
     <keyword type="signal" name="The &quot;access-point-removed&quot; signal" link="NMDeviceWifi.html#NMDeviceWifi-access-point-removed"/>
     <keyword type="struct" name="NMDeviceModem" link="NMDeviceModem.html#NMDeviceModem-struct"/>
     <keyword type="struct" name="NMDeviceModemClass" link="NMDeviceModem.html#NMDeviceModemClass"/>
+    <keyword type="enum" name="enum NMDeviceModemError" link="NMDeviceModem.html#NMDeviceModemError"/>
     <keyword type="macro" name="NM_DEVICE_MODEM_CURRENT_CAPABILITIES" link="NMDeviceModem.html#NM-DEVICE-MODEM-CURRENT-CAPABILITIES:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_MODEM_ERROR" link="NMDeviceModem.html#NM-DEVICE-MODEM-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_MODEM_MODEM_CAPABILITIES" link="NMDeviceModem.html#NM-DEVICE-MODEM-MODEM-CAPABILITIES:CAPS"/>
+    <keyword type="function" name="nm_device_modem_error_quark ()" link="NMDeviceModem.html#nm-device-modem-error-quark"/>
     <keyword type="function" name="nm_device_modem_get_current_capabilities ()" link="NMDeviceModem.html#nm-device-modem-get-current-capabilities"/>
     <keyword type="function" name="nm_device_modem_get_modem_capabilities ()" link="NMDeviceModem.html#nm-device-modem-get-modem-capabilities"/>
     <keyword type="property" name="The &quot;current-capabilities&quot; property" link="NMDeviceModem.html#NMDeviceModem--current-capabilities"/>
     <keyword type="property" name="The &quot;modem-capabilities&quot; property" link="NMDeviceModem.html#NMDeviceModem--modem-capabilities"/>
     <keyword type="struct" name="NMDeviceBt" link="NMDeviceBt.html#NMDeviceBt-struct"/>
     <keyword type="struct" name="NMDeviceBtClass" link="NMDeviceBt.html#NMDeviceBtClass"/>
+    <keyword type="enum" name="enum NMDeviceBtError" link="NMDeviceBt.html#NMDeviceBtError"/>
     <keyword type="macro" name="NM_DEVICE_BT_CAPABILITIES" link="NMDeviceBt.html#NM-DEVICE-BT-CAPABILITIES:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BT_ERROR" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BT_HW_ADDRESS" link="NMDeviceBt.html#NM-DEVICE-BT-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BT_NAME" link="NMDeviceBt.html#NM-DEVICE-BT-NAME:CAPS"/>
+    <keyword type="function" name="nm_device_bt_error_quark ()" link="NMDeviceBt.html#nm-device-bt-error-quark"/>
     <keyword type="function" name="nm_device_bt_get_capabilities ()" link="NMDeviceBt.html#nm-device-bt-get-capabilities"/>
     <keyword type="function" name="nm_device_bt_get_hw_address ()" link="NMDeviceBt.html#nm-device-bt-get-hw-address"/>
     <keyword type="function" name="nm_device_bt_get_name ()" link="NMDeviceBt.html#nm-device-bt-get-name"/>
@@ -238,13 +265,16 @@
     <keyword type="property" name="The &quot;name&quot; property" link="NMDeviceBt.html#NMDeviceBt--name"/>
     <keyword type="struct" name="NMDeviceWimax" link="NMDeviceWimax.html#NMDeviceWimax-struct"/>
     <keyword type="struct" name="NMDeviceWimaxClass" link="NMDeviceWimax.html#NMDeviceWimaxClass"/>
+    <keyword type="enum" name="enum NMDeviceWimaxError" link="NMDeviceWimax.html#NMDeviceWimaxError"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_ACTIVE_NSP" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ACTIVE-NSP:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_BSID" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-BSID:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_CENTER_FREQUENCY" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-CENTER-FREQUENCY:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_CINR" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-CINR:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_WIMAX_ERROR" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_HW_ADDRESS" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_RSSI" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-RSSI:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIMAX_TX_POWER" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-TX-POWER:CAPS"/>
+    <keyword type="function" name="nm_device_wimax_error_quark ()" link="NMDeviceWimax.html#nm-device-wimax-error-quark"/>
     <keyword type="function" name="nm_device_wimax_get_active_nsp ()" link="NMDeviceWimax.html#nm-device-wimax-get-active-nsp"/>
     <keyword type="function" name="nm_device_wimax_get_bsid ()" link="NMDeviceWimax.html#nm-device-wimax-get-bsid"/>
     <keyword type="function" name="nm_device_wimax_get_center_frequency ()" link="NMDeviceWimax.html#nm-device-wimax-get-center-frequency"/>
@@ -264,6 +294,60 @@
     <keyword type="property" name="The &quot;tx-power&quot; property" link="NMDeviceWimax.html#NMDeviceWimax--tx-power"/>
     <keyword type="signal" name="The &quot;nsp-added&quot; signal" link="NMDeviceWimax.html#NMDeviceWimax-nsp-added"/>
     <keyword type="signal" name="The &quot;nsp-removed&quot; signal" link="NMDeviceWimax.html#NMDeviceWimax-nsp-removed"/>
+    <keyword type="struct" name="NMDeviceBond" link="NMDeviceBond.html#NMDeviceBond-struct"/>
+    <keyword type="struct" name="NMDeviceBondClass" link="NMDeviceBond.html#NMDeviceBondClass"/>
+    <keyword type="enum" name="enum NMDeviceBondError" link="NMDeviceBond.html#NMDeviceBondError"/>
+    <keyword type="macro" name="NM_DEVICE_BOND_CARRIER" link="NMDeviceBond.html#NM-DEVICE-BOND-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BOND_ERROR" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BOND_HW_ADDRESS" link="NMDeviceBond.html#NM-DEVICE-BOND-HW-ADDRESS:CAPS"/>
+    <keyword type="function" name="nm_device_bond_error_quark ()" link="NMDeviceBond.html#nm-device-bond-error-quark"/>
+    <keyword type="function" name="nm_device_bond_get_carrier ()" link="NMDeviceBond.html#nm-device-bond-get-carrier"/>
+    <keyword type="function" name="nm_device_bond_get_hw_address ()" link="NMDeviceBond.html#nm-device-bond-get-hw-address"/>
+    <keyword type="function" name="nm_device_bond_new ()" link="NMDeviceBond.html#nm-device-bond-new"/>
+    <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceBond.html#NMDeviceBond--carrier"/>
+    <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceBond.html#NMDeviceBond--hw-address"/>
+    <keyword type="struct" name="NMDeviceInfiniband" link="NMDeviceInfiniband.html#NMDeviceInfiniband-struct"/>
+    <keyword type="struct" name="NMDeviceInfinibandClass" link="NMDeviceInfiniband.html#NMDeviceInfinibandClass"/>
+    <keyword type="enum" name="enum NMDeviceInfinibandError" link="NMDeviceInfiniband.html#NMDeviceInfinibandError"/>
+    <keyword type="macro" name="NM_DEVICE_INFINIBAND_CARRIER" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_INFINIBAND_ERROR" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_INFINIBAND_HW_ADDRESS" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-HW-ADDRESS:CAPS"/>
+    <keyword type="function" name="nm_device_infiniband_error_quark ()" link="NMDeviceInfiniband.html#nm-device-infiniband-error-quark"/>
+    <keyword type="function" name="nm_device_infiniband_get_carrier ()" link="NMDeviceInfiniband.html#nm-device-infiniband-get-carrier"/>
+    <keyword type="function" name="nm_device_infiniband_get_hw_address ()" link="NMDeviceInfiniband.html#nm-device-infiniband-get-hw-address"/>
+    <keyword type="function" name="nm_device_infiniband_new ()" link="NMDeviceInfiniband.html#nm-device-infiniband-new"/>
+    <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceInfiniband.html#NMDeviceInfiniband--carrier"/>
+    <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceInfiniband.html#NMDeviceInfiniband--hw-address"/>
+    <keyword type="struct" name="NMDeviceVlan" link="NMDeviceVlan.html#NMDeviceVlan-struct"/>
+    <keyword type="struct" name="NMDeviceVlanClass" link="NMDeviceVlan.html#NMDeviceVlanClass"/>
+    <keyword type="enum" name="enum NMDeviceVlanError" link="NMDeviceVlan.html#NMDeviceVlanError"/>
+    <keyword type="macro" name="NM_DEVICE_VLAN_CARRIER" link="NMDeviceVlan.html#NM-DEVICE-VLAN-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_VLAN_ERROR" link="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_VLAN_HW_ADDRESS" link="NMDeviceVlan.html#NM-DEVICE-VLAN-HW-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_VLAN_VLAN_ID" link="NMDeviceVlan.html#NM-DEVICE-VLAN-VLAN-ID:CAPS"/>
+    <keyword type="function" name="nm_device_vlan_error_quark ()" link="NMDeviceVlan.html#nm-device-vlan-error-quark"/>
+    <keyword type="function" name="nm_device_vlan_get_carrier ()" link="NMDeviceVlan.html#nm-device-vlan-get-carrier"/>
+    <keyword type="function" name="nm_device_vlan_get_hw_address ()" link="NMDeviceVlan.html#nm-device-vlan-get-hw-address"/>
+    <keyword type="function" name="nm_device_vlan_get_vlan_id ()" link="NMDeviceVlan.html#nm-device-vlan-get-vlan-id"/>
+    <keyword type="function" name="nm_device_vlan_new ()" link="NMDeviceVlan.html#nm-device-vlan-new"/>
+    <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--carrier"/>
+    <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--hw-address"/>
+    <keyword type="property" name="The &quot;vlan-id&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--vlan-id"/>
+    <keyword type="struct" name="NMDeviceOlpcMesh" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh-struct"/>
+    <keyword type="struct" name="NMDeviceOlpcMeshClass" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMeshClass"/>
+    <keyword type="enum" name="enum NMDeviceOlpcMeshError" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMeshError"/>
+    <keyword type="macro" name="NM_DEVICE_OLPC_MESH_ACTIVE_CHANNEL" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-ACTIVE-CHANNEL:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_OLPC_MESH_COMPANION" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-COMPANION:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_OLPC_MESH_ERROR" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_OLPC_MESH_HW_ADDRESS" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-HW-ADDRESS:CAPS"/>
+    <keyword type="function" name="nm_device_olpc_mesh_error_quark ()" link="NMDeviceOlpcMesh.html#nm-device-olpc-mesh-error-quark"/>
+    <keyword type="function" name="nm_device_olpc_mesh_get_active_channel ()" link="NMDeviceOlpcMesh.html#nm-device-olpc-mesh-get-active-channel"/>
+    <keyword type="function" name="nm_device_olpc_mesh_get_companion ()" link="NMDeviceOlpcMesh.html#nm-device-olpc-mesh-get-companion"/>
+    <keyword type="function" name="nm_device_olpc_mesh_get_hw_address ()" link="NMDeviceOlpcMesh.html#nm-device-olpc-mesh-get-hw-address"/>
+    <keyword type="function" name="nm_device_olpc_mesh_new ()" link="NMDeviceOlpcMesh.html#nm-device-olpc-mesh-new"/>
+    <keyword type="property" name="The &quot;active-channel&quot; property" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh--active-channel"/>
+    <keyword type="property" name="The &quot;companion&quot; property" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh--companion"/>
+    <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMesh--hw-address"/>
     <keyword type="struct" name="NMWimaxNsp" link="NMWimaxNsp.html#NMWimaxNsp-struct"/>
     <keyword type="struct" name="NMWimaxNspClass" link="NMWimaxNsp.html#NMWimaxNspClass"/>
     <keyword type="enum" name="enum NMWimaxNspNetworkType" link="NMWimaxNsp.html#NMWimaxNspNetworkType"/>
@@ -363,12 +447,16 @@
     <keyword type="property" name="The &quot;options&quot; property" link="NMDHCP6Config.html#NMDHCP6Config--options"/>
     <keyword type="struct" name="NMObject" link="NMObject.html#NMObject-struct"/>
     <keyword type="struct" name="NMObjectClass" link="NMObject.html#NMObjectClass"/>
+    <keyword type="enum" name="enum NMObjectError" link="NMObject.html#NMObjectError"/>
     <keyword type="macro" name="NM_OBJECT_DBUS_CONNECTION" link="NMObject.html#NM-OBJECT-DBUS-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_OBJECT_DBUS_PATH" link="NMObject.html#NM-OBJECT-DBUS-PATH:CAPS"/>
+    <keyword type="macro" name="NM_OBJECT_ERROR" link="NMObject.html#NM-OBJECT-ERROR:CAPS"/>
+    <keyword type="function" name="nm_object_error_quark ()" link="NMObject.html#nm-object-error-quark"/>
     <keyword type="function" name="nm_object_get_connection ()" link="NMObject.html#nm-object-get-connection"/>
     <keyword type="function" name="nm_object_get_path ()" link="NMObject.html#nm-object-get-path"/>
     <keyword type="property" name="The &quot;dbus-connection&quot; property" link="NMObject.html#NMObject--dbus-connection"/>
     <keyword type="property" name="The &quot;dbus-path&quot; property" link="NMObject.html#NMObject--dbus-path"/>
+    <keyword type="signal" name="The &quot;object-creation-failed&quot; signal" link="NMObject.html#NMObject-object-creation-failed"/>
     <keyword type="struct" name="NMRemoteConnection" link="NMRemoteConnection.html#NMRemoteConnection-struct"/>
     <keyword type="struct" name="NMRemoteConnectionClass" link="NMRemoteConnection.html#NMRemoteConnectionClass"/>
     <keyword type="function" name="NMRemoteConnectionCommitFunc ()" link="NMRemoteConnection.html#NMRemoteConnectionCommitFunc"/>
@@ -421,9 +509,11 @@
     <keyword type="macro" name="NM_SECRET_AGENT_AUTO_REGISTER" link="NMSecretAgent.html#NM-SECRET-AGENT-AUTO-REGISTER:CAPS"/>
     <keyword type="macro" name="NM_SECRET_AGENT_ERROR" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR:CAPS"/>
     <keyword type="macro" name="NM_SECRET_AGENT_IDENTIFIER" link="NMSecretAgent.html#NM-SECRET-AGENT-IDENTIFIER:CAPS"/>
+    <keyword type="macro" name="NM_SECRET_AGENT_REGISTERED" link="NMSecretAgent.html#NM-SECRET-AGENT-REGISTERED:CAPS"/>
     <keyword type="macro" name="NM_SECRET_AGENT_REGISTRATION_RESULT" link="NMSecretAgent.html#NM-SECRET-AGENT-REGISTRATION-RESULT:CAPS"/>
     <keyword type="function" name="nm_secret_agent_delete_secrets ()" link="NMSecretAgent.html#nm-secret-agent-delete-secrets"/>
     <keyword type="function" name="nm_secret_agent_error_quark ()" link="NMSecretAgent.html#nm-secret-agent-error-quark"/>
+    <keyword type="function" name="nm_secret_agent_get_registered ()" link="NMSecretAgent.html#nm-secret-agent-get-registered"/>
     <keyword type="function" name="nm_secret_agent_get_secrets ()" link="NMSecretAgent.html#nm-secret-agent-get-secrets"/>
     <keyword type="function" name="nm_secret_agent_register ()" link="NMSecretAgent.html#nm-secret-agent-register"/>
     <keyword type="function" name="nm_secret_agent_save_secrets ()" link="NMSecretAgent.html#nm-secret-agent-save-secrets"/>
@@ -452,7 +542,9 @@
     <keyword type="function" name="nm_vpn_plugin_failure ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-failure"/>
     <keyword type="function" name="nm_vpn_plugin_get_connection ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-get-connection"/>
     <keyword type="function" name="nm_vpn_plugin_get_state ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-get-state"/>
+    <keyword type="function" name="nm_vpn_plugin_set_config ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-config"/>
     <keyword type="function" name="nm_vpn_plugin_set_ip4_config ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-ip4-config"/>
+    <keyword type="function" name="nm_vpn_plugin_set_ip6_config ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-ip6-config"/>
     <keyword type="function" name="nm_vpn_plugin_set_login_banner ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-login-banner"/>
     <keyword type="function" name="nm_vpn_plugin_set_state ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-state"/>
     <keyword type="function" name="NMVpnPluginUiFactory ()" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiFactory"/>
@@ -477,11 +569,58 @@
     <keyword type="function" name="nm_vpn_plugin_ui_widget_interface_update_connection ()" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-widget-interface-update-connection"/>
     <keyword type="function" name="nm_vpn_plugin_utils_get_secret_flags ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-get-secret-flags"/>
     <keyword type="function" name="nm_vpn_plugin_utils_read_vpn_details ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-read-vpn-details"/>
+    <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_UNKNOWN" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_NOT_ETHERNET_CONNECTION" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-NOT-ETHERNET-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_INVALID_ETHERNET_CONNECTION" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-INVALID-ETHERNET-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_INVALID_DEVICE_MAC" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-INVALID-DEVICE-MAC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_MAC_MISMATCH" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-MAC-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_UNKNOWN" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_NOT_WIFI_CONNECTION" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-NOT-WIFI-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_INVALID_WIFI_CONNECTION" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-INVALID-WIFI-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_INVALID_DEVICE_MAC" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-INVALID-DEVICE-MAC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_MAC_MISMATCH" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-MAC-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_WPA_CAPS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-WPA-CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_RSN_CAPS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-RSN-CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_ERROR_UNKNOWN" link="NMDeviceModem.html#NM-DEVICE-MODEM-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_ERROR_NOT_MODEM_CONNECTION" link="NMDeviceModem.html#NM-DEVICE-MODEM-ERROR-NOT-MODEM-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_ERROR_INVALID_MODEM_CONNECTION" link="NMDeviceModem.html#NM-DEVICE-MODEM-ERROR-INVALID-MODEM-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_ERROR_MISSING_DEVICE_CAPS" link="NMDeviceModem.html#NM-DEVICE-MODEM-ERROR-MISSING-DEVICE-CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BT_ERROR_UNKNOWN" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BT_ERROR_NOT_BT_CONNECTION" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR-NOT-BT-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BT_ERROR_INVALID_BT_CONNECTION" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR-INVALID-BT-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BT_ERROR_INVALID_DEVICE_MAC" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR-INVALID-DEVICE-MAC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BT_ERROR_MAC_MISMATCH" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR-MAC-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BT_ERROR_MISSING_DEVICE_CAPS" link="NMDeviceBt.html#NM-DEVICE-BT-ERROR-MISSING-DEVICE-CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_UNKNOWN" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_NOT_WIMAX_CONNECTION" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-NOT-WIMAX-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_INVALID_WIMAX_CONNECTION" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-INVALID-WIMAX-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_INVALID_DEVICE_MAC" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-INVALID-DEVICE-MAC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_MAC_MISMATCH" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-MAC-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BOND_ERROR_UNKNOWN" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BOND_ERROR_NOT_BOND_CONNECTION" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-NOT-BOND-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BOND_ERROR_INVALID_BOND_CONNECTION" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-INVALID-BOND-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BOND_ERROR_INTERFACE_MISMATCH" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-INTERFACE-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_UNKNOWN" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_NOT_INFINIBAND_CONNECTION" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-NOT-INFINIBAND-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_INVALID_INFINIBAND_CONNECTION" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-INVALID-INFINIBAND-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_INVALID_DEVICE_MAC" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-INVALID-DEVICE-MAC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_MAC_MISMATCH" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-MAC-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_VLAN_ERROR_UNKNOWN" link="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_VLAN_ERROR_NOT_VLAN_CONNECTION" link="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR-NOT-VLAN-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_VLAN_ERROR_INVALID_VLAN_CONNECTION" link="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR-INVALID-VLAN-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_VLAN_ERROR_ID_MISMATCH" link="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR-ID-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_VLAN_ERROR_INTERFACE_MISMATCH" link="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR-INTERFACE-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_OLPC_MESH_ERROR_UNKNOWN" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_OLPC_MESH_ERROR_NOT_OLPC_MESH_CONNECTION" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-ERROR-NOT-OLPC-MESH-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_OLPC_MESH_ERROR_INVALID_OLPC_MESH_CONNECTION" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-ERROR-INVALID-OLPC-MESH-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_OBJECT_ERROR_UNKNOWN" link="NMObject.html#NM-OBJECT-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_OBJECT_ERROR_OBJECT_CREATION_FAILURE" link="NMObject.html#NM-OBJECT-ERROR-OBJECT-CREATION-FAILURE:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_UNKNOWN" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-CONNECTION-REMOVED:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-CONNECTION-UNAVAILABLE:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-NONE:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-ALLOW-INTERACTION:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-REQUEST-NEW:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-USER-REQUESTED:CAPS"/>
   </functions>
 </book>

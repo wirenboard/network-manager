@@ -24,6 +24,8 @@
 #include <config.h>
 #include <string.h>
 
+#include "nm-glib-compat.h"
+
 #include <nm-setting-connection.h>
 #include <nm-setting-gsm.h>
 #include <nm-setting-cdma.h>
@@ -44,8 +46,6 @@ typedef struct {
 
 	NMDeviceModemCapabilities caps;
 	NMDeviceModemCapabilities current_caps;
-
-	gboolean disposed;
 } NMDeviceModemPrivate;
 
 enum {
@@ -205,6 +205,8 @@ get_property (GObject *object,
 {
 	NMDeviceModem *self = NM_DEVICE_MODEM (object);
 
+	_nm_object_ensure_inited (NM_OBJECT (object));
+
 	switch (prop_id) {
 	case PROP_MODEM_CAPS:
 		g_value_set_uint (value, nm_device_modem_get_modem_capabilities (self));
@@ -223,14 +225,7 @@ dispose (GObject *object)
 {
 	NMDeviceModemPrivate *priv = NM_DEVICE_MODEM_GET_PRIVATE (object);
 
-	if (priv->disposed) {
-		G_OBJECT_CLASS (nm_device_modem_parent_class)->dispose (object);
-		return;
-	}
-
-	priv->disposed = TRUE;
-
-	g_object_unref (priv->proxy);
+	g_clear_object (&priv->proxy);
 
 	G_OBJECT_CLASS (nm_device_modem_parent_class)->dispose (object);
 }

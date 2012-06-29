@@ -349,14 +349,15 @@ add_ip4_addresses (NMIP4Config *config, int ifindex)
 }
 
 struct rtnl_route *
-nm_system_add_ip4_vpn_gateway_route (NMDevice *parent_device, NMIP4Config *vpn_config)
+nm_system_add_ip4_vpn_gateway_route (NMDevice *parent_device, guint32 vpn_gw)
 {
 	NMIP4Config *parent_config;
-	guint32 parent_gw = 0, parent_prefix = 0, vpn_gw = 0, i;
+	guint32 parent_gw = 0, parent_prefix = 0, i;
 	NMIP4Address *tmp;
 	struct rtnl_route *route = NULL;
 
 	g_return_val_if_fail (NM_IS_DEVICE (parent_device), NULL);
+	g_return_val_if_fail (vpn_gw != 0, NULL);
 
 	/* Set up a route to the VPN gateway's public IP address through the default
 	 * network device if the VPN gateway is on a different subnet.
@@ -374,15 +375,7 @@ nm_system_add_ip4_vpn_gateway_route (NMDevice *parent_device, NMIP4Config *vpn_c
 		}
 	}
 
-	for (i = 0; i < nm_ip4_config_get_num_addresses (vpn_config); i++) {
-		tmp = nm_ip4_config_get_address (vpn_config, i);
-		if (nm_ip4_address_get_gateway (tmp)) {
-			vpn_gw = nm_ip4_address_get_gateway (tmp);
-			break;
-		}
-	}
-
-	if (!parent_gw || !vpn_gw)
+	if (!parent_gw)
 		return NULL;
 
 	/* If the VPN gateway is in the same subnet as one of the parent device's
@@ -479,7 +472,7 @@ nm_system_set_ip6_route (int ifindex,
 	struct rtnl_route *route;
 	int err = 0;
 
-	g_return_val_if_fail (ifindex >= 0, -1);
+	g_return_val_if_fail (ifindex > 0, -1);
 
 	nlh = nm_netlink_get_default_handle ();
 	g_return_val_if_fail (nlh != NULL, -1);
@@ -517,6 +510,96 @@ nm_system_set_ip6_route (int ifindex,
 		rtnl_route_put (route);
 
 	return err;
+}
+
+static gboolean
+ip6_dest_in_same_subnet (NMIP6Config *config, const struct in6_addr *dest, guint32 dest_prefix)
+{
+	int num;
+	int i;
+
+	num = nm_ip6_config_get_num_addresses (config);
+	for (i = 0; i < num; i++) {
+		NMIP6Address *addr = nm_ip6_config_get_address (config, i);
+		guint32 prefix = nm_ip6_address_get_prefix (addr);
+		const struct in6_addr *address = nm_ip6_address_get_address (addr);
+
+		if (prefix <= dest_prefix) {
+			const guint8 *maskbytes = (const guint8 *)address;
+			const guint8 *addrbytes = (const guint8 *)dest;
+			int nbytes, nbits;
+
+			/* Copied from g_inet_address_mask_matches() */
+			nbytes = prefix / 8;
+			if (nbytes != 0 && memcmp (maskbytes, addrbytes, nbytes) != 0)
+				continue;
+
+			nbits = prefix % 8;
+			if (nbits == 0)
+				return TRUE;
+
+			if (maskbytes[nbytes] == (addrbytes[nbytes] & (0xFF << (8 - nbits))))
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+struct rtnl_route *
+nm_system_add_ip6_vpn_gateway_route (NMDevice *parent_device,
+                                     const struct in6_addr *vpn_gw)
+{
+	NMIP6Config *parent_config;
+	const struct in6_addr *parent_gw = NULL;
+	guint32 parent_prefix = 0;
+	int i, err;
+	NMIP6Address *tmp;
+	struct rtnl_route *route = NULL;
+
+	g_return_val_if_fail (NM_IS_DEVICE (parent_device), NULL);
+	g_return_val_if_fail (vpn_gw != NULL, NULL);
+
+	/* This is all just the same as
+	 * nm_system_add_ip4_vpn_gateway_route(), except with an IPv6
+	 * address for the VPN gateway.
+	 */
+
+	parent_config = nm_device_get_ip6_config (parent_device);
+	g_return_val_if_fail (parent_config != NULL, NULL);
+
+	for (i = 0; i < nm_ip6_config_get_num_addresses (parent_config); i++) {
+		tmp = nm_ip6_config_get_address (parent_config, i);
+		if (nm_ip6_address_get_gateway (tmp)) {
+			parent_gw = nm_ip6_address_get_gateway (tmp);
+			parent_prefix = nm_ip6_address_get_prefix (tmp);
+			break;
+		}
+	}
+
+	if (!parent_gw)
+		return NULL;
+
+	if (ip6_dest_in_same_subnet (parent_config, vpn_gw, parent_prefix)) {
+		err = nm_system_set_ip6_route (nm_device_get_ip_ifindex (parent_device),
+		                               vpn_gw, 128, NULL, 0,
+		                               nm_ip6_config_get_mss (parent_config),
+		                               RTPROT_UNSPEC, RT_TABLE_UNSPEC,
+		                               &route);
+	} else {
+		err = nm_system_set_ip6_route (nm_device_get_ip_ifindex (parent_device),
+		                               vpn_gw, 128, parent_gw, 0,
+		                               nm_ip6_config_get_mss (parent_config),
+		                               RTPROT_UNSPEC, RT_TABLE_UNSPEC,
+		                               &route);
+	}
+
+	if (err) {
+		nm_log_err (LOGD_DEVICE | LOGD_IP6,
+		            "(%s): failed to add IPv6 route to VPN gateway (%d)",
+		            nm_device_get_iface (parent_device), err);
+	}
+	return route;
 }
 
 static gboolean
@@ -909,7 +992,7 @@ nm_system_replace_default_ip4_route_vpn (int ifindex,
 		goto out;
 
 	if ((err != -NLE_OBJ_NOTFOUND) && (err != -NLE_FAILURE)) {
-		nm_log_err (LOGD_DEVICE | LOGD_IP4,
+		nm_log_err (LOGD_DEVICE | LOGD_VPN | LOGD_IP4,
 		            "(%s): failed to set IPv4 default route: %d",
 		            iface, err);
 		goto out;
@@ -924,7 +1007,7 @@ nm_system_replace_default_ip4_route_vpn (int ifindex,
 	err = replace_default_ip4_route (ifindex, int_gw, mss);
 	if (err != 0) {
 		nm_netlink_route_delete (gw_route);
-		nm_log_err (LOGD_DEVICE | LOGD_IP4,
+		nm_log_err (LOGD_DEVICE | LOGD_VPN | LOGD_IP4,
 		            "(%s): failed to set IPv4 default route (pass #2): %d",
 		            iface, err);
 	} else
@@ -989,7 +1072,7 @@ out:
 }
 
 static struct rtnl_route *
-add_ip6_route_to_gateway (int ifindex, const struct in6_addr *gw)
+add_ip6_route_to_gateway (int ifindex, const struct in6_addr *gw, int mss)
 {
 	struct nl_sock *nlh;
 	struct rtnl_route *route = NULL;
@@ -999,7 +1082,7 @@ add_ip6_route_to_gateway (int ifindex, const struct in6_addr *gw)
 	g_return_val_if_fail (nlh != NULL, NULL);
 
 	/* Gateway might be over a bridge; try adding a route to gateway first */
-	route = nm_netlink_route_new (ifindex, AF_INET6, 0,
+	route = nm_netlink_route_new (ifindex, AF_INET6, mss,
 	                              NMNL_PROP_SCOPE, RT_SCOPE_LINK,
 	                              NMNL_PROP_TABLE, RT_TABLE_MAIN,
 	                              NULL);
@@ -1023,7 +1106,7 @@ add_ip6_route_to_gateway (int ifindex, const struct in6_addr *gw)
 }
 
 static int
-replace_default_ip6_route (int ifindex, const struct in6_addr *gw)
+add_default_ip6_route (int ifindex, const struct in6_addr *gw, int mss)
 {
 	struct rtnl_route *route = NULL;
 	struct nl_sock *nlh;
@@ -1034,23 +1117,79 @@ replace_default_ip6_route (int ifindex, const struct in6_addr *gw)
 	nlh = nm_netlink_get_default_handle ();
 	g_return_val_if_fail (nlh != NULL, -ENOMEM);
 
-	route = nm_netlink_route_new (ifindex, AF_INET6, 0,
+	route = nm_netlink_route_new (ifindex, AF_INET6, mss,
 	                              NMNL_PROP_SCOPE, RT_SCOPE_UNIVERSE,
 	                              NMNL_PROP_TABLE, RT_TABLE_MAIN,
+	                              NMNL_PROP_PRIO, 1,
 	                              NULL);
 	g_return_val_if_fail (route != NULL, -ENOMEM);
 
 	/* Add the new default route */
-	err = nm_netlink_route6_add (route, &in6addr_any, 0, gw, NLM_F_REPLACE);
-	if (err == -NLE_EXIST) {
-		/* FIXME: even though we use NLM_F_REPLACE the kernel won't replace
-		 * the route if it's the same.  Suppress the pointless error.
-		 */
+	err = nm_netlink_route6_add (route, &in6addr_any, 0, gw, NLM_F_CREATE);
+	if (err == -NLE_EXIST)
 		err = 0;
-	}
 
 	rtnl_route_put (route);
 	return err;
+}
+
+static struct rtnl_route *
+find_static_default_routes (struct rtnl_route *route,
+                            struct nl_addr *dst,
+                            const char *iface,
+                            gpointer user_data)
+{
+	GList **def_routes = user_data;
+
+	if (   nl_addr_get_prefixlen (dst) == 0
+	    && rtnl_route_get_protocol (route) == RTPROT_STATIC) {
+		rtnl_route_get (route);
+		*def_routes = g_list_prepend (*def_routes, route);
+	}
+
+	return NULL;
+}
+
+static int
+replace_default_ip6_route (int ifindex, const struct in6_addr *gw, int mss)
+{
+	GList *def_routes, *iter;
+	struct rtnl_route *route;
+	char *iface;
+	char gw_str[INET6_ADDRSTRLEN + 1];
+
+	g_return_val_if_fail (ifindex > 0, FALSE);
+	g_return_val_if_fail (gw != NULL, FALSE);
+
+	if (nm_logging_level_enabled (LOGL_DEBUG)) {
+		memset (gw_str, 0, sizeof (gw_str));
+		if (inet_ntop (AF_INET6, gw, gw_str, sizeof (gw_str) - 1))
+			nm_log_dbg (LOGD_IP6, "Setting IPv6 default route via %s", gw_str);
+	}
+
+	/* We can't just use NLM_F_REPLACE here like in the IPv4 case, because
+	 * the kernel doesn't like it if we replace the default routes it
+	 * creates. (See rh#785772.) So we delete any non-kernel default routes,
+	 * and then add a new default route of our own with a lower metric than
+	 * the kernel ones.
+	 */
+	def_routes = NULL;
+	nm_netlink_foreach_route (ifindex, AF_INET6, RT_SCOPE_UNIVERSE, TRUE,
+	                          find_static_default_routes, &def_routes);
+	for (iter = def_routes; iter; iter = iter->next) {
+		route = iter->data;
+		if (!nm_netlink_route_delete (route)) {
+			iface = nm_netlink_index_to_iface (ifindex);
+			nm_log_err (LOGD_DEVICE | LOGD_IP6,
+			            "(%s): failed to delete existing IPv6 default route",
+			            iface);
+			g_free (iface);
+		}
+		rtnl_route_put (route);
+	}
+	g_list_free (def_routes);
+
+	return add_default_ip6_route (ifindex, gw, mss);
 }
 
 /*
@@ -1067,11 +1206,8 @@ nm_system_replace_default_ip6_route (int ifindex, const struct in6_addr *gw)
 	char *iface;
 	int err;
 
-	err = replace_default_ip6_route (ifindex, gw);
-	if (err == 0)
-		return TRUE;
-
-	if (err == -NLE_EXIST)
+	err = replace_default_ip6_route (ifindex, gw, 0);
+	if (err == 0 || err == -NLE_EXIST)
 		return TRUE;
 
 	iface = nm_netlink_index_to_iface (ifindex);
@@ -1086,15 +1222,69 @@ nm_system_replace_default_ip6_route (int ifindex, const struct in6_addr *gw)
 	}
 
 	/* Try adding a direct route to the gateway first */
-	gw_route = add_ip6_route_to_gateway (ifindex, gw);
+	gw_route = add_ip6_route_to_gateway (ifindex, gw, 0);
 	if (!gw_route)
 		goto out;
 
 	/* Try adding the original route again */
-	err = replace_default_ip6_route (ifindex, gw);
+	err = replace_default_ip6_route (ifindex, gw, 0);
 	if (err != 0) {
 		nm_netlink_route_delete (gw_route);
 		nm_log_err (LOGD_DEVICE | LOGD_IP6,
+		            "(%s): failed to set IPv6 default route (pass #2): %d",
+		            iface, err);
+	} else
+		success = TRUE;
+
+out:
+	if (gw_route)
+		rtnl_route_put (gw_route);
+	g_free (iface);
+	return success;
+}
+
+gboolean
+nm_system_replace_default_ip6_route_vpn (int ifindex,
+                                         const struct in6_addr *ext_gw,
+                                         const struct in6_addr *int_gw,
+                                         guint32 mss,
+                                         int parent_ifindex,
+                                         guint32 parent_mss)
+{
+	struct rtnl_route *gw_route = NULL;
+	struct nl_sock *nlh;
+	gboolean success = FALSE;
+	int err;
+	char *iface;
+
+	nlh = nm_netlink_get_default_handle ();
+	g_return_val_if_fail (nlh != NULL, FALSE);
+
+	err = replace_default_ip6_route (ifindex, int_gw, mss);
+	if (err == 0)
+		return TRUE;
+
+	iface = nm_netlink_index_to_iface (ifindex);
+	if (!iface)
+		goto out;
+
+	if ((err != -NLE_OBJ_NOTFOUND) && (err != -NLE_FAILURE)) {
+		nm_log_err (LOGD_DEVICE | LOGD_VPN | LOGD_IP6,
+		            "(%s): failed to set IPv6 default route: %d",
+		            iface, err);
+		goto out;
+	}
+
+	/* Try adding a direct route to the gateway first */
+	gw_route = add_ip6_route_to_gateway (parent_ifindex, ext_gw, parent_mss);
+	if (!gw_route)
+		goto out;
+
+	/* Try adding the original route again */
+	err = replace_default_ip6_route (ifindex, int_gw, mss);
+	if (err != 0) {
+		nm_netlink_route_delete (gw_route);
+		nm_log_err (LOGD_DEVICE | LOGD_VPN | LOGD_IP6,
 		            "(%s): failed to set IPv6 default route (pass #2): %d",
 		            iface, err);
 	} else
@@ -1435,9 +1625,9 @@ nm_system_iface_enslave (gint master_ifindex,
 	struct nl_sock *sock;
 	int err;
 
-	g_return_val_if_fail (master_ifindex >= 0, FALSE);
+	g_return_val_if_fail (master_ifindex > 0, FALSE);
 	g_return_val_if_fail (master_iface != NULL, FALSE);
-	g_return_val_if_fail (slave_ifindex >= 0, FALSE);
+	g_return_val_if_fail (slave_ifindex > 0, FALSE);
 	g_return_val_if_fail (slave_iface != NULL, FALSE);
 
 	sock = nm_netlink_get_default_handle ();
@@ -1520,9 +1710,9 @@ nm_system_iface_release (gint master_ifindex,
 	struct nl_sock *sock;
 	int err;
 
-	g_return_val_if_fail (master_ifindex >= 0, FALSE);
+	g_return_val_if_fail (master_ifindex > 0, FALSE);
 	g_return_val_if_fail (master_iface != NULL, FALSE);
-	g_return_val_if_fail (slave_ifindex >= 0, FALSE);
+	g_return_val_if_fail (slave_ifindex > 0, FALSE);
 	g_return_val_if_fail (slave_iface != NULL, FALSE);
 
 	sock = nm_netlink_get_default_handle ();
@@ -1561,7 +1751,7 @@ nm_system_get_iface_type (int ifindex, const char *name)
 	char *type;
 	int res = NM_IFACE_TYPE_UNSPEC;
 
-	g_return_val_if_fail (ifindex >= 0 || name, NM_IFACE_TYPE_UNSPEC);
+	g_return_val_if_fail (ifindex > 0 || name, NM_IFACE_TYPE_UNSPEC);
 
 	nlh = nm_netlink_get_default_handle ();
 	if (!nlh)
@@ -1706,7 +1896,7 @@ nm_system_iface_compat_add_vlan_device (const char *master, int vid)
 	}
 
 	memset (&if_request, 0, sizeof (struct vlan_ioctl_args));
-	strcpy (if_request.device1, master);
+	g_strlcpy (if_request.device1, master, sizeof (if_request.device1));
 	if_request.cmd = ADD_VLAN_CMD;
 	if_request.u.VID = vid;
 
@@ -1732,7 +1922,7 @@ nm_system_iface_compat_rem_vlan_device (const char *iface)
 	}
 
 	memset (&if_request, 0, sizeof (struct vlan_ioctl_args));
-        strcpy (if_request.device1, iface);
+	g_strlcpy (if_request.device1, iface, sizeof (if_request.device1));
 	if_request.cmd = DEL_VLAN_CMD;
 
 	if (ioctl (fd, SIOCSIFVLAN, &if_request) < 0) {
@@ -1868,7 +2058,7 @@ nm_system_add_vlan_iface (NMConnection *connection,
 	guint32 vlan_flags = 0;
 	guint32 num, i, from, to;
 
-	g_return_val_if_fail (parent_ifindex >= 0, FALSE);
+	g_return_val_if_fail (parent_ifindex > 0, FALSE);
 
 	nlh = nm_netlink_get_default_handle ();
 	g_return_val_if_fail (nlh != NULL, FALSE);

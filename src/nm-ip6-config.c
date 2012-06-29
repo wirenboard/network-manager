@@ -53,6 +53,8 @@ typedef struct {
 	GPtrArray *domains;
 	GPtrArray *searches;
 
+	gboolean gateway_set;
+	struct in6_addr gateway;
 	GSList *routes;
 
 	gboolean never_default;
@@ -138,11 +140,17 @@ nm_ip6_config_add_address (NMIP6Config *config,
                            NMIP6Address *address)
 {
 	NMIP6ConfigPrivate *priv;
+	GSList *iter;
 
 	g_return_if_fail (NM_IS_IP6_CONFIG (config));
 	g_return_if_fail (address != NULL);
 
 	priv = NM_IP6_CONFIG_GET_PRIVATE (config);
+	for (iter = priv->addresses; iter; iter = g_slist_next (iter)) {
+		if (nm_ip6_address_compare ((NMIP6Address *) iter->data, address))
+			return;
+	}
+
 	priv->addresses = g_slist_append (priv->addresses, nm_ip6_address_dup (address));
 }
 
@@ -205,8 +213,10 @@ void nm_ip6_config_add_nameserver (NMIP6Config *config, const struct in6_addr *n
 
 	/* No dupes */
 	nameservers = (struct in6_addr *)priv->nameservers->data;
-	for (i = 0; i < priv->nameservers->len; i++)
-		g_return_if_fail (IN6_ARE_ADDR_EQUAL (nameserver, &nameservers[i]) == FALSE);
+	for (i = 0; i < priv->nameservers->len; i++) {
+		if (IN6_ARE_ADDR_EQUAL (nameserver, &nameservers[i]))
+			return;
+	}
 
 	g_array_append_val (priv->nameservers, *nameserver);
 }
@@ -237,6 +247,30 @@ void nm_ip6_config_reset_nameservers (NMIP6Config *config)
 }
 
 void
+nm_ip6_config_set_gateway (NMIP6Config *config, const struct in6_addr *gateway)
+{
+	NMIP6ConfigPrivate *priv;
+
+	g_return_if_fail (NM_IS_IP6_CONFIG (config));
+
+	priv = NM_IP6_CONFIG_GET_PRIVATE (config);
+	if (gateway)
+		memcpy (&priv->gateway, gateway, sizeof (priv->gateway));
+	priv->gateway_set = !!gateway;
+}
+
+const struct in6_addr *
+nm_ip6_config_get_gateway (NMIP6Config *config)
+{
+	NMIP6ConfigPrivate *priv;
+
+	g_return_val_if_fail (NM_IS_IP6_CONFIG (config), NULL);
+
+	priv = NM_IP6_CONFIG_GET_PRIVATE (config);
+	return priv->gateway_set ? &priv->gateway : NULL;
+}
+
+void
 nm_ip6_config_take_route (NMIP6Config *config, NMIP6Route *route)
 {
 	NMIP6ConfigPrivate *priv;
@@ -252,11 +286,17 @@ void
 nm_ip6_config_add_route (NMIP6Config *config, NMIP6Route *route)
 {
 	NMIP6ConfigPrivate *priv;
+	GSList *iter;
 
 	g_return_if_fail (NM_IS_IP6_CONFIG (config));
 	g_return_if_fail (route != NULL);
 
 	priv = NM_IP6_CONFIG_GET_PRIVATE (config);
+	for (iter = priv->routes; iter; iter = g_slist_next (iter)) {
+		if (nm_ip6_route_compare ((NMIP6Route *) iter->data, route))
+			return;
+	}
+
 	priv->routes = g_slist_append (priv->routes, nm_ip6_route_dup (route));
 }
 
@@ -598,7 +638,7 @@ nm_ip6_config_diff (NMIP6Config *a, NMIP6Config *b)
 	NMIP6ConfigCompareFlags flags = NM_IP6_COMPARE_FLAG_NONE;
 
 	if ((a && !b) || (b && !a))
-		return 0xFFFFFFFF;
+		return NM_IP6_COMPARE_FLAG_ALL;
 	if (!a && !b)
 		return NM_IP6_COMPARE_FLAG_NONE;
 
@@ -637,6 +677,65 @@ nm_ip6_config_diff (NMIP6Config *a, NMIP6Config *b)
 	return flags;
 }
 
+static inline void
+hash_u32 (GChecksum *sum, guint32 n)
+{
+	g_checksum_update (sum, (const guint8 *) &n, sizeof (n));
+}
+
+static inline void
+hash_in6addr (GChecksum *sum, const struct in6_addr *a)
+{
+	g_checksum_update (sum, (const guint8 *) a, sizeof (*a));
+}
+
+void
+nm_ip6_config_hash (NMIP6Config *config, GChecksum *sum, gboolean dns_only)
+{
+	guint32 i;
+	const struct in6_addr *in6a;
+	const char *s;
+
+	g_return_if_fail (config != NULL);
+	g_return_if_fail (sum != NULL);
+
+	if (dns_only == FALSE) {
+		for (i = 0; i < nm_ip6_config_get_num_addresses (config); i++) {
+			NMIP6Address *a = nm_ip6_config_get_address (config, i);
+
+			hash_in6addr (sum, nm_ip6_address_get_address (a));
+			hash_u32 (sum, nm_ip6_address_get_prefix (a));
+			hash_in6addr (sum, nm_ip6_address_get_gateway (a));
+		}
+
+		for (i = 0; i < nm_ip6_config_get_num_routes (config); i++) {
+			NMIP6Route *r = nm_ip6_config_get_route (config, i);
+
+			hash_in6addr (sum, nm_ip6_route_get_dest (r));
+			hash_u32 (sum, nm_ip6_route_get_prefix (r));
+			hash_in6addr (sum, nm_ip6_route_get_next_hop (r));
+			hash_u32 (sum, nm_ip6_route_get_metric (r));
+		}
+
+		in6a = nm_ip6_config_get_ptp_address (config);
+		if (in6a)
+			hash_in6addr (sum, in6a);
+	}
+
+	for (i = 0; i < nm_ip6_config_get_num_nameservers (config); i++)
+		hash_in6addr (sum, nm_ip6_config_get_nameserver (config, i));
+
+	for (i = 0; i < nm_ip6_config_get_num_domains (config); i++) {
+		s = nm_ip6_config_get_domain (config, i);
+		g_checksum_update (sum, (const guint8 *) s, strlen (s));
+	}
+
+	for (i = 0; i < nm_ip6_config_get_num_searches (config); i++) {
+		s = nm_ip6_config_get_search (config, i);
+		g_checksum_update (sum, (const guint8 *) s, strlen (s));
+	}
+}
+
 static void
 nm_ip6_config_init (NMIP6Config *config)
 {
@@ -645,6 +744,7 @@ nm_ip6_config_init (NMIP6Config *config)
 	priv->nameservers = g_array_new (FALSE, TRUE, sizeof (struct in6_addr));
 	priv->domains = g_ptr_array_sized_new (3);
 	priv->searches = g_ptr_array_sized_new (3);
+	priv->gateway_set = FALSE;
 }
 
 static void

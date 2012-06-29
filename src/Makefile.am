@@ -1,6 +1,7 @@
 SUBDIRS= \
 	generated \
 	logging \
+	posix-signals \
 	dns-manager \
 	vpn-manager \
 	dhcp-manager \
@@ -27,6 +28,7 @@ INCLUDES = -I${top_srcdir} \
            -I${top_srcdir}/src/generated \
            -I${top_builddir}/src/generated \
            -I${top_srcdir}/src/logging \
+           -I${top_srcdir}/src/posix-signals \
            -I${top_srcdir}/src/dns-manager \
            -I${top_srcdir}/src/vpn-manager \
            -I${top_srcdir}/src/dhcp-manager \
@@ -120,6 +122,8 @@ NetworkManager_SOURCES = \
 		nm-device-private.h \
 		nm-device-ethernet.c \
 		nm-device-ethernet.h \
+		nm-device-adsl.c \
+		nm-device-adsl.h \
 		nm-device-wifi.c \
 		nm-device-wifi.h \
 		nm-device-wired.c \
@@ -187,7 +191,9 @@ NetworkManager_SOURCES = \
 		nm-rfkill.h \
 		nm-session-monitor.h \
 		nm-session-utils.c \
-		nm-session-utils.h
+		nm-session-utils.h \
+		nm-connection-provider.h \
+		nm-connection-provider.c
 
 if WITH_CONCHECK
 NetworkManager_SOURCES += nm-connectivity.c nm-connectivity.h
@@ -217,6 +223,9 @@ nm-device-ethernet-glue.h: $(top_srcdir)/introspection/nm-device-ethernet.xml
 
 nm-device-infiniband-glue.h: $(top_srcdir)/introspection/nm-device-infiniband.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_infiniband --mode=glib-server --output=$@ $<
+
+nm-device-adsl-glue.h: $(top_srcdir)/introspection/nm-device-adsl.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_adsl --mode=glib-server --output=$@ $<
 
 nm-device-wifi-glue.h: $(top_srcdir)/introspection/nm-device-wifi.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_wifi --mode=glib-server --output=$@ $<
@@ -259,6 +268,7 @@ BUILT_SOURCES = \
 	nm-device-infiniband-glue.h \
 	nm-device-bond-glue.h \
 	nm-device-vlan-glue.h \
+	nm-device-adsl-glue.h \
 	nm-device-wifi-glue.h \
 	nm-device-olpc-mesh-glue.h \
 	nm-device-bt-glue.h \
@@ -296,6 +306,7 @@ endif
 NetworkManager_LDADD = \
 	./generated/libnm-generated.la \
 	./logging/libnm-logging.la \
+	./posix-signals/libnm-posix-signals.la \
 	./dns-manager/libdns-manager.la \
 	./vpn-manager/libvpn-manager.la \
 	./dhcp-manager/libdhcp-manager.la \

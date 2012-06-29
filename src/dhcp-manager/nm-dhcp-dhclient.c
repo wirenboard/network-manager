@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2005 - 2010 Red Hat, Inc.
+ * Copyright (C) 2005 - 2012 Red Hat, Inc.
  */
 
 #define _XOPEN_SOURCE
@@ -40,6 +40,7 @@
 #include "nm-utils.h"
 #include "nm-logging.h"
 #include "nm-dhcp-dhclient-utils.h"
+#include "nm-posix-signals.h"
 
 G_DEFINE_TYPE (NMDHCPDhclient, nm_dhcp_dhclient, NM_TYPE_DHCP_CLIENT)
 
@@ -333,6 +334,7 @@ merge_dhclient_config (const char *iface,
 	g_assert (new);
 	success = g_file_set_contents (conf_file, new, -1, error);
 	g_free (new);
+	g_free (orig);
 
 	return success;
 }
@@ -407,6 +409,12 @@ dhclient_child_setup (gpointer user_data G_GNUC_UNUSED)
 	/* We are in the child process at this point */
 	pid_t pid = getpid ();
 	setpgid (pid, pid);
+
+	/*
+	 * We blocked signals in main(). We need to restore original signal
+	 * mask for dhclient here so that it can receive signals.
+	 */
+	nm_unblock_posix_signals (NULL);
 }
 
 static GPid

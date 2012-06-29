@@ -14,6 +14,9 @@
       <sub name="NMSettingCdma" link="NMSettingCdma.html"/>
       <sub name="NMSettingGsm" link="NMSettingGsm.html"/>
       <sub name="NMSettingWimax" link="NMSettingWimax.html"/>
+      <sub name="NMSettingBond" link="NMSettingBond.html"/>
+      <sub name="NMSettingInfiniband" link="NMSettingInfiniband.html"/>
+      <sub name="NMSettingVlan" link="NMSettingVlan.html"/>
       <sub name="NMSettingOlpcMesh" link="NMSettingOlpcMesh.html"/>
       <sub name="NMSetting8021x" link="NMSetting8021x.html"/>
       <sub name="NMSettingIP4Config" link="NMSettingIP4Config.html"/>
@@ -47,6 +50,7 @@
     <keyword type="function" name="nm_connection_get_path ()" link="NMConnection.html#nm-connection-get-path"/>
     <keyword type="function" name="nm_connection_get_setting ()" link="NMConnection.html#nm-connection-get-setting"/>
     <keyword type="function" name="nm_connection_get_setting_802_1x ()" link="NMConnection.html#nm-connection-get-setting-802-1x"/>
+    <keyword type="function" name="nm_connection_get_setting_adsl ()" link="NMConnection.html#nm-connection-get-setting-adsl"/>
     <keyword type="function" name="nm_connection_get_setting_bluetooth ()" link="NMConnection.html#nm-connection-get-setting-bluetooth"/>
     <keyword type="function" name="nm_connection_get_setting_bond ()" link="NMConnection.html#nm-connection-get-setting-bond"/>
     <keyword type="function" name="nm_connection_get_setting_by_name ()" link="NMConnection.html#nm-connection-get-setting-by-name"/>
@@ -215,6 +219,7 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_CHANNEL" link="NMSettingWireless.html#NM-SETTING-WIRELESS-CHANNEL:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-CLONED-MAC-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_ERROR" link="NMSettingWireless.html#NM-SETTING-WIRELESS-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_HIDDEN" link="NMSettingWireless.html#NM-SETTING-WIRELESS-HIDDEN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE:CAPS"/>
@@ -234,6 +239,7 @@
     <keyword type="function" name="nm_setting_wireless_get_bssid ()" link="NMSettingWireless.html#nm-setting-wireless-get-bssid"/>
     <keyword type="function" name="nm_setting_wireless_get_channel ()" link="NMSettingWireless.html#nm-setting-wireless-get-channel"/>
     <keyword type="function" name="nm_setting_wireless_get_cloned_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address"/>
+    <keyword type="function" name="nm_setting_wireless_get_hidden ()" link="NMSettingWireless.html#nm-setting-wireless-get-hidden"/>
     <keyword type="function" name="nm_setting_wireless_get_mac_address ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address"/>
     <keyword type="function" name="nm_setting_wireless_get_mac_address_blacklist ()" link="NMSettingWireless.html#nm-setting-wireless-get-mac-address-blacklist"/>
     <keyword type="function" name="nm_setting_wireless_get_mode ()" link="NMSettingWireless.html#nm-setting-wireless-get-mode"/>
@@ -249,6 +255,7 @@
     <keyword type="property" name="The &quot;bssid&quot; property" link="NMSettingWireless.html#NMSettingWireless--bssid"/>
     <keyword type="property" name="The &quot;channel&quot; property" link="NMSettingWireless.html#NMSettingWireless--channel"/>
     <keyword type="property" name="The &quot;cloned-mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--cloned-mac-address"/>
+    <keyword type="property" name="The &quot;hidden&quot; property" link="NMSettingWireless.html#NMSettingWireless--hidden"/>
     <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address"/>
     <keyword type="property" name="The &quot;mac-address-blacklist&quot; property" link="NMSettingWireless.html#NMSettingWireless--mac-address-blacklist"/>
     <keyword type="property" name="The &quot;mode&quot; property" link="NMSettingWireless.html#NMSettingWireless--mode"/>
@@ -438,6 +445,78 @@
     <keyword type="function" name="nm_setting_wimax_new ()" link="NMSettingWimax.html#nm-setting-wimax-new"/>
     <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingWimax.html#NMSettingWimax--mac-address"/>
     <keyword type="property" name="The &quot;network-name&quot; property" link="NMSettingWimax.html#NMSettingWimax--network-name"/>
+    <keyword type="struct" name="NMSettingBond" link="NMSettingBond.html#NMSettingBond-struct"/>
+    <keyword type="struct" name="NMSettingBondClass" link="NMSettingBond.html#NMSettingBondClass"/>
+    <keyword type="enum" name="enum NMSettingBondError" link="NMSettingBond.html#NMSettingBondError-enum"/>
+    <keyword type="macro" name="NM_SETTING_BOND_ERROR" link="NMSettingBond.html#NM-SETTING-BOND-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_INTERFACE_NAME" link="NMSettingBond.html#NM-SETTING-BOND-INTERFACE-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTIONS" link="NMSettingBond.html#NM-SETTING-BOND-OPTIONS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_ARP_INTERVAL" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-ARP-INTERVAL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_ARP_IP_TARGET" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-ARP-IP-TARGET:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_DOWNDELAY" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-DOWNDELAY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_MIIMON" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-MIIMON:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_MODE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-MODE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_UPDELAY" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-UPDELAY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_SETTING_NAME" link="NMSettingBond.html#NM-SETTING-BOND-SETTING-NAME:CAPS"/>
+    <keyword type="function" name="nm_setting_bond_add_option ()" link="NMSettingBond.html#nm-setting-bond-add-option"/>
+    <keyword type="function" name="nm_setting_bond_error_quark ()" link="NMSettingBond.html#nm-setting-bond-error-quark"/>
+    <keyword type="function" name="nm_setting_bond_get_interface_name ()" link="NMSettingBond.html#nm-setting-bond-get-interface-name"/>
+    <keyword type="function" name="nm_setting_bond_get_num_options ()" link="NMSettingBond.html#nm-setting-bond-get-num-options"/>
+    <keyword type="function" name="nm_setting_bond_get_option ()" link="NMSettingBond.html#nm-setting-bond-get-option"/>
+    <keyword type="function" name="nm_setting_bond_get_option_by_name ()" link="NMSettingBond.html#nm-setting-bond-get-option-by-name"/>
+    <keyword type="function" name="nm_setting_bond_get_option_default ()" link="NMSettingBond.html#nm-setting-bond-get-option-default"/>
+    <keyword type="function" name="nm_setting_bond_get_valid_options ()" link="NMSettingBond.html#nm-setting-bond-get-valid-options"/>
+    <keyword type="function" name="nm_setting_bond_new ()" link="NMSettingBond.html#nm-setting-bond-new"/>
+    <keyword type="function" name="nm_setting_bond_remove_option ()" link="NMSettingBond.html#nm-setting-bond-remove-option"/>
+    <keyword type="property" name="The &quot;interface-name&quot; property" link="NMSettingBond.html#NMSettingBond--interface-name"/>
+    <keyword type="property" name="The &quot;options&quot; property" link="NMSettingBond.html#NMSettingBond--options"/>
+    <keyword type="struct" name="NMSettingInfiniband" link="NMSettingInfiniband.html#NMSettingInfiniband-struct"/>
+    <keyword type="struct" name="NMSettingInfinibandClass" link="NMSettingInfiniband.html#NMSettingInfinibandClass"/>
+    <keyword type="enum" name="enum NMSettingInfinibandError" link="NMSettingInfiniband.html#NMSettingInfinibandError-enum"/>
+    <keyword type="macro" name="NM_SETTING_INFINIBAND_ERROR" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_INFINIBAND_MAC_ADDRESS" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-MAC-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_INFINIBAND_MTU" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-MTU:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_INFINIBAND_SETTING_NAME" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_INFINIBAND_TRANSPORT_MODE" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-TRANSPORT-MODE:CAPS"/>
+    <keyword type="function" name="nm_setting_infiniband_error_quark ()" link="NMSettingInfiniband.html#nm-setting-infiniband-error-quark"/>
+    <keyword type="function" name="nm_setting_infiniband_get_mac_address ()" link="NMSettingInfiniband.html#nm-setting-infiniband-get-mac-address"/>
+    <keyword type="function" name="nm_setting_infiniband_get_mtu ()" link="NMSettingInfiniband.html#nm-setting-infiniband-get-mtu"/>
+    <keyword type="function" name="nm_setting_infiniband_get_transport_mode ()" link="NMSettingInfiniband.html#nm-setting-infiniband-get-transport-mode"/>
+    <keyword type="function" name="nm_setting_infiniband_new ()" link="NMSettingInfiniband.html#nm-setting-infiniband-new"/>
+    <keyword type="property" name="The &quot;mac-address&quot; property" link="NMSettingInfiniband.html#NMSettingInfiniband--mac-address"/>
+    <keyword type="property" name="The &quot;mtu&quot; property" link="NMSettingInfiniband.html#NMSettingInfiniband--mtu"/>
+    <keyword type="property" name="The &quot;transport-mode&quot; property" link="NMSettingInfiniband.html#NMSettingInfiniband--transport-mode"/>
+    <keyword type="struct" name="NMSettingVlan" link="NMSettingVlan.html#NMSettingVlan-struct"/>
+    <keyword type="struct" name="NMSettingVlanClass" link="NMSettingVlan.html#NMSettingVlanClass"/>
+    <keyword type="enum" name="enum NMSettingVlanError" link="NMSettingVlan.html#NMSettingVlanError-enum"/>
+    <keyword type="enum" name="enum NMVlanFlags" link="NMSettingVlan.html#NMVlanFlags-enum"/>
+    <keyword type="enum" name="enum NMVlanPriorityMap" link="NMSettingVlan.html#NMVlanPriorityMap-enum"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_EGRESS_PRIORITY_MAP" link="NMSettingVlan.html#NM-SETTING-VLAN-EGRESS-PRIORITY-MAP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_ERROR" link="NMSettingVlan.html#NM-SETTING-VLAN-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_FLAGS" link="NMSettingVlan.html#NM-SETTING-VLAN-FLAGS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_ID" link="NMSettingVlan.html#NM-SETTING-VLAN-ID:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_INGRESS_PRIORITY_MAP" link="NMSettingVlan.html#NM-SETTING-VLAN-INGRESS-PRIORITY-MAP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_INTERFACE_NAME" link="NMSettingVlan.html#NM-SETTING-VLAN-INTERFACE-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_PARENT" link="NMSettingVlan.html#NM-SETTING-VLAN-PARENT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VLAN_SETTING_NAME" link="NMSettingVlan.html#NM-SETTING-VLAN-SETTING-NAME:CAPS"/>
+    <keyword type="function" name="nm_setting_vlan_add_priority ()" link="NMSettingVlan.html#nm-setting-vlan-add-priority"/>
+    <keyword type="function" name="nm_setting_vlan_add_priority_str ()" link="NMSettingVlan.html#nm-setting-vlan-add-priority-str"/>
+    <keyword type="function" name="nm_setting_vlan_clear_priorities ()" link="NMSettingVlan.html#nm-setting-vlan-clear-priorities"/>
+    <keyword type="function" name="nm_setting_vlan_error_quark ()" link="NMSettingVlan.html#nm-setting-vlan-error-quark"/>
+    <keyword type="function" name="nm_setting_vlan_get_flags ()" link="NMSettingVlan.html#nm-setting-vlan-get-flags"/>
+    <keyword type="function" name="nm_setting_vlan_get_id ()" link="NMSettingVlan.html#nm-setting-vlan-get-id"/>
+    <keyword type="function" name="nm_setting_vlan_get_interface_name ()" link="NMSettingVlan.html#nm-setting-vlan-get-interface-name"/>
+    <keyword type="function" name="nm_setting_vlan_get_num_priorities ()" link="NMSettingVlan.html#nm-setting-vlan-get-num-priorities"/>
+    <keyword type="function" name="nm_setting_vlan_get_parent ()" link="NMSettingVlan.html#nm-setting-vlan-get-parent"/>
+    <keyword type="function" name="nm_setting_vlan_get_priority ()" link="NMSettingVlan.html#nm-setting-vlan-get-priority"/>
+    <keyword type="function" name="nm_setting_vlan_new ()" link="NMSettingVlan.html#nm-setting-vlan-new"/>
+    <keyword type="function" name="nm_setting_vlan_remove_priority ()" link="NMSettingVlan.html#nm-setting-vlan-remove-priority"/>
+    <keyword type="property" name="The &quot;egress-priority-map&quot; property" link="NMSettingVlan.html#NMSettingVlan--egress-priority-map"/>
+    <keyword type="property" name="The &quot;flags&quot; property" link="NMSettingVlan.html#NMSettingVlan--flags"/>
+    <keyword type="property" name="The &quot;id&quot; property" link="NMSettingVlan.html#NMSettingVlan--id"/>
+    <keyword type="property" name="The &quot;ingress-priority-map&quot; property" link="NMSettingVlan.html#NMSettingVlan--ingress-priority-map"/>
+    <keyword type="property" name="The &quot;interface-name&quot; property" link="NMSettingVlan.html#NMSettingVlan--interface-name"/>
+    <keyword type="property" name="The &quot;parent&quot; property" link="NMSettingVlan.html#NMSettingVlan--parent"/>
     <keyword type="struct" name="NMSettingOlpcMesh" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh-struct"/>
     <keyword type="struct" name="NMSettingOlpcMeshClass" link="NMSettingOlpcMesh.html#NMSettingOlpcMeshClass"/>
     <keyword type="enum" name="enum NMSettingOlpcMeshError" link="NMSettingOlpcMesh.html#NMSettingOlpcMeshError-enum"/>
@@ -996,6 +1075,22 @@
     <keyword type="constant" name="NM_SETTING_WIMAX_ERROR_UNKNOWN" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR-INVALID-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY" link="NMSettingWimax.html#NM-SETTING-WIMAX-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BOND_ERROR_UNKNOWN" link="NMSettingBond.html#NM-SETTING-BOND-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BOND_ERROR_INVALID_PROPERTY" link="NMSettingBond.html#NM-SETTING-BOND-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BOND_ERROR_MISSING_PROPERTY" link="NMSettingBond.html#NM-SETTING-BOND-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BOND_ERROR_INVALID_OPTION" link="NMSettingBond.html#NM-SETTING-BOND-ERROR-INVALID-OPTION:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_BOND_ERROR_MISSING_OPTION" link="NMSettingBond.html#NM-SETTING-BOND-ERROR-MISSING-OPTION:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_INFINIBAND_ERROR_UNKNOWN" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_INFINIBAND_ERROR_INVALID_PROPERTY" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_INFINIBAND_ERROR_MISSING_PROPERTY" link="NMSettingInfiniband.html#NM-SETTING-INFINIBAND-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_VLAN_ERROR_UNKNOWN" link="NMSettingVlan.html#NM-SETTING-VLAN-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_VLAN_ERROR_INVALID_PROPERTY" link="NMSettingVlan.html#NM-SETTING-VLAN-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_VLAN_ERROR_MISSING_PROPERTY" link="NMSettingVlan.html#NM-SETTING-VLAN-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_FLAG_REORDER_HEADERS" link="NMSettingVlan.html#NM-VLAN-FLAG-REORDER-HEADERS:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_FLAG_GVRP" link="NMSettingVlan.html#NM-VLAN-FLAG-GVRP:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_FLAG_LOOSE_BINDING" link="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_INGRESS_MAP" link="NMSettingVlan.html#NM-VLAN-INGRESS-MAP:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_EGRESS_MAP" link="NMSettingVlan.html#NM-VLAN-EGRESS-MAP:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_X509" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-X509:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_RAW_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-RAW-KEY:CAPS"/>

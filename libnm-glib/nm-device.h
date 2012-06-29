@@ -50,8 +50,11 @@ G_BEGIN_DECLS
 #define NM_DEVICE_INTERFACE "interface"
 #define NM_DEVICE_IP_INTERFACE "ip-interface"
 #define NM_DEVICE_DRIVER "driver"
+#define NM_DEVICE_DRIVER_VERSION "driver-version"
+#define NM_DEVICE_FIRMWARE_VERSION "firmware-version"
 #define NM_DEVICE_CAPABILITIES "capabilities"
 #define NM_DEVICE_MANAGED "managed"
+#define NM_DEVICE_AUTOCONNECT "autoconnect"
 #define NM_DEVICE_FIRMWARE_MISSING "firmware-missing"
 #define NM_DEVICE_IP4_CONFIG "ip4-config"
 #define NM_DEVICE_DHCP4_CONFIG "dhcp4-config"
@@ -98,8 +101,12 @@ const char *         nm_device_get_ip_iface         (NMDevice *device);
 NMDeviceType         nm_device_get_device_type      (NMDevice *device);
 const char *         nm_device_get_udi              (NMDevice *device);
 const char *         nm_device_get_driver           (NMDevice *device);
+const char *         nm_device_get_driver_version   (NMDevice *device);
+const char *         nm_device_get_firmware_version (NMDevice *device);
 NMDeviceCapabilities nm_device_get_capabilities     (NMDevice *device);
 gboolean             nm_device_get_managed          (NMDevice *device);
+gboolean             nm_device_get_autoconnect      (NMDevice *device);
+void                 nm_device_set_autoconnect      (NMDevice *device, gboolean autoconnect);
 gboolean             nm_device_get_firmware_missing (NMDevice *device);
 NMIP4Config *        nm_device_get_ip4_config       (NMDevice *device);
 NMDHCP4Config *      nm_device_get_dhcp4_config     (NMDevice *device);

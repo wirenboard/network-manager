@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2005 - 2011 Red Hat, Inc.
+ * Copyright (C) 2005 - 2012 Red Hat, Inc.
  * Copyright (C) 2005 - 2008 Novell, Inc.
  */
 
@@ -31,6 +31,7 @@
 #include "nm-vpn-service.h"
 #include "nm-dbus-manager.h"
 #include "nm-logging.h"
+#include "nm-posix-signals.h"
 #include "nm-vpn-manager.h"
 #include "nm-glib-compat.h"
 
@@ -168,6 +169,12 @@ nm_vpn_service_child_setup (gpointer user_data G_GNUC_UNUSED)
 	/* We are in the child process at this point */
 	pid_t pid = getpid ();
 	setpgid (pid, pid);
+
+	/*
+	 * We blocked signals in main(). We need to restore original signal
+	 * mask for VPN service here so that it can receive signals.
+	 */
+	nm_unblock_posix_signals (NULL);
 }
 
 static void
@@ -296,13 +303,14 @@ service_quit (gpointer user_data)
 
 static void
 connection_vpn_state_changed (NMVPNConnection *connection,
-                              NMVPNConnectionState state,
+                              NMVPNConnectionState new_state,
+                              NMVPNConnectionState old_state,
                               NMVPNConnectionStateReason reason,
                               gpointer user_data)
 {
 	NMVPNServicePrivate *priv = NM_VPN_SERVICE_GET_PRIVATE (user_data);
 
-	switch (state) {
+	switch (new_state) {
 	case NM_VPN_CONNECTION_STATE_FAILED:
 	case NM_VPN_CONNECTION_STATE_DISCONNECTED:
 		/* Remove the connection from our list */
@@ -343,9 +351,9 @@ nm_vpn_service_activate (NMVPNService *service,
 	clear_quit_timeout (service);
 
 	vpn = nm_vpn_connection_new (connection, device, specific_object, user_requested, user_uid);
-	g_signal_connect (vpn, "vpn-state-changed",
-				   G_CALLBACK (connection_vpn_state_changed),
-				   service);
+	g_signal_connect (vpn, NM_VPN_CONNECTION_VPN_STATE_CHANGED,
+	                  G_CALLBACK (connection_vpn_state_changed),
+	                  service);
 
 	priv->connections = g_slist_prepend (priv->connections, vpn);
 

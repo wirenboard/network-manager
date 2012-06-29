@@ -16,6 +16,7 @@ libnm_util_include_HEADERS = 		\
 	nm-connection.h			\
 	nm-setting.h			\
 	nm-setting-8021x.h		\
+	nm-setting-adsl.h		\
 	nm-setting-bluetooth.h		\
 	nm-setting-bond.h		\
 	nm-setting-connection.h		\
@@ -49,6 +50,7 @@ libnm_util_la_csources = \
 	nm-param-spec-specialized.c	\
 	nm-setting.c			\
 	nm-setting-8021x.c		\
+	nm-setting-adsl.c		\
 	nm-setting-bluetooth.c		\
 	nm-setting-bond.c		\
 	nm-setting-connection.c		\
@@ -147,10 +149,11 @@ introspection_sources = $(libnm_util_include_HEADERS) $(libnm_util_la_csources) 
 NetworkManager-1.0.gir: libnm-util.la
 NetworkManager_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
 NetworkManager_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1
+NetworkManager_1_0_gir_EXPORT_PACKAGES = libnm-util
 NetworkManager_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-util
 NetworkManager_1_0_gir_LIBS = libnm-util.la
 NetworkManager_1_0_gir_FILES = $(introspection_sources)
-NetworkManager_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm_
+NetworkManager_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm
 INTROSPECTION_GIRS += NetworkManager-1.0.gir
 
 girdir = $(datadir)/gir-1.0

@@ -41,6 +41,11 @@ NMDevice
 
 </para>
 
+<!-- ##### ARG NMDevice:autoconnect ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMDevice:capabilities ##### -->
 <para>
 
@@ -66,7 +71,17 @@ NMDevice
 
 </para>
 
+<!-- ##### ARG NMDevice:driver-version ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMDevice:firmware-missing ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDevice:firmware-version ##### -->
 <para>
 
 </para>
@@ -153,6 +168,13 @@ NMDevice
 
 
 
+<!-- ##### MACRO NM_DEVICE_AUTOCONNECT ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_DEVICE_CAPABILITIES ##### -->
 <para>
 
@@ -188,7 +210,21 @@ NMDevice
 
 
 
+<!-- ##### MACRO NM_DEVICE_DRIVER_VERSION ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_DEVICE_FIRMWARE_MISSING ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_FIRMWARE_VERSION ##### -->
 <para>
 
 </para>
@@ -265,6 +301,17 @@ NMDevice
 
 
 
+<!-- ##### FUNCTION nm_device_connection_compatible ##### -->
+<para>
+
+</para>
+
+@device: 
+@connection: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_device_connection_valid ##### -->
 <para>
 
@@ -296,6 +343,15 @@ NMDevice
 
 
 <!-- ##### FUNCTION nm_device_get_active_connection ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_get_autoconnect ##### -->
 <para>
 
 </para>
@@ -349,7 +405,25 @@ NMDevice
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_device_get_driver_version ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_device_get_firmware_missing ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_get_firmware_version ##### -->
 <para>
 
 </para>
@@ -457,5 +531,14 @@ NMDevice
 @connection: 
 @path: 
 @Returns: 
+
+
+<!-- ##### FUNCTION nm_device_set_autoconnect ##### -->
+<para>
+
+</para>
+
+@device: 
+@autoconnect: 
 
 

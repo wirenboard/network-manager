@@ -509,7 +509,6 @@ NMAccessPoint *
 nm_ap_new_from_properties (const char *supplicant_path, GHashTable *properties)
 {
 	NMAccessPoint *ap;
-	GTimeVal cur_time;
 	const struct ether_addr * addr;
 	const char bad_bssid1[ETH_ALEN] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	const char bad_bssid2[ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -531,8 +530,7 @@ nm_ap_new_from_properties (const char *supplicant_path, GHashTable *properties)
 		return NULL;
 	}
 
-	g_get_current_time (&cur_time);
-	nm_ap_set_last_seen (ap, cur_time.tv_sec);
+	nm_ap_set_last_seen (ap, (guint32) time (NULL));
 
 	if (!nm_ap_get_ssid (ap))
 		nm_ap_set_broadcast (ap, FALSE);
@@ -966,16 +964,15 @@ void nm_ap_set_mode (NMAccessPoint *ap, const NM80211Mode mode)
 	NMAccessPointPrivate *priv;
 
 	g_return_if_fail (NM_IS_AP (ap));
+	g_return_if_fail (   mode == NM_802_11_MODE_ADHOC
+	                  || mode == NM_802_11_MODE_INFRA);
 
-	if (mode == NM_802_11_MODE_ADHOC || mode == NM_802_11_MODE_INFRA) {
-		priv = NM_AP_GET_PRIVATE (ap);
+	priv = NM_AP_GET_PRIVATE (ap);
 
-		if (priv->mode != mode) {
-			priv->mode = mode;
-			g_object_notify (G_OBJECT (ap), NM_AP_MODE);
-		}
-	} else
-		nm_log_warn (LOGD_WIFI, "Invalid AP mode '%d'", mode);
+	if (priv->mode != mode) {
+		priv->mode = mode;
+		g_object_notify (G_OBJECT (ap), NM_AP_MODE);
+	}
 }
 
 

@@ -48,6 +48,7 @@
 #include "nm-device-infiniband.h"
 #include "nm-device-bond.h"
 #include "nm-device-vlan.h"
+#include "nm-device-adsl.h"
 #include "nm-system.h"
 #include "nm-properties-changed-signal.h"
 #include "nm-setting-bluetooth.h"
@@ -127,18 +128,16 @@ static gboolean impl_manager_set_logging (NMManager *manager,
 #include "nm-manager-glue.h"
 
 static void bluez_manager_bdaddr_added_cb (NMBluezManager *bluez_mgr,
-					   const char *bdaddr,
-					   const char *name,
-					   const char *object_path,
-					   guint32 uuids,
-					   NMManager *manager);
+                                           const char *bdaddr,
+                                           const char *name,
+                                           const char *object_path,
+                                           guint32 uuids,
+                                           NMManager *manager);
 
 static void bluez_manager_bdaddr_removed_cb (NMBluezManager *bluez_mgr,
-					     const char *bdaddr,
-					     const char *object_path,
-					     gpointer user_data);
-
-static void bluez_manager_resync_devices (NMManager *self);
+                                             const char *bdaddr,
+                                             const char *object_path,
+                                             gpointer user_data);
 
 static void add_device (NMManager *self, NMDevice *device);
 
@@ -356,19 +355,20 @@ manager_sleeping (NMManager *self)
 static void
 vpn_manager_connection_activated_cb (NMVPNManager *manager,
                                      NMVPNConnection *vpn,
-                                     NMVPNConnectionState state,
-                                     NMVPNConnectionStateReason reason,
                                      gpointer user_data)
 {
+	NMConnection *connection = nm_vpn_connection_get_connection (vpn);
+
 	/* Update timestamp for the VPN connection */
-	nm_settings_connection_update_timestamp (NM_SETTINGS_CONNECTION (nm_vpn_connection_get_connection (vpn)),
+	nm_settings_connection_update_timestamp (NM_SETTINGS_CONNECTION (connection),
 	                                         (guint64) time (NULL), TRUE);
 }
 
 static void
 vpn_manager_connection_deactivated_cb (NMVPNManager *manager,
                                        NMVPNConnection *vpn,
-                                       NMVPNConnectionState state,
+                                       NMVPNConnectionState new_state,
+                                       NMVPNConnectionState old_state,
                                        NMVPNConnectionStateReason reason,
                                        gpointer user_data)
 {
@@ -1160,8 +1160,6 @@ connection_added (NMSettings *settings,
                   NMSettingsConnection *connection,
                   NMManager *manager)
 {
-	bluez_manager_resync_devices (manager);
-
 	if (connection_needs_virtual_device (NM_CONNECTION (connection)))
 		system_create_virtual_device (manager, NM_CONNECTION (connection));
 }
@@ -1171,8 +1169,6 @@ connection_changed (NMSettings *settings,
                      NMSettingsConnection *connection,
                      NMManager *manager)
 {
-	bluez_manager_resync_devices (manager);
-
 	/* FIXME: Some virtual devices may need to be updated in the future. */
 }
 
@@ -1181,8 +1177,6 @@ connection_removed (NMSettings *settings,
                     NMSettingsConnection *connection,
                     NMManager *manager)
 {
-	bluez_manager_resync_devices (manager);
-
 	/*
 	 * Do not delete existing virtual devices to keep connectivity up.
 	 * Virtual devices are reused when NetworkManager is restarted.
@@ -1539,111 +1533,96 @@ manager_modem_enabled_changed (NMModem *device, gpointer user_data)
 	nm_manager_rfkill_update (NM_MANAGER (user_data), RFKILL_TYPE_WWAN);
 }
 
-static GError *
-deactivate_disconnect_check_error (GError *auth_error,
-                                   NMAuthCallResult result,
-                                   const char *detail)
-{
-	if (auth_error) {
-		nm_log_dbg (LOGD_CORE, "%s request failed: %s", detail, auth_error->message);
-		return g_error_new (NM_MANAGER_ERROR,
-		                    NM_MANAGER_ERROR_PERMISSION_DENIED,
-		                    "%s request failed: %s",
-		                    detail, auth_error->message);
-	} else if (result != NM_AUTH_CALL_RESULT_YES) {
-		return g_error_new (NM_MANAGER_ERROR,
-		                    NM_MANAGER_ERROR_PERMISSION_DENIED,
-		                    "Not authorized to %s connections",
-		                    detail);
-	}
-	return NULL;
-}
-
 static void
-disconnect_net_auth_done_cb (NMAuthChain *chain,
-                             GError *auth_error,
-                             DBusGMethodInvocation *context,
-                             gpointer user_data)
+device_auth_done_cb (NMAuthChain *chain,
+                     GError *auth_error,
+                     DBusGMethodInvocation *context,
+                     gpointer user_data)
 {
 	NMManager *self = NM_MANAGER (user_data);
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
 	GError *error = NULL;
 	NMAuthCallResult result;
 	NMDevice *device;
+	const char *permission;
+	NMDeviceAuthRequestFunc callback;
 
 	priv->auth_chains = g_slist_remove (priv->auth_chains, chain);
 
-	result = GPOINTER_TO_UINT (nm_auth_chain_get_data (chain, NM_AUTH_PERMISSION_NETWORK_CONTROL));
-	error = deactivate_disconnect_check_error (auth_error, result, "Disconnect");
-	if (!error) {
-		device = nm_auth_chain_get_data (chain, "device");
-		if (!nm_device_disconnect (device, &error))
-			g_assert (error);
+	permission = nm_auth_chain_get_data (chain, "requested-permission");
+	g_assert (permission);
+	callback = nm_auth_chain_get_data (chain, "callback");
+	g_assert (callback);
+	device = nm_auth_chain_get_data (chain, "device");
+	g_assert (device);
+
+	result = GPOINTER_TO_UINT (nm_auth_chain_get_data (chain, permission));
+	if (auth_error) {
+		/* translate the auth error into a manager permission denied error */
+		nm_log_dbg (LOGD_CORE, "%s request failed: %s", permission, auth_error->message);
+		error = g_error_new (NM_MANAGER_ERROR,
+		                     NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                     "%s request failed: %s",
+		                     permission, auth_error->message);
+	} else if (result != NM_AUTH_CALL_RESULT_YES) {
+		nm_log_dbg (LOGD_CORE, "%s request failed: not authorized", permission);
+		error = g_error_new (NM_MANAGER_ERROR,
+		                     NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                     "%s request failed: not authorized",
+		                     permission);
 	}
 
-	if (error)
-		dbus_g_method_return_error (context, error);
-	else
-		dbus_g_method_return (context);
+	g_assert (error || (result == NM_AUTH_CALL_RESULT_YES));
+
+	callback (device,
+	          context,
+	          error,
+	          nm_auth_chain_get_data (chain, "user-data"));
 
 	g_clear_error (&error);
 	nm_auth_chain_unref (chain);
 }
 
 static void
-manager_device_disconnect_request (NMDevice *device,
-                                   DBusGMethodInvocation *context,
-                                   NMManager *self)
+device_auth_request_cb (NMDevice *device,
+                        DBusGMethodInvocation *context,
+                        const char *permission,
+                        gboolean allow_interaction,
+                        NMDeviceAuthRequestFunc callback,
+                        gpointer user_data,
+                        NMManager *self)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	NMActRequest *req;
 	GError *error = NULL;
 	gulong sender_uid = G_MAXULONG;
 	char *error_desc = NULL;
+	NMAuthChain *chain;
 
-	req = nm_device_get_act_request (device);
-	if (!req) {
-		error = g_error_new_literal (NM_MANAGER_ERROR,
-		                             NM_MANAGER_ERROR_UNKNOWN_CONNECTION,
-		                             "This device is not active");
-		dbus_g_method_return_error (context, error);
-		g_error_free (error);
-		return;
-	}
-
-	/* Need to check the caller's permissions and stuff before we can
-	 * deactivate the connection.
-	 */
-	if (!nm_auth_get_caller_uid (context,
-		                         priv->dbus_mgr,
-	                             &sender_uid,
-	                             &error_desc)) {
+	/* Get the caller's UID for the root check */
+	if (!nm_auth_get_caller_uid (context, priv->dbus_mgr, &sender_uid, &error_desc)) {
 		error = g_error_new_literal (NM_MANAGER_ERROR,
 		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
 		                             error_desc);
-		dbus_g_method_return_error (context, error);
+		callback (device, context, error, user_data);
 		g_error_free (error);
 		g_free (error_desc);
 		return;
 	}
 
 	/* Yay for root */
-	if (0 == sender_uid) {
-		if (!nm_device_disconnect (device, &error)) {
-			dbus_g_method_return_error (context, error);
-			g_clear_error (&error);
-		} else
-			dbus_g_method_return (context);
-	} else {
-		NMAuthChain *chain;
-
-		/* Otherwise validate the user request */
-		chain = nm_auth_chain_new (context, NULL, disconnect_net_auth_done_cb, self);
+	if (0 == sender_uid)
+		callback (device, context, NULL, user_data);
+	else {
+		/* Otherwise validate the non-root request */
+		chain = nm_auth_chain_new (context, NULL, device_auth_done_cb, self);
 		g_assert (chain);
 		priv->auth_chains = g_slist_append (priv->auth_chains, chain);
 
 		nm_auth_chain_set_data (chain, "device", g_object_ref (device), g_object_unref);
-		nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_NETWORK_CONTROL, TRUE);
+		nm_auth_chain_set_data (chain, "requested-permission", g_strdup (permission), g_free);
+		nm_auth_chain_set_data (chain, "callback", callback, NULL);
+		nm_auth_chain_set_data (chain, "user-data", user_data, NULL);
+		nm_auth_chain_add_call (chain, permission, allow_interaction);
 	}
 }
 
@@ -1678,15 +1657,17 @@ add_device (NMManager *self, NMDevice *device)
 		return;
 	}
 
+	nm_device_set_connection_provider (device, NM_CONNECTION_PROVIDER (priv->settings));
+
 	priv->devices = g_slist_append (priv->devices, device);
 
 	g_signal_connect (device, "state-changed",
 					  G_CALLBACK (manager_device_state_changed),
 					  self);
 
-	g_signal_connect (device, NM_DEVICE_DISCONNECT_REQUEST,
-					  G_CALLBACK (manager_device_disconnect_request),
-					  self);
+	g_signal_connect (device, NM_DEVICE_AUTH_REQUEST,
+	                  G_CALLBACK (device_auth_request_cb),
+	                  self);
 
 	if (devtype == NM_DEVICE_TYPE_WIFI) {
 		/* Attach to the access-point-added signal so that the manager can fill
@@ -1791,120 +1772,6 @@ add_device (NMManager *self, NMDevice *device)
 	}
 }
 
-static gboolean
-bdaddr_matches_connection (NMSettingBluetooth *s_bt, const char *bdaddr)
-{
-	const GByteArray *arr;
-	gboolean ret = FALSE;
-
-	arr = nm_setting_bluetooth_get_bdaddr (s_bt);
-
-	if (   arr != NULL 
-	       && arr->len == ETH_ALEN) {
-		char *str;
-
-		str = g_strdup_printf ("%02X:%02X:%02X:%02X:%02X:%02X",
-				       arr->data[0],
-				       arr->data[1],
-				       arr->data[2],
-				       arr->data[3],
-				       arr->data[4],
-				       arr->data[5]);
-		ret = g_str_equal (str, bdaddr);
-		g_free (str);
-	}
-
-	return ret;
-}
-
-static NMConnection *
-bluez_manager_find_connection (NMManager *manager,
-                               const char *bdaddr,
-                               guint32 capabilities)
-{
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-	NMConnection *found = NULL;
-	GSList *connections, *l;
-
-	connections = nm_settings_get_connections (priv->settings);
-
-	for (l = connections; l != NULL; l = l->next) {
-		NMConnection *candidate = NM_CONNECTION (l->data);
-		NMSettingConnection *s_con;
-		NMSettingBluetooth *s_bt;
-		const char *con_type;
-		const char *bt_type;
-
-		s_con = nm_connection_get_setting_connection (candidate);
-		g_assert (s_con);
-		con_type = nm_setting_connection_get_connection_type (s_con);
-		g_assert (con_type);
-		if (!g_str_equal (con_type, NM_SETTING_BLUETOOTH_SETTING_NAME))
-			continue;
-
-		s_bt = nm_connection_get_setting_bluetooth (candidate);
-		if (!s_bt)
-			continue;
-
-		if (!bdaddr_matches_connection (s_bt, bdaddr))
-			continue;
-
-		bt_type = nm_setting_bluetooth_get_connection_type (s_bt);
-		if (   g_str_equal (bt_type, NM_SETTING_BLUETOOTH_TYPE_DUN)
-		    && !(capabilities & NM_BT_CAPABILITY_DUN))
-		    	continue;
-		if (   g_str_equal (bt_type, NM_SETTING_BLUETOOTH_TYPE_PANU)
-		    && !(capabilities & NM_BT_CAPABILITY_NAP))
-		    	continue;
-
-		found = candidate;
-		break;
-	}
-
-	g_slist_free (connections);
-	return found;
-}
-
-static void
-bluez_manager_resync_devices (NMManager *self)
-{
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	GSList *iter, *gone = NULL, *keep = NULL;
-
-	/* Remove devices from the device list that don't have a corresponding connection */
-	for (iter = priv->devices; iter; iter = g_slist_next (iter)) {
-		NMDevice *candidate = NM_DEVICE (iter->data);
-		guint32 uuids;
-		const char *bdaddr;
-
-		if (nm_device_get_device_type (candidate) == NM_DEVICE_TYPE_BT) {
-			uuids = nm_device_bt_get_capabilities (NM_DEVICE_BT (candidate));
-			bdaddr = nm_device_bt_get_hw_address (NM_DEVICE_BT (candidate));
-
-			if (bluez_manager_find_connection (self, bdaddr, uuids))
-				keep = g_slist_prepend (keep, candidate);
-			else
-				gone = g_slist_prepend (gone, candidate);
-		} else
-			keep = g_slist_prepend (keep, candidate);
-	}
-
-	/* Only touch the device list if anything actually changed */
-	if (g_slist_length (gone)) {
-		g_slist_free (priv->devices);
-		priv->devices = keep;
-
-		while (g_slist_length (gone))
-			gone = remove_one_device (self, gone, NM_DEVICE (gone->data), FALSE);
-	} else {
-		g_slist_free (keep);
-		g_slist_free (gone);
-	}
-
-	/* Now look for devices without connections */
-	nm_bluez_manager_query_devices (priv->bluez_mgr);
-}
-
 static void
 bluez_manager_bdaddr_added_cb (NMBluezManager *bluez_mgr,
                                const char *bdaddr,
@@ -1924,12 +1791,6 @@ bluez_manager_bdaddr_added_cb (NMBluezManager *bluez_mgr,
 
 	/* Make sure the device is not already in the device list */
 	if (nm_manager_get_device_by_udi (manager, object_path))
-		return;
-
-	if (has_dun == FALSE && has_nap == FALSE)
-		return;
-
-	if (!bluez_manager_find_connection (manager, bdaddr, capabilities))
 		return;
 
 	device = nm_device_bt_new (object_path, bdaddr, name, capabilities, FALSE);
@@ -1953,19 +1814,15 @@ bluez_manager_bdaddr_removed_cb (NMBluezManager *bluez_mgr,
 {
 	NMManager *self = NM_MANAGER (user_data);
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	GSList *iter;
+	NMDevice *device;
 
 	g_return_if_fail (bdaddr != NULL);
 	g_return_if_fail (object_path != NULL);
 
-	for (iter = priv->devices; iter; iter = iter->next) {
-		NMDevice *device = NM_DEVICE (iter->data);
-
-		if (!strcmp (nm_device_get_udi (device), object_path)) {
-			nm_log_info (LOGD_HW, "BT device %s removed", bdaddr);
-			priv->devices = remove_one_device (self, priv->devices, device, FALSE);
-			break;
-		}
+	device = nm_manager_get_device_by_udi (self, object_path);
+	if (device) {
+		nm_log_info (LOGD_HW, "BT device %s removed", bdaddr);
+		priv->devices = remove_one_device (self, priv->devices, device, FALSE);
 	}
 }
 
@@ -2155,6 +2012,12 @@ is_vlan (int ifindex)
 	return (nm_system_get_iface_type (ifindex, NULL) == NM_IFACE_TYPE_VLAN);
 }
 
+static gboolean
+is_adsl (GUdevDevice *device)
+{
+	return (g_strcmp0 (g_udev_device_get_subsystem (device), "atm") == 0);
+}
+
 static void
 udev_device_added_cb (NMUdevManager *udev_mgr,
                       GUdevDevice *udev_device,
@@ -2174,14 +2037,22 @@ udev_device_added_cb (NMUdevManager *udev_mgr,
 	g_return_if_fail (iface != NULL);
 	g_return_if_fail (sysfs_path != NULL);
 	g_return_if_fail (driver != NULL);
-	g_return_if_fail (ifindex >= 0);
 
-	device = find_device_by_ifindex (self, ifindex);
-	if (device) {
-		/* If it's a virtual device we may need to update its UDI */
-		if (nm_system_get_iface_type (ifindex, iface) != NM_IFACE_TYPE_UNSPEC)
-			g_object_set (G_OBJECT (device), NM_DEVICE_UDI, sysfs_path, NULL);
-		return;
+	/* Most devices will have an ifindex here */
+	if (ifindex > 0) {
+		device = find_device_by_ifindex (self, ifindex);
+		if (device) {
+			/* If it's a virtual device we may need to update its UDI */
+			if (nm_system_get_iface_type (ifindex, iface) != NM_IFACE_TYPE_UNSPEC)
+				g_object_set (G_OBJECT (device), NM_DEVICE_UDI, sysfs_path, NULL);
+			return;
+		}
+	} else {
+		/* But ATM/ADSL devices don't */
+		g_return_if_fail (is_adsl (udev_device));
+		device = find_device_by_ip_iface (self, iface);
+		if (device)
+			return;
 	}
 
 	/* Try registered device factories */
@@ -2233,7 +2104,9 @@ udev_device_added_cb (NMUdevManager *udev_mgr,
 				}
 			} else
 				nm_log_err (LOGD_HW, "(%s): failed to get VLAN parent ifindex", iface);
-		} else
+		} else if (is_adsl (udev_device))
+			device = nm_device_adsl_new (sysfs_path, iface, driver);
+		else
 			device = nm_device_ethernet_new (sysfs_path, iface, driver);
 	}
 
@@ -3098,8 +2971,18 @@ deactivate_net_auth_done_cb (NMAuthChain *chain,
 	priv->auth_chains = g_slist_remove (priv->auth_chains, chain);
 
 	result = GPOINTER_TO_UINT (nm_auth_chain_get_data (chain, NM_AUTH_PERMISSION_NETWORK_CONTROL));
-	error = deactivate_disconnect_check_error (auth_error, result, "Deactivate");
-	if (!error) {
+	if (auth_error) {
+		nm_log_dbg (LOGD_CORE, "Disconnect request failed: %s", auth_error->message);
+		error = g_error_new (NM_MANAGER_ERROR,
+		                     NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                     "Deactivate request failed: %s",
+		                     auth_error->message);
+	} else if (result != NM_AUTH_CALL_RESULT_YES) {
+		error = g_error_new_literal (NM_MANAGER_ERROR,
+		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                             "Not authorized to deactivate connections");
+	} else {
+		/* success; deactivation allowed */
 		active_path = nm_auth_chain_get_data (chain, "path");
 		if (!nm_manager_deactivate_connection (self,
 		                                       active_path,
@@ -3246,15 +3129,13 @@ do_sleep_wake (NMManager *self)
 					nm_device_set_enabled (device, enabled);
 			}
 
-			nm_device_clear_autoconnect_inhibit (device);
+			g_object_set (G_OBJECT (device), NM_DEVICE_AUTOCONNECT, TRUE, NULL);
+
 			if (nm_device_spec_match_list (device, unmanaged_specs))
 				nm_device_set_managed (device, FALSE, NM_DEVICE_STATE_REASON_NOW_UNMANAGED);
 			else
 				nm_device_set_managed (device, TRUE, NM_DEVICE_STATE_REASON_NOW_MANAGED);
 		}
-
-		/* Ask for new bluetooth devices */
-		bluez_manager_resync_devices (self);
 	}
 
 	nm_manager_update_state (self);
@@ -3671,7 +3552,7 @@ nm_manager_start (NMManager *self)
 	system_hostname_changed_cb (priv->settings, NULL, self);
 
 	nm_udev_manager_query_devices (priv->udev_mgr);
-	bluez_manager_resync_devices (self);
+	nm_bluez_manager_query_devices (priv->bluez_mgr);
 
 	/* Query devices again to ensure that we catch all virtual interfaces (like
 	 * VLANs) that require a parent.  If during the first pass the VLAN
@@ -3766,7 +3647,8 @@ firmware_dir_changed (GFileMonitor *monitor,
 	}
 }
 
-#define PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
+#define NM_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
+#define DEV_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.Device.PermissionDenied"
 
 static void
 prop_set_auth_done_cb (NMAuthChain *chain,
@@ -3779,9 +3661,13 @@ prop_set_auth_done_cb (NMAuthChain *chain,
 	DBusGConnection *bus;
 	DBusConnection *dbus_connection;
 	NMAuthCallResult result;
-	DBusMessage *reply, *request;
-	const char *permission, *prop;
+	DBusMessage *reply = NULL, *request;
+	GError *ret_error;
+	const char *permission, *prop, *objpath;
 	gboolean set_enabled = TRUE;
+	gboolean is_device = FALSE;
+	size_t objpath_len;
+	size_t devpath_len;
 
 	priv->auth_chains = g_slist_remove (priv->auth_chains, chain);
 
@@ -3789,9 +3675,16 @@ prop_set_auth_done_cb (NMAuthChain *chain,
 	permission = nm_auth_chain_get_data (chain, "permission");
 	prop = nm_auth_chain_get_data (chain, "prop");
 	set_enabled = GPOINTER_TO_UINT (nm_auth_chain_get_data (chain, "enabled"));
+	objpath = nm_auth_chain_get_data (chain, "objectpath");
+
+	objpath_len = strlen (objpath);
+	devpath_len = strlen (NM_DBUS_PATH "/Devices");
+	if (   strncmp (objpath, NM_DBUS_PATH "/Devices", devpath_len) == 0
+	    && objpath_len > devpath_len)
+		is_device = TRUE;
 
 	if (error) {
-		reply = dbus_message_new_error (request, PERM_DENIED_ERROR,
+		reply = dbus_message_new_error (request, is_device ? DEV_PERM_DENIED_ERROR : NM_PERM_DENIED_ERROR,
 		                                "Not authorized to perform this operation");
 	} else {
 		/* Caller has had a chance to obtain authorization, so we only need to
@@ -3799,11 +3692,27 @@ prop_set_auth_done_cb (NMAuthChain *chain,
 		 */
 		result = GPOINTER_TO_UINT (nm_auth_chain_get_data (chain, permission));
 		if (result != NM_AUTH_CALL_RESULT_YES) {
-			reply = dbus_message_new_error (request, PERM_DENIED_ERROR,
-				                            "Not authorized to perform this operation");
+			reply = dbus_message_new_error (request, is_device ? DEV_PERM_DENIED_ERROR : NM_PERM_DENIED_ERROR,
+			                                "Not authorized to perform this operation");
 		} else {
-			g_object_set (self, prop, set_enabled, NULL);
-			reply = dbus_message_new_method_return (request);
+			if (is_device) {
+				/* Find the device */
+				NMDevice *device = nm_manager_get_device_by_path (self, objpath);
+				if (device) {
+					g_object_set (device, prop, set_enabled, NULL);
+					reply = dbus_message_new_method_return (request);
+				}
+				else {
+					ret_error = g_error_new_literal (NM_MANAGER_ERROR,
+					                                 NM_MANAGER_ERROR_UNKNOWN_DEVICE,
+					                                 "Can't find device for this operation");
+					dbus_g_method_return_error (context, ret_error);
+					g_error_free (ret_error);
+				}
+			} else {
+				g_object_set (self, prop, set_enabled, NULL);
+				reply = dbus_message_new_method_return (request);
+			}
 		}
 	}
 
@@ -3831,6 +3740,7 @@ prop_filter (DBusConnection *connection,
 	const char *propiface = NULL;
 	const char *propname = NULL;
 	const char *sender = NULL;
+	const char *objpath = NULL;
 	const char *glib_propname = NULL, *permission = NULL;
 	DBusError dbus_error;
 	gulong uid = G_MAXULONG;
@@ -3852,7 +3762,7 @@ prop_filter (DBusConnection *connection,
 	if (dbus_message_iter_get_arg_type (&iter) != DBUS_TYPE_STRING)
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	dbus_message_iter_get_basic (&iter, &propiface);
-	if (!propiface || strcmp (propiface, NM_DBUS_INTERFACE))
+	if (!propiface || (strcmp (propiface, NM_DBUS_INTERFACE) && strcmp (propiface, NM_DBUS_INTERFACE_DEVICE)))
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 	dbus_message_iter_next (&iter);
 
@@ -3871,6 +3781,9 @@ prop_filter (DBusConnection *connection,
 	} else if (!strcmp (propname, "WimaxEnabled")) {
 		glib_propname = NM_MANAGER_WIMAX_ENABLED;
 		permission = NM_AUTH_PERMISSION_ENABLE_DISABLE_WIMAX;
+	} else if (!strcmp (propname, "Autoconnect")) {
+		glib_propname = NM_DEVICE_AUTOCONNECT;
+		permission = NM_AUTH_PERMISSION_NETWORK_CONTROL;
 	} else
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
@@ -3884,15 +3797,22 @@ prop_filter (DBusConnection *connection,
 
 	sender = dbus_message_get_sender (message);
 	if (!sender) {
-		reply = dbus_message_new_error (message, PERM_DENIED_ERROR,
+		reply = dbus_message_new_error (message, NM_PERM_DENIED_ERROR,
 		                                "Could not determine D-Bus requestor");
+		goto out;
+	}
+
+	objpath = dbus_message_get_path (message);
+	if (!objpath) {
+		reply = dbus_message_new_error (message, NM_PERM_DENIED_ERROR,
+		                                "Could not determine D-Bus object path");
 		goto out;
 	}
 
 	dbus_error_init (&dbus_error);
 	uid = dbus_bus_get_unix_user (connection, sender, &dbus_error);
 	if (dbus_error_is_set (&dbus_error)) {
-		reply = dbus_message_new_error (message, PERM_DENIED_ERROR,
+		reply = dbus_message_new_error (message, NM_PERM_DENIED_ERROR,
 		                                "Could not determine the user ID of the requestor");
 		dbus_error_free (&dbus_error);
 		goto out;
@@ -3907,6 +3827,7 @@ prop_filter (DBusConnection *connection,
 		nm_auth_chain_set_data (chain, "permission", g_strdup (permission), g_free);
 		nm_auth_chain_set_data (chain, "enabled", GUINT_TO_POINTER (set_enabled), NULL);
 		nm_auth_chain_set_data (chain, "message", dbus_message_ref (message), (GDestroyNotify) dbus_message_unref);
+		nm_auth_chain_set_data (chain, "objectpath", g_strdup (objpath), g_free);
 		nm_auth_chain_add_call (chain, permission, TRUE);
 	} else {
 		/* Yay for root */
@@ -4013,17 +3934,17 @@ nm_manager_new (NMSettings *settings,
 	                  G_CALLBACK (udev_manager_rfkill_changed_cb),
 	                  singleton);
 
-	priv->bluez_mgr = nm_bluez_manager_get ();
+	priv->bluez_mgr = nm_bluez_manager_get (NM_CONNECTION_PROVIDER (priv->settings));
 
 	g_signal_connect (priv->bluez_mgr,
-			  "bdaddr-added",
-			  G_CALLBACK (bluez_manager_bdaddr_added_cb),
-			  singleton);
+	                  NM_BLUEZ_MANAGER_BDADDR_ADDED,
+	                  G_CALLBACK (bluez_manager_bdaddr_added_cb),
+	                  singleton);
 
 	g_signal_connect (priv->bluez_mgr,
-			  "bdaddr-removed",
-			  G_CALLBACK (bluez_manager_bdaddr_removed_cb),
-			  singleton);
+	                  NM_BLUEZ_MANAGER_BDADDR_REMOVED,
+	                  G_CALLBACK (bluez_manager_bdaddr_removed_cb),
+	                  singleton);
 
 	return singleton;
 }

@@ -45,8 +45,11 @@
 <a name="NMDeviceModem.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="NMDeviceModem.html#NMDeviceModem-struct" title="NMDeviceModem">NMDeviceModem</a>;
                     <a class="link" href="NMDeviceModem.html#NMDeviceModemClass" title="NMDeviceModemClass">NMDeviceModemClass</a>;
+enum                <a class="link" href="NMDeviceModem.html#NMDeviceModemError" title="enum NMDeviceModemError">NMDeviceModemError</a>;
 #define             <a class="link" href="NMDeviceModem.html#NM-DEVICE-MODEM-CURRENT-CAPABILITIES:CAPS" title="NM_DEVICE_MODEM_CURRENT_CAPABILITIES">NM_DEVICE_MODEM_CURRENT_CAPABILITIES</a>
+#define             <a class="link" href="NMDeviceModem.html#NM-DEVICE-MODEM-ERROR:CAPS" title="NM_DEVICE_MODEM_ERROR">NM_DEVICE_MODEM_ERROR</a>
 #define             <a class="link" href="NMDeviceModem.html#NM-DEVICE-MODEM-MODEM-CAPABILITIES:CAPS" title="NM_DEVICE_MODEM_MODEM_CAPABILITIES">NM_DEVICE_MODEM_MODEM_CAPABILITIES</a>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMDeviceModem.html#nm-device-modem-error-quark" title="nm_device_modem_error_quark ()">nm_device_modem_error_quark</a>         (<em class="parameter"><code><span class="type">void</span></code></em>);
 <span class="returnvalue">NMDeviceModemCapabilities</span> <a class="link" href="NMDeviceModem.html#nm-device-modem-get-current-capabilities" title="nm_device_modem_get_current_capabilities ()">nm_device_modem_get_current_capabilities</a>
                                                         (<em class="parameter"><code><a class="link" href="NMDeviceModem.html" title="NMDeviceModem"><span class="type">NMDeviceModem</span></a> *self</code></em>);
 <span class="returnvalue">NMDeviceModemCapabilities</span> <a class="link" href="NMDeviceModem.html#nm-device-modem-get-modem-capabilities" title="nm_device_modem_get_modem_capabilities ()">nm_device_modem_get_modem_capabilities</a>
@@ -108,8 +111,52 @@ NMDeviceModem implements
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMDeviceModemError"></a><h3>enum NMDeviceModemError</h3>
+<pre class="programlisting">typedef enum {
+	NM_DEVICE_MODEM_ERROR_UNKNOWN = 0,              /*&lt; nick=UnknownError &gt;*/
+	NM_DEVICE_MODEM_ERROR_NOT_MODEM_CONNECTION,     /*&lt; nick=NotModemConnection &gt;*/
+	NM_DEVICE_MODEM_ERROR_INVALID_MODEM_CONNECTION, /*&lt; nick=InvalidModemConnection &gt;*/
+	NM_DEVICE_MODEM_ERROR_MISSING_DEVICE_CAPS,      /*&lt; nick=MissingDeviceCaps &gt;*/
+} NMDeviceModemError;
+</pre>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-ERROR-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_ERROR_UNKNOWN</code></span></p></td>
+<td>unknown or unclassified error
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-ERROR-NOT-MODEM-CONNECTION:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_ERROR_NOT_MODEM_CONNECTION</code></span></p></td>
+<td>the connection was not of modem type
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-ERROR-INVALID-MODEM-CONNECTION:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_ERROR_INVALID_MODEM_CONNECTION</code></span></p></td>
+<td>the modem connection was invalid
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-ERROR-MISSING-DEVICE-CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_ERROR_MISSING_DEVICE_CAPS</code></span></p></td>
+<td>the device missed required capabilities
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-DEVICE-MODEM-CURRENT-CAPABILITIES:CAPS"></a><h3>NM_DEVICE_MODEM_CURRENT_CAPABILITIES</h3>
 <pre class="programlisting">#define NM_DEVICE_MODEM_CURRENT_CAPABILITIES "current-capabilities"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DEVICE-MODEM-ERROR:CAPS"></a><h3>NM_DEVICE_MODEM_ERROR</h3>
+<pre class="programlisting">#define NM_DEVICE_MODEM_ERROR nm_device_modem_error_quark ()
 </pre>
 <p>
 </p>
@@ -121,6 +168,21 @@ NMDeviceModem implements
 </pre>
 <p>
 </p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-device-modem-error-quark"></a><h3>nm_device_modem_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_device_modem_error_quark         (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Registers an error quark for <a class="link" href="NMDeviceModem.html" title="NMDeviceModem"><span class="type">NMDeviceModem</span></a> if necessary.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the error quark used for <a class="link" href="NMDeviceModem.html" title="NMDeviceModem"><span class="type">NMDeviceModem</span></a> errors.</td>
+</tr></tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

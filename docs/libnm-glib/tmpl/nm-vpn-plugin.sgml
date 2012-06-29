@@ -41,12 +41,12 @@ NMVPNPlugin
 @login_banner: 
 @failure: 
 @quit: 
+@config: 
+@ip6_config: 
 @_reserved1: 
 @_reserved2: 
 @_reserved3: 
 @_reserved4: 
-@_reserved5: 
-@_reserved6: 
 
 <!-- ##### ENUM NMVPNPluginError ##### -->
 <para>
@@ -123,6 +123,15 @@ NMVPNPlugin
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_vpn_plugin_set_config ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@config: 
+
+
 <!-- ##### FUNCTION nm_vpn_plugin_set_ip4_config ##### -->
 <para>
 
@@ -130,6 +139,15 @@ NMVPNPlugin
 
 @plugin: 
 @ip4_config: 
+
+
+<!-- ##### FUNCTION nm_vpn_plugin_set_ip6_config ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@ip6_config: 
 
 
 <!-- ##### FUNCTION nm_vpn_plugin_set_login_banner ##### -->

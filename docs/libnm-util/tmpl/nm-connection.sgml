@@ -210,6 +210,15 @@ NMConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_connection_get_setting_adsl ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_connection_get_setting_bluetooth ##### -->
 <para>
 

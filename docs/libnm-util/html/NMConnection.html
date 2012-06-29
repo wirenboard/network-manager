@@ -78,16 +78,17 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMCon
 <a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMConnection.html#nm-connection-get-setting" title="nm_connection_get_setting ()">nm_connection_get_setting</a>           (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> setting_type</code></em>);
 <a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="returnvalue">NMSetting8021x</span></a> *    <a class="link" href="NMConnection.html#nm-connection-get-setting-802-1x" title="nm_connection_get_setting_802_1x ()">nm_connection_get_setting_802_1x</a>    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+<span class="returnvalue">NMSettingAdsl</span> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-adsl" title="nm_connection_get_setting_adsl ()">nm_connection_get_setting_adsl</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="returnvalue">NMSettingBluetooth</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-bluetooth" title="nm_connection_get_setting_bluetooth ()">nm_connection_get_setting_bluetooth</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
-<span class="returnvalue">NMSettingBond</span> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-bond" title="nm_connection_get_setting_bond ()">nm_connection_get_setting_bond</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+<a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="returnvalue">NMSettingBond</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-bond" title="nm_connection_get_setting_bond ()">nm_connection_get_setting_bond</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMConnection.html#nm-connection-get-setting-by-name" title="nm_connection_get_setting_by_name ()">nm_connection_get_setting_by_name</a>   (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);
 <a class="link" href="NMSettingCdma.html" title="NMSettingCdma"><span class="returnvalue">NMSettingCdma</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-cdma" title="nm_connection_get_setting_cdma ()">nm_connection_get_setting_cdma</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="returnvalue">NMSettingConnection</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-connection" title="nm_connection_get_setting_connection ()">nm_connection_get_setting_connection</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingGsm.html" title="NMSettingGsm"><span class="returnvalue">NMSettingGsm</span></a> *      <a class="link" href="NMConnection.html#nm-connection-get-setting-gsm" title="nm_connection_get_setting_gsm ()">nm_connection_get_setting_gsm</a>       (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
-<span class="returnvalue">NMSettingInfiniband</span> * <a class="link" href="NMConnection.html#nm-connection-get-setting-infiniband" title="nm_connection_get_setting_infiniband ()">nm_connection_get_setting_infiniband</a>
+<a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="returnvalue">NMSettingInfiniband</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-infiniband" title="nm_connection_get_setting_infiniband ()">nm_connection_get_setting_infiniband</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config"><span class="returnvalue">NMSettingIP4Config</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-ip4-config" title="nm_connection_get_setting_ip4_config ()">nm_connection_get_setting_ip4_config</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
@@ -97,7 +98,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMCon
 <a class="link" href="NMSettingPPP.html" title="NMSettingPPP"><span class="returnvalue">NMSettingPPP</span></a> *      <a class="link" href="NMConnection.html#nm-connection-get-setting-ppp" title="nm_connection_get_setting_ppp ()">nm_connection_get_setting_ppp</a>       (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="returnvalue">NMSettingPPPOE</span></a> *    <a class="link" href="NMConnection.html#nm-connection-get-setting-pppoe" title="nm_connection_get_setting_pppoe ()">nm_connection_get_setting_pppoe</a>     (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingSerial.html" title="NMSettingSerial"><span class="returnvalue">NMSettingSerial</span></a> *   <a class="link" href="NMConnection.html#nm-connection-get-setting-serial" title="nm_connection_get_setting_serial ()">nm_connection_get_setting_serial</a>    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
-<span class="returnvalue">NMSettingVlan</span> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-vlan" title="nm_connection_get_setting_vlan ()">nm_connection_get_setting_vlan</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+<a class="link" href="NMSettingVlan.html" title="NMSettingVlan"><span class="returnvalue">NMSettingVlan</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-vlan" title="nm_connection_get_setting_vlan ()">nm_connection_get_setting_vlan</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="returnvalue">NMSettingVPN</span></a> *      <a class="link" href="NMConnection.html#nm-connection-get-setting-vpn" title="nm_connection_get_setting_vpn ()">nm_connection_get_setting_vpn</a>       (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingWimax.html" title="NMSettingWimax"><span class="returnvalue">NMSettingWimax</span></a> *    <a class="link" href="NMConnection.html#nm-connection-get-setting-wimax" title="nm_connection_get_setting_wimax ()">nm_connection_get_setting_wimax</a>     (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="returnvalue">NMSettingWired</span></a> *    <a class="link" href="NMConnection.html#nm-connection-get-setting-wired" title="nm_connection_get_setting_wired ()">nm_connection_get_setting_wired</a>     (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
@@ -629,6 +630,29 @@ A shortcut to return any <a class="link" href="NMSetting8021x.html" title="NMSet
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-connection-get-setting-adsl"></a><h3>nm_connection_get_setting_adsl ()</h3>
+<pre class="programlisting"><span class="returnvalue">NMSettingAdsl</span> *     nm_connection_get_setting_adsl      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<p>
+A shortcut to return any <span class="type">NMSettingAdsl</span> the connection might contain.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>an <span class="type">NMSettingAdsl</span> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-connection-get-setting-bluetooth"></a><h3>nm_connection_get_setting_bluetooth ()</h3>
 <pre class="programlisting"><a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="returnvalue">NMSettingBluetooth</span></a> * nm_connection_get_setting_bluetooth
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
@@ -654,9 +678,9 @@ A shortcut to return any <a class="link" href="NMSettingBluetooth.html" title="N
 <hr>
 <div class="refsect2">
 <a name="nm-connection-get-setting-bond"></a><h3>nm_connection_get_setting_bond ()</h3>
-<pre class="programlisting"><span class="returnvalue">NMSettingBond</span> *     nm_connection_get_setting_bond      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<pre class="programlisting"><a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="returnvalue">NMSettingBond</span></a> *     nm_connection_get_setting_bond      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
-A shortcut to return any <span class="type">NMSettingBond</span> the connection might contain.
+A shortcut to return any <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> the connection might contain.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -668,7 +692,7 @@ A shortcut to return any <span class="type">NMSettingBond</span> the connection 
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>an <span class="type">NMSettingBond</span> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+<td>an <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
@@ -777,10 +801,10 @@ A shortcut to return any <a class="link" href="NMSettingGsm.html" title="NMSetti
 <hr>
 <div class="refsect2">
 <a name="nm-connection-get-setting-infiniband"></a><h3>nm_connection_get_setting_infiniband ()</h3>
-<pre class="programlisting"><span class="returnvalue">NMSettingInfiniband</span> * nm_connection_get_setting_infiniband
+<pre class="programlisting"><a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="returnvalue">NMSettingInfiniband</span></a> * nm_connection_get_setting_infiniband
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
-A shortcut to return any <span class="type">NMSettingInfiniband</span> the connection might contain.
+A shortcut to return any <a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="type">NMSettingInfiniband</span></a> the connection might contain.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -792,7 +816,7 @@ A shortcut to return any <span class="type">NMSettingInfiniband</span> the conne
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>an <span class="type">NMSettingInfiniband</span> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+<td>an <a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="type">NMSettingInfiniband</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
@@ -941,9 +965,9 @@ A shortcut to return any <a class="link" href="NMSettingSerial.html" title="NMSe
 <hr>
 <div class="refsect2">
 <a name="nm-connection-get-setting-vlan"></a><h3>nm_connection_get_setting_vlan ()</h3>
-<pre class="programlisting"><span class="returnvalue">NMSettingVlan</span> *     nm_connection_get_setting_vlan      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<pre class="programlisting"><a class="link" href="NMSettingVlan.html" title="NMSettingVlan"><span class="returnvalue">NMSettingVlan</span></a> *     nm_connection_get_setting_vlan      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
-A shortcut to return any <span class="type">NMSettingVlan</span> the connection might contain.
+A shortcut to return any <a class="link" href="NMSettingVlan.html" title="NMSettingVlan"><span class="type">NMSettingVlan</span></a> the connection might contain.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -955,7 +979,7 @@ A shortcut to return any <span class="type">NMSettingVlan</span> the connection 
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>an <span class="type">NMSettingVlan</span> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+<td>an <a class="link" href="NMSettingVlan.html" title="NMSettingVlan"><span class="type">NMSettingVlan</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
