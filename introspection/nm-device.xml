@@ -36,6 +36,16 @@
         The driver handling the device.
       </tp:docstring>
     </property>
+    <property name="DriverVersion" type="s" access="read">
+      <tp:docstring>
+        The version of the driver handling the device.
+      </tp:docstring>
+    </property>
+    <property name="FirmwareVersion" type="s" access="read">
+      <tp:docstring>
+        The firmware version for the device.
+      </tp:docstring>
+    </property>
     <property name="Capabilities" type="u" access="read" tp:type="NM_DEVICE_CAP">
       <tp:docstring>
         Flags describing the capabilities of the device.
@@ -89,6 +99,14 @@
     <property name="Managed" type="b" access="read">
       <tp:docstring>
         Whether or not this device is managed by NetworkManager.
+      </tp:docstring>
+    </property>
+    <property name="Autoconnect" type="b" access="readwrite">
+      <tp:docstring>
+        If TRUE, indicates the device is allowed to autoconnect.  If FALSE,
+        manual intervention is required before the device will automatically
+        connect to a known network, such as activating a connection using the
+        device, or setting this property to TRUE.
       </tp:docstring>
     </property>
     <property name="FirmwareMissing" type="b" access="read">
@@ -524,6 +542,11 @@
       <tp:enumvalue suffix="DEPENDENCY_FAILED" value="50">
         <tp:docstring>
           A dependency of the connection failed.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="BR2684_FAILED" value="50">
+        <tp:docstring>
+          Problem with the RFC 2684 Ethernet over ADSL bridge.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>

@@ -49,8 +49,12 @@ enum                <a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugi
                                                          <em class="parameter"><code><span class="type">NMVPNPluginFailure</span> reason</code></em>);
 <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="returnvalue">DBusGConnection</span></a> *   <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-get-connection" title="nm_vpn_plugin_get_connection ()">nm_vpn_plugin_get_connection</a>        (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>);
 <span class="returnvalue">NMVPNServiceState</span>   <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-get-state" title="nm_vpn_plugin_get_state ()">nm_vpn_plugin_get_state</a>             (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-config" title="nm_vpn_plugin_set_config ()">nm_vpn_plugin_set_config</a>            (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *config</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-ip4-config" title="nm_vpn_plugin_set_ip4_config ()">nm_vpn_plugin_set_ip4_config</a>        (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *ip4_config</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-ip6-config" title="nm_vpn_plugin_set_ip6_config ()">nm_vpn_plugin_set_ip6_config</a>        (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *ip6_config</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-login-banner" title="nm_vpn_plugin_set_login_banner ()">nm_vpn_plugin_set_login_banner</a>      (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *banner</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-state" title="nm_vpn_plugin_set_state ()">nm_vpn_plugin_set_state</a>             (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
@@ -80,40 +84,44 @@ enum                <a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugi
 	GObjectClass parent;
 
 	/* virtual methods */
-	gboolean (*connect)    (NMVPNPlugin   *plugin,
-					    NMConnection  *connection,
-					    GError       **err);
+	gboolean (*connect)      (NMVPNPlugin   *plugin,
+	                          NMConnection  *connection,
+	                          GError       **err);
 
 	gboolean (*need_secrets) (NMVPNPlugin *plugin,
-	                              NMConnection *connection,
-	                              char **setting_name,
-	                              GError **error);
+	                          NMConnection *connection,
+	                          char **setting_name,
+	                          GError **error);
 
-	gboolean (*disconnect) (NMVPNPlugin   *plugin,
-					    GError       **err);
+	gboolean (*disconnect)   (NMVPNPlugin   *plugin,
+	                          GError       **err);
 
 	/* Signals */
 	void (*state_changed)  (NMVPNPlugin *plugin,
-					    NMVPNServiceState state);
+	                        NMVPNServiceState state);
 
 	void (*ip4_config)     (NMVPNPlugin *plugin,
-					    GHashTable  *ip4_config);
+	                        GHashTable  *ip4_config);
 
 	void (*login_banner)   (NMVPNPlugin *plugin,
-					    const char *banner);
+	                        const char *banner);
 
 	void (*failure)        (NMVPNPlugin *plugin,
-					    NMVPNPluginFailure reason);
+	                        NMVPNPluginFailure reason);
 
 	void (*quit)           (NMVPNPlugin *plugin);
+
+	void (*config)         (NMVPNPlugin *plugin,
+	                        GHashTable  *config);
+
+	void (*ip6_config)     (NMVPNPlugin *plugin,
+	                        GHashTable  *config);
 
 	/* Padding for future expansion */
 	void (*_reserved1) (void);
 	void (*_reserved2) (void);
 	void (*_reserved3) (void);
 	void (*_reserved4) (void);
-	void (*_reserved5) (void);
-	void (*_reserved6) (void);
 } NMVPNPluginClass;
 </pre>
 <p>
@@ -192,9 +200,25 @@ enum                <a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugi
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-vpn-plugin-set-config"></a><h3>nm_vpn_plugin_set_config ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                nm_vpn_plugin_set_config            (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *config</code></em>);</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-vpn-plugin-set-ip4-config"></a><h3>nm_vpn_plugin_set_ip4_config ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                nm_vpn_plugin_set_ip4_config        (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *ip4_config</code></em>);</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-vpn-plugin-set-ip6-config"></a><h3>nm_vpn_plugin_set_ip6_config ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                nm_vpn_plugin_set_ip6_config        (<em class="parameter"><code><a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugin" title="NMVPNPlugin"><span class="type">NMVPNPlugin</span></a> *plugin</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *ip6_config</code></em>);</pre>
 <p>
 </p>
 </div>

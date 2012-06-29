@@ -103,7 +103,7 @@ nm_setting_bond_new (void)
 }
 
 /**
- * nm_setting_bond_get_interface_name
+ * nm_setting_bond_get_interface_name:
  * @setting: the #NMSettingBond
  *
  * Returns: the #NMSettingBond:interface-name property of the setting
@@ -111,7 +111,7 @@ nm_setting_bond_new (void)
 const char *
 nm_setting_bond_get_interface_name (NMSettingBond *setting)
 {
-	g_return_val_if_fail (NM_IS_SETTING_BOND (setting), 0);
+	g_return_val_if_fail (NM_IS_SETTING_BOND (setting), NULL);
 
 	return NM_SETTING_BOND_GET_PRIVATE (setting)->interface_name;
 }
@@ -288,7 +288,7 @@ nm_setting_bond_remove_option (NMSettingBond *setting,
  *
  * Returns a list of valid bond options.
  *
- * Returns: a NULL-terminated array of strings of valid bond options.
+ * Returns: (transfer none): a NULL-terminated array of strings of valid bond options.
  **/
 const char **
 nm_setting_bond_get_valid_options  (NMSettingBond *setting)
@@ -402,10 +402,10 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		    || !value[0]
 		    || (strlen (value) > 200)
 		    || strchr (value, ' ')) {
-			g_set_error (error,
-			             NM_SETTING_BOND_ERROR,
-			             NM_SETTING_BOND_ERROR_INVALID_OPTION,
-			             key);
+			g_set_error_literal (error,
+			                     NM_SETTING_BOND_ERROR,
+			                     NM_SETTING_BOND_ERROR_INVALID_OPTION,
+			                     key);
 			return FALSE;
 		}
 	}

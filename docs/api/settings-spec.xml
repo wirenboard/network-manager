@@ -1279,6 +1279,12 @@
         <entry><screen></screen></entry>
         <entry>If the wireless connection has any security restrictions, like 802.1x, WEP, or WPA, set this property to '802-11-wireless-security' and ensure the connection contains a valid 802-11-wireless-security setting.</entry>
       </row>
+      <row>
+        <entry><screen>hidden</screen></entry>
+        <entry><screen>boolean</screen></entry>
+        <entry><screen>FALSE</screen></entry>
+        <entry>If TRUE, indicates this network is a non-broadcasting network that hides its SSID.  In this case various workarounds may take place, such as probe-scanning the SSID for more reliable network discovery.  However, these workarounds expose inherent insecurities with hidden SSID networks, and thus hidden SSID networks should be used with caution.</entry>
+      </row>
     </tbody>
   </tgroup>
 </table>

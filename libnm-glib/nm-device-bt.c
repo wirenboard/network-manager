@@ -25,6 +25,8 @@
 #include <string.h>
 #include <netinet/ether.h>
 
+#include "nm-glib-compat.h"
+
 #include <nm-setting-connection.h>
 #include <nm-setting-bluetooth.h>
 
@@ -42,8 +44,6 @@ typedef struct {
 	char *hw_address;
 	char *name;
 	guint32 bt_capabilities;
-
-	gboolean disposed;
 } NMDeviceBtPrivate;
 
 enum {
@@ -273,13 +273,7 @@ dispose (GObject *object)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (object);
 
-	if (priv->disposed) {
-		G_OBJECT_CLASS (nm_device_bt_parent_class)->dispose (object);
-		return;
-	}
-	priv->disposed = TRUE;
-
-	g_object_unref (priv->proxy);
+	g_clear_object (&priv->proxy);
 
 	G_OBJECT_CLASS (nm_device_bt_parent_class)->dispose (object);
 }
@@ -302,6 +296,8 @@ get_property (GObject *object,
               GParamSpec *pspec)
 {
 	NMDeviceBt *device = NM_DEVICE_BT (object);
+
+	_nm_object_ensure_inited (NM_OBJECT (object));
 
 	switch (prop_id) {
 	case PROP_HW_ADDRESS:

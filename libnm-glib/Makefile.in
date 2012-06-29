@@ -56,7 +56,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
 	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
 	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -108,6 +108,7 @@ am__objects_2 = libnm_glib_test_la-nm-object.lo \
 	libnm_glib_test_la-nm-device.lo \
 	libnm_glib_test_la-nm-device-ethernet.lo \
 	libnm_glib_test_la-nm-device-infiniband.lo \
+	libnm_glib_test_la-nm-device-adsl.lo \
 	libnm_glib_test_la-nm-device-wifi.lo \
 	libnm_glib_test_la-nm-device-bt.lo \
 	libnm_glib_test_la-nm-device-olpc-mesh.lo \
@@ -155,6 +156,7 @@ libnm_glib_la_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
 am__objects_4 = libnm_glib_la-nm-object.lo libnm_glib_la-nm-client.lo \
 	libnm_glib_la-nm-device.lo libnm_glib_la-nm-device-ethernet.lo \
 	libnm_glib_la-nm-device-infiniband.lo \
+	libnm_glib_la-nm-device-adsl.lo \
 	libnm_glib_la-nm-device-wifi.lo libnm_glib_la-nm-device-bt.lo \
 	libnm_glib_la-nm-device-olpc-mesh.lo \
 	libnm_glib_la-nm-device-bond.lo \
@@ -338,6 +340,10 @@ INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
 INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTLTOOL_V_MERGE = @INTLTOOL_V_MERGE@
+INTLTOOL_V_MERGE_OPTIONS = @INTLTOOL_V_MERGE_OPTIONS@
+INTLTOOL__v_MERGE_ = @INTLTOOL__v_MERGE_@
+INTLTOOL__v_MERGE_0 = @INTLTOOL__v_MERGE_0@
 INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 INTROSPECTION_CFLAGS = @INTROSPECTION_CFLAGS@
 INTROSPECTION_COMPILER = @INTROSPECTION_COMPILER@
@@ -433,6 +439,9 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VAPIGEN = @VAPIGEN@
+VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
+VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
@@ -471,6 +480,8 @@ htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
+intltool__v_merge_options_ = @intltool__v_merge_options_@
+intltool__v_merge_options_0 = @intltool__v_merge_options_0@
 libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
@@ -543,6 +554,7 @@ libnminclude_HEADERS = \
 	nm-device.h \
 	nm-device-ethernet.h \
 	nm-device-infiniband.h \
+	nm-device-adsl.h \
 	nm-device-wifi.h \
 	nm-device-bt.h \
 	nm-device-olpc-mesh.h \
@@ -576,6 +588,7 @@ libnm_glib_la_csources = \
 	nm-device.c \
 	nm-device-ethernet.c \
 	nm-device-infiniband.c \
+	nm-device-adsl.c \
 	nm-device-wifi.c \
 	nm-device-bt.c \
 	nm-device-olpc-mesh.c \
@@ -674,10 +687,11 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(top_builddir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@introspection_sources = $(libnminclude_HEADERS) $(libnm_glib_la_csources)
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_INCLUDES = Gio-2.0 DBusGLib-1.0
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_PACKAGES = gio-2.0 dbus-glib-1 gudev-1.0
+@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_EXPORT_PACKAGES = libnm-glib libnm-glib-vpn
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-glib -I$(top_srcdir)/libnm-util
-@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_LIBS = libnm-glib.la
+@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_LIBS = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_FILES = $(introspection_sources)
-@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm_ --include-uninstalled=$(top_builddir)/libnm-util/NetworkManager-1.0.gir
+@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm --include-uninstalled=$(top_builddir)/libnm-util/NetworkManager-1.0.gir
 @HAVE_INTROSPECTION_TRUE@girdir = $(datadir)/gir-1.0
 @HAVE_INTROSPECTION_TRUE@gir_DATA = $(INTROSPECTION_GIRS)
 @HAVE_INTROSPECTION_TRUE@typelibdir = $(libdir)/girepository-1.0
@@ -792,6 +806,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-access-point.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-active-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-client.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-adsl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-bt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_la-nm-device-ethernet.Plo@am__quote@
@@ -820,6 +835,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-access-point.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-active-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-client.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-adsl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-bt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test_la-nm-device-ethernet.Plo@am__quote@
@@ -923,6 +939,14 @@ libnm_glib_test_la-nm-device-infiniband.lo: nm-device-infiniband.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-infiniband.c' object='libnm_glib_test_la-nm-device-infiniband.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-infiniband.lo `test -f 'nm-device-infiniband.c' || echo '$(srcdir)/'`nm-device-infiniband.c
+
+libnm_glib_test_la-nm-device-adsl.lo: nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-adsl.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-adsl.Tpo -c -o libnm_glib_test_la-nm-device-adsl.lo `test -f 'nm-device-adsl.c' || echo '$(srcdir)/'`nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_test_la-nm-device-adsl.Tpo $(DEPDIR)/libnm_glib_test_la-nm-device-adsl.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-adsl.c' object='libnm_glib_test_la-nm-device-adsl.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_test_la-nm-device-adsl.lo `test -f 'nm-device-adsl.c' || echo '$(srcdir)/'`nm-device-adsl.c
 
 libnm_glib_test_la-nm-device-wifi.lo: nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_la_CFLAGS) $(CFLAGS) -MT libnm_glib_test_la-nm-device-wifi.lo -MD -MP -MF $(DEPDIR)/libnm_glib_test_la-nm-device-wifi.Tpo -c -o libnm_glib_test_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
@@ -1171,6 +1195,14 @@ libnm_glib_la-nm-device-infiniband.lo: nm-device-infiniband.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-infiniband.c' object='libnm_glib_la-nm-device-infiniband.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-infiniband.lo `test -f 'nm-device-infiniband.c' || echo '$(srcdir)/'`nm-device-infiniband.c
+
+libnm_glib_la-nm-device-adsl.lo: nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-adsl.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-adsl.Tpo -c -o libnm_glib_la-nm-device-adsl.lo `test -f 'nm-device-adsl.c' || echo '$(srcdir)/'`nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_glib_la-nm-device-adsl.Tpo $(DEPDIR)/libnm_glib_la-nm-device-adsl.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-adsl.c' object='libnm_glib_la-nm-device-adsl.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -c -o libnm_glib_la-nm-device-adsl.lo `test -f 'nm-device-adsl.c' || echo '$(srcdir)/'`nm-device-adsl.c
 
 libnm_glib_la-nm-device-wifi.lo: nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_la_CFLAGS) $(CFLAGS) -MT libnm_glib_la-nm-device-wifi.lo -MD -MP -MF $(DEPDIR)/libnm_glib_la-nm-device-wifi.Tpo -c -o libnm_glib_la-nm-device-wifi.lo `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c

@@ -50,6 +50,8 @@ static void wpas_iface_scan_done (DBusGProxy *proxy,
                                   gboolean success,
                                   gpointer user_data);
 
+static void wpas_iface_get_props (NMSupplicantInterface *self);
+
 #define NM_SUPPLICANT_INTERFACE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
                                                  NM_TYPE_SUPPLICANT_INTERFACE, \
                                                  NMSupplicantInterfacePrivate))
@@ -85,6 +87,8 @@ typedef struct {
 	gboolean              is_wireless;
 	gboolean              has_credreq;  /* Whether querying 802.1x credentials is supported */
 	gboolean              fast_supported;
+	guint32               max_scan_ssids;
+	guint32               ready_count;
 
 	char *                object_path;
 	guint32               state;
@@ -100,7 +104,7 @@ typedef struct {
 	guint32               blobs_left;
 	GHashTable *          bss_proxies;
 
-	guint32               last_scan;
+	time_t                last_scan;
 
 	NMSupplicantConfig *  cfg;
 
@@ -257,6 +261,10 @@ bss_properties_changed (DBusGProxy *proxy,
                         gpointer user_data)
 {
 	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+
+	if (priv->scanning)
+		priv->last_scan = time (NULL);
 
 	if (g_strcmp0 (interface, WPAS_DBUS_IFACE_BSS) == 0)
 		g_signal_emit (self, signals[BSS_UPDATED], 0, dbus_g_proxy_get_path (proxy), props);
@@ -268,6 +276,10 @@ old_bss_properties_changed (DBusGProxy *proxy,
                             gpointer user_data)
 {
 	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+
+	if (priv->scanning)
+		priv->last_scan = time (NULL);
 
 	g_signal_emit (self, signals[BSS_UPDATED], 0, dbus_g_proxy_get_path (proxy), props);
 }
@@ -346,7 +358,13 @@ wpas_iface_bss_added (DBusGProxy *proxy,
                       GHashTable *props,
                       gpointer user_data)
 {
-	handle_new_bss (NM_SUPPLICANT_INTERFACE (user_data), object_path, props);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+
+	if (priv->scanning)
+		priv->last_scan = time (NULL);
+
+	handle_new_bss (self, object_path, props);
 }
 
 static void
@@ -365,7 +383,9 @@ wpas_iface_bss_removed (DBusGProxy *proxy,
 static int
 wpas_state_string_to_enum (const char *str_state)
 {
-	if (!strcmp (str_state, "disconnected"))
+	if (!strcmp (str_state, "interface_disabled"))
+		return NM_SUPPLICANT_INTERFACE_STATE_DISABLED;
+	else if (!strcmp (str_state, "disconnected"))
 		return NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED;
 	else if (!strcmp (str_state, "inactive"))
 		return NM_SUPPLICANT_INTERFACE_STATE_INACTIVE;
@@ -406,7 +426,12 @@ set_state (NMSupplicantInterface *self, guint32 new_state)
 	if (priv->state >= NM_SUPPLICANT_INTERFACE_STATE_READY)
 		g_return_if_fail (new_state > NM_SUPPLICANT_INTERFACE_STATE_READY);
 
-	if (new_state == NM_SUPPLICANT_INTERFACE_STATE_DOWN) {
+	if (new_state == NM_SUPPLICANT_INTERFACE_STATE_READY) {
+		/* Get properties again to update to the actual wpa_supplicant
+		 * interface state.
+		 */
+		wpas_iface_get_props (self);
+	} else if (new_state == NM_SUPPLICANT_INTERFACE_STATE_DOWN) {
 		/* Cancel all pending calls when going down */
 		cancel_all_callbacks (priv->other_pcalls);
 		cancel_all_callbacks (priv->assoc_pcalls);
@@ -438,6 +463,11 @@ set_state (NMSupplicantInterface *self, guint32 new_state)
 	}
 
 	priv->state = new_state;
+
+	if (   priv->state == NM_SUPPLICANT_INTERFACE_STATE_SCANNING
+	    || old_state == NM_SUPPLICANT_INTERFACE_STATE_SCANNING)
+		priv->last_scan = time (NULL);
+
 	g_signal_emit (self, signals[STATE], 0, priv->state, old_state);
 }
 
@@ -456,16 +486,13 @@ static void
 set_scanning (NMSupplicantInterface *self, gboolean new_scanning)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	GTimeVal cur_time;
 
 	if (priv->scanning != new_scanning) {
 		priv->scanning = new_scanning;
 
 		/* Cache time of last scan completion */
-		if (priv->scanning == FALSE) {
-			g_get_current_time (&cur_time);
-			priv->last_scan = cur_time.tv_sec;
-		}
+		if (priv->scanning == FALSE)
+			priv->last_scan = time (NULL);
 
 		g_object_notify (G_OBJECT (self), "scanning");
 	}
@@ -486,6 +513,12 @@ nm_supplicant_interface_get_scanning (NMSupplicantInterface *self)
 	return FALSE;
 }
 
+time_t
+nm_supplicant_interface_get_last_scan_time (NMSupplicantInterface *self)
+{
+	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->last_scan;
+}
+
 static void
 wpas_iface_scan_done (DBusGProxy *proxy,
                       gboolean success,
@@ -493,13 +526,48 @@ wpas_iface_scan_done (DBusGProxy *proxy,
 {
 	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	GTimeVal cur_time;
 
 	/* Cache last scan completed time */
-	g_get_current_time (&cur_time);
-	priv->last_scan = cur_time.tv_sec;
-
+	priv->last_scan = time (NULL);
 	g_signal_emit (self, signals[SCAN_DONE], 0, success);
+}
+
+static void
+parse_capabilities (NMSupplicantInterface *self, GHashTable *props)
+{
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+	GValue *value;
+	gboolean have_active = FALSE, have_ssid = FALSE;
+
+	g_return_if_fail (props != NULL);
+
+	value = g_hash_table_lookup (props, "Scan");
+	if (value && G_VALUE_HOLDS (value, G_TYPE_STRV)) {
+		const char **vals = g_value_get_boxed (value);
+		const char **iter = vals;
+
+		while (iter && *iter && (!have_active || !have_ssid)) {
+			if (g_strcmp0 (*iter, "active") == 0)
+				have_active = TRUE;
+			else if (g_strcmp0 (*iter, "ssid") == 0)
+				have_ssid = TRUE;
+			iter++;
+		}
+	}
+
+	value = g_hash_table_lookup (props, "MaxScanSSID");
+	if (value && G_VALUE_HOLDS (value, G_TYPE_INT)) {
+		/* We need active scan and SSID probe capabilities to care about MaxScanSSIDs */
+		if (have_active && have_ssid) {
+			/* wpa_supplicant's WPAS_MAX_SCAN_SSIDS value is 16, but for speed
+			 * and to ensure we don't disclose too many SSIDs from the hidden
+			 * list, we'll limit to 5.
+			 */
+			priv->max_scan_ssids = CLAMP (g_value_get_int (value), 0, 5);
+			nm_log_info (LOGD_SUPPLICANT, "(%s) supports %d scan SSIDs",
+			             priv->dev, priv->max_scan_ssids);
+		}
+	}
 }
 
 static void
@@ -508,6 +576,7 @@ wpas_iface_properties_changed (DBusGProxy *proxy,
                                gpointer user_data)
 {
 	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GValue *value;
 
 	value = g_hash_table_lookup (props, "Scanning");
@@ -515,8 +584,16 @@ wpas_iface_properties_changed (DBusGProxy *proxy,
 		set_scanning (self, g_value_get_boolean (value));
 
 	value = g_hash_table_lookup (props, "State");
-	if (value && G_VALUE_HOLDS_STRING (value))
-		set_state_from_string (self, g_value_get_string (value));
+	if (value && G_VALUE_HOLDS_STRING (value)) {
+		if (priv->state >= NM_SUPPLICANT_INTERFACE_STATE_READY) {
+			/* Only transition to actual wpa_supplicant interface states (ie,
+			 * anything > READY) after the NMSupplicantInterface has had a
+			 * chance to initialize, which is signalled by entering the READY
+			 * state.
+			 */
+			set_state_from_string (self, g_value_get_string (value));
+		}
+	}
 
 	value = g_hash_table_lookup (props, "BSSs");
 	if (value && G_VALUE_HOLDS (value, DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH)) {
@@ -525,6 +602,22 @@ wpas_iface_properties_changed (DBusGProxy *proxy,
 
 		for (i = 0; paths && (i < paths->len); i++)
 			handle_new_bss (self, g_ptr_array_index (paths, i), NULL);
+	}
+
+	value = g_hash_table_lookup (props, "Capabilities");
+	if (value && G_VALUE_HOLDS (value, DBUS_TYPE_G_MAP_OF_VARIANT))
+		parse_capabilities (self, g_value_get_boxed (value));
+}
+
+static void
+iface_check_ready (NMSupplicantInterface *self)
+{
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+
+	if (priv->ready_count && priv->state < NM_SUPPLICANT_INTERFACE_STATE_READY) {
+		priv->ready_count--;
+		if (priv->ready_count == 0)
+			set_state (self, NM_SUPPLICANT_INTERFACE_STATE_READY);
 	}
 }
 
@@ -545,6 +638,7 @@ iface_get_props_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_da
 		             error && error->message ? error->message : "(unknown)");
 		g_clear_error (&error);
 	}
+	iface_check_ready (info->interface);
 }
 
 static void
@@ -629,6 +723,8 @@ iface_check_netreply_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer us
 			        priv->has_credreq ? "supports" : "does not support");
 	}
 	g_clear_error (&error);
+
+	iface_check_ready (info->interface);
 }
 
 static void
@@ -721,13 +817,10 @@ interface_add_done (NMSupplicantInterface *self, char *path)
 	                                               WPAS_DBUS_SERVICE,
 	                                               path,
 	                                               DBUS_INTERFACE_PROPERTIES);
-	/* Get initial properties */
+	/* Get initial properties and check whether NetworkReply is supported */
 	wpas_iface_get_props (self);
-
-	/* Check whether NetworkReply is supported */
 	wpas_iface_check_network_reply (self);
-
-	set_state (self, NM_SUPPLICANT_INTERFACE_STATE_READY);
+	priv->ready_count = 2;
 }
 
 static void
@@ -1159,8 +1252,18 @@ string_to_gvalue (const char *str)
 	return val;
 }
 
+static GValue *
+byte_array_array_to_gvalue (const GPtrArray *array)
+{
+	GValue *val = g_slice_new0 (GValue);
+
+	g_value_init (val, DBUS_TYPE_G_ARRAY_OF_ARRAY_OF_UCHAR);
+	g_value_set_boxed (val, array);
+	return val;
+}
+
 gboolean
-nm_supplicant_interface_request_scan (NMSupplicantInterface * self)
+nm_supplicant_interface_request_scan (NMSupplicantInterface *self, const GPtrArray *ssids)
 {
 	NMSupplicantInterfacePrivate *priv;
 	NMSupplicantInfo *info;
@@ -1174,6 +1277,8 @@ nm_supplicant_interface_request_scan (NMSupplicantInterface * self)
 	/* Scan parameters */
 	hash = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, destroy_gvalue);
 	g_hash_table_insert (hash, "Type", string_to_gvalue ("active"));
+	if (ssids)
+		g_hash_table_insert (hash, "SSIDs", byte_array_array_to_gvalue (ssids));
 
 	info = nm_supplicant_info_new (self, priv->iface_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->iface_proxy, "Scan",
@@ -1206,6 +1311,8 @@ nm_supplicant_interface_state_to_string (guint32 state)
 		return "starting";
 	case NM_SUPPLICANT_INTERFACE_STATE_READY:
 		return "ready";
+	case NM_SUPPLICANT_INTERFACE_STATE_DISABLED:
+		return "disabled";
 	case NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED:
 		return "disconnected";
 	case NM_SUPPLICANT_INTERFACE_STATE_INACTIVE:
@@ -1257,6 +1364,15 @@ nm_supplicant_interface_get_ifname (NMSupplicantInterface *self)
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), NULL);
 
 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->dev;
+}
+
+guint
+nm_supplicant_interface_get_max_scan_ssids (NMSupplicantInterface *self)
+{
+	g_return_val_if_fail (self != NULL, 0);
+	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), 0);
+
+	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->max_scan_ssids;
 }
 
 /*******************************************************************/

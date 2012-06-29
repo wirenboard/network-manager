@@ -46,6 +46,11 @@ NMSettingWireless
 
 </para>
 
+<!-- ##### ARG NMSettingWireless:hidden ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMSettingWireless:mac-address ##### -->
 <para>
 
@@ -142,6 +147,13 @@ NMSettingWireless
 
 
 <!-- ##### MACRO NM_SETTING_WIRELESS_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRELESS_HIDDEN ##### -->
 <para>
 
 </para>
@@ -293,6 +305,15 @@ NMSettingWireless
 
 
 <!-- ##### FUNCTION nm_setting_wireless_get_cloned_mac_address ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_get_hidden ##### -->
 <para>
 
 </para>

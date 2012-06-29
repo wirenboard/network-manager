@@ -570,8 +570,20 @@ nm_dhcp_client_new_options (NMDHCPClient *self,
 	g_hash_table_remove_all (priv->options);
 	g_hash_table_foreach (options, copy_option, priv->options);
 
-	if (old_state == new_state)
-		return;
+	if (old_state == new_state) {
+		/* dhclient will stay in the same state (or, really, provide the same
+		 * reason) for operations like RENEW and REBIND.  We need to ensure
+		 * that triggers various DHCP lease change code, so we need to pass
+		 * along same-state transitions for these states.
+		 */
+		if (   new_state != DHC_BOUND4
+		    && new_state != DHC_RENEW4
+		    && new_state != DHC_REBIND4
+		    && new_state != DHC_BOUND6
+		    && new_state != DHC_RENEW6
+		    && new_state != DHC_REBIND6)
+			return;
+	}
 
 	/* Handle changed device state */
 	if (state_is_bound (new_state)) {
@@ -1217,12 +1229,6 @@ ip6_options_to_config (NMDHCPClient *self)
 		return NULL;
 	}
 
-	addr = nm_ip6_address_new ();
-	if (!addr) {
-		nm_log_warn (LOGD_DHCP6, "(%s): couldn't allocate memory for an IP6 Address!", priv->iface);
-		goto error;
-	}
-
 	str = g_hash_table_lookup (priv->options, "new_ip6_address");
 	if (str) {
 		if (!inet_pton (AF_INET6, str, &tmp_addr)) {
@@ -1231,35 +1237,17 @@ ip6_options_to_config (NMDHCPClient *self)
 			goto error;
 		}
 
+		addr = nm_ip6_address_new ();
+		g_assert (addr);
 		nm_ip6_address_set_address (addr, &tmp_addr);
-		nm_log_info (LOGD_DHCP6, "  address %s", str);
-	} else {
-		/* No address in managed mode is a hard error */
-		if (priv->info_only == FALSE)
-			goto error;
-
-		/* But "info-only" setups don't necessarily need an address */
-		nm_ip6_address_unref (addr);
-		addr = NULL;
-	}
-
-	/* Only care about prefix if we got an address */
-	if (addr) {
-		str = g_hash_table_lookup (priv->options, "new_ip6_prefixlen");
-		if (str) {
-			long unsigned int prefix;
-
-			errno = 0;
-			prefix = strtoul (str, NULL, 10);
-			if (errno != 0 || prefix > 128)
-				goto error;
-
-			nm_ip6_address_set_prefix (addr, (guint32) prefix);
-			nm_log_info (LOGD_DHCP6, "  prefix %lu", prefix);
-		}
+		/* DHCPv6 IA_NA assignments are single address only */
+		nm_ip6_address_set_prefix (addr, 128);
+		nm_log_info (LOGD_DHCP6, "  address %s/128", str);
 
 		nm_ip6_config_take_address (ip6_config, addr);
-		addr = NULL;
+	} else if (priv->info_only == FALSE) {
+		/* No address in Managed mode is a hard error */
+		goto error;
 	}
 
 	str = g_hash_table_lookup (priv->options, "new_host_name");
@@ -1288,8 +1276,6 @@ ip6_options_to_config (NMDHCPClient *self)
 	return ip6_config;
 
 error:
-	if (addr)
-		nm_ip6_address_unref (addr);
 	g_object_unref (ip6_config);
 	return NULL;
 }

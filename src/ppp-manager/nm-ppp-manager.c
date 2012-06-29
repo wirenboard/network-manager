@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2008 Novell, Inc.
- * Copyright (C) 2008 - 2011 Red Hat, Inc.
+ * Copyright (C) 2008 - 2012 Red Hat, Inc.
  */
 
 #include <config.h>
@@ -47,11 +47,13 @@
 #include "nm-setting-connection.h"
 #include "nm-setting-ppp.h"
 #include "nm-setting-pppoe.h"
+#include "nm-setting-adsl.h"
 #include "nm-setting-gsm.h"
 #include "nm-setting-cdma.h"
 #include "nm-dbus-manager.h"
 #include "nm-logging.h"
 #include "nm-marshal.h"
+#include "nm-posix-signals.h"
 
 static void impl_ppp_manager_need_secrets (NMPPPManager *manager,
                                            DBusGMethodInvocation *context);
@@ -304,18 +306,20 @@ monitor_cb (gpointer user_data)
 {
 	NMPPPManager *manager = NM_PPP_MANAGER (user_data);
 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (manager);
-	struct ifpppstatsreq req;
+	struct ifreq req;
+	struct ppp_stats stats;
 
 	memset (&req, 0, sizeof (req));
-	req.stats_ptr = (caddr_t) &req.stats;
+	memset (&stats, 0, sizeof (stats));
+	req.ifr_data = (caddr_t) &stats;
 
-	strncpy (req.ifr__name, priv->ip_iface, sizeof (req.ifr__name));
+	strncpy (req.ifr_name, priv->ip_iface, sizeof (req.ifr_name));
 	if (ioctl (priv->monitor_fd, SIOCGPPPSTATS, &req) < 0) {
 		nm_log_warn (LOGD_PPP, "could not read ppp stats: %s", strerror (errno));
 	} else {
 		g_signal_emit (manager, signals[STATS], 0, 
-		               req.stats.p.ppp_ibytes,
-		               req.stats.p.ppp_obytes);
+		               stats.p.ppp_ibytes,
+		               stats.p.ppp_obytes);
 	}
 
 	return TRUE;
@@ -391,6 +395,9 @@ extract_details_from_connection (NMConnection *connection,
 	if (NM_IS_SETTING_PPPOE (setting)) {
 		*username = nm_setting_pppoe_get_username (NM_SETTING_PPPOE (setting));
 		*password = nm_setting_pppoe_get_password (NM_SETTING_PPPOE (setting));
+	} else if (NM_IS_SETTING_ADSL (setting)) {
+		*username = nm_setting_adsl_get_username (NM_SETTING_ADSL (setting));
+		*password = nm_setting_adsl_get_password (NM_SETTING_ADSL (setting));
 	} else if (NM_IS_SETTING_GSM (setting)) {
 		*username = nm_setting_gsm_get_username (NM_SETTING_GSM (setting));
 		*password = nm_setting_gsm_get_password (NM_SETTING_GSM (setting));
@@ -792,6 +799,7 @@ static NMCmdLine *
 create_pppd_cmd_line (NMPPPManager *self,
                       NMSettingPPP *setting, 
                       NMSettingPPPOE *pppoe,
+                      NMSettingAdsl  *adsl,
                       const char *ppp_name,
                       GError **err)
 {
@@ -818,6 +826,10 @@ create_pppd_cmd_line (NMPPPManager *self,
 
 	/* NM handles setting the default route */
 	nm_cmd_line_add_string (cmd, "nodefaultroute");
+
+	/* Allow IPv6 to be configured by IPV6CP */
+	nm_cmd_line_add_string (cmd, "ipv6");
+	nm_cmd_line_add_string (cmd, ",");
 
 	ppp_debug = !!getenv ("NM_PPP_DEBUG");
 	if (   nm_logging_level_enabled (LOGL_DEBUG)
@@ -848,6 +860,34 @@ create_pppd_cmd_line (NMPPPManager *self,
 			nm_cmd_line_add_string (cmd, "rp_pppoe_service");
 			nm_cmd_line_add_string (cmd, pppoe_service);
 		}
+	} else if (adsl) {
+		const gchar *protocol = nm_setting_adsl_get_protocol (adsl);
+
+		if (!strcmp (protocol, NM_SETTING_ADSL_PROTOCOL_PPPOA)) {
+			guint32 vpi = nm_setting_adsl_get_vpi (adsl);
+			guint32 vci = nm_setting_adsl_get_vci (adsl);
+			const char *encaps = nm_setting_adsl_get_encapsulation (adsl);
+			gchar *vpivci;
+
+			nm_cmd_line_add_string (cmd, "plugin");
+			nm_cmd_line_add_string (cmd, "pppoatm.so");
+
+			vpivci = g_strdup_printf("%d.%d", vpi, vci);
+			nm_cmd_line_add_string (cmd, vpivci);
+			g_free (vpivci);
+
+			if (g_strcmp0 (encaps, NM_SETTING_ADSL_ENCAPSULATION_LLC) == 0)
+				nm_cmd_line_add_string (cmd, "llc-encaps");
+			else if (g_strcmp0 (encaps, NM_SETTING_ADSL_ENCAPSULATION_VCMUX) == 0)
+				nm_cmd_line_add_string (cmd, "vc-encaps");
+
+		} else if (!strcmp (protocol, NM_SETTING_ADSL_PROTOCOL_PPPOE)) {
+			nm_cmd_line_add_string (cmd, "plugin");
+			nm_cmd_line_add_string (cmd, "rp-pppoe.so");
+			nm_cmd_line_add_string (cmd, priv->parent_iface);
+		}
+
+		nm_cmd_line_add_string (cmd, "noipdefault");
 	} else {
 		nm_cmd_line_add_string (cmd, priv->parent_iface);
 		/* Don't send some random address as the local address */
@@ -924,6 +964,12 @@ pppd_child_setup (gpointer user_data G_GNUC_UNUSED)
 	/* We are in the child process at this point */
 	pid_t pid = getpid ();
 	setpgid (pid, pid);
+
+	/*
+	 * We blocked signals in main(). We need to restore original signal
+	 * mask for pppd here so that it can receive signals.
+	 */
+	nm_unblock_posix_signals (NULL);
 }
 
 static void
@@ -965,6 +1011,7 @@ nm_ppp_manager_start (NMPPPManager *manager,
 	NMSettingPPP *s_ppp;
 	gboolean s_ppp_created = FALSE;
 	NMSettingPPPOE *pppoe_setting;
+	NMSettingAdsl *adsl_setting;
 	NMCmdLine *ppp_cmd;
 	char *cmd_str;
 	struct stat st;
@@ -1006,7 +1053,9 @@ nm_ppp_manager_start (NMPPPManager *manager,
 	if (pppoe_setting)
 		pppoe_fill_defaults (s_ppp);
 
-	ppp_cmd = create_pppd_cmd_line (manager, s_ppp, pppoe_setting, ppp_name, err);
+	adsl_setting = (NMSettingAdsl *) nm_connection_get_setting (connection, NM_TYPE_SETTING_ADSL);
+
+	ppp_cmd = create_pppd_cmd_line (manager, s_ppp, pppoe_setting, adsl_setting, ppp_name, err);
 	if (!ppp_cmd)
 		goto out;
 

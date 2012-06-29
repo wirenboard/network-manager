@@ -8,6 +8,7 @@
 #include "nm-connection.h" 
 #include "nm-setting.h" 
 #include "nm-setting-8021x.h" 
+#include "nm-setting-adsl.h" 
 #include "nm-setting-bluetooth.h" 
 #include "nm-setting-bond.h" 
 #include "nm-setting-connection.h" 
@@ -210,6 +211,26 @@ nm_setting_802_1x_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMSetting8021xError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_adsl_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_ADSL_ERROR_UNKNOWN, "NM_SETTING_ADSL_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_ADSL_ERROR_INVALID_PROPERTY, "NM_SETTING_ADSL_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_ADSL_ERROR_MISSING_PROPERTY, "NM_SETTING_ADSL_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingAdslError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

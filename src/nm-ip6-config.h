@@ -67,6 +67,9 @@ const struct in6_addr *nm_ip6_config_get_nameserver      (NMIP6Config *config, g
 guint32       nm_ip6_config_get_num_nameservers (NMIP6Config *config);
 void          nm_ip6_config_reset_nameservers   (NMIP6Config *config);
 
+void                   nm_ip6_config_set_gateway  (NMIP6Config *config, const struct in6_addr *gateway);
+const struct in6_addr *nm_ip6_config_get_gateway  (NMIP6Config *config);
+
 void          nm_ip6_config_take_route          (NMIP6Config *config, NMIP6Route *route);
 void          nm_ip6_config_add_route           (NMIP6Config *config, NMIP6Route *route);
 void          nm_ip6_config_replace_route       (NMIP6Config *config, guint32 i, NMIP6Route *new_route);
@@ -116,5 +119,7 @@ typedef enum {
 
 /* Returns a bitfield representing how the two IP6 configs differ */
 NMIP6ConfigCompareFlags nm_ip6_config_diff (NMIP6Config *a, NMIP6Config *b);
+
+void nm_ip6_config_hash (NMIP6Config *config, GChecksum *sum, gboolean dns_only);
 
 #endif /* NM_IP6_CONFIG_H */

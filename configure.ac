@@ -3,8 +3,8 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
-m4_define([nm_micro_version], [4])
-m4_define([nm_nano_version],  [0])
+m4_define([nm_micro_version], [5])
+m4_define([nm_nano_version],  [95])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
 
@@ -303,6 +303,11 @@ AC_DEFINE_UNQUOTED(HAVE_DBUS_GLIB_DISABLE_LEGACY_PROP_ACCESS, $ac_have_dg_prop, 
 PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.75)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
+
+# dbus-glib uses GValueArray, which is deprecated as of GLib 2.32.
+# Set GLIB_VERSION_MIN_REQUIRED to something less than that to avoid
+# getting warnings. (GLIB_VERSION_2_26 is the oldest defined version.)
+DBUS_CFLAGS="$DBUS_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_26"
 
 PKG_CHECK_MODULES(GLIB, gthread-2.0 glib-2.0 >= 2.22 gobject-2.0)
 AC_SUBST(GLIB_CFLAGS)
@@ -692,7 +697,7 @@ PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libso
 AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
                      [enable_concheck=${enableval}], [enable_concheck=${have_libsoup}])
 if (test "${enable_concheck}" = "yes"); then
-	if test x"$have_concheck" = x"no"; then
+	if test x"$have_libsoup" = x"no"; then
 		AC_MSG_ERROR(Connectivity checking requires libsoup development headers)
 	fi
 	AC_SUBST(LIBSOUP_CFLAGS)
@@ -706,6 +711,13 @@ AM_CONDITIONAL(WITH_CONCHECK, test "${enable_concheck}" = "yes")
 NM_COMPILER_WARNINGS
 
 GTK_DOC_CHECK(1.0)
+
+
+dnl -------------------------
+dnl Vala bindings
+dnl -------------------------
+
+VAPIGEN_CHECK(0.17.1.24)
 
 dnl
 dnl Tests
@@ -730,6 +742,7 @@ src/Makefile
 src/tests/Makefile
 src/generated/Makefile
 src/logging/Makefile
+src/posix-signals/Makefile
 src/dns-manager/Makefile
 src/vpn-manager/Makefile
 src/dhcp-manager/Makefile
@@ -756,6 +769,7 @@ src/settings/plugins/ifcfg-suse/Makefile
 src/settings/plugins/keyfile/Makefile
 src/settings/plugins/keyfile/tests/Makefile
 src/settings/plugins/keyfile/tests/keyfiles/Makefile
+src/settings/plugins/example/Makefile
 src/settings/tests/Makefile
 src/wimax/Makefile
 src/backends/Makefile
@@ -817,6 +831,7 @@ examples/ruby/Makefile
 examples/C/Makefile
 examples/C/glib/Makefile
 examples/C/qt/Makefile
+vapi/Makefile
 ])
 AC_OUTPUT
 
@@ -872,6 +887,12 @@ else
 fi
 
 echo libnl version: ${libnl_version}
+
+if test "${ac_with_wext}" = "yes"; then
+	echo WEXT support: yes
+else
+	echo WEXT support: no
+fi
 
 echo
 echo Building documentation: ${with_docs}

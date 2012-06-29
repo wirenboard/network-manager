@@ -34,8 +34,13 @@
 #define NM_IS_VPN_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((obj), NM_TYPE_VPN_CONNECTION))
 #define NM_VPN_CONNECTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_VPN_CONNECTION, NMVPNConnectionClass))
 
+/* Properties */
 #define NM_VPN_CONNECTION_VPN_STATE "vpn-state"
 #define NM_VPN_CONNECTION_BANNER "banner"
+
+/* Signals */
+#define NM_VPN_CONNECTION_VPN_STATE_CHANGED "vpn-state-changed"
+
 
 typedef struct {
 	NMActiveConnection parent;
@@ -46,7 +51,8 @@ typedef struct {
 
 	/* Signals */
 	void (*vpn_state_changed) (NMVPNConnection *connection,
-	                           NMVPNConnectionState state,
+	                           NMVPNConnectionState new_state,
+	                           NMVPNConnectionState old_state,
 	                           NMVPNConnectionStateReason reason);
 } NMVPNConnectionClass;
 
@@ -68,9 +74,11 @@ void                 nm_vpn_connection_fail            (NMVPNConnection *connect
 void                 nm_vpn_connection_disconnect      (NMVPNConnection *connection,
                                                         NMVPNConnectionStateReason reason);
 NMIP4Config *        nm_vpn_connection_get_ip4_config  (NMVPNConnection *connection);
+NMIP6Config *        nm_vpn_connection_get_ip6_config  (NMVPNConnection *connection);
 const char *         nm_vpn_connection_get_ip_iface    (NMVPNConnection *connection);
 int                  nm_vpn_connection_get_ip_ifindex  (NMVPNConnection *connection);
 NMDevice *           nm_vpn_connection_get_parent_device (NMVPNConnection *connection);
 guint32              nm_vpn_connection_get_ip4_internal_gateway (NMVPNConnection *connection);
+struct in6_addr *    nm_vpn_connection_get_ip6_internal_gateway (NMVPNConnection *connection);
 
 #endif /* NM_VPN_CONNECTION_H */

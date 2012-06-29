@@ -591,7 +591,7 @@ real_deactivate (NMModem *self, NMDevice *device)
 	case MM_MODEM_IP_METHOD_STATIC:
 	case MM_MODEM_IP_METHOD_DHCP:
 		ifindex = nm_device_get_ip_ifindex (device);
-		if (ifindex >= 0) {
+		if (ifindex > 0) {
 			/* FIXME: use AF_UNSPEC here when we have IPv6 support */
 			nm_system_iface_flush_routes (ifindex, AF_INET);
 			nm_system_iface_flush_addresses (ifindex, AF_UNSPEC);
@@ -614,8 +614,9 @@ static void
 disconnect_done (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
 	GError *error = NULL;
+	gboolean warn = GPOINTER_TO_UINT (user_data);
 
-	if (!dbus_g_proxy_end_call (proxy, call_id, &error, G_TYPE_INVALID)) {
+	if (!dbus_g_proxy_end_call (proxy, call_id, &error, G_TYPE_INVALID) && warn) {
 		nm_log_info (LOGD_MB, "disconnect failed: (%d) %s",
 		             error ? error->code : -1,
 		             error && error->message ? error->message : "(unknown)");
@@ -628,7 +629,7 @@ nm_modem_device_state_changed (NMModem *self,
                                NMDeviceState old_state,
                                NMDeviceStateReason reason)
 {
-	gboolean was_connected = FALSE;
+	gboolean was_connected = FALSE, warn = TRUE;
 	NMModemPrivate *priv;
 
 	g_return_if_fail (self != NULL);
@@ -658,10 +659,13 @@ nm_modem_device_state_changed (NMModem *self,
 		}
 
 		if (was_connected) {
+			/* Don't bother warning on FAILED since the modem is already gone */
+			if (new_state == NM_DEVICE_STATE_FAILED)
+				warn = FALSE;
 			dbus_g_proxy_begin_call (nm_modem_get_proxy (self, MM_DBUS_INTERFACE_MODEM),
 			                         "Disconnect",
 			                         disconnect_done,
-			                         self,
+			                         GUINT_TO_POINTER (warn),
 			                         NULL,
 			                         G_TYPE_INVALID);
 		}

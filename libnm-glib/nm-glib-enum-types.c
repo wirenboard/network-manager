@@ -10,6 +10,7 @@
 #include "nm-device.h" 
 #include "nm-device-ethernet.h" 
 #include "nm-device-infiniband.h" 
+#include "nm-device-adsl.h" 
 #include "nm-device-wifi.h" 
 #include "nm-device-bt.h" 
 #include "nm-device-olpc-mesh.h" 
@@ -30,6 +31,25 @@
 #include "nm-device-wimax.h" 
 #include "nm-wimax-nsp.h"
 
+GType
+nm_object_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_OBJECT_ERROR_UNKNOWN, "NM_OBJECT_ERROR_UNKNOWN", "unknown" },
+        { NM_OBJECT_ERROR_OBJECT_CREATION_FAILURE, "NM_OBJECT_ERROR_OBJECT_CREATION_FAILURE", "object-creation-failure" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMObjectError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
 GType
 nm_client_permission_get_type (void)
 {
@@ -120,6 +140,26 @@ nm_device_infiniband_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMDeviceInfinibandError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_device_adsl_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_DEVICE_ADSL_ERROR_UNKNOWN, "NM_DEVICE_ADSL_ERROR_UNKNOWN", "UnknownError" },
+        { NM_DEVICE_ADSL_ERROR_NOT_ADSL_CONNECTION, "NM_DEVICE_ADSL_ERROR_NOT_ADSL_CONNECTION", "NotAdslConnection" },
+        { NM_DEVICE_ADSL_ERROR_INVALID_ADSL_CONNECTION, "NM_DEVICE_ADSL_ERROR_INVALID_ADSL_CONNECTION", "InvalidAdslConnection" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMDeviceAdslError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -310,6 +350,7 @@ nm_secret_agent_get_secrets_flags_get_type (void)
         { NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE, "NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE", "none" },
         { NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION, "NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION", "allow-interaction" },
         { NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW, "NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW", "request-new" },
+        { NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED, "NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED", "user-requested" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

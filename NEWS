@@ -1,4 +1,24 @@
 ==============================================
+NetworkManager-0.9.6
+Overview of changes since NetworkManager-0.9.4
+==============================================
+
+This is a new stable release of NetworkManager.  Notable changes include:
+
+* Many libnm-glib fixes, including crashes when NetworkManager restarts
+* Enhanced IPv6 stability and compatibility
+* Fix regression in carrier handling for devices that don't support carrier detect
+* Add ability to connect to new WiFi networks from nmcli
+* Add native support for ADSL modems using PPPoE or PPPoATM
+* Reduce number of changes made to DNS information during connection setup
+* Add support for IPv6-enabled VPN connections
+* Add device driver version, firmware version, and autoconnect properties to D-Bus API
+* Add on-demand WiFi scan support
+* Fix IPv6 default gateway handling for DHCPv6
+* Add Vala language bindings
+
+
+==============================================
 NetworkManager-0.9.4
 Overview of changes since NetworkManager-0.9.2
 ==============================================

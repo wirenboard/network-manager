@@ -27,6 +27,8 @@ GType nm_setting_802_1x_ck_scheme_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_802_1X_CK_SCHEME (nm_setting_802_1x_ck_scheme_get_type ())
 GType nm_setting_802_1x_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_802_1X_ERROR (nm_setting_802_1x_error_get_type ())
+GType nm_setting_adsl_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SETTING_ADSL_ERROR (nm_setting_adsl_error_get_type ())
 GType nm_setting_bluetooth_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_BLUETOOTH_ERROR (nm_setting_bluetooth_error_get_type ())
 GType nm_setting_bond_error_get_type (void) G_GNUC_CONST;

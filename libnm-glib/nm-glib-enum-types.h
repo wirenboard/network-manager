@@ -9,6 +9,8 @@
 #include <glib-object.h>
 
 G_BEGIN_DECLS
+GType nm_object_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_OBJECT_ERROR (nm_object_error_get_type ())
 GType nm_client_permission_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_CLIENT_PERMISSION (nm_client_permission_get_type ())
 GType nm_client_permission_result_get_type (void) G_GNUC_CONST;
@@ -17,6 +19,8 @@ GType nm_device_ethernet_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_ETHERNET_ERROR (nm_device_ethernet_error_get_type ())
 GType nm_device_infiniband_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_INFINIBAND_ERROR (nm_device_infiniband_error_get_type ())
+GType nm_device_adsl_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_DEVICE_ADSL_ERROR (nm_device_adsl_error_get_type ())
 GType nm_device_wifi_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_WIFI_ERROR (nm_device_wifi_error_get_type ())
 GType nm_device_bt_error_get_type (void) G_GNUC_CONST;

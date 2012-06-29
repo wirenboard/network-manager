@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2005 - 2011 Red Hat, Inc.
+ * Copyright (C) 2005 - 2012 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
@@ -23,7 +23,7 @@
 #define NM_DEVICE_H
 
 #include <glib-object.h>
-#include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
 #include <netinet/in.h>
 
 #include "NetworkManager.h"
@@ -34,12 +34,15 @@
 #include "nm-dhcp6-config.h"
 #include "nm-connection.h"
 #include "nm-rfkill.h"
+#include "nm-connection-provider.h"
 
 /* Properties */
 #define NM_DEVICE_UDI              "udi"
 #define NM_DEVICE_IFACE            "interface"
 #define NM_DEVICE_IP_IFACE         "ip-interface"
 #define NM_DEVICE_DRIVER           "driver"
+#define NM_DEVICE_DRIVER_VERSION   "driver-version"
+#define NM_DEVICE_FIRMWARE_VERSION "firmware-version"
 #define NM_DEVICE_CAPABILITIES     "capabilities"
 #define NM_DEVICE_IP4_ADDRESS      "ip4-address"
 #define NM_DEVICE_IP4_CONFIG       "ip4-config"
@@ -51,13 +54,16 @@
 #define NM_DEVICE_ACTIVE_CONNECTION "active-connection"
 #define NM_DEVICE_DEVICE_TYPE      "device-type" /* ugh */
 #define NM_DEVICE_MANAGED          "managed"
+#define NM_DEVICE_AUTOCONNECT      "autoconnect"
 #define NM_DEVICE_FIRMWARE_MISSING "firmware-missing"
 #define NM_DEVICE_TYPE_DESC        "type-desc"    /* Internal only */
 #define NM_DEVICE_RFKILL_TYPE      "rfkill-type"  /* Internal only */
 #define NM_DEVICE_IFINDEX          "ifindex"      /* Internal only */
 
-/* Internal signal */
-#define NM_DEVICE_DISCONNECT_REQUEST "disconnect-request"
+/* Internal signals */
+#define NM_DEVICE_AUTH_REQUEST "auth-request"
+#define NM_DEVICE_IP4_CONFIG_CHANGED "ip4-config-changed"
+#define NM_DEVICE_IP6_CONFIG_CHANGED "ip6-config-changed"
 
 
 G_BEGIN_DECLS
@@ -169,6 +175,11 @@ typedef struct {
 } NMDeviceClass;
 
 
+typedef void (*NMDeviceAuthRequestFunc) (NMDevice *device,
+                                         DBusGMethodInvocation *context,
+                                         GError *error,
+                                         gpointer user_data);
+
 GType nm_device_get_type (void);
 
 const char *    nm_device_get_path (NMDevice *dev);
@@ -180,6 +191,8 @@ int             nm_device_get_ifindex	(NMDevice *dev);
 const char *	nm_device_get_ip_iface	(NMDevice *dev);
 int             nm_device_get_ip_ifindex(NMDevice *dev);
 const char *	nm_device_get_driver	(NMDevice *dev);
+const char *	nm_device_get_driver_version	(NMDevice *dev);
+const char *	nm_device_get_firmware_version	(NMDevice *dev);
 const char *	nm_device_get_type_desc (NMDevice *dev);
 NMDeviceType	nm_device_get_device_type	(NMDevice *dev);
 
@@ -243,7 +256,7 @@ void nm_device_set_managed (NMDevice *device,
                             gboolean managed,
                             NMDeviceStateReason reason);
 
-void nm_device_clear_autoconnect_inhibit (NMDevice *device);
+gboolean nm_device_get_autoconnect (NMDevice *device);
 
 void nm_device_handle_autoip4_event (NMDevice *self,
                                      const char *event,
@@ -261,7 +274,7 @@ gboolean nm_device_get_firmware_missing (NMDevice *self);
 
 gboolean nm_device_activate (NMDevice *device, NMActRequest *req, GError **error);
 
-gboolean nm_device_disconnect (NMDevice *device, GError **error);
+void nm_device_set_connection_provider (NMDevice *device, NMConnectionProvider *provider);
 
 G_END_DECLS
 

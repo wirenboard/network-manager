@@ -59,6 +59,7 @@ libnminclude_HEADERS = \
 	nm-device.h \
 	nm-device-ethernet.h \
 	nm-device-infiniband.h \
+	nm-device-adsl.h \
 	nm-device-wifi.h \
 	nm-device-bt.h \
 	nm-device-olpc-mesh.h \
@@ -92,6 +93,7 @@ libnm_glib_la_csources = \
 	nm-device.c \
 	nm-device-ethernet.c \
 	nm-device-infiniband.c \
+	nm-device-adsl.c \
 	nm-device-wifi.c \
 	nm-device-bt.c \
 	nm-device-olpc-mesh.c \
@@ -215,10 +217,11 @@ introspection_sources = $(libnminclude_HEADERS) $(libnm_glib_la_csources)
 NMClient-1.0.gir: libnm-glib.la
 NMClient_1_0_gir_INCLUDES = Gio-2.0 DBusGLib-1.0
 NMClient_1_0_gir_PACKAGES = gio-2.0 dbus-glib-1 gudev-1.0
+NMClient_1_0_gir_EXPORT_PACKAGES = libnm-glib libnm-glib-vpn
 NMClient_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-glib -I$(top_srcdir)/libnm-util
-NMClient_1_0_gir_LIBS = libnm-glib.la
+NMClient_1_0_gir_LIBS = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la
 NMClient_1_0_gir_FILES = $(introspection_sources)
-NMClient_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm_ --include-uninstalled=$(top_builddir)/libnm-util/NetworkManager-1.0.gir
+NMClient_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm --include-uninstalled=$(top_builddir)/libnm-util/NetworkManager-1.0.gir
 INTROSPECTION_GIRS += NMClient-1.0.gir
 
 girdir = $(datadir)/gir-1.0

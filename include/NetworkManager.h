@@ -34,6 +34,7 @@
 #define	NM_DBUS_INTERFACE                   "org.freedesktop.NetworkManager"
 #define	NM_DBUS_INTERFACE_DEVICE            NM_DBUS_INTERFACE ".Device"
 #define NM_DBUS_INTERFACE_DEVICE_WIRED      NM_DBUS_INTERFACE_DEVICE ".Wired"
+#define NM_DBUS_INTERFACE_DEVICE_ADSL       NM_DBUS_INTERFACE_DEVICE ".Adsl"
 #define NM_DBUS_INTERFACE_DEVICE_WIRELESS   NM_DBUS_INTERFACE_DEVICE ".Wireless"
 #define NM_DBUS_INTERFACE_DEVICE_BLUETOOTH  NM_DBUS_INTERFACE_DEVICE ".Bluetooth"
 #define NM_DBUS_INTERFACE_DEVICE_OLPC_MESH  NM_DBUS_INTERFACE_DEVICE ".OlpcMesh"
@@ -107,6 +108,7 @@ typedef enum {
  * GSM/UMTS, or LTE network access protocols
  * @NM_DEVICE_TYPE_INFINIBAND: an IP-over-InfiniBand device
  * @NM_DEVICE_TYPE_BOND: a bond master interface
+ * @NM_DEVICE_TYPE_ADSL: ADSL modem
  *
  * #NMDeviceType values indicate the type of hardware represented by
  * an #NMDevice.
@@ -124,6 +126,7 @@ typedef enum {
 	NM_DEVICE_TYPE_INFINIBAND = 9,
 	NM_DEVICE_TYPE_BOND       = 10,
 	NM_DEVICE_TYPE_VLAN       = 11,
+	NM_DEVICE_TYPE_ADSL       = 12,
 } NMDeviceType;
 
 /**
@@ -490,6 +493,9 @@ typedef enum {
 
 	/* A dependency of the connection failed */
 	NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED = 50,
+
+	/* Problem with the RFC 2684 Ethernet over ADSL bridge */
+	NM_DEVICE_STATE_REASON_BR2684_FAILED = 51,
 
 	/* Unused */
 	NM_DEVICE_STATE_REASON_LAST = 0xFFFF

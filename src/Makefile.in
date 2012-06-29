@@ -58,7 +58,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
 	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
 	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -97,20 +97,21 @@ am__installdirs = "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(sbindir)" \
 PROGRAMS = $(libexec_PROGRAMS) $(sbin_PROGRAMS)
 am__NetworkManager_SOURCES_DIST = nm-call-store.c nm-call-store.h \
 	nm-device.c nm-device.h nm-device-private.h \
-	nm-device-ethernet.c nm-device-ethernet.h nm-device-wifi.c \
-	nm-device-wifi.h nm-device-wired.c nm-device-wired.h \
-	nm-device-olpc-mesh.c nm-device-olpc-mesh.h nm-device-bt.c \
-	nm-device-bt.h nm-device-modem.h nm-device-modem.c \
-	nm-device-infiniband.c nm-device-infiniband.h nm-device-bond.c \
-	nm-device-bond.h nm-device-vlan.c nm-device-vlan.h \
-	nm-wifi-ap.c nm-wifi-ap.h nm-wifi-ap-utils.c \
-	nm-wifi-ap-utils.h nm-dbus-manager.h nm-dbus-manager.c \
-	nm-udev-manager.c nm-udev-manager.h nm-device-factory.h \
-	nm-hostname-provider.c nm-hostname-provider.h nm-ip4-config.c \
-	nm-ip4-config.h nm-ip6-config.c nm-ip6-config.h \
-	nm-active-connection.h nm-active-connection.c nm-config.h \
-	nm-config.c main.c nm-policy.c nm-policy.h nm-policy-hosts.c \
-	nm-policy-hosts.h nm-policy-hostname.c nm-policy-hostname.h \
+	nm-device-ethernet.c nm-device-ethernet.h nm-device-adsl.c \
+	nm-device-adsl.h nm-device-wifi.c nm-device-wifi.h \
+	nm-device-wired.c nm-device-wired.h nm-device-olpc-mesh.c \
+	nm-device-olpc-mesh.h nm-device-bt.c nm-device-bt.h \
+	nm-device-modem.h nm-device-modem.c nm-device-infiniband.c \
+	nm-device-infiniband.h nm-device-bond.c nm-device-bond.h \
+	nm-device-vlan.c nm-device-vlan.h nm-wifi-ap.c nm-wifi-ap.h \
+	nm-wifi-ap-utils.c nm-wifi-ap-utils.h nm-dbus-manager.h \
+	nm-dbus-manager.c nm-udev-manager.c nm-udev-manager.h \
+	nm-device-factory.h nm-hostname-provider.c \
+	nm-hostname-provider.h nm-ip4-config.c nm-ip4-config.h \
+	nm-ip6-config.c nm-ip6-config.h nm-active-connection.h \
+	nm-active-connection.c nm-config.h nm-config.c main.c \
+	nm-policy.c nm-policy.h nm-policy-hosts.c nm-policy-hosts.h \
+	nm-policy-hostname.c nm-policy-hostname.h \
 	NetworkManagerUtils.c NetworkManagerUtils.h nm-system.c \
 	nm-system.h nm-manager.c nm-manager.h nm-manager-auth.c \
 	nm-manager-auth.h nm-netlink-monitor.c nm-netlink-monitor.h \
@@ -120,7 +121,8 @@ am__NetworkManager_SOURCES_DIST = nm-call-store.c nm-call-store.h \
 	nm-properties-changed-signal.h nm-dhcp4-config.c \
 	nm-dhcp4-config.h nm-dhcp6-config.c nm-dhcp6-config.h \
 	nm-rfkill.h nm-session-monitor.h nm-session-utils.c \
-	nm-session-utils.h nm-connectivity.c nm-connectivity.h \
+	nm-session-utils.h nm-connection-provider.h \
+	nm-connection-provider.c nm-connectivity.c nm-connectivity.h \
 	nm-session-monitor-systemd.c nm-session-monitor-ck.c \
 	nm-session-monitor-null.c
 @WITH_CONCHECK_TRUE@am__objects_1 =  \
@@ -131,6 +133,7 @@ am__NetworkManager_SOURCES_DIST = nm-call-store.c nm-call-store.h \
 am_NetworkManager_OBJECTS = NetworkManager-nm-call-store.$(OBJEXT) \
 	NetworkManager-nm-device.$(OBJEXT) \
 	NetworkManager-nm-device-ethernet.$(OBJEXT) \
+	NetworkManager-nm-device-adsl.$(OBJEXT) \
 	NetworkManager-nm-device-wifi.$(OBJEXT) \
 	NetworkManager-nm-device-wired.$(OBJEXT) \
 	NetworkManager-nm-device-olpc-mesh.$(OBJEXT) \
@@ -163,12 +166,16 @@ am_NetworkManager_OBJECTS = NetworkManager-nm-call-store.$(OBJEXT) \
 	NetworkManager-nm-properties-changed-signal.$(OBJEXT) \
 	NetworkManager-nm-dhcp4-config.$(OBJEXT) \
 	NetworkManager-nm-dhcp6-config.$(OBJEXT) \
-	NetworkManager-nm-session-utils.$(OBJEXT) $(am__objects_1) \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4)
+	NetworkManager-nm-session-utils.$(OBJEXT) \
+	NetworkManager-nm-connection-provider.$(OBJEXT) \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4)
 NetworkManager_OBJECTS = $(am_NetworkManager_OBJECTS)
 @WITH_CONCHECK_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 NetworkManager_DEPENDENCIES = ./generated/libnm-generated.la \
-	./logging/libnm-logging.la ./dns-manager/libdns-manager.la \
+	./logging/libnm-logging.la \
+	./posix-signals/libnm-posix-signals.la \
+	./dns-manager/libdns-manager.la \
 	./vpn-manager/libvpn-manager.la \
 	./dhcp-manager/libdhcp-manager.la \
 	./ip6-manager/libip6-manager.la \
@@ -263,10 +270,10 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = generated logging dns-manager vpn-manager dhcp-manager \
-	ip6-manager supplicant-manager ppp-manager backends \
-	dnsmasq-manager modem-manager bluez-manager firewall-manager \
-	wifi settings wimax . tests
+DIST_SUBDIRS = generated logging posix-signals dns-manager vpn-manager \
+	dhcp-manager ip6-manager supplicant-manager ppp-manager \
+	backends dnsmasq-manager modem-manager bluez-manager \
+	firewall-manager wifi settings wimax . tests
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -365,6 +372,10 @@ INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
 INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTLTOOL_V_MERGE = @INTLTOOL_V_MERGE@
+INTLTOOL_V_MERGE_OPTIONS = @INTLTOOL_V_MERGE_OPTIONS@
+INTLTOOL__v_MERGE_ = @INTLTOOL__v_MERGE_@
+INTLTOOL__v_MERGE_0 = @INTLTOOL__v_MERGE_0@
 INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 INTROSPECTION_CFLAGS = @INTROSPECTION_CFLAGS@
 INTROSPECTION_COMPILER = @INTROSPECTION_COMPILER@
@@ -460,6 +471,9 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VAPIGEN = @VAPIGEN@
+VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
+VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
@@ -498,6 +512,8 @@ htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
+intltool__v_merge_options_ = @intltool__v_merge_options_@
+intltool__v_merge_options_0 = @intltool__v_merge_options_0@
 libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
@@ -518,16 +534,17 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = generated logging dns-manager vpn-manager dhcp-manager \
-	ip6-manager supplicant-manager ppp-manager backends \
-	dnsmasq-manager modem-manager bluez-manager firewall-manager \
-	wifi settings $(am__append_1) . tests
+SUBDIRS = generated logging posix-signals dns-manager vpn-manager \
+	dhcp-manager ip6-manager supplicant-manager ppp-manager \
+	backends dnsmasq-manager modem-manager bluez-manager \
+	firewall-manager wifi settings $(am__append_1) . tests
 INCLUDES = -I${top_srcdir} \
            -I${top_srcdir}/include \
            -I${top_builddir}/include \
            -I${top_srcdir}/src/generated \
            -I${top_builddir}/src/generated \
            -I${top_srcdir}/src/logging \
+           -I${top_srcdir}/src/posix-signals \
            -I${top_srcdir}/src/dns-manager \
            -I${top_srcdir}/src/vpn-manager \
            -I${top_srcdir}/src/dhcp-manager \
@@ -607,10 +624,11 @@ libtest_wifi_ap_utils_la_LIBADD = \
 
 NetworkManager_SOURCES = nm-call-store.c nm-call-store.h nm-device.c \
 	nm-device.h nm-device-private.h nm-device-ethernet.c \
-	nm-device-ethernet.h nm-device-wifi.c nm-device-wifi.h \
-	nm-device-wired.c nm-device-wired.h nm-device-olpc-mesh.c \
-	nm-device-olpc-mesh.h nm-device-bt.c nm-device-bt.h \
-	nm-device-modem.h nm-device-modem.c nm-device-infiniband.c \
+	nm-device-ethernet.h nm-device-adsl.c nm-device-adsl.h \
+	nm-device-wifi.c nm-device-wifi.h nm-device-wired.c \
+	nm-device-wired.h nm-device-olpc-mesh.c nm-device-olpc-mesh.h \
+	nm-device-bt.c nm-device-bt.h nm-device-modem.h \
+	nm-device-modem.c nm-device-infiniband.c \
 	nm-device-infiniband.h nm-device-bond.c nm-device-bond.h \
 	nm-device-vlan.c nm-device-vlan.h nm-wifi-ap.c nm-wifi-ap.h \
 	nm-wifi-ap-utils.c nm-wifi-ap-utils.h nm-dbus-manager.h \
@@ -630,7 +648,8 @@ NetworkManager_SOURCES = nm-call-store.c nm-call-store.h nm-device.c \
 	nm-properties-changed-signal.h nm-dhcp4-config.c \
 	nm-dhcp4-config.h nm-dhcp6-config.c nm-dhcp6-config.h \
 	nm-rfkill.h nm-session-monitor.h nm-session-utils.c \
-	nm-session-utils.h $(am__append_2) $(am__append_3) \
+	nm-session-utils.h nm-connection-provider.h \
+	nm-connection-provider.c $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5)
 BUILT_SOURCES = \
 	nm-access-point-glue.h \
@@ -640,6 +659,7 @@ BUILT_SOURCES = \
 	nm-device-infiniband-glue.h \
 	nm-device-bond-glue.h \
 	nm-device-vlan-glue.h \
+	nm-device-adsl-glue.h \
 	nm-device-wifi-glue.h \
 	nm-device-olpc-mesh-glue.h \
 	nm-device-bt-glue.h \
@@ -660,7 +680,9 @@ NetworkManager_CPPFLAGS = $(DBUS_CFLAGS) $(GLIB_CFLAGS) \
 	-DNM_RUN_DIR=\"$(rundir)\" -DNMLOCALEDIR=\"$(datadir)/locale\" \
 	-DNMPLUGINDIR=\"$(pkglibdir)\" $(am__append_6)
 NetworkManager_LDADD = ./generated/libnm-generated.la \
-	./logging/libnm-logging.la ./dns-manager/libdns-manager.la \
+	./logging/libnm-logging.la \
+	./posix-signals/libnm-posix-signals.la \
+	./dns-manager/libdns-manager.la \
 	./vpn-manager/libvpn-manager.la \
 	./dhcp-manager/libdhcp-manager.la \
 	./ip6-manager/libip6-manager.la \
@@ -853,8 +875,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-active-connection.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-call-store.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-config.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-connection-provider.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-connectivity.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-dbus-manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-device-adsl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-device-bond.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-device-bt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NetworkManager-nm-device-ethernet.Po@am__quote@
@@ -1017,6 +1041,22 @@ NetworkManager-nm-device-ethernet.obj: nm-device-ethernet.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-ethernet.c' object='NetworkManager-nm-device-ethernet.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-device-ethernet.obj `if test -f 'nm-device-ethernet.c'; then $(CYGPATH_W) 'nm-device-ethernet.c'; else $(CYGPATH_W) '$(srcdir)/nm-device-ethernet.c'; fi`
+
+NetworkManager-nm-device-adsl.o: nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT NetworkManager-nm-device-adsl.o -MD -MP -MF $(DEPDIR)/NetworkManager-nm-device-adsl.Tpo -c -o NetworkManager-nm-device-adsl.o `test -f 'nm-device-adsl.c' || echo '$(srcdir)/'`nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/NetworkManager-nm-device-adsl.Tpo $(DEPDIR)/NetworkManager-nm-device-adsl.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-adsl.c' object='NetworkManager-nm-device-adsl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-device-adsl.o `test -f 'nm-device-adsl.c' || echo '$(srcdir)/'`nm-device-adsl.c
+
+NetworkManager-nm-device-adsl.obj: nm-device-adsl.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT NetworkManager-nm-device-adsl.obj -MD -MP -MF $(DEPDIR)/NetworkManager-nm-device-adsl.Tpo -c -o NetworkManager-nm-device-adsl.obj `if test -f 'nm-device-adsl.c'; then $(CYGPATH_W) 'nm-device-adsl.c'; else $(CYGPATH_W) '$(srcdir)/nm-device-adsl.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/NetworkManager-nm-device-adsl.Tpo $(DEPDIR)/NetworkManager-nm-device-adsl.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-device-adsl.c' object='NetworkManager-nm-device-adsl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-device-adsl.obj `if test -f 'nm-device-adsl.c'; then $(CYGPATH_W) 'nm-device-adsl.c'; else $(CYGPATH_W) '$(srcdir)/nm-device-adsl.c'; fi`
 
 NetworkManager-nm-device-wifi.o: nm-device-wifi.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT NetworkManager-nm-device-wifi.o -MD -MP -MF $(DEPDIR)/NetworkManager-nm-device-wifi.Tpo -c -o NetworkManager-nm-device-wifi.o `test -f 'nm-device-wifi.c' || echo '$(srcdir)/'`nm-device-wifi.c
@@ -1546,6 +1586,22 @@ NetworkManager-nm-session-utils.obj: nm-session-utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-session-utils.obj `if test -f 'nm-session-utils.c'; then $(CYGPATH_W) 'nm-session-utils.c'; else $(CYGPATH_W) '$(srcdir)/nm-session-utils.c'; fi`
 
+NetworkManager-nm-connection-provider.o: nm-connection-provider.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT NetworkManager-nm-connection-provider.o -MD -MP -MF $(DEPDIR)/NetworkManager-nm-connection-provider.Tpo -c -o NetworkManager-nm-connection-provider.o `test -f 'nm-connection-provider.c' || echo '$(srcdir)/'`nm-connection-provider.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/NetworkManager-nm-connection-provider.Tpo $(DEPDIR)/NetworkManager-nm-connection-provider.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-connection-provider.c' object='NetworkManager-nm-connection-provider.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-connection-provider.o `test -f 'nm-connection-provider.c' || echo '$(srcdir)/'`nm-connection-provider.c
+
+NetworkManager-nm-connection-provider.obj: nm-connection-provider.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT NetworkManager-nm-connection-provider.obj -MD -MP -MF $(DEPDIR)/NetworkManager-nm-connection-provider.Tpo -c -o NetworkManager-nm-connection-provider.obj `if test -f 'nm-connection-provider.c'; then $(CYGPATH_W) 'nm-connection-provider.c'; else $(CYGPATH_W) '$(srcdir)/nm-connection-provider.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/NetworkManager-nm-connection-provider.Tpo $(DEPDIR)/NetworkManager-nm-connection-provider.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nm-connection-provider.c' object='NetworkManager-nm-connection-provider.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-connection-provider.obj `if test -f 'nm-connection-provider.c'; then $(CYGPATH_W) 'nm-connection-provider.c'; else $(CYGPATH_W) '$(srcdir)/nm-connection-provider.c'; fi`
+
 NetworkManager-nm-connectivity.o: nm-connectivity.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT NetworkManager-nm-connectivity.o -MD -MP -MF $(DEPDIR)/NetworkManager-nm-connectivity.Tpo -c -o NetworkManager-nm-connectivity.o `test -f 'nm-connectivity.c' || echo '$(srcdir)/'`nm-connectivity.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/NetworkManager-nm-connectivity.Tpo $(DEPDIR)/NetworkManager-nm-connectivity.Po
@@ -2014,6 +2070,9 @@ nm-device-ethernet-glue.h: $(top_srcdir)/introspection/nm-device-ethernet.xml
 
 nm-device-infiniband-glue.h: $(top_srcdir)/introspection/nm-device-infiniband.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_infiniband --mode=glib-server --output=$@ $<
+
+nm-device-adsl-glue.h: $(top_srcdir)/introspection/nm-device-adsl.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_adsl --mode=glib-server --output=$@ $<
 
 nm-device-wifi-glue.h: $(top_srcdir)/introspection/nm-device-wifi.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_wifi --mode=glib-server --output=$@ $<
