@@ -14,6 +14,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_connection_get_path@Base 0.7.0
  nm_connection_get_setting@Base 0.7.0
  nm_connection_get_setting_802_1x@Base 0.8.998
+ nm_connection_get_setting_adsl@Base 0.9.5.95
  nm_connection_get_setting_bluetooth@Base 0.8.998
  nm_connection_get_setting_bond@Base 0.9.4.0
  nm_connection_get_setting_by_name@Base 0.7.0
@@ -170,6 +171,17 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_802_1x_set_phase2_client_cert@Base 0.7.999
  nm_setting_802_1x_set_phase2_private_key@Base 0.7.999
  nm_setting_802_1x_set_private_key@Base 0.7.999
+ nm_setting_adsl_error_get_type@Base 0.9.5.95
+ nm_setting_adsl_error_quark@Base 0.9.5.95
+ nm_setting_adsl_get_encapsulation@Base 0.9.5.95
+ nm_setting_adsl_get_password@Base 0.9.5.95
+ nm_setting_adsl_get_password_flags@Base 0.9.5.95
+ nm_setting_adsl_get_protocol@Base 0.9.5.95
+ nm_setting_adsl_get_type@Base 0.9.5.95
+ nm_setting_adsl_get_username@Base 0.9.5.95
+ nm_setting_adsl_get_vci@Base 0.9.5.95
+ nm_setting_adsl_get_vpi@Base 0.9.5.95
+ nm_setting_adsl_new@Base 0.9.5.95
  nm_setting_bluetooth_error_get_type@Base 0.7.999
  nm_setting_bluetooth_error_quark@Base 0.7.999
  nm_setting_bluetooth_get_bdaddr@Base 0.7.999
@@ -434,6 +446,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_wireless_get_bssid@Base 0.7.0
  nm_setting_wireless_get_channel@Base 0.7.0
  nm_setting_wireless_get_cloned_mac_address@Base 0.8.2
+ nm_setting_wireless_get_hidden@Base 0.9.5.95
  nm_setting_wireless_get_mac_address@Base 0.7.0
  nm_setting_wireless_get_mac_address_blacklist@Base 0.9.0
  nm_setting_wireless_get_mode@Base 0.7.0

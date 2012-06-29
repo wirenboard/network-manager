@@ -5,6 +5,7 @@ network-manager (0.9.5.95-1) UNRELEASED; urgency=low
       (Closes: #678965)
   * debian/patches/02-dbus_access_network_manager.patch: Updated.
   * Remove patches which have been merged upstream.
+  * Update symbols files for libnm-glib and libnm-util.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 29 Jun 2012 20:13:03 +0200
 

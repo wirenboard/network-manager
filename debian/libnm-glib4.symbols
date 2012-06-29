@@ -57,6 +57,11 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_client_wwan_get_enabled@Base 0.7.999
  nm_client_wwan_hardware_get_enabled@Base 0.7.999
  nm_client_wwan_set_enabled@Base 0.7.999
+ nm_device_adsl_error_get_type@Base 0.9.5.95
+ nm_device_adsl_error_quark@Base 0.9.5.95
+ nm_device_adsl_get_carrier@Base 0.9.5.95
+ nm_device_adsl_get_type@Base 0.9.5.95
+ nm_device_adsl_new@Base 0.9.5.95
  nm_device_bond_error_get_type@Base 0.9.4.0
  nm_device_bond_error_quark@Base 0.9.4.0
  nm_device_bond_get_carrier@Base 0.9.4.0
@@ -83,12 +88,15 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_ethernet_new@Base 0.7.999
  nm_device_filter_connections@Base 0.8.998
  nm_device_get_active_connection@Base 0.8.9997
+ nm_device_get_autoconnect@Base 0.9.5.95
  nm_device_get_capabilities@Base 0.7.999
  nm_device_get_device_type@Base 0.8.998
  nm_device_get_dhcp4_config@Base 0.7.999
  nm_device_get_dhcp6_config@Base 0.8.3.998
  nm_device_get_driver@Base 0.7.999
+ nm_device_get_driver_version@Base 0.9.5.95
  nm_device_get_firmware_missing@Base 0.8.2
+ nm_device_get_firmware_version@Base 0.9.5.95
  nm_device_get_iface@Base 0.7.999
  nm_device_get_ip4_config@Base 0.7.999
  nm_device_get_ip6_config@Base 0.7.999
@@ -119,6 +127,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_olpc_mesh_get_hw_address@Base 0.9.4.0
  nm_device_olpc_mesh_get_type@Base 0.9.4.0
  nm_device_olpc_mesh_new@Base 0.9.4.0
+ nm_device_set_autoconnect@Base 0.9.5.95
  nm_device_vlan_error_get_type@Base 0.9.4.0
  nm_device_vlan_error_quark@Base 0.9.4.0
  nm_device_vlan_get_carrier@Base 0.9.4.0
@@ -176,6 +185,8 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_ip6_config_new@Base 0.7.999
  nm_ip6_route_object_array_get_type@Base 0.7.999
  nm_object_array_get_type@Base 0.7.999
+ nm_object_error_get_type@Base 0.9.5.95
+ nm_object_error_quark@Base 0.9.5.95
  nm_object_get_connection@Base 0.7.999
  nm_object_get_path@Base 0.7.999
  nm_object_get_type@Base 0.7.999
