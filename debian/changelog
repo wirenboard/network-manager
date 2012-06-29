@@ -1,4 +1,4 @@
-network-manager (0.9.5.95-1) UNRELEASED; urgency=low
+network-manager (0.9.5.95-1) experimental; urgency=low
 
   * New upstream release (0.9.6 rc1).
     - Remove 'max_replies_per_connection' limit from D-Bus configuration.
@@ -7,7 +7,7 @@ network-manager (0.9.5.95-1) UNRELEASED; urgency=low
   * Remove patches which have been merged upstream.
   * Update symbols files for libnm-glib and libnm-util.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 29 Jun 2012 20:13:03 +0200
+ -- Michael Biebl <biebl@debian.org>  Fri, 29 Jun 2012 20:30:16 +0200
 
 network-manager (0.9.4.0-5) unstable; urgency=low
 
