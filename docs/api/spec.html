@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.5.95</title><style type="text/css">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.5.96</title><style type="text/css">
 
           body {
             font-family: sans-serif;
@@ -98,7 +98,7 @@
             margin-right: 4em;
           }
 
-        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.5.95</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
+        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.5.96</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
 <p>This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -586,6 +586,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The device is a bond master interface.
         </dd><dt><code>NM_DEVICE_TYPE_VLAN = 11</code></dt><dd>
           The device is a VLAN interface.
+        </dd><dt><code>NM_DEVICE_TYPE_ADSL = 12</code></dt><dd>
+          The device is an ADSL device supporting PPPoE and PPPoATM protocols.
         </dd></dl><h3><a name="type-NM_DEVICE_STATE_REASON" id="type-NM_DEVICE_STATE_REASON">NM_DEVICE_STATE_REASON</a></h3><dl><dt><code>NM_DEVICE_STATE_REASON_UNKNOWN = 0</code></dt><dd>
           The reason for the device state change is unknown.
         </dd><dt><code>NM_DEVICE_STATE_REASON_NONE = 1</code></dt><dd>
@@ -688,7 +690,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           InfiniBand device does not support connected mode.
         </dd><dt><code>NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED = 50</code></dt><dd>
           A dependency of the connection failed.
-        </dd><dt><code>NM_DEVICE_STATE_REASON_BR2684_FAILED = 50</code></dt><dd>
+        </dd><dt><code>NM_DEVICE_STATE_REASON_BR2684_FAILED = 51</code></dt><dd>
           Problem with the RFC 2684 Ethernet over ADSL bridge.
         </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_DEVICE_CAP" id="type-NM_DEVICE_CAP">NM_DEVICE_CAP</a></h3><dl><dt><code>NM_DEVICE_CAP_NONE = 0x0</code></dt><dd>Null capability.</dd><dt><code>NM_DEVICE_CAP_NM_SUPPORTED = 0x1</code></dt><dd>The device is supported by NetworkManager.</dd><dt><code>NM_DEVICE_CAP_CARRIER_DETECT = 0x2</code></dt><dd>The device supports carrier detection.</dd></dl><h2>Structure types:</h2><div class="struct"><h3><a name="type-NM_DEVICE_STATE_REASON_STRUCT" id="type-NM_DEVICE_STATE_REASON_STRUCT">NM_DEVICE_STATE_REASON_STRUCT</a> - (
         u: state, u: reason

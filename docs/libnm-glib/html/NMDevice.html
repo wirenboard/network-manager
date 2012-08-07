@@ -1235,9 +1235,9 @@ The vendor string of the device.
 <div class="refsect2">
 <a name="NMDevice-state-changed"></a><h3>The <code class="literal">"state-changed"</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device,
-                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     state,
-                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     arg2,
-                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     arg3,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     new_state,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     old_state,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     reason,
                                                         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>  user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
 <p>
 Notifies the state change of a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.
@@ -1247,11 +1247,19 @@ Notifies the state change of a <a class="link" href="NMDevice.html" title="NMDev
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
-<td>the client that received the signal</td>
+<td>the device object that received the signal</td>
 </tr>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>state</code></em> :</span></p></td>
+<td><p><span class="term"><em class="parameter"><code>new_state</code></em> :</span></p></td>
 <td>the new state of the device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>old_state</code></em> :</span></p></td>
+<td>the previous state of the device</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>reason</code></em> :</span></p></td>
+<td>the reason describing the state change</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>

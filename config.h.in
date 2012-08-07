@@ -180,6 +180,9 @@
 /* Define if you have Gentoo */
 #undef TARGET_GENTOO
 
+/* Define if you have Linux From Scratch */
+#undef TARGET_LFS
+
 /* Define if you have linexa */
 #undef TARGET_LINEXA
 

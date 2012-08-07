@@ -696,12 +696,25 @@ set_current_ap (NMDeviceWifi *self, NMAccessPoint *new_ap)
 	g_free (old_path);
 }
 
-static void
-periodic_update (NMDeviceWifi *self)
+/* Called both as a GSourceFunc and standalone */
+static gboolean
+periodic_update (gpointer user_data)
 {
+	NMDeviceWifi *self = NM_DEVICE_WIFI (user_data);
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	NMAccessPoint *new_ap;
 	guint32 new_rate, percent;
+	NMDeviceState state;
+
+	/* BSSID and signal strength have meaningful values only if the device
+	 * is activated and not scanning.
+	 */
+	state = nm_device_get_state (NM_DEVICE (self));
+	if (state != NM_DEVICE_STATE_ACTIVATED)
+		return TRUE;
+
+	if (nm_supplicant_interface_get_scanning (priv->supplicant.iface))
+		return TRUE;
 
 	/* In IBSS mode, most newer firmware/drivers do "BSS coalescing" where
 	 * multiple IBSS stations using the same SSID will eventually switch to
@@ -771,33 +784,7 @@ periodic_update (NMDeviceWifi *self)
 		priv->rate = new_rate;
 		g_object_notify (G_OBJECT (self), NM_DEVICE_WIFI_BITRATE);
 	}
-}
 
-/*
- * nm_device_wifi_periodic_update
- *
- * Periodically update device statistics.
- *
- */
-static gboolean
-nm_device_wifi_periodic_update (gpointer data)
-{
-	NMDeviceWifi *self = NM_DEVICE_WIFI (data);
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-	NMDeviceState state;
-
-	/* BSSID and signal strength have meaningful values only if the device
-	   is activated and not scanning */
-	state = nm_device_get_state (NM_DEVICE (self));
-	if (state != NM_DEVICE_STATE_ACTIVATED)
-		goto out;
-
-	if (nm_supplicant_interface_get_scanning (priv->supplicant.iface))
-		goto out;
-
-	periodic_update (self);
-
-out:
 	return TRUE;
 }
 
@@ -837,7 +824,7 @@ real_bring_up (NMDevice *dev)
 	NMDeviceWifi *self = NM_DEVICE_WIFI (dev);
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 
-	priv->periodic_source_id = g_timeout_add_seconds (6, nm_device_wifi_periodic_update, self);
+	priv->periodic_source_id = g_timeout_add_seconds (6, periodic_update, self);
 	return TRUE;
 }
 
@@ -2432,7 +2419,6 @@ handle_auth_or_fail (NMDeviceWifi *self,
 {
 	const char *setting_name;
 	guint32 tries;
-	NMAccessPoint *ap;
 	NMConnection *connection;
 	NMActStageReturn ret = NM_ACT_STAGE_RETURN_FAILURE;
 
@@ -2445,9 +2431,6 @@ handle_auth_or_fail (NMDeviceWifi *self,
 
 	connection = nm_act_request_get_connection (req);
 	g_assert (connection);
-
-	ap = nm_device_wifi_get_activation_ap (self);
-	g_assert (ap);
 
 	tries = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (connection), WIRELESS_SECRETS_TRIES));
 	if (tries > 3)
@@ -3181,7 +3164,6 @@ activation_failure_handler (NMDevice *dev)
 	NMDeviceWifi *self = NM_DEVICE_WIFI (dev);
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	NMAccessPoint *ap;
-	const GByteArray * ssid;
 	NMConnection *connection;
 
 	connection = nm_device_get_connection (dev);
@@ -3203,12 +3185,6 @@ activation_failure_handler (NMDevice *dev)
 			g_object_unref (ap);
 		}
 	}
-
-	ssid = nm_ap_get_ssid (ap);
-	nm_log_warn (LOGD_DEVICE | LOGD_WIFI,
-	             "Activation (%s) failed for access point (%s)",
-	             nm_device_get_iface (dev),
-	             ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(none)");
 }
 
 static gboolean

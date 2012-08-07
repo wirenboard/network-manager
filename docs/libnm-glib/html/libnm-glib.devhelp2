@@ -553,6 +553,7 @@
     <keyword type="struct" name="struct NMVpnPluginUiWidgetInterface" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiWidgetInterface"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_IPV6" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_NONE" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_INTERFACE_DESC" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_INTERFACE_NAME" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS"/>

@@ -4,7 +4,7 @@ dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
 m4_define([nm_micro_version], [5])
-m4_define([nm_nano_version],  [95])
+m4_define([nm_nano_version],  [96])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
 
@@ -107,7 +107,7 @@ dnl Make sha1.c happy on big endian systems
 dnl
 AC_C_BIGENDIAN
 
-AC_ARG_WITH(distro, AS_HELP_STRING([--with-distro=DISTRO], [Specify the Linux distribution to target: One of redhat, suse, gentoo, debian, arch, slackware, paldo, mandriva, pardus, linexa or exherbo]))
+AC_ARG_WITH(distro, AS_HELP_STRING([--with-distro=DISTRO], [Specify the Linux distribution to target: One of redhat, suse, gentoo, debian, arch, slackware, paldo, mandriva, pardus, linexa, exherbo or lfs]))
 if test "z$with_distro" = "z"; then
 	AC_CHECK_FILE(/etc/redhat-release,with_distro="redhat")
 	AC_CHECK_FILE(/etc/SuSE-release,with_distro="suse")
@@ -121,6 +121,7 @@ if test "z$with_distro" = "z"; then
 	AC_CHECK_FILE(/etc/pardus-release,with_distro="pardus")
 	AC_CHECK_FILE(/etc/linexa-release,with_distro="linexa")
 	AC_CHECK_FILE(/etc/exherbo-release,with_distro="exherbo")
+	AC_CHECK_FILE(/etc/lfs-release,with_distro="lfs")
 	if test "z$with_distro" = "z"; then
 		with_distro=`lsb_release -is`
 	fi
@@ -132,7 +133,7 @@ if test "z$with_distro" = "z"; then
 	exit 1
 else
 	case $with_distro in
-		redhat|suse|gentoo|debian|slackware|arch|paldo|frugalware|mandriva|pardus|linexa|exherbo|generic) ;;
+		redhat|suse|gentoo|debian|slackware|arch|paldo|frugalware|mandriva|pardus|linexa|exherbo|lfs|generic) ;;
 		*)
 			echo "Your distribution (${with_distro}) is not yet supported!  (patches welcome)"
 			exit 1
@@ -203,6 +204,11 @@ fi
 AM_CONDITIONAL(TARGET_EXHERBO, test x"$with_distro" = xexherbo)
 if test x"$with_distro" = xexherbo; then
   AC_DEFINE(TARGET_EXHERBO, 1, [Define if you have Exherbo])
+fi
+
+AM_CONDITIONAL(TARGET_LFS, test x"$with_distro" = xlfs)
+if test x"$with_distro" = xlfs; then
+  AC_DEFINE(TARGET_LFS, 1, [Define if you have Linux From Scratch])
 fi
 
 dnl
@@ -300,7 +306,7 @@ dnl
 AC_CHECK_LIB([dbus-glib-1], [dbus_glib_global_set_disable_legacy_property_access], ac_have_dg_prop="1", ac_have_dg_prop="0")
 AC_DEFINE_UNQUOTED(HAVE_DBUS_GLIB_DISABLE_LEGACY_PROP_ACCESS, $ac_have_dg_prop, [Define if you have a dbus-glib with dbus_glib_global_set_disable_legacy_property_access()])
 
-PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.75)
+PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.94)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
@@ -362,14 +368,14 @@ if test "x$with_systemdsystemunitdir" != xno; then
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
-AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd], [Build NetworkManager with specific session tracking support]))
+AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd|ck|none], [Build NetworkManager with specific session tracking support]))
 if test "z$with_session_tracking" = "z"; then
     # Default to ConsoleKit session tracking like we used before
     with_session_tracking=ck
 fi
 
 case $with_session_tracking in
-    ck|none) ;;
+    ck|none|no) ;;
     systemd)
         PKG_CHECK_MODULES(SYSTEMD, [libsystemd-login])
         ;;
@@ -458,7 +464,7 @@ else
 fi
 AM_CONDITIONAL(WITH_POLKIT, test "${enable_polkit}" = "yes")
 
-AC_ARG_WITH(crypto, AS_HELP_STRING([--with-crypto=nss | gnutls], [Cryptography library to use for certificate and key operations]),ac_crypto=$withval, ac_crypto=nss)
+AC_ARG_WITH(crypto, AS_HELP_STRING([--with-crypto=nss|gnutls], [Cryptography library to use for certificate and key operations]),ac_crypto=$withval, ac_crypto=nss)
 
 with_nss=no
 with_gnutls=no

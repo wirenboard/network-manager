@@ -4,23 +4,23 @@
   <chapters>
     <sub name="D-Bus API Reference" link="ref-dbus.html"/>
     <sub name="Network Configuration Setting Specification" link="ref-settings.html">
-      <sub name="Configuration Settings" link="ref-settings.html#id372896"/>
+      <sub name="Configuration Settings" link="ref-settings.html#id437745"/>
       <sub name="Secret flag types" link="secrets-flags.html"/>
     </sub>
     <sub name="Migrating from NetworkManager 0.8 to NetworkManager 0.9" link="ref-migrating.html">
-      <sub name="Architecture and D-Bus API Changes in 0.9" link="ref-migrating.html#id366491">
-        <sub name="Elimination of the User Settings Service" link="ref-migrating.html#id366497"/>
-        <sub name="User Secret Agents" link="ref-migrating.html#id356823"/>
-        <sub name="Settings Service Interface Changes" link="ref-migrating.html#id355349"/>
-        <sub name="Connection Object Interface Changes" link="ref-migrating.html#id364468"/>
-        <sub name="Permissions Methods Consolidation" link="ref-migrating.html#id382175"/>
-        <sub name="AddConnection Returns Object Path of New Connection" link="ref-migrating.html#id365236"/>
-        <sub name="Support for WiMAX Devices" link="ref-migrating.html#id373812"/>
-        <sub name="New Device States" link="ref-migrating.html#id347885"/>
-        <sub name="New Active Connection State" link="ref-migrating.html#id375497"/>
-        <sub name="Consolidated Modem Devices" link="ref-migrating.html#id383339"/>
-        <sub name="Secret Property Flags" link="ref-migrating.html#id355516"/>
-        <sub name="Deprecated Methods Removed" link="ref-migrating.html#id352005"/>
+      <sub name="Architecture and D-Bus API Changes in 0.9" link="ref-migrating.html#id449785">
+        <sub name="Elimination of the User Settings Service" link="ref-migrating.html#id446214"/>
+        <sub name="User Secret Agents" link="ref-migrating.html#id429971"/>
+        <sub name="Settings Service Interface Changes" link="ref-migrating.html#id429654"/>
+        <sub name="Connection Object Interface Changes" link="ref-migrating.html#id438294"/>
+        <sub name="Permissions Methods Consolidation" link="ref-migrating.html#id432724"/>
+        <sub name="AddConnection Returns Object Path of New Connection" link="ref-migrating.html#id431666"/>
+        <sub name="Support for WiMAX Devices" link="ref-migrating.html#id413984"/>
+        <sub name="New Device States" link="ref-migrating.html#id444778"/>
+        <sub name="New Active Connection State" link="ref-migrating.html#id448971"/>
+        <sub name="Consolidated Modem Devices" link="ref-migrating.html#id443548"/>
+        <sub name="Secret Property Flags" link="ref-migrating.html#id421190"/>
+        <sub name="Deprecated Methods Removed" link="ref-migrating.html#id420876"/>
       </sub>
     </sub>
     <sub name="Index" link="ix01.html"/>

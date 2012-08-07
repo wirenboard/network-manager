@@ -161,11 +161,6 @@
 <ANCHOR id="NM-SETTING-CONNECTION-TYPE:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-TYPE:CAPS">
 <ANCHOR id="NM-SETTING-CONNECTION-UUID:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-UUID:CAPS">
 <ANCHOR id="NM-SETTING-CONNECTION-ZONE:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE:CAPS">
-<ANCHOR id="NM-SETTING-CONNECTION-ZONE-BLOCK:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-BLOCK:CAPS">
-<ANCHOR id="NM-SETTING-CONNECTION-ZONE-HOME:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-HOME:CAPS">
-<ANCHOR id="NM-SETTING-CONNECTION-ZONE-PUBLIC:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-PUBLIC:CAPS">
-<ANCHOR id="NM-SETTING-CONNECTION-ZONE-TRUSTED:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-TRUSTED:CAPS">
-<ANCHOR id="NM-SETTING-CONNECTION-ZONE-WORK:CAPS" href="libnm-util/NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-WORK:CAPS">
 <ANCHOR id="nm-setting-connection-add-permission" href="libnm-util/NMSettingConnection.html#nm-setting-connection-add-permission">
 <ANCHOR id="nm-setting-connection-error-quark" href="libnm-util/NMSettingConnection.html#nm-setting-connection-error-quark">
 <ANCHOR id="nm-setting-connection-get-autoconnect" href="libnm-util/NMSettingConnection.html#nm-setting-connection-get-autoconnect">
@@ -1261,6 +1256,7 @@
 <ANCHOR id="NM-UTILS-HWADDR-LEN-MAX:CAPS" href="libnm-util/libnm-util-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS">
 <ANCHOR id="nm-utils-deinit" href="libnm-util/libnm-util-nm-utils.html#nm-utils-deinit">
 <ANCHOR id="nm-utils-escape-ssid" href="libnm-util/libnm-util-nm-utils.html#nm-utils-escape-ssid">
+<ANCHOR id="nm-utils-file-is-pkcs12" href="libnm-util/libnm-util-nm-utils.html#nm-utils-file-is-pkcs12">
 <ANCHOR id="nm-utils-gvalue-hash-dup" href="libnm-util/libnm-util-nm-utils.html#nm-utils-gvalue-hash-dup">
 <ANCHOR id="nm-utils-hwaddr-atoba" href="libnm-util/libnm-util-nm-utils.html#nm-utils-hwaddr-atoba">
 <ANCHOR id="nm-utils-hwaddr-aton" href="libnm-util/libnm-util-nm-utils.html#nm-utils-hwaddr-aton">
