@@ -492,6 +492,7 @@ libnm-util.so.2 libnm-util2 #MINVER#
  nm_setting_wireless_security_set_wep_key@Base 0.7.0
  nm_utils_deinit@Base 0.7.0
  nm_utils_escape_ssid@Base 0.7.0
+ nm_utils_file_is_pkcs12@Base 0.9.5.96
  nm_utils_gvalue_hash_dup@Base 0.7.0
  nm_utils_hwaddr_atoba@Base 0.9.4.0
  nm_utils_hwaddr_aton@Base 0.9.4.0
