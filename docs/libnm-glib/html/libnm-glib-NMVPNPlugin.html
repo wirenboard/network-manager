@@ -143,7 +143,68 @@ enum                <a class="link" href="libnm-glib-NMVPNPlugin.html#NMVPNPlugi
 } NMVPNPluginError;
 </pre>
 <p>
+Returned by the VPN service plugin to indicate errors.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-GENERAL:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_GENERAL</code></span></p></td>
+<td>general failure
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-STARTING-IN-PROGRESS:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_STARTING_IN_PROGRESS</code></span></p></td>
+<td>the plugin is already starting,
+ and another connect request was received
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-ALREADY-STARTED:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_ALREADY_STARTED</code></span></p></td>
+<td>the plugin is already connected, and
+ another connect request was received
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-STOPPING-IN-PROGRESS:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_STOPPING_IN_PROGRESS</code></span></p></td>
+<td>the plugin is already stopping,
+ and another stop request was received
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-ALREADY-STOPPED:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_ALREADY_STOPPED</code></span></p></td>
+<td>the plugin is already stopped, and
+ another disconnect request was received
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-WRONG-STATE:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_WRONG_STATE</code></span></p></td>
+<td>the operation could not be performed in
+ this state
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-BAD-ARGUMENTS:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS</code></span></p></td>
+<td>the operation could not be performed as
+ the request contained malformed arguments, or arguments of unexpected type.
+ Usually means that one of the VPN setting data items or secrets was not of
+ the expected type (ie int, string, bool, etc).
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-LAUNCH-FAILED:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED</code></span></p></td>
+<td>a child process failed to launch
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-ERROR-CONNECTION-INVALID:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_ERROR_CONNECTION_INVALID</code></span></p></td>
+<td>the operation could not be performed
+ because the connection was invalid.  Usually means that the connection's
+ VPN setting was missing some required data item or secret.
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

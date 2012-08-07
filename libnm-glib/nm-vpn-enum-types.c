@@ -36,6 +36,27 @@ nm_vpn_plugin_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_vpn_plugin_ui_capability_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_VPN_PLUGIN_UI_CAPABILITY_NONE, "NM_VPN_PLUGIN_UI_CAPABILITY_NONE", "none" },
+        { NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT, "NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT", "import" },
+        { NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT, "NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT", "export" },
+        { NM_VPN_PLUGIN_UI_CAPABILITY_IPV6, "NM_VPN_PLUGIN_UI_CAPABILITY_IPV6", "ipv6" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMVpnPluginUiCapability"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_vpn_plugin_ui_interface_prop_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;

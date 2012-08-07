@@ -5,48 +5,48 @@
 
 #include "nm-enum-types.h"
 
-#include "nm-ip4-config.h" 
-#include "nm-device-olpc-mesh.h" 
 #include "nm-hostname-provider.h" 
 #include "nm-device.h" 
-#include "nm-rfkill.h" 
 #include "NetworkManagerUtils.h" 
-#include "nm-device-vlan.h" 
+#include "nm-system.h" 
 #include "nm-device-factory.h" 
 #include "nm-active-connection.h" 
 #include "nm-wifi-ap.h" 
+#include "nm-device-ethernet.h" 
 #include "nm-device-bt.h" 
-#include "nm-device-private.h" 
+#include "nm-call-store.h" 
+#include "nm-device-infiniband.h" 
 #include "nm-device-wifi.h" 
 #include "nm-dbus-manager.h" 
+#include "nm-device-wired.h" 
+#include "nm-device-private.h" 
 #include "nm-dhcp4-config.h" 
 #include "nm-dhcp6-config.h" 
+#include "nm-session-utils.h" 
 #include "nm-netlink-compat.h" 
 #include "nm-session-monitor.h" 
+#include "nm-ip4-config.h" 
 #include "nm-device-bond.h" 
 #include "nm-wifi-ap-utils.h" 
 #include "nm-device-adsl.h" 
 #include "nm-policy-hosts.h" 
-#include "nm-udev-manager.h" 
+#include "nm-rfkill.h" 
 #include "nm-connection-provider.h" 
 #include "nm-manager.h" 
 #include "nm-device-modem.h" 
-#include "nm-device-wired.h" 
 #include "nm-activation-request.h" 
-#include "nm-session-utils.h" 
 #include "nm-policy-hostname.h" 
-#include "nm-device-infiniband.h" 
 #include "nm-properties-changed-signal.h" 
 #include "nm-ip6-config.h" 
-#include "nm-call-store.h" 
 #include "nm-policy.h" 
 #include "nm-manager-auth.h" 
 #include "nm-config.h" 
 #include "nm-netlink-utils.h" 
 #include "nm-netlink-monitor.h" 
-#include "nm-system.h" 
+#include "nm-udev-manager.h" 
 #include "nm-connectivity.h" 
-#include "nm-device-ethernet.h" 
+#include "nm-device-vlan.h" 
+#include "nm-device-olpc-mesh.h" 
 #include "nm-logging.h" 
 #include "nm-dns-utils.h" 
 #include "nm-dns-plugin.h" 
@@ -91,13 +91,131 @@
 #include "nm-settings-error.h" 
 #include "nm-agent-manager.h" 
 #include "nm-inotify-helper.h" 
-#include "nm-secret-agent.h" 
-#include "nm-device-wimax.h" 
-#include "iwmxsdk.h" 
-#include "nm-wimax-types.h" 
-#include "nm-wimax-util.h" 
-#include "nm-wimax-nsp.h"
+#include "nm-secret-agent.h"
 
+GType
+nm_device_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_DEVICE_ERROR_CONNECTION_ACTIVATING, "NM_DEVICE_ERROR_CONNECTION_ACTIVATING", "ConnectionActivating" },
+        { NM_DEVICE_ERROR_CONNECTION_INVALID, "NM_DEVICE_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_DEVICE_ERROR_NOT_ACTIVE, "NM_DEVICE_ERROR_NOT_ACTIVE", "NotActive" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMDeviceError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_ethernet_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED, "NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED", "ConnectionNotWired" },
+        { NM_ETHERNET_ERROR_CONNECTION_INVALID, "NM_ETHERNET_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE, "NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMEthernetError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_bt_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_BT_ERROR_CONNECTION_NOT_BT, "NM_BT_ERROR_CONNECTION_NOT_BT", "ConnectionNotBt" },
+        { NM_BT_ERROR_CONNECTION_INVALID, "NM_BT_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_BT_ERROR_CONNECTION_INCOMPATIBLE, "NM_BT_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMBtError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_infiniband_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_INFINIBAND_ERROR_CONNECTION_NOT_INFINIBAND, "NM_INFINIBAND_ERROR_CONNECTION_NOT_INFINIBAND", "ConnectionNotInfiniband" },
+        { NM_INFINIBAND_ERROR_CONNECTION_INVALID, "NM_INFINIBAND_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_INFINIBAND_ERROR_CONNECTION_INCOMPATIBLE, "NM_INFINIBAND_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMInfinibandError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_wifi_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_WIFI_ERROR_CONNECTION_NOT_WIRELESS, "NM_WIFI_ERROR_CONNECTION_NOT_WIRELESS", "ConnectionNotWireless" },
+        { NM_WIFI_ERROR_CONNECTION_INVALID, "NM_WIFI_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE, "NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { NM_WIFI_ERROR_ACCESS_POINT_NOT_FOUND, "NM_WIFI_ERROR_ACCESS_POINT_NOT_FOUND", "AccessPointNotFound" },
+        { NM_WIFI_ERROR_SCAN_NOT_ALLOWED, "NM_WIFI_ERROR_SCAN_NOT_ALLOWED", "ScanNotAllowed" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMWifiError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_session_monitor_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SESSION_MONITOR_ERROR_IO_ERROR, "NM_SESSION_MONITOR_ERROR_IO_ERROR", "IOError" },
+        { NM_SESSION_MONITOR_ERROR_MALFORMED_DATABASE, "NM_SESSION_MONITOR_ERROR_MALFORMED_DATABASE", "MalformedDatabase" },
+        { NM_SESSION_MONITOR_ERROR_UNKNOWN_USER, "NM_SESSION_MONITOR_ERROR_UNKNOWN_USER", "UnknownUser" },
+        { NM_SESSION_MONITOR_ERROR_NO_DATABASE, "NM_SESSION_MONITOR_ERROR_NO_DATABASE", "NoDatabase" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSessionMonitorError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
 GType
 nm_ip4_config_compare_flags_get_type (void)
 {
@@ -129,40 +247,40 @@ nm_ip4_config_compare_flags_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_olpc_mesh_error_get_type (void)
+nm_bond_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_OLPC_MESH_ERROR_CONNECTION_NOT_MESH, "NM_OLPC_MESH_ERROR_CONNECTION_NOT_MESH", "ConnectionNotMesh" },
-        { NM_OLPC_MESH_ERROR_CONNECTION_INVALID, "NM_OLPC_MESH_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_OLPC_MESH_ERROR_CONNECTION_INCOMPATIBLE, "NM_OLPC_MESH_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { NM_BOND_ERROR_CONNECTION_NOT_BOND, "NM_BOND_ERROR_CONNECTION_NOT_BOND", "ConnectionNotBond" },
+        { NM_BOND_ERROR_CONNECTION_INVALID, "NM_BOND_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_BOND_ERROR_CONNECTION_INCOMPATIBLE, "NM_BOND_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMOlpcMeshError"), values);
+        g_enum_register_static (g_intern_static_string ("NMBondError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
   return g_define_type_id__volatile;
 }
 GType
-nm_device_error_get_type (void)
+nm_adsl_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_DEVICE_ERROR_CONNECTION_ACTIVATING, "NM_DEVICE_ERROR_CONNECTION_ACTIVATING", "ConnectionActivating" },
-        { NM_DEVICE_ERROR_CONNECTION_INVALID, "NM_DEVICE_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_DEVICE_ERROR_NOT_ACTIVE, "NM_DEVICE_ERROR_NOT_ACTIVE", "NotActive" },
+        { NM_ADSL_ERROR_CONNECTION_NOT_ADSL, "NM_ADSL_ERROR_CONNECTION_NOT_ADSL", "ConnectionNotAdsl" },
+        { NM_ADSL_ERROR_CONNECTION_INVALID, "NM_ADSL_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE, "NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDeviceError"), values);
+        g_enum_register_static (g_intern_static_string ("NMAdslError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -211,108 +329,6 @@ nm_rf_kill_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_vlan_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_VLAN_ERROR_CONNECTION_NOT_VLAN, "NM_VLAN_ERROR_CONNECTION_NOT_VLAN", "ConnectionNotVlan" },
-        { NM_VLAN_ERROR_CONNECTION_INVALID, "NM_VLAN_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_VLAN_ERROR_CONNECTION_INCOMPATIBLE, "NM_VLAN_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMVlanError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_bt_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_BT_ERROR_CONNECTION_NOT_BT, "NM_BT_ERROR_CONNECTION_NOT_BT", "ConnectionNotBt" },
-        { NM_BT_ERROR_CONNECTION_INVALID, "NM_BT_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_BT_ERROR_CONNECTION_INCOMPATIBLE, "NM_BT_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMBtError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_wifi_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_WIFI_ERROR_CONNECTION_NOT_WIRELESS, "NM_WIFI_ERROR_CONNECTION_NOT_WIRELESS", "ConnectionNotWireless" },
-        { NM_WIFI_ERROR_CONNECTION_INVALID, "NM_WIFI_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE, "NM_WIFI_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { NM_WIFI_ERROR_ACCESS_POINT_NOT_FOUND, "NM_WIFI_ERROR_ACCESS_POINT_NOT_FOUND", "AccessPointNotFound" },
-        { NM_WIFI_ERROR_SCAN_NOT_ALLOWED, "NM_WIFI_ERROR_SCAN_NOT_ALLOWED", "ScanNotAllowed" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMWifiError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_bond_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_BOND_ERROR_CONNECTION_NOT_BOND, "NM_BOND_ERROR_CONNECTION_NOT_BOND", "ConnectionNotBond" },
-        { NM_BOND_ERROR_CONNECTION_INVALID, "NM_BOND_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_BOND_ERROR_CONNECTION_INCOMPATIBLE, "NM_BOND_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMBondError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_adsl_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_ADSL_ERROR_CONNECTION_NOT_ADSL, "NM_ADSL_ERROR_CONNECTION_NOT_ADSL", "ConnectionNotAdsl" },
-        { NM_ADSL_ERROR_CONNECTION_INVALID, "NM_ADSL_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE, "NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMAdslError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
 nm_manager_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -355,47 +371,6 @@ nm_act_request_dependency_result_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMActRequestDependencyResult"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_session_monitor_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_SESSION_MONITOR_ERROR_IO_ERROR, "NM_SESSION_MONITOR_ERROR_IO_ERROR", "IOError" },
-        { NM_SESSION_MONITOR_ERROR_MALFORMED_DATABASE, "NM_SESSION_MONITOR_ERROR_MALFORMED_DATABASE", "MalformedDatabase" },
-        { NM_SESSION_MONITOR_ERROR_UNKNOWN_USER, "NM_SESSION_MONITOR_ERROR_UNKNOWN_USER", "UnknownUser" },
-        { NM_SESSION_MONITOR_ERROR_NO_DATABASE, "NM_SESSION_MONITOR_ERROR_NO_DATABASE", "NoDatabase" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMSessionMonitorError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_infiniband_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_INFINIBAND_ERROR_CONNECTION_NOT_INFINIBAND, "NM_INFINIBAND_ERROR_CONNECTION_NOT_INFINIBAND", "ConnectionNotInfiniband" },
-        { NM_INFINIBAND_ERROR_CONNECTION_INVALID, "NM_INFINIBAND_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_INFINIBAND_ERROR_CONNECTION_INCOMPATIBLE, "NM_INFINIBAND_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMInfinibandError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -515,20 +490,40 @@ nm_netlink_monitor_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_ethernet_error_get_type (void)
+nm_vlan_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED, "NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED", "ConnectionNotWired" },
-        { NM_ETHERNET_ERROR_CONNECTION_INVALID, "NM_ETHERNET_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE, "NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { NM_VLAN_ERROR_CONNECTION_NOT_VLAN, "NM_VLAN_ERROR_CONNECTION_NOT_VLAN", "ConnectionNotVlan" },
+        { NM_VLAN_ERROR_CONNECTION_INVALID, "NM_VLAN_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_VLAN_ERROR_CONNECTION_INCOMPATIBLE, "NM_VLAN_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMEthernetError"), values);
+        g_enum_register_static (g_intern_static_string ("NMVlanError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_olpc_mesh_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_OLPC_MESH_ERROR_CONNECTION_NOT_MESH, "NM_OLPC_MESH_ERROR_CONNECTION_NOT_MESH", "ConnectionNotMesh" },
+        { NM_OLPC_MESH_ERROR_CONNECTION_INVALID, "NM_OLPC_MESH_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_OLPC_MESH_ERROR_CONNECTION_INCOMPATIBLE, "NM_OLPC_MESH_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMOlpcMeshError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -884,48 +879,6 @@ nm_agent_manager_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMAgentManagerError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_wimax_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX, "NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX", "ConnectionNotWimax" },
-        { NM_WIMAX_ERROR_CONNECTION_INVALID, "NM_WIMAX_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE, "NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { NM_WIMAX_ERROR_NSP_NOT_FOUND, "NM_WIMAX_ERROR_NSP_NOT_FOUND", "NspNotFound" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMWimaxError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_wimax_nsp_network_type_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN, "NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN", "unknown" },
-        { NM_WIMAX_NSP_NETWORK_TYPE_HOME, "NM_WIMAX_NSP_NETWORK_TYPE_HOME", "home" },
-        { NM_WIMAX_NSP_NETWORK_TYPE_PARTNER, "NM_WIMAX_NSP_NETWORK_TYPE_PARTNER", "partner" },
-        { NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER, "NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER", "roaming-partner" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMWimaxNspNetworkType"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

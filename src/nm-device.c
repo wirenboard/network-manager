@@ -2478,7 +2478,8 @@ nm_device_activate_schedule_stage3_ip_config_start (NMDevice *self)
 	g_return_if_fail (priv->act_request);
 
 	state = nm_device_get_state (self);
-	g_warn_if_fail (state >= NM_DEVICE_STATE_PREPARE && state <= NM_DEVICE_STATE_NEED_AUTH);
+	if (nm_act_request_get_assumed (priv->act_request) == FALSE)
+		g_warn_if_fail (state >= NM_DEVICE_STATE_PREPARE && state <= NM_DEVICE_STATE_NEED_AUTH);
 
 	/* Add the interface to the specified firewall zone */
 	connection = nm_device_get_connection (self);
@@ -4687,8 +4688,6 @@ ip4_match_config (NMDevice *self, NMConnection *connection)
 	const char *method;
 
 	s_ip4 = nm_connection_get_setting_ip4_config (connection);
-	if (!s_ip4)
-		return FALSE;
 
 	/* Get any saved leases that apply to this connection */
 	dhcp_mgr = nm_dhcp_manager_get ();
@@ -4697,7 +4696,7 @@ ip4_match_config (NMDevice *self, NMConnection *connection)
 	                                           nm_connection_get_uuid (connection));
 	g_object_unref (dhcp_mgr);
 
-	method = nm_setting_ip4_config_get_method (s_ip4);
+	method = s_ip4 ? nm_setting_ip4_config_get_method (s_ip4) : NM_SETTING_IP4_CONFIG_METHOD_AUTO;
 	if (!strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_AUTO)) {
 		gboolean found = FALSE;
 
@@ -4740,16 +4739,18 @@ ip4_match_config (NMDevice *self, NMConnection *connection)
 	/* Everything below for static addressing */
 
 	/* Find all IP4 addresses of this connection on the device */
-	num = nm_setting_ip4_config_get_num_addresses (s_ip4);
-	for (i = 0; i < num; i++) {
-		NMIP4Address *addr = nm_setting_ip4_config_get_address (s_ip4, i);
-		struct in_addr tmp = { .s_addr = nm_ip4_address_get_address (addr) };
+	if (s_ip4) {
+		num = nm_setting_ip4_config_get_num_addresses (s_ip4);
+		for (i = 0; i < num; i++) {
+			NMIP4Address *addr = nm_setting_ip4_config_get_address (s_ip4, i);
+			struct in_addr tmp = { .s_addr = nm_ip4_address_get_address (addr) };
 
-		if (!nm_netlink_find_address (nm_device_get_ip_ifindex (self),
-		                              AF_INET,
-		                              &tmp,
-		                              nm_ip4_address_get_prefix (addr)))
-			return FALSE;
+			if (!nm_netlink_find_address (nm_device_get_ip_ifindex (self),
+						      AF_INET,
+						      &tmp,
+						      nm_ip4_address_get_prefix (addr)))
+				return FALSE;
+		}
 	}
 
 	/* Success; all the connection's static IP addresses are assigned to the device */

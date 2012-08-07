@@ -61,7 +61,7 @@ IGNORE_HFILES= \
 HTML_IMAGES = libnm-glib.png
 
 # Extra XML files that are included by $(DOC_MAIN_SGML_FILE).
-content_files = 
+content_files = version.xml
 
 # Other files to distribute.
 extra_files = libnm-glib.png
@@ -72,7 +72,6 @@ extra_files = libnm-glib.png
 GTKDOC_CFLAGS =				\
 	-I$(top_srcdir)/include		\
 	-I$(top_srcdir)/libnm-util	\
-	-I$(top_builddir)/marshallers	\
 	-I$(top_srcdir)/libnm-glib	\
 	$(GLIB_CFLAGS)			\
 	$(DBUS_CFLAGS)
@@ -84,6 +83,8 @@ GTKDOC_LIBS =  \
 
 # include common portion ...
 include $(top_srcdir)/gtk-doc.make
+
+EXTRA_DIST += version.xml.in
 
 CLEANFILES += \
 	libnm-glib-sections.txt \

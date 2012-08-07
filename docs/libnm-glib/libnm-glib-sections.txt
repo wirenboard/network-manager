@@ -735,8 +735,10 @@ nm_vpn_connection_get_type
 <FILE>nm-vpn-enum-types</FILE>
 <SUBSECTION Standard>
 NM_TYPE_VPN_PLUGIN_ERROR
+NM_TYPE_VPN_PLUGIN_UI_CAPABILITY
 NM_TYPE_VPN_PLUGIN_UI_INTERFACE_PROP
 nm_vpn_plugin_error_get_type
+nm_vpn_plugin_ui_capability_get_type
 nm_vpn_plugin_ui_interface_prop_get_type
 </SECTION>
 
@@ -774,14 +776,11 @@ nm_vpn_plugin_get_type
 <FILE>nm-vpn-plugin-ui-interface</FILE>
 <TITLE>NMVpnPluginUi</TITLE>
 <TITLE>NMVpnPluginUiWidget</TITLE>
+NMVpnPluginUiCapability
 NMVpnPluginUiFactory
 NMVpnPluginUiInterface
 NMVpnPluginUiInterfaceProp
 NMVpnPluginUiWidgetInterface
-NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT
-NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT
-NM_VPN_PLUGIN_UI_CAPABILITY_IPV6
-NM_VPN_PLUGIN_UI_CAPABILITY_NONE
 NM_VPN_PLUGIN_UI_INTERFACE_DESC
 NM_VPN_PLUGIN_UI_INTERFACE_NAME
 NM_VPN_PLUGIN_UI_INTERFACE_SERVICE

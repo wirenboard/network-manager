@@ -9,34 +9,32 @@
 #include <glib-object.h>
 
 G_BEGIN_DECLS
-GType nm_ip4_config_compare_flags_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_IP4_CONFIG_COMPARE_FLAGS (nm_ip4_config_compare_flags_get_type ())
-GType nm_olpc_mesh_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_OLPC_MESH_ERROR (nm_olpc_mesh_error_get_type ())
 GType nm_device_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_ERROR (nm_device_error_get_type ())
-GType nm_rf_kill_state_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_RF_KILL_STATE (nm_rf_kill_state_get_type ())
-GType nm_rf_kill_type_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_RF_KILL_TYPE (nm_rf_kill_type_get_type ())
-GType nm_vlan_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_VLAN_ERROR (nm_vlan_error_get_type ())
+GType nm_ethernet_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_ETHERNET_ERROR (nm_ethernet_error_get_type ())
 GType nm_bt_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_BT_ERROR (nm_bt_error_get_type ())
+GType nm_infiniband_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_INFINIBAND_ERROR (nm_infiniband_error_get_type ())
 GType nm_wifi_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_WIFI_ERROR (nm_wifi_error_get_type ())
+GType nm_session_monitor_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SESSION_MONITOR_ERROR (nm_session_monitor_error_get_type ())
+GType nm_ip4_config_compare_flags_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_IP4_CONFIG_COMPARE_FLAGS (nm_ip4_config_compare_flags_get_type ())
 GType nm_bond_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_BOND_ERROR (nm_bond_error_get_type ())
 GType nm_adsl_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_ADSL_ERROR (nm_adsl_error_get_type ())
+GType nm_rf_kill_state_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_RF_KILL_STATE (nm_rf_kill_state_get_type ())
+GType nm_rf_kill_type_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_RF_KILL_TYPE (nm_rf_kill_type_get_type ())
 GType nm_manager_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_MANAGER_ERROR (nm_manager_error_get_type ())
 GType nm_act_request_dependency_result_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_ACT_REQUEST_DEPENDENCY_RESULT (nm_act_request_dependency_result_get_type ())
-GType nm_session_monitor_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_SESSION_MONITOR_ERROR (nm_session_monitor_error_get_type ())
-GType nm_infiniband_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_INFINIBAND_ERROR (nm_infiniband_error_get_type ())
 GType nm_ip6_config_compare_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_IP6_CONFIG_COMPARE_FLAGS (nm_ip6_config_compare_flags_get_type ())
 GType nm_auth_call_result_get_type (void) G_GNUC_CONST;
@@ -47,8 +45,10 @@ GType nm_nm_nl_prop_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_NM_NL_PROP (nm_nm_nl_prop_get_type ())
 GType nm_netlink_monitor_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_NETLINK_MONITOR_ERROR (nm_netlink_monitor_error_get_type ())
-GType nm_ethernet_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_ETHERNET_ERROR (nm_ethernet_error_get_type ())
+GType nm_vlan_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_VLAN_ERROR (nm_vlan_error_get_type ())
+GType nm_olpc_mesh_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_OLPC_MESH_ERROR (nm_olpc_mesh_error_get_type ())
 GType nm_logging_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_LOGGING_ERROR (nm_logging_error_get_type ())
 GType nm_dns_manager_error_get_type (void) G_GNUC_CONST;
@@ -79,10 +79,6 @@ GType nm_settings_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTINGS_ERROR (nm_settings_error_get_type ())
 GType nm_agent_manager_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_AGENT_MANAGER_ERROR (nm_agent_manager_error_get_type ())
-GType nm_wimax_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_WIMAX_ERROR (nm_wimax_error_get_type ())
-GType nm_wimax_nsp_network_type_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_WIMAX_NSP_NETWORK_TYPE (nm_wimax_nsp_network_type_get_type ())
 G_END_DECLS
 
 #endif /* __NM_ENUM_TYPES_H__ */

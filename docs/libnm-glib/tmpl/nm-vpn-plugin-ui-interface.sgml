@@ -22,6 +22,16 @@ NMVpnPluginUiWidget
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### ENUM NMVpnPluginUiCapability ##### -->
+<para>
+
+</para>
+
+@NM_VPN_PLUGIN_UI_CAPABILITY_NONE: 
+@NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT: 
+@NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT: 
+@NM_VPN_PLUGIN_UI_CAPABILITY_IPV6: 
+
 <!-- ##### USER_FUNCTION NMVpnPluginUiFactory ##### -->
 <para>
 
@@ -55,7 +65,6 @@ NMVpnPluginUiWidget
 
 </para>
 
-@NM_VPN_PLUGIN_UI_INTERFACE_PROP_FIRST: 
 @NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME: 
 @NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC: 
 @NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE: 
@@ -70,34 +79,6 @@ NMVpnPluginUiWidget
 @update_connection: 
 @save_secrets: 
 @changed: 
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_IPV6 ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_NONE ##### -->
-<para>
-
-</para>
-
-
 
 <!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_DESC ##### -->
 <para>
