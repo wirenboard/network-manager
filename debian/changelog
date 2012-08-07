@@ -1,6 +1,6 @@
-network-manager (0.9.5.96-1) UNRELEASED; urgency=low
+network-manager (0.9.6.0-1) UNRELEASED; urgency=low
 
-  * New upstream release (0.9.6 rc2).
+  * New upstream release.
   * Bump Build-Depends on libdbus-glib-1-dev to (>= 0.94).
   * Update symbols file for libnm-util.
 
