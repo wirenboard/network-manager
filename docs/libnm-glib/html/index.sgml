@@ -781,6 +781,7 @@
 <ANCHOR id="NMVpnPluginUiWidgetInterface" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiWidgetInterface">
 <ANCHOR id="NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS">
 <ANCHOR id="NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS">
+<ANCHOR id="NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS">
 <ANCHOR id="NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS">
 <ANCHOR id="NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS">
 <ANCHOR id="NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS" href="libnm-glib/libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS">

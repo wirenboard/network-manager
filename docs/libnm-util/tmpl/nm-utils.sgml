@@ -60,6 +60,15 @@ nm-utils
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_utils_file_is_pkcs12 ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_utils_gvalue_hash_dup ##### -->
 <para>
 

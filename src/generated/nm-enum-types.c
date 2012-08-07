@@ -300,9 +300,9 @@ nm_adsl_error_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_ADSL_ERROR_CONNECTION_NOT_ADSL, "NM_ADSL_ERROR_CONNECTION_NOT_ADSL", "not-adsl" },
-        { NM_ADSL_ERROR_CONNECTION_INVALID, "NM_ADSL_ERROR_CONNECTION_INVALID", "invalid" },
-        { NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE, "NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE", "incompatible" },
+        { NM_ADSL_ERROR_CONNECTION_NOT_ADSL, "NM_ADSL_ERROR_CONNECTION_NOT_ADSL", "ConnectionNotAdsl" },
+        { NM_ADSL_ERROR_CONNECTION_INVALID, "NM_ADSL_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE, "NM_ADSL_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

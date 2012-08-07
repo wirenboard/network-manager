@@ -9,10 +9,12 @@ NMVpnPluginUiWidget
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -77,6 +79,13 @@ NMVpnPluginUiWidget
 
 
 <!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VPN_PLUGIN_UI_CAPABILITY_IPV6 ##### -->
 <para>
 
 </para>

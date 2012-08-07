@@ -135,11 +135,6 @@
     <keyword type="macro" name="NM_SETTING_CONNECTION_TYPE" link="NMSettingConnection.html#NM-SETTING-CONNECTION-TYPE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_UUID" link="NMSettingConnection.html#NM-SETTING-CONNECTION-UUID:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE_BLOCK" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-BLOCK:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE_HOME" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-HOME:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE_PUBLIC" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-PUBLIC:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE_TRUSTED" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-TRUSTED:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE_WORK" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE-WORK:CAPS"/>
     <keyword type="function" name="nm_setting_connection_add_permission ()" link="NMSettingConnection.html#nm-setting-connection-add-permission"/>
     <keyword type="function" name="nm_setting_connection_error_quark ()" link="NMSettingConnection.html#nm-setting-connection-error-quark"/>
     <keyword type="function" name="nm_setting_connection_get_autoconnect ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect"/>
@@ -956,6 +951,7 @@
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-util-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
     <keyword type="function" name="nm_utils_deinit ()" link="libnm-util-nm-utils.html#nm-utils-deinit"/>
     <keyword type="function" name="nm_utils_escape_ssid ()" link="libnm-util-nm-utils.html#nm-utils-escape-ssid"/>
+    <keyword type="function" name="nm_utils_file_is_pkcs12 ()" link="libnm-util-nm-utils.html#nm-utils-file-is-pkcs12"/>
     <keyword type="function" name="nm_utils_gvalue_hash_dup ()" link="libnm-util-nm-utils.html#nm-utils-gvalue-hash-dup"/>
     <keyword type="function" name="nm_utils_hwaddr_atoba ()" link="libnm-util-nm-utils.html#nm-utils-hwaddr-atoba"/>
     <keyword type="function" name="nm_utils_hwaddr_aton ()" link="libnm-util-nm-utils.html#nm-utils-hwaddr-aton"/>

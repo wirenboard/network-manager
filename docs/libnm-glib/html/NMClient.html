@@ -1182,7 +1182,7 @@ Notifies that a <a class="link" href="NMDevice.html" title="NMDevice"><span clas
 <hr>
 <div class="refsect2">
 <a name="NMClient-device-removed"></a><h3>The <code class="literal">"device-removed"</code> signal</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *widget,
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client,
                                                         <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a>  *device,
                                                         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>  user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
 <p>
@@ -1192,7 +1192,7 @@ Notifies that a <a class="link" href="NMDevice.html" title="NMDevice"><span clas
 <col align="left" valign="top">
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>widget</code></em> :</span></p></td>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
 <td>the client that received the signal</td>
 </tr>
 <tr>
@@ -1210,7 +1210,7 @@ Notifies that a <a class="link" href="NMDevice.html" title="NMDevice"><span clas
 <hr>
 <div class="refsect2">
 <a name="NMClient-permission-changed"></a><h3>The <code class="literal">"permission-changed"</code> signal</h3>
-<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *widget,
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client,
                                                         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     permission,
                                                         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>     result,
                                                         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>  user_data)       : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS"><code class="literal">Run First</code></a></pre>
@@ -1221,7 +1221,7 @@ Notifies that a permission has changed
 <col align="left" valign="top">
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>widget</code></em> :</span></p></td>
+<td><p><span class="term"><em class="parameter"><code>client</code></em> :</span></p></td>
 <td>the client that received the signal</td>
 </tr>
 <tr>

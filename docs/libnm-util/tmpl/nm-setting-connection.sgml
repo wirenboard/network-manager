@@ -182,41 +182,6 @@ NMSettingConnection
 
 
 
-<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE_BLOCK ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE_HOME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE_PUBLIC ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE_TRUSTED ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE_WORK ##### -->
-<para>
-
-</para>
-
-
-
 <!-- ##### FUNCTION nm_setting_connection_add_permission ##### -->
 <para>
 
