@@ -241,7 +241,90 @@ NMClient implements
 } NMClientPermission;
 </pre>
 <p>
+<a class="link" href="NMClient.html#NMClientPermission" title="enum NMClientPermission"><span class="type">NMClientPermission</span></a> values indicate various permissions that NetworkManager
+clients can obtain to perform certain tasks on behalf of the current user.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-NONE:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_NONE</code></span></p></td>
+<td>unknown or no permission
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-ENABLE-DISABLE-NETWORK:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_ENABLE_DISABLE_NETWORK</code></span></p></td>
+<td>controls whether networking
+ can be globally enabled or disabled
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-ENABLE-DISABLE-WIFI:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI</code></span></p></td>
+<td>controls whether WiFi can be
+ globally enabled or disabled
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-ENABLE-DISABLE-WWAN:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_ENABLE_DISABLE_WWAN</code></span></p></td>
+<td>controls whether WWAN (3G) can be
+ globally enabled or disabled
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-ENABLE-DISABLE-WIMAX:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIMAX</code></span></p></td>
+<td>controls whether WiMAX can be
+ globally enabled or disabled
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-SLEEP-WAKE:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_SLEEP_WAKE</code></span></p></td>
+<td>controls whether the client can ask
+ NetworkManager to sleep and wake
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-NETWORK-CONTROL:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_NETWORK_CONTROL</code></span></p></td>
+<td>controls whether networking connections
+ can be started, stopped, and changed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-WIFI-SHARE-PROTECTED:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_WIFI_SHARE_PROTECTED</code></span></p></td>
+<td>controls whether a password
+ protected WiFi hotspot can be created
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-WIFI-SHARE-OPEN:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_WIFI_SHARE_OPEN</code></span></p></td>
+<td>controls whether an open WiFi hotspot
+ can be created
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-SYSTEM:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_SETTINGS_MODIFY_SYSTEM</code></span></p></td>
+<td>controls whether connections
+ that are available to all users can be modified
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-OWN:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_SETTINGS_MODIFY_OWN</code></span></p></td>
+<td>controls whether connections
+ owned by the current user can be modified
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-HOSTNAME:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME</code></span></p></td>
+<td>controls whether the
+ persistent hostname can be changed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-LAST:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_LAST</code></span></p></td>
+<td>a reserved boundary value
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
@@ -254,7 +337,36 @@ NMClient implements
 } NMClientPermissionResult;
 </pre>
 <p>
+<a class="link" href="NMClient.html#NMClientPermissionResult" title="enum NMClientPermissionResult"><span class="type">NMClientPermissionResult</span></a> values indicate what authorizations and permissions
+the user requires to obtain a given <a class="link" href="NMClient.html#NMClientPermission" title="enum NMClientPermission"><span class="type">NMClientPermission</span></a>
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-RESULT-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_RESULT_UNKNOWN</code></span></p></td>
+<td>unknown or no authorization
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-RESULT-YES:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_RESULT_YES</code></span></p></td>
+<td>the permission is available
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-RESULT-AUTH:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_RESULT_AUTH</code></span></p></td>
+<td>authorization is necessary before the
+ permission is available
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CLIENT-PERMISSION-RESULT-NO:CAPS"></a><span class="term"><code class="literal">NM_CLIENT_PERMISSION_RESULT_NO</code></span></p></td>
+<td>permission to perform the operation is
+ denied by system policy
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">

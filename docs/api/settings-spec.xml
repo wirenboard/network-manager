@@ -983,13 +983,13 @@
         <entry><screen>interface-name</screen></entry>
         <entry><screen>string</screen></entry>
         <entry><screen></screen></entry>
-        <entry>If given, specifies the kernel name of the VLAN interface. If not given, a default name will be constructed from the interface described by the parent interface and the 'id' property, ex 'eth2.1'. The parent interface may be given by the 'parent' property or by a hardware address property, eg the 'wired' or 'infiniband' settings' 'mac-address' property.</entry>
+        <entry>If given, specifies the kernel name of the VLAN interface. If not given, a default name will be constructed from the interface described by the parent interface and the 'id' property, ex 'eth2.1'. The parent interface may be given by the 'parent' property or by a hardware address property, eg the 'wired' settings' 'mac-address' property.</entry>
       </row>
       <row>
         <entry><screen>parent</screen></entry>
         <entry><screen>string</screen></entry>
         <entry><screen></screen></entry>
-        <entry>If given, specifies the parent interface name or parent connection UUID from which this VLAN interface should be created.  If this property is not specified, the connection must contain a hardware address in a hardware-specific setting, like the 'wired' or 'infiniband' settings' 'mac-address' property.</entry>
+        <entry>If given, specifies the parent interface name or parent connection UUID from which this VLAN interface should be created.  If this property is not specified, the connection must contain a hardware address in a hardware-specific setting, like the 'wired' settings' 'mac-address' property.</entry>
       </row>
       <row>
         <entry><screen>id</screen></entry>

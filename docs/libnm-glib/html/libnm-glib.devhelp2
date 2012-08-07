@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
-<book xmlns="http://www.devhelp.net/book" title="libnm-glib Reference Manual" link="index.html" author="Dan Williams" name="libnm-glib" version="2" language="c">
+<book xmlns="http://www.devhelp.net/book" title="libnm-glib Reference Manual" link="index.html" author="" name="libnm-glib" version="2" language="c">
   <chapters>
     <sub name="Object Overview" link="ref-overview.html"/>
     <sub name="libnm-glib API Reference" link="ch02.html">
@@ -12,6 +12,7 @@
       <sub name="NMDeviceModem" link="NMDeviceModem.html"/>
       <sub name="NMDeviceBt" link="NMDeviceBt.html"/>
       <sub name="NMDeviceWimax" link="NMDeviceWimax.html"/>
+      <sub name="NMDeviceAdsl" link="NMDeviceAdsl.html"/>
       <sub name="NMDeviceBond" link="NMDeviceBond.html"/>
       <sub name="NMDeviceInfiniband" link="NMDeviceInfiniband.html"/>
       <sub name="NMDeviceVlan" link="NMDeviceVlan.html"/>
@@ -294,6 +295,15 @@
     <keyword type="property" name="The &quot;tx-power&quot; property" link="NMDeviceWimax.html#NMDeviceWimax--tx-power"/>
     <keyword type="signal" name="The &quot;nsp-added&quot; signal" link="NMDeviceWimax.html#NMDeviceWimax-nsp-added"/>
     <keyword type="signal" name="The &quot;nsp-removed&quot; signal" link="NMDeviceWimax.html#NMDeviceWimax-nsp-removed"/>
+    <keyword type="struct" name="NMDeviceAdsl" link="NMDeviceAdsl.html#NMDeviceAdsl-struct"/>
+    <keyword type="struct" name="NMDeviceAdslClass" link="NMDeviceAdsl.html#NMDeviceAdslClass"/>
+    <keyword type="enum" name="enum NMDeviceAdslError" link="NMDeviceAdsl.html#NMDeviceAdslError"/>
+    <keyword type="macro" name="NM_DEVICE_ADSL_CARRIER" link="NMDeviceAdsl.html#NM-DEVICE-ADSL-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_ADSL_ERROR" link="NMDeviceAdsl.html#NM-DEVICE-ADSL-ERROR:CAPS"/>
+    <keyword type="function" name="nm_device_adsl_error_quark ()" link="NMDeviceAdsl.html#nm-device-adsl-error-quark"/>
+    <keyword type="function" name="nm_device_adsl_get_carrier ()" link="NMDeviceAdsl.html#nm-device-adsl-get-carrier"/>
+    <keyword type="function" name="nm_device_adsl_new ()" link="NMDeviceAdsl.html#nm-device-adsl-new"/>
+    <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceAdsl.html#NMDeviceAdsl--carrier"/>
     <keyword type="struct" name="NMDeviceBond" link="NMDeviceBond.html#NMDeviceBond-struct"/>
     <keyword type="struct" name="NMDeviceBondClass" link="NMDeviceBond.html#NMDeviceBondClass"/>
     <keyword type="enum" name="enum NMDeviceBondError" link="NMDeviceBond.html#NMDeviceBondError"/>
@@ -547,14 +557,11 @@
     <keyword type="function" name="nm_vpn_plugin_set_ip6_config ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-ip6-config"/>
     <keyword type="function" name="nm_vpn_plugin_set_login_banner ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-login-banner"/>
     <keyword type="function" name="nm_vpn_plugin_set_state ()" link="libnm-glib-NMVPNPlugin.html#nm-vpn-plugin-set-state"/>
+    <keyword type="enum" name="enum NMVpnPluginUiCapability" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiCapability"/>
     <keyword type="function" name="NMVpnPluginUiFactory ()" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiFactory"/>
     <keyword type="struct" name="struct NMVpnPluginUiInterface" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterface"/>
     <keyword type="enum" name="enum NMVpnPluginUiInterfaceProp" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterfaceProp"/>
     <keyword type="struct" name="struct NMVpnPluginUiWidgetInterface" link="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiWidgetInterface"/>
-    <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"/>
-    <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"/>
-    <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_IPV6" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS"/>
-    <keyword type="macro" name="NM_VPN_PLUGIN_UI_CAPABILITY_NONE" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_INTERFACE_DESC" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_INTERFACE_NAME" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS"/>
     <keyword type="macro" name="NM_VPN_PLUGIN_UI_INTERFACE_SERVICE" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-SERVICE:CAPS"/>
@@ -570,6 +577,23 @@
     <keyword type="function" name="nm_vpn_plugin_ui_widget_interface_update_connection ()" link="libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-plugin-ui-widget-interface-update-connection"/>
     <keyword type="function" name="nm_vpn_plugin_utils_get_secret_flags ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-get-secret-flags"/>
     <keyword type="function" name="nm_vpn_plugin_utils_read_vpn_details ()" link="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-read-vpn-details"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_NONE" link="NMClient.html#NM-CLIENT-PERMISSION-NONE:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_NETWORK" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-NETWORK:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-WIFI:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_WWAN" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-WWAN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIMAX" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-WIMAX:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SLEEP_WAKE" link="NMClient.html#NM-CLIENT-PERMISSION-SLEEP-WAKE:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_NETWORK_CONTROL" link="NMClient.html#NM-CLIENT-PERMISSION-NETWORK-CONTROL:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_WIFI_SHARE_PROTECTED" link="NMClient.html#NM-CLIENT-PERMISSION-WIFI-SHARE-PROTECTED:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_WIFI_SHARE_OPEN" link="NMClient.html#NM-CLIENT-PERMISSION-WIFI-SHARE-OPEN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_SYSTEM" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-SYSTEM:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_OWN" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-OWN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-HOSTNAME:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_LAST" link="NMClient.html#NM-CLIENT-PERMISSION-LAST:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_UNKNOWN" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_YES" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-YES:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_AUTH" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-AUTH:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_NO" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-NO:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_UNKNOWN" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_NOT_ETHERNET_CONNECTION" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-NOT-ETHERNET-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_ETHERNET_ERROR_INVALID_ETHERNET_CONNECTION" link="NMDeviceEthernet.html#NM-DEVICE-ETHERNET-ERROR-INVALID-ETHERNET-CONNECTION:CAPS"/>
@@ -597,6 +621,9 @@
     <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_INVALID_WIMAX_CONNECTION" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-INVALID-WIMAX-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_INVALID_DEVICE_MAC" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-INVALID-DEVICE-MAC:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_WIMAX_ERROR_MAC_MISMATCH" link="NMDeviceWimax.html#NM-DEVICE-WIMAX-ERROR-MAC-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ADSL_ERROR_UNKNOWN" link="NMDeviceAdsl.html#NM-DEVICE-ADSL-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ADSL_ERROR_NOT_ADSL_CONNECTION" link="NMDeviceAdsl.html#NM-DEVICE-ADSL-ERROR-NOT-ADSL-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ADSL_ERROR_INVALID_ADSL_CONNECTION" link="NMDeviceAdsl.html#NM-DEVICE-ADSL-ERROR-INVALID-ADSL-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_BOND_ERROR_UNKNOWN" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_BOND_ERROR_NOT_BOND_CONNECTION" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-NOT-BOND-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_BOND_ERROR_INVALID_BOND_CONNECTION" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-INVALID-BOND-CONNECTION:CAPS"/>
@@ -619,9 +646,31 @@
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_UNKNOWN" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-CONNECTION-REMOVED:CAPS"/>
     <keyword type="constant" name="NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE" link="NMRemoteSettings.html#NM-REMOTE-SETTINGS-ERROR-CONNECTION-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_NOT_AUTHORIZED" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR-NOT-AUTHORIZED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_INVALID_CONNECTION" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR-INVALID-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_USER_CANCELED" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR-USER-CANCELED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_AGENT_CANCELED" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR-AGENT-CANCELED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_INTERNAL_ERROR" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR-INTERNAL-ERROR:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_NO_SECRETS" link="NMSecretAgent.html#NM-SECRET-AGENT-ERROR-NO-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-NONE:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-ALLOW-INTERACTION:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-REQUEST-NEW:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED" link="NMSecretAgent.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-USER-REQUESTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_GENERAL" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-GENERAL:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_STARTING_IN_PROGRESS" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-STARTING-IN-PROGRESS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_ALREADY_STARTED" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-ALREADY-STARTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_STOPPING_IN_PROGRESS" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-STOPPING-IN-PROGRESS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_ALREADY_STOPPED" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-ALREADY-STOPPED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_WRONG_STATE" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-WRONG-STATE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-BAD-ARGUMENTS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-LAUNCH-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_CONNECTION_INVALID" link="libnm-glib-NMVPNPlugin.html#NM-VPN-PLUGIN-ERROR-CONNECTION-INVALID:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_CAPABILITY_NONE" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_CAPABILITY_IPV6" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-PROP-NAME:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-PROP-DESC:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE" link="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-PROP-SERVICE:CAPS"/>
   </functions>
 </book>

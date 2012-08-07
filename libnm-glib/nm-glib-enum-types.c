@@ -346,7 +346,7 @@ nm_secret_agent_get_secrets_flags_get_type (void)
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
-      static const GEnumValue values[] = {
+      static const GFlagsValue values[] = {
         { NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE, "NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE", "none" },
         { NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION, "NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION", "allow-interaction" },
         { NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW, "NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW", "request-new" },
@@ -354,7 +354,7 @@ nm_secret_agent_get_secrets_flags_get_type (void)
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMSecretAgentGetSecretsFlags"), values);
+        g_flags_register_static (g_intern_static_string ("NMSecretAgentGetSecretsFlags"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

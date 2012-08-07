@@ -27,7 +27,11 @@ NMDeviceAdsl
 
 </para>
 
-@parent: 
+
+<!-- ##### ARG NMDeviceAdsl:carrier ##### -->
+<para>
+
+</para>
 
 <!-- ##### STRUCT NMDeviceAdslClass ##### -->
 <para>

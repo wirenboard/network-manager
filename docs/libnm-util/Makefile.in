@@ -40,7 +40,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/gtk-doc.make
+	$(srcdir)/version.xml.in $(top_srcdir)/gtk-doc.make
 subdir = docs/libnm-util
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
@@ -58,7 +58,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = version.xml
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
@@ -344,7 +344,7 @@ IGNORE_HFILES = \
 HTML_IMAGES = 
 
 # Extra XML files that are included by $(DOC_MAIN_SGML_FILE).
-content_files = 
+content_files = version.xml
 
 # Other files to distribute.
 extra_files = 
@@ -354,7 +354,6 @@ extra_files =
 GTKDOC_CFLAGS = \
 	-I$(top_srcdir)/include		\
 	-I$(top_srcdir)/libnm-util	\
-	-I$(top_builddir)/marshallers	\
 	$(GLIB_CFLAGS)			\
 	$(DBUS_CFLAGS)
 
@@ -382,10 +381,9 @@ SETUP_FILES = \
 	$(DOC_MODULE)-sections.txt	\
 	$(DOC_MODULE)-overrides.txt
 
-EXTRA_DIST = \
-	$(HTML_IMAGES)			\
-	$(SETUP_FILES)
 
+# include common portion ...
+EXTRA_DIST = $(HTML_IMAGES) $(SETUP_FILES) version.xml.in
 DOC_STAMPS = setup-build.stamp scan-build.stamp tmpl-build.stamp sgml-build.stamp \
 	html-build.stamp pdf-build.stamp \
 	tmpl.stamp sgml.stamp html.stamp pdf.stamp
@@ -402,8 +400,6 @@ REPORT_FILES = \
 	$(DOC_MODULE)-undeclared.txt \
 	$(DOC_MODULE)-unused.txt
 
-
-# include common portion ...
 CLEANFILES = $(SCANOBJ_FILES) $(REPORT_FILES) $(DOC_STAMPS) \
 	libnm-util-sections.txt html/* tmpl/* xml/*
 @ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_FALSE@HTML_BUILD_STAMP = 
@@ -444,6 +440,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+version.xml: $(top_builddir)/config.status $(srcdir)/version.xml.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
 	-rm -f *.lo

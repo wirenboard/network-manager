@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
-<book xmlns="http://www.devhelp.net/book" title="NetworkManager D-Bus Reference Manual" link="index.html" author="Dan Williams" name="NetworkManager" version="2" language="c">
+<book xmlns="http://www.devhelp.net/book" title="NetworkManager D-Bus Reference Manual" link="index.html" author="" name="NetworkManager" version="2" language="c">
   <chapters>
     <sub name="D-Bus API Reference" link="ref-dbus.html"/>
     <sub name="Network Configuration Setting Specification" link="ref-settings.html">
-      <sub name="Configuration Settings" link="ref-settings.html#id437745"/>
+      <sub name="Configuration Settings" link="ref-settings.html#id480831"/>
       <sub name="Secret flag types" link="secrets-flags.html"/>
     </sub>
     <sub name="Migrating from NetworkManager 0.8 to NetworkManager 0.9" link="ref-migrating.html">
-      <sub name="Architecture and D-Bus API Changes in 0.9" link="ref-migrating.html#id449785">
-        <sub name="Elimination of the User Settings Service" link="ref-migrating.html#id446214"/>
-        <sub name="User Secret Agents" link="ref-migrating.html#id429971"/>
-        <sub name="Settings Service Interface Changes" link="ref-migrating.html#id429654"/>
-        <sub name="Connection Object Interface Changes" link="ref-migrating.html#id438294"/>
-        <sub name="Permissions Methods Consolidation" link="ref-migrating.html#id432724"/>
-        <sub name="AddConnection Returns Object Path of New Connection" link="ref-migrating.html#id431666"/>
-        <sub name="Support for WiMAX Devices" link="ref-migrating.html#id413984"/>
-        <sub name="New Device States" link="ref-migrating.html#id444778"/>
-        <sub name="New Active Connection State" link="ref-migrating.html#id448971"/>
-        <sub name="Consolidated Modem Devices" link="ref-migrating.html#id443548"/>
-        <sub name="Secret Property Flags" link="ref-migrating.html#id421190"/>
-        <sub name="Deprecated Methods Removed" link="ref-migrating.html#id420876"/>
+      <sub name="Architecture and D-Bus API Changes in 0.9" link="ref-migrating.html#id473771">
+        <sub name="Elimination of the User Settings Service" link="ref-migrating.html#id488881"/>
+        <sub name="User Secret Agents" link="ref-migrating.html#id459804"/>
+        <sub name="Settings Service Interface Changes" link="ref-migrating.html#id471077"/>
+        <sub name="Connection Object Interface Changes" link="ref-migrating.html#id492108"/>
+        <sub name="Permissions Methods Consolidation" link="ref-migrating.html#id477672"/>
+        <sub name="AddConnection Returns Object Path of New Connection" link="ref-migrating.html#id483262"/>
+        <sub name="Support for WiMAX Devices" link="ref-migrating.html#id450653"/>
+        <sub name="New Device States" link="ref-migrating.html#id456786"/>
+        <sub name="New Active Connection State" link="ref-migrating.html#id486946"/>
+        <sub name="Consolidated Modem Devices" link="ref-migrating.html#id455331"/>
+        <sub name="Secret Property Flags" link="ref-migrating.html#id451364"/>
+        <sub name="Deprecated Methods Removed" link="ref-migrating.html#id456844"/>
       </sub>
     </sub>
     <sub name="Index" link="ix01.html"/>

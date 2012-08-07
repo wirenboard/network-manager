@@ -78,7 +78,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMCon
 <a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMConnection.html#nm-connection-get-setting" title="nm_connection_get_setting ()">nm_connection_get_setting</a>           (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> setting_type</code></em>);
 <a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="returnvalue">NMSetting8021x</span></a> *    <a class="link" href="NMConnection.html#nm-connection-get-setting-802-1x" title="nm_connection_get_setting_802_1x ()">nm_connection_get_setting_802_1x</a>    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
-<span class="returnvalue">NMSettingAdsl</span> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-adsl" title="nm_connection_get_setting_adsl ()">nm_connection_get_setting_adsl</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+<a class="link" href="NMSettingAdsl.html" title="NMSettingAdsl"><span class="returnvalue">NMSettingAdsl</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-adsl" title="nm_connection_get_setting_adsl ()">nm_connection_get_setting_adsl</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="returnvalue">NMSettingBluetooth</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-bluetooth" title="nm_connection_get_setting_bluetooth ()">nm_connection_get_setting_bluetooth</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="returnvalue">NMSettingBond</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-bond" title="nm_connection_get_setting_bond ()">nm_connection_get_setting_bond</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
@@ -631,9 +631,9 @@ A shortcut to return any <a class="link" href="NMSetting8021x.html" title="NMSet
 <hr>
 <div class="refsect2">
 <a name="nm-connection-get-setting-adsl"></a><h3>nm_connection_get_setting_adsl ()</h3>
-<pre class="programlisting"><span class="returnvalue">NMSettingAdsl</span> *     nm_connection_get_setting_adsl      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<pre class="programlisting"><a class="link" href="NMSettingAdsl.html" title="NMSettingAdsl"><span class="returnvalue">NMSettingAdsl</span></a> *     nm_connection_get_setting_adsl      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
-A shortcut to return any <span class="type">NMSettingAdsl</span> the connection might contain.
+A shortcut to return any <a class="link" href="NMSettingAdsl.html" title="NMSettingAdsl"><span class="type">NMSettingAdsl</span></a> the connection might contain.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -645,7 +645,7 @@ A shortcut to return any <span class="type">NMSettingAdsl</span> the connection 
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>an <span class="type">NMSettingAdsl</span> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+<td>an <a class="link" href="NMSettingAdsl.html" title="NMSettingAdsl"><span class="type">NMSettingAdsl</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>
@@ -921,7 +921,7 @@ A shortcut to return any <a class="link" href="NMSettingPPP.html" title="NMSetti
 <a name="nm-connection-get-setting-pppoe"></a><h3>nm_connection_get_setting_pppoe ()</h3>
 <pre class="programlisting"><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="returnvalue">NMSettingPPPOE</span></a> *    nm_connection_get_setting_pppoe     (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
-A shortcut to return any <span class="type">NMSettingPPOE</span> the connection might contain.
+A shortcut to return any <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> the connection might contain.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">

@@ -36,13 +36,19 @@ G_BEGIN_DECLS
 #define NM_SETTING_OLPC_MESH(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_SETTING_OLPC_MESH, NMSettingOlpcMesh))
 #define NM_SETTING_OLPC_MESH_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), NM_TYPE_SETTING_OLPC_MESH, NMSettingOlpcMeshClass))
 #define NM_IS_SETTING_OLPC_MESH(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_SETTING_OLPC_MESH))
-#define NM_IS_SETTING_OLPC_MESH_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((obj), NM_TYPE_SETTING_OLPC_MESH))
+#define NM_IS_SETTING_OLPC_MESH_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_SETTING_OLPC_MESH))
 #define NM_SETTING_OLPC_MESH_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_SETTING_OLPC_MESH, NMSettingOlpcMeshClass))
 
 #define NM_SETTING_OLPC_MESH_SETTING_NAME "802-11-olpc-mesh"
 
-typedef enum
-{
+/**
+ * NMSettingOlpcMeshError:
+ * @NM_SETTING_OLPC_MESH_ERROR_UNKNOWN: unknown or unclassified error
+ * @NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY: the property was invalid
+ * @NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY: the property was missing and is
+ * required
+ */
+typedef enum {
 	NM_SETTING_OLPC_MESH_ERROR_UNKNOWN = 0,      /*< nick=UnknownError >*/
 	NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY, /*< nick=InvalidProperty >*/
 	NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY  /*< nick=MissingProperty >*/

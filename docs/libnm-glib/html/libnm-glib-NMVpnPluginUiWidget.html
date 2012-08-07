@@ -37,14 +37,11 @@
 </tr></table></div>
 <div class="refsynopsisdiv">
 <a name="libnm-glib-NMVpnPluginUiWidget.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis"><a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterface" title="struct NMVpnPluginUiInterface"><span class="returnvalue">NMVpnPluginUiInterface</span></a> * (<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiFactory" title="NMVpnPluginUiFactory ()">*NMVpnPluginUiFactory</a>)        (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<pre class="synopsis">enum                <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiCapability" title="enum NMVpnPluginUiCapability">NMVpnPluginUiCapability</a>;
+<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterface" title="struct NMVpnPluginUiInterface"><span class="returnvalue">NMVpnPluginUiInterface</span></a> * (<a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiFactory" title="NMVpnPluginUiFactory ()">*NMVpnPluginUiFactory</a>)        (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
 struct              <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterface" title="struct NMVpnPluginUiInterface">NMVpnPluginUiInterface</a>;
 enum                <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterfaceProp" title="enum NMVpnPluginUiInterfaceProp">NMVpnPluginUiInterfaceProp</a>;
 struct              <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiWidgetInterface" title="struct NMVpnPluginUiWidgetInterface">NMVpnPluginUiWidgetInterface</a>;
-#define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT">NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT</a>
-#define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT">NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT</a>
-#define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_IPV6">NM_VPN_PLUGIN_UI_CAPABILITY_IPV6</a>
-#define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS" title="NM_VPN_PLUGIN_UI_CAPABILITY_NONE">NM_VPN_PLUGIN_UI_CAPABILITY_NONE</a>
 #define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-DESC:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_DESC">NM_VPN_PLUGIN_UI_INTERFACE_DESC</a>
 #define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-NAME:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_NAME">NM_VPN_PLUGIN_UI_INTERFACE_NAME</a>
 #define             <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM-VPN-PLUGIN-UI-INTERFACE-SERVICE:CAPS" title="NM_VPN_PLUGIN_UI_INTERFACE_SERVICE">NM_VPN_PLUGIN_UI_INTERFACE_SERVICE</a>
@@ -88,6 +85,45 @@ struct              <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM
 </div>
 <div class="refsect1">
 <a name="libnm-glib-NMVpnPluginUiWidget.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="NMVpnPluginUiCapability"></a><h3>enum NMVpnPluginUiCapability</h3>
+<pre class="programlisting">typedef enum {
+	NM_VPN_PLUGIN_UI_CAPABILITY_NONE   = 0x00,
+	NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT = 0x01,
+	NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT = 0x02,
+	NM_VPN_PLUGIN_UI_CAPABILITY_IPV6   = 0x04
+} NMVpnPluginUiCapability;
+</pre>
+<p>
+Flags that indicate to UI programs certain capabilities of the plugin.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_CAPABILITY_NONE</code></span></p></td>
+<td>unknown or no capability
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT</code></span></p></td>
+<td>the plugin can import new connections
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT</code></span></p></td>
+<td>the plugin can export connections
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_CAPABILITY_IPV6</code></span></p></td>
+<td>the plugin supports IPv6 addressing
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
 <div class="refsect2">
 <a name="NMVpnPluginUiFactory"></a><h3>NMVpnPluginUiFactory ()</h3>
 <pre class="programlisting"><a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NMVpnPluginUiInterface" title="struct NMVpnPluginUiInterface"><span class="returnvalue">NMVpnPluginUiInterface</span></a> * (*NMVpnPluginUiFactory)        (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
@@ -157,15 +193,37 @@ struct              <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM
 <div class="refsect2">
 <a name="NMVpnPluginUiInterfaceProp"></a><h3>enum NMVpnPluginUiInterfaceProp</h3>
 <pre class="programlisting">typedef enum {
-	NM_VPN_PLUGIN_UI_INTERFACE_PROP_FIRST = 0x1000,
-
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME = NM_VPN_PLUGIN_UI_INTERFACE_PROP_FIRST,
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC,
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE
 } NMVpnPluginUiInterfaceProp;
 </pre>
 <p>
+<a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="type">GObject</span></a> property numbers that plugins should override to provide certain
+information to UI programs.
 </p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-INTERFACE-PROP-NAME:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME</code></span></p></td>
+<td>the VPN plugin's name
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-INTERFACE-PROP-DESC:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC</code></span></p></td>
+<td>description of the VPN plugin and what
+VPN services it supports
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-VPN-PLUGIN-UI-INTERFACE-PROP-SERVICE:CAPS"></a><span class="term"><code class="literal">NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE</code></span></p></td>
+<td>the D-Bus service name used by the
+plugin's VPN service daemon
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <hr>
 <div class="refsect2">
@@ -196,38 +254,6 @@ struct              <a class="link" href="libnm-glib-NMVpnPluginUiWidget.html#NM
 	 * check via update_connection() to write values to the connection */
 	void (*changed) (NMVpnPluginUiWidgetInterface *iface);
 };
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-VPN-PLUGIN-UI-CAPABILITY-EXPORT:CAPS"></a><h3>NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT</h3>
-<pre class="programlisting">#define NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT   0x02
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-VPN-PLUGIN-UI-CAPABILITY-IMPORT:CAPS"></a><h3>NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT</h3>
-<pre class="programlisting">#define NM_VPN_PLUGIN_UI_CAPABILITY_IMPORT   0x01
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-VPN-PLUGIN-UI-CAPABILITY-IPV6:CAPS"></a><h3>NM_VPN_PLUGIN_UI_CAPABILITY_IPV6</h3>
-<pre class="programlisting">#define NM_VPN_PLUGIN_UI_CAPABILITY_IPV6     0x04
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-VPN-PLUGIN-UI-CAPABILITY-NONE:CAPS"></a><h3>NM_VPN_PLUGIN_UI_CAPABILITY_NONE</h3>
-<pre class="programlisting">#define NM_VPN_PLUGIN_UI_CAPABILITY_NONE     0x00
 </pre>
 <p>
 </p>

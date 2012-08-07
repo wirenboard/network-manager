@@ -18,6 +18,7 @@
       <sub name="NMSettingInfiniband" link="NMSettingInfiniband.html"/>
       <sub name="NMSettingVlan" link="NMSettingVlan.html"/>
       <sub name="NMSettingOlpcMesh" link="NMSettingOlpcMesh.html"/>
+      <sub name="NMSettingAdsl" link="NMSettingAdsl.html"/>
       <sub name="NMSetting8021x" link="NMSetting8021x.html"/>
       <sub name="NMSettingIP4Config" link="NMSettingIP4Config.html"/>
       <sub name="NMSettingIP6Config" link="NMSettingIP6Config.html"/>
@@ -528,6 +529,39 @@
     <keyword type="property" name="The &quot;channel&quot; property" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh--channel"/>
     <keyword type="property" name="The &quot;dhcp-anycast-address&quot; property" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh--dhcp-anycast-address"/>
     <keyword type="property" name="The &quot;ssid&quot; property" link="NMSettingOlpcMesh.html#NMSettingOlpcMesh--ssid"/>
+    <keyword type="struct" name="NMSettingAdsl" link="NMSettingAdsl.html#NMSettingAdsl-struct"/>
+    <keyword type="struct" name="NMSettingAdslClass" link="NMSettingAdsl.html#NMSettingAdslClass"/>
+    <keyword type="enum" name="enum NMSettingAdslError" link="NMSettingAdsl.html#NMSettingAdslError-enum"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_ENCAPSULATION" link="NMSettingAdsl.html#NM-SETTING-ADSL-ENCAPSULATION:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_ENCAPSULATION_LLC" link="NMSettingAdsl.html#NM-SETTING-ADSL-ENCAPSULATION-LLC:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_ENCAPSULATION_VCMUX" link="NMSettingAdsl.html#NM-SETTING-ADSL-ENCAPSULATION-VCMUX:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_ERROR" link="NMSettingAdsl.html#NM-SETTING-ADSL-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_PASSWORD" link="NMSettingAdsl.html#NM-SETTING-ADSL-PASSWORD:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_PASSWORD_FLAGS" link="NMSettingAdsl.html#NM-SETTING-ADSL-PASSWORD-FLAGS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_PROTOCOL" link="NMSettingAdsl.html#NM-SETTING-ADSL-PROTOCOL:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_PROTOCOL_IPOATM" link="NMSettingAdsl.html#NM-SETTING-ADSL-PROTOCOL-IPOATM:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_PROTOCOL_PPPOA" link="NMSettingAdsl.html#NM-SETTING-ADSL-PROTOCOL-PPPOA:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_PROTOCOL_PPPOE" link="NMSettingAdsl.html#NM-SETTING-ADSL-PROTOCOL-PPPOE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_SETTING_NAME" link="NMSettingAdsl.html#NM-SETTING-ADSL-SETTING-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_USERNAME" link="NMSettingAdsl.html#NM-SETTING-ADSL-USERNAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_VCI" link="NMSettingAdsl.html#NM-SETTING-ADSL-VCI:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_ADSL_VPI" link="NMSettingAdsl.html#NM-SETTING-ADSL-VPI:CAPS"/>
+    <keyword type="function" name="nm_setting_adsl_error_quark ()" link="NMSettingAdsl.html#nm-setting-adsl-error-quark"/>
+    <keyword type="function" name="nm_setting_adsl_get_encapsulation ()" link="NMSettingAdsl.html#nm-setting-adsl-get-encapsulation"/>
+    <keyword type="function" name="nm_setting_adsl_get_password ()" link="NMSettingAdsl.html#nm-setting-adsl-get-password"/>
+    <keyword type="function" name="nm_setting_adsl_get_password_flags ()" link="NMSettingAdsl.html#nm-setting-adsl-get-password-flags"/>
+    <keyword type="function" name="nm_setting_adsl_get_protocol ()" link="NMSettingAdsl.html#nm-setting-adsl-get-protocol"/>
+    <keyword type="function" name="nm_setting_adsl_get_username ()" link="NMSettingAdsl.html#nm-setting-adsl-get-username"/>
+    <keyword type="function" name="nm_setting_adsl_get_vci ()" link="NMSettingAdsl.html#nm-setting-adsl-get-vci"/>
+    <keyword type="function" name="nm_setting_adsl_get_vpi ()" link="NMSettingAdsl.html#nm-setting-adsl-get-vpi"/>
+    <keyword type="function" name="nm_setting_adsl_new ()" link="NMSettingAdsl.html#nm-setting-adsl-new"/>
+    <keyword type="property" name="The &quot;encapsulation&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--encapsulation"/>
+    <keyword type="property" name="The &quot;password&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--password"/>
+    <keyword type="property" name="The &quot;password-flags&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--password-flags"/>
+    <keyword type="property" name="The &quot;protocol&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--protocol"/>
+    <keyword type="property" name="The &quot;username&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--username"/>
+    <keyword type="property" name="The &quot;vci&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--vci"/>
+    <keyword type="property" name="The &quot;vpi&quot; property" link="NMSettingAdsl.html#NMSettingAdsl--vpi"/>
     <keyword type="struct" name="NMSetting8021x" link="NMSetting8021x.html#NMSetting8021x-struct"/>
     <keyword type="enum" name="enum NMSetting8021xCKFormat" link="NMSetting8021x.html#NMSetting8021xCKFormat-enum"/>
     <keyword type="enum" name="enum NMSetting8021xCKScheme" link="NMSetting8021x.html#NMSetting8021xCKScheme-enum"/>
@@ -1087,6 +1121,12 @@
     <keyword type="constant" name="NM_VLAN_FLAG_LOOSE_BINDING" link="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"/>
     <keyword type="constant" name="NM_VLAN_INGRESS_MAP" link="NMSettingVlan.html#NM-VLAN-INGRESS-MAP:CAPS"/>
     <keyword type="constant" name="NM_VLAN_EGRESS_MAP" link="NMSettingVlan.html#NM-VLAN-EGRESS-MAP:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_OLPC_MESH_ERROR_UNKNOWN" link="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY" link="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY" link="NMSettingOlpcMesh.html#NM-SETTING-OLPC-MESH-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_ADSL_ERROR_UNKNOWN" link="NMSettingAdsl.html#NM-SETTING-ADSL-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_ADSL_ERROR_INVALID_PROPERTY" link="NMSettingAdsl.html#NM-SETTING-ADSL-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_ADSL_ERROR_MISSING_PROPERTY" link="NMSettingAdsl.html#NM-SETTING-ADSL-ERROR-MISSING-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_X509" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-X509:CAPS"/>
     <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_RAW_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-RAW-KEY:CAPS"/>
