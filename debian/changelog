@@ -1,6 +1,7 @@
 network-manager (0.9.5.96-1) UNRELEASED; urgency=low
 
   * New upstream release (0.9.6 rc2).
+  * Bump Build-Depends on libdbus-glib-1-dev to (>= 0.94).
 
  -- Michael Biebl <biebl@debian.org>  Tue, 07 Aug 2012 14:24:25 +0200
 
