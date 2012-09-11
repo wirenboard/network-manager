@@ -8,3 +8,4 @@
 14-use-same-kernel-API-as-wpa_supplicant.patch
 15-ignore-cached-cloned-routes-ipv6-config.patch
 16-ignore-cached-cloned-routes-kernel-notifications.patch
+17-dbus-remove-max_replies_per_connection-limit.patch

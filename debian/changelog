@@ -5,6 +5,11 @@ network-manager (0.9.4.0-6) UNRELEASED; urgency=low
     debian/patches/16-ignore-cached-cloned-routes-kernel-notifications.patch:
     Don't create static IPv6 routes for cached/cloned routes. Patches
     cherry-picked from upstream Git. (Closes: #686328)
+  * debian/patches/17-dbus-remove_max_replies_per_connection_limit.patch:
+    Remove 'max_replies_per_connection' limit from D-Bus configuration which
+    sets it to 512. It was intended to increase the limit from its historical
+    value of 32. However, since 2007 the default limit has been 8192, so this
+    is actually a reduction. (Closes: #678965)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 11 Sep 2012 18:15:49 +0200
 
