@@ -1,6 +1,10 @@
 network-manager (0.9.4.0-6) UNRELEASED; urgency=low
 
   * debian/rules: Use xz compression for binary packages.
+  * debian/patches/15-ignore-cached-cloned-routes-ipv6-config.patch,
+    debian/patches/16-ignore-cached-cloned-routes-kernel-notifications.patch:
+    Don't create static IPv6 routes for cached/cloned routes. Patches
+    cherry-picked from upstream Git. (Closes: #686328)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 11 Sep 2012 18:15:49 +0200
 

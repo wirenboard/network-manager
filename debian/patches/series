@@ -6,3 +6,5 @@
 12-initialize-gerror.patch
 13-dont-replace-kernel-default-route-for-IPv6.patch
 14-use-same-kernel-API-as-wpa_supplicant.patch
+15-ignore-cached-cloned-routes-ipv6-config.patch
+16-ignore-cached-cloned-routes-kernel-notifications.patch
