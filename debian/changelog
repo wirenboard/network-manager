@@ -24,6 +24,21 @@ network-manager (0.9.5.95-1) experimental; urgency=low
 
  -- Michael Biebl <biebl@debian.org>  Fri, 29 Jun 2012 20:30:16 +0200
 
+network-manager (0.9.4.0-6) unstable; urgency=low
+
+  * debian/rules: Use xz compression for binary packages.
+  * debian/patches/15-ignore-cached-cloned-routes-ipv6-config.patch,
+    debian/patches/16-ignore-cached-cloned-routes-kernel-notifications.patch:
+    Don't create static IPv6 routes for cached/cloned routes. Patches
+    cherry-picked from upstream Git. (Closes: #686328)
+  * debian/patches/17-dbus-remove_max_replies_per_connection_limit.patch:
+    Remove 'max_replies_per_connection' limit from D-Bus configuration which
+    sets it to 512. It was intended to increase the limit from its historical
+    value of 32. However, since 2007 the default limit has been 8192, so this
+    is actually a reduction. (Closes: #678965)
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 11 Sep 2012 19:24:15 +0200
+
 network-manager (0.9.4.0-5) unstable; urgency=low
 
   * debian/patches/14-use-same-kernel-API-as-wpa_supplicant.patch: Some
