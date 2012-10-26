@@ -409,13 +409,16 @@
 <ANCHOR id="NM-DEVICE-BOND-CARRIER:CAPS" href="libnm-glib/NMDeviceBond.html#NM-DEVICE-BOND-CARRIER:CAPS">
 <ANCHOR id="NM-DEVICE-BOND-ERROR:CAPS" href="libnm-glib/NMDeviceBond.html#NM-DEVICE-BOND-ERROR:CAPS">
 <ANCHOR id="NM-DEVICE-BOND-HW-ADDRESS:CAPS" href="libnm-glib/NMDeviceBond.html#NM-DEVICE-BOND-HW-ADDRESS:CAPS">
+<ANCHOR id="NM-DEVICE-BOND-SLAVES:CAPS" href="libnm-glib/NMDeviceBond.html#NM-DEVICE-BOND-SLAVES:CAPS">
 <ANCHOR id="nm-device-bond-error-quark" href="libnm-glib/NMDeviceBond.html#nm-device-bond-error-quark">
 <ANCHOR id="nm-device-bond-get-carrier" href="libnm-glib/NMDeviceBond.html#nm-device-bond-get-carrier">
 <ANCHOR id="nm-device-bond-get-hw-address" href="libnm-glib/NMDeviceBond.html#nm-device-bond-get-hw-address">
+<ANCHOR id="nm-device-bond-get-slaves" href="libnm-glib/NMDeviceBond.html#nm-device-bond-get-slaves">
 <ANCHOR id="nm-device-bond-new" href="libnm-glib/NMDeviceBond.html#nm-device-bond-new">
 <ANCHOR id="NMDeviceBond.property-details" href="libnm-glib/NMDeviceBond.html#NMDeviceBond.property-details">
 <ANCHOR id="NMDeviceBond--carrier" href="libnm-glib/NMDeviceBond.html#NMDeviceBond--carrier">
 <ANCHOR id="NMDeviceBond--hw-address" href="libnm-glib/NMDeviceBond.html#NMDeviceBond--hw-address">
+<ANCHOR id="NMDeviceBond--slaves" href="libnm-glib/NMDeviceBond.html#NMDeviceBond--slaves">
 <ANCHOR id="NMDeviceInfiniband" href="libnm-glib/NMDeviceInfiniband.html">
 <ANCHOR id="NMDeviceInfiniband.synopsis" href="libnm-glib/NMDeviceInfiniband.html#NMDeviceInfiniband.synopsis">
 <ANCHOR id="NMDeviceInfiniband.object-hierarchy" href="libnm-glib/NMDeviceInfiniband.html#NMDeviceInfiniband.object-hierarchy">

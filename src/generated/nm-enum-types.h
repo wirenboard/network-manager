@@ -79,6 +79,10 @@ GType nm_settings_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTINGS_ERROR (nm_settings_error_get_type ())
 GType nm_agent_manager_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_AGENT_MANAGER_ERROR (nm_agent_manager_error_get_type ())
+GType nm_wimax_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_WIMAX_ERROR (nm_wimax_error_get_type ())
+GType nm_wimax_nsp_network_type_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_WIMAX_NSP_NETWORK_TYPE (nm_wimax_nsp_network_type_get_type ())
 G_END_DECLS
 
 #endif /* __NM_ENUM_TYPES_H__ */

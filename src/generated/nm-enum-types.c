@@ -5,7 +5,6 @@
 
 #include "nm-enum-types.h"
 
-#include "nm-hostname-provider.h" 
 #include "nm-device.h" 
 #include "NetworkManagerUtils.h" 
 #include "nm-system.h" 
@@ -28,14 +27,15 @@
 #include "nm-ip4-config.h" 
 #include "nm-device-bond.h" 
 #include "nm-wifi-ap-utils.h" 
+#include "nm-hostname-provider.h" 
 #include "nm-device-adsl.h" 
 #include "nm-policy-hosts.h" 
 #include "nm-rfkill.h" 
-#include "nm-connection-provider.h" 
 #include "nm-manager.h" 
 #include "nm-device-modem.h" 
 #include "nm-activation-request.h" 
 #include "nm-policy-hostname.h" 
+#include "nm-connection-provider.h" 
 #include "nm-properties-changed-signal.h" 
 #include "nm-ip6-config.h" 
 #include "nm-policy.h" 
@@ -53,9 +53,9 @@
 #include "nm-dns-manager.h" 
 #include "nm-dns-bind.h" 
 #include "nm-dns-dnsmasq.h" 
+#include "nm-vpn-connection.h" 
 #include "nm-vpn-manager.h" 
 #include "nm-vpn-service.h" 
-#include "nm-vpn-connection.h" 
 #include "nm-dhcp-dhcpcd.h" 
 #include "nm-dhcp-dhclient.h" 
 #include "nm-dhcp-manager.h" 
@@ -91,7 +91,12 @@
 #include "nm-settings-error.h" 
 #include "nm-agent-manager.h" 
 #include "nm-inotify-helper.h" 
-#include "nm-secret-agent.h"
+#include "nm-secret-agent.h" 
+#include "nm-device-wimax.h" 
+#include "iwmxsdk.h" 
+#include "nm-wimax-types.h" 
+#include "nm-wimax-util.h" 
+#include "nm-wimax-nsp.h"
 
 GType
 nm_device_error_get_type (void)
@@ -879,6 +884,48 @@ nm_agent_manager_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMAgentManagerError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_wimax_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX, "NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX", "ConnectionNotWimax" },
+        { NM_WIMAX_ERROR_CONNECTION_INVALID, "NM_WIMAX_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE, "NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
+        { NM_WIMAX_ERROR_NSP_NOT_FOUND, "NM_WIMAX_ERROR_NSP_NOT_FOUND", "NspNotFound" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMWimaxError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_wimax_nsp_network_type_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN, "NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN", "unknown" },
+        { NM_WIMAX_NSP_NETWORK_TYPE_HOME, "NM_WIMAX_NSP_NETWORK_TYPE_HOME", "home" },
+        { NM_WIMAX_NSP_NETWORK_TYPE_PARTNER, "NM_WIMAX_NSP_NETWORK_TYPE_PARTNER", "partner" },
+        { NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER, "NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER", "roaming-partner" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMWimaxNspNetworkType"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

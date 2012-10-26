@@ -564,10 +564,10 @@ update_ip4_routing (NMPolicy *policy, gboolean force_update)
 	NMVPNConnection *vpn = NULL;
 	NMActiveConnection *best_ac = NULL;
 	NMIP4Config *ip4_config = NULL, *parent_ip4;
-	NMIP4Address *addr;
 	const char *ip_iface = NULL;
 	int ip_ifindex = -1;
-	guint32 parent_mss;
+	guint32 gw_addr = 0, parent_mss;
+	guint32 i;
 
 	/* Note that we might have an IPv4 VPN tunneled over an IPv6-only device,
 	 * so we can get (vpn != NULL && best == NULL).
@@ -582,9 +582,18 @@ update_ip4_routing (NMPolicy *policy, gboolean force_update)
 	if (!force_update && best && (best == policy->default_device4))
 		return;
 
-	/* We set the default route to the gateway of the first IP address of the config */
-	addr = nm_ip4_config_get_address (ip4_config, 0);
-	g_assert (addr);
+	/* We set the default route to the first gateway we find.  If we don't find
+	 * a gateway (WWAN, point-to-point, etc) then we just use 0.0.0.0
+	 */
+	for (i = 0; i < nm_ip4_config_get_num_addresses (ip4_config); i++) {
+		NMIP4Address *addr;
+
+		addr = nm_ip4_config_get_address (ip4_config, i);
+		if (nm_ip4_address_get_gateway (addr)) {
+			gw_addr = nm_ip4_address_get_gateway (addr);
+			break;
+		}
+	}
 
 	if (vpn) {
 		parent = nm_vpn_connection_get_parent_device (vpn);
@@ -592,14 +601,14 @@ update_ip4_routing (NMPolicy *policy, gboolean force_update)
 		parent_mss = parent_ip4 ? nm_ip4_config_get_mss (parent_ip4) : 0;
 
 		nm_system_replace_default_ip4_route_vpn (ip_ifindex,
-		                                         nm_ip4_address_get_gateway (addr),
+		                                         gw_addr,
 		                                         nm_vpn_connection_get_ip4_internal_gateway (vpn),
 		                                         nm_ip4_config_get_mss (ip4_config),
 		                                         nm_device_get_ip_ifindex (parent),
 		                                         parent_mss);
 	} else {
 		nm_system_replace_default_ip4_route (ip_ifindex,
-		                                     nm_ip4_address_get_gateway (addr),
+		                                     gw_addr,
 		                                     nm_ip4_config_get_mss (ip4_config));
 	}
 
@@ -720,10 +729,11 @@ update_ip6_routing (NMPolicy *policy, gboolean force_update)
 	NMVPNConnection *vpn = NULL;
 	NMActiveConnection *best_ac = NULL;
 	NMIP6Config *ip6_config = NULL, *parent_ip6;
-	NMIP6Address *addr;
 	const char *ip_iface = NULL;
 	int ip_ifindex = -1;
 	guint32 parent_mss;
+	guint32 i;
+	const struct in6_addr *gw_addr;
 
 	/* Note that we might have an IPv6 VPN tunneled over an IPv4-only device,
 	 * so we can get (vpn != NULL && best == NULL).
@@ -738,9 +748,26 @@ update_ip6_routing (NMPolicy *policy, gboolean force_update)
 	if (!force_update && best && (best == policy->default_device6))
 		return;
 
-	/* We set the default route to the gateway of the first IP address of the config */
-	addr = nm_ip6_config_get_address (ip6_config, 0);
-	g_assert (addr);
+	/* If no better gateway is found, use ::; not all configurations will
+	 * have a gateway, especially WWAN/Point-to-Point connections.
+	 */
+	gw_addr = &in6addr_any;
+
+	/* Look for a gateway paired with one of the addresses */
+	for (i = 0; i < nm_ip6_config_get_num_addresses (ip6_config); i++) {
+		NMIP6Address *addr;
+
+		addr = nm_ip6_config_get_address (ip6_config, i);
+		if (nm_ip6_address_get_gateway (addr)) {
+			gw_addr = nm_ip6_address_get_gateway (addr);
+			break;
+		}
+	}
+
+	/* If we don't find a paired gateway, try the generic IPv6 gateway */
+	if (   IN6_IS_ADDR_UNSPECIFIED (gw_addr)
+	    && nm_ip6_config_get_gateway (ip6_config))
+		gw_addr = nm_ip6_config_get_gateway (ip6_config);
 
 	if (vpn) {
 		parent = nm_vpn_connection_get_parent_device (vpn);
@@ -748,18 +775,16 @@ update_ip6_routing (NMPolicy *policy, gboolean force_update)
 		parent_mss = parent_ip6 ? nm_ip6_config_get_mss (parent_ip6) : 0;
 
 		nm_system_replace_default_ip6_route_vpn (ip_ifindex,
-		                                         nm_ip6_address_get_gateway (addr),
+		                                         gw_addr,
 		                                         nm_vpn_connection_get_ip6_internal_gateway (vpn),
 		                                         nm_ip6_config_get_mss (ip6_config),
 		                                         nm_device_get_ip_ifindex (parent),
 		                                         parent_mss);
 	} else {
-		if (memcmp (nm_ip6_address_get_gateway (addr)->s6_addr, in6addr_any.s6_addr, sizeof (in6addr_any.s6_addr)) != 0)
-			nm_system_replace_default_ip6_route (ip_ifindex, nm_ip6_address_get_gateway (addr));
-		else if (nm_ip6_config_get_gateway (ip6_config))
-			nm_system_replace_default_ip6_route (ip_ifindex, nm_ip6_config_get_gateway (ip6_config));
+		if (gw_addr)
+			nm_system_replace_default_ip6_route (ip_ifindex, gw_addr);
 		else
-			nm_log_dbg (LOGD_IP6, "missing default IPv6 route");
+			nm_log_dbg (LOGD_IP6, "missing default IPv6 gateway");
 	}
 
 	update_default_ac (policy, best_ac, nm_active_connection_set_default6);
