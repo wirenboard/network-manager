@@ -921,6 +921,14 @@ process_route_change (NMIP6Manager *manager, struct nl_msg *msg)
 		return NULL;
 	}
 
+	/* Cached/cloned routes are created by the kernel for specific operations
+	 * and aren't part of the interface's permanent routing configuration.
+	 */
+	if (rtnl_route_get_flags (rtnlroute) & RTM_F_CLONED) {
+		rtnl_route_put (rtnlroute);
+		return NULL;
+	}
+
 	device = nm_ip6_manager_get_device (manager, rtnl_route_get_oif (rtnlroute));
 
 	old_size = nl_cache_nitems (priv->route_cache);
@@ -1521,6 +1529,12 @@ nm_ip6_manager_get_ip6_config (NMIP6Manager *manager, int ifindex)
 		if (rtnl_route_get_oif (rtnlroute) != device->ifindex)
 			continue;
 		if (rtnl_route_get_family (rtnlroute) != AF_INET6)
+			continue;
+
+		/* And ignore cache/cloned routes as they aren't part of the interface's
+		 * permanent routing configuration.
+		 */
+		if (rtnl_route_get_flags (rtnlroute) & RTM_F_CLONED)
 			continue;
 
 		nldest = rtnl_route_get_dst (rtnlroute);

@@ -38,6 +38,11 @@ NMDeviceBond
 
 </para>
 
+<!-- ##### ARG NMDeviceBond:slaves ##### -->
+<para>
+
+</para>
+
 <!-- ##### STRUCT NMDeviceBondClass ##### -->
 <para>
 
@@ -82,6 +87,13 @@ NMDeviceBond
 
 
 
+<!-- ##### MACRO NM_DEVICE_BOND_SLAVES ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### FUNCTION nm_device_bond_error_quark ##### -->
 <para>
 
@@ -101,6 +113,15 @@ NMDeviceBond
 
 
 <!-- ##### FUNCTION nm_device_bond_get_hw_address ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_bond_get_slaves ##### -->
 <para>
 
 </para>

@@ -221,9 +221,11 @@ NMDeviceBondError
 NM_DEVICE_BOND_CARRIER
 NM_DEVICE_BOND_ERROR
 NM_DEVICE_BOND_HW_ADDRESS
+NM_DEVICE_BOND_SLAVES
 nm_device_bond_error_quark
 nm_device_bond_get_carrier
 nm_device_bond_get_hw_address
+nm_device_bond_get_slaves
 nm_device_bond_new
 <SUBSECTION Standard>
 NM_DEVICE_BOND

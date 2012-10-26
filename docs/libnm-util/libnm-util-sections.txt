@@ -65,6 +65,11 @@ nm_connection_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-connection-private</FILE>
+
+</SECTION>
+
+<SECTION>
 <FILE>nm-setting</FILE>
 <TITLE>NMSetting</TITLE>
 NMSetting

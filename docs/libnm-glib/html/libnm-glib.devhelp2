@@ -310,12 +310,15 @@
     <keyword type="macro" name="NM_DEVICE_BOND_CARRIER" link="NMDeviceBond.html#NM-DEVICE-BOND-CARRIER:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BOND_ERROR" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BOND_HW_ADDRESS" link="NMDeviceBond.html#NM-DEVICE-BOND-HW-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BOND_SLAVES" link="NMDeviceBond.html#NM-DEVICE-BOND-SLAVES:CAPS"/>
     <keyword type="function" name="nm_device_bond_error_quark ()" link="NMDeviceBond.html#nm-device-bond-error-quark"/>
     <keyword type="function" name="nm_device_bond_get_carrier ()" link="NMDeviceBond.html#nm-device-bond-get-carrier"/>
     <keyword type="function" name="nm_device_bond_get_hw_address ()" link="NMDeviceBond.html#nm-device-bond-get-hw-address"/>
+    <keyword type="function" name="nm_device_bond_get_slaves ()" link="NMDeviceBond.html#nm-device-bond-get-slaves" since="0.9.6.4"/>
     <keyword type="function" name="nm_device_bond_new ()" link="NMDeviceBond.html#nm-device-bond-new"/>
     <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceBond.html#NMDeviceBond--carrier"/>
     <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceBond.html#NMDeviceBond--hw-address"/>
+    <keyword type="property" name="The &quot;slaves&quot; property" link="NMDeviceBond.html#NMDeviceBond--slaves"/>
     <keyword type="struct" name="NMDeviceInfiniband" link="NMDeviceInfiniband.html#NMDeviceInfiniband-struct"/>
     <keyword type="struct" name="NMDeviceInfinibandClass" link="NMDeviceInfiniband.html#NMDeviceInfinibandClass"/>
     <keyword type="enum" name="enum NMDeviceInfinibandError" link="NMDeviceInfiniband.html#NMDeviceInfinibandError"/>
