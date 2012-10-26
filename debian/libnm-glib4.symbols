@@ -66,6 +66,7 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_device_bond_error_quark@Base 0.9.4.0
  nm_device_bond_get_carrier@Base 0.9.4.0
  nm_device_bond_get_hw_address@Base 0.9.4.0
+ nm_device_bond_get_slaves@Base 0.9.6.4
  nm_device_bond_get_type@Base 0.9.4.0
  nm_device_bond_new@Base 0.9.4.0
  nm_device_bt_error_get_type@Base 0.9.4.0
