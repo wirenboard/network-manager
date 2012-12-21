@@ -1,4 +1,4 @@
-network-manager (0.9.4.0-7) UNRELEASED; urgency=low
+network-manager (0.9.4.0-7) unstable; urgency=low
 
   * Install a PolicyKit pkla file which allows members of group netdev or sudo
     to create system-wide network connections without being prompted for the
@@ -8,7 +8,7 @@ network-manager (0.9.4.0-7) UNRELEASED; urgency=low
     panel or in gnome-shell and nm-applet when restarting NetworkManager.
     (Closes: #696143) (bgo: #674473)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 18 Dec 2012 19:55:33 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 21 Dec 2012 03:48:18 +0100
 
 network-manager (0.9.4.0-6) unstable; urgency=low
 
