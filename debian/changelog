@@ -3,6 +3,10 @@ network-manager (0.9.4.0-7) UNRELEASED; urgency=low
   * Install a PolicyKit pkla file which allows members of group netdev or sudo
     to create system-wide network connections without being prompted for the
     admin password. (Closes: #642136)
+  * Cherry-pick patches for libnm-glib which fix various segfaults e.g. in
+    gnome-control-center when switching between overview and network settings
+    panel or in gnome-shell and nm-applet when restarting NetworkManager.
+    (Closes: #696143) (bgo: #674473)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 18 Dec 2012 19:55:33 +0100
 

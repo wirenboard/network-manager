@@ -9,3 +9,6 @@
 15-ignore-cached-cloned-routes-ipv6-config.patch
 16-ignore-cached-cloned-routes-kernel-notifications.patch
 17-dbus-remove-max_replies_per_connection-limit.patch
+18-libnm-glib-NULL-out-priv-fields-on-dispose.patch
+19-libnm-glib-discard-devices-and-active-connections-on-stop.patch
+20-libnm-glib-clear-object-cache-on-stop.patch
