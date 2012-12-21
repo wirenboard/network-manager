@@ -1,3 +1,11 @@
+network-manager (0.9.4.0-7) UNRELEASED; urgency=low
+
+  * Install a PolicyKit pkla file which allows members of group netdev or sudo
+    to create system-wide network connections without being prompted for the
+    admin password. (Closes: #642136)
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 18 Dec 2012 19:55:33 +0100
+
 network-manager (0.9.4.0-6) unstable; urgency=low
 
   * debian/rules: Use xz compression for binary packages.
