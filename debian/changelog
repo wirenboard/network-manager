@@ -1,4 +1,4 @@
-network-manager (0.9.4.0-8) UNRELEASED; urgency=low
+network-manager (0.9.4.0-8) unstable; urgency=low
 
   * Move the pkla file to /etc/polkit-1 as requested by the release team.
   * debian/patches/04-systemd-set-kill-mode-process.patch: By default, when
@@ -8,7 +8,7 @@ network-manager (0.9.4.0-8) UNRELEASED; urgency=low
     setting KillMode=process, which tells systemd to only kill NM itself, and
     let NM kill its children. Patch cherry-picked from upstream Git.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 05 Jan 2013 20:15:30 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 05 Jan 2013 20:23:27 +0100
 
 network-manager (0.9.4.0-7) unstable; urgency=low
 
