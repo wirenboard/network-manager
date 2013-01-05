@@ -1,3 +1,9 @@
+network-manager (0.9.4.0-8) UNRELEASED; urgency=low
+
+  * Move the pkla file to /etc/polkit-1 as requested by the release team.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 05 Jan 2013 20:15:30 +0100
+
 network-manager (0.9.4.0-7) unstable; urgency=low
 
   * Install a PolicyKit pkla file which allows members of group netdev or sudo
