@@ -1,0 +1,72 @@
+commit 48981a6166208152890b6c57af19cc3c5db5837f
+Author: Dan Williams <dcbw@redhat.com>
+Date:   Mon Apr 23 17:07:18 2012 -0500
+
+    libnm-glib: ensure object cache is cleared when NM stops (bgo #674473)
+    
+    Otherwise if a client holds references to the objects (or in the
+    JavaScript case, uses deferred garbage collection) they'll still
+    be in the cache when NM restarts, and the old object may have the
+    same path as some new object, which isn't good.
+
+diff --git a/libnm-glib/nm-client.c b/libnm-glib/nm-client.c
+index bed1b4e..311b1d2 100644
+--- a/libnm-glib/nm-client.c
++++ b/libnm-glib/nm-client.c
+@@ -1116,6 +1116,11 @@ proxy_name_owner_changed (DBusGProxy *proxy,
+ 		priv->wimax_hw_enabled = FALSE;
+ 		g_free (priv->version);
+ 		priv->version = NULL;
++
++		/* Clear object cache to ensure bad refcounting by clients doesn't
++		 * keep objects in the cache.
++		 */
++		_nm_object_cache_clear (NM_OBJECT (client));
+ 	} else {
+ 		_nm_object_suppress_property_updates (NM_OBJECT (client), FALSE);
+ 		_nm_object_reload_properties_async (NM_OBJECT (client), updated_properties, client);
+diff --git a/libnm-glib/nm-object-cache.c b/libnm-glib/nm-object-cache.c
+index 741f129..2748b1d 100644
+--- a/libnm-glib/nm-object-cache.c
++++ b/libnm-glib/nm-object-cache.c
+@@ -64,3 +64,28 @@ _nm_object_cache_get (const char *path)
+ 	return object ? g_object_ref (object) : NULL;
+ }
+ 
++void
++_nm_object_cache_clear (NMObject *except)
++{
++	GHashTableIter iter;
++	NMObject *obj;
++	const char *path;
++	char *foo;
++
++	_init_cache ();
++	g_hash_table_iter_init (&iter, cache);
++	while (g_hash_table_iter_next (&iter, (gpointer) &path, (gpointer) &obj)) {
++		if (obj != except) {
++			/* Remove the callback so that if the object isn't yet released
++			 * by a client, when it does finally get unrefed, it won't trigger
++			 * the cache removal for a new object with the same path as the
++			 * one being released.
++			 */
++			foo = g_object_steal_data (G_OBJECT (obj), "nm-object-cache-tag");
++			g_free (foo);
++
++			g_hash_table_iter_remove (&iter);
++		}
++	}
++}
++
+diff --git a/libnm-glib/nm-object-cache.h b/libnm-glib/nm-object-cache.h
+index 8386591..8475213 100644
+--- a/libnm-glib/nm-object-cache.h
++++ b/libnm-glib/nm-object-cache.h
+@@ -32,6 +32,7 @@ G_BEGIN_DECLS
+ /* Returns referenced object from the cache */
+ NMObject *_nm_object_cache_get (const char *path);
+ void _nm_object_cache_add (NMObject *object);
++void _nm_object_cache_clear (NMObject *except);
+ 
+ G_END_DECLS
+ 

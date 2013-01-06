@@ -1,3 +1,7 @@
 # Debian patches for network-manager
 02-dbus_access_network_manager.patch
 03-systemd.patch
+04-systemd-set-kill-mode-process.patch
+18-libnm-glib-NULL-out-priv-fields-on-dispose.patch
+19-libnm-glib-discard-devices-and-active-connections-on-stop.patch
+20-libnm-glib-clear-object-cache-on-stop.patch

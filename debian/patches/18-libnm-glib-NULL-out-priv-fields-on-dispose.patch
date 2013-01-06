@@ -1,0 +1,670 @@
+From be18dd06cd138be232ff68ec7af19cfcf2f969ed Mon Sep 17 00:00:00 2001
+From: Dan Winship <danw@gnome.org>
+Date: Mon, 23 Apr 2012 15:02:48 +0000
+Subject: libnm-glib: NULL out priv fields on dispose()
+
+In some situations, objects might get used after being disposed, so
+clear out their various priv fields so we don't try to access unreffed
+objects, freed strings, etc.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=674473
+---
+Index: network-manager/include/nm-glib-compat.h
+===================================================================
+--- network-manager.orig/include/nm-glib-compat.h	2012-10-30 21:02:36.779282426 +0100
++++ network-manager/include/nm-glib-compat.h	2012-12-21 01:13:58.030742565 +0100
+@@ -42,6 +42,16 @@
+ 		g_simple_async_result_set_from_error (result, __error); \
+ 		g_error_free (__error); \
+ 	} G_STMT_END
++
++#define g_clear_object(object_ptr) \
++	G_STMT_START { \
++		GObject **__obj_p = object_ptr; \
++		if (*__obj_p) { \
++			g_object_unref (*__obj_p); \
++			*__obj_p = NULL; \
++		} \
++	} G_STMT_END
++
+ #endif
+ 
+ #endif  /* NM_GLIB_COMPAT_H */
+Index: network-manager/libnm-glib/nm-access-point.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-access-point.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-access-point.c	2012-12-21 01:13:58.030742565 +0100
+@@ -41,7 +41,6 @@
+ #define NM_ACCESS_POINT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_ACCESS_POINT, NMAccessPointPrivate))
+ 
+ typedef struct {
+-	gboolean disposed;
+ 	DBusGProxy *proxy;
+ 
+ 	NM80211ApFlags flags;
+@@ -431,14 +430,7 @@
+ {
+ 	NMAccessPointPrivate *priv = NM_ACCESS_POINT_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_access_point_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_access_point_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-active-connection.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-active-connection.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-active-connection.c	2012-12-21 01:13:58.034742595 +0100
+@@ -49,7 +49,6 @@
+ #define NM_ACTIVE_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_ACTIVE_CONNECTION, NMActiveConnectionPrivate))
+ 
+ typedef struct {
+-	gboolean disposed;
+ 	DBusGProxy *proxy;
+ 
+ 	char *connection;
+@@ -357,18 +356,13 @@
+ {
+ 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_active_connection_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+ 	if (priv->devices) {
+ 		g_ptr_array_foreach (priv->devices, (GFunc) g_object_unref, NULL);
+ 		g_ptr_array_free (priv->devices, TRUE);
++		priv->devices = NULL;
+ 	}
+-	g_object_unref (priv->proxy);
++
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_active_connection_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-client.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-client.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-client.c	2012-12-21 01:13:58.034742595 +0100
+@@ -53,8 +53,6 @@
+ #define NM_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_CLIENT, NMClientPrivate))
+ 
+ typedef struct {
+-	gboolean disposed;
+-
+ 	DBusGProxy *client_proxy;
+ 	DBusGProxy *bus_proxy;
+ 	gboolean manager_running;
+@@ -1419,24 +1417,23 @@
+ {
+ 	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_client_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	if (priv->perm_call)
++	if (priv->perm_call) {
+ 		dbus_g_proxy_cancel_call (priv->client_proxy, priv->perm_call);
++		priv->perm_call = NULL;
++	}
+ 
+-	g_object_unref (priv->client_proxy);
+-	g_object_unref (priv->bus_proxy);
++	g_clear_object (&priv->client_proxy);
++	g_clear_object (&priv->bus_proxy);
+ 
+ 	free_object_array (&priv->devices);
+ 	dispose_and_free_object_array (&priv->active_connections);
+ 
+ 	g_slist_foreach (priv->pending_activations, (GFunc) activate_info_free, NULL);
+ 	g_slist_free (priv->pending_activations);
++	priv->pending_activations = NULL;
+ 
+ 	g_hash_table_destroy (priv->permissions);
++	priv->permissions = NULL;
+ 
+ 	G_OBJECT_CLASS (nm_client_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-bond.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-bond.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-device-bond.c	2012-12-21 01:13:58.034742595 +0100
+@@ -215,10 +215,7 @@
+ {
+ 	NMDeviceBondPrivate *priv = NM_DEVICE_BOND_GET_PRIVATE (object);
+ 
+-	if (priv->proxy) {
+-		g_object_unref (priv->proxy);
+-		priv->proxy = NULL;
+-	}
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_bond_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-bt.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-bt.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-device-bt.c	2012-12-21 01:13:58.034742595 +0100
+@@ -42,8 +42,6 @@
+ 	char *hw_address;
+ 	char *name;
+ 	guint32 bt_capabilities;
+-
+-	gboolean disposed;
+ } NMDeviceBtPrivate;
+ 
+ enum {
+@@ -273,13 +271,7 @@
+ {
+ 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_device_bt_parent_class)->dispose (object);
+-		return;
+-	}
+-	priv->disposed = TRUE;
+-
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_bt_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-ethernet.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-ethernet.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-device-ethernet.c	2012-12-21 01:13:58.034742595 +0100
+@@ -44,8 +44,6 @@
+ 	char *perm_hw_address;
+ 	guint32 speed;
+ 	gboolean carrier;
+-
+-	gboolean disposed;
+ } NMDeviceEthernetPrivate;
+ 
+ enum {
+@@ -280,14 +278,7 @@
+ {
+ 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_device_ethernet_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_ethernet_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-infiniband.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-infiniband.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-device-infiniband.c	2012-12-21 01:13:58.034742595 +0100
+@@ -224,10 +224,7 @@
+ {
+ 	NMDeviceInfinibandPrivate *priv = NM_DEVICE_INFINIBAND_GET_PRIVATE (object);
+ 
+-	if (priv->proxy) {
+-		g_object_unref (priv->proxy);
+-		priv->proxy = NULL;
+-	}
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_infiniband_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-modem.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-modem.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-device-modem.c	2012-12-21 01:13:58.034742595 +0100
+@@ -44,8 +44,6 @@
+ 
+ 	NMDeviceModemCapabilities caps;
+ 	NMDeviceModemCapabilities current_caps;
+-
+-	gboolean disposed;
+ } NMDeviceModemPrivate;
+ 
+ enum {
+@@ -223,14 +221,7 @@
+ {
+ 	NMDeviceModemPrivate *priv = NM_DEVICE_MODEM_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_device_modem_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_modem_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-olpc-mesh.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-olpc-mesh.c	2012-10-30 21:02:36.783282401 +0100
++++ network-manager/libnm-glib/nm-device-olpc-mesh.c	2012-12-21 01:13:58.034742595 +0100
+@@ -227,14 +227,8 @@
+ {
+ 	NMDeviceOlpcMeshPrivate *priv = NM_DEVICE_OLPC_MESH_GET_PRIVATE (object);
+ 
+-	if (priv->companion) {
+-		g_object_unref (priv->companion);
+-		priv->companion = NULL;
+-	}
+-	if (priv->proxy) {
+-		g_object_unref (priv->proxy);
+-		priv->proxy = NULL;
+-	}
++	g_clear_object (&priv->companion);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_olpc_mesh_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-vlan.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-vlan.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-device-vlan.c	2012-12-21 01:13:58.034742595 +0100
+@@ -238,10 +238,7 @@
+ {
+ 	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (object);
+ 
+-	if (priv->proxy) {
+-		g_object_unref (priv->proxy);
+-		priv->proxy = NULL;
+-	}
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_vlan_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-wifi.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-wifi.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-device-wifi.c	2012-12-21 01:13:58.034742595 +0100
+@@ -43,7 +43,6 @@
+ void _nm_device_wifi_set_wireless_enabled (NMDeviceWifi *device, gboolean enabled);
+ 
+ typedef struct {
+-	gboolean disposed;
+ 	DBusGProxy *proxy;
+ 
+ 	char *hw_address;
+@@ -606,15 +605,8 @@
+ {
+ 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_device_wifi_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+ 	clean_up_aps (NM_DEVICE_WIFI (object), FALSE);
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_wifi_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device-wimax.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device-wimax.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-device-wimax.c	2012-12-21 01:13:58.034742595 +0100
+@@ -42,7 +42,6 @@
+ void _nm_device_wimax_set_wireless_enabled (NMDeviceWimax *wimax, gboolean enabled);
+ 
+ typedef struct {
+-	gboolean disposed;
+ 	DBusGProxy *proxy;
+ 
+ 	char *hw_address;
+@@ -591,18 +590,18 @@
+ {
+ 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_device_wimax_parent_class)->dispose (object);
+-		return;
++	if (priv->hw_address) {
++		g_free (priv->hw_address);
++		priv->hw_address = NULL;
+ 	}
+ 
+-	priv->disposed = TRUE;
+-
+-	g_free (priv->hw_address);
+-	g_free (priv->bsid);
++	if (priv->bsid) {
++		g_free (priv->bsid);
++		priv->bsid = NULL;
++	}
+ 
+ 	clean_up_nsps (NM_DEVICE_WIMAX (object), FALSE);
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_device_wimax_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-device.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-device.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-device.c	2012-12-21 01:13:58.038742626 +0100
+@@ -60,7 +60,6 @@
+ #define NM_DEVICE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DEVICE, NMDevicePrivate))
+ 
+ typedef struct {
+-	gboolean disposed;
+ 	DBusGProxy *proxy;
+ 
+ 	char *iface;
+@@ -265,26 +264,13 @@
+ {
+ 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_device_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+-	g_object_unref (priv->proxy);
+-	if (priv->ip4_config)
+-		g_object_unref (priv->ip4_config);
+-	if (priv->dhcp4_config)
+-		g_object_unref (priv->dhcp4_config);
+-	if (priv->ip6_config)
+-		g_object_unref (priv->ip6_config);
+-	if (priv->dhcp6_config)
+-		g_object_unref (priv->dhcp6_config);
+-	if (priv->client)
+-		g_object_unref (priv->client);
+-	if (priv->active_connection)
+-		g_object_unref (priv->active_connection);
++	g_clear_object (&priv->proxy);
++	g_clear_object (&priv->ip4_config);
++	g_clear_object (&priv->dhcp4_config);
++	g_clear_object (&priv->ip6_config);
++	g_clear_object (&priv->dhcp6_config);
++	g_clear_object (&priv->client);
++	g_clear_object (&priv->active_connection);
+ 
+ 	G_OBJECT_CLASS (nm_device_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-object.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-object.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-object.c	2012-12-21 01:13:58.038742626 +0100
+@@ -78,7 +78,7 @@
+ 
+ 	GSList *notify_props;
+ 	guint32 notify_id;
+-	gboolean inited, disposed;
++	gboolean inited;
+ 
+ 	GSList *reload_results;
+ 	guint reload_remaining;
+@@ -194,13 +194,6 @@
+ {
+ 	NMObjectPrivate *priv = NM_OBJECT_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_object_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+ 	if (priv->notify_id) {
+ 		g_source_remove (priv->notify_id);
+ 		priv->notify_id = 0;
+@@ -208,12 +201,18 @@
+ 
+ 	g_slist_foreach (priv->notify_props, (GFunc) g_free, NULL);
+ 	g_slist_free (priv->notify_props);
++	priv->notify_props = NULL;
+ 
+ 	g_slist_foreach (priv->property_interfaces, (GFunc) g_free, NULL);
+ 	g_slist_free (priv->property_interfaces);
++	priv->property_interfaces = NULL;
+ 
+-	g_object_unref (priv->properties_proxy);
+-	dbus_g_connection_unref (priv->connection);
++	g_clear_object (&priv->properties_proxy);
++
++	if (priv->connection) {
++		dbus_g_connection_unref (priv->connection);
++		priv->connection = NULL;
++	}
+ 
+ 	G_OBJECT_CLASS (nm_object_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-remote-connection.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-remote-connection.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-remote-connection.c	2012-12-21 01:13:58.038742626 +0100
+@@ -72,7 +72,6 @@
+ 	GSList *calls;
+ 
+ 	gboolean visible;
+-	gboolean disposed;
+ } NMRemoteConnectionPrivate;
+ 
+ #define NM_REMOTE_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_REMOTE_CONNECTION, NMRemoteConnectionPrivate))
+@@ -477,14 +476,14 @@
+ 	NMRemoteConnection *self = NM_REMOTE_CONNECTION (object);
+ 	NMRemoteConnectionPrivate *priv = NM_REMOTE_CONNECTION_GET_PRIVATE (object);
+ 
+-	if (!priv->disposed) {
+-		priv->disposed = TRUE;
++	while (g_slist_length (priv->calls))
++		remote_call_complete (self, priv->calls->data);
+ 
+-		while (g_slist_length (priv->calls))
+-			remote_call_complete (self, priv->calls->data);
++	g_clear_object (&priv->proxy);
+ 
+-		g_object_unref (priv->proxy);
++	if (priv->bus) {
+ 		dbus_g_connection_unref (priv->bus);
++		priv->bus = NULL;
+ 	}
+ 
+ 	G_OBJECT_CLASS (nm_remote_connection_parent_class)->dispose (object);
+Index: network-manager/libnm-glib/nm-remote-settings.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-remote-settings.c	2012-12-21 01:13:57.994742293 +0100
++++ network-manager/libnm-glib/nm-remote-settings.c	2012-12-21 01:13:58.038742626 +0100
+@@ -61,8 +61,6 @@
+ 	DBusGProxy *dbus_proxy;
+ 
+ 	guint fetch_id;
+-
+-	gboolean disposed;
+ } NMRemoteSettingsPrivate;
+ 
+ enum {
+@@ -1012,29 +1010,35 @@
+ 	NMRemoteSettings *self = NM_REMOTE_SETTINGS (object);
+ 	NMRemoteSettingsPrivate *priv = NM_REMOTE_SETTINGS_GET_PRIVATE (self);
+ 
+-	if (priv->disposed)
+-		return;
+-
+-	priv->disposed = TRUE;
+-
+-	if (priv->fetch_id)
++	if (priv->fetch_id) {
+ 		g_source_remove (priv->fetch_id);
++		priv->fetch_id = 0;
++	}
+ 
+ 	while (g_slist_length (priv->add_list))
+ 		add_connection_info_dispose (self, (AddConnectionInfo *) priv->add_list->data);
+ 
+-	if (priv->connections)
++	if (priv->connections) {
+ 		g_hash_table_destroy (priv->connections);
++		priv->connections = NULL;
++	}
+ 
+-	if (priv->pending)
++	if (priv->pending) {
+ 		g_hash_table_destroy (priv->pending);
++		priv->pending = NULL;
++	}
+ 
+ 	g_free (priv->hostname);
++	priv->hostname = NULL;
+ 
+-	g_object_unref (priv->dbus_proxy);
+-	g_object_unref (priv->proxy);
+-	g_object_unref (priv->props_proxy);
+-	dbus_g_connection_unref (priv->bus);
++	g_clear_object (&priv->dbus_proxy);
++	g_clear_object (&priv->proxy);
++	g_clear_object (&priv->props_proxy);
++
++	if (priv->bus) {
++		dbus_g_connection_unref (priv->bus);
++		priv->bus = NULL;
++	}
+ 
+ 	G_OBJECT_CLASS (nm_remote_settings_parent_class)->dispose (object);
+ }
+Index: network-manager/libnm-glib/nm-secret-agent.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-secret-agent.c	2012-10-30 21:02:36.787282377 +0100
++++ network-manager/libnm-glib/nm-secret-agent.c	2012-12-21 01:13:58.038742626 +0100
+@@ -79,8 +79,6 @@
+ 	gboolean auto_register;
+ 	gboolean suppress_auto;
+ 	gboolean auto_register_id;
+-
+-	gboolean disposed;
+ } NMSecretAgentPrivate;
+ 
+ enum {
+@@ -878,29 +876,28 @@
+ 	NMSecretAgent *self = NM_SECRET_AGENT (object);
+ 	NMSecretAgentPrivate *priv = NM_SECRET_AGENT_GET_PRIVATE (self);
+ 
+-	if (!priv->disposed) {
+-		priv->disposed = TRUE;
+-
+-		if (priv->registered)
+-			nm_secret_agent_unregister (self);
+-
+-		if (priv->auto_register_id)
+-			g_source_remove (priv->auto_register_id);
++	if (priv->registered)
++		nm_secret_agent_unregister (self);
+ 
+-		g_free (priv->identifier);
+-		g_free (priv->nm_owner);
++	if (priv->auto_register_id) {
++		g_source_remove (priv->auto_register_id);
++		priv->auto_register_id = 0;
++	}
+ 
+-		while (priv->pending_gets)
+-			get_secrets_info_finalize (self, priv->pending_gets->data);
++	g_free (priv->identifier);
++	priv->identifier = NULL;
++	g_free (priv->nm_owner);
++	priv->nm_owner = NULL;
+ 
+-		if (priv->dbus_proxy)
+-			g_object_unref (priv->dbus_proxy);
++	while (priv->pending_gets)
++		get_secrets_info_finalize (self, priv->pending_gets->data);
+ 
+-		if (priv->manager_proxy)
+-			g_object_unref (priv->manager_proxy);
++	g_clear_object (&priv->dbus_proxy);
++	g_clear_object (&priv->manager_proxy);
+ 
+-		if (priv->bus)
+-			dbus_g_connection_unref (priv->bus);
++	if (priv->bus) {
++		dbus_g_connection_unref (priv->bus);
++		priv->bus = NULL;
+ 	}
+ 
+ 	G_OBJECT_CLASS (nm_secret_agent_parent_class)->dispose (object);
+Index: network-manager/libnm-glib/nm-vpn-plugin.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-vpn-plugin.c	2012-10-30 21:02:36.791282354 +0100
++++ network-manager/libnm-glib/nm-vpn-plugin.c	2012-12-21 01:13:58.038742626 +0100
+@@ -63,9 +63,6 @@
+ 	DBusGConnection *connection;
+ 	char *dbus_service_name;
+ 
+-	/* GObject-y stuff */
+-	gboolean disposed;
+-
+ 	/* Temporary stuff */
+ 	guint connect_timer;
+ 	guint quit_timer;
+@@ -590,15 +587,10 @@
+ 	NMVPNServiceState state;
+ 	GError *err = NULL;
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_vpn_plugin_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+-	if (priv->fail_stop_id)
++	if (priv->fail_stop_id) {
+ 		g_source_remove (priv->fail_stop_id);
++		priv->fail_stop_id = 0;
++	}
+ 
+ 	state = nm_vpn_plugin_get_state (plugin);
+ 
+Index: network-manager/libnm-glib/nm-wimax-nsp.c
+===================================================================
+--- network-manager.orig/libnm-glib/nm-wimax-nsp.c	2012-10-30 21:02:36.791282354 +0100
++++ network-manager/libnm-glib/nm-wimax-nsp.c	2012-12-21 01:13:58.038742626 +0100
+@@ -37,7 +37,6 @@
+ #define NM_WIMAX_NSP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_WIMAX_NSP, NMWimaxNspPrivate))
+ 
+ typedef struct {
+-	gboolean disposed;
+ 	DBusGProxy *proxy;
+ 
+ 	char *name;
+@@ -217,14 +216,7 @@
+ {
+ 	NMWimaxNspPrivate *priv = NM_WIMAX_NSP_GET_PRIVATE (object);
+ 
+-	if (priv->disposed) {
+-		G_OBJECT_CLASS (nm_wimax_nsp_parent_class)->dispose (object);
+-		return;
+-	}
+-
+-	priv->disposed = TRUE;
+-
+-	g_object_unref (priv->proxy);
++	g_clear_object (&priv->proxy);
+ 
+ 	G_OBJECT_CLASS (nm_wimax_nsp_parent_class)->dispose (object);
+ }

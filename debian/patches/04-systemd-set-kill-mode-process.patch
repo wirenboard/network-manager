@@ -1,0 +1,27 @@
+commit 1d89bc0004ec27fbc0c89f17861118c78d7eeab5 (HEAD, origin/master, origin/HEAD, master)
+Author: Dan Winship <danw@gnome.org>
+Date:   Fri Jan 4 11:53:03 2013 -0500
+
+    systemd: set KillMode=process
+    
+    By default, when shutting NM down, systemd will kill everything in its
+    cgroup. But this can cause problems (eg, NM thinking that dhclient
+    crashed and then taking down an interface that it would otherwise have
+    left up). Fix this by setting KillMode=process, which tells systemd to
+    only kill NM itself, and let NM kill its children.
+    
+    https://bugzilla.redhat.com/show_bug.cgi?id=876218
+
+Index: network-manager/data/NetworkManager.service.in
+===================================================================
+--- network-manager.orig/data/NetworkManager.service.in	2013-01-05 20:18:09.943472117 +0100
++++ network-manager/data/NetworkManager.service.in	2013-01-05 20:18:09.943472117 +0100
+@@ -10,6 +10,8 @@
+ # with LOG_PERROR when run in foreground. But systemd redirects stderr to
+ # syslog by default, which results in logging each message twice.
+ StandardError=null
++# NM doesn't want systemd to kill its children for it
++KillMode=process
+ 
+ [Install]
+ WantedBy=multi-user.target
