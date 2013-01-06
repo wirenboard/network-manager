@@ -1,9 +1,9 @@
-network-manager (0.9.6.4-2) UNRELEASED; urgency=low
+network-manager (0.9.6.4-2) experimental; urgency=low
 
   * Merge changes from unstable branch.
   * Drop patches for libnm-glib, merged upstream.
 
- -- Michael Biebl <biebl@debian.org>  Sun, 06 Jan 2013 10:11:57 +0100
+ -- Michael Biebl <biebl@debian.org>  Sun, 06 Jan 2013 10:13:36 +0100
 
 network-manager (0.9.6.4-1) experimental; urgency=low
 
