@@ -1,3 +1,12 @@
+network-manager (0.9.4.0-9) UNRELEASED; urgency=low
+
+  * Change the ifupdown dispatcher script and set ADDRFAM to "inet" or "inet6"
+    depending on whether the connection has a valid IPv4 or IPv6 address.
+    Using "NetworkManager" as ADDRFAM type did confuse most ifupdown hook
+    scripts and e.g. broke async NFS mounts. (Closes: #475188, #656584)
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 28 Jan 2013 18:25:50 +0100
+
 network-manager (0.9.4.0-8) unstable; urgency=low
 
   * Move the pkla file to /etc/polkit-1 as requested by the release team.
