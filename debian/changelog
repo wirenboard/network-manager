@@ -4,6 +4,11 @@ network-manager (0.9.4.0-9) UNRELEASED; urgency=low
     depending on whether the connection has a valid IPv4 or IPv6 address.
     Using "NetworkManager" as ADDRFAM type did confuse most ifupdown hook
     scripts and e.g. broke async NFS mounts. (Closes: #475188, #656584)
+  * debian/patches/05-force-online-with-unmanaged-devices.patch: If network
+    interfaces are configured in /etc/network/interfaces, NM will mark those
+    devices as unmanaged by default. If such a network interface has been
+    brought up by ifup, set the global online state to CONNECTED.
+    (Closes: #512286)
 
  -- Michael Biebl <biebl@debian.org>  Mon, 28 Jan 2013 18:25:50 +0100
 
