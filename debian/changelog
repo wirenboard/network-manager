@@ -21,6 +21,7 @@ network-manager (0.9.4.0-9) UNRELEASED; urgency=low
     network-manager package afterwards, show a warning in postinst if we
     find any interface configurations in /etc/network/interfaces.
     (Closes: #688355, #690987, #606268)
+  * Update README.Debian for the latest changes.
 
  -- Michael Biebl <biebl@debian.org>  Mon, 28 Jan 2013 18:25:50 +0100
 
