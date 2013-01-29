@@ -28,6 +28,7 @@ case "$1" in
         ;;
     remove)
         # Restore the ifupdown configuration that were disabled at installation
+        # TODO: drop this code in jessie
         backup_suffix=0
         while test -e /etc/network/interfaces.bak-${backup_suffix}; do
             backup_suffix=$(($backup_suffix + 1))

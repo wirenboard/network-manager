@@ -9,6 +9,18 @@ network-manager (0.9.4.0-9) UNRELEASED; urgency=low
     devices as unmanaged by default. If such a network interface has been
     brought up by ifup, set the global online state to CONNECTED.
     (Closes: #512286)
+  * No longer run the ifblacklist_migrate.sh script upon installation. This
+    script was used to comment out DHCP type network interface configurations
+    in /etc/network/interfaces as otherwise NM would mark such devices as
+    unmanaged. This script was buggy though and sometimes created a broken
+    network configuration.
+    Since debian-installer in wheezy (7.0) will create proper configuration
+    for NM if the network-manager package is part of the installation, this is
+    no longer necessary.
+    If users make a minimal system installation and install the
+    network-manager package afterwards, show a warning in postinst if we
+    find any interface configurations in /etc/network/interfaces.
+    (Closes: #688355, #690987, #606268)
 
  -- Michael Biebl <biebl@debian.org>  Mon, 28 Jan 2013 18:25:50 +0100
 

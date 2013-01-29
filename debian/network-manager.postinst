@@ -42,10 +42,17 @@ case "$1" in
             kill `pidof /usr/sbin/nm-system-settings` 2>/dev/null || true
         fi
 
-        if [ -z "$2" ] || dpkg --compare-versions "$2" lt-nl "0.8.1-4"; then
-            if [ -f /etc/network/interfaces ]; then
-                echo "Disabling interfaces configured with plain DHCP in /etc/network/interfaces so that NetworkManager can take them over"
-                /usr/lib/NetworkManager/ifblacklist_migrate.sh
+        NIF=/etc/network/interfaces
+        if [ -z "$2" ] && [ -f $NIF ]; then
+            ifaces=`grep -v '^#' $NIF | awk '/iface/ {print $2}' | sort -u | sed -e 's/lo//' -e '/^$/d' -e 's/^/- /'`
+            if [ -n "$ifaces" ]; then
+                echo "" 1>&2
+                echo "The following network interfaces were found in $NIF" 1>&2
+                echo "which means they are currently configured by ifupdown:" 1>&2
+                echo "$ifaces" 1>&2
+                echo "If you want to manage those interfaces with NetworkManager instead" 1>&2
+                echo "remove their configuration from $NIF." 1>&2
+                echo "" 1>&2
             fi
         fi
         ;;
