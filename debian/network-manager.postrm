@@ -27,14 +27,8 @@ case "$1" in
         fi
         ;;
     remove)
-        # Restore the ifupdown configuration that were disabled at installation
-        backup_suffix=0
-        while test -e /etc/network/interfaces.bak-${backup_suffix}; do
-            backup_suffix=$(($backup_suffix + 1))
-        done
-        if [ -f /etc/network/interfaces ]; then
-            sed -i.bak-${backup_suffix} -e "s/^#NetworkManager#//g" /etc/network/interfaces
-        fi
+        # Since we no longer run the ifblacklist_migrate.sh script
+        # we also don't need to clean up anymore afterwards.
         ;;
     upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         ;;

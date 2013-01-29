@@ -2,3 +2,4 @@
 02-dbus_access_network_manager.patch
 03-systemd.patch
 04-systemd-set-kill-mode-process.patch
+05-force-online-with-unmanaged-devices.patch
