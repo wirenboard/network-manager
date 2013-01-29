@@ -6,9 +6,9 @@ Author: Michael Biebl <biebl@debian.org>
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
 Index: network-manager/src/nm-manager.c
 ===================================================================
---- network-manager.orig/src/nm-manager.c	2013-01-15 14:18:54.847100261 +0100
-+++ network-manager/src/nm-manager.c	2013-01-15 14:22:20.945799751 +0100
-@@ -79,6 +79,8 @@
+--- network-manager.orig/src/nm-manager.c	2013-01-29 04:32:04.443486952 +0100
++++ network-manager/src/nm-manager.c	2013-01-29 04:32:04.439486915 +0100
+@@ -80,6 +80,8 @@
  
  #define UPOWER_DBUS_SERVICE "org.freedesktop.UPower"
  
@@ -17,7 +17,7 @@ Index: network-manager/src/nm-manager.c
  static gboolean impl_manager_get_devices (NMManager *manager,
                                            GPtrArray **devices,
                                            GError **err);
-@@ -237,6 +239,11 @@
+@@ -236,6 +238,11 @@
  	guint fw_monitor_id;
  	guint fw_changed_id;
  
@@ -44,7 +44,7 @@ Index: network-manager/src/nm-manager.c
  			if (nm_device_is_activating (dev))
  				new_state = NM_STATE_CONNECTING;
  			else if (new_state != NM_STATE_CONNECTING) {
-@@ -3766,6 +3781,65 @@
+@@ -3655,6 +3670,65 @@
  	}
  }
  
@@ -107,10 +107,10 @@ Index: network-manager/src/nm-manager.c
 +	}
 +}
 +
- #define PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
+ #define NM_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
+ #define DEV_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.Device.PermissionDenied"
  
- static void
-@@ -4121,6 +4195,17 @@
+@@ -4050,6 +4124,17 @@
  		g_object_unref (priv->fw_monitor);
  	}
  
@@ -128,7 +128,7 @@ Index: network-manager/src/nm-manager.c
  	g_slist_free (priv->factories);
  
  	if (priv->timestamp_update_id) {
-@@ -4469,6 +4554,23 @@
+@@ -4398,6 +4483,23 @@
  		             KERNEL_FIRMWARE_DIR);
  	}
  
