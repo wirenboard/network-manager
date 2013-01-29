@@ -1,9 +1,9 @@
-network-manager (0.9.6.4-3) UNRELEASED; urgency=low
+network-manager (0.9.6.4-3) experimental; urgency=low
 
   * Merge changes from unstable branch.
   * Refresh 05-force-online-with-unmanaged-devices.patch.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 29 Jan 2013 04:32:08 +0100
+ -- Michael Biebl <biebl@debian.org>  Tue, 29 Jan 2013 04:43:19 +0100
 
 network-manager (0.9.6.4-2) experimental; urgency=low
 
