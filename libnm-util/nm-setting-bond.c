@@ -22,7 +22,6 @@
  */
 
 #include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
 #include <dbus/dbus-glib.h>
 
@@ -31,6 +30,7 @@
 #include "nm-utils.h"
 #include "nm-utils-private.h"
 #include "nm-dbus-glib-types.h"
+#include "nm-setting-private.h"
 
 /**
  * SECTION:nm-setting-bond
@@ -59,7 +59,12 @@ nm_setting_bond_error_quark (void)
 }
 
 
-G_DEFINE_TYPE (NMSettingBond, nm_setting_bond, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingBond, nm_setting_bond, NM_TYPE_SETTING,
+                         _nm_register_setting (NM_SETTING_BOND_SETTING_NAME,
+                                               g_define_type_id,
+                                               1,
+                                               NM_SETTING_BOND_ERROR))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_BOND)
 
 #define NM_SETTING_BOND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_BOND, NMSettingBondPrivate))
 
@@ -329,31 +334,6 @@ nm_setting_bond_get_option_default (NMSettingBond *setting, const char *name)
 	g_assert_not_reached ();
 }
 
-/*
- * This function is a 1:1 copy of the kernel's
- * dev_valid_name() in net/core/dev.c
- */
-static gboolean
-dev_valid_name(const char *name)
-{
-	if (*name == '\0')
-		return FALSE;
-
-	if (strlen (name) >= 16)
-		return FALSE;
-
-	if (!strcmp (name, ".") || !strcmp (name, ".."))
-		return FALSE;
-
-	while (*name) {
-		if (*name == '/' || isspace (*name))
-			return FALSE;
-		name++;
-	}
-
-	return TRUE;
-}
-
 static gint
 find_setting_by_name (gconstpointer a, gconstpointer b)
 {
@@ -388,7 +368,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		return FALSE;
 	}
 
-	if (!dev_valid_name (priv->interface_name)) {
+	if (!nm_utils_iface_valid_name (priv->interface_name)) {
 		g_set_error (error,
 		             NM_SETTING_BOND_ERROR,
 		             NM_SETTING_BOND_ERROR_INVALID_PROPERTY,

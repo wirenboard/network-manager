@@ -10,7 +10,7 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.xml
 # The directory containing the source code. Relative to $(srcdir).
 # gtk-doc will search all .c & .h files beneath here for inline comments
 # documenting functions and macros.
-DOC_SOURCE_DIR=../../libnm-glib
+DOC_SOURCE_DIR=$(top_srcdir)/libnm-glib
 
 # Extra options to supply to gtkdoc-scan.
 SCAN_OPTIONS=
@@ -71,8 +71,11 @@ extra_files = libnm-glib.png
 # if $(DOC_MODULE).types is non-empty.
 GTKDOC_CFLAGS =				\
 	-I$(top_srcdir)/include		\
+	-I$(top_builddir)/include	\
 	-I$(top_srcdir)/libnm-util	\
+	-I$(top_builddir)/libnm-util	\
 	-I$(top_srcdir)/libnm-glib	\
+	-I$(top_builddir)/libnm-glib	\
 	$(GLIB_CFLAGS)			\
 	$(DBUS_CFLAGS)
 
@@ -88,6 +91,7 @@ EXTRA_DIST += version.xml.in
 
 CLEANFILES += \
 	libnm-glib-sections.txt \
+	libnm-glib-overrides.txt \
 	html/* \
 	tmpl/* \
 	xml/*

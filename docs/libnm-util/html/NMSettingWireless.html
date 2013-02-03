@@ -57,6 +57,7 @@ enum                <a class="link" href="NMSettingWireless.html#NMSettingWirele
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS" title="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST">NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE:CAPS" title="NM_SETTING_WIRELESS_MODE">NM_SETTING_WIRELESS_MODE</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-ADHOC:CAPS" title="NM_SETTING_WIRELESS_MODE_ADHOC">NM_SETTING_WIRELESS_MODE_ADHOC</a>
+#define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-AP:CAPS" title="NM_SETTING_WIRELESS_MODE_AP">NM_SETTING_WIRELESS_MODE_AP</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-INFRA:CAPS" title="NM_SETTING_WIRELESS_MODE_INFRA">NM_SETTING_WIRELESS_MODE_INFRA</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS" title="NM_SETTING_WIRELESS_MTU">NM_SETTING_WIRELESS_MTU</a>
 #define             <a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-RATE:CAPS" title="NM_SETTING_WIRELESS_RATE">NM_SETTING_WIRELESS_RATE</a>
@@ -287,6 +288,16 @@ Indicates Ad-Hoc mode where no access point is expected to be present.
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-SETTING-WIRELESS-MODE-AP:CAPS"></a><h3>NM_SETTING_WIRELESS_MODE_AP</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_MODE_AP     "ap"
+</pre>
+<p>
+Indicates AP/master mode where the wireless device is started as an access
+point/hotspot.
+</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-WIRELESS-MODE-INFRA:CAPS"></a><h3>NM_SETTING_WIRELESS_MODE_INFRA</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_MODE_INFRA  "infrastructure"
 </pre>
@@ -357,9 +368,10 @@ for this connection.
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_wireless_add_seen_bssid  (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *bssid</code></em>);</pre>
 <p>
-Adds a new WiFi AP's BSSID to the previously seen BSSID list of the setting.
-NetworkManager tracks previously seen BSSIDs internally so this function
-no longer has much use.
+Adds a new Wi-Fi AP's BSSID to the previously seen BSSID list of the setting.
+NetworkManager now tracks previously seen BSSIDs internally so this function
+no longer has much use. Actually, changes you make using this function will
+not be preserved.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -853,7 +865,7 @@ MAC address is in the standard hex-digits-and-colons notation.
 <a name="NMSettingWireless--mode"></a><h3>The <code class="literal">"mode"</code> property</h3>
 <pre class="programlisting">  "mode"                     <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read / Write</pre>
 <p>
-WiFi network mode; one of 'infrastructure' or 'adhoc'.  If blank,
+WiFi network mode; one of 'infrastructure', 'adhoc' or 'ap'.  If blank,
 infrastructure is assumed.
 </p>
 <p>Default value: NULL</p>
@@ -897,9 +909,10 @@ the connection contains a valid 802-11-wireless-security setting.
 <pre class="programlisting">  "seen-bssids"              <span class="type">GSList_gchararray_</span>*   : Read / Write</pre>
 <p>
 A list of BSSIDs (each BSSID formatted as a MAC address like
-'00:11:22:33:44:55') that have been detected as part of the WiFI network.
-NetworkManager internally tracks previously seen BSSIDs so this property
-is no longer of much use.
+'00:11:22:33:44:55') that have been detected as part of the Wi-FI network.
+NetworkManager internally tracks previously seen BSSIDs. The property is only
+meant for reading and reflects the BBSID list of NetworkManager. The changes you
+make to this property will not be preserved.
 </p>
 </div>
 <hr>

@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <ctype.h>
 
 #include <config.h>
 
@@ -45,16 +44,6 @@
 G_DEFINE_TYPE (NMDHCPDhclient, nm_dhcp_dhclient, NM_TYPE_DHCP_CLIENT)
 
 #define NM_DHCP_DHCLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DHCP_DHCLIENT, NMDHCPDhclientPrivate))
-
-#if defined(TARGET_DEBIAN) || defined(TARGET_SUSE) || defined(TARGET_MANDRIVA)
-#if defined(DHCLIENT_V3)
-#define NM_DHCLIENT_LEASE_DIR			LOCALSTATEDIR "/lib/dhcp3"
-#else
-#define NM_DHCLIENT_LEASE_DIR           LOCALSTATEDIR "/lib/dhcp"
-#endif
-#else
-#define NM_DHCLIENT_LEASE_DIR           LOCALSTATEDIR "/lib/dhclient"
-#endif
 
 #define ACTION_SCRIPT_PATH	LIBEXECDIR "/nm-dhcp-client.action"
 
@@ -90,10 +79,9 @@ nm_dhcp_dhclient_get_path (const char *try_first)
 }
 
 static char *
-get_leasefile_for_iface (const char * iface, const char *uuid, gboolean ipv6)
+get_dhclient_leasefile (const char * iface, const char *uuid, gboolean ipv6)
 {
-	return g_strdup_printf ("%s/dhclient%s-%s-%s.lease",
-	                        NM_DHCLIENT_LEASE_DIR,
+	return g_strdup_printf (NMSTATEDIR "/dhclient%s-%s-%s.lease",
 	                        ipv6 ? "6" : "",
 	                        uuid,
 	                        iface);
@@ -140,7 +128,7 @@ add_lease_option (GHashTable *hash, char *line)
 }
 
 GSList *
-nm_dhcp_dhclient_get_lease_config (const char *iface, const char *uuid)
+nm_dhcp_dhclient_get_lease_config (const char *iface, const char *uuid, gboolean ipv6)
 {
 	GSList *parsed = NULL, *iter, *leases = NULL;
 	char *contents = NULL;
@@ -148,7 +136,11 @@ nm_dhcp_dhclient_get_lease_config (const char *iface, const char *uuid)
 	char **line, **split = NULL;
 	GHashTable *hash = NULL;
 
-	leasefile = get_leasefile_for_iface (iface, uuid, FALSE);
+	/* IPv6 not supported */
+	if (ipv6)
+		return NULL;
+
+	leasefile = get_dhclient_leasefile (iface, uuid, FALSE);
 	if (!leasefile)
 		return NULL;
 
@@ -308,7 +300,9 @@ out:
 static gboolean
 merge_dhclient_config (const char *iface,
                        const char *conf_file,
+                       gboolean is_ip6,
                        NMSettingIP4Config *s_ip4,
+                       NMSettingIP6Config *s_ip6,
                        guint8 *anycast_addr,
                        const char *hostname,
                        const char *orig_path,
@@ -324,13 +318,13 @@ merge_dhclient_config (const char *iface,
 		GError *read_error = NULL;
 
 		if (!g_file_get_contents (orig_path, &orig, NULL, &read_error)) {
-			nm_log_warn (LOGD_DHCP, "(%s): error reading dhclient configuration %s: %s",
-			             iface, orig_path, read_error->message);
+			nm_log_warn (LOGD_DHCP, "(%s): error reading dhclient%s configuration %s: %s",
+			             iface, is_ip6 ? "6" : "", orig_path, read_error->message);
 			g_error_free (read_error);
 		}
 	}
 
-	new = nm_dhcp_dhclient_create_config (iface, s_ip4, anycast_addr, hostname, orig_path, orig);
+	new = nm_dhcp_dhclient_create_config (iface, is_ip6, s_ip4, s_ip6, anycast_addr, hostname, orig_path, orig);
 	g_assert (new);
 	success = g_file_set_contents (conf_file, new, -1, error);
 	g_free (new);
@@ -338,6 +332,64 @@ merge_dhclient_config (const char *iface,
 
 	return success;
 }
+
+static char *
+get_dhclient_config (const char * iface, const char *uuid, gboolean ipv6)
+{
+	char *path;
+
+	/* NetworkManager-overridden configuration can be used to ship DHCP config
+	 * with NetworkManager itself. It can be uuid-specific, device-specific
+	 * or generic.
+	 */
+	if (uuid) {
+		path = g_strdup_printf (NMCONFDIR "/dhclient%s-%s.conf", ipv6 ? "6" : "", uuid);
+		if (g_file_test (path, G_FILE_TEST_EXISTS))
+			return path;
+		g_free (path);
+	}
+
+	path = g_strdup_printf (NMCONFDIR "/dhclient%s-%s.conf", ipv6 ? "6" : "", iface);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		return path;
+	g_free (path);
+
+	path = g_strdup_printf (NMCONFDIR "/dhclient%s.conf", ipv6 ? "6" : "");
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		return path;
+	g_free (path);
+
+	/* Distribution's dhclient configuration is used so that we can use
+	 * configuration shipped with dhclient (if any).
+	 *
+	 * This replaces conditional compilation based on distribution name. Fedora
+	 * and Debian store the configs in /etc/dhcp while upstream defaults to /etc
+	 * which is then used by many other distributions. Some distributions
+	 * (including Fedora) don't even provide a default configuration file.
+	 */
+	path = g_strdup_printf (SYSCONFDIR "/dhcp/dhclient%s-%s.conf", ipv6 ? "6" : "", iface);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		return path;
+	g_free (path);
+
+	path = g_strdup_printf (SYSCONFDIR "/dhclient%s-%s.conf", ipv6 ? "6" : "", iface);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		return path;
+	g_free (path);
+
+	path = g_strdup_printf (SYSCONFDIR "/dhcp/dhclient%s.conf", ipv6 ? "6" : "");
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		return path;
+	g_free (path);
+
+	path = g_strdup_printf (SYSCONFDIR "/dhclient%s.conf", ipv6 ? "6" : "");
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		return path;
+	g_free (path);
+
+	return NULL;
+}
+
 
 /* NM provides interface-specific options; thus the same dhclient config
  * file cannot be used since DHCP transactions can happen in parallel.
@@ -347,59 +399,32 @@ merge_dhclient_config (const char *iface,
  */
 static char *
 create_dhclient_config (const char *iface,
+                        gboolean is_ip6,
                         NMSettingIP4Config *s_ip4,
+                        NMSettingIP6Config *s_ip6,
                         guint8 *dhcp_anycast_addr,
                         const char *hostname)
 {
-	char *orig = NULL, *tmp, *conf_file = NULL;
+	char *orig = NULL, *new = NULL;
 	GError *error = NULL;
 	gboolean success = FALSE;
 
 	g_return_val_if_fail (iface != NULL, NULL);
 
-#if defined(TARGET_SUSE)
-	orig = g_strdup (SYSCONFDIR "/dhclient.conf");
-#elif defined(TARGET_DEBIAN) || defined(TARGET_GENTOO)
-#if defined(DHCLIENT_V3)
-	orig = g_strdup (SYSCONFDIR "/dhcp3/dhclient.conf");
-#else
-	orig = g_strdup (SYSCONFDIR "/dhcp/dhclient.conf");
-#endif
-#else
-	orig = g_strdup_printf (SYSCONFDIR "/dhclient-%s.conf", iface);
-#endif
+	new = g_strdup_printf (NMSTATEDIR "/dhclient%s-%s.conf", is_ip6 ? "6" : "", iface);
 
-	if (!orig) {
-		nm_log_warn (LOGD_DHCP, "(%s): not enough memory for dhclient options.", iface);
-		return NULL;
-	}
-
-#if !defined(TARGET_SUSE) && !defined(TARGET_DEBIAN) && !defined(TARGET_GENTOO)
-	/* Try /etc/dhcp/ too (rh #607759) */
-	if (!g_file_test (orig, G_FILE_TEST_EXISTS)) {
-		g_free (orig);
-		orig = g_strdup_printf (SYSCONFDIR "/dhcp/dhclient-%s.conf", iface);
-		if (!orig) {
-			nm_log_warn (LOGD_DHCP, "(%s): not enough memory for dhclient options.", iface);
-			return NULL;
-		}
-	}
-#endif
-
-	tmp = g_strdup_printf ("nm-dhclient-%s.conf", iface);
-	conf_file = g_build_filename ("/var", "run", tmp, NULL);
-	g_free (tmp);
-
+	/* TODO: also support UUID */
+	orig = get_dhclient_config (iface, NULL, is_ip6);
 	error = NULL;
-	success = merge_dhclient_config (iface, conf_file, s_ip4, dhcp_anycast_addr, hostname, orig, &error);
+	success = merge_dhclient_config (iface, new, is_ip6, s_ip4, s_ip6, dhcp_anycast_addr, hostname, orig, &error);
 	if (!success) {
-		nm_log_warn (LOGD_DHCP, "(%s): error creating dhclient configuration: %s",
-		             iface, error->message);
+		nm_log_warn (LOGD_DHCP, "(%s): error creating dhclient%s configuration: %s",
+		             iface, is_ip6 ? "6" : "", error->message);
 		g_error_free (error);
 	}
 
 	g_free (orig);
-	return conf_file;
+	return new;
 }
 
 
@@ -439,13 +464,6 @@ dhclient_start (NMDHCPClient *client,
 
 	log_domain = ipv6 ? LOGD_DHCP6 : LOGD_DHCP4;
 
-#if defined(DHCLIENT_V3)
-	if (ipv6) {
-		nm_log_warn (log_domain, "(%s): ISC dhcp3 does not support IPv6", iface);
-		return -1;
-	}
-#endif
-
 	if (!g_file_test (priv->path, G_FILE_TEST_EXISTS)) {
 		nm_log_warn (log_domain, "%s does not exist.", priv->path);
 		return -1;
@@ -471,7 +489,7 @@ dhclient_start (NMDHCPClient *client,
 	}
 
 	g_free (priv->lease_file);
-	priv->lease_file = get_leasefile_for_iface (iface, uuid, ipv6);
+	priv->lease_file = get_dhclient_leasefile (iface, uuid, ipv6);
 	if (!priv->lease_file) {
 		nm_log_warn (log_domain, "(%s): not enough memory for dhclient options.", iface);
 		return -1;
@@ -485,16 +503,11 @@ dhclient_start (NMDHCPClient *client,
 	if (release)
 		g_ptr_array_add (argv, (gpointer) "-r");
 
-#if !defined(DHCLIENT_V3)
 	if (ipv6) {
 		g_ptr_array_add (argv, (gpointer) "-6");
 		if (mode_opt)
 			g_ptr_array_add (argv, (gpointer) mode_opt);
-	} else {
-		g_ptr_array_add (argv, (gpointer) "-4");
 	}
-#endif
-
 	g_ptr_array_add (argv, (gpointer) "-sf");	/* Set script file */
 	g_ptr_array_add (argv, (gpointer) ACTION_SCRIPT_PATH );
 
@@ -546,17 +559,17 @@ dhclient_start (NMDHCPClient *client,
 }
 
 static GPid
-real_ip4_start (NMDHCPClient *client,
-                NMSettingIP4Config *s_ip4,
-                guint8 *dhcp_anycast_addr,
-                const char *hostname)
+ip4_start (NMDHCPClient *client,
+           NMSettingIP4Config *s_ip4,
+           guint8 *dhcp_anycast_addr,
+           const char *hostname)
 {
 	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
 	const char *iface;
 
 	iface = nm_dhcp_client_get_iface (client);
 
-	priv->conf_file = create_dhclient_config (iface, s_ip4, dhcp_anycast_addr, hostname);
+	priv->conf_file = create_dhclient_config (iface, FALSE, s_ip4, NULL, dhcp_anycast_addr, hostname);
 	if (!priv->conf_file) {
 		nm_log_warn (LOGD_DHCP4, "(%s): error creating dhclient configuration file.", iface);
 		return -1;
@@ -566,17 +579,28 @@ real_ip4_start (NMDHCPClient *client,
 }
 
 static GPid
-real_ip6_start (NMDHCPClient *client,
-                NMSettingIP6Config *s_ip6,
-                guint8 *dhcp_anycast_addr,
-                const char *hostname,
-                gboolean info_only)
+ip6_start (NMDHCPClient *client,
+           NMSettingIP6Config *s_ip6,
+           guint8 *dhcp_anycast_addr,
+           const char *hostname,
+           gboolean info_only)
 {
+	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
+	const char *iface;
+
+	iface = nm_dhcp_client_get_iface (client);
+
+	priv->conf_file = create_dhclient_config (iface, TRUE, NULL, s_ip6, dhcp_anycast_addr, hostname);
+	if (!priv->conf_file) {
+		nm_log_warn (LOGD_DHCP6, "(%s): error creating dhclient6 configuration file.", iface);
+		return -1;
+	}
+
 	return dhclient_start (client, info_only ? "-S" : "-N", FALSE);
 }
 
 static void
-real_stop (NMDHCPClient *client, gboolean release)
+stop (NMDHCPClient *client, gboolean release)
 {
 	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
 
@@ -635,8 +659,8 @@ nm_dhcp_dhclient_class_init (NMDHCPDhclientClass *dhclient_class)
 	/* virtual methods */
 	object_class->dispose = dispose;
 
-	client_class->ip4_start = real_ip4_start;
-	client_class->ip6_start = real_ip6_start;
-	client_class->stop = real_stop;
+	client_class->ip4_start = ip4_start;
+	client_class->ip6_start = ip6_start;
+	client_class->stop = stop;
 }
 

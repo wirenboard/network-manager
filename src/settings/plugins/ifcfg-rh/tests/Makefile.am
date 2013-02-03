@@ -1,9 +1,12 @@
+if ENABLE_TESTS
+
 SUBDIRS=network-scripts
 
 INCLUDES = \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
+	-I$(top_builddir)/libnm-util \
 	-I$(top_srcdir)/libnm-glib \
 	-I$(srcdir)/../
 
@@ -35,13 +38,9 @@ test_ifcfg_rh_utils_CPPFLAGS = \
 test_ifcfg_rh_utils_LDADD = \
 	$(builddir)/../libifcfg-rh-io.la
 
-if WITH_TESTS
-
 check-local: test-ifcfg-rh
 	$(abs_builddir)/test-ifcfg-rh-utils
 	$(abs_builddir)/test-ifcfg-rh
-
-endif
 
 EXTRA_DIST = \
 	iscsiadm-test-dhcp \
@@ -53,4 +52,5 @@ EXTRA_DIST = \
 	iscsiadm-test-bad-entry \
 	iscsiadm-test-bad-record
 
+endif
 

@@ -11,6 +11,8 @@
 #include "nm-setting-adsl.h" 
 #include "nm-setting-bluetooth.h" 
 #include "nm-setting-bond.h" 
+#include "nm-setting-bridge.h" 
+#include "nm-setting-bridge-port.h" 
 #include "nm-setting-connection.h" 
 #include "nm-setting-infiniband.h" 
 #include "nm-setting-ip4-config.h" 
@@ -280,6 +282,46 @@ nm_setting_bond_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_setting_bridge_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_BRIDGE_ERROR_UNKNOWN, "NM_SETTING_BRIDGE_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY, "NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY, "NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingBridgeError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_bridge_port_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_BRIDGE_PORT_ERROR_UNKNOWN, "NM_SETTING_BRIDGE_PORT_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_BRIDGE_PORT_ERROR_INVALID_PROPERTY, "NM_SETTING_BRIDGE_PORT_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_BRIDGE_PORT_ERROR_MISSING_PROPERTY, "NM_SETTING_BRIDGE_PORT_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingBridgePortError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_setting_connection_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -353,6 +395,7 @@ nm_setting_vlan_error_get_type (void)
         { NM_SETTING_VLAN_ERROR_UNKNOWN, "NM_SETTING_VLAN_ERROR_UNKNOWN", "Unknown" },
         { NM_SETTING_VLAN_ERROR_INVALID_PROPERTY, "NM_SETTING_VLAN_ERROR_INVALID_PROPERTY", "InvalidProperty" },
         { NM_SETTING_VLAN_ERROR_MISSING_PROPERTY, "NM_SETTING_VLAN_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { NM_SETTING_VLAN_ERROR_INVALID_PARENT, "NM_SETTING_VLAN_ERROR_INVALID_PARENT", "InvalidParent" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -540,6 +583,8 @@ nm_setting_gsm_network_type_get_type (void)
         { NM_SETTING_GSM_NETWORK_TYPE_GPRS_EDGE, "NM_SETTING_GSM_NETWORK_TYPE_GPRS_EDGE", "gprs-edge" },
         { NM_SETTING_GSM_NETWORK_TYPE_PREFER_UMTS_HSPA, "NM_SETTING_GSM_NETWORK_TYPE_PREFER_UMTS_HSPA", "prefer-umts-hspa" },
         { NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE, "NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE", "prefer-gprs-edge" },
+        { NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G, "NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G", "prefer-4g" },
+        { NM_SETTING_GSM_NETWORK_TYPE_4G, "NM_SETTING_GSM_NETWORK_TYPE_4G", "4g" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

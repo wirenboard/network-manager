@@ -334,10 +334,14 @@ client_recheck_permissions (DBusGProxy *proxy, gpointer user_data)
  * nm_client_get_devices:
  * @client: a #NMClient
  *
- * Gets all the detected devices.
+ * Gets all the known network devices.  Use nm_device_get_type() or the
+ * NM_IS_DEVICE_XXXX() functions to determine what kind of device member of the
+ * returned array is, and then you may use device-specific methods such as
+ * nm_device_ethernet_get_hw_address().
  *
- * Returns: (transfer none) (element-type NMClient.Device): a #GPtrArray containing all the #NMDevice<!-- -->s.
- * The returned array is owned by the client and should not be modified.
+ * Returns: (transfer none) (element-type NMClient.Device): a #GPtrArray
+ * containing all the #NMDevice<!-- -->s.  The returned array is owned by the
+ * #NMClient object and should not be modified.
  **/
 const GPtrArray *
 nm_client_get_devices (NMClient *client)
@@ -1039,6 +1043,82 @@ nm_client_get_permission_result (NMClient *client, NMClientPermission permission
 	result = g_hash_table_lookup (NM_CLIENT_GET_PRIVATE (client)->permissions,
 	                              GUINT_TO_POINTER (permission));
 	return GPOINTER_TO_UINT (result);
+}
+
+/**
+ * nm_client_get_logging:
+ * @client: a #NMClient
+ * @level: (allow-none): return location for logging level string
+ * @domains: (allow-none): return location for log domains string. The string is
+ *   a list of domains separated by ","
+ * @error: (allow-none): return location for a #GError, or %NULL
+ *
+ * Gets NetworkManager current logging level and domains.
+ *
+ * Returns: %TRUE on success, %FALSE otherwise
+ **/
+gboolean
+nm_client_get_logging (NMClient *client, char **level, char **domains, GError **error)
+{
+	GError *err = NULL;
+
+	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (level == NULL || *level == NULL, FALSE);
+	g_return_val_if_fail (domains == NULL || *domains == NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!level && !domains)
+		return TRUE;
+
+	if (!dbus_g_proxy_call (NM_CLIENT_GET_PRIVATE (client)->client_proxy, "GetLogging", &err,
+	                        G_TYPE_INVALID,
+	                        G_TYPE_STRING, level,
+	                        G_TYPE_STRING, domains,
+	                        G_TYPE_INVALID)) {
+		if (error)
+			*error = g_error_copy (err);
+		g_error_free (err);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * nm_client_set_logging:
+ * @client: a #NMClient
+ * @level: (allow-none): logging level to set (%NULL or an empty string for no change)
+ * @domains: (allow-none): logging domains to set. The string should be a list of log
+ *   domains separated by ",". (%NULL or an empty string for no change)
+ * @error: (allow-none): return location for a #GError, or %NULL
+ *
+ * Sets NetworkManager logging level and/or domains.
+ *
+ * Returns: %TRUE on success, %FALSE otherwise
+ **/
+gboolean
+nm_client_set_logging (NMClient *client, const char *level, const char *domains, GError **error)
+{
+	GError *err = NULL;
+
+	g_return_val_if_fail (NM_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!level && !domains)
+		return TRUE;
+
+	if (!dbus_g_proxy_call (NM_CLIENT_GET_PRIVATE (client)->client_proxy, "SetLogging", &err,
+	                        G_TYPE_STRING, level ? level : "",
+	                        G_TYPE_STRING, domains ? domains : "",
+	                        G_TYPE_INVALID,
+	                        G_TYPE_INVALID)) {
+		if (error)
+			*error = g_error_copy (err);
+		g_error_free (err);
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 /****************************************************************/

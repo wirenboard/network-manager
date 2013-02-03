@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * (C) Copyright 2008 Novell, Inc.
- * (C) Copyright 2008 - 2011 Red Hat, Inc.
+ * (C) Copyright 2008 - 2012 Red Hat, Inc.
  */
 
 #include "config.h"
@@ -28,6 +28,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <nm-setting-connection.h>
 #include <nm-setting-vpn.h>
+#include <nm-setting-wireless.h>
 #include <nm-utils.h>
 
 #include "nm-settings-connection.h"
@@ -41,8 +42,8 @@
 #include "nm-agent-manager.h"
 #include "NetworkManagerUtils.h"
 
-#define SETTINGS_TIMESTAMPS_FILE  LOCALSTATEDIR"/lib/NetworkManager/timestamps"
-#define SETTINGS_SEEN_BSSIDS_FILE LOCALSTATEDIR"/lib/NetworkManager/seen-bssids"
+#define SETTINGS_TIMESTAMPS_FILE  NMSTATEDIR "/timestamps"
+#define SETTINGS_SEEN_BSSIDS_FILE NMSTATEDIR "/seen-bssids"
 
 static void impl_settings_connection_get_settings (NMSettingsConnection *connection,
                                                    DBusGMethodInvocation *context);
@@ -107,6 +108,7 @@ typedef struct {
 	NMConnection *agent_secrets;
 
 	guint64 timestamp;   /* Up-to-date timestamp of connection use */
+	gboolean timestamp_set;
 	GHashTable *seen_bssids; /* Up-to-date BSSIDs that's been seen for the connection */
 } NMSettingsConnectionPrivate;
 
@@ -572,8 +574,6 @@ do_delete (NMSettingsConnection *connection,
 	/* Remove connection from seen-bssids database file */
 	remove_entry_from_db (connection, "seen-bssids");
 
-	/* Signal the connection is removed and deleted */
-	g_signal_emit (connection, signals[REMOVED], 0);
 	callback (connection, NULL, user_data);
 	g_object_unref (connection);
 }
@@ -1061,7 +1061,9 @@ get_settings_auth_cb (NMSettingsConnection *self,
 		GHashTable *settings;
 		NMConnection *dupl_con;
 		NMSettingConnection *s_con;
-		guint64 timestamp;
+		NMSettingWireless *s_wifi;
+		guint64 timestamp = 0;
+		GSList *bssid_list;
 
 		dupl_con = nm_connection_duplicate (NM_CONNECTION (self));
 		g_assert (dupl_con);
@@ -1072,11 +1074,21 @@ get_settings_auth_cb (NMSettingsConnection *self,
 		 * timestamps are kept track of in a private variable. So, substitute
 		 * timestamp property with the real one here before returning the settings.
 		 */
-		timestamp = nm_settings_connection_get_timestamp (self);
+		nm_settings_connection_get_timestamp (self, &timestamp);
 		if (timestamp) {
 			s_con = nm_connection_get_setting_connection (NM_CONNECTION (dupl_con));
 			g_assert (s_con);
 			g_object_set (s_con, NM_SETTING_CONNECTION_TIMESTAMP, timestamp, NULL);
+		}
+		/* Seen BSSIDs are not updated in 802-11-wireless 'seen-bssids' property
+		 * from the same reason as timestamp. Thus we put it here to GetSettings()
+		 * return settings too.
+		 */
+		bssid_list = nm_settings_connection_get_seen_bssids (self);
+		s_wifi = nm_connection_get_setting_wireless (NM_CONNECTION (dupl_con));
+		if (bssid_list && s_wifi) {
+			g_object_set (s_wifi, NM_SETTING_WIRELESS_SEEN_BSSIDS, bssid_list, NULL);
+			nm_utils_slist_free (bssid_list, g_free);
 		}
 
 		/* Secrets should *never* be returned by the GetSettings method, they
@@ -1403,18 +1415,23 @@ nm_settings_connection_signal_remove (NMSettingsConnection *self)
 /**
  * nm_settings_connection_get_timestamp:
  * @connection: the #NMSettingsConnection
+ * @out_timestamp: the connection's timestamp
  *
- * Returns current connection's timestamp.
+ * Returns the time (in seconds since the Unix epoch) when the connection
+ * was last successfully activated.
  *
- * Returns: timestamp of the last connection use (0 when it's not used)
+ * Returns: %TRUE if the timestamp has ever been set, otherwise %FALSE.
  **/
-guint64
-nm_settings_connection_get_timestamp (NMSettingsConnection *connection)
+gboolean
+nm_settings_connection_get_timestamp (NMSettingsConnection *connection,
+                                      guint64 *out_timestamp)
 {
 	g_return_val_if_fail (connection != NULL, 0);
 	g_return_val_if_fail (NM_IS_SETTINGS_CONNECTION (connection), 0);
 
-	return NM_SETTINGS_CONNECTION_GET_PRIVATE (connection)->timestamp;
+	if (out_timestamp)
+		*out_timestamp = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection)->timestamp;
+	return NM_SETTINGS_CONNECTION_GET_PRIVATE (connection)->timestamp_set;
 }
 
 /**
@@ -1440,6 +1457,7 @@ nm_settings_connection_update_timestamp (NMSettingsConnection *connection,
 
 	/* Update timestamp in private storage */
 	priv->timestamp = timestamp;
+	priv->timestamp_set = TRUE;
 
 	if (flush_to_disk == FALSE)
 		return;
@@ -1497,9 +1515,10 @@ nm_settings_connection_read_and_fill_timestamp (NMSettingsConnection *connection
 	}
 
 	/* Update connection's timestamp */
-	if (!err)
+	if (!err) {
 		priv->timestamp = timestamp;
-	else {
+		priv->timestamp_set = TRUE;
+	} else {
 		nm_log_dbg (LOGD_SETTINGS, "failed to read connection timestamp for '%s': (%d) %s",
 		            connection_uuid, err->code, err->message);
 		g_clear_error (&err);
@@ -1534,6 +1553,33 @@ mac_dup (const struct ether_addr *old)
 	new = g_malloc0 (ETH_ALEN);
 	memcpy (new, old, ETH_ALEN);
 	return new;
+}
+
+/**
+ * nm_settings_connection_get_seen_bssids:
+ * @connection: the #NMSettingsConnection
+ *
+ * Returns current list of seen BSSIDs for the connection.
+ *
+ * Returns: (transfer full) list of seen BSSIDs (in the standard hex-digits-and-colons notation).
+ * The caller is responsible for freeing the list.
+ **/
+GSList *
+nm_settings_connection_get_seen_bssids (NMSettingsConnection *connection)
+{
+	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection);
+	GHashTableIter iter;
+	char *bssid_str;
+	GSList *bssid_list = NULL;
+
+	g_return_val_if_fail (connection != NULL, 0);
+	g_return_val_if_fail (NM_IS_SETTINGS_CONNECTION (connection), NULL);
+
+	g_hash_table_iter_init (&iter, priv->seen_bssids);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &bssid_str))
+		bssid_list = g_slist_prepend (bssid_list, g_strdup (bssid_str));
+
+	return bssid_list;
 }
 
 /**

@@ -9,12 +9,10 @@ NMSettingIP6Config
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -41,6 +39,11 @@ NMSettingIP6Config
 
 
 <!-- ##### ARG NMSettingIP6Config:addresses ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingIP6Config:dhcp-hostname ##### -->
 <para>
 
 </para>
@@ -122,6 +125,13 @@ NMSettingIP6Config
 @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR: 
 
 <!-- ##### MACRO NM_SETTING_IP6_CONFIG_ADDRESSES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME ##### -->
 <para>
 
 </para>
@@ -549,6 +559,15 @@ NMSettingIP6Config
 
 @setting: 
 @i: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ip6_config_get_dhcp_hostname ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

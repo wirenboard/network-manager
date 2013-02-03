@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2005 - 2011 Red Hat, Inc.
+ * Copyright (C) 2005 - 2012 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
@@ -43,15 +43,6 @@ typedef struct {
 	GFileMonitor *monitor;
 	guint monitor_id;
 } NMVPNManagerPrivate;
-
-enum {
-	CONNECTION_ACTIVATED,
-	CONNECTION_DEACTIVATED,
-
-	LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL] = { 0 };
 
 GQuark
 nm_vpn_manager_error_quark (void)
@@ -91,7 +82,7 @@ find_active_vpn_connection_by_connection (NMVPNManager *self, NMConnection *conn
 	NMVPNManagerPrivate *priv = NM_VPN_MANAGER_GET_PRIVATE (self);
 	GHashTableIter iter;
 	gpointer data;
-	GSList *active, *aiter;
+	const GSList *active, *aiter;
 	NMVPNConnection *found = NULL;
 
 	g_return_val_if_fail (connection, NULL);
@@ -108,31 +99,8 @@ find_active_vpn_connection_by_connection (NMVPNManager *self, NMConnection *conn
 				break;
 			}
 		}
-		g_slist_free (active);
 	}
 	return found;
-}
-
-static void
-connection_vpn_state_changed (NMVPNConnection *connection,
-                              NMVPNConnectionState new_state,
-                              NMVPNConnectionState old_state,
-                              NMVPNConnectionStateReason reason,
-                              gpointer user_data)
-{
-	NMVPNManager *manager = NM_VPN_MANAGER (user_data);
-
-	switch (new_state) {
-	case NM_VPN_CONNECTION_STATE_ACTIVATED:
-		g_signal_emit (manager, signals[CONNECTION_ACTIVATED], 0, connection);
-		break;
-	case NM_VPN_CONNECTION_STATE_FAILED:
-	case NM_VPN_CONNECTION_STATE_DISCONNECTED:
-		g_signal_emit (manager, signals[CONNECTION_DEACTIVATED], 0, connection, new_state, old_state, reason);
-		break;
-	default:
-		break;
-	}
 }
 
 NMActiveConnection *
@@ -155,7 +123,8 @@ nm_vpn_manager_activate_connection (NMVPNManager *manager,
 	g_return_val_if_fail (error != NULL, NULL);
 	g_return_val_if_fail (*error == NULL, NULL);
 
-	if (nm_device_get_state (device) != NM_DEVICE_STATE_ACTIVATED) {
+	if (   nm_device_get_state (device) != NM_DEVICE_STATE_ACTIVATED
+	    && nm_device_get_state (device) != NM_DEVICE_STATE_SECONDARIES) {
 		g_set_error (error,
 		             NM_VPN_MANAGER_ERROR, NM_VPN_MANAGER_ERROR_DEVICE_NOT_ACTIVE,
 		             "%s", "The base device for the VPN connection was not active.");
@@ -187,140 +156,46 @@ nm_vpn_manager_activate_connection (NMVPNManager *manager,
 		return NULL;
 	}
 
-	vpn = nm_vpn_service_activate (service, connection, device, specific_object, user_requested, user_uid, error);
-	if (vpn) {
-		g_signal_connect (vpn, NM_VPN_CONNECTION_INTERNAL_STATE_CHANGED,
-		                  G_CALLBACK (connection_vpn_state_changed),
-		                  manager);
-	}
-
-	return (NMActiveConnection *) vpn;
+	return (NMActiveConnection *) nm_vpn_service_activate (service,
+	                                                       connection,
+	                                                       device,
+	                                                       specific_object,
+	                                                       user_requested,
+	                                                       user_uid,
+	                                                       error);
 }
 
 gboolean
 nm_vpn_manager_deactivate_connection (NMVPNManager *self,
-                                      const char *path,
+                                      NMVPNConnection *connection,
                                       NMVPNConnectionStateReason reason)
 {
 	NMVPNManagerPrivate *priv;
 	GHashTableIter iter;
 	gpointer data;
-	GSList *active, *aiter;
+	const GSList *active, *aiter;
 	gboolean success = FALSE;
 
 	g_return_val_if_fail (self, FALSE);
 	g_return_val_if_fail (NM_IS_VPN_MANAGER (self), FALSE);
-	g_return_val_if_fail (path != NULL, FALSE);
+	g_return_val_if_fail (connection != NULL, FALSE);
 
 	priv = NM_VPN_MANAGER_GET_PRIVATE (self);
 	g_hash_table_iter_init (&iter, priv->services);
 	while (g_hash_table_iter_next (&iter, NULL, &data) && (success == FALSE)) {
 		active = nm_vpn_service_get_active_connections (NM_VPN_SERVICE (data));
 		for (aiter = active; aiter; aiter = g_slist_next (aiter)) {
-			NMVPNConnection *vpn = NM_VPN_CONNECTION (aiter->data);
-			const char *vpn_path;
+			NMVPNConnection *candidate = aiter->data;
 
-			vpn_path = nm_active_connection_get_path (NM_ACTIVE_CONNECTION (vpn));
-			if (!strcmp (path, vpn_path)) {
-				nm_vpn_connection_disconnect (vpn, reason);
+			if (connection == candidate) {
+				nm_vpn_connection_disconnect (connection, reason);
 				success = TRUE;
 				break;
 			}
 		}
-		g_slist_free (active);
 	}
 
 	return success;
-}
-
-void
-nm_vpn_manager_add_active_connections (NMVPNManager *self,
-                                       NMConnection *filter,
-                                       GPtrArray *array)
-{
-	NMVPNManagerPrivate *priv;
-	GHashTableIter iter;
-	gpointer data;
-	GSList *active, *aiter;
-
-	g_return_if_fail (self);
-	g_return_if_fail (NM_IS_VPN_MANAGER (self));
-	g_return_if_fail (array != NULL);
-
-	priv = NM_VPN_MANAGER_GET_PRIVATE (self);
-	g_hash_table_iter_init (&iter, priv->services);
-	while (g_hash_table_iter_next (&iter, NULL, &data)) {
-		active = nm_vpn_service_get_active_connections (NM_VPN_SERVICE (data));
-		for (aiter = active; aiter; aiter = g_slist_next (aiter)) {
-			NMVPNConnection *vpn = NM_VPN_CONNECTION (aiter->data);
-			const char *path;
-
-			if (!filter || (nm_vpn_connection_get_connection (vpn) == filter)) {
-				path = nm_active_connection_get_path (NM_ACTIVE_CONNECTION (vpn));
-				g_ptr_array_add (array, g_strdup (path));
-			}
-		}
-		g_slist_free (active);
-	}
-}
-
-GSList *
-nm_vpn_manager_get_active_connections (NMVPNManager *self)
-{
-	NMVPNManagerPrivate *priv;
-	GHashTableIter iter;
-	gpointer data;
-	GSList *list = NULL, *active;
-
-	g_return_val_if_fail (self, NULL);
-	g_return_val_if_fail (NM_IS_VPN_MANAGER (self), NULL);
-
-	priv = NM_VPN_MANAGER_GET_PRIVATE (self);
-	g_hash_table_iter_init (&iter, priv->services);
-	while (g_hash_table_iter_next (&iter, NULL, &data)) {
-		active = nm_vpn_service_get_active_connections (NM_VPN_SERVICE (data));
-		list = g_slist_concat (list, active);
-	}
-	return list;
-}
-
-NMVPNConnection *
-nm_vpn_manager_get_vpn_connection_for_active (NMVPNManager *manager,
-                                              const char *active_path)
-{
-	NMVPNManagerPrivate *priv;
-	GHashTableIter iter;
-	gpointer data;
-	GSList *active, *elt;
-
-	g_return_val_if_fail (NM_IS_VPN_MANAGER (manager), NULL);
-
-	priv = NM_VPN_MANAGER_GET_PRIVATE (manager);
-	g_hash_table_iter_init (&iter, priv->services);
-	while (g_hash_table_iter_next (&iter, NULL, &data)) {
-		active = nm_vpn_service_get_active_connections (NM_VPN_SERVICE (data));
-		for (elt = active; elt; elt = g_slist_next (elt)) {
-			NMVPNConnection *vpn = NM_VPN_CONNECTION (elt->data);
-			const char *ac_path;
-
-			ac_path = nm_active_connection_get_path (NM_ACTIVE_CONNECTION (vpn));
-			if (ac_path && !strcmp (ac_path, active_path))
-				return vpn;
-		}
-	}
-
-	return NULL;
-}
-
-NMConnection *
-nm_vpn_manager_get_connection_for_active (NMVPNManager *manager,
-                                          const char *active_path)
-{
-	NMVPNConnection *vpn_con;
-
-	vpn_con = nm_vpn_manager_get_vpn_connection_for_active (manager, active_path);
-
-	return vpn_con ? nm_vpn_connection_get_connection (vpn_con) : NULL;
 }
 
 static char *
@@ -505,23 +380,6 @@ nm_vpn_manager_class_init (NMVPNManagerClass *manager_class)
 
 	/* virtual methods */
 	object_class->dispose = dispose;
-
-	/* signals */
-	signals[CONNECTION_ACTIVATED] =
-		g_signal_new ("connection-activated",
-				    G_OBJECT_CLASS_TYPE (object_class),
-				    G_SIGNAL_RUN_FIRST,
-				    0, NULL, NULL,
-				    g_cclosure_marshal_VOID__OBJECT,
-				    G_TYPE_NONE, 1, G_TYPE_OBJECT);
-
-	signals[CONNECTION_DEACTIVATED] =
-		g_signal_new ("connection-deactivated",
-				    G_OBJECT_CLASS_TYPE (object_class),
-				    G_SIGNAL_RUN_FIRST,
-				    0, NULL, NULL,
-				    _nm_marshal_VOID__OBJECT_UINT_UINT_UINT,
-				    G_TYPE_NONE, 4, G_TYPE_OBJECT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 
 	dbus_g_error_domain_register (NM_VPN_MANAGER_ERROR, NULL, NM_TYPE_VPN_MANAGER_ERROR);
 }

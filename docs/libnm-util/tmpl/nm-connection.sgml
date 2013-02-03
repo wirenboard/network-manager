@@ -9,12 +9,10 @@ NMConnection
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -231,6 +229,24 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_setting_bond ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_bridge ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_bridge_port ##### -->
 <para>
 
 </para>

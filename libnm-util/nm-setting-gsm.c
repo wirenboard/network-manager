@@ -24,7 +24,6 @@
  */
 
 #include <string.h>
-#include <ctype.h>
 #include "nm-setting-gsm.h"
 #include "nm-utils.h"
 #include "nm-setting-private.h"
@@ -57,7 +56,12 @@ nm_setting_gsm_error_quark (void)
 }
 
 
-G_DEFINE_TYPE (NMSettingGsm, nm_setting_gsm, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingGsm, nm_setting_gsm, NM_TYPE_SETTING,
+                         _nm_register_setting (NM_SETTING_GSM_SETTING_NAME,
+                                               g_define_type_id,
+                                               1,
+                                               NM_SETTING_GSM_ERROR))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_GSM)
 
 #define NM_SETTING_GSM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_GSM, NMSettingGsmPrivate))
 
@@ -306,7 +310,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		 * like space ( ) and such.
 		 */
 		for (i = 0; i < apn_len; i++) {
-			if (   !isalnum (priv->apn[i])
+			if (   !g_ascii_isalnum (priv->apn[i])
 			    && (priv->apn[i] != '.')
 			    && (priv->apn[i] != '_')
 			    && (priv->apn[i] != '-')) {
@@ -349,7 +353,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		}
 
 		for (i = 0; i < nid_len; i++) {
-			if (!isdigit (priv->network_id[i])) {
+			if (!g_ascii_isdigit (priv->network_id[i])) {
 				g_set_error (error,
 				             NM_SETTING_GSM_ERROR,
 				             NM_SETTING_GSM_ERROR_INVALID_PROPERTY,
@@ -658,10 +662,10 @@ nm_setting_gsm_class_init (NMSettingGsmClass *setting_class)
 					    "Network preference to force the device to only use "
 					    "specific network technologies.  The permitted values "
 					    "are: -1: any, 0: 3G only, 1: GPRS/EDGE only, "
-					    "2: prefer 3G, and 3: prefer 2G.  Note that not all "
-					    "devices allow network preference control.",
+					    "2: prefer 3G, 3: prefer 2G, 4: prefer 4G/LTE, 5: 4G/LTE only. "
+					    "Note that not all devices allow network preference control.",
 					    NM_SETTING_GSM_NETWORK_TYPE_ANY,
-					    NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE,
+					    NM_SETTING_GSM_NETWORK_TYPE_4G,
 					    NM_SETTING_GSM_NETWORK_TYPE_ANY,
 					    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
 

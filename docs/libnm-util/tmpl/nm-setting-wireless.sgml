@@ -9,12 +9,10 @@ NMSettingWireless
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -184,6 +182,13 @@ NMSettingWireless
 
 
 <!-- ##### MACRO NM_SETTING_WIRELESS_MODE_ADHOC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRELESS_MODE_AP ##### -->
 <para>
 
 </para>

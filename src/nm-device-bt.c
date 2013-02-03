@@ -47,6 +47,8 @@
 #include "nm-enum-types.h"
 #include "nm-utils.h"
 
+#define MM_OLD_DBUS_SERVICE  "org.freedesktop.ModemManager"
+#define MM_NEW_DBUS_SERVICE  "org.freedesktop.ModemManager1"
 #define BLUETOOTH_DUN_UUID "dun"
 #define BLUETOOTH_NAP_UUID "nap"
 
@@ -57,6 +59,10 @@ G_DEFINE_TYPE (NMDeviceBt, nm_device_bt, NM_TYPE_DEVICE)
 static gboolean modem_stage1 (NMDeviceBt *self, NMModem *modem, NMDeviceStateReason *reason);
 
 typedef struct {
+	NMDBusManager *dbus_mgr;
+	guint mm_watch_id;
+	gboolean mm_running;
+
 	char *bdaddr;
 	char *name;
 	guint32 capabilities;
@@ -141,9 +147,9 @@ get_connection_bt_type (NMConnection *connection)
 }
 
 static NMConnection *
-real_get_best_auto_connection (NMDevice *device,
-                               GSList *connections,
-                               char **specific_object)
+get_best_auto_connection (NMDevice *device,
+                          GSList *connections,
+                          char **specific_object)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 	GSList *iter;
@@ -166,15 +172,19 @@ real_get_best_auto_connection (NMDevice *device,
 		if (!(bt_type & priv->capabilities))
 			continue;
 
+		/* Can't auto-activate a DUN connection without ModemManager */
+		if (bt_type == NM_BT_CAPABILITY_DUN && priv->mm_running == FALSE)
+			continue;
+
 		return connection;
 	}
 	return NULL;
 }
 
 static gboolean
-real_check_connection_compatible (NMDevice *device,
-                                  NMConnection *connection,
-                                  GError **error)
+check_connection_compatible (NMDevice *device,
+                             NMConnection *connection,
+                             GError **error)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 	NMSettingConnection *s_con;
@@ -228,11 +238,28 @@ real_check_connection_compatible (NMDevice *device,
 }
 
 static gboolean
-real_complete_connection (NMDevice *device,
-                          NMConnection *connection,
-                          const char *specific_object,
-                          const GSList *existing_connections,
-                          GError **error)
+check_connection_available (NMDevice *device, NMConnection *connection)
+{
+	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
+	guint32 bt_type;
+
+	bt_type = get_connection_bt_type (connection);
+	if (!(bt_type & priv->capabilities))
+		return FALSE;
+
+	/* DUN connections aren't available without ModemManager */
+	if (bt_type == NM_BT_CAPABILITY_DUN && priv->mm_running == FALSE)
+		return FALSE;
+
+	return TRUE;
+}
+
+static gboolean
+complete_connection (NMDevice *device,
+                     NMConnection *connection,
+                     const char *specific_object,
+                     const GSList *existing_connections,
+                     GError **error)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 	NMSettingBluetooth *s_bt;
@@ -369,7 +396,7 @@ real_complete_connection (NMDevice *device,
 }
 
 static guint32
-real_get_generic_capabilities (NMDevice *dev)
+get_generic_capabilities (NMDevice *dev)
 {
 	return NM_DEVICE_CAP_NM_SUPPORTED;
 }
@@ -517,8 +544,7 @@ static void
 device_state_changed (NMDevice *device,
                       NMDeviceState new_state,
                       NMDeviceState old_state,
-                      NMDeviceStateReason reason,
-                      gpointer user_data)
+                      NMDeviceStateReason reason)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 
@@ -528,7 +554,6 @@ device_state_changed (NMDevice *device,
 
 static void
 modem_ip4_config_result (NMModem *self,
-                         const char *iface,
                          NMIP4Config *config,
                          GError *error,
                          gpointer user_data)
@@ -545,12 +570,16 @@ modem_ip4_config_result (NMModem *self,
 		             error && error->message ? error->message : "(unknown)");
 
 		nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE);
-	} else {
-		if (iface)
-			nm_device_set_ip_iface (device, iface);
-
+	} else
 		nm_device_activate_schedule_ip4_config_result (device, config);
-	}
+}
+
+static void
+data_port_changed_cb (NMModem *modem, GParamSpec *pspec, gpointer user_data)
+{
+	NMDevice *self = NM_DEVICE (user_data);
+
+	nm_device_set_ip_iface (self, nm_modem_get_data_port (modem));
 }
 
 static gboolean
@@ -586,7 +615,8 @@ nm_device_bt_modem_added (NMDeviceBt *self,
                           const char *driver)
 {
 	NMDeviceBtPrivate *priv;
-	const char *modem_iface;
+	const gchar *modem_data_port;
+	const gchar *modem_control_port;
 	char *base;
 	NMDeviceState state;
 	NMDeviceStateReason reason = NM_DEVICE_STATE_REASON_NONE;
@@ -597,14 +627,15 @@ nm_device_bt_modem_added (NMDeviceBt *self,
 	g_return_val_if_fail (NM_IS_MODEM (modem), FALSE);
 
 	priv = NM_DEVICE_BT_GET_PRIVATE (self);
-	modem_iface = nm_modem_get_iface (modem);
-	g_return_val_if_fail (modem_iface != NULL, FALSE);
+	modem_data_port = nm_modem_get_data_port (modem);
+	modem_control_port = nm_modem_get_control_port (modem);
+	g_return_val_if_fail (modem_data_port != NULL || modem_control_port != NULL, FALSE);
 
 	if (!priv->rfcomm_iface)
 		return FALSE;
 
 	base = g_path_get_basename (priv->rfcomm_iface);
-	if (strcmp (base, modem_iface)) {
+	if (g_strcmp0 (base, modem_data_port) && g_strcmp0 (base, modem_control_port)) {
 		g_free (base);
 		return FALSE;
 	}
@@ -644,6 +675,13 @@ nm_device_bt_modem_added (NMDeviceBt *self,
 	g_signal_connect (modem, NM_MODEM_IP4_CONFIG_RESULT, G_CALLBACK (modem_ip4_config_result), self);
 	g_signal_connect (modem, NM_MODEM_AUTH_REQUESTED, G_CALLBACK (modem_auth_requested), self);
 	g_signal_connect (modem, NM_MODEM_AUTH_RESULT, G_CALLBACK (modem_auth_result), self);
+
+	/* In the old ModemManager the data port is known from the very beginning;
+	 * while in the new ModemManager the data port is set afterwards when the bearer gets
+	 * created */
+	if (modem_data_port)
+		nm_device_set_ip_iface (NM_DEVICE (self), modem_data_port);
+	g_signal_connect (modem, "notify::" NM_MODEM_DATA_PORT, G_CALLBACK (data_port_changed_cb), self);
 
 	/* Kick off the modem connection */
 	if (!modem_stage1 (self, modem, &reason))
@@ -854,11 +892,10 @@ bt_connect_timeout (gpointer user_data)
 }
 
 static NMActStageReturn
-real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
-	NMDBusManager *dbus_mgr;
-	DBusGConnection *g_connection;
+	DBusGConnection *bus;
 	gboolean dun = FALSE;
 	NMConnection *connection;
 
@@ -870,9 +907,10 @@ real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 		return NM_ACT_STAGE_RETURN_FAILURE;
 	}
 
-	dbus_mgr = nm_dbus_manager_get ();
-	g_connection = nm_dbus_manager_get_connection (dbus_mgr);
-	g_object_unref (dbus_mgr);
+	if (priv->bt_type == NM_BT_CAPABILITY_DUN && !priv->mm_running) {
+		*reason = NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE;
+		return NM_ACT_STAGE_RETURN_FAILURE;
+	}
 
 	if (priv->bt_type == NM_BT_CAPABILITY_DUN)
 		dun = TRUE;
@@ -881,10 +919,11 @@ real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	else
 		g_assert_not_reached ();
 
-	priv->dev_proxy = dbus_g_proxy_new_for_name (g_connection,
-	                                               BLUEZ_SERVICE,
-	                                               nm_device_get_udi (device),
-	                                               BLUEZ_DEVICE_INTERFACE);
+	bus = nm_dbus_manager_get_connection (priv->dbus_mgr);
+	priv->dev_proxy = dbus_g_proxy_new_for_name (bus,
+	                                             BLUEZ_SERVICE,
+	                                             nm_device_get_udi (device),
+	                                             BLUEZ_DEVICE_INTERFACE);
 	if (!priv->dev_proxy) {
 		// FIXME: set a reason code
 		return NM_ACT_STAGE_RETURN_FAILURE;
@@ -900,7 +939,7 @@ real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	dbus_g_proxy_connect_signal (priv->dev_proxy, "PropertyChanged",
 	                             G_CALLBACK (bluez_property_changed), device, NULL);
 
-	priv->type_proxy = dbus_g_proxy_new_for_name (g_connection,
+	priv->type_proxy = dbus_g_proxy_new_for_name (bus,
 	                                              BLUEZ_SERVICE,
 	                                              nm_device_get_udi (device),
 	                                              dun ? BLUEZ_SERIAL_INTERFACE : BLUEZ_NETWORK_INTERFACE);
@@ -929,9 +968,9 @@ real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 }
 
 static NMActStageReturn
-real_act_stage3_ip4_config_start (NMDevice *device,
-                                  NMIP4Config **out_config,
-                                  NMDeviceStateReason *reason)
+act_stage3_ip4_config_start (NMDevice *device,
+                             NMIP4Config **out_config,
+                             NMDeviceStateReason *reason)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 	NMActStageReturn ret;
@@ -948,9 +987,9 @@ real_act_stage3_ip4_config_start (NMDevice *device,
 }
 
 static NMActStageReturn
-real_act_stage3_ip6_config_start (NMDevice *device,
-                                  NMIP6Config **out_config,
-                                  NMDeviceStateReason *reason)
+act_stage3_ip6_config_start (NMDevice *device,
+                             NMIP6Config **out_config,
+                             NMDeviceStateReason *reason)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 	NMActStageReturn ret;
@@ -967,7 +1006,7 @@ real_act_stage3_ip6_config_start (NMDevice *device,
 }
 
 static void
-real_deactivate (NMDevice *device)
+deactivate (NMDevice *device)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (device);
 
@@ -1032,6 +1071,109 @@ real_deactivate (NMDevice *device)
 
 /*****************************************************************************/
 
+static gboolean
+is_available (NMDevice *dev)
+{
+	NMDeviceBt *self = NM_DEVICE_BT (dev);
+	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (self);
+
+	/* PAN doesn't need ModemManager, so devices that support it are always available */
+	if (priv->capabilities & NM_BT_CAPABILITY_NAP)
+		return TRUE;
+
+	/* DUN requires ModemManager */
+	return priv->mm_running;
+}
+
+static void
+handle_availability_change (NMDeviceBt *self,
+                            gboolean old_available,
+                            NMDeviceStateReason unavailable_reason)
+{
+	NMDevice *device = NM_DEVICE (self);
+	NMDeviceState state;
+	gboolean available;
+
+	state = nm_device_get_state (device);
+	if (state < NM_DEVICE_STATE_UNAVAILABLE) {
+		nm_log_dbg (LOGD_BT, "(%s): availability blocked by UNMANAGED state",
+		            nm_device_get_iface (device));
+		return;
+	}
+
+	available = nm_device_is_available (device);
+	if (available == old_available)
+		return;
+
+	if (available) {
+		if (state != NM_DEVICE_STATE_UNAVAILABLE)
+			nm_log_warn (LOGD_CORE | LOGD_BT, "not in expected unavailable state!");
+
+		nm_device_state_changed (device,
+		                         NM_DEVICE_STATE_DISCONNECTED,
+		                         NM_DEVICE_STATE_REASON_NONE);
+	} else {
+		nm_device_state_changed (device,
+		                         NM_DEVICE_STATE_UNAVAILABLE,
+		                         unavailable_reason);
+	}
+}
+
+static void
+set_mm_running (NMDeviceBt *self, gboolean running)
+{
+	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (self);
+	gboolean old_available;
+
+	if (priv->mm_running == running)
+		return;
+
+	nm_log_dbg (LOGD_BT, "(%s): ModemManager now %s",
+	            nm_device_get_iface (NM_DEVICE (self)),
+	            running ? "available" : "unavailable");
+
+	old_available = nm_device_is_available (NM_DEVICE (self));
+	priv->mm_running = running;
+	handle_availability_change (self, old_available, NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE);
+
+	/* Need to recheck available connections whenever MM appears or disappears,
+	 * since the device could be both DUN and NAP capable and thus may not
+	 * change state (which rechecks available connections) when MM comes and goes.
+	 */
+	if (priv->capabilities & NM_BT_CAPABILITY_DUN)
+	    nm_device_recheck_available_connections (NM_DEVICE (self));
+}
+
+static void
+mm_name_owner_changed (NMDBusManager *dbus_mgr,
+                       const char *name,
+                       const char *old_owner,
+                       const char *new_owner,
+                       NMDeviceBt *self)
+{
+	gboolean old_owner_good;
+	gboolean new_owner_good;
+
+	/* Can't handle the signal if its not from the modem service */
+	if (strcmp (MM_OLD_DBUS_SERVICE, name) != 0)
+		return;
+
+#if WITH_MODEM_MANAGER_1
+	if (strcmp (MM_NEW_DBUS_SERVICE, name) != 0)
+		return;
+#endif
+
+	old_owner_good = (old_owner && strlen (old_owner));
+	new_owner_good = (new_owner && strlen (new_owner));
+
+	if (!old_owner_good && new_owner_good)
+		set_mm_running (self, TRUE);
+	else if (old_owner_good && !new_owner_good)
+		set_mm_running (self, FALSE);
+}
+
+/*****************************************************************************/
+
 NMDevice *
 nm_device_bt_new (const char *udi,
                   const char *bdaddr,
@@ -1039,33 +1181,44 @@ nm_device_bt_new (const char *udi,
                   guint32 capabilities,
                   gboolean managed)
 {
-	NMDevice *device;
-
 	g_return_val_if_fail (udi != NULL, NULL);
 	g_return_val_if_fail (bdaddr != NULL, NULL);
 	g_return_val_if_fail (name != NULL, NULL);
 	g_return_val_if_fail (capabilities != NM_BT_CAPABILITY_NONE, NULL);
 
-	device = (NMDevice *) g_object_new (NM_TYPE_DEVICE_BT,
-	                                    NM_DEVICE_UDI, udi,
-	                                    NM_DEVICE_IFACE, bdaddr,
-	                                    NM_DEVICE_DRIVER, "bluez",
-	                                    NM_DEVICE_BT_HW_ADDRESS, bdaddr,
-	                                    NM_DEVICE_BT_NAME, name,
-	                                    NM_DEVICE_BT_CAPABILITIES, capabilities,
-	                                    NM_DEVICE_MANAGED, managed,
-	                                    NM_DEVICE_TYPE_DESC, "Bluetooth",
-	                                    NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_BT,
-	                                    NULL);
-	if (device)
-		g_signal_connect (device, "state-changed", G_CALLBACK (device_state_changed), device);
-
-	return device;
+	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_BT,
+	                                  NM_DEVICE_UDI, udi,
+	                                  NM_DEVICE_IFACE, bdaddr,
+	                                  NM_DEVICE_DRIVER, "bluez",
+	                                  NM_DEVICE_BT_HW_ADDRESS, bdaddr,
+	                                  NM_DEVICE_BT_NAME, name,
+	                                  NM_DEVICE_BT_CAPABILITIES, capabilities,
+	                                  NM_DEVICE_MANAGED, managed,
+	                                  NM_DEVICE_TYPE_DESC, "Bluetooth",
+	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_BT,
+	                                  NULL);
 }
 
 static void
 nm_device_bt_init (NMDeviceBt *self)
 {
+	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (self);
+	gboolean mm_running;
+
+	priv->dbus_mgr = nm_dbus_manager_get ();
+
+	priv->mm_watch_id = g_signal_connect (priv->dbus_mgr,
+	                                      NM_DBUS_MANAGER_NAME_OWNER_CHANGED,
+	                                      G_CALLBACK (mm_name_owner_changed),
+	                                      self);
+
+	/* Initial check to see if ModemManager is running */
+	mm_running = nm_dbus_manager_name_has_owner (priv->dbus_mgr, MM_OLD_DBUS_SERVICE);
+#if WITH_MODEM_MANAGER_1
+	if (!mm_running)
+		mm_running = nm_dbus_manager_name_has_owner (priv->dbus_mgr, MM_NEW_DBUS_SERVICE);
+#endif
+	set_mm_running (self, mm_running);
 }
 
 static void
@@ -1116,7 +1269,7 @@ get_property (GObject *object, guint prop_id,
 }
 
 static void
-finalize (GObject *object)
+dispose (GObject *object)
 {
 	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (object);
 
@@ -1125,14 +1278,23 @@ finalize (GObject *object)
 		priv->timeout_id = 0;
 	}
 
-	if (priv->type_proxy)
-		g_object_unref (priv->type_proxy);
+	if (priv->dbus_mgr && priv->mm_watch_id) {
+		g_signal_handler_disconnect (priv->dbus_mgr, priv->mm_watch_id);
+		priv->mm_watch_id = 0;
+	}
+	g_clear_object (&priv->dbus_mgr);
 
-	if (priv->dev_proxy)
-		g_object_unref (priv->dev_proxy);
+	g_clear_object (&priv->type_proxy);
+	g_clear_object (&priv->dev_proxy);
+	g_clear_object (&priv->modem);
 
-	if (priv->modem)
-		g_object_unref (priv->modem);
+	G_OBJECT_CLASS (nm_device_bt_parent_class)->dispose (object);
+}
+
+static void
+finalize (GObject *object)
+{
+	NMDeviceBtPrivate *priv = NM_DEVICE_BT_GET_PRIVATE (object);
 
 	g_free (priv->rfcomm_iface);
 	g_free (priv->bdaddr);
@@ -1151,17 +1313,22 @@ nm_device_bt_class_init (NMDeviceBtClass *klass)
 
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
+	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 
-	device_class->get_best_auto_connection = real_get_best_auto_connection;
-	device_class->get_generic_capabilities = real_get_generic_capabilities;
-	device_class->deactivate = real_deactivate;
-	device_class->act_stage2_config = real_act_stage2_config;
-	device_class->act_stage3_ip4_config_start = real_act_stage3_ip4_config_start;
-	device_class->act_stage3_ip6_config_start = real_act_stage3_ip6_config_start;
-	device_class->check_connection_compatible = real_check_connection_compatible;
-	device_class->complete_connection = real_complete_connection;
+	device_class->get_best_auto_connection = get_best_auto_connection;
+	device_class->get_generic_capabilities = get_generic_capabilities;
+	device_class->deactivate = deactivate;
+	device_class->act_stage2_config = act_stage2_config;
+	device_class->act_stage3_ip4_config_start = act_stage3_ip4_config_start;
+	device_class->act_stage3_ip6_config_start = act_stage3_ip6_config_start;
+	device_class->check_connection_compatible = check_connection_compatible;
+	device_class->check_connection_available = check_connection_available;
+	device_class->complete_connection = complete_connection;
 	device_class->hwaddr_matches = hwaddr_matches;
+	device_class->is_available = is_available;
+
+	device_class->state_changed = device_state_changed;
 
 	/* Properties */
 	g_object_class_install_property
@@ -1199,7 +1366,7 @@ nm_device_bt_class_init (NMDeviceBtClass *klass)
 		              G_TYPE_NONE, 2,
 		              G_TYPE_UINT, G_TYPE_UINT);
 
-	signals[PROPERTIES_CHANGED] = 
+	signals[PROPERTIES_CHANGED] =
 		nm_properties_changed_signal_new (object_class,
 		                                  G_STRUCT_OFFSET (NMDeviceBtClass, properties_changed));
 

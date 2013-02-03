@@ -51,23 +51,26 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = test-settings-defaults$(EXEEXT) test-crypto$(EXEEXT) \
-	test-secrets$(EXEEXT) test-general$(EXEEXT) \
-	test-setting-8021x$(EXEEXT)
+@ENABLE_TESTS_TRUE@noinst_PROGRAMS = test-settings-defaults$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-crypto$(EXEEXT) test-secrets$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-general$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-setting-8021x$(EXEEXT)
 subdir = libnm-util/tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gtk-doc.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
-	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/introspection.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libnl-check.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gnome-code-coverage.m4 \
+	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
+	$(top_srcdir)/m4/introspection.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/vapigen.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -75,35 +78,43 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_test_crypto_OBJECTS = test_crypto-test-crypto.$(OBJEXT)
+am__test_crypto_SOURCES_DIST = test-crypto.c
+@ENABLE_TESTS_TRUE@am_test_crypto_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test_crypto-test-crypto.$(OBJEXT)
 test_crypto_OBJECTS = $(am_test_crypto_OBJECTS)
 am__DEPENDENCIES_1 =
-test_crypto_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libtest-crypto.la \
-	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1)
+@ENABLE_TESTS_TRUE@test_crypto_DEPENDENCIES = $(top_builddir)/libnm-util/libtest-crypto.la \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-am_test_general_OBJECTS = test_general-test-general.$(OBJEXT)
+am__test_general_SOURCES_DIST = test-general.c
+@ENABLE_TESTS_TRUE@am_test_general_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test_general-test-general.$(OBJEXT)
 test_general_OBJECTS = $(am_test_general_OBJECTS)
-test_general_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_test_secrets_OBJECTS = test_secrets-test-secrets.$(OBJEXT)
+@ENABLE_TESTS_TRUE@test_general_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__test_secrets_SOURCES_DIST = test-secrets.c
+@ENABLE_TESTS_TRUE@am_test_secrets_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test_secrets-test-secrets.$(OBJEXT)
 test_secrets_OBJECTS = $(am_test_secrets_OBJECTS)
-test_secrets_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_test_setting_8021x_OBJECTS =  \
-	test_setting_8021x-test-setting-8021x.$(OBJEXT)
+@ENABLE_TESTS_TRUE@test_secrets_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__test_setting_8021x_SOURCES_DIST = test-setting-8021x.c
+@ENABLE_TESTS_TRUE@am_test_setting_8021x_OBJECTS = test_setting_8021x-test-setting-8021x.$(OBJEXT)
 test_setting_8021x_OBJECTS = $(am_test_setting_8021x_OBJECTS)
-test_setting_8021x_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_test_settings_defaults_OBJECTS =  \
-	test_settings_defaults-test-settings-defaults.$(OBJEXT)
+@ENABLE_TESTS_TRUE@test_setting_8021x_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am__test_settings_defaults_SOURCES_DIST = test-settings-defaults.c
+@ENABLE_TESTS_TRUE@am_test_settings_defaults_OBJECTS = test_settings_defaults-test-settings-defaults.$(OBJEXT)
 test_settings_defaults_OBJECTS = $(am_test_settings_defaults_OBJECTS)
-test_settings_defaults_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+@ENABLE_TESTS_TRUE@test_settings_defaults_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -133,9 +144,11 @@ am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(test_crypto_SOURCES) $(test_general_SOURCES) \
 	$(test_secrets_SOURCES) $(test_setting_8021x_SOURCES) \
 	$(test_settings_defaults_SOURCES)
-DIST_SOURCES = $(test_crypto_SOURCES) $(test_general_SOURCES) \
-	$(test_secrets_SOURCES) $(test_setting_8021x_SOURCES) \
-	$(test_settings_defaults_SOURCES)
+DIST_SOURCES = $(am__test_crypto_SOURCES_DIST) \
+	$(am__test_general_SOURCES_DIST) \
+	$(am__test_secrets_SOURCES_DIST) \
+	$(am__test_setting_8021x_SOURCES_DIST) \
+	$(am__test_settings_defaults_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -155,7 +168,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = certs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -194,6 +207,10 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CKDB_PATH = @CKDB_PATH@
+CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
+CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
+CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -208,9 +225,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
-DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
-DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -220,17 +235,14 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
-GIO_CFLAGS = @GIO_CFLAGS@
-GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
 GLIB_MAKEFILE = @GLIB_MAKEFILE@
 GLIB_MKENUMS = @GLIB_MKENUMS@
-GMODULE_CFLAGS = @GMODULE_CFLAGS@
-GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
@@ -271,6 +283,7 @@ IPTABLES_PATH = @IPTABLES_PATH@
 IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
 IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -287,11 +300,7 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
-LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
-LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
-LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
-LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
@@ -306,6 +315,8 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MM_GLIB_CFLAGS = @MM_GLIB_CFLAGS@
+MM_GLIB_LIBS = @MM_GLIB_LIBS@
 MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
@@ -315,6 +326,7 @@ NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_MODIFY_SYSTEM_POLICY = @NM_MODIFY_SYSTEM_POLICY@
 NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
@@ -341,13 +353,14 @@ PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
-RESOLVCONF_PATH = @RESOLVCONF_PATH@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
-SYSTEMD_LIBS = @SYSTEMD_LIBS@
+SYSTEMD_INHIBIT_CFLAGS = @SYSTEMD_INHIBIT_CFLAGS@
+SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
+SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
+SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -402,6 +415,11 @@ localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+nmbinary = @nmbinary@
+nmconfdir = @nmconfdir@
+nmdatadir = @nmdatadir@
+nmrundir = @nmrundir@
+nmstatedir = @nmstatedir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -416,72 +434,76 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = certs
-INCLUDES = \
-	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
-	-I$(top_srcdir)/libnm-util \
-	-I$(top_builddir)/libnm-util
+with_dhclient = @with_dhclient@
+with_dhcpcd = @with_dhcpcd@
+with_netconfig = @with_netconfig@
+with_resolvconf = @with_resolvconf@
+@ENABLE_TESTS_TRUE@SUBDIRS = certs
+@ENABLE_TESTS_TRUE@INCLUDES = \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util
 
-test_settings_defaults_SOURCES = \
-	test-settings-defaults.c
+@ENABLE_TESTS_TRUE@test_settings_defaults_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-settings-defaults.c
 
-test_settings_defaults_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS)
+@ENABLE_TESTS_TRUE@test_settings_defaults_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
-test_settings_defaults_LDADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS) \
-	$(DBUS_LIBS)
+@ENABLE_TESTS_TRUE@test_settings_defaults_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
-test_crypto_SOURCES = \
-	test-crypto.c
+@ENABLE_TESTS_TRUE@test_crypto_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-crypto.c
 
-test_crypto_CPPFLAGS = \
-	$(GLIB_CFLAGS)
+@ENABLE_TESTS_TRUE@test_crypto_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS)
 
-test_crypto_LDADD = \
-	$(top_builddir)/libnm-util/libtest-crypto.la \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS)
+@ENABLE_TESTS_TRUE@test_crypto_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libtest-crypto.la \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS)
 
-test_secrets_SOURCES = \
-	test-secrets.c
+@ENABLE_TESTS_TRUE@test_secrets_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-secrets.c
 
-test_secrets_CPPFLAGS = \
-	-DTEST_CERT_DIR=\"$(top_srcdir)/libnm-util/tests/certs/\" \
-	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS)
+@ENABLE_TESTS_TRUE@test_secrets_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@	-DTEST_CERT_DIR=\"$(top_srcdir)/libnm-util/tests/certs/\" \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
-test_secrets_LDADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS) \
-	$(DBUS_LIBS)
+@ENABLE_TESTS_TRUE@test_secrets_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
-test_general_SOURCES = \
-	test-general.c
+@ENABLE_TESTS_TRUE@test_general_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-general.c
 
-test_general_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS)
+@ENABLE_TESTS_TRUE@test_general_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
-test_general_LDADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS) \
-	$(DBUS_LIBS)
+@ENABLE_TESTS_TRUE@test_general_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
-test_setting_8021x_SOURCES = \
-	test-setting-8021x.c
+@ENABLE_TESTS_TRUE@test_setting_8021x_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-setting-8021x.c
 
-test_setting_8021x_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS)
+@ENABLE_TESTS_TRUE@test_setting_8021x_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
-test_setting_8021x_LDADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS) \
-	$(DBUS_LIBS)
+@ENABLE_TESTS_TRUE@test_setting_8021x_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
 all: all-recursive
 
@@ -555,25 +577,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_settings_defaults-test-settings-defaults.Po@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
@@ -844,7 +863,7 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-@WITH_TESTS_FALSE@check-local:
+@ENABLE_TESTS_FALSE@check-local:
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-recursive
@@ -971,66 +990,66 @@ uninstall-am:
 	tags tags-recursive uninstall uninstall-am
 
 
-@WITH_TESTS_TRUE@check-local: test-settings-defaults test-crypto test-secrets
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-settings-defaults
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-secrets
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-general
+@ENABLE_TESTS_TRUE@check-local: test-settings-defaults test-crypto test-secrets
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-settings-defaults
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-secrets
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-general
 
 # Private key and CA certificate in the same file (PEM)
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test_key_and_cert.pem "test"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test_key_and_cert.pem "test"
 
 # Private key by itself (PEM)
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-key-only.pem "test"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-key-only.pem "test"
 
 # PKCS#8 private key by itself (PEM)
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/pkcs8-enc-key.pem "1234567890"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/pkcs8-enc-key.pem "1234567890"
 
 # Private key and CA certificate in the same file (pkcs12)
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-cert.p12 "test"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-cert.p12 "test"
 
 # Normal CA certificate
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.pem
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.pem
 
 # Another CA certificate
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_ca_cert.pem
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_ca_cert.pem
 
 # Normal CA certificate (DER format)
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.der
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.der
 
 # CA certificate without an ending newline
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/ca-no-ending-newline.pem
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/ca-no-ending-newline.pem
 
 # Combined user cert and private key
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_key_and_cert.pem
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_key_and_cert.pem
 
 # Another combined user cert and private key
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_key_and_cert.pem
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_key_and_cert.pem
 
 # Private key with 8 bytes of tail padding
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --key \
-@WITH_TESTS_TRUE@		$(srcdir)/certs/test_key_and_cert.pem \
-@WITH_TESTS_TRUE@		"test" \
-@WITH_TESTS_TRUE@		$(srcdir)/certs/test-key-only-decrypted.der
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key \
+@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test_key_and_cert.pem \
+@ENABLE_TESTS_TRUE@		"test" \
+@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test-key-only-decrypted.der
 
 # Private key only (not combined with a cert)
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --key \
-@WITH_TESTS_TRUE@		$(srcdir)/certs/test-key-only.pem \
-@WITH_TESTS_TRUE@		"test" \
-@WITH_TESTS_TRUE@		$(srcdir)/certs/test-key-only-decrypted.der
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key \
+@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test-key-only.pem \
+@ENABLE_TESTS_TRUE@		"test" \
+@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test-key-only-decrypted.der
 
 # Private key with 6 bytes of tail padding
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --key $(srcdir)/certs/test2_key_and_cert.pem "12345testing"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key $(srcdir)/certs/test2_key_and_cert.pem "12345testing"
 
 # PKCS#12 file
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test-cert.p12 "test"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test-cert.p12 "test"
 
 # Another PKCS#12 file
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test2-cert.p12 "12345testing"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test2-cert.p12 "12345testing"
 
 # PKCS#8 encrypted private key
-@WITH_TESTS_TRUE@	$(abs_builddir)/test-crypto --pkcs8 \
-@WITH_TESTS_TRUE@		$(srcdir)/certs/pkcs8-enc-key.pem \
-@WITH_TESTS_TRUE@		"1234567890"
+@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --pkcs8 \
+@ENABLE_TESTS_TRUE@		$(srcdir)/certs/pkcs8-enc-key.pem \
+@ENABLE_TESTS_TRUE@		"1234567890"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

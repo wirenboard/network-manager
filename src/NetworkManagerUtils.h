@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include <net/ethernet.h>
 
-#include "nm-device.h"
 #include "nm-ip4-config.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-ip6-config.h"
@@ -39,13 +38,6 @@ int nm_spawn_process (const char *args);
 
 void nm_utils_merge_ip4_config (NMIP4Config *ip4_config, NMSettingIP4Config *setting);
 void nm_utils_merge_ip6_config (NMIP6Config *ip6_config, NMSettingIP6Config *setting);
-
-void nm_utils_call_dispatcher (const char *action,
-                               NMConnection *connection,
-                               NMDevice *device,
-                               const char *vpn_iface,
-                               NMIP4Config *vpn_ip4_config,
-                               NMIP6Config *vpn_ip6_config);
 
 gboolean nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr);
 gboolean nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels);
@@ -97,8 +89,6 @@ void nm_utils_complete_generic (NMConnection *connection,
                                 const char *format,
                                 const char *preferred,
                                 gboolean default_enable_ipv6);
-
-gboolean nm_utils_is_uuid (const char *str);
 
 char *nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id);
 

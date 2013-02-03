@@ -9,12 +9,10 @@ nm-utils
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -42,6 +40,16 @@ nm-utils
 
 </para>
 
+
+
+<!-- ##### FUNCTION nm_utils_ap_mode_security_valid ##### -->
+<para>
+
+</para>
+
+@type: 
+@wifi_caps: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_utils_deinit ##### -->
@@ -126,6 +134,15 @@ nm-utils
 </para>
 
 @len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_iface_valid_name ##### -->
+<para>
+
+</para>
+
+@name: 
 @Returns: 
 
 
@@ -262,6 +279,15 @@ nm-utils
 
 @ssid: 
 @len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_is_uuid ##### -->
+<para>
+
+</para>
+
+@str: 
 @Returns: 
 
 

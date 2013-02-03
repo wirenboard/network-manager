@@ -40,11 +40,11 @@
 #include <resolv.h>
 #include <netdb.h>
 #include <glib.h>
-#include <ctype.h>
 #include <linux/if.h>
 #include <linux/sockios.h>
 #include <linux/if_bonding.h>
 #include <linux/if_vlan.h>
+#include <linux/if_bridge.h>
 
 #include "nm-system.h"
 #include "nm-device.h"
@@ -61,7 +61,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
 
-#ifdef HAVE_LIBNL3
+#if HAVE_LIBNL == 3
 #include <netlink/route/link/bonding.h>
 #include <netlink/route/link/vlan.h>
 #endif
@@ -897,6 +897,50 @@ out:
 	return success;
 }
 
+/**
+ * nm_system_iface_set_arp:
+ * @ifindex: interface index
+ * @enable: %TRUE to enable ARP, or %FALSE to disable
+ *
+ * Sets a flag to indicate that ARP should or should not be used on the
+ * interface.  Point-to-point or IPv4 /32 interfaces often require that ARP
+ * be disabled.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean
+nm_system_iface_set_arp (int ifindex, gboolean enable)
+{
+	struct rtnl_link *request = NULL, *old = NULL;
+	struct nl_sock *nlh;
+	gboolean success = FALSE;
+	int err;
+
+	g_return_val_if_fail (ifindex > 0, FALSE);
+
+	if (!(request = rtnl_link_alloc ()))
+		return FALSE;
+
+	if (enable)
+		rtnl_link_unset_flags (request, IFF_NOARP);
+	else
+		rtnl_link_set_flags (request, IFF_NOARP);
+
+	old = nm_netlink_index_to_rtnl_link (ifindex);
+	if (old) {
+		nlh = nm_netlink_get_default_handle ();
+		if (nlh) {
+			err = rtnl_link_change (nlh, old, request, 0);
+			if (err == 0)
+				success = TRUE;
+		}
+	}
+
+	rtnl_link_put (old);
+	rtnl_link_put (request);
+	return success;
+}
+
 static struct rtnl_route *
 add_ip4_route_to_gateway (int ifindex, guint32 gw, guint32 mss)
 {
@@ -1160,12 +1204,16 @@ replace_default_ip6_route (int ifindex, const struct in6_addr *gw, int mss)
 	char gw_str[INET6_ADDRSTRLEN + 1];
 
 	g_return_val_if_fail (ifindex > 0, FALSE);
-	g_return_val_if_fail (gw != NULL, FALSE);
 
 	if (nm_logging_level_enabled (LOGL_DEBUG)) {
-		memset (gw_str, 0, sizeof (gw_str));
-		if (inet_ntop (AF_INET6, gw, gw_str, sizeof (gw_str) - 1))
-			nm_log_dbg (LOGD_IP6, "Setting IPv6 default route via %s", gw_str);
+		if (gw) {
+			memset (gw_str, 0, sizeof (gw_str));
+			if (inet_ntop (AF_INET6, gw, gw_str, sizeof (gw_str) - 1))
+				nm_log_dbg (LOGD_IP6, "Setting IPv6 default route via %s", gw_str);
+		} else {
+			nm_log_dbg (LOGD_IP6, "Setting IPv6 default route via %s",
+			            nm_netlink_index_to_iface (ifindex));
+		}
 	}
 
 	/* We can't just use NLM_F_REPLACE here like in the IPv4 case, because
@@ -1572,7 +1620,7 @@ nm_system_add_bonding_master (const char *iface)
 }
 
 static gboolean
-nm_system_iface_compat_enslave (const char *master_iface, const char *slave_iface)
+nm_system_bond_compat_enslave (const char *master_iface, const char *slave_iface)
 {
 	struct ifreq ifr;
 	int fd;
@@ -1602,7 +1650,7 @@ nm_system_iface_compat_enslave (const char *master_iface, const char *slave_ifac
 }
 
 /**
- * nm_system_iface_enslave:
+ * nm_system_bond_enslave:
  * @master_ifindex: master device interface index
  * @master_iface: master device interface name
  * @slave_ifindex: slave device interface index
@@ -1618,10 +1666,10 @@ nm_system_iface_compat_enslave (const char *master_iface, const char *slave_ifac
  * Returns: %TRUE on success, or %FALSE
  */
 gboolean
-nm_system_iface_enslave (gint master_ifindex,
-                         const char *master_iface,
-                         gint slave_ifindex,
-                         const char *slave_iface)
+nm_system_bond_enslave (gint master_ifindex,
+                        const char *master_iface,
+                        gint slave_ifindex,
+                        const char *slave_iface)
 {
 	struct nl_sock *sock;
 	int err;
@@ -1648,7 +1696,7 @@ nm_system_iface_enslave (gint master_ifindex,
 
 	err = rtnl_link_bond_enslave_ifindex (sock, master_ifindex, slave_ifindex);
 	if (err == -NLE_OPNOTSUPP)
-		return nm_system_iface_compat_enslave (master_iface, slave_iface);
+		return nm_system_bond_compat_enslave (master_iface, slave_iface);
 
 	if (err < 0) {
 		nm_log_err (LOGD_DEVICE, "(%s): error enslaving %s: %d (%s)",
@@ -1660,7 +1708,7 @@ nm_system_iface_enslave (gint master_ifindex,
 }
 
 static gboolean
-nm_system_iface_compat_release (const char *master_iface, const char *slave_iface)
+nm_system_bond_compat_release (const char *master_iface, const char *slave_iface)
 {
 	struct ifreq ifr;
 	int fd;
@@ -1689,7 +1737,7 @@ nm_system_iface_compat_release (const char *master_iface, const char *slave_ifac
 }
 
 /**
- * nm_system_iface_release:
+ * nm_system_bond_release:
  * @master_ifindex: master device interface index
  * @master_iface: master device interface name
  * @slave_ifindex: slave device interface index
@@ -1703,10 +1751,10 @@ nm_system_iface_compat_release (const char *master_iface, const char *slave_ifac
  * Returns: %TRUE on success, or %FALSE
  */
 gboolean
-nm_system_iface_release (gint master_ifindex,
-                         const char *master_iface,
-                         gint slave_ifindex,
-                         const char *slave_iface)
+nm_system_bond_release (gint master_ifindex,
+                        const char *master_iface,
+                        gint slave_ifindex,
+                        const char *slave_iface)
 {
 	struct nl_sock *sock;
 	int err;
@@ -1724,7 +1772,7 @@ nm_system_iface_release (gint master_ifindex,
 
 	err = rtnl_link_bond_release_ifindex (sock, slave_ifindex);
 	if (err == -NLE_OPNOTSUPP)
-		return nm_system_iface_compat_release (master_iface, slave_iface);
+		return nm_system_bond_compat_release (master_iface, slave_iface);
 	else if (err < 0) {
 		nm_log_err (LOGD_DEVICE, "(%s): error releasing slave %s: %d (%s)",
 		            master_iface, slave_iface, err, nl_geterror (err));
@@ -1817,7 +1865,7 @@ nm_system_get_iface_type (int ifindex, const char *name)
 		goto out;
 
 	/* Prefer interface indexes to names */
-	err = rtnl_link_get_kernel (nlh, ifindex, ifindex < 0 ? name : NULL, &result);
+	err = rtnl_link_get_kernel (nlh, ifindex, ifindex <= 0 ? name : NULL, &result);
 	if (err < 0) {
 		if (err == -NLE_OPNOTSUPP)
 			res = nm_system_compat_get_iface_type (ifindex, name);
@@ -1830,6 +1878,8 @@ nm_system_get_iface_type (int ifindex, const char *name)
 		res = NM_IFACE_TYPE_BOND;
 	else if (!g_strcmp0 (type, "vlan"))
 		res = NM_IFACE_TYPE_VLAN;
+	else if (!g_strcmp0 (type, "bridge"))
+		res = NM_IFACE_TYPE_BRIDGE;
 	else if (!g_strcmp0 (type, "dummy"))
 		res = NM_IFACE_TYPE_DUMMY;
 
@@ -2265,4 +2315,244 @@ nm_system_del_vlan_iface (const char *iface)
 	rtnl_link_put (new_link);
 	nl_cache_free (cache);
 	return (ret == 0) ? TRUE : FALSE;
+}
+
+static int
+_bridge_create_compat (const char *iface)
+{
+	int ret = 0, fd;
+
+	if ((fd = socket (AF_LOCAL, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -EBADF;
+	}
+
+	if (ioctl (fd, SIOCBRADDBR, iface) < 0)
+		ret = -errno;
+
+	close (fd);
+	return ret;
+}
+
+/**
+ * nm_system_create_bridge:
+ * @iface: Name bridging device to create
+ *
+ * Creates a new bridging device in the kernel. If a bridging device with
+ * the specified name already exists, it is being reused.
+ *
+ * Returns: %TRUE on success, %FALSE on error.
+ */
+gboolean
+nm_system_create_bridge (const char *iface)
+{
+	int err;
+
+	/* FIXME: use netlink */
+	err = _bridge_create_compat (iface);
+	if (err < 0 && err != -EEXIST) {
+		nm_log_err (LOGD_DEVICE, "(%s): error while adding bridge: %s",
+		            iface, strerror (-err));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static int
+_bridge_del_compat (const char *iface)
+{
+	int ret = 0, fd;
+
+	if ((fd = socket (AF_LOCAL, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -EBADF;
+	}
+
+	if (ioctl (fd, SIOCBRDELBR, iface) < 0)
+		ret = -errno;
+
+	close (fd);
+	return ret;
+}
+
+/**
+ * nm_system_del_bridge:
+ * @iface: Name of bridging device to delete
+ *
+ * Deletes the specified bridging device in the kernel.
+ *
+ * Returns: %TRUE on success, %FALSE on error.
+ */
+gboolean
+nm_system_del_bridge (const char *iface)
+{
+	int err;
+
+	/* FIXME: use netlink */
+	err = _bridge_del_compat (iface);
+	if (err < 0 && err != -ENXIO) {
+		nm_log_err (LOGD_DEVICE, "(%s): error while deleting bridge: %s ",
+		            iface, strerror (-err));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static int
+_bridge_attach_compat (int master_ifindex,
+                       const char *master_iface,
+                       int slave_ifindex,
+                       const char *slave_iface)
+{
+	int ret = 0, fd;
+	struct ifreq ifr;
+
+	if ((fd = socket (AF_LOCAL, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -EBADF;
+	}
+
+	memset (&ifr, 0, sizeof (ifr));
+	strncpy (ifr.ifr_name, master_iface, IFNAMSIZ);
+	ifr.ifr_ifindex = slave_ifindex;
+	if (ioctl (fd, SIOCBRADDIF, &ifr) < 0)
+		ret = -errno;
+
+	close (fd);
+	return ret;
+}
+
+static int
+_bridge_detach_compat (int master_ifindex,
+                       const char *master_iface,
+                       int slave_ifindex,
+                       const char *slave_iface)
+{
+	int ret = 0, fd;
+	struct ifreq ifr;
+
+	if ((fd = socket (AF_LOCAL, SOCK_STREAM, 0)) < 0) {
+		nm_log_err (LOGD_DEVICE, "couldn't open control socket.");
+		return -EBADF;
+	}
+
+	memset (&ifr, 0, sizeof(ifr));
+	strncpy (ifr.ifr_name, master_iface, IFNAMSIZ);
+	ifr.ifr_ifindex = slave_ifindex;
+	if (ioctl (fd, SIOCBRDELIF, &ifr) < 0)
+		ret = -errno;
+
+	close (fd);
+	return ret;
+}
+
+/**
+ * nm_system_bridge_attach:
+ * @master_ifindex: master device interface index
+ * @master_iface: master device interface name
+ * @slave_ifindex: slave device interface index
+ * @slave_iface: slave device interface name
+ *
+ * Attaches interface 'slave' to bridge 'master'
+ *
+ * Returns: %TRUE on success, or %FALSE
+ */
+gboolean
+nm_system_bridge_attach (int master_ifindex,
+                         const char *master_iface,
+                         int slave_ifindex,
+                         const char *slave_iface)
+{
+	char *mif = NULL, *sif = NULL;
+	int err = -1;
+
+	g_return_val_if_fail (master_ifindex >= 0, FALSE);
+	g_return_val_if_fail (slave_ifindex >= 0, FALSE);
+
+	if (!master_iface) {
+		mif = nm_netlink_index_to_iface (master_ifindex);
+		if (mif == NULL) {
+			nm_log_err (LOGD_DEVICE, "interface name lookup failed for index %d", master_ifindex);
+			goto out;
+		}
+	}
+
+	if (!slave_ifindex) {
+		sif = nm_netlink_index_to_iface (slave_ifindex);
+		if (sif == NULL) {
+			nm_log_err (LOGD_DEVICE, "interface name lookup failed for index %d", slave_ifindex);
+			goto out;
+		}
+	}
+
+	/* FIXME: long term plan is to use netlink for this */
+	err = _bridge_attach_compat (master_ifindex,
+	                             mif ? mif : master_iface,
+	                             slave_ifindex,
+	                             sif ? sif : slave_iface);
+	if (err < 0 && err != -EBUSY) {
+		nm_log_err (LOGD_DEVICE, "(%s): failed to attach slave %s: %s",
+		            master_iface, slave_iface, strerror (-err));
+	}
+
+out:
+	g_free (sif);
+	g_free (mif);
+	return err == 0 ? TRUE : FALSE;
+}
+
+/**
+ * nm_system_bridge_detach:
+ * @master_ifindex: master device interface index
+ * @master_iface: master device interface name
+ * @slave_ifindex: slave device interface index
+ * @slave_iface: slave device interface name
+ *
+ * Detaches the interface 'slave' from the bridge 'master'.
+ *
+ * Returns: %TRUE on success, or %FALSE
+ */
+gboolean
+nm_system_bridge_detach (int master_ifindex,
+                         const char *master_iface,
+                         int slave_ifindex,
+                         const char *slave_iface)
+{
+	char *mif = NULL, *sif = NULL;
+	int err = -1;
+
+	g_return_val_if_fail (master_ifindex >= 0, FALSE);
+	g_return_val_if_fail (slave_ifindex >= 0, FALSE);
+
+	if (!master_iface) {
+		mif = nm_netlink_index_to_iface (master_ifindex);
+		if (mif == NULL) {
+			nm_log_err (LOGD_DEVICE, "interface name lookup failed for index %d", master_ifindex);
+			goto out;
+		}
+	}
+
+	if (!slave_ifindex) {
+		sif = nm_netlink_index_to_iface (slave_ifindex);
+		if (sif == NULL) {
+			nm_log_err (LOGD_DEVICE, "interface name lookup failed for index %d", slave_ifindex);
+			goto out;
+		}
+	}
+
+	/* FIXME: long term plan is to use netlink for this */
+	err = _bridge_detach_compat (master_ifindex,
+	                             mif ? mif : master_iface,
+	                             slave_ifindex,
+	                             sif ? sif : slave_iface);
+	/* Kernel doesn't return an error detaching an already-detached interface */
+	if (err < 0) {
+		nm_log_err (LOGD_DEVICE, "(%s): failed to detach slave %s: %s",
+		            master_iface, slave_iface, strerror (-err));
+	}
+
+out:
+	g_free (mif);
+	g_free (sif);
+	return err == 0 ? TRUE : FALSE;
 }

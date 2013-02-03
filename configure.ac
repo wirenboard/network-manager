@@ -3,8 +3,8 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
-m4_define([nm_micro_version], [6])
-m4_define([nm_nano_version],  [4])
+m4_define([nm_micro_version], [7])
+m4_define([nm_nano_version],  [995])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
 
@@ -16,10 +16,9 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
-AM_INIT_AUTOMAKE([1.10 subdir-objects tar-ustar no-dist-gzip dist-bzip2 -Wno-portability])
+AM_INIT_AUTOMAKE([1.11 tar-ustar no-dist-gzip dist-bzip2 -Wno-portability])
 AM_MAINTAINER_MODE([enable])
-
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([no])])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 dnl Define _SYSTEM_EXTENSIONS for various things like strcasestr()
 AC_USE_SYSTEM_EXTENSIONS
@@ -37,14 +36,6 @@ AC_PROG_CXX
 dnl Initialize libtool
 LT_PREREQ([2.2])
 LT_INIT([disable-static])
-
-dnl maintainer mode stuff
-if test $USE_MAINTAINER_MODE = yes; then
-	DISABLE_DEPRECATED="-DG_DISABLE_DEPRECATED"
-else
-	DISABLE_DEPRECATED=""
-fi
-AC_SUBST(DISABLE_DEPRECATED)
 
 dnl Version stuff
 NM_MAJOR_VERSION=nm_major_version
@@ -89,132 +80,46 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package])
 
 dnl
-dnl Documentation
-dnl
-AC_ARG_WITH(docs, AS_HELP_STRING([--with-docs], [Build NetworkManager documentation]))
-AM_CONDITIONAL(WITH_DOCS, test "x$with_docs" = "xyes")
-case $with_docs in
-    yes)
-        enable_gtk_doc=yes
-        ;;
-    *)
-        with_docs=no
-        ;;
-esac
-
-dnl
 dnl Make sha1.c happy on big endian systems
 dnl
 AC_C_BIGENDIAN
 
-AC_ARG_WITH(distro, AS_HELP_STRING([--with-distro=DISTRO], [Specify the Linux distribution to target: One of redhat, suse, gentoo, debian, arch, slackware, paldo, mandriva, pardus, linexa, exherbo or lfs]))
-if test "z$with_distro" = "z"; then
-	AC_CHECK_FILE(/etc/redhat-release,with_distro="redhat")
-	AC_CHECK_FILE(/etc/SuSE-release,with_distro="suse")
-	AC_CHECK_FILE(/etc/fedora-release,with_distro="redhat")
-	AC_CHECK_FILE(/etc/gentoo-release,with_distro="gentoo")
-	AC_CHECK_FILE(/etc/debian_version,with_distro="debian")
-	AC_CHECK_FILE(/etc/arch-release,with_distro="arch")
-	AC_CHECK_FILE(/etc/slackware-version,with_distro="slackware")
-	AC_CHECK_FILE(/etc/frugalware-release,with_distro="frugalware")
-	AC_CHECK_FILE(/etc/mandriva-release,with_distro="mandriva")
-	AC_CHECK_FILE(/etc/pardus-release,with_distro="pardus")
-	AC_CHECK_FILE(/etc/linexa-release,with_distro="linexa")
-	AC_CHECK_FILE(/etc/exherbo-release,with_distro="exherbo")
-	AC_CHECK_FILE(/etc/lfs-release,with_distro="lfs")
-	if test "z$with_distro" = "z"; then
-		with_distro=`lsb_release -is`
-	fi
-fi
-with_distro=`echo ${with_distro} | tr '[[:upper:]]' '[[:lower:]]' `
+# NetworkManager paths
+AC_SUBST(nmbinary, "$sbindir/$PACKAGE", [NetworkManager binary executable])
+AC_SUBST(nmconfdir, "$sysconfdir/$PACKAGE", [NetworkManager configuration directory])
+AC_SUBST(nmdatadir, "$datadir/$PACKAGE", [NetworkManager shared data directory])
+AC_SUBST(nmstatedir, "$localstatedir/lib/$PACKAGE", [NetworkManager persistent state directory])
+AC_SUBST(nmrundir, "$localstatedir/run/$PACKAGE", [NetworkManager runtime state directory])
 
-if test "z$with_distro" = "z"; then
-	echo "Linux distribution autodetection failed, you must specify the distribution to target using --with-distro=DISTRO"
-	exit 1
-else
-	case $with_distro in
-		redhat|suse|gentoo|debian|slackware|arch|paldo|frugalware|mandriva|pardus|linexa|exherbo|lfs|generic) ;;
-		*)
-			echo "Your distribution (${with_distro}) is not yet supported!  (patches welcome)"
-			exit 1
-			;;
-	esac
-fi
-
-AM_CONDITIONAL(TARGET_GENERIC, test x"$with_distro" = xgeneric)
-if test x"$with_distro" = xgeneric; then
-  AC_DEFINE(TARGET_GENERIC, 1, [Define for a general unknown Linux system])
-fi
-
-AM_CONDITIONAL(TARGET_REDHAT, test x"$with_distro" = xredhat)
-if test x"$with_distro" = xredhat; then
-  AC_DEFINE(TARGET_REDHAT, 1, [Define if you have Fedora or RHEL])
-fi
-
-AM_CONDITIONAL(TARGET_SUSE, test x"$with_distro" = xsuse)
-if test x"$with_distro" = xsuse; then
-  AC_DEFINE(TARGET_SUSE, 1, [Define if you have OpenSUSE or SLES])
-fi
-
-AM_CONDITIONAL(TARGET_GENTOO, test x"$with_distro" = xgentoo)
-if test x"$with_distro" = xgentoo; then
-  AC_DEFINE(TARGET_GENTOO, 1, [Define if you have Gentoo])
-fi
-
-AM_CONDITIONAL(TARGET_DEBIAN, test x"$with_distro" = xdebian)
-if test x"$with_distro" = xdebian; then
-  AC_DEFINE(TARGET_DEBIAN, 1, [Define if you have Debian])
-fi
-
-AM_CONDITIONAL(TARGET_SLACKWARE, test x"$with_distro" = xslackware)
-if test x"$with_distro" = xslackware; then
-  AC_DEFINE(TARGET_SLACKWARE, 1, [Define if you have Slackware])
-fi
-
-AM_CONDITIONAL(TARGET_ARCH, test x"$with_distro" = xarch)
-if test x"$with_distro" = xarch; then
-  AC_DEFINE(TARGET_ARCH, 1, [Define if you have Arch])
-fi
-
-AM_CONDITIONAL(TARGET_PALDO, test x"$with_distro" = xpaldo)
-if test x"$with_distro" = xpaldo; then
-  AC_DEFINE(TARGET_PALDO, 1, [Define if you have Paldo])
-fi
-
-AM_CONDITIONAL(TARGET_FRUGALWARE, test x"$with_distro" = xfrugalware)
-if test x"$with_distro" = xfrugalware; then
-  AC_DEFINE(TARGET_FRUGALWARE, 1, [Define if you have Frugalware])
-fi
-
-AM_CONDITIONAL(TARGET_MANDRIVA, test x"$with_distro" = xmandriva)
-if test x"$with_distro" = xmandriva; then
-  AC_DEFINE(TARGET_MANDRIVA, 1, [Define if you have Mandriva])
-fi
-
-AM_CONDITIONAL(TARGET_PARDUS, test x"$with_distro" = xpardus)
-if test x"$with_distro" = xpardus; then
-  AC_DEFINE(TARGET_PARDUS, 1, [Define if you have Pardus])
-fi
-
-AM_CONDITIONAL(TARGET_LINEXA, test x"$with_distro" = xlinexa)
-if test x"$with_distro" = xlinexa; then
-  AC_DEFINE(TARGET_LINEXA, 1, [Define if you have linexa])
-fi
-
-AM_CONDITIONAL(TARGET_EXHERBO, test x"$with_distro" = xexherbo)
-if test x"$with_distro" = xexherbo; then
-  AC_DEFINE(TARGET_EXHERBO, 1, [Define if you have Exherbo])
-fi
-
-AM_CONDITIONAL(TARGET_LFS, test x"$with_distro" = xlfs)
-if test x"$with_distro" = xlfs; then
-  AC_DEFINE(TARGET_LFS, 1, [Define if you have Linux From Scratch])
-fi
+# Alternative configuration plugins
+AC_ARG_ENABLE(ifcfg-rh, AS_HELP_STRING([--enable-ifcfg-rh], [enable ifcfg-rh configuration plugin (Fedora/RHEL)]))
+AC_ARG_ENABLE(ifcfg-suse, AS_HELP_STRING([--enable-ifcfg-suse], [enable ifcfg-suse configuration plugin (SUSE)]))
+AC_ARG_ENABLE(ifupdown, AS_HELP_STRING([--enable-ifupdown], [enable ifupdown configuration plugin (Debian/Ubuntu)]))
+AC_ARG_ENABLE(ifnet, AS_HELP_STRING([--enable-ifnet], [enable ifnet configuration plugin (Gentoo)]))
+# Default alternative plugins by distribution
+AS_IF([test -z "$enable_ifcfg_rh"], AC_CHECK_FILE(/etc/redhat-release, enable_ifcfg_rh=yes))
+AS_IF([test -z "$enable_ifcfg_rh"], AC_CHECK_FILE(/etc/fedora-release, enable_ifcfg_rh=yes))
+AS_IF([test -z "$enable_ifcfg_rh"], AC_CHECK_FILE(/etc/mandriva-release, enable_ifcfg_rh=yes))
+AS_IF([test -z "$enable_ifcfg_suse"], AC_CHECK_FILE(/etc/SuSE-release, enable_ifcfg_suse=yes))
+AS_IF([test -z "$enable_ifupdown"], AC_CHECK_FILE(/etc/debian_version, enable_ifupdown=yes))
+AS_IF([test -z "$enable_ifnet"], AC_CHECK_FILE(/etc/gentoo-release, enable_ifnet=yes))
+# Otherwise plugins default to "no"
+AS_IF([test -z "$enable_ifcfg_rh"], enable_ifcfg_rh=no)
+AS_IF([test -z "$enable_ifcfg_suse"], enable_ifcfg_suse=no)
+AS_IF([test -z "$enable_ifupdown"], enable_ifupdown=no)
+AS_IF([test -z "$enable_ifnet"], enable_ifnet=no)
+# Create automake conditionals
+AM_CONDITIONAL(CONFIG_PLUGIN_IFCFG_RH, test "$enable_ifcfg_rh" = "yes")
+AM_CONDITIONAL(CONFIG_PLUGIN_IFCFG_SUSE, test "$enable_ifcfg_suse" = "yes")
+AM_CONDITIONAL(CONFIG_PLUGIN_IFUPDOWN, test "$enable_ifupdown" = "yes")
+AM_CONDITIONAL(CONFIG_PLUGIN_IFNET, test "$enable_ifnet" = "yes")
+# Code coverage
+GNOME_CODE_COVERAGE
 
 dnl
 dnl Distribution version string
 dnl
-AC_ARG_WITH(dist-version, AS_HELP_STRING([--with-dist-version=<NM-distribution-version>], [Define the NM's distribution version string]), ac_distver=$withval, ac_distver="")
+AC_ARG_WITH(dist-version, AS_HELP_STRING([--with-dist-version=<NM-distribution-version>], [Define the NM''s distribution version string]), ac_distver=$withval, ac_distver="")
 if ! test x"$ac_distver" = x""; then
   AC_DEFINE_UNQUOTED(NM_DIST_VERSION, "$ac_distver", [Define the distribution version string])
 fi
@@ -259,7 +164,7 @@ AC_COMPILE_IFELSE(
                 #include <linux/types.h>
                 #include <sys/socket.h>
                 #include <linux/nl80211.h>]],
-              [[int a = NL80211_RATE_INFO_BITRATE;]])],
+              [[int a = NL80211_RATE_INFO_BITRATE; a++;]])],
         [ac_have_nl80211=yes],
         [ac_have_nl80211=no])
 AC_MSG_RESULT($ac_have_nl80211)
@@ -310,26 +215,21 @@ PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.94)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
+GLIB_VERSION_DEFINES="-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_26 '-DGLIB_VERSION_MAX_ALLOWED=G_ENCODE_VERSION(2,34)'"
+
 # dbus-glib uses GValueArray, which is deprecated as of GLib 2.32.
 # Set GLIB_VERSION_MIN_REQUIRED to something less than that to avoid
 # getting warnings. (GLIB_VERSION_2_26 is the oldest defined version.)
-DBUS_CFLAGS="$DBUS_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_26"
+DBUS_CFLAGS="$DBUS_CFLAGS $GLIB_VERSION_DEFINES"
 
-PKG_CHECK_MODULES(GLIB, gthread-2.0 glib-2.0 >= 2.22 gobject-2.0)
+PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.22 gmodule-2.0)
+GLIB_CFLAGS="$GLIB_CFLAGS $GLIB_VERSION_DEFINES"
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
-PKG_CHECK_MODULES(GMODULE, gmodule-2.0)
-AC_SUBST(GMODULE_CFLAGS)
-AC_SUBST(GMODULE_LIBS)
-
-PKG_CHECK_MODULES(GUDEV, gudev-1.0 >= 147)
+PKG_CHECK_MODULES(GUDEV, gudev-1.0 >= 165)
 AC_SUBST(GUDEV_CFLAGS)
 AC_SUBST(GUDEV_LIBS)
-
-PKG_CHECK_MODULES(GIO, gio-2.0)
-AC_SUBST(GIO_CFLAGS)
-AC_SUBST(GIO_LIBS)
 
 GOBJECT_INTROSPECTION_CHECK([0.9.6])
 
@@ -359,73 +259,104 @@ fi
 AC_SUBST(UDEV_BASE_DIR)
 
 # systemd unit support
-AC_ARG_WITH([systemdsystemunitdir],
- AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
- [],
- [with_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
-if test "x$with_systemdsystemunitdir" != xno; then
+AC_ARG_WITH([systemdsystemunitdir], AS_HELP_STRING([--with-systemdsystemunitdir=DIR],
+	[Directory for systemd service files]))
+# default location
+AS_IF([test -z "$with_systemdsystemunitdir" && $PKG_CONFIG systemd],
+	with_systemdsystemunitdir="\$(prefix)/lib/systemd/system")
+AS_IF([test -z "$with_systemdsystemunitdir"], with_systemdsystemunitdir=no)
+# add conditional and subst
+AM_CONDITIONAL(HAVE_SYSTEMD, [test "$with_systemdsystemunitdir" != no])
+if test "$with_systemdsystemunitdir" != no; then
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
-AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
-AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd|ck|none], [Build NetworkManager with specific session tracking support]))
-if test "z$with_session_tracking" = "z"; then
-    # Default to ConsoleKit session tracking like we used before
-    with_session_tracking=ck
+# session tracking support
+AC_MSG_CHECKING([Session tracking support])
+AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd|consolekit|no],
+	[Select session tracking support (default: consolekit)]))
+# default to consolekit
+AS_IF([test -z "$with_session_tracking"], with_session_tracking=consolekit)
+AS_IF([test "$with_session_tracking" = "ck"], with_session_tracking=consolekit)
+AS_IF([test "$with_session_tracking" = "none"], with_session_tracking=no)
+# check value
+AS_IF([! (echo "$with_session_tracking" | grep -q -E "^(systemd|consolekit|no)$")],
+	AC_MSG_ERROR([--with-session-tracking must be systemd/consolekit/no, not $with_session_tracking]))
+# add conditionals and subtitutions
+AM_CONDITIONAL(SESSION_TRACKING_CK, test "$with_session_tracking" = "consolekit")
+AM_CONDITIONAL(SESSION_TRACKING_SYSTEMD, test "xwith_session_tracking" = "systemd")
+if test "$with_session_tracking" = "systemd"; then
+	PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login])
+	AC_SUBST(SYSTEMD_LOGIN_CFLAGS)
+	AC_SUBST(SYSTEMD_LOGIN_LIBS)
+fi
+if test "$with_session_tracking" = "consolekit"; then
+	AC_SUBST(CKDB_PATH, /var/run/ConsoleKit/database)
+fi
+AC_MSG_RESULT($with_session_tracking)
+
+AC_ARG_WITH(suspend-resume, AS_HELP_STRING([--with-suspend-resume=upower|systemd], [Build NetworkManager with specific suspend/resume support]))
+if test "z$with_suspend_resume" = "z"; then
+    PKG_CHECK_EXISTS([systemd >= 183], [have_systemd_inhibit=yes], [have_systemd_inhibit=no])
+    if test "z${have_systemd_inhibit}" = "zyes"; then
+	# Use systemd if it's new enough
+	with_suspend_resume="systemd"
+    else
+	# Fall back to upower
+	with_suspend_resume="upower"
+    fi
 fi
 
-case $with_session_tracking in
-    ck|none|no) ;;
+case $with_suspend_resume in
+    upower) ;;
     systemd)
-        PKG_CHECK_MODULES(SYSTEMD, [libsystemd-login])
+	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [systemd >= 183])
         ;;
     *)
-	AC_MSG_ERROR(--with-session-tracking must be one of [none, ck, systemd])
+	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
         ;;
 esac
-AC_SUBST(SYSTEMD_CFLAGS)
-AC_SUBST(SYSTEMD_LIBS)
-AM_CONDITIONAL(SESSION_TRACKING_CK, test "x$with_session_tracking" = "xck")
-AM_CONDITIONAL(SESSION_TRACKING_SYSTEMD, test "x$with_session_tracking" = "xsystemd")
+AM_CONDITIONAL(SUSPEND_RESUME_UPOWER, test "x$with_suspend_resume" = "xupower")
+AM_CONDITIONAL(SUSPEND_RESUME_SYSTEMD, test "x$with_suspend_resume" = "xsystemd")
 
-
-have_libnl="no"
-PKG_CHECK_MODULES(LIBNL3, libnl-3.0, [have_libnl3=yes], [have_libnl3=no])
-PKG_CHECK_MODULES(LIBNL_ROUTE3, libnl-route-3.0, [have_libnl_route3=yes], [have_libnl_route3=no])
-PKG_CHECK_MODULES(LIBNL_GENL3, libnl-genl-3.0, [have_libnl_genl3=yes], [have_libnl_genl3=no])
-if (test "${have_libnl3}" = "yes" -a "${have_libnl_route3}" = "yes" -a "${have_libnl_genl3}" = "yes"); then
-	AC_DEFINE(HAVE_LIBNL3, 1, [Define if you require specific libnl-3 support])
-	LIBNL_CFLAGS="$LIBNL3_CFLAGS $LIBNL_ROUTE3_CFLAGS $LIBNL_GENL3_CFLAGS"
-	LIBNL_LIBS="$LIBNL3_LIBS $LIBNL_ROUTE3_LIBS $LIBNL_GENL3_LIBS"
-	libnl_version="3"
-	have_libnl="yes"
-else
-	PKG_CHECK_MODULES(LIBNL2, libnl-2.0, [have_libnl2=yes], [have_libnl2=no])
-	if (test "${have_libnl2}" = "yes"); then
-		AC_DEFINE(HAVE_LIBNL2, 1, [Define if you require specific libnl-2 support])
-		LIBNL_CFLAGS="$LIBNL2_CFLAGS"
-		LIBNL_LIBS="$LIBNL2_LIBS"
-		libnl_version="2"
-		have_libnl="yes"
-	else
-		PKG_CHECK_MODULES(LIBNL1, libnl-1 >= 1.0-pre8, [have_libnl1=yes], [have_libnl1=no])
-		if (test "${have_libnl1}" = "yes"); then
-			AC_DEFINE(HAVE_LIBNL1, 1, [Define if you require libnl-1 legacy support])
-			LIBNL_CFLAGS="$LIBNL1_CFLAGS"
-			LIBNL_LIBS="$LIBNL1_LIBS"
-			libnl_version="1"
-			have_libnl="yes"
-		fi
-	fi
+# libnl support for the linux platform
+AC_ARG_WITH(libnl, AS_HELP_STRING([--with-libnl=1|2|3], [Select libnl version (default: latest available)]))
+# default to "yes"
+AS_IF([test -z "$with_libnl"], with_libnl=yes)
+# test for various libnl versions
+if test "$with_libnl" = "yes" -o "$with_libnl" = "3"; then
+	PKG_CHECK_MODULES(LIBNL3, libnl-3.0 libnl-route-3.0 libnl-genl-3.0,
+		[with_libnl=3], [test "$with_libnl" = "3" && with_libnl=no])
+	AS_IF([test "$with_libnl" = "no"],
+		AC_MSG_ERROR([libnl 3.x could not be found]))
 fi
-
-if (test "${have_libnl}" = "no"); then
-	AC_MSG_ERROR([libnl development header are required])
+if test "$with_libnl" = "yes" -o "$with_libnl" = "2"; then
+	PKG_CHECK_MODULES(LIBNL2, libnl-2.0,
+		[with_libnl=2], [test "$with_libnl" = "2" && with_libnl=no])
+	AS_IF([test "$with_libnl" = "no"],
+		AC_MSG_ERROR([libnl 2.x could not be found]))
 fi
-AC_SUBST(LIBNL_CFLAGS)
-AC_SUBST(LIBNL_LIBS)
-
-if (test "${libnl_version}" = "1"); then
+if test "$with_libnl" = "yes" -o "$with_libnl" = "1"; then
+	PKG_CHECK_MODULES(LIBNL1, libnl-1 >= 1.0-pre8,
+		[with_libnl=1], [test "$with_libnl" = "1" && with_libnl=no])
+	AS_IF([test "$with_libnl" = "no"],
+		AC_MSG_ERROR([libnl 1.x could not be found]))
+fi
+if test "$with_libnl" = "yes"; then
+	AC_MSG_ERROR([libnl library could not be found])
+	with_libnl=no
+fi
+if ! echo "$with_libnl" | grep -q "^[[1-3]]$"; then
+	AC_MSG_ERROR([unsupported libnl version: $with_libnl])
+fi
+# add variables, conditionals and defines
+if test "$with_libnl" != "no"; then
+	AC_DEFINE_UNQUOTED(HAVE_LIBNL, $with_libnl, [libnl version])
+	AC_SUBST(LIBNL_CFLAGS, "$LIBNL3_CFLAGS$LIBNL2_CFLAGS$LIBNL1_CFLAGS")
+	AC_SUBST(LIBNL_LIBS, "$LIBNL3_LIBS$LIBNL2_LIBS$LIBNL1_LIBS")
+fi
+# additional tests
+if test "with_libnl" = "1"; then
 	NM_LIBNL_CHECK
 fi
 
@@ -463,6 +394,18 @@ else
 	AC_DEFINE(WITH_POLKIT, 0, [Define if you have PolicyKit support])
 fi
 AM_CONDITIONAL(WITH_POLKIT, test "${enable_polkit}" = "yes")
+
+AC_ARG_ENABLE(modify-system,
+              AS_HELP_STRING([--enable-modify-system], [Allow users to modify system connections]))
+if test "${enable_modify_system}" = "yes"; then
+	if ! test "${enable_polkit}" = "yes"; then
+		AC_MSG_ERROR([--enable-modify-system requires --enable-polkit])
+	fi
+	NM_MODIFY_SYSTEM_POLICY="yes"
+else
+	NM_MODIFY_SYSTEM_POLICY="auth_admin_keep"
+fi
+AC_SUBST(NM_MODIFY_SYSTEM_POLICY)
 
 AC_ARG_WITH(crypto, AS_HELP_STRING([--with-crypto=nss|gnutls], [Cryptography library to use for certificate and key operations]),ac_crypto=$withval, ac_crypto=nss)
 
@@ -531,7 +474,7 @@ AC_ARG_ENABLE(ppp, AS_HELP_STRING([--enable-ppp], [enable PPP/PPPoE support]),
                      [enable_ppp=${enableval}], [enable_ppp=yes])
 if (test "${enable_ppp}" = "yes"); then
 	AC_CHECK_HEADERS(pppd/pppd.h,,
-		AC_MSG_ERROR(couldn't find pppd.h. pppd development headers are required.))
+		AC_MSG_ERROR("couldn't find pppd.h. pppd development headers are required."))
 
 	AC_DEFINE(WITH_PPP, 1, [Define if you have PPP support])
 else
@@ -548,115 +491,91 @@ else
 fi
 AC_SUBST(PPPD_PLUGIN_DIR)
 
+# ModemManager1 with libmm-glib
+AC_ARG_WITH(modem-manager-1, AS_HELP_STRING([--with-modem-manager-1], [Enable new ModemManager1 interface support]),,[with_modem_manager_1=auto])
+if (test "${with_modem_manager_1}" != "no"); then
+    PKG_CHECK_MODULES(MM_GLIB,
+                      [mm-glib],
+                      [have_libmm_glib=yes],
+                      [have_libmm_glib=no])
+    AC_SUBST(MM_GLIB_CFLAGS)
+    AC_SUBST(MM_GLIB_LIBS)
 
-# dhclient support
-AC_ARG_WITH([dhclient], AS_HELP_STRING([--with-dhclient=yes|no|path], [Enable dhclient 4.x support]))
-# If a full path is given, use that and do not test if it works or not.
-case "${with_dhclient}" in
-	# NM only works with ISC dhclient - other derivatives don't have
-	# the same userland.  dhclient 4.x is required for IPv6 support;
-	# with older versions NM won't be able to use DHCPv6.
-
-	/*)
-		DHCLIENT_PATH="${with_dhclient}"
-		DHCLIENT_VERSION=4
-		if test -x "${with_dhclient}"; then
-			case `"${with_dhclient}" --version 2>&1` in
-				"isc-dhclient-4"*) DHCLIENT_VERSION=4; break;;
-				"isc-dhclient-V3"*) DHCLIENT_VERSION=3; break;;
-			esac
-		fi
-		AC_MSG_NOTICE(using dhclient at ${DHCLIENT_PATH})
-		;;
-	no)	AC_MSG_NOTICE(dhclient support disabled)
-		;;
-	*)
-		AC_MSG_CHECKING(for dhclient)
-		for path in /sbin /usr/sbin /usr/pkg/sbin /usr/local/sbin; do
-			test -x "${path}/dhclient" || continue
-			case `"$path/dhclient" --version 2>&1` in
-				"isc-dhclient-4"*) DHCLIENT_PATH="$path/dhclient"; DHCLIENT_VERSION=4; break;;
-				"isc-dhclient-V3"*) DHCLIENT_PATH="$path/dhclient"; DHCLIENT_VERSION=3; break;;
-			esac
-		done
-		if test -n "${DHCLIENT_PATH}"; then
-			AC_MSG_RESULT($DHCLIENT_PATH)
-		else
-			AC_MSG_RESULT(no)
-		fi
-		;;
-esac
-
-# dhcpcd support
-AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
-# If a full path is given, use that and do not test if it works or not.
-case "${with_dhcpcd}" in
-	/*)
-		DHCPCD_PATH="${with_dhcpcd}"
-		AC_MSG_NOTICE(using dhcpcd at ${DHCPCD_PATH})
-		;;
-	no)	AC_MSG_NOTICE(dhcpcd support disabled)
-		;;
-	*)
-		AC_MSG_CHECKING(for dhcpcd)
-		# We fully work with upstream dhcpcd-4
-		for path in /sbin /usr/sbin /usr/pkg/sbin /usr/local/sbin; do
-			test -x "${path}/dhcpcd" || continue
-			case `"$path/dhcpcd" --version 2>/dev/null` in
-				"dhcpcd "[123]*);;
-				"dhcpcd "*) DHCPCD_PATH="$path/dhcpcd"; break;;
-			esac
-		done
-		if test -n "${DHCPCD_PATH}"; then
-			AC_MSG_RESULT($DHCPCD_PATH)
-		else
-			AC_MSG_RESULT(no)
-		fi
-		;;
-esac
-
-if test -z "$DHCPCD_PATH" -a -z "$DHCLIENT_PATH"; then
-	# DHCP clients are not a build time dependency, only runtime.
-	# dhclient has been the longtime default for NM and it's in /sbin
-	# in most distros, so use it.
-	AC_MSG_WARN([Could not find a suitable DHCP client])
-	DHCLIENT_PATH=/sbin/dhclient
-	AC_MSG_WARN([Falling back to ISC dhclient, ${DHCLIENT_PATH}])
+    if (test "${have_libmm_glib}" = "no"); then
+        if (test "${with_modem_manager_1}" = "yes"); then
+            AC_MSG_ERROR([Couldn't find libmm-glib])
+        fi
+    else
+        with_modem_manager_1="yes"
+    fi
 fi
-AC_SUBST(DHCLIENT_PATH)
-AC_SUBST(DHCLIENT_VERSION)
-AC_SUBST(DHCPCD_PATH)
 
-# resolvconf support
-AC_ARG_WITH([resolvconf],
-	    AS_HELP_STRING([--with-resolvconf=yes|no|path], [Enable resolvconf support]),
-	    with_resolvconf="$withval",with_resolvconf=no)
-# If a full path is given, use that and do not test if it works or not.
-case "${with_resolvconf}" in
-	/*)
-		RESOLVCONF_PATH="${with_resolvconf}"
-		AC_MSG_NOTICE(setting resolvconf path to ${RESOLVCONF_PATH})
-		;;
-	no)	AC_MSG_NOTICE(resolvconf support disabled)
-		;;
-	*)
-		AC_MSG_CHECKING(for resolvconf)
-		for path in /sbin /usr/sbin /usr/pkg/sbin /usr/local/sbin; do
-			if test -x "${path}/resolvconf"; then
-				RESOLVCONF_PATH="${path}/resolvconf"
-				break
-			fi
-		done
-		if test -n "${RESOLVCONF_PATH}"; then
-			AC_MSG_RESULT($RESOLVCONF_PATH)
-		else
-			AC_MSG_RESULT(no)
+if (test "${with_modem_manager_1}" = "yes"); then
+    AC_DEFINE(WITH_MODEM_MANAGER_1, 1, [Define if you have ModemManager1 support])
+else
+	AC_DEFINE(WITH_MODEM_MANAGER_1, 0, [Define if you have ModemManager1 support])
+fi
+AM_CONDITIONAL(WITH_MODEM_MANAGER_1, test "${with_modem_manager_1}" = "yes")
+
+# DHCP client support
+AC_ARG_WITH([dhclient], AS_HELP_STRING([--with-dhclient=yes|no|path], [Enable dhclient 4.x support]))
+AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
+# Default to "yes"
+AS_IF([test -z "$with_dhclient"], with_dhclient=yes)
+AS_IF([test -z "$with_dhcpcd"], with_dhcpcd=yes)
+# Search and check the executables
+if test "$with_dhclient" = "yes"; then
+	AC_PATH_PROGS(with_dhclient, dhclient, no, /sbin:/usr/sbin:/usr/local/sbin)
+	if test "$with_dhclient" != "no"; then
+		if ! $with_dhclient --version 2>&1 | grep -q "^isc-dhclient-4\."; then
+			AC_MSG_WARN([Cannot use dhclient, version 4.x is required])
+			with_dhclient=no
 		fi
-		;;
-esac
-AC_SUBST(RESOLVCONF_PATH)
-if test -n "${RESOLVCONF_PATH}"; then
-	AC_DEFINE_UNQUOTED(RESOLVCONF_PATH, "$RESOLVCONF_PATH", [Define if you have a resolvconf implementation])
+	fi
+fi
+if test "$with_dhcpcd" = "yes"; then
+	AC_PATH_PROGS(with_dhcpcd, dhcpcd, no, /sbin:/usr/sbin:/usr/local/sbin)
+	if test "$with_dhcpcd" != "no"; then
+		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[45]]\."; then
+			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or 5.x is required])
+			with_dhcpcd=no
+		fi
+	fi
+fi
+# Fallback
+if test "$with_dhclient" = "no" -a "$with_dhcpcd" = "no"; then
+	AC_MSG_WARN([Could not find a suitable DHCP client, falling back to dhclient])
+	with_dhclient=/sbin/dhclient
+fi
+# Add substitutions
+if test "$with_dhclient" != "no"; then
+	AC_SUBST(DHCLIENT_PATH, $with_dhclient)
+fi
+if test "$with_dhcpcd" != "no"; then
+	AC_SUBST(DHCPCD_PATH, $with_dhcpcd)
+fi
+
+# resolvconf and netconfig support
+AC_ARG_WITH(resolvconf, AS_HELP_STRING([--with-resolvconf=yes|no|path], [Enable resolvconf support]))
+AC_ARG_WITH(netconfig, AS_HELP_STRING([--with-netconfig=yes|no], [Enable SUSE netconfig support]))
+# Use netconfig by default on SUSE
+AS_IF([test -z "$with_netconfig"], AC_CHECK_FILE(/etc/SuSE-release, with_netconfig=yes))
+# Otherwise default to "no"
+AS_IF([test -z "$with_resolvconf"], with_resolvconf=no)
+AS_IF([test -z "$with_netconfig"], with_netconfig=no)
+# Find resolvconf and netconfig
+if test "$with_resolvconf" = "yes"; then
+	AC_PATH_PROGS(with_resolvconf, resolvconf, no, /sbin:/usr/sbin:/usr/local/sbin)
+fi
+if test "$with_netconfig" = "yes"; then
+	AC_PATH_PROGS(with_netconfig, netconfig, no, /sbin:/usr/sbin:/usr/local/sbin)
+fi
+# Define resolvconf and netconfig paths
+if test "$with_resolvconf" != "no"; then
+	AC_DEFINE_UNQUOTED(RESOLVCONF_PATH, "$with_resolvconf", [Path to resolvconf (if enabled)])
+fi
+if test "$with_netconfig" != "no"; then
+	AC_DEFINE_UNQUOTED(NETCONFIG_PATH, "$with_netconfig", [Path to netconfig (if enabled)])
 fi
 
 # iptables path
@@ -716,29 +635,33 @@ AM_CONDITIONAL(WITH_CONCHECK, test "${enable_concheck}" = "yes")
 
 NM_COMPILER_WARNINGS
 
-GTK_DOC_CHECK(1.0)
-
-
 dnl -------------------------
 dnl Vala bindings
 dnl -------------------------
 
 VAPIGEN_CHECK(0.17.1.24)
 
-dnl
-dnl Tests
-dnl
-AC_ARG_WITH(tests, AS_HELP_STRING([--with-tests], [Build NetworkManager tests]))
-AM_CONDITIONAL(WITH_TESTS, test "x$with_tests" = "xyes")
-case $with_tests in
-    yes)
-        with_tests=yes
-        ;;
-    *)
-        with_tests=no
-        ;;
-esac
-
+# Tests, utilities and documentation
+AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests=root|yes|no], [Build NetworkManager tests (default: yes)]))
+AC_ARG_ENABLE(doc, AS_HELP_STRING([--enable-doc], [Build NetworkManager documentation (default: no)]))
+# Fallback to --with-tests and with-docs
+AC_ARG_WITH(tests, AS_HELP_STRING([--with-tests], [Build NetworkManager tests (deprecated)]))
+AC_ARG_WITH(docs, AS_HELP_STRING([--with-docs], [Build NetworkManager documentation (deprecated)]))
+AS_IF([test -n "$with_tests"], enable_tests="$with_tests")
+AS_IF([test -n "$with_docs"], enable_doc="$with_docs")
+# Default to --enable-tests and --disable-docs
+AS_IF([test -z "$enable_tests"], enable_tests="yes")
+AS_IF([test -z "$enable_doc"], enable_doc="no")
+# Normalize values
+AS_IF([test "$enable_tests" != "yes" -a "$enable_tests" != "root"], enable_tests="no")
+AS_IF([test "$enable_doc" != "yes"], enable_doc="no")
+# Add conditionals
+AM_CONDITIONAL(ENABLE_TESTS, test "$enable_tests" != "no")
+AM_CONDITIONAL(RUN_ROOT_TESTS, test "$enable_tests" == "root")
+AM_CONDITIONAL(ENABLE_DOC, test "$enable_doc" = "yes")
+# Add gtk-doc conditionals
+enable_gtk_doc="$enable_doc"
+GTK_DOC_CHECK(1.0)
 
 AC_CONFIG_FILES([
 Makefile
@@ -778,7 +701,6 @@ src/settings/plugins/keyfile/tests/keyfiles/Makefile
 src/settings/plugins/example/Makefile
 src/settings/tests/Makefile
 src/wimax/Makefile
-src/backends/Makefile
 libnm-util/libnm-util.pc
 libnm-util/Makefile
 libnm-util/tests/Makefile
@@ -793,24 +715,13 @@ tools/Makefile
 cli/Makefile
 cli/src/Makefile
 test/Makefile
-initscript/Makefile
-initscript/RedHat/Makefile
 initscript/RedHat/NetworkManager
-initscript/Gentoo/Makefile
-initscript/Gentoo/NetworkManager
-initscript/Debian/Makefile
 initscript/Debian/NetworkManager
-initscript/Slackware/Makefile
 initscript/Slackware/rc.networkmanager
-initscript/SUSE/Makefile
 initscript/SUSE/networkmanager
-initscript/Arch/Makefile
 initscript/Arch/networkmanager
-initscript/paldo/Makefile
 initscript/paldo/NetworkManager
-initscript/Mandriva/Makefile
 initscript/Mandriva/networkmanager
-initscript/linexa/Makefile
 initscript/linexa/networkmanager
 introspection/Makefile
 introspection/all.xml
@@ -823,6 +734,7 @@ man/nm-online.1
 man/nmcli.1
 po/Makefile.in
 policy/Makefile
+policy/org.freedesktop.NetworkManager.policy.in
 data/Makefile
 docs/Makefile
 docs/api/Makefile
@@ -839,71 +751,67 @@ examples/ruby/Makefile
 examples/C/Makefile
 examples/C/glib/Makefile
 examples/C/qt/Makefile
+examples/dispatcher/Makefile
 vapi/Makefile
 ])
 AC_OUTPUT
 
+# Print build configuration
 echo
-echo Distribution target: ${with_distro}
-echo 'if this is not correct, please specifiy your distro with --with-distro=DISTRO'
+echo "System paths:"
+echo "  prefix: $prefix"
+echo "  exec_prefix: $exec_prefix"
+echo "  systemdunitdir: $with_systemdsystemunitdir"
+echo "  nmbinary: $nmbinary"
+echo "  nmconfdir: $nmconfdir"
+echo "  nmdatadir: $nmdatadir"
+echo "  nmstatedir: $nmstatedir"
+echo "  nmrundir: $nmrundir"
+echo
 
-echo 
-
-if test -n "${DHCLIENT_PATH}"; then
-	echo ISC dhclient support: ${DHCLIENT_PATH}
-	echo ISC dhclient version: ${DHCLIENT_VERSION}
-else
-	echo ISC dhclient support: no
-fi
-
-if test -n "${DHCPCD_PATH}"; then
-	echo dhcpcd support: ${DHCPCD_PATH}
-else
-	echo dhcpcd support: no
-fi
-
-if test -n "${with_systemdsystemunitdir}"; then
-	echo systemd unit support: ${with_systemdsystemunitdir}
-else
-	echo systemd unit support: no
-fi
-
+echo "Platform:"
+echo "  libnl: $with_libnl"
+echo "  session tracking: $with_session_tracking"
+echo "  suspend/resume: $with_suspend_resume"
 if test "${enable_polkit}" = "yes"; then
-	echo PolicyKit support: yes
+	if test "${enable_modify_system}"; then
+		echo "  policykit: yes (permissive modify.system)"
+	else
+		echo "  policykit: yes (restrictive modify.system)"
+	fi
 else
-	echo PolicyKit support: no
+	echo  "  policykit: no"
 fi
-
-        echo Session tracking: ${with_session_tracking}
-
-if test "${enable_wimax}" = "yes"; then
-	echo WiMAX support: yes
-else
-	echo WiMAX support: no
-fi
-
-if test "${enable_ppp}" = "yes"; then
-	echo PPP support: yes
-else
-	echo PPP support: no
-fi
-
-if test "${enable_concheck}" = "yes"; then
-	echo Connectivity checking support: yes
-else
-	echo Connectivity checking support: no
-fi
-
-echo libnl version: ${libnl_version}
-
-if test "${ac_with_wext}" = "yes"; then
-	echo WEXT support: yes
-else
-	echo WEXT support: no
-fi
-
 echo
-echo Building documentation: ${with_docs}
-echo Building tests: ${with_tests}
+
+echo "Features:"
+echo "  wext: $ac_with_wext"
+echo "  wimax: $enable_wimax"
+echo "  ppp: $enable_ppp"
+echo "  modemmanager-1: $with_modem_manager_1"
+echo "  concheck: $enable_concheck"
+echo
+
+echo "Configuration plugins"
+echo "  ifcfg-rh: ${enable_ifcfg_rh}"
+echo "  ifcfg-suse: ${enable_ifcfg_suse}"
+echo "  ifupdown: ${enable_ifupdown}"
+echo "  ifnet: ${enable_ifnet}"
+echo
+
+echo "Handlers for /etc/resolv.conf:"
+echo "  resolvconf: ${with_resolvconf}"
+echo "  netconfig: ${with_netconfig}"
+echo
+
+echo "DHCP clients:"
+echo "  dhclient: $with_dhclient"
+echo "  dhcpcd: $with_dhcpcd"
+echo
+
+echo "Miscellaneous:"
+echo "  documentation: $enable_doc"
+echo "  tests: $enable_tests"
+echo "  code coverage: $enable_code_coverage"
 echo
 

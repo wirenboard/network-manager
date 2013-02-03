@@ -1,4 +1,4 @@
-SUBDIRS=. tests
+SUBDIRS = . tests
 
 nm-ifcfg-rh-glue.h: nm-ifcfg-rh.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ifcfg_rh --mode=glib-server --output=$@ $<
@@ -29,13 +29,13 @@ INCLUDES = \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-glib \
-	-I$(top_srcdir)/libnm-util
+	-I$(top_srcdir)/libnm-util \
+	-I$(top_builddir)/libnm-util
 
 libifcfg_rh_io_la_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(NSS_CFLAGS) \
-	-DG_DISABLE_DEPRECATED \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DSBINDIR=\"$(sbindir)\"
 
@@ -54,9 +54,7 @@ libnm_settings_plugin_ifcfg_rh_la_SOURCES = \
 
 libnm_settings_plugin_ifcfg_rh_la_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
-	$(GMODULE_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	-DG_DISABLE_DEPRECATED \
 	-DSYSCONFDIR=\"$(sysconfdir)\"
 
 libnm_settings_plugin_ifcfg_rh_la_LDFLAGS = -module -avoid-version
@@ -64,9 +62,7 @@ libnm_settings_plugin_ifcfg_rh_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(top_builddir)/libnm-glib/libnm-glib.la \
 	libifcfg-rh-io.la \
-	$(GLIB_LIBS) \
-	$(GMODULE_LIBS) \
-	$(GIO_LIBS)
+	$(GLIB_LIBS)
 
 dbusservicedir = $(DBUS_SYS_DIR)
 dbusservice_DATA = nm-ifcfg-rh.conf

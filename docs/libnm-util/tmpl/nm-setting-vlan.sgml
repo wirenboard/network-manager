@@ -9,12 +9,10 @@ NMSettingVlan
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -77,6 +75,7 @@ NMSettingVlan
 @NM_SETTING_VLAN_ERROR_UNKNOWN: 
 @NM_SETTING_VLAN_ERROR_INVALID_PROPERTY: 
 @NM_SETTING_VLAN_ERROR_MISSING_PROPERTY: 
+@NM_SETTING_VLAN_ERROR_INVALID_PARENT: 
 
 <!-- ##### ENUM NMVlanFlags ##### -->
 <para>

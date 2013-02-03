@@ -30,6 +30,7 @@
 #include "nm-utils.h"
 #include "nm-dbus-glib-types.h"
 #include "nm-glib-compat.h"
+#include "nm-setting-private.h"
 
 /**
  * SECTION:nm-setting-ip6-config
@@ -60,12 +61,18 @@ nm_setting_ip6_config_error_quark (void)
 G_DEFINE_BOXED_TYPE (NMIP6Address, nm_ip6_address, nm_ip6_address_dup, nm_ip6_address_unref)
 G_DEFINE_BOXED_TYPE (NMIP6Route, nm_ip6_route, nm_ip6_route_dup, nm_ip6_route_unref)
 
-G_DEFINE_TYPE (NMSettingIP6Config, nm_setting_ip6_config, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingIP6Config, nm_setting_ip6_config, NM_TYPE_SETTING,
+                         _nm_register_setting (NM_SETTING_IP6_CONFIG_SETTING_NAME,
+                                               g_define_type_id,
+                                               4,
+                                               NM_SETTING_IP6_CONFIG_ERROR))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_IP6_CONFIG)
 
 #define NM_SETTING_IP6_CONFIG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_IP6_CONFIG, NMSettingIP6ConfigPrivate))
 
 typedef struct {
 	char *method;
+	char *dhcp_hostname;
 	GSList *dns;        /* array of struct in6_addr */
 	GSList *dns_search; /* list of strings */
 	GSList *addresses;  /* array of NMIP6Address */
@@ -81,6 +88,7 @@ typedef struct {
 enum {
 	PROP_0,
 	PROP_METHOD,
+	PROP_DHCP_HOSTNAME,
 	PROP_DNS,
 	PROP_DNS_SEARCH,
 	PROP_ADDRESSES,
@@ -119,6 +127,23 @@ nm_setting_ip6_config_get_method (NMSettingIP6Config *setting)
 	g_return_val_if_fail (NM_IS_SETTING_IP6_CONFIG (setting), NULL);
 
 	return NM_SETTING_IP6_CONFIG_GET_PRIVATE (setting)->method;
+}
+
+/**
+ * nm_setting_ip6_config_get_dhcp_hostname:
+ * @setting: the #NMSettingIP6Config
+ *
+ * Returns the value contained in the #NMSettingIP6Config:dhcp-hostname
+ * property.
+ *
+ * Returns: the configured hostname to send to the DHCP server
+ **/
+const char *
+nm_setting_ip6_config_get_dhcp_hostname (NMSettingIP6Config *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_IP6_CONFIG (setting), NULL);
+
+	return NM_SETTING_IP6_CONFIG_GET_PRIVATE (setting)->dhcp_hostname;
 }
 
 /**
@@ -693,6 +718,14 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		return FALSE;
 	}
 
+	if (priv->dhcp_hostname && !strlen (priv->dhcp_hostname)) {
+		g_set_error (error,
+		             NM_SETTING_IP6_CONFIG_ERROR,
+		             NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY,
+		             NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -751,6 +784,10 @@ set_property (GObject *object, guint prop_id,
 	case PROP_IGNORE_AUTO_DNS:
 		priv->ignore_auto_dns = g_value_get_boolean (value);
 		break;
+	case PROP_DHCP_HOSTNAME:
+		g_free (priv->dhcp_hostname);
+		priv->dhcp_hostname = g_value_dup_string (value);
+		break;
 	case PROP_NEVER_DEFAULT:
 		priv->never_default = g_value_get_boolean (value);
 		break;
@@ -793,6 +830,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_IGNORE_AUTO_DNS:
 		g_value_set_boolean (value, priv->ignore_auto_dns);
+		break;
+	case PROP_DHCP_HOSTNAME:
+		g_value_set_string (value, priv->dhcp_hostname);
 		break;
 	case PROP_NEVER_DEFAULT:
 		g_value_set_boolean (value, priv->never_default);
@@ -858,6 +898,20 @@ nm_setting_ip6_config_class_init (NMSettingIP6ConfigClass *setting_class)
 						      "is not yet supported.",
 						      NULL,
 						      G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+
+	/**
+	 * NMSettingIP6Config:dhcp-hostname:
+	 *
+	 * The specified name will be sent to the DHCP server when acquiring a lease.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_DHCP_HOSTNAME,
+		 g_param_spec_string (NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME,
+		                      "DHCP Hostname",
+		                      "The specified name will be sent to the DHCP server "
+		                      "when acquiring a lease.",
+		                      NULL,
+		                      G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
 
 	/**
 	 * NMSettingIP6Config:dns:

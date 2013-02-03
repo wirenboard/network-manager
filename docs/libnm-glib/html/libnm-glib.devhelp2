@@ -14,6 +14,7 @@
       <sub name="NMDeviceWimax" link="NMDeviceWimax.html"/>
       <sub name="NMDeviceAdsl" link="NMDeviceAdsl.html"/>
       <sub name="NMDeviceBond" link="NMDeviceBond.html"/>
+      <sub name="NMDeviceBridge" link="NMDeviceBridge.html"/>
       <sub name="NMDeviceInfiniband" link="NMDeviceInfiniband.html"/>
       <sub name="NMDeviceVlan" link="NMDeviceVlan.html"/>
       <sub name="NMDeviceOlpcMesh" link="NMDeviceOlpcMesh.html"/>
@@ -319,6 +320,21 @@
     <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceBond.html#NMDeviceBond--carrier"/>
     <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceBond.html#NMDeviceBond--hw-address"/>
     <keyword type="property" name="The &quot;slaves&quot; property" link="NMDeviceBond.html#NMDeviceBond--slaves"/>
+    <keyword type="struct" name="NMDeviceBridge" link="NMDeviceBridge.html#NMDeviceBridge-struct"/>
+    <keyword type="struct" name="NMDeviceBridgeClass" link="NMDeviceBridge.html#NMDeviceBridgeClass"/>
+    <keyword type="enum" name="enum NMDeviceBridgeError" link="NMDeviceBridge.html#NMDeviceBridgeError"/>
+    <keyword type="macro" name="NM_DEVICE_BRIDGE_CARRIER" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BRIDGE_ERROR" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-ERROR:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BRIDGE_HW_ADDRESS" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-HW-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_BRIDGE_SLAVES" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-SLAVES:CAPS"/>
+    <keyword type="function" name="nm_device_bridge_error_quark ()" link="NMDeviceBridge.html#nm-device-bridge-error-quark"/>
+    <keyword type="function" name="nm_device_bridge_get_carrier ()" link="NMDeviceBridge.html#nm-device-bridge-get-carrier"/>
+    <keyword type="function" name="nm_device_bridge_get_hw_address ()" link="NMDeviceBridge.html#nm-device-bridge-get-hw-address"/>
+    <keyword type="function" name="nm_device_bridge_get_slaves ()" link="NMDeviceBridge.html#nm-device-bridge-get-slaves"/>
+    <keyword type="function" name="nm_device_bridge_new ()" link="NMDeviceBridge.html#nm-device-bridge-new"/>
+    <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceBridge.html#NMDeviceBridge--carrier"/>
+    <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceBridge.html#NMDeviceBridge--hw-address"/>
+    <keyword type="property" name="The &quot;slaves&quot; property" link="NMDeviceBridge.html#NMDeviceBridge--slaves"/>
     <keyword type="struct" name="NMDeviceInfiniband" link="NMDeviceInfiniband.html#NMDeviceInfiniband-struct"/>
     <keyword type="struct" name="NMDeviceInfinibandClass" link="NMDeviceInfiniband.html#NMDeviceInfinibandClass"/>
     <keyword type="enum" name="enum NMDeviceInfinibandError" link="NMDeviceInfiniband.html#NMDeviceInfinibandError"/>
@@ -631,6 +647,10 @@
     <keyword type="constant" name="NM_DEVICE_BOND_ERROR_NOT_BOND_CONNECTION" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-NOT-BOND-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_BOND_ERROR_INVALID_BOND_CONNECTION" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-INVALID-BOND-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_BOND_ERROR_INTERFACE_MISMATCH" link="NMDeviceBond.html#NM-DEVICE-BOND-ERROR-INTERFACE-MISMATCH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BRIDGE_ERROR_UNKNOWN" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-ERROR-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BRIDGE_ERROR_NOT_BRIDGE_CONNECTION" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-ERROR-NOT-BRIDGE-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BRIDGE_ERROR_INVALID_BRIDGE_CONNECTION" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-ERROR-INVALID-BRIDGE-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_BRIDGE_ERROR_INTERFACE_MISMATCH" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-ERROR-INTERFACE-MISMATCH:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_UNKNOWN" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_NOT_INFINIBAND_CONNECTION" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-NOT-INFINIBAND-CONNECTION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_INFINIBAND_ERROR_INVALID_INFINIBAND_CONNECTION" link="NMDeviceInfiniband.html#NM-DEVICE-INFINIBAND-ERROR-INVALID-INFINIBAND-CONNECTION:CAPS"/>

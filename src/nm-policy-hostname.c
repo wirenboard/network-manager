@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2004 - 2011 Red Hat, Inc.
+ * Copyright (C) 2004 - 2012 Red Hat, Inc.
  * Copyright (C) 2007 - 2008 Novell, Inc.
  */
 
@@ -23,7 +23,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <netdb.h>
-#include <ctype.h>
 #include <arpa/inet.h>
 
 #include <glib.h>
@@ -107,7 +106,7 @@ hostname_thread_worker (gpointer data)
 		nm_log_dbg (LOGD_DNS, "(%p) address reverse-lookup returned hostname '%s'",
 		            ht, ht->hostname);
 		for (i = 0; i < strlen (ht->hostname); i++)
-			ht->hostname[i] = tolower (ht->hostname[i]);
+			ht->hostname[i] = g_ascii_tolower (ht->hostname[i]);
 	} else {
 		nm_log_dbg (LOGD_DNS, "(%p) address reverse-lookup failed: (%d) %s",
 		            ht, ht->ret, gai_strerror (ht->ret));
@@ -140,7 +139,6 @@ hostname4_thread_new (guint32 ip4_addr,
                       gpointer user_data)
 {
 	HostnameThread *ht;
-	struct sockaddr_in addr4;
 	char buf[INET_ADDRSTRLEN + 1];
 
 	ht = g_malloc0 (sizeof (HostnameThread));
@@ -161,7 +159,7 @@ hostname4_thread_new (guint32 ip4_addr,
 		return NULL;
 	}
 
-	if (!inet_ntop (AF_INET, &addr4.sin_addr, buf, sizeof (buf)))
+	if (!inet_ntop (AF_INET, &ht->addr4.sin_addr, buf, sizeof (buf)))
 		strcpy (buf, "(unknown)");
 
 	nm_log_dbg (LOGD_DNS, "(%p) started IPv4 reverse-lookup thread for address '%s'",

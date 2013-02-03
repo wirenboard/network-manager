@@ -2,11 +2,13 @@ GENERATE_SETTINGS_SPEC_SOURCE = generate-settings-spec.c
 
 AUTOMAKE_OPTIONS = 1.7
 
-if WITH_DOCS
+if ENABLE_DOC
 
 INCLUDES = \
 	-I$(top_srcdir)/include \
-	-I$(top_srcdir)/libnm-util
+	-I$(top_builddir)/include \
+	-I$(top_srcdir)/libnm-util \
+	-I$(top_builddir)/libnm-util
 
 noinst_PROGRAMS = \
 	generate-settings-spec
@@ -85,6 +87,6 @@ CLEANFILES =
 endif
 
 EXTRA_DIST += version.xml.in
-
-CLEANFILES += html/* tmpl/* xml/*
-
+CLEANFILES += html/* tmpl/* xml/* \
+	NetworkManager-sections.txt \
+	NetworkManager-overrides.txt

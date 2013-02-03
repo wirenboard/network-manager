@@ -283,8 +283,7 @@ static void
 device_state_changed (NMDevice *device,
                       NMDeviceState new_state,
                       NMDeviceState old_state,
-                      NMDeviceStateReason reason,
-                      gpointer user_data)
+                      NMDeviceStateReason reason)
 {
 	switch (new_state) {
 	case NM_DEVICE_STATE_ACTIVATED:
@@ -300,11 +299,10 @@ device_state_changed (NMDevice *device,
 static void
 nm_device_ethernet_init (NMDeviceEthernet * self)
 {
-	g_signal_connect (self, "state-changed", G_CALLBACK (device_state_changed), NULL);
 }
 
 static gboolean
-real_is_up (NMDevice *device)
+is_up (NMDevice *device)
 {
 	if (!NM_DEVICE_ETHERNET_GET_PRIVATE (device)->supplicant.mgr)
 		return FALSE;
@@ -313,7 +311,7 @@ real_is_up (NMDevice *device)
 }
 
 static gboolean
-real_bring_up (NMDevice *dev)
+bring_up (NMDevice *dev)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (dev);
 
@@ -323,7 +321,7 @@ real_bring_up (NMDevice *dev)
 }
 
 static void
-real_take_down (NMDevice *dev)
+take_down (NMDevice *dev)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (dev);
 
@@ -408,7 +406,7 @@ _set_hw_addr (NMDeviceEthernet *self, const guint8 *addr, const char *detail)
 }
 
 static void
-real_update_hw_address (NMDevice *dev)
+update_hw_address (NMDevice *dev)
 {
 	const guint8 *hw_addr;
 	guint8 old_addr[ETH_ALEN];
@@ -424,7 +422,7 @@ real_update_hw_address (NMDevice *dev)
 }
 
 static void
-real_update_permanent_hw_address (NMDevice *dev)
+update_permanent_hw_address (NMDevice *dev)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (dev);
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
@@ -468,7 +466,7 @@ real_update_permanent_hw_address (NMDevice *dev)
 }
 
 static void
-real_update_initial_hw_address (NMDevice *dev)
+update_initial_hw_address (NMDevice *dev)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (dev);
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
@@ -482,7 +480,7 @@ real_update_initial_hw_address (NMDevice *dev)
 	 */
 	current_addr = nm_device_wired_get_hwaddr (NM_DEVICE_WIRED (self));
 	if (!memcmp (current_addr, &zero, ETH_ALEN))
-		real_update_hw_address (dev);
+		update_hw_address (dev);
 
 	if (memcmp (&priv->initial_hw_addr, current_addr, ETH_ALEN))
 		memcpy (&priv->initial_hw_addr, current_addr, ETH_ALEN);
@@ -497,7 +495,7 @@ real_update_initial_hw_address (NMDevice *dev)
 }
 
 static guint32
-real_get_generic_capabilities (NMDevice *dev)
+get_generic_capabilities (NMDevice *dev)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (dev);
 	guint32	caps = NM_DEVICE_CAP_NONE;
@@ -620,9 +618,9 @@ match_ethernet_connection (NMDevice *device, NMConnection *connection,
 }
 
 static NMConnection *
-real_get_best_auto_connection (NMDevice *dev,
-                               GSList *connections,
-                               char **specific_object)
+get_best_auto_connection (NMDevice *dev,
+                          GSList *connections,
+                          char **specific_object)
 {
 	GSList *iter;
 
@@ -826,6 +824,7 @@ static void
 supplicant_iface_state_cb (NMSupplicantInterface *iface,
                            guint32 new_state,
                            guint32 old_state,
+                           int disconnect_reason,
                            gpointer user_data)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (user_data);
@@ -1029,7 +1028,7 @@ supplicant_interface_init (NMDeviceEthernet *self)
 
 	/* Listen for it's state signals */
 	priv->supplicant.iface_state_id = g_signal_connect (priv->supplicant.iface,
-	                                                    "state",
+	                                                    NM_SUPPLICANT_INTERFACE_STATE,
 	                                                    G_CALLBACK (supplicant_iface_state_cb),
 	                                                    self);
 
@@ -1046,7 +1045,7 @@ supplicant_interface_init (NMDeviceEthernet *self)
 }
 
 static NMActStageReturn
-real_act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
+act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (dev);
 	NMActRequest *req;
@@ -1197,7 +1196,7 @@ pppoe_stage3_ip4_config_start (NMDeviceEthernet *self, NMDeviceStateReason *reas
 }
 
 static NMActStageReturn
-real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
+act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 {
 	NMSettingConnection *s_con;
 	const char *connection_type;
@@ -1224,9 +1223,9 @@ real_act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 }
 
 static NMActStageReturn
-real_act_stage3_ip4_config_start (NMDevice *device,
-                                  NMIP4Config **out_config,
-                                  NMDeviceStateReason *reason)
+act_stage3_ip4_config_start (NMDevice *device,
+                             NMIP4Config **out_config,
+                             NMDeviceStateReason *reason)
 {
 	NMSettingConnection *s_con;
 	const char *connection_type;
@@ -1244,7 +1243,7 @@ real_act_stage3_ip4_config_start (NMDevice *device,
 }
 
 static void
-real_ip4_config_pre_commit (NMDevice *device, NMIP4Config *config)
+ip4_config_pre_commit (NMDevice *device, NMIP4Config *config)
 {
 	NMConnection *connection;
 	NMSettingWired *s_wired;
@@ -1266,7 +1265,7 @@ real_ip4_config_pre_commit (NMDevice *device, NMIP4Config *config)
 }
 
 static void
-real_deactivate (NMDevice *device)
+deactivate (NMDevice *device)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (device);
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
@@ -1291,19 +1290,19 @@ real_deactivate (NMDevice *device)
 }
 
 static gboolean
-real_check_connection_compatible (NMDevice *device,
-                                  NMConnection *connection,
-                                  GError **error)
+check_connection_compatible (NMDevice *device,
+                             NMConnection *connection,
+                             GError **error)
 {
 	return match_ethernet_connection (device, connection, TRUE, error);
 }
 
 static gboolean
-real_complete_connection (NMDevice *device,
-                          NMConnection *connection,
-                          const char *specific_object,
-                          const GSList *existing_connections,
-                          GError **error)
+complete_connection (NMDevice *device,
+                     NMConnection *connection,
+                     const char *specific_object,
+                     const GSList *existing_connections,
+                     GError **error)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
 	NMSettingWired *s_wired;
@@ -1513,25 +1512,27 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
 
-	parent_class->get_generic_capabilities = real_get_generic_capabilities;
-	parent_class->is_up = real_is_up;
-	parent_class->bring_up = real_bring_up;
-	parent_class->take_down = real_take_down;
-	parent_class->update_hw_address = real_update_hw_address;
-	parent_class->update_permanent_hw_address = real_update_permanent_hw_address;
-	parent_class->update_initial_hw_address = real_update_initial_hw_address;
-	parent_class->get_best_auto_connection = real_get_best_auto_connection;
-	parent_class->check_connection_compatible = real_check_connection_compatible;
-	parent_class->complete_connection = real_complete_connection;
+	parent_class->get_generic_capabilities = get_generic_capabilities;
+	parent_class->is_up = is_up;
+	parent_class->bring_up = bring_up;
+	parent_class->take_down = take_down;
+	parent_class->update_hw_address = update_hw_address;
+	parent_class->update_permanent_hw_address = update_permanent_hw_address;
+	parent_class->update_initial_hw_address = update_initial_hw_address;
+	parent_class->get_best_auto_connection = get_best_auto_connection;
+	parent_class->check_connection_compatible = check_connection_compatible;
+	parent_class->complete_connection = complete_connection;
 
-	parent_class->act_stage1_prepare = real_act_stage1_prepare;
-	parent_class->act_stage2_config = real_act_stage2_config;
-	parent_class->act_stage3_ip4_config_start = real_act_stage3_ip4_config_start;
-	parent_class->ip4_config_pre_commit = real_ip4_config_pre_commit;
-	parent_class->deactivate = real_deactivate;
+	parent_class->act_stage1_prepare = act_stage1_prepare;
+	parent_class->act_stage2_config = act_stage2_config;
+	parent_class->act_stage3_ip4_config_start = act_stage3_ip4_config_start;
+	parent_class->ip4_config_pre_commit = ip4_config_pre_commit;
+	parent_class->deactivate = deactivate;
 	parent_class->spec_match_list = spec_match_list;
 	parent_class->connection_match_config = connection_match_config;
 	parent_class->hwaddr_matches = hwaddr_matches;
+
+	parent_class->state_changed = device_state_changed;
 
 	/* properties */
 	g_object_class_install_property

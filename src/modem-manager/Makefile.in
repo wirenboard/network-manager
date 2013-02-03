@@ -51,20 +51,30 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+
+# Support for the new ModemManager1 interface
+@WITH_MODEM_MANAGER_1_TRUE@am__append_1 = \
+@WITH_MODEM_MANAGER_1_TRUE@	nm-modem-broadband.h \
+@WITH_MODEM_MANAGER_1_TRUE@	nm-modem-broadband.c
+
+@WITH_MODEM_MANAGER_1_TRUE@am__append_2 = $(MM_GLIB_CFLAGS)
+@WITH_MODEM_MANAGER_1_TRUE@am__append_3 = $(MM_GLIB_LIBS)
 subdir = src/modem-manager
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gtk-doc.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
-	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/introspection.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libnl-check.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gnome-code-coverage.m4 \
+	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
+	$(top_srcdir)/m4/introspection.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/vapigen.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -73,14 +83,23 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+@WITH_MODEM_MANAGER_1_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 libmodem_manager_la_DEPENDENCIES =  \
 	$(top_builddir)/src/generated/libnm-generated.la \
 	$(top_builddir)/src/logging/libnm-logging.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2)
+am__libmodem_manager_la_SOURCES_DIST = nm-modem.c nm-modem.h \
+	nm-modem-generic.c nm-modem-generic.h nm-modem-cdma.c \
+	nm-modem-cdma.h nm-modem-gsm.c nm-modem-gsm.h \
+	nm-modem-manager.h nm-modem-manager.c nm-modem-types.h \
+	nm-modem-broadband.h nm-modem-broadband.c
+@WITH_MODEM_MANAGER_1_TRUE@am__objects_1 = libmodem_manager_la-nm-modem-broadband.lo
 am_libmodem_manager_la_OBJECTS = libmodem_manager_la-nm-modem.lo \
+	libmodem_manager_la-nm-modem-generic.lo \
 	libmodem_manager_la-nm-modem-cdma.lo \
 	libmodem_manager_la-nm-modem-gsm.lo \
-	libmodem_manager_la-nm-modem-manager.lo
+	libmodem_manager_la-nm-modem-manager.lo $(am__objects_1)
 libmodem_manager_la_OBJECTS = $(am_libmodem_manager_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -112,7 +131,7 @@ AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libmodem_manager_la_SOURCES)
-DIST_SOURCES = $(libmodem_manager_la_SOURCES)
+DIST_SOURCES = $(am__libmodem_manager_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -133,6 +152,10 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CKDB_PATH = @CKDB_PATH@
+CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
+CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
+CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -147,9 +170,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
-DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
-DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -159,17 +180,14 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
-GIO_CFLAGS = @GIO_CFLAGS@
-GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
 GLIB_MAKEFILE = @GLIB_MAKEFILE@
 GLIB_MKENUMS = @GLIB_MKENUMS@
-GMODULE_CFLAGS = @GMODULE_CFLAGS@
-GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
@@ -210,6 +228,7 @@ IPTABLES_PATH = @IPTABLES_PATH@
 IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
 IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -226,11 +245,7 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
-LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
-LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
-LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
-LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
@@ -245,6 +260,8 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MM_GLIB_CFLAGS = @MM_GLIB_CFLAGS@
+MM_GLIB_LIBS = @MM_GLIB_LIBS@
 MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
@@ -254,6 +271,7 @@ NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_MODIFY_SYSTEM_POLICY = @NM_MODIFY_SYSTEM_POLICY@
 NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
@@ -280,13 +298,14 @@ PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
-RESOLVCONF_PATH = @RESOLVCONF_PATH@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
-SYSTEMD_LIBS = @SYSTEMD_LIBS@
+SYSTEMD_INHIBIT_CFLAGS = @SYSTEMD_INHIBIT_CFLAGS@
+SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
+SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
+SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -341,6 +360,11 @@ localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+nmbinary = @nmbinary@
+nmconfdir = @nmconfdir@
+nmdatadir = @nmdatadir@
+nmrundir = @nmrundir@
+nmstatedir = @nmstatedir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -355,6 +379,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+with_dhclient = @with_dhclient@
+with_dhcpcd = @with_dhcpcd@
+with_netconfig = @with_netconfig@
+with_resolvconf = @with_resolvconf@
 INCLUDES = \
 	-I${top_srcdir}/src \
 	-I${top_builddir}/src/generated \
@@ -366,27 +394,16 @@ INCLUDES = \
 	-I${top_srcdir}/libnm-util
 
 noinst_LTLIBRARIES = libmodem-manager.la
-libmodem_manager_la_SOURCES = \
-	nm-modem.c \
-	nm-modem.h \
-	nm-modem-cdma.c \
-	nm-modem-cdma.h \
-	nm-modem-gsm.c \
-	nm-modem-gsm.h \
-	nm-modem-manager.h \
-	nm-modem-manager.c \
-	nm-modem-types.h
-
-libmodem_manager_la_CPPFLAGS = \
-	$(LIBNL_CFLAGS) \
-	$(DBUS_CFLAGS)
-
-libmodem_manager_la_LIBADD = \
+libmodem_manager_la_SOURCES = nm-modem.c nm-modem.h nm-modem-generic.c \
+	nm-modem-generic.h nm-modem-cdma.c nm-modem-cdma.h \
+	nm-modem-gsm.c nm-modem-gsm.h nm-modem-manager.h \
+	nm-modem-manager.c nm-modem-types.h $(am__append_1)
+libmodem_manager_la_CPPFLAGS = $(LIBNL_CFLAGS) $(DBUS_CFLAGS) \
+	$(am__append_2)
+libmodem_manager_la_LIBADD =  \
 	$(top_builddir)/src/generated/libnm-generated.la \
-	$(top_builddir)/src/logging/libnm-logging.la \
-	$(LIBNL_LIBS) \
-	$(DBUS_LIBS)
-
+	$(top_builddir)/src/logging/libnm-logging.la $(LIBNL_LIBS) \
+	$(DBUS_LIBS) $(am__append_3)
 all: all-am
 
 .SUFFIXES:
@@ -439,31 +456,30 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmodem_manager_la-nm-modem-broadband.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmodem_manager_la-nm-modem-cdma.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmodem_manager_la-nm-modem-generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmodem_manager_la-nm-modem-gsm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmodem_manager_la-nm-modem-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmodem_manager_la-nm-modem.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
@@ -474,6 +490,13 @@ libmodem_manager_la-nm-modem.lo: nm-modem.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-modem.c' object='libmodem_manager_la-nm-modem.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libmodem_manager_la-nm-modem.lo `test -f 'nm-modem.c' || echo '$(srcdir)/'`nm-modem.c
+
+libmodem_manager_la-nm-modem-generic.lo: nm-modem-generic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libmodem_manager_la-nm-modem-generic.lo -MD -MP -MF $(DEPDIR)/libmodem_manager_la-nm-modem-generic.Tpo -c -o libmodem_manager_la-nm-modem-generic.lo `test -f 'nm-modem-generic.c' || echo '$(srcdir)/'`nm-modem-generic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmodem_manager_la-nm-modem-generic.Tpo $(DEPDIR)/libmodem_manager_la-nm-modem-generic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-modem-generic.c' object='libmodem_manager_la-nm-modem-generic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libmodem_manager_la-nm-modem-generic.lo `test -f 'nm-modem-generic.c' || echo '$(srcdir)/'`nm-modem-generic.c
 
 libmodem_manager_la-nm-modem-cdma.lo: nm-modem-cdma.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libmodem_manager_la-nm-modem-cdma.lo -MD -MP -MF $(DEPDIR)/libmodem_manager_la-nm-modem-cdma.Tpo -c -o libmodem_manager_la-nm-modem-cdma.lo `test -f 'nm-modem-cdma.c' || echo '$(srcdir)/'`nm-modem-cdma.c
@@ -495,6 +518,13 @@ libmodem_manager_la-nm-modem-manager.lo: nm-modem-manager.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-modem-manager.c' object='libmodem_manager_la-nm-modem-manager.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libmodem_manager_la-nm-modem-manager.lo `test -f 'nm-modem-manager.c' || echo '$(srcdir)/'`nm-modem-manager.c
+
+libmodem_manager_la-nm-modem-broadband.lo: nm-modem-broadband.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libmodem_manager_la-nm-modem-broadband.lo -MD -MP -MF $(DEPDIR)/libmodem_manager_la-nm-modem-broadband.Tpo -c -o libmodem_manager_la-nm-modem-broadband.lo `test -f 'nm-modem-broadband.c' || echo '$(srcdir)/'`nm-modem-broadband.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libmodem_manager_la-nm-modem-broadband.Tpo $(DEPDIR)/libmodem_manager_la-nm-modem-broadband.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-modem-broadband.c' object='libmodem_manager_la-nm-modem-broadband.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmodem_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libmodem_manager_la-nm-modem-broadband.lo `test -f 'nm-modem-broadband.c' || echo '$(srcdir)/'`nm-modem-broadband.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

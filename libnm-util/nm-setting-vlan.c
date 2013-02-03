@@ -21,12 +21,16 @@
  * (C) Copyright 2011 - 2012 Red Hat, Inc.
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <dbus/dbus-glib.h>
+
 #include "nm-setting-vlan.h"
 #include "nm-param-spec-specialized.h"
 #include "nm-utils.h"
 #include "nm-dbus-glib-types.h"
 #include "nm-setting-connection.h"
+#include "nm-setting-private.h"
 
 /**
  * SECTION:nm-setting-vlan
@@ -54,7 +58,12 @@ nm_setting_vlan_error_quark (void)
 	return quark;
 }
 
-G_DEFINE_TYPE (NMSettingVlan, nm_setting_vlan, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingVlan, nm_setting_vlan, NM_TYPE_SETTING,
+                         _nm_register_setting (NM_SETTING_VLAN_SETTING_NAME,
+                                               g_define_type_id,
+                                               1,
+                                               NM_SETTING_VLAN_ERROR))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_VLAN)
 
 #define NM_SETTING_VLAN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_VLAN, NMSettingVlanPrivate))
 
@@ -436,8 +445,22 @@ static gboolean
 verify (NMSetting *setting, GSList *all_settings, GError **error)
 {
 	NMSettingVlanPrivate *priv = NM_SETTING_VLAN_GET_PRIVATE (setting);
+	NMSettingConnection *s_con = NULL;
+	NMSettingWired *s_wired = NULL;
+	GSList *iter;
 
-	if (priv->iface_name && !priv->iface_name[0]) {
+	for (iter = all_settings; iter; iter = iter->next) {
+		if (NM_IS_SETTING_CONNECTION (iter->data))
+			s_con = iter->data;
+		else if (NM_IS_SETTING_WIRED (iter->data))
+			s_wired = iter->data;
+	}
+
+	/* If iface_name is specified, it must be a valid interface name. We
+	 * don't check that it matches parent and/or id, because we allowing
+	 * renaming vlans to arbitrary names.
+	 */
+	if (priv->iface_name && !nm_utils_iface_valid_name (priv->iface_name)) {
 		g_set_error (error,
 		             NM_SETTING_VLAN_ERROR,
 		             NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
@@ -445,20 +468,45 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		return FALSE;
 	}
 
-	if (priv->parent && !priv->parent[0]) {
-		g_set_error (error,
-		             NM_SETTING_VLAN_ERROR,
-		             NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_VLAN_PARENT);
-		return FALSE;
-	}
+	if (priv->parent) {
+		if (nm_utils_is_uuid (priv->parent)) {
+			/* If we have an NMSettingConnection:master with slave-type="vlan",
+			 * then it must be the same UUID.
+			 */
+			if (s_con) {
+				const char *master = NULL, *slave_type = NULL;
 
-	if (priv->id > 4095) {
-		g_set_error (error,
-		             NM_SETTING_VLAN_ERROR,
-		             NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_VLAN_ID);
-		return FALSE;
+				slave_type = nm_setting_connection_get_slave_type (s_con);
+				if (!g_strcmp0 (slave_type, NM_SETTING_VLAN_SETTING_NAME))
+					master = nm_setting_connection_get_master (s_con);
+
+				if (master && g_strcmp0 (priv->parent, master) != 0) {
+					g_set_error (error,
+					             NM_SETTING_VLAN_ERROR,
+					             NM_SETTING_VLAN_ERROR_INVALID_PARENT,
+					             NM_SETTING_CONNECTION_MASTER);
+					return FALSE;
+				}
+			}
+		} else if (!nm_utils_iface_valid_name (priv->parent)) {
+			/* parent must be either a UUID or an interface name */
+			g_set_error (error,
+			             NM_SETTING_VLAN_ERROR,
+			             NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
+			             NM_SETTING_VLAN_PARENT);
+			return FALSE;
+		} 
+	} else {
+		/* If parent is NULL, the parent must be specified via
+		 * NMSettingWired:mac-address.
+		 */
+		if (!s_wired || !nm_setting_wired_get_mac_address (s_wired)) {
+			g_set_error (error,
+			             NM_SETTING_VLAN_ERROR,
+			             NM_SETTING_VLAN_ERROR_MISSING_PROPERTY,
+			             NM_SETTING_VLAN_PARENT);
+			return FALSE;
+		}
 	}
 
 	if (priv->flags & ~(NM_VLAN_FLAG_REORDER_HEADERS |

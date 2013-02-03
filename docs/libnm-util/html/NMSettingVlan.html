@@ -152,7 +152,8 @@ necessary for connection to VLAN interfaces.
 <pre class="programlisting">typedef enum {
 	NM_SETTING_VLAN_ERROR_UNKNOWN = 0,      /*&lt; nick=Unknown &gt;*/
 	NM_SETTING_VLAN_ERROR_INVALID_PROPERTY, /*&lt; nick=InvalidProperty &gt;*/
-	NM_SETTING_VLAN_ERROR_MISSING_PROPERTY  /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_VLAN_ERROR_MISSING_PROPERTY, /*&lt; nick=MissingProperty &gt;*/
+	NM_SETTING_VLAN_ERROR_INVALID_PARENT    /*&lt; nick=InvalidParent &gt;*/
 } NMSettingVlanError;
 </pre>
 <div class="variablelist"><table border="0">
@@ -171,7 +172,13 @@ necessary for connection to VLAN interfaces.
 <tr>
 <td><p><a name="NM-SETTING-VLAN-ERROR-MISSING-PROPERTY:CAPS"></a><span class="term"><code class="literal">NM_SETTING_VLAN_ERROR_MISSING_PROPERTY</code></span></p></td>
 <td>the property was missing and is
-required
+  required
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-VLAN-ERROR-INVALID-PARENT:CAPS"></a><span class="term"><code class="literal">NM_SETTING_VLAN_ERROR_INVALID_PARENT</code></span></p></td>
+<td>the VLAN parent was specified
+  inconsistently
 </td>
 </tr>
 </tbody>

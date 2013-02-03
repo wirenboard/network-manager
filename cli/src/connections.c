@@ -43,6 +43,7 @@
 #include <nm-device-olpc-mesh.h>
 #include <nm-device-infiniband.h>
 #include <nm-device-bond.h>
+#include <nm-device-bridge.h>
 #include <nm-device-vlan.h>
 #include <nm-remote-settings.h>
 #include <nm-vpn-connection.h>
@@ -94,6 +95,8 @@ static NmcOutputField nmc_fields_settings_names[] = {
 	SETTING_FIELD (NM_SETTING_BOND_SETTING_NAME, 0),                  /* 17 */
 	SETTING_FIELD (NM_SETTING_VLAN_SETTING_NAME, 0),                  /* 18 */
 	SETTING_FIELD (NM_SETTING_ADSL_SETTING_NAME, 0),                  /* 19 */
+	SETTING_FIELD (NM_SETTING_BRIDGE_SETTING_NAME, 0),                /* 20 */
+	SETTING_FIELD (NM_SETTING_BRIDGE_PORT_SETTING_NAME, 0),           /* 21 */
 	{NULL, NULL, 0, NULL, 0}
 };
 #define NMC_FIELDS_SETTINGS_NAMES_ALL_X  NM_SETTING_CONNECTION_SETTING_NAME","\
@@ -114,7 +117,9 @@ static NmcOutputField nmc_fields_settings_names[] = {
                                          NM_SETTING_VPN_SETTING_NAME","\
                                          NM_SETTING_INFINIBAND_SETTING_NAME","\
                                          NM_SETTING_BOND_SETTING_NAME","\
-                                         NM_SETTING_VLAN_SETTING_NAME
+                                         NM_SETTING_VLAN_SETTING_NAME","\
+                                         NM_SETTING_BRIDGE_SETTING_NAME","\
+                                         NM_SETTING_BRIDGE_PORT_SETTING_NAME
 #if WITH_WIMAX
 #define NMC_FIELDS_SETTINGS_NAMES_ALL    NMC_FIELDS_SETTINGS_NAMES_ALL_X","\
                                          NM_SETTING_WIMAX_SETTING_NAME
@@ -187,7 +192,7 @@ static void
 usage (void)
 {
 	fprintf (stderr,
-	         _("Usage: nmcli con { COMMAND | help }\n"
+	         _("Usage: nmcli connection { COMMAND | help }\n"
 	         "  COMMAND := { list | status | up | down | delete }\n\n"
 	         "  list [id <id> | uuid <id>]\n"
 	         "  status [id <id> | uuid <id> | path <path>]\n"
@@ -197,7 +202,9 @@ usage (void)
 	         "  up id <id> | uuid <id> [iface <iface>] [ap <BSSID>] [--nowait] [--timeout <timeout>]\n"
 #endif
 	         "  down id <id> | uuid <id>\n"
-	         "  delete id <id> | uuid <id>\n"));
+	         "  delete id <id> | uuid <id>\n"
+	         "\n"
+	         ));
 }
 
 /* The real commands that do something - i.e. not 'help', etc. */
@@ -450,6 +457,24 @@ nmc_connection_detail (NMConnection *connection, NmCli *nmc)
 				continue;
 			}
 		}
+
+		if (!strcasecmp (nmc_fields_settings_names[section_idx].name, nmc_fields_settings_names[20].name)) {
+			NMSettingBridge *s_bridge = nm_connection_get_setting_bridge (connection);
+			if (s_bridge) {
+				setting_bridge_details (s_bridge, nmc);
+				was_output = TRUE;
+				continue;
+			}
+		}
+
+		if (!strcasecmp (nmc_fields_settings_names[section_idx].name, nmc_fields_settings_names[21].name)) {
+			NMSettingBridgePort *s_bridge_port = nm_connection_get_setting_bridge_port (connection);
+			if (s_bridge_port) {
+				setting_bridge_port_details (s_bridge_port, nmc);
+				was_output = TRUE;
+				continue;
+			}
+		}
 	}
 
 	if (print_settings_array)
@@ -570,7 +595,7 @@ do_connections_list (NmCli *nmc, int argc, char **argv)
 				NMConnection *con;
 
 				if (next_arg (&argc, &argv) != 0) {
-					g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+					g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 					nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 					return nmc->return_value;
 				}
@@ -1107,7 +1132,7 @@ do_connections_status (NmCli *nmc, int argc, char **argv)
 				NMActiveConnection *acon;
 
 				if (next_arg (&argc, &argv) != 0) {
-					g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+					g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 					nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 					return nmc->return_value;
 				}
@@ -1645,7 +1670,7 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 			id_specified = TRUE;
 
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1660,7 +1685,7 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 		}
 		else if (strcmp (*argv, "iface") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1669,7 +1694,7 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 		}
 		else if (strcmp (*argv, "ap") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1679,7 +1704,7 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 #if WITH_WIMAX
 		else if (strcmp (*argv, "nsp") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1691,7 +1716,7 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 			wait = FALSE;
 		} else if (strcmp (*argv, "--timeout") == 0) {
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1737,7 +1762,8 @@ do_connection_up (NmCli *nmc, int argc, char **argv)
 	con_type = nm_setting_connection_get_connection_type (s_con);
 
 	if (   nm_connection_is_type (connection, NM_SETTING_BOND_SETTING_NAME)
-	    || nm_connection_is_type (connection, NM_SETTING_VLAN_SETTING_NAME))
+	    || nm_connection_is_type (connection, NM_SETTING_VLAN_SETTING_NAME)
+	    || nm_connection_is_type (connection, NM_SETTING_BRIDGE_SETTING_NAME))
 		is_virtual = TRUE;
 
 	device_found = find_device_for_connection (nmc, connection, iface, ap, nsp, &device, &spec_object, &error);
@@ -1799,7 +1825,7 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 			id_specified = TRUE;
 
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1901,7 +1927,7 @@ do_connection_delete (NmCli *nmc, int argc, char **argv)
 		if (strcmp (*argv, "id") == 0 || strcmp (*argv, "uuid") == 0) {
 			selector = *argv;
 			if (next_arg (&argc, &argv) != 0) {
-				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *argv);
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
@@ -1987,10 +2013,13 @@ parse_cmd (NmCli *nmc, int argc, char **argv)
 		else if (matches(*argv, "delete") == 0) {
 			nmc->return_value = do_connection_delete (nmc, argc-1, argv+1);
 		}
-		else if (matches (*argv, "help") == 0) {
+		else if (   matches (*argv, "help") == 0
+		         || (g_str_has_prefix (*argv, "-")  && matches ((*argv)+1, "help") == 0)
+		         || (g_str_has_prefix (*argv, "--") && matches ((*argv)+2, "help") == 0)) {
 			usage ();
 			nmc->should_wait = FALSE;
-		} else {
+		}
+		else {
 			usage ();
 			g_string_printf (nmc->return_text, _("Error: 'con' command '%s' is not valid."), *argv);
 			nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
@@ -2023,7 +2052,7 @@ get_connections_cb (NMRemoteSettings *settings, gpointer user_data)
 		quit ();
 }
 
-/* Entry point function for connections-related commands: 'nmcli con' */
+/* Entry point function for connections-related commands: 'nmcli connection' */
 NMCResultCode
 do_connections (NmCli *nmc, int argc, char **argv)
 {

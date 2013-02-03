@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <nm-utils.h>
 
 #include "net_parser.h"
@@ -62,31 +63,33 @@ test_getdata ()
 }
 
 static void
-test_read_hostname ()
+test_read_hostname (const char *base_path)
 {
-	gchar *hostname = read_hostname ("hostname");
+	char *hostname_path, *hostname;
 
-	ASSERT (hostname != NULL, "get hostname", "hostname is NULL");
-	ASSERT (strcmp ("gentoo", hostname) == 0,
-		"get hostname",
-		"hostname is not correctly read, read:%s, expected: gentoo",
-		hostname);
+	hostname_path = g_build_filename (base_path, "hostname", NULL);
+	hostname = read_hostname (hostname_path);
+
+	g_assert_cmpstr (hostname, ==, "gentoo");
+
 	g_free (hostname);
+	g_free (hostname_path);
 }
 
 static void
-test_write_hostname ()
+test_write_hostname (const char *temp_path)
 {
-	gchar *hostname = read_hostname ("hostname");
-	gchar *tmp;
+	char *hostname_path, *hostname;
 
-	write_hostname ("gentoo-nm", "hostname");
-	tmp = read_hostname ("hostname");
-	ASSERT (strcmp (tmp, "gentoo-nm") == 0,
-		"write hostname", "write hostname error");
-	write_hostname (hostname, "hostname");
-	g_free (tmp);
+	hostname_path = g_build_filename (temp_path, "hostname-test", NULL);
+	write_hostname (hostname_path, "gentoo-nm");
+	hostname = read_hostname (hostname_path);
+
+	g_assert_cmpstr (hostname, ==, "gentoo-nm");
+
 	g_free (hostname);
+	unlink (hostname_path);
+	g_free (hostname_path);
 }
 
 static void
@@ -226,21 +229,15 @@ test_wpa_parser ()
 {
 	const char *value;
 
-	ASSERT (exist_ssid ("example"), "get wsec",
-		"ssid myxjtu2 is not found");
-	ASSERT (exist_ssid ("static-wep-test"), "exist_ssid",
-		"ssid static-wep-test is not found");
+	g_assert (exist_ssid ("example"));
+
+	g_assert (exist_ssid ("static-wep-test"));
 	value = wpa_get_value ("static-wep-test", "key_mgmt");
-	ASSERT (value
-		&& strcmp (value, "NONE") == 0, "get wpa data",
-		"key_mgmt of static-wep-test should be NONE, find %s", value);
+	g_assert_cmpstr (value, ==, "NONE");
 	value = wpa_get_value ("static-wep-test", "wep_key0");
-	ASSERT (value
-		&& strcmp (value, "\"abcde\"") == 0,
-		"get wpa data",
-		"wep_key0 of static-wep-test should be abcde, find %s", value);
-	ASSERT (exist_ssid ("leap-example"), "get wsec",
-		"ssid leap-example is not found");
+	g_assert_cmpstr (value, ==, "\"abcde\"");
+
+	g_assert (exist_ssid ("leap-example"));
 
 	value = wpa_get_value ("test-with-hash-in-psk", "psk");
 	g_assert_cmpstr (value, ==, "\"xjtudlc3731###asdfasdfasdf\"");
@@ -277,48 +274,59 @@ test_new_connection ()
 	GError *error = NULL;
 	NMConnection *connection;
 
-	connection = ifnet_update_connection_from_config_block ("eth2", &error);
+	connection = ifnet_update_connection_from_config_block ("eth2", NULL, &error);
 	ASSERT (connection != NULL, "new connection",
 		"new connection failed: %s",
 		error ? error->message : "None");
 	g_object_unref (connection);
 
-	connection = ifnet_update_connection_from_config_block ("qiaomuf", &error);
+	connection = ifnet_update_connection_from_config_block ("qiaomuf", NULL, &error);
 	ASSERT (connection != NULL, "new connection",
 		"new connection failed: %s",
 		error ? error->message : "NONE");
 	g_object_unref (connection);
 
-	connection = ifnet_update_connection_from_config_block ("myxjtu2", &error);
+	connection = ifnet_update_connection_from_config_block ("myxjtu2", NULL, &error);
 	ASSERT (connection != NULL, "new connection",
 		"new connection failed: %s",
 		error ? error->message : "NONE");
 	g_object_unref (connection);
 
-	connection = ifnet_update_connection_from_config_block ("eth9", &error);
+	connection = ifnet_update_connection_from_config_block ("eth9", NULL, &error);
 	ASSERT (connection != NULL, "new connection",
 		"new connection(eth9) failed: %s",
 		error ? error->message : "NONE");
 	g_object_unref (connection);
 
-	connection = ifnet_update_connection_from_config_block ("eth10", &error);
+	connection = ifnet_update_connection_from_config_block ("eth10", NULL, &error);
 	ASSERT (connection != NULL, "new connection",
 		"new connection(eth10) failed: %s",
 		error ? error->message : "NONE");
 	g_object_unref (connection);
 }
 
+static void
+kill_backup (char **path)
+{
+	if (path) {
+		unlink (*path);
+		g_free (*path);
+		*path = NULL;
+	}
+}
+
 #define NET_GEN_NAME "net.generate"
 #define SUP_GEN_NAME "wpa_supplicant.conf.generate"
 
 static void
-test_update_connection ()
+test_update_connection (const char *basepath)
 {
 	GError *error = NULL;
 	NMConnection *connection;
 	gboolean success;
+	char *backup = NULL;
 
-	connection = ifnet_update_connection_from_config_block ("eth0", &error);
+	connection = ifnet_update_connection_from_config_block ("eth0", basepath, &error);
 	ASSERT (connection != NULL, "get connection",
 		"get connection failed: %s",
 		error ? error->message : "None");
@@ -327,11 +335,13 @@ test_update_connection ()
 	                                              NET_GEN_NAME,
 	                                              SUP_GEN_NAME,
 	                                              NULL,
+	                                              &backup,
 	                                              &error);
+	kill_backup (&backup);
 	ASSERT (success, "update connection", "update connection failed %s", "eth0");
 	g_object_unref (connection);
 
-	connection = ifnet_update_connection_from_config_block ("0xab3ace", &error);
+	connection = ifnet_update_connection_from_config_block ("0xab3ace", basepath, &error);
 	ASSERT (connection != NULL, "get connection", "get connection failed: %s",
 		error ? error->message : "None");
 
@@ -339,7 +349,9 @@ test_update_connection ()
 	                                              NET_GEN_NAME,
 	                                              SUP_GEN_NAME,
 	                                              NULL,
+	                                              &backup,
 	                                              &error);
+	kill_backup (&backup);
 	ASSERT (success, "update connection", "update connection failed %s", "0xab3ace");
 	g_object_unref (connection);
 
@@ -348,17 +360,21 @@ test_update_connection ()
 }
 
 static void
-test_add_connection ()
+test_add_connection (const char *basepath)
 {
 	NMConnection *connection;
+	char *backup = NULL;
 
-	connection = ifnet_update_connection_from_config_block ("eth0", NULL);
-	ASSERT (ifnet_add_new_connection (connection, NET_GEN_NAME, SUP_GEN_NAME, NULL),
+	connection = ifnet_update_connection_from_config_block ("eth0", basepath, NULL);
+	ASSERT (ifnet_add_new_connection (connection, NET_GEN_NAME, SUP_GEN_NAME, &backup, NULL),
 	        "add connection", "add connection failed: %s", "eth0");
+	kill_backup (&backup);
 	g_object_unref (connection);
-	connection = ifnet_update_connection_from_config_block ("myxjtu2", NULL);
-	ASSERT (ifnet_add_new_connection (connection, NET_GEN_NAME, SUP_GEN_NAME, NULL),
+
+	connection = ifnet_update_connection_from_config_block ("myxjtu2", basepath, NULL);
+	ASSERT (ifnet_add_new_connection (connection, NET_GEN_NAME, SUP_GEN_NAME, &backup, NULL),
 	        "add connection", "add connection failed: %s", "myxjtu2");
+	kill_backup (&backup);
 	g_object_unref (connection);
 
 	unlink (NET_GEN_NAME);
@@ -370,20 +386,24 @@ test_delete_connection ()
 {
 	GError *error = NULL;
 	NMConnection *connection;
+	char *backup = NULL;
 
-	connection = ifnet_update_connection_from_config_block ("eth7", &error);
+	connection = ifnet_update_connection_from_config_block ("eth7", NULL, &error);
 	ASSERT (connection != NULL, "get connection",
 	        "get connection failed: %s",
 	        error ? error->message : "None");
-	ASSERT (ifnet_delete_connection_in_parsers ("eth7", NET_GEN_NAME, SUP_GEN_NAME),
+	ASSERT (ifnet_delete_connection_in_parsers ("eth7", NET_GEN_NAME, SUP_GEN_NAME, &backup),
 	        "delete connection", "delete connection failed: %s", "eth7");
+	kill_backup (&backup);
 	g_object_unref (connection);
-	connection = ifnet_update_connection_from_config_block ("qiaomuf", &error);
+
+	connection = ifnet_update_connection_from_config_block ("qiaomuf", NULL, &error);
 	ASSERT (connection != NULL, "get connection",
 	        "get connection failed: %s",
 	        error ? error->message : "None");
-	ASSERT (ifnet_delete_connection_in_parsers ("qiaomuf", NET_GEN_NAME, SUP_GEN_NAME),
+	ASSERT (ifnet_delete_connection_in_parsers ("qiaomuf", NET_GEN_NAME, SUP_GEN_NAME, &backup),
 	        "delete connection", "delete connection failed: %s", "qiaomuf");
+	kill_backup (&backup);
 	g_object_unref (connection);
 
 	unlink (NET_GEN_NAME);
@@ -396,50 +416,51 @@ test_missing_config ()
 	GError *error = NULL;
 	NMConnection *connection;
 
-	connection = ifnet_update_connection_from_config_block ("eth8", &error);
+	connection = ifnet_update_connection_from_config_block ("eth8", NULL, &error);
 	ASSERT (connection == NULL && error != NULL, "get connection",
 	        "get connection should fail with 'Unknown config for eth8'");
 }
 
-static void
-run_all (gboolean run)
-{
-	if (run) {
-		test_strip_string ();
-		test_is_static ();
-		test_has_ip6_address ();
-		test_has_default_route ();
-		test_getdata ();
-		test_read_hostname ();
-		test_write_hostname ();
-		test_is_ip4_address ();
-		test_is_ip6_address ();
-		test_convert_ipv4_config_block ();
-		test_convert_ipv4_routes_block ();
-		test_is_unmanaged ();
-		test_wpa_parser ();
-		test_convert_ipv4_routes_block ();
-		test_new_connection ();
-		test_update_connection ();
-		test_add_connection ();
-		test_delete_connection ();
-		test_missing_config ();
-	}
-}
-
 int
-main (void)
+main (int argc, char **argv)
 {
-//      g_mem_set_vtable(glib_mem_profiler_table);
-//      g_atexit(g_mem_profile);
+	char *f;
+
 	g_type_init ();
+
+	f = g_build_filename (argv[1], "net", NULL);
+	ifnet_init (f);
+	g_free (f);
+
+	f = g_build_filename (argv[1], "wpa_supplicant.conf", NULL);
+	wpa_parser_init (f);
+	g_free (f);
+
+	test_strip_string ();
+	test_is_static ();
+	test_has_ip6_address ();
+	test_has_default_route ();
+	test_getdata ();
+	test_read_hostname (argv[1]);
+	test_write_hostname (argv[2]);
+	test_is_ip4_address ();
+	test_is_ip6_address ();
+	test_convert_ipv4_config_block ();
+	test_convert_ipv4_routes_block ();
+	test_is_unmanaged ();
+	test_wpa_parser ();
+	test_convert_ipv4_routes_block ();
+	test_new_connection ();
+	test_update_connection (argv[1]);
+	test_add_connection (argv[1]);
+	test_delete_connection ();
+	test_missing_config ();
+
 	ifnet_destroy ();
 	wpa_parser_destroy ();
-	ifnet_init ("net");
-	wpa_parser_init ("wpa_supplicant.conf");
-	printf ("Initialization complete\n");
-	run_all (TRUE);
-	ifnet_destroy ();
-	wpa_parser_destroy ();
+
+	f = g_path_get_basename (argv[0]);
+	fprintf (stdout, "%s: SUCCESS\n", f);
+	g_free (f);
 	return 0;
 }

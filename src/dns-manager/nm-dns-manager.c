@@ -40,17 +40,11 @@
 #include "nm-ip4-config.h"
 #include "nm-ip6-config.h"
 #include "nm-logging.h"
-#include "backends/nm-backend.h"
 #include "NetworkManagerUtils.h"
 #include "nm-posix-signals.h"
 
 #include "nm-dns-plugin.h"
 #include "nm-dns-dnsmasq.h"
-#include "nm-dns-bind.h"
-
-#ifdef HAVE_SELINUX
-#include <selinux/selinux.h>
-#endif
 
 #ifndef RESOLV_CONF
 #define RESOLV_CONF "/etc/resolv.conf"
@@ -208,7 +202,7 @@ merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src, const char *iface)
 }
 
 
-#if defined(TARGET_SUSE)
+#if defined(NETCONFIG_PATH)
 /**********************************/
 /* SUSE */
 
@@ -232,7 +226,7 @@ run_netconfig (GError **error, gint *stdin_fd)
 	char *tmp;
 	GPid pid = -1;
 
-	argv[0] = "/sbin/netconfig";
+	argv[0] = NETCONFIG_PATH;
 	argv[1] = "modify";
 	argv[2] = "--service";
 	argv[3] = "NetworkManager";
@@ -756,7 +750,7 @@ update_dns (NMDnsManager *self,
 	success = dispatch_resolvconf (domain, searches, nameservers, iface, error);
 #endif
 
-#ifdef TARGET_SUSE
+#ifdef NETCONFIG_PATH
 	if (success == FALSE) {
 		success = dispatch_netconfig (domain, searches, nameservers,
 		                              nis_domain, nis_servers,
@@ -766,9 +760,6 @@ update_dns (NMDnsManager *self,
 
 	if (success == FALSE)
 		success = update_resolv_conf (domain, searches, nameservers, iface, error);
-
-	if (success)
-		nm_backend_update_dns ();
 
 	if (searches)
 		g_strfreev (searches);
@@ -1055,10 +1046,7 @@ load_plugins (NMDnsManager *self, const char **plugins)
 		for (iter = plugins; iter && *iter; iter++) {
 			if (!strcasecmp (*iter, "dnsmasq"))
 				plugin = NM_DNS_PLUGIN (nm_dns_dnsmasq_new ());
-			else if (!strcasecmp (*iter, "bind")) {
-				plugin = NM_DNS_PLUGIN (nm_dns_bind_new ());
-				nm_log_warn (LOGD_DNS, "The BIND plugin is experimental!");
-			} else {
+			else {
 				nm_log_warn (LOGD_DNS, "Unknown DNS plugin '%s'", *iter);\
 				continue;
 			}

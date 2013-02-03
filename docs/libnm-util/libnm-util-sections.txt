@@ -23,6 +23,8 @@ nm_connection_get_setting_802_1x
 nm_connection_get_setting_adsl
 nm_connection_get_setting_bluetooth
 nm_connection_get_setting_bond
+nm_connection_get_setting_bridge
+nm_connection_get_setting_bridge_port
 nm_connection_get_setting_by_name
 nm_connection_get_setting_cdma
 nm_connection_get_setting_connection
@@ -62,11 +64,6 @@ NM_IS_CONNECTION
 NM_IS_CONNECTION_CLASS
 NM_TYPE_CONNECTION
 nm_connection_get_type
-</SECTION>
-
-<SECTION>
-<FILE>nm-connection-private</FILE>
-
 </SECTION>
 
 <SECTION>
@@ -334,6 +331,66 @@ nm_setting_bond_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-setting-bridge</FILE>
+<TITLE>NMSettingBridge</TITLE>
+NMSettingBridge
+NMSettingBridgeClass
+NMSettingBridgeError
+NM_SETTING_BRIDGE_AGEING_TIME
+NM_SETTING_BRIDGE_ERROR
+NM_SETTING_BRIDGE_FORWARD_DELAY
+NM_SETTING_BRIDGE_HELLO_TIME
+NM_SETTING_BRIDGE_INTERFACE_NAME
+NM_SETTING_BRIDGE_MAX_AGE
+NM_SETTING_BRIDGE_PRIORITY
+NM_SETTING_BRIDGE_SETTING_NAME
+NM_SETTING_BRIDGE_STP
+nm_setting_bridge_error_quark
+nm_setting_bridge_get_ageing_time
+nm_setting_bridge_get_forward_delay
+nm_setting_bridge_get_hello_time
+nm_setting_bridge_get_interface_name
+nm_setting_bridge_get_max_age
+nm_setting_bridge_get_priority
+nm_setting_bridge_get_stp
+nm_setting_bridge_new
+<SUBSECTION Standard>
+NM_IS_SETTING_BRIDGE
+NM_IS_SETTING_BRIDGE_CLASS
+NM_SETTING_BRIDGE
+NM_SETTING_BRIDGE_CLASS
+NM_SETTING_BRIDGE_GET_CLASS
+NM_TYPE_SETTING_BRIDGE
+nm_setting_bridge_get_type
+</SECTION>
+
+<SECTION>
+<FILE>nm-setting-bridge-port</FILE>
+<TITLE>NMSettingBridgePort</TITLE>
+NMSettingBridgePort
+NMSettingBridgePortClass
+NMSettingBridgePortError
+NM_SETTING_BRIDGE_PORT_ERROR
+NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE
+NM_SETTING_BRIDGE_PORT_PATH_COST
+NM_SETTING_BRIDGE_PORT_PRIORITY
+NM_SETTING_BRIDGE_PORT_SETTING_NAME
+nm_setting_bridge_port_error_quark
+nm_setting_bridge_port_get_hairpin_mode
+nm_setting_bridge_port_get_path_cost
+nm_setting_bridge_port_get_priority
+nm_setting_bridge_port_new
+<SUBSECTION Standard>
+NM_IS_SETTING_BRIDGE_PORT
+NM_IS_SETTING_BRIDGE_PORT_CLASS
+NM_SETTING_BRIDGE_PORT
+NM_SETTING_BRIDGE_PORT_CLASS
+NM_SETTING_BRIDGE_PORT_GET_CLASS
+NM_TYPE_SETTING_BRIDGE_PORT
+nm_setting_bridge_port_get_type
+</SECTION>
+
+<SECTION>
 <FILE>nm-setting-cdma</FILE>
 <TITLE>NMSettingCdma</TITLE>
 NMSettingCdma
@@ -373,6 +430,7 @@ NM_SETTING_CONNECTION_ID
 NM_SETTING_CONNECTION_MASTER
 NM_SETTING_CONNECTION_PERMISSIONS
 NM_SETTING_CONNECTION_READ_ONLY
+NM_SETTING_CONNECTION_SECONDARIES
 NM_SETTING_CONNECTION_SETTING_NAME
 NM_SETTING_CONNECTION_SLAVE_TYPE
 NM_SETTING_CONNECTION_TIMESTAMP
@@ -380,14 +438,17 @@ NM_SETTING_CONNECTION_TYPE
 NM_SETTING_CONNECTION_UUID
 NM_SETTING_CONNECTION_ZONE
 nm_setting_connection_add_permission
+nm_setting_connection_add_secondary
 nm_setting_connection_error_quark
 nm_setting_connection_get_autoconnect
 nm_setting_connection_get_connection_type
 nm_setting_connection_get_id
 nm_setting_connection_get_master
 nm_setting_connection_get_num_permissions
+nm_setting_connection_get_num_secondaries
 nm_setting_connection_get_permission
 nm_setting_connection_get_read_only
+nm_setting_connection_get_secondary
 nm_setting_connection_get_slave_type
 nm_setting_connection_get_timestamp
 nm_setting_connection_get_uuid
@@ -396,6 +457,7 @@ nm_setting_connection_is_slave_type
 nm_setting_connection_new
 nm_setting_connection_permissions_user_allowed
 nm_setting_connection_remove_permission
+nm_setting_connection_remove_secondary
 <SUBSECTION Standard>
 NM_IS_SETTING_CONNECTION
 NM_IS_SETTING_CONNECTION_CLASS
@@ -579,6 +641,7 @@ NMSettingIP6ConfigClass
 NMSettingIP6ConfigError
 NMSettingIP6ConfigPrivacy
 NM_SETTING_IP6_CONFIG_ADDRESSES
+NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME
 NM_SETTING_IP6_CONFIG_DNS
 NM_SETTING_IP6_CONFIG_DNS_SEARCH
 NM_SETTING_IP6_CONFIG_ERROR
@@ -630,6 +693,7 @@ nm_setting_ip6_config_clear_dns_searches
 nm_setting_ip6_config_clear_routes
 nm_setting_ip6_config_error_quark
 nm_setting_ip6_config_get_address
+nm_setting_ip6_config_get_dhcp_hostname
 nm_setting_ip6_config_get_dns
 nm_setting_ip6_config_get_dns_search
 nm_setting_ip6_config_get_ignore_auto_dns
@@ -772,6 +836,7 @@ nm_setting_pppoe_get_type
 
 <SECTION>
 <FILE>nm-setting-private</FILE>
+NM_SETTING_REGISTER_TYPE
 NM_SETTING_SECRET_FLAGS_ALL
 </SECTION>
 
@@ -966,6 +1031,7 @@ NM_SETTING_WIRELESS_MAC_ADDRESS
 NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST
 NM_SETTING_WIRELESS_MODE
 NM_SETTING_WIRELESS_MODE_ADHOC
+NM_SETTING_WIRELESS_MODE_AP
 NM_SETTING_WIRELESS_MODE_INFRA
 NM_SETTING_WIRELESS_MTU
 NM_SETTING_WIRELESS_RATE
@@ -1072,6 +1138,7 @@ nm_setting_wireless_security_get_type
 <FILE>nm-utils</FILE>
 NMUtilsSecurityType
 NM_UTILS_HWADDR_LEN_MAX
+nm_utils_ap_mode_security_valid
 nm_utils_deinit
 nm_utils_escape_ssid
 nm_utils_file_is_pkcs12
@@ -1081,6 +1148,7 @@ nm_utils_hwaddr_aton
 nm_utils_hwaddr_len
 nm_utils_hwaddr_ntoa
 nm_utils_hwaddr_type
+nm_utils_iface_valid_name
 nm_utils_init
 nm_utils_ip4_addresses_from_gvalue
 nm_utils_ip4_addresses_to_gvalue
@@ -1096,6 +1164,7 @@ nm_utils_ip6_dns_to_gvalue
 nm_utils_ip6_routes_from_gvalue
 nm_utils_ip6_routes_to_gvalue
 nm_utils_is_empty_ssid
+nm_utils_is_uuid
 nm_utils_rsa_key_encrypt
 nm_utils_same_ssid
 nm_utils_security_valid
@@ -1119,6 +1188,8 @@ NM_TYPE_SETTING_802_1X_ERROR
 NM_TYPE_SETTING_ADSL_ERROR
 NM_TYPE_SETTING_BLUETOOTH_ERROR
 NM_TYPE_SETTING_BOND_ERROR
+NM_TYPE_SETTING_BRIDGE_ERROR
+NM_TYPE_SETTING_BRIDGE_PORT_ERROR
 NM_TYPE_SETTING_CDMA_ERROR
 NM_TYPE_SETTING_COMPARE_FLAGS
 NM_TYPE_SETTING_CONNECTION_ERROR
@@ -1154,6 +1225,8 @@ nm_setting_802_1x_error_get_type
 nm_setting_adsl_error_get_type
 nm_setting_bluetooth_error_get_type
 nm_setting_bond_error_get_type
+nm_setting_bridge_error_get_type
+nm_setting_bridge_port_error_get_type
 nm_setting_cdma_error_get_type
 nm_setting_compare_flags_get_type
 nm_setting_connection_error_get_type

@@ -1,4 +1,4 @@
-SUBDIRS=. tests
+SUBDIRS = . tests
 
 ###########################################
 # Test libraries
@@ -24,7 +24,7 @@ nm_dhcp_client_action_SOURCES = \
 
 nm_dhcp_client_action_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
-	-DSYSCONFDIR=\"$(sysconfdir)\" \
+	-DNMCONFDIR=\"$(nmconfdir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\"
 
 nm_dhcp_client_action_LDADD = $(DBUS_LIBS)
@@ -36,7 +36,6 @@ nm_avahi_autoipd_action_SOURCES = \
 nm_avahi_autoipd_action_CPPFLAGS = 		\
 	$(DBUS_CFLAGS)						\
 	$(GLIB_CFLAGS)					\
-	-DG_DISABLE_DEPRECATED				\
 	-DSYSCONFDIR=\"$(sysconfdir)\"		\
 	-DLIBEXECDIR=\"$(libexecdir)\"
 
@@ -59,8 +58,7 @@ nm_dispatcher_action_CPPFLAGS = \
 	-I${top_builddir}/libnm-util \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	-DG_DISABLE_DEPRECATED \
-	-DSYSCONFDIR=\"$(sysconfdir)\" \
+	-DNMCONFDIR=\"$(nmconfdir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\"
 
 nm_dispatcher_action_LDADD = \

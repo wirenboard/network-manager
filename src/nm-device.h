@@ -27,6 +27,7 @@
 #include <netinet/in.h>
 
 #include "NetworkManager.h"
+#include "nm-types.h"
 #include "nm-activation-request.h"
 #include "nm-ip4-config.h"
 #include "nm-ip6-config.h"
@@ -59,6 +60,7 @@
 #define NM_DEVICE_TYPE_DESC        "type-desc"    /* Internal only */
 #define NM_DEVICE_RFKILL_TYPE      "rfkill-type"  /* Internal only */
 #define NM_DEVICE_IFINDEX          "ifindex"      /* Internal only */
+#define NM_DEVICE_AVAILABLE_CONNECTIONS "available-connections"
 
 /* Internal signals */
 #define NM_DEVICE_AUTH_REQUEST "auth-request"
@@ -83,9 +85,9 @@ typedef enum {
 	NM_DEVICE_ERROR_NOT_ACTIVE,                /*< nick=NotActive >*/
 } NMDeviceError;
 
-typedef struct {
+struct _NMDevice {
 	GObject parent;
-} NMDevice;
+};
 
 typedef struct {
 	GObjectClass parent;
@@ -124,9 +126,20 @@ typedef struct {
 	                                             GSList *connections,
 	                                             char **specific_object);
 
+	/* Checks whether the connection is compatible with the device using
+	 * only the devices type and characteristics.  Does not use any live
+	 * network information like WiFi/WiMAX scan lists etc.
+	 */
 	gboolean    (* check_connection_compatible) (NMDevice *self,
 	                                             NMConnection *connection,
 	                                             GError **error);
+
+	/* Checks whether the connection is likely available to be activated,
+	 * including any live network information like scan lists.  Returns
+	 * TRUE if the connection is available; FALSE if not.
+	 */
+	gboolean    (* check_connection_available) (NMDevice *self,
+	                                            NMConnection *connection);
 
 	gboolean    (* complete_connection)         (NMDevice *self,
 	                                             NMConnection *connection,
@@ -168,7 +181,8 @@ typedef struct {
 	                                    gboolean fail_if_no_hwaddr);
 
 	gboolean        (* enslave_slave) (NMDevice *self,
-	                                   NMDevice *slave);
+	                                   NMDevice *slave,
+	                                   NMConnection *connection);
 
 	gboolean        (* release_slave) (NMDevice *self,
 	                                   NMDevice *slave);
@@ -204,8 +218,14 @@ NMDHCP6Config * nm_device_get_dhcp6_config (NMDevice *dev);
 NMIP4Config *	nm_device_get_ip4_config	(NMDevice *dev);
 NMIP6Config *	nm_device_get_ip6_config	(NMDevice *dev);
 
-gboolean        nm_device_enslave_slave     (NMDevice *dev, NMDevice *slave);
-gboolean        nm_device_release_slave     (NMDevice *dev, NMDevice *slave);
+/* Master */
+gboolean        nm_device_master_add_slave  (NMDevice *dev, NMDevice *slave);
+GSList *        nm_device_master_get_slaves (NMDevice *dev);
+
+/* Slave */
+void            nm_device_slave_notify_enslaved (NMDevice *dev,
+                                                 gboolean enslaved,
+                                                 gboolean master_failed);
 
 NMActRequest *	nm_device_get_act_request	(NMDevice *dev);
 NMConnection *  nm_device_get_connection	(NMDevice *dev);
@@ -272,9 +292,11 @@ void nm_device_queue_state   (NMDevice *self,
 
 gboolean nm_device_get_firmware_missing (NMDevice *self);
 
-gboolean nm_device_activate (NMDevice *device, NMActRequest *req, GError **error);
+void nm_device_activate (NMDevice *device, NMActRequest *req);
 
 void nm_device_set_connection_provider (NMDevice *device, NMConnectionProvider *provider);
+
+gboolean nm_device_supports_vlans (NMDevice *device);
 
 G_END_DECLS
 

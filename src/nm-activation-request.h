@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2005 - 2010 Red Hat, Inc.
+ * (C) Copyright 2005 - 2012 Red Hat, Inc.
  */
 
 #ifndef NM_ACTIVATION_REQUEST_H
@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include "nm-types.h"
 #include "nm-connection.h"
 #include "nm-active-connection.h"
 #include "nm-settings-flags.h"
@@ -34,26 +35,15 @@
 #define NM_IS_ACT_REQUEST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_ACT_REQUEST))
 #define NM_ACT_REQUEST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_ACT_REQUEST, NMActRequestClass))
 
-typedef enum {
-	NM_ACT_REQUEST_DEP_RESULT_UNKNOWN,
-	NM_ACT_REQUEST_DEP_RESULT_WAIT,
-	NM_ACT_REQUEST_DEP_RESULT_READY,
-	NM_ACT_REQUEST_DEP_RESULT_FAILED,
-} NMActRequestDependencyResult;
-
-#define NM_ACT_REQUEST_DEPENDENCY_RESULT "dependency-result"
-
 typedef struct {
-	GObject parent;
+	NMActiveConnection parent;
 } NMActRequest;
 
 typedef struct {
-	GObjectClass parent;
+	NMActiveConnectionClass parent;
 
 	/* Signals */
 	void (*properties_changed) (NMActRequest *req, GHashTable *properties);
-
-	void (*dependency_result) (NMActRequest *req, NMActRequestDependencyResult result);
 } NMActRequestClass;
 
 GType nm_act_request_get_type (void);
@@ -62,13 +52,16 @@ NMActRequest *nm_act_request_new          (NMConnection *connection,
                                            const char *specific_object,
                                            gboolean user_requested,
                                            gulong user_uid,
+                                           const char *dbus_sender,
                                            gboolean assumed,
-                                           gpointer *device,  /* An NMDevice */
-                                           NMActiveConnection *dependency);
+                                           NMDevice *device,
+                                           NMDevice *master);
 
-NMConnection *nm_act_request_get_connection     (NMActRequest *req);
+NMConnection *nm_act_request_get_connection (NMActRequest *req);
 
-gboolean      nm_act_request_get_user_requested (NMActRequest *req);
+gulong        nm_act_request_get_user_uid (NMActRequest *req);
+
+const char   *nm_act_request_get_dbus_sender (NMActRequest *req);
 
 gboolean      nm_act_request_get_shared (NMActRequest *req);
 
@@ -77,14 +70,6 @@ void          nm_act_request_set_shared (NMActRequest *req, gboolean shared);
 void          nm_act_request_add_share_rule (NMActRequest *req,
                                              const char *table,
                                              const char *rule);
-
-GObject *     nm_act_request_get_device (NMActRequest *req);
-
-gboolean      nm_act_request_get_assumed (NMActRequest *req);
-
-NMActiveConnection *         nm_act_request_get_dependency (NMActRequest *req);
-
-NMActRequestDependencyResult nm_act_request_get_dependency_result (NMActRequest *req);
 
 /* Secrets handling */
 

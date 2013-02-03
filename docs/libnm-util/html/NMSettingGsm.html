@@ -297,7 +297,9 @@ the device may use when connecting to this network.
 	NM_SETTING_GSM_NETWORK_TYPE_UMTS_HSPA = 0,
 	NM_SETTING_GSM_NETWORK_TYPE_GPRS_EDGE = 1,
 	NM_SETTING_GSM_NETWORK_TYPE_PREFER_UMTS_HSPA = 2,
-	NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE = 3
+	NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE = 3,
+	NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G = 4,
+	NM_SETTING_GSM_NETWORK_TYPE_4G = 5
 } NMSettingGsmNetworkType;
 </pre>
 <p>
@@ -334,6 +336,18 @@ preferred but 2G-type technologies may be used as a fallback
 <td><p><a name="NM-SETTING-GSM-NETWORK-TYPE-PREFER-GPRS-EDGE:CAPS"></a><span class="term"><code class="literal">NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE</code></span></p></td>
 <td>2G-type technologies are
 preferred but 3G-type technologies may be used as a fallback
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-GSM-NETWORK-TYPE-PREFER-4G:CAPS"></a><span class="term"><code class="literal">NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G</code></span></p></td>
+<td>4G/LTE-type technologies are
+preferred but 3G/2/-type technologies may be used as a fallback
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-GSM-NETWORK-TYPE-4G:CAPS"></a><span class="term"><code class="literal">NM_SETTING_GSM_NETWORK_TYPE_4G</code></span></p></td>
+<td>only 4G/LTE type
+technologies may be used
 </td>
 </tr>
 </tbody>
@@ -746,7 +760,7 @@ technologies.  Permitted values are those specified by
 <a class="link" href="NMSettingGsm.html#NMSettingGsmNetworkType"><span class="type">NMSettingGsmNetworkType</span></a>.  Note that not all devices allow network
 preference control.
 </p>
-<p>Allowed values: [G_MAXULONG,3]</p>
+<p>Allowed values: [G_MAXULONG,5]</p>
 <p>Default value: -1</p>
 </div>
 <hr>

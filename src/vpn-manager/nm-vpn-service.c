@@ -355,7 +355,7 @@ nm_vpn_service_activate (NMVPNService *service,
 	                  G_CALLBACK (connection_vpn_state_changed),
 	                  service);
 
-	priv->connections = g_slist_prepend (priv->connections, vpn);
+	priv->connections = g_slist_prepend (priv->connections, g_object_ref (vpn));
 
 	if (nm_dbus_manager_name_has_owner (priv->dbus_mgr, priv->dbus_service)) {
 		// FIXME: fill in error when errors happen
@@ -369,12 +369,12 @@ nm_vpn_service_activate (NMVPNService *service,
 	return vpn;
 }
 
-GSList *
+const GSList *
 nm_vpn_service_get_active_connections (NMVPNService *service)
 {
 	g_return_val_if_fail (NM_IS_VPN_SERVICE (service), NULL);
 
-	return g_slist_copy (NM_VPN_SERVICE_GET_PRIVATE (service)->connections);
+	return NM_VPN_SERVICE_GET_PRIVATE (service)->connections;
 }
 
 static void

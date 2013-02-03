@@ -1,6 +1,6 @@
 include $(GLIB_MAKEFILE)
 
-SUBDIRS=. tests
+SUBDIRS = . tests
 
 INCLUDES = \
 	-I$(top_srcdir)/include \
@@ -45,7 +45,7 @@ libdeprecated_HEADERS = libnm_glib.h
 lib_LTLIBRARIES = libnm-glib.la libnm-glib-vpn.la
 
 libnm_glib_la_CFLAGS = \
-	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GUDEV_CFLAGS)
 
@@ -63,6 +63,7 @@ libnminclude_HEADERS = \
 	nm-device-bt.h \
 	nm-device-olpc-mesh.h \
 	nm-device-bond.h \
+	nm-device-bridge.h \
 	nm-device-vlan.h \
 	nm-access-point.h \
 	nm-ip4-config.h \
@@ -97,6 +98,7 @@ libnm_glib_la_csources = \
 	nm-device-bt.c \
 	nm-device-olpc-mesh.c \
 	nm-device-bond.c \
+	nm-device-bridge.c \
 	nm-device-vlan.c \
 	nm-access-point.c \
 	nm-ip4-config.c \
@@ -139,7 +141,7 @@ nm_glib_marshal_sources = $(libnm_glib_la_SOURCES)
 libnm_glib_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(builddir)/libdeprecated-nm-glib.la \
-	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(GUDEV_LIBS)
 
@@ -151,8 +153,8 @@ libnm_glib_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
 noinst_PROGRAMS = libnm-glib-test
 
 libnm_glib_test_SOURCES = libnm-glib-test.c
-libnm_glib_test_CFLAGS = $(GIO_CFLAGS) $(DBUS_CFLAGS)
-libnm_glib_test_LDADD = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la $(GIO_LIBS) $(DBUS_LIBS)
+libnm_glib_test_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
+libnm_glib_test_LDADD = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
 
 
 libnm_glib_vpn_la_SOURCES = \
@@ -162,8 +164,8 @@ libnm_glib_vpn_la_SOURCES = \
 	nm-vpn-enum-types.c
 GLIB_GENERATED += nm-vpn-enum-types.h nm-vpn-enum-types.c
 nm_vpn_enum_types_sources = $(libnmvpn_HEADERS)
-libnm_glib_vpn_la_CFLAGS = $(GIO_CFLAGS) $(DBUS_CFLAGS)
-libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GIO_LIBS) $(DBUS_LIBS)
+libnm_glib_vpn_la_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
+libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
 libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib-vpn.ver \
 	-version-info "2:0:1"
 
@@ -174,7 +176,7 @@ BUILT_SOURCES += $(GLIB_GENERATED)
 #####################################################
 
 libnm_glib_test_la_CFLAGS = \
-	$(GIO_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GUDEV_CFLAGS) \
 	-DLIBNM_GLIB_TEST
@@ -185,7 +187,7 @@ libnm_glib_test_la_SOURCES = \
 
 libnm_glib_test_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GIO_LIBS) \
+	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
 	$(GUDEV_LIBS)
 
@@ -232,7 +234,7 @@ typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
 endif
 
-if WITH_TESTS
+if ENABLE_TESTS
 
 check-local:
 	$(top_srcdir)/tools/check-exports.sh $(builddir)/.libs/libnm-glib.so $(SYMBOL_VIS_FILE)

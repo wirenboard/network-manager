@@ -9,12 +9,10 @@ NMSettingConnection
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -49,6 +47,11 @@ NMSettingConnection
 </para>
 
 <!-- ##### ARG NMSettingConnection:read-only ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:secondaries ##### -->
 <para>
 
 </para>
@@ -142,6 +145,13 @@ NMSettingConnection
 
 
 
+<!-- ##### MACRO NM_SETTING_CONNECTION_SECONDARIES ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_CONNECTION_SETTING_NAME ##### -->
 <para>
 
@@ -193,6 +203,16 @@ NMSettingConnection
 @ptype: 
 @pitem: 
 @detail: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_add_secondary ##### -->
+<para>
+
+</para>
+
+@setting: 
+@sec_uuid: 
 @Returns: 
 
 
@@ -250,6 +270,15 @@ NMSettingConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_setting_connection_get_num_secondaries ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_setting_connection_get_permission ##### -->
 <para>
 
@@ -269,6 +298,16 @@ NMSettingConnection
 </para>
 
 @setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_secondary ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
 @Returns: 
 
 
@@ -338,6 +377,15 @@ NMSettingConnection
 
 
 <!-- ##### FUNCTION nm_setting_connection_remove_permission ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_secondary ##### -->
 <para>
 
 </para>
