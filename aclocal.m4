@@ -1280,6 +1280,7 @@ AC_SUBST([am__untar])
 
 m4_include([m4/compiler_warnings.m4])
 m4_include([m4/gettext.m4])
+m4_include([m4/gnome-code-coverage.m4])
 m4_include([m4/gtk-doc.m4])
 m4_include([m4/iconv.m4])
 m4_include([m4/intlmacosx.m4])

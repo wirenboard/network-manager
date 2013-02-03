@@ -86,12 +86,14 @@ typedef struct {
 	char *                dev;
 	gboolean              is_wireless;
 	gboolean              has_credreq;  /* Whether querying 802.1x credentials is supported */
+	ApSupport             ap_support;   /* Lightweight AP mode support */
 	gboolean              fast_supported;
 	guint32               max_scan_ssids;
 	guint32               ready_count;
 
 	char *                object_path;
 	guint32               state;
+	int                   disconnect_reason;
 	NMCallStore *         assoc_pcalls;
 	NMCallStore *         other_pcalls;
 
@@ -468,7 +470,14 @@ set_state (NMSupplicantInterface *self, guint32 new_state)
 	    || old_state == NM_SUPPLICANT_INTERFACE_STATE_SCANNING)
 		priv->last_scan = time (NULL);
 
-	g_signal_emit (self, signals[STATE], 0, priv->state, old_state);
+	/* Disconnect reason is no longer relevant when not in the DISCONNECTED state */
+	if (priv->state != NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED)
+		priv->disconnect_reason = 0;
+
+	g_signal_emit (self, signals[STATE], 0,
+	               priv->state,
+	               old_state,
+	               priv->disconnect_reason);
 }
 
 static void
@@ -607,6 +616,21 @@ wpas_iface_properties_changed (DBusGProxy *proxy,
 	value = g_hash_table_lookup (props, "Capabilities");
 	if (value && G_VALUE_HOLDS (value, DBUS_TYPE_G_MAP_OF_VARIANT))
 		parse_capabilities (self, g_value_get_boxed (value));
+
+	/* Disconnect reason is currently only given for deauthentication events,
+	 * not disassociation; currently they are IEEE 802.11 "reason codes",
+	 * defined by (IEEE 802.11-2007, 7.3.1.7, Table 7-22).  Any locally caused
+	 * deauthentication will be negative, while authentications caused by the
+	 * AP will be positive.
+	 */
+	value = g_hash_table_lookup (props, "DisconnectReason");
+	if (value && G_VALUE_HOLDS (value, G_TYPE_INT)) {
+		priv->disconnect_reason = g_value_get_int (value);
+		if (priv->disconnect_reason != 0) {
+			nm_log_warn (LOGD_SUPPLICANT, "Connection disconnected (reason %d)",
+			             priv->disconnect_reason);
+		}
+	}
 }
 
 static void
@@ -734,6 +758,7 @@ wpas_iface_check_network_reply (NMSupplicantInterface *self)
 	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
 
+	priv->ready_count++;
 	info = nm_supplicant_info_new (self, priv->props_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->iface_proxy, "NetworkReply",
 	                                iface_check_netreply_cb,
@@ -742,6 +767,76 @@ wpas_iface_check_network_reply (NMSupplicantInterface *self)
 	                                DBUS_TYPE_G_OBJECT_PATH, "/foobaraasdfasdf",
 	                                G_TYPE_STRING, "foobar",
 	                                G_TYPE_STRING, "foobar",
+	                                G_TYPE_INVALID);
+	nm_supplicant_info_set_call (info, call);
+}
+
+ApSupport
+nm_supplicant_interface_get_ap_support (NMSupplicantInterface *self)
+{
+	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->ap_support;
+}
+
+void
+nm_supplicant_interface_set_ap_support (NMSupplicantInterface *self,
+                                        ApSupport ap_support)
+{
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+
+	/* Use the best indicator of support between the supplicant global
+	 * Capabilities property and the interface's introspection data.
+	 */
+	if (ap_support > priv->ap_support)
+		priv->ap_support = ap_support;
+}
+
+static void
+iface_check_ap_mode_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
+{
+	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	char *data;
+
+	/* The ProbeRequest method only exists if AP mode has been enabled */
+	if (dbus_g_proxy_end_call (proxy, call_id, NULL,
+	                           G_TYPE_STRING,
+	                           &data,
+	                           G_TYPE_INVALID)) {
+		if (data && strstr (data, "ProbeRequest"))
+			priv->ap_support = AP_SUPPORT_YES;
+		g_free (data);
+	}
+
+	iface_check_ready (info->interface);
+}
+
+static void
+wpas_iface_check_ap_mode (NMSupplicantInterface *self)
+{
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+	NMSupplicantInfo *info;
+	DBusGProxyCall *call;
+	DBusGProxy *proxy;
+
+	priv->ready_count++;
+
+	proxy = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
+	                                   WPAS_DBUS_SERVICE,
+	                                   priv->object_path,
+	                                   DBUS_INTERFACE_INTROSPECTABLE);
+
+	info = nm_supplicant_info_new (self, proxy, priv->other_pcalls);
+	g_object_unref (proxy);
+
+	/* If the global supplicant capabilities property is not present, we can
+	 * fall back to checking whether the ProbeRequest method is supported.  If
+	 * neither of these works we have no way of determining if AP mode is
+	 * supported or not.  hostap 1.0 and earlier don't support either of these.
+	 */
+	call = dbus_g_proxy_begin_call (proxy, "Introspect",
+	                                iface_check_ap_mode_cb,
+	                                info,
+	                                nm_supplicant_info_destroy,
 	                                G_TYPE_INVALID);
 	nm_supplicant_info_set_call (info, call);
 }
@@ -818,9 +913,13 @@ interface_add_done (NMSupplicantInterface *self, char *path)
 	                                               path,
 	                                               DBUS_INTERFACE_PROPERTIES);
 	/* Get initial properties and check whether NetworkReply is supported */
+	priv->ready_count = 1;
 	wpas_iface_get_props (self);
+
+	/* These two increment ready_count themselves */
 	wpas_iface_check_network_reply (self);
-	priv->ready_count = 2;
+	if (priv->ap_support == AP_SUPPORT_UNKNOWN)
+		wpas_iface_check_ap_mode (self);
 }
 
 static void
@@ -1383,6 +1482,7 @@ nm_supplicant_interface_new (NMSupplicantManager *smgr,
                              const char *ifname,
                              gboolean is_wireless,
                              gboolean fast_supported,
+                             ApSupport ap_support,
                              gboolean start_now)
 {
 	NMSupplicantInterface *self;
@@ -1406,6 +1506,7 @@ nm_supplicant_interface_new (NMSupplicantManager *smgr,
 		priv->dev = g_strdup (ifname);
 		priv->is_wireless = is_wireless;
 		priv->fast_supported = fast_supported;
+		priv->ap_support = ap_support;
 
 		if (start_now)
 			interface_add (self, priv->is_wireless);
@@ -1540,8 +1641,8 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, state),
 		              NULL, NULL,
-		              _nm_marshal_VOID__UINT_UINT,
-		              G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
+		              _nm_marshal_VOID__UINT_UINT_INT,
+		              G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INT);
 
 	signals[REMOVED] =
 		g_signal_new (NM_SUPPLICANT_INTERFACE_REMOVED,

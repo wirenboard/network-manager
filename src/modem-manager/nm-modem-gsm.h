@@ -22,16 +22,16 @@
 #ifndef NM_MODEM_GSM_H
 #define NM_MODEM_GSM_H
 
-#include <nm-modem.h>
+#include <nm-modem-generic.h>
 
 G_BEGIN_DECLS
 
-#define NM_TYPE_MODEM_GSM			 (nm_modem_gsm_get_type ())
-#define NM_MODEM_GSM(obj)			 (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MODEM_GSM, NMModemGsm))
-#define NM_MODEM_GSM_CLASS(klass)	 (G_TYPE_CHECK_CLASS_CAST ((klass),	 NM_TYPE_MODEM_GSM, NMModemGsmClass))
-#define NM_IS_MODEM_GSM(obj)		 (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MODEM_GSM))
+#define NM_TYPE_MODEM_GSM            (nm_modem_gsm_get_type ())
+#define NM_MODEM_GSM(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MODEM_GSM, NMModemGsm))
+#define NM_MODEM_GSM_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),	 NM_TYPE_MODEM_GSM, NMModemGsmClass))
+#define NM_IS_MODEM_GSM(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MODEM_GSM))
 #define NM_IS_MODEM_GSM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),	 NM_TYPE_MODEM_GSM))
-#define NM_MODEM_GSM_GET_CLASS(obj)	 (G_TYPE_INSTANCE_GET_CLASS ((obj),	 NM_TYPE_MODEM_GSM, NMModemGsmClass))
+#define NM_MODEM_GSM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),	 NM_TYPE_MODEM_GSM, NMModemGsmClass))
 
 typedef enum {
 	NM_GSM_ERROR_CONNECTION_NOT_GSM = 0,  /*< nick=ConnectionNotGsm >*/
@@ -40,22 +40,19 @@ typedef enum {
 } NMGsmError;
 
 typedef struct {
-	NMModem parent;
+	NMModemGeneric parent;
 } NMModemGsm;
 
 typedef struct {
-	NMModemClass parent;
-
-	/* Signals */
-	void (*signal_quality) (NMModemGsm *self, guint32 quality);
+	NMModemGenericClass parent;
 } NMModemGsmClass;
 
 GType nm_modem_gsm_get_type (void);
 
 NMModem *nm_modem_gsm_new (const char *path,
-                           const char *device,
                            const char *data_device,
-                           guint32 ip_method);
+                           guint32 ip_method,
+                           NMModemState state);
 
 G_END_DECLS
 

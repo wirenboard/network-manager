@@ -33,6 +33,10 @@ GType nm_setting_bluetooth_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_BLUETOOTH_ERROR (nm_setting_bluetooth_error_get_type ())
 GType nm_setting_bond_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_BOND_ERROR (nm_setting_bond_error_get_type ())
+GType nm_setting_bridge_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SETTING_BRIDGE_ERROR (nm_setting_bridge_error_get_type ())
+GType nm_setting_bridge_port_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SETTING_BRIDGE_PORT_ERROR (nm_setting_bridge_port_error_get_type ())
 GType nm_setting_connection_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_CONNECTION_ERROR (nm_setting_connection_error_get_type ())
 GType nm_setting_infiniband_error_get_type (void) G_GNUC_CONST;

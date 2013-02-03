@@ -206,6 +206,69 @@
   </tgroup>
 </table>
 <table>
+  <title>adsl setting</title>
+  <tgroup cols="4">
+    <thead>
+      <row>
+        <entry>Key Name</entry>
+        <entry>Value Type</entry>
+        <entry>Default Value</entry>
+        <entry>Value Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><screen>name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen>adsl</screen></entry>
+        <entry>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</entry>
+      </row>
+      <row>
+        <entry><screen>username</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>Username used to authenticate with the pppoa service.</entry>
+      </row>
+      <row>
+        <entry><screen>password</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>Password used to authenticate with the pppoa service.</entry>
+      </row>
+      <row>
+        <entry><screen>password-flags</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>Flags indicating how to handle the ADSL password. (see <xref linkend="secrets-flags"/> for flag values)</entry>
+      </row>
+      <row>
+        <entry><screen>protocol</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>ADSL connection protocol.</entry>
+      </row>
+      <row>
+        <entry><screen>encapsulation</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>Encapsulation of ADSL connection</entry>
+      </row>
+      <row>
+        <entry><screen>vpi</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>VPI of ADSL connection</entry>
+      </row>
+      <row>
+        <entry><screen>vci</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>0</screen></entry>
+        <entry>VCI of ADSL connection</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<table>
   <title>bluetooth setting</title>
   <tgroup cols="4">
     <thead>
@@ -267,6 +330,108 @@
         <entry><screen>dict of (string::string)</screen></entry>
         <entry><screen>[ ]</screen></entry>
         <entry>Dictionary of key/value pairs of bonding options.  Both keys and values must be strings.  Option names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<table>
+  <title>bridge setting</title>
+  <tgroup cols="4">
+    <thead>
+      <row>
+        <entry>Key Name</entry>
+        <entry>Value Type</entry>
+        <entry>Default Value</entry>
+        <entry>Value Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><screen>name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen>bridge</screen></entry>
+        <entry>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</entry>
+      </row>
+      <row>
+        <entry><screen>interface-name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>The name of the virtual in-kernel bridging network interface</entry>
+      </row>
+      <row>
+        <entry><screen>stp</screen></entry>
+        <entry><screen>boolean</screen></entry>
+        <entry><screen>TRUE</screen></entry>
+        <entry>Controls whether Spanning Tree Protocol (STP) is enabled for this bridge.</entry>
+      </row>
+      <row>
+        <entry><screen>priority</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>128</screen></entry>
+        <entry>Sets the Spanning Tree Protocol (STP) priority for this bridge.  Lower values are 'better'; the lowest priority bridge will be elected the root bridge.</entry>
+      </row>
+      <row>
+        <entry><screen>forward-delay</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>15</screen></entry>
+        <entry>The Spanning Tree Protocol (STP) forwarding delay, in seconds.</entry>
+      </row>
+      <row>
+        <entry><screen>hello-time</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>2</screen></entry>
+        <entry>The Spanning Tree Protocol (STP) hello time, in seconds.</entry>
+      </row>
+      <row>
+        <entry><screen>max-age</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>20</screen></entry>
+        <entry>The Spanning Tree Protocol (STP) maximum message age, in seconds.</entry>
+      </row>
+      <row>
+        <entry><screen>ageing-time</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>300</screen></entry>
+        <entry>The ethernet MAC address aging time, in seconds.</entry>
+      </row>
+    </tbody>
+  </tgroup>
+</table>
+<table>
+  <title>bridge-port setting</title>
+  <tgroup cols="4">
+    <thead>
+      <row>
+        <entry>Key Name</entry>
+        <entry>Value Type</entry>
+        <entry>Default Value</entry>
+        <entry>Value Description</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><screen>name</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen>bridge-port</screen></entry>
+        <entry>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</entry>
+      </row>
+      <row>
+        <entry><screen>priority</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>32</screen></entry>
+        <entry>The Spanning Tree Protocol (STP) priority of this bridge port</entry>
+      </row>
+      <row>
+        <entry><screen>path-cost</screen></entry>
+        <entry><screen>uint32</screen></entry>
+        <entry><screen>100</screen></entry>
+        <entry>The Spanning Tree Protocol (STP) port cost for destinations via this port.</entry>
+      </row>
+      <row>
+        <entry><screen>hairpin-mode</screen></entry>
+        <entry><screen>boolean</screen></entry>
+        <entry><screen>FALSE</screen></entry>
+        <entry>Enables or disabled 'hairpin mode' for the port, which allows frames to be sent back out through the port the frame was received on.</entry>
       </row>
     </tbody>
   </tgroup>
@@ -394,6 +559,12 @@
         <entry><screen></screen></entry>
         <entry>Setting name describing the type of slave this connection is (ie, 'bond') or NULL if this connection is not a slave.</entry>
       </row>
+      <row>
+        <entry><screen>secondaries</screen></entry>
+        <entry><screen>array of string</screen></entry>
+        <entry><screen>[]</screen></entry>
+        <entry>List of connection UUIDs that should be activated when the base connection itself is activated.</entry>
+      </row>
     </tbody>
   </tgroup>
 </table>
@@ -455,7 +626,7 @@
         <entry><screen>network-type</screen></entry>
         <entry><screen>int32</screen></entry>
         <entry><screen>-1</screen></entry>
-        <entry>Network preference to force the device to only use specific network technologies.  The permitted values are: -1: any, 0: 3G only, 1: GPRS/EDGE only, 2: prefer 3G, and 3: prefer 2G.  Note that not all devices allow network preference control.</entry>
+        <entry>Network preference to force the device to only use specific network technologies.  The permitted values are: -1: any, 0: 3G only, 1: GPRS/EDGE only, 2: prefer 3G, 3: prefer 2G, 4: prefer 4G/LTE, 5: 4G/LTE only. Note that not all devices allow network preference control.</entry>
       </row>
       <row>
         <entry><screen>pin</screen></entry>
@@ -551,7 +722,7 @@
         <entry><screen>dns</screen></entry>
         <entry><screen>array of uint32</screen></entry>
         <entry><screen>[]</screen></entry>
-        <entry>List of DNS servers (network byte order). For the 'auto' method, these DNS servers are appended to those (if any) returned by automatic configuration.  DNS servers cannot be used with the 'shared', 'link-local', or 'disabled' methods as there is no usptream network.  In all other methods, these DNS servers are used as the only DNS servers for this connection.</entry>
+        <entry>List of DNS servers (network byte order). For the 'auto' method, these DNS servers are appended to those (if any) returned by automatic configuration.  DNS servers cannot be used with the 'shared', 'link-local', or 'disabled' methods as there is no upstream network.  In all other methods, these DNS servers are used as the only DNS servers for this connection.</entry>
       </row>
       <row>
         <entry><screen>dns-search</screen></entry>
@@ -587,7 +758,7 @@
         <entry><screen>dhcp-client-id</screen></entry>
         <entry><screen>string</screen></entry>
         <entry><screen></screen></entry>
-        <entry>A string sent to the DHCP server to identify the local machine which the DHCP server may use to cusomize the DHCP lease and options.</entry>
+        <entry>A string sent to the DHCP server to identify the local machine which the DHCP server may use to customize the DHCP lease and options.</entry>
       </row>
       <row>
         <entry><screen>dhcp-send-hostname</screen></entry>
@@ -639,6 +810,12 @@
         <entry><screen>string</screen></entry>
         <entry><screen></screen></entry>
         <entry>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignored' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' methodis not yet supported.</entry>
+      </row>
+      <row>
+        <entry><screen>dhcp-hostname</screen></entry>
+        <entry><screen>string</screen></entry>
+        <entry><screen></screen></entry>
+        <entry>The specified name will be sent to the DHCP server when acquiring a lease.</entry>
       </row>
       <row>
         <entry><screen>dns</screen></entry>
@@ -1211,7 +1388,7 @@
         <entry><screen>mode</screen></entry>
         <entry><screen>string</screen></entry>
         <entry><screen></screen></entry>
-        <entry>WiFi network mode; one of 'infrastructure' or 'adhoc'.  If blank, infrastructure is assumed.</entry>
+        <entry>WiFi network mode; one of 'infrastructure', 'adhoc' or 'ap'.  If blank, infrastructure is assumed.</entry>
       </row>
       <row>
         <entry><screen>band</screen></entry>
@@ -1271,7 +1448,7 @@
         <entry><screen>seen-bssids</screen></entry>
         <entry><screen>array of string</screen></entry>
         <entry><screen>[]</screen></entry>
-        <entry>A list of BSSIDs (each BSSID formatted as a MAC address like 00:11:22:33:44:55') that have been detected as part of the WiFI network. NetworkManager internally tracks previously seen BSSIDs so this property is no longer of much use.</entry>
+        <entry>A list of BSSIDs (each BSSID formatted as a MAC address like 00:11:22:33:44:55') that have been detected as part of the WiFI network. NetworkManager internally tracks previously seen BSSIDs. The property is only meant for reading and reflects the BBSID list of NetworkManager. The changes you make to this property will not be preserved.</entry>
       </row>
       <row>
         <entry><screen>security</screen></entry>

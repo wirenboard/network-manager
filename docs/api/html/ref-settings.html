@@ -23,7 +23,7 @@
 <div class="titlepage"><div><div><h2 class="title">
 <a name="ref-settings"></a>Network Configuration Setting Specification</h2></div></div></div>
 <div class="toc"><dl>
-<dt><span class="section"><a href="ref-settings.html#idp9702768">Configuration Settings</a></span></dt>
+<dt><span class="section"><a href="ref-settings.html#idp7117680">Configuration Settings</a></span></dt>
 <dt><span class="section"><a href="secrets-flags.html">Secret flag types</a></span></dt>
 </dl></div>
 <p>
@@ -35,11 +35,11 @@
     </p>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="idp9702768"></a>Configuration Settings</h2></div></div></div>
+<a name="idp7117680"></a>Configuration Settings</h2></div></div></div>
 <p>
 </p>
 <div class="table">
-<a name="idp9518592"></a><p class="title"><b>Table 1. 802-1x setting</b></p>
+<a name="idp6405792"></a><p class="title"><b>Table 1. 802-1x setting</b></p>
 <div class="table-contents"><table summary="802-1x setting" border="1">
 <colgroup>
 <col>
@@ -246,7 +246,76 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp6764528"></a><p class="title"><b>Table 2. bluetooth setting</b></p>
+<a name="idp6771136"></a><p class="title"><b>Table 2. adsl setting</b></p>
+<div class="table-contents"><table summary="adsl setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><pre class="screen">name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">adsl</pre></td>
+<td>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</td>
+</tr>
+<tr>
+<td><pre class="screen">username</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Username used to authenticate with the pppoa service.</td>
+</tr>
+<tr>
+<td><pre class="screen">password</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Password used to authenticate with the pppoa service.</td>
+</tr>
+<tr>
+<td><pre class="screen">password-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Flags indicating how to handle the ADSL password. (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
+<td><pre class="screen">protocol</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>ADSL connection protocol.</td>
+</tr>
+<tr>
+<td><pre class="screen">encapsulation</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Encapsulation of ADSL connection</td>
+</tr>
+<tr>
+<td><pre class="screen">vpi</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>VPI of ADSL connection</td>
+</tr>
+<tr>
+<td><pre class="screen">vci</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>VCI of ADSL connection</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+</p>
+<div class="table">
+<a name="idp6805376"></a><p class="title"><b>Table 3. bluetooth setting</b></p>
 <div class="table-contents"><table summary="bluetooth setting" border="1">
 <colgroup>
 <col>
@@ -285,7 +354,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp6780448"></a><p class="title"><b>Table 3. bond setting</b></p>
+<a name="idp10739632"></a><p class="title"><b>Table 4. bond setting</b></p>
 <div class="table-contents"><table summary="bond setting" border="1">
 <colgroup>
 <col>
@@ -324,7 +393,121 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp6796400"></a><p class="title"><b>Table 4. cdma setting</b></p>
+<a name="idp10753056"></a><p class="title"><b>Table 5. bridge setting</b></p>
+<div class="table-contents"><table summary="bridge setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><pre class="screen">name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">bridge</pre></td>
+<td>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</td>
+</tr>
+<tr>
+<td><pre class="screen">interface-name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>The name of the virtual in-kernel bridging network interface</td>
+</tr>
+<tr>
+<td><pre class="screen">stp</pre></td>
+<td><pre class="screen">boolean</pre></td>
+<td><pre class="screen">TRUE</pre></td>
+<td>Controls whether Spanning Tree Protocol (STP) is enabled for this bridge.</td>
+</tr>
+<tr>
+<td><pre class="screen">priority</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">128</pre></td>
+<td>Sets the Spanning Tree Protocol (STP) priority for this bridge.  Lower values are 'better'; the lowest priority bridge will be elected the root bridge.</td>
+</tr>
+<tr>
+<td><pre class="screen">forward-delay</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">15</pre></td>
+<td>The Spanning Tree Protocol (STP) forwarding delay, in seconds.</td>
+</tr>
+<tr>
+<td><pre class="screen">hello-time</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">2</pre></td>
+<td>The Spanning Tree Protocol (STP) hello time, in seconds.</td>
+</tr>
+<tr>
+<td><pre class="screen">max-age</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">20</pre></td>
+<td>The Spanning Tree Protocol (STP) maximum message age, in seconds.</td>
+</tr>
+<tr>
+<td><pre class="screen">ageing-time</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">300</pre></td>
+<td>The ethernet MAC address aging time, in seconds.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+</p>
+<div class="table">
+<a name="idp10781584"></a><p class="title"><b>Table 6. bridge-port setting</b></p>
+<div class="table-contents"><table summary="bridge-port setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><pre class="screen">name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">bridge-port</pre></td>
+<td>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</td>
+</tr>
+<tr>
+<td><pre class="screen">priority</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">32</pre></td>
+<td>The Spanning Tree Protocol (STP) priority of this bridge port</td>
+</tr>
+<tr>
+<td><pre class="screen">path-cost</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">100</pre></td>
+<td>The Spanning Tree Protocol (STP) port cost for destinations via this port.</td>
+</tr>
+<tr>
+<td><pre class="screen">hairpin-mode</pre></td>
+<td><pre class="screen">boolean</pre></td>
+<td><pre class="screen">FALSE</pre></td>
+<td>Enables or disabled 'hairpin mode' for the port, which allows frames to be sent back out through the port the frame was received on.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+</p>
+<div class="table">
+<a name="idp10798128"></a><p class="title"><b>Table 7. cdma setting</b></p>
 <div class="table-contents"><table summary="cdma setting" border="1">
 <colgroup>
 <col>
@@ -375,7 +558,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10654080"></a><p class="title"><b>Table 5. connection setting</b></p>
+<a name="idp10818160"></a><p class="title"><b>Table 8. connection setting</b></p>
 <div class="table-contents"><table summary="connection setting" border="1">
 <colgroup>
 <col>
@@ -456,13 +639,19 @@
 <td><pre class="screen"></pre></td>
 <td>Setting name describing the type of slave this connection is (ie, 'bond') or NULL if this connection is not a slave.</td>
 </tr>
+<tr>
+<td><pre class="screen">secondaries</pre></td>
+<td><pre class="screen">array of string</pre></td>
+<td><pre class="screen">[]</pre></td>
+<td>List of connection UUIDs that should be activated when the base connection itself is activated.</td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10693680"></a><p class="title"><b>Table 6. gsm setting</b></p>
+<a name="idp10860896"></a><p class="title"><b>Table 9. gsm setting</b></p>
 <div class="table-contents"><table summary="gsm setting" border="1">
 <colgroup>
 <col>
@@ -523,7 +712,7 @@
 <td><pre class="screen">network-type</pre></td>
 <td><pre class="screen">int32</pre></td>
 <td><pre class="screen">-1</pre></td>
-<td>Network preference to force the device to only use specific network technologies.  The permitted values are: -1: any, 0: 3G only, 1: GPRS/EDGE only, 2: prefer 3G, and 3: prefer 2G.  Note that not all devices allow network preference control.</td>
+<td>Network preference to force the device to only use specific network technologies.  The permitted values are: -1: any, 0: 3G only, 1: GPRS/EDGE only, 2: prefer 3G, 3: prefer 2G, 4: prefer 4G/LTE, 5: 4G/LTE only. Note that not all devices allow network preference control.</td>
 </tr>
 <tr>
 <td><pre class="screen">pin</pre></td>
@@ -555,7 +744,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10736592"></a><p class="title"><b>Table 7. infiniband setting</b></p>
+<a name="idp10903840"></a><p class="title"><b>Table 10. infiniband setting</b></p>
 <div class="table-contents"><table summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -600,7 +789,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10753200"></a><p class="title"><b>Table 8. ipv4 setting</b></p>
+<a name="idp10920448"></a><p class="title"><b>Table 11. ipv4 setting</b></p>
 <div class="table-contents"><table summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -631,7 +820,7 @@
 <td><pre class="screen">dns</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>List of DNS servers (network byte order). For the 'auto' method, these DNS servers are appended to those (if any) returned by automatic configuration.  DNS servers cannot be used with the 'shared', 'link-local', or 'disabled' methods as there is no usptream network.  In all other methods, these DNS servers are used as the only DNS servers for this connection.</td>
+<td>List of DNS servers (network byte order). For the 'auto' method, these DNS servers are appended to those (if any) returned by automatic configuration.  DNS servers cannot be used with the 'shared', 'link-local', or 'disabled' methods as there is no upstream network.  In all other methods, these DNS servers are used as the only DNS servers for this connection.</td>
 </tr>
 <tr>
 <td><pre class="screen">dns-search</pre></td>
@@ -667,7 +856,7 @@
 <td><pre class="screen">dhcp-client-id</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>A string sent to the DHCP server to identify the local machine which the DHCP server may use to cusomize the DHCP lease and options.</td>
+<td>A string sent to the DHCP server to identify the local machine which the DHCP server may use to customize the DHCP lease and options.</td>
 </tr>
 <tr>
 <td><pre class="screen">dhcp-send-hostname</pre></td>
@@ -699,7 +888,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10800752"></a><p class="title"><b>Table 9. ipv6 setting</b></p>
+<a name="idp10968000"></a><p class="title"><b>Table 12. ipv6 setting</b></p>
 <div class="table-contents"><table summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -725,6 +914,12 @@
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
 <td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignored' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' methodis not yet supported.</td>
+</tr>
+<tr>
+<td><pre class="screen">dhcp-hostname</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>The specified name will be sent to the DHCP server when acquiring a lease.</td>
 </tr>
 <tr>
 <td><pre class="screen">dns</pre></td>
@@ -786,7 +981,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10842400"></a><p class="title"><b>Table 10. 802-11-olpc-mesh setting</b></p>
+<a name="idp11018480"></a><p class="title"><b>Table 13. 802-11-olpc-mesh setting</b></p>
 <div class="table-contents"><table summary="802-11-olpc-mesh setting" border="1">
 <colgroup>
 <col>
@@ -831,7 +1026,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10858976"></a><p class="title"><b>Table 11. ppp setting</b></p>
+<a name="idp11039120"></a><p class="title"><b>Table 14. ppp setting</b></p>
 <div class="table-contents"><table summary="ppp setting" border="1">
 <colgroup>
 <col>
@@ -966,7 +1161,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10922576"></a><p class="title"><b>Table 12. pppoe setting</b></p>
+<a name="idp11119600"></a><p class="title"><b>Table 15. pppoe setting</b></p>
 <div class="table-contents"><table summary="pppoe setting" border="1">
 <colgroup>
 <col>
@@ -1017,7 +1212,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10946032"></a><p class="title"><b>Table 13. serial setting</b></p>
+<a name="idp11144352"></a><p class="title"><b>Table 16. serial setting</b></p>
 <div class="table-contents"><table summary="serial setting" border="1">
 <colgroup>
 <col>
@@ -1074,7 +1269,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10974672"></a><p class="title"><b>Table 14. vlan setting</b></p>
+<a name="idp11172992"></a><p class="title"><b>Table 17. vlan setting</b></p>
 <div class="table-contents"><table summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -1137,7 +1332,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11007648"></a><p class="title"><b>Table 15. vpn setting</b></p>
+<a name="idp11205968"></a><p class="title"><b>Table 18. vpn setting</b></p>
 <div class="table-contents"><table summary="vpn setting" border="1">
 <colgroup>
 <col>
@@ -1188,7 +1383,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11032336"></a><p class="title"><b>Table 16. wimax setting</b></p>
+<a name="idp11230656"></a><p class="title"><b>Table 19. wimax setting</b></p>
 <div class="table-contents"><table summary="wimax setting" border="1">
 <colgroup>
 <col>
@@ -1227,7 +1422,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11048960"></a><p class="title"><b>Table 17. 802-3-ethernet setting</b></p>
+<a name="idp11247280"></a><p class="title"><b>Table 20. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -1320,7 +1515,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11101808"></a><p class="title"><b>Table 18. 802-11-wireless setting</b></p>
+<a name="idp11300128"></a><p class="title"><b>Table 21. 802-11-wireless setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -1351,7 +1546,7 @@
 <td><pre class="screen">mode</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>WiFi network mode; one of 'infrastructure' or 'adhoc'.  If blank, infrastructure is assumed.</td>
+<td>WiFi network mode; one of 'infrastructure', 'adhoc' or 'ap'.  If blank, infrastructure is assumed.</td>
 </tr>
 <tr>
 <td><pre class="screen">band</pre></td>
@@ -1411,7 +1606,7 @@
 <td><pre class="screen">seen-bssids</pre></td>
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>A list of BSSIDs (each BSSID formatted as a MAC address like 00:11:22:33:44:55') that have been detected as part of the WiFI network. NetworkManager internally tracks previously seen BSSIDs so this property is no longer of much use.</td>
+<td>A list of BSSIDs (each BSSID formatted as a MAC address like 00:11:22:33:44:55') that have been detected as part of the WiFI network. NetworkManager internally tracks previously seen BSSIDs. The property is only meant for reading and reflects the BBSID list of NetworkManager. The changes you make to this property will not be preserved.</td>
 </tr>
 <tr>
 <td><pre class="screen">security</pre></td>
@@ -1431,7 +1626,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11167088"></a><p class="title"><b>Table 19. 802-11-wireless-security setting</b></p>
+<a name="idp11365504"></a><p class="title"><b>Table 22. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>

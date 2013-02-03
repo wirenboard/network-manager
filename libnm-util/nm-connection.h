@@ -33,6 +33,8 @@
 #include <nm-setting-8021x.h>
 #include <nm-setting-bluetooth.h>
 #include <nm-setting-bond.h>
+#include <nm-setting-bridge.h>
+#include <nm-setting-bridge-port.h>
 #include <nm-setting-cdma.h>
 #include <nm-setting-connection.h>
 #include <nm-setting-gsm.h>
@@ -188,6 +190,8 @@ const char *  nm_connection_get_id        (NMConnection *connection);
 NMSetting8021x *           nm_connection_get_setting_802_1x            (NMConnection *connection);
 NMSettingBluetooth *       nm_connection_get_setting_bluetooth         (NMConnection *connection);
 NMSettingBond *            nm_connection_get_setting_bond              (NMConnection *connection);
+NMSettingBridge *          nm_connection_get_setting_bridge            (NMConnection *connection);
+NMSettingBridgePort *      nm_connection_get_setting_bridge_port       (NMConnection *connection);
 NMSettingCdma *            nm_connection_get_setting_cdma              (NMConnection *connection);
 NMSettingConnection *      nm_connection_get_setting_connection        (NMConnection *connection);
 NMSettingGsm *             nm_connection_get_setting_gsm               (NMConnection *connection);

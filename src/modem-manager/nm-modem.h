@@ -29,19 +29,21 @@
 
 G_BEGIN_DECLS
 
-#define NM_TYPE_MODEM			(nm_modem_get_type ())
-#define NM_MODEM(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MODEM, NMModem))
-#define NM_MODEM_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass),	NM_TYPE_MODEM, NMModemClass))
-#define NM_IS_MODEM(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MODEM))
-#define NM_IS_MODEM_CLASS(klass)	(G_TYPE_CHECK_CLASS_TYPE ((klass),	NM_TYPE_MODEM))
-#define NM_MODEM_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj),	NM_TYPE_MODEM, NMModemClass))
+#define NM_TYPE_MODEM            (nm_modem_get_type ())
+#define NM_MODEM(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MODEM, NMModem))
+#define NM_MODEM_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  NM_TYPE_MODEM, NMModemClass))
+#define NM_IS_MODEM(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MODEM))
+#define NM_IS_MODEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  NM_TYPE_MODEM))
+#define NM_MODEM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_MODEM, NMModemClass))
 
-#define NM_MODEM_PATH      "path"
-#define NM_MODEM_DEVICE    "device"
-#define NM_MODEM_IFACE     "iface"
-#define NM_MODEM_IP_METHOD "ip-method"
-#define NM_MODEM_IP_TIMEOUT "ip-timeout"
-#define NM_MODEM_ENABLED   "enabled"
+#define NM_MODEM_UID          "uid"
+#define NM_MODEM_PATH         "path"
+#define NM_MODEM_CONTROL_PORT "control-port"
+#define NM_MODEM_DATA_PORT    "data-port"
+#define NM_MODEM_IP_METHOD    "ip-method"
+#define NM_MODEM_IP_TIMEOUT   "ip-timeout"
+#define NM_MODEM_ENABLED      "enabled"
+#define NM_MODEM_CONNECTED    "connected"
 
 #define NM_MODEM_PPP_STATS         "ppp-stats"
 #define NM_MODEM_PPP_FAILED        "ppp-failed"
@@ -49,6 +51,10 @@ G_BEGIN_DECLS
 #define NM_MODEM_IP4_CONFIG_RESULT "ip4-config-result"
 #define NM_MODEM_AUTH_REQUESTED    "auth-requested"
 #define NM_MODEM_AUTH_RESULT       "auth-result"
+
+#define MM_MODEM_IP_METHOD_PPP    0
+#define MM_MODEM_IP_METHOD_STATIC 1
+#define MM_MODEM_IP_METHOD_DHCP   2
 
 typedef struct {
 	GObject parent;
@@ -83,6 +89,14 @@ typedef struct {
 	                                            const char **out_setting_name,
 	                                            NMDeviceStateReason *reason);
 
+	NMActStageReturn (*static_stage3_ip4_config_start) (NMModem *self,
+	                                                    NMActRequest *req,
+	                                                    NMDeviceStateReason *reason);
+
+	void (*set_mm_enabled)                     (NMModem *self, gboolean enabled);
+
+	void (*disconnect)                         (NMModem *self, gboolean warn);
+
 	void (*deactivate)                         (NMModem *self, NMDevice *device);
 
 	/* Signals */
@@ -90,7 +104,7 @@ typedef struct {
 	void (*ppp_failed) (NMModem *self, NMDeviceStateReason reason);
 
 	void (*prepare_result)    (NMModem *self, gboolean success, NMDeviceStateReason reason);
-	void (*ip4_config_result) (NMModem *self, const char *iface, NMIP4Config *config, GError *error);
+	void (*ip4_config_result) (NMModem *self, NMIP4Config *config, GError *error);
 
 	void (*auth_requested)    (NMModem *self);
 	void (*auth_result)       (NMModem *self, GError *error);
@@ -98,11 +112,10 @@ typedef struct {
 
 GType nm_modem_get_type (void);
 
-/* Protected */
-
-DBusGProxy *  nm_modem_get_proxy       (NMModem *modem, const char *interface);
-const char *  nm_modem_get_iface       (NMModem *modem);
-const char *  nm_modem_get_path        (NMModem *modem);
+const char *nm_modem_get_path         (NMModem *modem);
+const char *nm_modem_get_uid          (NMModem *modem);
+const char *nm_modem_get_control_port (NMModem *modem);
+const char *nm_modem_get_data_port    (NMModem *modem);
 
 NMConnection *nm_modem_get_best_auto_connection (NMModem *self,
                                                  GSList *connections,
@@ -135,6 +148,8 @@ NMActStageReturn nm_modem_stage3_ip6_config_start (NMModem *modem,
                                                    NMDeviceClass *device_class,
                                                    NMDeviceStateReason *reason);
 
+void nm_modem_ip4_pre_commit (NMModem *modem, NMDevice *device, NMIP4Config *config);
+
 gboolean nm_modem_get_secrets (NMModem *modem,
                                const char *setting_name,
                                gboolean request_new,
@@ -147,13 +162,11 @@ void nm_modem_device_state_changed (NMModem *modem,
                                     NMDeviceState old_state,
                                     NMDeviceStateReason reason);
 
-gboolean nm_modem_hw_is_up (NMModem *modem, NMDevice *device);
-
-gboolean nm_modem_hw_bring_up (NMModem *modem, NMDevice *device, gboolean *no_firmware);
-
 gboolean      nm_modem_get_mm_enabled (NMModem *self);
 
 void          nm_modem_set_mm_enabled (NMModem *self, gboolean enabled);
+
+gboolean      nm_modem_get_mm_connected (NMModem *self);
 
 G_END_DECLS
 

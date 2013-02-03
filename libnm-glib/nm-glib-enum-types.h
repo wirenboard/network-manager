@@ -29,6 +29,8 @@ GType nm_device_olpc_mesh_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_OLPC_MESH_ERROR (nm_device_olpc_mesh_error_get_type ())
 GType nm_device_bond_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_BOND_ERROR (nm_device_bond_error_get_type ())
+GType nm_device_bridge_error_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_DEVICE_BRIDGE_ERROR (nm_device_bridge_error_get_type ())
 GType nm_device_vlan_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_VLAN_ERROR (nm_device_vlan_error_get_type ())
 GType nm_device_modem_error_get_type (void) G_GNUC_CONST;

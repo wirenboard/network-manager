@@ -82,6 +82,9 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMCon
 <a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="returnvalue">NMSettingBluetooth</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-bluetooth" title="nm_connection_get_setting_bluetooth ()">nm_connection_get_setting_bluetooth</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="returnvalue">NMSettingBond</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-bond" title="nm_connection_get_setting_bond ()">nm_connection_get_setting_bond</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+<a class="link" href="NMSettingBridge.html" title="NMSettingBridge"><span class="returnvalue">NMSettingBridge</span></a> *   <a class="link" href="NMConnection.html#nm-connection-get-setting-bridge" title="nm_connection_get_setting_bridge ()">nm_connection_get_setting_bridge</a>    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+<a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="returnvalue">NMSettingBridgePort</span></a> * <a class="link" href="NMConnection.html#nm-connection-get-setting-bridge-port" title="nm_connection_get_setting_bridge_port ()">nm_connection_get_setting_bridge_port</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMConnection.html#nm-connection-get-setting-by-name" title="nm_connection_get_setting_by_name ()">nm_connection_get_setting_by_name</a>   (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);
 <a class="link" href="NMSettingCdma.html" title="NMSettingCdma"><span class="returnvalue">NMSettingCdma</span></a> *     <a class="link" href="NMConnection.html#nm-connection-get-setting-cdma" title="nm_connection_get_setting_cdma ()">nm_connection_get_setting_cdma</a>      (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
@@ -693,6 +696,53 @@ A shortcut to return any <a class="link" href="NMSettingBond.html" title="NMSett
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
 <td>an <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-connection-get-setting-bridge"></a><h3>nm_connection_get_setting_bridge ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingBridge.html" title="NMSettingBridge"><span class="returnvalue">NMSettingBridge</span></a> *   nm_connection_get_setting_bridge    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<p>
+A shortcut to return any <a class="link" href="NMSettingBridge.html" title="NMSettingBridge"><span class="type">NMSettingBridge</span></a> the connection might contain.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>an <a class="link" href="NMSettingBridge.html" title="NMSettingBridge"><span class="type">NMSettingBridge</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-connection-get-setting-bridge-port"></a><h3>nm_connection_get_setting_bridge_port ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="returnvalue">NMSettingBridgePort</span></a> * nm_connection_get_setting_bridge_port
+                                                        (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<p>
+A shortcut to return any <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> the connection might contain.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>an <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> if the connection contains one, otherwise NULL. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
 </td>
 </tr>
 </tbody>

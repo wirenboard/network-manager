@@ -38,35 +38,34 @@ G_DEFINE_TYPE (NMModem, nm_modem, G_TYPE_OBJECT)
 
 enum {
 	PROP_0,
-	PROP_DEVICE,
-	PROP_IFACE,
+	PROP_CONTROL_PORT,
+	PROP_DATA_PORT,
 	PROP_PATH,
+	PROP_UID,
 	PROP_IP_METHOD,
 	PROP_IP_TIMEOUT,
 	PROP_ENABLED,
+	PROP_CONNECTED,
 
 	LAST_PROP
 };
 
 typedef struct {
-	NMDBusManager *dbus_mgr;
-	DBusGProxy *proxy;
-	DBusGProxy *props_proxy;
-
+	char *uid;
 	char *path;
-	NMPPPManager *ppp_manager;
+	char *control_port;
+	char *data_port;
 	guint32 ip_method;
-	char *device;
-	char *iface;
+
+	NMPPPManager *ppp_manager;
 
 	NMActRequest *act_request;
 	guint32 secrets_tries;
 	guint32 secrets_id;
 
-	DBusGProxyCall *call;
-
 	gboolean mm_enabled;
 	guint32 mm_ip_timeout;
+	gboolean mm_connected;
 
 	/* PPP stats */
 	guint32 in_bytes;
@@ -86,47 +85,31 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-static void
-update_mm_enabled (NMModem *self, gboolean new_enabled)
-{
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-
-	if (priv->mm_enabled != new_enabled) {
-		priv->mm_enabled = new_enabled;
-		g_object_notify (G_OBJECT (self), NM_MODEM_ENABLED);
-	}
-}
+/*****************************************************************************/
+/* Get/Set enabled/connected */
 
 gboolean
 nm_modem_get_mm_enabled (NMModem *self)
 {
-	g_return_val_if_fail (NM_IS_MODEM (self), TRUE);
-
 	return NM_MODEM_GET_PRIVATE (self)->mm_enabled;
 }
 
-DBusGProxy *
-nm_modem_get_proxy (NMModem *self,
-					const char *interface)
+void
+nm_modem_set_mm_enabled (NMModem *self,
+                         gboolean enabled)
 {
+	NMModemPrivate *priv;
 
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-	const char *current_iface;
+	priv = NM_MODEM_GET_PRIVATE (self);
 
-	g_return_val_if_fail (NM_IS_MODEM (self), NULL);
+	if (priv->mm_enabled != enabled)
+		NM_MODEM_GET_CLASS (self)->set_mm_enabled (self, enabled);
+}
 
-	/* Default to the default interface. */
-	if (interface == NULL)
-		interface = MM_DBUS_INTERFACE_MODEM;
-
-	if (interface && !strcmp (interface, DBUS_INTERFACE_PROPERTIES))
-		return priv->props_proxy;
-
-	current_iface = dbus_g_proxy_get_interface (priv->proxy);
-	if (!current_iface || strcmp (current_iface, interface))
-		dbus_g_proxy_set_interface (priv->proxy, interface);
-
-	return priv->proxy;
+gboolean
+nm_modem_get_mm_connected (NMModem *self)
+{
+	return NM_MODEM_GET_PRIVATE (self)->mm_connected;
 }
 
 /*****************************************************************************/
@@ -154,12 +137,18 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 				gpointer user_data)
 {
 	NMModem *self = NM_MODEM (user_data);
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
 	guint32 i, num;
 	guint32 bad_dns1 = htonl (0x0A0B0C0D);
 	guint32 good_dns1 = htonl (0x04020201);  /* GTE nameserver */
 	guint32 bad_dns2 = htonl (0x0A0B0C0E);
 	guint32 good_dns2 = htonl (0x04020202);  /* GTE nameserver */
 	gboolean dns_workaround = FALSE;
+
+	/* Notify about the new data port to use */
+	g_free (priv->data_port);
+	priv->data_port = g_strdup (iface);
+	g_object_notify (G_OBJECT (self), NM_MODEM_DATA_PORT);
 
 	/* Work around a PPP bug (#1732) which causes many mobile broadband
 	 * providers to return 10.11.12.13 and 10.11.12.14 for the DNS servers.
@@ -197,7 +186,7 @@ ppp_ip4_config (NMPPPManager *ppp_manager,
 		nm_ip4_config_add_nameserver (config, good_dns2);
 	}
 
-	g_signal_emit (self, signals[IP4_CONFIG_RESULT], 0, iface, config, NULL);
+	g_signal_emit (self, signals[IP4_CONFIG_RESULT], 0, config, NULL);
 }
 
 static void
@@ -250,17 +239,17 @@ ppp_stage3_ip4_config_start (NMModem *self,
 		ip_timeout = priv->mm_ip_timeout;
 	}
 
-	priv->ppp_manager = nm_ppp_manager_new (priv->iface);
+	priv->ppp_manager = nm_ppp_manager_new (priv->data_port);
 	if (nm_ppp_manager_start (priv->ppp_manager, req, ppp_name, ip_timeout, &error)) {
 		g_signal_connect (priv->ppp_manager, "state-changed",
-						  G_CALLBACK (ppp_state_changed),
-						  self);
+		                  G_CALLBACK (ppp_state_changed),
+		                  self);
 		g_signal_connect (priv->ppp_manager, "ip4-config",
-						  G_CALLBACK (ppp_ip4_config),
-						  self);
+		                  G_CALLBACK (ppp_ip4_config),
+		                  self);
 		g_signal_connect (priv->ppp_manager, "stats",
-						  G_CALLBACK (ppp_stats),
-						  self);
+		                  G_CALLBACK (ppp_stats),
+		                  self);
 
 		ret = NM_ACT_STAGE_RETURN_POSTPONE;
 	} else {
@@ -277,103 +266,6 @@ ppp_stage3_ip4_config_start (NMModem *self,
 	}
 
 	return ret;
-}
-
-/*****************************************************************************/
-/* IP method static */
-
-static char addr_to_string_buf[INET6_ADDRSTRLEN + 1];
-
-static const char *
-ip_address_to_string (guint32 numeric)
-{
-	struct in_addr temp_addr;
-
-	memset (&addr_to_string_buf, '\0', sizeof (addr_to_string_buf));
-	temp_addr.s_addr = numeric;
-
-	if (inet_ntop (AF_INET, &temp_addr, addr_to_string_buf, INET_ADDRSTRLEN)) {
-		return addr_to_string_buf;
-	} else {
-		nm_log_warn (LOGD_VPN, "error converting IP4 address 0x%X",
-		             ntohl (temp_addr.s_addr));
-		return NULL;
-	}
-}
-
-static void
-static_stage3_done (DBusGProxy *proxy, DBusGProxyCall *call, gpointer user_data)
-{
-	NMModem *self = NM_MODEM (user_data);
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-	GValueArray *ret_array = NULL;
-	GError *error = NULL;
-	NMIP4Config *config = NULL;
-
-	priv->call = NULL;
-
-	/* Returned value array is (uuuu): [IP, DNS1, DNS2, DNS3], all in
-	 * network byte order.
-	 */
-	if (dbus_g_proxy_end_call (proxy, call, &error,
-	                           G_TYPE_VALUE_ARRAY, &ret_array,
-	                           G_TYPE_INVALID)) {
-		NMIP4Address *addr;
-		int i;
-
-		config = nm_ip4_config_new ();
-
-		addr = nm_ip4_address_new ();
-
-		nm_log_info (LOGD_MB, "(%s): IPv4 static configuration:", priv->iface);
-
-		/* IP address */
-		nm_ip4_address_set_address (addr, g_value_get_uint (g_value_array_get_nth (ret_array, 0)));
-		nm_ip4_address_set_prefix (addr, 32);
-		nm_ip4_config_take_address (config, addr);
-
-		nm_log_info (LOGD_MB, "  address %s/%d",
-		             ip_address_to_string (nm_ip4_address_get_address (addr)),
-		             nm_ip4_address_get_prefix (addr));
-
-		/* DNS servers */
-		for (i = 1; i < ret_array->n_values; i++) {
-			GValue *value = g_value_array_get_nth (ret_array, i);
-			guint32 tmp = g_value_get_uint (value);
-
-			if (tmp > 0) {
-				nm_ip4_config_add_nameserver (config, tmp);
-				nm_log_info (LOGD_MB, "  DNS %s", ip_address_to_string (tmp));
-			}
-		}
-		g_value_array_free (ret_array);
-	}
-
-	g_signal_emit (self, signals[IP4_CONFIG_RESULT], 0, NULL, config, error);
-	g_clear_error (&error);
-}
-
-static NMActStageReturn
-static_stage3_ip4_config_start (NMModem *self,
-                                NMActRequest *req,
-                                NMDeviceStateReason *reason)
-{
-	NMModemPrivate *priv;
-
-	g_return_val_if_fail (self != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (NM_IS_MODEM (self), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), NM_ACT_STAGE_RETURN_FAILURE);
-	g_return_val_if_fail (reason !=	NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	priv = NM_MODEM_GET_PRIVATE (self);
-
-	priv->call = dbus_g_proxy_begin_call (nm_modem_get_proxy (self, MM_DBUS_INTERFACE_MODEM),
-	                                      "GetIP4Config", static_stage3_done,
-	                                      self, NULL,
-	                                      G_TYPE_INVALID);
-
-	return NM_ACT_STAGE_RETURN_POSTPONE;
 }
 
 /*****************************************************************************/
@@ -405,7 +297,7 @@ nm_modem_stage3_ip4_config_start (NMModem *self,
 		ret = ppp_stage3_ip4_config_start (self, req, reason);
 		break;
 	case MM_MODEM_IP_METHOD_STATIC:
-		ret = static_stage3_ip4_config_start (self, req, reason);
+		ret = NM_MODEM_GET_CLASS (self)->static_stage3_ip4_config_start (self, req, reason);
 		break;
 	case MM_MODEM_IP_METHOD_DHCP:
 		ret = device_class->act_stage3_ip4_config_start (device, NULL, reason);
@@ -419,6 +311,29 @@ nm_modem_stage3_ip4_config_start (NMModem *self,
 	return ret;
 }
 
+void
+nm_modem_ip4_pre_commit (NMModem *modem,
+                         NMDevice *device,
+                         NMIP4Config *config)
+{
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (modem);
+
+	/* If the modem has an ethernet-type data interface (ie, not PPP and thus
+	 * not point-to-point) and IP config has a /32 prefix, then we assume that
+	 * ARP will be pointless and we turn it off.
+	 */
+	if (   priv->ip_method == MM_MODEM_IP_METHOD_STATIC
+	    || priv->ip_method == MM_MODEM_IP_METHOD_DHCP) {
+		NMIP4Address *addr = nm_ip4_config_get_address (config, 0);
+
+		g_assert (addr);
+		if (nm_ip4_address_get_prefix (addr) == 32)
+			nm_system_iface_set_arp (nm_device_get_ip_ifindex (device), FALSE);
+	}
+}
+
+/*****************************************************************************/
+
 NMActStageReturn
 nm_modem_stage3_ip6_config_start (NMModem *self,
                                   NMDevice *device,
@@ -429,6 +344,8 @@ nm_modem_stage3_ip6_config_start (NMModem *self,
 	nm_device_activate_schedule_ip6_config_timeout (device);
 	return NM_ACT_STAGE_RETURN_POSTPONE;
 }
+
+/*****************************************************************************/
 
 static void
 cancel_get_secrets (NMModem *self)
@@ -486,12 +403,14 @@ nm_modem_get_secrets (NMModem *self,
 	return !!(priv->secrets_id);
 }
 
+/*****************************************************************************/
+
 static NMActStageReturn
-real_act_stage1_prepare (NMModem *modem,
-                         NMActRequest *req,
-                         GPtrArray **out_hints,
-                         const char **out_setting_name,
-                         NMDeviceStateReason *reason)
+act_stage1_prepare (NMModem *modem,
+                    NMActRequest *req,
+                    GPtrArray **out_hints,
+                    const char **out_setting_name,
+                    NMDeviceStateReason *reason)
 {
 	*reason = NM_DEVICE_STATE_REASON_UNKNOWN;
 	return NM_ACT_STAGE_RETURN_FAILURE;
@@ -541,6 +460,8 @@ nm_modem_act_stage1_prepare (NMModem *self,
 	return ret;
 }
 
+/*****************************************************************************/
+
 NMActStageReturn
 nm_modem_act_stage2_config (NMModem *self,
                             NMActRequest *req,
@@ -556,6 +477,8 @@ nm_modem_act_stage2_config (NMModem *self,
 	return NM_ACT_STAGE_RETURN_SUCCESS;
 }
 
+/*****************************************************************************/
+
 NMConnection *
 nm_modem_get_best_auto_connection (NMModem *self,
                                    GSList *connections,
@@ -566,6 +489,8 @@ nm_modem_get_best_auto_connection (NMModem *self,
 	return NULL;
 }
 
+/*****************************************************************************/
+
 gboolean
 nm_modem_check_connection_compatible (NMModem *self,
                                       NMConnection *connection,
@@ -575,6 +500,8 @@ nm_modem_check_connection_compatible (NMModem *self,
 		return NM_MODEM_GET_CLASS (self)->check_connection_compatible (self, connection, error);
 	return FALSE;
 }
+
+/*****************************************************************************/
 
 gboolean
 nm_modem_complete_connection (NMModem *self,
@@ -587,8 +514,10 @@ nm_modem_complete_connection (NMModem *self,
 	return FALSE;
 }
 
+/*****************************************************************************/
+
 static void
-real_deactivate (NMModem *self, NMDevice *device)
+deactivate (NMModem *self, NMDevice *device)
 {
 	NMModemPrivate *priv;
 	int ifindex;
@@ -606,11 +535,6 @@ real_deactivate (NMModem *self, NMDevice *device)
 		cancel_get_secrets (self);
 		g_object_unref (priv->act_request);
 		priv->act_request = NULL;
-	}
-
-	if (priv->call) {
-		dbus_g_proxy_cancel_call (priv->proxy, priv->call);
-		priv->call = NULL;
 	}
 
 	priv->in_bytes = priv->out_bytes = 0;
@@ -639,24 +563,15 @@ real_deactivate (NMModem *self, NMDevice *device)
 	}
 }
 
+/*****************************************************************************/
+
 void
 nm_modem_deactivate (NMModem *self, NMDevice *device)
 {
 	NM_MODEM_GET_CLASS (self)->deactivate (self, device);
 }
 
-static void
-disconnect_done (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
-{
-	GError *error = NULL;
-	gboolean warn = GPOINTER_TO_UINT (user_data);
-
-	if (!dbus_g_proxy_end_call (proxy, call_id, &error, G_TYPE_INVALID) && warn) {
-		nm_log_info (LOGD_MB, "disconnect failed: (%d) %s",
-		             error ? error->code : -1,
-		             error && error->message ? error->message : "(unknown)");
-	}
-}
+/*****************************************************************************/
 
 void
 nm_modem_device_state_changed (NMModem *self,
@@ -697,12 +612,7 @@ nm_modem_device_state_changed (NMModem *self,
 			/* Don't bother warning on FAILED since the modem is already gone */
 			if (new_state == NM_DEVICE_STATE_FAILED)
 				warn = FALSE;
-			dbus_g_proxy_begin_call (nm_modem_get_proxy (self, MM_DBUS_INTERFACE_MODEM),
-			                         "Disconnect",
-			                         disconnect_done,
-			                         GUINT_TO_POINTER (warn),
-			                         NULL,
-			                         G_TYPE_INVALID);
+			NM_MODEM_GET_CLASS (self)->disconnect (self, warn);
 		}
 		break;
 	default:
@@ -710,29 +620,15 @@ nm_modem_device_state_changed (NMModem *self,
 	}
 }
 
-gboolean
-nm_modem_hw_is_up (NMModem *self, NMDevice *device)
-{
-	int ifindex = nm_device_get_ip_ifindex (device);
-
-	return ifindex > 0 ? nm_system_iface_is_up (ifindex) : TRUE;
-}
-
-gboolean
-nm_modem_hw_bring_up (NMModem *self, NMDevice *device, gboolean *no_firmware)
-{
-	int ifindex = nm_device_get_ip_ifindex (device);
-
-	return ifindex > 0 ? nm_system_iface_set_up (ifindex, TRUE, no_firmware) : TRUE;
-}
+/*****************************************************************************/
 
 const char *
-nm_modem_get_iface (NMModem *self)
+nm_modem_get_uid (NMModem *self)
 {
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_MODEM (self), NULL);
 
-	return NM_MODEM_GET_PRIVATE (self)->iface;
+	return NM_MODEM_GET_PRIVATE (self)->uid;
 }
 
 const char *
@@ -744,109 +640,22 @@ nm_modem_get_path (NMModem *self)
 	return NM_MODEM_GET_PRIVATE (self)->path;
 }
 
-static void
-get_mm_enabled_done (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
+const char *
+nm_modem_get_control_port (NMModem *self)
 {
-	NMModem *self = NM_MODEM (user_data);
-	GError *error = NULL;
-	GValue value = { 0, };
+	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (NM_IS_MODEM (self), NULL);
 
-	if (!dbus_g_proxy_end_call (proxy, call_id, &error,
-	                            G_TYPE_VALUE, &value,
-	                            G_TYPE_INVALID)) {
-		nm_log_warn (LOGD_MB, "failed get modem enabled state: (%d) %s",
-		             error ? error->code : -1,
-		             error && error->message ? error->message : "(unknown)");
-		return;
-	}
-
-	if (G_VALUE_HOLDS_BOOLEAN (&value)) {
-		update_mm_enabled (self, g_value_get_boolean (&value));
-	} else
-		nm_log_warn (LOGD_MB, "failed get modem enabled state: unexpected reply type");
-
-	g_value_unset (&value);
+	return NM_MODEM_GET_PRIVATE (self)->control_port;
 }
 
-static void
-query_mm_enabled (NMModem *self)
+const char *
+nm_modem_get_data_port (NMModem *self)
 {
-	dbus_g_proxy_begin_call (NM_MODEM_GET_PRIVATE (self)->props_proxy,
-	                         "Get", get_mm_enabled_done,
-	                         self, NULL,
-	                         G_TYPE_STRING, MM_DBUS_INTERFACE_MODEM,
-	                         G_TYPE_STRING, "Enabled",
-	                         G_TYPE_INVALID);
-}
+	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (NM_IS_MODEM (self), NULL);
 
-static void
-set_mm_enabled_done (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
-{
-	GError *error = NULL;
-
-	if (!dbus_g_proxy_end_call (proxy, call_id, &error, G_TYPE_INVALID)) {
-		nm_log_warn (LOGD_MB, "failed to enable/disable modem: (%d) %s",
-		             error ? error->code : -1,
-		             error && error->message ? error->message : "(unknown)");
-	}
-
-	/* Update enabled/disabled state again */
-	query_mm_enabled (NM_MODEM (user_data));
-}
-
-void
-nm_modem_set_mm_enabled (NMModem *self, gboolean enabled)
-{
-	NMModemPrivate *priv;
-
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (NM_IS_MODEM (self));
-
-	priv = NM_MODEM_GET_PRIVATE (self);
-
-	/* FIXME: For now this just toggles the ModemManager enabled state.  In the
-	 * future we want to tie this into rfkill state instead so that the user can
-	 * toggle rfkill status of the WWAN modem.
-	 */
-
-	if (priv->mm_enabled != enabled) {
-		DBusGProxy *proxy;
-
-		proxy = nm_modem_get_proxy (self, MM_DBUS_INTERFACE_MODEM);
-		dbus_g_proxy_begin_call (proxy,
-		                         "Enable", set_mm_enabled_done,
-		                         self, NULL,
-		                         G_TYPE_BOOLEAN, enabled,
-		                         G_TYPE_INVALID);
-		/* If we are disabling the modem, stop saying that it's enabled. */
-		if (!enabled)
-			update_mm_enabled (self, enabled);
-	}
-}
-
-static void
-modem_properties_changed (DBusGProxy *proxy,
-                          const char *interface,
-                          GHashTable *props,
-                          gpointer user_data)
-{
-	NMModem *self = NM_MODEM (user_data);
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-	GValue *value;
-
-	if (strcmp (interface, MM_DBUS_INTERFACE_MODEM))
-		return;
-
-	value = g_hash_table_lookup (props, "Enabled");
-	if (value && G_VALUE_HOLDS_BOOLEAN (value)) {
-		update_mm_enabled (self, g_value_get_boolean (value));
-	}
-
-	value = g_hash_table_lookup (props, "IpMethod");
-	if (value && G_VALUE_HOLDS_UINT (value)) {
-		priv->ip_method = g_value_get_uint (value);
-		g_object_notify (G_OBJECT (self), NM_MODEM_IP_METHOD);
-	}
+	return NM_MODEM_GET_PRIVATE (self)->data_port;
 }
 
 /*****************************************************************************/
@@ -854,9 +663,6 @@ modem_properties_changed (DBusGProxy *proxy,
 static void
 nm_modem_init (NMModem *self)
 {
-	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (self);
-
-	priv->dbus_mgr = nm_dbus_manager_get ();
 }
 
 static GObject*
@@ -866,23 +672,17 @@ constructor (GType type,
 {
 	GObject *object;
 	NMModemPrivate *priv;
-	DBusGConnection *bus;
 
 	object = G_OBJECT_CLASS (nm_modem_parent_class)->constructor (type,
-																  n_construct_params,
-																  construct_params);
+	                                                              n_construct_params,
+	                                                              construct_params);
 	if (!object)
 		return NULL;
 
 	priv = NM_MODEM_GET_PRIVATE (object);
 
-	if (!priv->device) {
-		nm_log_err (LOGD_HW, "modem parent device not provided");
-		goto err;
-	}
-
-	if (!priv->device) {
-		nm_log_err (LOGD_HW, "modem command interface not provided");
+	if (!priv->data_port && !priv->control_port) {
+		nm_log_err (LOGD_HW, "neither modem command nor data interface provided");
 		goto err;
 	}
 
@@ -890,30 +690,6 @@ constructor (GType type,
 		nm_log_err (LOGD_HW, "D-Bus path not provided");
 		goto err;
 	}
-
-	bus = nm_dbus_manager_get_connection (priv->dbus_mgr);
-	priv->proxy = dbus_g_proxy_new_for_name (bus,
-	                                         MM_DBUS_SERVICE,
-	                                         priv->path,
-	                                         MM_DBUS_INTERFACE_MODEM);
-
-	priv->props_proxy = dbus_g_proxy_new_for_name (bus,
-	                                               MM_DBUS_SERVICE,
-	                                               priv->path,
-	                                               DBUS_INTERFACE_PROPERTIES);
-	dbus_g_object_register_marshaller (_nm_marshal_VOID__STRING_BOXED,
-	                                   G_TYPE_NONE,
-	                                   G_TYPE_STRING, DBUS_TYPE_G_MAP_OF_VARIANT,
-	                                   G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (priv->props_proxy, "MmPropertiesChanged",
-	                         G_TYPE_STRING, DBUS_TYPE_G_MAP_OF_VARIANT,
-	                         G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (priv->props_proxy, "MmPropertiesChanged",
-	                             G_CALLBACK (modem_properties_changed),
-	                             object,
-	                             NULL);
-
-	query_mm_enabled (NM_MODEM (object));
 
 	return object;
 
@@ -924,7 +700,7 @@ constructor (GType type,
 
 static void
 get_property (GObject *object, guint prop_id,
-			  GValue *value, GParamSpec *pspec)
+              GValue *value, GParamSpec *pspec)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (object);
 
@@ -932,11 +708,14 @@ get_property (GObject *object, guint prop_id,
 	case PROP_PATH:
 		g_value_set_string (value, priv->path);
 		break;
-	case PROP_DEVICE:
-		g_value_set_string (value, priv->device);
+	case PROP_CONTROL_PORT:
+		g_value_set_string (value, priv->control_port);
 		break;
-	case PROP_IFACE:
-		g_value_set_string (value, priv->iface);
+	case PROP_DATA_PORT:
+		g_value_set_string (value, priv->data_port);
+		break;
+	case PROP_UID:
+		g_value_set_string (value, priv->uid);
 		break;
 	case PROP_IP_METHOD:
 		g_value_set_uint (value, priv->ip_method);
@@ -947,16 +726,18 @@ get_property (GObject *object, guint prop_id,
 	case PROP_ENABLED:
 		g_value_set_boolean (value, priv->mm_enabled);
 		break;
+	case PROP_CONNECTED:
+		g_value_set_boolean (value, priv->mm_connected);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
-
 }
 
 static void
 set_property (GObject *object, guint prop_id,
-			  const GValue *value, GParamSpec *pspec)
+              const GValue *value, GParamSpec *pspec)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (object);
 
@@ -965,22 +746,27 @@ set_property (GObject *object, guint prop_id,
 		/* Construct only */
 		priv->path = g_value_dup_string (value);
 		break;
-	case PROP_DEVICE:
-		/* Construct only */
-		priv->device = g_value_dup_string (value);
+	case PROP_CONTROL_PORT:
+		priv->control_port = g_value_dup_string (value);
 		break;
-	case PROP_IFACE:
+	case PROP_DATA_PORT:
+		priv->data_port = g_value_dup_string (value);
+		break;
+	case PROP_UID:
 		/* Construct only */
-		priv->iface = g_value_dup_string (value);
+		priv->uid = g_value_dup_string (value);
 		break;
 	case PROP_IP_METHOD:
-		/* Construct only */
 		priv->ip_method = g_value_get_uint (value);
 		break;
 	case PROP_IP_TIMEOUT:
 		priv->mm_ip_timeout = g_value_get_uint (value);
 		break;
 	case PROP_ENABLED:
+		priv->mm_enabled = g_value_get_boolean (value);
+		break;
+	case PROP_CONNECTED:
+		priv->mm_connected = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -989,24 +775,27 @@ set_property (GObject *object, guint prop_id,
 }
 
 static void
+dispose (GObject *object)
+{
+	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (object);
+
+	if (priv->act_request) {
+		g_object_unref (priv->act_request);
+		priv->act_request = NULL;
+	}
+
+	G_OBJECT_CLASS (nm_modem_parent_class)->dispose (object);
+}
+
+static void
 finalize (GObject *object)
 {
 	NMModemPrivate *priv = NM_MODEM_GET_PRIVATE (object);
 
-	if (priv->act_request)
-		g_object_unref (priv->act_request);
-
-	if (priv->proxy)
-		g_object_unref (priv->proxy);
-
-	if (priv->props_proxy)
-		g_object_unref (priv->props_proxy);
-
-	g_object_unref (priv->dbus_mgr);
-
-	g_free (priv->iface);
+	g_free (priv->uid);
 	g_free (priv->path);
-	g_free (priv->device);
+	g_free (priv->control_port);
+	g_free (priv->data_port);
 
 	G_OBJECT_CLASS (nm_modem_parent_class)->finalize (object);
 }
@@ -1022,45 +811,55 @@ nm_modem_class_init (NMModemClass *klass)
 	object_class->constructor = constructor;
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
+	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 
-	klass->act_stage1_prepare = real_act_stage1_prepare;
-	klass->deactivate = real_deactivate;
+	klass->act_stage1_prepare = act_stage1_prepare;
+	klass->deactivate = deactivate;
 
 	/* Properties */
+
+	g_object_class_install_property
+		(object_class, PROP_UID,
+		 g_param_spec_string (NM_MODEM_UID,
+		                      "UID",
+		                      "Modem unique ID",
+		                      NULL,
+		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
 	g_object_class_install_property
 		(object_class, PROP_PATH,
 		 g_param_spec_string (NM_MODEM_PATH,
-							  "DBus path",
-							  "DBus path",
-							  NULL,
-							  G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-
-	g_object_class_install_property
-		(object_class, PROP_DEVICE,
-		 g_param_spec_string (NM_MODEM_DEVICE,
-		                      "Device",
-		                      "Master modem parent device",
+		                      "DBus path",
+		                      "DBus path",
 		                      NULL,
 		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
 	g_object_class_install_property
-		(object_class, PROP_IFACE,
-		 g_param_spec_string (NM_MODEM_IFACE,
-		                      "Interface",
-		                      "Modem command interface",
+		(object_class, PROP_CONTROL_PORT,
+		 g_param_spec_string (NM_MODEM_CONTROL_PORT,
+		                      "Control port",
+		                      "The port controlling the modem",
 		                      NULL,
 		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property
+		(object_class, PROP_DATA_PORT,
+		 g_param_spec_string (NM_MODEM_DATA_PORT,
+		                      "Data port",
+		                      "The port to connect to",
+		                      NULL,
+		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	g_object_class_install_property
 		(object_class, PROP_IP_METHOD,
 		 g_param_spec_uint (NM_MODEM_IP_METHOD,
-							"IP method",
-							"IP method",
-							MM_MODEM_IP_METHOD_PPP,
-							MM_MODEM_IP_METHOD_DHCP,
-							MM_MODEM_IP_METHOD_PPP,
-							G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+		                    "IP method",
+		                    "IP method",
+		                    MM_MODEM_IP_METHOD_PPP,
+		                    MM_MODEM_IP_METHOD_DHCP,
+		                    MM_MODEM_IP_METHOD_PPP,
+		                    G_PARAM_READWRITE));
 
 	g_object_class_install_property
 		(object_class, PROP_IP_TIMEOUT,
@@ -1068,7 +867,7 @@ nm_modem_class_init (NMModemClass *klass)
 		                    "IP timeout",
 		                    "IP timeout",
 		                    0, 360, 20,
-		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+		                    G_PARAM_READWRITE));
 
 	g_object_class_install_property
 		(object_class, PROP_ENABLED,
@@ -1076,62 +875,70 @@ nm_modem_class_init (NMModemClass *klass)
 		                       "Enabled",
 		                       "Enabled",
 		                       TRUE,
-		                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | NM_PROPERTY_PARAM_NO_EXPORT));
+		                       G_PARAM_READWRITE));
+
+	g_object_class_install_property
+		(object_class, PROP_CONNECTED,
+		 g_param_spec_boolean (NM_MODEM_CONNECTED,
+		                       "Connected",
+		                       "Connected",
+		                       TRUE,
+		                       G_PARAM_READWRITE));
 
 	/* Signals */
+
 	signals[PPP_STATS] =
 		g_signal_new ("ppp-stats",
-					  G_OBJECT_CLASS_TYPE (object_class),
-					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, ppp_stats),
-					  NULL, NULL,
-					  _nm_marshal_VOID__UINT_UINT,
-					  G_TYPE_NONE, 2,
-					  G_TYPE_UINT, G_TYPE_UINT);
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMModemClass, ppp_stats),
+		              NULL, NULL,
+		              _nm_marshal_VOID__UINT_UINT,
+		              G_TYPE_NONE, 2,
+		              G_TYPE_UINT, G_TYPE_UINT);
 
 	signals[PPP_FAILED] =
 		g_signal_new ("ppp-failed",
-					  G_OBJECT_CLASS_TYPE (object_class),
-					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, ppp_failed),
-					  NULL, NULL,
-					  g_cclosure_marshal_VOID__UINT,
-					  G_TYPE_NONE, 1, G_TYPE_UINT);
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMModemClass, ppp_failed),
+		              NULL, NULL,
+		              g_cclosure_marshal_VOID__UINT,
+		              G_TYPE_NONE, 1, G_TYPE_UINT);
 
 	signals[IP4_CONFIG_RESULT] =
 		g_signal_new (NM_MODEM_IP4_CONFIG_RESULT,
-					  G_OBJECT_CLASS_TYPE (object_class),
-					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, ip4_config_result),
-					  NULL, NULL,
-					  _nm_marshal_VOID__STRING_OBJECT_POINTER,
-					  G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_OBJECT, G_TYPE_POINTER);
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMModemClass, ip4_config_result),
+		              NULL, NULL,
+		              _nm_marshal_VOID__OBJECT_POINTER,
+		              G_TYPE_NONE, 2, G_TYPE_OBJECT, G_TYPE_POINTER);
 
 	signals[PREPARE_RESULT] =
 		g_signal_new (NM_MODEM_PREPARE_RESULT,
-					  G_OBJECT_CLASS_TYPE (object_class),
-					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, prepare_result),
-					  NULL, NULL,
-					  _nm_marshal_VOID__BOOLEAN_UINT,
-					  G_TYPE_NONE, 2, G_TYPE_BOOLEAN, G_TYPE_UINT);
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMModemClass, prepare_result),
+		              NULL, NULL,
+		              _nm_marshal_VOID__BOOLEAN_UINT,
+		              G_TYPE_NONE, 2, G_TYPE_BOOLEAN, G_TYPE_UINT);
 
 	signals[AUTH_REQUESTED] =
 		g_signal_new (NM_MODEM_AUTH_REQUESTED,
-					  G_OBJECT_CLASS_TYPE (object_class),
-					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, auth_requested),
-					  NULL, NULL,
-					  g_cclosure_marshal_VOID__VOID,
-					  G_TYPE_NONE, 0);
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMModemClass, auth_requested),
+		              NULL, NULL,
+		              g_cclosure_marshal_VOID__VOID,
+		              G_TYPE_NONE, 0);
 
 	signals[AUTH_RESULT] =
 		g_signal_new (NM_MODEM_AUTH_RESULT,
-					  G_OBJECT_CLASS_TYPE (object_class),
-					  G_SIGNAL_RUN_FIRST,
-					  G_STRUCT_OFFSET (NMModemClass, auth_result),
-					  NULL, NULL,
-					  g_cclosure_marshal_VOID__POINTER,
-					  G_TYPE_NONE, 1, G_TYPE_POINTER);
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMModemClass, auth_result),
+		              NULL, NULL,
+		              g_cclosure_marshal_VOID__POINTER,
+		              G_TYPE_NONE, 1, G_TYPE_POINTER);
 }
-

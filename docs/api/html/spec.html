@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.6.4</title><style type="text/css">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.7.995</title><style type="text/css">
 
           body {
             font-family: sans-serif;
@@ -98,7 +98,7 @@
             margin-right: 4em;
           }
 
-        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.6.4</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
+        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.7.995</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
 <p>This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -112,7 +112,7 @@ General Public License for more details.</p>
 <p>You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
-</div><h2>Interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul>
+</div><h2>Interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bridge">org.freedesktop.NetworkManager.Device.Bridge</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul>
   <h1><a name="org.freedesktop.NetworkManager" id="org.freedesktop.NetworkManager"></a>org.freedesktop.NetworkManager</h1><h2>Methods:</h2><div class="method"><h3><a name="org.freedesktop.NetworkManager.GetDevices" id="org.freedesktop.NetworkManager.GetDevices">GetDevices</a> (
         
         ) &#8594;
@@ -255,11 +255,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>s</code></dt><dd>
           A combination of logging domains separated by commas (','), or "NONE"
           to disable logging.  Each domain enables logging for operations
-          related to that domain.  Available domains are: [NONE, HW, RFKILL,
-          ETHER, WIFI, BT, MB, DHCP4, DHCP6, PPP, WIFI_SCAN, IP4, IP6, AUTOIP4,
-          DNS, VPN, SHARING, SUPPLICANT, USER_SET, SYS_SET, SUSPEND, CORE,
-          DEVICE, OLPC].  If an empty string is given, the log level is changed
-          but the current set of log domains remains unchanged.
+          related to that domain.  Available domains are: [HW, RFKILL, ETHER,
+          WIFI, BT, MB, DHCP4, DHCP6, PPP, WIFI_SCAN, IP4, IP6, AUTOIP4, DNS,
+          VPN, SHARING, SUPPLICANT, AGENTS, SETTINGS, SUSPEND, CORE, DEVICE,
+          OLPC, WIMAX, INFINIBAND, FIREWALL, ADSL, BOND, VLAN].  In addition to
+          these domains, the following special domains can be used: [NONE, ALL,
+          DEFAULT, DHCP, IP].  If an empty string is given, the log level is
+          changed but the current set of log domains remains unchanged.
+        </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.GetLogging" id="org.freedesktop.NetworkManager.GetLogging">GetLogging</a> (
+        
+        ) &#8594;
+        s, s</h3><div class="docstring">
+        Get current logging verbosity level and operations domains.
+      </div><div><h4>Returns</h4><dl><dt><code>level</code> -
+      <code>s</code></dt><dd>
+          One of [ERR, WARN, INFO, DEBUG].
+        </dd><dt><code>domains</code> -
+      <code>s</code></dt><dd>
+          For available domains see SetLogging() call.
         </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.state" id="org.freedesktop.NetworkManager.state">state</a> (
         
         ) &#8594;
@@ -538,6 +551,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       (<a xmlns="" href="#type-NM_DEVICE_TYPE">NM_DEVICE_TYPE</a>)
     </dt><dd>
         The general type of the network device; ie Ethernet, WiFi, etc.
+      </dd><dt><code>AvailableConnections</code> -
+      <code>ao</code> -
+      <code>(read)</code></dt><dd>
+        An array of object paths of every configured connection that is currently 'available' through this device.
       </dd></dl><h2>Enumerated types:</h2><h3><a name="type-NM_DEVICE_STATE" id="type-NM_DEVICE_STATE">NM_DEVICE_STATE</a></h3><dl><dt><code>NM_DEVICE_STATE_UNKNOWN = 0</code></dt><dd>
           The device is in an unknown state.
         </dd><dt><code>NM_DEVICE_STATE_UNMANAGED = 10</code></dt><dd>
@@ -588,6 +605,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The device is a VLAN interface.
         </dd><dt><code>NM_DEVICE_TYPE_ADSL = 12</code></dt><dd>
           The device is an ADSL device supporting PPPoE and PPPoATM protocols.
+        </dd><dt><code>NM_DEVICE_TYPE_BRIDGE = 13</code></dt><dd>
+          The device is a bridge interface.
         </dd></dl><h3><a name="type-NM_DEVICE_STATE_REASON" id="type-NM_DEVICE_STATE_REASON">NM_DEVICE_STATE_REASON</a></h3><dl><dt><code>NM_DEVICE_STATE_REASON_UNKNOWN = 0</code></dt><dd>
           The reason for the device state change is unknown.
         </dd><dt><code>NM_DEVICE_STATE_REASON_NONE = 1</code></dt><dd>
@@ -692,6 +711,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           A dependency of the connection failed.
         </dd><dt><code>NM_DEVICE_STATE_REASON_BR2684_FAILED = 51</code></dt><dd>
           Problem with the RFC 2684 Ethernet over ADSL bridge.
+        </dd><dt><code>NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE = 52</code></dt><dd>
+          ModemManager was not running or quit unexpectedly.
+        </dd><dt><code>NM_DEVICE_STATE_REASON_SSID_NOT_FOUND = 53</code></dt><dd>
+          The 802.11 Wi-Fi network could not be found.
+        </dd><dt><code>NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED = 54</code></dt><dd>
+          A secondary connection of the base connection failed.
         </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_DEVICE_CAP" id="type-NM_DEVICE_CAP">NM_DEVICE_CAP</a></h3><dl><dt><code>NM_DEVICE_CAP_NONE = 0x0</code></dt><dd>Null capability.</dd><dt><code>NM_DEVICE_CAP_NM_SUPPORTED = 0x1</code></dt><dd>The device is supported by NetworkManager.</dd><dt><code>NM_DEVICE_CAP_CARRIER_DETECT = 0x2</code></dt><dd>The device supports carrier detection.</dd></dl><h2>Structure types:</h2><div class="struct"><h3><a name="type-NM_DEVICE_STATE_REASON_STRUCT" id="type-NM_DEVICE_STATE_REASON_STRUCT">NM_DEVICE_STATE_REASON_STRUCT</a> - (
         u: state, u: reason
         )
@@ -1001,6 +1026,28 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
 	slaved to this device.
       </dd></dl>
 
+  <h1><a name="org.freedesktop.NetworkManager.Device.Bridge" id="org.freedesktop.NetworkManager.Device.Bridge"></a>org.freedesktop.NetworkManager.Device.Bridge</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bridge.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bridge.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd><dt><code>Slaves</code> -
+      <code>ao</code> -
+      <code>(read)</code></dt><dd>
+        Array of object paths representing devices which are currently
+	slaved to this device.
+      </dd></dl>
+
   <h1><a name="org.freedesktop.NetworkManager.Device.Vlan" id="org.freedesktop.NetworkManager.Device.Vlan"></a>org.freedesktop.NetworkManager.Device.Vlan</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Vlan.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Vlan.PropertiesChanged">PropertiesChanged</a> (
         a{sv}: properties
         )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
@@ -1283,6 +1330,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The connection is activated.
         </dd><dt><code>NM_ACTIVE_CONNECTION_STATE_DEACTIVATING = 3</code></dt><dd>
           The connection is being torn down and cleaned up.
+        </dd><dt><code>NM_ACTIVE_CONNECTION_STATE_DEACTIVATED = 4</code></dt><dd>
+          The connection is no longer active.
         </dd></dl>
 
   <h1><a name="org.freedesktop.NetworkManager.AgentManager" id="org.freedesktop.NetworkManager.AgentManager"></a>org.freedesktop.NetworkManager.AgentManager</h1><h2>Methods:</h2><div class="method"><h3><a name="org.freedesktop.NetworkManager.AgentManager.Register" id="org.freedesktop.NetworkManager.AgentManager.Register">Register</a> (
@@ -1643,7 +1692,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </dd><dt><code>NM_VPN_PLUGIN_FAILURE_BAD_IP_CONFIG = 2</code></dt><dd>
           Invalid IP configuration returned from the VPN plugin.
         </dd></dl>
-<h1>Generic types:</h1><h2>Enumerated types:</h2><h3><a name="type-NM_802_11_MODE" id="type-NM_802_11_MODE">NM_802_11_MODE</a></h3><dl><dt><code>NM_802_11_MODE_UNKNOWN = 0</code></dt><dd>Mode is unknown.</dd><dt><code>NM_802_11_MODE_ADHOC = 1</code></dt><dd>Uncoordinated network without central infrastructure.</dd><dt><code>NM_802_11_MODE_INFRA = 2</code></dt><dd>Coordinated network with one or more central controllers.</dd></dl><h2>Mapping types:</h2><div class="struct"><h3><a name="type-String_Variant_Map" id="type-String_Variant_Map">String_Variant_Map</a> - a{
+<h1>Generic types:</h1><h2>Enumerated types:</h2><h3><a name="type-NM_802_11_MODE" id="type-NM_802_11_MODE">NM_802_11_MODE</a></h3><dl><dt><code>NM_802_11_MODE_UNKNOWN = 0</code></dt><dd>Mode is unknown.</dd><dt><code>NM_802_11_MODE_ADHOC = 1</code></dt><dd>
+        For both devices and access point objects, indicates the object is
+        part of an Ad-Hoc 802.11 network without a central coordinating access
+        point.
+      </dd><dt><code>NM_802_11_MODE_INFRA = 2</code></dt><dd>
+        The wireless device or access point is in infrastructure mode.  For
+        devices, this indicates the device is an 802.11 client/station.  For
+        access point objects, this indicates the object is an access point that
+        provides connectivity to clients.
+      </dd><dt><code>NM_802_11_MODE_AP = 3</code></dt><dd>
+        The device is an access point/hotspot.  Not valid for access point
+        objects themselves.
+      </dd></dl><h2>Mapping types:</h2><div class="struct"><h3><a name="type-String_Variant_Map" id="type-String_Variant_Map">String_Variant_Map</a> - a{
         s: Key &#8594; v: Value
         }
       </h3><div class="docstring">A mapping from strings to variants representing extra
@@ -1687,7 +1748,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
   <h2><a name="org.freedesktop.NetworkManager.VPN.Error.BadArguments" id="org.freedesktop.NetworkManager.VPN.Error.BadArguments"></a>org.freedesktop.NetworkManager.VPN.Error.BadArguments</h2>Invalid arguments were passed with the request.  FIXME: too general.
   <h2><a name="org.freedesktop.NetworkManager.VPN.Error.LaunchFailed" id="org.freedesktop.NetworkManager.VPN.Error.LaunchFailed"></a>org.freedesktop.NetworkManager.VPN.Error.LaunchFailed</h2>A binary providing the service failed to launch.
   <h2><a name="org.freedesktop.NetworkManager.VPN.Error.ConnectionInvalid" id="org.freedesktop.NetworkManager.VPN.Error.ConnectionInvalid"></a>org.freedesktop.NetworkManager.VPN.Error.ConnectionInvalid</h2>The request could not be processed because the VPN connection settings were invalid.
-<h1>Index</h1><h2>Index of interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul><h2>Index of types</h2><ul><li><code><a href="#type-NM_802_11_AP_FLAGS">NM_802_11_AP_FLAGS</a></code>
+<h1>Index</h1><h2>Index of interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bridge">org.freedesktop.NetworkManager.Device.Bridge</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul><h2>Index of types</h2><ul><li><code><a href="#type-NM_802_11_AP_FLAGS">NM_802_11_AP_FLAGS</a></code>
     - u</li><li><code><a href="#type-NM_802_11_AP_SEC">NM_802_11_AP_SEC</a></code>
     - u</li><li><code><a href="#type-NM_802_11_DEVICE_CAP">NM_802_11_DEVICE_CAP</a></code>
     - u</li><li><code><a href="#type-NM_802_11_MODE">NM_802_11_MODE</a></code>

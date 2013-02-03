@@ -52,6 +52,7 @@
 #define NM_DBUS_INTERFACE_DEVICE_INFINIBAND NM_DBUS_INTERFACE_DEVICE ".Infiniband"
 #define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
 #define NM_DBUS_INTERFACE_DEVICE_VLAN       NM_DBUS_INTERFACE_DEVICE ".Vlan"
+#define NM_DBUS_INTERFACE_DEVICE_BRIDGE     NM_DBUS_INTERFACE_DEVICE ".Bridge"
 
 
 #define NM_DBUS_IFACE_SETTINGS            "org.freedesktop.NetworkManager.Settings"
@@ -128,6 +129,7 @@ typedef enum {
 	NM_DEVICE_TYPE_BOND       = 10,
 	NM_DEVICE_TYPE_VLAN       = 11,
 	NM_DEVICE_TYPE_ADSL       = 12,
+	NM_DEVICE_TYPE_BRIDGE     = 13,
 } NMDeviceType;
 
 /**
@@ -225,15 +227,23 @@ typedef enum {
 /**
  * NM80211Mode:
  * @NM_802_11_MODE_UNKNOWN: the device or access point mode is unknown
- * @NM_802_11_MODE_ADHOC: the device or access point is in Ad-Hoc mode
- * @NM_802_11_MODE_INFRA: the device or access point is in infrastructure mode
+ * @NM_802_11_MODE_ADHOC: for both devices and access point objects, indicates
+ *   the object is part of an Ad-Hoc 802.11 network without a central
+ *   coordinating access point.
+ * @NM_802_11_MODE_INFRA: the device or access point is in infrastructure mode.
+ *   For devices, this indicates the device is an 802.11 client/station.  For
+ *   access point objects, this indicates the object is an access point that
+ *   provides connectivity to clients.
+ * @NM_802_11_MODE_AP: the device is an access point/hotspot.  Not valid for
+ *   access point objects; used only for hotspot mode on the local machine.
  *
  * Indicates the 802.11 mode an access point or device is currently in.
  **/
 typedef enum {
 	NM_802_11_MODE_UNKNOWN = 0,
 	NM_802_11_MODE_ADHOC,
-	NM_802_11_MODE_INFRA
+	NM_802_11_MODE_INFRA,
+	NM_802_11_MODE_AP
 } NM80211Mode;
 
 /**
@@ -492,6 +502,15 @@ typedef enum {
 	/* Problem with the RFC 2684 Ethernet over ADSL bridge */
 	NM_DEVICE_STATE_REASON_BR2684_FAILED = 51,
 
+	/* ModemManager not running */
+	NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE = 52,
+
+	/* The WiFi network could not be found */
+	NM_DEVICE_STATE_REASON_SSID_NOT_FOUND = 53,
+
+	/* A secondary connection of the base connection failed */
+	NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED = 54,
+
 	/* Unused */
 	NM_DEVICE_STATE_REASON_LAST = 0xFFFF
 } NMDeviceStateReason;
@@ -504,6 +523,8 @@ typedef enum {
  * @NM_ACTIVE_CONNECTION_STATE_ACTIVATED: there is a connection to the network
  * @NM_ACTIVE_CONNECTION_STATE_DEACTIVATING: the network connection is being
  *   torn down and cleaned up
+ * @NM_ACTIVE_CONNECTION_STATE_DEACTIVATED: the network connection is disconnected
+ *   and will be removed
  *
  * #NMActiveConnectionState values indicate the state of a connection to a
  * specific network while it is starting, connected, or disconnecting from that
@@ -513,7 +534,8 @@ typedef enum {
 	NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0,
 	NM_ACTIVE_CONNECTION_STATE_ACTIVATING,
 	NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
-	NM_ACTIVE_CONNECTION_STATE_DEACTIVATING
+	NM_ACTIVE_CONNECTION_STATE_DEACTIVATING,
+	NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
 } NMActiveConnectionState;
 
 #endif /* NETWORK_MANAGER_H */

@@ -68,7 +68,7 @@ nm_ifnet_connection_new (const char *conn_name, NMConnection *source)
 	if (source)
 		tmp = g_object_ref (source);
 	else {
-		tmp = ifnet_update_connection_from_config_block (conn_name, &error);
+		tmp = ifnet_update_connection_from_config_block (conn_name, NULL, &error);
 		if (!tmp){
 			g_error_free (error);
 			return NULL;
@@ -108,6 +108,7 @@ commit_changes (NMSettingsConnection *connection,
 	                                         CONF_NET_FILE,
 	                                         WPA_SUPPLICANT_CONF,
 	                                         &new_name,
+	                                         NULL,
 	                                         &error)) {
 		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Failed to update %s", priv->conn_name);
 		reload_parsers ();
@@ -135,8 +136,7 @@ do_delete (NMSettingsConnection *connection,
 	NMIfnetConnectionPrivate *priv = NM_IFNET_CONNECTION_GET_PRIVATE (connection);
 
 	g_signal_emit (connection, signals[IFNET_CANCEL_MONITORS], 0);
-	if (!ifnet_delete_connection_in_parsers
-	    (priv->conn_name, CONF_NET_FILE, WPA_SUPPLICANT_CONF)) {
+	if (!ifnet_delete_connection_in_parsers (priv->conn_name, CONF_NET_FILE, WPA_SUPPLICANT_CONF, NULL)) {
 		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Failed to delete %s",
 			      priv->conn_name);
 		reload_parsers ();

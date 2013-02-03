@@ -31,7 +31,7 @@
 #include "nm-utils.h"
 #include "nm-dbus-glib-types.h"
 #include "nm-glib-compat.h"
-
+#include "nm-setting-private.h"
 
 
 /**
@@ -63,7 +63,12 @@ nm_setting_ip4_config_error_quark (void)
 G_DEFINE_BOXED_TYPE (NMIP4Address, nm_ip4_address, nm_ip4_address_dup, nm_ip4_address_unref)
 G_DEFINE_BOXED_TYPE (NMIP4Route, nm_ip4_route, nm_ip4_route_dup, nm_ip4_route_unref)
 
-G_DEFINE_TYPE (NMSettingIP4Config, nm_setting_ip4_config, NM_TYPE_SETTING)
+G_DEFINE_TYPE_WITH_CODE (NMSettingIP4Config, nm_setting_ip4_config, NM_TYPE_SETTING,
+                         _nm_register_setting (NM_SETTING_IP4_CONFIG_SETTING_NAME,
+                                               g_define_type_id,
+                                               4,
+                                               NM_SETTING_IP4_CONFIG_ERROR))
+NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_IP4_CONFIG)
 
 #define NM_SETTING_IP4_CONFIG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_SETTING_IP4_CONFIG, NMSettingIP4ConfigPrivate))
 
@@ -996,7 +1001,7 @@ nm_setting_ip4_config_class_init (NMSettingIP4ConfigClass *setting_class)
 	 * List of DNS servers (network byte order).  For the 'auto' method, these
 	 * DNS servers are appended to those (if any) returned by automatic
 	 * configuration.  DNS servers cannot be used with the 'shared', 'link-local',
-	 * or 'disabled' methods as there is no usptream network.  In all other
+	 * or 'disabled' methods as there is no upstream network.  In all other
 	 * methods, these DNS servers are used as the only DNS servers for this
 	 * connection.
 	 **/
@@ -1009,7 +1014,7 @@ nm_setting_ip4_config_class_init (NMSettingIP4ConfigClass *setting_class)
 							   "appended to those (if any) returned by automatic "
 							   "configuration.  DNS servers cannot be used with "
 							   "the 'shared', 'link-local', or 'disabled' "
-							   "methods as there is no usptream network.  In all "
+							   "methods as there is no upstream network.  In all "
 							   "other methods, these DNS servers are used as the "
 							   "only DNS servers for this connection.",
 							   DBUS_TYPE_G_UINT_ARRAY,
@@ -1143,7 +1148,7 @@ nm_setting_ip4_config_class_init (NMSettingIP4ConfigClass *setting_class)
 	 * NMSettingIP4Config:dhcp-client-id:
 	 *
 	 * A string sent to the DHCP server to identify the local machine which the
-	 * DHCP server may use to cusomize the DHCP lease and options.
+	 * DHCP server may use to customize the DHCP lease and options.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_DHCP_CLIENT_ID,
@@ -1151,7 +1156,7 @@ nm_setting_ip4_config_class_init (NMSettingIP4ConfigClass *setting_class)
 						   "DHCP Client ID",
 						   "A string sent to the DHCP server to identify the "
 						   "local machine which the DHCP server may use to "
-						   "cusomize the DHCP lease and options.",
+						   "customize the DHCP lease and options.",
 						   NULL,
 						   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
 

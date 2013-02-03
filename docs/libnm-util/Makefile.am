@@ -10,7 +10,7 @@ DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.sgml
 # The directory containing the source code. Relative to $(srcdir).
 # gtk-doc will search all .c & .h files beneath here for inline comments
 # documenting functions and macros.
-DOC_SOURCE_DIR=../../libnm-util
+DOC_SOURCE_DIR=$(top_srcdir)/libnm-util
 
 # Extra options to supply to gtkdoc-scan.
 SCAN_OPTIONS=--rebuild-types --rebuild-sections
@@ -66,6 +66,7 @@ EXTRA_DIST += version.xml.in
 
 CLEANFILES += \
 	libnm-util-sections.txt \
+	libnm-util-overrides.txt \
 	html/* \
 	tmpl/* \
 	xml/*

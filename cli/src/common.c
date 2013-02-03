@@ -411,7 +411,7 @@ nmc_device_reason_to_string (NMDeviceStateReason reason)
 		return _("The device could not be readied for configuration");
 
 	case NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE:
-		return _("IP configuration could not be reserved (no available address, timeout, etc)");
+		return _("IP configuration could not be reserved (no available address, timeout, etc.)");
 
 	case NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED:
 		return _("The IP configuration is no longer valid");
@@ -550,6 +550,15 @@ nmc_device_reason_to_string (NMDeviceStateReason reason)
 
 	case NM_DEVICE_STATE_REASON_BR2684_FAILED:
 		return _("A problem with the RFC 2684 Ethernet over ADSL bridge");
+
+	case NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE:
+		return _("ModemManager is unavailable");
+
+	case NM_DEVICE_STATE_REASON_SSID_NOT_FOUND:
+		return _("The Wi-Fi network could not be found");
+
+	case NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED:
+		return _("A secondary connection of the base connection failed");
 
 	default:
 		return _("Unknown");

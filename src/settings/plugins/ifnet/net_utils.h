@@ -45,7 +45,7 @@ typedef struct _ip6_block {
 } ip6_block;
 
 gchar *read_hostname (const char *path);
-gboolean write_hostname (const char *hostname, const char *path);
+gboolean write_hostname (const char *path, const char *hostname);
 gboolean is_static_ip4 (const char *conn_name);
 gboolean is_static_ip6 (const char *conn_name);
 gboolean is_ip4_address (const char *in_address);
@@ -77,5 +77,5 @@ gboolean is_true (const char *str);
 
 void get_dhcp_hostname_and_client_id (char **hostname, char **client_id);
 
-void backup_file (const gchar* target);
+gchar *backup_file (const gchar* target);
 #endif

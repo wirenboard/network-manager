@@ -38,21 +38,21 @@ extern void _nm_marshal_VOID__OBJECT_OBJECT (GClosure     *closure,
                                              gpointer      invocation_hint,
                                              gpointer      marshal_data);
 
-/* VOID:OBJECT,STRING (nm-marshal.list:5) */
+/* VOID:OBJECT,POINTER (nm-marshal.list:5) */
+extern void _nm_marshal_VOID__OBJECT_POINTER (GClosure     *closure,
+                                              GValue       *return_value,
+                                              guint         n_param_values,
+                                              const GValue *param_values,
+                                              gpointer      invocation_hint,
+                                              gpointer      marshal_data);
+
+/* VOID:OBJECT,STRING (nm-marshal.list:6) */
 extern void _nm_marshal_VOID__OBJECT_STRING (GClosure     *closure,
                                              GValue       *return_value,
                                              guint         n_param_values,
                                              const GValue *param_values,
                                              gpointer      invocation_hint,
                                              gpointer      marshal_data);
-
-/* VOID:OBJECT,UINT,UINT,UINT (nm-marshal.list:6) */
-extern void _nm_marshal_VOID__OBJECT_UINT_UINT_UINT (GClosure     *closure,
-                                                     GValue       *return_value,
-                                                     guint         n_param_values,
-                                                     const GValue *param_values,
-                                                     gpointer      invocation_hint,
-                                                     gpointer      marshal_data);
 
 /* VOID:POINTER (nm-marshal.list:7) */
 #define _nm_marshal_VOID__POINTER	g_cclosure_marshal_VOID__POINTER
@@ -105,15 +105,7 @@ extern void _nm_marshal_VOID__STRING_OBJECT (GClosure     *closure,
                                              gpointer      invocation_hint,
                                              gpointer      marshal_data);
 
-/* VOID:STRING,OBJECT,POINTER (nm-marshal.list:14) */
-extern void _nm_marshal_VOID__STRING_OBJECT_POINTER (GClosure     *closure,
-                                                     GValue       *return_value,
-                                                     guint         n_param_values,
-                                                     const GValue *param_values,
-                                                     gpointer      invocation_hint,
-                                                     gpointer      marshal_data);
-
-/* VOID:STRING,POINTER (nm-marshal.list:15) */
+/* VOID:STRING,POINTER (nm-marshal.list:14) */
 extern void _nm_marshal_VOID__STRING_POINTER (GClosure     *closure,
                                               GValue       *return_value,
                                               guint         n_param_values,
@@ -121,7 +113,7 @@ extern void _nm_marshal_VOID__STRING_POINTER (GClosure     *closure,
                                               gpointer      invocation_hint,
                                               gpointer      marshal_data);
 
-/* VOID:STRING,STRING (nm-marshal.list:16) */
+/* VOID:STRING,STRING (nm-marshal.list:15) */
 extern void _nm_marshal_VOID__STRING_STRING (GClosure     *closure,
                                              GValue       *return_value,
                                              guint         n_param_values,
@@ -129,7 +121,7 @@ extern void _nm_marshal_VOID__STRING_STRING (GClosure     *closure,
                                              gpointer      invocation_hint,
                                              gpointer      marshal_data);
 
-/* VOID:STRING,STRING,STRING (nm-marshal.list:17) */
+/* VOID:STRING,STRING,STRING (nm-marshal.list:16) */
 extern void _nm_marshal_VOID__STRING_STRING_STRING (GClosure     *closure,
                                                     GValue       *return_value,
                                                     guint         n_param_values,
@@ -137,7 +129,7 @@ extern void _nm_marshal_VOID__STRING_STRING_STRING (GClosure     *closure,
                                                     gpointer      invocation_hint,
                                                     gpointer      marshal_data);
 
-/* VOID:STRING,STRING,STRING,UINT (nm-marshal.list:18) */
+/* VOID:STRING,STRING,STRING,UINT (nm-marshal.list:17) */
 extern void _nm_marshal_VOID__STRING_STRING_STRING_UINT (GClosure     *closure,
                                                          GValue       *return_value,
                                                          guint         n_param_values,
@@ -145,13 +137,21 @@ extern void _nm_marshal_VOID__STRING_STRING_STRING_UINT (GClosure     *closure,
                                                          gpointer      invocation_hint,
                                                          gpointer      marshal_data);
 
-/* VOID:UINT,UINT (nm-marshal.list:19) */
+/* VOID:UINT,UINT (nm-marshal.list:18) */
 extern void _nm_marshal_VOID__UINT_UINT (GClosure     *closure,
                                          GValue       *return_value,
                                          guint         n_param_values,
                                          const GValue *param_values,
                                          gpointer      invocation_hint,
                                          gpointer      marshal_data);
+
+/* VOID:UINT,UINT,INT (nm-marshal.list:19) */
+extern void _nm_marshal_VOID__UINT_UINT_INT (GClosure     *closure,
+                                             GValue       *return_value,
+                                             guint         n_param_values,
+                                             const GValue *param_values,
+                                             gpointer      invocation_hint,
+                                             gpointer      marshal_data);
 
 /* VOID:UINT,UINT,UINT (nm-marshal.list:20) */
 extern void _nm_marshal_VOID__UINT_UINT_UINT (GClosure     *closure,

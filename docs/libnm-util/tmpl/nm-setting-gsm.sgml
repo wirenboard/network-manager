@@ -9,12 +9,10 @@ NMSettingGsm
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -135,6 +133,8 @@ NMSettingGsm
 @NM_SETTING_GSM_NETWORK_TYPE_GPRS_EDGE: 
 @NM_SETTING_GSM_NETWORK_TYPE_PREFER_UMTS_HSPA: 
 @NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE: 
+@NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G: 
+@NM_SETTING_GSM_NETWORK_TYPE_4G: 
 
 <!-- ##### MACRO NM_SETTING_GSM_ALLOWED_BANDS ##### -->
 <para>

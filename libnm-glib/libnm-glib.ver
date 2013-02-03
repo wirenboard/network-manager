@@ -36,6 +36,7 @@ global:
 	nm_client_get_device_by_iface;
 	nm_client_get_device_by_path;
 	nm_client_get_devices;
+	nm_client_get_logging;
 	nm_client_get_manager_running;
 	nm_client_get_permission_result;
 	nm_client_get_state;
@@ -48,6 +49,7 @@ global:
 	nm_client_new_finish;
 	nm_client_permission_get_type;
 	nm_client_permission_result_get_type;
+	nm_client_set_logging;
 	nm_client_sleep;
 	nm_client_wimax_get_enabled;
 	nm_client_wimax_hardware_get_enabled;
@@ -70,6 +72,13 @@ global:
 	nm_device_bond_get_slaves;
 	nm_device_bond_get_type;
 	nm_device_bond_new;
+	nm_device_bridge_error_get_type;
+	nm_device_bridge_error_quark;
+	nm_device_bridge_get_carrier;
+	nm_device_bridge_get_hw_address;
+	nm_device_bridge_get_slaves;
+	nm_device_bridge_get_type;
+	nm_device_bridge_new;
 	nm_device_bt_error_get_type;
 	nm_device_bt_error_quark;
 	nm_device_bt_get_capabilities;
@@ -149,6 +158,7 @@ global:
 	nm_device_wifi_get_permanent_hw_address;
 	nm_device_wifi_get_type;
 	nm_device_wifi_new;
+	nm_device_wifi_request_scan_simple;
 	nm_device_wimax_error_get_type;
 	nm_device_wimax_error_quark;
 	nm_device_wimax_get_active_nsp;

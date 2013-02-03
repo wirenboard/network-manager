@@ -15,6 +15,7 @@
 #include "nm-device-bt.h" 
 #include "nm-device-olpc-mesh.h" 
 #include "nm-device-bond.h" 
+#include "nm-device-bridge.h" 
 #include "nm-device-vlan.h" 
 #include "nm-access-point.h" 
 #include "nm-ip4-config.h" 
@@ -248,6 +249,27 @@ nm_device_bond_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMDeviceBondError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_device_bridge_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_DEVICE_BRIDGE_ERROR_UNKNOWN, "NM_DEVICE_BRIDGE_ERROR_UNKNOWN", "UnknownError" },
+        { NM_DEVICE_BRIDGE_ERROR_NOT_BRIDGE_CONNECTION, "NM_DEVICE_BRIDGE_ERROR_NOT_BRIDGE_CONNECTION", "NotBridgeConnection" },
+        { NM_DEVICE_BRIDGE_ERROR_INVALID_BRIDGE_CONNECTION, "NM_DEVICE_BRIDGE_ERROR_INVALID_BRIDGE_CONNECTION", "InvalidBridgeConnection" },
+        { NM_DEVICE_BRIDGE_ERROR_INTERFACE_MISMATCH, "NM_DEVICE_BRIDGE_ERROR_INTERFACE_MISMATCH", "InterfaceMismatch" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMDeviceBridgeError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

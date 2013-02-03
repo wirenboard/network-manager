@@ -57,22 +57,24 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@WITH_DOCS_TRUE@noinst_PROGRAMS = generate-settings-spec$(EXEEXT)
+@ENABLE_DOC_TRUE@noinst_PROGRAMS = generate-settings-spec$(EXEEXT)
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/version.xml.in $(top_srcdir)/gtk-doc.make
 subdir = docs/api
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gtk-doc.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
-	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/introspection.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libnl-check.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gnome-code-coverage.m4 \
+	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
+	$(top_srcdir)/m4/introspection.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/vapigen.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -83,12 +85,12 @@ PROGRAMS = $(noinst_PROGRAMS)
 am__generate_settings_spec_SOURCES_DIST = generate-settings-spec.c
 am__objects_1 =  \
 	generate_settings_spec-generate-settings-spec.$(OBJEXT)
-@WITH_DOCS_TRUE@am_generate_settings_spec_OBJECTS = $(am__objects_1)
+@ENABLE_DOC_TRUE@am_generate_settings_spec_OBJECTS = $(am__objects_1)
 generate_settings_spec_OBJECTS = $(am_generate_settings_spec_OBJECTS)
 am__DEPENDENCIES_1 =
-@WITH_DOCS_TRUE@generate_settings_spec_DEPENDENCIES =  \
-@WITH_DOCS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
-@WITH_DOCS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@ENABLE_DOC_TRUE@generate_settings_spec_DEPENDENCIES =  \
+@ENABLE_DOC_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_DOC_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -140,6 +142,10 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CKDB_PATH = @CKDB_PATH@
+CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
+CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
+CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -154,9 +160,7 @@ DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
-DHCLIENT_VERSION = @DHCLIENT_VERSION@
 DHCPCD_PATH = @DHCPCD_PATH@
-DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
 DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -166,17 +170,14 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
-GIO_CFLAGS = @GIO_CFLAGS@
-GIO_LIBS = @GIO_LIBS@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_LIBS = @GLIB_LIBS@
 GLIB_MAKEFILE = @GLIB_MAKEFILE@
 GLIB_MKENUMS = @GLIB_MKENUMS@
-GMODULE_CFLAGS = @GMODULE_CFLAGS@
-GMODULE_LIBS = @GMODULE_LIBS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
@@ -217,6 +218,7 @@ IPTABLES_PATH = @IPTABLES_PATH@
 IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
 IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBDL = @LIBDL@
@@ -233,11 +235,7 @@ LIBNL2_LIBS = @LIBNL2_LIBS@
 LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
 LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
-LIBNL_GENL3_CFLAGS = @LIBNL_GENL3_CFLAGS@
-LIBNL_GENL3_LIBS = @LIBNL_GENL3_LIBS@
 LIBNL_LIBS = @LIBNL_LIBS@
-LIBNL_ROUTE3_CFLAGS = @LIBNL_ROUTE3_CFLAGS@
-LIBNL_ROUTE3_LIBS = @LIBNL_ROUTE3_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
@@ -252,6 +250,8 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MM_GLIB_CFLAGS = @MM_GLIB_CFLAGS@
+MM_GLIB_LIBS = @MM_GLIB_LIBS@
 MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
@@ -261,6 +261,7 @@ NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
+NM_MODIFY_SYSTEM_POLICY = @NM_MODIFY_SYSTEM_POLICY@
 NM_VERSION = @NM_VERSION@
 NSS_CFLAGS = @NSS_CFLAGS@
 NSS_LIBS = @NSS_LIBS@
@@ -287,13 +288,14 @@ PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
-RESOLVCONF_PATH = @RESOLVCONF_PATH@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SYSTEMD_CFLAGS = @SYSTEMD_CFLAGS@
-SYSTEMD_LIBS = @SYSTEMD_LIBS@
+SYSTEMD_INHIBIT_CFLAGS = @SYSTEMD_INHIBIT_CFLAGS@
+SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
+SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
+SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
 UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
@@ -348,6 +350,11 @@ localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+nmbinary = @nmbinary@
+nmconfdir = @nmconfdir@
+nmdatadir = @nmdatadir@
+nmrundir = @nmrundir@
+nmstatedir = @nmstatedir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -362,108 +369,117 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+with_dhclient = @with_dhclient@
+with_dhcpcd = @with_dhcpcd@
+with_netconfig = @with_netconfig@
+with_resolvconf = @with_resolvconf@
 GENERATE_SETTINGS_SPEC_SOURCE = generate-settings-spec.c
 AUTOMAKE_OPTIONS = 1.7
-@WITH_DOCS_TRUE@INCLUDES = \
-@WITH_DOCS_TRUE@	-I$(top_srcdir)/include \
-@WITH_DOCS_TRUE@	-I$(top_srcdir)/libnm-util
+@ENABLE_DOC_TRUE@INCLUDES = \
+@ENABLE_DOC_TRUE@	-I$(top_srcdir)/include \
+@ENABLE_DOC_TRUE@	-I$(top_builddir)/include \
+@ENABLE_DOC_TRUE@	-I$(top_srcdir)/libnm-util \
+@ENABLE_DOC_TRUE@	-I$(top_builddir)/libnm-util
 
-@WITH_DOCS_TRUE@generate_settings_spec_SOURCES = \
-@WITH_DOCS_TRUE@	$(GENERATE_SETTINGS_SPEC_SOURCE)
+@ENABLE_DOC_TRUE@generate_settings_spec_SOURCES = \
+@ENABLE_DOC_TRUE@	$(GENERATE_SETTINGS_SPEC_SOURCE)
 
-@WITH_DOCS_TRUE@generate_settings_spec_CPPFLAGS = \
-@WITH_DOCS_TRUE@	$(GLIB_CFLAGS) \
-@WITH_DOCS_TRUE@	$(DBUS_CFLAGS)
+@ENABLE_DOC_TRUE@generate_settings_spec_CPPFLAGS = \
+@ENABLE_DOC_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_DOC_TRUE@	$(DBUS_CFLAGS)
 
-@WITH_DOCS_TRUE@generate_settings_spec_LDADD = \
-@WITH_DOCS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
-@WITH_DOCS_TRUE@	$(GLIB_LIBS) \
-@WITH_DOCS_TRUE@	$(DBUS_LIBS)
+@ENABLE_DOC_TRUE@generate_settings_spec_LDADD = \
+@ENABLE_DOC_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_DOC_TRUE@	$(GLIB_LIBS) \
+@ENABLE_DOC_TRUE@	$(DBUS_LIBS)
 
-@WITH_DOCS_TRUE@XSLTPROC = xsltproc --xinclude --nonet
-@WITH_DOCS_TRUE@XMLS = $(wildcard $(top_srcdir)/introspection/nm-*.xml)
-@WITH_DOCS_TRUE@OTHER_FILES = \
-@WITH_DOCS_TRUE@	$(top_builddir)/introspection/all.xml \
-@WITH_DOCS_TRUE@	$(top_srcdir)/introspection/generic-types.xml \
-@WITH_DOCS_TRUE@	$(top_srcdir)/introspection/errors.xml \
-@WITH_DOCS_TRUE@	$(top_srcdir)/introspection/vpn-errors.xml \
-@WITH_DOCS_TRUE@	$(top_srcdir)/tools/doc-generator.xsl \
-@WITH_DOCS_TRUE@	$(top_srcdir)/introspection/generic-types.xml
+@ENABLE_DOC_TRUE@XSLTPROC = xsltproc --xinclude --nonet
+@ENABLE_DOC_TRUE@XMLS = $(wildcard $(top_srcdir)/introspection/nm-*.xml)
+@ENABLE_DOC_TRUE@OTHER_FILES = \
+@ENABLE_DOC_TRUE@	$(top_builddir)/introspection/all.xml \
+@ENABLE_DOC_TRUE@	$(top_srcdir)/introspection/generic-types.xml \
+@ENABLE_DOC_TRUE@	$(top_srcdir)/introspection/errors.xml \
+@ENABLE_DOC_TRUE@	$(top_srcdir)/introspection/vpn-errors.xml \
+@ENABLE_DOC_TRUE@	$(top_srcdir)/tools/doc-generator.xsl \
+@ENABLE_DOC_TRUE@	$(top_srcdir)/introspection/generic-types.xml
 
-@WITH_DOCS_TRUE@GENERATED_FILES = spec.html settings-spec.xml
+@ENABLE_DOC_TRUE@GENERATED_FILES = spec.html settings-spec.xml
 
 ####################################
 
 # The name of the module.
-@WITH_DOCS_TRUE@DOC_MODULE = NetworkManager
+@ENABLE_DOC_TRUE@DOC_MODULE = NetworkManager
 
 # The top-level SGML file.
-@WITH_DOCS_TRUE@DOC_MAIN_SGML_FILE = network-manager-docs.xml
-@WITH_DOCS_TRUE@DOC_SOURCE_DIR = $(srcdir)
+@ENABLE_DOC_TRUE@DOC_MAIN_SGML_FILE = network-manager-docs.xml
+@ENABLE_DOC_TRUE@DOC_SOURCE_DIR = $(srcdir)
 
 # Extra options to supply to gtkdoc-mkdb
-@WITH_DOCS_TRUE@MKDB_OPTIONS = --sgml-mode --output-format=xml
+@ENABLE_DOC_TRUE@MKDB_OPTIONS = --sgml-mode --output-format=xml
 
 # Extra options to supply to gtkdoc-mktmpl
-@WITH_DOCS_TRUE@MKTMPL_OPTIONS = 
+@ENABLE_DOC_TRUE@MKTMPL_OPTIONS = 
 
 # Non-autogenerated SGML files to be included in $(DOC_MAIN_SGML_FILE)
-@WITH_DOCS_TRUE@content_files = \
-@WITH_DOCS_TRUE@	version.xml \
-@WITH_DOCS_TRUE@	settings-spec.xml \
-@WITH_DOCS_TRUE@	migrating-to-09.xml \
-@WITH_DOCS_TRUE@	$(NULL)
+@ENABLE_DOC_TRUE@content_files = \
+@ENABLE_DOC_TRUE@	version.xml \
+@ENABLE_DOC_TRUE@	settings-spec.xml \
+@ENABLE_DOC_TRUE@	migrating-to-09.xml \
+@ENABLE_DOC_TRUE@	$(NULL)
 
-@GTK_DOC_USE_LIBTOOL_FALSE@@WITH_DOCS_TRUE@GTKDOC_CC = $(CC) $(INCLUDES) $(GTKDOC_DEPS_CFLAGS) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-@GTK_DOC_USE_LIBTOOL_TRUE@@WITH_DOCS_TRUE@GTKDOC_CC = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(INCLUDES) $(GTKDOC_DEPS_CFLAGS) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-@GTK_DOC_USE_LIBTOOL_FALSE@@WITH_DOCS_TRUE@GTKDOC_LD = $(CC) $(GTKDOC_DEPS_LIBS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
-@GTK_DOC_USE_LIBTOOL_TRUE@@WITH_DOCS_TRUE@GTKDOC_LD = $(LIBTOOL) --tag=CC --mode=link $(CC) $(GTKDOC_DEPS_LIBS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
-@GTK_DOC_USE_LIBTOOL_FALSE@@WITH_DOCS_TRUE@GTKDOC_RUN = 
-@GTK_DOC_USE_LIBTOOL_TRUE@@WITH_DOCS_TRUE@GTKDOC_RUN = $(LIBTOOL) --mode=execute
+@ENABLE_DOC_TRUE@@GTK_DOC_USE_LIBTOOL_FALSE@GTKDOC_CC = $(CC) $(INCLUDES) $(GTKDOC_DEPS_CFLAGS) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+@ENABLE_DOC_TRUE@@GTK_DOC_USE_LIBTOOL_TRUE@GTKDOC_CC = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(INCLUDES) $(GTKDOC_DEPS_CFLAGS) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+@ENABLE_DOC_TRUE@@GTK_DOC_USE_LIBTOOL_FALSE@GTKDOC_LD = $(CC) $(GTKDOC_DEPS_LIBS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
+@ENABLE_DOC_TRUE@@GTK_DOC_USE_LIBTOOL_TRUE@GTKDOC_LD = $(LIBTOOL) --tag=CC --mode=link $(CC) $(GTKDOC_DEPS_LIBS) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
+@ENABLE_DOC_TRUE@@GTK_DOC_USE_LIBTOOL_FALSE@GTKDOC_RUN = 
+@ENABLE_DOC_TRUE@@GTK_DOC_USE_LIBTOOL_TRUE@GTKDOC_RUN = $(LIBTOOL) --mode=execute
 
 # We set GPATH here; this gives us semantics for GNU make
 # which are more like other make's VPATH, when it comes to
 # whether a source that is a target of one rule is then
 # searched for in VPATH/GPATH.
 #
-@WITH_DOCS_TRUE@GPATH = $(srcdir)
-@WITH_DOCS_TRUE@TARGET_DIR = $(HTML_DIR)/$(DOC_MODULE)
-@WITH_DOCS_TRUE@SETUP_FILES = \
-@WITH_DOCS_TRUE@	$(content_files)		\
-@WITH_DOCS_TRUE@	$(DOC_MAIN_SGML_FILE)		\
-@WITH_DOCS_TRUE@	$(DOC_MODULE)-sections.txt	\
-@WITH_DOCS_TRUE@	$(DOC_MODULE)-overrides.txt
+@ENABLE_DOC_TRUE@GPATH = $(srcdir)
+@ENABLE_DOC_TRUE@TARGET_DIR = $(HTML_DIR)/$(DOC_MODULE)
+@ENABLE_DOC_TRUE@SETUP_FILES = \
+@ENABLE_DOC_TRUE@	$(content_files)		\
+@ENABLE_DOC_TRUE@	$(DOC_MAIN_SGML_FILE)		\
+@ENABLE_DOC_TRUE@	$(DOC_MODULE)-sections.txt	\
+@ENABLE_DOC_TRUE@	$(DOC_MODULE)-overrides.txt
 
-@WITH_DOCS_FALSE@EXTRA_DIST = $(GENERATE_SETTINGS_SPEC_SOURCE) \
-@WITH_DOCS_FALSE@	version.xml.in
+@ENABLE_DOC_FALSE@EXTRA_DIST = $(GENERATE_SETTINGS_SPEC_SOURCE) \
+@ENABLE_DOC_FALSE@	version.xml.in
 
 ####################################
-@WITH_DOCS_TRUE@EXTRA_DIST = $(HTML_IMAGES) $(SETUP_FILES) \
-@WITH_DOCS_TRUE@	$(GENERATED_FILES) version.xml.in
-@WITH_DOCS_TRUE@DOC_STAMPS = setup-build.stamp scan-build.stamp tmpl-build.stamp sgml-build.stamp \
-@WITH_DOCS_TRUE@	html-build.stamp pdf-build.stamp \
-@WITH_DOCS_TRUE@	tmpl.stamp sgml.stamp html.stamp pdf.stamp
+@ENABLE_DOC_TRUE@EXTRA_DIST = $(HTML_IMAGES) $(SETUP_FILES) \
+@ENABLE_DOC_TRUE@	$(GENERATED_FILES) version.xml.in
+@ENABLE_DOC_TRUE@DOC_STAMPS = setup-build.stamp scan-build.stamp tmpl-build.stamp sgml-build.stamp \
+@ENABLE_DOC_TRUE@	html-build.stamp pdf-build.stamp \
+@ENABLE_DOC_TRUE@	tmpl.stamp sgml.stamp html.stamp pdf.stamp
 
-@WITH_DOCS_TRUE@SCANOBJ_FILES = \
-@WITH_DOCS_TRUE@	$(DOC_MODULE).args 	 \
-@WITH_DOCS_TRUE@	$(DOC_MODULE).hierarchy  \
-@WITH_DOCS_TRUE@	$(DOC_MODULE).interfaces \
-@WITH_DOCS_TRUE@	$(DOC_MODULE).prerequisites \
-@WITH_DOCS_TRUE@	$(DOC_MODULE).signals
+@ENABLE_DOC_TRUE@SCANOBJ_FILES = \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE).args 	 \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE).hierarchy  \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE).interfaces \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE).prerequisites \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE).signals
 
-@WITH_DOCS_TRUE@REPORT_FILES = \
-@WITH_DOCS_TRUE@	$(DOC_MODULE)-undocumented.txt \
-@WITH_DOCS_TRUE@	$(DOC_MODULE)-undeclared.txt \
-@WITH_DOCS_TRUE@	$(DOC_MODULE)-unused.txt
+@ENABLE_DOC_TRUE@REPORT_FILES = \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE)-undocumented.txt \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE)-undeclared.txt \
+@ENABLE_DOC_TRUE@	$(DOC_MODULE)-unused.txt
 
-@WITH_DOCS_FALSE@CLEANFILES = html/* tmpl/* xml/*
-@WITH_DOCS_TRUE@CLEANFILES = $(SCANOBJ_FILES) $(REPORT_FILES) \
-@WITH_DOCS_TRUE@	$(DOC_STAMPS) $(GENERATED_FILES) html/* tmpl/* \
-@WITH_DOCS_TRUE@	xml/*
-@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_FALSE@@WITH_DOCS_TRUE@HTML_BUILD_STAMP = 
-@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_TRUE@@WITH_DOCS_TRUE@HTML_BUILD_STAMP = html-build.stamp
-@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_PDF_FALSE@@WITH_DOCS_TRUE@PDF_BUILD_STAMP = 
-@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_PDF_TRUE@@WITH_DOCS_TRUE@PDF_BUILD_STAMP = pdf-build.stamp
+@ENABLE_DOC_FALSE@CLEANFILES = html/* tmpl/* xml/* \
+@ENABLE_DOC_FALSE@	NetworkManager-sections.txt \
+@ENABLE_DOC_FALSE@	NetworkManager-overrides.txt
+@ENABLE_DOC_TRUE@CLEANFILES = $(SCANOBJ_FILES) $(REPORT_FILES) \
+@ENABLE_DOC_TRUE@	$(DOC_STAMPS) $(GENERATED_FILES) html/* \
+@ENABLE_DOC_TRUE@	tmpl/* xml/* NetworkManager-sections.txt \
+@ENABLE_DOC_TRUE@	NetworkManager-overrides.txt
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_FALSE@HTML_BUILD_STAMP = 
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_TRUE@HTML_BUILD_STAMP = html-build.stamp
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_PDF_FALSE@PDF_BUILD_STAMP = 
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_PDF_TRUE@PDF_BUILD_STAMP = pdf-build.stamp
 all: all-am
 
 .SUFFIXES:
@@ -523,25 +539,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generate_settings_spec-generate-settings-spec.Po@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
@@ -617,7 +630,7 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
-@WITH_DOCS_FALSE@dist-hook:
+@ENABLE_DOC_FALSE@dist-hook:
 
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
@@ -654,7 +667,7 @@ distdir: $(DISTFILES)
 	  dist-hook
 check-am: all-am
 check: check-am
-@WITH_DOCS_FALSE@all-local:
+@ENABLE_DOC_FALSE@all-local:
 all-am: Makefile $(PROGRAMS) all-local
 installdirs:
 install: install-am
@@ -688,11 +701,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@WITH_DOCS_FALSE@uninstall-local:
-@WITH_DOCS_FALSE@distclean-local:
-@WITH_DOCS_FALSE@install-data-local:
-@WITH_DOCS_FALSE@maintainer-clean-local:
-@WITH_DOCS_FALSE@clean-local:
+@ENABLE_DOC_FALSE@uninstall-local:
+@ENABLE_DOC_FALSE@distclean-local:
+@ENABLE_DOC_FALSE@install-data-local:
+@ENABLE_DOC_FALSE@maintainer-clean-local:
+@ENABLE_DOC_FALSE@clean-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-local clean-noinstPROGRAMS \
@@ -783,227 +796,227 @@ uninstall-am: uninstall-local
 	tags uninstall uninstall-am uninstall-local
 
 
-@WITH_DOCS_TRUE@spec.html: $(XMLS) $(OTHER_FILES) html-build.stamp
-@WITH_DOCS_TRUE@	$(XSLTPROC) --path "$(top_builddir)/introspection:$(top_srcdir)/introspection" $(top_srcdir)/tools/doc-generator.xsl $(top_builddir)/introspection/all.xml > $@
-@WITH_DOCS_TRUE@	mkdir -p $(builddir)/html/
-@WITH_DOCS_TRUE@	cp $@ $(builddir)/html/
+@ENABLE_DOC_TRUE@spec.html: $(XMLS) $(OTHER_FILES) html-build.stamp
+@ENABLE_DOC_TRUE@	$(XSLTPROC) --path "$(top_builddir)/introspection:$(top_srcdir)/introspection" $(top_srcdir)/tools/doc-generator.xsl $(top_builddir)/introspection/all.xml > $@
+@ENABLE_DOC_TRUE@	mkdir -p $(builddir)/html/
+@ENABLE_DOC_TRUE@	cp $@ $(builddir)/html/
 
-@WITH_DOCS_TRUE@settings-spec.xml: generate-settings-spec $(top_builddir)/libnm-util/libnm-util.la
-@WITH_DOCS_TRUE@	rm -f $(builddir)/$@
-@WITH_DOCS_TRUE@	$(builddir)/generate-settings-spec $(builddir)/$@
+@ENABLE_DOC_TRUE@settings-spec.xml: generate-settings-spec $(top_builddir)/libnm-util/libnm-util.la
+@ENABLE_DOC_TRUE@	rm -f $(builddir)/$@
+@ENABLE_DOC_TRUE@	$(builddir)/generate-settings-spec $(builddir)/$@
 
-@WITH_DOCS_TRUE@all: $(GENERATED_FILES)
+@ENABLE_DOC_TRUE@all: $(GENERATED_FILES)
 
-@ENABLE_GTK_DOC_TRUE@@WITH_DOCS_TRUE@all-local: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
-@ENABLE_GTK_DOC_FALSE@@WITH_DOCS_TRUE@all-local:
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@all-local: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_FALSE@all-local:
 
-@WITH_DOCS_TRUE@docs: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
+@ENABLE_DOC_TRUE@docs: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
 
-@WITH_DOCS_TRUE@$(REPORT_FILES): sgml-build.stamp
+@ENABLE_DOC_TRUE@$(REPORT_FILES): sgml-build.stamp
 
 #### setup ####
 
-@WITH_DOCS_TRUE@setup-build.stamp:
-@WITH_DOCS_TRUE@	-@if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
-@WITH_DOCS_TRUE@	    echo '  DOC   Preparing build'; \
-@WITH_DOCS_TRUE@	    files=`echo $(SETUP_FILES) $(expand_content_files) $(DOC_MODULE).types`; \
-@WITH_DOCS_TRUE@	    if test "x$$files" != "x" ; then \
-@WITH_DOCS_TRUE@	        for file in $$files ; do \
-@WITH_DOCS_TRUE@	            test -f $(abs_srcdir)/$$file && \
-@WITH_DOCS_TRUE@	                cp -pu $(abs_srcdir)/$$file $(abs_builddir)/ || true; \
-@WITH_DOCS_TRUE@	        done; \
-@WITH_DOCS_TRUE@	    fi; \
-@WITH_DOCS_TRUE@	    test -d $(abs_srcdir)/tmpl && \
-@WITH_DOCS_TRUE@	        { cp -rp $(abs_srcdir)/tmpl $(abs_builddir)/; \
-@WITH_DOCS_TRUE@	        chmod -R u+w $(abs_builddir)/tmpl; } \
-@WITH_DOCS_TRUE@	fi
-@WITH_DOCS_TRUE@	@touch setup-build.stamp
+@ENABLE_DOC_TRUE@setup-build.stamp:
+@ENABLE_DOC_TRUE@	-@if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
+@ENABLE_DOC_TRUE@	    echo '  DOC   Preparing build'; \
+@ENABLE_DOC_TRUE@	    files=`echo $(SETUP_FILES) $(expand_content_files) $(DOC_MODULE).types`; \
+@ENABLE_DOC_TRUE@	    if test "x$$files" != "x" ; then \
+@ENABLE_DOC_TRUE@	        for file in $$files ; do \
+@ENABLE_DOC_TRUE@	            test -f $(abs_srcdir)/$$file && \
+@ENABLE_DOC_TRUE@	                cp -pu $(abs_srcdir)/$$file $(abs_builddir)/ || true; \
+@ENABLE_DOC_TRUE@	        done; \
+@ENABLE_DOC_TRUE@	    fi; \
+@ENABLE_DOC_TRUE@	    test -d $(abs_srcdir)/tmpl && \
+@ENABLE_DOC_TRUE@	        { cp -rp $(abs_srcdir)/tmpl $(abs_builddir)/; \
+@ENABLE_DOC_TRUE@	        chmod -R u+w $(abs_builddir)/tmpl; } \
+@ENABLE_DOC_TRUE@	fi
+@ENABLE_DOC_TRUE@	@touch setup-build.stamp
 
 #### scan ####
 
-@WITH_DOCS_TRUE@scan-build.stamp: $(HFILE_GLOB) $(CFILE_GLOB)
-@WITH_DOCS_TRUE@	@echo '  DOC   Scanning header files'
-@WITH_DOCS_TRUE@	@_source_dir='' ; \
-@WITH_DOCS_TRUE@	for i in $(DOC_SOURCE_DIR) ; do \
-@WITH_DOCS_TRUE@	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
-@WITH_DOCS_TRUE@	done ; \
-@WITH_DOCS_TRUE@	gtkdoc-scan --module=$(DOC_MODULE) --ignore-headers="$(IGNORE_HFILES)" $${_source_dir} $(SCAN_OPTIONS) $(EXTRA_HFILES)
-@WITH_DOCS_TRUE@	@if grep -l '^..*$$' $(DOC_MODULE).types > /dev/null 2>&1 ; then \
-@WITH_DOCS_TRUE@	    echo "  DOC   Introspecting gobjects"; \
-@WITH_DOCS_TRUE@	    scanobj_options=""; \
-@WITH_DOCS_TRUE@	    gtkdoc-scangobj 2>&1 --help | grep  >/dev/null "\-\-verbose"; \
-@WITH_DOCS_TRUE@	    if test "$(?)" = "0"; then \
-@WITH_DOCS_TRUE@	        if test "x$(V)" = "x1"; then \
-@WITH_DOCS_TRUE@	            scanobj_options="--verbose"; \
-@WITH_DOCS_TRUE@	        fi; \
-@WITH_DOCS_TRUE@	    fi; \
-@WITH_DOCS_TRUE@	    CC="$(GTKDOC_CC)" LD="$(GTKDOC_LD)" RUN="$(GTKDOC_RUN)" CFLAGS="$(GTKDOC_CFLAGS) $(CFLAGS)" LDFLAGS="$(GTKDOC_LIBS) $(LDFLAGS)" \
-@WITH_DOCS_TRUE@	    gtkdoc-scangobj $(SCANGOBJ_OPTIONS) $$scanobj_options --module=$(DOC_MODULE); \
-@WITH_DOCS_TRUE@	else \
-@WITH_DOCS_TRUE@	    for i in $(SCANOBJ_FILES) ; do \
-@WITH_DOCS_TRUE@	        test -f $$i || touch $$i ; \
-@WITH_DOCS_TRUE@	    done \
-@WITH_DOCS_TRUE@	fi
-@WITH_DOCS_TRUE@	@touch scan-build.stamp
+@ENABLE_DOC_TRUE@scan-build.stamp: $(HFILE_GLOB) $(CFILE_GLOB)
+@ENABLE_DOC_TRUE@	@echo '  DOC   Scanning header files'
+@ENABLE_DOC_TRUE@	@_source_dir='' ; \
+@ENABLE_DOC_TRUE@	for i in $(DOC_SOURCE_DIR) ; do \
+@ENABLE_DOC_TRUE@	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
+@ENABLE_DOC_TRUE@	done ; \
+@ENABLE_DOC_TRUE@	gtkdoc-scan --module=$(DOC_MODULE) --ignore-headers="$(IGNORE_HFILES)" $${_source_dir} $(SCAN_OPTIONS) $(EXTRA_HFILES)
+@ENABLE_DOC_TRUE@	@if grep -l '^..*$$' $(DOC_MODULE).types > /dev/null 2>&1 ; then \
+@ENABLE_DOC_TRUE@	    echo "  DOC   Introspecting gobjects"; \
+@ENABLE_DOC_TRUE@	    scanobj_options=""; \
+@ENABLE_DOC_TRUE@	    gtkdoc-scangobj 2>&1 --help | grep  >/dev/null "\-\-verbose"; \
+@ENABLE_DOC_TRUE@	    if test "$(?)" = "0"; then \
+@ENABLE_DOC_TRUE@	        if test "x$(V)" = "x1"; then \
+@ENABLE_DOC_TRUE@	            scanobj_options="--verbose"; \
+@ENABLE_DOC_TRUE@	        fi; \
+@ENABLE_DOC_TRUE@	    fi; \
+@ENABLE_DOC_TRUE@	    CC="$(GTKDOC_CC)" LD="$(GTKDOC_LD)" RUN="$(GTKDOC_RUN)" CFLAGS="$(GTKDOC_CFLAGS) $(CFLAGS)" LDFLAGS="$(GTKDOC_LIBS) $(LDFLAGS)" \
+@ENABLE_DOC_TRUE@	    gtkdoc-scangobj $(SCANGOBJ_OPTIONS) $$scanobj_options --module=$(DOC_MODULE); \
+@ENABLE_DOC_TRUE@	else \
+@ENABLE_DOC_TRUE@	    for i in $(SCANOBJ_FILES) ; do \
+@ENABLE_DOC_TRUE@	        test -f $$i || touch $$i ; \
+@ENABLE_DOC_TRUE@	    done \
+@ENABLE_DOC_TRUE@	fi
+@ENABLE_DOC_TRUE@	@touch scan-build.stamp
 
-@WITH_DOCS_TRUE@$(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt: scan-build.stamp
-@WITH_DOCS_TRUE@	@true
+@ENABLE_DOC_TRUE@$(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt: scan-build.stamp
+@ENABLE_DOC_TRUE@	@true
 
 #### templates ####
 
-@WITH_DOCS_TRUE@tmpl-build.stamp: setup-build.stamp $(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt
-@WITH_DOCS_TRUE@	@echo '  DOC   Rebuilding template files'
-@WITH_DOCS_TRUE@	@gtkdoc-mktmpl --module=$(DOC_MODULE) $(MKTMPL_OPTIONS)
-@WITH_DOCS_TRUE@	@if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
-@WITH_DOCS_TRUE@	  if test -w $(abs_srcdir) ; then \
-@WITH_DOCS_TRUE@	    cp -rp $(abs_builddir)/tmpl $(abs_srcdir)/; \
-@WITH_DOCS_TRUE@	  fi \
-@WITH_DOCS_TRUE@	fi
-@WITH_DOCS_TRUE@	@touch tmpl-build.stamp
+@ENABLE_DOC_TRUE@tmpl-build.stamp: setup-build.stamp $(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DOC_MODULE)-sections.txt $(DOC_MODULE)-overrides.txt
+@ENABLE_DOC_TRUE@	@echo '  DOC   Rebuilding template files'
+@ENABLE_DOC_TRUE@	@gtkdoc-mktmpl --module=$(DOC_MODULE) $(MKTMPL_OPTIONS)
+@ENABLE_DOC_TRUE@	@if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
+@ENABLE_DOC_TRUE@	  if test -w $(abs_srcdir) ; then \
+@ENABLE_DOC_TRUE@	    cp -rp $(abs_builddir)/tmpl $(abs_srcdir)/; \
+@ENABLE_DOC_TRUE@	  fi \
+@ENABLE_DOC_TRUE@	fi
+@ENABLE_DOC_TRUE@	@touch tmpl-build.stamp
 
-@WITH_DOCS_TRUE@tmpl.stamp: tmpl-build.stamp
-@WITH_DOCS_TRUE@	@true
+@ENABLE_DOC_TRUE@tmpl.stamp: tmpl-build.stamp
+@ENABLE_DOC_TRUE@	@true
 
-@WITH_DOCS_TRUE@$(srcdir)/tmpl/*.sgml:
-@WITH_DOCS_TRUE@	@true
+@ENABLE_DOC_TRUE@$(srcdir)/tmpl/*.sgml:
+@ENABLE_DOC_TRUE@	@true
 
 #### xml ####
 
-@WITH_DOCS_TRUE@sgml-build.stamp: tmpl.stamp $(DOC_MODULE)-sections.txt $(srcdir)/tmpl/*.sgml $(expand_content_files)
-@WITH_DOCS_TRUE@	@echo '  DOC   Building XML'
-@WITH_DOCS_TRUE@	@-chmod -R u+w $(srcdir)
-@WITH_DOCS_TRUE@	@_source_dir='' ; \
-@WITH_DOCS_TRUE@	for i in $(DOC_SOURCE_DIR) ; do \
-@WITH_DOCS_TRUE@	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
-@WITH_DOCS_TRUE@	done ; \
-@WITH_DOCS_TRUE@	gtkdoc-mkdb --module=$(DOC_MODULE) --output-format=xml --expand-content-files="$(expand_content_files)" --main-sgml-file=$(DOC_MAIN_SGML_FILE) $${_source_dir} $(MKDB_OPTIONS)
-@WITH_DOCS_TRUE@	@touch sgml-build.stamp
+@ENABLE_DOC_TRUE@sgml-build.stamp: tmpl.stamp $(DOC_MODULE)-sections.txt $(srcdir)/tmpl/*.sgml $(expand_content_files)
+@ENABLE_DOC_TRUE@	@echo '  DOC   Building XML'
+@ENABLE_DOC_TRUE@	@-chmod -R u+w $(srcdir)
+@ENABLE_DOC_TRUE@	@_source_dir='' ; \
+@ENABLE_DOC_TRUE@	for i in $(DOC_SOURCE_DIR) ; do \
+@ENABLE_DOC_TRUE@	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
+@ENABLE_DOC_TRUE@	done ; \
+@ENABLE_DOC_TRUE@	gtkdoc-mkdb --module=$(DOC_MODULE) --output-format=xml --expand-content-files="$(expand_content_files)" --main-sgml-file=$(DOC_MAIN_SGML_FILE) $${_source_dir} $(MKDB_OPTIONS)
+@ENABLE_DOC_TRUE@	@touch sgml-build.stamp
 
-@WITH_DOCS_TRUE@sgml.stamp: sgml-build.stamp
-@WITH_DOCS_TRUE@	@true
+@ENABLE_DOC_TRUE@sgml.stamp: sgml-build.stamp
+@ENABLE_DOC_TRUE@	@true
 
 #### html ####
 
-@WITH_DOCS_TRUE@html-build.stamp: sgml.stamp $(DOC_MAIN_SGML_FILE) $(content_files)
-@WITH_DOCS_TRUE@	@echo '  DOC   Building HTML'
-@WITH_DOCS_TRUE@	@rm -rf html
-@WITH_DOCS_TRUE@	@mkdir html
-@WITH_DOCS_TRUE@	@mkhtml_options=""; \
-@WITH_DOCS_TRUE@	gtkdoc-mkhtml 2>&1 --help | grep  >/dev/null "\-\-verbose"; \
-@WITH_DOCS_TRUE@	if test "$(?)" = "0"; then \
-@WITH_DOCS_TRUE@	  if test "x$(V)" = "x1"; then \
-@WITH_DOCS_TRUE@	    mkhtml_options="$$mkhtml_options --verbose"; \
-@WITH_DOCS_TRUE@	  fi; \
-@WITH_DOCS_TRUE@	fi; \
-@WITH_DOCS_TRUE@	gtkdoc-mkhtml 2>&1 --help | grep  >/dev/null "\-\-path"; \
-@WITH_DOCS_TRUE@	if test "$(?)" = "0"; then \
-@WITH_DOCS_TRUE@	  mkhtml_options="$$mkhtml_options --path=\"$(abs_srcdir)\""; \
-@WITH_DOCS_TRUE@	fi; \
-@WITH_DOCS_TRUE@	cd html && gtkdoc-mkhtml $$mkhtml_options $(MKHTML_OPTIONS) $(DOC_MODULE) ../$(DOC_MAIN_SGML_FILE)
-@WITH_DOCS_TRUE@	-@test "x$(HTML_IMAGES)" = "x" || \
-@WITH_DOCS_TRUE@	for file in $(HTML_IMAGES) ; do \
-@WITH_DOCS_TRUE@	  if test -f $(abs_srcdir)/$$file ; then \
-@WITH_DOCS_TRUE@	    cp $(abs_srcdir)/$$file $(abs_builddir)/html; \
-@WITH_DOCS_TRUE@	  fi; \
-@WITH_DOCS_TRUE@	  if test -f $(abs_builddir)/$$file ; then \
-@WITH_DOCS_TRUE@	    cp $(abs_builddir)/$$file $(abs_builddir)/html; \
-@WITH_DOCS_TRUE@	  fi; \
-@WITH_DOCS_TRUE@	done;
-@WITH_DOCS_TRUE@	@echo '  DOC   Fixing cross-references'
-@WITH_DOCS_TRUE@	@gtkdoc-fixxref --module=$(DOC_MODULE) --module-dir=html --html-dir=$(HTML_DIR) $(FIXXREF_OPTIONS)
-@WITH_DOCS_TRUE@	@touch html-build.stamp
+@ENABLE_DOC_TRUE@html-build.stamp: sgml.stamp $(DOC_MAIN_SGML_FILE) $(content_files)
+@ENABLE_DOC_TRUE@	@echo '  DOC   Building HTML'
+@ENABLE_DOC_TRUE@	@rm -rf html
+@ENABLE_DOC_TRUE@	@mkdir html
+@ENABLE_DOC_TRUE@	@mkhtml_options=""; \
+@ENABLE_DOC_TRUE@	gtkdoc-mkhtml 2>&1 --help | grep  >/dev/null "\-\-verbose"; \
+@ENABLE_DOC_TRUE@	if test "$(?)" = "0"; then \
+@ENABLE_DOC_TRUE@	  if test "x$(V)" = "x1"; then \
+@ENABLE_DOC_TRUE@	    mkhtml_options="$$mkhtml_options --verbose"; \
+@ENABLE_DOC_TRUE@	  fi; \
+@ENABLE_DOC_TRUE@	fi; \
+@ENABLE_DOC_TRUE@	gtkdoc-mkhtml 2>&1 --help | grep  >/dev/null "\-\-path"; \
+@ENABLE_DOC_TRUE@	if test "$(?)" = "0"; then \
+@ENABLE_DOC_TRUE@	  mkhtml_options="$$mkhtml_options --path=\"$(abs_srcdir)\""; \
+@ENABLE_DOC_TRUE@	fi; \
+@ENABLE_DOC_TRUE@	cd html && gtkdoc-mkhtml $$mkhtml_options $(MKHTML_OPTIONS) $(DOC_MODULE) ../$(DOC_MAIN_SGML_FILE)
+@ENABLE_DOC_TRUE@	-@test "x$(HTML_IMAGES)" = "x" || \
+@ENABLE_DOC_TRUE@	for file in $(HTML_IMAGES) ; do \
+@ENABLE_DOC_TRUE@	  if test -f $(abs_srcdir)/$$file ; then \
+@ENABLE_DOC_TRUE@	    cp $(abs_srcdir)/$$file $(abs_builddir)/html; \
+@ENABLE_DOC_TRUE@	  fi; \
+@ENABLE_DOC_TRUE@	  if test -f $(abs_builddir)/$$file ; then \
+@ENABLE_DOC_TRUE@	    cp $(abs_builddir)/$$file $(abs_builddir)/html; \
+@ENABLE_DOC_TRUE@	  fi; \
+@ENABLE_DOC_TRUE@	done;
+@ENABLE_DOC_TRUE@	@echo '  DOC   Fixing cross-references'
+@ENABLE_DOC_TRUE@	@gtkdoc-fixxref --module=$(DOC_MODULE) --module-dir=html --html-dir=$(HTML_DIR) $(FIXXREF_OPTIONS)
+@ENABLE_DOC_TRUE@	@touch html-build.stamp
 
 #### pdf ####
 
-@WITH_DOCS_TRUE@pdf-build.stamp: sgml.stamp $(DOC_MAIN_SGML_FILE) $(content_files)
-@WITH_DOCS_TRUE@	@echo '  DOC   Building PDF'
-@WITH_DOCS_TRUE@	@rm -f $(DOC_MODULE).pdf
-@WITH_DOCS_TRUE@	@mkpdf_options=""; \
-@WITH_DOCS_TRUE@	gtkdoc-mkpdf 2>&1 --help | grep  >/dev/null "\-\-verbose"; \
-@WITH_DOCS_TRUE@	if test "$(?)" = "0"; then \
-@WITH_DOCS_TRUE@	  if test "x$(V)" = "x1"; then \
-@WITH_DOCS_TRUE@	    mkpdf_options="$$mkpdf_options --verbose"; \
-@WITH_DOCS_TRUE@	  fi; \
-@WITH_DOCS_TRUE@	fi; \
-@WITH_DOCS_TRUE@	if test "x$(HTML_IMAGES)" != "x"; then \
-@WITH_DOCS_TRUE@	  for img in $(HTML_IMAGES); do \
-@WITH_DOCS_TRUE@	    part=`dirname $$img`; \
-@WITH_DOCS_TRUE@	    echo $$mkpdf_options | grep >/dev/null "\-\-imgdir=$$part "; \
-@WITH_DOCS_TRUE@	    if test $$? != 0; then \
-@WITH_DOCS_TRUE@	      mkpdf_options="$$mkpdf_options --imgdir=$$part"; \
-@WITH_DOCS_TRUE@	    fi; \
-@WITH_DOCS_TRUE@	  done; \
-@WITH_DOCS_TRUE@	fi; \
-@WITH_DOCS_TRUE@	gtkdoc-mkpdf --path="$(abs_srcdir)" $$mkpdf_options $(DOC_MODULE) $(DOC_MAIN_SGML_FILE) $(MKPDF_OPTIONS)
-@WITH_DOCS_TRUE@	@touch pdf-build.stamp
+@ENABLE_DOC_TRUE@pdf-build.stamp: sgml.stamp $(DOC_MAIN_SGML_FILE) $(content_files)
+@ENABLE_DOC_TRUE@	@echo '  DOC   Building PDF'
+@ENABLE_DOC_TRUE@	@rm -f $(DOC_MODULE).pdf
+@ENABLE_DOC_TRUE@	@mkpdf_options=""; \
+@ENABLE_DOC_TRUE@	gtkdoc-mkpdf 2>&1 --help | grep  >/dev/null "\-\-verbose"; \
+@ENABLE_DOC_TRUE@	if test "$(?)" = "0"; then \
+@ENABLE_DOC_TRUE@	  if test "x$(V)" = "x1"; then \
+@ENABLE_DOC_TRUE@	    mkpdf_options="$$mkpdf_options --verbose"; \
+@ENABLE_DOC_TRUE@	  fi; \
+@ENABLE_DOC_TRUE@	fi; \
+@ENABLE_DOC_TRUE@	if test "x$(HTML_IMAGES)" != "x"; then \
+@ENABLE_DOC_TRUE@	  for img in $(HTML_IMAGES); do \
+@ENABLE_DOC_TRUE@	    part=`dirname $$img`; \
+@ENABLE_DOC_TRUE@	    echo $$mkpdf_options | grep >/dev/null "\-\-imgdir=$$part "; \
+@ENABLE_DOC_TRUE@	    if test $$? != 0; then \
+@ENABLE_DOC_TRUE@	      mkpdf_options="$$mkpdf_options --imgdir=$$part"; \
+@ENABLE_DOC_TRUE@	    fi; \
+@ENABLE_DOC_TRUE@	  done; \
+@ENABLE_DOC_TRUE@	fi; \
+@ENABLE_DOC_TRUE@	gtkdoc-mkpdf --path="$(abs_srcdir)" $$mkpdf_options $(DOC_MODULE) $(DOC_MAIN_SGML_FILE) $(MKPDF_OPTIONS)
+@ENABLE_DOC_TRUE@	@touch pdf-build.stamp
 
 ##############
 
-@WITH_DOCS_TRUE@clean-local:
-@WITH_DOCS_TRUE@	@rm -f *~ *.bak
-@WITH_DOCS_TRUE@	@rm -rf .libs
+@ENABLE_DOC_TRUE@clean-local:
+@ENABLE_DOC_TRUE@	@rm -f *~ *.bak
+@ENABLE_DOC_TRUE@	@rm -rf .libs
 
-@WITH_DOCS_TRUE@distclean-local:
-@WITH_DOCS_TRUE@	@rm -rf xml html $(REPORT_FILES) $(DOC_MODULE).pdf \
-@WITH_DOCS_TRUE@	    $(DOC_MODULE)-decl-list.txt $(DOC_MODULE)-decl.txt
-@WITH_DOCS_TRUE@	@if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
-@WITH_DOCS_TRUE@	    rm -f $(SETUP_FILES) $(expand_content_files) $(DOC_MODULE).types; \
-@WITH_DOCS_TRUE@	    rm -rf tmpl; \
-@WITH_DOCS_TRUE@	fi
+@ENABLE_DOC_TRUE@distclean-local:
+@ENABLE_DOC_TRUE@	@rm -rf xml html $(REPORT_FILES) $(DOC_MODULE).pdf \
+@ENABLE_DOC_TRUE@	    $(DOC_MODULE)-decl-list.txt $(DOC_MODULE)-decl.txt
+@ENABLE_DOC_TRUE@	@if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
+@ENABLE_DOC_TRUE@	    rm -f $(SETUP_FILES) $(expand_content_files) $(DOC_MODULE).types; \
+@ENABLE_DOC_TRUE@	    rm -rf tmpl; \
+@ENABLE_DOC_TRUE@	fi
 
-@WITH_DOCS_TRUE@maintainer-clean-local: clean
-@WITH_DOCS_TRUE@	@rm -rf xml html
+@ENABLE_DOC_TRUE@maintainer-clean-local: clean
+@ENABLE_DOC_TRUE@	@rm -rf xml html
 
-@WITH_DOCS_TRUE@install-data-local:
-@WITH_DOCS_TRUE@	@installfiles=`echo $(builddir)/html/*`; \
-@WITH_DOCS_TRUE@	if test "$$installfiles" = '$(builddir)/html/*'; \
-@WITH_DOCS_TRUE@	then echo 1>&2 'Nothing to install' ; \
-@WITH_DOCS_TRUE@	else \
-@WITH_DOCS_TRUE@	  if test -n "$(DOC_MODULE_VERSION)"; then \
-@WITH_DOCS_TRUE@	    installdir="$(DESTDIR)$(TARGET_DIR)-$(DOC_MODULE_VERSION)"; \
-@WITH_DOCS_TRUE@	  else \
-@WITH_DOCS_TRUE@	    installdir="$(DESTDIR)$(TARGET_DIR)"; \
-@WITH_DOCS_TRUE@	  fi; \
-@WITH_DOCS_TRUE@	  $(mkinstalldirs) $${installdir} ; \
-@WITH_DOCS_TRUE@	  for i in $$installfiles; do \
-@WITH_DOCS_TRUE@	    echo ' $(INSTALL_DATA) '$$i ; \
-@WITH_DOCS_TRUE@	    $(INSTALL_DATA) $$i $${installdir}; \
-@WITH_DOCS_TRUE@	  done; \
-@WITH_DOCS_TRUE@	  if test -n "$(DOC_MODULE_VERSION)"; then \
-@WITH_DOCS_TRUE@	    mv -f $${installdir}/$(DOC_MODULE).devhelp2 \
-@WITH_DOCS_TRUE@	      $${installdir}/$(DOC_MODULE)-$(DOC_MODULE_VERSION).devhelp2; \
-@WITH_DOCS_TRUE@	  fi; \
-@WITH_DOCS_TRUE@	  $(GTKDOC_REBASE) --relative --dest-dir=$(DESTDIR) --html-dir=$${installdir}; \
-@WITH_DOCS_TRUE@	fi
+@ENABLE_DOC_TRUE@install-data-local:
+@ENABLE_DOC_TRUE@	@installfiles=`echo $(builddir)/html/*`; \
+@ENABLE_DOC_TRUE@	if test "$$installfiles" = '$(builddir)/html/*'; \
+@ENABLE_DOC_TRUE@	then echo 1>&2 'Nothing to install' ; \
+@ENABLE_DOC_TRUE@	else \
+@ENABLE_DOC_TRUE@	  if test -n "$(DOC_MODULE_VERSION)"; then \
+@ENABLE_DOC_TRUE@	    installdir="$(DESTDIR)$(TARGET_DIR)-$(DOC_MODULE_VERSION)"; \
+@ENABLE_DOC_TRUE@	  else \
+@ENABLE_DOC_TRUE@	    installdir="$(DESTDIR)$(TARGET_DIR)"; \
+@ENABLE_DOC_TRUE@	  fi; \
+@ENABLE_DOC_TRUE@	  $(mkinstalldirs) $${installdir} ; \
+@ENABLE_DOC_TRUE@	  for i in $$installfiles; do \
+@ENABLE_DOC_TRUE@	    echo ' $(INSTALL_DATA) '$$i ; \
+@ENABLE_DOC_TRUE@	    $(INSTALL_DATA) $$i $${installdir}; \
+@ENABLE_DOC_TRUE@	  done; \
+@ENABLE_DOC_TRUE@	  if test -n "$(DOC_MODULE_VERSION)"; then \
+@ENABLE_DOC_TRUE@	    mv -f $${installdir}/$(DOC_MODULE).devhelp2 \
+@ENABLE_DOC_TRUE@	      $${installdir}/$(DOC_MODULE)-$(DOC_MODULE_VERSION).devhelp2; \
+@ENABLE_DOC_TRUE@	  fi; \
+@ENABLE_DOC_TRUE@	  $(GTKDOC_REBASE) --relative --dest-dir=$(DESTDIR) --html-dir=$${installdir}; \
+@ENABLE_DOC_TRUE@	fi
 
-@WITH_DOCS_TRUE@uninstall-local:
-@WITH_DOCS_TRUE@	@if test -n "$(DOC_MODULE_VERSION)"; then \
-@WITH_DOCS_TRUE@	  installdir="$(DESTDIR)$(TARGET_DIR)-$(DOC_MODULE_VERSION)"; \
-@WITH_DOCS_TRUE@	else \
-@WITH_DOCS_TRUE@	  installdir="$(DESTDIR)$(TARGET_DIR)"; \
-@WITH_DOCS_TRUE@	fi; \
-@WITH_DOCS_TRUE@	rm -rf $${installdir}
+@ENABLE_DOC_TRUE@uninstall-local:
+@ENABLE_DOC_TRUE@	@if test -n "$(DOC_MODULE_VERSION)"; then \
+@ENABLE_DOC_TRUE@	  installdir="$(DESTDIR)$(TARGET_DIR)-$(DOC_MODULE_VERSION)"; \
+@ENABLE_DOC_TRUE@	else \
+@ENABLE_DOC_TRUE@	  installdir="$(DESTDIR)$(TARGET_DIR)"; \
+@ENABLE_DOC_TRUE@	fi; \
+@ENABLE_DOC_TRUE@	rm -rf $${installdir}
 
 #
 # Require gtk-doc when making dist
 #
-@ENABLE_GTK_DOC_TRUE@@WITH_DOCS_TRUE@dist-check-gtkdoc:
-@ENABLE_GTK_DOC_FALSE@@WITH_DOCS_TRUE@dist-check-gtkdoc:
-@ENABLE_GTK_DOC_FALSE@@WITH_DOCS_TRUE@	@echo "*** gtk-doc must be installed and enabled in order to make dist"
-@ENABLE_GTK_DOC_FALSE@@WITH_DOCS_TRUE@	@false
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@dist-check-gtkdoc:
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_FALSE@dist-check-gtkdoc:
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_FALSE@	@echo "*** gtk-doc must be installed and enabled in order to make dist"
+@ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_FALSE@	@false
 
-@WITH_DOCS_TRUE@dist-hook: dist-check-gtkdoc dist-hook-local
-@WITH_DOCS_TRUE@	@mkdir $(distdir)/tmpl
-@WITH_DOCS_TRUE@	@mkdir $(distdir)/html
-@WITH_DOCS_TRUE@	@-cp ./tmpl/*.sgml $(distdir)/tmpl
-@WITH_DOCS_TRUE@	@cp ./html/* $(distdir)/html
-@WITH_DOCS_TRUE@	@-cp ./$(DOC_MODULE).pdf $(distdir)/
-@WITH_DOCS_TRUE@	@-cp ./$(DOC_MODULE).types $(distdir)/
-@WITH_DOCS_TRUE@	@-cp ./$(DOC_MODULE)-sections.txt $(distdir)/
-@WITH_DOCS_TRUE@	@cd $(distdir) && rm -f $(DISTCLEANFILES)
-@WITH_DOCS_TRUE@	@$(GTKDOC_REBASE) --online --relative --html-dir=$(distdir)/html
+@ENABLE_DOC_TRUE@dist-hook: dist-check-gtkdoc dist-hook-local
+@ENABLE_DOC_TRUE@	@mkdir $(distdir)/tmpl
+@ENABLE_DOC_TRUE@	@mkdir $(distdir)/html
+@ENABLE_DOC_TRUE@	@-cp ./tmpl/*.sgml $(distdir)/tmpl
+@ENABLE_DOC_TRUE@	@cp ./html/* $(distdir)/html
+@ENABLE_DOC_TRUE@	@-cp ./$(DOC_MODULE).pdf $(distdir)/
+@ENABLE_DOC_TRUE@	@-cp ./$(DOC_MODULE).types $(distdir)/
+@ENABLE_DOC_TRUE@	@-cp ./$(DOC_MODULE)-sections.txt $(distdir)/
+@ENABLE_DOC_TRUE@	@cd $(distdir) && rm -f $(DISTCLEANFILES)
+@ENABLE_DOC_TRUE@	@$(GTKDOC_REBASE) --online --relative --html-dir=$(distdir)/html
 
-@WITH_DOCS_TRUE@.PHONY : dist-hook-local docs
+@ENABLE_DOC_TRUE@.PHONY : dist-hook-local docs
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

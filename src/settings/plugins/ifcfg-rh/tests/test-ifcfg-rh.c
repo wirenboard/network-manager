@@ -11929,6 +11929,7 @@ static void
 test_read_bridge_main (void)
 {
 	NMConnection *connection;
+	NMSettingBridge *s_bridge;
 	char *unmanaged = NULL;
 	char *keyfile = NULL;
 	char *routefile = NULL;
@@ -11946,13 +11947,140 @@ test_read_bridge_main (void)
 	                                   &route6file,
 	                                   &error,
 	                                   &ignore_error);
-	ASSERT (connection == NULL,
-	        "bridge-main-read", "unexpected success reading %s", TEST_IFCFG_BRIDGE_MAIN);
+	g_assert (connection);
+	g_assert (nm_connection_verify (connection, &error));
+	g_assert_no_error (error);
+
+	/* ===== Bridging SETTING ===== */
+
+	s_bridge = nm_connection_get_setting_bridge (connection);
+	g_assert (s_bridge);
+	g_assert_cmpstr (nm_setting_bridge_get_interface_name (s_bridge), ==, "br0");
+	g_assert_cmpuint (nm_setting_bridge_get_forward_delay (s_bridge), ==, 0);
+	g_assert_cmpuint (nm_setting_bridge_get_stp (s_bridge), ==, TRUE);
+	g_assert_cmpuint (nm_setting_bridge_get_priority (s_bridge), ==, 32744);
+	g_assert_cmpuint (nm_setting_bridge_get_hello_time (s_bridge), ==, 7);
+	g_assert_cmpuint (nm_setting_bridge_get_max_age (s_bridge), ==, 39);
+	g_assert_cmpuint (nm_setting_bridge_get_ageing_time (s_bridge), ==, 235352);
 
 	g_free (unmanaged);
 	g_free (keyfile);
 	g_free (routefile);
 	g_free (route6file);
+	g_object_unref (connection);
+}
+
+static void
+test_write_bridge_main (void)
+{
+	NMConnection *connection;
+	NMConnection *reread;
+	NMSettingConnection *s_con;
+	NMSettingBridge *s_bridge;
+	NMSettingIP4Config *s_ip4;
+	NMSettingIP6Config *s_ip6;
+	char *uuid;
+	const guint32 ip1 = htonl (0x01010103);
+	const guint32 gw = htonl (0x01010101);
+	const guint32 prefix = 24;
+	NMIP4Address *addr;
+	gboolean success;
+	GError *error = NULL;
+	char *testfile = NULL;
+	char *unmanaged = NULL;
+	char *keyfile = NULL;
+	char *routefile = NULL;
+	char *route6file = NULL;
+	gboolean ignore_error = FALSE;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Bridge Main",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_BRIDGE_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* bridge setting */
+	s_bridge = (NMSettingBridge *) nm_setting_bridge_new ();
+	g_assert (s_bridge);
+	nm_connection_add_setting (connection, NM_SETTING (s_bridge));
+
+	g_object_set (s_bridge,
+	              NM_SETTING_BRIDGE_INTERFACE_NAME, "br0",
+	              NULL);
+
+	/* IP4 setting */
+	s_ip4 = (NMSettingIP4Config *) nm_setting_ip4_config_new ();
+	g_assert (s_ip4);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
+
+	g_object_set (s_ip4,
+	              NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_MANUAL,
+	              NM_SETTING_IP4_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
+
+	addr = nm_ip4_address_new ();
+	nm_ip4_address_set_address (addr, ip1);
+	nm_ip4_address_set_prefix (addr, prefix);
+	nm_ip4_address_set_gateway (addr, gw);
+	nm_setting_ip4_config_add_address (s_ip4, addr);
+	nm_ip4_address_unref (addr);
+
+	/* IP6 setting */
+	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
+	g_assert (s_ip6);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
+
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
+	              NULL);
+
+	g_assert (nm_connection_verify (connection, &error));
+	g_assert_no_error (error);
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &testfile,
+	                                 &error);
+	g_assert (success);
+	g_assert_cmpstr (testfile, !=, NULL);
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file (testfile,
+	                               NULL,
+	                               TYPE_BRIDGE,
+	                               NULL,
+	                               &unmanaged,
+	                               &keyfile,
+	                               &routefile,
+	                               &route6file,
+	                               &error,
+	                               &ignore_error);
+	unlink (testfile);
+
+	g_assert (reread);
+	g_assert (nm_connection_verify (reread, &error));
+	g_assert_no_error (error);
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	g_free (testfile);
+	g_free (unmanaged);
+	g_free (keyfile);
+	g_free (routefile);
+	g_free (route6file);
+	g_object_unref (connection);
+	g_object_unref (reread);
 }
 
 #define TEST_IFCFG_BRIDGE_COMPONENT TEST_IFCFG_DIR"/network-scripts/ifcfg-test-bridge-component"
@@ -11961,12 +12089,15 @@ static void
 test_read_bridge_component (void)
 {
 	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingBridgePort *s_port;
 	char *unmanaged = NULL;
 	char *keyfile = NULL;
 	char *routefile = NULL;
 	char *route6file = NULL;
 	gboolean ignore_error = FALSE;
 	GError *error = NULL;
+	gboolean success;
 
 	connection = connection_from_file (TEST_IFCFG_BRIDGE_COMPONENT,
 	                                   NULL,
@@ -11978,20 +12109,135 @@ test_read_bridge_component (void)
 	                                   &route6file,
 	                                   &error,
 	                                   &ignore_error);
-	ASSERT (connection != NULL,
-	        "bridge-component-read", "unexpected failure reading %s", TEST_IFCFG_BRIDGE_COMPONENT);
+	g_assert (connection);
 
-	ASSERT (unmanaged != NULL,
-	        "bridge-component-read", "missing unmanaged spec from %s", TEST_IFCFG_BRIDGE_COMPONENT);
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
 
-	ASSERT (g_strcmp0 (unmanaged, "mac:00:22:15:59:62:97") == 0,
-	        "bridge-component-read", "unexpected unmanaged spec from %s", TEST_IFCFG_BRIDGE_COMPONENT);
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+	g_assert_cmpstr (nm_setting_connection_get_master (s_con), ==, "br0");
+	g_assert_cmpstr (nm_setting_connection_get_slave_type (s_con), ==, NM_SETTING_BRIDGE_SETTING_NAME);
+
+	s_port = nm_connection_get_setting_bridge_port (connection);
+	g_assert (s_port);
+	g_assert (nm_setting_bridge_port_get_hairpin_mode (s_port));
+	g_assert_cmpuint (nm_setting_bridge_port_get_priority (s_port), ==, 28);
+	g_assert_cmpuint (nm_setting_bridge_port_get_path_cost (s_port), ==, 100);
 
 	g_free (unmanaged);
 	g_free (keyfile);
 	g_free (routefile);
 	g_free (route6file);
 	g_object_unref (connection);
+}
+
+static void
+test_write_bridge_component (void)
+{
+	NMConnection *connection;
+	NMConnection *reread;
+	NMSettingConnection *s_con;
+	NMSettingWired *s_wired;
+	NMSetting *s_port;
+	static unsigned char tmpmac[] = { 0x31, 0x33, 0x33, 0x37, 0xbe, 0xcd };
+	GByteArray *mac;
+	guint32 mtu = 1492;
+	char *uuid;
+	gboolean success;
+	GError *error = NULL;
+	char *testfile = NULL;
+	char *unmanaged = NULL;
+	char *keyfile = NULL;
+	char *routefile = NULL;
+	char *route6file = NULL;
+	gboolean ignore_error = FALSE;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Bridge Component",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRED_SETTING_NAME,
+				  NM_SETTING_CONNECTION_MASTER, "br0",
+				  NM_SETTING_CONNECTION_SLAVE_TYPE, NM_SETTING_BRIDGE_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wired setting */
+	s_wired = (NMSettingWired *) nm_setting_wired_new ();
+	g_assert (s_wired);
+	nm_connection_add_setting (connection, NM_SETTING (s_wired));
+
+	mac = g_byte_array_sized_new (sizeof (tmpmac));
+	g_byte_array_append (mac, &tmpmac[0], sizeof (tmpmac));
+
+	g_object_set (s_wired,
+	              NM_SETTING_WIRED_MAC_ADDRESS, mac,
+	              NM_SETTING_WIRED_MTU, mtu,
+	              NULL);
+	g_byte_array_free (mac, TRUE);
+
+	/* Bridge port */
+	s_port = nm_setting_bridge_port_new ();
+	nm_connection_add_setting (connection, s_port);
+	g_object_set (s_port,
+	              NM_SETTING_BRIDGE_PORT_PRIORITY, 50,
+	              NM_SETTING_BRIDGE_PORT_PATH_COST, 33,
+	              NULL);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &testfile,
+	                                 &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (testfile);
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file (testfile,
+	                               NULL,
+	                               TYPE_ETHERNET,
+	                               NULL,
+	                               &unmanaged,
+	                               &keyfile,
+	                               &routefile,
+	                               &route6file,
+	                               &error,
+	                               &ignore_error);
+	unlink (testfile);
+
+	g_assert (reread);
+
+	success = nm_connection_verify (reread, &error);
+	g_assert_no_error (error);
+
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	if (route6file)
+		unlink (route6file);
+
+	g_free (testfile);
+	g_free (unmanaged);
+	g_free (keyfile);
+	g_free (routefile);
+	g_free (route6file);
+	g_object_unref (connection);
+	g_object_unref (reread);
 }
 
 #define TEST_IFCFG_VLAN_INTERFACE TEST_IFCFG_DIR"/network-scripts/ifcfg-test-vlan-interface"
@@ -12262,6 +12508,124 @@ test_write_vlan_only_vlanid (void)
 	g_object_unref (reread);
 }
 
+static void
+test_write_ethernet_missing_ipv6 (void)
+{
+	NMConnection *connection;
+	NMConnection *reread;
+	NMSettingConnection *s_con;
+	NMSettingWired *s_wired;
+	NMSettingIP4Config *s_ip4;
+	NMSettingIP6Config *s_ip6;
+	char *uuid;
+	gboolean success;
+	GError *error = NULL;
+	char *testfile = NULL;
+	char *unmanaged = NULL;
+	char *keyfile = NULL;
+	char *routefile = NULL;
+	char *route6file = NULL;
+	gboolean ignore_error = FALSE;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Ethernet Without IPv6 Setting",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRED_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wired setting */
+	s_wired = (NMSettingWired *) nm_setting_wired_new ();
+	g_assert (s_wired);
+	nm_connection_add_setting (connection, NM_SETTING (s_wired));
+
+	/* IP4 setting */
+	s_ip4 = (NMSettingIP4Config *) nm_setting_ip4_config_new ();
+	g_assert (s_ip4);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
+	g_object_set (s_ip4,
+	              NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_AUTO,
+	              NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID, "random-client-id-00:22:33",
+	              NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES, TRUE,
+	              NM_SETTING_IP4_CONFIG_IGNORE_AUTO_DNS, TRUE,
+	              NULL);
+
+	/* IP6 setting */
+	/*
+	 * We intentionally don't add IPv6 setting here. ifcfg-rh plugin should regard
+	 * missing IPv6 as IPv6 with NM_SETTING_IP6_CONFIG_METHOD_AUTO method.
+	 */
+
+	ASSERT (nm_connection_verify (connection, &error) == TRUE,
+	        "ethernet-missing-ipv6", "failed to verify connection: %s",
+	        (error && error->message) ? error->message : "(unknown)");
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &testfile,
+	                                 &error);
+	ASSERT (success == TRUE,
+	        "ethernet-missing-ipv6", "failed to write connection to disk: %s",
+	        (error && error->message) ? error->message : "(unknown)");
+
+	ASSERT (testfile != NULL,
+	        "ethernet-missing-ipv6", "didn't get ifcfg file path back after writing connection");
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file (testfile,
+	                               NULL,
+	                               TYPE_ETHERNET,
+	                               NULL,
+	                               &unmanaged,
+	                               &keyfile,
+	                               &routefile,
+	                               &route6file,
+	                               &error,
+	                               &ignore_error);
+	unlink (testfile);
+
+	ASSERT (reread != NULL,
+	        "ethernet-missing-ipv6-reread", "failed to read %s: %s", testfile, error->message);
+
+	ASSERT (nm_connection_verify (reread, &error),
+	        "ethernet-missing-ipv6-reread-verify", "failed to verify %s: %s", testfile, error->message);
+
+	/*
+	 * We need to add IPv6 setting to the original connection now so that
+	 * the comparison can succeed. Missing IPv6 setting should have been
+	 * written out (and re-read) as Automatic IPv6.
+	 */
+	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
+	g_assert (s_ip6);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
+	g_object_set (s_ip6,
+	              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_AUTO,
+	              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
+
+	ASSERT (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT) == TRUE,
+	        "ethernet-missing-ipv6", "written and re-read connection weren't the same.");
+
+	g_free (testfile);
+	g_free (unmanaged);
+	g_free (keyfile);
+	g_free (routefile);
+	g_free (route6file);
+	g_object_unref (connection);
+	g_object_unref (reread);
+}
+
 #define TEST_IFCFG_BOND_MAIN TEST_IFCFG_DIR"/network-scripts/ifcfg-test-bond-main"
 
 static void
@@ -12479,10 +12843,10 @@ test_read_bond_slave (void)
 	                                   &error,
 	                                   &ignore_error);
 	ASSERT (connection != NULL,
-	        "bond-slave-read", "unexpected failure reading %s", TEST_IFCFG_BOND_MAIN);
+	        "bond-slave-read", "unexpected failure reading %s", TEST_IFCFG_BOND_SLAVE);
 
 	ASSERT (nm_connection_verify (connection, &error),
-	        "bond-slave-read", "failed to verify %s: %s", TEST_IFCFG_BOND_MAIN, error->message);
+	        "bond-slave-read", "failed to verify %s: %s", TEST_IFCFG_BOND_SLAVE, error->message);
 
 	s_con = nm_connection_get_setting_connection (connection);
 	ASSERT (s_con != NULL,
@@ -12834,6 +13198,167 @@ test_write_infiniband (void)
 	g_object_unref (reread);
 }
 
+#define TEST_IFCFG_BOND_SLAVE_IB TEST_IFCFG_DIR"/network-scripts/ifcfg-test-bond-slave-ib"
+
+static void
+test_read_bond_slave_ib (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	char *unmanaged = NULL;
+	char *keyfile = NULL;
+	char *routefile = NULL;
+	char *route6file = NULL;
+	gboolean ignore_error = FALSE;
+	GError *error = NULL;
+
+	connection = connection_from_file (TEST_IFCFG_BOND_SLAVE_IB,
+	                                   NULL,
+	                                   NULL,
+	                                   NULL,
+	                                   &unmanaged,
+	                                   &keyfile,
+	                                   &routefile,
+	                                   &route6file,
+	                                   &error,
+	                                   &ignore_error);
+	ASSERT (connection != NULL,
+	        "bond-slave-read-ib", "unexpected failure reading %s", TEST_IFCFG_BOND_SLAVE_IB);
+
+	ASSERT (nm_connection_verify (connection, &error),
+	        "bond-slave-read-ib", "failed to verify %s: %s", TEST_IFCFG_BOND_SLAVE_IB, error->message);
+
+	s_con = nm_connection_get_setting_connection (connection);
+	ASSERT (s_con != NULL,
+	        "bond-slave-read-ib", "failed to verify %s: missing %s setting",
+	        TEST_IFCFG_BOND_SLAVE_IB, NM_SETTING_CONNECTION_SETTING_NAME);
+
+	ASSERT (g_strcmp0 (nm_setting_connection_get_master (s_con), "bond0") == 0,
+	        "bond-slave-read-ib", "failed to verify %s: master is not bond0",
+	        TEST_IFCFG_BOND_SLAVE_IB);
+
+	ASSERT (g_strcmp0 (nm_setting_connection_get_slave_type (s_con), NM_SETTING_BOND_SETTING_NAME) == 0,
+	        "bond-slave-read-ib", "failed to verify %s: slave-type is not bond",
+	        TEST_IFCFG_BOND_SLAVE_IB);
+
+	g_free (unmanaged);
+	g_free (keyfile);
+	g_free (routefile);
+	g_free (route6file);
+	g_object_unref (connection);
+}
+
+static void
+test_write_bond_slave_ib (void)
+{
+	NMConnection *connection;
+	NMConnection *reread;
+	NMSettingConnection *s_con;
+	NMSettingInfiniband *s_infiniband;
+	static unsigned char tmpmac[] = { 
+		0x80, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+		0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22
+	};
+	GByteArray *mac;
+	char *uuid;
+	gboolean success;
+	GError *error = NULL;
+	char *testfile = NULL;
+	char *unmanaged = NULL;
+	char *keyfile = NULL;
+	char *routefile = NULL;
+	char *route6file = NULL;
+	gboolean ignore_error = FALSE;
+
+	connection = nm_connection_new ();
+	ASSERT (connection != NULL,
+	        "bond-slave-write-ib", "failed to allocate new connection");
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	ASSERT (s_con != NULL,
+	        "bond-slave-write-ib", "failed to allocate new %s setting",
+	        NM_SETTING_CONNECTION_SETTING_NAME);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Bond Slave InfiniBand",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_INFINIBAND_SETTING_NAME,
+				  NM_SETTING_CONNECTION_MASTER, "bond0",
+				  NM_SETTING_CONNECTION_SLAVE_TYPE, NM_SETTING_BOND_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* InfiniBand setting */
+	s_infiniband = (NMSettingInfiniband *) nm_setting_infiniband_new ();
+	ASSERT (s_infiniband != NULL,
+	        "bond-main-write", "failed to allocate new %s setting",
+	        NM_SETTING_INFINIBAND_SETTING_NAME);
+	nm_connection_add_setting (connection, NM_SETTING (s_infiniband));
+
+	mac = g_byte_array_sized_new (sizeof (tmpmac));
+	g_byte_array_append (mac, &tmpmac[0], sizeof (tmpmac));
+
+	g_object_set (s_infiniband,
+	              NM_SETTING_INFINIBAND_MAC_ADDRESS, mac,
+	              NM_SETTING_INFINIBAND_MTU, 2044,
+	              NM_SETTING_INFINIBAND_TRANSPORT_MODE, "datagram",
+	              NULL);
+	g_byte_array_free (mac, TRUE);
+
+	ASSERT (nm_connection_verify (connection, &error) == TRUE,
+	        "bond-slave-write-ib", "failed to verify connection: %s",
+	        (error && error->message) ? error->message : "(unknown)");
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &testfile,
+	                                 &error);
+	ASSERT (success == TRUE,
+	        "bond-slave-write-ib", "failed to write connection to disk: %s",
+	        (error && error->message) ? error->message : "(unknown)");
+
+	ASSERT (testfile != NULL,
+	        "bond-slave-write-ib", "didn't get ifcfg file path back after writing connection");
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file (testfile,
+	                               NULL,
+	                               NULL,
+	                               NULL,
+	                               &unmanaged,
+	                               &keyfile,
+	                               &routefile,
+	                               &route6file,
+	                               &error,
+	                               &ignore_error);
+	unlink (testfile);
+
+	ASSERT (reread != NULL,
+	        "bond-slave-write-ib-reread", "failed to read %s: %s", testfile, error->message);
+
+	ASSERT (nm_connection_verify (reread, &error),
+	        "bond-slave-write-ib-reread-verify", "failed to verify %s: %s", testfile, error->message);
+
+	ASSERT (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT) == TRUE,
+	        "bond-slave-write-ib", "written and re-read connection weren't the same.");
+
+	if (route6file)
+		unlink (route6file);
+
+	g_free (testfile);
+	g_free (unmanaged);
+	g_free (keyfile);
+	g_free (routefile);
+	g_free (route6file);
+	g_object_unref (connection);
+	g_object_unref (reread);
+}
+
 #define TEST_IFCFG_WIFI_OPEN_SSID_BAD_HEX TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wifi-open-ssid-bad-hex"
 #define TEST_IFCFG_WIFI_OPEN_SSID_LONG_QUOTED TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wifi-open-ssid-long-quoted"
 #define TEST_IFCFG_WIFI_OPEN_SSID_LONG_HEX TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wifi-open-ssid-long-hex"
@@ -12996,6 +13521,7 @@ int main (int argc, char **argv)
 	test_write_infiniband ();
 	test_write_vlan ();
 	test_write_vlan_only_vlanid ();
+	test_write_ethernet_missing_ipv6 ();
 
 	/* iSCSI / ibft */
 	test_read_ibft_dhcp ();
@@ -13010,16 +13536,21 @@ int main (int argc, char **argv)
 	/* bonding */
 	test_read_bond_main ();
 	test_read_bond_slave ();
+	test_read_bond_slave_ib ();
 	test_write_bond_main ();
 	test_write_bond_slave ();
+	test_write_bond_slave_ib ();
+
+	test_read_bridge_main ();
+	test_write_bridge_main ();
+	test_read_bridge_component ();
+	test_write_bridge_component ();
 
 	/* Stuff we expect to fail for now */
 	test_write_wired_pppoe ();
 	test_write_vpn ();
 	test_write_mobile_broadband (TRUE);
 	test_write_mobile_broadband (FALSE);
-	test_read_bridge_main ();
-	test_read_bridge_component ();
 
 	base = g_path_get_basename (argv[0]);
 	fprintf (stdout, "%s: SUCCESS\n", base);

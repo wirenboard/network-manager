@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2006 - 2010 Red Hat, Inc.
+ * Copyright (C) 2006 - 2012 Red Hat, Inc.
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
@@ -55,9 +55,12 @@ enum {
 	LOGD_INFINIBAND = 0x01000000,
 	LOGD_FIREWALL   = 0x02000000,
 	LOGD_ADSL       = 0x04000000,
+	LOGD_BOND       = 0x08000000,
+	LOGD_VLAN       = 0x10000000,
 };
 
 #define LOGD_DHCP (LOGD_DHCP4 | LOGD_DHCP6)
+#define LOGD_IP   (LOGD_IP4 | LOGD_IP6)
 
 /* Log levels */
 enum {

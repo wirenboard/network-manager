@@ -1,6 +1,6 @@
 include $(GLIB_MAKEFILE)
 
-SUBDIRS=. tests
+SUBDIRS = . tests
 
 INCLUDES = -I${top_srcdir} -I${top_srcdir}/include -I${top_builddir}/include
 
@@ -9,8 +9,7 @@ lib_LTLIBRARIES=libnm-util.la
 libnm_util_la_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	$(UUID_CFLAGS) \
-	-DG_DISABLE_DEPRECATED
+	$(UUID_CFLAGS)
 
 libnm_util_include_HEADERS = 		\
 	nm-connection.h			\
@@ -19,6 +18,8 @@ libnm_util_include_HEADERS = 		\
 	nm-setting-adsl.h		\
 	nm-setting-bluetooth.h		\
 	nm-setting-bond.h		\
+	nm-setting-bridge.h		\
+	nm-setting-bridge-port.h	\
 	nm-setting-connection.h		\
 	nm-setting-infiniband.h		\
 	nm-setting-ip4-config.h		\
@@ -53,6 +54,8 @@ libnm_util_la_csources = \
 	nm-setting-adsl.c		\
 	nm-setting-bluetooth.c		\
 	nm-setting-bond.c		\
+	nm-setting-bridge.c		\
+	nm-setting-bridge-port.c	\
 	nm-setting-connection.c		\
 	nm-setting-infiniband.c		\
 	nm-setting-ip4-config.c		\
@@ -165,7 +168,7 @@ typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
 endif
 
-if WITH_TESTS
+if ENABLE_TESTS
 
 check-local:
 	$(top_srcdir)/tools/check-exports.sh $(builddir)/.libs/libnm-util.so $(SYMBOL_VIS_FILE)

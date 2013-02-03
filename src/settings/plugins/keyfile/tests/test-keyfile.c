@@ -50,6 +50,74 @@
 #define TEST_WIRELESS_FILE TEST_KEYFILES_DIR"/Test_Wireless_Connection"
 
 static void
+check_ip4_address (NMSettingIP4Config *config, int idx, const char *address_str, int plen, const char *gateway_str)
+{
+	NMIP4Address *ip4 = nm_setting_ip4_config_get_address (config, idx);
+	struct in_addr address;
+	struct in_addr gateway;
+
+	g_assert (inet_pton (AF_INET, address_str, &address) == 1);
+	g_assert (inet_pton (AF_INET, gateway_str, &gateway) == 1);
+
+	g_assert (ip4);
+	g_assert (nm_ip4_address_get_address (ip4) == address.s_addr);
+	g_assert (nm_ip4_address_get_prefix (ip4) == plen);
+	g_assert (nm_ip4_address_get_gateway (ip4) == gateway.s_addr);
+}
+
+static void
+check_ip6_address (NMSettingIP6Config *config, int idx, const char *address_str, int plen, const char *gateway_str)
+{
+	NMIP6Address *ip6 = nm_setting_ip6_config_get_address (config, idx);
+	struct in6_addr address;
+	struct in6_addr gateway;
+
+	g_assert (inet_pton (AF_INET6, address_str, &address) == 1);
+	g_assert (inet_pton (AF_INET6, gateway_str, &gateway) == 1);
+
+	g_assert (ip6);
+	g_assert (!memcmp (nm_ip6_address_get_address (ip6), &address, sizeof(address)));
+	g_assert (nm_ip6_address_get_prefix (ip6) == plen);
+	g_assert (!memcmp (nm_ip6_address_get_gateway (ip6), &gateway, sizeof(gateway)));
+}
+
+static void
+check_ip4_route (NMSettingIP4Config *config, int idx, const char *destination_str, int plen,
+		const char *nexthop_str, int metric)
+{
+	NMIP4Route *route = nm_setting_ip4_config_get_route (config, idx);
+	struct in_addr destination;
+	struct in_addr nexthop;
+
+	g_assert (inet_pton (AF_INET, destination_str, &destination) == 1);
+	g_assert (inet_pton (AF_INET, nexthop_str, &nexthop) == 1);
+
+	g_assert (route);
+	g_assert (nm_ip4_route_get_dest (route) == destination.s_addr);
+	g_assert (nm_ip4_route_get_prefix (route) == plen);
+	g_assert (nm_ip4_route_get_next_hop (route) == nexthop.s_addr);
+	g_assert (nm_ip4_route_get_metric (route) == metric);
+}
+
+static void
+check_ip6_route (NMSettingIP6Config *config, int idx, const char *destination_str, int plen,
+		const char *next_hop_str, int metric)
+{
+	NMIP6Route *route = nm_setting_ip6_config_get_route (config, idx);
+	struct in6_addr destination;
+	struct in6_addr next_hop;
+
+	g_assert (inet_pton (AF_INET6, destination_str, &destination) == 1);
+	g_assert (inet_pton (AF_INET6, next_hop_str, &next_hop) == 1);
+
+	g_assert (route);
+	g_assert (!memcmp (nm_ip6_route_get_dest (route), &destination, sizeof(destination)));
+	g_assert (nm_ip6_route_get_prefix (route) == plen);
+	g_assert (!memcmp (nm_ip6_route_get_next_hop (route), &next_hop, sizeof(next_hop)));
+	g_assert (nm_ip6_route_get_metric (route) == metric);
+}
+
+static void
 test_read_valid_wired_connection (void)
 {
 	NMConnection *connection;
@@ -68,23 +136,12 @@ test_read_valid_wired_connection (void)
 	const char *expected_dns1 = "4.2.2.1";
 	const char *expected_dns2 = "4.2.2.2";
 	struct in_addr addr;
-	const char *expected_address1 = "192.168.0.5";
-	const char *expected_address2 = "1.2.3.4";
-	const char *expected_address1_gw = "192.168.0.1";
-	const char *expected_address2_gw = "1.2.1.1";
-	NMIP4Address *ip4_addr;
+	struct in6_addr addr6;
 	const char *expected6_dns1 = "1111:dddd::aaaa";
 	const char *expected6_dns2 = "1::cafe";
 	const char *expected6_dnssearch1 = "super-domain.com";
 	const char *expected6_dnssearch2 = "redhat.com";
 	const char *expected6_dnssearch3 = "gnu.org";
-	struct in6_addr addr6;
-	const char *expected6_address1 = "abcd:1234:ffff::cdde";
-	const char *expected6_address2 = "1:2:3:4:5:6:7:8";
-	const char *expected6_route_dest = "a:b:c:d::";
-	const char *expected6_route_nh = "f:e:d:c:1:2:3:4";
-	NMIP6Address *ip6_addr;
-	NMIP6Route *ip6_route;
 
 	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_FILE, NULL);
 	ASSERT (connection != NULL,
@@ -219,83 +276,17 @@ test_read_valid_wired_connection (void)
 	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP4_CONFIG_DNS);
 
-	ASSERT (nm_setting_ip4_config_get_num_addresses (s_ip4) == 2,
-	        "connection-verify-wired", "failed to verify %s: unexpected %s / %s key value",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_DNS);
+	/* IPv4 addresses */
+	g_assert (nm_setting_ip4_config_get_num_addresses (s_ip4) == 4);
+	check_ip4_address (s_ip4, 0, "2.3.4.5", 24, "2.3.4.6");
+	check_ip4_address (s_ip4, 1, "192.168.0.5", 24, "192.168.0.1");
+	check_ip4_address (s_ip4, 2, "1.2.3.4", 16, "1.2.1.1");
+	check_ip4_address (s_ip4, 3, "3.4.5.6", 16, "0.0.0.0");
 
-	/* Address #1 */
-	ip4_addr = nm_setting_ip4_config_get_address (s_ip4, 0);
-	ASSERT (ip4_addr,
-	        "connection-verify-wired", "failed to verify %s: missing IP4 address #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-
-	ASSERT (nm_ip4_address_get_prefix (ip4_addr) == 24,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #1 prefix",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET, expected_address1, &addr) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_DNS);
-	ASSERT (nm_ip4_address_get_address (ip4_addr) == addr.s_addr,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET, expected_address1_gw, &addr) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #1 gateway",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-	ASSERT (nm_ip4_address_get_gateway (ip4_addr) == addr.s_addr,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #1 gateway",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-	
-	/* Address #2 */
-	ip4_addr = nm_setting_ip4_config_get_address (s_ip4, 1);
-	ASSERT (ip4_addr,
-	        "connection-verify-wired", "failed to verify %s: missing IP4 address #2",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-
-	ASSERT (nm_ip4_address_get_prefix (ip4_addr) == 16,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #2 prefix",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET, expected_address2, &addr) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #2",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_DNS);
-	ASSERT (nm_ip4_address_get_address (ip4_addr) == addr.s_addr,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #2",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET, expected_address2_gw, &addr) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #2 gateway",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
-	ASSERT (nm_ip4_address_get_gateway (ip4_addr) == addr.s_addr,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #2 gateway",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP4_CONFIG_ADDRESSES);
+	/* IPv4 routes */
+	g_assert (nm_setting_ip4_config_get_num_routes (s_ip4) == 2);
+	check_ip4_route (s_ip4, 0, "5.6.7.8", 32, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 1, "1.2.3.0", 24, "2.3.4.8", 99);
 
 	/* ===== IPv6 SETTING ===== */
 
@@ -342,12 +333,6 @@ test_read_valid_wired_connection (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP6_CONFIG_DNS);
 
-	ASSERT (nm_setting_ip6_config_get_num_addresses (s_ip6) == 2,
-	        "connection-verify-wired", "failed to verify %s: unexpected %s / %s key value",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_DNS);
-
 	/* DNS Searches */
 	ASSERT (nm_setting_ip6_config_get_num_dns_searches (s_ip6) == 3,
 	        "connection-verify-wired", "failed to verify %s: unexpected %s / %s key value",
@@ -371,98 +356,18 @@ test_read_valid_wired_connection (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP6_CONFIG_DNS_SEARCH);
 
-	/* Address #1 */
-	ip6_addr = nm_setting_ip6_config_get_address (s_ip6, 0);
-	ASSERT (ip6_addr,
-	        "connection-verify-wired", "failed to verify %s: missing IP6 address #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (nm_ip6_address_get_prefix (ip6_addr) == 64,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP6 address #1 prefix",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET6, expected6_address1, &addr6) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_DNS);
-	ASSERT (IN6_ARE_ADDR_EQUAL (nm_ip6_address_get_address (ip6_addr), &addr6),
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	/* Address #2 */
-	ip6_addr = nm_setting_ip6_config_get_address (s_ip6, 1);
-	ASSERT (ip6_addr,
-	        "connection-verify-wired", "failed to verify %s: missing IP6 address #2",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (nm_ip6_address_get_prefix (ip6_addr) == 96,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP6 address #2 prefix",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET6, expected6_address2, &addr6) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #2",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_DNS);
-	ASSERT (IN6_ARE_ADDR_EQUAL (nm_ip6_address_get_address (ip6_addr), &addr6),
-	        "connection-verify-wired", "failed to verify %s: unexpected IP6 address #2",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
+	/* IPv6 addresses */
+	g_assert (nm_setting_ip6_config_get_num_addresses (s_ip6) == 4);
+	check_ip6_address (s_ip6, 0, "2:3:4:5:6:7:8:9", 64, "2:3:4:5:1:2:3:4");
+	check_ip6_address (s_ip6, 1, "abcd:1234:ffff::cdde", 64, "::");
+	check_ip6_address (s_ip6, 2, "1:2:3:4:5:6:7:8", 96, "::");
+	check_ip6_address (s_ip6, 3, "3:4:5:6:7:8:9:0", 128, "::");
 
 	/* Route #1 */
-	ip6_route = nm_setting_ip6_config_get_route (s_ip6, 0);
-	ASSERT (ip6_route,
-	        "connection-verify-wired", "failed to verify %s: missing IP6 route #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ROUTES);
-
-	ASSERT (inet_pton (AF_INET6, expected6_route_dest, &addr6) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP route dest #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_DNS);
-	ASSERT (IN6_ARE_ADDR_EQUAL (nm_ip6_route_get_dest (ip6_route), &addr6),
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 route dest #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ROUTES);
-
-	ASSERT (nm_ip6_route_get_prefix (ip6_route) == 64,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP6 route #1 prefix",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ROUTES);
-
-	ASSERT (inet_pton (AF_INET6, expected6_route_nh, &addr6) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP route next hop #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_DNS);
-	ASSERT (IN6_ARE_ADDR_EQUAL (nm_ip6_route_get_next_hop (ip6_route), &addr6),
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 route dest #1",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ROUTES);
-
-	ASSERT (nm_ip6_route_get_metric (ip6_route) == 99,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP6 route #1 metric",
-	        TEST_WIRED_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ROUTES);
-
+	g_assert (nm_setting_ip6_config_get_num_routes (s_ip6) == 3);
+	check_ip6_route (s_ip6, 0, "d:e:f:0:1:2:3:4", 64, "f:e:d:c:1:2:3:4", 0);
+	check_ip6_route (s_ip6, 1, "a:b:c:d::", 64, "f:e:d:c:1:2:3:4", 99);
+	check_ip6_route (s_ip6, 2, "8:7:6:5:4:3:2:1", 128, "::", 0);
 	g_object_unref (connection);
 }
 
@@ -733,10 +638,6 @@ test_read_ip6_wired_connection (void)
 	const char *tmp;
 	const char *expected_id = "Test Wired Connection IP6";
 	const char *expected_uuid = "4e80a56d-c99f-4aad-a6dd-b449bc398c57";
-	struct in6_addr addr6;
-	const char *expected6_address1 = "abcd:1234:ffff::cdde";
-	const char *expected6_gw1 = "abcd:1234:ffff::cdd1";
-	NMIP6Address *ip6_addr;
 
 	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_IP6_FILE, NULL);
 	ASSERT (connection != NULL,
@@ -825,47 +726,9 @@ test_read_ip6_wired_connection (void)
 	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP6_CONFIG_METHOD);
 
-	ASSERT (nm_setting_ip6_config_get_num_addresses (s_ip6) == 1,
-	        "connection-verify-wired", "failed to verify %s: unexpected %s / %s key value",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_DNS);
-
-	/* Address #1 */
-	ip6_addr = nm_setting_ip6_config_get_address (s_ip6, 0);
-	ASSERT (ip6_addr,
-	        "connection-verify-wired", "failed to verify %s: missing IP6 address #1",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (nm_ip6_address_get_prefix (ip6_addr) == 64,
-	        "connection-verify-wired", "failed to verify %s: unexpected IP6 address #1 prefix",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET6, expected6_address1, &addr6) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert IP address #1",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-	ASSERT (IN6_ARE_ADDR_EQUAL (nm_ip6_address_get_address (ip6_addr), &addr6),
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #1",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-
-	ASSERT (inet_pton (AF_INET6, expected6_gw1, &addr6) > 0,
-	        "connection-verify-wired", "failed to verify %s: couldn't convert GW address #1",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
-	ASSERT (IN6_ARE_ADDR_EQUAL (nm_ip6_address_get_gateway (ip6_addr), &addr6),
-	        "connection-verify-wired", "failed to verify %s: unexpected IP4 address #1",
-	        TEST_WIRED_IP6_FILE,
-	        NM_SETTING_IP6_CONFIG_SETTING_NAME,
-	        NM_SETTING_IP6_CONFIG_ADDRESSES);
+	/* IPv6 address */
+	g_assert (nm_setting_ip6_config_get_num_addresses (s_ip6) == 1);
+	check_ip6_address (s_ip6, 0, "abcd:1234:ffff::cdde", 64, "abcd:1234:ffff::cdd1");
 
 	g_object_unref (connection);
 }
@@ -2958,6 +2821,264 @@ test_write_infiniband_connection (void)
 	g_object_unref (connection);
 }
 
+#define TEST_BRIDGE_MAIN_FILE TEST_KEYFILES_DIR"/Test_Bridge_Main"
+
+static void
+test_read_bridge_main (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingIP4Config *s_ip4;
+	NMSettingBridge *s_bridge;
+	GError *error = NULL;
+	const char *expected_id = "Test Bridge Main";
+	const char *expected_uuid = "8f061643-fe41-4d4c-a8d9-097d26e2ad3a";
+	gboolean success;
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_BRIDGE_MAIN_FILE, &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Connection setting */
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+	g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, expected_id);
+	g_assert_cmpstr (nm_setting_connection_get_uuid (s_con), ==, expected_uuid);
+
+	/* IPv4 setting */
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+	g_assert (s_ip4);
+	g_assert_cmpstr (nm_setting_ip4_config_get_method (s_ip4), ==, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+	/* Bridge setting */
+	s_bridge = nm_connection_get_setting_bridge (connection);
+	g_assert (s_bridge);
+	g_assert_cmpstr (nm_setting_bridge_get_interface_name (s_bridge), ==, "br0");
+	g_assert_cmpuint (nm_setting_bridge_get_forward_delay (s_bridge), ==, 0);
+	g_assert_cmpuint (nm_setting_bridge_get_stp (s_bridge), ==, TRUE);
+	g_assert_cmpuint (nm_setting_bridge_get_priority (s_bridge), ==, 32744);
+	g_assert_cmpuint (nm_setting_bridge_get_hello_time (s_bridge), ==, 7);
+	g_assert_cmpuint (nm_setting_bridge_get_max_age (s_bridge), ==, 39);
+	g_assert_cmpuint (nm_setting_bridge_get_ageing_time (s_bridge), ==, 235352);
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_bridge_main (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingBridge *s_bridge;
+	NMSettingIP4Config *s_ip4;
+	NMSettingIP6Config *s_ip6;
+	char *uuid;
+	gboolean success;
+	NMConnection *reread;
+	char *testfile = NULL;
+	GError *error = NULL;
+	pid_t owner_grp;
+	uid_t owner_uid;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Bridge Main",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_BRIDGE_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Bridge setting */
+	s_bridge = (NMSettingBridge *) nm_setting_bridge_new ();
+	g_assert (s_bridge);
+	nm_connection_add_setting (connection, NM_SETTING (s_bridge));
+
+	g_object_set (s_bridge,
+	              NM_SETTING_BRIDGE_INTERFACE_NAME, "br0",
+	              NULL);
+
+	/* IP4 setting */
+	s_ip4 = (NMSettingIP4Config *) nm_setting_ip4_config_new ();
+	g_assert (s_ip4);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
+	g_object_set (s_ip4,
+	              NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_MANUAL,
+	              NM_SETTING_IP4_CONFIG_MAY_FAIL, TRUE,
+	              NULL);
+
+	add_one_ip4_address (s_ip4, "1.2.3.4", "1.1.1.1", 24);
+
+	/* IP6 setting */
+	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
+	g_assert (s_ip6);
+	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
+	g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_AUTO, NULL);
+
+	/* Write out the connection */
+	owner_uid = geteuid ();
+	owner_grp = getegid ();
+	success = nm_keyfile_plugin_write_test_connection (connection, TEST_SCRATCH_DIR, owner_uid, owner_grp, &testfile, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (testfile);
+
+	/* Read the connection back in and compare it to the one we just wrote out */
+	reread = nm_keyfile_plugin_connection_from_file (testfile, &error);
+	g_assert_no_error (error);
+	g_assert (reread);
+
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	unlink (testfile);
+	g_free (testfile);
+
+	g_object_unref (reread);
+	g_object_unref (connection);
+}
+
+#define TEST_BRIDGE_COMPONENT_FILE TEST_KEYFILES_DIR"/Test_Bridge_Component"
+
+static void
+test_read_bridge_component (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingBridgePort *s_port;
+	NMSettingWired *s_wired;
+	const GByteArray *array;
+	guint8 expected_mac[ETH_ALEN] = { 0x00, 0x22, 0x15, 0x59, 0x62, 0x97 };
+	GError *error = NULL;
+	const char *expected_id = "Test Bridge Component";
+	const char *expected_uuid = "d7b4f96c-c45e-4298-bef8-f48574f8c1c0";
+	gboolean success;
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_BRIDGE_COMPONENT_FILE, &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Connection setting */
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+	g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, expected_id);
+	g_assert_cmpstr (nm_setting_connection_get_uuid (s_con), ==, expected_uuid);
+	g_assert_cmpstr (nm_setting_connection_get_master (s_con), ==, "br0");
+	g_assert (nm_setting_connection_is_slave_type (s_con, NM_SETTING_BRIDGE_SETTING_NAME));
+
+	/* Wired setting */
+	s_wired = nm_connection_get_setting_wired (connection);
+	g_assert (s_wired);
+	array = nm_setting_wired_get_mac_address (s_wired);
+	g_assert (array);
+	g_assert_cmpint (array->len, ==, ETH_ALEN);
+	g_assert_cmpint (memcmp (array->data, expected_mac, sizeof (expected_mac)), ==, 0);
+
+	/* BridgePort setting */
+	s_port = nm_connection_get_setting_bridge_port (connection);
+	g_assert (s_port);
+	g_assert (nm_setting_bridge_port_get_hairpin_mode (s_port));
+	g_assert_cmpuint (nm_setting_bridge_port_get_priority (s_port), ==, 28);
+	g_assert_cmpuint (nm_setting_bridge_port_get_path_cost (s_port), ==, 100);
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_bridge_component (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingBridgePort *s_port;
+	NMSettingWired *s_wired;
+	char *uuid;
+	GByteArray *mac;
+	guint8 tmpmac[] = { 0x99, 0x88, 0x77, 0x66, 0x55, 0x44 };
+	gboolean success;
+	NMConnection *reread;
+	char *testfile = NULL;
+	GError *error = NULL;
+	pid_t owner_grp;
+	uid_t owner_uid;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Bridge Component",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRED_SETTING_NAME,
+	              NM_SETTING_CONNECTION_MASTER, "br0",
+	              NM_SETTING_CONNECTION_SLAVE_TYPE, NM_SETTING_BRIDGE_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wired setting */
+	s_wired = NM_SETTING_WIRED (nm_setting_wired_new ());
+	g_assert (s_wired);
+	nm_connection_add_setting (connection, NM_SETTING (s_wired));
+
+	mac = g_byte_array_sized_new (ETH_ALEN);
+	g_byte_array_append (mac, &tmpmac[0], sizeof (tmpmac));
+	g_object_set (s_wired,
+	              NM_SETTING_WIRED_MAC_ADDRESS, mac,
+	              NM_SETTING_WIRED_MTU, 1300,
+	              NULL);
+	g_byte_array_free (mac, TRUE);
+
+	/* BridgePort setting */
+	s_port = (NMSettingBridgePort *) nm_setting_bridge_port_new ();
+	g_assert (s_port);
+	nm_connection_add_setting (connection, NM_SETTING (s_port));
+
+	g_object_set (s_port,
+	              NM_SETTING_BRIDGE_PORT_PRIORITY, 3,
+	              NM_SETTING_BRIDGE_PORT_PATH_COST, 99,
+	              NULL);
+
+	/* Write out the connection */
+	owner_uid = geteuid ();
+	owner_grp = getegid ();
+	success = nm_keyfile_plugin_write_test_connection (connection, TEST_SCRATCH_DIR, owner_uid, owner_grp, &testfile, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (testfile);
+
+	/* Read the connection back in and compare it to the one we just wrote out */
+	reread = nm_keyfile_plugin_connection_from_file (testfile, &error);
+	g_assert_no_error (error);
+	g_assert (reread);
+
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	unlink (testfile);
+	g_free (testfile);
+
+	g_object_unref (reread);
+	g_object_unref (connection);
+}
+
+
 int main (int argc, char **argv)
 {
 	GError *error = NULL;
@@ -3008,6 +3129,11 @@ int main (int argc, char **argv)
 
 	test_read_infiniband_connection ();
 	test_write_infiniband_connection ();
+
+	test_read_bridge_main ();
+	test_write_bridge_main ();
+	test_read_bridge_component ();
+	test_write_bridge_component ();
 
 	base = g_path_get_basename (argv[0]);
 	fprintf (stdout, "%s: SUCCESS\n", base);

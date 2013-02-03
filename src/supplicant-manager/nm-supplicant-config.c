@@ -363,11 +363,11 @@ gboolean
 nm_supplicant_config_add_setting_wireless (NMSupplicantConfig * self,
                                            NMSettingWireless * setting,
                                            gboolean is_broadcast,
-                                           guint32 adhoc_freq,
+                                           guint32 fixed_freq,
                                            gboolean has_scan_capa_ssid)
 {
 	NMSupplicantConfigPrivate *priv;
-	gboolean is_adhoc;
+	gboolean is_adhoc, is_ap;
 	const char *mode;
 	const GByteArray *id;
 
@@ -378,7 +378,8 @@ nm_supplicant_config_add_setting_wireless (NMSupplicantConfig * self,
 
 	mode = nm_setting_wireless_get_mode (setting);
 	is_adhoc = (mode && !strcmp (mode, "adhoc")) ? TRUE : FALSE;
-	if (is_adhoc)
+	is_ap = (mode && !strcmp (mode, "ap")) ? TRUE : FALSE;
+	if (is_adhoc || is_ap)
 		priv->ap_scan = 2;
 	else if (is_broadcast == FALSE) {
 		/* drivers that support scanning specific SSIDs should use
@@ -395,27 +396,34 @@ nm_supplicant_config_add_setting_wireless (NMSupplicantConfig * self,
 
 	if (is_adhoc) {
 		if (!nm_supplicant_config_add_option (self, "mode", "1", -1, FALSE)) {
-			nm_log_warn (LOGD_SUPPLICANT, "Error adding mode to supplicant config.");
+			nm_log_warn (LOGD_SUPPLICANT, "Error adding mode=1 (adhoc) to supplicant config.");
 			return FALSE;
-		}
-
-		if (adhoc_freq) {
-			char *str_freq;
-
-			str_freq = g_strdup_printf ("%u", adhoc_freq);
-			if (!nm_supplicant_config_add_option (self, "frequency", str_freq, -1, FALSE)) {
-				g_free (str_freq);
-				nm_log_warn (LOGD_SUPPLICANT, "Error adding Ad-Hoc frequency to supplicant config.");
-				return FALSE;
-			}
-			g_free (str_freq);
 		}
 	}
 
-	/* Except for Ad-Hoc networks, request that the driver probe for the
+	if (is_ap) {
+		if (!nm_supplicant_config_add_option (self, "mode", "2", -1, FALSE)) {
+			nm_log_warn (LOGD_SUPPLICANT, "Error adding mode=2 (ap) to supplicant config.");
+			return FALSE;
+		}
+	}
+
+	if ((is_adhoc || is_ap) && fixed_freq) {
+		char *str_freq;
+
+		str_freq = g_strdup_printf ("%u", fixed_freq);
+		if (!nm_supplicant_config_add_option (self, "frequency", str_freq, -1, FALSE)) {
+			g_free (str_freq);
+			nm_log_warn (LOGD_SUPPLICANT, "Error adding Ad-Hoc/AP frequency to supplicant config.");
+			return FALSE;
+		}
+		g_free (str_freq);
+	}
+
+	/* Except for Ad-Hoc and Hotspot, request that the driver probe for the
 	 * specific SSID we want to associate with.
 	 */
-	if (!is_adhoc) {
+	if (!(is_adhoc || is_ap)) {
 		if (!nm_supplicant_config_add_option (self, "scan_ssid", "1", -1, FALSE))
 			return FALSE;
 	}
@@ -712,6 +720,13 @@ nm_supplicant_config_add_setting_wireless_security (NMSupplicantConfig *self,
 			 */
 			if (!nm_supplicant_config_add_option (self, "bgscan", "simple:30:-45:300", -1, FALSE))
 				nm_log_warn (LOGD_SUPPLICANT, "Error enabling background scanning for ESS roaming");
+
+			/* When using WPA-Enterprise, we want to use Proactive Key Caching (also
+			 * called Opportunistic Key Caching) to avoid full EAP exchanges when
+			 * roaming between access points in the same mobility group.
+			 */
+			if (!nm_supplicant_config_add_option (self, "proactive_key_caching", "1", -1, FALSE))
+				return FALSE;
 		}
 	}
 
@@ -730,7 +745,7 @@ nm_supplicant_config_add_setting_8021x (NMSupplicantConfig *self,
 	gboolean success, added;
 	GString *phase1, *phase2;
 	const GByteArray *array;
-	gboolean peap = FALSE, fast = FALSE;
+	gboolean fast = FALSE;
 	guint32 i, num_eap;
 	gboolean fast_provisoning_allowed = FALSE;
 
@@ -778,23 +793,10 @@ nm_supplicant_config_add_setting_8021x (NMSupplicantConfig *self,
 	for (i = 0; i < num_eap; i++) {
 		const char *method = nm_setting_802_1x_get_eap_method (setting, i);
 
-		if (method && (strcasecmp (method, "peap") == 0))
-			peap = TRUE;
 		if (method && (strcasecmp (method, "fast") == 0)) {
 			fast = TRUE;
 			priv->fast_required = TRUE;
 		}
-	}
-
-	/* When using PEAP-GTC, we're likely using Cisco kit, so we want to turn
-	 * on PMKSA caching so that roaming between access points actually works
-	 * without a full reauth (which requires a new token code).  We may want
-	 * to extend this to all PEAP phase2 methods at some point.
-	 */
-	value = nm_setting_802_1x_get_phase2_auth (setting);
-	if (peap && value && (strcasecmp (value, "gtc") == 0)) {
-		if (!nm_supplicant_config_add_option (self, "proactive_key_caching", "1", -1, FALSE))
-			return FALSE;
 	}
 
 	/* Drop the fragment size a bit for better compatibility */

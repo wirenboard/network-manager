@@ -108,7 +108,7 @@ write_system_hostname (NMSystemConfigInterface * config,
 	g_return_if_fail (newhostname);
 	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Write system hostname: %s",
 		      newhostname);
-	if (write_hostname (newhostname, IFNET_SYSTEM_HOSTNAME_FILE)) {
+	if (write_hostname (IFNET_SYSTEM_HOSTNAME_FILE, newhostname)) {
 		g_free (priv->hostname);
 		priv->hostname = g_strdup (newhostname);
 		g_object_notify (G_OBJECT (config),
@@ -360,7 +360,7 @@ add_connection (NMSystemConfigInterface *config,
 	nm_connection_for_each_setting_value (source, check_flagged_secrets, &has_flagged_secrets);
 
 	if (!has_flagged_secrets) {
-		conn_name = ifnet_add_new_connection (source, CONF_NET_FILE, WPA_SUPPLICANT_CONF, error);
+		conn_name = ifnet_add_new_connection (source, CONF_NET_FILE, WPA_SUPPLICANT_CONF, NULL, error);
 		if (conn_name)
 			connection = nm_ifnet_connection_new (conn_name, source);
 		reload_connections (config);

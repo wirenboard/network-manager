@@ -8,7 +8,6 @@ SUBDIRS= \
 	ip6-manager \
 	supplicant-manager \
 	ppp-manager \
-	backends \
 	dnsmasq-manager \
 	modem-manager \
 	bluez-manager \
@@ -115,6 +114,7 @@ libtest_wifi_ap_utils_la_LIBADD = \
 sbin_PROGRAMS = NetworkManager
 
 NetworkManager_SOURCES = \
+		nm-types.h \
 		nm-call-store.c \
 		nm-call-store.h \
 		nm-device.c \
@@ -138,6 +138,8 @@ NetworkManager_SOURCES = \
 		nm-device-infiniband.h \
 		nm-device-bond.c \
 		nm-device-bond.h \
+		nm-device-bridge.c \
+		nm-device-bridge.h \
 		nm-device-vlan.c \
 		nm-device-vlan.h \
 		nm-wifi-ap.c \
@@ -192,8 +194,11 @@ NetworkManager_SOURCES = \
 		nm-session-monitor.h \
 		nm-session-utils.c \
 		nm-session-utils.h \
+		nm-sleep-monitor.h \
 		nm-connection-provider.h \
-		nm-connection-provider.c
+		nm-connection-provider.c \
+		nm-dispatcher.c \
+		nm-dispatcher.h
 
 if WITH_CONCHECK
 NetworkManager_SOURCES += nm-connectivity.c nm-connectivity.h
@@ -207,6 +212,13 @@ NetworkManager_SOURCES += nm-session-monitor-ck.c
 else
 NetworkManager_SOURCES += nm-session-monitor-null.c
 endif
+endif
+
+if SUSPEND_RESUME_SYSTEMD
+NetworkManager_SOURCES += nm-sleep-monitor-systemd.c
+else
+# UPower suspend/resume used whenever systemd is not enabled
+NetworkManager_SOURCES += nm-sleep-monitor-upower.c
 endif
 
 nm-access-point-glue.h: $(top_srcdir)/introspection/nm-access-point.xml
@@ -239,6 +251,9 @@ nm-device-olpc-mesh-glue.h: $(top_srcdir)/introspection/nm-device-olpc-mesh.xml
 nm-device-bond-glue.h: $(top_srcdir)/introspection/nm-device-bond.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_bond --mode=glib-server --output=$@ $<
 
+nm-device-bridge-glue.h: $(top_srcdir)/introspection/nm-device-bridge.xml
+	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_bridge --mode=glib-server --output=$@ $<
+
 nm-device-vlan-glue.h: $(top_srcdir)/introspection/nm-device-vlan.xml
 	$(AM_V_GEN) dbus-binding-tool --prefix=nm_device_vlan --mode=glib-server --output=$@ $<
 
@@ -267,6 +282,7 @@ BUILT_SOURCES = \
 	nm-device-ethernet-glue.h \
 	nm-device-infiniband-glue.h \
 	nm-device-bond-glue.h \
+	nm-device-bridge-glue.h \
 	nm-device-vlan-glue.h \
 	nm-device-adsl-glue.h \
 	nm-device-wifi-glue.h \
@@ -284,23 +300,27 @@ NetworkManager_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(GUDEV_CFLAGS) \
 	$(LIBNL_CFLAGS) \
-	$(GMODULE_CFLAGS) \
 	$(POLKIT_CFLAGS) \
-	$(SYSTEMD_CFLAGS) \
-	-DG_DISABLE_DEPRECATED \
+	$(SYSTEMD_LOGIN_CFLAGS) \
 	-DBINDIR=\"$(bindir)\" \
 	-DSBINDIR=\"$(sbindir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\" \
 	-DDATADIR=\"$(datadir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DLOCALSTATEDIR=\"$(localstatedir)\" \
-	-DNM_RUN_DIR=\"$(rundir)\" \
 	-DNMLOCALEDIR=\"$(datadir)/locale\" \
-	-DNMPLUGINDIR=\"$(pkglibdir)\"
+	-DNMPLUGINDIR=\"$(pkglibdir)\" \
+	-DNMCONFDIR=\"$(nmconfdir)\" \
+	-DNMRUNDIR=\"$(nmrundir)\" \
+	-DNMSTATEDIR=\"$(nmstatedir)\" \
 	-DARP_DEBUG
 
 if WITH_CONCHECK
 NetworkManager_CPPFLAGS += $(LIBSOUP_CFLAGS)
+endif
+
+if SESSION_TRACKING_CK
+NetworkManager_CPPFLAGS += -DCKDB_PATH=\"${CKDB_PATH}\"
 endif
 
 NetworkManager_LDADD = \
@@ -319,15 +339,13 @@ NetworkManager_LDADD = \
 	./wifi/libwifi-utils.la \
 	./firewall-manager/libfirewall-manager.la \
 	./settings/libsettings.la \
-	./backends/libnmbackend.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS) \
 	$(GUDEV_LIBS) \
 	$(LIBNL_LIBS) \
-	$(GMODULE_LIBS) \
 	$(POLKIT_LIBS) \
-	$(SYSTEMD_LIBS) \
+	$(SYSTEMD_LOGIN_LIBS) \
 	$(LIBM) \
 	$(LIBDL)
 
@@ -341,12 +359,11 @@ libexec_PROGRAMS = nm-crash-logger
 nm_crash_logger_SOURCES = nm-crash-logger.c
 nm_crash_logger_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
-	-DG_DISABLE_DEPRECATED \
 	-DBINDIR=\"$(bindir)\" \
-	-DSBINDIR=\"$(sbindir)\" \
-	-DDATADIR=\"$(datadir)\" \
+	-DNMBINARY=\"$(nmbinary)\" \
+	-DNMDATADIR=\"$(nmdatadir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-DLOCALSTATEDIR=\"$(localstatedir)\"
+	-DNMSTATEDIR=\"$(nmstatedir)\"
 nm_crash_logger_LDADD = $(GLIB_LIBS)
 
 
@@ -365,6 +382,7 @@ statedir=$(localstatedir)/lib/NetworkManager
 install-data-hook:
 	$(mkinstalldirs) -m 0700 $(DESTDIR)$(rundir)
 	$(mkinstalldirs) -m 0700 $(DESTDIR)$(statedir)
+	$(mkinstalldirs) -m 0755 $(DESTDIR)$(pkglibdir)
 
 CLEANFILES = $(BUILT_SOURCES)
 

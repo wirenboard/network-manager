@@ -1,4 +1,4 @@
-SUBDIRS=plugins . tests
+SUBDIRS = plugins . tests
 
 INCLUDES = -I${top_srcdir} \
            -I${top_builddir}/include \
@@ -53,15 +53,13 @@ libsettings_la_SOURCES = \
 libsettings_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	$(GMODULE_CFLAGS) \
 	$(POLKIT_CFLAGS) \
-	-DG_DISABLE_DEPRECATED	\
 	-DBINDIR=\"$(bindir)\" \
 	-DSBINDIR=\"$(sbindir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\" \
 	-DDATADIR=\"$(datadir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-DLOCALSTATEDIR=\"$(localstatedir)\" \
+	-DNMSTATEDIR=\"$(nmstatedir)\" \
 	-DGNOMELOCALEDIR=\"$(datadir)/locale\" \
 	-DPLUGINDIR=\"$(pkglibdir)\"
 
@@ -72,7 +70,6 @@ libsettings_la_LIBADD = \
 	$(builddir)/plugins/keyfile/libnm-settings-plugin-keyfile.la \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS) \
-	$(GMODULE_LIBS) \
 	$(POLKIT_LIBS)
 
 libsettings_la_LDFLAGS = -rdynamic

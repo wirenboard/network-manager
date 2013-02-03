@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <errno.h>
 #include <nm-utils.h>
 #include <nm-system-config-interface.h>
@@ -67,7 +66,7 @@ is_hex (const char *value)
 	if (!p)
 		return FALSE;
 	while (*p) {
-		if (!isxdigit (*p++))
+		if (!g_ascii_isxdigit (*p++))
 			return FALSE;
 	}
 	return TRUE;
@@ -79,7 +78,7 @@ is_ascii (const char *value)
 	const char *p = value;
 
 	while (*p) {
-		if (!isascii (*p++))
+		if (!g_ascii_isprint (*p++))
 			return FALSE;
 	}
 	return TRUE;
@@ -254,7 +253,7 @@ read_hostname (const char *path)
 }
 
 gboolean
-write_hostname (const gchar *hostname, const char *path)
+write_hostname (const char *path, const gchar *hostname)
 {
 	gboolean result;
 	char *contents;
@@ -462,7 +461,7 @@ create_ip4_block (gchar * ip)
 		iblock->ip = tmp_ip4_addr.s_addr;
 		prefix = ip_mask[1];
 		i = 0;
-		while (i < length && isdigit (prefix[i]))
+		while (i < length && g_ascii_isdigit (prefix[i]))
 			i++;
 		prefix[i] = '\0';
 		iblock->netmask = nm_utils_ip4_prefix_to_netmask ((guint32)
@@ -951,7 +950,7 @@ get_dhcp_hostname_and_client_id (char **hostname, char **client_id)
 	g_free (contents);
 }
 
-void backup_file (const gchar* target)
+gchar *backup_file (const gchar* target)
 {
 	GFile *source, *backup;
 	gchar* backup_path;
@@ -962,8 +961,11 @@ void backup_file (const gchar* target)
 	backup = g_file_new_for_path (backup_path);
 
 	g_file_copy (source, backup, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, error);
-	if (error && *error)
+	if (error && *error) {
 		PLUGIN_WARN (IFNET_PLUGIN_NAME, "Backup failed: %s", (*error)->message);
+		g_free (backup_path);
+		backup_path = NULL;
+	}
 
-	g_free (backup_path);
+	return backup_path;
 }

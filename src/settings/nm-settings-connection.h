@@ -122,13 +122,16 @@ gboolean nm_settings_connection_check_permission (NMSettingsConnection *self,
 
 void nm_settings_connection_signal_remove (NMSettingsConnection *self);
 
-guint64 nm_settings_connection_get_timestamp (NMSettingsConnection *connection);
+gboolean nm_settings_connection_get_timestamp (NMSettingsConnection *connection,
+                                               guint64 *out_timestamp);
 
 void nm_settings_connection_update_timestamp (NMSettingsConnection *connection,
                                               guint64 timestamp,
                                               gboolean flush_to_disk);
 
 void nm_settings_connection_read_and_fill_timestamp (NMSettingsConnection *connection);
+
+GSList *nm_settings_connection_get_seen_bssids (NMSettingsConnection *connection);
 
 gboolean nm_settings_connection_has_seen_bssid (NMSettingsConnection *connection,
                                                 const struct ether_addr *bssid);

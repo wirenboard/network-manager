@@ -22,14 +22,14 @@
 #ifndef NM_MODEM_CDMA_H
 #define NM_MODEM_CDMA_H
 
-#include <nm-modem.h>
+#include <nm-modem-generic.h>
 
 G_BEGIN_DECLS
 
-#define NM_TYPE_MODEM_CDMA			  (nm_modem_cdma_get_type ())
-#define NM_MODEM_CDMA(obj)			  (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MODEM_CDMA, NMModemCdma))
-#define NM_MODEM_CDMA_CLASS(klass)	  (G_TYPE_CHECK_CLASS_CAST ((klass),  NM_TYPE_MODEM_CDMA, NMModemCdmaClass))
-#define NM_IS_MODEM_CDMA(obj)		  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MODEM_CDMA))
+#define NM_TYPE_MODEM_CDMA            (nm_modem_cdma_get_type ())
+#define NM_MODEM_CDMA(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MODEM_CDMA, NMModemCdma))
+#define NM_MODEM_CDMA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  NM_TYPE_MODEM_CDMA, NMModemCdmaClass))
+#define NM_IS_MODEM_CDMA(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NM_TYPE_MODEM_CDMA))
 #define NM_IS_MODEM_CDMA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  NM_TYPE_MODEM_CDMA))
 #define NM_MODEM_CDMA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_MODEM_CDMA, NMModemCdmaClass))
 
@@ -40,22 +40,19 @@ typedef enum {
 } NMCdmaError;
 
 typedef struct {
-	NMModem parent;
+	NMModemGeneric parent;
 } NMModemCdma;
 
 typedef struct {
-	NMModemClass parent;
-
-	/* Signals */
-	void (*signal_quality) (NMModemCdma *self, guint32 quality);
+	NMModemGenericClass parent;
 } NMModemCdmaClass;
 
 GType nm_modem_cdma_get_type (void);
 
 NMModem *nm_modem_cdma_new (const char *path,
-                            const char *device,
                             const char *data_device,
-                            guint32 ip_method);
+                            guint32 ip_method,
+                            NMModemState state);
 
 G_END_DECLS
 

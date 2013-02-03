@@ -200,7 +200,44 @@ _nm_marshal_VOID__OBJECT_OBJECT (GClosure     *closure,
             data2);
 }
 
-/* VOID:OBJECT,STRING (nm-marshal.list:5) */
+/* VOID:OBJECT,POINTER (nm-marshal.list:5) */
+void
+_nm_marshal_VOID__OBJECT_POINTER (GClosure     *closure,
+                                  GValue       *return_value G_GNUC_UNUSED,
+                                  guint         n_param_values,
+                                  const GValue *param_values,
+                                  gpointer      invocation_hint G_GNUC_UNUSED,
+                                  gpointer      marshal_data)
+{
+  typedef void (*GMarshalFunc_VOID__OBJECT_POINTER) (gpointer     data1,
+                                                     gpointer     arg_1,
+                                                     gpointer     arg_2,
+                                                     gpointer     data2);
+  register GMarshalFunc_VOID__OBJECT_POINTER callback;
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+
+  g_return_if_fail (n_param_values == 3);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+  callback = (GMarshalFunc_VOID__OBJECT_POINTER) (marshal_data ? marshal_data : cc->callback);
+
+  callback (data1,
+            g_marshal_value_peek_object (param_values + 1),
+            g_marshal_value_peek_pointer (param_values + 2),
+            data2);
+}
+
+/* VOID:OBJECT,STRING (nm-marshal.list:6) */
 void
 _nm_marshal_VOID__OBJECT_STRING (GClosure     *closure,
                                  GValue       *return_value G_GNUC_UNUSED,
@@ -234,47 +271,6 @@ _nm_marshal_VOID__OBJECT_STRING (GClosure     *closure,
   callback (data1,
             g_marshal_value_peek_object (param_values + 1),
             g_marshal_value_peek_string (param_values + 2),
-            data2);
-}
-
-/* VOID:OBJECT,UINT,UINT,UINT (nm-marshal.list:6) */
-void
-_nm_marshal_VOID__OBJECT_UINT_UINT_UINT (GClosure     *closure,
-                                         GValue       *return_value G_GNUC_UNUSED,
-                                         guint         n_param_values,
-                                         const GValue *param_values,
-                                         gpointer      invocation_hint G_GNUC_UNUSED,
-                                         gpointer      marshal_data)
-{
-  typedef void (*GMarshalFunc_VOID__OBJECT_UINT_UINT_UINT) (gpointer     data1,
-                                                            gpointer     arg_1,
-                                                            guint        arg_2,
-                                                            guint        arg_3,
-                                                            guint        arg_4,
-                                                            gpointer     data2);
-  register GMarshalFunc_VOID__OBJECT_UINT_UINT_UINT callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
-
-  g_return_if_fail (n_param_values == 5);
-
-  if (G_CCLOSURE_SWAP_DATA (closure))
-    {
-      data1 = closure->data;
-      data2 = g_value_peek_pointer (param_values + 0);
-    }
-  else
-    {
-      data1 = g_value_peek_pointer (param_values + 0);
-      data2 = closure->data;
-    }
-  callback = (GMarshalFunc_VOID__OBJECT_UINT_UINT_UINT) (marshal_data ? marshal_data : cc->callback);
-
-  callback (data1,
-            g_marshal_value_peek_object (param_values + 1),
-            g_marshal_value_peek_uint (param_values + 2),
-            g_marshal_value_peek_uint (param_values + 3),
-            g_marshal_value_peek_uint (param_values + 4),
             data2);
 }
 
@@ -516,46 +512,7 @@ _nm_marshal_VOID__STRING_OBJECT (GClosure     *closure,
             data2);
 }
 
-/* VOID:STRING,OBJECT,POINTER (nm-marshal.list:14) */
-void
-_nm_marshal_VOID__STRING_OBJECT_POINTER (GClosure     *closure,
-                                         GValue       *return_value G_GNUC_UNUSED,
-                                         guint         n_param_values,
-                                         const GValue *param_values,
-                                         gpointer      invocation_hint G_GNUC_UNUSED,
-                                         gpointer      marshal_data)
-{
-  typedef void (*GMarshalFunc_VOID__STRING_OBJECT_POINTER) (gpointer     data1,
-                                                            gpointer     arg_1,
-                                                            gpointer     arg_2,
-                                                            gpointer     arg_3,
-                                                            gpointer     data2);
-  register GMarshalFunc_VOID__STRING_OBJECT_POINTER callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
-
-  g_return_if_fail (n_param_values == 4);
-
-  if (G_CCLOSURE_SWAP_DATA (closure))
-    {
-      data1 = closure->data;
-      data2 = g_value_peek_pointer (param_values + 0);
-    }
-  else
-    {
-      data1 = g_value_peek_pointer (param_values + 0);
-      data2 = closure->data;
-    }
-  callback = (GMarshalFunc_VOID__STRING_OBJECT_POINTER) (marshal_data ? marshal_data : cc->callback);
-
-  callback (data1,
-            g_marshal_value_peek_string (param_values + 1),
-            g_marshal_value_peek_object (param_values + 2),
-            g_marshal_value_peek_pointer (param_values + 3),
-            data2);
-}
-
-/* VOID:STRING,POINTER (nm-marshal.list:15) */
+/* VOID:STRING,POINTER (nm-marshal.list:14) */
 void
 _nm_marshal_VOID__STRING_POINTER (GClosure     *closure,
                                   GValue       *return_value G_GNUC_UNUSED,
@@ -592,7 +549,7 @@ _nm_marshal_VOID__STRING_POINTER (GClosure     *closure,
             data2);
 }
 
-/* VOID:STRING,STRING (nm-marshal.list:16) */
+/* VOID:STRING,STRING (nm-marshal.list:15) */
 void
 _nm_marshal_VOID__STRING_STRING (GClosure     *closure,
                                  GValue       *return_value G_GNUC_UNUSED,
@@ -629,7 +586,7 @@ _nm_marshal_VOID__STRING_STRING (GClosure     *closure,
             data2);
 }
 
-/* VOID:STRING,STRING,STRING (nm-marshal.list:17) */
+/* VOID:STRING,STRING,STRING (nm-marshal.list:16) */
 void
 _nm_marshal_VOID__STRING_STRING_STRING (GClosure     *closure,
                                         GValue       *return_value G_GNUC_UNUSED,
@@ -668,7 +625,7 @@ _nm_marshal_VOID__STRING_STRING_STRING (GClosure     *closure,
             data2);
 }
 
-/* VOID:STRING,STRING,STRING,UINT (nm-marshal.list:18) */
+/* VOID:STRING,STRING,STRING,UINT (nm-marshal.list:17) */
 void
 _nm_marshal_VOID__STRING_STRING_STRING_UINT (GClosure     *closure,
                                              GValue       *return_value G_GNUC_UNUSED,
@@ -709,7 +666,7 @@ _nm_marshal_VOID__STRING_STRING_STRING_UINT (GClosure     *closure,
             data2);
 }
 
-/* VOID:UINT,UINT (nm-marshal.list:19) */
+/* VOID:UINT,UINT (nm-marshal.list:18) */
 void
 _nm_marshal_VOID__UINT_UINT (GClosure     *closure,
                              GValue       *return_value G_GNUC_UNUSED,
@@ -743,6 +700,45 @@ _nm_marshal_VOID__UINT_UINT (GClosure     *closure,
   callback (data1,
             g_marshal_value_peek_uint (param_values + 1),
             g_marshal_value_peek_uint (param_values + 2),
+            data2);
+}
+
+/* VOID:UINT,UINT,INT (nm-marshal.list:19) */
+void
+_nm_marshal_VOID__UINT_UINT_INT (GClosure     *closure,
+                                 GValue       *return_value G_GNUC_UNUSED,
+                                 guint         n_param_values,
+                                 const GValue *param_values,
+                                 gpointer      invocation_hint G_GNUC_UNUSED,
+                                 gpointer      marshal_data)
+{
+  typedef void (*GMarshalFunc_VOID__UINT_UINT_INT) (gpointer     data1,
+                                                    guint        arg_1,
+                                                    guint        arg_2,
+                                                    gint         arg_3,
+                                                    gpointer     data2);
+  register GMarshalFunc_VOID__UINT_UINT_INT callback;
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+
+  g_return_if_fail (n_param_values == 4);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+  callback = (GMarshalFunc_VOID__UINT_UINT_INT) (marshal_data ? marshal_data : cc->callback);
+
+  callback (data1,
+            g_marshal_value_peek_uint (param_values + 1),
+            g_marshal_value_peek_uint (param_values + 2),
+            g_marshal_value_peek_int (param_values + 3),
             data2);
 }
 

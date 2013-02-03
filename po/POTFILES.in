@@ -12,7 +12,7 @@ libnm-util/crypto.c
 libnm-util/crypto_gnutls.c
 libnm-util/crypto_nss.c
 libnm-util/nm-utils.c
-policy/org.freedesktop.NetworkManager.policy.in
+policy/org.freedesktop.NetworkManager.policy.in.in
 src/main.c
 src/dhcp-manager/nm-dhcp-dhclient.c
 src/dhcp-manager/nm-dhcp-dhclient-utils.c
@@ -21,8 +21,10 @@ src/dns-manager/nm-dns-manager.c
 src/logging/nm-logging.c
 src/modem-manager/nm-modem-cdma.c
 src/modem-manager/nm-modem-gsm.c
+src/modem-manager/nm-modem-broadband.c
 src/nm-device-bond.c
 src/nm-device-adsl.c
+src/nm-device-bridge.c
 src/nm-device-bt.c
 src/nm-device-ethernet.c
 src/nm-device-infiniband.c

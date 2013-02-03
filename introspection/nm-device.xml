@@ -120,6 +120,11 @@
         The general type of the network device; ie Ethernet, WiFi, etc.
       </tp:docstring>
     </property>
+    <property name="AvailableConnections" type="ao" access="read">
+      <tp:docstring>
+        An array of object paths of every configured connection that is currently 'available' through this device.
+      </tp:docstring>
+    </property>
 
     <method name="Disconnect">
       <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="impl_device_disconnect"/>
@@ -277,6 +282,11 @@
       <tp:enumvalue suffix="ADSL" value="12">
         <tp:docstring>
           The device is an ADSL device supporting PPPoE and PPPoATM protocols.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="BRIDGE" value="13">
+        <tp:docstring>
+          The device is a bridge interface.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>
@@ -552,6 +562,21 @@
       <tp:enumvalue suffix="BR2684_FAILED" value="51">
         <tp:docstring>
           Problem with the RFC 2684 Ethernet over ADSL bridge.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="MODEM_MANAGER_UNAVAILABLE" value="52">
+        <tp:docstring>
+          ModemManager was not running or quit unexpectedly.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="SSID_NOT_FOUND" value="53">
+        <tp:docstring>
+          The 802.11 Wi-Fi network could not be found.
+        </tp:docstring>
+      </tp:enumvalue>
+      <tp:enumvalue suffix="SECONDARY_CONNECTION_FAILED" value="54">
+        <tp:docstring>
+          A secondary connection of the base connection failed.
         </tp:docstring>
       </tp:enumvalue>
     </tp:enum>

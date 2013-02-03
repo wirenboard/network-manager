@@ -685,7 +685,10 @@ Gets a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">
 <a name="nm-client-get-devices"></a><h3>nm_client_get_devices ()</h3>
 <pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   nm_client_get_devices               (<em class="parameter"><code><a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> *client</code></em>);</pre>
 <p>
-Gets all the detected devices.
+Gets all the known network devices.  Use <code class="function">nm_device_get_type()</code> or the
+<code class="function">NM_IS_DEVICE_XXXX()</code> functions to determine what kind of device member of the
+returned array is, and then you may use device-specific methods such as
+<a class="link" href="NMDeviceEthernet.html#nm-device-ethernet-get-hw-address" title="nm_device_ethernet_get_hw_address ()"><code class="function">nm_device_ethernet_get_hw_address()</code></a>.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">
@@ -697,8 +700,9 @@ Gets all the detected devices.
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> containing all the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>s.
-The returned array is owned by the client and should not be modified. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMClient.Device]</span>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a>
+containing all the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>s.  The returned array is owned by the
+<a class="link" href="NMClient.html" title="NMClient"><span class="type">NMClient</span></a> object and should not be modified. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMClient.Device]</span>
 </td>
 </tr>
 </tbody>

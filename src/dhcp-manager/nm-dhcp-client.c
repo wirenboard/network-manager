@@ -18,7 +18,6 @@
  */
 
 #include <config.h>
-#include <ctype.h>
 #include <glib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -183,7 +182,7 @@ nm_dhcp_client_stop_pid (GPid pid, const char *iface, guint timeout_secs)
 }
 
 static void
-real_stop (NMDHCPClient *self, gboolean release)
+stop (NMDHCPClient *self, gboolean release)
 {
 	NMDHCPClientPrivate *priv;
 
@@ -886,7 +885,7 @@ ip4_process_classless_routes (GHashTable *options,
 
 	p = str;
 	while (*p) {
-		if (!isdigit (*p) && (*p != ' ') && (*p != '.') && (*p != '/')) {
+		if (!g_ascii_isdigit (*p) && (*p != ' ') && (*p != '.') && (*p != '/')) {
 			nm_log_warn (LOGD_DHCP4, "ignoring invalid classless static routes '%s'", str);
 			return FALSE;
 		}
@@ -1399,7 +1398,7 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
 
-	client_class->stop = real_stop;
+	client_class->stop = stop;
 
 	g_object_class_install_property
 		(object_class, PROP_IFACE,

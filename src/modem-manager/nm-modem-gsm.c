@@ -58,8 +58,10 @@ typedef enum {
     MM_MODEM_GSM_ALLOWED_MODE_3G_PREFERRED = 2,
     MM_MODEM_GSM_ALLOWED_MODE_2G_ONLY      = 3,
     MM_MODEM_GSM_ALLOWED_MODE_3G_ONLY      = 4,
+    MM_MODEM_GSM_ALLOWED_MODE_4G_PREFERRED = 5,
+    MM_MODEM_GSM_ALLOWED_MODE_4G_ONLY      = 6,
 
-    MM_MODEM_GSM_ALLOWED_MODE_LAST = MM_MODEM_GSM_ALLOWED_MODE_3G_ONLY
+    MM_MODEM_GSM_ALLOWED_MODE_LAST = MM_MODEM_GSM_ALLOWED_MODE_4G_ONLY
 } MMModemGsmAllowedMode;
 
 typedef enum {
@@ -75,7 +77,7 @@ typedef enum {
     MM_MODEM_GSM_ALLOWED_AUTH_LAST = MM_MODEM_GSM_ALLOWED_AUTH_EAP
 } MMModemGsmAllowedAuth;
 
-G_DEFINE_TYPE (NMModemGsm, nm_modem_gsm, NM_TYPE_MODEM)
+G_DEFINE_TYPE (NMModemGsm, nm_modem_gsm, NM_TYPE_MODEM_GENERIC)
 
 #define NM_MODEM_GSM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_MODEM_GSM, NMModemGsmPrivate))
 
@@ -102,19 +104,20 @@ nm_gsm_error_quark (void)
 
 NMModem *
 nm_modem_gsm_new (const char *path,
-                  const char *device,
                   const char *data_device,
-                  guint32 ip_method)
+                  guint32 ip_method,
+                  NMModemState state)
 {
 	g_return_val_if_fail (path != NULL, NULL);
-	g_return_val_if_fail (device != NULL, NULL);
 	g_return_val_if_fail (data_device != NULL, NULL);
 
 	return (NMModem *) g_object_new (NM_TYPE_MODEM_GSM,
 	                                 NM_MODEM_PATH, path,
-	                                 NM_MODEM_DEVICE, device,
-	                                 NM_MODEM_IFACE, data_device,
+	                                 NM_MODEM_UID, data_device,
+	                                 NM_MODEM_CONTROL_PORT, NULL,
+	                                 NM_MODEM_DATA_PORT, data_device,
 	                                 NM_MODEM_IP_METHOD, ip_method,
+	                                 NM_MODEM_CONNECTED, (state == NM_MODEM_STATE_CONNECTED),
 	                                 NULL);
 }
 
@@ -222,12 +225,12 @@ do_connect (NMModemGsm *self)
 	NMModemGsmPrivate *priv = NM_MODEM_GSM_GET_PRIVATE (self);
 	DBusGProxy *proxy;
 
-	proxy = nm_modem_get_proxy (NM_MODEM (self), MM_DBUS_INTERFACE_MODEM_SIMPLE);
-	dbus_g_proxy_begin_call_with_timeout (proxy,
-	                                      "Connect", stage1_prepare_done,
-	                                      self, NULL, 120000,
-	                                      DBUS_TYPE_G_MAP_OF_VARIANT, priv->connect_properties,
-	                                      G_TYPE_INVALID);
+	proxy = nm_modem_generic_get_proxy (NM_MODEM_GENERIC (self), MM_OLD_DBUS_INTERFACE_MODEM_SIMPLE);
+	priv->call = dbus_g_proxy_begin_call_with_timeout (proxy,
+	                                                   "Connect", stage1_prepare_done,
+	                                                   self, NULL, 120000,
+	                                                   DBUS_TYPE_G_MAP_OF_VARIANT, priv->connect_properties,
+	                                                   G_TYPE_INVALID);
 }
 
 static void stage1_enable_done (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data);
@@ -242,7 +245,7 @@ do_enable (NMModemGsm *self)
 	g_return_val_if_fail (NM_IS_MODEM_GSM (self), FALSE);
 
 	NM_MODEM_GSM_GET_PRIVATE (self)->enable_delay_id = 0;
-	proxy = nm_modem_get_proxy (NM_MODEM (self), MM_DBUS_INTERFACE_MODEM);
+	proxy = nm_modem_generic_get_proxy (NM_MODEM_GENERIC (self), MM_OLD_DBUS_INTERFACE_MODEM);
 	dbus_g_proxy_begin_call_with_timeout (proxy,
 	                                      "Enable", stage1_enable_done,
 	                                      self, NULL, 20000,
@@ -295,7 +298,7 @@ handle_enable_pin_required (NMModemGsm *self)
 
 	/* If we do, send it */
 	if (pin) {
-		proxy = nm_modem_get_proxy (NM_MODEM (self), MM_DBUS_INTERFACE_MODEM_GSM_CARD);
+		proxy = nm_modem_generic_get_proxy (NM_MODEM_GENERIC (self), MM_OLD_DBUS_INTERFACE_MODEM_GSM_CARD);
 		dbus_g_proxy_begin_call_with_timeout (proxy,
 		                                      "SendPin", stage1_pin_done,
 		                                      self, NULL, 10000,
@@ -387,6 +390,14 @@ create_connect_properties (NMConnection *connection)
 		value_hash_add_uint (properties, "network_mode", MM_MODEM_GSM_NETWORK_DEPRECATED_MODE_2G_PREFERRED);
 		value_hash_add_uint (properties, "allowed_mode", MM_MODEM_GSM_ALLOWED_MODE_2G_PREFERRED);
 		break;
+	case NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G:
+		/* deprecated modes not extended for 4G, so no need to set them here */
+		value_hash_add_uint (properties, "allowed_mode", MM_MODEM_GSM_ALLOWED_MODE_4G_PREFERRED);
+		break;
+	case NM_SETTING_GSM_NETWORK_TYPE_4G:
+		/* deprecated modes not extended for 4G, so no need to set them here */
+		value_hash_add_uint (properties, "allowed_mode", MM_MODEM_GSM_ALLOWED_MODE_4G_ONLY);
+		break;
 	default:
 		value_hash_add_uint (properties, "network_mode", MM_MODEM_GSM_NETWORK_DEPRECATED_MODE_ANY);
 		value_hash_add_uint (properties, "allowed_mode", MM_MODEM_GSM_ALLOWED_MODE_ANY);
@@ -423,11 +434,11 @@ create_connect_properties (NMConnection *connection)
 }
 
 static NMActStageReturn
-real_act_stage1_prepare (NMModem *modem,
-                         NMActRequest *req,
-                         GPtrArray **out_hints,
-                         const char **out_setting_name,
-                         NMDeviceStateReason *reason)
+act_stage1_prepare (NMModem *modem,
+                    NMActRequest *req,
+                    GPtrArray **out_hints,
+                    const char **out_setting_name,
+                    NMDeviceStateReason *reason)
 {
 	NMModemGsm *self = NM_MODEM_GSM (modem);
 	NMModemGsmPrivate *priv = NM_MODEM_GSM_GET_PRIVATE (self);
@@ -456,9 +467,9 @@ real_act_stage1_prepare (NMModem *modem,
 }
 
 static NMConnection *
-real_get_best_auto_connection (NMModem *modem,
-							   GSList *connections,
-							   char **specific_object)
+get_best_auto_connection (NMModem *modem,
+                          GSList *connections,
+                          char **specific_object)
 {
 	GSList *iter;
 
@@ -481,9 +492,9 @@ real_get_best_auto_connection (NMModem *modem,
 }
 
 static gboolean
-real_check_connection_compatible (NMModem *modem,
-                                  NMConnection *connection,
-                                  GError **error)
+check_connection_compatible (NMModem *modem,
+                             NMConnection *connection,
+                             GError **error)
 {
 	NMSettingConnection *s_con;
 	NMSettingGsm *s_gsm;
@@ -510,10 +521,10 @@ real_check_connection_compatible (NMModem *modem,
 }
 
 static gboolean
-real_complete_connection (NMModem *modem,
-                          NMConnection *connection,
-                          const GSList *existing_connections,
-                          GError **error)
+complete_connection (NMModem *modem,
+                     NMConnection *connection,
+                     const GSList *existing_connections,
+                     GError **error)
 {
 	NMSettingGsm *s_gsm;
 	NMSettingPPP *s_ppp;
@@ -552,10 +563,10 @@ real_complete_connection (NMModem *modem,
 }
 
 static gboolean
-real_get_user_pass (NMModem *modem,
-                    NMConnection *connection,
-                    const char **user,
-                    const char **pass)
+get_user_pass (NMModem *modem,
+               NMConnection *connection,
+               const char **user,
+               const char **pass)
 {
 	NMSettingGsm *s_gsm;
 
@@ -572,20 +583,20 @@ real_get_user_pass (NMModem *modem,
 }
 
 static const char *
-real_get_setting_name (NMModem *modem)
+get_setting_name (NMModem *modem)
 {
 	return NM_SETTING_GSM_SETTING_NAME;
 }
 
 static void
-real_deactivate (NMModem *modem, NMDevice *device)
+deactivate (NMModem *modem, NMDevice *device)
 {
 	NMModemGsmPrivate *priv = NM_MODEM_GSM_GET_PRIVATE (modem);
 
 	if (priv->call) {
 		DBusGProxy *proxy;
 
-		proxy = nm_modem_get_proxy (modem, MM_DBUS_INTERFACE_MODEM_SIMPLE);
+		proxy = nm_modem_generic_get_proxy (NM_MODEM_GENERIC (modem), MM_OLD_DBUS_INTERFACE_MODEM_SIMPLE);
 		dbus_g_proxy_cancel_call (proxy, priv->call);
 		priv->call = NULL;
 	}
@@ -630,13 +641,13 @@ nm_modem_gsm_class_init (NMModemGsmClass *klass)
 
 	/* Virtual methods */
 	object_class->dispose = dispose;
-	modem_class->get_user_pass = real_get_user_pass;
-	modem_class->get_setting_name = real_get_setting_name;
-	modem_class->get_best_auto_connection = real_get_best_auto_connection;
-	modem_class->check_connection_compatible = real_check_connection_compatible;
-	modem_class->complete_connection = real_complete_connection;
-	modem_class->act_stage1_prepare = real_act_stage1_prepare;
-	modem_class->deactivate = real_deactivate;
+	modem_class->get_user_pass = get_user_pass;
+	modem_class->get_setting_name = get_setting_name;
+	modem_class->get_best_auto_connection = get_best_auto_connection;
+	modem_class->check_connection_compatible = check_connection_compatible;
+	modem_class->complete_connection = complete_connection;
+	modem_class->act_stage1_prepare = act_stage1_prepare;
+	modem_class->deactivate = deactivate;
 
 	dbus_g_error_domain_register (NM_GSM_ERROR, NULL, NM_TYPE_GSM_ERROR);
 }

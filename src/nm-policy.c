@@ -24,7 +24,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <netdb.h>
-#include <ctype.h>
 
 #include "nm-policy.h"
 #include "NetworkManagerUtils.h"
@@ -41,6 +40,8 @@
 #include "nm-policy-hostname.h"
 #include "nm-manager-auth.h"
 #include "nm-firewall-manager.h"
+#include "nm-dispatcher.h"
+#include "nm-utils.h"
 
 struct NMPolicy {
 	NMManager *manager;
@@ -50,9 +51,7 @@ struct NMPolicy {
 	GSList *settings_ids;
 	GSList *dev_ids;
 
-	NMVPNManager *vpn_manager;
-	gulong vpn_activated_id;
-	gulong vpn_deactivated_id;
+	GSList *pending_secondaries;
 
 	NMFirewallManager *fw_manager;
 	gulong fw_started_id;
@@ -103,7 +102,8 @@ get_best_ip4_device (NMManager *manager)
 		gboolean can_default = FALSE;
 		const char *method = NULL;
 
-		if (nm_device_get_state (dev) != NM_DEVICE_STATE_ACTIVATED)
+		if (   nm_device_get_state (dev) != NM_DEVICE_STATE_ACTIVATED
+		    && nm_device_get_state (dev) != NM_DEVICE_STATE_SECONDARIES)
 			continue;
 
 		ip4_config = nm_device_get_ip4_config (dev);
@@ -175,7 +175,8 @@ get_best_ip6_device (NMManager *manager)
 		gboolean can_default = FALSE;
 		const char *method = NULL;
 
-		if (nm_device_get_state (dev) != NM_DEVICE_STATE_ACTIVATED)
+		if (   nm_device_get_state (dev) != NM_DEVICE_STATE_ACTIVATED
+		    && nm_device_get_state (dev) != NM_DEVICE_STATE_SECONDARIES)
 			continue;
 
 		ip6_config = nm_device_get_ip6_config (dev);
@@ -259,7 +260,7 @@ _set_hostname (NMPolicy *policy,
 	g_object_unref (dns_mgr);
 
 	if (nm_policy_set_system_hostname (policy->cur_hostname, msg))
-		nm_utils_call_dispatcher ("hostname", NULL, NULL, NULL, NULL, NULL);
+		nm_dispatcher_call (DISPATCHER_ACTION_HOSTNAME, NULL, NULL, NULL, NULL);
 }
 
 static void
@@ -339,7 +340,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
 			if (dhcp_hostname && strlen (dhcp_hostname)) {
 				/* Sanity check; strip leading spaces */
 				while (*p) {
-					if (!isblank (*p++)) {
+					if (!g_ascii_isspace (*p++)) {
 						_set_hostname (policy, p-1, "from DHCPv4");
 						return;
 					}
@@ -358,7 +359,7 @@ update_system_hostname (NMPolicy *policy, NMDevice *best4, NMDevice *best6)
 			if (dhcp_hostname && strlen (dhcp_hostname)) {
 				/* Sanity check; strip leading spaces */
 				while (*p) {
-					if (!isblank (*p++)) {
+					if (!g_ascii_isspace (*p++)) {
 						_set_hostname (policy, p-1, "from DHCPv6");
 						return;
 					}
@@ -429,26 +430,17 @@ update_default_ac (NMPolicy *policy,
                    NMActiveConnection *best,
                    void (*set_active_func)(NMActiveConnection*, gboolean))
 {
-	GSList *devices, *vpns, *iter;
-	NMActRequest *req;
+	const GSList *connections, *iter;
 
 	/* Clear the 'default[6]' flag on all active connections that aren't the new
 	 * default active connection.  We'll set the new default after; this ensures
 	 * we don't ever have two marked 'default[6]' simultaneously.
 	 */
-	devices = nm_manager_get_devices (policy->manager);
-	for (iter = devices; iter; iter = g_slist_next (iter)) {
-		req = nm_device_get_act_request (NM_DEVICE (iter->data));
-		if (req && (NM_ACTIVE_CONNECTION (req) != best))
-			set_active_func (NM_ACTIVE_CONNECTION (req), FALSE);
-	}
-
-	vpns = nm_vpn_manager_get_active_connections (policy->vpn_manager);
-	for (iter = vpns; iter; iter = g_slist_next (iter)) {
+	connections = nm_manager_get_active_connections (policy->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		if (NM_ACTIVE_CONNECTION (iter->data) != best)
 			set_active_func (NM_ACTIVE_CONNECTION (iter->data), FALSE);
 	}
-	g_slist_free (vpns);
 
 	/* Mark new default active connection */
 	if (best)
@@ -464,21 +456,27 @@ get_best_ip4_config (NMPolicy *policy,
                      NMDevice **out_device,
                      NMVPNConnection **out_vpn)
 {
-	GSList *vpns, *iter;
+	const GSList *connections, *iter;
 	NMDevice *device;
 	NMActRequest *req = NULL;
 	NMIP4Config *ip4_config = NULL;
 
 	/* If a VPN connection is active, it is preferred */
-	vpns = nm_vpn_manager_get_active_connections (policy->vpn_manager);
-	for (iter = vpns; iter; iter = g_slist_next (iter)) {
-		NMVPNConnection *candidate = NM_VPN_CONNECTION (iter->data);
+	connections = nm_manager_get_active_connections (policy->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMActiveConnection *active = NM_ACTIVE_CONNECTION (iter->data);
+		NMVPNConnection *candidate;
 		NMIP4Config *vpn_ip4;
 		NMConnection *tmp;
 		NMSettingIP4Config *s_ip4;
 		NMVPNConnectionState vpn_state;
 
-		tmp = nm_vpn_connection_get_connection (candidate);
+		if (!NM_IS_VPN_CONNECTION (active))
+			continue;
+
+		candidate = NM_VPN_CONNECTION (active);
+
+		tmp = nm_active_connection_get_connection (active);
 		g_assert (tmp);
 
 		vpn_state = nm_vpn_connection_get_vpn_state (candidate);
@@ -504,14 +502,13 @@ get_best_ip4_config (NMPolicy *policy,
 		if (out_vpn)
 			*out_vpn = candidate;
 		if (out_ac)
-			*out_ac = NM_ACTIVE_CONNECTION (candidate);
+			*out_ac = active;
 		if (out_ip_iface)
 			*out_ip_iface = nm_vpn_connection_get_ip_iface (candidate);
 		if (out_ip_ifindex)
 			*out_ip_ifindex = nm_vpn_connection_get_ip_ifindex (candidate);
 		break;
 	}
-	g_slist_free (vpns);
 
 	/* If no VPN connections, we use the best device instead */
 	if (!ip4_config) {
@@ -629,21 +626,27 @@ get_best_ip6_config (NMPolicy *policy,
                      NMDevice **out_device,
                      NMVPNConnection **out_vpn)
 {
-	GSList *vpns, *iter;
+	const GSList *connections, *iter;
 	NMDevice *device;
 	NMActRequest *req = NULL;
 	NMIP6Config *ip6_config = NULL;
 
 	/* If a VPN connection is active, it is preferred */
-	vpns = nm_vpn_manager_get_active_connections (policy->vpn_manager);
-	for (iter = vpns; iter; iter = g_slist_next (iter)) {
-		NMVPNConnection *candidate = NM_VPN_CONNECTION (iter->data);
+	connections = nm_manager_get_active_connections (policy->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter)) {
+		NMActiveConnection *active = NM_ACTIVE_CONNECTION (iter->data);
+		NMVPNConnection *candidate;
 		NMIP6Config *vpn_ip6;
 		NMConnection *tmp;
 		NMSettingIP6Config *s_ip6;
 		NMVPNConnectionState vpn_state;
 
-		tmp = nm_vpn_connection_get_connection (candidate);
+		if (!NM_IS_VPN_CONNECTION (active))
+			continue;
+
+		candidate = NM_VPN_CONNECTION (active);
+
+		tmp = nm_active_connection_get_connection (active);
 		g_assert (tmp);
 
 		vpn_state = nm_vpn_connection_get_vpn_state (candidate);
@@ -676,7 +679,6 @@ get_best_ip6_config (NMPolicy *policy,
 			*out_ip_ifindex = nm_vpn_connection_get_ip_ifindex (candidate);
 		break;
 	}
-	g_slist_free (vpns);
 
 	/* If no VPN connections, we use the best device instead */
 	if (!ip6_config) {
@@ -954,101 +956,83 @@ find_pending_activation (GSList *list, NMDevice *device)
 
 /*****************************************************************************/
 
-static void
-vpn_connection_activated (NMVPNManager *manager,
-                          NMVPNConnection *vpn,
-                          gpointer user_data)
+typedef struct {
+	NMDevice *device;
+	GSList *secondaries;
+} PendingSecondaryData;
+
+static PendingSecondaryData *
+pending_secondary_data_new (NMDevice *device, GSList *secondaries)
 {
-	NMDnsManager *mgr;
-	NMIP4Config *ip4_config;
-	NMIP6Config *ip6_config;
-	const char *ip_iface;
+	PendingSecondaryData *data;
 
-	mgr = nm_dns_manager_get (NULL);
-	nm_dns_manager_begin_updates (mgr, __func__);
-
-	ip_iface = nm_vpn_connection_get_ip_iface (vpn);
-
-	/* Add the VPN connection's IP configs from DNS */
-
-	ip4_config = nm_vpn_connection_get_ip4_config (vpn);
-	if (ip4_config)
-		nm_dns_manager_add_ip4_config (mgr, ip_iface, ip4_config, NM_DNS_IP_CONFIG_TYPE_VPN);
-
-	ip6_config = nm_vpn_connection_get_ip6_config (vpn);
-	if (ip6_config)
-		nm_dns_manager_add_ip6_config (mgr, ip_iface, ip6_config, NM_DNS_IP_CONFIG_TYPE_VPN);
-
-	update_routing_and_dns ((NMPolicy *) user_data, TRUE);
-
-	nm_dns_manager_end_updates (mgr, __func__);
+	data = g_malloc0 (sizeof (PendingSecondaryData));
+	data->device = g_object_ref (device);
+	data->secondaries = secondaries;
+	return data;
 }
 
 static void
-vpn_connection_deactivated (NMVPNManager *manager,
-                            NMVPNConnection *vpn,
-                            NMVPNConnectionState new_state,
-                            NMVPNConnectionState old_state,
-                            NMVPNConnectionStateReason reason,
-                            gpointer user_data)
+pending_secondary_data_free (PendingSecondaryData *data)
 {
-	NMDnsManager *mgr;
-	NMIP4Config *ip4_config, *parent_ip4 = NULL;
-	NMIP6Config *ip6_config, *parent_ip6 = NULL;
-	const char *ip_iface;
-	NMDevice *parent;
+	g_object_unref (data->device);
+	nm_utils_slist_free (data->secondaries, g_free);
+	memset (data, 0, sizeof (*data));
+	g_free (data);
+}
 
-	mgr = nm_dns_manager_get (NULL);
-	nm_dns_manager_begin_updates (mgr, __func__);
+static void
+process_secondaries (NMPolicy *policy,
+                     NMActiveConnection *active,
+                     gboolean connected)
+{
+	NMDevice *device = NULL;
+	const char *ac_path;
+	GSList *iter, *iter2;
 
-	ip_iface = nm_vpn_connection_get_ip_iface (vpn);
-	parent = nm_vpn_connection_get_parent_device (vpn);
+	nm_log_dbg (LOGD_DEVICE, "Secondary connection '%s' %s; active path '%s'",
+	            nm_active_connection_get_name (active),
+	            connected ? "SUCCEEDED" : "FAILED",
+	            nm_active_connection_get_path (active));
 
-	ip4_config = nm_vpn_connection_get_ip4_config (vpn);
-	if (ip4_config) {
-		/* Remove the VPN connection's IP4 config from DNS */
-		nm_dns_manager_remove_ip4_config (mgr, ip_iface, ip4_config);
+	ac_path = nm_active_connection_get_path (active);
 
-		/* Re-apply routes and addresses of the VPN connection's parent interface,
-		 * which the VPN might have overridden.
-		 */
-		if (parent) {
-			parent_ip4 = nm_device_get_ip4_config (parent);
-			if (parent_ip4) {
-				if (!nm_system_apply_ip4_config (nm_device_get_ip_ifindex (parent),
-				                                 parent_ip4,
-				                                 nm_device_get_priority (parent),
-				                                 NM_IP4_COMPARE_FLAG_ADDRESSES | NM_IP4_COMPARE_FLAG_ROUTES)) {
-					nm_log_err (LOGD_VPN, "failed to re-apply VPN parent device IPv4 addresses and routes.");
+	if (NM_IS_VPN_CONNECTION (active))
+		device = nm_vpn_connection_get_parent_device (NM_VPN_CONNECTION (active));
+
+	for (iter = policy->pending_secondaries; iter; iter = g_slist_next (iter)) {
+		PendingSecondaryData *secondary_data = (PendingSecondaryData *) iter->data;
+		NMDevice *item_device = secondary_data->device;
+
+		if (!device || item_device == device) {
+			for (iter2 = secondary_data->secondaries; iter2; iter2 = g_slist_next (iter2)) {
+				char *list_ac_path = (char *) iter2->data;
+
+				if (g_strcmp0 (ac_path, list_ac_path) == 0) {
+					if (connected) {
+						/* Secondary connection activated */
+						secondary_data->secondaries = g_slist_remove (secondary_data->secondaries, list_ac_path);
+						g_free (list_ac_path);
+						if (!secondary_data->secondaries) {
+							/* None secondary UUID remained -> remove the secondary data item */
+							policy->pending_secondaries = g_slist_remove (policy->pending_secondaries, secondary_data);
+							pending_secondary_data_free (secondary_data);
+							nm_device_state_changed (item_device, NM_DEVICE_STATE_ACTIVATED, NM_DEVICE_STATE_REASON_NONE);
+							return;
+						}
+					} else {
+						/* Secondary connection failed -> do not watch other connections */
+						policy->pending_secondaries = g_slist_remove (policy->pending_secondaries, secondary_data);
+						pending_secondary_data_free (secondary_data);
+						nm_device_state_changed (item_device, NM_DEVICE_STATE_FAILED,
+						                                      NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED);
+						return;
+					}
 				}
 			}
+			return;
 		}
 	}
-
-	ip6_config = nm_vpn_connection_get_ip6_config (vpn);
-	if (ip6_config) {
-		/* Remove the VPN connection's IP6 config from DNS */
-		nm_dns_manager_remove_ip6_config (mgr, ip_iface, ip6_config);
-
-		/* Re-apply routes and addresses of the VPN connection's parent interface,
-		 * which the VPN might have overridden.
-		 */
-		if (parent) {
-			parent_ip6 = nm_device_get_ip6_config (parent);
-			if (parent_ip6) {
-				if (!nm_system_apply_ip6_config (nm_device_get_ip_ifindex (parent),
-				                                 parent_ip6,
-				                                 nm_device_get_priority (parent),
-				                                 NM_IP6_COMPARE_FLAG_ADDRESSES | NM_IP6_COMPARE_FLAG_ROUTES)) {
-					nm_log_err (LOGD_VPN, "failed to re-apply VPN parent device IPv6 addresses and routes.");
-				}
-			}
-		}
-	}
-
-	update_routing_and_dns ((NMPolicy *) user_data, TRUE);
-
-	nm_dns_manager_end_updates (mgr, __func__);
 }
 
 static void
@@ -1204,6 +1188,69 @@ activate_slave_connections (NMPolicy *policy, NMConnection *connection,
 	schedule_activate_all (policy);
 }
 
+static gboolean
+activate_secondary_connections (NMPolicy *policy,
+                                NMConnection *connection,
+                                NMDevice *device)
+{
+	NMSettingConnection *s_con;
+	NMSettingsConnection *settings_con;
+	NMActiveConnection *ac;
+	PendingSecondaryData *secondary_data;
+	GSList *secondary_ac_list = NULL;
+	GError *error = NULL;
+	guint32 i;
+	gboolean success = TRUE;
+
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+
+	for (i = 0; i < nm_setting_connection_get_num_secondaries (s_con); i++) {
+		const char *sec_uuid = nm_setting_connection_get_secondary (s_con, i);
+
+		settings_con = nm_settings_get_connection_by_uuid (policy->settings, sec_uuid);
+		if (settings_con) {
+			NMActRequest *req = nm_device_get_act_request (device);
+			g_assert (req);
+
+			nm_log_dbg (LOGD_DEVICE, "Activating secondary connection '%s (%s)' for base connection '%s (%s)'",
+			            nm_connection_get_id (NM_CONNECTION (settings_con)), sec_uuid,
+			            nm_connection_get_id (connection), nm_connection_get_uuid (connection));
+			ac = nm_manager_activate_connection (policy->manager,
+			                                     NM_CONNECTION (settings_con),
+			                                     nm_active_connection_get_path (NM_ACTIVE_CONNECTION (req)),
+			                                     nm_device_get_path (device),
+			                                     nm_act_request_get_dbus_sender (req),
+			                                     &error);
+			if (ac) {
+				secondary_ac_list = g_slist_append (secondary_ac_list,
+				                                    g_strdup (nm_active_connection_get_path (ac)));
+			} else {
+				nm_log_warn (LOGD_DEVICE, "Secondary connection '%s' auto-activation failed: (%d) %s",
+				             sec_uuid,
+				             error ? error->code : 0,
+				             (error && error->message) ? error->message : "unknown");
+				g_clear_error (&error);
+				success = FALSE;
+				break;
+			}
+		} else {
+			nm_log_warn (LOGD_DEVICE, "Secondary connection '%s' auto-activation failed: The connection doesn't exist.",
+			             sec_uuid);
+			success = FALSE;
+			break;
+		}
+	}
+
+	if (success && secondary_ac_list != NULL) {
+		secondary_data = pending_secondary_data_new (device, secondary_ac_list);
+		policy->pending_secondaries = g_slist_append (policy->pending_secondaries, secondary_data);
+	} else
+		nm_utils_slist_free (secondary_ac_list, g_free);
+
+	return success;
+}
+
 static void
 device_state_changed (NMDevice *device,
                       NMDeviceState new_state,
@@ -1216,6 +1263,7 @@ device_state_changed (NMDevice *device,
 	const char *ip_iface = nm_device_get_ip_iface (device);
 	NMIP4Config *ip4_config;
 	NMIP6Config *ip6_config;
+	NMSettingConnection *s_con;
 	NMDnsManager *dns_mgr;
 
 	if (connection)
@@ -1278,22 +1326,16 @@ device_state_changed (NMDevice *device,
 		nm_dns_manager_begin_updates (dns_mgr, __func__);
 
 		ip4_config = nm_device_get_ip4_config (device);
-		if (ip4_config) {
+		if (ip4_config)
 			nm_dns_manager_add_ip4_config (dns_mgr, ip_iface, ip4_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
-			update_ip4_dns (policy, dns_mgr);
-		}
 		ip6_config = nm_device_get_ip6_config (device);
-		if (ip6_config) {
+		if (ip6_config)
 			nm_dns_manager_add_ip6_config (dns_mgr, ip_iface, ip6_config, NM_DNS_IP_CONFIG_TYPE_DEFAULT);
-			update_ip6_dns (policy, dns_mgr);
-		}
+
+		update_routing_and_dns (policy, FALSE);
 
 		nm_dns_manager_end_updates (dns_mgr, __func__);
 		g_object_unref (dns_mgr);
-
-		/* And make sure the best devices have the default route */
-		update_ip4_routing (policy, FALSE);
-		update_ip6_routing (policy, FALSE);
 		break;
 	case NM_DEVICE_STATE_UNMANAGED:
 	case NM_DEVICE_STATE_UNAVAILABLE:
@@ -1317,6 +1359,20 @@ device_state_changed (NMDevice *device,
 		/* Reset auto-connect retries of all slaves and schedule them for
 		 * activation. */
 		activate_slave_connections (policy, connection, device);
+		break;
+	case NM_DEVICE_STATE_SECONDARIES:
+		s_con = nm_connection_get_setting_connection (connection);
+		if (s_con && nm_setting_connection_get_num_secondaries (s_con) > 0) {
+			/* Make routes and DNS up-to-date before activating dependent connections */
+			update_routing_and_dns (policy, FALSE);
+
+			/* Activate secondary (VPN) connections */
+			if (!activate_secondary_connections (policy, connection, device))
+				nm_device_queue_state (device, NM_DEVICE_STATE_FAILED,
+				                       NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED);
+		} else
+			nm_device_queue_state (device, NM_DEVICE_STATE_ACTIVATED,
+			                       NM_DEVICE_STATE_REASON_NONE);
 		break;
 
 	default:
@@ -1502,6 +1558,145 @@ device_removed (NMManager *manager, NMDevice *device, gpointer user_data)
 	 */
 }
 
+/**************************************************************************/
+
+static void
+vpn_connection_activated (NMPolicy *policy, NMVPNConnection *vpn)
+{
+	NMDnsManager *mgr;
+	NMIP4Config *ip4_config;
+	NMIP6Config *ip6_config;
+	const char *ip_iface;
+
+	mgr = nm_dns_manager_get (NULL);
+	nm_dns_manager_begin_updates (mgr, __func__);
+
+	ip_iface = nm_vpn_connection_get_ip_iface (vpn);
+
+	/* Add the VPN connection's IP configs from DNS */
+
+	ip4_config = nm_vpn_connection_get_ip4_config (vpn);
+	if (ip4_config)
+		nm_dns_manager_add_ip4_config (mgr, ip_iface, ip4_config, NM_DNS_IP_CONFIG_TYPE_VPN);
+
+	ip6_config = nm_vpn_connection_get_ip6_config (vpn);
+	if (ip6_config)
+		nm_dns_manager_add_ip6_config (mgr, ip_iface, ip6_config, NM_DNS_IP_CONFIG_TYPE_VPN);
+
+	update_routing_and_dns (policy, TRUE);
+
+	nm_dns_manager_end_updates (mgr, __func__);
+
+	process_secondaries (policy, NM_ACTIVE_CONNECTION (vpn), TRUE);
+}
+
+static void
+vpn_connection_deactivated (NMPolicy *policy, NMVPNConnection *vpn)
+{
+	NMDnsManager *mgr;
+	NMIP4Config *ip4_config, *parent_ip4 = NULL;
+	NMIP6Config *ip6_config, *parent_ip6 = NULL;
+	const char *ip_iface;
+	NMDevice *parent;
+
+	mgr = nm_dns_manager_get (NULL);
+	nm_dns_manager_begin_updates (mgr, __func__);
+
+	ip_iface = nm_vpn_connection_get_ip_iface (vpn);
+	parent = nm_vpn_connection_get_parent_device (vpn);
+
+	ip4_config = nm_vpn_connection_get_ip4_config (vpn);
+	if (ip4_config) {
+		/* Remove the VPN connection's IP4 config from DNS */
+		nm_dns_manager_remove_ip4_config (mgr, ip_iface, ip4_config);
+
+		/* Re-apply routes and addresses of the VPN connection's parent interface,
+		 * which the VPN might have overridden.
+		 */
+		if (parent) {
+			parent_ip4 = nm_device_get_ip4_config (parent);
+			if (parent_ip4) {
+				if (!nm_system_apply_ip4_config (nm_device_get_ip_ifindex (parent),
+				                                 parent_ip4,
+				                                 nm_device_get_priority (parent),
+				                                 NM_IP4_COMPARE_FLAG_ADDRESSES | NM_IP4_COMPARE_FLAG_ROUTES)) {
+					nm_log_err (LOGD_VPN, "failed to re-apply VPN parent device IPv4 addresses and routes.");
+				}
+			}
+		}
+	}
+
+	ip6_config = nm_vpn_connection_get_ip6_config (vpn);
+	if (ip6_config) {
+		/* Remove the VPN connection's IP6 config from DNS */
+		nm_dns_manager_remove_ip6_config (mgr, ip_iface, ip6_config);
+
+		/* Re-apply routes and addresses of the VPN connection's parent interface,
+		 * which the VPN might have overridden.
+		 */
+		if (parent) {
+			parent_ip6 = nm_device_get_ip6_config (parent);
+			if (parent_ip6) {
+				if (!nm_system_apply_ip6_config (nm_device_get_ip_ifindex (parent),
+				                                 parent_ip6,
+				                                 nm_device_get_priority (parent),
+				                                 NM_IP6_COMPARE_FLAG_ADDRESSES | NM_IP6_COMPARE_FLAG_ROUTES)) {
+					nm_log_err (LOGD_VPN, "failed to re-apply VPN parent device IPv6 addresses and routes.");
+				}
+			}
+		}
+	}
+
+	update_routing_and_dns (policy, TRUE);
+
+	nm_dns_manager_end_updates (mgr, __func__);
+
+	process_secondaries (policy, NM_ACTIVE_CONNECTION (vpn), FALSE);
+}
+
+static void
+active_connection_state_changed (NMActiveConnection *active,
+                                 GParamSpec *pspec,
+                                 NMPolicy *policy)
+{
+	switch (nm_active_connection_get_state (active)) {
+	case NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
+		if (NM_IS_VPN_CONNECTION (active))
+			vpn_connection_activated (policy, NM_VPN_CONNECTION (active));
+		break;
+	case NM_ACTIVE_CONNECTION_STATE_DEACTIVATED:
+		if (NM_IS_VPN_CONNECTION (active))
+			vpn_connection_deactivated (policy, NM_VPN_CONNECTION (active));
+		break;
+	default:
+		break;
+	}
+}
+
+static void
+active_connection_added (NMManager *manager,
+                         NMActiveConnection *active,
+                         gpointer user_data)
+{
+	NMPolicy *policy = (NMPolicy *) user_data;
+
+	g_signal_connect (active, "notify::" NM_ACTIVE_CONNECTION_STATE,
+	                  G_CALLBACK (active_connection_state_changed),
+	                  policy);
+}
+
+static void
+active_connection_removed (NMManager *manager,
+                           NMActiveConnection *active,
+                           gpointer user_data)
+{
+	g_signal_handlers_disconnect_by_func (active,
+	                                      active_connection_state_changed,
+	                                      (NMPolicy *) user_data);
+}
+
+/**************************************************************************/
+
 static void
 schedule_activate_all (NMPolicy *policy)
 {
@@ -1614,25 +1809,26 @@ connection_updated (NMSettings *settings,
 static void
 _deactivate_if_active (NMManager *manager, NMConnection *connection)
 {
-	GPtrArray *list;
-	int i;
+	const GSList *active, *iter;
 
-	list = nm_manager_get_active_connections_by_connection (manager, connection);
-	if (!list)
-		return;
-
-	for (i = 0; i < list->len; i++) {
-		char *path = g_ptr_array_index (list, i);
+	active = nm_manager_get_active_connections (manager);
+	for (iter = active; iter; iter = g_slist_next (iter)) {
+		NMActiveConnection *ac = iter->data;
 		GError *error = NULL;
 
-		if (!nm_manager_deactivate_connection (manager, path, NM_DEVICE_STATE_REASON_CONNECTION_REMOVED, &error)) {
-			nm_log_warn (LOGD_DEVICE, "Connection '%s' disappeared, but error deactivating it: (%d) %s",
-			             nm_connection_get_id (connection), error->code, error->message);
-			g_error_free (error);
+		if (nm_active_connection_get_connection (ac) == connection) {
+			if (!nm_manager_deactivate_connection (manager,
+			                                       nm_active_connection_get_path (ac),
+			                                       NM_DEVICE_STATE_REASON_CONNECTION_REMOVED,
+			                                       &error)) {
+				nm_log_warn (LOGD_DEVICE, "Connection '%s' disappeared, but error deactivating it: (%d) %s",
+					         nm_connection_get_id (connection),
+					         error ? error->code : -1,
+					         error ? error->message : "(unknown)");
+				g_clear_error (&error);
+			}
 		}
-		g_free (path);
 	}
-	g_ptr_array_free (list, TRUE);
 }
 
 static void
@@ -1690,9 +1886,7 @@ _connect_settings_signal (NMPolicy *policy, const char *name, gpointer callback)
 }
 
 NMPolicy *
-nm_policy_new (NMManager *manager,
-               NMVPNManager *vpn_manager,
-               NMSettings *settings)
+nm_policy_new (NMManager *manager, NMSettings *settings)
 {
 	NMPolicy *policy;
 	static gboolean initialized = FALSE;
@@ -1718,14 +1912,6 @@ nm_policy_new (NMManager *manager,
 			policy->orig_hostname = g_strdup (hostname);
 	}
 
-	policy->vpn_manager = g_object_ref (vpn_manager);
-	id = g_signal_connect (policy->vpn_manager, "connection-activated",
-	                       G_CALLBACK (vpn_connection_activated), policy);
-	policy->vpn_activated_id = id;
-	id = g_signal_connect (policy->vpn_manager, "connection-deactivated",
-	                       G_CALLBACK (vpn_connection_deactivated), policy);
-	policy->vpn_deactivated_id = id;
-
 	policy->fw_manager = nm_firewall_manager_get();
 	id = g_signal_connect (policy->fw_manager, "started",
 	                       G_CALLBACK (firewall_started), policy);
@@ -1737,6 +1923,8 @@ nm_policy_new (NMManager *manager,
 	_connect_manager_signal (policy, "notify::" NM_MANAGER_NETWORKING_ENABLED, sleeping_changed);
 	_connect_manager_signal (policy, "device-added", device_added);
 	_connect_manager_signal (policy, "device-removed", device_removed);
+	_connect_manager_signal (policy, NM_MANAGER_ACTIVE_CONNECTION_ADDED, active_connection_added);
+	_connect_manager_signal (policy, NM_MANAGER_ACTIVE_CONNECTION_REMOVED, active_connection_removed);
 
 	_connect_settings_signal (policy, NM_SETTINGS_SIGNAL_CONNECTIONS_LOADED, connections_loaded);
 	_connect_settings_signal (policy, NM_SETTINGS_SIGNAL_CONNECTION_ADDED, connection_added);
@@ -1756,7 +1944,7 @@ nm_policy_new (NMManager *manager,
 void
 nm_policy_destroy (NMPolicy *policy)
 {
-	GSList *iter;
+	const GSList *connections, *iter;
 
 	g_return_if_fail (policy != NULL);
 
@@ -1771,9 +1959,8 @@ nm_policy_destroy (NMPolicy *policy)
 	g_slist_foreach (policy->pending_activation_checks, (GFunc) activate_data_free, NULL);
 	g_slist_free (policy->pending_activation_checks);
 
-	g_signal_handler_disconnect (policy->vpn_manager, policy->vpn_activated_id);
-	g_signal_handler_disconnect (policy->vpn_manager, policy->vpn_deactivated_id);
-	g_object_unref (policy->vpn_manager);
+	g_slist_foreach (policy->pending_secondaries, (GFunc) pending_secondary_data_free, NULL);
+	g_slist_free (policy->pending_secondaries);
 
 	g_signal_handler_disconnect (policy->fw_manager, policy->fw_started_id);
 	g_object_unref (policy->fw_manager);
@@ -1793,6 +1980,10 @@ nm_policy_destroy (NMPolicy *policy)
 		g_slice_free (DeviceSignalId, data);
 	}
 	g_slist_free (policy->dev_ids);
+
+	connections = nm_manager_get_active_connections (policy->manager);
+	for (iter = connections; iter; iter = g_slist_next (iter))
+		active_connection_removed (policy->manager, NM_ACTIVE_CONNECTION (iter->data), policy);
 
 	if (policy->reset_retries_id)
 		g_source_remove (policy->reset_retries_id);

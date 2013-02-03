@@ -25,7 +25,6 @@
  */
 
 #include "config.h"
-#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1204,6 +1203,42 @@ device_supports_ap_ciphers (guint32 dev_caps,
 }
 
 /**
+ * nm_utils_ap_mode_security_valid:
+ * @type: the security type to check device capabilties against,
+ * e.g. #NMU_SEC_STATIC_WEP
+ * @wifi_caps: bitfield of the capabilities of the specific WiFi device, e.g.
+ * #NM_WIFI_DEVICE_CAP_CIPHER_WEP40
+ *
+ * Given a set of device capabilities, and a desired security type to check
+ * against, determines whether the combination of device capabilities and
+ * desired security type are valid for AP/Hotspot connections.
+ *
+ * Returns: TRUE if the device capabilities are compatible with the desired
+ * @type, FALSE if they are not.
+ **/
+gboolean
+nm_utils_ap_mode_security_valid (NMUtilsSecurityType type,
+                                 NMDeviceWifiCapabilities wifi_caps)
+{
+	if (!(wifi_caps & NM_WIFI_DEVICE_CAP_AP))
+		return FALSE;
+
+	/* Return TRUE for any security that wpa_supplicant's lightweight AP
+	 * mode can handle: which is open, WEP, and WPA/WPA2 PSK.
+	 */
+	switch (type) {
+	case NMU_SEC_NONE:
+	case NMU_SEC_STATIC_WEP:
+	case NMU_SEC_WPA_PSK:
+	case NMU_SEC_WPA2_PSK:
+		return TRUE;
+	default:
+		break;
+	}
+	return FALSE;
+}
+
+/**
  * nm_utils_security_valid:
  * @type: the security type to check AP flags and device capabilties against,
  * e.g. #NMU_SEC_STATIC_WEP
@@ -1220,6 +1255,9 @@ device_supports_ap_ciphers (guint32 dev_caps,
  * Given a set of device capabilities, and a desired security type to check
  * against, determines whether the combination of device, desired security
  * type, and AP capabilities intersect.
+ *
+ * NOTE: this function cannot handle checking security for AP/Hotspot mode;
+ * use nm_utils_ap_mode_security_valid() instead.
  *
  * Returns: TRUE if the device capabilities and AP capabilties intersect and are
  * compatible with the desired @type, FALSE if they are not
@@ -2504,11 +2542,11 @@ nm_utils_hwaddr_aton (const char *asc, int type, gpointer buffer)
 	while (left && *in) {
 		guint8 d1 = in[0], d2 = in[1];
 
-		if (!isxdigit (d1))
+		if (!g_ascii_isxdigit (d1))
 			return NULL;
 
 		/* If there's no leading zero (ie "aa:b:cc") then fake it */
-		if (d2 && isxdigit (d2)) {
+		if (d2 && g_ascii_isxdigit (d2)) {
 			*out++ = (HEXVAL (d1) << 4) + HEXVAL (d2);
 			in += 2;
 		} else {
@@ -2581,4 +2619,61 @@ nm_utils_hwaddr_ntoa (gconstpointer addr, int type)
 	}
 
 	return g_string_free (out, FALSE);
+}
+
+/**
+ * nm_utils_iface_valid_name:
+ * @name: Name of interface
+ *
+ * This function is a 1:1 copy of the kernel's interface validation
+ * function in net/core/dev.c.
+ *
+ * Returns: %TRUE if interface name is valid, otherwise %FALSE is returned.
+ */
+gboolean
+nm_utils_iface_valid_name (const char *name)
+{
+	g_return_val_if_fail (name != NULL, FALSE);
+
+	if (*name == '\0')
+		return FALSE;
+
+	if (strlen (name) >= 16)
+		return FALSE;
+
+	if (!strcmp (name, ".") || !strcmp (name, ".."))
+		return FALSE;
+
+	while (*name) {
+		if (*name == '/' || g_ascii_isspace (*name))
+			return FALSE;
+		name++;
+	}
+
+	return TRUE;
+}
+
+/**
+ * nm_utils_is_uuid:
+ * @str: a string that might be a UUID
+ *
+ * Checks if @str is a UUID
+ *
+ * Returns: %TRUE if @str is a UUID, %FALSE if not
+ */
+gboolean
+nm_utils_is_uuid (const char *str)
+{
+	const char *p = str;
+	int num_dashes = 0;
+
+	while (*p) {
+		if (*p == '-')
+			num_dashes++;
+		else if (!g_ascii_isxdigit (*p))
+			return FALSE;
+		p++;
+	}
+
+	return (num_dashes == 4) && (p - str == 36);
 }
