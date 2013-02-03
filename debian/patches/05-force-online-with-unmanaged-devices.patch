@@ -6,18 +6,18 @@ Author: Michael Biebl <biebl@debian.org>
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
 Index: network-manager/src/nm-manager.c
 ===================================================================
---- network-manager.orig/src/nm-manager.c	2013-01-29 04:32:04.443486952 +0100
-+++ network-manager/src/nm-manager.c	2013-01-29 04:32:04.439486915 +0100
+--- network-manager.orig/src/nm-manager.c	2013-01-29 20:15:17.955873772 +0100
++++ network-manager/src/nm-manager.c	2013-01-29 20:15:17.951873729 +0100
 @@ -80,6 +80,8 @@
- 
- #define UPOWER_DBUS_SERVICE "org.freedesktop.UPower"
+ #define NM_AUTOIP_DBUS_SERVICE "org.freedesktop.nm_avahi_autoipd"
+ #define NM_AUTOIP_DBUS_IFACE   "org.freedesktop.nm_avahi_autoipd"
  
 +#define IFUPDOWN_STATE_FILE "/run/network/ifstate"
 +
  static gboolean impl_manager_get_devices (NMManager *manager,
                                            GPtrArray **devices,
                                            GError **err);
-@@ -236,6 +238,11 @@
+@@ -242,6 +244,11 @@
  	guint fw_monitor_id;
  	guint fw_changed_id;
  
@@ -29,7 +29,7 @@ Index: network-manager/src/nm-manager.c
  	guint timestamp_update_id;
  
  	gboolean disposed;
-@@ -448,6 +455,14 @@
+@@ -533,6 +540,14 @@
  				break;
  			}
  
@@ -44,7 +44,7 @@ Index: network-manager/src/nm-manager.c
  			if (nm_device_is_activating (dev))
  				new_state = NM_STATE_CONNECTING;
  			else if (new_state != NM_STATE_CONNECTING) {
-@@ -3655,6 +3670,65 @@
+@@ -3717,6 +3732,65 @@
  	}
  }
  
@@ -110,7 +110,7 @@ Index: network-manager/src/nm-manager.c
  #define NM_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
  #define DEV_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.Device.PermissionDenied"
  
-@@ -4050,6 +4124,17 @@
+@@ -4115,6 +4189,17 @@
  		g_object_unref (priv->fw_monitor);
  	}
  
@@ -128,7 +128,7 @@ Index: network-manager/src/nm-manager.c
  	g_slist_free (priv->factories);
  
  	if (priv->timestamp_update_id) {
-@@ -4398,6 +4483,23 @@
+@@ -4443,6 +4528,23 @@
  		             KERNEL_FIRMWARE_DIR);
  	}
  
