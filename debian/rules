@@ -9,15 +9,20 @@ include /usr/share/dpkg/buildflags.mk
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		--libexecdir=/usr/lib/NetworkManager \
-		--with-distro=debian \
 		--with-resolvconf=/sbin/resolvconf \
 		--with-dhclient=/sbin/dhclient \
 		--with-iptables=/sbin/iptables \
 		--with-systemdsystemunitdir=/lib/systemd/system \
 		--with-crypto=gnutls \
+		--with-session-tracking=consolekit \
+		--with-suspend-resume=upower \
 		--disable-more-warnings \
+		--disable-modify-system \
+		--enable-polkit \
+		--enable-ppp \
+		--enable-ifupdown \
 		--enable-introspection \
-		--with-docs
+		--enable-doc
 
 override_dh_install:
 	dh_install --list-missing
