@@ -1,6 +1,7 @@
 network-manager (0.9.7.995-1) UNRELEASED; urgency=low
 
   * New upstream release (0.9.8 beta1).
+  * Update symbols files.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 03 Feb 2013 14:49:46 +0100
 
