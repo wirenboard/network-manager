@@ -10,6 +10,7 @@ network-manager (0.9.7.997-1) UNRELEASED; urgency=low
   * No longer install nm-crash-logger, has been removed upstream.
   * 05-force-online-with-unmanaged-devices.patch: Set correct online state on
     daemon startup.
+  * 06-nm-settings-manx.patch: Don't install generated xml file as man page.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 03 Feb 2013 14:49:46 +0100
 

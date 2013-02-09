@@ -1,0 +1,26 @@
+Index: network-manager/man/Makefile.am
+===================================================================
+--- network-manager.orig/man/Makefile.am	2013-02-09 03:41:21.118828763 +0100
++++ network-manager/man/Makefile.am	2013-02-09 03:41:21.110828660 +0100
+@@ -25,7 +25,7 @@
+ 	nm-tool.1			\
+ 	nm-online.1			\
+ 	nmcli.1				\
+-	$(GENERATED_FILES)
++	nm-settings.5
+ 
+ EXTRA_DIST =				\
+ 	$(man_MANS)			\
+Index: network-manager/man/Makefile.in
+===================================================================
+--- network-manager.orig/man/Makefile.in	2013-02-09 03:22:03.849341752 +0100
++++ network-manager/man/Makefile.in	2013-02-09 03:41:46.763152937 +0100
+@@ -372,7 +372,7 @@
+ 	nm-tool.1			\
+ 	nm-online.1			\
+ 	nmcli.1				\
+-	$(GENERATED_FILES)
++	nm-settings.5
+ 
+ EXTRA_DIST = \
+ 	$(man_MANS)			\
