@@ -1,8 +1,8 @@
-network-manager (0.9.7.997-2) UNRELEASED; urgency=low
+network-manager (0.9.7.997-2) experimental; urgency=low
 
   * Move pid file to the new location in /var/run/NetworkManager.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 09 Feb 2013 17:49:45 +0100
+ -- Michael Biebl <biebl@debian.org>  Sat, 09 Feb 2013 19:23:19 +0100
 
 network-manager (0.9.7.997-1) experimental; urgency=low
 
