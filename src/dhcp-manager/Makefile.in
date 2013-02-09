@@ -61,12 +61,11 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
 	$(top_srcdir)/m4/introspection.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/vapigen.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
+	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -269,12 +268,6 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
-LIBNL1_CFLAGS = @LIBNL1_CFLAGS@
-LIBNL1_LIBS = @LIBNL1_LIBS@
-LIBNL2_CFLAGS = @LIBNL2_CFLAGS@
-LIBNL2_LIBS = @LIBNL2_LIBS@
-LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
-LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
@@ -466,6 +459,7 @@ libdhcp_manager_la_SOURCES = \
 libdhcp_manager_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\" \
 	-DLOCALSTATEDIR=\"$(localstatedir)\" \
 	-DDHCLIENT_PATH=\"$(DHCLIENT_PATH)\" \

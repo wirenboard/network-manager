@@ -9,10 +9,12 @@ NMClient
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -324,6 +326,18 @@ NMClient
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_client_get_logging ##### -->
+<para>
+
+</para>
+
+@client: 
+@level: 
+@domains: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_client_get_manager_running ##### -->
 <para>
 
@@ -404,6 +418,18 @@ NMClient
 </para>
 
 @result: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_set_logging ##### -->
+<para>
+
+</para>
+
+@client: 
+@level: 
+@domains: 
 @error: 
 @Returns: 
 

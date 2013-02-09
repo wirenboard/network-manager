@@ -9,10 +9,12 @@ NMDeviceWifi
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -99,6 +101,16 @@ NMDeviceWifi
 @NM_DEVICE_WIFI_ERROR_MAC_MISMATCH: 
 @NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_WPA_CAPS: 
 @NM_DEVICE_WIFI_ERROR_MISSING_DEVICE_RSN_CAPS: 
+
+<!-- ##### USER_FUNCTION NMDeviceWifiRequestScanFn ##### -->
+<para>
+
+</para>
+
+@device: 
+@error: 
+@user_data: 
+
 
 <!-- ##### MACRO NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT ##### -->
 <para>
@@ -239,5 +251,15 @@ NMDeviceWifi
 @connection: 
 @path: 
 @Returns: 
+
+
+<!-- ##### FUNCTION nm_device_wifi_request_scan_simple ##### -->
+<para>
+
+</para>
+
+@device: 
+@callback: 
+@user_data: 
 
 

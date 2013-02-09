@@ -23,7 +23,6 @@
 #ifndef NM_NETLINK_MONITOR_H
 #define NM_NETLINK_MONITOR_H
 
-#include <glib.h>
 #include <glib-object.h>
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
@@ -81,6 +80,9 @@ void              nm_netlink_monitor_unsubscribe      (NMNetlinkMonitor *monitor
 
 gboolean          nm_netlink_monitor_request_ip6_info (NMNetlinkMonitor *monitor,
                                                        GError **error);
+
+gboolean          nm_netlink_monitor_request_bridge_info (NMNetlinkMonitor *monitor,
+                                                          GError **error);
 
 void              nm_netlink_monitor_request_status   (NMNetlinkMonitor *monitor);
 

@@ -4,7 +4,7 @@ dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
 m4_define([nm_micro_version], [7])
-m4_define([nm_nano_version],  [995])
+m4_define([nm_nano_version],  [997])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
 
@@ -206,11 +206,8 @@ AC_CHECK_LIB([dl], [dladdr], LIBDL="-ldl", LIBDL="")
 AC_SUBST(LIBDL)
 
 dnl
-dnl Checks for new dbus-glib property access function
+dnl Checks for dbus-glib
 dnl
-AC_CHECK_LIB([dbus-glib-1], [dbus_glib_global_set_disable_legacy_property_access], ac_have_dg_prop="1", ac_have_dg_prop="0")
-AC_DEFINE_UNQUOTED(HAVE_DBUS_GLIB_DISABLE_LEGACY_PROP_ACCESS, $ac_have_dg_prop, [Define if you have a dbus-glib with dbus_glib_global_set_disable_legacy_property_access()])
-
 PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.94)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
@@ -320,46 +317,11 @@ AM_CONDITIONAL(SUSPEND_RESUME_UPOWER, test "x$with_suspend_resume" = "xupower")
 AM_CONDITIONAL(SUSPEND_RESUME_SYSTEMD, test "x$with_suspend_resume" = "xsystemd")
 
 # libnl support for the linux platform
-AC_ARG_WITH(libnl, AS_HELP_STRING([--with-libnl=1|2|3], [Select libnl version (default: latest available)]))
-# default to "yes"
-AS_IF([test -z "$with_libnl"], with_libnl=yes)
-# test for various libnl versions
-if test "$with_libnl" = "yes" -o "$with_libnl" = "3"; then
-	PKG_CHECK_MODULES(LIBNL3, libnl-3.0 libnl-route-3.0 libnl-genl-3.0,
-		[with_libnl=3], [test "$with_libnl" = "3" && with_libnl=no])
-	AS_IF([test "$with_libnl" = "no"],
-		AC_MSG_ERROR([libnl 3.x could not be found]))
-fi
-if test "$with_libnl" = "yes" -o "$with_libnl" = "2"; then
-	PKG_CHECK_MODULES(LIBNL2, libnl-2.0,
-		[with_libnl=2], [test "$with_libnl" = "2" && with_libnl=no])
-	AS_IF([test "$with_libnl" = "no"],
-		AC_MSG_ERROR([libnl 2.x could not be found]))
-fi
-if test "$with_libnl" = "yes" -o "$with_libnl" = "1"; then
-	PKG_CHECK_MODULES(LIBNL1, libnl-1 >= 1.0-pre8,
-		[with_libnl=1], [test "$with_libnl" = "1" && with_libnl=no])
-	AS_IF([test "$with_libnl" = "no"],
-		AC_MSG_ERROR([libnl 1.x could not be found]))
-fi
-if test "$with_libnl" = "yes"; then
-	AC_MSG_ERROR([libnl library could not be found])
-	with_libnl=no
-fi
-if ! echo "$with_libnl" | grep -q "^[[1-3]]$"; then
-	AC_MSG_ERROR([unsupported libnl version: $with_libnl])
-fi
-# add variables, conditionals and defines
-if test "$with_libnl" != "no"; then
-	AC_DEFINE_UNQUOTED(HAVE_LIBNL, $with_libnl, [libnl version])
-	AC_SUBST(LIBNL_CFLAGS, "$LIBNL3_CFLAGS$LIBNL2_CFLAGS$LIBNL1_CFLAGS")
-	AC_SUBST(LIBNL_LIBS, "$LIBNL3_LIBS$LIBNL2_LIBS$LIBNL1_LIBS")
-fi
-# additional tests
-if test "with_libnl" = "1"; then
-	NM_LIBNL_CHECK
-fi
+PKG_CHECK_MODULES(LIBNL, libnl-3.0 >= 3.2.7 libnl-route-3.0 libnl-genl-3.0)
+AC_SUBST(LIBNL_CFLAGS)
+AC_SUBST(LIBNL_LIBS)
 
+# uuid library
 PKG_CHECK_MODULES(UUID, uuid)
 AC_SUBST(UUID_CFLAGS)
 AC_SUBST(UUID_LIBS)
@@ -611,13 +573,6 @@ fi
 AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path of the kernel firmware directory])
 AC_SUBST(KERNEL_FIRMWARE_DIR)
 
-AC_ARG_ENABLE(crashtrace,
-              AS_HELP_STRING([--disable-crashtrace], [Disable GNU backtrace extensions]),
-              [enable_crashtrace=${enableval}], [enable_crashtrace=yes])
-if test x"$enable_crashtrace" = xyes; then
-  AC_DEFINE(ENABLE_CRASHTRACE, 1, [Define if you have GNU backtrace extensions])
-fi
-
 PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libsoup=no])
 AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
                      [enable_concheck=${enableval}], [enable_concheck=${have_libsoup}])
@@ -770,11 +725,10 @@ echo "  nmrundir: $nmrundir"
 echo
 
 echo "Platform:"
-echo "  libnl: $with_libnl"
 echo "  session tracking: $with_session_tracking"
 echo "  suspend/resume: $with_suspend_resume"
 if test "${enable_polkit}" = "yes"; then
-	if test "${enable_modify_system}"; then
+	if test "${enable_modify_system}" = "yes"; then
 		echo "  policykit: yes (permissive modify.system)"
 	else
 		echo "  policykit: yes (restrictive modify.system)"

@@ -22,6 +22,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "nm-dhcp-dhclient-utils.h"
 
@@ -253,5 +254,167 @@ nm_dhcp_dhclient_create_config (const char *interface,
 	}
 
 	return g_string_free (new_contents, FALSE);
+}
+
+/* Roughly follow what dhclient's quotify_buf() and pretty_escape() functions do */
+char *
+nm_dhcp_dhclient_escape_duid (const GByteArray *duid)
+{
+	char *escaped;
+	const guint8 *s = duid->data;
+	char *d;
+
+	d = escaped = g_malloc0 ((duid->len * 4) + 1);
+	while (s < (duid->data + duid->len)) {
+		if (!g_ascii_isprint (*s)) {
+			*d++ = '\\';
+			*d++ = '0' + ((*s >> 6) & 0x7);
+			*d++ = '0' + ((*s >> 3) & 0x7);
+			*d++ = '0' + (*s++ & 0x7);
+		} else if (*s == '"' || *s == '\'' || *s == '$' ||
+		           *s == '`' || *s == '\\' || *s == '|' ||
+		           *s == '&') {
+			*d++ = '\\';
+			*d++ = *s++;
+		} else
+			*d++ = *s++;
+	}
+	return escaped;
+}
+
+static inline gboolean
+isoctal (const guint8 *p)
+{
+	return (   p[0] >= '0' && p[0] <= '3'
+	        && p[1] >= '0' && p[1] <= '7'
+	        && p[2] >= '0' && p[2] <= '7');
+}
+
+GByteArray *
+nm_dhcp_dhclient_unescape_duid (const char *duid)
+{
+	GByteArray *unescaped;
+	const guint8 *p = (const guint8 *) duid;
+	guint i, len;
+	guint8 octal;
+
+	len = strlen (duid);
+	unescaped = g_byte_array_sized_new (len);
+	for (i = 0; i < len; i++) {
+		if (p[i] == '\\') {
+			i++;
+			if (isdigit (p[i])) {
+				/* Octal escape sequence */
+				if (i + 2 >= len || !isoctal (p + i))
+					goto error;
+				octal = ((p[i] - '0') << 6) + ((p[i + 1] - '0') << 3) + (p[i + 2] - '0');
+				g_byte_array_append (unescaped, &octal, 1);
+				i += 2;
+			} else {
+				/* One of ", ', $, `, \, |, or & */
+				g_warn_if_fail (p[i] == '"' || p[i] == '\'' || p[i] == '$' ||
+				                p[i] == '`' || p[i] == '\\' || p[i] == '|' ||
+				                p[i] == '&');
+				g_byte_array_append (unescaped, &p[i], 1);
+			}
+		} else
+			g_byte_array_append (unescaped, &p[i], 1);
+	}
+
+	return unescaped;
+
+error:
+	g_byte_array_free (unescaped, TRUE);
+	return NULL;
+}
+
+#define DUID_PREFIX "default-duid \""
+
+GByteArray *
+nm_dhcp_dhclient_read_duid (const char *leasefile, GError **error)
+{
+	GByteArray *duid = NULL;
+	char *contents;
+	char **line, **split, *p, *e;
+
+	if (!g_file_test (leasefile, G_FILE_TEST_EXISTS))
+		return NULL;
+
+	if (!g_file_get_contents (leasefile, &contents, NULL, error))
+		return NULL;
+
+	split = g_strsplit_set (contents, "\n\r", -1);
+	for (line = split; line && *line && (duid == NULL); line++) {
+		p = g_strstrip (*line);
+		if (g_str_has_prefix (p, DUID_PREFIX)) {
+			p += strlen (DUID_PREFIX);
+
+			/* look for trailing "; */
+			e = p + strlen (p) - 2;
+			if (strcmp (e, "\";") != 0)
+				continue;
+			*e = '\0';
+
+			duid = nm_dhcp_dhclient_unescape_duid (p);
+		}
+	}
+	g_free (contents);
+	g_strfreev (split);
+
+	return duid;
+}
+
+gboolean
+nm_dhcp_dhclient_save_duid (const char *leasefile,
+                            const char *escaped_duid,
+                            GError **error)
+{
+	char **lines = NULL, **iter, *l;
+	GString *s;
+	gboolean success;
+	gsize len = 0;
+
+	g_return_val_if_fail (leasefile != NULL, FALSE);
+	g_return_val_if_fail (escaped_duid != NULL, FALSE);
+
+	if (g_file_test (leasefile, G_FILE_TEST_EXISTS)) {
+		char *contents = NULL;
+
+		if (!g_file_get_contents (leasefile, &contents, &len, error)) {
+			g_prefix_error (error, "failed to read lease file %s: ", leasefile);
+			return FALSE;
+		}
+
+		/* If the file already contains an uncommented DUID, leave it */
+		g_assert (contents);
+		lines = g_strsplit_set (contents, "\n\r", -1);
+		g_free (contents);
+		for (iter = lines; iter && *iter; iter++) {
+			l = *iter;
+			while (g_ascii_isspace (*l))
+				l++;
+			if (g_str_has_prefix (l, DUID_PREFIX)) {
+				g_strfreev (lines);
+				return TRUE;
+			}
+		}
+	}
+
+	s = g_string_sized_new (len + 50);
+	g_string_append_printf (s, DUID_PREFIX "%s\";\n", escaped_duid);
+
+	/* Preserve existing leasefile contents */
+	if (lines) {
+		for (iter = lines; iter && *iter; iter++)
+			g_string_append (s, *iter[0] ? *iter : "\n");
+		g_strfreev (lines);
+	}
+
+	success = g_file_set_contents (leasefile, s->str, -1, error);
+	if (!success)
+		g_prefix_error (error, "failed to set DUID in lease file %s: ", leasefile);
+
+	g_string_free (s, TRUE);
+	return success;
 }
 

@@ -38,7 +38,11 @@
 #include <linux/if.h>
 #include <linux/unistd.h>
 #include <unistd.h>
+#include <netlink/version.h>
+#if LIBNL_VER_NUM == LIBNL_VER (3, 2) && LIBNL_VER_MIC < 20
 #include <netlink/object-api.h>
+#endif
+#include <netlink/object.h>
 #include <netlink/route/addr.h>
 #include <netlink/route/rtnl.h>
 
@@ -408,7 +412,7 @@ sync_connection_setup (NMNetlinkMonitor *self, GError **error)
 	nl_cache_free (addr_cache);
 #endif
 
-	err = rtnl_link_alloc_cache (priv->nlh_sync, &priv->link_cache);
+	err = rtnl_link_alloc_cache (priv->nlh_sync, AF_UNSPEC, &priv->link_cache);
 	if (err < 0) {
 		g_set_error (error, NM_NETLINK_MONITOR_ERROR,
 		             NM_NETLINK_MONITOR_ERROR_NETLINK_ALLOC_LINK_CACHE,
@@ -592,6 +596,24 @@ nm_netlink_monitor_request_ip6_info (NMNetlinkMonitor *self, GError **error)
 	return TRUE;
 }
 
+gboolean
+nm_netlink_monitor_request_bridge_info (NMNetlinkMonitor *self, GError **error)
+{
+	NMNetlinkMonitorPrivate *priv;
+
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (NM_IS_NETLINK_MONITOR (self), FALSE);
+
+	priv = NM_NETLINK_MONITOR_GET_PRIVATE (self);
+
+	/* FIXME: nl_rtgen_request() gets the return value screwed up with
+	 * libnl-1.1; revisit this and return a proper error when we port to
+	 * a later libnl.
+	 */
+	nl_rtgen_request (priv->nlh_event, RTM_GETLINK, AF_BRIDGE, NLM_F_DUMP);
+
+	return TRUE;
+}
 
 static gboolean
 deferred_emit_carrier_state (gpointer user_data)

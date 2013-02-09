@@ -130,19 +130,13 @@ get_carrier_sync (NMDeviceVlan *self)
 }
 
 static gboolean
-hw_is_up (NMDevice *device)
-{
-	return nm_system_iface_is_up (nm_device_get_ip_ifindex (device));
-}
-
-static gboolean
 hw_bring_up (NMDevice *dev, gboolean *no_firmware)
 {
 	gboolean success = FALSE, carrier;
 	guint i = 20;
 
 	while (i-- > 0 && !success) {
-		success = nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), TRUE, no_firmware);
+		success = NM_DEVICE_CLASS (nm_device_vlan_parent_class)->hw_bring_up (dev, no_firmware);
 		g_usleep (50);
 	}
 
@@ -163,49 +157,28 @@ hw_bring_up (NMDevice *dev, gboolean *no_firmware)
 }
 
 static void
-hw_take_down (NMDevice *dev)
-{
-	nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), FALSE, NULL);
-}
-
-static void
 update_hw_address (NMDevice *dev)
 {
 	NMDeviceVlan *self = NM_DEVICE_VLAN (dev);
 	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (self);
-	struct rtnl_link *rtnl;
-	struct nl_addr *addr;
+	gsize addrlen;
+	gboolean changed = FALSE;
 
-	rtnl = nm_netlink_index_to_rtnl_link (nm_device_get_ip_ifindex (dev));
-	if (!rtnl) {
-		nm_log_err (LOGD_HW | LOGD_VLAN,
-		            "(%s) failed to read hardware address (error %d)",
-		            nm_device_get_iface (dev), errno);
-		return;
+	addrlen = nm_device_read_hwaddr (dev, priv->hw_addr, sizeof (priv->hw_addr), &changed);
+	if (addrlen) {
+		priv->hw_addr_len = addrlen;
+		if (changed)
+			g_object_notify (G_OBJECT (self), NM_DEVICE_VLAN_HW_ADDRESS);
 	}
+}
 
-	addr = rtnl_link_get_addr (rtnl);
-	if (!addr) {
-		nm_log_err (LOGD_HW | LOGD_VLAN,
-		            "(%s) no hardware address?",
-		            nm_device_get_iface (dev));
-		goto out;
-	}
+static const guint8 *
+get_hw_address (NMDevice *device, guint *out_len)
+{
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
 
-	if (nl_addr_get_len (addr) > sizeof (priv->hw_addr)) {
-		nm_log_err (LOGD_HW | LOGD_VLAN,
-		            "(%s) hardware address is wrong length (got %d max %zd)",
-		            nm_device_get_iface (dev),
-		            nl_addr_get_len (addr),
-		            sizeof (priv->hw_addr));
-	} else {
-		priv->hw_addr_len = nl_addr_get_len (addr);
-		memcpy (&priv->hw_addr, nl_addr_get_binary_addr (addr), priv->hw_addr_len);
-		g_object_notify (G_OBJECT (self), NM_DEVICE_VLAN_HW_ADDRESS);
-	}
-
-out:
-	rtnl_link_put (rtnl);
+	*out_len = priv->hw_addr_len;
+	return priv->hw_addr;
 }
 
 static gboolean
@@ -327,12 +300,8 @@ get_best_auto_connection (NMDevice *dev,
 
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		NMConnection *connection = NM_CONNECTION (iter->data);
-		NMSettingConnection *s_con;
 
-		s_con = nm_connection_get_setting_connection (connection);
-		g_assert (s_con);
-		if (   nm_setting_connection_get_autoconnect (s_con)
-		    && match_vlan_connection (NM_DEVICE_VLAN (dev), connection, NULL))
+		if (match_vlan_connection (NM_DEVICE_VLAN (dev), connection, NULL))
 			return connection;
 	}
 	return NULL;
@@ -760,9 +729,8 @@ nm_device_vlan_class_init (NMDeviceVlanClass *klass)
 
 	parent_class->get_generic_capabilities = get_generic_capabilities;
 	parent_class->update_hw_address = update_hw_address;
-	parent_class->hw_is_up = hw_is_up;
+	parent_class->get_hw_address = get_hw_address;
 	parent_class->hw_bring_up = hw_bring_up;
-	parent_class->hw_take_down = hw_take_down;
 	parent_class->can_interrupt_activation = can_interrupt_activation;
 	parent_class->is_available = is_available;
 

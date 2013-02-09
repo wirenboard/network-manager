@@ -49,9 +49,6 @@ G_DEFINE_TYPE (NMDeviceWired, nm_device_wired, NM_TYPE_DEVICE)
 #define NM_DEVICE_WIRED_LOG_LEVEL(dev) ((nm_device_get_device_type (dev) == NM_DEVICE_TYPE_INFINIBAND) ? LOGD_INFINIBAND : LOGD_ETHER)
 
 typedef struct {
-	guint8              hw_addr[NM_UTILS_HWADDR_LEN_MAX];         /* Currently set MAC address */
-	guint               hw_addr_type;
-	guint               hw_addr_len;
 	gboolean            carrier;
 	guint32             speed;
 
@@ -134,31 +131,37 @@ carrier_action_defer_clear (NMDeviceWired *self)
 	}
 }
 
+static void
+carrier_action (NMDeviceWired *self, NMDeviceState state, gboolean carrier)
+{
+	NMDevice *device = NM_DEVICE (self);
+
+	if (state == NM_DEVICE_STATE_UNAVAILABLE) {
+		if (carrier)
+			nm_device_queue_state (device, NM_DEVICE_STATE_DISCONNECTED, NM_DEVICE_STATE_REASON_CARRIER);
+		else {
+			/* clear any queued state changes if they wouldn't be valid when the
+			 * carrier is off.
+			 */
+			if (nm_device_queued_state_peek (device) >= NM_DEVICE_STATE_DISCONNECTED)
+				nm_device_queued_state_clear (device);
+		}
+	} else if (state >= NM_DEVICE_STATE_DISCONNECTED) {
+		if (!carrier && !nm_device_get_enslaved (device))
+			nm_device_queue_state (device, NM_DEVICE_STATE_UNAVAILABLE, NM_DEVICE_STATE_REASON_CARRIER);
+	}
+}
+
 static gboolean
 carrier_action_defer_cb (gpointer user_data)
 {
 	NMDeviceWired *self = NM_DEVICE_WIRED (user_data);
 	NMDeviceWiredPrivate *priv = NM_DEVICE_WIRED_GET_PRIVATE (self);
-	NMDeviceState state;
 
 	priv->carrier_action_defer_id = 0;
-
-	state = nm_device_get_state (NM_DEVICE (self));
-	if (state == NM_DEVICE_STATE_UNAVAILABLE) {
-		if (priv->carrier)
-			nm_device_queue_state (NM_DEVICE (self), NM_DEVICE_STATE_DISCONNECTED, NM_DEVICE_STATE_REASON_CARRIER);
-		else {
-			/* clear any queued state changes if they wouldn't be valid when the
-			 * carrier is off.
-			 */
-			if (nm_device_queued_state_peek (NM_DEVICE (self)) >= NM_DEVICE_STATE_DISCONNECTED)
-				nm_device_queued_state_clear (NM_DEVICE (self));
-		}
-	} else if (state >= NM_DEVICE_STATE_DISCONNECTED) {
-		if (!priv->carrier)
-			nm_device_queue_state (NM_DEVICE (self), NM_DEVICE_STATE_UNAVAILABLE, NM_DEVICE_STATE_REASON_CARRIER);
-	}
-
+	NM_DEVICE_WIRED_GET_CLASS (self)->carrier_action (self,
+	                                                  nm_device_get_state (NM_DEVICE (self)),
+	                                                  priv->carrier);
 	return FALSE;
 }
 
@@ -167,13 +170,11 @@ set_carrier (NMDeviceWired *self,
              const gboolean carrier,
              const gboolean defer_action)
 {
-	NMDeviceWiredPrivate *priv;
+	NMDeviceWiredPrivate *priv = NM_DEVICE_WIRED_GET_PRIVATE (self);
+	NMDevice *device = NM_DEVICE (self);
 	NMDeviceState state;
 	guint32 caps;
 
-	g_return_if_fail (NM_IS_DEVICE (self));
-
-	priv = NM_DEVICE_WIRED_GET_PRIVATE (self);
 	if (priv->carrier == carrier)
 		return;
 
@@ -184,20 +185,30 @@ set_carrier (NMDeviceWired *self,
 	 * doesn't support carrier detect.  These devices assume
 	 * the carrier is always up.
 	 */
-	caps = nm_device_get_capabilities (NM_DEVICE (self));
+	caps = nm_device_get_capabilities (device);
 	g_return_if_fail (caps & NM_DEVICE_CAP_CARRIER_DETECT);
 
 	priv->carrier = carrier;
-	g_object_notify (G_OBJECT (self), "carrier");
 
-	state = nm_device_get_state (NM_DEVICE (self));
+	state = nm_device_get_state (device);
 	if (state >= NM_DEVICE_STATE_UNAVAILABLE) {
-		nm_log_info (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (NM_DEVICE (self)),
+		nm_log_info (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (device),
 		             "(%s): carrier now %s (device state %d%s)",
-		             nm_device_get_iface (NM_DEVICE (self)),
+		             nm_device_get_iface (device),
 		             carrier ? "ON" : "OFF",
 		             state,
 		             defer_action ? ", deferring action for 4 seconds" : "");
+	}
+
+	g_object_notify (G_OBJECT (self), "carrier");
+
+	/* Retry IP configuration for master devices now that the carrier is on */
+	if (nm_device_is_master (device) && priv->carrier) {
+		if (nm_device_activate_ip4_state_in_wait (device))
+			nm_device_activate_stage3_ip4_start (device);
+
+		if (nm_device_activate_ip6_state_in_wait (device))
+			nm_device_activate_stage3_ip6_start (device);
 	}
 
 	if (defer_action)
@@ -301,22 +312,6 @@ constructor (GType type,
 	            nm_device_get_iface (NM_DEVICE (self)),
 	            nm_device_get_ifindex (NM_DEVICE (self)));
 
-	if (nm_device_get_device_type (self) == NM_DEVICE_TYPE_ETHERNET) {
-		priv->hw_addr_type = ARPHRD_ETHER;
-		priv->hw_addr_len = ETH_ALEN;
-	} else if (nm_device_get_device_type (self) == NM_DEVICE_TYPE_INFINIBAND) {
-		priv->hw_addr_type = ARPHRD_INFINIBAND;
-		priv->hw_addr_len = INFINIBAND_ALEN;
-	} else if (nm_device_get_device_type (self) == NM_DEVICE_TYPE_BOND) {
-		/* We may not know the hardware address type until a slave is added */
-		priv->hw_addr_type = ARPHRD_ETHER;
-		priv->hw_addr_len = ETH_ALEN;
-	} else if (nm_device_get_device_type (self) == NM_DEVICE_TYPE_BRIDGE) {
-		priv->hw_addr_type = ARPHRD_ETHER;
-		priv->hw_addr_len = ETH_ALEN;
-	} else
-		g_assert_not_reached ();
-
 	caps = nm_device_get_capabilities (self);
 	if (caps & NM_DEVICE_CAP_CARRIER_DETECT) {
 		/* Only listen to netlink for cards that support carrier detect */
@@ -357,70 +352,20 @@ nm_device_wired_init (NMDeviceWired * self)
 }
 
 static gboolean
-hw_is_up (NMDevice *device)
-{
-	return nm_system_iface_is_up (nm_device_get_ip_ifindex (device));
-}
-
-static gboolean
 hw_bring_up (NMDevice *dev, gboolean *no_firmware)
 {
-	gboolean success, carrier;
+	gboolean result, carrier;
 	guint32 caps;
 
-	success = nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), TRUE, no_firmware);
-	if (success) {
+	result = NM_DEVICE_CLASS(nm_device_wired_parent_class)->hw_bring_up (dev, no_firmware);
+	if (result) {
 		caps = nm_device_get_capabilities (dev);
 		if (caps & NM_DEVICE_CAP_CARRIER_DETECT) {
 			carrier = get_carrier_sync (NM_DEVICE_WIRED (dev));
 			set_carrier (NM_DEVICE_WIRED (dev), carrier, carrier ? FALSE : TRUE);
 		}
 	}
-	return success;
-}
-
-static void
-hw_take_down (NMDevice *dev)
-{
-	nm_system_iface_set_up (nm_device_get_ip_ifindex (dev), FALSE, NULL);
-}
-
-static void
-update_hw_address (NMDevice *dev)
-{
-	NMDeviceWired *self = NM_DEVICE_WIRED (dev);
-	NMDeviceWiredPrivate *priv = NM_DEVICE_WIRED_GET_PRIVATE (self);
-	struct rtnl_link *rtnl;
-	struct nl_addr *addr;
-
-	rtnl = nm_netlink_index_to_rtnl_link (nm_device_get_ip_ifindex (dev));
-	if (!rtnl) {
-		nm_log_err (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (dev),
-		            "(%s) failed to read hardware address (error %d)",
-		            nm_device_get_iface (dev), errno);
-		return;
-	}
-
-	addr = rtnl_link_get_addr (rtnl);
-	if (!addr) {
-		nm_log_err (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (dev),
-		            "(%s) no hardware address?",
-		            nm_device_get_iface (dev));
-		rtnl_link_put (rtnl);
-		return;
-	}
-
-	if (nl_addr_get_len (addr) != priv->hw_addr_len) {
-		nm_log_err (LOGD_HW | NM_DEVICE_WIRED_LOG_LEVEL (dev),
-		            "(%s) hardware address is wrong length (expected %d got %d)",
-		            nm_device_get_iface (dev),
-		            priv->hw_addr_len, nl_addr_get_len (addr));
-	} else {
-		memcpy (&priv->hw_addr, nl_addr_get_binary_addr (addr),
-				priv->hw_addr_len);
-	}
-
-	rtnl_link_put (rtnl);
+	return result;
 }
 
 static gboolean
@@ -468,6 +413,36 @@ connection_match_config (NMDevice *self, const GSList *connections)
 	return NULL;
 }
 
+static NMActStageReturn
+act_stage3_ip4_config_start (NMDevice *device,
+                             NMIP4Config **out_config,
+                             NMDeviceStateReason *reason)
+{
+	if (nm_device_is_master (device) && !nm_device_wired_get_carrier (NM_DEVICE_WIRED (device))) {
+		nm_log_info (LOGD_IP4 | NM_DEVICE_WIRED_LOG_LEVEL (device),
+		             "(%s): IPv4 config waiting until carrier is on",
+		             nm_device_get_ip_iface (device));
+		return NM_ACT_STAGE_RETURN_WAIT;
+	}
+
+	return NM_DEVICE_CLASS (nm_device_wired_parent_class)->act_stage3_ip4_config_start (device, out_config, reason);
+}
+
+static NMActStageReturn
+act_stage3_ip6_config_start (NMDevice *device,
+                             NMIP6Config **out_config,
+                             NMDeviceStateReason *reason)
+{
+	if (nm_device_is_master (device) && !nm_device_wired_get_carrier (NM_DEVICE_WIRED (device))) {
+		nm_log_info (LOGD_IP6 | NM_DEVICE_WIRED_LOG_LEVEL (device),
+		             "(%s): IPv6 config waiting until carrier is on",
+		             nm_device_get_ip_iface (device));
+		return NM_ACT_STAGE_RETURN_WAIT;
+	}
+
+	return NM_DEVICE_CLASS (nm_device_wired_parent_class)->act_stage3_ip6_config_start (device, out_config, reason);
+}
+
 static void
 dispose (GObject *object)
 {
@@ -498,6 +473,7 @@ nm_device_wired_class_init (NMDeviceWiredClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	NMDeviceClass *parent_class = NM_DEVICE_CLASS (klass);
+	NMDeviceWiredClass *wired_class = NM_DEVICE_WIRED_CLASS (klass);
 
 	g_type_class_add_private (object_class, sizeof (NMDeviceWiredPrivate));
 
@@ -505,75 +481,14 @@ nm_device_wired_class_init (NMDeviceWiredClass *klass)
 	object_class->constructor = constructor;
 	object_class->dispose = dispose;
 
-	parent_class->hw_is_up = hw_is_up;
 	parent_class->hw_bring_up = hw_bring_up;
-	parent_class->hw_take_down = hw_take_down;
 	parent_class->can_interrupt_activation = can_interrupt_activation;
-	parent_class->update_hw_address = update_hw_address;
 	parent_class->is_available = is_available;
 	parent_class->connection_match_config = connection_match_config;
-}
+	parent_class->act_stage3_ip4_config_start = act_stage3_ip4_config_start;
+	parent_class->act_stage3_ip6_config_start = act_stage3_ip6_config_start;
 
-/**
- * nm_device_wired_get_hwaddr:
- * @dev: an #NMDeviceWired
- *
- * Get a device's hardware address
- *
- * Returns: (transfer none): @dev's hardware address
- */
-const guint8 *
-nm_device_wired_get_hwaddr (NMDeviceWired *dev)
-{
-	NMDeviceWiredPrivate *priv;
-
-	g_return_val_if_fail (dev != NULL, NULL);
-
-	priv = NM_DEVICE_WIRED_GET_PRIVATE (dev);
-	return priv->hw_addr;
-}
-
-/**
- * nm_device_wired_set_hwaddr:
- * @dev: an #NMDeviceWired
- * @addr: the new hardware address, @addrlen bytes in length
- * @addrlen: the length in bytes of @addr
- *
- * Sets the device's hardware address.
- */
-void
-nm_device_wired_set_hwaddr (NMDeviceWired *dev,
-                            const guint8 *addr,
-                            guint addrlen)
-{
-	NMDeviceWiredPrivate *priv;
-
-	g_return_if_fail (dev != NULL);
-	g_return_if_fail (addr != NULL);
-
-	priv = NM_DEVICE_WIRED_GET_PRIVATE (dev);
-	g_return_if_fail (addrlen == priv->hw_addr_len);
-
-	memcpy (priv->hw_addr, addr, priv->hw_addr_len);
-}
-
-/**
- * nm_device_wired_get_hwaddr_type:
- * @dev: an #NMDeviceWired
- *
- * Get the type of a device's hardware address
- *
- * Returns: the type of @dev's hardware address
- */
-int
-nm_device_wired_get_hwaddr_type (NMDeviceWired *dev)
-{
-	NMDeviceWiredPrivate *priv;
-
-	g_return_val_if_fail (dev != NULL, -1);
-
-	priv = NM_DEVICE_WIRED_GET_PRIVATE (dev);
-	return priv->hw_addr_type;
+	wired_class->carrier_action = carrier_action;
 }
 
 /**

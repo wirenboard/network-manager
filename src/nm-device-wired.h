@@ -42,15 +42,13 @@ typedef struct {
 typedef struct {
 	NMDeviceClass parent;
 
+	void (*carrier_action) (NMDeviceWired *self,
+	                        NMDeviceState state,
+	                        gboolean carrier);
 } NMDeviceWiredClass;
 
 GType nm_device_wired_get_type (void);
 
-const guint8 *nm_device_wired_get_hwaddr      (NMDeviceWired *dev);
-void          nm_device_wired_set_hwaddr      (NMDeviceWired *dev,
-                                               const guint8 *addr,
-                                               guint addrlen);
-int           nm_device_wired_get_hwaddr_type (NMDeviceWired *dev);
 gboolean      nm_device_wired_get_carrier     (NMDeviceWired *dev);
 guint32       nm_device_wired_get_speed       (NMDeviceWired *dev);
 
