@@ -46,6 +46,8 @@ gboolean nm_device_hw_bring_up (NMDevice *self, gboolean wait, gboolean *no_firm
 
 void nm_device_hw_take_down (NMDevice *self, gboolean block);
 
+gsize nm_device_read_hwaddr (NMDevice *dev, guint8 *out_buf, gsize buf_len, gboolean *out_changed);
+
 gboolean nm_device_ip_config_should_fail (NMDevice *self, gboolean ip6);
 
 void nm_device_set_firmware_missing (NMDevice *self, gboolean missing);
@@ -63,7 +65,10 @@ void nm_device_activate_schedule_ip6_config_result (NMDevice *device, NMIP6Confi
 void nm_device_activate_schedule_ip6_config_timeout (NMDevice *device);
 
 gboolean nm_device_activate_ip4_state_in_conf (NMDevice *device);
+gboolean nm_device_activate_ip4_state_in_wait (NMDevice *device);
+
 gboolean nm_device_activate_ip6_state_in_conf (NMDevice *device);
+gboolean nm_device_activate_ip6_state_in_wait (NMDevice *device);
 
 void nm_device_set_dhcp_timeout (NMDevice *device, guint32 timeout);
 void nm_device_set_dhcp_anycast_address (NMDevice *device, guint8 *addr);
@@ -79,5 +84,9 @@ void nm_device_recheck_available_connections (NMDevice *device);
 void nm_device_queued_state_clear (NMDevice *device);
 
 NMDeviceState nm_device_queued_state_peek (NMDevice *device);
+
+gboolean nm_device_get_enslaved (NMDevice *device);
+
+NMDevice *nm_device_master_get_slave_by_ifindex (NMDevice *dev, int ifindex);
 
 #endif	/* NM_DEVICE_PRIVATE_H */

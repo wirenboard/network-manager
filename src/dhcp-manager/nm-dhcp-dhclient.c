@@ -50,6 +50,7 @@ G_DEFINE_TYPE (NMDHCPDhclient, nm_dhcp_dhclient, NM_TYPE_DHCP_CLIENT)
 typedef struct {
 	const char *path;
 	char *conf_file;
+	const char *def_leasefile;
 	char *lease_file;
 	char *pid_file;
 } NMDHCPDhclientPrivate;
@@ -445,6 +446,7 @@ dhclient_child_setup (gpointer user_data G_GNUC_UNUSED)
 static GPid
 dhclient_start (NMDHCPClient *client,
                 const char *mode_opt,
+                const GByteArray *duid,
                 gboolean release)
 {
 	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
@@ -575,7 +577,7 @@ ip4_start (NMDHCPClient *client,
 		return -1;
 	}
 
-	return dhclient_start (client, NULL, FALSE);
+	return dhclient_start (client, NULL, NULL, FALSE);
 }
 
 static GPid
@@ -583,7 +585,8 @@ ip6_start (NMDHCPClient *client,
            NMSettingIP6Config *s_ip6,
            guint8 *dhcp_anycast_addr,
            const char *hostname,
-           gboolean info_only)
+           gboolean info_only,
+           const GByteArray *duid)
 {
 	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
 	const char *iface;
@@ -596,16 +599,16 @@ ip6_start (NMDHCPClient *client,
 		return -1;
 	}
 
-	return dhclient_start (client, info_only ? "-S" : "-N", FALSE);
+	return dhclient_start (client, info_only ? "-S" : "-N", duid, FALSE);
 }
 
 static void
-stop (NMDHCPClient *client, gboolean release)
+stop (NMDHCPClient *client, gboolean release, const GByteArray *duid)
 {
 	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
 
 	/* Chain up to parent */
-	NM_DHCP_CLIENT_CLASS (nm_dhcp_dhclient_parent_class)->stop (client, release);
+	NM_DHCP_CLIENT_CLASS (nm_dhcp_dhclient_parent_class)->stop (client, release, duid);
 
 	if (priv->conf_file)
 		remove (priv->conf_file);
@@ -618,7 +621,7 @@ stop (NMDHCPClient *client, gboolean release)
 	if (release) {
 		GPid rpid;
 
-		rpid = dhclient_start (client, NULL, TRUE);
+		rpid = dhclient_start (client, NULL, duid, TRUE);
 		if (rpid > 0) {
 			/* Wait a few seconds for the release to happen */
 			nm_dhcp_client_stop_pid (rpid, nm_dhcp_client_get_iface (client), 5);
@@ -626,14 +629,75 @@ stop (NMDHCPClient *client, gboolean release)
 	}
 }
 
+static GByteArray *
+get_duid (NMDHCPClient *client)
+{
+	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (client);
+	GByteArray *duid = NULL;
+	char *leasefile;
+	GError *error = NULL;
+
+	/* Look in interface-specific leasefile first for backwards compat */
+	leasefile = get_dhclient_leasefile (nm_dhcp_client_get_iface (client),
+	                                    nm_dhcp_client_get_uuid (client),
+	                                    TRUE);
+	nm_log_dbg (LOGD_DHCP, "Looking for DHCPv6 DUID in '%s'.", leasefile);
+	duid = nm_dhcp_dhclient_read_duid (leasefile, &error);
+	g_free (leasefile);
+
+	if (error) {
+		nm_log_warn (LOGD_DHCP, "Failed to read leasefile '%s': (%d) %s",
+		             leasefile,
+		             error ? error->code : -1,
+		             error ? error->message : "(unknown)");
+		g_clear_error (&error);
+	}
+
+	if (!duid && priv->def_leasefile) {
+		/* Otherwise read the default machine-wide DUID */
+		nm_log_dbg (LOGD_DHCP, "Looking for default DHCPv6 DUID in '%s'.", priv->def_leasefile);
+		duid = nm_dhcp_dhclient_read_duid (priv->def_leasefile, &error);
+		if (error) {
+			nm_log_warn (LOGD_DHCP, "Failed to read leasefile '%s': (%d) %s",
+			             priv->def_leasefile,
+			             error ? error->code : -1,
+			             error ? error->message : "(unknown)");
+			g_clear_error (&error);
+		}
+	}
+
+	/* return our DUID, otherwise let the parent class make a default DUID */
+	return duid ? duid : NM_DHCP_CLIENT_CLASS (nm_dhcp_dhclient_parent_class)->get_duid (client);
+}
+
 /***************************************************/
+
+static const char *def_leasefiles[] = {
+	SYSCONFDIR "/dhclient6.leases",
+	LOCALSTATEDIR "/lib/dhcp/dhclient6.leases",
+	LOCALSTATEDIR "/lib/dhclient/dhclient6.leases",
+	NULL
+};
 
 static void
 nm_dhcp_dhclient_init (NMDHCPDhclient *self)
 {
 	NMDHCPDhclientPrivate *priv = NM_DHCP_DHCLIENT_GET_PRIVATE (self);
+	const char **iter = &def_leasefiles[0];
 
 	priv->path = nm_dhcp_dhclient_get_path (DHCLIENT_PATH);
+
+	while (iter && *iter) {
+		if (g_file_test (*iter, G_FILE_TEST_EXISTS)) {
+			priv->def_leasefile = *iter;
+			break;
+		}
+		iter++;
+	}
+
+	/* Fallback option */
+	if (!priv->def_leasefile)
+		priv->def_leasefile = SYSCONFDIR "/dhclient6.leases";
 }
 
 static void
@@ -662,5 +726,6 @@ nm_dhcp_dhclient_class_init (NMDHCPDhclientClass *dhclient_class)
 	client_class->ip4_start = ip4_start;
 	client_class->ip6_start = ip6_start;
 	client_class->stop = stop;
+	client_class->get_duid = get_duid;
 }
 

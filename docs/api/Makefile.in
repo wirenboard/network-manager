@@ -20,7 +20,6 @@
 ####################################
 # Everything below here is generic #
 ####################################
-
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -57,7 +56,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@ENABLE_DOC_TRUE@noinst_PROGRAMS = generate-settings-spec$(EXEEXT)
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/version.xml.in $(top_srcdir)/gtk-doc.make
 subdir = docs/api
@@ -69,66 +67,30 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
 	$(top_srcdir)/m4/introspection.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/vapigen.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
+	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = version.xml
 CONFIG_CLEAN_VPATH_FILES =
-PROGRAMS = $(noinst_PROGRAMS)
-am__generate_settings_spec_SOURCES_DIST = generate-settings-spec.c
-am__objects_1 =  \
-	generate_settings_spec-generate-settings-spec.$(OBJEXT)
-@ENABLE_DOC_TRUE@am_generate_settings_spec_OBJECTS = $(am__objects_1)
-generate_settings_spec_OBJECTS = $(am_generate_settings_spec_OBJECTS)
-am__DEPENDENCIES_1 =
-@ENABLE_DOC_TRUE@generate_settings_spec_DEPENDENCIES =  \
-@ENABLE_DOC_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
-@ENABLE_DOC_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
-am__depfiles_maybe = depfiles
-am__mv = mv -f
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-AM_V_CC = $(am__v_CC_@AM_V@)
-am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
-am__v_CC_0 = @echo "  CC    " $@;
-AM_V_at = $(am__v_at_@AM_V@)
-am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
-am__v_at_0 = @
-CCLD = $(CC)
-LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_CCLD = $(am__v_CCLD_@AM_V@)
-am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
-am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(generate_settings_spec_SOURCES)
-DIST_SOURCES = $(am__generate_settings_spec_SOURCES_DIST)
+AM_V_at = $(am__v_at_@AM_V@)
+am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
+am__v_at_0 = @
+SOURCES =
+DIST_SOURCES =
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-ETAGS = etags
-CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
@@ -228,12 +190,6 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
-LIBNL1_CFLAGS = @LIBNL1_CFLAGS@
-LIBNL1_LIBS = @LIBNL1_LIBS@
-LIBNL2_CFLAGS = @LIBNL2_CFLAGS@
-LIBNL2_LIBS = @LIBNL2_LIBS@
-LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
-LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
@@ -373,26 +329,7 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-GENERATE_SETTINGS_SPEC_SOURCE = generate-settings-spec.c
 AUTOMAKE_OPTIONS = 1.7
-@ENABLE_DOC_TRUE@INCLUDES = \
-@ENABLE_DOC_TRUE@	-I$(top_srcdir)/include \
-@ENABLE_DOC_TRUE@	-I$(top_builddir)/include \
-@ENABLE_DOC_TRUE@	-I$(top_srcdir)/libnm-util \
-@ENABLE_DOC_TRUE@	-I$(top_builddir)/libnm-util
-
-@ENABLE_DOC_TRUE@generate_settings_spec_SOURCES = \
-@ENABLE_DOC_TRUE@	$(GENERATE_SETTINGS_SPEC_SOURCE)
-
-@ENABLE_DOC_TRUE@generate_settings_spec_CPPFLAGS = \
-@ENABLE_DOC_TRUE@	$(GLIB_CFLAGS) \
-@ENABLE_DOC_TRUE@	$(DBUS_CFLAGS)
-
-@ENABLE_DOC_TRUE@generate_settings_spec_LDADD = \
-@ENABLE_DOC_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
-@ENABLE_DOC_TRUE@	$(GLIB_LIBS) \
-@ENABLE_DOC_TRUE@	$(DBUS_LIBS)
-
 @ENABLE_DOC_TRUE@XSLTPROC = xsltproc --xinclude --nonet
 @ENABLE_DOC_TRUE@XMLS = $(wildcard $(top_srcdir)/introspection/nm-*.xml)
 @ENABLE_DOC_TRUE@OTHER_FILES = \
@@ -423,7 +360,6 @@ AUTOMAKE_OPTIONS = 1.7
 # Non-autogenerated SGML files to be included in $(DOC_MAIN_SGML_FILE)
 @ENABLE_DOC_TRUE@content_files = \
 @ENABLE_DOC_TRUE@	version.xml \
-@ENABLE_DOC_TRUE@	settings-spec.xml \
 @ENABLE_DOC_TRUE@	migrating-to-09.xml \
 @ENABLE_DOC_TRUE@	$(NULL)
 
@@ -447,12 +383,11 @@ AUTOMAKE_OPTIONS = 1.7
 @ENABLE_DOC_TRUE@	$(DOC_MODULE)-sections.txt	\
 @ENABLE_DOC_TRUE@	$(DOC_MODULE)-overrides.txt
 
-@ENABLE_DOC_FALSE@EXTRA_DIST = $(GENERATE_SETTINGS_SPEC_SOURCE) \
-@ENABLE_DOC_FALSE@	version.xml.in
+@ENABLE_DOC_FALSE@EXTRA_DIST = version.xml.in
 
 ####################################
-@ENABLE_DOC_TRUE@EXTRA_DIST = $(HTML_IMAGES) $(SETUP_FILES) \
-@ENABLE_DOC_TRUE@	$(GENERATED_FILES) version.xml.in
+@ENABLE_DOC_TRUE@EXTRA_DIST = $(HTML_IMAGES) $(SETUP_FILES) spec.html \
+@ENABLE_DOC_TRUE@	version.xml.in
 @ENABLE_DOC_TRUE@DOC_STAMPS = setup-build.stamp scan-build.stamp tmpl-build.stamp sgml-build.stamp \
 @ENABLE_DOC_TRUE@	html-build.stamp pdf-build.stamp \
 @ENABLE_DOC_TRUE@	tmpl.stamp sgml.stamp html.stamp pdf.stamp
@@ -483,7 +418,6 @@ AUTOMAKE_OPTIONS = 1.7
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/gtk-doc.make $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -518,118 +452,17 @@ $(am__aclocal_m4_deps):
 version.xml: $(top_builddir)/config.status $(srcdir)/version.xml.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-generate-settings-spec$(EXEEXT): $(generate_settings_spec_OBJECTS) $(generate_settings_spec_DEPENDENCIES) $(EXTRA_generate_settings_spec_DEPENDENCIES) 
-	@rm -f generate-settings-spec$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(generate_settings_spec_OBJECTS) $(generate_settings_spec_LDADD) $(LIBS)
-
-mostlyclean-compile:
-	-rm -f *.$(OBJEXT)
-
-distclean-compile:
-	-rm -f *.tab.c
-
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generate_settings_spec-generate-settings-spec.Po@am__quote@
-
-.c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c $<
-
-.c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c `$(CYGPATH_W) '$<'`
-
-.c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-generate_settings_spec-generate-settings-spec.o: generate-settings-spec.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(generate_settings_spec_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT generate_settings_spec-generate-settings-spec.o -MD -MP -MF $(DEPDIR)/generate_settings_spec-generate-settings-spec.Tpo -c -o generate_settings_spec-generate-settings-spec.o `test -f 'generate-settings-spec.c' || echo '$(srcdir)/'`generate-settings-spec.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/generate_settings_spec-generate-settings-spec.Tpo $(DEPDIR)/generate_settings_spec-generate-settings-spec.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='generate-settings-spec.c' object='generate_settings_spec-generate-settings-spec.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(generate_settings_spec_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o generate_settings_spec-generate-settings-spec.o `test -f 'generate-settings-spec.c' || echo '$(srcdir)/'`generate-settings-spec.c
-
-generate_settings_spec-generate-settings-spec.obj: generate-settings-spec.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(generate_settings_spec_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT generate_settings_spec-generate-settings-spec.obj -MD -MP -MF $(DEPDIR)/generate_settings_spec-generate-settings-spec.Tpo -c -o generate_settings_spec-generate-settings-spec.obj `if test -f 'generate-settings-spec.c'; then $(CYGPATH_W) 'generate-settings-spec.c'; else $(CYGPATH_W) '$(srcdir)/generate-settings-spec.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/generate_settings_spec-generate-settings-spec.Tpo $(DEPDIR)/generate_settings_spec-generate-settings-spec.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='generate-settings-spec.c' object='generate_settings_spec-generate-settings-spec.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(generate_settings_spec_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o generate_settings_spec-generate-settings-spec.obj `if test -f 'generate-settings-spec.c'; then $(CYGPATH_W) 'generate-settings-spec.c'; else $(CYGPATH_W) '$(srcdir)/generate-settings-spec.c'; fi`
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-
-ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
-	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
-	      END { if (nonempty) { for (i in files) print i; }; }'`; \
-	mkid -fID $$unique
 tags: TAGS
+TAGS:
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
-	set x; \
-	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
-	      END { if (nonempty) { for (i in files) print i; }; }'`; \
-	shift; \
-	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
-	  test -n "$$unique" || unique=$$empty_fix; \
-	  if test $$# -gt 0; then \
-	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
-	      "$$@" $$unique; \
-	  else \
-	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
-	      $$unique; \
-	  fi; \
-	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
-	      END { if (nonempty) { for (i in files) print i; }; }'`; \
-	test -z "$(CTAGS_ARGS)$$unique" \
-	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
-	     $$unique
+CTAGS:
 
-GTAGS:
-	here=`$(am__cd) $(top_builddir) && pwd` \
-	  && $(am__cd) $(top_srcdir) \
-	  && gtags -i $(GTAGS_ARGS) "$$here"
-
-distclean-tags:
-	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 @ENABLE_DOC_FALSE@dist-hook:
 
 distdir: $(DISTFILES)
@@ -668,7 +501,7 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: check-am
 @ENABLE_DOC_FALSE@all-local:
-all-am: Makefile $(PROGRAMS) all-local
+all-am: Makefile all-local
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -708,14 +541,11 @@ maintainer-clean-generic:
 @ENABLE_DOC_FALSE@clean-local:
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-local clean-noinstPROGRAMS \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-local distclean-tags
+distclean-am: clean-am distclean-generic distclean-local
 
 dvi: dvi-am
 
@@ -758,15 +588,13 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic \
 	maintainer-clean-local
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -780,20 +608,19 @@ uninstall-am: uninstall-local
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am all-local check check-am clean \
-	clean-generic clean-libtool clean-local clean-noinstPROGRAMS \
-	ctags dist-hook distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-local distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
+.PHONY: all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-local dist-hook distclean \
+	distclean-generic distclean-libtool distclean-local distdir \
+	dvi dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-data-local install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic \
-	maintainer-clean-local mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-local
+	maintainer-clean-local mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
+	uninstall-local
 
 
 @ENABLE_DOC_TRUE@spec.html: $(XMLS) $(OTHER_FILES) html-build.stamp
@@ -801,9 +628,10 @@ uninstall-am: uninstall-local
 @ENABLE_DOC_TRUE@	mkdir -p $(builddir)/html/
 @ENABLE_DOC_TRUE@	cp $@ $(builddir)/html/
 
-@ENABLE_DOC_TRUE@settings-spec.xml: generate-settings-spec $(top_builddir)/libnm-util/libnm-util.la
-@ENABLE_DOC_TRUE@	rm -f $(builddir)/$@
-@ENABLE_DOC_TRUE@	$(builddir)/generate-settings-spec $(builddir)/$@
+# settings-spec.xml should *not* be DISTed because it must be regenerated
+# whenever the libnm-util source changes
+@ENABLE_DOC_TRUE@settings-spec.xml: $(top_builddir)/tools/generate-settings-spec $(top_builddir)/libnm-util/libnm-util.la
+@ENABLE_DOC_TRUE@	$(top_builddir)/tools/generate-settings-spec book $@
 
 @ENABLE_DOC_TRUE@all: $(GENERATED_FILES)
 

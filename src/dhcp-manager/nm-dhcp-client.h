@@ -35,6 +35,7 @@
 #define NM_DHCP_CLIENT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_DHCP_CLIENT, NMDHCPClientClass))
 
 #define NM_DHCP_CLIENT_INTERFACE "iface"
+#define NM_DHCP_CLIENT_HWADDR    "hwaddr"
 #define NM_DHCP_CLIENT_IPV6      "ipv6"
 #define NM_DHCP_CLIENT_UUID      "uuid"
 #define NM_DHCP_CLIENT_TIMEOUT   "timeout"
@@ -85,10 +86,23 @@ typedef struct {
 	                       NMSettingIP6Config *s_ip6,
 	                       guint8 *anycast_addr,
 	                       const char *hostname,
-	                       gboolean info_only);
+	                       gboolean info_only,
+	                       const GByteArray *duid);
 
 	void (*stop)          (NMDHCPClient *self,
-	                       gboolean release);
+	                       gboolean release,
+	                       const GByteArray *duid);
+
+	/**
+	 * get_duid:
+	 * @self: the #NMDHCPClient
+	 *
+	 * Attempts to find an existing DHCPv6 DUID for this client in the DHCP
+	 * client's persistent configuration.  Returned DUID should be the binary
+	 * representation of the DUID.  If no DUID is found, %NULL should be
+	 * returned.
+	 */
+	GByteArray * (*get_duid) (NMDHCPClient *self);
 
 	/* Signals */
 	void (*state_changed) (NMDHCPClient *self, NMDHCPState state);

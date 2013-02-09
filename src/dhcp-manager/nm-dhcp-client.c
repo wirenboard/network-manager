@@ -25,9 +25,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
+#include <uuid/uuid.h>
 
 #include "nm-utils.h"
 #include "nm-logging.h"
@@ -36,9 +35,11 @@
 
 typedef struct {
 	char *       iface;
+	GByteArray * hwaddr;
 	gboolean     ipv6;
 	char *       uuid;
 	guint32      timeout;
+	GByteArray * duid;
 
 	guchar       state;
 	GPid         pid;
@@ -67,6 +68,7 @@ static guint signals[LAST_SIGNAL] = { 0 };
 enum {
 	PROP_0,
 	PROP_IFACE,
+	PROP_HWADDR,
 	PROP_IPV6,
 	PROP_UUID,
 	PROP_TIMEOUT,
@@ -182,7 +184,7 @@ nm_dhcp_client_stop_pid (GPid pid, const char *iface, guint timeout_secs)
 }
 
 static void
-stop (NMDHCPClient *self, gboolean release)
+stop (NMDHCPClient *self, gboolean release, const GByteArray *duid)
 {
 	NMDHCPClientPrivate *priv;
 
@@ -321,6 +323,96 @@ nm_dhcp_client_start_ip4 (NMDHCPClient *self,
 	return priv->pid ? TRUE : FALSE;
 }
 
+static GByteArray *
+generate_duid_from_machine_id (void)
+{
+	GByteArray *duid;
+	char *contents = NULL;
+	GError *error = NULL;
+	GChecksum *sum;
+	guint8 buffer[32]; /* SHA256 digest size */
+	gsize sumlen = sizeof (buffer);
+	const guint16 duid_type = g_htons (4);
+	uuid_t uuid;
+	int ret;
+
+	/* Get the machine ID from /etc/machine-id; it's always in /etc no matter
+	 * where our configured SYSCONFDIR is.
+	 */
+	if (!g_file_get_contents ("/etc/machine-id", &contents, NULL, &error)) {
+		nm_log_warn (LOGD_DHCP6, "Failed to read " SYSCONFDIR "/machine-id to generate DHCPv6 DUID: (%d) %s",
+			         error ? error->code : -1,
+			         error ? error->message : "(unknown)");
+		g_clear_error (&error);
+		return NULL;
+	}
+
+	contents = g_strstrip (contents);
+	ret = uuid_parse (contents, uuid);
+	g_free (contents);
+
+	if (ret != 0) {
+		nm_log_warn (LOGD_DHCP6, "Failed to parse " SYSCONFDIR "/machine-id to generate DHCPv6 DUID.");
+		return NULL;
+	}
+
+	/* Hash the machine ID so it's not leaked to the network */
+	sum = g_checksum_new (G_CHECKSUM_SHA256);
+	g_checksum_update (sum, (const guchar *) &uuid, sizeof (uuid));
+	g_checksum_get_digest (sum, buffer, &sumlen);
+	g_checksum_free (sum);
+
+	/* Generate a DHCP Unique Identifier for DHCPv6 using the
+	 * DUID-UUID method (see RFC 6355 section 4).  Format is:
+	 *
+	 * u16: type (DUID-UUID = 4)
+	 * u8[16]: UUID bytes
+	 */
+	duid = g_byte_array_sized_new (18);
+	g_byte_array_append (duid, (guint8 *) &duid_type, sizeof (duid_type));
+
+	/* Since SHA256 is 256 bits, but UUID is 128 bits, we just take the first
+	 * 128 bits of the SHA256 as the DUID-UUID.
+	 */
+	g_byte_array_append (duid, buffer, 16);
+
+	return duid;
+}
+
+static GByteArray *
+get_duid (NMDHCPClient *self)
+{
+	static GByteArray *duid = NULL;
+	GByteArray *copy = NULL;
+
+	if (G_UNLIKELY (duid == NULL))
+		duid = generate_duid_from_machine_id ();
+
+	if (G_LIKELY (duid)) {
+		copy = g_byte_array_sized_new (duid->len);
+		g_byte_array_append (copy, duid->data, duid->len);
+	}
+
+	return copy;
+}
+
+static char *
+escape_duid (const GByteArray *duid)
+{
+	guint32 i = 0;
+	GString *s;
+
+	g_return_val_if_fail (duid != NULL, NULL);
+
+	s = g_string_sized_new (40);
+	while (i < duid->len) {
+		if (s->len)
+			g_string_append_c (s, ':');
+		g_string_append_printf (s, "%02x", duid->data[i++]);
+	}
+	return g_string_free (s, FALSE);
+}
+
 gboolean
 nm_dhcp_client_start_ip6 (NMDHCPClient *self,
                           NMSettingIP6Config *s_ip6,
@@ -329,6 +421,7 @@ nm_dhcp_client_start_ip6 (NMDHCPClient *self,
                           gboolean info_only)
 {
 	NMDHCPClientPrivate *priv;
+	char *escaped;
 
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
@@ -338,12 +431,29 @@ nm_dhcp_client_start_ip6 (NMDHCPClient *self,
 	g_return_val_if_fail (priv->ipv6 == TRUE, FALSE);
 	g_return_val_if_fail (priv->uuid != NULL, FALSE);
 
+	/* If we don't have one yet, read the default DUID for this DHCPv6 client
+	 * from the client-specific persistent configuration.
+	 */
+	if (!priv->duid)
+		priv->duid = NM_DHCP_CLIENT_GET_CLASS (self)->get_duid (self);
+
+	if (nm_logging_level_enabled (LOGL_DEBUG)) {
+		escaped = escape_duid (priv->duid);
+		nm_log_dbg (LOGD_DHCP, "(%s): DHCPv6 DUID is '%s'", priv->iface, escaped);
+		g_free (escaped);
+	}
+
 	priv->info_only = info_only;
 
 	nm_log_info (LOGD_DHCP, "Activation (%s) Beginning DHCPv6 transaction (timeout in %d seconds)",
 	             priv->iface, priv->timeout);
 
-	priv->pid = NM_DHCP_CLIENT_GET_CLASS (self)->ip6_start (self, s_ip6, dhcp_anycast_addr, hostname, info_only);
+	priv->pid = NM_DHCP_CLIENT_GET_CLASS (self)->ip6_start (self,
+	                                                        s_ip6,
+	                                                        dhcp_anycast_addr,
+	                                                        hostname,
+	                                                        info_only,
+	                                                        priv->duid);
 	if (priv->pid > 0)
 		start_monitor (self);
 
@@ -397,7 +507,7 @@ nm_dhcp_client_stop (NMDHCPClient *self, gboolean release)
 
 	/* Kill the DHCP client */
 	if (!priv->dead) {
-		NM_DHCP_CLIENT_GET_CLASS (self)->stop (self, release);
+		NM_DHCP_CLIENT_GET_CLASS (self)->stop (self, release, priv->duid);
 		priv->dead = TRUE;
 
 		nm_log_info (LOGD_DHCP, "(%s): canceled DHCP transaction, DHCP client pid %d",
@@ -1323,6 +1433,9 @@ get_property (GObject *object, guint prop_id,
 	case PROP_IFACE:
 		g_value_set_string (value, priv->iface);
 		break;
+	case PROP_HWADDR:
+		g_value_set_boxed (value, priv->hwaddr);
+		break;
 	case PROP_IPV6:
 		g_value_set_boolean (value, priv->ipv6);
 		break;
@@ -1348,6 +1461,10 @@ set_property (GObject *object, guint prop_id,
 	case PROP_IFACE:
 		/* construct-only */
 		priv->iface = g_strdup (g_value_get_string (value));
+		break;
+	case PROP_HWADDR:
+		/* construct only */
+		priv->hwaddr = g_value_dup_boxed (value);
 		break;
 	case PROP_IPV6:
 		/* construct-only */
@@ -1382,6 +1499,11 @@ dispose (GObject *object)
 
 	g_hash_table_destroy (priv->options);
 	g_free (priv->iface);
+	if (priv->hwaddr)
+		g_byte_array_free (priv->hwaddr, TRUE);
+
+	if (priv->duid)
+		g_byte_array_free (priv->duid, TRUE);
 
 	G_OBJECT_CLASS (nm_dhcp_client_parent_class)->dispose (object);
 }
@@ -1399,6 +1521,7 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 	object_class->set_property = set_property;
 
 	client_class->stop = stop;
+	client_class->get_duid = get_duid;
 
 	g_object_class_install_property
 		(object_class, PROP_IFACE,
@@ -1407,6 +1530,14 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 		                      "Interface",
 		                      NULL,
 		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property
+		(object_class, PROP_HWADDR,
+		 g_param_spec_boxed (NM_DHCP_CLIENT_HWADDR,
+		                     "hwaddr",
+		                     "hardware address",
+		                     G_TYPE_BYTE_ARRAY,
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
 	g_object_class_install_property
 		(object_class, PROP_IPV6,

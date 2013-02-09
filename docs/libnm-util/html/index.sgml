@@ -1416,10 +1416,12 @@
 <ANCHOR id="nm-utils-ssid-to-utf8" href="libnm-util/libnm-util-nm-utils.html#nm-utils-ssid-to-utf8">
 <ANCHOR id="nm-utils-uuid-generate" href="libnm-util/libnm-util-nm-utils.html#nm-utils-uuid-generate">
 <ANCHOR id="nm-utils-uuid-generate-from-string" href="libnm-util/libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string">
+<ANCHOR id="nm-utils-wep-key-valid" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wep-key-valid">
 <ANCHOR id="nm-utils-wifi-channel-to-freq" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq">
 <ANCHOR id="nm-utils-wifi-find-next-channel" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel">
 <ANCHOR id="nm-utils-wifi-freq-to-channel" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel">
 <ANCHOR id="nm-utils-wifi-is-channel-valid" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid">
+<ANCHOR id="nm-utils-wpa-psk-valid" href="libnm-util/libnm-util-nm-utils.html#nm-utils-wpa-psk-valid">
 <ANCHOR id="annotation-glossterm-out" href="libnm-util/annotation-glossary.html#annotation-glossterm-out">
 <ANCHOR id="annotation-glossterm-allow-none" href="libnm-util/annotation-glossary.html#annotation-glossterm-allow-none">
 <ANCHOR id="annotation-glossterm-inout" href="libnm-util/annotation-glossary.html#annotation-glossterm-inout">

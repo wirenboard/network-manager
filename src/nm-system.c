@@ -60,11 +60,8 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
-
-#if HAVE_LIBNL == 3
 #include <netlink/route/link/bonding.h>
 #include <netlink/route/link/vlan.h>
-#endif
 
 #if !HAVE_VLAN_FLAG_LOOSE_BINDING
 /* Older kernels don't have this flag */
@@ -1689,9 +1686,29 @@ nm_system_bond_enslave (gint master_ifindex,
 	g_assert (!nm_system_iface_is_up (slave_ifindex));
 
 	if (nm_system_iface_get_flags (slave_ifindex) & IFF_SLAVE) {
-		nm_log_err (LOGD_DEVICE, "(%s): %s is already a slave",
-		            master_iface, slave_iface);
-		return FALSE;
+		struct rtnl_link *link;
+		int existing_master = -1;
+
+		/* Get the ifindex of the existing master device */
+		link = nm_netlink_index_to_rtnl_link (slave_ifindex);
+		g_warn_if_fail (link != NULL);
+		if (link) {
+			existing_master = rtnl_link_get_master (link);
+			rtnl_link_put (link);
+		}
+
+		if (existing_master > 0) {
+			/* Fail if the device is already a slave of a different master */
+			if (existing_master != master_ifindex) {
+				nm_log_err (LOGD_DEVICE, "(%s): already a slave of a different master",
+							slave_iface);
+				return FALSE;
+			}
+
+			nm_log_dbg (LOGD_DEVICE, "(%s): %s is already enslaved",
+			            master_iface, slave_iface);
+			return TRUE;
+		}
 	}
 
 	err = rtnl_link_bond_enslave_ifindex (sock, master_ifindex, slave_ifindex);
@@ -1783,7 +1800,7 @@ nm_system_bond_release (gint master_ifindex,
 }
 
 /**
- * nm_system_get_iface_type_compat:
+ * nm_system_compat_get_iface_type:
  * @ifindex: interface index
  * @name: name of interface
  *
@@ -1796,10 +1813,11 @@ static int
 nm_system_compat_get_iface_type (int ifindex, const char *name)
 {
 	int res = NM_IFACE_TYPE_UNSPEC;
-	char *ifname = NULL;
+	char *ifname = NULL, *path = NULL;
 	struct vlan_ioctl_args ifv;
 	struct ifreq ifr;
 	struct ifbond ifb;
+	struct stat st;
 	int fd;
 
 	g_return_val_if_fail (ifindex > 0 || name, NM_IFACE_TYPE_UNSPEC);
@@ -1833,7 +1851,15 @@ nm_system_compat_get_iface_type (int ifindex, const char *name)
 		goto out;
 	}
 
+	/* and bridge */
+	path = g_strdup_printf ("/sys/class/net/%s/bridge", ifname ? ifname : name);
+	if ((stat (path, &st) == 0) && S_ISDIR (st.st_mode)) {
+		res = NM_IFACE_TYPE_BRIDGE;
+		goto out;
+	}
+
 out:
+	g_free (path);
 	close (fd);
 	g_free (ifname);
 	return res;
@@ -1918,7 +1944,7 @@ nm_system_get_iface_vlan_info (int ifindex,
 	if (!nlh)
 		return FALSE;
 
-	ret = rtnl_link_alloc_cache (nlh, &cache);
+	ret = rtnl_link_alloc_cache (nlh, AF_UNSPEC, &cache);
 	g_return_val_if_fail (ret == 0, FALSE);
 	g_return_val_if_fail (cache != NULL, FALSE);
 
@@ -2295,7 +2321,7 @@ nm_system_del_vlan_iface (const char *iface)
 	nlh = nm_netlink_get_default_handle ();
 	g_return_val_if_fail (nlh != NULL, FALSE);
 
-	ret = rtnl_link_alloc_cache (nlh, &cache);
+	ret = rtnl_link_alloc_cache (nlh, AF_UNSPEC, &cache);
 	g_return_val_if_fail (ret == 0, FALSE);
 	g_return_val_if_fail (cache != NULL, FALSE);
 
@@ -2337,14 +2363,16 @@ _bridge_create_compat (const char *iface)
 /**
  * nm_system_create_bridge:
  * @iface: Name bridging device to create
+ * @out_exists: on return, %TRUE if the bridge already exists
  *
  * Creates a new bridging device in the kernel. If a bridging device with
- * the specified name already exists, it is being reused.
+ * the specified name already exists, it is reused and no error is returned,
+ * but @out_exists is set to %TRUE.
  *
  * Returns: %TRUE on success, %FALSE on error.
  */
 gboolean
-nm_system_create_bridge (const char *iface)
+nm_system_create_bridge (const char *iface, gboolean *out_exists)
 {
 	int err;
 
@@ -2355,6 +2383,8 @@ nm_system_create_bridge (const char *iface)
 		            iface, strerror (-err));
 		return FALSE;
 	}
+	if (out_exists && err == -EEXIST)
+		*out_exists = TRUE;
 	return TRUE;
 }
 
@@ -2490,9 +2520,14 @@ nm_system_bridge_attach (int master_ifindex,
 	                             mif ? mif : master_iface,
 	                             slave_ifindex,
 	                             sif ? sif : slave_iface);
-	if (err < 0 && err != -EBUSY) {
-		nm_log_err (LOGD_DEVICE, "(%s): failed to attach slave %s: %s",
-		            master_iface, slave_iface, strerror (-err));
+	if (err < 0) {
+		if (err == -EBUSY) {
+			/* Interface already attached to the given bridge */
+			err = 0;
+		} else {
+			nm_log_err (LOGD_DEVICE, "(%s): failed to attach slave %s: %s",
+			            master_iface, slave_iface, strerror (-err));
+		}
 	}
 
 out:

@@ -100,6 +100,7 @@ nm_client_get_active_connections
 nm_client_get_device_by_iface
 nm_client_get_device_by_path
 nm_client_get_devices
+nm_client_get_logging
 nm_client_get_manager_running
 nm_client_get_permission_result
 nm_client_get_state
@@ -109,6 +110,7 @@ nm_client_networking_set_enabled
 nm_client_new
 nm_client_new_async
 nm_client_new_finish
+nm_client_set_logging
 nm_client_sleep
 nm_client_wimax_get_enabled
 nm_client_wimax_hardware_get_enabled
@@ -415,6 +417,7 @@ nm_device_vlan_get_type
 NMDeviceWifi
 NMDeviceWifiClass
 NMDeviceWifiError
+NMDeviceWifiRequestScanFn
 NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT
 NM_DEVICE_WIFI_BITRATE
 NM_DEVICE_WIFI_CAPABILITIES
@@ -432,6 +435,7 @@ nm_device_wifi_get_hw_address
 nm_device_wifi_get_mode
 nm_device_wifi_get_permanent_hw_address
 nm_device_wifi_new
+nm_device_wifi_request_scan_simple
 <SUBSECTION Standard>
 NM_DEVICE_WIFI
 NM_DEVICE_WIFI_CLASS

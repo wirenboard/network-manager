@@ -65,7 +65,6 @@ sbin_PROGRAMS = NetworkManager$(EXEEXT)
 @WITH_CONCHECK_TRUE@am__append_8 = $(LIBSOUP_CFLAGS)
 @SESSION_TRACKING_CK_TRUE@am__append_9 = -DCKDB_PATH=\"${CKDB_PATH}\"
 @WITH_CONCHECK_TRUE@am__append_10 = $(LIBSOUP_LIBS)
-libexec_PROGRAMS = nm-crash-logger$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -76,12 +75,11 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
 	$(top_srcdir)/m4/introspection.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libnl-check.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/vapigen.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
+	$(top_srcdir)/m4/vapigen.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -115,9 +113,9 @@ am_libtest_wifi_ap_utils_la_OBJECTS =  \
 	libtest_wifi_ap_utils_la-nm-wifi-ap-utils.lo
 libtest_wifi_ap_utils_la_OBJECTS =  \
 	$(am_libtest_wifi_ap_utils_la_OBJECTS)
-am__installdirs = "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(sbindir)" \
+am__installdirs = "$(DESTDIR)$(sbindir)" \
 	"$(DESTDIR)$(NetworkManagerdir)" "$(DESTDIR)$(dbusservicedir)"
-PROGRAMS = $(libexec_PROGRAMS) $(sbin_PROGRAMS)
+PROGRAMS = $(sbin_PROGRAMS)
 am__NetworkManager_SOURCES_DIST = nm-types.h nm-call-store.c \
 	nm-call-store.h nm-device.c nm-device.h nm-device-private.h \
 	nm-device-ethernet.c nm-device-ethernet.h nm-device-adsl.c \
@@ -224,10 +222,6 @@ NetworkManager_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(NetworkManager_LDFLAGS) $(LDFLAGS) -o \
 	$@
-am_nm_crash_logger_OBJECTS =  \
-	nm_crash_logger-nm-crash-logger.$(OBJEXT)
-nm_crash_logger_OBJECTS = $(am_nm_crash_logger_OBJECTS)
-nm_crash_logger_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -256,12 +250,11 @@ am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libtest_dhcp_la_SOURCES) \
 	$(libtest_policy_hosts_la_SOURCES) \
-	$(libtest_wifi_ap_utils_la_SOURCES) $(NetworkManager_SOURCES) \
-	$(nm_crash_logger_SOURCES)
+	$(libtest_wifi_ap_utils_la_SOURCES) $(NetworkManager_SOURCES)
 DIST_SOURCES = $(libtest_dhcp_la_SOURCES) \
 	$(libtest_policy_hosts_la_SOURCES) \
 	$(libtest_wifi_ap_utils_la_SOURCES) \
-	$(am__NetworkManager_SOURCES_DIST) $(nm_crash_logger_SOURCES)
+	$(am__NetworkManager_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -437,12 +430,6 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
-LIBNL1_CFLAGS = @LIBNL1_CFLAGS@
-LIBNL1_LIBS = @LIBNL1_LIBS@
-LIBNL2_CFLAGS = @LIBNL2_CFLAGS@
-LIBNL2_LIBS = @LIBNL2_LIBS@
-LIBNL3_CFLAGS = @LIBNL3_CFLAGS@
-LIBNL3_LIBS = @LIBNL3_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
@@ -748,16 +735,6 @@ NetworkManager_LDADD = ./generated/libnm-generated.la \
 	$(GLIB_LIBS) $(GUDEV_LIBS) $(LIBNL_LIBS) $(POLKIT_LIBS) \
 	$(SYSTEMD_LOGIN_LIBS) $(LIBM) $(LIBDL) $(am__append_10)
 NetworkManager_LDFLAGS = -rdynamic
-nm_crash_logger_SOURCES = nm-crash-logger.c
-nm_crash_logger_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	-DBINDIR=\"$(bindir)\" \
-	-DNMBINARY=\"$(nmbinary)\" \
-	-DNMDATADIR=\"$(nmdatadir)\" \
-	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-DNMSTATEDIR=\"$(nmstatedir)\"
-
-nm_crash_logger_LDADD = $(GLIB_LIBS)
 NetworkManagerdir = $(datadir)/NetworkManager
 NetworkManager_DATA = gdb-cmd
 dbusservicedir = $(DBUS_SYS_DIR)
@@ -819,52 +796,6 @@ libtest-policy-hosts.la: $(libtest_policy_hosts_la_OBJECTS) $(libtest_policy_hos
 	$(AM_V_CCLD)$(LINK)  $(libtest_policy_hosts_la_OBJECTS) $(libtest_policy_hosts_la_LIBADD) $(LIBS)
 libtest-wifi-ap-utils.la: $(libtest_wifi_ap_utils_la_OBJECTS) $(libtest_wifi_ap_utils_la_DEPENDENCIES) $(EXTRA_libtest_wifi_ap_utils_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libtest_wifi_ap_utils_la_OBJECTS) $(libtest_wifi_ap_utils_la_LIBADD) $(LIBS)
-install-libexecPROGRAMS: $(libexec_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(libexecdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(libexecdir)" || exit 1; \
-	fi; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p || test -f $$p1; \
-	  then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(libexecdir)$$dir'"; \
-	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(libexecdir)$$dir" || exit $$?; \
-	    } \
-	; done
-
-uninstall-libexecPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' `; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(libexecdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(libexecdir)" && rm -f $$files
-
-clean-libexecPROGRAMS:
-	@list='$(libexec_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
 install-sbinPROGRAMS: $(sbin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(sbin_PROGRAMS)'; test -n "$(sbindir)" || list=; \
@@ -914,9 +845,6 @@ clean-sbinPROGRAMS:
 NetworkManager$(EXEEXT): $(NetworkManager_OBJECTS) $(NetworkManager_DEPENDENCIES) $(EXTRA_NetworkManager_DEPENDENCIES) 
 	@rm -f NetworkManager$(EXEEXT)
 	$(AM_V_CCLD)$(NetworkManager_LINK) $(NetworkManager_OBJECTS) $(NetworkManager_LDADD) $(LIBS)
-nm-crash-logger$(EXEEXT): $(nm_crash_logger_OBJECTS) $(nm_crash_logger_DEPENDENCIES) $(EXTRA_nm_crash_logger_DEPENDENCIES) 
-	@rm -f nm-crash-logger$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(nm_crash_logger_OBJECTS) $(nm_crash_logger_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -976,7 +904,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_dhcp_la-nm-ip6-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_policy_hosts_la-nm-policy-hosts.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_wifi_ap_utils_la-nm-wifi-ap-utils.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm_crash_logger-nm-crash-logger.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1685,20 +1612,6 @@ NetworkManager-nm-sleep-monitor-upower.obj: nm-sleep-monitor-upower.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(NetworkManager_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o NetworkManager-nm-sleep-monitor-upower.obj `if test -f 'nm-sleep-monitor-upower.c'; then $(CYGPATH_W) 'nm-sleep-monitor-upower.c'; else $(CYGPATH_W) '$(srcdir)/nm-sleep-monitor-upower.c'; fi`
 
-nm_crash_logger-nm-crash-logger.o: nm-crash-logger.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_crash_logger_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_crash_logger-nm-crash-logger.o -MD -MP -MF $(DEPDIR)/nm_crash_logger-nm-crash-logger.Tpo -c -o nm_crash_logger-nm-crash-logger.o `test -f 'nm-crash-logger.c' || echo '$(srcdir)/'`nm-crash-logger.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_crash_logger-nm-crash-logger.Tpo $(DEPDIR)/nm_crash_logger-nm-crash-logger.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-crash-logger.c' object='nm_crash_logger-nm-crash-logger.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_crash_logger_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_crash_logger-nm-crash-logger.o `test -f 'nm-crash-logger.c' || echo '$(srcdir)/'`nm-crash-logger.c
-
-nm_crash_logger-nm-crash-logger.obj: nm-crash-logger.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_crash_logger_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_crash_logger-nm-crash-logger.obj -MD -MP -MF $(DEPDIR)/nm_crash_logger-nm-crash-logger.Tpo -c -o nm_crash_logger-nm-crash-logger.obj `if test -f 'nm-crash-logger.c'; then $(CYGPATH_W) 'nm-crash-logger.c'; else $(CYGPATH_W) '$(srcdir)/nm-crash-logger.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_crash_logger-nm-crash-logger.Tpo $(DEPDIR)/nm_crash_logger-nm-crash-logger.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-crash-logger.c' object='nm_crash_logger-nm-crash-logger.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_crash_logger_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_crash_logger-nm-crash-logger.obj `if test -f 'nm-crash-logger.c'; then $(CYGPATH_W) 'nm-crash-logger.c'; else $(CYGPATH_W) '$(srcdir)/nm-crash-logger.c'; fi`
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1943,7 +1856,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(NetworkManagerdir)" "$(DESTDIR)$(dbusservicedir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(NetworkManagerdir)" "$(DESTDIR)$(dbusservicedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1981,8 +1894,8 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
-clean-am: clean-generic clean-libexecPROGRAMS clean-libtool \
-	clean-noinstLTLIBRARIES clean-sbinPROGRAMS mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-sbinPROGRAMS mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
@@ -2009,7 +1922,7 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-libexecPROGRAMS install-sbinPROGRAMS
+install-exec-am: install-sbinPROGRAMS
 
 install-html: install-html-recursive
 
@@ -2050,31 +1963,29 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-NetworkManagerDATA uninstall-dbusserviceDATA \
-	uninstall-libexecPROGRAMS uninstall-sbinPROGRAMS
+	uninstall-sbinPROGRAMS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all check \
 	ctags-recursive install install-am install-data-am \
 	install-strip tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am check check-am clean clean-generic \
-	clean-libexecPROGRAMS clean-libtool clean-noinstLTLIBRARIES \
-	clean-sbinPROGRAMS ctags ctags-recursive distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-NetworkManagerDATA install-am install-data \
-	install-data-am install-data-hook install-dbusserviceDATA \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-sbinPROGRAMS install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall \
-	uninstall-NetworkManagerDATA uninstall-am \
-	uninstall-dbusserviceDATA uninstall-libexecPROGRAMS \
-	uninstall-sbinPROGRAMS
+	all all-am check check-am clean clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES clean-sbinPROGRAMS ctags \
+	ctags-recursive distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-NetworkManagerDATA \
+	install-am install-data install-data-am install-data-hook \
+	install-dbusserviceDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-sbinPROGRAMS \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-NetworkManagerDATA uninstall-am \
+	uninstall-dbusserviceDATA uninstall-sbinPROGRAMS
 
 
 nm-access-point-glue.h: $(top_srcdir)/introspection/nm-access-point.xml

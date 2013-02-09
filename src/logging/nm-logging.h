@@ -28,7 +28,7 @@
 /* Log domains */
 enum {
 	LOGD_NONE       = 0x00000000,
-	LOGD_HW         = 0x00000001, /* Hardware detection and info */
+	LOGD_PLATFORM   = 0x00000001, /* Platform services */
 	LOGD_RFKILL     = 0x00000002,
 	LOGD_ETHER      = 0x00000004,
 	LOGD_WIFI       = 0x00000008,
@@ -57,10 +57,12 @@ enum {
 	LOGD_ADSL       = 0x04000000,
 	LOGD_BOND       = 0x08000000,
 	LOGD_VLAN       = 0x10000000,
+	LOGD_BRIDGE     = 0x20000000,
 };
 
 #define LOGD_DHCP (LOGD_DHCP4 | LOGD_DHCP6)
 #define LOGD_IP   (LOGD_IP4 | LOGD_IP6)
+#define LOGD_HW LOGD_PLATFORM
 
 /* Log levels */
 enum {
@@ -107,7 +109,6 @@ gboolean nm_logging_level_enabled (guint32 level);
 gboolean nm_logging_domain_enabled (guint32 domain);
 
 /* Undefine the nm-utils.h logging stuff to ensure errors */
-#undef nm_print_backtrace
 #undef nm_get_timestamp
 #undef nm_info
 #undef nm_info_str
@@ -120,7 +121,6 @@ gboolean nm_logging_domain_enabled (guint32 domain);
 
 gboolean nm_logging_setup     (const char *level, const char *domains, GError **error);
 void     nm_logging_start     (gboolean become_daemon);
-void     nm_logging_backtrace (void);
 void     nm_logging_shutdown  (void);
 
 #endif /* NM_LOGGING_H */

@@ -48,6 +48,7 @@
 <ANCHOR id="nm-client-get-device-by-iface" href="libnm-glib/NMClient.html#nm-client-get-device-by-iface">
 <ANCHOR id="nm-client-get-device-by-path" href="libnm-glib/NMClient.html#nm-client-get-device-by-path">
 <ANCHOR id="nm-client-get-devices" href="libnm-glib/NMClient.html#nm-client-get-devices">
+<ANCHOR id="nm-client-get-logging" href="libnm-glib/NMClient.html#nm-client-get-logging">
 <ANCHOR id="nm-client-get-manager-running" href="libnm-glib/NMClient.html#nm-client-get-manager-running">
 <ANCHOR id="nm-client-get-permission-result" href="libnm-glib/NMClient.html#nm-client-get-permission-result">
 <ANCHOR id="nm-client-get-state" href="libnm-glib/NMClient.html#nm-client-get-state">
@@ -57,6 +58,7 @@
 <ANCHOR id="nm-client-new" href="libnm-glib/NMClient.html#nm-client-new">
 <ANCHOR id="nm-client-new-async" href="libnm-glib/NMClient.html#nm-client-new-async">
 <ANCHOR id="nm-client-new-finish" href="libnm-glib/NMClient.html#nm-client-new-finish">
+<ANCHOR id="nm-client-set-logging" href="libnm-glib/NMClient.html#nm-client-set-logging">
 <ANCHOR id="nm-client-sleep" href="libnm-glib/NMClient.html#nm-client-sleep">
 <ANCHOR id="nm-client-wimax-get-enabled" href="libnm-glib/NMClient.html#nm-client-wimax-get-enabled">
 <ANCHOR id="nm-client-wimax-hardware-get-enabled" href="libnm-glib/NMClient.html#nm-client-wimax-hardware-get-enabled">
@@ -247,6 +249,7 @@
 <ANCHOR id="NM-DEVICE-WIFI-ERROR-MAC-MISMATCH:CAPS" href="libnm-glib/NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-MAC-MISMATCH:CAPS">
 <ANCHOR id="NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-WPA-CAPS" href="libnm-glib/NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-WPA-CAPS">
 <ANCHOR id="NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-RSN-CAPS" href="libnm-glib/NMDeviceWifi.html#NM-DEVICE-WIFI-ERROR-MISSING-DEVICE-RSN-CAPS">
+<ANCHOR id="NMDeviceWifiRequestScanFn" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifiRequestScanFn">
 <ANCHOR id="NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS" href="libnm-glib/NMDeviceWifi.html#NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS">
 <ANCHOR id="NM-DEVICE-WIFI-BITRATE:CAPS" href="libnm-glib/NMDeviceWifi.html#NM-DEVICE-WIFI-BITRATE:CAPS">
 <ANCHOR id="NM-DEVICE-WIFI-CAPABILITIES:CAPS" href="libnm-glib/NMDeviceWifi.html#NM-DEVICE-WIFI-CAPABILITIES:CAPS">
@@ -264,6 +267,7 @@
 <ANCHOR id="nm-device-wifi-get-mode" href="libnm-glib/NMDeviceWifi.html#nm-device-wifi-get-mode">
 <ANCHOR id="nm-device-wifi-get-permanent-hw-address" href="libnm-glib/NMDeviceWifi.html#nm-device-wifi-get-permanent-hw-address">
 <ANCHOR id="nm-device-wifi-new" href="libnm-glib/NMDeviceWifi.html#nm-device-wifi-new">
+<ANCHOR id="nm-device-wifi-request-scan-simple" href="libnm-glib/NMDeviceWifi.html#nm-device-wifi-request-scan-simple">
 <ANCHOR id="NMDeviceWifi.property-details" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi.property-details">
 <ANCHOR id="NMDeviceWifi--active-access-point" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi--active-access-point">
 <ANCHOR id="NMDeviceWifi--bitrate" href="libnm-glib/NMDeviceWifi.html#NMDeviceWifi--bitrate">

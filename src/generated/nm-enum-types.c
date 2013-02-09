@@ -5,10 +5,10 @@
 
 #include "nm-enum-types.h"
 
-#include "nm-hostname-provider.h" 
 #include "nm-sleep-monitor.h" 
 #include "nm-device.h" 
 #include "nm-rfkill.h" 
+#include "NetworkManagerUtils.h" 
 #include "nm-device-vlan.h" 
 #include "nm-device-factory.h" 
 #include "nm-active-connection.h" 
@@ -26,6 +26,7 @@
 #include "nm-connection-provider.h" 
 #include "nm-device-bond.h" 
 #include "nm-wifi-ap-utils.h" 
+#include "nm-hostname-provider.h" 
 #include "nm-device-adsl.h" 
 #include "nm-policy-hosts.h" 
 #include "nm-dispatcher.h" 
@@ -42,7 +43,6 @@
 #include "nm-device-private.h" 
 #include "nm-policy.h" 
 #include "nm-manager-auth.h" 
-#include "NetworkManagerUtils.h" 
 #include "nm-config.h" 
 #include "nm-netlink-utils.h" 
 #include "nm-netlink-monitor.h" 
@@ -349,6 +349,7 @@ nm_manager_error_get_type (void)
         { NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED, "NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED", "AlreadyEnabledOrDisabled" },
         { NM_MANAGER_ERROR_UNSUPPORTED_CONNECTION_TYPE, "NM_MANAGER_ERROR_UNSUPPORTED_CONNECTION_TYPE", "UnsupportedConnectionType" },
         { NM_MANAGER_ERROR_DEPENDENCY_FAILED, "NM_MANAGER_ERROR_DEPENDENCY_FAILED", "DependencyFailed" },
+        { NM_MANAGER_ERROR_AUTOCONNECT_NOT_ALLOWED, "NM_MANAGER_ERROR_AUTOCONNECT_NOT_ALLOWED", "AutoconnectNotAllowed" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

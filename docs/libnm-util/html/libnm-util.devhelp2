@@ -1075,10 +1075,12 @@
     <keyword type="function" name="nm_utils_ssid_to_utf8 ()" link="libnm-util-nm-utils.html#nm-utils-ssid-to-utf8"/>
     <keyword type="function" name="nm_utils_uuid_generate ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate"/>
     <keyword type="function" name="nm_utils_uuid_generate_from_string ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string"/>
+    <keyword type="function" name="nm_utils_wep_key_valid ()" link="libnm-util-nm-utils.html#nm-utils-wep-key-valid"/>
     <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
     <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
     <keyword type="function" name="nm_utils_wifi_freq_to_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel"/>
     <keyword type="function" name="nm_utils_wifi_is_channel_valid ()" link="libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
+    <keyword type="function" name="nm_utils_wpa_psk_valid ()" link="libnm-util-nm-utils.html#nm-utils-wpa-psk-valid"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_UNKNOWN" link="NMConnection.html#NM-CONNECTION-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-SETTING-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-TYPE-INVALID:CAPS"/>

@@ -365,6 +365,16 @@ nm-utils
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_utils_wep_key_valid ##### -->
+<para>
+
+</para>
+
+@key: 
+@wep_type: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_utils_wifi_channel_to_freq ##### -->
 <para>
 
@@ -402,6 +412,15 @@ nm-utils
 
 @channel: 
 @band: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_wpa_psk_valid ##### -->
+<para>
+
+</para>
+
+@psk: 
 @Returns: 
 
 

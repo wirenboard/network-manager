@@ -203,6 +203,8 @@ static void schedule_scanlist_cull (NMDeviceWifi *self);
 
 static gboolean request_wireless_scan (gpointer user_data);
 
+static void update_hw_address (NMDevice *dev);
+
 /*****************************************************************/
 
 #define NM_WIFI_ERROR (nm_wifi_error_quark ())
@@ -804,24 +806,12 @@ periodic_update (gpointer user_data)
 }
 
 static gboolean
-hw_is_up (NMDevice *device)
-{
-	return nm_system_iface_is_up (nm_device_get_ip_ifindex (device));
-}
-
-static gboolean
 hw_bring_up (NMDevice *device, gboolean *no_firmware)
 {
 	if (!NM_DEVICE_WIFI_GET_PRIVATE (device)->enabled)
 		return FALSE;
 
-	return nm_system_iface_set_up (nm_device_get_ip_ifindex (device), TRUE, no_firmware);
-}
-
-static void
-hw_take_down (NMDevice *device)
-{
-	nm_system_iface_set_up (nm_device_get_ip_ifindex (device), FALSE, NULL);
+	return NM_DEVICE_CLASS (nm_device_wifi_parent_class)->hw_bring_up (device, no_firmware);
 }
 
 static gboolean
@@ -841,19 +831,6 @@ bring_up (NMDevice *dev)
 
 	priv->periodic_source_id = g_timeout_add_seconds (6, periodic_update, self);
 	return TRUE;
-}
-
-static void
-_update_hw_addr (NMDeviceWifi *self, const guint8 *addr)
-{
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-
-	g_return_if_fail (addr != NULL);
-
-	if (memcmp (&priv->hw_addr, addr, ETH_ALEN)) {
-		memcpy (&priv->hw_addr, addr, ETH_ALEN);
-		g_object_notify (G_OBJECT (self), NM_DEVICE_WIFI_HW_ADDRESS);
-	}
 }
 
 static gboolean
@@ -880,12 +857,12 @@ _set_hw_addr (NMDeviceWifi *self, const guint8 *addr, const char *detail)
 	}
 
 	/* Can't change MAC address while device is up */
-	hw_take_down (dev);
+	nm_device_hw_take_down (dev, FALSE);
 
 	success = nm_system_iface_set_mac (nm_device_get_ip_ifindex (dev), (struct ether_addr *) addr);
 	if (success) {
 		/* MAC address succesfully changed; update the current MAC to match */
-		_update_hw_addr (self, addr);
+		update_hw_address (dev);
 		nm_log_info (LOGD_DEVICE | LOGD_ETHER, "(%s): %s MAC address to %s",
 		             iface, detail, mac_str);
 	} else {
@@ -1409,7 +1386,6 @@ get_best_auto_connection (NMDevice *dev,
 
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		NMConnection *connection = NM_CONNECTION (iter->data);
-		NMSettingConnection *s_con;
 		NMSettingWireless *s_wireless;
 		const GByteArray *mac;
 		const GSList *mac_blacklist, *mac_blacklist_iter;
@@ -1418,12 +1394,7 @@ get_best_auto_connection (NMDevice *dev,
 		const char *method = NULL;
 		guint64 timestamp = 0;
 
-		s_con = nm_connection_get_setting_connection (connection);
-		if (s_con == NULL)
-			continue;
-		if (strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_WIRELESS_SETTING_NAME))
-			continue;
-		if (!nm_setting_connection_get_autoconnect (s_con))
+		if (!nm_connection_is_type (connection, NM_SETTING_WIRELESS_SETTING_NAME))
 			continue;
 
 		/* Don't autoconnect to networks that have been tried at least once
@@ -1481,25 +1452,6 @@ get_best_auto_connection (NMDevice *dev,
 		}
 	}
 	return NULL;
-}
-
-/*
- * nm_device_wifi_get_address
- *
- * Get a device's hardware address
- *
- */
-void
-nm_device_wifi_get_address (NMDeviceWifi *self,
-                            struct ether_addr *addr)
-{
-	NMDeviceWifiPrivate *priv;
-
-	g_return_if_fail (self != NULL);
-	g_return_if_fail (addr != NULL);
-
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-	memcpy (addr, &priv->hw_addr, sizeof (struct ether_addr));
 }
 
 static void
@@ -2878,26 +2830,16 @@ error:
 static void
 update_hw_address (NMDevice *dev)
 {
-	NMDeviceWifi *self = NM_DEVICE_WIFI (dev);
-	struct ifreq req;
-	int fd;
+	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (dev);
+	gsize addrlen;
+	gboolean changed = FALSE;
 
-	fd = socket (PF_INET, SOCK_DGRAM, 0);
-	if (fd < 0) {
-		nm_log_err (LOGD_HW, "could not open control socket.");
-		return;
+	addrlen = nm_device_read_hwaddr (dev, priv->hw_addr, sizeof (priv->hw_addr), &changed);
+	if (addrlen) {
+		g_return_if_fail (addrlen == ETH_ALEN);
+		if (changed)
+			g_object_notify (G_OBJECT (dev), NM_DEVICE_WIFI_HW_ADDRESS);
 	}
-
-	memset (&req, 0, sizeof (struct ifreq));
-	strncpy (req.ifr_name, nm_device_get_iface (dev), IFNAMSIZ);
-	errno = 0;
-	if (ioctl (fd, SIOCGIFHWADDR, &req) < 0) {
-		nm_log_err (LOGD_HW | LOGD_WIFI, "(%s): unable to read hardware address (error %d)",
-		            nm_device_get_iface (dev), errno);
-	} else
-		_update_hw_addr (self, (const guint8 *) &req.ifr_hwaddr.sa_data);
-
-	close (fd);
 }
 
 static void
@@ -2967,6 +2909,15 @@ update_initial_hw_address (NMDevice *dev)
 	            nm_device_get_iface (dev), mac_str);
 
 	g_free (mac_str);
+}
+
+static const guint8 *
+get_hw_address (NMDevice *device, guint *out_len)
+{
+	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (device);
+
+	*out_len = ETH_ALEN;
+	return priv->hw_addr;
 }
 
 static NMActStageReturn
@@ -3789,13 +3740,12 @@ nm_device_wifi_class_init (NMDeviceWifiClass *klass)
 
 	parent_class->get_type_capabilities = get_type_capabilities;
 	parent_class->get_generic_capabilities = get_generic_capabilities;
-	parent_class->hw_is_up = hw_is_up;
 	parent_class->hw_bring_up = hw_bring_up;
-	parent_class->hw_take_down = hw_take_down;
 	parent_class->is_up = is_up;
 	parent_class->bring_up = bring_up;
 	parent_class->take_down = take_down;
 	parent_class->update_hw_address = update_hw_address;
+	parent_class->get_hw_address = get_hw_address;
 	parent_class->update_permanent_hw_address = update_permanent_hw_address;
 	parent_class->update_initial_hw_address = update_initial_hw_address;
 	parent_class->get_best_auto_connection = get_best_auto_connection;

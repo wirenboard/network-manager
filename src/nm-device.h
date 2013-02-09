@@ -60,6 +60,7 @@
 #define NM_DEVICE_TYPE_DESC        "type-desc"    /* Internal only */
 #define NM_DEVICE_RFKILL_TYPE      "rfkill-type"  /* Internal only */
 #define NM_DEVICE_IFINDEX          "ifindex"      /* Internal only */
+#define NM_DEVICE_IS_MASTER        "is-master"    /* Internal only */
 #define NM_DEVICE_AVAILABLE_CONNECTIONS "available-connections"
 
 /* Internal signals */
@@ -112,6 +113,7 @@ typedef struct {
 	void        (* update_hw_address) (NMDevice *self);
 	void        (* update_permanent_hw_address) (NMDevice *self);
 	void        (* update_initial_hw_address) (NMDevice *self);
+	const guint8 * (* get_hw_address) (NMDevice *self, guint *out_len);
 
 	guint32		(* get_type_capabilities)	(NMDevice *self);
 	guint32		(* get_generic_capabilities)	(NMDevice *self);
@@ -186,6 +188,9 @@ typedef struct {
 
 	gboolean        (* release_slave) (NMDevice *self,
 	                                   NMDevice *slave);
+
+	gboolean        (* have_any_ready_slaves) (NMDevice *self,
+	                                           const GSList *slaves);
 } NMDeviceClass;
 
 
@@ -212,6 +217,8 @@ NMDeviceType	nm_device_get_device_type	(NMDevice *dev);
 
 int			nm_device_get_priority (NMDevice *dev);
 
+const guint8 *  nm_device_get_hw_address (NMDevice *dev, guint *out_len);
+
 NMDHCP4Config * nm_device_get_dhcp4_config (NMDevice *dev);
 NMDHCP6Config * nm_device_get_dhcp6_config (NMDevice *dev);
 
@@ -221,6 +228,7 @@ NMIP6Config *	nm_device_get_ip6_config	(NMDevice *dev);
 /* Master */
 gboolean        nm_device_master_add_slave  (NMDevice *dev, NMDevice *slave);
 GSList *        nm_device_master_get_slaves (NMDevice *dev);
+gboolean        nm_device_is_master         (NMDevice *dev);
 
 /* Slave */
 void            nm_device_slave_notify_enslaved (NMDevice *dev,
