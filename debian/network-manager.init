@@ -18,7 +18,7 @@ NAME="NetworkManager"
 
 DAEMON=/usr/sbin/$NAME
 
-PIDFILE=/var/run/$NAME.pid
+PIDFILE=/var/run/$NAME/$NAME.pid
 
 SCRIPTNAME=/etc/init.d/network-manager
 
