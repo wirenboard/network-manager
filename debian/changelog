@@ -1,6 +1,6 @@
-network-manager (0.9.7.995-1) UNRELEASED; urgency=low
+network-manager (0.9.7.997-1) UNRELEASED; urgency=low
 
-  * New upstream release (0.9.8 beta1).
+  * New upstream release (0.9.8 beta2).
   * Update symbols files.
   * Use new distro-agnostic configure flags.
   * Drop 04-systemd-set-kill-mode-process.patch, refresh other patches.
