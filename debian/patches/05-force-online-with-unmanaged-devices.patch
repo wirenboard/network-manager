@@ -147,7 +147,7 @@ Index: network-manager/src/nm-manager.c
 +		nm_log_warn (LOGD_CORE, "failed to monitor ifupdown state file '%s'.",
 +		             IFUPDOWN_STATE_FILE);
 +	}
-+	priv->ifstate_force_online = FALSE;
++	check_ifstate_file (manager);
 +
  	load_device_factories (manager);
  

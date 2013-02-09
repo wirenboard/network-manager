@@ -8,6 +8,8 @@ network-manager (0.9.7.997-1) UNRELEASED; urgency=low
     libnl-3-dev.
   * Mark binary packages as linux-any.
   * No longer install nm-crash-logger, has been removed upstream.
+  * 05-force-online-with-unmanaged-devices.patch: Set correct online state on
+    daemon startup.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 03 Feb 2013 14:49:46 +0100
 
