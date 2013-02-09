@@ -4,7 +4,8 @@ network-manager (0.9.7.997-1) UNRELEASED; urgency=low
   * Update symbols files.
   * Use new distro-agnostic configure flags.
   * Drop 04-systemd-set-kill-mode-process.patch, refresh other patches.
-  * Bump Build-Depends on libglib2.0-dev and libudev-dev/libgudev-1.0-dev.
+  * Bump Build-Depends on libglib2.0-dev, libudev-dev, libgudev-1.0-dev and
+    libnl-3-dev.
   * Mark binary packages as linux-any.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 03 Feb 2013 14:49:46 +0100
