@@ -7,6 +7,7 @@ network-manager (0.9.7.997-1) UNRELEASED; urgency=low
   * Bump Build-Depends on libglib2.0-dev, libudev-dev, libgudev-1.0-dev and
     libnl-3-dev.
   * Mark binary packages as linux-any.
+  * No longer install nm-crash-logger, has been removed upstream.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 03 Feb 2013 14:49:46 +0100
 
