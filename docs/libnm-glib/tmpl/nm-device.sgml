@@ -48,6 +48,11 @@ NMDevice
 
 </para>
 
+<!-- ##### ARG NMDevice:available-connections ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMDevice:capabilities ##### -->
 <para>
 
@@ -171,6 +176,13 @@ NMDevice
 
 
 <!-- ##### MACRO NM_DEVICE_AUTOCONNECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_AVAILABLE_CONNECTIONS ##### -->
 <para>
 
 </para>
@@ -354,6 +366,15 @@ NMDevice
 
 
 <!-- ##### FUNCTION nm_device_get_autoconnect ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_get_available_connections ##### -->
 <para>
 
 </para>

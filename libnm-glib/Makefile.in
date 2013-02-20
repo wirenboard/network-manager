@@ -126,8 +126,7 @@ am__v_lt_0 = --silent
 libnm_glib_test_la_DEPENDENCIES =  \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am__objects_1 =
-am__objects_2 = libnm_glib_test_la-nm-object.lo \
+am__objects_1 = libnm_glib_test_la-nm-object.lo \
 	libnm_glib_test_la-nm-client.lo \
 	libnm_glib_test_la-nm-device.lo \
 	libnm_glib_test_la-nm-device-ethernet.lo \
@@ -156,8 +155,9 @@ am__objects_2 = libnm_glib_test_la-nm-object.lo \
 	libnm_glib_test_la-nm-wimax-nsp.lo \
 	libnm_glib_test_la-nm-glib-enum-types.lo \
 	libnm_glib_test_la-nm-glib-marshal.lo
-am__objects_3 = $(am__objects_2) $(am__objects_1)
-am_libnm_glib_test_la_OBJECTS = $(am__objects_1) $(am__objects_3)
+am__objects_2 =
+am__objects_3 = $(am__objects_1) $(am__objects_2)
+am_libnm_glib_test_la_OBJECTS = $(am__objects_3)
 libnm_glib_test_la_OBJECTS = $(am_libnm_glib_test_la_OBJECTS)
 libnm_glib_test_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -202,7 +202,7 @@ am__objects_4 = libnm_glib_la-nm-object.lo libnm_glib_la-nm-client.lo \
 	libnm_glib_la-nm-device-wimax.lo libnm_glib_la-nm-wimax-nsp.lo \
 	libnm_glib_la-nm-glib-enum-types.lo \
 	libnm_glib_la-nm-glib-marshal.lo
-am_libnm_glib_la_OBJECTS = $(am__objects_4) $(am__objects_1)
+am_libnm_glib_la_OBJECTS = $(am__objects_4) $(am__objects_2)
 libnm_glib_la_OBJECTS = $(am_libnm_glib_la_OBJECTS)
 libnm_glib_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libnm_glib_la_CFLAGS) \
@@ -675,7 +675,7 @@ libnm_glib_la_LIBADD = \
 
 SYMBOL_VIS_FILE = $(srcdir)/libnm-glib.ver
 libnm_glib_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "8:0:4"
+	-version-info "9:0:5"
 
 libnm_glib_test_SOURCES = libnm-glib-test.c
 libnm_glib_test_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
@@ -703,7 +703,7 @@ libnm_glib_test_la_CFLAGS = \
 	-DLIBNM_GLIB_TEST
 
 libnm_glib_test_la_SOURCES = \
-	$(libnminclude_HEADERS) \
+	$(li0bnminclude_HEADERS) \
 	$(libnm_glib_la_SOURCES)
 
 libnm_glib_test_la_LIBADD = \

@@ -581,7 +581,7 @@ libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS) \
 	$(am__append_3) $(am__append_6)
 SYMBOL_VIS_FILE = $(srcdir)/libnm-util.ver
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "5:0:3"
+	-version-info "6:0:4"
 
 libnm_util_includedir = $(includedir)/NetworkManager
 

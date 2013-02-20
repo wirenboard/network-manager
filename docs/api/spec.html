@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.7.997</title><style type="text/css">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.8.0</title><style type="text/css">
 
           body {
             font-family: sans-serif;
@@ -98,7 +98,7 @@
             margin-right: 4em;
           }
 
-        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.7.997</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
+        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.8.0</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
 <p>This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -827,7 +827,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         The capabilities of the wireless device.
       </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_802_11_DEVICE_CAP" id="type-NM_802_11_DEVICE_CAP">NM_802_11_DEVICE_CAP</a></h3>
         Flags describing the capabilities of a wireless device.
-      <dl><dt><code>NM_802_11_DEVICE_CAP_NONE = 0x0</code></dt><dd>Null capability - syntactic sugar for no capabilities supported.  Do not AND this with other capabilities!</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_WEP40 = 0x1</code></dt><dd>The device supports the 40-bit WEP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_WEP104 = 0x2</code></dt><dd>The device supports the 104-bit WEP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_TKIP = 0x4</code></dt><dd>The device supports the TKIP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_CCMP = 0x8</code></dt><dd>The device supports the CCMP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_WPA = 0x10</code></dt><dd>The device supports the WPA encryption/authentication protocol.</dd><dt><code>NM_802_11_DEVICE_CAP_RSN = 0x20</code></dt><dd>The device supports the RSN encryption/authentication protocol.</dd><dt><code>NM_802_11_DEVICE_CAP_AP = 0x40</code></dt><dd>The device supports Access Point mode.</dd></dl>
+      <dl><dt><code>NM_802_11_DEVICE_CAP_NONE = 0x0</code></dt><dd>Null capability - syntactic sugar for no capabilities supported.  Do not AND this with other capabilities!</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_WEP40 = 0x1</code></dt><dd>The device supports the 40-bit WEP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_WEP104 = 0x2</code></dt><dd>The device supports the 104-bit WEP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_TKIP = 0x4</code></dt><dd>The device supports the TKIP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_CIPHER_CCMP = 0x8</code></dt><dd>The device supports the CCMP cipher.</dd><dt><code>NM_802_11_DEVICE_CAP_WPA = 0x10</code></dt><dd>The device supports the WPA encryption/authentication protocol.</dd><dt><code>NM_802_11_DEVICE_CAP_RSN = 0x20</code></dt><dd>The device supports the RSN encryption/authentication protocol.</dd><dt><code>NM_802_11_DEVICE_CAP_AP = 0x40</code></dt><dd>The device supports Access Point mode.</dd><dt><code>NM_802_11_DEVICE_CAP_ADHOC = 0x80</code></dt><dd>The device supports Ad-Hoc mode.</dd></dl>
 
   <h1><a name="org.freedesktop.NetworkManager.Device.Modem" id="org.freedesktop.NetworkManager.Device.Modem"></a>org.freedesktop.NetworkManager.Device.Modem</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Modem.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Modem.PropertiesChanged">PropertiesChanged</a> (
         a{sv}: properties
