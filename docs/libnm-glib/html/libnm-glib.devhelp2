@@ -63,7 +63,7 @@
     <keyword type="function" name="nm_client_get_device_by_iface ()" link="NMClient.html#nm-client-get-device-by-iface"/>
     <keyword type="function" name="nm_client_get_device_by_path ()" link="NMClient.html#nm-client-get-device-by-path"/>
     <keyword type="function" name="nm_client_get_devices ()" link="NMClient.html#nm-client-get-devices"/>
-    <keyword type="function" name="nm_client_get_logging ()" link="NMClient.html#nm-client-get-logging"/>
+    <keyword type="function" name="nm_client_get_logging ()" link="NMClient.html#nm-client-get-logging" since="0.9.8"/>
     <keyword type="function" name="nm_client_get_manager_running ()" link="NMClient.html#nm-client-get-manager-running"/>
     <keyword type="function" name="nm_client_get_permission_result ()" link="NMClient.html#nm-client-get-permission-result"/>
     <keyword type="function" name="nm_client_get_state ()" link="NMClient.html#nm-client-get-state"/>
@@ -73,7 +73,7 @@
     <keyword type="function" name="nm_client_new ()" link="NMClient.html#nm-client-new"/>
     <keyword type="function" name="nm_client_new_async ()" link="NMClient.html#nm-client-new-async"/>
     <keyword type="function" name="nm_client_new_finish ()" link="NMClient.html#nm-client-new-finish"/>
-    <keyword type="function" name="nm_client_set_logging ()" link="NMClient.html#nm-client-set-logging"/>
+    <keyword type="function" name="nm_client_set_logging ()" link="NMClient.html#nm-client-set-logging" since="0.9.8"/>
     <keyword type="function" name="nm_client_sleep ()" link="NMClient.html#nm-client-sleep"/>
     <keyword type="function" name="nm_client_wimax_get_enabled ()" link="NMClient.html#nm-client-wimax-get-enabled"/>
     <keyword type="function" name="nm_client_wimax_hardware_get_enabled ()" link="NMClient.html#nm-client-wimax-hardware-get-enabled"/>
@@ -130,6 +130,7 @@
     <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
     <keyword type="macro" name="NM_DEVICE_ACTIVE_CONNECTION" link="NMDevice.html#NM-DEVICE-ACTIVE-CONNECTION:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_AUTOCONNECT" link="NMDevice.html#NM-DEVICE-AUTOCONNECT:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_AVAILABLE_CONNECTIONS" link="NMDevice.html#NM-DEVICE-AVAILABLE-CONNECTIONS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_CAPABILITIES" link="NMDevice.html#NM-DEVICE-CAPABILITIES:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DEVICE_TYPE" link="NMDevice.html#NM-DEVICE-DEVICE-TYPE:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_DHCP4_CONFIG" link="NMDevice.html#NM-DEVICE-DHCP4-CONFIG:CAPS"/>
@@ -154,6 +155,7 @@
     <keyword type="function" name="nm_device_filter_connections ()" link="NMDevice.html#nm-device-filter-connections"/>
     <keyword type="function" name="nm_device_get_active_connection ()" link="NMDevice.html#nm-device-get-active-connection"/>
     <keyword type="function" name="nm_device_get_autoconnect ()" link="NMDevice.html#nm-device-get-autoconnect"/>
+    <keyword type="function" name="nm_device_get_available_connections ()" link="NMDevice.html#nm-device-get-available-connections" since="0.9.8"/>
     <keyword type="function" name="nm_device_get_capabilities ()" link="NMDevice.html#nm-device-get-capabilities"/>
     <keyword type="function" name="nm_device_get_device_type ()" link="NMDevice.html#nm-device-get-device-type"/>
     <keyword type="function" name="nm_device_get_dhcp4_config ()" link="NMDevice.html#nm-device-get-dhcp4-config"/>
@@ -176,6 +178,7 @@
     <keyword type="function" name="nm_device_set_autoconnect ()" link="NMDevice.html#nm-device-set-autoconnect"/>
     <keyword type="property" name="The &quot;active-connection&quot; property" link="NMDevice.html#NMDevice--active-connection"/>
     <keyword type="property" name="The &quot;autoconnect&quot; property" link="NMDevice.html#NMDevice--autoconnect"/>
+    <keyword type="property" name="The &quot;available-connections&quot; property" link="NMDevice.html#NMDevice--available-connections"/>
     <keyword type="property" name="The &quot;capabilities&quot; property" link="NMDevice.html#NMDevice--capabilities"/>
     <keyword type="property" name="The &quot;device-type&quot; property" link="NMDevice.html#NMDevice--device-type"/>
     <keyword type="property" name="The &quot;dhcp4-config&quot; property" link="NMDevice.html#NMDevice--dhcp4-config"/>
@@ -234,7 +237,7 @@
     <keyword type="function" name="nm_device_wifi_get_mode ()" link="NMDeviceWifi.html#nm-device-wifi-get-mode"/>
     <keyword type="function" name="nm_device_wifi_get_permanent_hw_address ()" link="NMDeviceWifi.html#nm-device-wifi-get-permanent-hw-address"/>
     <keyword type="function" name="nm_device_wifi_new ()" link="NMDeviceWifi.html#nm-device-wifi-new"/>
-    <keyword type="function" name="nm_device_wifi_request_scan_simple ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-simple"/>
+    <keyword type="function" name="nm_device_wifi_request_scan_simple ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-simple" since="0.9.8"/>
     <keyword type="property" name="The &quot;active-access-point&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--active-access-point"/>
     <keyword type="property" name="The &quot;bitrate&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--bitrate"/>
     <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceWifi.html#NMDeviceWifi--hw-address"/>
@@ -326,16 +329,16 @@
     <keyword type="property" name="The &quot;slaves&quot; property" link="NMDeviceBond.html#NMDeviceBond--slaves"/>
     <keyword type="struct" name="NMDeviceBridge" link="NMDeviceBridge.html#NMDeviceBridge-struct"/>
     <keyword type="struct" name="NMDeviceBridgeClass" link="NMDeviceBridge.html#NMDeviceBridgeClass"/>
-    <keyword type="enum" name="enum NMDeviceBridgeError" link="NMDeviceBridge.html#NMDeviceBridgeError"/>
+    <keyword type="enum" name="enum NMDeviceBridgeError" link="NMDeviceBridge.html#NMDeviceBridgeError" since="0.9.8"/>
     <keyword type="macro" name="NM_DEVICE_BRIDGE_CARRIER" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-CARRIER:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BRIDGE_ERROR" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-ERROR:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BRIDGE_HW_ADDRESS" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_BRIDGE_SLAVES" link="NMDeviceBridge.html#NM-DEVICE-BRIDGE-SLAVES:CAPS"/>
-    <keyword type="function" name="nm_device_bridge_error_quark ()" link="NMDeviceBridge.html#nm-device-bridge-error-quark"/>
-    <keyword type="function" name="nm_device_bridge_get_carrier ()" link="NMDeviceBridge.html#nm-device-bridge-get-carrier"/>
-    <keyword type="function" name="nm_device_bridge_get_hw_address ()" link="NMDeviceBridge.html#nm-device-bridge-get-hw-address"/>
-    <keyword type="function" name="nm_device_bridge_get_slaves ()" link="NMDeviceBridge.html#nm-device-bridge-get-slaves"/>
-    <keyword type="function" name="nm_device_bridge_new ()" link="NMDeviceBridge.html#nm-device-bridge-new"/>
+    <keyword type="function" name="nm_device_bridge_error_quark ()" link="NMDeviceBridge.html#nm-device-bridge-error-quark" since="0.9.8"/>
+    <keyword type="function" name="nm_device_bridge_get_carrier ()" link="NMDeviceBridge.html#nm-device-bridge-get-carrier" since="0.9.8"/>
+    <keyword type="function" name="nm_device_bridge_get_hw_address ()" link="NMDeviceBridge.html#nm-device-bridge-get-hw-address" since="0.9.8"/>
+    <keyword type="function" name="nm_device_bridge_get_slaves ()" link="NMDeviceBridge.html#nm-device-bridge-get-slaves" since="0.9.8"/>
+    <keyword type="function" name="nm_device_bridge_new ()" link="NMDeviceBridge.html#nm-device-bridge-new" since="0.9.8"/>
     <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceBridge.html#NMDeviceBridge--carrier"/>
     <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceBridge.html#NMDeviceBridge--hw-address"/>
     <keyword type="property" name="The &quot;slaves&quot; property" link="NMDeviceBridge.html#NMDeviceBridge--slaves"/>
@@ -502,6 +505,8 @@
     <keyword type="function" name="nm_remote_connection_get_secrets ()" link="NMRemoteConnection.html#nm-remote-connection-get-secrets"/>
     <keyword type="function" name="nm_remote_connection_new ()" link="NMRemoteConnection.html#nm-remote-connection-new"/>
     <keyword type="property" name="The &quot;bus&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--bus"/>
+    <keyword type="property" name="The &quot;dbus-connection&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--dbus-connection"/>
+    <keyword type="property" name="The &quot;dbus-path&quot; property" link="NMRemoteConnection.html#NMRemoteConnection--dbus-path"/>
     <keyword type="signal" name="The &quot;removed&quot; signal" link="NMRemoteConnection.html#NMRemoteConnection-removed"/>
     <keyword type="signal" name="The &quot;updated&quot; signal" link="NMRemoteConnection.html#NMRemoteConnection-updated"/>
     <keyword type="signal" name="The &quot;visible&quot; signal" link="NMRemoteConnection.html#NMRemoteConnection-visible"/>

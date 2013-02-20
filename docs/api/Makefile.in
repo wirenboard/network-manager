@@ -633,6 +633,9 @@ uninstall-am: uninstall-local
 @ENABLE_DOC_TRUE@settings-spec.xml: $(top_builddir)/tools/generate-settings-spec $(top_builddir)/libnm-util/libnm-util.la
 @ENABLE_DOC_TRUE@	$(top_builddir)/tools/generate-settings-spec book $@
 
+# Top-level SGML file includes (depends on) settings-spec.xml
+@ENABLE_DOC_TRUE@$(DOC_MAIN_SGML_FILE): settings-spec.xml
+
 @ENABLE_DOC_TRUE@all: $(GENERATED_FILES)
 
 @ENABLE_DOC_TRUE@@ENABLE_GTK_DOC_TRUE@all-local: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)

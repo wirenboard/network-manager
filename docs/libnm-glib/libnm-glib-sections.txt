@@ -139,6 +139,7 @@ NMDeviceClass
 NMDeviceDeactivateFn
 NM_DEVICE_ACTIVE_CONNECTION
 NM_DEVICE_AUTOCONNECT
+NM_DEVICE_AVAILABLE_CONNECTIONS
 NM_DEVICE_CAPABILITIES
 NM_DEVICE_DEVICE_TYPE
 NM_DEVICE_DHCP4_CONFIG
@@ -163,6 +164,7 @@ nm_device_disconnect
 nm_device_filter_connections
 nm_device_get_active_connection
 nm_device_get_autoconnect
+nm_device_get_available_connections
 nm_device_get_capabilities
 nm_device_get_device_type
 nm_device_get_dhcp4_config

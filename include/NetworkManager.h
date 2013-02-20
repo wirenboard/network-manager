@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2004 - 2012 Red Hat, Inc.
+ * (C) Copyright 2004 - 2013 Red Hat, Inc.
  */
 
 #ifndef NETWORK_MANAGER_H
@@ -111,6 +111,7 @@ typedef enum {
  * @NM_DEVICE_TYPE_BOND: a bond master interface
  * @NM_DEVICE_TYPE_VLAN: an 802.1Q VLAN interface
  * @NM_DEVICE_TYPE_ADSL: ADSL modem
+ * @NM_DEVICE_TYPE_BRIDGE: a bridge master interface
  *
  * #NMDeviceType values indicate the type of hardware represented by
  * an #NMDevice.
@@ -157,6 +158,7 @@ typedef enum {
  * @NM_WIFI_DEVICE_CAP_WPA: device supports WPA1 authentication
  * @NM_WIFI_DEVICE_CAP_RSN: device supports WPA2/RSN authentication
  * @NM_WIFI_DEVICE_CAP_AP: device supports Access Point mode
+ * @NM_WIFI_DEVICE_CAP_ADHOC: device supports Ad-Hoc mode
  *
  * 802.11 specific device encryption and authentication capabilities.
  **/
@@ -168,7 +170,8 @@ typedef enum {
 	NM_WIFI_DEVICE_CAP_CIPHER_CCMP   = 0x00000008,
 	NM_WIFI_DEVICE_CAP_WPA           = 0x00000010,
 	NM_WIFI_DEVICE_CAP_RSN           = 0x00000020,
-	NM_WIFI_DEVICE_CAP_AP            = 0x00000040
+	NM_WIFI_DEVICE_CAP_AP            = 0x00000040,
+	NM_WIFI_DEVICE_CAP_ADHOC         = 0x00000080
 } NMDeviceWifiCapabilities;
 
 

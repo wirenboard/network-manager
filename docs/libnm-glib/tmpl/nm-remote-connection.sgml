@@ -55,6 +55,16 @@ NMRemoteConnection
 
 </para>
 
+<!-- ##### ARG NMRemoteConnection:dbus-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMRemoteConnection:dbus-path ##### -->
+<para>
+
+</para>
+
 <!-- ##### STRUCT NMRemoteConnectionClass ##### -->
 <para>
 

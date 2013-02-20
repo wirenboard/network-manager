@@ -52,6 +52,7 @@
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
 #define             <a class="link" href="NMDevice.html#NM-DEVICE-ACTIVE-CONNECTION:CAPS" title="NM_DEVICE_ACTIVE_CONNECTION">NM_DEVICE_ACTIVE_CONNECTION</a>
 #define             <a class="link" href="NMDevice.html#NM-DEVICE-AUTOCONNECT:CAPS" title="NM_DEVICE_AUTOCONNECT">NM_DEVICE_AUTOCONNECT</a>
+#define             <a class="link" href="NMDevice.html#NM-DEVICE-AVAILABLE-CONNECTIONS:CAPS" title="NM_DEVICE_AVAILABLE_CONNECTIONS">NM_DEVICE_AVAILABLE_CONNECTIONS</a>
 #define             <a class="link" href="NMDevice.html#NM-DEVICE-CAPABILITIES:CAPS" title="NM_DEVICE_CAPABILITIES">NM_DEVICE_CAPABILITIES</a>
 #define             <a class="link" href="NMDevice.html#NM-DEVICE-DEVICE-TYPE:CAPS" title="NM_DEVICE_DEVICE_TYPE">NM_DEVICE_DEVICE_TYPE</a>
 #define             <a class="link" href="NMDevice.html#NM-DEVICE-DHCP4-CONFIG:CAPS" title="NM_DEVICE_DHCP4_CONFIG">NM_DEVICE_DHCP4_CONFIG</a>
@@ -82,6 +83,7 @@
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#GSList"><span class="type">GSList</span></a> *connections</code></em>);
 <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="returnvalue">NMActiveConnection</span></a> * <a class="link" href="NMDevice.html#nm-device-get-active-connection" title="nm_device_get_active_connection ()">nm_device_get_active_connection</a>    (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMDevice.html#nm-device-get-autoconnect" title="nm_device_get_autoconnect ()">nm_device_get_autoconnect</a>           (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   <a class="link" href="NMDevice.html#nm-device-get-available-connections" title="nm_device_get_available_connections ()">nm_device_get_available_connections</a> (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);
 <span class="returnvalue">NMDeviceCapabilities</span> <a class="link" href="NMDevice.html#nm-device-get-capabilities" title="nm_device_get_capabilities ()">nm_device_get_capabilities</a>         (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);
 <span class="returnvalue">NMDeviceType</span>        <a class="link" href="NMDevice.html#nm-device-get-device-type" title="nm_device_get_device_type ()">nm_device_get_device_type</a>           (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);
 <a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="returnvalue">NMDHCP4Config</span></a> *     <a class="link" href="NMDevice.html#nm-device-get-dhcp4-config" title="nm_device_get_dhcp4_config ()">nm_device_get_dhcp4_config</a>          (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);
@@ -137,6 +139,7 @@ NMDevice implements
 <pre class="synopsis">
   "<a class="link" href="NMDevice.html#NMDevice--active-connection" title='The "active-connection" property'>active-connection</a>"        <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a>*   : Read
   "<a class="link" href="NMDevice.html#NMDevice--autoconnect" title='The "autoconnect" property'>autoconnect</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read / Write
+  "<a class="link" href="NMDevice.html#NMDevice--available-connections" title='The "available-connections" property'>available-connections</a>"    <span class="type">NMObjectArray</span>*        : Read
   "<a class="link" href="NMDevice.html#NMDevice--capabilities" title='The "capabilities" property'>capabilities</a>"             <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read
   "<a class="link" href="NMDevice.html#NMDevice--device-type" title='The "device-type" property'>device-type</a>"              <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a>                 : Read
   "<a class="link" href="NMDevice.html#NMDevice--dhcp4-config" title='The "dhcp4-config" property'>dhcp4-config</a>"             <a class="link" href="NMDHCP4Config.html" title="NMDHCP4Config"><span class="type">NMDHCP4Config</span></a>*        : Read
@@ -225,6 +228,14 @@ NMDevice implements
 <div class="refsect2">
 <a name="NM-DEVICE-AUTOCONNECT:CAPS"></a><h3>NM_DEVICE_AUTOCONNECT</h3>
 <pre class="programlisting">#define NM_DEVICE_AUTOCONNECT "autoconnect"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DEVICE-AVAILABLE-CONNECTIONS:CAPS"></a><h3>NM_DEVICE_AVAILABLE_CONNECTIONS</h3>
+<pre class="programlisting">#define NM_DEVICE_AVAILABLE_CONNECTIONS "available-connections"
 </pre>
 <p>
 </p>
@@ -572,6 +583,33 @@ Whether the <a class="link" href="NMDevice.html" title="NMDevice"><span class="t
 </tr>
 </tbody>
 </table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-device-get-available-connections"></a><h3>nm_device_get_available_connections ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="returnvalue">GPtrArray</span></a> *   nm_device_get_available_connections (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
+<p>
+Gets the <a href="NMRemoteConnection.html"><span class="type">NMRemoteConnections</span></a> currently known to the daemon that could
+be activated on <em class="parameter"><code>device</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a>
+containing <a href="NMRemoteConnection.html"><span class="type">NMRemoteConnections</span></a>. This is the internal copy used by
+the connection, and must not be modified. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMClient.RemoteConnection]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 0.9.8</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1066,6 +1104,15 @@ The <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><s
 Whether the device can auto-activate a connection.
 </p>
 <p>Default value: TRUE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--available-connections"></a><h3>The <code class="literal">"available-connections"</code> property</h3>
+<pre class="programlisting">  "available-connections"    <span class="type">NMObjectArray</span>*        : Read</pre>
+<p>
+The available connections (<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a>) of the device
+</p>
+<p class="since">Since 0.9.8</p>
 </div>
 <hr>
 <div class="refsect2">

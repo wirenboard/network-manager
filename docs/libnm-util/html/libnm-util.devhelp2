@@ -142,17 +142,17 @@
     <keyword type="macro" name="NM_SETTING_CONNECTION_UUID" link="NMSettingConnection.html#NM-SETTING-CONNECTION-UUID:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE:CAPS"/>
     <keyword type="function" name="nm_setting_connection_add_permission ()" link="NMSettingConnection.html#nm-setting-connection-add-permission"/>
-    <keyword type="function" name="nm_setting_connection_add_secondary ()" link="NMSettingConnection.html#nm-setting-connection-add-secondary"/>
+    <keyword type="function" name="nm_setting_connection_add_secondary ()" link="NMSettingConnection.html#nm-setting-connection-add-secondary" since="0.9.8"/>
     <keyword type="function" name="nm_setting_connection_error_quark ()" link="NMSettingConnection.html#nm-setting-connection-error-quark"/>
     <keyword type="function" name="nm_setting_connection_get_autoconnect ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect"/>
     <keyword type="function" name="nm_setting_connection_get_connection_type ()" link="NMSettingConnection.html#nm-setting-connection-get-connection-type"/>
     <keyword type="function" name="nm_setting_connection_get_id ()" link="NMSettingConnection.html#nm-setting-connection-get-id"/>
     <keyword type="function" name="nm_setting_connection_get_master ()" link="NMSettingConnection.html#nm-setting-connection-get-master"/>
     <keyword type="function" name="nm_setting_connection_get_num_permissions ()" link="NMSettingConnection.html#nm-setting-connection-get-num-permissions"/>
-    <keyword type="function" name="nm_setting_connection_get_num_secondaries ()" link="NMSettingConnection.html#nm-setting-connection-get-num-secondaries"/>
+    <keyword type="function" name="nm_setting_connection_get_num_secondaries ()" link="NMSettingConnection.html#nm-setting-connection-get-num-secondaries" since="0.9.8"/>
     <keyword type="function" name="nm_setting_connection_get_permission ()" link="NMSettingConnection.html#nm-setting-connection-get-permission"/>
     <keyword type="function" name="nm_setting_connection_get_read_only ()" link="NMSettingConnection.html#nm-setting-connection-get-read-only"/>
-    <keyword type="function" name="nm_setting_connection_get_secondary ()" link="NMSettingConnection.html#nm-setting-connection-get-secondary"/>
+    <keyword type="function" name="nm_setting_connection_get_secondary ()" link="NMSettingConnection.html#nm-setting-connection-get-secondary" since="0.9.8"/>
     <keyword type="function" name="nm_setting_connection_get_slave_type ()" link="NMSettingConnection.html#nm-setting-connection-get-slave-type"/>
     <keyword type="function" name="nm_setting_connection_get_timestamp ()" link="NMSettingConnection.html#nm-setting-connection-get-timestamp"/>
     <keyword type="function" name="nm_setting_connection_get_uuid ()" link="NMSettingConnection.html#nm-setting-connection-get-uuid"/>
@@ -161,7 +161,7 @@
     <keyword type="function" name="nm_setting_connection_new ()" link="NMSettingConnection.html#nm-setting-connection-new"/>
     <keyword type="function" name="nm_setting_connection_permissions_user_allowed ()" link="NMSettingConnection.html#nm-setting-connection-permissions-user-allowed"/>
     <keyword type="function" name="nm_setting_connection_remove_permission ()" link="NMSettingConnection.html#nm-setting-connection-remove-permission"/>
-    <keyword type="function" name="nm_setting_connection_remove_secondary ()" link="NMSettingConnection.html#nm-setting-connection-remove-secondary"/>
+    <keyword type="function" name="nm_setting_connection_remove_secondary ()" link="NMSettingConnection.html#nm-setting-connection-remove-secondary" since="0.9.8"/>
     <keyword type="property" name="The &quot;autoconnect&quot; property" link="NMSettingConnection.html#NMSettingConnection--autoconnect"/>
     <keyword type="property" name="The &quot;id&quot; property" link="NMSettingConnection.html#NMSettingConnection--id"/>
     <keyword type="property" name="The &quot;master&quot; property" link="NMSettingConnection.html#NMSettingConnection--master"/>
@@ -230,7 +230,7 @@
     <keyword type="macro" name="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_ADHOC" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-ADHOC:CAPS"/>
-    <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_AP" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-AP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_AP" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-AP:CAPS" since="0.9.8"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MODE_INFRA" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-INFRA:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_MTU" link="NMSettingWireless.html#NM-SETTING-WIRELESS-MTU:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRELESS_RATE" link="NMSettingWireless.html#NM-SETTING-WIRELESS-RATE:CAPS"/>
@@ -489,15 +489,15 @@
     <keyword type="macro" name="NM_SETTING_BRIDGE_PRIORITY" link="NMSettingBridge.html#NM-SETTING-BRIDGE-PRIORITY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BRIDGE_SETTING_NAME" link="NMSettingBridge.html#NM-SETTING-BRIDGE-SETTING-NAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BRIDGE_STP" link="NMSettingBridge.html#NM-SETTING-BRIDGE-STP:CAPS"/>
-    <keyword type="function" name="nm_setting_bridge_error_quark ()" link="NMSettingBridge.html#nm-setting-bridge-error-quark"/>
-    <keyword type="function" name="nm_setting_bridge_get_ageing_time ()" link="NMSettingBridge.html#nm-setting-bridge-get-ageing-time"/>
-    <keyword type="function" name="nm_setting_bridge_get_forward_delay ()" link="NMSettingBridge.html#nm-setting-bridge-get-forward-delay"/>
-    <keyword type="function" name="nm_setting_bridge_get_hello_time ()" link="NMSettingBridge.html#nm-setting-bridge-get-hello-time"/>
-    <keyword type="function" name="nm_setting_bridge_get_interface_name ()" link="NMSettingBridge.html#nm-setting-bridge-get-interface-name"/>
-    <keyword type="function" name="nm_setting_bridge_get_max_age ()" link="NMSettingBridge.html#nm-setting-bridge-get-max-age"/>
-    <keyword type="function" name="nm_setting_bridge_get_priority ()" link="NMSettingBridge.html#nm-setting-bridge-get-priority"/>
-    <keyword type="function" name="nm_setting_bridge_get_stp ()" link="NMSettingBridge.html#nm-setting-bridge-get-stp"/>
-    <keyword type="function" name="nm_setting_bridge_new ()" link="NMSettingBridge.html#nm-setting-bridge-new"/>
+    <keyword type="function" name="nm_setting_bridge_error_quark ()" link="NMSettingBridge.html#nm-setting-bridge-error-quark" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_ageing_time ()" link="NMSettingBridge.html#nm-setting-bridge-get-ageing-time" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_forward_delay ()" link="NMSettingBridge.html#nm-setting-bridge-get-forward-delay" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_hello_time ()" link="NMSettingBridge.html#nm-setting-bridge-get-hello-time" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_interface_name ()" link="NMSettingBridge.html#nm-setting-bridge-get-interface-name" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_max_age ()" link="NMSettingBridge.html#nm-setting-bridge-get-max-age" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_priority ()" link="NMSettingBridge.html#nm-setting-bridge-get-priority" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_get_stp ()" link="NMSettingBridge.html#nm-setting-bridge-get-stp" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_new ()" link="NMSettingBridge.html#nm-setting-bridge-new" since="0.9.8"/>
     <keyword type="property" name="The &quot;ageing-time&quot; property" link="NMSettingBridge.html#NMSettingBridge--ageing-time"/>
     <keyword type="property" name="The &quot;forward-delay&quot; property" link="NMSettingBridge.html#NMSettingBridge--forward-delay"/>
     <keyword type="property" name="The &quot;hello-time&quot; property" link="NMSettingBridge.html#NMSettingBridge--hello-time"/>
@@ -513,11 +513,11 @@
     <keyword type="macro" name="NM_SETTING_BRIDGE_PORT_PATH_COST" link="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-PATH-COST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BRIDGE_PORT_PRIORITY" link="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-PRIORITY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BRIDGE_PORT_SETTING_NAME" link="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-SETTING-NAME:CAPS"/>
-    <keyword type="function" name="nm_setting_bridge_port_error_quark ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-error-quark"/>
-    <keyword type="function" name="nm_setting_bridge_port_get_hairpin_mode ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-get-hairpin-mode"/>
-    <keyword type="function" name="nm_setting_bridge_port_get_path_cost ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-get-path-cost"/>
-    <keyword type="function" name="nm_setting_bridge_port_get_priority ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-get-priority"/>
-    <keyword type="function" name="nm_setting_bridge_port_new ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-new"/>
+    <keyword type="function" name="nm_setting_bridge_port_error_quark ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-error-quark" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_port_get_hairpin_mode ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-get-hairpin-mode" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_port_get_path_cost ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-get-path-cost" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_port_get_priority ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-get-priority" since="0.9.8"/>
+    <keyword type="function" name="nm_setting_bridge_port_new ()" link="NMSettingBridgePort.html#nm-setting-bridge-port-new" since="0.9.8"/>
     <keyword type="property" name="The &quot;hairpin-mode&quot; property" link="NMSettingBridgePort.html#NMSettingBridgePort--hairpin-mode"/>
     <keyword type="property" name="The &quot;path-cost&quot; property" link="NMSettingBridgePort.html#NMSettingBridgePort--path-cost"/>
     <keyword type="property" name="The &quot;priority&quot; property" link="NMSettingBridgePort.html#NMSettingBridgePort--priority"/>
@@ -901,7 +901,7 @@
     <keyword type="function" name="nm_setting_ip6_config_clear_routes ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-clear-routes"/>
     <keyword type="function" name="nm_setting_ip6_config_error_quark ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-error-quark"/>
     <keyword type="function" name="nm_setting_ip6_config_get_address ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-address"/>
-    <keyword type="function" name="nm_setting_ip6_config_get_dhcp_hostname ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-dhcp-hostname"/>
+    <keyword type="function" name="nm_setting_ip6_config_get_dhcp_hostname ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-dhcp-hostname" since="0.9.8"/>
     <keyword type="function" name="nm_setting_ip6_config_get_dns ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-dns"/>
     <keyword type="function" name="nm_setting_ip6_config_get_dns_search ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-dns-search"/>
     <keyword type="function" name="nm_setting_ip6_config_get_ignore_auto_dns ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-ignore-auto-dns"/>
@@ -1041,7 +1041,7 @@
     <keyword type="property" name="The &quot;user-name&quot; property" link="NMSettingVPN.html#NMSettingVPN--user-name"/>
     <keyword type="enum" name="enum NMUtilsSecurityType" link="libnm-util-nm-utils.html#NMUtilsSecurityType-enum"/>
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-util-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
-    <keyword type="function" name="nm_utils_ap_mode_security_valid ()" link="libnm-util-nm-utils.html#nm-utils-ap-mode-security-valid"/>
+    <keyword type="function" name="nm_utils_ap_mode_security_valid ()" link="libnm-util-nm-utils.html#nm-utils-ap-mode-security-valid" since="0.9.8"/>
     <keyword type="function" name="nm_utils_deinit ()" link="libnm-util-nm-utils.html#nm-utils-deinit"/>
     <keyword type="function" name="nm_utils_escape_ssid ()" link="libnm-util-nm-utils.html#nm-utils-escape-ssid"/>
     <keyword type="function" name="nm_utils_file_is_pkcs12 ()" link="libnm-util-nm-utils.html#nm-utils-file-is-pkcs12"/>
@@ -1051,7 +1051,7 @@
     <keyword type="function" name="nm_utils_hwaddr_len ()" link="libnm-util-nm-utils.html#nm-utils-hwaddr-len"/>
     <keyword type="function" name="nm_utils_hwaddr_ntoa ()" link="libnm-util-nm-utils.html#nm-utils-hwaddr-ntoa"/>
     <keyword type="function" name="nm_utils_hwaddr_type ()" link="libnm-util-nm-utils.html#nm-utils-hwaddr-type"/>
-    <keyword type="function" name="nm_utils_iface_valid_name ()" link="libnm-util-nm-utils.html#nm-utils-iface-valid-name"/>
+    <keyword type="function" name="nm_utils_iface_valid_name ()" link="libnm-util-nm-utils.html#nm-utils-iface-valid-name" since="0.9.8"/>
     <keyword type="function" name="nm_utils_init ()" link="libnm-util-nm-utils.html#nm-utils-init"/>
     <keyword type="function" name="nm_utils_ip4_addresses_from_gvalue ()" link="libnm-util-nm-utils.html#nm-utils-ip4-addresses-from-gvalue"/>
     <keyword type="function" name="nm_utils_ip4_addresses_to_gvalue ()" link="libnm-util-nm-utils.html#nm-utils-ip4-addresses-to-gvalue"/>
@@ -1067,7 +1067,7 @@
     <keyword type="function" name="nm_utils_ip6_routes_from_gvalue ()" link="libnm-util-nm-utils.html#nm-utils-ip6-routes-from-gvalue"/>
     <keyword type="function" name="nm_utils_ip6_routes_to_gvalue ()" link="libnm-util-nm-utils.html#nm-utils-ip6-routes-to-gvalue"/>
     <keyword type="function" name="nm_utils_is_empty_ssid ()" link="libnm-util-nm-utils.html#nm-utils-is-empty-ssid"/>
-    <keyword type="function" name="nm_utils_is_uuid ()" link="libnm-util-nm-utils.html#nm-utils-is-uuid"/>
+    <keyword type="function" name="nm_utils_is_uuid ()" link="libnm-util-nm-utils.html#nm-utils-is-uuid" since="0.9.8"/>
     <keyword type="function" name="nm_utils_rsa_key_encrypt ()" link="libnm-util-nm-utils.html#nm-utils-rsa-key-encrypt"/>
     <keyword type="function" name="nm_utils_same_ssid ()" link="libnm-util-nm-utils.html#nm-utils-same-ssid"/>
     <keyword type="function" name="nm_utils_security_valid ()" link="libnm-util-nm-utils.html#nm-utils-security-valid"/>
@@ -1075,12 +1075,12 @@
     <keyword type="function" name="nm_utils_ssid_to_utf8 ()" link="libnm-util-nm-utils.html#nm-utils-ssid-to-utf8"/>
     <keyword type="function" name="nm_utils_uuid_generate ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate"/>
     <keyword type="function" name="nm_utils_uuid_generate_from_string ()" link="libnm-util-nm-utils.html#nm-utils-uuid-generate-from-string"/>
-    <keyword type="function" name="nm_utils_wep_key_valid ()" link="libnm-util-nm-utils.html#nm-utils-wep-key-valid"/>
+    <keyword type="function" name="nm_utils_wep_key_valid ()" link="libnm-util-nm-utils.html#nm-utils-wep-key-valid" since="0.9.8"/>
     <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
     <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
     <keyword type="function" name="nm_utils_wifi_freq_to_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel"/>
     <keyword type="function" name="nm_utils_wifi_is_channel_valid ()" link="libnm-util-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
-    <keyword type="function" name="nm_utils_wpa_psk_valid ()" link="libnm-util-nm-utils.html#nm-utils-wpa-psk-valid"/>
+    <keyword type="function" name="nm_utils_wpa_psk_valid ()" link="libnm-util-nm-utils.html#nm-utils-wpa-psk-valid" since="0.9.8"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_UNKNOWN" link="NMConnection.html#NM-CONNECTION-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-SETTING-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-TYPE-INVALID:CAPS"/>

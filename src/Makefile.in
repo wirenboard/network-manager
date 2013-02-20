@@ -113,8 +113,7 @@ am_libtest_wifi_ap_utils_la_OBJECTS =  \
 	libtest_wifi_ap_utils_la-nm-wifi-ap-utils.lo
 libtest_wifi_ap_utils_la_OBJECTS =  \
 	$(am_libtest_wifi_ap_utils_la_OBJECTS)
-am__installdirs = "$(DESTDIR)$(sbindir)" \
-	"$(DESTDIR)$(NetworkManagerdir)" "$(DESTDIR)$(dbusservicedir)"
+am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(dbusservicedir)"
 PROGRAMS = $(sbin_PROGRAMS)
 am__NetworkManager_SOURCES_DIST = nm-types.h nm-call-store.c \
 	nm-call-store.h nm-device.c nm-device.h nm-device-private.h \
@@ -294,7 +293,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-DATA = $(NetworkManager_DATA) $(dbusservice_DATA)
+DATA = $(dbusservice_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -735,8 +734,6 @@ NetworkManager_LDADD = ./generated/libnm-generated.la \
 	$(GLIB_LIBS) $(GUDEV_LIBS) $(LIBNL_LIBS) $(POLKIT_LIBS) \
 	$(SYSTEMD_LOGIN_LIBS) $(LIBM) $(LIBDL) $(am__append_10)
 NetworkManager_LDFLAGS = -rdynamic
-NetworkManagerdir = $(datadir)/NetworkManager
-NetworkManager_DATA = gdb-cmd
 dbusservicedir = $(DBUS_SYS_DIR)
 dbusservice_DATA = org.freedesktop.NetworkManager.conf
 EXTRA_DIST = \
@@ -1617,27 +1614,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-NetworkManagerDATA: $(NetworkManager_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(NetworkManager_DATA)'; test -n "$(NetworkManagerdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(NetworkManagerdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(NetworkManagerdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(NetworkManagerdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(NetworkManagerdir)" || exit $$?; \
-	done
-
-uninstall-NetworkManagerDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(NetworkManager_DATA)'; test -n "$(NetworkManagerdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(NetworkManagerdir)'; $(am__uninstall_files_from_dir)
 install-dbusserviceDATA: $(dbusservice_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(dbusservice_DATA)'; test -n "$(dbusservicedir)" || list=; \
@@ -1856,7 +1832,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(NetworkManagerdir)" "$(DESTDIR)$(dbusservicedir)"; do \
+	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(dbusservicedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1915,7 +1891,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-NetworkManagerDATA install-dbusserviceDATA
+install-data-am: install-dbusserviceDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-recursive
@@ -1962,8 +1938,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-NetworkManagerDATA uninstall-dbusserviceDATA \
-	uninstall-sbinPROGRAMS
+uninstall-am: uninstall-dbusserviceDATA uninstall-sbinPROGRAMS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all check \
 	ctags-recursive install install-am install-data-am \
@@ -1974,17 +1949,16 @@ uninstall-am: uninstall-NetworkManagerDATA uninstall-dbusserviceDATA \
 	clean-noinstLTLIBRARIES clean-sbinPROGRAMS ctags \
 	ctags-recursive distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-NetworkManagerDATA \
-	install-am install-data install-data-am install-data-hook \
-	install-dbusserviceDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-sbinPROGRAMS \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-NetworkManagerDATA uninstall-am \
+	html-am info info-am install install-am install-data \
+	install-data-am install-data-hook install-dbusserviceDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-sbinPROGRAMS install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
 	uninstall-dbusserviceDATA uninstall-sbinPROGRAMS
 
 
