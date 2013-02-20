@@ -1,11 +1,11 @@
-network-manager (0.9.8.0-1) UNRELEASED; urgency=low
+network-manager (0.9.8.0-1) experimental; urgency=low
 
   * New upstream release.
   * Drop 06-nm-settings-manx.patch, merged upstream.
   * Update symbols file for libnm-glib.
   * Install bash-completion file for nmcli.
 
- -- Michael Biebl <biebl@debian.org>  Wed, 20 Feb 2013 23:07:16 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 20 Feb 2013 23:14:18 +0100
 
 network-manager (0.9.7.997-2) experimental; urgency=low
 
