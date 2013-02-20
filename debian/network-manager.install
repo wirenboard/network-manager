@@ -11,6 +11,7 @@ usr/share/locale/
 usr/share/man/
 usr/share/dbus-1/system-services/
 usr/share/polkit-1/
+usr/share/bash-completion/
 etc/dbus-1/system.d/org.freedesktop.NetworkManager.conf
 etc/dbus-1/system.d/nm-dhcp-client.conf
 etc/dbus-1/system.d/nm-dispatcher.conf
