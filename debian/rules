@@ -32,7 +32,7 @@ override_dh_install:
 		debian/network-manager/usr/lib/NetworkManager
 
 override_dh_installinit:
-	dh_installinit -pnetwork-manager -R -- start 26 2 3 4 5 . stop 88 0 1 6 .
+	dh_installinit -pnetwork-manager -R
 
 override_dh_makeshlibs:
 	dh_makeshlibs -X/usr/lib/NetworkManager/ -X/usr/lib/pppd/
