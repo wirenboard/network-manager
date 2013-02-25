@@ -1,3 +1,12 @@
+network-manager (0.9.8.0-2) UNRELEASED; urgency=low
+
+  * debian/control.in: Make libnm-glib-dev depend on
+    network-manager-dev (= ${binary:Version}) as required by the pkg-config
+    file
+  * Add myself to uploaders
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Mon, 25 Feb 2013 09:44:44 +0100
+
 network-manager (0.9.8.0-1) experimental; urgency=low
 
   * New upstream release.
