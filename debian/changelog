@@ -1,4 +1,4 @@
-network-manager (0.9.8.0-2) UNRELEASED; urgency=low
+network-manager (0.9.8.0-2) experimental; urgency=low
 
   [ Sjoerd Simons ]
   * Add myself to uploaders
@@ -9,7 +9,7 @@ network-manager (0.9.8.0-2) UNRELEASED; urgency=low
     header now to get a correct ordering when being run under sysvinit.
   * Tighten dependencies between -dev packages.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 02 Mar 2013 00:22:21 +0100
+ -- Michael Biebl <biebl@debian.org>  Wed, 20 Mar 2013 16:23:07 +0100
 
 network-manager (0.9.8.0-1) experimental; urgency=low
 
