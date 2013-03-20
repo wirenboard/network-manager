@@ -109,8 +109,8 @@ Depends:
  libnm-glib4 (= ${binary:Version}),
  gir1.2-networkmanager-1.0 (= ${binary:Version}),
  ${misc:Depends},
- libnm-util-dev,
- network-manager-dev (= ${binary:Version}),
+ libnm-util-dev (>= ${binary:Version}),
+ network-manager-dev (>= ${binary:Version}),
  libglib2.0-dev,
  libdbus-glib-1-dev
 Description: network management framework (GLib interface)
@@ -145,7 +145,8 @@ Architecture: linux-any
 Depends:
  libnm-glib-vpn1 (= ${binary:Version}),
  ${misc:Depends},
- libnm-glib-dev
+ libnm-glib-dev (>= ${binary:Version}),
+ network-manager-dev (>= ${binary:Version}),
 Description: network management framework (GLib interface)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -179,6 +180,7 @@ Depends:
  libnm-util2 (= ${binary:Version}),
  gir1.2-networkmanager-1.0 (= ${binary:Version}),
  ${misc:Depends},
+ network-manager-dev (>= ${binary:Version}),
  libglib2.0-dev,
  libdbus-glib-1-dev
 Description: network management framework (development files)
