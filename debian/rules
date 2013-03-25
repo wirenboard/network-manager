@@ -4,7 +4,7 @@ DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
 %:
-	dh $@
+	dh $@ --with gir
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
@@ -39,11 +39,6 @@ override_dh_makeshlibs:
 
 override_dh_strip:
 	dh_strip --dbg-package=network-manager-dbg
-
-override_dh_shlibdeps:
-	dh_shlibdeps
-	dh_girepository -plibnm-util2
-	dh_girepository -plibnm-glib4
 
 override_dh_builddeb:
 	dh_builddeb -- -Zxz
