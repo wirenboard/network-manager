@@ -88,6 +88,14 @@ network-manager (0.9.5.95-1) experimental; urgency=low
 
  -- Michael Biebl <biebl@debian.org>  Fri, 29 Jun 2012 20:30:16 +0200
 
+network-manager (0.9.4.0-10) unstable; urgency=low
+
+  * debian/patches/21-carrier-detect.patch: ensure carrier is always on for
+    devices that don't support detection (rh #816719). (Closes: #699292)
+    Patch cherry-picked from upstream Git.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 30 Jan 2013 01:12:53 +0100
+
 network-manager (0.9.4.0-9) unstable; urgency=low
 
   * Change the ifupdown dispatcher script and set ADDRFAM to "inet" or "inet6"
