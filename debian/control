@@ -26,7 +26,7 @@ Build-Depends:
  gobject-introspection (>= 0.9.12-4~),
  gtk-doc-tools,
  libglib2.0-doc
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Vcs-Git: git://git.debian.org/git/pkg-utopia/network-manager.git
 Vcs-Browser: http://git.debian.org/?p=pkg-utopia/network-manager.git;a=summary
 Homepage: http://www.gnome.org/projects/NetworkManager/
