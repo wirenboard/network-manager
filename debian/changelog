@@ -2,6 +2,7 @@ network-manager (0.9.8.0-3) UNRELEASED; urgency=low
 
   * Use gir dh addon instead of calling dh_girepository manually.
   * Upload to unstable.
+  * Be more aggressive in cleaning up /var/lib/NetworkManager on purge.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 26 Mar 2013 00:18:07 +0100
 
