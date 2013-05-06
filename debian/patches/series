@@ -2,3 +2,4 @@
 02-dbus_access_network_manager.patch
 03-systemd.patch
 05-force-online-with-unmanaged-devices.patch
+06-tear-down-connections-for-unavailable-devices.patch
