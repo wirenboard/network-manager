@@ -1,9 +1,9 @@
-network-manager (0.9.8.0-4) UNRELEASED; urgency=low
+network-manager (0.9.8.0-4) unstable; urgency=low
 
   * Ensure ActiveConnections are torn down when device is unavailable. Patch
     cherry-picked from upstream Git. (Closes: #700391)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 07 May 2013 01:53:47 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 07 May 2013 02:02:31 +0200
 
 network-manager (0.9.8.0-3) unstable; urgency=low
 
