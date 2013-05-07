@@ -28,20 +28,6 @@ case "$1" in
             invoke-rc.d dbus force-reload || true
         fi
 
-        # Update init script priorities
-        if dpkg --compare-versions "$2" lt "0.7.0.99-1"; then
-            for i in 0 1 6 ; do
-                if [ -e /etc/rc$i.d/K14network-manager ]; then
-                    mv /etc/rc$i.d/K14network-manager /etc/rc$i.d/K88network-manager
-                fi
-            done
-        fi
-
-        # Kill nm-system-settings service as in 0.8 it is no longer a separate process
-        if dpkg --compare-versions "$2" lt "0.7.999-1"; then
-            kill `pidof /usr/sbin/nm-system-settings` 2>/dev/null || true
-        fi
-
         NIF=/etc/network/interfaces
         if [ -z "$2" ] && [ -f $NIF ]; then
             ifaces=`grep -v '^#' $NIF | awk '/iface/ {print $2}' | sort -u | sed -e 's/lo//' -e '/^$/d' -e 's/^/- /'`

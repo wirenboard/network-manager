@@ -1,3 +1,9 @@
+network-manager (0.9.8.0-5) UNRELEASED; urgency=low
+
+  * Remove old code for upgrading from pre-squeeze versions.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 07 May 2013 06:41:41 +0200
+
 network-manager (0.9.8.0-4) unstable; urgency=low
 
   * Ensure ActiveConnections are torn down when device is unavailable. Patch

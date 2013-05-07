@@ -20,12 +20,6 @@ set -e
 case "$1" in
     install|upgrade)
 	# Upgrade from previous versions
-	if dpkg --compare-versions "$2" lt "0.7.0~svn3624-1"; then
-	    if [ -x "/etc/init.d/network-manager-dispatcher" ]; then
-	        invoke-rc.d network-manager-dispatcher stop
-	    fi
-	    update-rc.d network-manager-dispatcher remove >/dev/null
-	fi
 	if dpkg --compare-versions "$2" lt "0.9.7.997-2"; then
 	    # Move old pid file to /var/run/NetworkManager so the init script
 	    # doesn't get confused
