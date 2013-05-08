@@ -3,3 +3,4 @@
 03-systemd.patch
 05-force-online-with-unmanaged-devices.patch
 06-tear-down-connections-for-unavailable-devices.patch
+07-duid-fallback.patch
