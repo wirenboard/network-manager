@@ -20,6 +20,8 @@ Build-Depends:
  libpolkit-gobject-1-dev,
  libgnutls-dev,
  uuid-dev,
+ systemd (>= 185),
+ libsystemd-login-dev (>= 185),
  libudev-dev (>= 165),
  libgudev-1.0-dev (>= 165),
  libgirepository1.0-dev (>= 0.10.7-1~),
@@ -49,7 +51,8 @@ Recommends:
  dnsmasq-base,
  iptables,
  modemmanager,
- crda
+ crda,
+ systemd
 Suggests: avahi-autoipd
 Breaks:
  network-manager-gnome (<< 0.9),

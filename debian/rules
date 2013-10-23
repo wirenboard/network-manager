@@ -14,8 +14,8 @@ override_dh_auto_configure:
 		--with-iptables=/sbin/iptables \
 		--with-systemdsystemunitdir=/lib/systemd/system \
 		--with-crypto=gnutls \
-		--with-session-tracking=consolekit \
-		--with-suspend-resume=upower \
+		--with-session-tracking=systemd \
+		--with-suspend-resume=systemd \
 		--disable-more-warnings \
 		--disable-modify-system \
 		--enable-polkit \

@@ -1,11 +1,14 @@
-network-manager (0.9.8.0-6) UNRELEASED; urgency=low
+network-manager (0.9.8.0-5.1) UNRELEASED; urgency=low
 
   * debian/60-network-manager.rules
     debian/network-manager.install:
     - Install a rules file compatible with experimentals policykit (0.110)
       implementing the same policy as the pkla
 
- -- Sjoerd Simons <sjoerd@debian.org>  Sun, 25 Aug 2013 18:07:41 +0200
+  [ Sjoerd Simons ]
+  * Switch session tracking to systemd.
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Wed, 23 Oct 2013 22:43:41 +0200
 
 network-manager (0.9.8.0-5) unstable; urgency=low
 
@@ -26,6 +29,7 @@ network-manager (0.9.8.0-4) unstable; urgency=low
 
 network-manager (0.9.8.0-3) unstable; urgency=low
 
+  [ Michael Biebl ]
   * Use gir dh addon instead of calling dh_girepository manually.
   * Upload to unstable.
   * Be more aggressive in cleaning up /var/lib/NetworkManager on purge.
