@@ -1,5 +1,5 @@
 <!-- ##### SECTION Title ##### -->
-NMVpnPluginUiWidget
+NMVpnPluginUi
 
 <!-- ##### SECTION Short_Description ##### -->
 
@@ -22,6 +22,24 @@ NMVpnPluginUiWidget
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### USER_FUNCTION NMVpnPluginUiFactory ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_vpn_plugin_ui_factory ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
 <!-- ##### ENUM NMVpnPluginUiCapability ##### -->
 <para>
 
@@ -32,14 +50,35 @@ NMVpnPluginUiWidget
 @NM_VPN_PLUGIN_UI_CAPABILITY_EXPORT: 
 @NM_VPN_PLUGIN_UI_CAPABILITY_IPV6: 
 
-<!-- ##### USER_FUNCTION NMVpnPluginUiFactory ##### -->
+<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_NAME ##### -->
 <para>
 
 </para>
 
-@error: 
-@Returns: 
 
+
+<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_DESC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_SERVICE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMVpnPluginUiInterfaceProp ##### -->
+<para>
+
+</para>
+
+@NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME: 
+@NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC: 
+@NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE: 
 
 <!-- ##### STRUCT NMVpnPluginUiInterface ##### -->
 <para>
@@ -60,63 +99,33 @@ NMVpnPluginUiWidget
 @_reserved5: 
 @_reserved6: 
 
-<!-- ##### ENUM NMVpnPluginUiInterfaceProp ##### -->
-<para>
-
-</para>
-
-@NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME: 
-@NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC: 
-@NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE: 
-
-<!-- ##### STRUCT NMVpnPluginUiWidgetInterface ##### -->
-<para>
-
-</para>
-
-@g_iface: 
-@get_widget: 
-@update_connection: 
-@save_secrets: 
-@changed: 
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_DESC ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_VPN_PLUGIN_UI_INTERFACE_SERVICE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_vpn_plugin_ui_factory ##### -->
-<para>
-
-</para>
-
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_delete_connection ##### -->
+<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_ui_factory ##### -->
 <para>
 
 </para>
 
 @iface: 
 @connection: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_get_capabilities ##### -->
+<para>
+
+</para>
+
+@iface: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_import ##### -->
+<para>
+
+</para>
+
+@iface: 
+@path: 
 @error: 
 @Returns: 
 
@@ -133,15 +142,6 @@ NMVpnPluginUiWidget
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_get_capabilities ##### -->
-<para>
-
-</para>
-
-@iface: 
-@Returns: 
-
-
 <!-- ##### FUNCTION nm_vpn_plugin_ui_interface_get_suggested_name ##### -->
 <para>
 
@@ -152,18 +152,7 @@ NMVpnPluginUiWidget
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_import ##### -->
-<para>
-
-</para>
-
-@iface: 
-@path: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_ui_factory ##### -->
+<!-- ##### FUNCTION nm_vpn_plugin_ui_interface_delete_connection ##### -->
 <para>
 
 </para>
@@ -173,6 +162,17 @@ NMVpnPluginUiWidget
 @error: 
 @Returns: 
 
+
+<!-- ##### STRUCT NMVpnPluginUiWidgetInterface ##### -->
+<para>
+
+</para>
+
+@g_iface: 
+@get_widget: 
+@update_connection: 
+@save_secrets: 
+@changed: 
 
 <!-- ##### FUNCTION nm_vpn_plugin_ui_widget_interface_get_widget ##### -->
 <para>
@@ -183,7 +183,7 @@ NMVpnPluginUiWidget
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_vpn_plugin_ui_widget_interface_save_secrets ##### -->
+<!-- ##### FUNCTION nm_vpn_plugin_ui_widget_interface_update_connection ##### -->
 <para>
 
 </para>
@@ -194,7 +194,7 @@ NMVpnPluginUiWidget
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_vpn_plugin_ui_widget_interface_update_connection ##### -->
+<!-- ##### FUNCTION nm_vpn_plugin_ui_widget_interface_save_secrets ##### -->
 <para>
 
 </para>

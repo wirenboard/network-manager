@@ -22,6 +22,44 @@ NMObject
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### ENUM NMObjectError ##### -->
+<para>
+
+</para>
+
+@NM_OBJECT_ERROR_UNKNOWN: 
+@NM_OBJECT_ERROR_OBJECT_CREATION_FAILURE: 
+
+<!-- ##### MACRO NM_OBJECT_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_object_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_OBJECT_DBUS_CONNECTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_OBJECT_DBUS_PATH ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMObject ##### -->
 <para>
 
@@ -60,44 +98,6 @@ NMObject
 @_reserved4: 
 @_reserved5: 
 @_reserved6: 
-
-<!-- ##### ENUM NMObjectError ##### -->
-<para>
-
-</para>
-
-@NM_OBJECT_ERROR_UNKNOWN: 
-@NM_OBJECT_ERROR_OBJECT_CREATION_FAILURE: 
-
-<!-- ##### MACRO NM_OBJECT_DBUS_CONNECTION ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_OBJECT_DBUS_PATH ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_OBJECT_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_object_error_quark ##### -->
-<para>
-
-</para>
-
-@void: 
-@Returns: 
-
 
 <!-- ##### FUNCTION nm_object_get_connection ##### -->
 <para>

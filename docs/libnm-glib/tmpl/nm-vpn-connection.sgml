@@ -22,6 +22,20 @@ NMVPNConnection
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_VPN_CONNECTION_VPN_STATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VPN_CONNECTION_BANNER ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMVPNConnection ##### -->
 <para>
 
@@ -61,26 +75,13 @@ NMVPNConnection
 @_reserved5: 
 @_reserved6: 
 
-<!-- ##### MACRO NM_VPN_CONNECTION_BANNER ##### -->
+<!-- ##### FUNCTION nm_vpn_connection_new ##### -->
 <para>
 
 </para>
 
-
-
-<!-- ##### MACRO NM_VPN_CONNECTION_VPN_STATE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_vpn_connection_get_banner ##### -->
-<para>
-
-</para>
-
-@vpn: 
+@connection: 
+@path: 
 @Returns: 
 
 
@@ -93,13 +94,12 @@ NMVPNConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_vpn_connection_new ##### -->
+<!-- ##### FUNCTION nm_vpn_connection_get_banner ##### -->
 <para>
 
 </para>
 
-@connection: 
-@path: 
+@vpn: 
 @Returns: 
 
 

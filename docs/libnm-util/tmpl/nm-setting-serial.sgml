@@ -22,6 +22,74 @@ NMSettingSerial
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_SERIAL_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingSerialError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_SERIAL_ERROR_UNKNOWN: 
+@NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY: 
+@NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING: 
+
+<!-- ##### MACRO NM_SETTING_SERIAL_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_serial_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_BAUD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_BITS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_PARITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_STOPBITS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_SEND_DELAY ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingSerial ##### -->
 <para>
 
@@ -64,66 +132,7 @@ NMSettingSerial
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingSerialError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_SERIAL_ERROR_UNKNOWN: 
-@NM_SETTING_SERIAL_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_SERIAL_ERROR_MISSING_PROPERTY: 
-@NM_SETTING_SERIAL_ERROR_MISSING_PPP_SETTING: 
-
-<!-- ##### MACRO NM_SETTING_SERIAL_BAUD ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_SERIAL_BITS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_SERIAL_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_SERIAL_PARITY ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_SERIAL_SEND_DELAY ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_SERIAL_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_SERIAL_STOPBITS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_serial_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_serial_new ##### -->
 <para>
 
 </para>
@@ -159,15 +168,6 @@ NMSettingSerial
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_serial_get_send_delay ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
 <!-- ##### FUNCTION nm_setting_serial_get_stopbits ##### -->
 <para>
 
@@ -177,12 +177,12 @@ NMSettingSerial
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_serial_new ##### -->
+<!-- ##### FUNCTION nm_setting_serial_get_send_delay ##### -->
 <para>
 
 </para>
 
-@void: 
+@setting: 
 @Returns: 
 
 

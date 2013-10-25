@@ -22,18 +22,18 @@ nm-setting-private
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_SECRET_FLAGS_ALL ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_REGISTER_TYPE ##### -->
 <para>
 
 </para>
 
 @x: 
-
-
-<!-- ##### MACRO NM_SETTING_SECRET_FLAGS_ALL ##### -->
-<para>
-
-</para>
-
 
 

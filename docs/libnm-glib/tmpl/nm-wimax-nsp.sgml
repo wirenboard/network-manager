@@ -22,6 +22,37 @@ NMWimaxNsp
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_WIMAX_NSP_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_WIMAX_NSP_SIGNAL_QUALITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_WIMAX_NSP_NETWORK_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMWimaxNspNetworkType ##### -->
+<para>
+
+</para>
+
+@NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN: 
+@NM_WIMAX_NSP_NETWORK_TYPE_HOME: 
+@NM_WIMAX_NSP_NETWORK_TYPE_PARTNER: 
+@NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER: 
+
 <!-- ##### STRUCT NMWimaxNsp ##### -->
 <para>
 
@@ -56,67 +87,17 @@ NMWimaxNsp
 @_reserved5: 
 @_reserved6: 
 
-<!-- ##### ENUM NMWimaxNspNetworkType ##### -->
+<!-- ##### FUNCTION nm_wimax_nsp_new ##### -->
 <para>
 
 </para>
 
-@NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN: 
-@NM_WIMAX_NSP_NETWORK_TYPE_HOME: 
-@NM_WIMAX_NSP_NETWORK_TYPE_PARTNER: 
-@NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER: 
-
-<!-- ##### MACRO NM_WIMAX_NSP_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_WIMAX_NSP_NETWORK_TYPE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_WIMAX_NSP_SIGNAL_QUALITY ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_wimax_nsp_connection_valid ##### -->
-<para>
-
-</para>
-
-@nsp: 
 @connection: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_wimax_nsp_filter_connections ##### -->
-<para>
-
-</para>
-
-@nsp: 
-@connections: 
+@path: 
 @Returns: 
 
 
 <!-- ##### FUNCTION nm_wimax_nsp_get_name ##### -->
-<para>
-
-</para>
-
-@nsp: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_wimax_nsp_get_network_type ##### -->
 <para>
 
 </para>
@@ -134,13 +115,32 @@ NMWimaxNsp
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_wimax_nsp_new ##### -->
+<!-- ##### FUNCTION nm_wimax_nsp_get_network_type ##### -->
 <para>
 
 </para>
 
+@nsp: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_wimax_nsp_filter_connections ##### -->
+<para>
+
+</para>
+
+@nsp: 
+@connections: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_wimax_nsp_connection_valid ##### -->
+<para>
+
+</para>
+
+@nsp: 
 @connection: 
-@path: 
 @Returns: 
 
 

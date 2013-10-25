@@ -60,6 +60,9 @@ typedef struct {
 	NMState state;
 	GPtrArray *devices;
 	GPtrArray *active_connections;
+	NMConnectivityState connectivity;
+	NMActiveConnection *primary_connection;
+	NMActiveConnection *activating_connection;
 
 	DBusGProxyCall *perm_call;
 	GHashTable *permissions;
@@ -93,6 +96,9 @@ enum {
 	PROP_WIMAX_ENABLED,
 	PROP_WIMAX_HARDWARE_ENABLED,
 	PROP_ACTIVE_CONNECTIONS,
+	PROP_CONNECTIVITY,
+	PROP_PRIMARY_CONNECTION,
+	PROP_ACTIVATING_CONNECTION,
 
 	LAST_PROP
 };
@@ -161,6 +167,9 @@ register_properties (NMClient *client)
 		{ NM_CLIENT_WIMAX_ENABLED,             &priv->wimax_enabled },
 		{ NM_CLIENT_WIMAX_HARDWARE_ENABLED,    &priv->wimax_hw_enabled },
 		{ NM_CLIENT_ACTIVE_CONNECTIONS,        &priv->active_connections, NULL, NM_TYPE_ACTIVE_CONNECTION },
+		{ NM_CLIENT_CONNECTIVITY,              &priv->connectivity },
+		{ NM_CLIENT_PRIMARY_CONNECTION,        &priv->primary_connection, NULL, NM_TYPE_ACTIVE_CONNECTION },
+		{ NM_CLIENT_ACTIVATING_CONNECTION,     &priv->activating_connection, NULL, NM_TYPE_ACTIVE_CONNECTION },
 		{ NULL },
 	};
 
@@ -464,7 +473,7 @@ static void
 recheck_pending_activations (NMClient *self, const char *failed_path, GError *error)
 {
 	NMClientPrivate *priv = NM_CLIENT_GET_PRIVATE (self);
-	GSList *iter;
+	GSList *iter, *next;
 	const GPtrArray *active_connections;
 	gboolean found_in_active = FALSE;
 	gboolean found_in_pending = FALSE;
@@ -479,8 +488,10 @@ recheck_pending_activations (NMClient *self, const char *failed_path, GError *er
 	 * If the connection to activate doesn't make it to active_connections,
 	 * due to an error, we have to call the callback for failed_path.
 	 */
-	for (iter = priv->pending_activations; iter; iter = g_slist_next (iter)) {
+	for (iter = priv->pending_activations; iter; iter = next) {
 		ActivateInfo *info = iter->data;
+
+		next = g_slist_next (iter);
 
 		if (!found_in_pending && failed_path && g_strcmp0 (failed_path, info->active_path) == 0) {
 			found_in_pending = TRUE;
@@ -542,7 +553,7 @@ activate_cb (DBusGProxy *proxy,
  * @device: (allow-none): the #NMDevice
  * @specific_object: (allow-none): the object path of a connection-type-specific
  *   object this activation should use. This parameter is currently ignored for
- *   wired and mobile broadband connections, and the value of NULL should be used
+ *   wired and mobile broadband connections, and the value of %NULL should be used
  *   (ie, no specific object).  For WiFi or WiMAX connections, pass the object
  *   path of a #NMAccessPoint or #NMWimaxNsp owned by @device, which you can
  *   get using nm_object_get_path(), and which will be used to complete the
@@ -618,12 +629,12 @@ add_activate_cb (DBusGProxy *proxy,
  * nm_client_add_and_activate_connection:
  * @client: a #NMClient
  * @partial: (allow-none): an #NMConnection to add; the connection may be
- *   partially filled (or even NULL) and will be completed by NetworkManager
+ *   partially filled (or even %NULL) and will be completed by NetworkManager
  *   using the given @device and @specific_object before being added
  * @device: the #NMDevice
  * @specific_object: (allow-none): the object path of a connection-type-specific
  *   object this activation should use. This parameter is currently ignored for
- *   wired and mobile broadband connections, and the value of NULL should be used
+ *   wired and mobile broadband connections, and the value of %NULL should be used
  *   (ie, no specific object).  For WiFi or WiMAX connections, pass the object
  *   path of a #NMAccessPoint or #NMWimaxNsp owned by @device, which you can
  *   get using nm_object_get_path(), and which will be used to complete the
@@ -1125,6 +1136,58 @@ nm_client_set_logging (NMClient *client, const char *level, const char *domains,
 	return TRUE;
 }
 
+/**
+ * nm_client_get_primary_connection:
+ * @client: an #NMClient
+ *
+ * Gets the #NMActiveConnection corresponding to the primary active
+ * network device.
+ *
+ * In particular, when there is no VPN active, or the VPN does not
+ * have the default route, this returns the active connection that has
+ * the default route. If there is a VPN active with the default route,
+ * then this function returns the active connection that contains the
+ * route to the VPN endpoint.
+ *
+ * If there is no default route, or the default route is over a
+ * non-NetworkManager-recognized device, this will return %NULL.
+ *
+ * Returns: (transfer none): the appropriate #NMActiveConnection, if
+ * any
+ *
+ * Since: 0.9.8.4
+ */
+NMActiveConnection *
+nm_client_get_primary_connection (NMClient *client)
+{
+	g_return_val_if_fail (NM_IS_CLIENT (client), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (client));
+	return NM_CLIENT_GET_PRIVATE (client)->primary_connection;
+}
+
+/**
+ * nm_client_get_activating_connection:
+ * @client: an #NMClient
+ *
+ * Gets the #NMActiveConnection corresponding to a
+ * currently-activating connection that is expected to become the new
+ * #NMClient:primary-connection upon successful activation.
+ *
+ * Returns: (transfer none): the appropriate #NMActiveConnection, if
+ * any.
+ *
+ * Since: 0.9.8.4
+ */
+NMActiveConnection *
+nm_client_get_activating_connection (NMClient *client)
+{
+	g_return_val_if_fail (NM_IS_CLIENT (client), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (client));
+	return NM_CLIENT_GET_PRIVATE (client)->activating_connection;
+}
+
 /****************************************************************/
 
 static void
@@ -1249,6 +1312,197 @@ static void
 client_device_removed (NMObject *client, NMObject *device)
 {
 	g_signal_emit (client, signals[DEVICE_REMOVED], 0, device);
+}
+
+/**
+ * nm_client_get_connectivity:
+ * @client: an #NMClient
+ *
+ * Gets the current network connectivity state. Contrast
+ * nm_client_check_connectivity() and
+ * nm_client_check_connectivity_async(), which re-check the
+ * connectivity state first before returning any information.
+ *
+ * Returns: the current connectivity state
+ * Since: 0.9.8.4
+ */
+NMConnectivityState
+nm_client_get_connectivity (NMClient *client)
+{
+	NMClientPrivate *priv;
+
+	g_return_val_if_fail (NM_IS_CLIENT (client), NM_STATE_UNKNOWN);
+	priv = NM_CLIENT_GET_PRIVATE (client);
+
+	_nm_object_ensure_inited (NM_OBJECT (client));
+
+	return priv->connectivity;
+}
+
+/**
+ * nm_client_check_connectivity:
+ * @client: an #NMClient
+ * @cancellable: a #GCancellable
+ * @error: return location for a #GError
+ *
+ * Updates the network connectivity state and returns the (new)
+ * current state. Contrast nm_client_get_connectivity(), which returns
+ * the most recent known state without re-checking.
+ *
+ * This is a blocking call; use nm_client_check_connectivity_async()
+ * if you do not want to block.
+ *
+ * Returns: the (new) current connectivity state
+ * Since: 0.9.8.4
+ */
+NMConnectivityState
+nm_client_check_connectivity (NMClient *client,
+                              GCancellable *cancellable,
+                              GError **error)
+{
+	NMClientPrivate *priv;
+	NMConnectivityState connectivity;
+
+	g_return_val_if_fail (NM_IS_CLIENT (client), NM_CONNECTIVITY_UNKNOWN);
+	priv = NM_CLIENT_GET_PRIVATE (client);
+
+	if (!dbus_g_proxy_call (priv->client_proxy, "CheckConnectivity", error,
+	                        G_TYPE_INVALID,
+	                        G_TYPE_UINT, &connectivity,
+	                        G_TYPE_INVALID))
+		connectivity = NM_CONNECTIVITY_UNKNOWN;
+
+	return connectivity;
+}
+
+typedef struct {
+	NMClient *client;
+	DBusGProxyCall *call;
+	GCancellable *cancellable;
+	guint cancelled_id;
+	NMConnectivityState connectivity;
+} CheckConnectivityData;
+
+static void
+check_connectivity_data_free (CheckConnectivityData *ccd)
+{
+	if (ccd->cancellable) {
+		if (ccd->cancelled_id)
+			g_signal_handler_disconnect (ccd->cancellable, ccd->cancelled_id);
+		g_object_unref (ccd->cancellable);
+	}
+
+	g_slice_free (CheckConnectivityData, ccd);
+}
+
+static void
+check_connectivity_cb (DBusGProxy *proxy,
+                       DBusGProxyCall *call,
+                       gpointer user_data)
+{
+	GSimpleAsyncResult *simple = user_data;
+	CheckConnectivityData *ccd = g_simple_async_result_get_op_res_gpointer (simple);
+	GError *error = NULL;
+
+	if (!dbus_g_proxy_end_call (proxy, call, &error,
+	                            G_TYPE_UINT, &ccd->connectivity,
+	                            G_TYPE_INVALID))
+		g_simple_async_result_take_error (simple, error);
+
+	g_simple_async_result_complete (simple);
+	g_object_unref (simple);
+}
+
+static void
+check_connectivity_cancelled_cb (GCancellable *cancellable,
+                                 gpointer user_data)
+{
+	GSimpleAsyncResult *simple = user_data;
+	CheckConnectivityData *ccd = g_simple_async_result_get_op_res_gpointer (simple);
+
+	g_signal_handler_disconnect (cancellable, ccd->cancelled_id);
+	ccd->cancelled_id = 0;
+
+	dbus_g_proxy_cancel_call (NM_CLIENT_GET_PRIVATE (ccd->client)->client_proxy, ccd->call);
+	g_simple_async_result_complete_in_idle (simple);
+}
+
+/**
+ * nm_client_check_connectivity_async:
+ * @client: an #NMClient
+ * @cancellable: a #GCancellable
+ * @callback: callback to call with the result
+ * @user_data: data for @callback.
+ *
+ * Asynchronously updates the network connectivity state and invokes
+ * @callback when complete. Contrast nm_client_get_connectivity(),
+ * which (immediately) returns the most recent known state without
+ * re-checking, and nm_client_check_connectivity(), which blocks.
+ *
+ * Since: 0.9.8.4
+ */
+void
+nm_client_check_connectivity_async (NMClient *client,
+                                    GCancellable *cancellable,
+                                    GAsyncReadyCallback callback,
+                                    gpointer user_data)
+{
+	NMClientPrivate *priv;
+	GSimpleAsyncResult *simple;
+	CheckConnectivityData *ccd;
+
+	g_return_if_fail (NM_IS_CLIENT (client));
+	priv = NM_CLIENT_GET_PRIVATE (client);
+
+	ccd = g_slice_new (CheckConnectivityData);
+	ccd->client = client;
+
+	simple = g_simple_async_result_new (G_OBJECT (client), callback, user_data,
+	                                    nm_client_check_connectivity_async);
+	g_simple_async_result_set_op_res_gpointer (simple, ccd, (GDestroyNotify) check_connectivity_data_free);
+
+	if (cancellable) {
+		ccd->cancellable = g_object_ref (cancellable);
+		ccd->cancelled_id = g_signal_connect (cancellable, "cancelled",
+		                                      G_CALLBACK (check_connectivity_cancelled_cb),
+		                                      simple);
+		g_simple_async_result_set_check_cancellable (simple, cancellable);
+	}
+
+	ccd->call = dbus_g_proxy_begin_call (priv->client_proxy, "CheckConnectivity",
+	                                     check_connectivity_cb, simple, NULL,
+	                                     G_TYPE_INVALID);
+}
+
+/**
+ * nm_client_check_connectivity_finish:
+ * @client: an #NMClient
+ * @result: the #GAsyncResult
+ * @error: return location for a #GError
+ *
+ * Retrieves the result of an nm_client_check_connectivity_async()
+ * call.
+ *
+ * Returns: the (new) current connectivity state
+ * Since: 0.9.8.4
+ */
+NMConnectivityState
+nm_client_check_connectivity_finish (NMClient *client,
+                                     GAsyncResult *result,
+                                     GError **error)
+{
+	GSimpleAsyncResult *simple;
+	CheckConnectivityData *ccd;
+
+	g_return_val_if_fail (g_simple_async_result_is_valid (result, G_OBJECT (client), nm_client_check_connectivity_async), NM_CONNECTIVITY_UNKNOWN);
+
+	simple = G_SIMPLE_ASYNC_RESULT (result);
+	ccd = g_simple_async_result_get_op_res_gpointer (simple);
+
+	if (g_simple_async_result_propagate_error (simple, error))
+		return NM_CONNECTIVITY_UNKNOWN;
+
+	return ccd->connectivity;
 }
 
 /****************************************************************/
@@ -1677,6 +1931,8 @@ dispose (GObject *object)
 
 	free_devices (client, FALSE);
 	free_active_connections (client, FALSE);
+	g_clear_object (&priv->primary_connection);
+	g_clear_object (&priv->activating_connection);
 
 	g_slist_foreach (priv->pending_activations, (GFunc) activate_info_free, NULL);
 	g_slist_free (priv->pending_activations);
@@ -1784,6 +2040,15 @@ get_property (GObject *object,
 		break;
 	case PROP_ACTIVE_CONNECTIONS:
 		g_value_set_boxed (value, nm_client_get_active_connections (self));
+		break;
+	case PROP_CONNECTIVITY:
+		g_value_set_uint (value, priv->connectivity);
+		break;
+	case PROP_PRIMARY_CONNECTION:
+		g_value_set_object (value, priv->primary_connection);
+		break;
+	case PROP_ACTIVATING_CONNECTION:
+		g_value_set_object (value, priv->activating_connection);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1950,6 +2215,53 @@ nm_client_class_init (NMClientClass *client_class)
 						   "Active connections",
 						   NM_TYPE_OBJECT_ARRAY,
 						   G_PARAM_READABLE));
+
+	/**
+	 * NMClient:connectivity:
+	 *
+	 * The network connectivity state.
+	 *
+	 * Since: 0.9.8.4
+	 */
+	g_object_class_install_property
+		(object_class, PROP_CONNECTIVITY,
+		 g_param_spec_uint (NM_CLIENT_CONNECTIVITY,
+		                    "Connectivity",
+		                    "Connectivity state",
+		                    NM_CONNECTIVITY_UNKNOWN, NM_CONNECTIVITY_FULL, NM_CONNECTIVITY_UNKNOWN,
+		                    G_PARAM_READABLE));
+
+	/**
+	 * NMClient:primary-connection:
+	 *
+	 * The #NMActiveConnection of the device with the default route;
+	 * see nm_client_get_primary_connection() for more details.
+	 *
+	 * Since: 0.9.8.4
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_PRIMARY_CONNECTION,
+		 g_param_spec_object (NM_CLIENT_PRIMARY_CONNECTION,
+		                      "Primary connection",
+		                      "Primary connection",
+		                      NM_TYPE_ACTIVE_CONNECTION,
+		                      G_PARAM_READABLE));
+
+	/**
+	 * NMClient:activating-connection:
+	 *
+	 * The #NMActiveConnection of the activating connection that is
+	 * likely to become the new #NMClient:primary-connection.
+	 *
+	 * Since: 0.9.8.4
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_ACTIVATING_CONNECTION,
+		 g_param_spec_object (NM_CLIENT_ACTIVATING_CONNECTION,
+		                      "Activating connection",
+		                      "Activating connection",
+		                      NM_TYPE_ACTIVE_CONNECTION,
+		                      G_PARAM_READABLE));
 
 	/* signals */
 

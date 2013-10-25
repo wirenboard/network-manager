@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMDeviceVlan</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMDeviceInfiniband.html" title="NMDeviceInfiniband">
 <link rel="next" href="NMDeviceOlpcMesh.html" title="NMDeviceOlpcMesh">
-<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -43,19 +43,19 @@
 </tr></table></div>
 <div class="refsynopsisdiv">
 <a name="NMDeviceVlan.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis">                    <a class="link" href="NMDeviceVlan.html#NMDeviceVlan-struct" title="NMDeviceVlan">NMDeviceVlan</a>;
-                    <a class="link" href="NMDeviceVlan.html#NMDeviceVlanClass" title="NMDeviceVlanClass">NMDeviceVlanClass</a>;
-enum                <a class="link" href="NMDeviceVlan.html#NMDeviceVlanError" title="enum NMDeviceVlanError">NMDeviceVlanError</a>;
-#define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-CARRIER:CAPS" title="NM_DEVICE_VLAN_CARRIER">NM_DEVICE_VLAN_CARRIER</a>
+<pre class="synopsis">enum                <a class="link" href="NMDeviceVlan.html#NMDeviceVlanError" title="enum NMDeviceVlanError">NMDeviceVlanError</a>;
 #define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-ERROR:CAPS" title="NM_DEVICE_VLAN_ERROR">NM_DEVICE_VLAN_ERROR</a>
-#define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-HW-ADDRESS:CAPS" title="NM_DEVICE_VLAN_HW_ADDRESS">NM_DEVICE_VLAN_HW_ADDRESS</a>
-#define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-VLAN-ID:CAPS" title="NM_DEVICE_VLAN_VLAN_ID">NM_DEVICE_VLAN_VLAN_ID</a>
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMDeviceVlan.html#nm-device-vlan-error-quark" title="nm_device_vlan_error_quark ()">nm_device_vlan_error_quark</a>          (<em class="parameter"><code><span class="type">void</span></code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMDeviceVlan.html#nm-device-vlan-get-carrier" title="nm_device_vlan_get_carrier ()">nm_device_vlan_get_carrier</a>          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);
-const <span class="returnvalue">char</span> *        <a class="link" href="NMDeviceVlan.html#nm-device-vlan-get-hw-address" title="nm_device_vlan_get_hw_address ()">nm_device_vlan_get_hw_address</a>       (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="NMDeviceVlan.html#nm-device-vlan-get-vlan-id" title="nm_device_vlan_get_vlan_id ()">nm_device_vlan_get_vlan_id</a>          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);
+#define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-HW-ADDRESS:CAPS" title="NM_DEVICE_VLAN_HW_ADDRESS">NM_DEVICE_VLAN_HW_ADDRESS</a>
+#define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-CARRIER:CAPS" title="NM_DEVICE_VLAN_CARRIER">NM_DEVICE_VLAN_CARRIER</a>
+#define             <a class="link" href="NMDeviceVlan.html#NM-DEVICE-VLAN-VLAN-ID:CAPS" title="NM_DEVICE_VLAN_VLAN_ID">NM_DEVICE_VLAN_VLAN_ID</a>
+                    <a class="link" href="NMDeviceVlan.html#NMDeviceVlan-struct" title="NMDeviceVlan">NMDeviceVlan</a>;
+                    <a class="link" href="NMDeviceVlan.html#NMDeviceVlanClass" title="NMDeviceVlanClass">NMDeviceVlanClass</a>;
 <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           <a class="link" href="NMDeviceVlan.html#nm-device-vlan-new" title="nm_device_vlan_new ()">nm_device_vlan_new</a>                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="NMDeviceVlan.html#nm-device-vlan-get-hw-address" title="nm_device_vlan_get_hw_address ()">nm_device_vlan_get_hw_address</a>       (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMDeviceVlan.html#nm-device-vlan-get-carrier" title="nm_device_vlan_get_carrier ()">nm_device_vlan_get_carrier</a>          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="NMDeviceVlan.html#nm-device-vlan-get-vlan-id" title="nm_device_vlan_get_vlan_id ()">nm_device_vlan_get_vlan_id</a>          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);
 </pre>
 </div>
 <div class="refsect1">
@@ -89,31 +89,6 @@ NMDeviceVlan implements
 <div class="refsect1">
 <a name="NMDeviceVlan.details"></a><h2>Details</h2>
 <div class="refsect2">
-<a name="NMDeviceVlan-struct"></a><h3>NMDeviceVlan</h3>
-<pre class="programlisting">typedef struct _NMDeviceVlan NMDeviceVlan;</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NMDeviceVlanClass"></a><h3>NMDeviceVlanClass</h3>
-<pre class="programlisting">typedef struct {
-	NMDeviceClass parent;
-
-	/* Padding for future expansion */
-	void (*_reserved1) (void);
-	void (*_reserved2) (void);
-	void (*_reserved3) (void);
-	void (*_reserved4) (void);
-	void (*_reserved5) (void);
-	void (*_reserved6) (void);
-} NMDeviceVlanClass;
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
 <a name="NMDeviceVlanError"></a><h3>enum NMDeviceVlanError</h3>
 <pre class="programlisting">typedef enum {
 	NM_DEVICE_VLAN_ERROR_UNKNOWN = 0,             /*&lt; nick=UnknownError &gt;*/
@@ -123,8 +98,11 @@ NMDeviceVlan implements
 	NM_DEVICE_VLAN_ERROR_INTERFACE_MISMATCH,      /*&lt; nick=InterfaceMismatch &gt;*/
 } NMDeviceVlanError;
 </pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><a name="NM-DEVICE-VLAN-ERROR-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_VLAN_ERROR_UNKNOWN</code></span></p></td>
@@ -156,14 +134,6 @@ NMDeviceVlan implements
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-DEVICE-VLAN-CARRIER:CAPS"></a><h3>NM_DEVICE_VLAN_CARRIER</h3>
-<pre class="programlisting">#define NM_DEVICE_VLAN_CARRIER     "carrier"
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
 <a name="NM-DEVICE-VLAN-ERROR:CAPS"></a><h3>NM_DEVICE_VLAN_ERROR</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_ERROR nm_device_vlan_error_quark ()
 </pre>
@@ -172,8 +142,34 @@ NMDeviceVlan implements
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-device-vlan-error-quark"></a><h3>nm_device_vlan_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_device_vlan_error_quark          (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Registers an error quark for <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> if necessary.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the error quark used for <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> errors.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-DEVICE-VLAN-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_VLAN_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_HW_ADDRESS  "hw-address"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DEVICE-VLAN-CARRIER:CAPS"></a><h3>NM_DEVICE_VLAN_CARRIER</h3>
+<pre class="programlisting">#define NM_DEVICE_VLAN_CARRIER     "carrier"
 </pre>
 <p>
 </p>
@@ -188,38 +184,56 @@ NMDeviceVlan implements
 </div>
 <hr>
 <div class="refsect2">
-<a name="nm-device-vlan-error-quark"></a><h3>nm_device_vlan_error_quark ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_device_vlan_error_quark          (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<a name="NMDeviceVlan-struct"></a><h3>NMDeviceVlan</h3>
+<pre class="programlisting">typedef struct _NMDeviceVlan NMDeviceVlan;</pre>
 <p>
-Registers an error quark for <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> if necessary.
 </p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the error quark used for <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> errors.</td>
-</tr></tbody>
-</table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="nm-device-vlan-get-carrier"></a><h3>nm_device_vlan_get_carrier ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_device_vlan_get_carrier          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);</pre>
+<a name="NMDeviceVlanClass"></a><h3>NMDeviceVlanClass</h3>
+<pre class="programlisting">typedef struct {
+	NMDeviceClass parent;
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+	void (*_reserved5) (void);
+	void (*_reserved6) (void);
+} NMDeviceVlanClass;
+</pre>
 <p>
-Whether the device has carrier.
 </p>
-<div class="variablelist"><table border="0">
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-device-vlan-new"></a><h3>nm_device_vlan_new ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_device_vlan_new                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
+<p>
+Creates a new <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a>.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
-<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
-<td>a <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a>
 </td>
 </tr>
 <tr>
+<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
+<td>the DBus object path of the device</td>
+</tr>
+<tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the device has carrier</td>
+<td>a new device. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
 </tr>
 </tbody>
 </table></div>
@@ -231,8 +245,11 @@ Whether the device has carrier.
 <p>
 Gets the hardware (MAC) address of the <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a>
 </p>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
@@ -249,10 +266,39 @@ device, and must not be modified.</td>
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-device-vlan-get-carrier"></a><h3>nm_device_vlan_get_carrier ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_device_vlan_get_carrier          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);</pre>
+<p>
+Whether the device has carrier.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
+<td>a <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the device has carrier</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-device-vlan-get-vlan-id"></a><h3>nm_device_vlan_get_vlan_id ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               nm_device_vlan_get_vlan_id          (<em class="parameter"><code><a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> *device</code></em>);</pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>device</code></em> :</span></p></td>
@@ -262,34 +308,6 @@ device, and must not be modified.</td>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
 <td>the device's VLAN ID</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-device-vlan-new"></a><h3>nm_device_vlan_new ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject"><span class="returnvalue">GObject</span></a> *           nm_device_vlan_new                  (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *connection</code></em>,
-                                                         <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
-<p>
-Creates a new <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a>.
-</p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
-<td>the <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>path</code></em> :</span></p></td>
-<td>the DBus object path of the device</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>a new device. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
-</td>
 </tr>
 </tbody>
 </table></div>
@@ -328,6 +346,6 @@ The device's VLAN ID.
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.18</div>
+          Generated by GTK-Doc V1.19</div>
 </body>
 </html>

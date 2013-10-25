@@ -1125,11 +1125,11 @@ check_connection_available (NMDevice *device, NMConnection *connection)
 
 	s_wifi = nm_connection_get_setting_wireless (connection);
 
-	/* Ad-Hoc connections are always available because they may be started
-	 * at any time.
+	/* Ad-Hoc and AP connections are always available because they may be
+	 * started at any time.
 	 */
 	mode = nm_setting_wireless_get_mode (s_wifi);
-	if (g_strcmp0 (mode, "adhoc") == 0)
+	if (g_strcmp0 (mode, "adhoc") == 0 || g_strcmp0 (mode, "ap") == 0)
 		return TRUE;
 
 	/* Hidden SSIDs obviously don't always appear in the scan list either */
@@ -2203,7 +2203,7 @@ link_timeout_cb (gpointer user_data)
 
 	nm_log_warn (LOGD_WIFI, "(%s): link timed out.", nm_device_get_iface (dev));
 
-	NM_DEVICE_WIFI_GET_PRIVATE (dev)->link_timeout_id = 0;
+	priv->link_timeout_id = 0;
 
 	/* Disconnect event while activated; the supplicant hasn't been able
 	 * to reassociate within the timeout period, so the connection must
@@ -2212,18 +2212,21 @@ link_timeout_cb (gpointer user_data)
 	if (nm_device_get_state (dev) != NM_DEVICE_STATE_ACTIVATED)
 		return FALSE;
 
-	/* Remove whatever access point we used to be connected to from the list
-	 * since it failed and might no longer be visible.  If it's actually still
-	 * there, we'll find it in the next scan.
+	/* If the access point failed, and wasn't found by the supplicant when it
+	 * attempted to reconnect, then it's probably out of range or turned off.
+	 * Remove it from the list and if it's actually still present, it'll be
+	 * found in the next scan.
 	 */
-	if (priv->current_ap) {
-		ap = priv->current_ap;
-		priv->current_ap = NULL;
-	} else
-		ap = nm_device_wifi_get_activation_ap (self);
+	if (priv->ssid_found == FALSE) {
+		if (priv->current_ap) {
+			ap = priv->current_ap;
+			priv->current_ap = NULL;
+		} else
+			ap = nm_device_wifi_get_activation_ap (self);
 
-	if (ap)
-		remove_access_point (self, ap);
+		if (ap)
+			remove_access_point (self, ap);
+	}
 
 	nm_device_state_changed (dev,
 	                         NM_DEVICE_STATE_FAILED,
@@ -2887,7 +2890,7 @@ update_permanent_hw_address (NMDevice *dev)
 	errno = 0;
 	ret = ioctl (fd, SIOCETHTOOL, &req);
 	if ((ret < 0) || !nm_ethernet_address_is_valid ((struct ether_addr *) epaddr->data)) {
-		nm_log_err (LOGD_HW | LOGD_ETHER, "(%s): unable to read permanent MAC address (error %d)",
+		nm_log_dbg (LOGD_HW | LOGD_ETHER, "(%s): unable to read permanent MAC address (error %d)",
 		            nm_device_get_iface (dev), errno);
 		/* Fall back to current address */
 		memcpy (epaddr->data, &priv->hw_addr, ETH_ALEN);
@@ -3237,9 +3240,6 @@ handle_ip_config_timeout (NMDeviceWifi *self,
 		return ret;
 	}
 
-	ap = nm_device_wifi_get_activation_ap (self);
-	g_assert (ap);
-
 	/* If IP configuration times out and it's a static WEP connection, that
 	 * usually means the WEP key is wrong.  WEP's Open System auth mode has
 	 * no provision for figuring out if the WEP key is wrong, so you just have
@@ -3247,7 +3247,8 @@ handle_ip_config_timeout (NMDeviceWifi *self,
 	 * types (open, WPA, 802.1x, etc) if the secrets/certs were wrong the
 	 * connection would have failed before IP configuration.
 	 */
-	if (is_static_wep (ap, connection) && (may_fail == FALSE)) {
+	ap = nm_device_wifi_get_activation_ap (self);
+	if (ap && is_static_wep (ap, connection) && (may_fail == FALSE)) {
 		/* Activation failed, we must have bad encryption key */
 		nm_log_warn (LOGD_DEVICE | LOGD_WIFI,
 		             "Activation (%s/wireless): could not get IP configuration for "

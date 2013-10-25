@@ -41,7 +41,6 @@
 #include "NetworkManager.h"
 #include "NetworkManagerUtils.h"
 #include "nm-manager.h"
-#include "nm-policy.h"
 #include "nm-dns-manager.h"
 #include "nm-dbus-manager.h"
 #include "nm-supplicant-manager.h"
@@ -318,7 +317,6 @@ main (int argc, char *argv[])
 	char *connectivity_response = NULL;
 	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE, wimax_enabled = TRUE;
 	gboolean success, show_version = FALSE;
-	NMPolicy *policy = NULL;
 	NMVPNManager *vpn_manager = NULL;
 	NMDnsManager *dns_mgr = NULL;
 	NMDBusManager *dbus_mgr = NULL;
@@ -354,6 +352,19 @@ main (int argc, char *argv[])
 		{ "connectivity-response", 0, 0, G_OPTION_ARG_STRING, &connectivity_response, _("The expected start of the response"), N_("Bingo!") },
 		{NULL}
 	};
+
+	/* Make GIO ignore the remote VFS service; otherwise it tries to use the
+	 * session bus to contact the remote service, and NM shouldn't ever be
+	 * talking on the session bus.  See rh #588745
+	 */
+	setenv ("GIO_USE_VFS", "local", 1);
+
+	/*
+	 * Set the umask to 0022, which results in 0666 & ~0022 = 0644.
+	 * Otherwise, if root (or an su'ing user) has a wacky umask, we could
+	 * write out an unreadable resolv.conf.
+	 */
+	umask (022);
 
 	if (!g_module_supported ()) {
 		fprintf (stderr, _("GModules are not supported on your platform!\n"));
@@ -395,11 +406,6 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	/* Make GIO ignore the remote VFS service; otherwise it tries to use the
-	 * session bus to contact the remote service, and NM shouldn't ever be
-	 * talking on the session bus.  See rh #588745
-	 */
-	setenv ("GIO_USE_VFS", "local", 1);
 
 	/* Setup runtime directory */
 	if (g_mkdir_with_parents (NMRUNDIR, 0755) != 0) {
@@ -480,13 +486,6 @@ main (int argc, char *argv[])
 		g_log_set_always_fatal (fatal_mask);
 	}
 
-	/*
-	 * Set the umask to 0022, which results in 0666 & ~0022 = 0644.
-	 * Otherwise, if root (or an su'ing user) has a wacky umask, we could
-	 * write out an unreadable resolv.conf.
-	 */
-	umask (022);
-
 	g_type_init ();
 
 /*
@@ -565,12 +564,6 @@ main (int argc, char *argv[])
 		goto done;
 	}
 
-	policy = nm_policy_new (manager, settings);
-	if (policy == NULL) {
-		nm_log_err (LOGD_CORE, "failed to initialize the policy.");
-		goto done;
-	}
-
 	/* Initialize the supplicant manager */
 	sup_mgr = nm_supplicant_manager_get ();
 	if (!sup_mgr) {
@@ -627,9 +620,6 @@ main (int argc, char *argv[])
 	g_main_loop_run (main_loop);
 
 done:
-	if (policy)
-		nm_policy_destroy (policy);
-
 	if (manager)
 		g_object_unref (manager);
 

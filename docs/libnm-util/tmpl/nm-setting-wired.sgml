@@ -22,6 +22,115 @@ NMSettingWired
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_WIRED_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingWiredError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_WIRED_ERROR_UNKNOWN: 
+@NM_SETTING_WIRED_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_WIRED_ERROR_MISSING_PROPERTY: 
+
+<!-- ##### MACRO NM_SETTING_WIRED_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_wired_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_PORT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_SPEED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_DUPLEX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_AUTO_NEGOTIATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_MAC_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_CLONED_MAC_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_MTU ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_S390_SUBCHANNELS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_S390_NETTYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_WIRED_S390_OPTIONS ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingWired ##### -->
 <para>
 
@@ -94,118 +203,7 @@ NMSettingWired
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingWiredError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_WIRED_ERROR_UNKNOWN: 
-@NM_SETTING_WIRED_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_WIRED_ERROR_MISSING_PROPERTY: 
-
-<!-- ##### MACRO NM_SETTING_WIRED_AUTO_NEGOTIATE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_CLONED_MAC_ADDRESS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_DUPLEX ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_MAC_ADDRESS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_MTU ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_PORT ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_S390_NETTYPE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_S390_OPTIONS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_S390_SUBCHANNELS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_WIRED_SPEED ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_wired_add_s390_option ##### -->
-<para>
-
-</para>
-
-@setting: 
-@key: 
-@item: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_wired_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_wired_new ##### -->
 <para>
 
 </para>
@@ -214,7 +212,7 @@ NMSettingWired
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_wired_get_auto_negotiate ##### -->
+<!-- ##### FUNCTION nm_setting_wired_get_port ##### -->
 <para>
 
 </para>
@@ -223,7 +221,7 @@ NMSettingWired
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_wired_get_cloned_mac_address ##### -->
+<!-- ##### FUNCTION nm_setting_wired_get_speed ##### -->
 <para>
 
 </para>
@@ -241,7 +239,25 @@ NMSettingWired
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_setting_wired_get_auto_negotiate ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_setting_wired_get_mac_address ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_get_cloned_mac_address ##### -->
 <para>
 
 </para>
@@ -268,16 +284,7 @@ NMSettingWired
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_wired_get_num_s390_options ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_wired_get_port ##### -->
+<!-- ##### FUNCTION nm_setting_wired_get_s390_subchannels ##### -->
 <para>
 
 </para>
@@ -287,6 +294,15 @@ NMSettingWired
 
 
 <!-- ##### FUNCTION nm_setting_wired_get_s390_nettype ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_get_num_s390_options ##### -->
 <para>
 
 </para>
@@ -317,30 +333,14 @@ NMSettingWired
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_wired_get_s390_subchannels ##### -->
+<!-- ##### FUNCTION nm_setting_wired_add_s390_option ##### -->
 <para>
 
 </para>
 
 @setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_wired_get_speed ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_wired_new ##### -->
-<para>
-
-</para>
-
-@void: 
+@key: 
+@item: 
 @Returns: 
 
 

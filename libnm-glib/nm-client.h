@@ -32,6 +32,7 @@
 #include "nm-object.h"
 #include "nm-device.h"
 #include "nm-active-connection.h"
+#include "nm-vpn-connection.h"
 
 G_BEGIN_DECLS
 
@@ -53,6 +54,9 @@ G_BEGIN_DECLS
 #define NM_CLIENT_WIMAX_ENABLED "wimax-enabled"
 #define NM_CLIENT_WIMAX_HARDWARE_ENABLED "wimax-hardware-enabled"
 #define NM_CLIENT_ACTIVE_CONNECTIONS "active-connections"
+#define NM_CLIENT_CONNECTIVITY "connectivity"
+#define NM_CLIENT_PRIMARY_CONNECTION "primary-connection"
+#define NM_CLIENT_ACTIVATING_CONNECTION "activating-connection"
 
 /**
  * NMClientPermission:
@@ -211,6 +215,22 @@ NMClientPermissionResult nm_client_get_permission_result (NMClient *client,
 
 gboolean nm_client_get_logging (NMClient *client, char **level, char **domains, GError **error);
 gboolean nm_client_set_logging (NMClient *client, const char *level, const char *domains, GError **error);
+
+NMConnectivityState nm_client_get_connectivity          (NMClient *client);
+
+NMConnectivityState nm_client_check_connectivity        (NMClient *client,
+                                                         GCancellable *cancellable,
+                                                         GError **error);
+void                nm_client_check_connectivity_async  (NMClient *client,
+                                                         GCancellable *cancellable,
+                                                         GAsyncReadyCallback callback,
+                                                         gpointer user_data);
+NMConnectivityState nm_client_check_connectivity_finish (NMClient *client,
+                                                         GAsyncResult *result,
+                                                         GError **error);
+
+NMActiveConnection *nm_client_get_primary_connection (NMClient *client);
+NMActiveConnection *nm_client_get_activating_connection (NMClient *client);
 
 G_END_DECLS
 

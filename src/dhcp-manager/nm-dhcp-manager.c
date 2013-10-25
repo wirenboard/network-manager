@@ -509,7 +509,8 @@ nm_dhcp_manager_start_ip6 (NMDHCPManager *self,
 
 	priv = NM_DHCP_MANAGER_GET_PRIVATE (self);
 
-	hostname = nm_setting_ip6_config_get_dhcp_hostname (s_ip6);
+	if (s_ip6)
+		hostname = nm_setting_ip6_config_get_dhcp_hostname (s_ip6);
 	if (!hostname && priv->hostname_provider) {
 		hostname = nm_hostname_provider_get_hostname (priv->hostname_provider);
 		if (   g_strcmp0 (hostname, "localhost.localdomain") == 0
@@ -553,12 +554,14 @@ nm_dhcp_manager_get_lease_config (NMDHCPManager *self,
                                   const char *uuid,
                                   gboolean ipv6)
 {
-	g_return_val_if_fail (self != NULL, NULL);
-	g_return_val_if_fail (NM_IS_DHCP_MANAGER (self), NULL);
+	NMDHCPManagerPrivate *priv = NM_DHCP_MANAGER_GET_PRIVATE (self);
+
 	g_return_val_if_fail (iface != NULL, NULL);
 	g_return_val_if_fail (uuid != NULL, NULL);
 
-	return NM_DHCP_MANAGER_GET_PRIVATE (self)->get_lease_config_func (iface, uuid, ipv6);
+	if (priv->get_lease_config_func)
+		return priv->get_lease_config_func (iface, uuid, ipv6);
+	return NULL;
 }
 
 NMIP4Config *

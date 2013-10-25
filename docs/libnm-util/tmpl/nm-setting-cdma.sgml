@@ -22,6 +22,67 @@ NMSettingCdma
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_CDMA_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingCdmaError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_CDMA_ERROR_UNKNOWN: 
+@NM_SETTING_CDMA_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_CDMA_ERROR_MISSING_PROPERTY: 
+@NM_SETTING_CDMA_ERROR_MISSING_SERIAL_SETTING: 
+
+<!-- ##### MACRO NM_SETTING_CDMA_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_cdma_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_NUMBER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_USERNAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_PASSWORD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_PASSWORD_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingCdma ##### -->
 <para>
 
@@ -59,59 +120,7 @@ NMSettingCdma
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingCdmaError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_CDMA_ERROR_UNKNOWN: 
-@NM_SETTING_CDMA_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_CDMA_ERROR_MISSING_PROPERTY: 
-@NM_SETTING_CDMA_ERROR_MISSING_SERIAL_SETTING: 
-
-<!-- ##### MACRO NM_SETTING_CDMA_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CDMA_NUMBER ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CDMA_PASSWORD ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CDMA_PASSWORD_FLAGS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CDMA_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CDMA_USERNAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_cdma_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_cdma_new ##### -->
 <para>
 
 </para>
@@ -121,6 +130,15 @@ NMSettingCdma
 
 
 <!-- ##### FUNCTION nm_setting_cdma_get_number ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_cdma_get_username ##### -->
 <para>
 
 </para>
@@ -144,24 +162,6 @@ NMSettingCdma
 </para>
 
 @setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_cdma_get_username ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_cdma_new ##### -->
-<para>
-
-</para>
-
-@void: 
 @Returns: 
 
 

@@ -1041,9 +1041,9 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 	gboolean success = FALSE;
 
 	const char *pattern_empty = "^\\s*(\\#.*)?$";
-	const char *pattern_to1 = "^\\s*(" IPV6_ADDR_REGEX "|default)"  /* IPv6 or 'default' keyword */
+	const char *pattern_to1 = "^\\s*(default|" IPV6_ADDR_REGEX ")"  /* IPv6 or 'default' keyword */
 	                          "(?:/(\\d{1,3}))?";                   /* optional prefix */
-	const char *pattern_to2 = "to\\s+(" IPV6_ADDR_REGEX "|default)" /* IPv6 or 'default' keyword */
+	const char *pattern_to2 = "to\\s+(default|" IPV6_ADDR_REGEX ")" /* IPv6 or 'default' keyword */
 	                          "(?:/(\\d{1,3}))?";                   /* optional prefix */
 	const char *pattern_via = "via\\s+(" IPV6_ADDR_REGEX ")";       /* IPv6 of gateway */
 	const char *pattern_metric = "metric\\s+(\\d+)";                /* metric */
@@ -1092,8 +1092,14 @@ read_route6_file (const char *filename, NMSettingIP6Config *s_ip6, GError **erro
 			}
 		}
 		dest = g_match_info_fetch (match_info, 1);
-		if (!strcmp (dest, "default"))
-			strcpy (dest, "::");
+		if (!g_strcmp0 (dest, "default")) {
+			/* Ignore default route - NM handles it internally */
+			g_free (dest);
+			g_match_info_free (match_info);
+			PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: ignoring manual default route: '%s' (%s)",
+			             *iter, filename);
+			continue;
+		}
 		if (inet_pton (AF_INET6, dest, &ip6_addr) != 1) {
 			g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
 				     "Invalid IP6 route destination address '%s'", dest);
@@ -2670,7 +2676,7 @@ fill_8021x (shvarFile *ifcfg,
 	NMSetting8021x *s_8021x;
 	shvarFile *keys = NULL;
 	char *value;
-	char **list, **iter;
+	char **list = NULL, **iter;
 
 	value = svGetValue (ifcfg, "IEEE_8021X_EAP_METHODS", FALSE);
 	if (!value) {
@@ -2729,7 +2735,6 @@ fill_8021x (shvarFile *ifcfg,
 		}
 		g_free (lower);
 	}
-	g_strfreev (list);
 
 	if (nm_setting_802_1x_get_num_eap_methods (s_8021x) == 0) {
 		g_set_error (error, IFCFG_PLUGIN_ERROR, 0,
@@ -2737,11 +2742,15 @@ fill_8021x (shvarFile *ifcfg,
 		goto error;
 	}
 
+	if (list)
+		g_strfreev (list);
 	if (keys)
 		svCloseFile (keys);
 	return s_8021x;
 
 error:
+	if (list)
+		g_strfreev (list);
 	if (keys)
 		svCloseFile (keys);
 	g_object_unref (s_8021x);
@@ -3814,6 +3823,7 @@ make_bridge_setting (shvarFile *ifcfg,
 	char *value;
 	guint32 u;
 	gboolean stp = FALSE;
+	gboolean stp_set = FALSE;
 
 	s_bridge = NM_SETTING_BRIDGE (nm_setting_bridge_new ());
 
@@ -3831,11 +3841,18 @@ make_bridge_setting (shvarFile *ifcfg,
 		if (!strcasecmp (value, "on") || !strcasecmp (value, "yes")) {
 			g_object_set (s_bridge, NM_SETTING_BRIDGE_STP, TRUE, NULL);
 			stp = TRUE;
-		} else if (!strcasecmp (value, "off") || !strcasecmp (value, "no"))
+			stp_set = TRUE;
+		} else if (!strcasecmp (value, "off") || !strcasecmp (value, "no")) {
 			g_object_set (s_bridge, NM_SETTING_BRIDGE_STP, FALSE, NULL);
-		else
+			stp_set = TRUE;
+		} else
 			PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    warning: invalid STP value '%s'", value);
 		g_free (value);
+	}
+
+	if (!stp_set) {
+		/* Missing or invalid STP property means "no" */
+		g_object_set (s_bridge, NM_SETTING_BRIDGE_STP, FALSE, NULL);
 	}
 
 	value = svGetValue (ifcfg, "DELAY", FALSE);
@@ -4053,13 +4070,25 @@ make_vlan_setting (shvarFile *ifcfg,
 
 	s_vlan = NM_SETTING_VLAN (nm_setting_vlan_new ());
 
+	/* Parent interface from PHYSDEV takes precedence if it exists */
+	parent = svGetValue (ifcfg, "PHYSDEV", FALSE);
+
 	if (iface_name) {
 		g_object_set (s_vlan, NM_SETTING_VLAN_INTERFACE_NAME, iface_name, NULL);
 
 		p = strchr (iface_name, '.');
 		if (p) {
-			/* eth0.43; PHYSDEV is assumed from it */
-			parent = g_strndup (iface_name, p - iface_name);
+			/* eth0.43; PHYSDEV is assumed from it if unknown */
+			if (!parent) {
+				parent = g_strndup (iface_name, p - iface_name);
+				if (g_str_has_prefix (parent, "vlan")) {
+					/* Like initscripts, if no PHYSDEV and we get an obviously
+					 * invalid parent interface from DEVICE, fail.
+					 */
+					g_free (parent);
+					parent = NULL;
+				}
+			}
 			p++;
 		} else {
 			/* format like vlan43; PHYSDEV or MASTER must be set */
@@ -4088,8 +4117,6 @@ make_vlan_setting (shvarFile *ifcfg,
 	}
 	g_object_set (s_vlan, NM_SETTING_VLAN_ID, vlan_id, NULL);
 
-	if (!parent)
-		parent = svGetValue (ifcfg, "PHYSDEV", FALSE);
 	if (parent == NULL) {
 		g_set_error_literal (error, IFCFG_PLUGIN_ERROR, 0,
 		                     "Failed to determine VLAN parent from DEVICE or PHYSDEV");

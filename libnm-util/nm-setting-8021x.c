@@ -488,7 +488,7 @@ path_to_scheme_value (const char *path)
  * @cert_path: when @scheme is set to either %NM_SETTING_802_1X_CK_SCHEME_PATH
  *   or %NM_SETTING_802_1X_CK_SCHEME_BLOB, pass the path of the CA certificate
  *   file (PEM or DER format).  The path must be UTF-8 encoded; use
- *   g_filename_to_utf8() to convert if needed.  Passing NULL with any @scheme
+ *   g_filename_to_utf8() to convert if needed.  Passing %NULL with any @scheme
  *   clears the CA certificate.
  * @scheme: desired storage scheme for the certificate
  * @out_format: on successful return, the type of the certificate added
@@ -538,29 +538,23 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
 		/* wpa_supplicant can only use raw x509 CA certs */
-		switch (format) {
-		case NM_CRYPTO_FILE_FORMAT_X509:
+		if (format == NM_CRYPTO_FILE_FORMAT_X509) {
 			if (out_format)
 				*out_format = NM_SETTING_802_1X_CK_FORMAT_X509;
-			break;
-		default:
-			g_byte_array_free (data, TRUE);
-			data = NULL;
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_CA_CERT);
-			break;
-		}
 
-		if (data) {
 			if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
-				priv->ca_cert = data;
+				priv->ca_cert = g_byte_array_ref (data);
 			else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
 				priv->ca_cert = path_to_scheme_value (cert_path);
 			else
 				g_assert_not_reached ();
+		} else {
+			g_set_error (error,
+			             NM_SETTING_802_1X_ERROR,
+			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			             NM_SETTING_802_1X_CA_CERT);
 		}
+		g_byte_array_unref (data);
 	}
 
 	return priv->ca_cert != NULL;
@@ -572,7 +566,7 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
  *
  * Returns: the #NMSetting8021x:subject-match property. This is the
  * substring to be matched against the subject of the authentication
- * server certificate, or NULL no subject verification is to be
+ * server certificate, or %NULL no subject verification is to be
  * performed.
  **/
 const char *
@@ -765,7 +759,7 @@ nm_setting_802_1x_get_client_cert_path (NMSetting8021x *setting)
  * @cert_path: when @scheme is set to either %NM_SETTING_802_1X_CK_SCHEME_PATH
  *   or %NM_SETTING_802_1X_CK_SCHEME_BLOB, pass the path of the client
  *   certificate file (PEM, DER, or PKCS#12 format).  The path must be UTF-8
- *   encoded; use g_filename_to_utf8() to convert if needed.  Passing NULL with
+ *   encoded; use g_filename_to_utf8() to convert if needed.  Passing %NULL with
  *   any @scheme clears the client certificate.
  * @scheme: desired storage scheme for the certificate
  * @out_format: on successful return, the type of the certificate added
@@ -818,19 +812,20 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
-		/* wpa_supplicant can only use raw x509 CA certs */
+		gboolean valid = FALSE;
+
 		switch (format) {
 		case NM_CRYPTO_FILE_FORMAT_X509:
 			if (out_format)
 				*out_format = NM_SETTING_802_1X_CK_FORMAT_X509;
+			valid = TRUE;
 			break;
 		case NM_CRYPTO_FILE_FORMAT_PKCS12:
 			if (out_format)
 				*out_format = NM_SETTING_802_1X_CK_FORMAT_PKCS12;
+			valid = TRUE;
 			break;
 		default:
-			g_byte_array_free (data, TRUE);
-			data = NULL;
 			g_set_error (error,
 			             NM_SETTING_802_1X_ERROR,
 			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
@@ -838,14 +833,15 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 			break;
 		}
 
-		if (data) {
+		if (valid) {
 			if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
-				priv->client_cert = data;
+				priv->client_cert = g_byte_array_ref (data);
 			else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
 				priv->client_cert = path_to_scheme_value (cert_path);
 			else
 				g_assert_not_reached ();
 		}
+		g_byte_array_unref (data);
 	}
 
 	return priv->client_cert != NULL;
@@ -857,7 +853,7 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
  *
  * Returns: the "phase 1" PEAP version to be used when authenticating with
  *  EAP-PEAP as contained in the #NMSetting8021x:phase1-peapver property.  Valid
- *  values are NULL (unset), "0" (PEAP version 0), and "1" (PEAP version 1).
+ *  values are %NULL (unset), "0" (PEAP version 0), and "1" (PEAP version 1).
  **/
 const char *
 nm_setting_802_1x_get_phase1_peapver (NMSetting8021x *setting)
@@ -873,7 +869,7 @@ nm_setting_802_1x_get_phase1_peapver (NMSetting8021x *setting)
  *
  * Returns: whether the "phase 1" PEAP label is new-style or old-style, to be
  *  used when authenticating with EAP-PEAP, as contained in the
- *  #NMSetting8021x:phase1-peaplabel property.  Valid values are NULL (unset),
+ *  #NMSetting8021x:phase1-peaplabel property.  Valid values are %NULL (unset),
  *  "0" (use old-style label), and "1" (use new-style label).  See the
  *  wpa_supplicant documentation for more details.
  **/
@@ -1028,7 +1024,7 @@ nm_setting_802_1x_get_phase2_ca_cert_path (NMSetting8021x *setting)
  * @cert_path: when @scheme is set to either %NM_SETTING_802_1X_CK_SCHEME_PATH
  *   or %NM_SETTING_802_1X_CK_SCHEME_BLOB, pass the path of the "phase2" CA
  *   certificate file (PEM or DER format).  The path must be UTF-8 encoded; use
- *   g_filename_to_utf8() to convert if needed.  Passing NULL with any @scheme
+ *   g_filename_to_utf8() to convert if needed.  Passing %NULL with any @scheme
  *   clears the "phase2" CA certificate.
  * @scheme: desired storage scheme for the certificate
  * @out_format: on successful return, the type of the certificate added
@@ -1078,29 +1074,23 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
 		/* wpa_supplicant can only use raw x509 CA certs */
-		switch (format) {
-		case NM_CRYPTO_FILE_FORMAT_X509:
+		if (format == NM_CRYPTO_FILE_FORMAT_X509) {
 			if (out_format)
 				*out_format = NM_SETTING_802_1X_CK_FORMAT_X509;
-			break;
-		default:
-			g_byte_array_free (data, TRUE);
-			data = NULL;
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_CA_CERT);
-			break;
-		}
 
-		if (data) {
 			if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
-				priv->phase2_ca_cert = data;
+				priv->phase2_ca_cert = g_byte_array_ref (data);
 			else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
 				priv->phase2_ca_cert = path_to_scheme_value (cert_path);
 			else
 				g_assert_not_reached ();
+		} else {
+			g_set_error (error,
+			             NM_SETTING_802_1X_ERROR,
+			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			             NM_SETTING_802_1X_PHASE2_CA_CERT);
 		}
+		g_byte_array_unref (data);
 	}
 
 	return priv->phase2_ca_cert != NULL;
@@ -1112,7 +1102,7 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
  *
  * Returns: the #NMSetting8021x:phase2-subject-match property. This is
  * the substring to be matched against the subject of the "phase 2"
- * authentication server certificate, or NULL no subject verification
+ * authentication server certificate, or %NULL no subject verification
  * is to be performed.
  **/
 const char *
@@ -1309,7 +1299,7 @@ nm_setting_802_1x_get_phase2_client_cert_path (NMSetting8021x *setting)
  * @cert_path: when @scheme is set to either %NM_SETTING_802_1X_CK_SCHEME_PATH
  *   or %NM_SETTING_802_1X_CK_SCHEME_BLOB, pass the path of the "phase2" client
  *   certificate file (PEM, DER, or PKCS#12 format).  The path must be UTF-8
- *   encoded; use g_filename_to_utf8() to convert if needed.  Passing NULL with
+ *   encoded; use g_filename_to_utf8() to convert if needed.  Passing %NULL with
  *   any @scheme clears the "phase2" client certificate.
  * @scheme: desired storage scheme for the certificate
  * @out_format: on successful return, the type of the certificate added
@@ -1362,19 +1352,21 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
+		gboolean valid = FALSE;
+
 		/* wpa_supplicant can only use raw x509 CA certs */
 		switch (format) {
 		case NM_CRYPTO_FILE_FORMAT_X509:
 			if (out_format)
 				*out_format = NM_SETTING_802_1X_CK_FORMAT_X509;
+			valid = TRUE;
 			break;
 		case NM_CRYPTO_FILE_FORMAT_PKCS12:
 			if (out_format)
 				*out_format = NM_SETTING_802_1X_CK_FORMAT_PKCS12;
+			valid = TRUE;
 			break;
 		default:
-			g_byte_array_free (data, TRUE);
-			data = NULL;
 			g_set_error (error,
 			             NM_SETTING_802_1X_ERROR,
 			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
@@ -1382,14 +1374,15 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 			break;
 		}
 
-		if (data) {
+		if (valid) {
 			if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB)
-				priv->phase2_client_cert = data;
+				priv->phase2_client_cert = g_byte_array_ref (data);
 			else if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH)
 				priv->phase2_client_cert = path_to_scheme_value (cert_path);
 			else
 				g_assert_not_reached ();
 		}
+		g_byte_array_unref (data);
 	}
 
 	return priv->phase2_client_cert != NULL;
@@ -1579,7 +1572,7 @@ file_to_byte_array (const char *filename)
  * @key_path: when @scheme is set to either %NM_SETTING_802_1X_CK_SCHEME_PATH or
  *   %NM_SETTING_802_1X_CK_SCHEME_BLOB, pass the path of the private key file
  *   (PEM, DER, or PKCS#12 format).  The path must be UTF-8 encoded; use
- *   g_filename_to_utf8() to convert if needed.  Passing NULL with any @scheme
+ *   g_filename_to_utf8() to convert if needed.  Passing %NULL with any @scheme
  *   clears the private key.
  * @password: password used to decrypt the private key, or %NULL if the password
  *   is unknown.  If the password is given but fails to decrypt the private key,
@@ -1872,7 +1865,7 @@ nm_setting_802_1x_get_phase2_private_key_path (NMSetting8021x *setting)
  * @key_path: when @scheme is set to either %NM_SETTING_802_1X_CK_SCHEME_PATH or
  *   %NM_SETTING_802_1X_CK_SCHEME_BLOB, pass the path of the "phase2" private
  *   key file (PEM, DER, or PKCS#12 format).  The path must be UTF-8 encoded;
- *   use g_filename_to_utf8() to convert if needed.  Passing NULL with any
+ *   use g_filename_to_utf8() to convert if needed.  Passing %NULL with any
  *   @scheme clears the private key.
  * @password: password used to decrypt the private key, or %NULL if the password
  *   is unknown.  If the password is given but fails to decrypt the private key,
@@ -2580,6 +2573,7 @@ finalize (GObject *object)
 	g_free (priv->password);
 	if (priv->password_raw)
 		g_byte_array_free (priv->password_raw, TRUE);
+	g_free (priv->pin);
 
 	nm_utils_slist_free (priv->eap, g_free);
 	nm_utils_slist_free (priv->altsubject_matches, g_free);
@@ -2791,6 +2785,13 @@ set_property (GObject *object, guint prop_id,
 	case PROP_PHASE2_PRIVATE_KEY_PASSWORD_FLAGS:
 		priv->phase2_private_key_password_flags = g_value_get_uint (value);
 		break;
+	case PROP_PIN:
+		g_free (priv->pin);
+		priv->pin = g_value_dup_string (value);
+		break;
+	case PROP_PIN_FLAGS:
+		priv->pin_flags = g_value_get_uint (value);
+		break;
 	case PROP_SYSTEM_CA_CERTS:
 		priv->system_ca_certs = g_value_get_boolean (value);
 		break;
@@ -2894,6 +2895,12 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_PHASE2_PRIVATE_KEY_PASSWORD_FLAGS:
 		g_value_set_uint (value, priv->phase2_private_key_password_flags);
+		break;
+	case PROP_PIN:
+		g_value_set_string (value, priv->pin);
+		break;
+	case PROP_PIN_FLAGS:
+		g_value_set_uint (value, priv->pin_flags);
 		break;
 	case PROP_SYSTEM_CA_CERTS:
 		g_value_set_boolean (value, priv->system_ca_certs);
@@ -3354,7 +3361,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		(object_class, PROP_PASSWORD,
 		 g_param_spec_string (NM_SETTING_802_1X_PASSWORD,
 						  "Password",
-						  "Password used for EAP authentication methods.",
+						  "UTF-8 encoded password used for EAP authentication methods.",
 						  NULL,
 						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
 
@@ -3384,7 +3391,12 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		(object_class, PROP_PASSWORD_RAW,
 		 _nm_param_spec_specialized (NM_SETTING_802_1X_PASSWORD_RAW,
 		                             "Password byte array",
-		                             "Password used for EAP authentication methods as a byte array",
+		                             "Password used for EAP authentication "
+		                             "methods, given as a byte array to allow "
+		                             "passwords in other encodings than UTF-8 "
+		                             "to be used.  If both 'password' and "
+		                             "'password-raw' are given, 'password' is "
+		                             "preferred.",
 		                             DBUS_TYPE_G_UCHAR_ARRAY,
 		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
 
@@ -3553,6 +3565,33 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                    "Phase2 Private Key Password Flags",
 		                    "Flags indicating how to handle the 802.1x phase2 "
 		                    "private key password.",
+		                    NM_SETTING_SECRET_FLAG_NONE,
+		                    NM_SETTING_SECRET_FLAGS_ALL,
+		                    NM_SETTING_SECRET_FLAG_NONE,
+		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+
+	/**
+	 * NMSetting8021x:pin:
+	 *
+	 * PIN used for EAP authentication methods.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_PIN,
+		 g_param_spec_string (NM_SETTING_802_1X_PIN,
+		                      "PIN",
+		                      "PIN used for EAP authentication methods.",
+		                      NULL,
+		                      G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+
+	/**
+	 * NMSetting8021x:pin-flags:
+	 *
+	 * Flags indicating how to handle #NMSetting8021x:pin:.
+	 **/
+	g_object_class_install_property (object_class, PROP_PIN_FLAGS,
+		 g_param_spec_uint (NM_SETTING_802_1X_PIN_FLAGS,
+		                    "PIN Flags",
+		                    "Flags indicating how to handle the 802.1x PIN.",
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,

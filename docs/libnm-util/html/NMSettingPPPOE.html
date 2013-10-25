@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSettingPPPOE</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingPPP.html" title="NMSettingPPP">
 <link rel="next" href="NMSettingVPN.html" title="NMSettingVPN">
-<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -44,34 +44,34 @@
 <a name="NMSettingPPPOEError"></a><pre class="synopsis">
 #include &lt;nm-setting-pppoe.h&gt;
 
-                    <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE-struct" title="NMSettingPPPOE">NMSettingPPPOE</a>;
-                    <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOEClass" title="NMSettingPPPOEClass">NMSettingPPPOEClass</a>;
+#define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-SETTING-NAME:CAPS" title="NM_SETTING_PPPOE_SETTING_NAME">NM_SETTING_PPPOE_SETTING_NAME</a>
 enum                <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOEError-enum" title="enum NMSettingPPPOEError">NMSettingPPPOEError</a>;
 #define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-ERROR:CAPS" title="NM_SETTING_PPPOE_ERROR">NM_SETTING_PPPOE_ERROR</a>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-error-quark" title="nm_setting_pppoe_error_quark ()">nm_setting_pppoe_error_quark</a>        (<em class="parameter"><code><span class="type">void</span></code></em>);
+#define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-SERVICE:CAPS" title="NM_SETTING_PPPOE_SERVICE">NM_SETTING_PPPOE_SERVICE</a>
+#define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-USERNAME:CAPS" title="NM_SETTING_PPPOE_USERNAME">NM_SETTING_PPPOE_USERNAME</a>
 #define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-PASSWORD:CAPS" title="NM_SETTING_PPPOE_PASSWORD">NM_SETTING_PPPOE_PASSWORD</a>
 #define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-PASSWORD-FLAGS:CAPS" title="NM_SETTING_PPPOE_PASSWORD_FLAGS">NM_SETTING_PPPOE_PASSWORD_FLAGS</a>
-#define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-SERVICE:CAPS" title="NM_SETTING_PPPOE_SERVICE">NM_SETTING_PPPOE_SERVICE</a>
-#define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-SETTING-NAME:CAPS" title="NM_SETTING_PPPOE_SETTING_NAME">NM_SETTING_PPPOE_SETTING_NAME</a>
-#define             <a class="link" href="NMSettingPPPOE.html#NM-SETTING-PPPOE-USERNAME:CAPS" title="NM_SETTING_PPPOE_USERNAME">NM_SETTING_PPPOE_USERNAME</a>
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-error-quark" title="nm_setting_pppoe_error_quark ()">nm_setting_pppoe_error_quark</a>        (<em class="parameter"><code><span class="type">void</span></code></em>);
+                    <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE-struct" title="NMSettingPPPOE">NMSettingPPPOE</a>;
+                    <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOEClass" title="NMSettingPPPOEClass">NMSettingPPPOEClass</a>;
+<a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-new" title="nm_setting_pppoe_new ()">nm_setting_pppoe_new</a>                (<em class="parameter"><code><span class="type">void</span></code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-get-service" title="nm_setting_pppoe_get_service ()">nm_setting_pppoe_get_service</a>        (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-get-username" title="nm_setting_pppoe_get_username ()">nm_setting_pppoe_get_username</a>       (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-get-password" title="nm_setting_pppoe_get_password ()">nm_setting_pppoe_get_password</a>       (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);
 <a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-get-password-flags" title="nm_setting_pppoe_get_password_flags ()">nm_setting_pppoe_get_password_flags</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);
-const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-get-service" title="nm_setting_pppoe_get_service ()">nm_setting_pppoe_get_service</a>        (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);
-const <span class="returnvalue">char</span> *        <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-get-username" title="nm_setting_pppoe_get_username ()">nm_setting_pppoe_get_username</a>       (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);
-<a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMSettingPPPOE.html#nm-setting-pppoe-new" title="nm_setting_pppoe_new ()">nm_setting_pppoe_new</a>                (<em class="parameter"><code><span class="type">void</span></code></em>);
 </pre>
 </div>
 <div class="refsect1">
 <a name="NMSettingPPPOE.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
+  GEnum
+   +----NMSettingPPPOEError
+</pre>
+<pre class="synopsis">
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
    +----<a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
          +----NMSettingPPPOE
-</pre>
-<pre class="synopsis">
-  GEnum
-   +----NMSettingPPPOEError
 </pre>
 </div>
 <div class="refsect1">
@@ -94,23 +94,8 @@ to provide IP transport, for example cable or DSL modems.
 <div class="refsect1">
 <a name="NMSettingPPPOE.details"></a><h2>Details</h2>
 <div class="refsect2">
-<a name="NMSettingPPPOE-struct"></a><h3>NMSettingPPPOE</h3>
-<pre class="programlisting">typedef struct _NMSettingPPPOE NMSettingPPPOE;</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NMSettingPPPOEClass"></a><h3>NMSettingPPPOEClass</h3>
-<pre class="programlisting">typedef struct {
-	NMSettingClass parent;
-
-	/* Padding for future expansion */
-	void (*_reserved1) (void);
-	void (*_reserved2) (void);
-	void (*_reserved3) (void);
-	void (*_reserved4) (void);
-} NMSettingPPPOEClass;
+<a name="NM-SETTING-PPPOE-SETTING-NAME:CAPS"></a><h3>NM_SETTING_PPPOE_SETTING_NAME</h3>
+<pre class="programlisting">#define NM_SETTING_PPPOE_SETTING_NAME "pppoe"
 </pre>
 <p>
 </p>
@@ -125,8 +110,11 @@ to provide IP transport, for example cable or DSL modems.
 	NM_SETTING_PPPOE_ERROR_MISSING_PPP_SETTING /*&lt; nick=MissingPPPSetting &gt;*/
 } NMSettingPPPOEError;
 </pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><a name="NM-SETTING-PPPOE-ERROR-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_SETTING_PPPOE_ERROR_UNKNOWN</code></span></p></td>
@@ -163,6 +151,40 @@ did not contain a required PPP setting for PPP related options
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-setting-pppoe-error-quark"></a><h3>nm_setting_pppoe_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_pppoe_error_quark        (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Registers an error quark for <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> if necessary.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the error quark used for <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> errors.</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-PPPOE-SERVICE:CAPS"></a><h3>NM_SETTING_PPPOE_SERVICE</h3>
+<pre class="programlisting">#define NM_SETTING_PPPOE_SERVICE        "service"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-PPPOE-USERNAME:CAPS"></a><h3>NM_SETTING_PPPOE_USERNAME</h3>
+<pre class="programlisting">#define NM_SETTING_PPPOE_USERNAME       "username"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-PPPOE-PASSWORD:CAPS"></a><h3>NM_SETTING_PPPOE_PASSWORD</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_PASSWORD       "password"
 </pre>
@@ -179,49 +201,99 @@ did not contain a required PPP setting for PPP related options
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-SETTING-PPPOE-SERVICE:CAPS"></a><h3>NM_SETTING_PPPOE_SERVICE</h3>
-<pre class="programlisting">#define NM_SETTING_PPPOE_SERVICE        "service"
+<a name="NMSettingPPPOE-struct"></a><h3>NMSettingPPPOE</h3>
+<pre class="programlisting">typedef struct _NMSettingPPPOE NMSettingPPPOE;</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingPPPOEClass"></a><h3>NMSettingPPPOEClass</h3>
+<pre class="programlisting">typedef struct {
+	NMSettingClass parent;
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+} NMSettingPPPOEClass;
 </pre>
 <p>
 </p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-SETTING-PPPOE-SETTING-NAME:CAPS"></a><h3>NM_SETTING_PPPOE_SETTING_NAME</h3>
-<pre class="programlisting">#define NM_SETTING_PPPOE_SETTING_NAME "pppoe"
-</pre>
+<a name="nm-setting-pppoe-new"></a><h3>nm_setting_pppoe_new ()</h3>
+<pre class="programlisting"><a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         nm_setting_pppoe_new                (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
+Creates a new <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> object with default values.
 </p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-SETTING-PPPOE-USERNAME:CAPS"></a><h3>NM_SETTING_PPPOE_USERNAME</h3>
-<pre class="programlisting">#define NM_SETTING_PPPOE_USERNAME       "username"
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-setting-pppoe-error-quark"></a><h3>nm_setting_pppoe_error_quark ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_pppoe_error_quark        (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>
-Registers an error quark for <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> if necessary.
-</p>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody><tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the error quark used for <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> errors.</td>
+<td>the new empty <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> object. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
 </tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-pppoe-get-service"></a><h3>nm_setting_pppoe_get_service ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_pppoe_get_service        (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);</pre>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--service" title='The "service" property'><span class="type">"service"</span></a> property of the setting</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-pppoe-get-username"></a><h3>nm_setting_pppoe_get_username ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_pppoe_get_username       (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);</pre>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--username" title='The "username" property'><span class="type">"username"</span></a> property of the setting</td>
+</tr>
+</tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
 <a name="nm-setting-pppoe-get-password"></a><h3>nm_setting_pppoe_get_password ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_pppoe_get_password       (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
@@ -240,8 +312,11 @@ Registers an error quark for <a class="link" href="NMSettingPPPOE.html" title="N
 <a name="nm-setting-pppoe-get-password-flags"></a><h3>nm_setting_pppoe_get_password_flags ()</h3>
 <pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a> nm_setting_pppoe_get_password_flags
                                                         (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
@@ -254,60 +329,6 @@ Registers an error quark for <a class="link" href="NMSettingPPPOE.html" title="N
 </td>
 </tr>
 </tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-setting-pppoe-get-service"></a><h3>nm_setting_pppoe_get_service ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_pppoe_get_service        (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
-<td>the <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--service" title='The "service" property'><span class="type">"service"</span></a> property of the setting</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-setting-pppoe-get-username"></a><h3>nm_setting_pppoe_get_username ()</h3>
-<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_setting_pppoe_get_username       (<em class="parameter"><code><a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
-<td>the <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--username" title='The "username" property'><span class="type">"username"</span></a> property of the setting</td>
-</tr>
-</tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-setting-pppoe-new"></a><h3>nm_setting_pppoe_new ()</h3>
-<pre class="programlisting"><a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         nm_setting_pppoe_new                (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>
-Creates a new <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> object with default values.
-</p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the new empty <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> object. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
-</td>
-</tr></tbody>
 </table></div>
 </div>
 </div>
@@ -356,6 +377,6 @@ Username used to authenticate with the PPPoE service.
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.18</div>
+          Generated by GTK-Doc V1.19</div>
 </body>
 </html>
