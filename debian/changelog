@@ -1,4 +1,4 @@
-network-manager (0.9.8.0-5.1) UNRELEASED; urgency=low
+network-manager (0.9.8.8-1) UNRELEASED; urgency=low
 
   * debian/60-network-manager.rules
     debian/network-manager.install:
@@ -7,8 +7,9 @@ network-manager (0.9.8.0-5.1) UNRELEASED; urgency=low
 
   [ Sjoerd Simons ]
   * Switch session tracking to systemd.
+  * New upstream release
 
- -- Sjoerd Simons <sjoerd@debian.org>  Wed, 23 Oct 2013 22:43:41 +0200
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 25 Oct 2013 21:21:15 +0200
 
 network-manager (0.9.8.0-5) unstable; urgency=low
 
