@@ -200,7 +200,7 @@ one_property_cb (gpointer key, gpointer val, gpointer user_data)
  * property names and value types.
  * 
  * Returns: a new #NMSetting object populated with the properties from the
- * hash table, or NULL on failure
+ * hash table, or %NULL on failure
  **/
 NMSetting *
 nm_setting_new_from_hash (GType setting_type, GHashTable *hash)
@@ -690,10 +690,10 @@ nm_setting_clear_secrets_with_flags (NMSetting *setting,
  * guide to what secrets may be required, because in some circumstances, there
  * is no way to conclusively determine exactly which secrets are needed.
  *
- * Returns: (transfer full) (element-type utf8): a #GPtrArray containing the property names of secrets of the
- * #NMSetting which may be required; the caller owns the array
- * and must free the each array element with g_free(), as well as the array
- * itself with g_ptr_array_free()
+ * Returns: (transfer container) (element-type utf8): a #GPtrArray containing
+ * the property names of secrets of the #NMSetting which may be required; the
+ * caller owns the array and must free it with g_ptr_array_free(), but must not
+ * free the elements.
  **/
 GPtrArray *
 nm_setting_need_secrets (NMSetting *setting)
@@ -754,8 +754,8 @@ update_one_secret (NMSetting *setting, const char *key, GValue *value, GError **
  * Update the setting's secrets, given a hash table of secrets intended for that
  * setting (deserialized from D-Bus for example).
  * 
- * Returns: %TRUE if the secrets were successfully updated and the connection
- * is valid, %FALSE on failure or if the setting was never added to the connection
+ * Returns: %TRUE if the secrets were successfully updated, %FALSE on failure to
+ * update one or more of the secrets.
  **/
 gboolean
 nm_setting_update_secrets (NMSetting *setting, GHashTable *secrets, GError **error)

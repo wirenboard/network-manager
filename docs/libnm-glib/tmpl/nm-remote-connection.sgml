@@ -22,6 +22,20 @@ NMRemoteConnection
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_REMOTE_CONNECTION_UPDATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_REMOTE_CONNECTION_REMOVED ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMRemoteConnection ##### -->
 <para>
 
@@ -111,18 +125,14 @@ NMRemoteConnection
 @user_data: 
 
 
-<!-- ##### MACRO NM_REMOTE_CONNECTION_REMOVED ##### -->
+<!-- ##### FUNCTION nm_remote_connection_new ##### -->
 <para>
 
 </para>
 
-
-
-<!-- ##### MACRO NM_REMOTE_CONNECTION_UPDATED ##### -->
-<para>
-
-</para>
-
+@bus: 
+@path: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_remote_connection_commit_changes ##### -->
@@ -154,15 +164,5 @@ NMRemoteConnection
 @setting_name: 
 @callback: 
 @user_data: 
-
-
-<!-- ##### FUNCTION nm_remote_connection_new ##### -->
-<para>
-
-</para>
-
-@bus: 
-@path: 
-@Returns: 
 
 

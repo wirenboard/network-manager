@@ -222,7 +222,7 @@ get_secrets_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_dat
  * @connection: the #NMRemoteConnection
  * @setting_name: the #NMSetting object name to get secrets for
  * @callback: (scope async): a function to be called when the update completes;
- * must not be NULL
+ * must not be %NULL
  * @user_data: (closure): caller-specific data to be passed to @callback
  *
  * Request the connection's secrets.
@@ -428,6 +428,7 @@ init_get_settings_cb (DBusGProxy *proxy,
 	}
 
 	g_simple_async_result_complete (init_data->result);
+	g_object_unref (init_data->result);
 	g_slice_free (NMRemoteConnectionInitData, init_data);
 }
 

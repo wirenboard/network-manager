@@ -349,7 +349,7 @@ nm_setting_wired_get_s390_option (NMSettingWired *setting,
  * Returns the value associated with the s390-specific option specified by
  * @key, if it exists.
  *
- * Returns: the value, or NULL if the key/value pair was never added to the
+ * Returns: the value, or %NULL if the key/value pair was never added to the
  * setting; the value is owned by the setting and must not be modified
  **/
 const char *
@@ -536,6 +536,11 @@ finalize (GObject *object)
 		g_byte_array_free (priv->cloned_mac_address, TRUE);
 
 	nm_utils_slist_free (priv->mac_address_blacklist, g_free);
+
+	if (priv->s390_subchannels) {
+		g_ptr_array_foreach (priv->s390_subchannels, (GFunc) g_free, NULL);
+		g_ptr_array_free (priv->s390_subchannels, TRUE);
+	}
 
 	G_OBJECT_CLASS (nm_setting_wired_parent_class)->finalize (object);
 }

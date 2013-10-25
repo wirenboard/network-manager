@@ -22,6 +22,122 @@ NMSettingAdsl
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_ADSL_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingAdslError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_ADSL_ERROR_UNKNOWN: 
+@NM_SETTING_ADSL_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_ADSL_ERROR_MISSING_PROPERTY: 
+
+<!-- ##### MACRO NM_SETTING_ADSL_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_adsl_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_USERNAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_PASSWORD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_PASSWORD_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_ENCAPSULATION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_VPI ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_VCI ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL_PPPOA ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL_PPPOE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL_IPOATM ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_ENCAPSULATION_VCMUX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_ADSL_ENCAPSULATION_LLC ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingAdsl ##### -->
 <para>
 
@@ -74,114 +190,7 @@ NMSettingAdsl
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingAdslError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_ADSL_ERROR_UNKNOWN: 
-@NM_SETTING_ADSL_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_ADSL_ERROR_MISSING_PROPERTY: 
-
-<!-- ##### MACRO NM_SETTING_ADSL_ENCAPSULATION ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_ENCAPSULATION_LLC ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_ENCAPSULATION_VCMUX ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_PASSWORD ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_PASSWORD_FLAGS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL_IPOATM ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL_PPPOA ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_PROTOCOL_PPPOE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_USERNAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_VCI ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_ADSL_VPI ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_adsl_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_adsl_new ##### -->
 <para>
 
 </para>
@@ -190,7 +199,7 @@ NMSettingAdsl
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_adsl_get_encapsulation ##### -->
+<!-- ##### FUNCTION nm_setting_adsl_get_username ##### -->
 <para>
 
 </para>
@@ -208,15 +217,6 @@ NMSettingAdsl
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_adsl_get_password_flags ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
 <!-- ##### FUNCTION nm_setting_adsl_get_protocol ##### -->
 <para>
 
@@ -226,16 +226,7 @@ NMSettingAdsl
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_adsl_get_username ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_adsl_get_vci ##### -->
+<!-- ##### FUNCTION nm_setting_adsl_get_encapsulation ##### -->
 <para>
 
 </para>
@@ -253,12 +244,21 @@ NMSettingAdsl
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_adsl_new ##### -->
+<!-- ##### FUNCTION nm_setting_adsl_get_vci ##### -->
 <para>
 
 </para>
 
-@void: 
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_adsl_get_password_flags ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

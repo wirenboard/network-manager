@@ -276,7 +276,7 @@ nm_setting_connection_get_num_permissions (NMSettingConnection *setting)
  * @out_ptype: on return, the permission type (at this time, always "user")
  * @out_pitem: on return, the permission item (formatted accoring to @ptype, see
  * #NMSettingConnection:permissions for more detail
- * @out_detail: on return, the permission detail (at this time, always NULL)
+ * @out_detail: on return, the permission detail (at this time, always %NULL)
  *
  * Retrieve one of the entries of the #NMSettingConnection:permissions property
  * of this setting.
@@ -773,6 +773,7 @@ finalize (GObject *object)
 	g_free (priv->master);
 	g_free (priv->slave_type);
 	nm_utils_slist_free (priv->permissions, (GDestroyNotify) permission_free);
+	nm_utils_slist_free (priv->secondaries, g_free);
 
 	G_OBJECT_CLASS (nm_setting_connection_parent_class)->finalize (object);
 }

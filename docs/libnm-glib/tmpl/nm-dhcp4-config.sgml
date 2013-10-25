@@ -53,13 +53,13 @@ NMDHCP4Config
 
 
 
-<!-- ##### FUNCTION nm_dhcp4_config_get_one_option ##### -->
+<!-- ##### FUNCTION nm_dhcp4_config_new ##### -->
 <para>
 
 </para>
 
-@config: 
-@option: 
+@connection: 
+@object_path: 
 @Returns: 
 
 
@@ -72,13 +72,13 @@ NMDHCP4Config
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_dhcp4_config_new ##### -->
+<!-- ##### FUNCTION nm_dhcp4_config_get_one_option ##### -->
 <para>
 
 </para>
 
-@connection: 
-@object_path: 
+@config: 
+@option: 
 @Returns: 
 
 

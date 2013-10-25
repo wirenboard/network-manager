@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.8.0</title><style type="text/css">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 0.9.8.8</title><style type="text/css">
 
           body {
             font-family: sans-serif;
@@ -98,7 +97,7 @@
             margin-right: 4em;
           }
 
-        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.8.0</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
+        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 0.9.8.8</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
 <p>This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -273,6 +272,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         </dd><dt><code>domains</code> -
       <code>s</code></dt><dd>
           For available domains see SetLogging() call.
+        </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.CheckConnectivity" id="org.freedesktop.NetworkManager.CheckConnectivity">CheckConnectivity</a> (
+        
+        ) &#8594;
+        u</h3><div class="docstring">
+	Re-check the network connectivity state.
+      </div><div><h4>Returns</h4><dl><dt><code>connectivity</code> -
+      <code>u</code>
+      (<a xmlns="" href="#type-NM_CONNECTIVITY">NM_CONNECTIVITY</a>)
+    </dt><dd>
+          The current connectivity state.
         </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.state" id="org.freedesktop.NetworkManager.state">state</a> (
         
         ) &#8594;
@@ -352,6 +361,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>ao</code> -
       <code>(read)</code></dt><dd>
         List of active connection object paths.
+      </dd><dt><code>PrimaryConnection</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of the "primary" active connection being used
+        to access the network. In particular, if there is no VPN
+        active, or the VPN does not have the default route, then this
+        indicates the connection that has the default route. If there
+        is a VPN active with the default route, then this indicates
+        the connection that contains the route to the VPN endpoint.
+      </dd><dt><code>ActivatingConnection</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of an active connection that is currently
+        being activated and which is expected to become the new
+        PrimaryConnection when it finishes activating.
       </dd><dt><code>Version</code> -
       <code>s</code> -
       <code>(read)</code></dt><dd>
@@ -362,6 +386,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       (<a xmlns="" href="#type-NM_STATE">NM_STATE</a>)
     </dt><dd>
         The overall state of the NetworkManager daemon.
+      </dd><dt><code>Connectivity</code> -
+      <code>u</code> -
+      <code>(read)</code>
+      (<a xmlns="" href="#type-NM_CONNECTIVITY">NM_CONNECTIVITY</a>)
+    </dt><dd>
+        The network connectivity state.
       </dd></dl><h2>Enumerated types:</h2><h3><a name="type-NM_STATE" id="type-NM_STATE">NM_STATE</a></h3>
         Describes the overall state of the daemon.
       <dl><dt><code>NM_STATE_UNKNOWN = 0</code></dt><dd>
@@ -381,6 +411,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           A network device is connected, but there is only site-local connectivity.
         </dd><dt><code>NM_STATE_CONNECTED_GLOBAL = 70</code></dt><dd>
           A network device is connected, with global network connectivity.
+        </dd></dl><h3><a name="type-NM_CONNECTIVITY" id="type-NM_CONNECTIVITY">NM_CONNECTIVITY</a></h3>
+        Describes the network-connectivity state.
+      <dl><dt><code>NM_CONNECTIVITY_UNKNOWN = 0</code></dt><dd>
+          Network connectivity is unknown.
+        </dd><dt><code>NM_CONNECTIVITY_NONE = 1</code></dt><dd>
+          The host is not connected to any network.
+        </dd><dt><code>NM_CONNECTIVITY_PORTAL = 2</code></dt><dd>
+          The host is behind a captive portal and cannot reach the
+          full Internet.
+        </dd><dt><code>NM_CONNECTIVITY_LIMITED = 3</code></dt><dd>
+          The host is connected to a network, but does not appear to
+	  be able to reach the full Internet.
+        </dd><dt><code>NM_CONNECTIVITY_FULL = 4</code></dt><dd>
+	  The host is connected to a network, and appears to be able
+	  to reach the full Internet
         </dd></dl>
 
   <h1><a name="org.freedesktop.NetworkManager.AccessPoint" id="org.freedesktop.NetworkManager.AccessPoint"></a>org.freedesktop.NetworkManager.AccessPoint</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.AccessPoint.PropertiesChanged" id="org.freedesktop.NetworkManager.AccessPoint.PropertiesChanged">PropertiesChanged</a> (
@@ -1162,7 +1207,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         
         ) &#8594;
         ao</h3><div class="docstring">
-        List the connections stored by this Settings object.
+        List the saved network connections known to NetworkManager.
       </div><div><h4>Returns</h4><dl><dt><code>connections</code> -
       <code>ao</code></dt><dd>
           List of connections.
@@ -1181,7 +1226,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         a{sa{sv}}: connection
         ) &#8594;
         o</h3><div class="docstring">
-        Add new connection.
+        Add new connection and save it to disk.  This operation does not start
+        the network connection unless (1) device is idle and able to connect to
+        the network described by the new connection, and (2) the connection
+        is allowed to be started automatically.
       </div><div><h4>Parameters</h4><dl><dt><code>connection</code> -
       <code>a{sa{sv}}</code></dt><dd>
           Connection settings and properties.
@@ -1206,7 +1254,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
             </dd></dl></div></div><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Settings.NewConnection" id="org.freedesktop.NetworkManager.Settings.NewConnection">NewConnection</a> (
         o: connection
         )</h3><div class="docstring">
-        Emitted when a new connection has been added.
+        Emitted when a new connection has been added after NetworkManager has
+        started up and initialized.  This signal is not emitted for connections
+        read while starting up, because NetworkManager's D-Bus service is only
+        available after all connections have been read, and to prevent spamming
+        listeners with too many signals at one time.  To retrieve the initial
+        connection list, call the ListConnections() method once, and then listen
+        for individual Settings.NewConnection and Settings.Connection.Deleted
+        signals for further updates.
       </div><div><h4>Parameters</h4><dl><dt><code>connection</code> -
       <code>o</code></dt><dd>
           Object path of the new connection.
@@ -1303,7 +1358,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>o</code> -
       <code>(read)</code></dt><dd>The path of the connection.</dd><dt><code>SpecificObject</code> -
       <code>o</code> -
-      <code>(read)</code></dt><dd>A specific object associated with the active connection.</dd><dt><code>Uuid</code> -
+      <code>(read)</code></dt><dd>
+        A specific object associated with the active connection.  This property
+        reflects the specific object used during connection activation, and will
+        not change over the lifetime of the ActiveConnection once set.
+      </dd><dt><code>Uuid</code> -
       <code>s</code> -
       <code>(read)</code></dt><dd>
         The UUID of the connection, provided as a convenience so that clients
@@ -1373,7 +1432,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         ) &#8594;
         a{sa{sv}}</h3><div class="docstring">
                 Retrieve and return stored secrets, if any, or request new
-                secrets from the agent's user.
+                secrets from the agent's user.  If user interaction is allowed
+                and the user enters new secrets, the agent is expected to save
+                the new secrets to persistent storage (if the secret's flags
+                include AGENT_OWNED) as NetworkManager will not send these
+                secrets back to the same agent via a SaveSecrets() call.
             </div><div><h4>Parameters</h4><dl><dt><code>connection</code> -
       <code>a{sa{sv}}</code>
       (<a xmlns="" href="#type-String_String_Variant_Map_Map">String_String_Variant_Map_Map</a>)
@@ -1395,7 +1458,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
                     Array of strings of key names in the requested setting for
                     which NetworkManager thinks a secrets may be required,
                     and/or well-known identifiers and data that may be useful
-                    to the client in processing the secrets request. The Agent
+                    to the client in processing the secrets request.  Note that
+                    it's not always possible to determine which secret is
+                    required, so in some cases no hints may be given.  The Agent
                     should return any secrets it has, or that it thinks are
                     required, regardless of what hints NetworkManager sends
                     in this request.
@@ -1420,11 +1485,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         ) &#8594;
         nothing</h3><div class="docstring">
                 Cancel a pending GetSecrets request for secrets of the given
-                connection.  Any matching request should be canceled.
+                connection.  Any GetSecrets request with the same
+                'connection_path' and 'setting_name' that are given in a
+                CancelGetSecrets request should be canceled.
             </div><div><h4>Parameters</h4><dl><dt><code>connection_path</code> -
       <code>o</code></dt><dd>
-                    Object path of the connection for which, if secrets are being
-                    requested, the request should be canceled.
+                    Object path of the connection for which, if secrets for
+                    the given 'setting_name' are being requested, the request
+                    should be canceled.
                 </dd><dt><code>setting_name</code> -
       <code>s</code></dt><dd>
                     Setting name for which secrets for this connection were
@@ -1754,6 +1822,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     - u</li><li><code><a href="#type-NM_802_11_MODE">NM_802_11_MODE</a></code>
     - u</li><li><code><a href="#type-NM_ACTIVE_CONNECTION_STATE">NM_ACTIVE_CONNECTION_STATE</a></code>
     - u</li><li><code><a href="#type-NM_BT_CAPABILITIES">NM_BT_CAPABILITIES</a></code>
+    - u</li><li><code><a href="#type-NM_CONNECTIVITY">NM_CONNECTIVITY</a></code>
     - u</li><li><code><a href="#type-NM_DEVICE_CAP">NM_DEVICE_CAP</a></code>
     - u</li><li><code><a href="#type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a></code>
     - u</li><li><code><a href="#type-NM_DEVICE_STATE">NM_DEVICE_STATE</a></code>

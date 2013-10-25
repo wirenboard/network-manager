@@ -102,11 +102,6 @@ clear_modem_manager_support (NMModemManager *self)
 		g_object_unref (self->priv->proxy);
 		self->priv->proxy = NULL;
 	}
-
-	if (self->priv->dbus_mgr) {
-		g_object_unref (self->priv->dbus_mgr);
-		self->priv->dbus_mgr = NULL;
-	}
 }
 
 static gboolean
@@ -595,10 +590,10 @@ modem_manager_1_poke_cb (GDBusConnection *connection,
 		    && !g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_SPAWN_FAILED)
 		    && !g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_TIMEOUT)
 		    && !g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_SPAWN_SERVICE_NOT_FOUND)) {
-			nm_log_warn (LOGD_MB, "error poking ModemManager: %s", error->message);
+			nm_log_dbg (LOGD_MB, "error poking ModemManager: %s", error->message);
 		}
-
 		g_error_free (error);
+
 		/* Setup timeout to relaunch */
 		schedule_modem_manager_1_relaunch (self, MODEM_POKE_INTERVAL);
 	} else
@@ -806,6 +801,11 @@ dispose (GObject *object)
 	if (self->priv->modems) {
 		g_hash_table_foreach_remove (self->priv->modems, remove_one_modem, object);
 		g_hash_table_destroy (self->priv->modems);
+	}
+
+	if (self->priv->dbus_mgr) {
+		g_object_unref (self->priv->dbus_mgr);
+		self->priv->dbus_mgr = NULL;
 	}
 
 	/* Chain up to the parent class */

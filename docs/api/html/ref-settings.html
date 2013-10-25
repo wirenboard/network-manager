@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Network Configuration Setting Specification</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="NetworkManager D-Bus Reference Manual">
 <link rel="up" href="index.html" title="NetworkManager D-Bus Reference Manual">
 <link rel="prev" href="ref-dbus.html" title="D-Bus API Reference">
 <link rel="next" href="secrets-flags.html" title="Secret flag types">
-<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -20,10 +20,10 @@
 <td><a accesskey="n" href="secrets-flags.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="chapter">
-<div class="titlepage"><div><div><h2 class="title">
-<a name="ref-settings"></a>Network Configuration Setting Specification</h2></div></div></div>
-<div class="toc"><dl>
-<dt><span class="section"><a href="ref-settings.html#idp5248400">Configuration Settings</a></span></dt>
+<div class="titlepage"><div><div><h1 class="title">
+<a name="ref-settings"></a>Network Configuration Setting Specification</h1></div></div></div>
+<div class="toc"><dl class="toc">
+<dt><span class="section"><a href="ref-settings.html#id-1.3.3">Configuration Settings</a></span></dt>
 <dt><span class="section"><a href="secrets-flags.html">Secret flag types</a></span></dt>
 </dl></div>
 <p>
@@ -35,11 +35,11 @@
     </p>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="idp5248400"></a>Configuration Settings</h2></div></div></div>
+<a name="id-1.3.3"></a>Configuration Settings</h2></div></div></div>
 <p>
 </p>
 <div class="table">
-<a name="idp7690608"></a><p class="title"><b>Table 1. 802-1x setting</b></p>
+<a name="id-1.3.3.2.1"></a><p class="title"><b>Table 1. 802-1x setting</b></p>
 <div class="table-contents"><table summary="802-1x setting" border="1">
 <colgroup>
 <col>
@@ -178,7 +178,7 @@
 <td><pre class="screen">password</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Password used for EAP authentication methods.</td>
+<td>UTF-8 encoded password used for EAP authentication methods.</td>
 </tr>
 <tr>
 <td><pre class="screen">password-flags</pre></td>
@@ -190,7 +190,7 @@
 <td><pre class="screen">password-raw</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>Password used for EAP authentication methods as a byte array</td>
+<td>Password used for EAP authentication methods, given as a byte array to allow passwords in other encodings than UTF-8 to be used.  If both 'password' and 'password-raw' are given, 'password' is preferred.</td>
 </tr>
 <tr>
 <td><pre class="screen">password-raw-flags</pre></td>
@@ -235,6 +235,18 @@
 <td>Flags indicating how to handle the 802.1x phase2 private key password. (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
 </tr>
 <tr>
+<td><pre class="screen">pin</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>PIN used for EAP authentication methods.</td>
+</tr>
+<tr>
+<td><pre class="screen">pin-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Flags indicating how to handle the 802.1x PIN. (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
 <td><pre class="screen">system-ca-certs</pre></td>
 <td><pre class="screen">boolean</pre></td>
 <td><pre class="screen">FALSE</pre></td>
@@ -246,7 +258,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp7045952"></a><p class="title"><b>Table 2. adsl setting</b></p>
+<a name="id-1.3.3.2.2"></a><p class="title"><b>Table 2. adsl setting</b></p>
 <div class="table-contents"><table summary="adsl setting" border="1">
 <colgroup>
 <col>
@@ -315,7 +327,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp7080192"></a><p class="title"><b>Table 3. bluetooth setting</b></p>
+<a name="id-1.3.3.2.3"></a><p class="title"><b>Table 3. bluetooth setting</b></p>
 <div class="table-contents"><table summary="bluetooth setting" border="1">
 <colgroup>
 <col>
@@ -354,7 +366,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10462240"></a><p class="title"><b>Table 4. bond setting</b></p>
+<a name="id-1.3.3.2.4"></a><p class="title"><b>Table 4. bond setting</b></p>
 <div class="table-contents"><table summary="bond setting" border="1">
 <colgroup>
 <col>
@@ -393,7 +405,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10475664"></a><p class="title"><b>Table 5. bridge setting</b></p>
+<a name="id-1.3.3.2.5"></a><p class="title"><b>Table 5. bridge setting</b></p>
 <div class="table-contents"><table summary="bridge setting" border="1">
 <colgroup>
 <col>
@@ -462,7 +474,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10504192"></a><p class="title"><b>Table 6. bridge-port setting</b></p>
+<a name="id-1.3.3.2.6"></a><p class="title"><b>Table 6. bridge-port setting</b></p>
 <div class="table-contents"><table summary="bridge-port setting" border="1">
 <colgroup>
 <col>
@@ -507,7 +519,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10520832"></a><p class="title"><b>Table 7. cdma setting</b></p>
+<a name="id-1.3.3.2.7"></a><p class="title"><b>Table 7. cdma setting</b></p>
 <div class="table-contents"><table summary="cdma setting" border="1">
 <colgroup>
 <col>
@@ -558,7 +570,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10540864"></a><p class="title"><b>Table 8. connection setting</b></p>
+<a name="id-1.3.3.2.8"></a><p class="title"><b>Table 8. connection setting</b></p>
 <div class="table-contents"><table summary="connection setting" border="1">
 <colgroup>
 <col>
@@ -651,7 +663,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10583600"></a><p class="title"><b>Table 9. gsm setting</b></p>
+<a name="id-1.3.3.2.9"></a><p class="title"><b>Table 9. gsm setting</b></p>
 <div class="table-contents"><table summary="gsm setting" border="1">
 <colgroup>
 <col>
@@ -744,7 +756,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10626544"></a><p class="title"><b>Table 10. infiniband setting</b></p>
+<a name="id-1.3.3.2.10"></a><p class="title"><b>Table 10. infiniband setting</b></p>
 <div class="table-contents"><table summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -789,7 +801,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10643152"></a><p class="title"><b>Table 11. ipv4 setting</b></p>
+<a name="id-1.3.3.2.11"></a><p class="title"><b>Table 11. ipv4 setting</b></p>
 <div class="table-contents"><table summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -888,7 +900,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10690704"></a><p class="title"><b>Table 12. ipv6 setting</b></p>
+<a name="id-1.3.3.2.12"></a><p class="title"><b>Table 12. ipv6 setting</b></p>
 <div class="table-contents"><table summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -913,7 +925,7 @@
 <td><pre class="screen">method</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignored' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' methodis not yet supported.</td>
+<td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignore' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' methodis not yet supported.</td>
 </tr>
 <tr>
 <td><pre class="screen">dhcp-hostname</pre></td>
@@ -981,7 +993,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10740976"></a><p class="title"><b>Table 13. 802-11-olpc-mesh setting</b></p>
+<a name="id-1.3.3.2.13"></a><p class="title"><b>Table 13. 802-11-olpc-mesh setting</b></p>
 <div class="table-contents"><table summary="802-11-olpc-mesh setting" border="1">
 <colgroup>
 <col>
@@ -1026,7 +1038,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10761616"></a><p class="title"><b>Table 14. ppp setting</b></p>
+<a name="id-1.3.3.2.14"></a><p class="title"><b>Table 14. ppp setting</b></p>
 <div class="table-contents"><table summary="ppp setting" border="1">
 <colgroup>
 <col>
@@ -1161,7 +1173,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10842096"></a><p class="title"><b>Table 15. pppoe setting</b></p>
+<a name="id-1.3.3.2.15"></a><p class="title"><b>Table 15. pppoe setting</b></p>
 <div class="table-contents"><table summary="pppoe setting" border="1">
 <colgroup>
 <col>
@@ -1212,7 +1224,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10866848"></a><p class="title"><b>Table 16. serial setting</b></p>
+<a name="id-1.3.3.2.16"></a><p class="title"><b>Table 16. serial setting</b></p>
 <div class="table-contents"><table summary="serial setting" border="1">
 <colgroup>
 <col>
@@ -1269,7 +1281,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10895488"></a><p class="title"><b>Table 17. vlan setting</b></p>
+<a name="id-1.3.3.2.17"></a><p class="title"><b>Table 17. vlan setting</b></p>
 <div class="table-contents"><table summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -1332,7 +1344,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10928464"></a><p class="title"><b>Table 18. vpn setting</b></p>
+<a name="id-1.3.3.2.18"></a><p class="title"><b>Table 18. vpn setting</b></p>
 <div class="table-contents"><table summary="vpn setting" border="1">
 <colgroup>
 <col>
@@ -1383,7 +1395,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10953152"></a><p class="title"><b>Table 19. wimax setting</b></p>
+<a name="id-1.3.3.2.19"></a><p class="title"><b>Table 19. wimax setting</b></p>
 <div class="table-contents"><table summary="wimax setting" border="1">
 <colgroup>
 <col>
@@ -1422,7 +1434,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp10969776"></a><p class="title"><b>Table 20. 802-3-ethernet setting</b></p>
+<a name="id-1.3.3.2.20"></a><p class="title"><b>Table 20. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -1515,7 +1527,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11022624"></a><p class="title"><b>Table 21. 802-11-wireless setting</b></p>
+<a name="id-1.3.3.2.21"></a><p class="title"><b>Table 21. 802-11-wireless setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -1594,7 +1606,7 @@
 <td><pre class="screen">mac-address-blacklist</pre></td>
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>If specified, this connection will never apply to the WiFi device whose permanent MAC address matches an address in the list.  Each MAC address is in the standard hex-digits-and-colons notation (00:11:22:33:44:55).</td>
+<td>A list of permanent MAC addresses of Wi-Fi devices to which this connection should never apply.  Each MAC address should be given in the standard hex-digits-and-colons notation (eg '00:11:22:33:44:55').</td>
 </tr>
 <tr>
 <td><pre class="screen">mtu</pre></td>
@@ -1626,7 +1638,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="idp11088000"></a><p class="title"><b>Table 22. 802-11-wireless-security setting</b></p>
+<a name="id-1.3.3.2.22"></a><p class="title"><b>Table 22. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>
@@ -1675,13 +1687,13 @@
 <td><pre class="screen">pairwise</pre></td>
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>If specified, will only connect to WPA networks that provide the specified pairwise encryption capabilities.  Each element may be one of 'wep40', 'wep104', 'tkip', or 'ccmp'.</td>
+<td>A list of pairwise encryption algorithms which prevents connections to Wi-Fi networks that do not utilize one of the algorithms in the list. For maximum compatibility leave this property empty.  Each list element may be one of 'wep40', 'wep104', 'tkip' or 'ccmp'.</td>
 </tr>
 <tr>
 <td><pre class="screen">group</pre></td>
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>If specified, will only connect to WPA networks that provide the specified group/multicast encryption capabilities.  Each element may be one of 'wep40', 'wep104', 'tkip', or 'ccmp'.</td>
+<td>A list of group/broadcast encryption algorithms which prevents connections to Wi-Fi networks that do not utilize one of the algorithms in the list.  For maximum compatibility leave this property empty.  Each list element may be one  of 'wep40', 'wep104', 'tkip', or 'ccmp'.</td>
 </tr>
 <tr>
 <td><pre class="screen">leap-username</pre></td>
@@ -1758,6 +1770,6 @@
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.18</div>
+          Generated by GTK-Doc V1.19</div>
 </body>
 </html>

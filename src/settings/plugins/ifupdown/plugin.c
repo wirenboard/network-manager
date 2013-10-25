@@ -73,11 +73,17 @@
 typedef struct {
 	GUdevClient *client;
 
-	GHashTable *iface_connections;
+	GHashTable *connections;  /* /e/n/i block name :: NMIfupdownConnection */
 	gchar* hostname;
 
-	GHashTable *well_known_interfaces;
-	GHashTable *well_known_ifaces;
+	/* Stores all blocks/interfaces read from /e/n/i regardless of whether
+	 * there is an NMIfupdownConnection for block.
+	 */
+	GHashTable *eni_ifaces;
+
+	/* Stores any network interfaces the kernel knows about */
+	GHashTable *kernel_ifaces;
+
 	gboolean unmanage_well_known;
 	char *conf_file;
 
@@ -243,14 +249,14 @@ udev_device_added (SCPluginIfupdown *self, GUdevDevice *device)
 	/* if we have a configured connection for this particular iface
 	 * we want to either unmanage the device or lock it
 	 */
-	exported = (NMIfupdownConnection *) g_hash_table_lookup (priv->iface_connections, iface);
-	if (!exported && !g_hash_table_lookup (priv->well_known_interfaces, iface)) {
+	exported = g_hash_table_lookup (priv->connections, iface);
+	if (!exported && !g_hash_table_lookup (priv->eni_ifaces, iface)) {
 		PLUGIN_PRINT("SCPlugin-Ifupdown",
 			"device added (path: %s, iface: %s): no ifupdown configuration found.", path, iface);
 		return;
 	}
 
-	g_hash_table_insert (priv->well_known_ifaces, g_strdup (iface), g_object_ref (device));
+	g_hash_table_insert (priv->kernel_ifaces, g_strdup (iface), g_object_ref (device));
 
 	if (exported)
 		bind_device_to_connection (self, device, exported);
@@ -273,7 +279,27 @@ udev_device_removed (SCPluginIfupdown *self, GUdevDevice *device)
 	PLUGIN_PRINT("SCPlugin-Ifupdown",
 	             "devices removed (path: %s, iface: %s)", path, iface);
 
-	if (!g_hash_table_remove (priv->well_known_ifaces, iface))
+	if (!g_hash_table_remove (priv->kernel_ifaces, iface))
+		return;
+
+	if (ALWAYS_UNMANAGE || priv->unmanage_well_known)
+		g_signal_emit_by_name (G_OBJECT (self), NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
+}
+
+static void
+udev_device_changed (SCPluginIfupdown *self, GUdevDevice *device)
+{
+	SCPluginIfupdownPrivate *priv = SC_PLUGIN_IFUPDOWN_GET_PRIVATE (self);
+	const char *iface, *path;
+
+	iface = g_udev_device_get_name (device);
+	path = g_udev_device_get_sysfs_path (device);
+	if (!iface || !path)
+		return;
+
+	PLUGIN_PRINT("SCPlugin-Ifupdown", "device changed (path: %s, iface: %s)", path, iface);
+
+	if (!g_hash_table_lookup (priv->kernel_ifaces, iface))
 		return;
 
 	if (ALWAYS_UNMANAGE || priv->unmanage_well_known)
@@ -300,6 +326,8 @@ handle_uevent (GUdevClient *client,
 		udev_device_added (self, device);
 	else if (!strcmp (action, "remove"))
 		udev_device_removed (self, device);
+	else if (!strcmp (action, "change"))
+		udev_device_changed (self, device);
 }
 
 static void
@@ -313,18 +341,21 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 	GKeyFile* keyfile;
 	GError *error = NULL;
 	GList *keys, *iter;
+	GHashTableIter con_iter;
+	const char *block_name;
+	NMIfupdownConnection *connection;
 	const char *subsys[2] = { "net", NULL };
 
 	auto_ifaces = g_hash_table_new (g_str_hash, g_str_equal);
 
-	if(!priv->iface_connections)
-		priv->iface_connections = g_hash_table_new (g_str_hash, g_str_equal);
+	if(!priv->connections)
+		priv->connections = g_hash_table_new (g_str_hash, g_str_equal);
 
-	if(!priv->well_known_ifaces)
-		priv->well_known_ifaces = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+	if(!priv->kernel_ifaces)
+		priv->kernel_ifaces = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
-	if(!priv->well_known_interfaces)
-		priv->well_known_interfaces = g_hash_table_new (g_str_hash, g_str_equal);
+	if(!priv->eni_ifaces)
+		priv->eni_ifaces = g_hash_table_new (g_str_hash, g_str_equal);
 
 	PLUGIN_PRINT("SCPlugin-Ifupdown", "init!");
 
@@ -384,8 +415,8 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 							continue;
 						}
 						if (state == 0 && strlen (token) > 0) {
-							PLUGIN_PRINT("SCPlugin-Ifupdown", "adding bridge port %s to well_known_interfaces", token);
-							g_hash_table_insert (priv->well_known_interfaces, g_strdup (token), "known");
+							PLUGIN_PRINT("SCPlugin-Ifupdown", "adding bridge port %s to eni_ifaces", token);
+							g_hash_table_insert (priv->eni_ifaces, g_strdup (token), "known");
 						}
 					}
 					g_strfreev (port_ifaces);
@@ -399,47 +430,40 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 			}
 
 			/* Remove any connection for this block that was previously found */
-			exported = g_hash_table_lookup (priv->iface_connections, block->name);
+			exported = g_hash_table_lookup (priv->connections, block->name);
 			if (exported) {
-				PLUGIN_PRINT("SCPlugin-Ifupdown", "deleting %s from iface_connections", block->name);
+				PLUGIN_PRINT("SCPlugin-Ifupdown", "deleting %s from connections", block->name);
 				nm_settings_connection_delete (NM_SETTINGS_CONNECTION (exported), ignore_cb, NULL);
-				g_hash_table_remove (priv->iface_connections, block->name);
+				g_hash_table_remove (priv->connections, block->name);
 			}
 
 			/* add the new connection */
 			exported = nm_ifupdown_connection_new (block);
 			if (exported) {
-				PLUGIN_PRINT("SCPlugin-Ifupdown", "adding %s to iface_connections", block->name);
-				g_hash_table_insert (priv->iface_connections, block->name, exported);
+				PLUGIN_PRINT("SCPlugin-Ifupdown", "adding %s to connections", block->name);
+				g_hash_table_insert (priv->connections, block->name, exported);
 			}
-			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding iface %s to well_known_interfaces", block->name);
-			g_hash_table_insert (priv->well_known_interfaces, block->name, "known");
+			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding iface %s to eni_ifaces", block->name);
+			g_hash_table_insert (priv->eni_ifaces, block->name, "known");
 		} else if (!strcmp ("mapping", block->type)) {
-			g_hash_table_insert (priv->well_known_interfaces, block->name, "known");
-			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding mapping %s to well_known_interfaces", block->name);
+			g_hash_table_insert (priv->eni_ifaces, block->name, "known");
+			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding mapping %s to eni_ifaces", block->name);
 		}
 	next:
 		block = block->next;
 	}
 
 	/* Make 'auto' interfaces autoconnect=TRUE */
-	keys = g_hash_table_get_keys (priv->iface_connections);
-	for (iter = keys; iter; iter = g_list_next (iter)) {
-		NMIfupdownConnection *exported;
+	g_hash_table_iter_init (&con_iter, priv->connections);
+	while (g_hash_table_iter_next (&con_iter, (gpointer) &block_name, (gpointer) &connection)) {
 		NMSettingConnection *setting;
 
-		if (!g_hash_table_lookup (auto_ifaces, iter->data))
-			continue;
-
-		exported = g_hash_table_lookup (priv->iface_connections, iter->data);
-		setting = nm_connection_get_setting_connection (NM_CONNECTION (exported));
-		g_object_set (setting, NM_SETTING_CONNECTION_AUTOCONNECT, TRUE, NULL);
-
-		nm_settings_connection_commit_changes (NM_SETTINGS_CONNECTION (exported), ignore_cb, NULL);
-
-		PLUGIN_PRINT("SCPlugin-Ifupdown", "autoconnect");
+		if (g_hash_table_lookup (auto_ifaces, block_name)) {
+			setting = nm_connection_get_setting_connection (NM_CONNECTION (connection));
+			g_object_set (setting, NM_SETTING_CONNECTION_AUTOCONNECT, TRUE, NULL);
+			PLUGIN_PRINT("SCPlugin-Ifupdown", "autoconnect");
+		}
 	}
-	g_list_free (keys);
 	g_hash_table_destroy (auto_ifaces);
 
 	/* Read the config file to find out whether to manage interfaces */
@@ -483,7 +507,7 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 
 	/* Now if we're running in managed mode, let NM know there are new connections */
 	if (!priv->unmanage_well_known) {
-		GList *con_list = g_hash_table_get_values (priv->iface_connections);
+		GList *con_list = g_hash_table_get_values (priv->connections);
 		GList *cl_iter;
 
 		for (cl_iter = con_list; cl_iter; cl_iter = g_list_next (cl_iter)) {
@@ -516,7 +540,7 @@ SCPluginIfupdown_get_connections (NMSystemConfigInterface *config)
 		return NULL;
 	}
 
-	g_hash_table_iter_init (&iter, priv->iface_connections);
+	g_hash_table_iter_init (&iter, priv->connections);
 	while (g_hash_table_iter_next (&iter, NULL, &value))
 		connections = g_slist_prepend (connections, value);
 
@@ -541,9 +565,9 @@ SCPluginIfupdown_get_unmanaged_specs (NMSystemConfigInterface *config)
 		return NULL;
 
 	PLUGIN_PRINT("Ifupdown", "get unmanaged devices count: %d",
-	             g_hash_table_size (priv->well_known_ifaces));
+	             g_hash_table_size (priv->kernel_ifaces));
 
-	g_hash_table_iter_init (&iter, priv->well_known_ifaces);
+	g_hash_table_iter_init (&iter, priv->kernel_ifaces);
 	while (g_hash_table_iter_next (&iter, NULL, &value)) {
 		GUdevDevice *device = G_UDEV_DEVICE (value);
 		const char *address;
@@ -689,11 +713,11 @@ GObject__dispose (GObject *object)
 	if (priv->inotify_system_hostname_wd >= 0)
 		nm_inotify_helper_remove_watch (inotify_helper, priv->inotify_system_hostname_wd);
 
-	if (priv->well_known_ifaces)
-		g_hash_table_destroy(priv->well_known_ifaces);
+	if (priv->kernel_ifaces)
+		g_hash_table_destroy(priv->kernel_ifaces);
 
-	if (priv->well_known_interfaces)
-		g_hash_table_destroy(priv->well_known_interfaces);
+	if (priv->eni_ifaces)
+		g_hash_table_destroy(priv->eni_ifaces);
 
 	g_free (priv->conf_file);
 

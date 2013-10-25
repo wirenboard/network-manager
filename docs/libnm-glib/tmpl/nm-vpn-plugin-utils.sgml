@@ -22,17 +22,6 @@ nm-vpn-plugin-utils
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### FUNCTION nm_vpn_plugin_utils_get_secret_flags ##### -->
-<para>
-
-</para>
-
-@data: 
-@secret_name: 
-@out_flags: 
-@Returns: 
-
-
 <!-- ##### FUNCTION nm_vpn_plugin_utils_read_vpn_details ##### -->
 <para>
 
@@ -41,6 +30,17 @@ nm-vpn-plugin-utils
 @fd: 
 @out_data: 
 @out_secrets: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_vpn_plugin_utils_get_secret_flags ##### -->
+<para>
+
+</para>
+
+@data: 
+@secret_name: 
+@out_flags: 
 @Returns: 
 
 

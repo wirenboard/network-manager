@@ -68,14 +68,14 @@ NMIP6Config
 
 
 
-<!-- ##### MACRO NM_IP6_CONFIG_DOMAINS ##### -->
+<!-- ##### MACRO NM_IP6_CONFIG_NAMESERVERS ##### -->
 <para>
 
 </para>
 
 
 
-<!-- ##### MACRO NM_IP6_CONFIG_NAMESERVERS ##### -->
+<!-- ##### MACRO NM_IP6_CONFIG_DOMAINS ##### -->
 <para>
 
 </para>
@@ -89,16 +89,17 @@ NMIP6Config
 
 
 
-<!-- ##### FUNCTION nm_ip6_config_get_addresses ##### -->
+<!-- ##### FUNCTION nm_ip6_config_new ##### -->
 <para>
 
 </para>
 
-@config: 
+@connection: 
+@object_path: 
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_ip6_config_get_domains ##### -->
+<!-- ##### FUNCTION nm_ip6_config_get_addresses ##### -->
 <para>
 
 </para>
@@ -116,7 +117,7 @@ NMIP6Config
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_ip6_config_get_routes ##### -->
+<!-- ##### FUNCTION nm_ip6_config_get_domains ##### -->
 <para>
 
 </para>
@@ -125,13 +126,12 @@ NMIP6Config
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_ip6_config_new ##### -->
+<!-- ##### FUNCTION nm_ip6_config_get_routes ##### -->
 <para>
 
 </para>
 
-@connection: 
-@object_path: 
+@config: 
 @Returns: 
 
 

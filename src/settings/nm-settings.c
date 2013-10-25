@@ -947,6 +947,15 @@ add_new_connection (NMSettings *self,
 	return NULL;
 }
 
+static NMConnection *
+_nm_connection_provider_add_connection (NMConnectionProvider *provider,
+                                        NMConnection *connection,
+                                        GError **error)
+{
+	g_assert (NM_IS_CONNECTION_PROVIDER (provider) && NM_IS_SETTINGS (provider));
+	return (NMConnection *) add_new_connection (NM_SETTINGS (provider), connection, error);
+}
+
 static gboolean
 secrets_filter_cb (NMSetting *setting,
                    const char *secret,
@@ -1162,18 +1171,14 @@ nm_settings_add_connection (NMSettings *self,
 	/* Ensure the caller's username exists in the connection's permissions,
 	 * or that the permissions is empty (ie, visible by everyone).
 	 */
-	if (0 != caller_uid) {
-		if (!nm_auth_uid_in_acl (connection, priv->session_monitor, caller_uid, &error_desc)) {
-			error = g_error_new_literal (NM_SETTINGS_ERROR,
-			                             NM_SETTINGS_ERROR_NOT_PRIVILEGED,
-			                             error_desc);
-			g_free (error_desc);
-			callback (self, NULL, error, context, user_data);
-			g_error_free (error);
-			return;
-		}
-
-		/* Caller is allowed to add this connection */
+	if (!nm_auth_uid_in_acl (connection, priv->session_monitor, caller_uid, &error_desc)) {
+		error = g_error_new_literal (NM_SETTINGS_ERROR,
+		                             NM_SETTINGS_ERROR_PERMISSION_DENIED,
+		                             error_desc);
+		g_free (error_desc);
+		callback (self, NULL, error, context, user_data);
+		g_error_free (error);
+		return;
 	}
 
 	/* If the caller is the only user in the connection's permissions, then
@@ -1748,6 +1753,14 @@ get_connections (NMConnectionProvider *provider)
 	return g_slist_reverse (list);
 }
 
+static gboolean
+has_connections_loaded (NMConnectionProvider *provider)
+{
+	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (provider);
+
+	return priv->connections_loaded;
+}
+
 /***************************************************************/
 
 NMSettings *
@@ -1785,6 +1798,8 @@ connection_provider_init (NMConnectionProvider *cp_class)
 {
     cp_class->get_best_connections = get_best_connections;
     cp_class->get_connections = get_connections;
+    cp_class->has_connections_loaded = has_connections_loaded;
+    cp_class->add_connection = _nm_connection_provider_add_connection;
 }
 
 static void

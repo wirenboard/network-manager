@@ -4,7 +4,7 @@ dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
 m4_define([nm_micro_version], [8])
-m4_define([nm_nano_version],  [0])
+m4_define([nm_nano_version],  [8])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
 
@@ -231,7 +231,7 @@ AC_SUBST(GUDEV_LIBS)
 GOBJECT_INTROSPECTION_CHECK([0.9.6])
 
 # Qt4
-PKG_CHECK_MODULES(QT, [Qt >= 4 QtCore QtDBus QtNetwork], [have_qt=yes],[have_qt=no])
+PKG_CHECK_MODULES(QT, [QtCore >= 4 QtDBus QtNetwork], [have_qt=yes],[have_qt=no])
 AC_ARG_ENABLE(qt, AS_HELP_STRING([--enable-qt], [enable Qt examples]),
                      [enable_qt=${enableval}], [enable_qt=${have_qt}])
 if (test "${enable_qt}" = "yes"); then
@@ -241,7 +241,7 @@ if (test "${enable_qt}" = "yes"); then
 	AC_SUBST(QT_CFLAGS)
 	AC_SUBST(QT_LIBS)
 	# Check for moc-qt4 and if not found then moc
-	QT4_BINDIR=`$PKG_CONFIG Qt --variable bindir`
+	QT4_BINDIR=`$PKG_CONFIG QtCore --variable moc_location`
 	AC_CHECK_PROGS(MOC, [moc-qt4 moc],, [$QT4_BINDIR:$PATH])
 fi
 AM_CONDITIONAL(WITH_QT, test "${enable_qt}" = "yes")
@@ -254,6 +254,18 @@ else
 	UDEV_BASE_DIR="/lib/udev"
 fi
 AC_SUBST(UDEV_BASE_DIR)
+
+# BlueZ
+AC_ARG_ENABLE(bluez4, AS_HELP_STRING([--enable-bluez4],
+              [build with BlueZ 4 support instead of BlueZ 5]),
+              [enable_bluez4=${enableval}])
+if (test "${enable_bluez4}" = "yes"); then
+	AC_DEFINE(WITH_BLUEZ4, 1, [Define if you have BlueZ 4 support])
+else
+	AC_DEFINE(WITH_BLUEZ4, 0, [Define if you have BlueZ 4 support])
+	enable_bluez4=no
+fi
+AM_CONDITIONAL(WITH_BLUEZ4, test "${enable_bluez4}" = "yes")
 
 # systemd unit support
 AC_ARG_WITH([systemdsystemunitdir], AS_HELP_STRING([--with-systemdsystemunitdir=DIR],
@@ -268,6 +280,9 @@ if test "$with_systemdsystemunitdir" != no; then
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
 fi
 
+PKG_CHECK_MODULES(SYSTEMD_200, [systemd >= 200], [have_systemd_200=yes],[have_systemd_200=no])
+AM_CONDITIONAL(HAVE_SYSTEMD_200, test "${have_systemd_200}" = "yes")
+
 # session tracking support
 AC_MSG_CHECKING([Session tracking support])
 AC_ARG_WITH(session-tracking, AS_HELP_STRING([--with-session-tracking=systemd|consolekit|no],
@@ -281,7 +296,7 @@ AS_IF([! (echo "$with_session_tracking" | grep -q -E "^(systemd|consolekit|no)$"
 	AC_MSG_ERROR([--with-session-tracking must be systemd/consolekit/no, not $with_session_tracking]))
 # add conditionals and subtitutions
 AM_CONDITIONAL(SESSION_TRACKING_CK, test "$with_session_tracking" = "consolekit")
-AM_CONDITIONAL(SESSION_TRACKING_SYSTEMD, test "xwith_session_tracking" = "systemd")
+AM_CONDITIONAL(SESSION_TRACKING_SYSTEMD, test "$with_session_tracking" = "systemd")
 if test "$with_session_tracking" = "systemd"; then
 	PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login])
 	AC_SUBST(SYSTEMD_LOGIN_CFLAGS)
@@ -294,7 +309,7 @@ AC_MSG_RESULT($with_session_tracking)
 
 AC_ARG_WITH(suspend-resume, AS_HELP_STRING([--with-suspend-resume=upower|systemd], [Build NetworkManager with specific suspend/resume support]))
 if test "z$with_suspend_resume" = "z"; then
-    PKG_CHECK_EXISTS([systemd >= 183], [have_systemd_inhibit=yes], [have_systemd_inhibit=no])
+    PKG_CHECK_EXISTS([libsystemd-login >= 183], [have_systemd_inhibit=yes], [have_systemd_inhibit=no])
     if test "z${have_systemd_inhibit}" = "zyes"; then
 	# Use systemd if it's new enough
 	with_suspend_resume="systemd"
@@ -307,7 +322,7 @@ fi
 case $with_suspend_resume in
     upower) ;;
     systemd)
-	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [systemd >= 183])
+	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])
         ;;
     *)
 	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
@@ -334,6 +349,15 @@ if (test "${enable_wimax}" = "yes"); then
 	if test x"$have_wimax" = x"no"; then
 		AC_MSG_ERROR(Intel WiMAX SDK is required)
 	fi
+
+	# Ensure the WiMAX stack is built with libnl3; otherwise crashes happen
+	# due to symbol conflicts
+	WMX_LIB_PATH=`$PKG_CONFIG --variable=libdir libiWmxSdk-0`
+	FOO=`ldd $WMX_LIB_PATH/libiWmxSdk.so.0.0.0 | grep libnl-3 2>&1`
+	if test "$?" != "0"; then
+		AC_MSG_ERROR([Intel WiMAX stack built with incompatible libnl version!])
+	fi
+
 	AC_SUBST(IWMX_SDK_CFLAGS)
 	AC_SUBST(IWMX_SDK_LIBS)
 	AC_DEFINE(WITH_WIMAX, 1, [Define if you have WiMAX support])
@@ -377,14 +401,9 @@ if test x"$ac_crypto" = xnss; then
   PKG_CHECK_MODULES(NSS, [nss >= 3.11])
 
   # Work around a pkg-config bug (fdo #29801) where exists != usable
-  AC_PATH_PROG(PKGCONFIG_PATH, pkg-config, no)
-  if test x"$PKGCONFIG_PATH" = xno; then
-    AC_MSG_ERROR([pkgconfig required but not found])
-  else
-    FOO=`$PKGCONFIG_PATH --cflags --libs nss`
-    if test x"$?" != "x0"; then
-      AC_MSG_ERROR([No usable NSS found])
-    fi
+  FOO=`$PKG_CONFIG --cflags --libs nss`
+  if test x"$?" != "x0"; then
+    AC_MSG_ERROR([No usable NSS found])
   fi
 
   AC_SUBST(NSS_CFLAGS)
@@ -457,7 +476,7 @@ AC_SUBST(PPPD_PLUGIN_DIR)
 AC_ARG_WITH(modem-manager-1, AS_HELP_STRING([--with-modem-manager-1], [Enable new ModemManager1 interface support]),,[with_modem_manager_1=auto])
 if (test "${with_modem_manager_1}" != "no"); then
     PKG_CHECK_MODULES(MM_GLIB,
-                      [mm-glib],
+                      [mm-glib >= 0.7.991],
                       [have_libmm_glib=yes],
                       [have_libmm_glib=no])
     AC_SUBST(MM_GLIB_CFLAGS)
@@ -466,6 +485,8 @@ if (test "${with_modem_manager_1}" != "no"); then
     if (test "${have_libmm_glib}" = "no"); then
         if (test "${with_modem_manager_1}" = "yes"); then
             AC_MSG_ERROR([Couldn't find libmm-glib])
+        else
+            with_modem_manager_1="no"
         fi
     else
         with_modem_manager_1="yes"
@@ -498,8 +519,8 @@ fi
 if test "$with_dhcpcd" = "yes"; then
 	AC_PATH_PROGS(with_dhcpcd, dhcpcd, no, /sbin:/usr/sbin:/usr/local/sbin)
 	if test "$with_dhcpcd" != "no"; then
-		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[45]]\."; then
-			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or 5.x is required])
+		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[456789]]\."; then
+			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or higher is required])
 			with_dhcpcd=no
 		fi
 	fi
@@ -598,25 +619,31 @@ VAPIGEN_CHECK(0.17.1.24)
 
 # Tests, utilities and documentation
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests=root|yes|no], [Build NetworkManager tests (default: yes)]))
-AC_ARG_ENABLE(doc, AS_HELP_STRING([--enable-doc], [Build NetworkManager documentation (default: no)]))
-# Fallback to --with-tests and with-docs
+# Fallback to --with-tests
 AC_ARG_WITH(tests, AS_HELP_STRING([--with-tests], [Build NetworkManager tests (deprecated)]))
-AC_ARG_WITH(docs, AS_HELP_STRING([--with-docs], [Build NetworkManager documentation (deprecated)]))
 AS_IF([test -n "$with_tests"], enable_tests="$with_tests")
-AS_IF([test -n "$with_docs"], enable_doc="$with_docs")
-# Default to --enable-tests and --disable-docs
+# Default to --enable-tests
 AS_IF([test -z "$enable_tests"], enable_tests="yes")
-AS_IF([test -z "$enable_doc"], enable_doc="no")
 # Normalize values
 AS_IF([test "$enable_tests" != "yes" -a "$enable_tests" != "root"], enable_tests="no")
-AS_IF([test "$enable_doc" != "yes"], enable_doc="no")
 # Add conditionals
 AM_CONDITIONAL(ENABLE_TESTS, test "$enable_tests" != "no")
 AM_CONDITIONAL(RUN_ROOT_TESTS, test "$enable_tests" == "root")
-AM_CONDITIONAL(ENABLE_DOC, test "$enable_doc" = "yes")
-# Add gtk-doc conditionals
-enable_gtk_doc="$enable_doc"
+
+# Backwards compatible documentation enable/disable
+AC_ARG_WITH(docs, AS_HELP_STRING([--with-docs], [Build NetworkManager documentation (deprecated, use --enable-gtk-doc)]))
+AC_ARG_ENABLE(doc, AS_HELP_STRING([--enable-doc], [Build NetworkManager documentation (deprecated, use --enable-gtk-doc)]))
+AS_IF([test "$with_docs" = "yes"], enable_gtk_doc="yes")
+AS_IF([test "$enable_doc" = "yes"], enable_gtk_doc="yes")
 GTK_DOC_CHECK(1.0)
+
+# check for pregenerated manpages to be installed
+install_pregen_manpages=no
+if test "$enable_gtk_doc" != "yes" -a -f man/nm-settings.5; then
+	install_pregen_manpages=yes
+fi
+AM_CONDITIONAL(INSTALL_PREGEN_MANPAGES, test "x${install_pregen_manpages}" = "xyes")
+
 
 AC_CONFIG_FILES([
 Makefile
@@ -745,6 +772,7 @@ echo "  wimax: $enable_wimax"
 echo "  ppp: $enable_ppp"
 echo "  modemmanager-1: $with_modem_manager_1"
 echo "  concheck: $enable_concheck"
+echo "  bluez 4: $enable_bluez4"
 echo
 
 echo "Configuration plugins"
@@ -765,8 +793,7 @@ echo "  dhcpcd: $with_dhcpcd"
 echo
 
 echo "Miscellaneous:"
-echo "  documentation: $enable_doc"
+echo "  documentation: $enable_gtk_doc"
 echo "  tests: $enable_tests"
 echo "  code coverage: $enable_code_coverage"
 echo
-

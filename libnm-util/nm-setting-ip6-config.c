@@ -662,6 +662,15 @@ nm_setting_ip6_config_get_ip6_privacy (NMSettingIP6Config *setting)
 	return NM_SETTING_IP6_CONFIG_GET_PRIVATE (setting)->ip6_privacy;
 }
 
+static gint
+find_setting_by_name (gconstpointer a, gconstpointer b)
+{
+	NMSetting *setting = NM_SETTING (a);
+	const char *str = (const char *) b;
+
+	return strcmp (nm_setting_get_name (setting), str);
+}
+
 static gboolean
 verify (NMSetting *setting, GSList *all_settings, GError **error)
 {
@@ -720,6 +729,22 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		return FALSE;
 	}
 
+	/* Method 'ignore' is not allowed when IPv4 is set to 'disabled' */
+	if (!strcmp (priv->method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE)) {
+		GSList *list = g_slist_find_custom (all_settings, NM_SETTING_IP4_CONFIG_SETTING_NAME, find_setting_by_name);
+		if (list) {
+			NMSettingIP4Config *s_ip4 = g_slist_nth_data (list, 0);
+			if (   s_ip4
+			    && !g_strcmp0 (nm_setting_ip4_config_get_method (s_ip4), NM_SETTING_IP4_CONFIG_METHOD_DISABLED)) {
+				g_set_error (error,
+				             NM_SETTING_IP6_CONFIG_ERROR,
+				             NM_SETTING_IP6_CONFIG_ERROR_INVALID_PROPERTY,
+				             NM_SETTING_IP6_CONFIG_METHOD);
+				return FALSE;
+			}
+		}
+	}
+
 	if (priv->dhcp_hostname && !strlen (priv->dhcp_hostname)) {
 		g_set_error (error,
 		             NM_SETTING_IP6_CONFIG_ERROR,
@@ -744,6 +769,8 @@ finalize (GObject *object)
 	NMSettingIP6ConfigPrivate *priv = NM_SETTING_IP6_CONFIG_GET_PRIVATE (object);
 
 	g_free (priv->method);
+	g_free (priv->dhcp_hostname);
+
 	g_slist_free (priv->dns);
 
 	nm_utils_slist_free (priv->dns_search, g_free);
@@ -762,7 +789,10 @@ set_property (GObject *object, guint prop_id,
 	switch (prop_id) {
 	case PROP_METHOD:
 		g_free (priv->method);
-		priv->method = g_value_dup_string (value);
+		if (g_strcmp0 (g_value_get_string (value), "disabled") == 0)
+			priv->method = g_strdup (NM_SETTING_IP6_CONFIG_METHOD_IGNORE);
+		else
+			priv->method = g_value_dup_string (value);
 		break;
 	case PROP_DNS:
 		nm_utils_slist_free (priv->dns, g_free);
@@ -876,7 +906,7 @@ nm_setting_ip6_config_class_init (NMSettingIP6ConfigClass *setting_class)
 	 * based hardware.  If 'link-local' is specified, then an IPv6 link-local
 	 * address will be assigned to the interface.  If 'manual' is specified,
 	 * static IP addressing is used and at least one IP address must be given
-	 * in the 'addresses' property.  If 'ignored' is specified, IPv6
+	 * in the 'addresses' property.  If 'ignore' is specified, IPv6
 	 * configuration is not done. This property must be set.  NOTE: the 'shared'
 	 * method are not yet supported.
 	 **/
@@ -894,7 +924,7 @@ nm_setting_ip6_config_class_init (NMSettingIP6ConfigClass *setting_class)
 						      "address will be assigned to the interface.  If "
 						      "'manual' is specified, static IP addressing is "
 						      "used and at least one IP address must be given in "
-						      " the 'addresses' property.  If 'ignored' is "
+						      " the 'addresses' property.  If 'ignore' is "
 						      "specified, IPv6 configuration is not done. This "
 						      "property must be set.  NOTE: the 'shared' method"
 						      "is not yet supported.",

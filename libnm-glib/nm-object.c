@@ -525,6 +525,17 @@ create_async_complete (GObject *object, NMObjectTypeAsyncData *async_data)
 	g_slice_free (NMObjectTypeAsyncData, async_data);
 }
 
+static const char *
+nm_object_or_connection_get_path (gpointer instance)
+{
+	if (NM_IS_OBJECT (instance))
+		return nm_object_get_path (instance);
+	else if (NM_IS_CONNECTION (instance))
+		return nm_connection_get_path (instance);
+
+	g_assert_not_reached ();
+}
+
 static void
 async_inited (GObject *source, GAsyncResult *result, gpointer user_data)
 {
@@ -534,7 +545,7 @@ async_inited (GObject *source, GAsyncResult *result, gpointer user_data)
 
 	if (!g_async_initable_init_finish (G_ASYNC_INITABLE (object), result, &error)) {
 		g_warning ("Could not create object for %s: %s",
-		           nm_object_get_path (NM_OBJECT (object)), error->message);
+		           nm_object_or_connection_get_path (object), error->message);
 		g_error_free (error);
 		g_object_unref (object);
 		object = NULL;
@@ -634,8 +645,10 @@ add_to_object_array_unique (GPtrArray *array, GObject *obj)
 
 	if (obj != NULL) {
 		for (i = 0; i < array->len; i++) {
-			if (g_ptr_array_index (array, i) == obj)
+			if (g_ptr_array_index (array, i) == obj) {
+				g_object_unref (obj);
 				return;
+			}
 		}
 		g_ptr_array_add (array, obj);
 	}
@@ -1399,6 +1412,7 @@ _nm_object_reload_properties_async (NMObject *object, GAsyncReadyCallback callba
 
 	if (!priv->property_interfaces && !priv->pseudo_properties) {
 		g_simple_async_result_complete_in_idle (simple);
+		g_object_unref (simple);
 		return;
 	}
 

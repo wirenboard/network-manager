@@ -22,6 +22,117 @@ NMSettingConnection
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_CONNECTION_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingConnectionError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_CONNECTION_ERROR_UNKNOWN: 
+@NM_SETTING_CONNECTION_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_CONNECTION_ERROR_MISSING_PROPERTY: 
+@NM_SETTING_CONNECTION_ERROR_TYPE_SETTING_NOT_FOUND: 
+@NM_SETTING_CONNECTION_ERROR_IP_CONFIG_NOT_ALLOWED: 
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_connection_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_ID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_UUID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_TIMESTAMP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_READ_ONLY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_PERMISSIONS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_MASTER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_SLAVE_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_SECONDARIES ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingConnection ##### -->
 <para>
 
@@ -94,131 +205,7 @@ NMSettingConnection
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingConnectionError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_CONNECTION_ERROR_UNKNOWN: 
-@NM_SETTING_CONNECTION_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_CONNECTION_ERROR_MISSING_PROPERTY: 
-@NM_SETTING_CONNECTION_ERROR_TYPE_SETTING_NOT_FOUND: 
-@NM_SETTING_CONNECTION_ERROR_IP_CONFIG_NOT_ALLOWED: 
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ID ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_MASTER ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_PERMISSIONS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_READ_ONLY ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_SECONDARIES ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_SLAVE_TYPE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_TIMESTAMP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_TYPE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_UUID ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_connection_add_permission ##### -->
-<para>
-
-</para>
-
-@setting: 
-@ptype: 
-@pitem: 
-@detail: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_add_secondary ##### -->
-<para>
-
-</para>
-
-@setting: 
-@sec_uuid: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_connection_new ##### -->
 <para>
 
 </para>
@@ -227,7 +214,16 @@ NMSettingConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_get_autoconnect ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_id ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_uuid ##### -->
 <para>
 
 </para>
@@ -245,7 +241,7 @@ NMSettingConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_get_id ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_autoconnect ##### -->
 <para>
 
 </para>
@@ -254,7 +250,16 @@ NMSettingConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_get_master ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_timestamp ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_read_only ##### -->
 <para>
 
 </para>
@@ -264,15 +269,6 @@ NMSettingConnection
 
 
 <!-- ##### FUNCTION nm_setting_connection_get_num_permissions ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_get_num_secondaries ##### -->
 <para>
 
 </para>
@@ -294,7 +290,7 @@ NMSettingConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_get_read_only ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_zone ##### -->
 <para>
 
 </para>
@@ -303,44 +299,38 @@ NMSettingConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_get_secondary ##### -->
+<!-- ##### FUNCTION nm_setting_connection_permissions_user_allowed ##### -->
+<para>
+
+</para>
+
+@setting: 
+@uname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_add_permission ##### -->
+<para>
+
+</para>
+
+@setting: 
+@ptype: 
+@pitem: 
+@detail: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_permission ##### -->
 <para>
 
 </para>
 
 @setting: 
 @idx: 
-@Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_get_slave_type ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_get_timestamp ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_get_uuid ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_get_zone ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_master ##### -->
 <para>
 
 </para>
@@ -359,32 +349,42 @@ NMSettingConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_new ##### -->
-<para>
-
-</para>
-
-@void: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_connection_permissions_user_allowed ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_slave_type ##### -->
 <para>
 
 </para>
 
 @setting: 
-@uname: 
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_connection_remove_permission ##### -->
+<!-- ##### FUNCTION nm_setting_connection_get_num_secondaries ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_secondary ##### -->
 <para>
 
 </para>
 
 @setting: 
 @idx: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_add_secondary ##### -->
+<para>
+
+</para>
+
+@setting: 
+@sec_uuid: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_setting_connection_remove_secondary ##### -->

@@ -188,14 +188,14 @@ build_ip6_address_or_route (const char *address_str, guint32 plen, const char *g
 
 /* On success, returns pointer to the zero-terminated field (original @current).
  * The @current * pointer target is set to point to the rest of the input
- * or NULL if there is no more input. Sets error to NULL for convenience.
+ * or %NULL if there is no more input. Sets error to %NULL for convenience.
  *
- * On failure, returns NULL (unspecified). The @current pointer target is
+ * On failure, returns %NULL (unspecified). The @current pointer target is
  * resets to its original value to allow skipping fields. The @error target
- * is set to the character that breaks the parsing or NULL if @current was NULL.
+ * is set to the character that breaks the parsing or %NULL if @current was %NULL.
  *
- * When @current target is NULL, gracefully fail returning NULL while
- * leaving the @current target NULL end setting @error to NULL;
+ * When @current target is %NULL, gracefully fail returning %NULL while
+ * leaving the @current target %NULL end setting @error to %NULL;
  */
 static char *
 read_field (char **current, char **error, const char *characters, const char *delimiters)
@@ -555,6 +555,10 @@ read_hash_of_string (GKeyFile *file, NMSetting *setting, const char *key)
 		if (NM_IS_SETTING_VPN (setting)) {
 			if (strcmp (*iter, NM_SETTING_VPN_SERVICE_TYPE))
 				nm_setting_vpn_add_data_item (NM_SETTING_VPN (setting), *iter, value);
+		}
+		if (NM_IS_SETTING_BOND (setting)) {
+			if (strcmp (*iter, NM_SETTING_BOND_INTERFACE_NAME))
+				nm_setting_bond_add_option (NM_SETTING_BOND (setting), *iter, value);
 		}
 		g_free (value);
 	}
@@ -956,6 +960,10 @@ read_one_setting_value (NMSetting *setting,
 	if (NM_IS_SETTING_VPN (setting))
 		check_for_key = FALSE;
 
+	/* Bonding 'options' don't have the exact key name. The options are right under [bond] group. */
+	if (NM_IS_SETTING_BOND (setting))
+		check_for_key = FALSE;
+
 	/* Check for the exact key in the GKeyFile if required.  Most setting
 	 * properties map 1:1 to a key in the GKeyFile, but for those properties
 	 * like IP addresses and routes where more than one value is actually
@@ -1157,15 +1165,23 @@ nm_keyfile_plugin_connection_from_file (const char *filename, GError **error)
 
 	/* Make sure that we have the base device type setting even if
 	 * the keyfile didn't include it, which can happen when the base
-	 * device type setting is all default values (like ethernet).
+	 * device type setting is all default values (like ethernet where
+	 * the MAC address isn't given, or VLAN when the VLAN ID is zero).
 	 */
 	s_con = nm_connection_get_setting_connection (connection);
 	if (s_con) {
 		ctype = nm_setting_connection_get_connection_type (s_con);
 		setting = nm_connection_get_setting_by_name (connection, ctype);
-		if (ctype) {
-			if (!setting && !strcmp (ctype, NM_SETTING_WIRED_SETTING_NAME))
-				nm_connection_add_setting (connection, nm_setting_wired_new ());
+		if (ctype && !setting) {
+			NMSetting *base_setting;
+			GType base_setting_type;
+
+			base_setting_type = nm_connection_lookup_setting_type (ctype);
+			if (base_setting_type != G_TYPE_INVALID) {
+				base_setting = (NMSetting *) g_object_new (base_setting_type, NULL);
+				g_assert (base_setting);
+				nm_connection_add_setting (connection, base_setting);
+			}
 		}
 	}
 

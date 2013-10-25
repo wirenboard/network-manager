@@ -22,6 +22,165 @@ NMSettingPPP
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_PPP_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingPPPError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_PPP_ERROR_UNKNOWN: 
+@NM_SETTING_PPP_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_PPP_ERROR_MISSING_PROPERTY: 
+@NM_SETTING_PPP_ERROR_REQUIRE_MPPE_NOT_ALLOWED: 
+
+<!-- ##### MACRO NM_SETTING_PPP_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_ppp_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_PPP_NOAUTH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REFUSE_EAP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REFUSE_PAP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REFUSE_CHAP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REFUSE_MSCHAP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REFUSE_MSCHAPV2 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_NOBSDCOMP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_NODEFLATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_NO_VJ_COMP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REQUIRE_MPPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_REQUIRE_MPPE_128 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_MPPE_STATEFUL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_CRTSCTS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_BAUD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_MRU ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_MTU ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_LCP_ECHO_FAILURE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_PPP_LCP_ECHO_INTERVAL ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingPPP ##### -->
 <para>
 
@@ -129,234 +288,12 @@ NMSettingPPP
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingPPPError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_PPP_ERROR_UNKNOWN: 
-@NM_SETTING_PPP_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_PPP_ERROR_MISSING_PROPERTY: 
-@NM_SETTING_PPP_ERROR_REQUIRE_MPPE_NOT_ALLOWED: 
-
-<!-- ##### MACRO NM_SETTING_PPP_BAUD ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_CRTSCTS ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_LCP_ECHO_FAILURE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_LCP_ECHO_INTERVAL ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_MPPE_STATEFUL ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_MRU ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_MTU ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_NOAUTH ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_NOBSDCOMP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_NODEFLATE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_NO_VJ_COMP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REFUSE_CHAP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REFUSE_EAP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REFUSE_MSCHAP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REFUSE_MSCHAPV2 ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REFUSE_PAP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REQUIRE_MPPE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_REQUIRE_MPPE_128 ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_PPP_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_ppp_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_ppp_new ##### -->
 <para>
 
 </para>
 
 @void: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_baud ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_crtscts ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_lcp_echo_failure ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_lcp_echo_interval ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_mppe_stateful ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_mru ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_mtu ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_no_vj_comp ##### -->
-<para>
-
-</para>
-
-@setting: 
 @Returns: 
 
 
@@ -369,7 +306,7 @@ NMSettingPPP
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_ppp_get_nobsdcomp ##### -->
+<!-- ##### FUNCTION nm_setting_ppp_get_refuse_eap ##### -->
 <para>
 
 </para>
@@ -378,7 +315,7 @@ NMSettingPPP
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_ppp_get_nodeflate ##### -->
+<!-- ##### FUNCTION nm_setting_ppp_get_refuse_pap ##### -->
 <para>
 
 </para>
@@ -388,15 +325,6 @@ NMSettingPPP
 
 
 <!-- ##### FUNCTION nm_setting_ppp_get_refuse_chap ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_ppp_get_refuse_eap ##### -->
 <para>
 
 </para>
@@ -423,7 +351,25 @@ NMSettingPPP
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_ppp_get_refuse_pap ##### -->
+<!-- ##### FUNCTION nm_setting_ppp_get_nobsdcomp ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_nodeflate ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_no_vj_comp ##### -->
 <para>
 
 </para>
@@ -450,12 +396,66 @@ NMSettingPPP
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_ppp_new ##### -->
+<!-- ##### FUNCTION nm_setting_ppp_get_mppe_stateful ##### -->
 <para>
 
 </para>
 
-@void: 
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_crtscts ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_baud ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_mru ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_mtu ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_lcp_echo_failure ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ppp_get_lcp_echo_interval ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

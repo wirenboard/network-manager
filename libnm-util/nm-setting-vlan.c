@@ -407,8 +407,8 @@ nm_setting_vlan_remove_priority (NMSettingVlan *setting,
 	list = get_map (setting, map);
 	g_return_if_fail (idx < g_slist_length (list));
 
-	item = g_slist_nth_data (list, idx);
-	priority_map_free ((PriorityMap *) item);
+	item = g_slist_nth (list, idx);
+	priority_map_free ((PriorityMap *) (item->data));
 	set_map (setting, map, g_slist_delete_link (list, item));
 }
 
@@ -636,6 +636,8 @@ finalize (GObject *object)
 	g_free (priv->parent);
 	nm_utils_slist_free (priv->ingress_priority_map, g_free);
 	nm_utils_slist_free (priv->egress_priority_map, g_free);
+
+	G_OBJECT_CLASS (nm_setting_vlan_parent_class)->finalize (object);
 }
 
 static void

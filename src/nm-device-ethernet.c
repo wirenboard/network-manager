@@ -439,7 +439,7 @@ update_permanent_hw_address (NMDevice *dev)
 	errno = 0;
 	ret = ioctl (fd, SIOCETHTOOL, &req);
 	if ((ret < 0) || !nm_ethernet_address_is_valid ((struct ether_addr *) epaddr->data)) {
-		nm_log_err (LOGD_HW | LOGD_ETHER, "(%s): unable to read permanent MAC address (error %d)",
+		nm_log_dbg (LOGD_HW | LOGD_ETHER, "(%s): unable to read permanent MAC address (error %d)",
 		            nm_device_get_iface (dev), errno);
 		/* Fall back to current address */
 		memcpy (epaddr->data, priv->hw_addr, ETH_ALEN);
@@ -450,6 +450,7 @@ update_permanent_hw_address (NMDevice *dev)
 		g_object_notify (G_OBJECT (dev), NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS);
 	}
 
+	g_free (epaddr);
 	close (fd);
 }
 
@@ -1053,13 +1054,13 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 		req = nm_device_get_act_request (NM_DEVICE (self));
 		g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
 
-		s_wired = NM_SETTING_WIRED (device_get_setting (dev, NM_TYPE_SETTING_WIRED));
-		g_assert (s_wired);
-
-		/* Set device MAC address if the connection wants to change it */
-		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac && (cloned_mac->len == ETH_ALEN))
-			_set_hw_addr (self, (const guint8 *) cloned_mac->data, "set");
+		s_wired = (NMSettingWired *) device_get_setting (dev, NM_TYPE_SETTING_WIRED);
+		if (s_wired) {
+			/* Set device MAC address if the connection wants to change it */
+			cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
+			if (cloned_mac && (cloned_mac->len == ETH_ALEN))
+				_set_hw_addr (self, (const guint8 *) cloned_mac->data, "set");
+		}
 	}
 
 	return ret;

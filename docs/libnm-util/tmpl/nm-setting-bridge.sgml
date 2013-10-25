@@ -22,6 +22,87 @@ NMSettingBridge
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_SETTING_BRIDGE_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingBridgeError ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_BRIDGE_ERROR_UNKNOWN: 
+@NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY: 
+@NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY: 
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_setting_bridge_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_INTERFACE_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_STP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_PRIORITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_FORWARD_DELAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_HELLO_TIME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_MAX_AGE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BRIDGE_AGEING_TIME ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingBridge ##### -->
 <para>
 
@@ -74,79 +155,7 @@ NMSettingBridge
 @_reserved3: 
 @_reserved4: 
 
-<!-- ##### ENUM NMSettingBridgeError ##### -->
-<para>
-
-</para>
-
-@NM_SETTING_BRIDGE_ERROR_UNKNOWN: 
-@NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY: 
-@NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY: 
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_AGEING_TIME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_ERROR ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_FORWARD_DELAY ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_HELLO_TIME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_INTERFACE_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_MAX_AGE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_PRIORITY ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_SETTING_NAME ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_BRIDGE_STP ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### FUNCTION nm_setting_bridge_error_quark ##### -->
+<!-- ##### FUNCTION nm_setting_bridge_new ##### -->
 <para>
 
 </para>
@@ -155,7 +164,25 @@ NMSettingBridge
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_bridge_get_ageing_time ##### -->
+<!-- ##### FUNCTION nm_setting_bridge_get_interface_name ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_get_stp ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bridge_get_priority ##### -->
 <para>
 
 </para>
@@ -182,15 +209,6 @@ NMSettingBridge
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_bridge_get_interface_name ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
 <!-- ##### FUNCTION nm_setting_bridge_get_max_age ##### -->
 <para>
 
@@ -200,30 +218,12 @@ NMSettingBridge
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_bridge_get_priority ##### -->
+<!-- ##### FUNCTION nm_setting_bridge_get_ageing_time ##### -->
 <para>
 
 </para>
 
 @setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_bridge_get_stp ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_bridge_new ##### -->
-<para>
-
-</para>
-
-@void: 
 @Returns: 
 
 

@@ -24,11 +24,12 @@ EXTRA_DIST = \
 	intltool-extract.in \
 	intltool-merge.in \
 	intltool-update.in \
-	Makefile.glib
+	Makefile.glib \
+	autogen.sh
 
 DISTCHECK_CONFIGURE_FLAGS = \
 	--with-tests=yes \
-	--with-docs=yes \
+	--enable-gtk-doc \
 	--enable-more-warnings=yes \
 	--with-udev-dir=$$dc_install_base/lib/udev \
 	--with-wext=no \

@@ -57,6 +57,9 @@ enum {
 
 #define MODEM_CAPS_3GPP2(caps) (caps & (MM_MODEM_CAPABILITY_CDMA_EVDO))
 
+/* Maximum time to keep the DBus call waiting for a connection result */
+#define MODEM_CONNECT_TIMEOUT_SECS 120
+
 /*****************************************************************************/
 
 #define NM_MODEM_BROADBAND_ERROR (nm_modem_broadband_error_quark ())
@@ -113,8 +116,23 @@ nm_modem_broadband_get_capabilities (NMModemBroadband *self,
                                      NMDeviceModemCapabilities *modem_caps,
                                      NMDeviceModemCapabilities *current_caps)
 {
-	*modem_caps = (NMDeviceModemCapabilities)mm_modem_get_modem_capabilities (self->priv->modem_iface);
-	*current_caps = (NMDeviceModemCapabilities)mm_modem_get_current_capabilities (self->priv->modem_iface);
+	MMModemCapability all_supported = MM_MODEM_CAPABILITY_NONE;
+	MMModemCapability *supported;
+	guint n_supported;
+
+	/* For now, we don't care about the capability combinations, just merge all
+	 * combinations in a single mask */
+	if (mm_modem_get_supported_capabilities (self->priv->modem_iface, &supported, &n_supported)) {
+		guint i;
+
+		for (i = 0; i < n_supported; i++)
+			all_supported |= supported[i];
+
+		g_free (supported);
+	}
+
+	*modem_caps = (NMDeviceModemCapabilities) all_supported;
+	*current_caps = (NMDeviceModemCapabilities) mm_modem_get_current_capabilities (self->priv->modem_iface);
 }
 
 /*****************************************************************************/
@@ -259,45 +277,6 @@ create_gsm_connect_properties (NMConnection *connection)
 	if (str)
 		mm_simple_connect_properties_set_password (properties, str);
 
-	/* TODO: We should check SUPPORTED MODES here */
-	switch (nm_setting_gsm_get_network_type (setting)) {
-	case NM_SETTING_GSM_NETWORK_TYPE_UMTS_HSPA:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_3G,
-		                                                MM_MODEM_MODE_NONE);
-		break;
-	case NM_SETTING_GSM_NETWORK_TYPE_GPRS_EDGE:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_2G,
-		                                                MM_MODEM_MODE_NONE);
-		break;
-	case NM_SETTING_GSM_NETWORK_TYPE_PREFER_UMTS_HSPA:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_ANY,
-		                                                MM_MODEM_MODE_3G);
-		break;
-	case NM_SETTING_GSM_NETWORK_TYPE_PREFER_GPRS_EDGE:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_ANY,
-		                                                MM_MODEM_MODE_2G);
-		break;
-	case NM_SETTING_GSM_NETWORK_TYPE_PREFER_4G:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_ANY,
-		                                                MM_MODEM_MODE_4G);
-		break;
-	case NM_SETTING_GSM_NETWORK_TYPE_4G:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_4G,
-		                                                MM_MODEM_MODE_NONE);
-		break;
-	default:
-		mm_simple_connect_properties_set_allowed_modes (properties,
-		                                                MM_MODEM_MODE_ANY,
-		                                                MM_MODEM_MODE_NONE);
-		break;
-	}
-
 	/* Roaming */
 	if (nm_setting_gsm_get_home_only (setting))
 		mm_simple_connect_properties_set_allow_roaming (properties, FALSE);
@@ -360,6 +339,7 @@ act_stage1_prepare (NMModem *_self,
 		if (!self->priv->simple_iface)
 			self->priv->simple_iface = mm_object_get_modem_simple (self->priv->modem_object);
 
+		g_dbus_proxy_set_default_timeout (G_DBUS_PROXY (self->priv->simple_iface), MODEM_CONNECT_TIMEOUT_SECS * 1000);
 		mm_modem_simple_connect (self->priv->simple_iface,
 		                         self->priv->connect_properties,
 		                         NULL,
@@ -869,7 +849,7 @@ modem_state_changed (MMModem *modem,
 	gboolean old;
 	gboolean new;
 
-	nm_log_info (LOGD_MB, "(%s) state changed, '%s' --> '%s' (reason: %s)\n",
+	nm_log_info (LOGD_MB, "(%s) modem state changed, '%s' --> '%s' (reason: %s)\n",
 	             nm_modem_get_uid (NM_MODEM (self)),
 	             mm_modem_state_get_string (old_state),
 	             mm_modem_state_get_string (new_state),

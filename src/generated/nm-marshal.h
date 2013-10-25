@@ -129,15 +129,7 @@ extern void _nm_marshal_VOID__STRING_STRING_STRING (GClosure     *closure,
                                                     gpointer      invocation_hint,
                                                     gpointer      marshal_data);
 
-/* VOID:STRING,STRING,STRING,UINT (nm-marshal.list:17) */
-extern void _nm_marshal_VOID__STRING_STRING_STRING_UINT (GClosure     *closure,
-                                                         GValue       *return_value,
-                                                         guint         n_param_values,
-                                                         const GValue *param_values,
-                                                         gpointer      invocation_hint,
-                                                         gpointer      marshal_data);
-
-/* VOID:UINT,UINT (nm-marshal.list:18) */
+/* VOID:UINT,UINT (nm-marshal.list:17) */
 extern void _nm_marshal_VOID__UINT_UINT (GClosure     *closure,
                                          GValue       *return_value,
                                          guint         n_param_values,
@@ -145,7 +137,7 @@ extern void _nm_marshal_VOID__UINT_UINT (GClosure     *closure,
                                          gpointer      invocation_hint,
                                          gpointer      marshal_data);
 
-/* VOID:UINT,UINT,INT (nm-marshal.list:19) */
+/* VOID:UINT,UINT,INT (nm-marshal.list:18) */
 extern void _nm_marshal_VOID__UINT_UINT_INT (GClosure     *closure,
                                              GValue       *return_value,
                                              guint         n_param_values,
@@ -153,7 +145,7 @@ extern void _nm_marshal_VOID__UINT_UINT_INT (GClosure     *closure,
                                              gpointer      invocation_hint,
                                              gpointer      marshal_data);
 
-/* VOID:UINT,UINT,UINT (nm-marshal.list:20) */
+/* VOID:UINT,UINT,UINT (nm-marshal.list:19) */
 extern void _nm_marshal_VOID__UINT_UINT_UINT (GClosure     *closure,
                                               GValue       *return_value,
                                               guint         n_param_values,

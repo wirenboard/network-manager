@@ -3,12 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NMSettingBridgePort</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingBridge.html" title="NMSettingBridge">
 <link rel="next" href="NMSettingInfiniband.html" title="NMSettingInfiniband">
-<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -44,33 +44,33 @@
 <a name="NMSettingBridgePortError"></a><pre class="synopsis">
 #include &lt;nm-setting-bridge-port.h&gt;
 
-                    <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort-struct" title="NMSettingBridgePort">NMSettingBridgePort</a>;
-                    <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePortClass" title="NMSettingBridgePortClass">NMSettingBridgePortClass</a>;
+#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-SETTING-NAME:CAPS" title="NM_SETTING_BRIDGE_PORT_SETTING_NAME">NM_SETTING_BRIDGE_PORT_SETTING_NAME</a>
 enum                <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePortError-enum" title="enum NMSettingBridgePortError">NMSettingBridgePortError</a>;
 #define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-ERROR:CAPS" title="NM_SETTING_BRIDGE_PORT_ERROR">NM_SETTING_BRIDGE_PORT_ERROR</a>
-#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-HAIRPIN-MODE:CAPS" title="NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE">NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE</a>
-#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-PATH-COST:CAPS" title="NM_SETTING_BRIDGE_PORT_PATH_COST">NM_SETTING_BRIDGE_PORT_PATH_COST</a>
-#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-PRIORITY:CAPS" title="NM_SETTING_BRIDGE_PORT_PRIORITY">NM_SETTING_BRIDGE_PORT_PRIORITY</a>
-#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-SETTING-NAME:CAPS" title="NM_SETTING_BRIDGE_PORT_SETTING_NAME">NM_SETTING_BRIDGE_PORT_SETTING_NAME</a>
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-error-quark" title="nm_setting_bridge_port_error_quark ()">nm_setting_bridge_port_error_quark</a>  (<em class="parameter"><code><span class="type">void</span></code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-get-hairpin-mode" title="nm_setting_bridge_port_get_hairpin_mode ()">nm_setting_bridge_port_get_hairpin_mode</a>
-                                                        (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);
+#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-PRIORITY:CAPS" title="NM_SETTING_BRIDGE_PORT_PRIORITY">NM_SETTING_BRIDGE_PORT_PRIORITY</a>
+#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-PATH-COST:CAPS" title="NM_SETTING_BRIDGE_PORT_PATH_COST">NM_SETTING_BRIDGE_PORT_PATH_COST</a>
+#define             <a class="link" href="NMSettingBridgePort.html#NM-SETTING-BRIDGE-PORT-HAIRPIN-MODE:CAPS" title="NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE">NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE</a>
+                    <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort-struct" title="NMSettingBridgePort">NMSettingBridgePort</a>;
+                    <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePortClass" title="NMSettingBridgePortClass">NMSettingBridgePortClass</a>;
+<a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-new" title="nm_setting_bridge_port_new ()">nm_setting_bridge_port_new</a>          (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-get-priority" title="nm_setting_bridge_port_get_priority ()">nm_setting_bridge_port_get_priority</a> (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-get-path-cost" title="nm_setting_bridge_port_get_path_cost ()">nm_setting_bridge_port_get_path_cost</a>
                                                         (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);
-<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-get-priority" title="nm_setting_bridge_port_get_priority ()">nm_setting_bridge_port_get_priority</a> (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);
-<a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-new" title="nm_setting_bridge_port_new ()">nm_setting_bridge_port_new</a>          (<em class="parameter"><code><span class="type">void</span></code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMSettingBridgePort.html#nm-setting-bridge-port-get-hairpin-mode" title="nm_setting_bridge_port_get_hairpin_mode ()">nm_setting_bridge_port_get_hairpin_mode</a>
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);
 </pre>
 </div>
 <div class="refsect1">
 <a name="NMSettingBridgePort.object-hierarchy"></a><h2>Object Hierarchy</h2>
 <pre class="synopsis">
+  GEnum
+   +----NMSettingBridgePortError
+</pre>
+<pre class="synopsis">
   <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
    +----<a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
          +----NMSettingBridgePort
-</pre>
-<pre class="synopsis">
-  GEnum
-   +----NMSettingBridgePortError
 </pre>
 </div>
 <div class="refsect1">
@@ -91,23 +91,8 @@ optional properties that apply to bridge ports.
 <div class="refsect1">
 <a name="NMSettingBridgePort.details"></a><h2>Details</h2>
 <div class="refsect2">
-<a name="NMSettingBridgePort-struct"></a><h3>NMSettingBridgePort</h3>
-<pre class="programlisting">typedef struct _NMSettingBridgePort NMSettingBridgePort;</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NMSettingBridgePortClass"></a><h3>NMSettingBridgePortClass</h3>
-<pre class="programlisting">typedef struct {
-	NMSettingClass parent;
-
-	/* Padding for future expansion */
-	void (*_reserved1) (void);
-	void (*_reserved2) (void);
-	void (*_reserved3) (void);
-	void (*_reserved4) (void);
-} NMSettingBridgePortClass;
+<a name="NM-SETTING-BRIDGE-PORT-SETTING-NAME:CAPS"></a><h3>NM_SETTING_BRIDGE_PORT_SETTING_NAME</h3>
+<pre class="programlisting">#define NM_SETTING_BRIDGE_PORT_SETTING_NAME "bridge-port"
 </pre>
 <p>
 </p>
@@ -121,8 +106,11 @@ optional properties that apply to bridge ports.
 	NM_SETTING_BRIDGE_PORT_ERROR_MISSING_PROPERTY, /*&lt; nick=MissingProperty &gt;*/
 } NMSettingBridgePortError;
 </pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><a name="NM-SETTING-BRIDGE-PORT-ERROR-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_SETTING_BRIDGE_PORT_ERROR_UNKNOWN</code></span></p></td>
@@ -154,8 +142,27 @@ is required
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-SETTING-BRIDGE-PORT-HAIRPIN-MODE:CAPS"></a><h3>NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE</h3>
-<pre class="programlisting">#define NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE "hairpin-mode"
+<a name="nm-setting-bridge-port-error-quark"></a><h3>nm_setting_bridge_port_error_quark ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_bridge_port_error_quark  (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Registers an error quark for <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> if necessary.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the error quark used for <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> errors.</td>
+</tr></tbody>
+</table></div>
+<p class="since">Since 0.9.8</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-BRIDGE-PORT-PRIORITY:CAPS"></a><h3>NM_SETTING_BRIDGE_PORT_PRIORITY</h3>
+<pre class="programlisting">#define NM_SETTING_BRIDGE_PORT_PRIORITY     "priority"
 </pre>
 <p>
 </p>
@@ -170,75 +177,52 @@ is required
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-SETTING-BRIDGE-PORT-PRIORITY:CAPS"></a><h3>NM_SETTING_BRIDGE_PORT_PRIORITY</h3>
-<pre class="programlisting">#define NM_SETTING_BRIDGE_PORT_PRIORITY     "priority"
+<a name="NM-SETTING-BRIDGE-PORT-HAIRPIN-MODE:CAPS"></a><h3>NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE</h3>
+<pre class="programlisting">#define NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE "hairpin-mode"
 </pre>
 <p>
 </p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-SETTING-BRIDGE-PORT-SETTING-NAME:CAPS"></a><h3>NM_SETTING_BRIDGE_PORT_SETTING_NAME</h3>
-<pre class="programlisting">#define NM_SETTING_BRIDGE_PORT_SETTING_NAME "bridge-port"
+<a name="NMSettingBridgePort-struct"></a><h3>NMSettingBridgePort</h3>
+<pre class="programlisting">typedef struct _NMSettingBridgePort NMSettingBridgePort;</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingBridgePortClass"></a><h3>NMSettingBridgePortClass</h3>
+<pre class="programlisting">typedef struct {
+	NMSettingClass parent;
+
+	/* Padding for future expansion */
+	void (*_reserved1) (void);
+	void (*_reserved2) (void);
+	void (*_reserved3) (void);
+	void (*_reserved4) (void);
+} NMSettingBridgePortClass;
 </pre>
 <p>
 </p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="nm-setting-bridge-port-error-quark"></a><h3>nm_setting_bridge_port_error_quark ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              nm_setting_bridge_port_error_quark  (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<a name="nm-setting-bridge-port-new"></a><h3>nm_setting_bridge_port_new ()</h3>
+<pre class="programlisting"><a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         nm_setting_bridge_port_new          (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>
-Registers an error quark for <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> if necessary.
+Creates a new <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> object with default values.
 </p>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody><tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the error quark used for <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> errors.</td>
+<td>the new empty <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> object. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
 </tr></tbody>
-</table></div>
-<p class="since">Since 0.9.8</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-setting-bridge-port-get-hairpin-mode"></a><h3>nm_setting_bridge_port_get_hairpin_mode ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_bridge_port_get_hairpin_mode
-                                                        (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
-<td>the <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--hairpin-mode" title='The "hairpin-mode" property'><span class="type">"hairpin-mode"</span></a> property of the setting</td>
-</tr>
-</tbody>
-</table></div>
-<p class="since">Since 0.9.8</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-setting-bridge-port-get-path-cost"></a><h3>nm_setting_bridge_port_get_path_cost ()</h3>
-<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             nm_setting_bridge_port_get_path_cost
-                                                        (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
-<td>the <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--path-cost" title='The "path-cost" property'><span class="type">"path-cost"</span></a> property of the setting</td>
-</tr>
-</tbody>
 </table></div>
 <p class="since">Since 0.9.8</p>
 </div>
@@ -246,8 +230,11 @@ Registers an error quark for <a class="link" href="NMSettingBridgePort.html" tit
 <div class="refsect2">
 <a name="nm-setting-bridge-port-get-priority"></a><h3>nm_setting_bridge_port_get_priority ()</h3>
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             nm_setting_bridge_port_get_priority (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
-<div class="variablelist"><table border="0">
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
+<col>
+</colgroup>
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
@@ -264,18 +251,49 @@ Registers an error quark for <a class="link" href="NMSettingBridgePort.html" tit
 </div>
 <hr>
 <div class="refsect2">
-<a name="nm-setting-bridge-port-new"></a><h3>nm_setting_bridge_port_new ()</h3>
-<pre class="programlisting"><a class="link" href="NMSetting.html" title="NMSetting"><span class="returnvalue">NMSetting</span></a> *         nm_setting_bridge_port_new          (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>
-Creates a new <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> object with default values.
-</p>
-<div class="variablelist"><table border="0">
+<a name="nm-setting-bridge-port-get-path-cost"></a><h3>nm_setting_bridge_port_get_path_cost ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint16"><span class="returnvalue">guint16</span></a>             nm_setting_bridge_port_get_path_cost
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
 <col align="left" valign="top">
-<tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the new empty <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> object. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a>
 </td>
-</tr></tbody>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--path-cost" title='The "path-cost" property'><span class="type">"path-cost"</span></a> property of the setting</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 0.9.8</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-bridge-port-get-hairpin-mode"></a><h3>nm_setting_bridge_port_get_hairpin_mode ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_setting_bridge_port_get_hairpin_mode
+                                                        (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>setting</code></em> :</span></p></td>
+<td>the <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--hairpin-mode" title='The "hairpin-mode" property'><span class="type">"hairpin-mode"</span></a> property of the setting</td>
+</tr>
+</tbody>
 </table></div>
 <p class="since">Since 0.9.8</p>
 </div>
@@ -318,6 +336,6 @@ The Spanning Tree Protocol (STP) priority of this bridge port.
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.18</div>
+          Generated by GTK-Doc V1.19</div>
 </body>
 </html>
