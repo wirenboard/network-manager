@@ -8,8 +8,16 @@ network-manager (0.9.8.8-1) UNRELEASED; urgency=low
   [ Sjoerd Simons ]
   * Switch session tracking to systemd.
   * New upstream release
+  * Dropped patches fixed upstream:
+    + d/p/06-tear-down-connections-for-unavailable-devices.patch
+    + d/p/07-duid-fallback.patch
+    + d/p/08-ifupdown-clarify-name-of-connections-hash.patch
+    + d/p/09-ifupdown-fix-naming-confusion-in-plugin-hash-tables.patch
+    + d/p/10-ifupdown-recalculate-unmanaged-specs-on-interface-ch.patch
+  * debian/patches/03-systemd.patch: Refreshed
+  * debian/patches/05-force-online-with-unmanaged-devices.patch: Refreshes
 
- -- Sjoerd Simons <sjoerd@debian.org>  Fri, 25 Oct 2013 21:21:15 +0200
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 25 Oct 2013 21:25:59 +0200
 
 network-manager (0.9.8.0-5) unstable; urgency=low
 

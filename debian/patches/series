@@ -1,8 +1,3 @@
 02-dbus_access_network_manager.patch
 03-systemd.patch
 05-force-online-with-unmanaged-devices.patch
-06-tear-down-connections-for-unavailable-devices.patch
-07-duid-fallback.patch
-08-ifupdown-clarify-name-of-connections-hash.patch
-09-ifupdown-fix-naming-confusion-in-plugin-hash-tables.patch
-10-ifupdown-recalculate-unmanaged-specs-on-interface-ch.patch
