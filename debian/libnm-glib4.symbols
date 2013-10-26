@@ -30,14 +30,20 @@ libnm-glib.so.4 libnm-glib4 #MINVER#
  nm_active_connection_new@Base 0.7.999
  nm_client_activate_connection@Base 0.7.999
  nm_client_add_and_activate_connection@Base 0.8.998
+ nm_client_check_connectivity@Base 0.9.8.8
+ nm_client_check_connectivity_async@Base 0.9.8.8
+ nm_client_check_connectivity_finish@Base 0.9.8.8
  nm_client_deactivate_connection@Base 0.7.999
+ nm_client_get_activating_connection@Base 0.9.8.8
  nm_client_get_active_connections@Base 0.7.999
+ nm_client_get_connectivity@Base 0.9.8.8
  nm_client_get_device_by_iface@Base 0.9.0
  nm_client_get_device_by_path@Base 0.7.999
  nm_client_get_devices@Base 0.7.999
  nm_client_get_logging@Base 0.9.7.995
  nm_client_get_manager_running@Base 0.7.999
  nm_client_get_permission_result@Base 0.8.2
+ nm_client_get_primary_connection@Base 0.9.8.8
  nm_client_get_state@Base 0.7.999
  nm_client_get_type@Base 0.7.999
  nm_client_get_version@Base 0.8.998

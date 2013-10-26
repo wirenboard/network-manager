@@ -21,6 +21,8 @@ network-manager (0.9.8.8-1) UNRELEASED; urgency=low
   * debian/control: Use canonical URL for the VCS fields
   * debian/control, debian/rules: Enable connectivity checking support
     (Closes: #691790)
+  * debian/libnm-glib4.symbols: Add the new symbols exported for connectivity
+    checking support
 
  -- Sjoerd Simons <sjoerd@debian.org>  Fri, 25 Oct 2013 21:25:59 +0200
 
