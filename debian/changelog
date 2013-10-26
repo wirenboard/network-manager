@@ -17,6 +17,9 @@ network-manager (0.9.8.8-1) UNRELEASED; urgency=low
   * debian/patches/03-systemd.patch: Refreshed
   * debian/patches/05-force-online-with-unmanaged-devices.patch: Refreshes
 
+  [ Laurent Bigonville ]
+  * debian/control: Use canonical URL for the VCS fields
+
  -- Sjoerd Simons <sjoerd@debian.org>  Fri, 25 Oct 2013 21:25:59 +0200
 
 network-manager (0.9.8.0-5) unstable; urgency=low
