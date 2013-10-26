@@ -1,11 +1,10 @@
 network-manager (0.9.8.8-1) UNRELEASED; urgency=low
 
+  [ Sjoerd Simons ]
   * debian/60-network-manager.rules
     debian/network-manager.install:
     - Install a rules file compatible with experimentals policykit (0.110)
       implementing the same policy as the pkla
-
-  [ Sjoerd Simons ]
   * Switch session tracking to systemd.
   * New upstream release
   * Dropped patches fixed upstream:
