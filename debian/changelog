@@ -25,8 +25,10 @@ network-manager (0.9.8.8-1) UNRELEASED; urgency=low
 
   [ Sjoerd Simons ]
   * Use logind for session tracking on linux, consolekit on other systems
+  * Enable usage of the new modem-manager interface
+  * Use bluez 4
 
- -- Sjoerd Simons <sjoerd@debian.org>  Fri, 01 Nov 2013 21:53:37 +0100
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 01 Nov 2013 22:07:24 +0100
 
 network-manager (0.9.8.0-5) unstable; urgency=low
 

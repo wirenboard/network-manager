@@ -29,7 +29,9 @@ override_dh_auto_configure:
 		--enable-ifupdown \
 		--enable-introspection \
 		--enable-doc \
-		--enable-concheck
+		--enable-concheck \
+		--with-modem-manager-1 \
+		--enable-bluez4
 
 override_dh_install:
 	dh_install --list-missing
