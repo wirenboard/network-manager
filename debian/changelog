@@ -1,4 +1,4 @@
-network-manager (0.9.8.8-1) UNRELEASED; urgency=low
+network-manager (0.9.8.8-1) experimental; urgency=low
 
   [ Sjoerd Simons ]
   * debian/60-network-manager.rules
@@ -28,7 +28,7 @@ network-manager (0.9.8.8-1) UNRELEASED; urgency=low
   * Enable usage of the new modem-manager interface
   * Use bluez 4
 
- -- Sjoerd Simons <sjoerd@debian.org>  Fri, 01 Nov 2013 22:07:24 +0100
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 01 Nov 2013 22:11:43 +0100
 
 network-manager (0.9.8.0-5) unstable; urgency=low
 
