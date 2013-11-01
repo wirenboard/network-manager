@@ -23,7 +23,10 @@ network-manager (0.9.8.8-1) UNRELEASED; urgency=low
   * debian/libnm-glib4.symbols: Add the new symbols exported for connectivity
     checking support
 
- -- Sjoerd Simons <sjoerd@debian.org>  Fri, 25 Oct 2013 21:25:59 +0200
+  [ Sjoerd Simons ]
+  * Use logind for session tracking on linux, consolekit on other systems
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Fri, 01 Nov 2013 21:53:37 +0100
 
 network-manager (0.9.8.0-5) unstable; urgency=low
 
