@@ -6,8 +6,10 @@ network-manager (0.9.8.8-2) UNRELEASED; urgency=medium
     symlink instead of using an Alias= to mask the initscript (Closes: #719703)
   * debian/control, debian/rules: Add call to dh-systemd to enable and start
     the systemd services (Closes: #730437)
+  * Completely Drop debian/patches/03-systemd.patch: /usr should now be
+    mounted from the initramfs meaning that it will be available early enough
 
- -- Laurent Bigonville <bigon@debian.org>  Mon, 09 Dec 2013 21:06:52 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 27 Dec 2013 14:15:45 +0100
 
 network-manager (0.9.8.8-1) experimental; urgency=low
 
