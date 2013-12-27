@@ -31,7 +31,7 @@ Build-Depends:
  gtk-doc-tools,
  libglib2.0-doc,
  libmm-glib-dev (>=  0.7.991)
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-utopia/network-manager.git;a=summary
 Homepage: http://www.gnome.org/projects/NetworkManager/
