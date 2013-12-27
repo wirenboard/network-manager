@@ -12,8 +12,10 @@ network-manager (0.9.8.8-2) experimental; urgency=medium
   * debian/network-manager.links: Create a symlink so
     NetworkManager-wait-online.service is run before network-online.target
   * debian/control: Bump Standards-Version to 3.9.5 (no further changes)
+  * debian/network-manager.links, debian/rules: Create the symlinks before
+    calling dh_systemd_start so the services are not restarted twice
 
- -- Laurent Bigonville <bigon@debian.org>  Fri, 27 Dec 2013 15:16:19 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 27 Dec 2013 15:46:33 +0100
 
 network-manager (0.9.8.8-1) experimental; urgency=low
 

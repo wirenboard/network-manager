@@ -58,6 +58,10 @@ override_dh_systemd_enable:
 	dh_systemd_enable -pnetwork-manager NetworkManager.service
 
 override_dh_systemd_start:
+	dh_link lib/systemd/system/NetworkManager.service \
+		lib/systemd/system/network-manager.service
+	dh_link lib/systemd/system/NetworkManager-wait-online.service \
+		lib/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
 	dh_systemd_start -pnetwork-manager --no-start NetworkManager-dispatcher.service
 	dh_systemd_start -pnetwork-manager --no-start NetworkManager-wait-online.service
 	dh_systemd_start -pnetwork-manager --restart-after-upgrade NetworkManager.service
