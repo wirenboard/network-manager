@@ -6,7 +6,7 @@ network-manager (0.9.8.8-2) experimental; urgency=medium
   * debian/patches/03-systemd.patch, debian/network-manager.links: Install a
     symlink instead of using an Alias= to mask the initscript (Closes: #719703)
   * debian/control, debian/rules: Add call to dh-systemd to enable and start
-    the systemd services (Closes: #730437)
+    the systemd services
   * Completely Drop debian/patches/03-systemd.patch: /usr should now be
     mounted from the initramfs meaning that it will be available early enough
   * debian/network-manager.links: Create a symlink so
