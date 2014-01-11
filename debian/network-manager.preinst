@@ -19,6 +19,20 @@ set -e
 
 case "$1" in
     install|upgrade)
+	# When upgrading from a version that was using an Alias= instead of
+	# symlink to mask the LSB initscript, stop NetworkManager before
+	# upgrading if we are running systemd and the NetworkManager.service is
+	# not enabled. This will ensure that NM can properly be stopped and
+	# then started again after the upgrade (See: #734460)
+	if dpkg --compare-versions "$2" lt-nl "0.9.8.8-2~"; then
+	    if [ -d /run/systemd/system ] && \
+	      ! systemctl is-enabled NetworkManager.service > /dev/null 2>&1; then
+	        if [ -x "/etc/init.d/network-manager" ]; then
+	            invoke-rc.d network-manager stop || exit $?
+	        fi
+	    fi
+	fi
+
 	# Upgrade from previous versions
 	if dpkg --compare-versions "$2" lt "0.9.7.997-2"; then
 	    # Move old pid file to /var/run/NetworkManager so the init script

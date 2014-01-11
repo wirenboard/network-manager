@@ -1,3 +1,10 @@
+network-manager (0.9.8.8-3) UNRELEASED; urgency=medium
+
+  * debian/network-manager.preinst: Stop network-manager before upgrading if
+    we are running systemd and the unit is not enabled (Closes: #734460)
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 11 Jan 2014 23:43:01 +0100
+
 network-manager (0.9.8.8-2) experimental; urgency=medium
 
   * Team upload.
