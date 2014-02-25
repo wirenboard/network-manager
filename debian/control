@@ -34,7 +34,7 @@ Build-Depends:
 Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-utopia/network-manager.git;a=summary
-Homepage: http://www.gnome.org/projects/NetworkManager/
+Homepage: https://wiki.gnome.org/Projects/NetworkManager
 
 Package: network-manager
 Architecture: linux-any

@@ -1,3 +1,9 @@
+network-manager (0.9.8.8-4) UNRELEASED; urgency=medium
+
+  * debian/control: Update the Homepage URL
+
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 26 Feb 2014 00:21:13 +0100
+
 network-manager (0.9.8.8-3) experimental; urgency=medium
 
   * Team upload.
