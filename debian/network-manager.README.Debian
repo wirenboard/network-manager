@@ -36,7 +36,7 @@ For more information see NetworkManager.conf(5) or
 http://live.gnome.org/NetworkManager/SystemSettings
 
 The keyfile specification is available at
-http://projects.gnome.org/NetworkManager/developers/settings-spec-08.html
+https://developer.gnome.org/NetworkManager/0.9/ref-settings.html
 
 unmanaged devices and /etc/network/interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
