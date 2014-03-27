@@ -3,13 +3,6 @@
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
-ifeq (linux,$(DEB_HOST_ARCH_OS))
-  SESSION_TRACKING = systemd
-else
-  SESSION_TRACKING = consolekit
-endif
-
-
 %:
 	dh $@ --with gir,systemd
 
@@ -21,7 +14,8 @@ override_dh_auto_configure:
 		--with-iptables=/sbin/iptables \
 		--with-systemdsystemunitdir=/lib/systemd/system \
 		--with-crypto=gnutls \
-		--with-session-tracking=$(SESSION_TRACKING) \
+		--with-session-tracking=systemd \
+		--with-suspend-resume=systemd \
 		--disable-more-warnings \
 		--disable-modify-system \
 		--enable-polkit \

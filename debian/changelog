@@ -61,7 +61,6 @@ network-manager (0.9.8.8-1) experimental; urgency=low
     checking support
 
   [ Sjoerd Simons ]
-  * Use logind for session tracking on linux, consolekit on other systems
   * Enable usage of the new modem-manager interface
   * Use bluez 4
 
