@@ -1,6 +1,10 @@
 network-manager (0.9.8.8-4) UNRELEASED; urgency=medium
 
+  [ Laurent Bigonville ]
   * debian/control: Update the Homepage URL
+
+  [ Michael Biebl ]
+  * Upload to unstable.
 
  -- Laurent Bigonville <bigon@debian.org>  Wed, 26 Feb 2014 00:21:13 +0100
 
