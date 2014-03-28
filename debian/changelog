@@ -6,6 +6,8 @@ network-manager (0.9.8.8-4) UNRELEASED; urgency=medium
   [ Michael Biebl ]
   * Upload to unstable.
   * Fix URL to keyfile spec in README.Debian.
+  * Remove /etc/systemd/system/network-manager.service symlink, which was
+    previously created dynamically via Alias=, on upgrades.
 
  -- Laurent Bigonville <bigon@debian.org>  Wed, 26 Feb 2014 00:21:13 +0100
 
