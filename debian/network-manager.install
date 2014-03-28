@@ -22,5 +22,5 @@ lib/systemd/system/NetworkManager.service
 lib/systemd/system/NetworkManager-dispatcher.service
 lib/systemd/system/NetworkManager-wait-online.service
 debian/NetworkManager.conf etc/NetworkManager/
-debian/org.freedesktop.NetworkManager.pkla etc/polkit-1/localauthority/10-vendor.d/
-debian/60-network-manager.rules etc/polkit-1/rules.d/
+debian/org.freedesktop.NetworkManager.pkla var/lib/polkit-1/localauthority/10-vendor.d/
+debian/60-network-manager.rules usr/share/polkit-1/rules.d/

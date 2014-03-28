@@ -8,6 +8,8 @@ network-manager (0.9.8.8-4) UNRELEASED; urgency=medium
   * Fix URL to keyfile spec in README.Debian.
   * Remove /etc/systemd/system/network-manager.service symlink, which was
     previously created dynamically via Alias=, on upgrades.
+  * Install PolicyKit rules and pkla file into the system directory.
+    /etc/polkit-1 is reserved for local configuration.
 
  -- Laurent Bigonville <bigon@debian.org>  Wed, 26 Feb 2014 00:21:13 +0100
 
