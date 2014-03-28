@@ -1,4 +1,4 @@
-network-manager (0.9.8.8-4) UNRELEASED; urgency=medium
+network-manager (0.9.8.8-4) unstable; urgency=medium
 
   [ Laurent Bigonville ]
   * debian/control: Update the Homepage URL
@@ -11,7 +11,7 @@ network-manager (0.9.8.8-4) UNRELEASED; urgency=medium
   * Install PolicyKit rules and pkla file into the system directory.
     /etc/polkit-1 is reserved for local configuration.
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 26 Feb 2014 00:21:13 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 28 Mar 2014 17:12:10 +0100
 
 network-manager (0.9.8.8-3) experimental; urgency=medium
 
