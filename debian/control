@@ -3,34 +3,33 @@ Section: net
 Priority: optional
 Maintainer: Utopia Maintenance Team <pkg-utopia-maintainers@lists.alioth.debian.org>
 Uploaders: Michael Biebl <biebl@debian.org>, Sjoerd Simons <sjoerd@debian.org>
-Build-Depends:
- debhelper (>= 8.1.0),
- dpkg-dev (>= 1.16.1),
- dh-systemd (>= 1.14),
- autotools-dev,
- pkg-config,
- intltool,
- libdbus-glib-1-dev (>= 0.94),
- libdbus-1-dev (>= 1.1),
- libiw-dev(>= 27+28pre9),
- libglib2.0-dev (>= 2.26),
- libnl-3-dev (>= 3.2.7),
- libnl-route-3-dev (>= 3.2.7),
- libnl-genl-3-dev (>= 3.2.7),
- ppp-dev (>= 2.4.5),
- libpolkit-gobject-1-dev,
- libgnutls-dev,
- uuid-dev,
- systemd (>= 185),
- libsystemd-login-dev (>= 185),
- libudev-dev (>= 165),
- libgudev-1.0-dev (>= 165),
- libgirepository1.0-dev (>= 0.10.7-1~),
- gobject-introspection (>= 0.9.12-4~),
- libsoup2.4-dev (>= 2.26),
- gtk-doc-tools,
- libglib2.0-doc,
- libmm-glib-dev (>=  0.7.991)
+Build-Depends: debhelper (>= 8.1.0),
+               dpkg-dev (>= 1.16.1),
+               dh-systemd (>= 1.14),
+               autotools-dev,
+               pkg-config,
+               intltool,
+               libdbus-glib-1-dev (>= 0.94),
+               libdbus-1-dev (>= 1.1),
+               libiw-dev(>= 27+28pre9),
+               libglib2.0-dev (>= 2.26),
+               libnl-3-dev (>= 3.2.7),
+               libnl-route-3-dev (>= 3.2.7),
+               libnl-genl-3-dev (>= 3.2.7),
+               ppp-dev (>= 2.4.5),
+               libpolkit-gobject-1-dev,
+               libgnutls-dev,
+               uuid-dev,
+               systemd (>= 185),
+               libsystemd-login-dev (>= 185),
+               libudev-dev (>= 165),
+               libgudev-1.0-dev (>= 165),
+               libgirepository1.0-dev (>= 0.10.7-1~),
+               gobject-introspection (>= 0.9.12-4~),
+               libsoup2.4-dev (>= 2.26),
+               gtk-doc-tools,
+               libglib2.0-doc,
+               libmm-glib-dev (>=  0.7.991)
 Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-utopia/network-manager.git;a=summary
@@ -39,33 +38,30 @@ Homepage: https://wiki.gnome.org/Projects/NetworkManager
 Package: network-manager
 Architecture: linux-any
 Pre-Depends: ${misc:Pre-Depends}
-Depends:
- ${shlibs:Depends},
- ${misc:Depends},
- lsb-base (>= 3.2-14),
- wpasupplicant (>= 0.7.3-1),
- dbus (>= 1.1.2),
- udev,
- adduser,
- isc-dhcp-client (>= 4.1.1-P1-4)
-Recommends:
- policykit-1,
- ppp (>= 2.4.5),
- dnsmasq-base,
- iptables,
- modemmanager,
- crda,
- systemd
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         lsb-base (>= 3.2-14),
+         wpasupplicant (>= 0.7.3-1),
+         dbus (>= 1.1.2),
+         udev,
+         adduser,
+         isc-dhcp-client (>= 4.1.1-P1-4)
+Recommends: policykit-1,
+            ppp (>= 2.4.5),
+            dnsmasq-base,
+            iptables,
+            modemmanager,
+            crda,
+            systemd
 Suggests: avahi-autoipd
-Breaks:
- network-manager-gnome (<< 0.9),
- network-manager-openvpn (<< 0.9),
- network-manager-vpnc (<< 0.9),
- network-manager-pptp (<< 0.9),
- network-manager-openconnect (<< 0.9),
- network-manager-kde (<< 1:0.9),
- plasma-widget-networkmanagement (<< 0.9~),
- ppp (<< 2.4.5)
+Breaks: network-manager-gnome (<< 0.9),
+        network-manager-openvpn (<< 0.9),
+        network-manager-vpnc (<< 0.9),
+        network-manager-pptp (<< 0.9),
+        network-manager-openconnect (<< 0.9),
+        network-manager-kde (<< 1:0.9),
+        plasma-widget-networkmanagement (<< 0.9~),
+        ppp (<< 2.4.5)
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -95,9 +91,8 @@ Description: network management framework (development files)
 Package: libnm-glib4
 Section: libs
 Architecture: linux-any
-Depends:
- ${shlibs:Depends},
- ${misc:Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
 Description: network management framework (GLib shared library)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -111,14 +106,13 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: linux-any
-Depends:
- libnm-glib4 (= ${binary:Version}),
- gir1.2-networkmanager-1.0 (= ${binary:Version}),
- ${misc:Depends},
- libnm-util-dev (>= ${binary:Version}),
- network-manager-dev (>= ${binary:Version}),
- libglib2.0-dev,
- libdbus-glib-1-dev
+Depends: ${misc:Depends},
+         libnm-glib4 (= ${binary:Version}),
+         gir1.2-networkmanager-1.0 (= ${binary:Version}),
+         libnm-util-dev (>= ${binary:Version}),
+         network-manager-dev (>= ${binary:Version}),
+         libglib2.0-dev,
+         libdbus-glib-1-dev
 Description: network management framework (GLib interface)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -132,9 +126,8 @@ Description: network management framework (GLib interface)
 Package: libnm-glib-vpn1
 Section: libs
 Architecture: linux-any
-Depends:
- ${shlibs:Depends},
- ${misc:Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
 Description: network management framework (GLib VPN shared library)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -148,11 +141,10 @@ Description: network management framework (GLib VPN shared library)
 Package: libnm-glib-vpn-dev
 Section: libdevel
 Architecture: linux-any
-Depends:
- libnm-glib-vpn1 (= ${binary:Version}),
- ${misc:Depends},
- libnm-glib-dev (>= ${binary:Version}),
- network-manager-dev (>= ${binary:Version}),
+Depends: ${misc:Depends},
+         libnm-glib-vpn1 (= ${binary:Version}),
+         libnm-glib-dev (>= ${binary:Version}),
+         network-manager-dev (>= ${binary:Version}),
 Description: network management framework (GLib interface)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -166,9 +158,8 @@ Description: network management framework (GLib interface)
 Package: libnm-util2
 Section: libs
 Architecture: linux-any
-Depends:
- ${shlibs:Depends},
- ${misc:Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
 Description: network management framework (shared library)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -182,13 +173,12 @@ Description: network management framework (shared library)
 Package: libnm-util-dev
 Section: libdevel
 Architecture: linux-any
-Depends:
- libnm-util2 (= ${binary:Version}),
- gir1.2-networkmanager-1.0 (= ${binary:Version}),
- ${misc:Depends},
- network-manager-dev (>= ${binary:Version}),
- libglib2.0-dev,
- libdbus-glib-1-dev
+Depends: ${misc:Depends},
+         libnm-util2 (= ${binary:Version}),
+         gir1.2-networkmanager-1.0 (= ${binary:Version}),
+         network-manager-dev (>= ${binary:Version}),
+         libglib2.0-dev,
+         libdbus-glib-1-dev
 Description: network management framework (development files)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -202,9 +192,11 @@ Package: network-manager-dbg
 Architecture: linux-any
 Section: debug
 Priority: extra
-Depends:
- network-manager (= ${binary:Version}) | libnm-util2 (= ${binary:Version}) | libnm-glib4 (= ${binary:Version}) | libnm-glib-vpn1 (= ${binary:Version}),
- ${misc:Depends}
+Depends: ${misc:Depends},
+         network-manager (= ${binary:Version}),
+         libnm-util2 (= ${binary:Version}),
+         libnm-glib4 (= ${binary:Version}),
+         libnm-glib-vpn1 (= ${binary:Version})
 Description: network management framework (debugging symbols)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
@@ -217,7 +209,9 @@ Description: network management framework (debugging symbols)
 Package: gir1.2-networkmanager-1.0
 Section: introspection
 Architecture: linux-any
-Depends: ${gir:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${gir:Depends},
+         ${shlibs:Depends},
+         ${misc:Depends}
 Description: GObject introspection data for NetworkManager
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
