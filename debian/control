@@ -44,14 +44,14 @@ Depends: ${shlibs:Depends},
          dbus (>= 1.1.2),
          udev,
          adduser,
-         isc-dhcp-client (>= 4.1.1-P1-4)
-Recommends: policykit-1,
-            ppp (>= 2.4.5),
+         isc-dhcp-client (>= 4.1.1-P1-4),
+         libpam-systemd,
+         policykit-1
+Recommends: ppp (>= 2.4.5),
             dnsmasq-base,
             iptables,
             modemmanager,
-            crda,
-            systemd
+            crda
 Suggests: avahi-autoipd
 Breaks: network-manager-gnome (<< 0.9),
         network-manager-openvpn (<< 0.9),
@@ -72,7 +72,6 @@ Description: network management framework (daemon and userspace tools)
  interact with NetworkManager.
  .
  Optional dependencies:
-  * policykit-1: Required for reading and writing system connections.
   * ppp: Required for establishing dial-up connections (e.g. via GSM).
   * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
     connection sharing.

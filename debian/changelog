@@ -6,6 +6,9 @@ network-manager (0.9.8.8-5) UNRELEASED; urgency=medium
     plugin to /usr/lib/pppd/2.4.5/.
   * Rely on dh v9 to set flags from dpkg-buildflags.
   * Use autotools_dev dh addon for up-to-date config.{guess,sub}.
+  * Add Depends on libpam-systemd since NetworkManager requires a properly
+    setup logind session. (Closes: #743128)
+  * Bump policykit-1 from Recommends to Depends.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Apr 2014 23:22:57 +0200
 
