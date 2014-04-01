@@ -1,3 +1,9 @@
+network-manager (0.9.8.8-5) UNRELEASED; urgency=medium
+
+  * Bump debhelper compatibility level to 9.
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 01 Apr 2014 23:22:57 +0200
+
 network-manager (0.9.8.8-4) unstable; urgency=medium
 
   [ Laurent Bigonville ]

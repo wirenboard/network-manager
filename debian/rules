@@ -35,7 +35,7 @@ override_dh_install:
 		debian/network-manager/usr/lib/NetworkManager
 
 override_dh_installinit:
-	dh_installinit -pnetwork-manager -R
+	dh_installinit -pnetwork-manager --restart-after-upgrade
 
 override_dh_makeshlibs:
 	dh_makeshlibs -X/usr/lib/NetworkManager/ -X/usr/lib/pppd/
