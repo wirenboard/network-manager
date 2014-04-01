@@ -1,4 +1,4 @@
-usr/lib/pkgconfig/NetworkManager.pc
+usr/lib/*/pkgconfig/NetworkManager.pc
 usr/include/NetworkManager/NetworkManager.h
 usr/include/NetworkManager/NetworkManagerVPN.h
 usr/include/NetworkManager/nm-version.h

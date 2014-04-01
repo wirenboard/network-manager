@@ -3,12 +3,15 @@
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 %:
 	dh $@ --with gir,systemd
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		--libexecdir=/usr/lib/NetworkManager \
+		--with-pppd-plugin-dir=/usr/lib/pppd/2.4.5 \
 		--with-resolvconf=/sbin/resolvconf \
 		--with-dhclient=/sbin/dhclient \
 		--with-iptables=/sbin/iptables \
@@ -16,6 +19,7 @@ override_dh_auto_configure:
 		--with-crypto=gnutls \
 		--with-session-tracking=systemd \
 		--with-suspend-resume=systemd \
+		--with-modem-manager-1 \
 		--disable-more-warnings \
 		--disable-modify-system \
 		--enable-polkit \
@@ -24,7 +28,6 @@ override_dh_auto_configure:
 		--enable-introspection \
 		--enable-doc \
 		--enable-concheck \
-		--with-modem-manager-1 \
 		--enable-bluez4
 
 override_dh_install:
@@ -38,7 +41,7 @@ override_dh_installinit:
 	dh_installinit -pnetwork-manager --restart-after-upgrade
 
 override_dh_makeshlibs:
-	dh_makeshlibs -X/usr/lib/NetworkManager/ -X/usr/lib/pppd/
+	dh_makeshlibs -X/usr/lib/$(DEB_HOST_MULTIARCH)/NetworkManager/ -X/usr/lib/pppd/
 
 override_dh_strip:
 	dh_strip --dbg-package=network-manager-dbg

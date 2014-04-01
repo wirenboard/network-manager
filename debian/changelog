@@ -1,6 +1,9 @@
 network-manager (0.9.8.8-5) UNRELEASED; urgency=medium
 
   * Bump debhelper compatibility level to 9.
+  * Convert to multi-arch. Mark libnm-glib4, libnm-glib-vpn1 and libnm-util2
+    as M-A: same. As pppd has not been converted yet, keep installing the ppp
+    plugin to /usr/lib/pppd/2.4.5/.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Apr 2014 23:22:57 +0200
 

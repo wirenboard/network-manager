@@ -1,5 +1,5 @@
-usr/lib/pkgconfig/libnm-glib.pc
-usr/lib/libnm-glib.so
+usr/lib/*/pkgconfig/libnm-glib.pc
+usr/lib/*/libnm-glib.so
 usr/include/libnm-glib/libnm_glib.h
 usr/include/libnm-glib/nm-object.h
 usr/include/libnm-glib/nm-client.h

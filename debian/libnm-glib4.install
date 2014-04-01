@@ -1,1 +1,1 @@
-usr/lib/libnm-glib.so.*
+usr/lib/*/libnm-glib.so.*

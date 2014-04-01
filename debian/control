@@ -91,6 +91,8 @@ Description: network management framework (development files)
 Package: libnm-glib4
 Section: libs
 Architecture: linux-any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Description: network management framework (GLib shared library)
@@ -126,6 +128,8 @@ Description: network management framework (GLib interface)
 Package: libnm-glib-vpn1
 Section: libs
 Architecture: linux-any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Description: network management framework (GLib VPN shared library)
@@ -158,6 +162,8 @@ Description: network management framework (GLib interface)
 Package: libnm-util2
 Section: libs
 Architecture: linux-any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Description: network management framework (shared library)

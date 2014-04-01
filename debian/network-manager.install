@@ -5,7 +5,7 @@ usr/bin/nmcli
 usr/lib/NetworkManager/nm-dhcp-client.action
 usr/lib/NetworkManager/nm-dispatcher.action
 usr/lib/NetworkManager/nm-avahi-autoipd.action
-usr/lib/NetworkManager/libnm-settings-plugin-ifupdown.so
+usr/lib/*/NetworkManager/libnm-settings-plugin-ifupdown.so
 usr/lib/pppd/*/*.so
 usr/share/locale/
 usr/share/man/
