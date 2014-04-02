@@ -9,6 +9,8 @@ network-manager (0.9.8.8-5) UNRELEASED; urgency=medium
   * Add Depends on libpam-systemd since NetworkManager requires a properly
     setup logind session. (Closes: #743128)
   * Bump policykit-1 from Recommends to Depends.
+  * Move the initial ifstate file check into nm_manager_start () to make sure
+    the NMManager object has been fully initialized. (Closes: #730437)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Apr 2014 23:22:57 +0200
 
