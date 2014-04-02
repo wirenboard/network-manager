@@ -1,4 +1,4 @@
-network-manager (0.9.8.8-5) UNRELEASED; urgency=medium
+network-manager (0.9.8.8-5) unstable; urgency=medium
 
   * Bump debhelper compatibility level to 9.
   * Convert to multi-arch. Mark libnm-glib4, libnm-glib-vpn1 and libnm-util2
@@ -12,7 +12,7 @@ network-manager (0.9.8.8-5) UNRELEASED; urgency=medium
   * Move the initial ifstate file check into nm_manager_start () to make sure
     the NMManager object has been fully initialized. (Closes: #730437)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 01 Apr 2014 23:22:57 +0200
+ -- Michael Biebl <biebl@debian.org>  Wed, 02 Apr 2014 22:58:16 +0200
 
 network-manager (0.9.8.8-4) unstable; urgency=medium
 
