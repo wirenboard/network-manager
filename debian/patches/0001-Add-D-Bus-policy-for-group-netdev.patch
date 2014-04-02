@@ -1,11 +1,17 @@
-Description: Add D-Bus policy for group netdev
- It is more or less a copy of the at_console section.
-Author: Michael Biebl <biebl@debian.org>
-Index: network-manager/src/org.freedesktop.NetworkManager.conf
-===================================================================
---- network-manager.orig/src/org.freedesktop.NetworkManager.conf	2012-06-29 20:12:59.056208718 +0200
-+++ network-manager/src/org.freedesktop.NetworkManager.conf	2012-06-29 20:17:00.479762828 +0200
-@@ -85,6 +85,67 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Wed, 2 Apr 2014 03:15:53 +0200
+Subject: Add D-Bus policy for group netdev
+
+This is more or less a verbatim copy of the at_console section.
+---
+ src/org.freedesktop.NetworkManager.conf | 61 +++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
+
+diff --git a/src/org.freedesktop.NetworkManager.conf b/src/org.freedesktop.NetworkManager.conf
+index 5e7bafa..e5378d7 100644
+--- a/src/org.freedesktop.NetworkManager.conf
++++ b/src/org.freedesktop.NetworkManager.conf
+@@ -86,6 +86,67 @@
                         send_interface="org.freedesktop.NetworkManager"
                         send_member="wake"/>
          </policy>

@@ -1,9 +1,18 @@
-Description: Force online state with unmanaged devices
- If we have unmanaged devices in /e/n/i, monitor the ifupdown state file
- and in case we find active interfaces besides lo, forcefully set the
- online state to CONNECTED.
-Author: Michael Biebl <biebl@debian.org>
+From: Michael Biebl <biebl@debian.org>
+Date: Wed, 2 Apr 2014 03:15:53 +0200
+Subject: Force online state with unmanaged devices
+
+If we have unmanaged devices in /e/n/i, monitor the ifupdown state file
+and in case we find active interfaces besides lo, forcefully set the
+online state to CONNECTED.
+
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
+---
+ src/nm-manager.c | 102 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 102 insertions(+)
+
+diff --git a/src/nm-manager.c b/src/nm-manager.c
+index 9c82d14..7dbba47 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
 @@ -78,6 +78,8 @@
@@ -15,7 +24,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  static gboolean impl_manager_get_devices (NMManager *manager,
                                            GPtrArray **devices,
                                            GError **err);
-@@ -249,6 +251,11 @@
+@@ -249,6 +251,11 @@ typedef struct {
  	guint fw_monitor_id;
  	guint fw_changed_id;
  
@@ -27,7 +36,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  	guint timestamp_update_id;
  
  	GHashTable *nm_bridges;
-@@ -618,6 +625,14 @@
+@@ -618,6 +625,14 @@ nm_manager_update_state (NMManager *manager)
  				}
  			}
  
@@ -42,7 +51,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  			if (nm_device_is_activating (dev))
  				new_state = NM_STATE_CONNECTING;
  			else if (new_state != NM_STATE_CONNECTING) {
-@@ -4090,6 +4105,65 @@
+@@ -4090,6 +4105,65 @@ policy_activating_device_changed (GObject *object, GParamSpec *pspec, gpointer u
  	}
  }
  
@@ -108,7 +117,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  #define NM_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.PermissionDenied"
  #define DEV_PERM_DENIED_ERROR "org.freedesktop.NetworkManager.Device.PermissionDenied"
  
-@@ -4506,6 +4580,17 @@
+@@ -4506,6 +4580,17 @@ dispose (GObject *object)
  		g_object_unref (priv->fw_monitor);
  	}
  
@@ -126,7 +135,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  	g_slist_free (priv->factories);
  
  	if (priv->timestamp_update_id) {
-@@ -4865,6 +4950,23 @@
+@@ -4865,6 +4950,23 @@ nm_manager_init (NMManager *manager)
  		             KERNEL_FIRMWARE_DIR);
  	}
  
