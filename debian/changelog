@@ -1,3 +1,10 @@
+network-manager (0.9.8.8-6) UNRELEASED; urgency=medium
+
+  * Rework the fix for #734460, kill NetworkManager in the postinst script
+    instead of the preinst one to minimize downtime on big upgrades
+
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 04 Apr 2014 01:42:47 +0200
+
 network-manager (0.9.8.8-5) unstable; urgency=medium
 
   * Bump debhelper compatibility level to 9.

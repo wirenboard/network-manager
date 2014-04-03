@@ -20,6 +20,17 @@ set -e
 
 case "$1" in
     configure)
+	# When upgrading from a version that was using an Alias= instead of
+	# symlink to mask the LSB initscript, if we are running systemd and
+	# NetworkManager has been started by the LSB script, kill the process
+	# before we are restarting it. (See: #734460)
+	if dpkg --compare-versions "$2" lt-nl "0.9.8.8-2~"; then
+	    if [ -d /run/systemd/system ] && \
+	      [ -f /var/run/NetworkManager/NetworkManager.pid ]; then
+	        start-stop-daemon --stop --retry 5 --quiet --exec /usr/sbin/NetworkManager \
+		  --pidfile /var/run/NetworkManager/NetworkManager.pid || true
+	    fi
+	fi
 
         # Create netdev group that is used in the D-Bus policy file
         addgroup --quiet --system netdev
