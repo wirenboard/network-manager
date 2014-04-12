@@ -9,6 +9,8 @@ network-manager (0.9.8.8-6) UNRELEASED; urgency=medium
     standalone logind we don't receive the Resume signal after a suspend
     request and NetworkManager remains in sleep mode where the devices are
     unmanaged. (Closes: #742933)
+  * Use dh-autoreconf to update the build system. Override dh_autoreconf since
+    we need to run gtkdocize.
 
  -- Laurent Bigonville <bigon@debian.org>  Fri, 04 Apr 2014 01:42:47 +0200
 
