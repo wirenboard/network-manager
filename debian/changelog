@@ -1,4 +1,4 @@
-network-manager (0.9.8.8-6) UNRELEASED; urgency=medium
+network-manager (0.9.8.8-6) unstable; urgency=medium
 
   [ Laurent Bigonville ]
   * Rework the fix for #734460, kill NetworkManager in the postinst script
@@ -12,7 +12,7 @@ network-manager (0.9.8.8-6) UNRELEASED; urgency=medium
   * Use dh-autoreconf to update the build system. Override dh_autoreconf since
     we need to run gtkdocize.
 
- -- Laurent Bigonville <bigon@debian.org>  Fri, 04 Apr 2014 01:42:47 +0200
+ -- Michael Biebl <biebl@debian.org>  Sat, 12 Apr 2014 12:48:33 +0200
 
 network-manager (0.9.8.8-5) unstable; urgency=medium
 
