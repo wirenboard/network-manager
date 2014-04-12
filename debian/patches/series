@@ -1,3 +1,4 @@
 0001-Add-D-Bus-policy-for-group-netdev.patch
 0002-Debian-specific-tweaks-for-NetworkManager-systemd-se.patch
 0003-Force-online-state-with-unmanaged-devices.patch
+0004-Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch

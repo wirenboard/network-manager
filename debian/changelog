@@ -1,7 +1,14 @@
 network-manager (0.9.8.8-6) UNRELEASED; urgency=medium
 
+  [ Laurent Bigonville ]
   * Rework the fix for #734460, kill NetworkManager in the postinst script
     instead of the preinst one to minimize downtime on big upgrades
+
+  [ Michael Biebl ]
+  * Don't setup Sleep Monitor if system was not booted with systemd. With a
+    standalone logind we don't receive the Resume signal after a suspend
+    request and NetworkManager remains in sleep mode where the devices are
+    unmanaged. (Closes: #742933)
 
  -- Laurent Bigonville <bigon@debian.org>  Fri, 04 Apr 2014 01:42:47 +0200
 
