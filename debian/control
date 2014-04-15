@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 9),
                libnl-3-dev (>= 3.2.7),
                libnl-route-3-dev (>= 3.2.7),
                libnl-genl-3-dev (>= 3.2.7),
-               ppp-dev (>= 2.4.5),
+               ppp-dev (>= 2.4.6),
                libpolkit-gobject-1-dev,
                libgnutls-dev,
                uuid-dev,
@@ -48,7 +48,7 @@ Depends: ${shlibs:Depends},
          isc-dhcp-client (>= 4.1.1-P1-4),
          libpam-systemd,
          policykit-1
-Recommends: ppp (>= 2.4.5),
+Recommends: ppp (>= 2.4.6),
             dnsmasq-base,
             iptables,
             modemmanager,
@@ -61,7 +61,7 @@ Breaks: network-manager-gnome (<< 0.9),
         network-manager-openconnect (<< 0.9),
         network-manager-kde (<< 1:0.9),
         plasma-widget-networkmanagement (<< 0.9~),
-        ppp (<< 2.4.5)
+        ppp (<< 2.4.6)
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when
