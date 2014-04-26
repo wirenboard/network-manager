@@ -379,7 +379,7 @@
       <row>
         <entry><screen>priority</screen></entry>
         <entry><screen>uint32</screen></entry>
-        <entry><screen>128</screen></entry>
+        <entry><screen>32768</screen></entry>
         <entry>Sets the Spanning Tree Protocol (STP) priority for this bridge.  Lower values are 'better'; the lowest priority bridge will be elected the root bridge.</entry>
       </row>
       <row>

@@ -353,6 +353,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -375,6 +376,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -560,10 +562,14 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 SUBDIRS = . tests
-INCLUDES = -I${top_srcdir} -I${top_srcdir}/include -I${top_builddir}/include
+AM_CPPFLAGS = \
+	-I${top_srcdir} \
+	-I${top_srcdir}/include \
+	-I${top_builddir}/include
+
 lib_LTLIBRARIES = libnm-util.la
 libnm_util_la_CPPFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS) $(UUID_CFLAGS) \
-	$(am__append_2) $(am__append_5)
+	$(AM_CPPFLAGS) $(am__append_2) $(am__append_5)
 libnm_util_include_HEADERS = \
 	nm-connection.h			\
 	nm-setting.h			\
@@ -649,8 +655,8 @@ libnm_util_includedir = $(includedir)/NetworkManager
 ###########################################
 noinst_LTLIBRARIES = libtest-crypto.la
 libtest_crypto_la_SOURCES = crypto.c $(am__append_7) $(am__append_10)
-libtest_crypto_la_CPPFLAGS = $(GLIB_CFLAGS) $(am__append_8) \
-	$(am__append_11)
+libtest_crypto_la_CPPFLAGS = $(GLIB_CFLAGS) $(AM_CPPFLAGS) \
+	$(am__append_8) $(am__append_11)
 libtest_crypto_la_LIBADD = $(GLIB_LIBS) $(am__append_9) \
 	$(am__append_12)
 pkgconfigdir = $(libdir)/pkgconfig
@@ -665,7 +671,7 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_EXPORT_PACKAGES = libnm-util
-@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-util
+@HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_CFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_LIBS = libnm-util.la
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_FILES = $(introspection_sources)
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm

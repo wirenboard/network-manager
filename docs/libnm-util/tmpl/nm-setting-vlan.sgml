@@ -97,53 +97,6 @@ NMSettingVlan
 
 
 
-<!-- ##### STRUCT NMSettingVlan ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingVlan:egress-priority-map ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVlan:flags ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVlan:id ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVlan:ingress-priority-map ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVlan:interface-name ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVlan:parent ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingVlanClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### ENUM NMVlanPriorityMap ##### -->
 <para>
 

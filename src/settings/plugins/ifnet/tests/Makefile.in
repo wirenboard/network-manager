@@ -103,8 +103,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am__check_ifnet_SOURCES_DIST = test_all.c
-@ENABLE_TESTS_TRUE@am_check_ifnet_OBJECTS =  \
-@ENABLE_TESTS_TRUE@	check_ifnet-test_all.$(OBJEXT)
+@ENABLE_TESTS_TRUE@am_check_ifnet_OBJECTS = test_all.$(OBJEXT)
 check_ifnet_OBJECTS = $(am_check_ifnet_OBJECTS)
 am__DEPENDENCIES_1 =
 @ENABLE_TESTS_TRUE@check_ifnet_DEPENDENCIES =  \
@@ -208,6 +207,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -230,6 +230,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -414,20 +415,19 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-@ENABLE_TESTS_TRUE@INCLUDES = -I$(srcdir)/../ \
-@ENABLE_TESTS_TRUE@	 -I$(top_srcdir)/libnm-glib \
-@ENABLE_TESTS_TRUE@	 -I$(top_srcdir)/libnm-util \
-@ENABLE_TESTS_TRUE@	 -I$(top_builddir)/libnm-util \
-@ENABLE_TESTS_TRUE@	 -I$(top_srcdir)/include \
-@ENABLE_TESTS_TRUE@	 -I$(top_builddir)/include \
-@ENABLE_TESTS_TRUE@	 -I$(top_srcdir)/src/settings
-
-@ENABLE_TESTS_TRUE@check_ifnet_SOURCES = test_all.c
-@ENABLE_TESTS_TRUE@check_ifnet_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
+@ENABLE_TESTS_TRUE@	-I$(srcdir)/../ \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-glib \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/settings \
 @ENABLE_TESTS_TRUE@	$(CHECK_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-DTEST_WPA_SUPPLICANT_CONF='"$(srcdir)/wpa_supplicant.conf"'
 
+@ENABLE_TESTS_TRUE@check_ifnet_SOURCES = test_all.c
 @ENABLE_TESTS_TRUE@check_ifnet_LDADD = $(top_builddir)/libnm-util/libnm-util.la \
 @ENABLE_TESTS_TRUE@		    $(builddir)/../lib-ifnet-io.la \
 @ENABLE_TESTS_TRUE@		    $(CHECK_LIBS) \
@@ -496,7 +496,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_ifnet-test_all.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_all.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -518,20 +518,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-check_ifnet-test_all.o: test_all.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(check_ifnet_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT check_ifnet-test_all.o -MD -MP -MF $(DEPDIR)/check_ifnet-test_all.Tpo -c -o check_ifnet-test_all.o `test -f 'test_all.c' || echo '$(srcdir)/'`test_all.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_ifnet-test_all.Tpo $(DEPDIR)/check_ifnet-test_all.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_all.c' object='check_ifnet-test_all.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(check_ifnet_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o check_ifnet-test_all.o `test -f 'test_all.c' || echo '$(srcdir)/'`test_all.c
-
-check_ifnet-test_all.obj: test_all.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(check_ifnet_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT check_ifnet-test_all.obj -MD -MP -MF $(DEPDIR)/check_ifnet-test_all.Tpo -c -o check_ifnet-test_all.obj `if test -f 'test_all.c'; then $(CYGPATH_W) 'test_all.c'; else $(CYGPATH_W) '$(srcdir)/test_all.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_ifnet-test_all.Tpo $(DEPDIR)/check_ifnet-test_all.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_all.c' object='check_ifnet-test_all.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(check_ifnet_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o check_ifnet-test_all.obj `if test -f 'test_all.c'; then $(CYGPATH_W) 'test_all.c'; else $(CYGPATH_W) '$(srcdir)/test_all.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

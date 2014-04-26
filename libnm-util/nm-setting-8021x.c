@@ -227,7 +227,7 @@ nm_setting_802_1x_get_eap_method (NMSetting8021x *setting, guint32 i)
  * EAP method has been added.  See #NMSetting8021x:eap property for a list of
  * allowed EAP methods.
  *
- * Returns: TRUE if the EAP method was successfully added, FALSE if it was
+ * Returns: %TRUE if the EAP method was successfully added, %FALSE if it was
  *  not a valid method or if it was already allowed.
  **/
 gboolean
@@ -369,11 +369,11 @@ nm_setting_802_1x_get_ca_path (NMSetting8021x *setting)
  * Sets the #NMSetting8021x:system-ca-certs property. The
  * #NMSetting8021x:ca-path and #NMSetting8021x:phase2-ca-path
  * properties are ignored if the #NMSetting8021x:system-ca-certs property is
- * TRUE, in which case a system-wide CA certificate directory specified at
+ * %TRUE, in which case a system-wide CA certificate directory specified at
  * compile time (using the --system-ca-path configure option) is used in place
  * of these properties. 
  *
- * Returns: TRUE if a system CA certificate path should be used, FALSE if not
+ * Returns: %TRUE if a system CA certificate path should be used, %FALSE if not
  **/
 gboolean
 nm_setting_802_1x_get_system_ca_certs (NMSetting8021x *setting)
@@ -499,7 +499,7 @@ path_to_scheme_value (const char *path)
  * scheme, or with the path to the certificate file if using the
  * %NM_SETTING_802_1X_CK_SCHEME_PATH scheme.
  *
- * Returns: TRUE if the operation succeeded, FALSE if it was unsuccessful
+ * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
 nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
@@ -625,12 +625,12 @@ nm_setting_802_1x_get_altsubject_match (NMSetting8021x *setting, guint32 i)
  * match is added, the altSubjectName of the remote authentication
  * server is not verified.
  *
- * Returns: TRUE if the alternative subject name match was
- *  successfully added, FALSE if it was already allowed.
+ * Returns: %TRUE if the alternative subject name match was
+ *  successfully added, %FALSE if it was already allowed.
  **/
 gboolean
 nm_setting_802_1x_add_altsubject_match (NMSetting8021x *setting,
-										const char *altsubject_match)
+                                        const char *altsubject_match)
 {
 	NMSetting8021xPrivate *priv;
 	GSList *iter;
@@ -644,7 +644,8 @@ nm_setting_802_1x_add_altsubject_match (NMSetting8021x *setting,
 			return FALSE;
 	}
 
-	priv->altsubject_matches = g_slist_append (priv->altsubject_matches, g_strdup (altsubject_match));
+	priv->altsubject_matches = g_slist_append (priv->altsubject_matches,
+	                                           g_strdup (altsubject_match));
 	return TRUE;
 }
 
@@ -774,7 +775,7 @@ nm_setting_802_1x_get_client_cert_path (NMSetting8021x *setting)
  * when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
  * authentication method.
  *
- * Returns: TRUE if the operation succeeded, FALSE if it was unsuccessful
+ * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
 nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
@@ -1035,7 +1036,7 @@ nm_setting_802_1x_get_phase2_ca_cert_path (NMSetting8021x *setting)
  * %NM_SETTING_802_1X_CK_SCHEME_BLOB scheme, or with the path to the certificate
  * file if using the %NM_SETTING_802_1X_CK_SCHEME_PATH scheme.
  *
- * Returns: TRUE if the operation succeeded, FALSE if it was unsuccessful
+ * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
 nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
@@ -1162,12 +1163,12 @@ nm_setting_802_1x_get_phase2_altsubject_match (NMSetting8021x *setting, guint32 
  * at least one match is added, the altSubjectName of the "phase 2"
  * remote authentication server is not verified.
  *
- * Returns: TRUE if the "phase 2" alternative subject name match was
- *  successfully added, FALSE if it was already allowed.
+ * Returns: %TRUE if the "phase 2" alternative subject name match was
+ *  successfully added, %FALSE if it was already allowed.
  **/
 gboolean
 nm_setting_802_1x_add_phase2_altsubject_match (NMSetting8021x *setting,
-											   const char *phase2_altsubject_match)
+                                               const char *phase2_altsubject_match)
 {
 	NMSetting8021xPrivate *priv;
 	GSList *iter;
@@ -1181,8 +1182,8 @@ nm_setting_802_1x_add_phase2_altsubject_match (NMSetting8021x *setting,
 			return FALSE;
 	}
 
-	priv->phase2_altsubject_matches = g_slist_append (priv->altsubject_matches,
-													  g_strdup (phase2_altsubject_match));
+	priv->phase2_altsubject_matches = g_slist_append (priv->phase2_altsubject_matches,
+	                                                  g_strdup (phase2_altsubject_match));
 	return TRUE;
 }
 
@@ -1314,7 +1315,7 @@ nm_setting_802_1x_get_phase2_client_cert_path (NMSetting8021x *setting)
  * when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
  * authentication method.
  *
- * Returns: TRUE if the operation succeeded, FALSE if it was unsuccessful
+ * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
 nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
@@ -1603,7 +1604,7 @@ file_to_byte_array (const char *filename)
  * unprivileged users.  Private keys should always be encrypted with a private
  * key password to prevent unauthorized access to unencrypted private key data.
  *
- * Returns: TRUE if the operation succeeded, FALSE if it was unsuccessful
+ * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
 nm_setting_802_1x_set_private_key (NMSetting8021x *self,
@@ -1896,7 +1897,7 @@ nm_setting_802_1x_get_phase2_private_key_path (NMSetting8021x *setting)
  * unprivileged users.  Private keys should always be encrypted with a private
  * key password to prevent unauthorized access to unencrypted private key data.
  *
- * Returns: TRUE if the operation succeeded, FALSE if it was unsuccessful
+ * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
 nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *self,
@@ -2286,11 +2287,13 @@ verify_identity (NMSetting8021x *self, gboolean phase2, GError **error)
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
 		             NM_SETTING_802_1X_IDENTITY);
+		return FALSE;
 	} else if (!strlen (priv->identity)) {
 		g_set_error (error,
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
 		             NM_SETTING_802_1X_IDENTITY);
+		return FALSE;
 	}
 
 	return TRUE;

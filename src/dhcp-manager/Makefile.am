@@ -1,6 +1,6 @@
 SUBDIRS = . tests
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I${top_srcdir} \
 	-I${top_builddir}/include \
 	-I${top_srcdir}/include \
@@ -10,7 +10,8 @@ INCLUDES = \
 	-I${top_srcdir}/src/posix-signals \
 	-I${top_builddir}/libnm-util \
 	-I${top_srcdir}/libnm-util \
-	-I${top_srcdir}/src
+	-I${top_srcdir}/src \
+	-DRUNDIR=\"$(rundir)\"
 
 noinst_LTLIBRARIES = libdhcp-manager.la libdhcp-dhclient.la
 
@@ -25,6 +26,7 @@ libdhcp_dhclient_la_SOURCES = \
 libdhcp_dhclient_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(AM_CPPFLAGS) \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\" \
 	-DLOCALSTATEDIR=\"$(localstatedir)\" \
@@ -52,6 +54,7 @@ libdhcp_manager_la_SOURCES = \
 libdhcp_manager_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(AM_CPPFLAGS) \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DLIBEXECDIR=\"$(libexecdir)\" \
 	-DLOCALSTATEDIR=\"$(localstatedir)\" \

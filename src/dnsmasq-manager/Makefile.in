@@ -206,6 +206,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -228,6 +229,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -412,21 +414,19 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-INCLUDES = \
+noinst_LTLIBRARIES = libdnsmasq-manager.la
+libdnsmasq_manager_la_CPPFLAGS = \
 	-I${top_srcdir}/libnm-util \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/src/posix-signals \
 	-I${top_srcdir}/src \
-	-I${top_srcdir}/include
+	-I${top_srcdir}/include \
+	$(GLIB_CFLAGS) \
+	-DLOCALSTATEDIR=\"$(localstatedir)\"
 
-noinst_LTLIBRARIES = libdnsmasq-manager.la
 libdnsmasq_manager_la_SOURCES = \
 	nm-dnsmasq-manager.h \
 	nm-dnsmasq-manager.c
-
-libdnsmasq_manager_la_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	-DLOCALSTATEDIR=\"$(localstatedir)\"
 
 libdnsmasq_manager_la_LIBADD = \
 	$(top_builddir)/src/logging/libnm-logging.la \

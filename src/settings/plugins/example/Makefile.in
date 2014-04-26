@@ -213,6 +213,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -235,6 +236,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -419,16 +421,19 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-INCLUDES = \
+
+# 'noinst' here because this is an example plugin we don't want to install
+noinst_LTLIBRARIES = libnm-settings-plugin-example.la
+libnm_settings_plugin_example_la_CPPFLAGS = \
 	-I$(top_srcdir)/src/settings \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
-	-I$(top_builddir)/libnm-util
+	-I$(top_builddir)/libnm-util \
+	$(GLIB_CFLAGS) \
+	$(DBUS_CFLAGS) \
+	-DNMCONFDIR=\"$(nmconfdir)\"
 
-
-# 'noinst' here because this is an example plugin we don't want to install
-noinst_LTLIBRARIES = libnm-settings-plugin-example.la
 
 # The actual plugins typically pull reader.c and writer.c out into
 # their own static library so that unit tests can use them without
@@ -443,11 +448,6 @@ libnm_settings_plugin_example_la_SOURCES = \
 	common.h \
 	reader.c \
 	writer.c
-
-libnm_settings_plugin_example_la_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS) \
-	-DNMCONFDIR=\"$(nmconfdir)\"
 
 libnm_settings_plugin_example_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \

@@ -222,6 +222,7 @@ typedef struct {
 	guint          dbus_connection_changed_id;
 	NMUdevManager *udev_mgr;
 	NMBluezManager *bluez_mgr;
+	NMSessionMonitor *session_monitor;
 
 	/* List of NMDeviceFactoryFunc pointers sorted in priority order */
 	GSList *factories;
@@ -583,6 +584,7 @@ checked_connectivity (GObject *object, GAsyncResult *result, gpointer user_data)
 		else if (   connectivity == NM_CONNECTIVITY_PORTAL
 		         || connectivity == NM_CONNECTIVITY_LIMITED)
 			set_state (manager, NM_STATE_CONNECTED_SITE);
+		g_object_notify (G_OBJECT (manager), NM_MANAGER_CONNECTIVITY);
 	}
 
 	g_object_unref (manager);
@@ -940,15 +942,17 @@ static void
 pending_activation_check_authorized (PendingActivation *pending,
                                      NMDBusManager *dbus_mgr)
 {
+	NMManagerPrivate *priv;
 	char *error_desc = NULL;
 	gulong sender_uid = G_MAXULONG;
 	GError *error;
 	const char *wifi_permission = NULL;
 	NMConnection *connection;
-	NMSettings *settings;
 
 	g_return_if_fail (pending != NULL);
 	g_return_if_fail (dbus_mgr != NULL);
+
+	priv = NM_MANAGER_GET_PRIVATE (pending->manager);
 
 	if (!nm_auth_get_caller_uid (pending->context, 
 	                             dbus_mgr,
@@ -973,10 +977,8 @@ pending_activation_check_authorized (PendingActivation *pending,
 	 * or an existing connection (for Activate).
 	 */
 	connection = pending->connection;
-	if (!connection) {
-		settings = NM_MANAGER_GET_PRIVATE (pending->manager)->settings;
-		connection = (NMConnection *) nm_settings_get_connection_by_path (settings, pending->connection_path);
-	}
+	if (!connection)
+		connection = (NMConnection *) nm_settings_get_connection_by_path (priv->settings, pending->connection_path);
 
 	if (!connection) {
 		error = g_error_new_literal (NM_MANAGER_ERROR,
@@ -984,6 +986,20 @@ pending_activation_check_authorized (PendingActivation *pending,
 		                             "Connection could not be found.");
 		pending->callback (pending, error);
 		g_error_free (error);
+		return;
+	}
+
+	/* Ensure the subject has permissions for this connection */
+	if (!nm_auth_uid_in_acl (connection,
+	                         priv->session_monitor,
+	                         sender_uid,
+	                         &error_desc)) {
+		error = g_error_new_literal (NM_MANAGER_ERROR,
+		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                             error_desc);
+		pending->callback (pending, error);
+		g_error_free (error);
+		g_free (error_desc);
 		return;
 	}
 
@@ -1304,8 +1320,8 @@ system_create_virtual_device (NMManager *self, NMConnection *connection)
 
 	iface = get_virtual_iface_name (self, connection, &parent);
 	if (!iface) {
-		nm_log_warn (LOGD_DEVICE, "(%s) failed to determine virtual interface name",
-		             nm_connection_get_id (connection));
+		nm_log_dbg (LOGD_DEVICE, "(%s) failed to determine virtual interface name",
+		            nm_connection_get_id (connection));
 		return NULL;
 	}
 
@@ -1833,6 +1849,7 @@ device_auth_done_cb (NMAuthChain *chain,
 static void
 device_auth_request_cb (NMDevice *device,
                         DBusGMethodInvocation *context,
+                        NMConnection *connection,
                         const char *permission,
                         gboolean allow_interaction,
                         NMDeviceAuthRequestFunc callback,
@@ -1847,6 +1864,20 @@ device_auth_request_cb (NMDevice *device,
 
 	/* Get the caller's UID for the root check */
 	if (!nm_auth_get_caller_uid (context, priv->dbus_mgr, &sender_uid, &error_desc)) {
+		error = g_error_new_literal (NM_MANAGER_ERROR,
+		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                             error_desc);
+		callback (device, context, error, user_data);
+		g_error_free (error);
+		g_free (error_desc);
+		return;
+	}
+
+	/* Ensure the subject has permissions for this connection */
+	if (!nm_auth_uid_in_acl (connection,
+	                         priv->session_monitor,
+	                         sender_uid,
+	                         &error_desc)) {
 		error = g_error_new_literal (NM_MANAGER_ERROR,
 		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
 		                             error_desc);
@@ -2007,9 +2038,7 @@ add_device (NMManager *self, NMDevice *device)
 		            nm_device_get_iface (device));
 
 		ac = internal_activate_device (self, device, existing, NULL, FALSE, 0, NULL, TRUE, NULL, &error);
-		if (ac)
-			active_connection_add (self, ac);
-		else {
+		if (!ac) {
 			nm_log_warn (LOGD_DEVICE, "assumed connection %s failed to activate: (%d) %s",
 			             nm_connection_get_path (existing),
 			             error ? error->code : -1,
@@ -2518,6 +2547,7 @@ internal_activate_device (NMManager *manager,
 	                          device,
 	                          master_device);
 	g_assert (req);
+	active_connection_add (manager, NM_ACTIVE_CONNECTION (req));
 	nm_device_activate (device, req);
 
 	return NM_ACTIVE_CONNECTION (req);
@@ -2795,7 +2825,7 @@ activate_vpn_connection (NMManager *self,
                          GError **error)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	NMActiveConnection *parent = NULL;
+	NMActiveConnection *parent = NULL, *ac;
 	NMDevice *device = NULL;
 	GSList *iter;
 
@@ -2831,13 +2861,16 @@ activate_vpn_connection (NMManager *self,
 		return NULL;
 	}
 
-	return nm_vpn_manager_activate_connection (priv->vpn_manager,
-	                                           connection,
-	                                           device,
-	                                           nm_active_connection_get_path (parent),
-	                                           TRUE,
-	                                           sender_uid,
-	                                           error);
+	ac = nm_vpn_manager_activate_connection (priv->vpn_manager,
+	                                         connection,
+	                                         device,
+	                                         nm_active_connection_get_path (parent),
+	                                         TRUE,
+	                                         sender_uid,
+	                                         error);
+	if (ac)
+		active_connection_add (self, ac);
+	return ac;
 }
 
 NMActiveConnection *
@@ -2856,8 +2889,10 @@ nm_manager_activate_connection (NMManager *manager,
 	char *iface;
 	NMDevice *master_device = NULL;
 	NMConnection *master_connection = NULL;
-	NMActiveConnection *master_ac = NULL, *ac = NULL;
+	NMConnection *existing_connection = NULL;
+	NMActiveConnection *master_ac = NULL;
 	gboolean matched;
+	char *error_desc = NULL;
 
 	g_return_val_if_fail (manager != NULL, NULL);
 	g_return_val_if_fail (connection != NULL, NULL);
@@ -2879,13 +2914,24 @@ nm_manager_activate_connection (NMManager *manager,
 			dbus_error_free (&dbus_error);
 			return NULL;
 		}
+
+		/* Ensure the subject has permissions for this connection */
+		if (!nm_auth_uid_in_acl (connection,
+		                         priv->session_monitor,
+		                         sender_uid,
+		                         &error_desc)) {
+			g_set_error_literal (error,
+			                     NM_MANAGER_ERROR,
+			                     NM_MANAGER_ERROR_PERMISSION_DENIED,
+			                     error_desc);
+			g_free (error_desc);
+			return NULL;
+		}
 	}
 
 	/* VPN ? */
-	if (nm_connection_is_type (connection, NM_SETTING_VPN_SETTING_NAME)) {
-		ac = activate_vpn_connection (manager, connection, specific_object, sender_uid, error);
-		goto activated;
-	}
+	if (nm_connection_is_type (connection, NM_SETTING_VPN_SETTING_NAME))
+		return activate_vpn_connection (manager, connection, specific_object, sender_uid, error);
 
 	/* Device-based connection */
 	if (device_path) {
@@ -2975,6 +3021,28 @@ nm_manager_activate_connection (NMManager *manager,
 		return NULL;
 	}
 
+	if (dbus_sender) {
+		/* If the device is active and its connection is not visible to the
+		 * user that's requesting this new activation, fail, since other users
+		 * should not be allowed to implicitly deactivate private connections
+		 * by activating a connection of their own.
+		 */
+		existing_connection = nm_device_get_connection (device);
+		if (existing_connection &&
+		    !nm_auth_uid_in_acl (existing_connection,
+		                         priv->session_monitor,
+		                         sender_uid,
+		                         &error_desc)) {
+			g_set_error (error,
+			             NM_MANAGER_ERROR,
+			             NM_MANAGER_ERROR_PERMISSION_DENIED,
+			             "Private connection already active on the device: %s",
+			             error_desc);
+			g_free (error_desc);
+			return FALSE;
+		}
+	}
+
 	/* Try to find the master connection/device if the connection has a dependency */
 	if (!find_master (manager, connection, device, &master_connection, &master_device)) {
 		g_set_error_literal (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_UNKNOWN_DEVICE,
@@ -3022,22 +3090,16 @@ nm_manager_activate_connection (NMManager *manager,
 		            nm_active_connection_get_path (master_ac));
 	}
 
-	ac = internal_activate_device (manager,
-	                               device,
-	                               connection,
-	                               specific_object,
-	                               dbus_sender ? TRUE : FALSE,
-	                               dbus_sender ? sender_uid : 0,
-	                               dbus_sender,
-	                               FALSE,
-	                               master_ac,
-	                               error);
-
-activated:
-	if (ac)
-		active_connection_add (manager, ac);
-
-	return ac;
+	return internal_activate_device (manager,
+	                                 device,
+	                                 connection,
+	                                 specific_object,
+	                                 dbus_sender ? TRUE : FALSE,
+	                                 dbus_sender ? sender_uid : 0,
+	                                 dbus_sender,
+	                                 FALSE,
+	                                 master_ac,
+	                                 error);
 }
 
 /* 
@@ -3320,6 +3382,20 @@ impl_manager_deactivate_connection (NMManager *self,
 		                         priv->dbus_mgr,
 	                             &sender_uid,
 	                             &error_desc)) {
+		error = g_error_new_literal (NM_MANAGER_ERROR,
+		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                             error_desc);
+		dbus_g_method_return_error (context, error);
+		g_error_free (error);
+		g_free (error_desc);
+		return;
+	}
+
+	/* Ensure the subject has permissions for this connection */
+	if (!nm_auth_uid_in_acl (connection,
+	                         priv->session_monitor,
+	                         sender_uid,
+	                         &error_desc)) {
 		error = g_error_new_literal (NM_MANAGER_ERROR,
 		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
 		                             error_desc);
@@ -3997,6 +4073,7 @@ connectivity_changed (NMConnectivity *connectivity,
 	            connectivity_states[state]);
 
 	nm_manager_update_state (self);
+	g_object_notify (G_OBJECT (self), NM_MANAGER_CONNECTIVITY);
 }
 
 static void
@@ -4396,6 +4473,8 @@ nm_manager_new (NMSettings *settings,
 	                  G_CALLBACK (bluez_manager_bdaddr_removed_cb),
 	                  singleton);
 
+	priv->session_monitor = nm_session_monitor_get ();
+
 	/* Force kernel WiFi rfkill state to follow NM saved wifi state in case
 	 * the BIOS doesn't save rfkill state, and to be consistent with user
 	 * changes to the WirelessEnabled property which toggles kernel rfkill.
@@ -4465,6 +4544,7 @@ dispose (GObject *object)
 
 	g_object_unref (priv->settings);
 	g_object_unref (priv->vpn_manager);
+	g_object_unref (priv->session_monitor);
 
 	if (priv->modem_added_id) {
 		g_source_remove (priv->modem_added_id);

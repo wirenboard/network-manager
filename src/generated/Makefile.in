@@ -80,6 +80,7 @@ build_triplet = @build@
 host_triplet = @host@
 @WITH_WIMAX_TRUE@am__append_1 = $(top_srcdir)/src/wimax/*.[ch]
 @WITH_WIMAX_TRUE@am__append_2 = -I$(top_srcdir)/src/wimax
+@WITH_MODEM_MANAGER_1_TRUE@am__append_3 = $(MM_GLIB_CFLAGS)
 subdir = src/generated
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp
@@ -205,6 +206,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -227,6 +229,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -451,9 +454,9 @@ nm_enum_types_sources = $(nm_daemon_sources)
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
 nm_marshal_sources = $(nm_daemon_sources)
-INCLUDES = -I${top_srcdir}/include -I${top_builddir}/include \
-	-I${top_srcdir}/src -I${top_srcdir}/src/logging \
-	-I${top_srcdir}/src/dns-manager \
+libnm_generated_la_CPPFLAGS = -I${top_srcdir}/include \
+	-I${top_builddir}/include -I${top_srcdir}/src \
+	-I${top_srcdir}/src/logging -I${top_srcdir}/src/dns-manager \
 	-I${top_srcdir}/src/vpn-manager \
 	-I${top_srcdir}/src/dhcp-manager \
 	-I${top_srcdir}/src/ip6-manager \
@@ -464,16 +467,10 @@ INCLUDES = -I${top_srcdir}/include -I${top_builddir}/include \
 	-I$(top_srcdir)/src/bluez-manager \
 	-I$(top_srcdir)/src/firewall-manager \
 	-I$(top_srcdir)/src/settings -I$(top_srcdir)/src/wifi \
-	-I$(top_srcdir)/libnm-util $(am__append_2)
-libnm_generated_la_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS) \
-	$(GUDEV_CFLAGS) \
-	$(LIBNL_CFLAGS) \
-	$(POLKIT_CFLAGS) \
-	$(SYSTEMD_LOGIN_CFLAGS) \
-	$(IWMX_SDK_CFLAGS)
-
+	-I$(top_srcdir)/libnm-util $(DBUS_CFLAGS) $(GLIB_CFLAGS) \
+	$(GUDEV_CFLAGS) $(LIBNL_CFLAGS) $(POLKIT_CFLAGS) \
+	$(SYSTEMD_LOGIN_CFLAGS) $(IWMX_SDK_CFLAGS) $(am__append_2) \
+	$(am__append_3)
 libnm_generated_la_LIBADD = \
 	$(GLIB_LIBS)
 
@@ -785,8 +782,6 @@ uninstall-am:
 	tags tags-am uninstall uninstall-am
 
 include $(GLIB_MAKEFILE)
-
-@WITH_MODEM_MANAGER_1_TRUE@	libnm_generated_la_CPPFLAGS += $(MM_GLIB_CFLAGS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

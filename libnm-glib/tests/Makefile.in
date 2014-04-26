@@ -210,6 +210,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -232,6 +233,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -416,7 +418,7 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-@ENABLE_TESTS_TRUE@INCLUDES = \
+@ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
@@ -430,7 +432,8 @@ with_resolvconf = @with_resolvconf@
 
 @ENABLE_TESTS_TRUE@test_remote_settings_client_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(AM_CPPFLAGS)
 
 @ENABLE_TESTS_TRUE@test_remote_settings_client_LDADD = \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \

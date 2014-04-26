@@ -1952,21 +1952,23 @@ dhcp4_state_changed (NMDHCPClient *client,
 	case DHC_REBOOT:     /* have valid lease, but now obtained a different one */
 	case DHC_REBIND4:    /* new, different lease */
 		config = nm_dhcp_client_get_ip4_config (priv->dhcp4_client, FALSE);
+
+		/* Update the DHCP4 config object with new DHCP options */
+		nm_dhcp4_config_reset (priv->dhcp4_config);
+		if (config) {
+			nm_dhcp_client_foreach_option (priv->dhcp4_client,
+			                               dhcp4_add_option_cb,
+			                               priv->dhcp4_config);
+		}
+		g_object_notify (G_OBJECT (device), NM_DEVICE_DHCP4_CONFIG);
+
 		if (priv->ip4_state == IP_CONF)
 			nm_device_activate_schedule_ip4_config_result (device, config);
 		else if (priv->ip4_state == IP_DONE)
 			dhcp4_lease_change (device, config);
 
-		if (config) {
-			/* Update the DHCP4 config object with new DHCP options */
-			nm_dhcp4_config_reset (priv->dhcp4_config);
-			nm_dhcp_client_foreach_option (priv->dhcp4_client,
-			                               dhcp4_add_option_cb,
-			                               priv->dhcp4_config);
-			g_object_notify (G_OBJECT (device), NM_DEVICE_DHCP4_CONFIG);
-
+		if (config)
 			g_object_unref (config);
-		}
 		break;
 	case DHC_TIMEOUT: /* timed out contacting DHCP server */
 		dhcp4_fail (device, TRUE);
@@ -2395,19 +2397,20 @@ dhcp6_state_changed (NMDHCPClient *client,
 		if (priv->dhcp6_ip6_config)
 			g_object_unref (priv->dhcp6_ip6_config);
 		priv->dhcp6_ip6_config = nm_dhcp_client_get_ip6_config (priv->dhcp6_client, FALSE);
+
+		/* Update the DHCP6 config object with new DHCP options */
+		nm_dhcp6_config_reset (priv->dhcp6_config);
+		if (priv->dhcp6_ip6_config) {
+			nm_dhcp_client_foreach_option (priv->dhcp6_client,
+			                               dhcp6_add_option_cb,
+			                               priv->dhcp6_config);
+		}
+		g_object_notify (G_OBJECT (device), NM_DEVICE_DHCP6_CONFIG);
+
 		if (priv->ip6_state == IP_CONF)
 			nm_device_activate_schedule_ip6_config_result (device, priv->dhcp6_ip6_config);
 		else if (priv->ip6_state == IP_DONE)
 			dhcp6_lease_change (device);
-
-		if (priv->dhcp6_ip6_config) {
-			/* Update the DHCP6 config object with new DHCP options */
-			nm_dhcp6_config_reset (priv->dhcp6_config);
-			nm_dhcp_client_foreach_option (priv->dhcp6_client,
-			                               dhcp6_add_option_cb,
-			                               priv->dhcp6_config);
-			g_object_notify (G_OBJECT (device), NM_DEVICE_DHCP6_CONFIG);
-		}
 		break;
 	case DHC_TIMEOUT: /* timed out contacting DHCP server */
 		dhcp6_fail (device, TRUE);
@@ -3608,8 +3611,8 @@ clear_act_request (NMDevice *self)
 
 	nm_active_connection_set_default (NM_ACTIVE_CONNECTION (priv->act_request), FALSE);
 
-	g_object_unref (priv->act_request);
-	priv->act_request = NULL;
+	g_clear_object (&priv->act_request);
+	g_object_notify (G_OBJECT (self), NM_DEVICE_ACTIVE_CONNECTION);
 }
 
 static void
@@ -3858,6 +3861,7 @@ disconnect_cb (NMDevice *device,
 static void
 impl_device_disconnect (NMDevice *device, DBusGMethodInvocation *context)
 {
+	NMConnection *connection;
 	GError *error = NULL;
 
 	if (NM_DEVICE_GET_PRIVATE (device)->act_request == NULL) {
@@ -3869,9 +3873,13 @@ impl_device_disconnect (NMDevice *device, DBusGMethodInvocation *context)
 		return;
 	}
 
+	connection = nm_device_get_connection (device);
+	g_assert (connection);
+
 	/* Ask the manager to authenticate this request for us */
 	g_signal_emit (device, signals[AUTH_REQUEST], 0,
 	               context,
+	               connection,
 	               NM_AUTH_PERMISSION_NETWORK_CONTROL,
 	               TRUE,
 	               disconnect_cb,
@@ -4836,9 +4844,9 @@ nm_device_class_init (NMDeviceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_FIRST,
 		              0, NULL, NULL,
-		              /* dbus-glib context, permission, allow_interaction, callback, user_data */
-		              _nm_marshal_VOID__POINTER_STRING_BOOLEAN_POINTER_POINTER,
-		              G_TYPE_NONE, 5, G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_POINTER, G_TYPE_POINTER);
+		              /* dbus-glib context, connection, permission, allow_interaction, callback, user_data */
+		              _nm_marshal_VOID__POINTER_POINTER_STRING_BOOLEAN_POINTER_POINTER,
+		              G_TYPE_NONE, 6, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_POINTER, G_TYPE_POINTER);
 
 	signals[IP4_CONFIG_CHANGED] =
 		g_signal_new (NM_DEVICE_IP4_CONFIG_CHANGED,

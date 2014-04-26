@@ -81,14 +81,6 @@ NMConnection
 
 </para>
 
-<!-- ##### STRUCT NMConnectionClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@secrets_updated: 
-
 <!-- ##### FUNCTION nm_connection_new ##### -->
 <para>
 

@@ -4,9 +4,10 @@ dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
 m4_define([nm_micro_version], [8])
-m4_define([nm_nano_version],  [8])
+m4_define([nm_nano_version],  [10])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
+m4_define([nm_git_sha], [m4_esyscmd([ ( [[ -d ./.git/ && "$(realpath ./.git/)" = "$(realpath "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ]] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
 
 AC_INIT([NetworkManager], [nm_version],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=NetworkManager],
@@ -42,6 +43,7 @@ NM_MAJOR_VERSION=nm_major_version
 NM_MINOR_VERSION=nm_minor_version
 NM_MICRO_VERSION=nm_micro_version
 NM_VERSION=nm_version
+NM_GIT_SHA=nm_git_sha
 AC_SUBST(NM_MAJOR_VERSION)
 AC_SUBST(NM_MINOR_VERSION)
 AC_SUBST(NM_MICRO_VERSION)
@@ -278,6 +280,9 @@ AS_IF([test -z "$with_systemdsystemunitdir"], with_systemdsystemunitdir=no)
 AM_CONDITIONAL(HAVE_SYSTEMD, [test "$with_systemdsystemunitdir" != no])
 if test "$with_systemdsystemunitdir" != no; then
 	AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])
+	AC_DEFINE(HAVE_SYSTEMD, 1, [Define if systemd support is available])
+else
+	AC_DEFINE(HAVE_SYSTEMD, 0, [Define if systemd support is available])
 fi
 
 PKG_CHECK_MODULES(SYSTEMD_200, [systemd >= 200], [have_systemd_200=yes],[have_systemd_200=no])
@@ -522,6 +527,8 @@ if test "$with_dhcpcd" = "yes"; then
 		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[456789]]\."; then
 			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or higher is required])
 			with_dhcpcd=no
+		elif $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[6789]]\."; then
+			AC_DEFINE(DHCPCD_SUPPORTS_IPV6, 1, [Define if dhcpcd supports IPv6 (6.x+)])
 		fi
 	fi
 fi
@@ -573,6 +580,16 @@ else
 fi
 AC_DEFINE_UNQUOTED(IPTABLES_PATH, "$IPTABLES_PATH", [Define to path of iptables binary])
 AC_SUBST(IPTABLES_PATH)
+
+# dnsmasq path
+AC_ARG_WITH(dnsmasq, AS_HELP_STRING([--with-dnsmasq=/path/to/dnsmasq], [path to dnsmasq]))
+if test "x${with_dnsmasq}" = x; then
+  AC_PATH_PROG(DNSMASQ_PATH, dnsmasq, [], $PATH:/sbin:/usr/sbin)
+else
+  DNSMASQ_PATH="$with_dnsmasq"
+fi
+AC_DEFINE_UNQUOTED(DNSMASQ_PATH, "$DNSMASQ_PATH", [Define to path of dnsmasq binary])
+AC_SUBST(DNSMASQ_PATH)
 
 # system CA certificates path
 AC_ARG_WITH(system-ca-path, AS_HELP_STRING([--with-system-ca-path=/path/to/ssl/certs], [path to system CA certificates])) 

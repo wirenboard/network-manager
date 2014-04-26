@@ -21,6 +21,7 @@
  */
 
 
+#include <config.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus.h>
@@ -110,7 +111,10 @@ ip4_start (NMDHCPClient *client,
 	iface = nm_dhcp_client_get_iface (client);
 	uuid = nm_dhcp_client_get_uuid (client);
 
-	priv->pid_file = g_strdup_printf (NMSTATEDIR "/dhcpcd-%s.pid", iface);
+	/* dhcpcd does not allow custom pidfiles; the pidfile is always
+	 * RUNDIR "dhcpcd-<ifname>.pid".
+	 */
+	priv->pid_file = g_strdup_printf (RUNDIR "/dhcpcd-%s.pid", iface);
 	if (!priv->pid_file) {
 		nm_log_warn (LOGD_DHCP4, "(%s): not enough memory for dhcpcd options.", iface);
 		return -1;
@@ -139,6 +143,14 @@ ip4_start (NMDHCPClient *client,
 
 	g_ptr_array_add (argv, (gpointer) "-c");	/* Set script file */
 	g_ptr_array_add (argv, (gpointer) ACTION_SCRIPT_PATH );
+
+#ifdef DHCPCD_SUPPORTS_IPV6
+	/* IPv4-only for now.  NetworkManager knows better than dhcpcd when to
+	 * run IPv6, and dhcpcd's automatic Router Solicitations cause problems
+	 * with devices that don't expect them.
+	 */
+	g_ptr_array_add (argv, (gpointer) "-4");
+#endif
 
 	if (hostname && strlen (hostname)) {
 		g_ptr_array_add (argv, (gpointer) "-h");	/* Send hostname to DHCP server */

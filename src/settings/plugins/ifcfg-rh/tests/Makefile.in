@@ -119,7 +119,8 @@ am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am__test_ifcfg_rh_utils_SOURCES_DIST = test-ifcfg-rh-utils.c
-@ENABLE_TESTS_TRUE@am_test_ifcfg_rh_utils_OBJECTS = test_ifcfg_rh_utils-test-ifcfg-rh-utils.$(OBJEXT)
+@ENABLE_TESTS_TRUE@am_test_ifcfg_rh_utils_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test-ifcfg-rh-utils.$(OBJEXT)
 test_ifcfg_rh_utils_OBJECTS = $(am_test_ifcfg_rh_utils_OBJECTS)
 @ENABLE_TESTS_TRUE@test_ifcfg_rh_utils_DEPENDENCIES =  \
 @ENABLE_TESTS_TRUE@	$(builddir)/../libifcfg-rh-io.la
@@ -259,6 +260,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -281,6 +283,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -466,19 +469,20 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 @ENABLE_TESTS_TRUE@SUBDIRS = network-scripts
-@ENABLE_TESTS_TRUE@INCLUDES = \
+@ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-glib \
-@ENABLE_TESTS_TRUE@	-I$(srcdir)/../
+@ENABLE_TESTS_TRUE@	-I$(srcdir)/../ \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS)
 
 @ENABLE_TESTS_TRUE@test_ifcfg_rh_SOURCES = \
 @ENABLE_TESTS_TRUE@	test-ifcfg-rh.c
 
 @ENABLE_TESTS_TRUE@test_ifcfg_rh_CPPFLAGS = \
-@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(AM_CPPFLAGS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-DTEST_IFCFG_DIR=\"$(abs_srcdir)\" \
 @ENABLE_TESTS_TRUE@	-DTEST_SCRATCH_DIR=\"$(abs_builddir)/\"
@@ -492,9 +496,6 @@ with_resolvconf = @with_resolvconf@
 
 @ENABLE_TESTS_TRUE@test_ifcfg_rh_utils_SOURCES = \
 @ENABLE_TESTS_TRUE@	test-ifcfg-rh-utils.c
-
-@ENABLE_TESTS_TRUE@test_ifcfg_rh_utils_CPPFLAGS = \
-@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS)
 
 @ENABLE_TESTS_TRUE@test_ifcfg_rh_utils_LDADD = \
 @ENABLE_TESTS_TRUE@	$(builddir)/../libifcfg-rh-io.la
@@ -567,8 +568,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ifcfg-rh-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ifcfg_rh-test-ifcfg-rh.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -604,20 +605,6 @@ test_ifcfg_rh-test-ifcfg-rh.obj: test-ifcfg-rh.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-ifcfg-rh.c' object='test_ifcfg_rh-test-ifcfg-rh.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_ifcfg_rh_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ifcfg_rh-test-ifcfg-rh.obj `if test -f 'test-ifcfg-rh.c'; then $(CYGPATH_W) 'test-ifcfg-rh.c'; else $(CYGPATH_W) '$(srcdir)/test-ifcfg-rh.c'; fi`
-
-test_ifcfg_rh_utils-test-ifcfg-rh-utils.o: test-ifcfg-rh-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_ifcfg_rh_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_ifcfg_rh_utils-test-ifcfg-rh-utils.o -MD -MP -MF $(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Tpo -c -o test_ifcfg_rh_utils-test-ifcfg-rh-utils.o `test -f 'test-ifcfg-rh-utils.c' || echo '$(srcdir)/'`test-ifcfg-rh-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Tpo $(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-ifcfg-rh-utils.c' object='test_ifcfg_rh_utils-test-ifcfg-rh-utils.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_ifcfg_rh_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ifcfg_rh_utils-test-ifcfg-rh-utils.o `test -f 'test-ifcfg-rh-utils.c' || echo '$(srcdir)/'`test-ifcfg-rh-utils.c
-
-test_ifcfg_rh_utils-test-ifcfg-rh-utils.obj: test-ifcfg-rh-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_ifcfg_rh_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_ifcfg_rh_utils-test-ifcfg-rh-utils.obj -MD -MP -MF $(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Tpo -c -o test_ifcfg_rh_utils-test-ifcfg-rh-utils.obj `if test -f 'test-ifcfg-rh-utils.c'; then $(CYGPATH_W) 'test-ifcfg-rh-utils.c'; else $(CYGPATH_W) '$(srcdir)/test-ifcfg-rh-utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Tpo $(DEPDIR)/test_ifcfg_rh_utils-test-ifcfg-rh-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-ifcfg-rh-utils.c' object='test_ifcfg_rh_utils-test-ifcfg-rh-utils.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_ifcfg_rh_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ifcfg_rh_utils-test-ifcfg-rh-utils.obj `if test -f 'test-ifcfg-rh-utils.c'; then $(CYGPATH_W) 'test-ifcfg-rh-utils.c'; else $(CYGPATH_W) '$(srcdir)/test-ifcfg-rh-utils.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
