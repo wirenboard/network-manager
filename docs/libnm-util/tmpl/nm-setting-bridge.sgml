@@ -103,58 +103,6 @@ NMSettingBridge
 
 
 
-<!-- ##### STRUCT NMSettingBridge ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingBridge:ageing-time ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridge:forward-delay ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridge:hello-time ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridge:interface-name ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridge:max-age ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridge:priority ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridge:stp ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingBridgeClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### FUNCTION nm_setting_bridge_new ##### -->
 <para>
 

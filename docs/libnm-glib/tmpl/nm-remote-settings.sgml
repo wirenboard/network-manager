@@ -110,62 +110,6 @@ NMRemoteSettings
 @user_data: 
 
 
-<!-- ##### STRUCT NMRemoteSettings ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### SIGNAL NMRemoteSettings::connections-read ##### -->
-<para>
-
-</para>
-
-@nmremotesettings: the object which received the signal.
-
-<!-- ##### SIGNAL NMRemoteSettings::new-connection ##### -->
-<para>
-
-</para>
-
-@nmremotesettings: the object which received the signal.
-@arg1: 
-
-<!-- ##### ARG NMRemoteSettings:bus ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMRemoteSettings:can-modify ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMRemoteSettings:hostname ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMRemoteSettings:service-running ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMRemoteSettingsClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@new_connection: 
-@connections_read: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_remote_settings_new ##### -->
 <para>
 

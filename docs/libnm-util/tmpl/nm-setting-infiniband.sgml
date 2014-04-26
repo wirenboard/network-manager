@@ -75,38 +75,6 @@ NMSettingInfiniband
 
 
 
-<!-- ##### STRUCT NMSettingInfiniband ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingInfiniband:mac-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingInfiniband:mtu ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingInfiniband:transport-mode ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingInfinibandClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### FUNCTION nm_setting_infiniband_new ##### -->
 <para>
 

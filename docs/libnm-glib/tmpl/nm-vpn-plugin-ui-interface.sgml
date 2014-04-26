@@ -1,5 +1,5 @@
 <!-- ##### SECTION Title ##### -->
-NMVpnPluginUi
+NMVpnPluginUiWidget
 
 <!-- ##### SECTION Short_Description ##### -->
 
@@ -80,25 +80,6 @@ NMVpnPluginUi
 @NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC: 
 @NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE: 
 
-<!-- ##### STRUCT NMVpnPluginUiInterface ##### -->
-<para>
-
-</para>
-
-@g_iface: 
-@ui_factory: 
-@get_capabilities: 
-@import_from_file: 
-@export_to_file: 
-@get_suggested_name: 
-@delete_connection: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_vpn_plugin_ui_interface_ui_factory ##### -->
 <para>
 
@@ -162,17 +143,6 @@ NMVpnPluginUi
 @error: 
 @Returns: 
 
-
-<!-- ##### STRUCT NMVpnPluginUiWidgetInterface ##### -->
-<para>
-
-</para>
-
-@g_iface: 
-@get_widget: 
-@update_connection: 
-@save_secrets: 
-@changed: 
 
 <!-- ##### FUNCTION nm_vpn_plugin_ui_widget_interface_get_widget ##### -->
 <para>

@@ -209,6 +209,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -231,6 +232,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -415,16 +417,23 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-INCLUDES = \
+noinst_LTLIBRARIES = libdns-manager.la
+libdns_manager_la_CPPFLAGS = \
 	-I${top_srcdir}/src/logging \
 	-I${top_srcdir}/src/posix-signals \
 	-I${top_srcdir}/libnm-util \
 	-I${top_builddir}/libnm-util \
 	-I${top_srcdir}/src \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/include
+	-I${top_builddir}/include \
+	$(LIBNL_CFLAGS) \
+	$(DBUS_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	-DLOCALSTATEDIR=\"$(localstatedir)\" \
+	-DSYSCONFDIR=\"$(sysconfdir)\" \
+	-DNMCONFDIR=\"$(nmconfdir)\" \
+	-DNMRUNDIR=\"$(nmrundir)\"
 
-noinst_LTLIBRARIES = libdns-manager.la
 libdns_manager_la_SOURCES = \
 	nm-dns-manager.h \
 	nm-dns-manager.c \
@@ -434,15 +443,6 @@ libdns_manager_la_SOURCES = \
 	nm-dns-dnsmasq.c \
 	nm-dns-utils.h \
 	nm-dns-utils.c
-
-libdns_manager_la_CPPFLAGS = \
-	$(LIBNL_CFLAGS) \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS) \
-	-DLOCALSTATEDIR=\"$(localstatedir)\" \
-	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-DNMCONFDIR=\"$(nmconfdir)\" \
-	-DNMRUNDIR=\"$(nmrundir)\"
 
 libdns_manager_la_LIBADD = \
 	$(top_builddir)/src/logging/libnm-logging.la \

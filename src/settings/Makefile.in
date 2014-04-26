@@ -130,8 +130,7 @@ libsettings_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 libtest_settings_utils_la_DEPENDENCIES =  \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_libtest_settings_utils_la_OBJECTS =  \
-	libtest_settings_utils_la-nm-settings-utils.lo
+am_libtest_settings_utils_la_OBJECTS = nm-settings-utils.lo
 libtest_settings_utils_la_OBJECTS =  \
 	$(am_libtest_settings_utils_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -271,6 +270,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -293,6 +293,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -478,7 +479,8 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 SUBDIRS = plugins . tests
-INCLUDES = -I${top_srcdir} \
+AM_CPPFLAGS = \
+           -I${top_srcdir} \
            -I${top_builddir}/include \
            -I${top_srcdir}/include \
            -I${top_builddir}/libnm-util \
@@ -486,16 +488,14 @@ INCLUDES = -I${top_srcdir} \
            -I${top_builddir}/src/generated \
            -I${top_srcdir}/src/generated \
            -I${top_srcdir}/src/logging \
-           -I${top_srcdir}/src
+           -I${top_srcdir}/src \
+           $(DBUS_CFLAGS) \
+           $(GLIB_CFLAGS)
 
 noinst_LTLIBRARIES = libsettings.la libtest-settings-utils.la
 libtest_settings_utils_la_SOURCES = \
 	nm-settings-utils.c \
 	nm-settings-utils.h
-
-libtest_settings_utils_la_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS)
 
 libtest_settings_utils_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
@@ -528,8 +528,7 @@ libsettings_la_SOURCES = \
 	nm-settings-utils.c
 
 libsettings_la_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS) \
+	$(AM_CPPFLAGS) \
 	$(POLKIT_CFLAGS) \
 	-DBINDIR=\"$(bindir)\" \
 	-DSBINDIR=\"$(sbindir)\" \
@@ -621,7 +620,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsettings_la-nm-settings-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsettings_la-nm-settings.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsettings_la-nm-system-config-interface.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_settings_utils_la-nm-settings-utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-settings-utils.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -706,13 +705,6 @@ libsettings_la-nm-settings-utils.lo: nm-settings-utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-settings-utils.c' object='libsettings_la-nm-settings-utils.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsettings_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libsettings_la-nm-settings-utils.lo `test -f 'nm-settings-utils.c' || echo '$(srcdir)/'`nm-settings-utils.c
-
-libtest_settings_utils_la-nm-settings-utils.lo: nm-settings-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_settings_utils_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_settings_utils_la-nm-settings-utils.lo -MD -MP -MF $(DEPDIR)/libtest_settings_utils_la-nm-settings-utils.Tpo -c -o libtest_settings_utils_la-nm-settings-utils.lo `test -f 'nm-settings-utils.c' || echo '$(srcdir)/'`nm-settings-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libtest_settings_utils_la-nm-settings-utils.Tpo $(DEPDIR)/libtest_settings_utils_la-nm-settings-utils.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-settings-utils.c' object='libtest_settings_utils_la-nm-settings-utils.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_settings_utils_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtest_settings_utils_la-nm-settings-utils.lo `test -f 'nm-settings-utils.c' || echo '$(srcdir)/'`nm-settings-utils.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -103,7 +103,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am__test_wired_defname_SOURCES_DIST = test-wired-defname.c
-@ENABLE_TESTS_TRUE@am_test_wired_defname_OBJECTS = test_wired_defname-test-wired-defname.$(OBJEXT)
+@ENABLE_TESTS_TRUE@am_test_wired_defname_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test-wired-defname.$(OBJEXT)
 test_wired_defname_OBJECTS = $(am_test_wired_defname_OBJECTS)
 am__DEPENDENCIES_1 =
 @ENABLE_TESTS_TRUE@test_wired_defname_DEPENDENCIES =  \
@@ -207,6 +208,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -229,6 +231,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -413,20 +416,18 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-@ENABLE_TESTS_TRUE@INCLUDES = \
+@ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/settings
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/settings \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
 
 ####### wired defname test #######
 @ENABLE_TESTS_TRUE@test_wired_defname_SOURCES = \
 @ENABLE_TESTS_TRUE@	test-wired-defname.c
-
-@ENABLE_TESTS_TRUE@test_wired_defname_CPPFLAGS = \
-@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
 @ENABLE_TESTS_TRUE@test_wired_defname_LDADD = \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
@@ -488,7 +489,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_wired_defname-test-wired-defname.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-wired-defname.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -510,20 +511,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-test_wired_defname-test-wired-defname.o: test-wired-defname.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wired_defname_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_wired_defname-test-wired-defname.o -MD -MP -MF $(DEPDIR)/test_wired_defname-test-wired-defname.Tpo -c -o test_wired_defname-test-wired-defname.o `test -f 'test-wired-defname.c' || echo '$(srcdir)/'`test-wired-defname.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_wired_defname-test-wired-defname.Tpo $(DEPDIR)/test_wired_defname-test-wired-defname.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-wired-defname.c' object='test_wired_defname-test-wired-defname.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wired_defname_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_wired_defname-test-wired-defname.o `test -f 'test-wired-defname.c' || echo '$(srcdir)/'`test-wired-defname.c
-
-test_wired_defname-test-wired-defname.obj: test-wired-defname.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wired_defname_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_wired_defname-test-wired-defname.obj -MD -MP -MF $(DEPDIR)/test_wired_defname-test-wired-defname.Tpo -c -o test_wired_defname-test-wired-defname.obj `if test -f 'test-wired-defname.c'; then $(CYGPATH_W) 'test-wired-defname.c'; else $(CYGPATH_W) '$(srcdir)/test-wired-defname.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_wired_defname-test-wired-defname.Tpo $(DEPDIR)/test_wired_defname-test-wired-defname.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-wired-defname.c' object='test_wired_defname-test-wired-defname.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_wired_defname_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_wired_defname-test-wired-defname.obj `if test -f 'test-wired-defname.c'; then $(CYGPATH_W) 'test-wired-defname.c'; else $(CYGPATH_W) '$(srcdir)/test-wired-defname.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

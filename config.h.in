@@ -3,6 +3,12 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* Define if dhcpcd supports IPv6 (6.x+) */
+#undef DHCPCD_SUPPORTS_IPV6
+
+/* Define to path of dnsmasq binary */
+#undef DNSMASQ_PATH
+
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
 #undef ENABLE_NLS
@@ -72,6 +78,9 @@
 
 /* Define to 1 if you have the <syslog.h> header file. */
 #undef HAVE_SYSLOG_H
+
+/* Define if systemd support is available */
+#undef HAVE_SYSTEMD
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H

@@ -65,21 +65,21 @@ extern void _nm_marshal_VOID__POINTER_POINTER_POINTER_POINTER_INT (GClosure     
                                                                    gpointer      invocation_hint,
                                                                    gpointer      marshal_data);
 
-/* VOID:POINTER,STRING (nm-marshal.list:9) */
+/* VOID:POINTER,POINTER,STRING,BOOLEAN,POINTER,POINTER (nm-marshal.list:9) */
+extern void _nm_marshal_VOID__POINTER_POINTER_STRING_BOOLEAN_POINTER_POINTER (GClosure     *closure,
+                                                                              GValue       *return_value,
+                                                                              guint         n_param_values,
+                                                                              const GValue *param_values,
+                                                                              gpointer      invocation_hint,
+                                                                              gpointer      marshal_data);
+
+/* VOID:POINTER,STRING (nm-marshal.list:10) */
 extern void _nm_marshal_VOID__POINTER_STRING (GClosure     *closure,
                                               GValue       *return_value,
                                               guint         n_param_values,
                                               const GValue *param_values,
                                               gpointer      invocation_hint,
                                               gpointer      marshal_data);
-
-/* VOID:POINTER,STRING,BOOLEAN,POINTER,POINTER (nm-marshal.list:10) */
-extern void _nm_marshal_VOID__POINTER_STRING_BOOLEAN_POINTER_POINTER (GClosure     *closure,
-                                                                      GValue       *return_value,
-                                                                      guint         n_param_values,
-                                                                      const GValue *param_values,
-                                                                      gpointer      invocation_hint,
-                                                                      gpointer      marshal_data);
 
 /* VOID:STRING,BOXED (nm-marshal.list:11) */
 extern void _nm_marshal_VOID__STRING_BOXED (GClosure     *closure,

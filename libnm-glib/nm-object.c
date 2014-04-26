@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <gio/gio.h>
+#include <stdlib.h>
 #include <nm-utils.h>
 #include "NetworkManager.h"
 #include "nm-object.h"
@@ -33,7 +34,8 @@
 #include "nm-types.h"
 #include "nm-glib-marshal.h"
 
-#define DEBUG 0
+static gboolean debug = FALSE;
+#define dbgmsg(f,...) if (G_UNLIKELY (debug)) { g_message (f, ## __VA_ARGS__ ); }
 
 static void nm_object_initable_iface_init (GInitableIface *iface);
 static void nm_object_async_initable_iface_init (GAsyncInitableIface *iface);
@@ -139,7 +141,7 @@ constructor (GType type,
 	priv = NM_OBJECT_GET_PRIVATE (object);
 
 	if (priv->connection == NULL || priv->path == NULL) {
-		g_warning ("%s: bus connection and path required.", __func__);
+		g_warn_if_reached ();
 		g_object_unref (object);
 		return NULL;
 	}
@@ -433,10 +435,13 @@ deferred_notify_cb (gpointer data)
 	props = g_slist_reverse (priv->notify_props);
 	priv->notify_props = NULL;
 
+	g_object_ref (object);
 	for (iter = props; iter; iter = g_slist_next (iter)) {
 		g_object_notify (G_OBJECT (object), (const char *) iter->data);
 		g_free (iter->data);
 	}
+	g_object_unref (object);
+
 	g_slist_free (props);
 	return FALSE;
 }
@@ -490,7 +495,7 @@ _nm_object_create (GType type, DBusGConnection *connection, const char *path)
 		type = type_func (connection, path);
 
 	if (type == G_TYPE_INVALID) {
-		g_warning ("Could not create object for %s: unknown object type", path);
+		dbgmsg ("Could not create object for %s: unknown object type", path);
 		return NULL;
 	}
 
@@ -499,10 +504,9 @@ _nm_object_create (GType type, DBusGConnection *connection, const char *path)
 	                       NM_OBJECT_DBUS_PATH, path,
 	                       NULL);
 	if (!g_initable_init (G_INITABLE (object), NULL, &error)) {
-		g_object_unref (object);
-		object = NULL;
-		g_warning ("Could not create object for %s: %s", path, error->message);
+		dbgmsg ("Could not create object for %s: %s", path, error->message);
 		g_error_free (error);
+		g_clear_object (&object);
 	}
 
 	return object;
@@ -544,11 +548,11 @@ async_inited (GObject *source, GAsyncResult *result, gpointer user_data)
 	GError *error = NULL;
 
 	if (!g_async_initable_init_finish (G_ASYNC_INITABLE (object), result, &error)) {
-		g_warning ("Could not create object for %s: %s",
-		           nm_object_or_connection_get_path (object), error->message);
+		dbgmsg ("Could not create object for %s: %s",
+		        nm_object_or_connection_get_path (object),
+		        error->message);
 		g_error_free (error);
-		g_object_unref (object);
-		object = NULL;
+		g_clear_object (&object);
 	}
 
 	create_async_complete (object, async_data);
@@ -850,36 +854,33 @@ handle_property_changed (NMObject *self, const char *dbus_name, GValue *value, g
 	}
 
 	if (!found) {
-#if DEBUG
-		g_warning ("Property '%s' unhandled.", prop_name);
-#endif
+		dbgmsg ("Property '%s' unhandled.", prop_name);
 		goto out;
 	}
 
 	pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (self)), prop_name);
 	if (!pspec) {
-		g_warning ("%s: property '%s' changed but wasn't defined by object type %s.",
-		           __func__,
-		           prop_name,
-		           G_OBJECT_TYPE_NAME (self));
+		dbgmsg ("%s: property '%s' changed but wasn't defined by object type %s.",
+		        __func__,
+		        prop_name,
+		        G_OBJECT_TYPE_NAME (self));
 		goto out;
 	}
 
-#if DEBUG
-	{
+	if (G_UNLIKELY (debug)) {
 		char *s;
 		s = g_strdup_value_contents (value);
-		g_message ("PC: %p (%s) prop (%s) '%s' value (%s) %s",
-		           self, G_OBJECT_TYPE_NAME (self),
-		           g_type_name (pspec->value_type), prop_name,
-		           G_VALUE_TYPE_NAME (value), s);
+		dbgmsg ("PC: (%p) %s::%s => '%s' (%s%s%s)",
+		        self, G_OBJECT_TYPE_NAME (self),
+		        prop_name,
+		        s,
+		        G_VALUE_TYPE_NAME (value),
+		        pi->object_type ? " / " : "",
+		        pi->object_type ? g_type_name (pi->object_type) : "");
 		g_free (s);
 	}
-#endif
+
 	if (pi->object_type) {
-#if DEBUG
-		g_message ("   Value is object type %s", g_type_name (pi->object_type));
-#endif
 		if (G_VALUE_HOLDS (value, DBUS_TYPE_G_OBJECT_PATH))
 			success = handle_object_property (self, pspec->name, value, pi, synchronously);
 		else if (G_VALUE_HOLDS (value, DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH))
@@ -892,10 +893,10 @@ handle_property_changed (NMObject *self, const char *dbus_name, GValue *value, g
 		success = (*(pi->func)) (self, pspec, value, pi->field);
 
 	if (!success) {
-		g_warning ("%s: failed to update property '%s' of object type %s.",
-		           __func__,
-		           prop_name,
-		           G_OBJECT_TYPE_NAME (self));
+		dbgmsg ("%s: failed to update property '%s' of object type %s.",
+		        __func__,
+		        prop_name,
+		        G_OBJECT_TYPE_NAME (self));
 	}
 
 out:
@@ -917,8 +918,8 @@ process_properties_changed (NMObject *self, GHashTable *properties, gboolean syn
 		if (value)
 			handle_property_changed (self, name, value, synchronously);
 		else {
-			g_warning ("%s:%d %s(): object %s property '%s' value is unexpectedly NULL",
-			           __FILE__, __LINE__, __func__, G_OBJECT_TYPE_NAME (self), (const char *) name);
+			dbgmsg ("%s:%d %s(): object %s property '%s' value is unexpectedly NULL",
+			        __FILE__, __LINE__, __func__, G_OBJECT_TYPE_NAME (self), (const char *) name);
 		}
 	}
 }
@@ -978,9 +979,11 @@ demarshal_generic (NMObject *object,
 	HANDLE_TYPE(LONG, long, long)
 	HANDLE_TYPE(ULONG, ulong, ulong)
 	} else {
-		g_warning ("%s: %s/%s unhandled type %s.",
-		           __func__, G_OBJECT_TYPE_NAME (object), pspec->name,
-		           g_type_name (pspec->value_type));
+		dbgmsg ("%s: %s/%s unhandled type %s.",
+		        __func__,
+		        G_OBJECT_TYPE_NAME (object),
+		        pspec->name,
+		        g_type_name (pspec->value_type));
 		success = FALSE;
 	}
 
@@ -988,9 +991,9 @@ done:
 	if (success) {
 		_nm_object_queue_notify (object, pspec->name);
 	} else {
-		g_warning ("%s: %s/%s (type %s) couldn't be set with type %s.",
-		           __func__, G_OBJECT_TYPE_NAME (object), pspec->name,
-		           g_type_name (pspec->value_type), G_VALUE_TYPE_NAME (value));
+		dbgmsg ("%s: %s/%s (type %s) couldn't be set with type %s.",
+		        __func__, G_OBJECT_TYPE_NAME (object), pspec->name,
+		        g_type_name (pspec->value_type), G_VALUE_TYPE_NAME (value));
 	}
 	return success;
 }
@@ -1001,12 +1004,21 @@ _nm_object_register_properties (NMObject *object,
                                 const NMPropertiesInfo *info)
 {
 	NMObjectPrivate *priv = NM_OBJECT_GET_PRIVATE (object);
+	static gsize dval = 0;
+	const char *debugstr;
 	NMPropertiesInfo *tmp;
 	GHashTable *instance;
 
 	g_return_if_fail (NM_IS_OBJECT (object));
 	g_return_if_fail (proxy != NULL);
 	g_return_if_fail (info != NULL);
+
+	if (g_once_init_enter (&dval)) {
+		debugstr = getenv ("LIBNM_GLIB_DEBUG");
+		if (debugstr && strstr (debugstr, "properties-changed"))
+			debug = TRUE;
+		g_once_init_leave (&dval, 1);
+	}
 
 	priv->property_interfaces = g_slist_prepend (priv->property_interfaces,
 	                                             g_strdup (dbus_g_proxy_get_interface (proxy)));
@@ -1087,9 +1099,10 @@ _nm_object_ensure_inited (NMObject *object)
 
 	if (!priv->inited) {
 		if (!g_initable_init (G_INITABLE (object), NULL, &error)) {
-			g_warning ("Could not initialize %s %s: %s",
-			           G_OBJECT_TYPE_NAME (object), priv->path,
-			           error->message);
+			dbgmsg ("Could not initialize %s %s: %s",
+			        G_OBJECT_TYPE_NAME (object),
+			        priv->path,
+			        error->message);
 			g_error_free (error);
 
 			/* Only warn once */
@@ -1117,17 +1130,12 @@ _nm_object_reload_property (NMObject *object,
 							G_TYPE_INVALID,
 							G_TYPE_VALUE, &value,
 							G_TYPE_INVALID)) {
-		/* Don't warn about D-Bus no reply/timeout errors; it's mostly noise and
-		 * happens for example when NM quits and the applet is still running.
-		 */
-		if (!g_error_matches (err, DBUS_GERROR, DBUS_GERROR_NO_REPLY)) {
-			g_warning ("%s: Error getting '%s' for %s: (%d) %s\n",
-			           __func__,
-			           prop_name,
-			           nm_object_get_path (object),
-			           err->code,
-			           err->message);
-		}
+		dbgmsg ("%s: Error getting '%s' for %s: (%d) %s\n",
+		        __func__,
+		        prop_name,
+		        nm_object_get_path (object),
+		        err->code,
+		        err->message);
 		g_clear_error (&err);
 		return;
 	}

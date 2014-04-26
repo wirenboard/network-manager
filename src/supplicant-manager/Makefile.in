@@ -251,6 +251,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -273,6 +274,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -458,7 +460,8 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 SUBDIRS = . tests
-INCLUDES = \
+noinst_LTLIBRARIES = libsupplicant-manager.la
+libsupplicant_manager_la_CPPFLAGS = \
 	-I${top_srcdir}/src \
 	-I${top_builddir}/src/generated \
 	-I${top_srcdir}/src/generated \
@@ -466,9 +469,12 @@ INCLUDES = \
 	-I${top_builddir}/include \
 	-I${top_srcdir}/include \
 	-I${top_builddir}/libnm-util \
-	-I${top_srcdir}/libnm-util
+	-I${top_srcdir}/libnm-util \
+	$(DBUS_CFLAGS) \
+	$(GLIB_CFLAGS) \
+	-DNM_PKGDATADIR=\"$(pkgdatadir)\" \
+	-DNM_LOCALSTATEDIR=\"$(localstatedir)\"
 
-noinst_LTLIBRARIES = libsupplicant-manager.la
 libsupplicant_manager_la_SOURCES = \
 	nm-supplicant-types.h \
 	nm-supplicant-manager.h \
@@ -479,12 +485,6 @@ libsupplicant_manager_la_SOURCES = \
 	nm-supplicant-interface.h \
 	nm-supplicant-settings-verify.h \
 	nm-supplicant-settings-verify.c
-
-libsupplicant_manager_la_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS) \
-	-DNM_PKGDATADIR=\"$(pkgdatadir)\" \
-	-DNM_LOCALSTATEDIR=\"$(localstatedir)\"
 
 libsupplicant_manager_la_LIBADD = \
 	$(top_builddir)/src/logging/libnm-logging.la \

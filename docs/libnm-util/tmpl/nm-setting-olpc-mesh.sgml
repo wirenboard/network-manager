@@ -75,38 +75,6 @@ NMSettingOlpcMesh
 
 
 
-<!-- ##### STRUCT NMSettingOlpcMesh ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingOlpcMesh:channel ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingOlpcMesh:dhcp-anycast-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingOlpcMesh:ssid ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingOlpcMeshClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### FUNCTION nm_setting_olpc_mesh_new ##### -->
 <para>
 

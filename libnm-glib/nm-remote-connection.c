@@ -102,6 +102,7 @@ update_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_data)
 	RemoteCall *call = user_data;
 	NMRemoteConnectionCommitFunc func = (NMRemoteConnectionCommitFunc) call->callback;
 	GError *error = NULL;
+	NMRemoteConnection *self = g_object_ref (call->self);
 
 	dbus_g_proxy_end_call (proxy, proxy_call, &error,
 	                       G_TYPE_INVALID);
@@ -109,6 +110,7 @@ update_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_data)
 		(*func)(call->self, error, call->user_data);
 	g_clear_error (&error);
 	remote_call_complete (call->self, call);
+	g_object_unref (self);
 }
 
 /**
@@ -206,13 +208,15 @@ get_secrets_cb (DBusGProxy *proxy, DBusGProxyCall *proxy_call, gpointer user_dat
 {
 	RemoteCall *call = user_data;
 	NMRemoteConnectionGetSecretsFunc func = (NMRemoteConnectionGetSecretsFunc) call->callback;
-	GHashTable *secrets;
+	GHashTable *secrets = NULL;
 	GError *error = NULL;
 
 	dbus_g_proxy_end_call (proxy, proxy_call, &error,
 	                       DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT, &secrets,
 	                       G_TYPE_INVALID);
 	(*func)(call->self, error ? NULL : secrets, error, call->user_data);
+	if (secrets)
+		g_hash_table_destroy (secrets);
 	g_clear_error (&error);
 	remote_call_complete (call->self, call);
 }

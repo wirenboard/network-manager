@@ -174,12 +174,6 @@ NMSettingIP4Config
 
 
 
-<!-- ##### TYPEDEF NMIP4Address ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### FUNCTION nm_ip4_address_new ##### -->
 <para>
 
@@ -276,12 +270,6 @@ NMSettingIP4Config
 
 @address: 
 @gateway: 
-
-
-<!-- ##### TYPEDEF NMIP4Route ##### -->
-<para>
-
-</para>
 
 
 <!-- ##### FUNCTION nm_ip4_route_new ##### -->
@@ -399,83 +387,6 @@ NMSettingIP4Config
 @route: 
 @metric: 
 
-
-<!-- ##### STRUCT NMSettingIP4Config ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingIP4Config:addresses ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:dhcp-client-id ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:dhcp-hostname ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:dhcp-send-hostname ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:dns ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:dns-search ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:ignore-auto-dns ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:ignore-auto-routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:may-fail ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:method ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:never-default ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP4Config:routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingIP4ConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
 
 <!-- ##### FUNCTION nm_setting_ip4_config_new ##### -->
 <para>

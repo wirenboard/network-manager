@@ -388,6 +388,7 @@ DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DLLTOOL = @DLLTOOL@
+DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -410,6 +411,7 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -595,7 +597,7 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 SUBDIRS = . tests
-INCLUDES = \
+AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
@@ -618,6 +620,7 @@ libdeprecated_nm_glib_la_SOURCES = \
 libdeprecated_nm_glib_la_CPPFLAGS = \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(AM_CPPFLAGS) \
 	-Wno-deprecated-declarations \
 	-Wno-deprecated
 
@@ -781,7 +784,7 @@ INTROSPECTION_COMPILER_ARGS = --includedir=$(top_builddir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_INCLUDES = Gio-2.0 DBusGLib-1.0
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_PACKAGES = gio-2.0 dbus-glib-1 gudev-1.0
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_EXPORT_PACKAGES = libnm-glib libnm-glib-vpn
-@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_CFLAGS = $(INCLUDES) -I$(top_srcdir)/libnm-glib -I$(top_srcdir)/libnm-util
+@HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_CFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/libnm-glib -I$(top_srcdir)/libnm-util
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_LIBS = libnm-glib.la $(top_builddir)/libnm-util/libnm-util.la
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_FILES = $(introspection_sources)
 @HAVE_INTROSPECTION_TRUE@NMClient_1_0_gir_SCANNERFLAGS = --warn-all --identifier-prefix=NM --symbol-prefix=nm --include-uninstalled=$(top_builddir)/libnm-util/NetworkManager-1.0.gir

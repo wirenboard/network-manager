@@ -74,7 +74,7 @@ static void request_add_agent (Request *req,
                                NMSecretAgent *agent,
                                NMSessionMonitor *session_monitor);
 
-static void request_remove_agent (Request *req, NMSecretAgent *agent);
+static void request_remove_agent (gpointer key, gpointer value, gpointer user_data);
 
 static void impl_agent_manager_register (NMAgentManager *self,
                                          const char *identifier,
@@ -101,13 +101,60 @@ nm_agent_manager_error_quark (void)
 
 /*************************************************************/
 
+/*----------------------------------------------------------------------------*/
+/* GHashTable safe iterating function: x_g_hash_table_safe_for_each()
+ * GHashTable can't be modified while iterating, the common solution for that is
+ * to flatten the hash table first and iterate over list.
+ * Taken from https://github.com/linuxmint/nemo/blob/master/eel/eel-glib-extensions.c
+ */
+typedef struct {
+	GList *keys;
+	GList *values;
+} FlattenedHashTable;
+
+static void
+flatten_hash_table_element (gpointer key, gpointer value, gpointer callback_data)
+{
+	FlattenedHashTable *flattened_table;
+
+	flattened_table = callback_data;
+	flattened_table->keys = g_list_prepend
+	        (flattened_table->keys, key);
+	flattened_table->values = g_list_prepend
+	        (flattened_table->values, value);
+}
+
+static void
+x_g_hash_table_safe_for_each (GHashTable *hash_table,
+                              GHFunc callback,
+                              gpointer callback_data)
+{
+	FlattenedHashTable flattened;
+	GList *p, *q;
+
+	flattened.keys = NULL;
+	flattened.values = NULL;
+
+	g_hash_table_foreach (hash_table,
+	                      flatten_hash_table_element,
+	                      &flattened);
+
+	for (p = flattened.keys, q = flattened.values;
+	     p != NULL;
+	     p = p->next, q = q->next) {
+	        (* callback) (p->data, q->data, callback_data);
+	}
+
+	g_list_free (flattened.keys);
+	g_list_free (flattened.values);
+}
+/*----------------------------------------------------------------------------*/
+
 static gboolean
 remove_agent (NMAgentManager *self, const char *owner)
 {
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
 	NMSecretAgent *agent;
-	GHashTableIter iter;
-	gpointer data;
 
 	g_return_val_if_fail (owner != NULL, FALSE);
 
@@ -119,10 +166,8 @@ remove_agent (NMAgentManager *self, const char *owner)
 	nm_log_dbg (LOGD_AGENTS, "(%s) agent unregistered",
 	            nm_secret_agent_get_description (agent));
 
-	/* Remove this agent to any in-progress secrets requests */
-	g_hash_table_iter_init (&iter, priv->requests);
-	while (g_hash_table_iter_next (&iter, NULL, &data))
-		request_remove_agent ((Request *) data, agent);
+	/* Remove this agent from any in-progress secrets requests */
+	x_g_hash_table_safe_for_each (priv->requests, request_remove_agent, agent);
 
 	/* And dispose of the agent */
 	g_hash_table_remove (priv->agents, owner);
@@ -471,7 +516,7 @@ request_free (Request *req)
 	if (req->cancel_callback)
 		req->cancel_callback (req);
 
-	g_slist_free (req->pending);
+	g_slist_free_full (req->pending, g_object_unref);
 	g_slist_free (req->asked);
 	g_object_unref (req->connection);
 	g_free (req->setting_name);
@@ -576,7 +621,7 @@ request_add_agent (Request *req,
 
 	/* Add this agent to the list, preferring active sessions */
 	req->pending = g_slist_insert_sorted_with_data (req->pending,
-	                                                agent,
+	                                                g_object_ref (agent),
 	                                                (GCompareDataFunc) agent_compare_func,
 	                                                session_monitor);
 }
@@ -594,17 +639,21 @@ request_add_agents (NMAgentManager *self, Request *req)
 }
 
 static void
-request_remove_agent (Request *req, NMSecretAgent *agent)
+request_remove_agent (gpointer key, gpointer value, gpointer user_data)
 {
+	Request *req = (Request *) value;
+	NMSecretAgent *agent = (NMSecretAgent *) user_data;
 	gboolean try_next = FALSE;
 	const char *detail = "";
+	GSList *found;
 
 	g_return_if_fail (req != NULL);
 	g_return_if_fail (agent != NULL);
 
 	/* If this agent is being asked right now, cancel the request */
 	if (agent == req->current) {
-		req->cancel_callback (req);
+		if (req->cancel_callback)
+			req->cancel_callback (req);
 		req->current_has_modify = FALSE;
 		req->current = NULL;
 		req->current_call_id = NULL;
@@ -616,7 +665,12 @@ request_remove_agent (Request *req, NMSecretAgent *agent)
 				nm_secret_agent_get_description (agent),
 				detail, req, req->setting_name);
 
-	req->pending = g_slist_remove (req->pending, agent);
+	found = g_slist_find (req->pending, agent);
+	if (found) {
+		req->pending = g_slist_remove_link (req->pending, found);
+		g_object_unref (found->data);
+		g_slist_free_1 (found);
+	}
 
 	if (try_next) {
 		/* If the agent serving the in-progress secrets request went away then
@@ -642,6 +696,8 @@ next_generic (Request *req, const char *detail)
 	} else {
 		/* Send a secrets request to the next agent */
 		req->current_has_modify = FALSE;
+		if (req->current)
+			g_object_unref (req->current);
 		req->current = req->pending->data;
 		req->pending = g_slist_remove (req->pending, req->current);
 
@@ -1452,7 +1508,7 @@ dispose (GObject *object)
 
 		nm_auth_changed_func_unregister (authority_changed_cb, NM_AGENT_MANAGER (object));
 
-		g_slist_foreach (priv->chains, (GFunc) nm_auth_chain_unref, NULL);
+		g_slist_free_full (priv->chains, (GDestroyNotify) nm_auth_chain_unref);
 
 		g_hash_table_destroy (priv->agents);
 		g_hash_table_destroy (priv->requests);

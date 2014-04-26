@@ -228,7 +228,7 @@ static gboolean initialized = FALSE;
  * is performed, but calling nm_utils_deinit() to explicitly deinitialize
  * libnm-util can also be done.  This function can be called more than once.
  * 
- * Returns: TRUE if the initialization was successful, FALSE on failure.
+ * Returns: %TRUE if the initialization was successful, %FALSE on failure.
  **/
 gboolean
 nm_utils_init (GError **error)
@@ -343,7 +343,7 @@ nm_utils_ssid_to_utf8 (const GByteArray *ssid)
  * AP's SSID.  This function attempts to detect blank/empty SSIDs using a
  * number of known SSID-cloaking methods.
  *
- * Returns: TRUE if the SSID is "empty", FALSE if it is not
+ * Returns: %TRUE if the SSID is "empty", %FALSE if it is not
  **/
 gboolean
 nm_utils_is_empty_ssid (const guint8 * ssid, int len)
@@ -405,7 +405,7 @@ nm_utils_escape_ssid (const guint8 * ssid, guint32 len)
  * nm_utils_same_ssid:
  * @ssid1: first SSID data to compare
  * @ssid2: second SSID data to compare
- * @ignore_trailing_null: TRUE to ignore one trailing NULL byte
+ * @ignore_trailing_null: %TRUE to ignore one trailing NULL byte
  *
  * Earlier versions of the Linux kernel added a NULL byte to the end of the
  * SSID to enable easy printing of the SSID on the console or in a terminal,
@@ -414,7 +414,7 @@ nm_utils_escape_ssid (const guint8 * ssid, guint32 len)
  * cost of some compatibility with odd SSIDs that may legitimately have trailing
  * NULLs, even though that is functionally pointless.
  *
- * Returns: TRUE if the SSIDs are the same, FALSE if they are not
+ * Returns: %TRUE if the SSIDs are the same, %FALSE if they are not
  **/
 gboolean
 nm_utils_same_ssid (const GByteArray * ssid1,
@@ -1213,8 +1213,8 @@ device_supports_ap_ciphers (guint32 dev_caps,
  * against, determines whether the combination of device capabilities and
  * desired security type are valid for AP/Hotspot connections.
  *
- * Returns: TRUE if the device capabilities are compatible with the desired
- * @type, FALSE if they are not.
+ * Returns: %TRUE if the device capabilities are compatible with the desired
+ * @type, %FALSE if they are not.
  *
  * Since: 0.9.8
  **/
@@ -1261,8 +1261,8 @@ nm_utils_ap_mode_security_valid (NMUtilsSecurityType type,
  * NOTE: this function cannot handle checking security for AP/Hotspot mode;
  * use nm_utils_ap_mode_security_valid() instead.
  *
- * Returns: TRUE if the device capabilities and AP capabilties intersect and are
- * compatible with the desired @type, FALSE if they are not
+ * Returns: %TRUE if the device capabilities and AP capabilties intersect and are
+ * compatible with the desired @type, %FALSE if they are not
  **/
 gboolean
 nm_utils_security_valid (NMUtilsSecurityType type,
@@ -1667,24 +1667,27 @@ nm_utils_ip4_routes_to_gvalue (GSList *list, GValue *value)
 guint32
 nm_utils_ip4_netmask_to_prefix (guint32 netmask)
 {
-	guchar *p, *end;
-	guint32 prefix = 0;
+	guint32 prefix;
+	guint8 v;
+	const guint8 *p = (guint8 *) &netmask;
 
-	p = (guchar *) &netmask;
-	end = p + sizeof (guint32);
-
-	while ((*p == 0xFF) && p < end) {
-		prefix += 8;
-		p++;
+	if (p[3]) {
+		prefix = 24;
+		v = p[3];
+	} else if (p[2]) {
+		prefix = 16;
+		v = p[2];
+	} else if (p[1]) {
+		prefix = 8;
+		v = p[1];
+	} else {
+		prefix = 0;
+		v = p[0];
 	}
 
-	if (p < end) {
-		guchar v = *p;
-
-		while (v) {
-			prefix++;
-			v <<= 1;
-		}
+	while (v) {
+		prefix++;
+		v <<= 1;
 	}
 
 	return prefix;
@@ -1699,16 +1702,7 @@ nm_utils_ip4_netmask_to_prefix (guint32 netmask)
 guint32
 nm_utils_ip4_prefix_to_netmask (guint32 prefix)
 {
-	guint32 msk = 0x80000000;
-	guint32 netmask = 0;
-
-	while (prefix > 0) {
-		netmask |= msk;
-		msk >>= 1;
-		prefix--;
-	}
-
-	return (guint32) htonl (netmask);
+	return prefix < 32 ? ~htonl(0xFFFFFFFF >> prefix) : 0xFFFFFFFF;
 }
 
 
@@ -2004,8 +1998,6 @@ nm_utils_ip6_routes_to_gvalue (GSList *list, GValue *value)
 	g_value_take_boxed (value, routes);
 }
 
-/* FIXME: the Posix namespace does not exist, and thus neither does
-   the in6_addr struct. Marking (skip) for now */
 /**
  * nm_utils_ip6_dns_from_gvalue: (skip)
  * @value: a #GValue
@@ -2013,8 +2005,7 @@ nm_utils_ip6_routes_to_gvalue (GSList *list, GValue *value)
  * Converts a #GValue containing a #GPtrArray of IP6 DNS, represented as
  * #GByteArray<!-- -->s into a #GSList of #in6_addr<!-- -->s.
  *
- * Returns: (transfer full) (element-type Posix.in6_addr): a #GSList of IP6
- * addresses.
+ * Returns: a #GSList of IP6 addresses.
  */
 GSList *
 nm_utils_ip6_dns_from_gvalue (const GValue *value)
@@ -2341,7 +2332,7 @@ out:
  *
  * Utility function to find out if the @filename is in PKCS#12 format.
  *
- * Returns: TRUE if the file is PKCS#12, FALSE if it is not
+ * Returns: %TRUE if the file is PKCS#12, %FALSE if it is not
  **/
 gboolean
 nm_utils_file_is_pkcs12 (const char *filename)
@@ -2534,7 +2525,7 @@ nm_utils_wifi_find_next_channel (guint32 channel, int direction, char *band)
  *
  * Utility function to verify WiFi channel validity.
  *
- * Returns: TRUE or FALSE
+ * Returns: %TRUE or %FALSE
  **/
 gboolean
 nm_utils_wifi_is_channel_valid (guint32 channel, const char *band)

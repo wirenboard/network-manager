@@ -184,12 +184,6 @@ NMSettingIP6Config
 @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR: 
 @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR: 
 
-<!-- ##### TYPEDEF NMIP6Address ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### FUNCTION nm_ip6_address_new ##### -->
 <para>
 
@@ -286,12 +280,6 @@ NMSettingIP6Config
 
 @address: 
 @gateway: 
-
-
-<!-- ##### TYPEDEF NMIP6Route ##### -->
-<para>
-
-</para>
 
 
 <!-- ##### FUNCTION nm_ip6_route_new ##### -->
@@ -409,78 +397,6 @@ NMSettingIP6Config
 @route: 
 @metric: 
 
-
-<!-- ##### STRUCT NMSettingIP6Config ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingIP6Config:addresses ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:dhcp-hostname ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:dns ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:dns-search ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:ignore-auto-dns ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:ignore-auto-routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:ip6-privacy ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:may-fail ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:method ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:never-default ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIP6Config:routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingIP6ConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
 
 <!-- ##### FUNCTION nm_setting_ip6_config_new ##### -->
 <para>
