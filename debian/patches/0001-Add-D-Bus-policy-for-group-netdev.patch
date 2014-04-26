@@ -7,11 +7,9 @@ This is more or less a verbatim copy of the at_console section.
  src/org.freedesktop.NetworkManager.conf | 61 +++++++++++++++++++++++++++++++++
  1 file changed, 61 insertions(+)
 
-diff --git a/src/org.freedesktop.NetworkManager.conf b/src/org.freedesktop.NetworkManager.conf
-index 5e7bafa..e5378d7 100644
 --- a/src/org.freedesktop.NetworkManager.conf
 +++ b/src/org.freedesktop.NetworkManager.conf
-@@ -86,6 +86,67 @@
+@@ -87,6 +87,67 @@
                         send_interface="org.freedesktop.NetworkManager"
                         send_member="wake"/>
          </policy>

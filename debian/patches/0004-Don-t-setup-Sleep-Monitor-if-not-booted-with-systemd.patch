@@ -17,11 +17,9 @@ Closes: #742933
  src/nm-sleep-monitor-systemd.c | 5 +++++
  3 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/configure.ac b/configure.ac
-index 6f40bad..e14e98c 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -322,7 +322,8 @@ fi
+@@ -327,7 +327,8 @@
  case $with_suspend_resume in
      upower) ;;
      systemd)
@@ -31,19 +29,17 @@ index 6f40bad..e14e98c 100644
          ;;
      *)
  	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
-diff --git a/src/Makefile.am b/src/Makefile.am
-index 3ca5a7d..c03706e 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -300,6 +300,7 @@ NetworkManager_CPPFLAGS = \
+@@ -304,6 +304,7 @@
  	$(LIBNL_CFLAGS) \
  	$(POLKIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
 +	$(SYSTEMD_INHIBIT_CFLAGS) \
  	$(LIBSOUP_CFLAGS) \
+ 	$(AM_CPPFLAGS) \
  	-DBINDIR=\"$(bindir)\" \
- 	-DSBINDIR=\"$(sbindir)\" \
-@@ -341,6 +342,7 @@ NetworkManager_LDADD = \
+@@ -346,6 +347,7 @@
  	$(LIBNL_LIBS) \
  	$(POLKIT_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \
@@ -51,8 +47,6 @@ index 3ca5a7d..c03706e 100644
  	$(LIBSOUP_LIBS) \
  	$(LIBM) \
  	$(LIBDL)
-diff --git a/src/nm-sleep-monitor-systemd.c b/src/nm-sleep-monitor-systemd.c
-index 576cb14..3eb6091 100644
 --- a/src/nm-sleep-monitor-systemd.c
 +++ b/src/nm-sleep-monitor-systemd.c
 @@ -25,6 +25,7 @@
@@ -63,7 +57,7 @@ index 576cb14..3eb6091 100644
  
  #include "nm-logging.h"
  #include "nm-dbus-manager.h"
-@@ -304,6 +305,10 @@ sleep_setup (NMSleepMonitor *self)
+@@ -304,6 +305,10 @@
  static void
  nm_sleep_monitor_init (NMSleepMonitor *self)
  {
