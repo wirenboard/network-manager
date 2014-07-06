@@ -26,7 +26,6 @@
 #include "nm-dhcp6-config.h"
 #include "nm-dhcp6-config-glue.h"
 #include "nm-dbus-glib-types.h"
-#include "nm-properties-changed-signal.h"
 #include "nm-utils.h"
 
 
@@ -46,14 +45,6 @@ enum {
 
 	LAST_PROP
 };
-
-enum {
-	PROPERTIES_CHANGED,
-
-	LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL] = { 0 };
 
 
 NMDHCP6Config *
@@ -140,14 +131,9 @@ nm_dhcp6_config_init (NMDHCP6Config *self)
 {
 	NMDHCP6ConfigPrivate *priv = NM_DHCP6_CONFIG_GET_PRIVATE (self);
 	static guint32 counter = 0;
-	DBusGConnection *connection;
-	NMDBusManager *dbus_mgr;
 
-	dbus_mgr = nm_dbus_manager_get ();
-	connection = nm_dbus_manager_get_connection (dbus_mgr);
 	priv->dbus_path = g_strdup_printf (NM_DBUS_PATH "/DHCP6Config/%d", counter++);
-	dbus_g_connection_register_g_object (connection, priv->dbus_path, G_OBJECT (self));
-	g_object_unref (dbus_mgr);
+	nm_dbus_manager_register_object (nm_dbus_manager_get (), priv->dbus_path, self);
 
 	priv->options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, nm_gvalue_destroy);
 }
@@ -199,11 +185,7 @@ nm_dhcp6_config_class_init (NMDHCP6ConfigClass *config_class)
 		                     DBUS_TYPE_G_MAP_OF_VARIANT,
 		                     G_PARAM_READABLE));
 
-	/* Signals */
-	signals[PROPERTIES_CHANGED] = 
-		nm_properties_changed_signal_new (object_class,
-								    G_STRUCT_OFFSET (NMDHCP6ConfigClass, properties_changed));
-
-	dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (config_class),
-									 &dbus_glib_nm_dhcp6_config_object_info);
+	nm_dbus_manager_register_exported_type (nm_dbus_manager_get (),
+	                                        G_TYPE_FROM_CLASS (config_class),
+	                                        &dbus_glib_nm_dhcp6_config_object_info);
 }

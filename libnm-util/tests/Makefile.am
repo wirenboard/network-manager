@@ -7,15 +7,18 @@ AM_CPPFLAGS = \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
 	-I$(top_builddir)/libnm-util \
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS)
+	$(DBUS_CFLAGS) \
+	-DTEST_CERT_DIR=\"$(top_srcdir)/libnm-util/tests/certs/\"
 
 noinst_PROGRAMS = \
 	test-settings-defaults \
 	test-crypto \
 	test-secrets \
 	test-general \
-	test-setting-8021x
+	test-setting-8021x \
+	test-setting-dcb
 
 test_settings_defaults_SOURCES = \
 	test-settings-defaults.c
@@ -35,10 +38,6 @@ test_crypto_LDADD = \
 
 test_secrets_SOURCES = \
 	test-secrets.c
-
-test_secrets_CPPFLAGS = \
-	-DTEST_CERT_DIR=\"$(top_srcdir)/libnm-util/tests/certs/\" \
-	$(AM_CPPFLAGS)
 
 test_secrets_LDADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
@@ -61,11 +60,15 @@ test_setting_8021x_LDADD = \
 	$(GLIB_LIBS) \
 	$(DBUS_LIBS)
 
-check-local: test-settings-defaults test-crypto test-secrets
-	$(abs_builddir)/test-settings-defaults
-	$(abs_builddir)/test-secrets
-	$(abs_builddir)/test-general
+test_setting_dcb_SOURCES = \
+	test-setting-dcb.c
 
+test_setting_dcb_LDADD = \
+	$(top_builddir)/libnm-util/libnm-util.la \
+	$(GLIB_LIBS) \
+	$(DBUS_LIBS)
+
+check-local: test-crypto test-setting-8021x
 # Private key and CA certificate in the same file (PEM)
 	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test_key_and_cert.pem "test"
 
@@ -121,5 +124,10 @@ check-local: test-settings-defaults test-crypto test-secrets
 	$(abs_builddir)/test-crypto --pkcs8 \
 		$(srcdir)/certs/pkcs8-enc-key.pem \
 		"1234567890"
+
+# Private key with AES cipher
+	$(abs_builddir)/test-crypto --key $(srcdir)/certs/test-aes-key.pem "test-aes-password"
+
+TESTS = test-settings-defaults test-secrets test-general test-setting-dcb
 
 endif

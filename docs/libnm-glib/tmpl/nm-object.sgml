@@ -60,6 +60,45 @@ NMObject
 
 
 
+<!-- ##### STRUCT NMObject ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NMObject::object-creation-failed ##### -->
+<para>
+
+</para>
+
+@nmobject: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### ARG NMObject:dbus-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMObject:dbus-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMObjectClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@object_creation_failed: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_object_get_connection ##### -->
 <para>
 

@@ -68,6 +68,40 @@ NMDeviceOlpcMesh
 
 
 
+<!-- ##### STRUCT NMDeviceOlpcMesh ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceOlpcMesh:active-channel ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceOlpcMesh:companion ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceOlpcMesh:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceOlpcMeshClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_device_olpc_mesh_new ##### -->
 <para>
 

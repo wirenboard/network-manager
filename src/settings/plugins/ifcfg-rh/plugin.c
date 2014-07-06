@@ -27,6 +27,8 @@
 #include <errno.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <gmodule.h>
 #include <glib-object.h>
@@ -37,6 +39,10 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#if HAVE_SELINUX
+#include <selinux/selinux.h>
+#endif
+
 #include <nm-setting-connection.h>
 
 #include "common.h"
@@ -44,10 +50,13 @@
 #include "plugin.h"
 #include "nm-system-config-interface.h"
 #include "nm-settings-error.h"
+#include "nm-config.h"
+#include "nm-logging.h"
 
 #include "nm-ifcfg-connection.h"
 #include "nm-inotify-helper.h"
 #include "shvar.h"
+#include "reader.h"
 #include "writer.h"
 #include "utils.h"
 
@@ -64,7 +73,8 @@ static gboolean impl_ifcfgrh_get_ifcfg_details (SCPluginIfcfg *plugin,
 
 static void connection_new_or_changed (SCPluginIfcfg *plugin,
                                        const char *path,
-                                       NMIfcfgConnection *existing);
+                                       NMIfcfgConnection *existing,
+                                       char **out_old_path);
 
 static void system_config_interface_init (NMSystemConfigInterface *system_config_interface_class);
 
@@ -76,8 +86,9 @@ G_DEFINE_TYPE_EXTENDED (SCPluginIfcfg, sc_plugin_ifcfg, G_TYPE_OBJECT, 0,
 
 
 typedef struct {
-	GHashTable *connections;
+	GHashTable *connections;  /* uuid::connection */
 
+	gboolean initialized;
 	gulong ih_event_id;
 	int sc_network_wd;
 	GFileMonitor *hostname_monitor;
@@ -92,14 +103,6 @@ typedef struct {
 
 
 static void
-connection_unmanaged_changed (NMIfcfgConnection *connection,
-                              GParamSpec *pspec,
-                              gpointer user_data)
-{
-	g_signal_emit_by_name (SC_PLUGIN_IFCFG (user_data), NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
-}
-
-static void
 connection_ifcfg_changed (NMIfcfgConnection *connection, gpointer user_data)
 {
 	SCPluginIfcfg *plugin = SC_PLUGIN_IFCFG (user_data);
@@ -108,7 +111,14 @@ connection_ifcfg_changed (NMIfcfgConnection *connection, gpointer user_data)
 	path = nm_ifcfg_connection_get_path (connection);
 	g_return_if_fail (path != NULL);
 
-	connection_new_or_changed (plugin, path, connection);
+	connection_new_or_changed (plugin, path, connection, NULL);
+}
+
+static void
+connection_removed_cb (NMSettingsConnection *obj, gpointer user_data)
+{
+	g_hash_table_remove (SC_PLUGIN_IFCFG_GET_PRIVATE (user_data)->connections,
+	                     nm_connection_get_uuid (NM_CONNECTION (obj)));
 }
 
 static NMIfcfgConnection *
@@ -123,17 +133,17 @@ _internal_new_connection (SCPluginIfcfg *self,
 	GError *local = NULL;
 	gboolean ignore_error = FALSE;
 
-	if (!source) {
-		PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "parsing %s ... ", path);
-	}
+	if (!source)
+		nm_log_info (LOGD_SETTINGS, "parsing %s ... ", path);
 
-	connection = nm_ifcfg_connection_new (path, source, &local, &ignore_error);
+	connection = nm_ifcfg_connection_new (source, path, &local, &ignore_error);
 	if (!connection) {
-		if (!ignore_error) {
-			PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "    error: %s",
-			              (local && local->message) ? local->message : "(unknown)");
-		}
-		g_propagate_error (error, local);
+		if (!ignore_error)
+			nm_log_warn (LOGD_SETTINGS, "    %s", (local && local->message) ? local->message : "(unknown)");
+		if (local)
+			g_propagate_error (error, local);
+		else
+			g_set_error (error, IFCFG_PLUGIN_ERROR, 0, "(unknown)");
 		return NULL;
 	}
 
@@ -141,19 +151,27 @@ _internal_new_connection (SCPluginIfcfg *self,
 	g_assert (cid);
 
 	g_hash_table_insert (priv->connections,
-	                     (gpointer) nm_ifcfg_connection_get_path (connection),
+	                     g_strdup (nm_connection_get_uuid (NM_CONNECTION (connection))),
 	                     connection);
-	PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "    read connection '%s'", cid);
+	nm_log_info (LOGD_SETTINGS, "    read connection '%s'", cid);
+	g_signal_connect (connection, NM_SETTINGS_CONNECTION_REMOVED,
+	                  G_CALLBACK (connection_removed_cb),
+	                  self);
 
 	if (nm_ifcfg_connection_get_unmanaged_spec (connection)) {
-		PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "Ignoring connection '%s' and its "
-		              "device due to NM_CONTROLLED/BRIDGE/VLAN.", cid);
-	} else {
-		/* Wait for the connection to become unmanaged once it knows the
-		 * hardware IDs of its device, if/when the device gets plugged in.
-		 */
-		g_signal_connect (G_OBJECT (connection), "notify::" NM_IFCFG_CONNECTION_UNMANAGED,
-		                  G_CALLBACK (connection_unmanaged_changed), self);
+		const char *spec;
+		const char *device_id;
+
+		spec = nm_ifcfg_connection_get_unmanaged_spec (connection);
+		device_id = strchr (spec, ':');
+		if (device_id)
+			device_id++;
+		else
+			device_id = spec;
+		nm_log_warn (LOGD_SETTINGS, "    Ignoring connection '%s' / device '%s' due to NM_CONTROLLED=no.",
+		             cid, device_id);
+	} else if (nm_ifcfg_connection_get_unrecognized_spec (connection)) {
+		nm_log_warn (LOGD_SETTINGS, "    Ignoring connection '%s' of unrecognized type.", cid);
 	}
 
 	/* watch changes of ifcfg hardlinks */
@@ -163,108 +181,118 @@ _internal_new_connection (SCPluginIfcfg *self,
 	return connection;
 }
 
-static void
-read_connections (SCPluginIfcfg *plugin)
-{
-	GDir *dir;
-	GError *err = NULL;
-
-	dir = g_dir_open (IFCFG_DIR, 0, &err);
-	if (dir) {
-		const char *item;
-
-		while ((item = g_dir_read_name (dir))) {
-			char *full_path;
-
-			if (utils_should_ignore_file (item, TRUE))
-				continue;
-
-			full_path = g_build_filename (IFCFG_DIR, item, NULL);
-			if (utils_get_ifcfg_name (full_path, TRUE))
-				_internal_new_connection (plugin, full_path, NULL, NULL);
-			g_free (full_path);
-		}
-
-		g_dir_close (dir);
-	} else {
-		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "Can not read directory '%s': %s", IFCFG_DIR, err->message);
-		g_error_free (err);
-	}
-}
-
 /* Monitoring */
-
-/* Callback for nm_settings_connection_replace_and_commit. Report any errors
- * encountered when commiting connection settings updates. */
-static void
-commit_cb (NMSettingsConnection *connection, GError *error, gpointer unused) 
-{
-	if (error) {
-		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    error updating: %s",
-	             	 (error && error->message) ? error->message : "(unknown)");
-	}
-}
 
 static void
 remove_connection (SCPluginIfcfg *self, NMIfcfgConnection *connection)
 {
 	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (self);
-	gboolean managed = FALSE;
-	const char *path;
+	gboolean unmanaged, unrecognized;
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (connection != NULL);
 
-	managed = !nm_ifcfg_connection_get_unmanaged_spec (connection);
-	path = nm_ifcfg_connection_get_path (connection);
+	unmanaged = !!nm_ifcfg_connection_get_unmanaged_spec (connection);
+	unrecognized = !!nm_ifcfg_connection_get_unrecognized_spec (connection);
 
 	g_object_ref (connection);
-	g_hash_table_remove (priv->connections, path);
+	g_hash_table_remove (priv->connections, nm_connection_get_uuid (NM_CONNECTION (connection)));
 	nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (connection));
 	g_object_unref (connection);
 
-	/* Emit unmanaged changes _after_ removing the connection */
-	if (managed == FALSE)
+	/* Emit changes _after_ removing the connection */
+	if (unmanaged)
 		g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
+	if (unrecognized)
+		g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNRECOGNIZED_SPECS_CHANGED);
+}
+
+static NMIfcfgConnection *
+find_by_path (SCPluginIfcfg *self, const char *path)
+{
+	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (self);
+	GHashTableIter iter;
+	NMIfcfgConnection *candidate = NULL;
+
+	g_return_val_if_fail (path != NULL, NULL);
+
+	g_hash_table_iter_init (&iter, priv->connections);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &candidate)) {
+		if (g_strcmp0 (path, nm_ifcfg_connection_get_path (candidate)) == 0)
+			return candidate;
+	}
+	return NULL;
+}
+
+static NMIfcfgConnection *
+find_by_uuid_from_path (SCPluginIfcfg *self, const char *path)
+{
+	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (self);
+	char *uuid;
+
+	g_return_val_if_fail (path != NULL, NULL);
+
+	uuid = uuid_from_file (path);
+	if (uuid)
+		return g_hash_table_lookup (priv->connections, uuid);
+	else
+		return NULL;
 }
 
 static void
 connection_new_or_changed (SCPluginIfcfg *self,
                            const char *path,
-                           NMIfcfgConnection *existing)
+                           NMIfcfgConnection *existing,
+                           char **out_old_path)
 {
+	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (self);
 	NMIfcfgConnection *new;
 	GError *error = NULL;
 	gboolean ignore_error = FALSE;
 	const char *new_unmanaged = NULL, *old_unmanaged = NULL;
+	const char *new_unrecognized = NULL, *old_unrecognized = NULL;
+	gboolean unmanaged_changed, unrecognized_changed;
 
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (path != NULL);
 
+	if (out_old_path)
+		*out_old_path = NULL;
+
 	if (!existing) {
-		/* Completely new connection */
+		/* See if it's a rename */
+		existing = find_by_uuid_from_path (self, path);
+		if (existing) {
+			const char *old_path = nm_ifcfg_connection_get_path (existing);
+			nm_log_info (LOGD_SETTINGS, "renaming %s -> %s", old_path, path);
+			if (out_old_path)
+				*out_old_path = g_strdup (old_path);
+			nm_ifcfg_connection_set_path (existing, path);
+		}
+	}
+
+	if (!existing) {
+		/* New connection */
 		new = _internal_new_connection (self, path, NULL, NULL);
 		if (new) {
-			if (nm_ifcfg_connection_get_unmanaged_spec (new)) {
+			if (nm_ifcfg_connection_get_unmanaged_spec (new))
 				g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
-			} else {
-				/* Only managed connections are announced to the settings service */
+			else if (nm_ifcfg_connection_get_unrecognized_spec (new))
+				g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNRECOGNIZED_SPECS_CHANGED);
+			else
 				g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_CONNECTION_ADDED, new);
-			}
 		}
 		return;
 	}
 
-	new = (NMIfcfgConnection *) nm_ifcfg_connection_new (path, NULL, &error, &ignore_error);
+	new = (NMIfcfgConnection *) nm_ifcfg_connection_new (NULL, path, &error, &ignore_error);
 	if (!new) {
 		/* errors reading connection; remove it */
-		if (!ignore_error) {
-			PLUGIN_WARN (IFCFG_PLUGIN_NAME, "    error: %s",
-			             (error && error->message) ? error->message : "(unknown)");
-		}
+		if (!ignore_error)
+			nm_log_warn (LOGD_SETTINGS, "    %s", (error && error->message) ? error->message : "(unknown)");
 		g_clear_error (&error);
 
-		PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "removed %s.", path);
+		nm_log_info (LOGD_SETTINGS, "removed %s.", path);
 		remove_connection (self, existing);
 		return;
 	}
@@ -273,57 +301,71 @@ connection_new_or_changed (SCPluginIfcfg *self,
 
 	old_unmanaged = nm_ifcfg_connection_get_unmanaged_spec (NM_IFCFG_CONNECTION (existing));
 	new_unmanaged = nm_ifcfg_connection_get_unmanaged_spec (NM_IFCFG_CONNECTION (new));
+	unmanaged_changed = g_strcmp0 (old_unmanaged, new_unmanaged);
 
-	/* When interface is unmanaged or the connections and unmanaged specs are the same
-	 * there's nothing to do */
-	if (   (g_strcmp0 (old_unmanaged, new_unmanaged) == 0 && new_unmanaged != NULL)
-	    || (   nm_connection_compare (NM_CONNECTION (existing),
-	                                  NM_CONNECTION (new),
-	                                  NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS |
-	                                    NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS)
-	        && g_strcmp0 (old_unmanaged, new_unmanaged) == 0)) {
+	old_unrecognized = nm_ifcfg_connection_get_unrecognized_spec (NM_IFCFG_CONNECTION (existing));
+	new_unrecognized = nm_ifcfg_connection_get_unrecognized_spec (NM_IFCFG_CONNECTION (new));
+	unrecognized_changed = g_strcmp0 (old_unrecognized, new_unrecognized);
 
+	if (   !unmanaged_changed
+	    && !unrecognized_changed
+	    && nm_connection_compare (NM_CONNECTION (existing),
+	                              NM_CONNECTION (new),
+	                              NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS |
+	                                  NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS)) {
 		g_object_unref (new);
 		return;
 	}
 
-	PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "updating %s", path);
+	nm_log_info (LOGD_SETTINGS, "updating %s", path);
+	g_object_set (existing,
+	              NM_IFCFG_CONNECTION_UNMANAGED_SPEC, new_unmanaged,
+	              NM_IFCFG_CONNECTION_UNRECOGNIZED_SPEC, new_unrecognized,
+	              NULL);
 
-	if (new_unmanaged) {
-		if (!old_unmanaged) {
+	if (new_unmanaged || new_unrecognized) {
+		if (!old_unmanaged && !old_unrecognized) {
+			g_object_ref (existing);
 			/* Unexport the connection by telling the settings service it's
-			 * been removed, and notify the settings service by signalling that
-			 * unmanaged specs have changed.
+			 * been removed.
 			 */
 			nm_settings_connection_signal_remove (NM_SETTINGS_CONNECTION (existing));
 			/* Remove the path so that claim_connection() doesn't complain later when
 			 * interface gets managed and connection is re-added. */
 			nm_connection_set_path (NM_CONNECTION (existing), NULL);
 
-			g_object_set (existing, NM_IFCFG_CONNECTION_UNMANAGED, new_unmanaged, NULL);
-			g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
+			/* signal_remove() will end up removing the connection from our hash,
+			 * so add it back now.
+			 */
+			g_hash_table_insert (priv->connections,
+			                     g_strdup (nm_connection_get_uuid (NM_CONNECTION (existing))),
+			                     existing);
 		}
 	} else {
-		if (old_unmanaged) {  /* now managed */
-			const char *cid;
+		const char *cid = nm_connection_get_id (NM_CONNECTION (new));
 
-			cid = nm_connection_get_id (NM_CONNECTION (new));
-			g_assert (cid);
-
-			PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "Managing connection '%s' and its "
-			              "device because NM_CONTROLLED was true.", cid);
+		if (old_unmanaged /* && !new_unmanaged */) {
+			nm_log_info (LOGD_SETTINGS, "Managing connection '%s' and its device because NM_CONTROLLED was true.", cid);
+			g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_CONNECTION_ADDED, existing);
+		} else if (old_unrecognized /* && !new_unrecognized */) {
+			nm_log_info (LOGD_SETTINGS, "Managing connection '%s' because it is now a recognized type.", cid);
 			g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_CONNECTION_ADDED, existing);
 		}
 
-		nm_settings_connection_replace_and_commit (NM_SETTINGS_CONNECTION (existing),
-		                                           NM_CONNECTION (new),
-		                                           commit_cb, NULL);
-
-		/* Update unmanaged status */
-		g_object_set (existing, NM_IFCFG_CONNECTION_UNMANAGED, new_unmanaged, NULL);
-		g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
+		if (!nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (existing),
+		                                              NM_CONNECTION (new),
+		                                              FALSE,  /* don't set Unsaved */
+		                                              &error)) {
+			/* Shouldn't ever get here as 'new' was verified by the reader already */
+			g_assert_no_error (error);
+		}
 	}
 	g_object_unref (new);
+
+	if (unmanaged_changed)
+		g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED);
+	if (unrecognized_changed)
+		g_signal_emit_by_name (self, NM_SYSTEM_CONFIG_INTERFACE_UNRECOGNIZED_SPECS_CHANGED);
 }
 
 static void
@@ -334,8 +376,7 @@ ifcfg_dir_changed (GFileMonitor *monitor,
                    gpointer user_data)
 {
 	SCPluginIfcfg *plugin = SC_PLUGIN_IFCFG (user_data);
-	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (plugin);
-	char *path, *name;
+	char *path, *base, *ifcfg_path;
 	NMIfcfgConnection *connection;
 
 	path = g_file_get_path (file);
@@ -344,27 +385,34 @@ ifcfg_dir_changed (GFileMonitor *monitor,
 		return;
 	}
 
-	/* Given any ifcfg, keys, or routes file, get the ifcfg file path */
-	name = utils_get_ifcfg_path (path);
-	g_free (path);
-	if (name) {
-		connection = g_hash_table_lookup (priv->connections, name);
+	base = g_file_get_basename (file);
+	if (utils_is_ifcfg_alias_file (base, NULL)) {
+		/* Alias file changed. Get the base ifcfg file from it */
+		ifcfg_path = utils_get_ifcfg_from_alias (path);
+	} else {
+		/* Given any ifcfg, keys, or routes file, get the ifcfg file path */
+		ifcfg_path = utils_get_ifcfg_path (path);
+	}
+	if (ifcfg_path) {
+		connection = find_by_path (plugin, ifcfg_path);
 		switch (event_type) {
 		case G_FILE_MONITOR_EVENT_DELETED:
-			PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "removed %s.", name);
+			nm_log_info (LOGD_SETTINGS, "removed %s.", ifcfg_path);
 			if (connection)
 				remove_connection (plugin, connection);
 			break;
 		case G_FILE_MONITOR_EVENT_CREATED:
 		case G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
 			/* Update or new */
-			connection_new_or_changed (plugin, name, connection);
+			connection_new_or_changed (plugin, ifcfg_path, connection, NULL);
 			break;
 		default:
 			break;
 		}
-		g_free (name);
+		g_free (ifcfg_path);
 	}
+	g_free (path);
+	g_free (base);
 }
 
 static void
@@ -373,8 +421,6 @@ setup_ifcfg_monitoring (SCPluginIfcfg *plugin)
 	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (plugin);
 	GFile *file;
 	GFileMonitor *monitor;
-
-	priv->connections = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
 
 	file = g_file_new_for_path (IFCFG_DIR "/");
 	monitor = g_file_monitor_directory (file, G_FILE_MONITOR_NONE, NULL, NULL);
@@ -387,6 +433,70 @@ setup_ifcfg_monitoring (SCPluginIfcfg *plugin)
 	}
 }
 
+static void
+read_connections (SCPluginIfcfg *plugin)
+{
+	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (plugin);
+	GDir *dir;
+	GError *err = NULL;
+	const char *item;
+	GHashTable *oldconns;
+	GHashTableIter iter;
+	gpointer key, value;
+	NMIfcfgConnection *connection;
+
+	dir = g_dir_open (IFCFG_DIR, 0, &err);
+	if (!dir) {
+		nm_log_warn (LOGD_SETTINGS, "Could not read directory '%s': %s", IFCFG_DIR, err->message);
+		g_error_free (err);
+		return;
+	}
+
+	oldconns = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	g_hash_table_iter_init (&iter, priv->connections);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		const char *ifcfg_path = nm_ifcfg_connection_get_path (value);
+		if (ifcfg_path)
+			g_hash_table_insert (oldconns, g_strdup (ifcfg_path), value);
+	}
+
+	while ((item = g_dir_read_name (dir))) {
+		char *full_path, *old_path;
+
+		if (utils_should_ignore_file (item, TRUE))
+			continue;
+		if (utils_is_ifcfg_alias_file (item, NULL))
+			continue;
+
+		full_path = g_build_filename (IFCFG_DIR, item, NULL);
+		if (!utils_get_ifcfg_name (full_path, TRUE))
+			goto next;
+
+		connection = g_hash_table_lookup (oldconns, full_path);
+		g_hash_table_remove (oldconns, full_path);
+		connection_new_or_changed (plugin, full_path, connection, &old_path);
+
+		if (old_path) {
+			g_hash_table_remove (oldconns, old_path);
+			g_free (old_path);
+		}
+
+	next:
+		g_free (full_path);
+	}
+
+	g_dir_close (dir);
+
+	g_hash_table_iter_init (&iter, oldconns);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		nm_log_info (LOGD_SETTINGS, "removed %s.", (char *)key);
+		g_hash_table_iter_remove (&iter);
+		remove_connection (plugin, value);
+	}
+
+	g_hash_table_destroy (oldconns);
+}
+
 static GSList *
 get_connections (NMSystemConfigInterface *config)
 {
@@ -394,75 +504,123 @@ get_connections (NMSystemConfigInterface *config)
 	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (plugin);
 	GSList *list = NULL;
 	GHashTableIter iter;
-	gpointer value;
+	NMIfcfgConnection *connection;
 
-	if (!priv->connections) {
-		setup_ifcfg_monitoring (plugin);
+	if (!priv->initialized) {
+		if (nm_config_get_monitor_connection_files (nm_config_get ()))
+			setup_ifcfg_monitoring (plugin);
 		read_connections (plugin);
+		priv->initialized = TRUE;
 	}
 
 	g_hash_table_iter_init (&iter, priv->connections);
-	while (g_hash_table_iter_next (&iter, NULL, &value)) {
-		NMIfcfgConnection *exported = NM_IFCFG_CONNECTION (value);
-
-		if (!nm_ifcfg_connection_get_unmanaged_spec (exported))
-			list = g_slist_prepend (list, value);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &connection)) {
+		if (   !nm_ifcfg_connection_get_unmanaged_spec (connection)
+		    && !nm_ifcfg_connection_get_unrecognized_spec (connection))
+			list = g_slist_prepend (list, connection);
 	}
 
 	return list;
 }
 
-static void
-check_unmanaged (gpointer key, gpointer data, gpointer user_data)
+static gboolean
+load_connection (NMSystemConfigInterface *config,
+                 const char *filename)
 {
-	GSList **list = (GSList **) user_data;
-	NMIfcfgConnection *connection = NM_IFCFG_CONNECTION (data);
-	const char *unmanaged_spec;
-	GSList *iter;
+	SCPluginIfcfg *plugin = SC_PLUGIN_IFCFG (config);
+	NMIfcfgConnection *connection;
+	int dir_len = strlen (IFCFG_DIR);
 
-	unmanaged_spec = nm_ifcfg_connection_get_unmanaged_spec (connection);
-	if (!unmanaged_spec)
-		return;
+	if (   strncmp (filename, IFCFG_DIR, dir_len) != 0
+	    || filename[dir_len] != '/'
+	    || strchr (filename + dir_len + 1, '/') != NULL)
+		return FALSE;
 
-	/* Just return if the unmanaged spec is already in the list */
-	for (iter = *list; iter; iter = g_slist_next (iter)) {
-		if (!strcmp ((char *) iter->data, unmanaged_spec))
-			return;
+	if (utils_should_ignore_file (filename + dir_len + 1, TRUE))
+		return FALSE;
+
+	connection = find_by_path (plugin, filename);
+	connection_new_or_changed (plugin, filename, connection, NULL);
+	if (!connection)
+		connection = find_by_path (plugin, filename);
+
+	return (connection != NULL);
+}
+
+static void
+reload_connections (NMSystemConfigInterface *config)
+{
+	SCPluginIfcfg *plugin = SC_PLUGIN_IFCFG (config);
+
+	read_connections (plugin);
+}
+
+static GSList *
+get_unhandled_specs (NMSystemConfigInterface *config,
+                     const char *property)
+{
+	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (config);
+	GSList *list = NULL, *list_iter;
+	GHashTableIter iter;
+	gpointer connection;
+	char *spec;
+	gboolean found;
+
+	g_hash_table_iter_init (&iter, priv->connections);
+	while (g_hash_table_iter_next (&iter, NULL, &connection)) {
+		g_object_get (connection, property, &spec, NULL);
+		if (spec) {
+			/* Ignore duplicates */
+			for (list_iter = list, found = FALSE; list_iter; list_iter = g_slist_next (list_iter)) {
+				if (g_str_equal (list_iter->data, spec)) {
+					found = TRUE;
+					break;
+				}
+			}
+			if (found)
+				g_free (spec);
+			else
+				list = g_slist_prepend (list, spec);
+		}
 	}
-
-	*list = g_slist_prepend (*list, g_strdup (unmanaged_spec));
+	return list;
 }
 
 static GSList *
 get_unmanaged_specs (NMSystemConfigInterface *config)
 {
-	SCPluginIfcfg *plugin = SC_PLUGIN_IFCFG (config);
-	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (config);
-	GSList *list = NULL;
+	return get_unhandled_specs (config, NM_IFCFG_CONNECTION_UNMANAGED_SPEC);
+}
 
-	if (!priv->connections) {
-		setup_ifcfg_monitoring (plugin);
-		read_connections (plugin);
-	}
-
-	g_hash_table_foreach (priv->connections, check_unmanaged, &list);
-	return list;
+static GSList *
+get_unrecognized_specs (NMSystemConfigInterface *config)
+{
+	return get_unhandled_specs (config, NM_IFCFG_CONNECTION_UNRECOGNIZED_SPEC);
 }
 
 static NMSettingsConnection *
 add_connection (NMSystemConfigInterface *config,
                 NMConnection *connection,
+                gboolean save_to_disk,
                 GError **error)
 {
 	SCPluginIfcfg *self = SC_PLUGIN_IFCFG (config);
 	NMIfcfgConnection *added = NULL;
 	char *path = NULL;
 
-	/* Write it out first, then add the connection to our internal list */
-	if (writer_new_connection (connection, IFCFG_DIR, &path, error)) {
-		added = _internal_new_connection (self, path, connection, error);
-		g_free (path);
+	/* Ensure we reject attempts to add the connection long before we're
+	 * asked to write it to disk.
+	 */
+	if (!writer_can_write_connection (connection, error))
+		return NULL;
+
+	if (save_to_disk) {
+		if (!writer_new_connection (connection, IFCFG_DIR, &path, error))
+			return NULL;
 	}
+
+	added = _internal_new_connection (self, path, connection, error);
+	g_free (path);
 	return (NMSettingsConnection *) added;
 }
 
@@ -481,9 +639,9 @@ plugin_get_hostname (SCPluginIfcfg *plugin)
 		return hostname;
 	}
 
-	network = svNewFile (SC_NETWORK_FILE);
+	network = svOpenFile (SC_NETWORK_FILE, NULL);
 	if (!network) {
-		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "Could not get hostname: failed to read " SC_NETWORK_FILE);
+		nm_log_warn (LOGD_SETTINGS, "Could not get hostname: failed to read " SC_NETWORK_FILE);
 		return NULL;
 	}
 
@@ -508,20 +666,45 @@ plugin_set_hostname (SCPluginIfcfg *plugin, const char *hostname)
 {
 	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (plugin);
 	shvarFile *network;
+	char *hostname_eol;
+	gboolean ret;
+#if HAVE_SELINUX
+	security_context_t se_ctx_prev, se_ctx = NULL;
+	struct stat file_stat = { .st_mode = 0 };
 
-	if (!g_file_set_contents (HOSTNAME_FILE, hostname, -1, NULL)) {
-		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "Could not save hostname: failed to create/open " HOSTNAME_FILE);
+	/* Get default context for HOSTNAME_FILE and set it for fscreate */
+	stat (HOSTNAME_FILE, &file_stat);
+	matchpathcon (HOSTNAME_FILE, file_stat.st_mode, &se_ctx);
+	matchpathcon_fini ();
+	getfscreatecon (&se_ctx_prev);
+	setfscreatecon (se_ctx);
+#endif
+
+	hostname_eol = g_strdup_printf ("%s\n", hostname);
+	ret = g_file_set_contents (HOSTNAME_FILE, hostname_eol, -1, NULL);
+
+#if HAVE_SELINUX
+	/* Restore previous context and cleanup */
+	setfscreatecon (se_ctx_prev);
+	freecon (se_ctx);
+	freecon (se_ctx_prev);
+#endif
+
+	if (!ret) {
+		nm_log_warn (LOGD_SETTINGS, "Could not save hostname: failed to create/open " HOSTNAME_FILE);
+		g_free (hostname_eol);
 		return FALSE;
 	}
 
 	g_free (priv->hostname);
 	priv->hostname = g_strdup (hostname);
+	g_free (hostname_eol);
 
 	/* Remove "HOSTNAME" from SC_NETWORK_FILE, if present */
-	network = svNewFile (SC_NETWORK_FILE);
+	network = svOpenFile (SC_NETWORK_FILE, NULL);
 	if (network) {
 		svSetValue (network, "HOSTNAME", NULL, FALSE);
-		svWriteFile (network, 0644);
+		svWriteFile (network, 0644, NULL);
 		svCloseFile (network);
 	}
 
@@ -579,7 +762,6 @@ impl_ifcfgrh_get_ifcfg_details (SCPluginIfcfg *plugin,
                                 const char **out_path,
                                 GError **error)
 {
-	SCPluginIfcfgPrivate *priv = SC_PLUGIN_IFCFG_GET_PRIVATE (plugin);
 	NMIfcfgConnection *connection;
 	NMSettingConnection *s_con;
 	const char *uuid;
@@ -593,8 +775,10 @@ impl_ifcfgrh_get_ifcfg_details (SCPluginIfcfg *plugin,
 		return FALSE;
 	}
 
-	connection = g_hash_table_lookup (priv->connections, in_ifcfg);
-	if (!connection || nm_ifcfg_connection_get_unmanaged_spec (connection)) {
+	connection = find_by_path (plugin, in_ifcfg);
+	if (   !connection
+	    || nm_ifcfg_connection_get_unmanaged_spec (connection)
+	    || nm_ifcfg_connection_get_unrecognized_spec (connection)) {
 		g_set_error (error,
 		             NM_SETTINGS_ERROR,
 		             NM_SETTINGS_ERROR_INVALID_CONNECTION,
@@ -650,6 +834,8 @@ sc_plugin_ifcfg_init (SCPluginIfcfg *plugin)
 	GFile *file;
 	GFileMonitor *monitor;
 
+	priv->connections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+
 	/* We watch SC_NETWORK_FILE via NMInotifyHelper (which doesn't track file creation but
 	 * *does* track modifications made via other hard links), since we expect it to always
 	 * exist. But we watch HOSTNAME_FILE via GFileMonitor (which has the opposite
@@ -674,8 +860,7 @@ sc_plugin_ifcfg_init (SCPluginIfcfg *plugin)
 
 	priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (!priv->bus) {
-		PLUGIN_WARN (IFCFG_PLUGIN_NAME, "Couldn't connect to D-Bus: %s",
-		             error->message);
+		nm_log_warn (LOGD_SETTINGS, "Couldn't connect to D-Bus: %s", error->message);
 		g_clear_error (&error);
 	} else {
 		DBusConnection *tmp;
@@ -696,11 +881,10 @@ sc_plugin_ifcfg_init (SCPluginIfcfg *plugin)
 		                        G_TYPE_INVALID,
 		                        G_TYPE_UINT, &result,
 		                        G_TYPE_INVALID)) {
-			PLUGIN_WARN (IFCFG_PLUGIN_NAME, "Couldn't acquire D-Bus service: %s",
-			             error->message);
+			nm_log_warn (LOGD_SETTINGS, "Couldn't acquire D-Bus service: %s", error->message);
 			g_clear_error (&error);
 		} else if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-			PLUGIN_WARN (IFCFG_PLUGIN_NAME, "Couldn't acquire ifcfgrh1 D-Bus service (already taken)");
+			nm_log_warn (LOGD_SETTINGS, "Couldn't acquire ifcfgrh1 D-Bus service (already taken)");
 		} else
 			success = TRUE;
 	}
@@ -745,8 +929,10 @@ dispose (GObject *object)
 
 	g_free (priv->hostname);
 
-	if (priv->connections)
+	if (priv->connections) {
 		g_hash_table_destroy (priv->connections);
+		priv->connections = NULL;
+	}
 
 	if (priv->ifcfg_monitor) {
 		if (priv->ifcfg_monitor_id)
@@ -757,12 +943,6 @@ dispose (GObject *object)
 	}
 
 	G_OBJECT_CLASS (sc_plugin_ifcfg_parent_class)->dispose (object);
-}
-
-static void
-finalize (GObject *object)
-{
-	G_OBJECT_CLASS (sc_plugin_ifcfg_parent_class)->finalize (object);
 }
 
 static void
@@ -817,7 +997,6 @@ sc_plugin_ifcfg_class_init (SCPluginIfcfgClass *req_class)
 	g_type_class_add_private (req_class, sizeof (SCPluginIfcfgPrivate));
 
 	object_class->dispose = dispose;
-	object_class->finalize = finalize;
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
 
@@ -847,26 +1026,27 @@ system_config_interface_init (NMSystemConfigInterface *system_config_interface_c
 	/* interface implementation */
 	system_config_interface_class->get_connections = get_connections;
 	system_config_interface_class->add_connection = add_connection;
+	system_config_interface_class->load_connection = load_connection;
+	system_config_interface_class->reload_connections = reload_connections;
 	system_config_interface_class->get_unmanaged_specs = get_unmanaged_specs;
+	system_config_interface_class->get_unrecognized_specs = get_unrecognized_specs;
 	system_config_interface_class->init = init;
 }
 
 G_MODULE_EXPORT GObject *
-nm_system_config_factory (const char *config_file)
+nm_system_config_factory (void)
 {
 	static SCPluginIfcfg *singleton = NULL;
 	SCPluginIfcfgPrivate *priv;
 
 	if (!singleton) {
 		singleton = SC_PLUGIN_IFCFG (g_object_new (SC_TYPE_PLUGIN_IFCFG, NULL));
-		if (singleton) {
-			priv = SC_PLUGIN_IFCFG_GET_PRIVATE (singleton);
-			if (priv->bus)
-				dbus_g_connection_register_g_object (priv->bus,
-				                                     DBUS_OBJECT_PATH,
-				                                     G_OBJECT (singleton));
-			PLUGIN_PRINT (IFCFG_PLUGIN_NAME, "Acquired D-Bus service %s", DBUS_SERVICE_NAME);
-		}
+		priv = SC_PLUGIN_IFCFG_GET_PRIVATE (singleton);
+		if (priv->bus)
+			dbus_g_connection_register_g_object (priv->bus,
+			                                     DBUS_OBJECT_PATH,
+			                                     G_OBJECT (singleton));
+		nm_log_info (LOGD_SETTINGS, "Acquired D-Bus service %s", DBUS_SERVICE_NAME);
 	} else
 		g_object_ref (singleton);
 

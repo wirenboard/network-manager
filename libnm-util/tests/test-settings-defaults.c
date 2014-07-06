@@ -22,7 +22,6 @@
 #include <glib.h>
 #include <string.h>
 
-#include "nm-test-helpers.h"
 #include <nm-utils.h>
 
 #include "nm-setting-8021x.h"
@@ -39,6 +38,7 @@
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
 
+#include "nm-test-utils.h"
 
 static void
 test_defaults (GType type, const char *name)
@@ -57,8 +57,8 @@ test_defaults (GType type, const char *name)
 
 	for (i = 0; i < n_property_specs; i++) {
 		GParamSpec *prop_spec = property_specs[i];
-		GValue value = { 0, };
-		GValue defvalue = { 0, };
+		GValue value = G_VALUE_INIT;
+		GValue defvalue = G_VALUE_INIT;
 		char *actual, *expected;
 		gboolean ok = FALSE;
 
@@ -104,7 +104,9 @@ int main (int argc, char **argv)
 	GError *error = NULL;
 	char *base;
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
 	if (!nm_utils_init (&error))
 		FAIL ("nm-utils-init", "failed to initialize libnm-util: %s", error->message);

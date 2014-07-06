@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2008 Red Hat, Inc.
+ * (C) Copyright 2007 - 2013 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -33,10 +33,14 @@
 #include <nm-setting-8021x.h>
 #include <nm-setting-bluetooth.h>
 #include <nm-setting-bond.h>
+#include <nm-setting-team.h>
+#include <nm-setting-team-port.h>
 #include <nm-setting-bridge.h>
 #include <nm-setting-bridge-port.h>
 #include <nm-setting-cdma.h>
 #include <nm-setting-connection.h>
+#include <nm-setting-dcb.h>
+#include <nm-setting-generic.h>
 #include <nm-setting-gsm.h>
 #include <nm-setting-infiniband.h>
 #include <nm-setting-ip4-config.h>
@@ -62,6 +66,13 @@ G_BEGIN_DECLS
 #define NM_IS_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_CONNECTION))
 #define NM_CONNECTION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_CONNECTION, NMConnectionClass))
 
+/* Signals */
+#define NM_CONNECTION_SECRETS_UPDATED "secrets-updated"
+#define NM_CONNECTION_SECRETS_CLEARED "secrets-cleared"
+#define NM_CONNECTION_CHANGED         "changed"
+
+/* Properties */
+#define NM_CONNECTION_PATH "path"
 
 /**
  * NMConnectionError:
@@ -89,8 +100,6 @@ typedef enum
 
 #define NM_CONNECTION_ERROR nm_connection_error_quark ()
 GQuark nm_connection_error_quark (void);
-
-#define NM_CONNECTION_PATH "path"
 
 /**
  * NMConnection:
@@ -134,6 +143,11 @@ NMSetting    *nm_connection_get_setting_by_name (NMConnection *connection,
 gboolean      nm_connection_replace_settings (NMConnection *connection,
                                               GHashTable *new_settings,
                                               GError **error);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean      nm_connection_replace_settings_from_connection (NMConnection *connection,
+                                                              NMConnection *new_connection,
+                                                              GError **error);
 
 gboolean      nm_connection_compare       (NMConnection *a,
                                            NMConnection *b,
@@ -183,17 +197,29 @@ GType         nm_connection_lookup_setting_type (const char *name);
 GType         nm_connection_lookup_setting_type_by_quark (GQuark error_quark);
 
 /* Helpers */
-const char *  nm_connection_get_uuid      (NMConnection *connection);
+const char *  nm_connection_get_uuid            (NMConnection *connection);
+const char *  nm_connection_get_id              (NMConnection *connection);
+NM_AVAILABLE_IN_0_9_10
+const char *  nm_connection_get_connection_type (NMConnection *connection);
 
-const char *  nm_connection_get_id        (NMConnection *connection);
+NM_AVAILABLE_IN_0_9_10
+char *        nm_connection_get_virtual_device_description (NMConnection *connection);
 
 NMSetting8021x *           nm_connection_get_setting_802_1x            (NMConnection *connection);
 NMSettingBluetooth *       nm_connection_get_setting_bluetooth         (NMConnection *connection);
 NMSettingBond *            nm_connection_get_setting_bond              (NMConnection *connection);
+NM_AVAILABLE_IN_0_9_10
+NMSettingTeam *            nm_connection_get_setting_team              (NMConnection *connection);
+NM_AVAILABLE_IN_0_9_10
+NMSettingTeamPort *        nm_connection_get_setting_team_port         (NMConnection *connection);
 NMSettingBridge *          nm_connection_get_setting_bridge            (NMConnection *connection);
 NMSettingBridgePort *      nm_connection_get_setting_bridge_port       (NMConnection *connection);
 NMSettingCdma *            nm_connection_get_setting_cdma              (NMConnection *connection);
 NMSettingConnection *      nm_connection_get_setting_connection        (NMConnection *connection);
+NM_AVAILABLE_IN_0_9_10
+NMSettingDcb *             nm_connection_get_setting_dcb               (NMConnection *connection);
+NM_AVAILABLE_IN_0_9_10
+NMSettingGeneric *         nm_connection_get_setting_generic           (NMConnection *connection);
 NMSettingGsm *             nm_connection_get_setting_gsm               (NMConnection *connection);
 NMSettingInfiniband *      nm_connection_get_setting_infiniband        (NMConnection *connection);
 NMSettingIP4Config *       nm_connection_get_setting_ip4_config        (NMConnection *connection);

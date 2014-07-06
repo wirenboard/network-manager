@@ -5,15 +5,22 @@ SUBDIRS = . tests
 AM_CPPFLAGS = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/include
-
-lib_LTLIBRARIES=libnm-util.la
-
-libnm_util_la_CPPFLAGS = \
+	-I${top_builddir}/include \
+	-DG_LOG_DOMAIN=\""libnm-util"\" \
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	$(UUID_CFLAGS) \
-	$(AM_CPPFLAGS)
+	$(UUID_CFLAGS)
+
+if WITH_GNUTLS
+AM_CPPFLAGS += $(LIBGCRYPT_CFLAGS) $(GNUTLS_CFLAGS)
+endif
+
+if WITH_NSS
+AM_CPPFLAGS += $(NSS_CFLAGS)
+endif
+
+lib_LTLIBRARIES=libnm-util.la
 
 libnm_util_include_HEADERS = 		\
 	nm-connection.h			\
@@ -22,9 +29,12 @@ libnm_util_include_HEADERS = 		\
 	nm-setting-adsl.h		\
 	nm-setting-bluetooth.h		\
 	nm-setting-bond.h		\
+	nm-setting-team.h		\
+	nm-setting-team-port.h		\
 	nm-setting-bridge.h		\
 	nm-setting-bridge-port.h	\
 	nm-setting-connection.h		\
+	nm-setting-dcb.h                \
 	nm-setting-infiniband.h		\
 	nm-setting-ip4-config.h		\
 	nm-setting-vlan.h		\
@@ -32,6 +42,7 @@ libnm_util_include_HEADERS = 		\
 	nm-setting-ppp.h		\
 	nm-setting-pppoe.h		\
 	nm-setting-serial.h		\
+	nm-setting-generic.h		\
 	nm-setting-gsm.h		\
 	nm-setting-cdma.h		\
 	nm-setting-olpc-mesh.h		\
@@ -46,7 +57,7 @@ libnm_util_include_HEADERS = 		\
 libnm_util_la_private_headers = \
 	crypto.h			\
 	nm-param-spec-specialized.h	\
-	nm-utils-private.h \
+	nm-utils-private.h		\
 	nm-setting-private.h
 
 libnm_util_la_csources = \
@@ -58,9 +69,12 @@ libnm_util_la_csources = \
 	nm-setting-adsl.c		\
 	nm-setting-bluetooth.c		\
 	nm-setting-bond.c		\
+	nm-setting-team.c		\
+	nm-setting-team-port.c		\
 	nm-setting-bridge.c		\
 	nm-setting-bridge-port.c	\
 	nm-setting-connection.c		\
+	nm-setting-dcb.c                \
 	nm-setting-infiniband.c		\
 	nm-setting-ip4-config.c		\
 	nm-setting-vlan.c		\
@@ -68,6 +82,7 @@ libnm_util_la_csources = \
 	nm-setting-ppp.c		\
 	nm-setting-pppoe.c		\
 	nm-setting-serial.c		\
+	nm-setting-generic.c		\
 	nm-setting-gsm.c		\
 	nm-setting-cdma.c		\
 	nm-setting-olpc-mesh.c		\
@@ -77,7 +92,8 @@ libnm_util_la_csources = \
 	nm-setting-wireless-security.c	\
 	nm-setting-vpn.c		\
 	nm-utils-enum-types.c		\
-	nm-utils.c
+	nm-utils.c			\
+	nm-value-transforms.c
 
 libnm_util_la_SOURCES = \
 	$(libnm_util_la_csources) \
@@ -94,17 +110,15 @@ libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS)
 SYMBOL_VIS_FILE=$(srcdir)/libnm-util.ver
 
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "6:0:4"
+	-version-info "8:0:6"
 
 if WITH_GNUTLS
 libnm_util_la_SOURCES += crypto_gnutls.c
-libnm_util_la_CPPFLAGS += $(LIBGCRYPT_CFLAGS) $(GNUTLS_CFLAGS)
 libnm_util_la_LIBADD += $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
 endif
 
 if WITH_NSS
 libnm_util_la_SOURCES += crypto_nss.c
-libnm_util_la_CPPFLAGS += $(NSS_CFLAGS)
 libnm_util_la_LIBADD += $(NSS_LIBS)
 endif
 
@@ -119,22 +133,16 @@ noinst_LTLIBRARIES = libtest-crypto.la
 
 libtest_crypto_la_SOURCES = crypto.c
 
-libtest_crypto_la_CPPFLAGS = \
-	$(GLIB_CFLAGS) \
-	$(AM_CPPFLAGS)
-
 libtest_crypto_la_LIBADD = \
 	$(GLIB_LIBS)
 
 if WITH_GNUTLS
 libtest_crypto_la_SOURCES += crypto_gnutls.c
-libtest_crypto_la_CPPFLAGS += $(LIBGCRYPT_CFLAGS) $(GNUTLS_CFLAGS)
 libtest_crypto_la_LIBADD += $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
 endif
 
 if WITH_NSS
 libtest_crypto_la_SOURCES += crypto_nss.c
-libtest_crypto_la_CPPFLAGS += $(NSS_CFLAGS)
 libtest_crypto_la_LIBADD += $(NSS_LIBS)
 endif
 

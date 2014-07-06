@@ -25,6 +25,9 @@
 #include <ctype.h>
 
 #include "nm-dhcp-dhclient-utils.h"
+#include "nm-ip4-config.h"
+#include "nm-utils.h"
+#include "NetworkManagerUtils.h"
 
 #define CLIENTID_TAG            "send dhcp-client-identifier"
 #define CLIENTID_FORMAT         CLIENTID_TAG " \"%s\"; # added by NetworkManager"
@@ -68,33 +71,32 @@ add_hostname (GString *str, const char *format, const char *hostname)
 }
 
 static void
-add_ip4_config (GString *str, NMSettingIP4Config *s_ip4, const char *hostname)
+add_ip4_config (GString *str, const char *dhcp_client_id, const char *hostname)
 {
-	if (s_ip4) {
-		const char *tmp;
+	if (dhcp_client_id) {
+		gboolean is_octets = TRUE;
+		int i = 0;
 
-		tmp = nm_setting_ip4_config_get_dhcp_client_id (s_ip4);
-		if (tmp) {
-			gboolean is_octets = TRUE;
-			const char *p = tmp;
-
-			while (*p) {
-				if (!g_ascii_isxdigit (*p) && (*p != ':')) {
-					is_octets = FALSE;
-					break;
-				}
-				p++;
+		while (dhcp_client_id[i]) {
+			if ((i % 3) != 2 && !g_ascii_isxdigit (dhcp_client_id[i])) {
+				is_octets = FALSE;
+				break;
 			}
-
-			/* If the client ID is just hex digits and : then don't use quotes,
-			 * because dhclient expects either a quoted ASCII string, or a byte
-			 * array formated as hex octets separated by :
-			 */
-			if (is_octets)
-				g_string_append_printf (str, CLIENTID_FORMAT_OCTETS "\n", tmp);
-			else
-				g_string_append_printf (str, CLIENTID_FORMAT "\n", tmp);
+			if ((i % 3) == 2 && dhcp_client_id[i] != ':') {
+				is_octets = FALSE;
+				break;
+			}
+			i++;
 		}
+
+		/* If the client ID is just hex digits and : then don't use quotes,
+		 * because dhclient expects either a quoted ASCII string, or a byte
+		 * array formated as hex octets separated by :
+		 */
+		if (is_octets)
+			g_string_append_printf (str, CLIENTID_FORMAT_OCTETS "\n", dhcp_client_id);
+		else
+			g_string_append_printf (str, CLIENTID_FORMAT "\n", dhcp_client_id);
 	}
 
 	add_hostname (str, HOSTNAME4_FORMAT "\n", hostname);
@@ -113,7 +115,7 @@ add_ip4_config (GString *str, NMSettingIP4Config *s_ip4, const char *hostname)
 }
 
 static void
-add_ip6_config (GString *str, NMSettingIP6Config *s_ip6, const char *hostname)
+add_ip6_config (GString *str, const char *hostname)
 {
 	add_hostname (str, HOSTNAME6_FORMAT "\n", hostname);
 	g_string_append (str,
@@ -125,9 +127,8 @@ add_ip6_config (GString *str, NMSettingIP6Config *s_ip6, const char *hostname)
 char *
 nm_dhcp_dhclient_create_config (const char *interface,
                                 gboolean is_ip6,
-                                NMSettingIP4Config *s_ip4,
-                                NMSettingIP6Config *s_ip6,
-                                guint8 *anycast_addr,
+                                const char *dhcp_client_id,
+                                GByteArray *anycast_addr,
                                 const char *hostname,
                                 const char *orig_path,
                                 const char *orig_contents)
@@ -155,9 +156,7 @@ nm_dhcp_dhclient_create_config (const char *interface,
 			/* Override config file "dhcp-client-id" and use one from the
 			 * connection.
 			 */
-			if (   s_ip4
-			    && nm_setting_ip4_config_get_dhcp_client_id (s_ip4)
-			    && !strncmp (p, CLIENTID_TAG, strlen (CLIENTID_TAG)))
+			if (dhcp_client_id && !strncmp (p, CLIENTID_TAG, strlen (CLIENTID_TAG)))
 				continue;
 
 			/* Override config file hostname and use one from the connection */
@@ -222,13 +221,13 @@ nm_dhcp_dhclient_create_config (const char *interface,
 		g_string_append_c (new_contents, '\n');
 
 	if (is_ip6) {
-		add_ip6_config (new_contents, s_ip6, hostname);
+		add_ip6_config (new_contents, hostname);
 		add_also_request (alsoreq, "dhcp6.name-servers");
 		add_also_request (alsoreq, "dhcp6.domain-search");
 		add_also_request (alsoreq, "dhcp6.client-id");
 		add_also_request (alsoreq, "dhcp6.server-id");
 	} else {
-		add_ip4_config (new_contents, s_ip4, hostname);
+		add_ip4_config (new_contents, dhcp_client_id, hostname);
 		add_also_request (alsoreq, "rfc3442-classless-static-routes");
 		add_also_request (alsoreq, "ms-classless-static-routes");
 		add_also_request (alsoreq, "static-routes");
@@ -247,16 +246,21 @@ nm_dhcp_dhclient_create_config (const char *interface,
 
 	g_string_append_c (new_contents, '\n');
 
-	if (anycast_addr) {
+	if (anycast_addr && anycast_addr->len == 6) {
+		const guint8 *p_anycast_addr = anycast_addr->data;
+
 		g_string_append_printf (new_contents, "interface \"%s\" {\n"
 		                        " initial-interval 1; \n"
 		                        " anycast-mac ethernet %02x:%02x:%02x:%02x:%02x:%02x;\n"
 		                        "}\n",
 		                        interface,
-		                        anycast_addr[0], anycast_addr[1],
-		                        anycast_addr[2], anycast_addr[3],
-		                        anycast_addr[4], anycast_addr[5]);
+		                        p_anycast_addr[0], p_anycast_addr[1],
+		                        p_anycast_addr[2], p_anycast_addr[3],
+		                        p_anycast_addr[4], p_anycast_addr[5]);
 	}
+
+	/* Finally, assert that anycast_addr was unset or a 48 bit mac address. */
+	g_return_val_if_fail (!anycast_addr || anycast_addr->len == 6, g_string_free (new_contents, FALSE));
 
 	return g_string_free (new_contents, FALSE);
 }
@@ -421,5 +425,240 @@ nm_dhcp_dhclient_save_duid (const char *leasefile,
 
 	g_string_free (s, TRUE);
 	return success;
+}
+
+static void
+add_lease_option (GHashTable *hash, char *line)
+{
+	char *spc;
+	size_t len;
+
+	/* Find the space after "option" */
+	spc = strchr (line, ' ');
+	if (!spc)
+		return;
+
+	/* Find the option tag's data, which is after the second space */
+	if (g_str_has_prefix (line, "option ")) {
+		while (g_ascii_isspace (*spc))
+			spc++;
+		spc = strchr (spc + 1, ' ');
+		if (!spc)
+			return;
+	}
+
+	/* Split the line at the space */
+	*spc = '\0';
+	spc++;
+
+	/* Kill the ';' at the end of the line, if any */
+	len = strlen (spc);
+	if (*(spc + len - 1) == ';')
+		*(spc + len - 1) = '\0';
+
+	/* Strip leading quote */
+	while (g_ascii_isspace (*spc))
+		spc++;
+	if (*spc == '"')
+		spc++;
+
+	/* Strip trailing quote */
+	len = strlen (spc);
+	if (len > 0 && spc[len - 1] == '"')
+		spc[len - 1] = '\0';
+
+	if (spc[0])
+		g_hash_table_insert (hash, g_strdup (line), g_strdup (spc));
+}
+
+#define LEASE_INVALID    G_MININT64
+static GTimeSpan
+lease_validity_span (const char *str_expire, GDateTime *now)
+{
+	GDateTime *expire = NULL;
+	struct tm expire_tm;
+	GTimeSpan span;
+
+	g_return_val_if_fail (now != NULL, LEASE_INVALID);
+	g_return_val_if_fail (str_expire != NULL, LEASE_INVALID);
+
+	/* Skip initial number (day of week?) */
+	if (!isdigit (*str_expire++))
+		return LEASE_INVALID;
+	if (!isspace (*str_expire++))
+		return LEASE_INVALID;
+	/* Read lease expiration (in UTC) */
+	if (!strptime (str_expire, "%t%Y/%m/%d %H:%M:%S", &expire_tm))
+		return LEASE_INVALID;
+
+	expire = g_date_time_new_utc (expire_tm.tm_year + 1900,
+	                              expire_tm.tm_mon + 1,
+	                              expire_tm.tm_mday,
+	                              expire_tm.tm_hour,
+	                              expire_tm.tm_min,
+	                              expire_tm.tm_sec);
+	if (!expire)
+		return LEASE_INVALID;
+
+	span = g_date_time_difference (expire, now);
+	g_date_time_unref (expire);
+
+	/* GDateTime only supports a range of less then 10000 years, so span can
+	 * not overflow or be equal to LEASE_INVALID */
+	return span;
+}
+
+/**
+ * nm_dhcp_dhclient_read_lease_ip_configs:
+ * @iface: the interface name to match leases with
+ * @contents: the contents of a dhclient leasefile
+ * @ipv6: whether to read IPv4 or IPv6 leases
+ * @now: the current UTC date/time; pass %NULL to automatically use current
+ *  UTC time.  Testcases may need a different value for 'now'
+ *
+ * Reads dhclient leases from @contents and parses them into either
+ * #NMIP4Config or #NMIP6Config objects depending on the value of @ipv6.
+ *
+ * Returns: a #GSList of #NMIP4Config objects (if @ipv6 is %FALSE) or a list of
+ * #NMIP6Config objects (if @ipv6 is %TRUE) containing the lease data.
+ */
+GSList *
+nm_dhcp_dhclient_read_lease_ip_configs (const char *iface,
+                                        const char *contents,
+                                        gboolean ipv6,
+                                        GDateTime *now)
+{
+	GSList *parsed = NULL, *iter, *leases = NULL;
+	char **line, **split = NULL;
+	GHashTable *hash = NULL;
+	gint32 now_monotonic_ts;
+
+	g_return_val_if_fail (contents != NULL, NULL);
+
+	split = g_strsplit_set (contents, "\n\r", -1);
+	if (!split)
+		return NULL;
+
+	for (line = split; line && *line; line++) {
+		*line = g_strstrip (*line);
+
+		if (*line[0] == '#') {
+			/* Comment */
+		} else if (!strcmp (*line, "}")) {
+			/* Lease ends */
+			parsed = g_slist_append (parsed, hash);
+			hash = NULL;
+		} else if (!strcmp (*line, "lease {")) {
+			/* Beginning of a new lease */
+			if (hash) {
+				/* Ignore malformed lease that doesn't end before new one starts */
+				g_hash_table_destroy (hash);
+			}
+
+			hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+		} else if (hash && strlen (*line))
+			add_lease_option (hash, *line);
+	}
+	g_strfreev (split);
+
+	/* Check if the last lease in the file was properly ended */
+	if (hash) {
+		/* Ignore malformed lease that doesn't end before new one starts */
+		g_hash_table_destroy (hash);
+		hash = NULL;
+	}
+
+	if (now)
+		g_date_time_ref (now);
+	else
+		now = g_date_time_new_now_utc ();
+	now_monotonic_ts = nm_utils_get_monotonic_timestamp_s ();
+
+	for (iter = parsed; iter; iter = g_slist_next (iter)) {
+		NMIP4Config *ip4;
+		NMPlatformIP4Address address;
+		const char *value;
+		GTimeSpan expiry;
+		guint32 tmp, gw = 0;
+
+		hash = iter->data;
+
+		/* Make sure this lease is for the interface we want */
+		value = g_hash_table_lookup (hash, "interface");
+		if (!value || strcmp (value, iface))
+			continue;
+
+		value = g_hash_table_lookup (hash, "expire");
+		if (!value)
+			continue;
+		expiry = lease_validity_span (value, now);
+		if (expiry == LEASE_INVALID)
+			continue;
+
+		/* scale expiry to seconds (and CLAMP into the range of guint32) */
+		expiry = CLAMP (expiry / G_TIME_SPAN_SECOND, 0, NM_PLATFORM_LIFETIME_PERMANENT-1);
+		if (expiry <= 0) {
+			/* the address is already expired. Don't even add it. */
+			continue;
+		}
+
+		memset (&address, 0, sizeof (address));
+
+		/* IP4 address */
+		value = g_hash_table_lookup (hash, "fixed-address");
+		if (!value)
+			continue;
+		if (!inet_pton (AF_INET, value, &address.address))
+			continue;
+
+		/* Gateway */
+		value = g_hash_table_lookup (hash, "option routers");
+		if (!value)
+			continue;
+		if (!inet_pton (AF_INET, value, &gw))
+			continue;
+
+		/* Netmask */
+		value = g_hash_table_lookup (hash, "option subnet-mask");
+		if (value && inet_pton (AF_INET, value, &tmp))
+			address.plen = nm_utils_ip4_netmask_to_prefix (tmp);
+
+		/* Get default netmask for the IP according to appropriate class. */
+		if (!address.plen)
+			address.plen = nm_utils_ip4_get_default_prefix (address.address);
+
+		address.timestamp = now_monotonic_ts;
+		address.lifetime = address.preferred = expiry;
+		address.source = NM_PLATFORM_SOURCE_DHCP;
+
+		ip4 = nm_ip4_config_new ();
+		nm_ip4_config_add_address (ip4, &address);
+		nm_ip4_config_set_gateway (ip4, gw);
+
+		value = g_hash_table_lookup (hash, "option domain-name-servers");
+		if (value) {
+			char **dns, **dns_iter;
+
+			dns = g_strsplit_set (value, ",", -1);
+			for (dns_iter = dns; dns_iter && *dns_iter; dns_iter++) {
+				if (inet_pton (AF_INET, *dns_iter, &tmp))
+					nm_ip4_config_add_nameserver (ip4, tmp);
+			}
+			if (dns)
+				g_strfreev (dns);
+		}
+
+		value = g_hash_table_lookup (hash, "option domain-name");
+		if (value && value[0])
+			nm_ip4_config_add_domain (ip4, value);
+
+		/* FIXME: static routes */
+
+		leases = g_slist_append (leases, ip4);
+	}
+
+	g_date_time_unref (now);
+	g_slist_free_full (parsed, (GDestroyNotify) g_hash_table_destroy);
+	return leases;
 }
 

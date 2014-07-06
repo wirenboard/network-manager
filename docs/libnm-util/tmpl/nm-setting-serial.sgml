@@ -90,6 +90,48 @@ NMSettingSerial
 
 
 
+<!-- ##### STRUCT NMSettingSerial ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingSerial:baud ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:bits ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:parity ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:send-delay ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:stopbits ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingSerialClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_serial_new ##### -->
 <para>
 

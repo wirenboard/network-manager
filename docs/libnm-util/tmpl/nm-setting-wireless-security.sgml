@@ -187,6 +187,108 @@ NMSettingWirelessSecurity
 
 
 
+<!-- ##### STRUCT NMSettingWirelessSecurity ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingWirelessSecurity:auth-alg ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:group ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:key-mgmt ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:leap-password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:leap-password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:leap-username ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:pairwise ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:proto ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:psk ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:psk-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-key-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-key-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-key0 ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-key1 ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-key2 ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-key3 ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWirelessSecurity:wep-tx-keyidx ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingWirelessSecurityClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_wireless_security_new ##### -->
 <para>
 
@@ -243,6 +345,16 @@ NMSettingWirelessSecurity
 @i: 
 
 
+<!-- ##### FUNCTION nm_setting_wireless_security_remove_proto_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@proto: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_setting_wireless_security_clear_protos ##### -->
 <para>
 
@@ -289,6 +401,16 @@ NMSettingWirelessSecurity
 @i: 
 
 
+<!-- ##### FUNCTION nm_setting_wireless_security_remove_pairwise_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@pairwise: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_setting_wireless_security_clear_pairwise ##### -->
 <para>
 
@@ -333,6 +455,16 @@ NMSettingWirelessSecurity
 
 @setting: 
 @i: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_security_remove_group_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@group: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_setting_wireless_security_clear_groups ##### -->

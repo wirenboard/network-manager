@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2008 - 2011 Red Hat, Inc.
+ * Copyright (C) 2008 - 2014 Red Hat, Inc.
  */
 
 #include <stdio.h>
@@ -40,11 +40,12 @@
 #include <nm-setting-gsm.h>
 #include <nm-setting-8021x.h>
 #include <nm-setting-infiniband.h>
-
-#include "nm-test-helpers.h"
+#include <nm-logging.h>
 
 #include "reader.h"
 #include "writer.h"
+
+#include "nm-test-utils.h"
 
 #define TEST_WIRED_FILE    TEST_KEYFILES_DIR"/Test_Wired_Connection"
 #define TEST_WIRELESS_FILE TEST_KEYFILES_DIR"/Test_Wireless_Connection"
@@ -53,16 +54,15 @@ static void
 check_ip4_address (NMSettingIP4Config *config, int idx, const char *address_str, int plen, const char *gateway_str)
 {
 	NMIP4Address *ip4 = nm_setting_ip4_config_get_address (config, idx);
-	struct in_addr address;
-	struct in_addr gateway;
+	guint32 address, gateway;
 
 	g_assert (inet_pton (AF_INET, address_str, &address) == 1);
 	g_assert (inet_pton (AF_INET, gateway_str, &gateway) == 1);
 
 	g_assert (ip4);
-	g_assert (nm_ip4_address_get_address (ip4) == address.s_addr);
+	g_assert (nm_ip4_address_get_address (ip4) == address);
 	g_assert (nm_ip4_address_get_prefix (ip4) == plen);
-	g_assert (nm_ip4_address_get_gateway (ip4) == gateway.s_addr);
+	g_assert (nm_ip4_address_get_gateway (ip4) == gateway);
 }
 
 static void
@@ -86,16 +86,15 @@ check_ip4_route (NMSettingIP4Config *config, int idx, const char *destination_st
 		const char *nexthop_str, int metric)
 {
 	NMIP4Route *route = nm_setting_ip4_config_get_route (config, idx);
-	struct in_addr destination;
-	struct in_addr nexthop;
+	guint32 destination, nexthop;
 
 	g_assert (inet_pton (AF_INET, destination_str, &destination) == 1);
 	g_assert (inet_pton (AF_INET, nexthop_str, &nexthop) == 1);
 
 	g_assert (route);
-	g_assert (nm_ip4_route_get_dest (route) == destination.s_addr);
+	g_assert (nm_ip4_route_get_dest (route) == destination);
 	g_assert (nm_ip4_route_get_prefix (route) == plen);
-	g_assert (nm_ip4_route_get_next_hop (route) == nexthop.s_addr);
+	g_assert (nm_ip4_route_get_next_hop (route) == nexthop);
 	g_assert (nm_ip4_route_get_metric (route) == metric);
 }
 
@@ -135,7 +134,7 @@ test_read_valid_wired_connection (void)
 	guint64 timestamp;
 	const char *expected_dns1 = "4.2.2.1";
 	const char *expected_dns2 = "4.2.2.2";
-	struct in_addr addr;
+	guint32 addr;
 	struct in6_addr addr6;
 	const char *expected6_dns1 = "1111:dddd::aaaa";
 	const char *expected6_dns2 = "1::cafe";
@@ -143,7 +142,36 @@ test_read_valid_wired_connection (void)
 	const char *expected6_dnssearch2 = "redhat.com";
 	const char *expected6_dnssearch3 = "gnu.org";
 
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.addresses1*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.addresses2*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	                       "*Missing prefix length*ipv4.address4*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	                       "*Missing prefix length*ipv4.address5*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.routes2*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.routes3*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.routes5*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.routes8*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	                       "*Missing prefix length*ipv6.address4*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv6.address5*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	                       "*Missing prefix length*ipv6.address5*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv6.address7*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv6.routes1*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv6.route6*semicolon at the end*");
 	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_FILE, NULL);
+	g_test_assert_expected_messages ();
 	ASSERT (connection != NULL,
 			"connection-read", "failed to read %s", TEST_WIRED_FILE);
 
@@ -259,7 +287,7 @@ test_read_valid_wired_connection (void)
 	        TEST_WIRED_FILE,
 	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP4_CONFIG_DNS);
-	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 0) == addr.s_addr,
+	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 0) == addr,
 	        "connection-verify-wired", "failed to verify %s: unexpected %s / %s key value #1",
 	        TEST_WIRED_FILE,
 	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
@@ -270,23 +298,35 @@ test_read_valid_wired_connection (void)
 	        TEST_WIRED_FILE,
 	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP4_CONFIG_DNS);
-	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 1) == addr.s_addr,
+	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 1) == addr,
 	        "connection-verify-wired", "failed to verify %s: unexpected %s / %s key value #2",
 	        TEST_WIRED_FILE,
 	        NM_SETTING_IP4_CONFIG_SETTING_NAME,
 	        NM_SETTING_IP4_CONFIG_DNS);
 
 	/* IPv4 addresses */
-	g_assert (nm_setting_ip4_config_get_num_addresses (s_ip4) == 4);
+	g_assert (nm_setting_ip4_config_get_num_addresses (s_ip4) == 6);
 	check_ip4_address (s_ip4, 0, "2.3.4.5", 24, "2.3.4.6");
 	check_ip4_address (s_ip4, 1, "192.168.0.5", 24, "192.168.0.1");
 	check_ip4_address (s_ip4, 2, "1.2.3.4", 16, "1.2.1.1");
 	check_ip4_address (s_ip4, 3, "3.4.5.6", 16, "0.0.0.0");
+	check_ip4_address (s_ip4, 4, "4.5.6.7", 24, "1.2.3.4");
+	check_ip4_address (s_ip4, 5, "5.6.7.8", 24, "0.0.0.0");
 
 	/* IPv4 routes */
-	g_assert (nm_setting_ip4_config_get_num_routes (s_ip4) == 2);
+	g_assert (nm_setting_ip4_config_get_num_routes (s_ip4) == 12);
 	check_ip4_route (s_ip4, 0, "5.6.7.8", 32, "0.0.0.0", 0);
 	check_ip4_route (s_ip4, 1, "1.2.3.0", 24, "2.3.4.8", 99);
+	check_ip4_route (s_ip4, 2, "1.1.1.2", 12, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 3, "1.1.1.3", 13, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 4, "1.1.1.4", 14, "2.2.2.4", 0);
+	check_ip4_route (s_ip4, 5, "1.1.1.5", 15, "2.2.2.5", 0);
+	check_ip4_route (s_ip4, 6, "1.1.1.6", 16, "2.2.2.6", 0);
+	check_ip4_route (s_ip4, 7, "1.1.1.7", 17, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 8, "1.1.1.8", 18, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 9, "1.1.1.9", 19, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 10, "1.1.1.10", 20, "0.0.0.0", 0);
+	check_ip4_route (s_ip4, 11, "1.1.1.11", 21, "0.0.0.0", 21);
 
 	/* ===== IPv6 SETTING ===== */
 
@@ -357,17 +397,27 @@ test_read_valid_wired_connection (void)
 	        NM_SETTING_IP6_CONFIG_DNS_SEARCH);
 
 	/* IPv6 addresses */
-	g_assert (nm_setting_ip6_config_get_num_addresses (s_ip6) == 4);
+	g_assert (nm_setting_ip6_config_get_num_addresses (s_ip6) == 10);
 	check_ip6_address (s_ip6, 0, "2:3:4:5:6:7:8:9", 64, "2:3:4:5:1:2:3:4");
 	check_ip6_address (s_ip6, 1, "abcd:1234:ffff::cdde", 64, "::");
 	check_ip6_address (s_ip6, 2, "1:2:3:4:5:6:7:8", 96, "::");
 	check_ip6_address (s_ip6, 3, "3:4:5:6:7:8:9:0", 128, "::");
+	check_ip6_address (s_ip6, 4, "3:4:5:6:7:8:9:14", 64, "::");
+	check_ip6_address (s_ip6, 5, "3:4:5:6:7:8:9:15", 64, "::");
+	check_ip6_address (s_ip6, 6, "3:4:5:6:7:8:9:16", 66, "::");
+	check_ip6_address (s_ip6, 7, "3:4:5:6:7:8:9:17", 67, "::");
+	check_ip6_address (s_ip6, 8, "3:4:5:6:7:8:9:18", 68, "::");
+	check_ip6_address (s_ip6, 9, "3:4:5:6:7:8:9:19", 69, "1::09");
 
 	/* Route #1 */
-	g_assert (nm_setting_ip6_config_get_num_routes (s_ip6) == 3);
+	g_assert (nm_setting_ip6_config_get_num_routes (s_ip6) == 7);
 	check_ip6_route (s_ip6, 0, "d:e:f:0:1:2:3:4", 64, "f:e:d:c:1:2:3:4", 0);
 	check_ip6_route (s_ip6, 1, "a:b:c:d::", 64, "f:e:d:c:1:2:3:4", 99);
 	check_ip6_route (s_ip6, 2, "8:7:6:5:4:3:2:1", 128, "::", 0);
+	check_ip6_route (s_ip6, 3, "6:7:8:9:0:1:2:3", 126, "::", 1);
+	check_ip6_route (s_ip6, 4, "7:8:9:0:1:2:3:4", 125, "::", 5);
+	check_ip6_route (s_ip6, 5, "8:9:0:1:2:3:4:5", 124, "::", 6);
+	check_ip6_route (s_ip6, 6, "8:9:0:1:2:3:4:6", 123, "::", 0);
 	g_object_unref (connection);
 }
 
@@ -377,17 +427,17 @@ add_one_ip4_address (NMSettingIP4Config *s_ip4,
                      const char *gw,
                      guint32 prefix)
 {
-	struct in_addr tmp;
+	guint32 tmp;
 	NMIP4Address *ip4_addr;
 
 	ip4_addr = nm_ip4_address_new ();
 	nm_ip4_address_set_prefix (ip4_addr, prefix);
 
 	inet_pton (AF_INET, addr, &tmp);
-	nm_ip4_address_set_address (ip4_addr, tmp.s_addr);
+	nm_ip4_address_set_address (ip4_addr, tmp);
 
 	inet_pton (AF_INET, gw, &tmp);
-	nm_ip4_address_set_gateway (ip4_addr, tmp.s_addr);
+	nm_ip4_address_set_gateway (ip4_addr, tmp);
 
 	nm_setting_ip4_config_add_address (s_ip4, ip4_addr);
 	nm_ip4_address_unref (ip4_addr);
@@ -400,7 +450,7 @@ add_one_ip4_route (NMSettingIP4Config *s_ip4,
                    guint32 prefix,
                    guint32 metric)
 {
-	struct in_addr addr;
+	guint32 addr;
 	NMIP4Route *route;
 
 	route = nm_ip4_route_new ();
@@ -408,10 +458,10 @@ add_one_ip4_route (NMSettingIP4Config *s_ip4,
 	nm_ip4_route_set_metric (route, metric);
 
 	inet_pton (AF_INET, dest, &addr);
-	nm_ip4_route_set_dest (route, addr.s_addr);
+	nm_ip4_route_set_dest (route, addr);
 
 	inet_pton (AF_INET, nh, &addr);
-	nm_ip4_route_set_next_hop (route, addr.s_addr);
+	nm_ip4_route_set_next_hop (route, addr);
 
 	nm_setting_ip4_config_add_route (s_ip4, route);
 	nm_ip4_route_unref (route);
@@ -483,7 +533,7 @@ test_write_wired_connection (void)
 	GError *error = NULL;
 	pid_t owner_grp;
 	uid_t owner_uid;
-	struct in_addr addr;
+	guint32 addr;
 	struct in6_addr addr6;
 	const char *dns1 = "4.2.2.1";
 	const char *dns2 = "4.2.2.2";
@@ -495,6 +545,10 @@ test_write_wired_connection (void)
 	const char *route1_nh = "10.10.10.1";
 	const char *route2 = "1.1.1.1";
 	const char *route2_nh = "1.2.1.1";
+	const char *route3 = "2.2.2.2";
+	const char *route3_nh = "0.0.0.0";
+	const char *route4 = "3.3.3.3";
+	const char *route4_nh = "0.0.0.0";
 	const char *dns6_1 = "1::cafe";
 	const char *dns6_2 = "2::cafe";
 	const char *address6_1 = "abcd::beef";
@@ -503,18 +557,17 @@ test_write_wired_connection (void)
 	const char *route6_1_nh = "8:7:6:5:4:3:2:1";
 	const char *route6_2 = "2001::1000";
 	const char *route6_2_nh = "2001::1111";
+	const char *route6_3 = "4:5:6:7:8:9:0:1";
+	const char *route6_3_nh = "::";
+	const char *route6_4 = "5:6:7:8:9:0:1:2";
+	const char *route6_4_nh = "::";
 	guint64 timestamp = 0x12345678L;
 
 	connection = nm_connection_new ();
-	ASSERT (connection != NULL,
-			"connection-write", "failed to allocate new connection");
 
 	/* Connection setting */
 
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
-	ASSERT (s_con != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_CONNECTION_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_con));
 
 	uuid = nm_utils_uuid_generate ();
@@ -530,9 +583,6 @@ test_write_wired_connection (void)
 	/* Wired setting */
 
 	s_wired = NM_SETTING_WIRED (nm_setting_wired_new ());
-	ASSERT (s_wired != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_WIRED_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_wired));
 
 	mac = g_byte_array_sized_new (ETH_ALEN);
@@ -546,9 +596,6 @@ test_write_wired_connection (void)
 	/* IP4 setting */
 
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
-	ASSERT (s_ip4 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP4_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
 
 	g_object_set (s_ip4,
@@ -562,19 +609,18 @@ test_write_wired_connection (void)
 	/* Routes */
 	add_one_ip4_route (s_ip4, route1, route1_nh, 24, 3);
 	add_one_ip4_route (s_ip4, route2, route2_nh, 8, 1);
+	add_one_ip4_route (s_ip4, route3, route3_nh, 7, 0);
+	add_one_ip4_route (s_ip4, route4, route4_nh, 6, 4);
 
 	/* DNS servers */
 	inet_pton (AF_INET, dns1, &addr);
-	nm_setting_ip4_config_add_dns (s_ip4, addr.s_addr);
+	nm_setting_ip4_config_add_dns (s_ip4, addr);
 	inet_pton (AF_INET, dns2, &addr);
-	nm_setting_ip4_config_add_dns (s_ip4, addr.s_addr);
+	nm_setting_ip4_config_add_dns (s_ip4, addr);
 
 	/* IP6 setting */
 
 	s_ip6 = NM_SETTING_IP6_CONFIG (nm_setting_ip6_config_new ());
-	ASSERT (s_ip6 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
 	g_object_set (s_ip6,
@@ -588,6 +634,8 @@ test_write_wired_connection (void)
 	/* Routes */
 	add_one_ip6_route (s_ip6, route6_1, route6_1_nh, 64, 3);
 	add_one_ip6_route (s_ip6, route6_2, route6_2_nh, 56, 1);
+	add_one_ip6_route (s_ip6, route6_3, route6_3_nh, 63, 5);
+	add_one_ip6_route (s_ip6, route6_4, route6_4_nh, 62, 0);
 
 	/* DNS servers */
 	inet_pton (AF_INET6, dns6_1, &addr6);
@@ -754,15 +802,10 @@ test_write_ip6_wired_connection (void)
 	const char *gw = "dcba::beef";
 
 	connection = nm_connection_new ();
-	ASSERT (connection != NULL,
-			"connection-write", "failed to allocate new connection");
 
 	/* Connection setting */
 
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
-	ASSERT (s_con != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_CONNECTION_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_con));
 
 	uuid = nm_utils_uuid_generate ();
@@ -777,17 +820,11 @@ test_write_ip6_wired_connection (void)
 	/* Wired setting */
 
 	s_wired = NM_SETTING_WIRED (nm_setting_wired_new ());
-	ASSERT (s_wired != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_WIRED_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_wired));
 
 	/* IP4 setting */
 
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
-	ASSERT (s_ip4 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP4_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
 
 	g_object_set (s_ip4,
@@ -797,9 +834,6 @@ test_write_ip6_wired_connection (void)
 	/* IP6 setting */
 
 	s_ip6 = NM_SETTING_IP6_CONFIG (nm_setting_ip6_config_new ());
-	ASSERT (s_ip6 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
 	g_object_set (s_ip6,
@@ -857,7 +891,14 @@ test_read_wired_mac_case (void)
 	const char *expected_id = "Test Wired Connection MAC Case";
 	const char *expected_uuid = "4e80a56d-c99f-4aad-a6dd-b449bc398c57";
 
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.addresses1*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv4.addresses2*semicolon at the end*");
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
+	                       "*ipv6.routes1*semicolon at the end*");
 	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_MAC_CASE_FILE, NULL);
+	g_test_assert_expected_messages ();
 	ASSERT (connection != NULL,
 			"connection-read", "failed to read %s", TEST_WIRED_MAC_CASE_FILE);
 
@@ -923,6 +964,79 @@ test_read_wired_mac_case (void)
 	        TEST_WIRED_MAC_CASE_FILE,
 	        NM_SETTING_WIRED_SETTING_NAME,
 	        NM_SETTING_WIRED_MAC_ADDRESS);
+
+	g_object_unref (connection);
+}
+
+#define TEST_MAC_OLD_FORMAT_FILE TEST_KEYFILES_DIR"/Test_MAC_Old_Format"
+
+static void
+test_read_mac_old_format (void)
+{
+	NMConnection *connection;
+	NMSettingWired *s_wired;
+	GError *error = NULL;
+	gboolean success;
+	const GByteArray *array;
+	char expected_mac[ETH_ALEN] = { 0x00, 0x11, 0xaa, 0xbb, 0xcc, 0x55 };
+	char expected_cloned_mac[ETH_ALEN] = { 0x00, 0x16, 0xaa, 0xbb, 0xcc, 0xfe };
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_MAC_OLD_FORMAT_FILE, &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	s_wired = nm_connection_get_setting_wired (connection);
+	g_assert (s_wired);
+
+	/* MAC address */
+	array = nm_setting_wired_get_mac_address (s_wired);
+	g_assert (array);
+	g_assert_cmpint (array->len, ==, ETH_ALEN);
+	g_assert (memcmp (array->data, expected_mac, ETH_ALEN) == 0);
+
+	/* Cloned MAC address */
+	array = nm_setting_wired_get_cloned_mac_address (s_wired);
+	g_assert (array);
+	g_assert_cmpint (array->len, ==, ETH_ALEN);
+	g_assert (memcmp (array->data, expected_cloned_mac, ETH_ALEN) == 0);
+
+	g_object_unref (connection);
+}
+
+#define TEST_MAC_IB_OLD_FORMAT_FILE TEST_KEYFILES_DIR"/Test_MAC_IB_Old_Format"
+
+static void
+test_read_mac_ib_old_format (void)
+{
+	NMConnection *connection;
+	NMSettingInfiniband *s_ib;
+	GError *error = NULL;
+	gboolean success;
+	const GByteArray *array;
+	guint8 expected_mac[INFINIBAND_ALEN] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
+		0x77, 0x88, 0x99, 0x01, 0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0x78, 0x89,
+		0x90 };
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_MAC_IB_OLD_FORMAT_FILE, &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	s_ib = nm_connection_get_setting_infiniband (connection);
+	g_assert (s_ib);
+
+	/* MAC address */
+	array = nm_setting_infiniband_get_mac_address (s_ib);
+	g_assert (array);
+	g_assert_cmpint (array->len, ==, INFINIBAND_ALEN);
+	g_assert_cmpint (memcmp (array->data, expected_mac, sizeof (expected_mac)), ==, 0);
 
 	g_object_unref (connection);
 }
@@ -1066,15 +1180,10 @@ test_write_wireless_connection (void)
 	guint64 timestamp = 0x12344433L;
 
 	connection = nm_connection_new ();
-	ASSERT (connection != NULL,
-	        "connection-write", "failed to allocate new connection");
 
 	/* Connection setting */
 
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
-	ASSERT (s_con != NULL,
-	        "connection-write", "failed to allocate new %s setting",
-	        NM_SETTING_CONNECTION_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_con));
 
 	uuid = nm_utils_uuid_generate ();
@@ -1090,9 +1199,6 @@ test_write_wireless_connection (void)
 	/* Wireless setting */
 
 	s_wireless = NM_SETTING_WIRELESS (nm_setting_wireless_new ());
-	ASSERT (s_wireless != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_WIRELESS_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_wireless));
 
 	bssid = g_byte_array_sized_new (ETH_ALEN);
@@ -1113,9 +1219,6 @@ test_write_wireless_connection (void)
 	/* IP4 setting */
 
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
-	ASSERT (s_ip4 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP4_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
 
 	g_object_set (s_ip4,
@@ -1125,9 +1228,6 @@ test_write_wireless_connection (void)
 	/* IP6 setting */
 
 	s_ip6 = NM_SETTING_IP6_CONFIG (nm_setting_ip6_config_new ());
-	ASSERT (s_ip6 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP6_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
 
 	g_object_set (s_ip6,
@@ -1217,15 +1317,10 @@ test_write_string_ssid (void)
 	GKeyFile *keyfile;
 
 	connection = nm_connection_new ();
-	ASSERT (connection != NULL,
-	        "connection-write", "failed to allocate new connection");
 
 	/* Connection setting */
 
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
-	ASSERT (s_con != NULL,
-	        "connection-write", "failed to allocate new %s setting",
-	        NM_SETTING_CONNECTION_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_con));
 
 	uuid = nm_utils_uuid_generate ();
@@ -1239,9 +1334,6 @@ test_write_string_ssid (void)
 	/* Wireless setting */
 
 	s_wireless = NM_SETTING_WIRELESS (nm_setting_wireless_new ());
-	ASSERT (s_wireless != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_WIRELESS_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_wireless));
 
 	ssid = g_byte_array_sized_new (sizeof (tmpssid));
@@ -1252,9 +1344,6 @@ test_write_string_ssid (void)
 	/* IP4 setting */
 
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
-	ASSERT (s_ip4 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP4_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
 
 	g_object_set (s_ip4,
@@ -1276,7 +1365,7 @@ test_write_string_ssid (void)
 	keyfile = g_key_file_new ();
 	ASSERT (g_key_file_load_from_file (keyfile, testfile, 0, NULL) == TRUE,
 	        "string-ssid-verify", "failed to load keyfile to verify");
-	tmp = g_key_file_get_string (keyfile, NM_SETTING_WIRELESS_SETTING_NAME, NM_SETTING_WIRELESS_SSID, NULL);
+	tmp = g_key_file_get_string (keyfile, "wifi", NM_SETTING_WIRELESS_SSID, NULL);
 	ASSERT (tmp, "string-ssid-verify", "failed to load 'ssid' key from file");
 	ASSERT (strlen (tmp) == sizeof (tmpssid),
 	        "string-ssid-verify", "reread SSID and expected were different sizes");
@@ -1398,7 +1487,7 @@ test_write_intlist_ssid (void)
 	g_assert_no_error (error);
 	g_assert (success);
 
-	intlist = g_key_file_get_integer_list (keyfile, NM_SETTING_WIRELESS_SETTING_NAME, NM_SETTING_WIRELESS_SSID, &len, &error);
+	intlist = g_key_file_get_integer_list (keyfile, "wifi", NM_SETTING_WIRELESS_SSID, &len, &error);
 	g_assert_no_error (error);
 	g_assert (intlist);
 	g_assert_cmpint (len, ==, sizeof (tmpssid));
@@ -1554,7 +1643,7 @@ test_write_intlike_ssid (void)
 	g_assert_no_error (error);
 	g_assert (success);
 
-	tmp = g_key_file_get_string (keyfile, NM_SETTING_WIRELESS_SETTING_NAME, NM_SETTING_WIRELESS_SSID, &error);
+	tmp = g_key_file_get_string (keyfile, "wifi", NM_SETTING_WIRELESS_SSID, &error);
 	g_assert_no_error (error);
 	g_assert (tmp);
 	g_assert_cmpstr (tmp, ==, "101");
@@ -1642,7 +1731,7 @@ test_write_intlike_ssid_2 (void)
 	g_assert_no_error (error);
 	g_assert (success);
 
-	tmp = g_key_file_get_string (keyfile, NM_SETTING_WIRELESS_SETTING_NAME, NM_SETTING_WIRELESS_SSID, &error);
+	tmp = g_key_file_get_string (keyfile, "wifi", NM_SETTING_WIRELESS_SSID, &error);
 	g_assert_no_error (error);
 	g_assert (tmp);
 	g_assert_cmpstr (tmp, ==, "11\\;12\\;13\\;");
@@ -1843,15 +1932,10 @@ test_write_bt_dun_connection (void)
 	guint64 timestamp = 0x12344433L;
 
 	connection = nm_connection_new ();
-	ASSERT (connection != NULL,
-	        "connection-write", "failed to allocate new connection");
 
 	/* Connection setting */
 
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
-	ASSERT (s_con != NULL,
-	        "connection-write", "failed to allocate new %s setting",
-	        NM_SETTING_CONNECTION_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_con));
 
 	uuid = nm_utils_uuid_generate ();
@@ -1867,9 +1951,6 @@ test_write_bt_dun_connection (void)
 	/* Bluetooth setting */
 
 	s_bt = NM_SETTING_BLUETOOTH (nm_setting_bluetooth_new ());
-	ASSERT (s_bt != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_BLUETOOTH_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_bt));
 
 	bdaddr = g_byte_array_sized_new (ETH_ALEN);
@@ -1885,9 +1966,6 @@ test_write_bt_dun_connection (void)
 	/* IP4 setting */
 
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
-	ASSERT (s_ip4 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP4_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
 
 	g_object_set (s_ip4,
@@ -1896,9 +1974,6 @@ test_write_bt_dun_connection (void)
 
 	/* GSM setting */
 	s_gsm = NM_SETTING_GSM (nm_setting_gsm_new ());
-	ASSERT (s_gsm != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_GSM_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_gsm));
 
 	g_object_set (s_gsm,
@@ -2103,15 +2178,10 @@ test_write_gsm_connection (void)
 	guint64 timestamp = 0x12344433L;
 
 	connection = nm_connection_new ();
-	ASSERT (connection != NULL,
-	        "connection-write", "failed to allocate new connection");
 
 	/* Connection setting */
 
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
-	ASSERT (s_con != NULL,
-	        "connection-write", "failed to allocate new %s setting",
-	        NM_SETTING_CONNECTION_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_con));
 
 	uuid = nm_utils_uuid_generate ();
@@ -2127,9 +2197,6 @@ test_write_gsm_connection (void)
 	/* IP4 setting */
 
 	s_ip4 = NM_SETTING_IP4_CONFIG (nm_setting_ip4_config_new ());
-	ASSERT (s_ip4 != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_IP4_CONFIG_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
 
 	g_object_set (s_ip4,
@@ -2138,9 +2205,6 @@ test_write_gsm_connection (void)
 
 	/* GSM setting */
 	s_gsm = NM_SETTING_GSM (nm_setting_gsm_new ());
-	ASSERT (s_gsm != NULL,
-			"connection-write", "failed to allocate new %s setting",
-			NM_SETTING_GSM_SETTING_NAME);
 	nm_connection_add_setting (connection, NM_SETTING (s_gsm));
 
 	g_object_set (s_gsm,
@@ -2228,7 +2292,10 @@ test_read_wired_8021x_tls_blob_connection (void)
 	g_assert_cmpint (nm_setting_802_1x_get_ca_cert_scheme (s_8021x), ==, NM_SETTING_802_1X_CK_SCHEME_BLOB);
 
 	/* Make sure it's not a path, since it's a blob */
+	g_test_expect_message ("libnm-util", G_LOG_LEVEL_CRITICAL,
+	                       "*assertion*scheme == NM_SETTING_802_1X_CK_SCHEME_PATH*");
 	tmp = nm_setting_802_1x_get_ca_cert_path (s_8021x);
+	g_test_assert_expected_messages ();
 	g_assert (tmp == NULL);
 
 	/* Validate the path */
@@ -2258,7 +2325,10 @@ test_read_wired_8021x_tls_bad_path_connection (void)
 	char *tmp2;
 	gboolean success;
 
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	                       "*does not exist*");
 	connection = nm_keyfile_plugin_connection_from_file (TEST_WIRED_TLS_PATH_MISSING_FILE, &error);
+	g_test_assert_expected_messages ();
 	if (connection == NULL) {
 		g_assert (error);
 		g_warning ("Failed to read %s: %s", TEST_WIRED_TLS_PATH_MISSING_FILE, error->message);
@@ -2894,6 +2964,7 @@ test_write_bridge_main (void)
 	              NM_SETTING_CONNECTION_UUID, uuid,
 	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
 	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_BRIDGE_SETTING_NAME,
+	              NM_SETTING_CONNECTION_INTERFACE_NAME, "br0",
 	              NULL);
 	g_free (uuid);
 
@@ -3076,6 +3147,247 @@ test_write_bridge_component (void)
 }
 
 static void
+test_read_new_wired_group_name (void)
+{
+	NMConnection *connection;
+	NMSettingWired *s_wired;
+	const GByteArray *array;
+	guint8 expected_mac[ETH_ALEN] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55 };
+	GError *error = NULL;
+	gboolean success;
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_KEYFILES_DIR"/Test_New_Wired_Group_Name", &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Wired setting */
+	s_wired = nm_connection_get_setting_wired (connection);
+	g_assert (s_wired);
+	g_assert_cmpint (nm_setting_wired_get_mtu (s_wired), ==, 1400);
+
+	array = nm_setting_wired_get_mac_address (s_wired);
+	g_assert (array);
+	g_assert_cmpint (array->len, ==, ETH_ALEN);
+	g_assert_cmpint (memcmp (array->data, expected_mac, sizeof (expected_mac)), ==, 0);
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_new_wired_group_name (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingWired *s_wired;
+	char *uuid;
+	gboolean success;
+	NMConnection *reread;
+	char *testfile = NULL;
+	GError *error = NULL;
+	pid_t owner_grp;
+	uid_t owner_uid;
+	GKeyFile *kf;
+	char *s;
+	gint mtu;
+
+	connection = nm_connection_new ();
+	g_assert (connection);
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	g_assert (s_con);
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write Wired New Group Name",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRED_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wired setting */
+	s_wired = (NMSettingWired *) nm_setting_wired_new ();
+	g_assert (s_wired);
+	g_object_set (s_wired, NM_SETTING_WIRED_MTU, 1400, NULL);
+	nm_connection_add_setting (connection, NM_SETTING (s_wired));
+
+	/* Write out the connection */
+	owner_uid = geteuid ();
+	owner_grp = getegid ();
+	success = nm_keyfile_plugin_write_test_connection (connection, TEST_SCRATCH_DIR, owner_uid, owner_grp, &testfile, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (testfile);
+
+	/* Read the connection back in and compare it to the one we just wrote out */
+	reread = nm_keyfile_plugin_connection_from_file (testfile, &error);
+	g_assert_no_error (error);
+	g_assert (reread);
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	/* Look at the keyfile itself to ensure we wrote out the new group names and type */
+	kf = g_key_file_new ();
+	success = g_key_file_load_from_file (kf, testfile, G_KEY_FILE_NONE, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	s = g_key_file_get_string (kf, NM_SETTING_CONNECTION_SETTING_NAME, NM_SETTING_CONNECTION_TYPE, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (s, ==, "ethernet");
+	g_free (s);
+
+	mtu = g_key_file_get_integer (kf, "ethernet", NM_SETTING_WIRED_MTU, &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (mtu, ==, 1400);
+
+	unlink (testfile);
+	g_free (testfile);
+
+	g_object_unref (reread);
+	g_object_unref (connection);
+}
+
+static void
+test_read_new_wireless_group_names (void)
+{
+	NMConnection *connection;
+	NMSettingWireless *s_wifi;
+	NMSettingWirelessSecurity *s_wsec;
+	const GByteArray *array;
+	const char *expected_ssid = "foobar";
+	GError *error = NULL;
+	gboolean success;
+
+	connection = nm_keyfile_plugin_connection_from_file (TEST_KEYFILES_DIR"/Test_New_Wireless_Group_Names", &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Wifi setting */
+	s_wifi = nm_connection_get_setting_wireless (connection);
+	g_assert (s_wifi);
+
+	array = nm_setting_wireless_get_ssid (s_wifi);
+	g_assert (array);
+	g_assert_cmpint (array->len, ==, strlen (expected_ssid));
+	g_assert_cmpint (memcmp (array->data, expected_ssid, array->len), ==, 0);
+
+	g_assert_cmpstr (nm_setting_wireless_get_mode (s_wifi), ==, NM_SETTING_WIRELESS_MODE_INFRA);
+
+	/* Wifi security setting */
+	s_wsec = nm_connection_get_setting_wireless_security (connection);
+	g_assert (s_wsec);
+	g_assert_cmpstr (nm_setting_wireless_security_get_key_mgmt (s_wsec), ==, "wpa-psk");
+	g_assert_cmpstr (nm_setting_wireless_security_get_psk (s_wsec), ==, "s3cu4e passphrase");
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_new_wireless_group_names (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingWireless *s_wifi;
+	NMSettingWirelessSecurity *s_wsec;
+	char *uuid;
+	GByteArray *ssid;
+	unsigned char tmpssid[] = { 0x31, 0x33, 0x33, 0x37 };
+	const char *expected_psk = "asdfasdfasdfa12315";
+	gboolean success;
+	NMConnection *reread;
+	char *testfile = NULL;
+	GError *error = NULL;
+	pid_t owner_grp;
+	uid_t owner_uid;
+	GKeyFile *kf;
+	char *s;
+
+	connection = nm_connection_new ();
+
+	/* Connection setting */
+
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write New Wireless Group Names",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRELESS_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* WiFi setting */
+	s_wifi = (NMSettingWireless *) nm_setting_wireless_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_wifi));
+
+	ssid = g_byte_array_sized_new (sizeof (tmpssid));
+	g_byte_array_append (ssid, &tmpssid[0], sizeof (tmpssid));
+	g_object_set (s_wifi,
+	              NM_SETTING_WIRELESS_SSID, ssid,
+	              NM_SETTING_WIRELESS_MODE, NM_SETTING_WIRELESS_MODE_INFRA,
+	              NULL);
+	g_byte_array_free (ssid, TRUE);
+
+	/* WiFi security setting */
+	s_wsec = (NMSettingWirelessSecurity *) nm_setting_wireless_security_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_wsec));
+	g_object_set (s_wsec,
+	              NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-psk",
+	              NM_SETTING_WIRELESS_SECURITY_PSK, expected_psk,
+	              NULL);
+
+	/* Write out the connection */
+	owner_uid = geteuid ();
+	owner_grp = getegid ();
+	success = nm_keyfile_plugin_write_test_connection (connection, TEST_SCRATCH_DIR, owner_uid, owner_grp, &testfile, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	g_assert (testfile);
+
+	/* Read the connection back in and compare it to the one we just wrote out */
+	reread = nm_keyfile_plugin_connection_from_file (testfile, &error);
+	g_assert_no_error (error);
+	g_assert (reread);
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	/* Look at the keyfile itself to ensure we wrote out the new group names and type */
+	kf = g_key_file_new ();
+	success = g_key_file_load_from_file (kf, testfile, G_KEY_FILE_NONE, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	s = g_key_file_get_string (kf, NM_SETTING_CONNECTION_SETTING_NAME, NM_SETTING_CONNECTION_TYPE, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (s, ==, "wifi");
+	g_free (s);
+
+	s = g_key_file_get_string (kf, "wifi", NM_SETTING_WIRELESS_MODE, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (s, ==, NM_SETTING_WIRELESS_MODE_INFRA);
+	g_free (s);
+
+	s = g_key_file_get_string (kf, "wifi-security", NM_SETTING_WIRELESS_SECURITY_PSK, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (s, ==, expected_psk);
+	g_free (s);
+
+	unlink (testfile);
+	g_free (testfile);
+
+	g_object_unref (reread);
+	g_object_unref (connection);
+}
+
+static void
 test_read_missing_vlan_setting (void)
 {
 	NMConnection *connection;
@@ -3098,15 +3410,13 @@ test_read_missing_vlan_setting (void)
 	g_object_unref (connection);
 }
 
+NMTST_DEFINE ();
+
 int main (int argc, char **argv)
 {
-	GError *error = NULL;
 	char *base;
 
-	g_type_init ();
-
-	if (!nm_utils_init (&error))
-		FAIL ("nm-utils-init", "failed to initialize libnm-util: %s", error->message);
+	nmtst_init_assert_logging (&argc, &argv);
 
 	/* The tests */
 	test_read_valid_wired_connection ();
@@ -3116,6 +3426,8 @@ int main (int argc, char **argv)
 	test_write_ip6_wired_connection ();
 
 	test_read_wired_mac_case ();
+	test_read_mac_old_format ();
+	test_read_mac_ib_old_format ();
 
 	test_read_valid_wireless_connection ();
 	test_write_wireless_connection ();
@@ -3153,6 +3465,11 @@ int main (int argc, char **argv)
 	test_write_bridge_main ();
 	test_read_bridge_component ();
 	test_write_bridge_component ();
+
+	test_read_new_wired_group_name ();
+	test_write_new_wired_group_name ();
+	test_read_new_wireless_group_names ();
+	test_write_new_wireless_group_names ();
 
 	test_read_missing_vlan_setting ();
 

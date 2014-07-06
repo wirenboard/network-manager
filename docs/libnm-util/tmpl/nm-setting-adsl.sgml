@@ -138,6 +138,58 @@ NMSettingAdsl
 
 
 
+<!-- ##### STRUCT NMSettingAdsl ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingAdsl:encapsulation ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingAdsl:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingAdsl:password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingAdsl:protocol ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingAdsl:username ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingAdsl:vci ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingAdsl:vpi ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingAdslClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_adsl_new ##### -->
 <para>
 

@@ -96,7 +96,7 @@ show_access_point_info (NMAccessPoint *ap)
 	wpa_flags = nm_access_point_get_wpa_flags (ap);
 	rsn_flags = nm_access_point_get_rsn_flags (ap);
 	ssid = nm_access_point_get_ssid (ap);
-	hwaddr = nm_access_point_get_hw_address (ap);
+	hwaddr = nm_access_point_get_bssid (ap);
 	freq = nm_access_point_get_frequency (ap);
 	mode = nm_access_point_get_mode (ap);
 	bitrate = nm_access_point_get_max_bitrate (ap);
@@ -105,7 +105,7 @@ show_access_point_info (NMAccessPoint *ap)
 	/* Convert to strings */
 	ssid_str = nm_utils_ssid_to_utf8 (ssid);
 	freq_str = g_strdup_printf ("%u MHz", freq);
-	bitrate_str = g_strdup_printf ("%u MB/s", bitrate/1000);
+	bitrate_str = g_strdup_printf ("%u Mbit/s", bitrate/1000);
 	strength_str = g_strdup_printf ("%u", strength);
 	wpa_flags_str = ap_wpa_rsn_flags_to_string (wpa_flags);
 	rsn_flags_str = ap_wpa_rsn_flags_to_string (rsn_flags);
@@ -178,7 +178,7 @@ show_wifi_device_info (NMDevice *device)
 	speed = nm_device_wifi_get_bitrate (NM_DEVICE_WIFI (device));
 	speed /= 1000;
 
-	printf ("Device: %s  ----  Driver: %s  ----  Speed: %d MB/s  ----  Active AP: %s\n",
+	printf ("Device: %s  ----  Driver: %s  ----  Speed: %d Mbit/s  ----  Active AP: %s\n",
 	         iface, driver, speed, active_ssid_str ? active_ssid_str : "none");
 	printf ("=================================================================================\n");
 	g_free (active_ssid_str);
@@ -200,8 +200,10 @@ int main (int argc, char *argv[])
 	const GPtrArray *devices;
 	int i;
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	/* Initialize GType system */
 	g_type_init ();
+#endif
 
 	/* Get system bus */
 	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);

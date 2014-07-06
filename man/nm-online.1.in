@@ -19,9 +19,9 @@
 .\" with this manual; if not, write to the Free Software Foundation, Inc.,
 .\" 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 .\"
-.\" Copyright (C) 2010 Red Hat, Inc.
+.\" Copyright (C) 2010 - 2014 Red Hat, Inc.
 .\"
-.TH NM-ONLINE "1" "11 July 2013"
+.TH NM-ONLINE "1" "25 March 2014"
 
 .SH NAME
 nm-online \- ask NetworkManager whether the network is connected
@@ -35,7 +35,12 @@ is a utility to find out whether we are online. It is done by asking
 NetworkManager about its status. When run, \fInm\-online\fP waits until
 NetworkManager reports an active connection, or specified timeout expires. On
 exit, the returned status code should be checked (see the return codes bellow).
-
+.P
+By default NetworkManager waits for IPv4 dynamic addressing to complete but does
+not wait for the "auto" IPv6 dynamic addressing.  To wait for IPv6 addressing to
+complete, either (1) change the network connection's IPv6 "may-fail" setting to "no",
+and/or (2) change the IPv6 addressing method to "manual" or "dhcp", to indicate that
+IPv6 connectivity is expected.
 .SH OPTIONS
 .TP
 .B \-t, \-\-timeout <timeout_value>
@@ -47,6 +52,15 @@ Exit immediately if NetworkManager is not running or connecting.
 .TP
 .B \-q, \-\-quiet
 Don't print anything.
+.TP
+.B \-s, \-\-wait-for-startup
+Wait for NetworkManager startup to complete, rather than waiting for
+network connectivity specifically. Startup is considered complete once
+NetworkManager has activated (or attempted to activate) every
+auto-activate connection which is available given the current network
+state. (This is generally only useful at boot time; after startup has
+completed, \fInm-online -s\fP will just return immediately, regardless
+of the current network state.)
 
 .SH EXIT STATUS
 
@@ -58,6 +72,5 @@ Offline or not online within given timeout
 Unspecified error
 
 .SH SEE ALSO
-.BR nm\-tool (1),
 .BR nmcli (1),
 .BR NetworkManager(8).

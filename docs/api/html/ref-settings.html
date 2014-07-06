@@ -2,22 +2,22 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>NetworkManager D-Bus Reference Manual: Network Configuration Setting Specification</title>
+<title>Network Configuration Setting Specification</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="NetworkManager D-Bus Reference Manual">
 <link rel="up" href="index.html" title="NetworkManager D-Bus Reference Manual">
 <link rel="prev" href="ref-dbus.html" title="D-Bus API Reference">
 <link rel="next" href="secrets-flags.html" title="Secret flag types">
-<meta name="generator" content="GTK-Doc V1.20 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
-<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="10"><tr valign="middle">
-<td width="100%" align="left" class="shortcuts"></td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
-<td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
-<td><a accesskey="p" href="ref-dbus.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
-<td><a accesskey="n" href="secrets-flags.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2"><tr valign="middle">
+<td><a accesskey="p" href="ref-dbus.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td> </td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">NetworkManager D-Bus Reference Manual</th>
+<td><a accesskey="n" href="secrets-flags.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="chapter">
 <div class="titlepage"><div><div><h1 class="title">
@@ -63,8 +63,8 @@
 <tr>
 <td><pre class="screen">eap</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
-<td>The allowed EAP method to be used when authenticating to the network with 802.1x. Valid methods are: 'leap', 'md5', 'tls', 'peap', 'ttls', and 'fast'. Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations.</td>
+<td><pre class="screen"></pre></td>
+<td>The allowed EAP method to be used when authenticating to the network with 802.1x. Valid methods are: 'leap', 'md5', 'tls', 'peap', 'ttls', 'pwd', and 'fast'. Each method requires different configuration using the properties of this setting; refer to wpa_supplicant documentation for the allowed combinations.</td>
 </tr>
 <tr>
 <td><pre class="screen">identity</pre></td>
@@ -105,7 +105,7 @@
 <tr>
 <td><pre class="screen">altsubject-matches</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>List of strings to be matched against the altSubjectName of the certificate presented by the authentication server. If the list is empty, no verification of the server certificate's altSubjectName is performed.</td>
 </tr>
 <tr>
@@ -165,7 +165,7 @@
 <tr>
 <td><pre class="screen">phase2-altsubject-matches</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>List of strings to be matched against List of strings to be matched against the altSubjectName of the certificate presented by the authentication server during the inner 'phase 2' authentication. If the list is empty, no verification of the server certificate's altSubjectName is performed.</td>
 </tr>
 <tr>
@@ -396,7 +396,7 @@
 <tr>
 <td><pre class="screen">options</pre></td>
 <td><pre class="screen">dict of (string::string)</pre></td>
-<td><pre class="screen">[ ]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Dictionary of key/value pairs of bonding options.  Both keys and values must be strings.  Option names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</td>
 </tr>
 </tbody>
@@ -433,6 +433,12 @@
 <td>The name of the virtual in-kernel bridging network interface</td>
 </tr>
 <tr>
+<td><pre class="screen">mac-address</pre></td>
+<td><pre class="screen">byte array</pre></td>
+<td><pre class="screen">[]</pre></td>
+<td>The MAC address of the bridge</td>
+</tr>
+<tr>
 <td><pre class="screen">stp</pre></td>
 <td><pre class="screen">boolean</pre></td>
 <td><pre class="screen">TRUE</pre></td>
@@ -466,7 +472,7 @@
 <td><pre class="screen">ageing-time</pre></td>
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">300</pre></td>
-<td>The ethernet MAC address aging time, in seconds.</td>
+<td>The Ethernet MAC address aging time, in seconds.</td>
 </tr>
 </tbody>
 </table></div>
@@ -601,7 +607,13 @@
 <td><pre class="screen">uuid</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Universally unique connection identifier.  Must be in the format '2815492f-7e56-435e-b2e9-246bd7cdc664' (ie, contains only hexadecimal characters and '-'). The UUID should be assigned when the connection is created and never changed as long as the connection still applies to the same network.  For example, it should not be changed when the user changes the connection's 'id', but should be recreated when the WiFi SSID, mobile broadband network provider, or the connection type changes.</td>
+<td>Universally unique connection identifier.  Must be in the format '2815492f-7e56-435e-b2e9-246bd7cdc664' (ie, contains only hexadecimal characters and '-'). The UUID should be assigned when the connection is created and never changed as long as the connection still applies to the same network.  For example, it should not be changed when the user changes the connection's 'id', but should be recreated when the Wi-Fi SSID, mobile broadband network provider, or the connection type changes.</td>
+</tr>
+<tr>
+<td><pre class="screen">interface-name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Interface name this connection is bound to. If not set, then the connection can be attached to any interface of the appropriate type (subject to restrictions imposed by other settings). For connection types where interface names cannot easily be made persistent (e.g. mobile broadband or USB Ethernet), this property should not be used. Setting this property restricts the interfaces a connection can be used with, and if interface names change or are reordered the connection may be applied to the wrong interface.</td>
 </tr>
 <tr>
 <td><pre class="screen">type</pre></td>
@@ -612,7 +624,7 @@
 <tr>
 <td><pre class="screen">permissions</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>An array of strings defining what access a given user has to this connection.  If this is NULL or empty, all users are allowed to access this connection.  Otherwise a user is allowed to access this connection if and only if they are in this array. Each entry is of the form "[type]:[id]:[reserved]", for example: "user:dcbw:blah"  At this time only the 'user' [type] is allowed.  Any other values are ignored and reserved for future use.  [id] is the username that this permission refers to, which may not contain the ':' character.  Any [reserved] information (if present) must be ignored and is reserved for future use.  All of [type], [id], and [reserved] must be valid UTF-8.</td>
 </tr>
 <tr>
@@ -625,7 +637,7 @@
 <td><pre class="screen">timestamp</pre></td>
 <td><pre class="screen">uint64</pre></td>
 <td><pre class="screen">0</pre></td>
-<td>Timestamp (in seconds since the Unix Epoch) that the connection was last successfully activated.  Settings services should update the connection timestamp periodically when the connection is active to ensure that an active connection has the latest timestamp.</td>
+<td>Timestamp (in seconds since the Unix Epoch) that the connection was last successfully activated.  NetworkManager updates the connection timestamp periodically when the connection is active to ensure that an active connection has the latest timestamp. The property is only meant for reading (changes to this property will not be preserved).</td>
 </tr>
 <tr>
 <td><pre class="screen">read-only</pre></td>
@@ -654,8 +666,14 @@
 <tr>
 <td><pre class="screen">secondaries</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
-<td>List of connection UUIDs that should be activated when the base connection itself is activated.</td>
+<td><pre class="screen"></pre></td>
+<td>List of connection UUIDs that should be activated when the base connection itself is activated.  Currently only VPN connections are supported.</td>
+</tr>
+<tr>
+<td><pre class="screen">gateway-ping-timeout</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>If greater than zero, delay success of IP addressing until either the timeout is reached, or an IP gateway replies to a ping.</td>
 </tr>
 </tbody>
 </table></div>
@@ -663,7 +681,124 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.9"></a><p class="title"><b>Table 9. gsm setting</b></p>
+<a name="id-1.3.3.2.9"></a><p class="title"><b>Table 9. dcb setting</b></p>
+<div class="table-contents"><table summary="dcb setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><pre class="screen">name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">dcb</pre></td>
+<td>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</td>
+</tr>
+<tr>
+<td><pre class="screen">app-fcoe-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Specifies the flags for the DCB FCoE application. Flags may be any combination of 0x1 (enable), 0x2 (advertise), and 0x4 (willing). (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
+<td><pre class="screen">app-fcoe-priority</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">-1</pre></td>
+<td>The highest User Priority (0 - 7) which FCoE frames should use, or -1 for default priority. Only used when the 'app-fcoe-flags' property includes the 'enabled' flag.</td>
+</tr>
+<tr>
+<td><pre class="screen">app-fcoe-mode</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">"fabric"</pre></td>
+<td>The FCoe controller mode; either 'fabric' (default) or 'vn2vn'.</td>
+</tr>
+<tr>
+<td><pre class="screen">app-iscsi-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Specifies the flags for the DCB iSCSI application. Flags may be any combination of 0x1 (enable), 0x2 (advertise), and 0x4 (willing). (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
+<td><pre class="screen">app-iscsi-priority</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">-1</pre></td>
+<td>The highest User Priority (0 - 7) which iSCSI frames should use, or -1 for default priority. Only used when the 'app-iscsi-flags' property includes the 'enabled' flag.</td>
+</tr>
+<tr>
+<td><pre class="screen">app-fip-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Specifies the flags for the DCB FIP application. Flags may be any combination of 0x1 (enable), 0x2 (advertise), and 0x4 (willing). (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
+<td><pre class="screen">app-fip-priority</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">-1</pre></td>
+<td>The highest User Priority (0 - 7) which FIP frames should use, or -1 for default priority. Only used when the 'app-fip-flags' property includes the 'enabled' flag.</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-flow-control-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Specifies the flags for DCB Priority Flow Control. Flags may be any combination of 0x1 (enable), 0x2 (advertise), and 0x4 (willing). (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-flow-control</pre></td>
+<td><pre class="screen">array of uint32</pre></td>
+<td><pre class="screen"></pre></td>
+<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates whether or not the corresponding priority should transmit priority pause.  Allowed values are 0 (do not transmit pause) and 1 (transmit pause).</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-group-flags</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>Specifies the flags for DCB Priority Groups. Flags may be any combination of 0x1 (enable), 0x2 (advertise), and 0x4 (willing). (see <a class="xref" href="secrets-flags.html" title="Secret flag types">the section called “Secret flag types”</a> for flag values)</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-group-id</pre></td>
+<td><pre class="screen">array of uint32</pre></td>
+<td><pre class="screen"></pre></td>
+<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the Priority Group ID. Allowed Priority Group ID values are 0 - 7 or 15 for the unrestricted group.</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-group-bandwidth</pre></td>
+<td><pre class="screen">array of uint32</pre></td>
+<td><pre class="screen"></pre></td>
+<td>An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 - 7) and the value indicates the percentage of link bandwidth allocated to that group.  Allowed values are 0 - 100, and the sum of all values must total 100 percent.</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-bandwidth</pre></td>
+<td><pre class="screen">array of uint32</pre></td>
+<td><pre class="screen"></pre></td>
+<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the percentage of bandwidth of the priority's assigned group that the priority may use.  The sum of all percentages for priorities which belong to the same group must total 100 percent.</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-strict-bandwidth</pre></td>
+<td><pre class="screen">array of uint32</pre></td>
+<td><pre class="screen"></pre></td>
+<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates whether or not the priority may use all of the bandwidth allocated to its assigned group. Allowed values are 0 (the priority may not utilize all bandwidth) or 1 (the priority may utilize all bandwidth).</td>
+</tr>
+<tr>
+<td><pre class="screen">priority-traffic-class</pre></td>
+<td><pre class="screen">array of uint32</pre></td>
+<td><pre class="screen"></pre></td>
+<td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the traffic class (0 - 7) to which the priority is mapped.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+</p>
+<div class="table">
+<a name="id-1.3.3.2.10"></a><p class="title"><b>Table 10. gsm setting</b></p>
 <div class="table-contents"><table summary="gsm setting" border="1">
 <colgroup>
 <col>
@@ -724,7 +859,7 @@
 <td><pre class="screen">network-type</pre></td>
 <td><pre class="screen">int32</pre></td>
 <td><pre class="screen">-1</pre></td>
-<td>Network preference to force the device to only use specific network technologies.  The permitted values are: -1: any, 0: 3G only, 1: GPRS/EDGE only, 2: prefer 3G, 3: prefer 2G, 4: prefer 4G/LTE, 5: 4G/LTE only. Note that not all devices allow network preference control.</td>
+<td>Network preference to force the device to only use specific network technologies.  The permitted values are: -1: any, 0: 3G only, 1: GPRS/EDGE only, 2: prefer 3G, 3: prefer 2G, 4: prefer 4G/LTE, 5: 4G/LTE only. Notes: This property is deprecated and NetworkManager from 0.9.10 onwards doesn't use this property when talking to ModemManager.Also, not all devices allow network preference control.</td>
 </tr>
 <tr>
 <td><pre class="screen">pin</pre></td>
@@ -742,7 +877,7 @@
 <td><pre class="screen">allowed-bands</pre></td>
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">1</pre></td>
-<td>Bitfield of allowed frequency bands.  Note that not all devices allow frequency band control.</td>
+<td>Bitfield of allowed frequency bands.Notes: This property is deprecated and NetworkManager from 0.9.10 onwards doesn't use this property when talking to ModemManager.Also, not all devices allow frequency band control.</td>
 </tr>
 <tr>
 <td><pre class="screen">home-only</pre></td>
@@ -756,7 +891,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.10"></a><p class="title"><b>Table 10. infiniband setting</b></p>
+<a name="id-1.3.3.2.11"></a><p class="title"><b>Table 11. infiniband setting</b></p>
 <div class="table-contents"><table summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -795,13 +930,25 @@
 <td><pre class="screen"></pre></td>
 <td>The IPoIB transport mode. Either 'datagram' or 'connected'.</td>
 </tr>
+<tr>
+<td><pre class="screen">p-key</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">-1</pre></td>
+<td>The InfiniBand P_Key. Either -1 for the default, or a 16-bit unsigned integer.</td>
+</tr>
+<tr>
+<td><pre class="screen">parent</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>The interface name of the parent device, or NULL</td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.11"></a><p class="title"><b>Table 11. ipv4 setting</b></p>
+<a name="id-1.3.3.2.12"></a><p class="title"><b>Table 12. ipv4 setting</b></p>
 <div class="table-contents"><table summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -831,25 +978,31 @@
 <tr>
 <td><pre class="screen">dns</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>List of DNS servers (network byte order). For the 'auto' method, these DNS servers are appended to those (if any) returned by automatic configuration.  DNS servers cannot be used with the 'shared', 'link-local', or 'disabled' methods as there is no upstream network.  In all other methods, these DNS servers are used as the only DNS servers for this connection.</td>
 </tr>
 <tr>
 <td><pre class="screen">dns-search</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>List of DNS search domains.  For the 'auto' method, these search domains are appended to those returned by automatic configuration. Search domains cannot be used with the 'shared', 'link-local', or 'disabled' methods as there is no upstream network.  In all other methods, these search domains are used as the only search domains for this connection.</td>
 </tr>
 <tr>
 <td><pre class="screen">addresses</pre></td>
 <td><pre class="screen">array of array of uint32</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Array of IPv4 address structures.  Each IPv4 address structure is composed of 3 32-bit values; the first being the IPv4 address (network byte order), the second the prefix (1 - 32), and last the IPv4 gateway (network byte order). The gateway may be left as 0 if no gateway exists for that subnet.  For the 'auto' method, given IP addresses are appended to those returned by automatic configuration.  Addresses cannot be used with the 'shared', 'link-local', or 'disabled' methods as addressing is either automatic or disabled with these methods.</td>
+</tr>
+<tr>
+<td><pre class="screen">address-labels</pre></td>
+<td><pre class="screen">array of string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Internal use only</td>
 </tr>
 <tr>
 <td><pre class="screen">routes</pre></td>
 <td><pre class="screen">array of array of uint32</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Array of IPv4 route structures.  Each IPv4 route structure is composed of 4 32-bit values; the first being the destination IPv4 network or address (network byte order), the second the destination network or address prefix (1 - 32), the third being the next-hop (network byte order) if any, and the fourth being the route metric. For the 'auto' method, given IP routes are appended to those returned by automatic configuration.  Routes cannot be used with the 'shared', 'link-local', or 'disabled', methods as there is no upstream network.</td>
 </tr>
 <tr>
@@ -900,7 +1053,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.12"></a><p class="title"><b>Table 12. ipv6 setting</b></p>
+<a name="id-1.3.3.2.13"></a><p class="title"><b>Table 13. ipv6 setting</b></p>
 <div class="table-contents"><table summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -925,7 +1078,7 @@
 <td><pre class="screen">method</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignore' is specified, IPv6 configuration is not done. This property must be set.  NOTE: the 'shared' methodis not yet supported.</td>
+<td>IPv6 configuration method.  If 'auto' is specified then the appropriate automatic method (PPP, router advertisement, etc) is used for the device and most other properties can be left unset.  To force the use of DHCP only, specify 'dhcp'; this method is only valid for Ethernet-based hardware.  If 'link-local' is specified, then an IPv6 link-local address will be assigned to the interface.  If 'manual' is specified, static IP addressing is used and at least one IP address must be given in  the 'addresses' property.  If 'ignore' is specified, IPv6 configuration is not done. This property must be set.  Note: the 'shared' method is not yet supported.</td>
 </tr>
 <tr>
 <td><pre class="screen">dhcp-hostname</pre></td>
@@ -936,25 +1089,25 @@
 <tr>
 <td><pre class="screen">dns</pre></td>
 <td><pre class="screen">array of byte array</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Array of DNS servers, where each member of the array is a byte array containing the IPv6 address of the DNS server (in network byte order). For the 'auto' method, these DNS servers are appended to those (if any) returned by automatic configuration.  DNS servers cannot be used with the 'shared' or 'link-local' methods as there is no usptream network.  In all other methods, these DNS servers are used as the only DNS servers for this connection.</td>
 </tr>
 <tr>
 <td><pre class="screen">dns-search</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>List of DNS search domains.  For the 'auto' method, these search domains are appended to those returned by automatic configuration. Search domains cannot be used with the 'shared' or 'link-local' methods as there is no upstream network.  In all other methods, these search domains are used as the only search domains for this connection.</td>
 </tr>
 <tr>
 <td><pre class="screen">addresses</pre></td>
 <td><pre class="screen">array of (byte array, uint32, byte array)</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Array of IPv6 address structures.  Each IPv6 address structure is composed of 3 members, the first being a byte array containing the IPv6 address (network byte order), the second a 32-bit integer containing the IPv6 address prefix, and the third a byte array containing the IPv6 address (network byte order) of the gateway associated with this address, if any. If no gateway is given, the third element should be given as all zeros.  For the 'auto' method, given IP addresses are appended to those returned by automatic configuration.  Addresses cannot be used with the 'shared' or 'link-local' methods as the interface is automatically assigned an address with these methods.</td>
 </tr>
 <tr>
 <td><pre class="screen">routes</pre></td>
 <td><pre class="screen">array of (byte array, uint32, byte array, uint32)</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Array of IPv6 route structures.  Each IPv6 route structure is composed of 4 members; the first being the destination IPv6 network or address (network byte order) as a byte array, the second the destination network or address IPv6 prefix, the third being the next-hop IPv6 address (network byte order) if any, and the fourth being the route metric. For the 'auto' method, given IP routes are appended to those returned by automatic configuration.  Routes cannot be used with the 'shared' or 'link-local' methods because there is no upstream network.</td>
 </tr>
 <tr>
@@ -993,7 +1146,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.13"></a><p class="title"><b>Table 13. 802-11-olpc-mesh setting</b></p>
+<a name="id-1.3.3.2.14"></a><p class="title"><b>Table 14. 802-11-olpc-mesh setting</b></p>
 <div class="table-contents"><table summary="802-11-olpc-mesh setting" border="1">
 <colgroup>
 <col>
@@ -1038,7 +1191,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.14"></a><p class="title"><b>Table 14. ppp setting</b></p>
+<a name="id-1.3.3.2.15"></a><p class="title"><b>Table 15. ppp setting</b></p>
 <div class="table-contents"><table summary="ppp setting" border="1">
 <colgroup>
 <col>
@@ -1173,7 +1326,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.15"></a><p class="title"><b>Table 15. pppoe setting</b></p>
+<a name="id-1.3.3.2.16"></a><p class="title"><b>Table 16. pppoe setting</b></p>
 <div class="table-contents"><table summary="pppoe setting" border="1">
 <colgroup>
 <col>
@@ -1198,7 +1351,7 @@
 <td><pre class="screen">service</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>If specified, instruct PPPoE to only initiate sessions with access concentrators that provide the specified serivce.  For most providers, this should be left blank.  It is only required if there are multiple access concentrators or a specific service is known to be required.</td>
+<td>If specified, instruct PPPoE to only initiate sessions with access concentrators that provide the specified service.  For most providers, this should be left blank.  It is only required if there are multiple access concentrators or a specific service is known to be required.</td>
 </tr>
 <tr>
 <td><pre class="screen">username</pre></td>
@@ -1224,7 +1377,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.16"></a><p class="title"><b>Table 16. serial setting</b></p>
+<a name="id-1.3.3.2.17"></a><p class="title"><b>Table 17. serial setting</b></p>
 <div class="table-contents"><table summary="serial setting" border="1">
 <colgroup>
 <col>
@@ -1281,7 +1434,79 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.17"></a><p class="title"><b>Table 17. vlan setting</b></p>
+<a name="id-1.3.3.2.18"></a><p class="title"><b>Table 18. team setting</b></p>
+<div class="table-contents"><table summary="team setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><pre class="screen">name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">team</pre></td>
+<td>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</td>
+</tr>
+<tr>
+<td><pre class="screen">interface-name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>The name of the virtual in-kernel team network interface</td>
+</tr>
+<tr>
+<td><pre class="screen">config</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>JSON configuration for the team network interface. The property should contain raw JSON configuration data suitable for teamd, because the value is passed directly to teamd. If not specified, the default configuration is used. See man teamd.conf for the format details.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+</p>
+<div class="table">
+<a name="id-1.3.3.2.19"></a><p class="title"><b>Table 19. team-port setting</b></p>
+<div class="table-contents"><table summary="team-port setting" border="1">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead><tr>
+<th>Key Name</th>
+<th>Value Type</th>
+<th>Default Value</th>
+<th>Value Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><pre class="screen">name</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen">team-port</pre></td>
+<td>The setting's name; these names are defined by the specification and cannot be changed after the object has been created.  Each setting class has a name, and all objects of that class share the same name.</td>
+</tr>
+<tr>
+<td><pre class="screen">config</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>JSON configuration for the team port. The property should contain raw JSON configuration data suitable for teamd, because the value is passed directly to teamd. If not specified, the dafault configuration is used. See man teamd.conf for the format details.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><br class="table-break">
+</p>
+<div class="table">
+<a name="id-1.3.3.2.20"></a><p class="title"><b>Table 20. vlan setting</b></p>
 <div class="table-contents"><table summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -1306,13 +1531,13 @@
 <td><pre class="screen">interface-name</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>If given, specifies the kernel name of the VLAN interface. If not given, a default name will be constructed from the interface described by the parent interface and the 'id' property, ex 'eth2.1'. The parent interface may be given by the 'parent' property or by a hardware address property, eg the 'wired' settings' 'mac-address' property.</td>
+<td>If given, specifies the kernel name of the VLAN interface. If not given, a default name will be constructed from the interface described by the parent interface and the 'id' property, ex 'eth2.1'. The parent interface may be given by the 'parent' property or by the 'mac-address' property of a 'wired' setting.</td>
 </tr>
 <tr>
 <td><pre class="screen">parent</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>If given, specifies the parent interface name or parent connection UUID from which this VLAN interface should be created.  If this property is not specified, the connection must contain a hardware address in a hardware-specific setting, like the 'wired' settings' 'mac-address' property.</td>
+<td>If given, specifies the parent interface name or parent connection UUID from which this VLAN interface should be created.  If this property is not specified, the connection must contain a 'wired' setting with a 'mac-address' property.</td>
 </tr>
 <tr>
 <td><pre class="screen">id</pre></td>
@@ -1329,13 +1554,13 @@
 <tr>
 <td><pre class="screen">ingress-priority-map</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>For incoming packets, a list of mappings from 802.1p priorities to Linux SKB priorities.  The mapping is given in the format 'from:to' where both 'from' and 'to' are unsigned integers, ie '7:3'.</td>
 </tr>
 <tr>
 <td><pre class="screen">egress-priority-map</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>For outgoing packets, a list of mappings from Linux SKB priorities to 802.1p priorities.  The mapping is given in the format 'from:to' where both 'from' and 'to' are unsigned integers, ie '7:3'.</td>
 </tr>
 </tbody>
@@ -1344,7 +1569,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.18"></a><p class="title"><b>Table 18. vpn setting</b></p>
+<a name="id-1.3.3.2.21"></a><p class="title"><b>Table 21. vpn setting</b></p>
 <div class="table-contents"><table summary="vpn setting" border="1">
 <colgroup>
 <col>
@@ -1380,13 +1605,13 @@
 <tr>
 <td><pre class="screen">data</pre></td>
 <td><pre class="screen">dict of (string::string)</pre></td>
-<td><pre class="screen">[ ]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Dictionary of key/value pairs of VPN plugin specific data.  Both keys and values must be strings.</td>
 </tr>
 <tr>
 <td><pre class="screen">secrets</pre></td>
 <td><pre class="screen">dict of (string::string)</pre></td>
-<td><pre class="screen">[ ]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Dictionary of key/value pairs of VPN plugin specific secrets like passwords or private keys.  Both keys and values must be strings.</td>
 </tr>
 </tbody>
@@ -1395,7 +1620,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.19"></a><p class="title"><b>Table 19. wimax setting</b></p>
+<a name="id-1.3.3.2.22"></a><p class="title"><b>Table 22. wimax setting</b></p>
 <div class="table-contents"><table summary="wimax setting" border="1">
 <colgroup>
 <col>
@@ -1434,7 +1659,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.20"></a><p class="title"><b>Table 20. 802-3-ethernet setting</b></p>
+<a name="id-1.3.3.2.23"></a><p class="title"><b>Table 23. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -1483,7 +1708,7 @@
 <td><pre class="screen">mac-address</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>If specified, this connection will only apply to the ethernet device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</td>
+<td>If specified, this connection will only apply to the Ethernet device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</td>
 </tr>
 <tr>
 <td><pre class="screen">cloned-mac-address</pre></td>
@@ -1494,8 +1719,8 @@
 <tr>
 <td><pre class="screen">mac-address-blacklist</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
-<td>If specified, this connection will never apply to the ethernet device whose permanent MAC address matches an address in the list.  Each MAC address is in the standard hex-digits-and-colons notation (00:11:22:33:44:55).</td>
+<td><pre class="screen"></pre></td>
+<td>If specified, this connection will never apply to the Ethernet device whose permanent MAC address matches an address in the list.  Each MAC address is in the standard hex-digits-and-colons notation (00:11:22:33:44:55).</td>
 </tr>
 <tr>
 <td><pre class="screen">mtu</pre></td>
@@ -1506,7 +1731,7 @@
 <tr>
 <td><pre class="screen">s390-subchannels</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Identifies specific subchannels that this network device uses for communcation with z/VM or s390 host.  Like the 'mac-address' property for non-z/VM devices, this property can be used to ensure this connection only applies to the network device that uses these subchannels. The list should contain exactly 3 strings, and each string may only be composed of hexadecimal characters and the period (.) character.</td>
 </tr>
 <tr>
@@ -1518,7 +1743,7 @@
 <tr>
 <td><pre class="screen">s390-options</pre></td>
 <td><pre class="screen">dict of (string::string)</pre></td>
-<td><pre class="screen">[ ]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>Dictionary of key/value pairs of s390-specific device options.  Both keys and values must be strings.  Allowed keys include 'portno', 'layer2', 'portname', 'protocol', among others.</td>
 </tr>
 </tbody>
@@ -1527,7 +1752,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.21"></a><p class="title"><b>Table 21. 802-11-wireless setting</b></p>
+<a name="id-1.3.3.2.24"></a><p class="title"><b>Table 24. 802-11-wireless setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -1552,25 +1777,25 @@
 <td><pre class="screen">ssid</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>SSID of the WiFi network.  Must be specified.</td>
+<td>SSID of the Wi-Fi network.  Must be specified.</td>
 </tr>
 <tr>
 <td><pre class="screen">mode</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>WiFi network mode; one of 'infrastructure', 'adhoc' or 'ap'.  If blank, infrastructure is assumed.</td>
+<td>Wi-Fi network mode; one of 'infrastructure', 'adhoc' or 'ap'.  If blank, infrastructure is assumed.</td>
 </tr>
 <tr>
 <td><pre class="screen">band</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>802.11 frequency band of the network.  One of 'a' for 5GHz 802.11a or 'bg' for 2.4GHz 802.11.  This will lock associations to the WiFi network to the specific band, i.e. if 'a' is specified, the device will not associate with the same network in the 2.4GHz band even if the network's settings are compatible.  This setting depends on specific driver capability and may not work with all drivers.</td>
+<td>802.11 frequency band of the network.  One of 'a' for 5GHz 802.11a or 'bg' for 2.4GHz 802.11.  This will lock associations to the Wi-Fi network to the specific band, i.e. if 'a' is specified, the device will not associate with the same network in the 2.4GHz band even if the network's settings are compatible.  This setting depends on specific driver capability and may not work with all drivers.</td>
 </tr>
 <tr>
 <td><pre class="screen">channel</pre></td>
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">0</pre></td>
-<td>Wireless channel to use for the WiFi connection.  The device will only join (or create for Ad-Hoc networks) a WiFi network on the specified channel.  Because channel numbers overlap between bands, this property also requires the 'band' property to be set.</td>
+<td>Wireless channel to use for the Wi-Fi connection.  The device will only join (or create for Ad-Hoc networks) a Wi-Fi network on the specified channel.  Because channel numbers overlap between bands, this property also requires the 'band' property to be set.</td>
 </tr>
 <tr>
 <td><pre class="screen">bssid</pre></td>
@@ -1594,18 +1819,18 @@
 <td><pre class="screen">mac-address</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>If specified, this connection will only apply to the WiFi device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</td>
+<td>If specified, this connection will only apply to the Wi-Fi device whose permanent MAC address matches.  This property does not change the MAC address of the device (i.e. MAC spoofing).</td>
 </tr>
 <tr>
 <td><pre class="screen">cloned-mac-address</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen">[]</pre></td>
-<td>If specified, request that the WiFi device use this MAC address instead of its permanent MAC address.  This is known as MAC cloning or spoofing.</td>
+<td>If specified, request that the Wi-Fi device use this MAC address instead of its permanent MAC address.  This is known as MAC cloning or spoofing.</td>
 </tr>
 <tr>
 <td><pre class="screen">mac-address-blacklist</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>A list of permanent MAC addresses of Wi-Fi devices to which this connection should never apply.  Each MAC address should be given in the standard hex-digits-and-colons notation (eg '00:11:22:33:44:55').</td>
 </tr>
 <tr>
@@ -1617,8 +1842,8 @@
 <tr>
 <td><pre class="screen">seen-bssids</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
-<td>A list of BSSIDs (each BSSID formatted as a MAC address like 00:11:22:33:44:55') that have been detected as part of the WiFI network. NetworkManager internally tracks previously seen BSSIDs. The property is only meant for reading and reflects the BBSID list of NetworkManager. The changes you make to this property will not be preserved.</td>
+<td><pre class="screen"></pre></td>
+<td>A list of BSSIDs (each BSSID formatted as a MAC address like 00:11:22:33:44:55') that have been detected as part of the Wi-Fi network. NetworkManager internally tracks previously seen BSSIDs. The property is only meant for reading and reflects the BSSID list of NetworkManager. The changes you make to this property will not be preserved.</td>
 </tr>
 <tr>
 <td><pre class="screen">security</pre></td>
@@ -1638,7 +1863,7 @@
 <p><br class="table-break">
 </p>
 <div class="table">
-<a name="id-1.3.3.2.22"></a><p class="title"><b>Table 22. 802-11-wireless-security setting</b></p>
+<a name="id-1.3.3.2.25"></a><p class="title"><b>Table 25. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>
@@ -1663,7 +1888,7 @@
 <td><pre class="screen">key-mgmt</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Key management used for the connection.  One of 'none' (WEP), 'ieee8021x' (Dynamic WEP), 'wpa-none' (WPA-PSK Ad-Hoc), 'wpa-psk' (infrastructure WPA-PSK), or 'wpa-eap' (WPA-Enterprise).  This property must be set for any WiFi connection that uses security.</td>
+<td>Key management used for the connection.  One of 'none' (WEP), 'ieee8021x' (Dynamic WEP), 'wpa-none' (WPA-PSK Ad-Hoc), 'wpa-psk' (infrastructure WPA-PSK), or 'wpa-eap' (WPA-Enterprise).  This property must be set for any Wi-Fi connection that uses security.</td>
 </tr>
 <tr>
 <td><pre class="screen">wep-tx-keyidx</pre></td>
@@ -1680,19 +1905,19 @@
 <tr>
 <td><pre class="screen">proto</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>List of strings specifying the allowed WPA protocol versions to use.  Each element may be one 'wpa' (allow WPA) or 'rsn' (allow WPA2/RSN).  If not specified, both WPA and RSN connections are allowed.</td>
 </tr>
 <tr>
 <td><pre class="screen">pairwise</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
-<td>A list of pairwise encryption algorithms which prevents connections to Wi-Fi networks that do not utilize one of the algorithms in the list. For maximum compatibility leave this property empty.  Each list element may be one of 'wep40', 'wep104', 'tkip' or 'ccmp'.</td>
+<td><pre class="screen"></pre></td>
+<td>A list of pairwise encryption algorithms which prevents connections to Wi-Fi networks that do not utilize one of the algorithms in the list. For maximum compatibility leave this property empty.  Each list element may be one of 'tkip' or 'ccmp'.</td>
 </tr>
 <tr>
 <td><pre class="screen">group</pre></td>
 <td><pre class="screen">array of string</pre></td>
-<td><pre class="screen">[]</pre></td>
+<td><pre class="screen"></pre></td>
 <td>A list of group/broadcast encryption algorithms which prevents connections to Wi-Fi networks that do not utilize one of the algorithms in the list.  For maximum compatibility leave this property empty.  Each list element may be one  of 'wep40', 'wep104', 'tkip', or 'ccmp'.</td>
 </tr>
 <tr>
@@ -1741,7 +1966,7 @@
 <td><pre class="screen">psk</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Pre-Shared-Key for WPA networks.  If the key is 64-characters long, it must contain only hexadecimal characters and is interpreted as a hexadecimal WPA key.  Otherwise, the key must be between 8 and 63 ASCII characters (as specified in the 802.11i standard) and is interpreted as a WPA passphrase, and is hashed to derive the actual WPA-PSK used when connecting to the WiFi network.</td>
+<td>Pre-Shared-Key for WPA networks.  If the key is 64-characters long, it must contain only hexadecimal characters and is interpreted as a hexadecimal WPA key.  Otherwise, the key must be between 8 and 63 ASCII characters (as specified in the 802.11i standard) and is interpreted as a WPA passphrase, and is hashed to derive the actual WPA-PSK used when connecting to the Wi-Fi network.</td>
 </tr>
 <tr>
 <td><pre class="screen">psk-flags</pre></td>
@@ -1770,6 +1995,6 @@
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.20</div>
+          Generated by GTK-Doc V1.19</div>
 </body>
 </html>

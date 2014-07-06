@@ -92,6 +92,75 @@ NMAccessPoint
 
 
 
+<!-- ##### STRUCT NMAccessPoint ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMAccessPoint:bssid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:frequency ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:max-bitrate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:mode ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:rsn-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:ssid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:strength ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMAccessPoint:wpa-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMAccessPointClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_access_point_new ##### -->
 <para>
 

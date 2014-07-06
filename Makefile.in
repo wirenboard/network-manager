@@ -14,6 +14,24 @@
 
 @SET_MAKE@
 
+# Copyright (C) 2012 Colin Walters <walters@verbum.org>
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -78,23 +96,22 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = .
-DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
-	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in \
+DIST_COMMON = $(srcdir)/libgsystem/Makefile-libgsystem.am INSTALL NEWS \
+	README AUTHORS ChangeLog $(srcdir)/Makefile.in \
+	$(srcdir)/Makefile.am $(top_srcdir)/configure \
+	$(am__configure_deps) $(srcdir)/config.h.in \
 	$(top_srcdir)/initscript/RedHat/NetworkManager.in \
 	$(top_srcdir)/initscript/Debian/NetworkManager.in \
 	$(top_srcdir)/initscript/Slackware/rc.networkmanager.in \
 	$(top_srcdir)/initscript/SUSE/networkmanager.in \
 	$(top_srcdir)/initscript/Arch/networkmanager.in \
-	$(top_srcdir)/initscript/paldo/NetworkManager.in \
 	$(top_srcdir)/initscript/Mandriva/networkmanager.in \
 	$(top_srcdir)/initscript/linexa/networkmanager.in \
-	$(srcdir)/NetworkManager.pc.in ABOUT-NLS COPYING TODO \
-	build-aux/compile build-aux/config.guess \
-	build-aux/config.rpath build-aux/config.sub build-aux/depcomp \
-	build-aux/install-sh build-aux/missing build-aux/ltmain.sh \
+	$(srcdir)/NetworkManager.pc.in ABOUT-NLS \
+	$(top_srcdir)/build-aux/depcomp COPYING TODO build-aux/compile \
+	build-aux/config.guess build-aux/config.rpath \
+	build-aux/config.sub build-aux/depcomp build-aux/install-sh \
+	build-aux/missing build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/config.guess \
 	$(top_srcdir)/build-aux/config.rpath \
@@ -102,8 +119,10 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(top_srcdir)/build-aux/install-sh \
 	$(top_srcdir)/build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/missing
+subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -125,10 +144,27 @@ CONFIG_CLEAN_FILES = initscript/RedHat/NetworkManager \
 	initscript/Debian/NetworkManager \
 	initscript/Slackware/rc.networkmanager \
 	initscript/SUSE/networkmanager initscript/Arch/networkmanager \
-	initscript/paldo/NetworkManager \
 	initscript/Mandriva/networkmanager \
 	initscript/linexa/networkmanager NetworkManager.pc
 CONFIG_CLEAN_VPATH_FILES =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+am__DEPENDENCIES_1 =
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
+libgsystem_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_libgsystem_la_OBJECTS = libgsystem_la-gsystem-local-alloc.lo \
+	libgsystem_la-gsystem-console.lo \
+	libgsystem_la-gsystem-file-utils.lo \
+	libgsystem_la-gsystem-shutil.lo libgsystem_la-gsystem-log.lo \
+	libgsystem_la-gsystem-subprocess-context.lo \
+	libgsystem_la-gsystem-subprocess.lo
+libgsystem_la_OBJECTS = $(am_libgsystem_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libgsystem_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libgsystem_la_CFLAGS) \
+	$(CFLAGS) $(libgsystem_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -141,8 +177,30 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-SOURCES =
-DIST_SOURCES =
+DEFAULT_INCLUDES = -I.@am__isrc@
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
+am__depfiles_maybe = depfiles
+am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC      " $@;
+am__v_CC_1 = 
+CCLD = $(CC)
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD    " $@;
+am__v_CCLD_1 = 
+SOURCES = $(libgsystem_la_SOURCES)
+DIST_SOURCES = $(libgsystem_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -282,12 +340,15 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
+DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
+DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
@@ -312,7 +373,6 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
-GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -357,12 +417,16 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
+LIBNDP_CFLAGS = @LIBNDP_CFLAGS@
+LIBNDP_LIBS = @LIBNDP_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
+LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -379,6 +443,8 @@ MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEWT_CFLAGS = @NEWT_CFLAGS@
+NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -406,11 +472,16 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
+PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
+READLINE_LIBS = @READLINE_LIBS@
 SED = @SED@
+SELINUX_CFLAGS = @SELINUX_CFLAGS@
+SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -425,6 +496,7 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VALGRIND_RULES = @VALGRIND_RULES@
 VAPIGEN = @VAPIGEN@
 VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
 VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
@@ -487,6 +559,7 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
@@ -497,7 +570,9 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
+with_valgrind = @with_valgrind@
 SUBDIRS = \
+	. \
 	include \
 	libnm-util \
 	libnm-glib \
@@ -505,27 +580,24 @@ SUBDIRS = \
 	src \
 	callouts \
 	cli \
+	tui \
 	tools \
 	policy \
 	data \
 	test \
 	po \
-	man \
 	docs \
+	man \
 	examples \
 	vapi
 
-EXTRA_DIST = \
-	CONTRIBUTING \
-	NetworkManager.pc.in \
-	intltool-extract.in \
-	intltool-merge.in \
-	intltool-update.in \
-	Makefile.glib \
-	autogen.sh
-
+EXTRA_DIST = CONTRIBUTING NetworkManager.pc.in intltool-extract.in \
+	intltool-merge.in intltool-update.in Makefile.glib autogen.sh \
+	valgrind.suppressions $(libgsystem_srcpath)/README \
+	$(libgsystem_srcpath)/COPYING
 DISTCHECK_CONFIGURE_FLAGS = \
-	--with-tests=yes \
+	--enable-tests=yes \
+	--with-valgrind=no \
 	--enable-gtk-doc \
 	--enable-more-warnings=yes \
 	--with-udev-dir=$$dc_install_base/lib/udev \
@@ -540,13 +612,41 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = NetworkManager.pc
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 CLEANFILES = cscope.in.out cscope.out cscope.po.out
+libgsystem_srcpath := libgsystem
+libgsystem_cflags := $(filter-out -DGLIB_VERSION%,$(GLIB_CFLAGS)) -I$(srcdir)/libgsystem
+libgsystem_libs = $(GLIB_LIBS)
+libgsystem_la_SOURCES = \
+	$(libgsystem_srcpath)/gsystem-local-alloc.h \
+	$(libgsystem_srcpath)/gsystem-local-alloc.c \
+	$(libgsystem_srcpath)/gsystem-console.h \
+	$(libgsystem_srcpath)/gsystem-console.c \
+	$(libgsystem_srcpath)/gsystem-file-utils.h \
+	$(libgsystem_srcpath)/gsystem-file-utils.c \
+	$(libgsystem_srcpath)/gsystem-glib-compat.h \
+	$(libgsystem_srcpath)/gsystem-shutil.h \
+	$(libgsystem_srcpath)/gsystem-shutil.c \
+	$(libgsystem_srcpath)/gsystem-log.h \
+	$(libgsystem_srcpath)/gsystem-log.c \
+	$(libgsystem_srcpath)/gsystem-subprocess-context.h \
+	$(libgsystem_srcpath)/gsystem-subprocess-context-private.h \
+	$(libgsystem_srcpath)/gsystem-subprocess-context.c \
+	$(libgsystem_srcpath)/gsystem-subprocess.h \
+	$(libgsystem_srcpath)/gsystem-subprocess.c \
+	$(libgsystem_srcpath)/libgsystem.h \
+	$(NULL)
+
+libgsystem_la_CFLAGS = $(AM_CFLAGS) $(libgsystem_cflags)
+libgsystem_la_LDFLAGS = -avoid-version -Bsymbolic-functions -export-symbols-regex "^gs_" -no-undefined -export-dynamic
+libgsystem_la_LIBADD = $(libgsystem_libs)
+noinst_LTLIBRARIES = libgsystem.la
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
+.SUFFIXES: .c .lo .o .obj
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/libgsystem/Makefile-libgsystem.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -569,6 +669,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe);; \
 	esac;
+$(srcdir)/libgsystem/Makefile-libgsystem.am:
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -603,14 +704,110 @@ initscript/SUSE/networkmanager: $(top_builddir)/config.status $(top_srcdir)/init
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 initscript/Arch/networkmanager: $(top_builddir)/config.status $(top_srcdir)/initscript/Arch/networkmanager.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-initscript/paldo/NetworkManager: $(top_builddir)/config.status $(top_srcdir)/initscript/paldo/NetworkManager.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 initscript/Mandriva/networkmanager: $(top_builddir)/config.status $(top_srcdir)/initscript/Mandriva/networkmanager.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 initscript/linexa/networkmanager: $(top_builddir)/config.status $(top_srcdir)/initscript/linexa/networkmanager.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 NetworkManager.pc: $(top_builddir)/config.status $(srcdir)/NetworkManager.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
+libgsystem.la: $(libgsystem_la_OBJECTS) $(libgsystem_la_DEPENDENCIES) $(EXTRA_libgsystem_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgsystem_la_LINK)  $(libgsystem_la_OBJECTS) $(libgsystem_la_LIBADD) $(LIBS)
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-console.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-file-utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-local-alloc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-log.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-shutil.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-subprocess-context.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgsystem_la-gsystem-subprocess.Plo@am__quote@
+
+.c.o:
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+.c.lo:
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libgsystem_la-gsystem-local-alloc.lo: $(libgsystem_srcpath)/gsystem-local-alloc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-local-alloc.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-local-alloc.Tpo -c -o libgsystem_la-gsystem-local-alloc.lo `test -f '$(libgsystem_srcpath)/gsystem-local-alloc.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-local-alloc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-local-alloc.Tpo $(DEPDIR)/libgsystem_la-gsystem-local-alloc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-local-alloc.c' object='libgsystem_la-gsystem-local-alloc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-local-alloc.lo `test -f '$(libgsystem_srcpath)/gsystem-local-alloc.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-local-alloc.c
+
+libgsystem_la-gsystem-console.lo: $(libgsystem_srcpath)/gsystem-console.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-console.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-console.Tpo -c -o libgsystem_la-gsystem-console.lo `test -f '$(libgsystem_srcpath)/gsystem-console.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-console.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-console.Tpo $(DEPDIR)/libgsystem_la-gsystem-console.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-console.c' object='libgsystem_la-gsystem-console.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-console.lo `test -f '$(libgsystem_srcpath)/gsystem-console.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-console.c
+
+libgsystem_la-gsystem-file-utils.lo: $(libgsystem_srcpath)/gsystem-file-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-file-utils.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-file-utils.Tpo -c -o libgsystem_la-gsystem-file-utils.lo `test -f '$(libgsystem_srcpath)/gsystem-file-utils.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-file-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-file-utils.Tpo $(DEPDIR)/libgsystem_la-gsystem-file-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-file-utils.c' object='libgsystem_la-gsystem-file-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-file-utils.lo `test -f '$(libgsystem_srcpath)/gsystem-file-utils.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-file-utils.c
+
+libgsystem_la-gsystem-shutil.lo: $(libgsystem_srcpath)/gsystem-shutil.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-shutil.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-shutil.Tpo -c -o libgsystem_la-gsystem-shutil.lo `test -f '$(libgsystem_srcpath)/gsystem-shutil.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-shutil.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-shutil.Tpo $(DEPDIR)/libgsystem_la-gsystem-shutil.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-shutil.c' object='libgsystem_la-gsystem-shutil.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-shutil.lo `test -f '$(libgsystem_srcpath)/gsystem-shutil.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-shutil.c
+
+libgsystem_la-gsystem-log.lo: $(libgsystem_srcpath)/gsystem-log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-log.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-log.Tpo -c -o libgsystem_la-gsystem-log.lo `test -f '$(libgsystem_srcpath)/gsystem-log.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-log.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-log.Tpo $(DEPDIR)/libgsystem_la-gsystem-log.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-log.c' object='libgsystem_la-gsystem-log.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-log.lo `test -f '$(libgsystem_srcpath)/gsystem-log.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-log.c
+
+libgsystem_la-gsystem-subprocess-context.lo: $(libgsystem_srcpath)/gsystem-subprocess-context.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-subprocess-context.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-subprocess-context.Tpo -c -o libgsystem_la-gsystem-subprocess-context.lo `test -f '$(libgsystem_srcpath)/gsystem-subprocess-context.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-subprocess-context.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-subprocess-context.Tpo $(DEPDIR)/libgsystem_la-gsystem-subprocess-context.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-subprocess-context.c' object='libgsystem_la-gsystem-subprocess-context.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-subprocess-context.lo `test -f '$(libgsystem_srcpath)/gsystem-subprocess-context.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-subprocess-context.c
+
+libgsystem_la-gsystem-subprocess.lo: $(libgsystem_srcpath)/gsystem-subprocess.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -MT libgsystem_la-gsystem-subprocess.lo -MD -MP -MF $(DEPDIR)/libgsystem_la-gsystem-subprocess.Tpo -c -o libgsystem_la-gsystem-subprocess.lo `test -f '$(libgsystem_srcpath)/gsystem-subprocess.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-subprocess.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgsystem_la-gsystem-subprocess.Tpo $(DEPDIR)/libgsystem_la-gsystem-subprocess.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(libgsystem_srcpath)/gsystem-subprocess.c' object='libgsystem_la-gsystem-subprocess.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgsystem_la_CFLAGS) $(CFLAGS) -c -o libgsystem_la-gsystem-subprocess.lo `test -f '$(libgsystem_srcpath)/gsystem-subprocess.c' || echo '$(srcdir)/'`$(libgsystem_srcpath)/gsystem-subprocess.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -927,7 +1124,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(DATA) config.h
+all-am: Makefile $(LTLIBRARIES) $(DATA) config.h
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(pkgconfigdir)"; do \
@@ -967,13 +1164,15 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-hdr distclean-libtool distclean-tags
 
 dvi: dvi-recursive
 
@@ -1018,12 +1217,14 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-generic mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 pdf: pdf-recursive
 
@@ -1039,26 +1240,30 @@ uninstall-am: uninstall-pkgconfigDATA
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
 	am--refresh check check-am clean clean-cscope clean-generic \
-	clean-libtool cscope cscopelist-am ctags ctags-am dist \
-	dist-all dist-bzip2 dist-gzip dist-lzip dist-shar dist-tarZ \
-	dist-xz dist-zip distcheck distclean distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags distcleancheck \
-	distdir distuninstallcheck dvi dvi-am html html-am info \
-	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-pkgconfigDATA \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-pkgconfigDATA
+	clean-libtool clean-noinstLTLIBRARIES cscope cscopelist-am \
+	ctags ctags-am dist dist-all dist-bzip2 dist-gzip dist-lzip \
+	dist-shar dist-tarZ dist-xz dist-zip distcheck distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pkgconfigDATA install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-pkgconfigDATA
 
 include $(GLIB_MAKEFILE)
 
-.PHONY: cscope
+@GNOME_CODE_COVERAGE_RULES@
+
 cscope:
 	cscope -b -q -R -Iinclude -ssrc -slibnm-glib -slibnm-util -scli/src;
+
+.PHONY: cscope
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

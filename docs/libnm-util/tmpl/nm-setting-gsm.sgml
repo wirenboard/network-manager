@@ -97,20 +97,6 @@ NMSettingGsm
 
 
 
-<!-- ##### MACRO NM_SETTING_GSM_NETWORK_TYPE ##### -->
-<para>
-
-</para>
-
-
-
-<!-- ##### MACRO NM_SETTING_GSM_ALLOWED_BANDS ##### -->
-<para>
-
-</para>
-
-
-
 <!-- ##### MACRO NM_SETTING_GSM_PIN ##### -->
 <para>
 
@@ -126,6 +112,20 @@ NMSettingGsm
 
 
 <!-- ##### MACRO NM_SETTING_GSM_HOME_ONLY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_GSM_ALLOWED_BANDS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_GSM_NETWORK_TYPE ##### -->
 <para>
 
 </para>
@@ -165,6 +165,85 @@ NMSettingGsm
 @NM_SETTING_GSM_BAND_U17IX: 
 @NM_SETTING_GSM_BAND_U1900: 
 @NM_SETTING_GSM_BAND_U2600: 
+
+<!-- ##### MACRO NM_SETTING_GSM_BANDS_MAX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingGsm ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingGsm:allowed-bands ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:apn ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:home-only ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:network-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:network-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:number ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:pin ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:pin-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingGsm:username ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingGsmClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
 
 <!-- ##### FUNCTION nm_setting_gsm_new ##### -->
 <para>
@@ -220,24 +299,6 @@ NMSettingGsm
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_gsm_get_network_type ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
-<!-- ##### FUNCTION nm_setting_gsm_get_allowed_bands ##### -->
-<para>
-
-</para>
-
-@setting: 
-@Returns: 
-
-
 <!-- ##### FUNCTION nm_setting_gsm_get_pin ##### -->
 <para>
 
@@ -266,6 +327,24 @@ NMSettingGsm
 
 
 <!-- ##### FUNCTION nm_setting_gsm_get_password_flags ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_gsm_get_network_type ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_gsm_get_allowed_bands ##### -->
 <para>
 
 </para>

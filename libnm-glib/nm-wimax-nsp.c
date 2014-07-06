@@ -55,10 +55,6 @@ enum {
 	LAST_PROP
 };
 
-#define DBUS_PROP_NAME "Name"
-#define DBUS_PROP_SIGNAL_QUALITY "SignalQuality"
-#define DBUS_PROP_NETWORK_TYPE "NetworkType"
-
 /**
  * nm_wimax_nsp_new:
  * @connection: the #DBusGConnection
@@ -278,17 +274,11 @@ register_properties (NMWimaxNsp *nsp)
 static void
 constructed (GObject *object)
 {
-	NMWimaxNspPrivate *priv;
+	NMWimaxNspPrivate *priv = NM_WIMAX_NSP_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_wimax_nsp_parent_class)->constructed (object);
 
-	priv = NM_WIMAX_NSP_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-											 NM_DBUS_SERVICE,
-											 nm_object_get_path (NM_OBJECT (object)),
-											 NM_DBUS_INTERFACE_WIMAX_NSP);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_WIMAX_NSP);
 	register_properties (NM_WIMAX_NSP (object));
 }
 

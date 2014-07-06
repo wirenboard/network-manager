@@ -23,13 +23,10 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "nm-glib-compat.h"
-
-#include <NetworkManager.h>
-
+#include "NetworkManager.h"
 #include "nm-secret-agent.h"
 #include "nm-glib-enum-types.h"
-#include "nm-glib-marshal.h"
-#include "NetworkManager.h"
+#include "nm-dbus-helpers-private.h"
 
 static void impl_secret_agent_get_secrets (NMSecretAgent *self,
                                            GHashTable *connection_hash,
@@ -66,8 +63,10 @@ static gboolean auto_register_cb (gpointer user_data);
 
 typedef struct {
 	gboolean registered;
+	NMSecretAgentCapabilities capabilities;
 
 	DBusGConnection *bus;
+	gboolean private_bus;
 	DBusGProxy *dbus_proxy;
 	DBusGProxy *manager_proxy;
 	DBusGProxyCall *reg_call;
@@ -88,6 +87,7 @@ enum {
 	PROP_IDENTIFIER,
 	PROP_AUTO_REGISTER,
 	PROP_REGISTERED,
+	PROP_CAPABILITIES,
 
 	LAST_PROP
 };
@@ -227,6 +227,12 @@ verify_sender (NMSecretAgent *self,
 	gboolean allowed = FALSE;
 
 	g_return_val_if_fail (context != NULL, FALSE);
+
+	/* Private bus connection is always to NetworkManager, which is always
+	 * UID 0.
+	 */
+	if (priv->private_bus)
+		return TRUE;
 
 	/* Verify the sender's UID is 0, and that the sender is the same as
 	 * NetworkManager's bus name owner.
@@ -527,6 +533,22 @@ impl_secret_agent_delete_secrets (NMSecretAgent *self,
 /**************************************************************/
 
 static void
+reg_result (NMSecretAgent *self, GError *error)
+{
+	NMSecretAgentPrivate *priv = NM_SECRET_AGENT_GET_PRIVATE (self);
+
+	if (error) {
+		/* If registration failed we shouldn't expose ourselves on the bus */
+		_internal_unregister (self);
+	} else {
+		priv->registered = TRUE;
+		g_object_notify (G_OBJECT (self), NM_SECRET_AGENT_REGISTERED);
+	}
+
+	g_signal_emit (self, signals[REGISTRATION_RESULT], 0, error);
+}
+
+static void
 reg_request_cb (DBusGProxy *proxy,
                 DBusGProxyCall *call,
                 gpointer user_data)
@@ -537,16 +559,37 @@ reg_request_cb (DBusGProxy *proxy,
 
 	priv->reg_call = NULL;
 
-	if (dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID)) {
-		priv->registered = TRUE;
-		g_object_notify (G_OBJECT (self), NM_SECRET_AGENT_REGISTERED);
-	} else {
-		/* If registration failed we shouldn't expose ourselves on the bus */
-		_internal_unregister (self);
+	dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
+	reg_result (self, error);
+	g_clear_error (&error);
+}
+
+static void
+reg_with_caps_cb (DBusGProxy *proxy,
+                  DBusGProxyCall *call,
+                  gpointer user_data)
+{
+	NMSecretAgent *self = NM_SECRET_AGENT (user_data);
+	NMSecretAgentPrivate *priv = NM_SECRET_AGENT_GET_PRIVATE (self);
+
+	priv->reg_call = NULL;
+
+	if (dbus_g_proxy_end_call (proxy, call, NULL, G_TYPE_INVALID)) {
+		reg_result (self, NULL);
+		return;
 	}
 
-	g_signal_emit (self, signals[REGISTRATION_RESULT], 0, error);
-	g_clear_error (&error);
+	/* Might be an old NetworkManager that doesn't support capabilities;
+	 * fall back to old Register() method instead.
+	 */
+	priv->reg_call = dbus_g_proxy_begin_call_with_timeout (priv->manager_proxy,
+	                                                       "Register",
+	                                                       reg_request_cb,
+	                                                       self,
+	                                                       NULL,
+	                                                       5000,
+	                                                       G_TYPE_STRING, priv->identifier,
+	                                                       G_TYPE_INVALID);
 }
 
 /**
@@ -569,7 +612,6 @@ nm_secret_agent_register (NMSecretAgent *self)
 	NMSecretAgentPrivate *priv;
 	NMSecretAgentClass *class;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_SECRET_AGENT (self), FALSE);
 
 	priv = NM_SECRET_AGENT_GET_PRIVATE (self);
@@ -585,6 +627,9 @@ nm_secret_agent_register (NMSecretAgent *self)
 	g_return_val_if_fail (class->save_secrets != NULL, FALSE);
 	g_return_val_if_fail (class->delete_secrets != NULL, FALSE);
 
+	if (!priv->nm_owner && !priv->private_bus)
+		return FALSE;
+
 	priv->suppress_auto = FALSE;
 
 	/* Export our secret agent interface before registering with the manager */
@@ -593,14 +638,14 @@ nm_secret_agent_register (NMSecretAgent *self)
 	                                     G_OBJECT (self));
 
 	priv->reg_call = dbus_g_proxy_begin_call_with_timeout (priv->manager_proxy,
-	                                                       "Register",
-	                                                       reg_request_cb,
+	                                                       "RegisterWithCapabilities",
+	                                                       reg_with_caps_cb,
 	                                                       self,
 	                                                       NULL,
 	                                                       5000,
 	                                                       G_TYPE_STRING, priv->identifier,
+	                                                       G_TYPE_UINT, priv->capabilities,
 	                                                       G_TYPE_INVALID);
-
 	return TRUE;
 }
 
@@ -619,7 +664,6 @@ nm_secret_agent_unregister (NMSecretAgent *self)
 {
 	NMSecretAgentPrivate *priv;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_SECRET_AGENT (self), FALSE);
 
 	priv = NM_SECRET_AGENT_GET_PRIVATE (self);
@@ -627,6 +671,9 @@ nm_secret_agent_unregister (NMSecretAgent *self)
 	g_return_val_if_fail (priv->registered == TRUE, FALSE);
 	g_return_val_if_fail (priv->bus != NULL, FALSE);
 	g_return_val_if_fail (priv->manager_proxy != NULL, FALSE);
+
+	if (!priv->nm_owner && !priv->private_bus)
+		return FALSE;
 
 	dbus_g_proxy_call_no_reply (priv->manager_proxy, "Unregister", G_TYPE_INVALID);
 
@@ -645,7 +692,6 @@ nm_secret_agent_unregister (NMSecretAgent *self)
 gboolean
 nm_secret_agent_get_registered (NMSecretAgent *self)
 {
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_SECRET_AGENT (self), FALSE);
 
 	return NM_SECRET_AGENT_GET_PRIVATE (self)->registered;
@@ -692,9 +738,7 @@ nm_secret_agent_get_secrets (NMSecretAgent *self,
                              NMSecretAgentGetSecretsFunc callback,
                              gpointer user_data)
 {
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_SECRET_AGENT (self));
-	g_return_if_fail (connection != NULL);
 	g_return_if_fail (NM_IS_CONNECTION (connection));
 	g_return_if_fail (nm_connection_get_path (connection));
 	g_return_if_fail (setting_name != NULL);
@@ -729,9 +773,7 @@ nm_secret_agent_save_secrets (NMSecretAgent *self,
                               NMSecretAgentSaveSecretsFunc callback,
                               gpointer user_data)
 {
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_SECRET_AGENT (self));
-	g_return_if_fail (connection != NULL);
 	g_return_if_fail (NM_IS_CONNECTION (connection));
 	g_return_if_fail (nm_connection_get_path (connection));
 
@@ -760,9 +802,7 @@ nm_secret_agent_delete_secrets (NMSecretAgent *self,
                                 NMSecretAgentDeleteSecretsFunc callback,
                                 gpointer user_data)
 {
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_SECRET_AGENT (self));
-	g_return_if_fail (connection != NULL);
 	g_return_if_fail (NM_IS_CONNECTION (connection));
 	g_return_if_fail (nm_connection_get_path (connection));
 
@@ -807,44 +847,46 @@ nm_secret_agent_init (NMSecretAgent *self)
 	NMSecretAgentPrivate *priv = NM_SECRET_AGENT_GET_PRIVATE (self);
 	GError *error = NULL;
 
-	priv->bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	priv->bus = _nm_dbus_new_connection (&error);
 	if (!priv->bus) {
 		g_warning ("Couldn't connect to system bus: %s", error->message);
 		g_error_free (error);
 		return;
 	}
+	priv->private_bus = _nm_dbus_is_connection_private (priv->bus);
 
-	priv->dbus_proxy = dbus_g_proxy_new_for_name (priv->bus,
-	                                              DBUS_SERVICE_DBUS,
-	                                              DBUS_PATH_DBUS,
-	                                              DBUS_INTERFACE_DBUS);
-	if (!priv->dbus_proxy) {
-		g_warning ("Couldn't create messagebus proxy.");
-		return;
+	if (priv->private_bus == FALSE) {
+		priv->dbus_proxy = dbus_g_proxy_new_for_name (priv->bus,
+		                                              DBUS_SERVICE_DBUS,
+		                                              DBUS_PATH_DBUS,
+		                                              DBUS_INTERFACE_DBUS);
+		g_assert (priv->dbus_proxy);
+
+		dbus_g_object_register_marshaller (g_cclosure_marshal_generic,
+		                                   G_TYPE_NONE,
+		                                   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+		                                   G_TYPE_INVALID);
+		dbus_g_proxy_add_signal (priv->dbus_proxy, "NameOwnerChanged",
+		                         G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+		                         G_TYPE_INVALID);
+		dbus_g_proxy_connect_signal (priv->dbus_proxy,
+		                             "NameOwnerChanged",
+		                             G_CALLBACK (name_owner_changed),
+		                             self, NULL);
+
+		get_nm_owner (self);
 	}
 
-	dbus_g_object_register_marshaller (_nm_glib_marshal_VOID__STRING_STRING_STRING,
-	                                   G_TYPE_NONE,
-	                                   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-	                                   G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (priv->dbus_proxy, "NameOwnerChanged",
-	                         G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-	                         G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (priv->dbus_proxy,
-	                             "NameOwnerChanged",
-	                             G_CALLBACK (name_owner_changed),
-	                             self, NULL);
-
-	priv->manager_proxy = dbus_g_proxy_new_for_name (priv->bus,
-	                                                 NM_DBUS_SERVICE,
-	                                                 NM_DBUS_PATH_AGENT_MANAGER,
-	                                                 NM_DBUS_INTERFACE_AGENT_MANAGER);
+	priv->manager_proxy = _nm_dbus_new_proxy_for_connection (priv->bus,
+	                                                         NM_DBUS_PATH_AGENT_MANAGER,
+	                                                         NM_DBUS_INTERFACE_AGENT_MANAGER);
 	if (!priv->manager_proxy) {
 		g_warning ("Couldn't create NM agent manager proxy.");
 		return;
 	}
 
-	priv->auto_register_id = g_idle_add (auto_register_cb, self);
+	if (priv->nm_owner || priv->private_bus)
+		priv->auto_register_id = g_idle_add (auto_register_cb, self);
 }
 
 static void
@@ -864,6 +906,9 @@ get_property (GObject *object,
 		break;
 	case PROP_REGISTERED:
 		g_value_set_boolean (value, priv->registered);
+		break;
+	case PROP_CAPABILITIES:
+		g_value_set_flags (value, priv->capabilities);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -891,6 +936,9 @@ set_property (GObject *object,
 		break;
 	case PROP_AUTO_REGISTER:
 		priv->auto_register = g_value_get_boolean (value);
+		break;
+	case PROP_CAPABILITIES:
+		priv->capabilities = g_value_get_flags (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -995,6 +1043,20 @@ nm_secret_agent_class_init (NMSecretAgentClass *class)
 		                       G_PARAM_READABLE));
 
 	/**
+	 * NMSecretAgent:capabilities:
+	 *
+	 * A bitfield of %NMSecretAgentCapabilities.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_CAPABILITIES,
+		 g_param_spec_flags (NM_SECRET_AGENT_CAPABILITIES,
+		                     "Capabilities",
+		                     "Capabilities",
+		                     NM_TYPE_SECRET_AGENT_CAPABILITIES,
+		                     NM_SECRET_AGENT_CAPABILITY_NONE,
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	/**
 	 * NMSecretAgent::registration-result:
 	 * @agent: the agent that received the signal
 	 * @error: the error, if any, that occured while registering
@@ -1006,8 +1068,7 @@ nm_secret_agent_class_init (NMSecretAgentClass *class)
 		g_signal_new (NM_SECRET_AGENT_REGISTRATION_RESULT,
 					  G_OBJECT_CLASS_TYPE (object_class),
 					  G_SIGNAL_RUN_FIRST,
-					  0, NULL, NULL,
-					  g_cclosure_marshal_VOID__POINTER,
+					  0, NULL, NULL, NULL,
 					  G_TYPE_NONE, 1, G_TYPE_POINTER);
 
 	dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (class),

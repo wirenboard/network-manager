@@ -23,6 +23,7 @@
 
 #include <string.h>
 
+#include <glib/gi18n.h>
 #include <gudev/gudev.h>
 
 #include "NetworkManager.h"
@@ -35,17 +36,20 @@
 #include "nm-device-wimax.h"
 #include "nm-device-infiniband.h"
 #include "nm-device-bond.h"
+#include "nm-device-team.h"
 #include "nm-device-bridge.h"
 #include "nm-device-vlan.h"
+#include "nm-device-generic.h"
 #include "nm-device.h"
 #include "nm-device-private.h"
 #include "nm-object-private.h"
 #include "nm-object-cache.h"
 #include "nm-remote-connection.h"
 #include "nm-types.h"
-#include "nm-glib-marshal.h"
 #include "nm-dbus-glib-types.h"
 #include "nm-glib-compat.h"
+#include "nm-utils.h"
+#include "nm-dbus-helpers-private.h"
 
 static GType _nm_device_type_for_path (DBusGConnection *connection,
                                        const char *path);
@@ -53,6 +57,7 @@ static void _nm_device_type_for_path_async (DBusGConnection *connection,
                                             const char *path,
                                             NMObjectTypeCallbackFunc callback,
                                             gpointer user_data);
+gboolean connection_compatible (NMDevice *device, NMConnection *connection, GError **error);
 
 G_DEFINE_TYPE_WITH_CODE (NMDevice, nm_device, NM_TYPE_OBJECT,
                          _nm_object_register_type_func (g_define_type_id, _nm_device_type_for_path,
@@ -73,6 +78,7 @@ typedef struct {
 	char *driver;
 	char *driver_version;
 	char *firmware_version;
+	char *type_description;
 	NMDeviceCapabilities capabilities;
 	gboolean managed;
 	gboolean firmware_missing;
@@ -89,8 +95,12 @@ typedef struct {
 	GPtrArray *available_connections;
 
 	GUdevClient *client;
-	char *product;
-	char *vendor;
+	char *product, *short_product;
+	char *vendor, *short_vendor;
+	char *description, *bus_name;
+
+	char *physical_port_id;
+	guint32 mtu;
 } NMDevicePrivate;
 
 enum {
@@ -116,6 +126,8 @@ enum {
 	PROP_DEVICE_TYPE,
 	PROP_ACTIVE_CONNECTION,
 	PROP_AVAILABLE_CONNECTIONS,
+	PROP_PHYSICAL_PORT_ID,
+	PROP_MTU,
 
 	LAST_PROP
 };
@@ -128,6 +140,24 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
+/**
+ * nm_device_error_quark:
+ *
+ * Registers an error quark for #NMDevice if necessary.
+ *
+ * Returns: the error quark used for #NMDevice errors.
+ *
+ * Since: 0.9.10
+ **/
+GQuark
+nm_device_error_quark (void)
+{
+	static GQuark quark = 0;
+
+	if (G_UNLIKELY (quark == 0))
+		quark = g_quark_from_static_string ("nm-device-error-quark");
+	return quark;
+}
 
 static void
 nm_device_init (NMDevice *device)
@@ -178,6 +208,8 @@ register_properties (NMDevice *device)
 		{ NM_DEVICE_STATE_REASON,      &priv->state, demarshal_state_reason },
 		{ NM_DEVICE_ACTIVE_CONNECTION, &priv->active_connection, NULL, NM_TYPE_ACTIVE_CONNECTION },
 		{ NM_DEVICE_AVAILABLE_CONNECTIONS, &priv->available_connections, NULL, NM_TYPE_REMOTE_CONNECTION },
+		{ NM_DEVICE_PHYSICAL_PORT_ID,  &priv->physical_port_id },
+		{ NM_DEVICE_MTU,               &priv->mtu },
 
 		/* Properties that exist in D-Bus but that we don't track */
 		{ "ip4-address", NULL },
@@ -282,10 +314,14 @@ _nm_device_gtype_from_dtype (NMDeviceType dtype)
 		return NM_TYPE_DEVICE_INFINIBAND;
 	case NM_DEVICE_TYPE_BOND:
 		return NM_TYPE_DEVICE_BOND;
+	case NM_DEVICE_TYPE_TEAM:
+		return NM_TYPE_DEVICE_TEAM;
 	case NM_DEVICE_TYPE_BRIDGE:
 		return NM_TYPE_DEVICE_BRIDGE;
 	case NM_DEVICE_TYPE_VLAN:
 		return NM_TYPE_DEVICE_VLAN;
+	case NM_DEVICE_TYPE_GENERIC:
+		return NM_TYPE_DEVICE_GENERIC;
 	default:
 		g_warning ("Unknown device type %d", dtype);
 		return G_TYPE_INVALID;
@@ -305,14 +341,11 @@ constructed (GObject *object)
 	/* Catch a subclass setting the wrong type */
 	g_warn_if_fail (G_OBJECT_TYPE (object) == _nm_device_gtype_from_dtype (priv->device_type));
 
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-											 NM_DBUS_SERVICE,
-											 nm_object_get_path (NM_OBJECT (object)),
-											 NM_DBUS_INTERFACE_DEVICE);
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE);
 
 	register_properties (NM_DEVICE (object));
 
-	dbus_g_object_register_marshaller (_nm_glib_marshal_VOID__UINT_UINT_UINT,
+	dbus_g_object_register_marshaller (g_cclosure_marshal_generic,
 									   G_TYPE_NONE,
 									   G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT,
 									   G_TYPE_INVALID);
@@ -365,7 +398,13 @@ finalize (GObject *object)
 	g_free (priv->driver_version);
 	g_free (priv->firmware_version);
 	g_free (priv->product);
+	g_free (priv->short_product);
 	g_free (priv->vendor);
+	g_free (priv->short_vendor);
+	g_free (priv->description);
+	g_free (priv->bus_name);
+	g_free (priv->type_description);
+	g_free (priv->physical_port_id);
 
 	G_OBJECT_CLASS (nm_device_parent_class)->finalize (object);
 }
@@ -450,6 +489,12 @@ get_property (GObject *object,
 	case PROP_VENDOR:
 		g_value_set_string (value, nm_device_get_vendor (device));
 		break;
+	case PROP_PHYSICAL_PORT_ID:
+		g_value_set_string (value, nm_device_get_physical_port_id (device));
+		break;
+	case PROP_MTU:
+		g_value_set_uint (value, nm_device_get_mtu (device));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -496,6 +541,8 @@ nm_device_class_init (NMDeviceClass *device_class)
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 
+	device_class->connection_compatible = connection_compatible;
+
 	/* properties */
 
 	/**
@@ -534,7 +581,7 @@ nm_device_class_init (NMDeviceClass *device_class)
 		(object_class, PROP_DEVICE_TYPE,
 		 g_param_spec_uint (NM_DEVICE_DEVICE_TYPE,
 						  "Device Type",
-						  "Numeric device type (ie ethernet, wifi, etc)",
+						  "Numeric device type (ie Ethernet, Wi-Fi, etc)",
 						  NM_DEVICE_TYPE_UNKNOWN, G_MAXUINT32, NM_DEVICE_TYPE_UNKNOWN,
 						  G_PARAM_READABLE));
 	/**
@@ -779,6 +826,37 @@ nm_device_class_init (NMDeviceClass *device_class)
 						  NULL,
 						  G_PARAM_READABLE));
 
+	/**
+	 * NMDevice:physical-port-id:
+	 *
+	 * The physical port ID of the device. (See
+	 * nm_device_get_physical_port_id().)
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_PHYSICAL_PORT_ID,
+		 g_param_spec_string (NM_DEVICE_PHYSICAL_PORT_ID,
+		                      "Physical Port ID",
+		                      "Physical port ID",
+		                      NULL,
+		                      G_PARAM_READABLE));
+
+	/**
+	 * NMDevice:mtu:
+	 *
+	 * The MTU of the device.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_MTU,
+		 g_param_spec_uint (NM_DEVICE_MTU,
+		                    "MTU",
+		                    "MTU",
+		                    0, G_MAXUINT32, 1500,
+		                    G_PARAM_READABLE));
+
 	/* signals */
 
 	/**
@@ -795,8 +873,7 @@ nm_device_class_init (NMDeviceClass *device_class)
 				    G_OBJECT_CLASS_TYPE (object_class),
 				    G_SIGNAL_RUN_FIRST,
 				    G_STRUCT_OFFSET (NMDeviceClass, state_changed),
-				    NULL, NULL,
-				    _nm_glib_marshal_VOID__UINT_UINT_UINT,
+				    NULL, NULL, NULL,
 				    G_TYPE_NONE, 3,
 				    G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 }
@@ -830,27 +907,25 @@ _nm_device_type_for_path (DBusGConnection *connection,
 {
 	DBusGProxy *proxy;
 	GError *err = NULL;
-	GValue value = {0,};
+	GValue value = G_VALUE_INIT;
 	NMDeviceType nm_dtype;
 
-	proxy = dbus_g_proxy_new_for_name (connection,
-									   NM_DBUS_SERVICE,
-									   path,
-									   "org.freedesktop.DBus.Properties");
+	proxy = _nm_dbus_new_proxy_for_connection (connection, path, "org.freedesktop.DBus.Properties");
 	if (!proxy) {
 		g_warning ("%s: couldn't create D-Bus object proxy.", __func__);
 		return G_TYPE_INVALID;
 	}
 
 	if (!dbus_g_proxy_call (proxy,
-						    "Get", &err,
-						    G_TYPE_STRING, NM_DBUS_INTERFACE_DEVICE,
-						    G_TYPE_STRING, "DeviceType",
-						    G_TYPE_INVALID,
-						    G_TYPE_VALUE, &value, G_TYPE_INVALID)) {
-		g_object_unref (proxy);
+	                        "Get", &err,
+	                        G_TYPE_STRING, NM_DBUS_INTERFACE_DEVICE,
+	                        G_TYPE_STRING, "DeviceType",
+	                        G_TYPE_INVALID,
+	                        G_TYPE_VALUE, &value, G_TYPE_INVALID)) {
 		g_warning ("Error in get_property: %s\n", err->message);
 		g_error_free (err);
+		g_object_unref (proxy);
+		return G_TYPE_INVALID;
 	}
 	g_object_unref (proxy);
 
@@ -935,8 +1010,7 @@ _nm_device_type_for_path_async (DBusGConnection *connection,
 	async_data->callback = callback;
 	async_data->user_data = user_data;
 
-	proxy = dbus_g_proxy_new_for_name (connection, NM_DBUS_SERVICE, path,
-	                                   "org.freedesktop.DBus.Properties");
+	proxy = _nm_dbus_new_proxy_for_connection (connection, path, "org.freedesktop.DBus.Properties");
 	dbus_g_proxy_begin_call (proxy, "Get",
 	                         async_got_type, async_data, NULL,
 	                         G_TYPE_STRING, NM_DBUS_INTERFACE_DEVICE,
@@ -985,7 +1059,7 @@ nm_device_get_ip_iface (NMDevice *device)
  * nm_device_get_device_type:
  * @device: a #NMDevice
  *
- * Returns the numeric type of the #NMDevice, ie ethernet, wifi, etc.
+ * Returns the numeric type of the #NMDevice, ie Ethernet, Wi-Fi, etc.
  *
  * Returns: the device type
  **/
@@ -1071,6 +1145,65 @@ nm_device_get_firmware_version (NMDevice *device)
 }
 
 /**
+ * nm_device_get_type_description:
+ * @device: a #NMDevice
+ *
+ * Gets a (non-localized) description of the type of device that
+ * @device is.
+ *
+ * Returns: the type description of the device. This is the internal
+ * string used by the device, and must not be modified.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_device_get_type_description (NMDevice *device)
+{
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
+	const char *desc, *typename;
+
+	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+
+	if (priv->type_description)
+		return priv->type_description;
+
+	if (NM_DEVICE_GET_CLASS (device)->get_type_description) {
+		desc = NM_DEVICE_GET_CLASS (device)->get_type_description (device);
+		if (desc)
+			return desc;
+	}
+
+	typename = G_OBJECT_TYPE_NAME (device);
+	if (g_str_has_prefix (typename, "NMDevice"))
+		typename += 8;
+	priv->type_description = g_ascii_strdown (typename, -1);
+
+	return priv->type_description;
+}
+
+/**
+ * nm_device_get_hw_address:
+ * @device: a #NMDevice
+ *
+ * Gets the current a hardware address (MAC) for the @device.
+ *
+ * Returns: the current MAC of the device, or %NULL.
+ * This is the internal string used by the device, and must not be modified.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_device_get_hw_address (NMDevice *device)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+
+	if (NM_DEVICE_GET_CLASS (device)->get_hw_address)
+		return NM_DEVICE_GET_CLASS (device)->get_hw_address (device);
+
+	return NULL;
+}
+
+/**
  * nm_device_get_capabilities:
  * @device: a #NMDevice
  *
@@ -1131,7 +1264,7 @@ nm_device_get_autoconnect (NMDevice *device)
 void
 nm_device_set_autoconnect (NMDevice *device, gboolean autoconnect)
 {
-	GValue value = {0,};
+	GValue value = G_VALUE_INIT;
 
 	g_return_if_fail (NM_IS_DEVICE (device));
 
@@ -1172,6 +1305,10 @@ nm_device_get_firmware_missing (NMDevice *device)
  *
  * Gets the current #NMIP4Config associated with the #NMDevice.
  *
+ * Note that as of NetworkManager 0.9.10, you can alternatively use
+ * nm_active_connection_get_ip4_config(), which also works with VPN
+ * connections.
+ *
  * Returns: (transfer none): the #NMIP4Config or %NULL if the device is not activated.
  **/
 NMIP4Config *
@@ -1188,6 +1325,10 @@ nm_device_get_ip4_config (NMDevice *device)
  * @device: a #NMDevice
  *
  * Gets the current #NMDHCP4Config associated with the #NMDevice.
+ *
+ * Note that as of NetworkManager 0.9.10, you can alternatively use
+ * nm_active_connection_get_dhcp4_config(), which also works with VPN
+ * connections.
  *
  * Returns: (transfer none): the #NMDHCP4Config or %NULL if the device is not activated or not
  * using DHCP.
@@ -1207,6 +1348,10 @@ nm_device_get_dhcp4_config (NMDevice *device)
  *
  * Gets the current #NMIP6Config associated with the #NMDevice.
  *
+ * Note that as of NetworkManager 0.9.10, you can alternatively use
+ * nm_active_connection_get_ip6_config(), which also works with VPN
+ * connections.
+ *
  * Returns: (transfer none): the #NMIP6Config or %NULL if the device is not activated.
  **/
 NMIP6Config *
@@ -1223,6 +1368,10 @@ nm_device_get_ip6_config (NMDevice *device)
  * @device: a #NMDevice
  *
  * Gets the current #NMDHCP6Config associated with the #NMDevice.
+ *
+ * Note that as of NetworkManager 0.9.10, you can alternatively use
+ * nm_active_connection_get_dhcp6_config(), which also works with VPN
+ * connections.
  *
  * Returns: (transfer none): the #NMDHCP6Config or %NULL if the device is not activated or not
  * using DHCP.
@@ -1314,33 +1463,6 @@ nm_device_get_available_connections (NMDevice *device)
 	return handle_ptr_array_return (NM_DEVICE_GET_PRIVATE (device)->available_connections);
 }
 
-/* From hostap, Copyright (c) 2002-2005, Jouni Malinen <jkmaline@cc.hut.fi> */
-
-static int hex2num (char c)
-{
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	if (c >= 'a' && c <= 'f')
-		return c - 'a' + 10;
-	if (c >= 'A' && c <= 'F')
-		return c - 'A' + 10;
-	return -1;
-}
-
-static int hex2byte (const char *hex)
-{
-	int a, b;
-	a = hex2num(*hex++);
-	if (a < 0)
-		return -1;
-	b = hex2num(*hex++);
-	if (b < 0)
-		return -1;
-	return (a << 4) | b;
-}
-
-/* End from hostap */
-
 static char *
 get_decoded_property (GUdevDevice *device, const char *property)
 {
@@ -1356,7 +1478,7 @@ get_decoded_property (GUdevDevice *device, const char *property)
 	n = unescaped = g_malloc0 (len + 1);
 	while (*p) {
 		if ((len >= 4) && (*p == '\\') && (*(p+1) == 'x')) {
-			*n++ = (char) hex2byte (p + 2);
+			*n++ = (char) nm_utils_hex2byte (p + 2);
 			p += 4;
 			len -= 4;
 		} else {
@@ -1368,23 +1490,31 @@ get_decoded_property (GUdevDevice *device, const char *property)
 	return unescaped;
 }
 
+static gboolean
+ensure_udev_client (NMDevice *device)
+{
+	static const char *const subsys[3] = { "net", "tty", NULL };
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
+
+	if (!priv->client)
+		priv->client = g_udev_client_new (subsys);
+
+	return priv->client != NULL;
+}
+
 static char *
 _get_udev_property (NMDevice *device,
                     const char *enc_prop,  /* ID_XXX_ENC */
                     const char *db_prop)   /* ID_XXX_FROM_DATABASE */
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
-	const char *subsys[3] = { "net", "tty", NULL };
 	GUdevDevice *udev_device = NULL, *tmpdev, *olddev;
 	const char *ifname;
 	guint32 count = 0;
 	char *enc_value = NULL, *db_value = NULL;
 
-	if (!priv->client) {
-		priv->client = g_udev_client_new (subsys);
-		if (!priv->client)
-			return NULL;
-	}
+	if (!ensure_udev_client (device))
+		return NULL;
 
 	ifname = nm_device_get_iface (device);
 	if (!ifname)
@@ -1424,7 +1554,7 @@ _get_udev_property (NMDevice *device,
 	/* Balance the initial g_udev_client_query_by_subsystem_and_name() */
 	g_object_unref (udev_device);
 
-	/* Prefer the the encoded value which comes directly from the device
+	/* Prefer the encoded value which comes directly from the device
 	 * over the hwdata database value.
 	 */
 	if (enc_value) {
@@ -1485,6 +1615,479 @@ nm_device_get_vendor (NMDevice *device)
 		_nm_object_queue_notify (NM_OBJECT (device), NM_DEVICE_VENDOR);
 	}
 	return priv->vendor;
+}
+
+static const char * const ignored_words[] = {
+	"Semiconductor",
+	"Components",
+	"Corporation",
+	"Communications",
+	"Company",
+	"Corp.",
+	"Corp",
+	"Co.",
+	"Inc.",
+	"Inc",
+	"Incorporated",
+	"Ltd.",
+	"Limited.",
+	"Intel?",
+	"chipset",
+	"adapter",
+	"[hex]",
+	"NDIS",
+	"Module",
+	NULL
+};
+
+static const char * const ignored_phrases[] = {
+	"Multiprotocol MAC/baseband processor",
+	"Wireless LAN Controller",
+	"Wireless LAN Adapter",
+	"Wireless Adapter",
+	"Network Connection",
+	"Wireless Cardbus Adapter",
+	"Wireless CardBus Adapter",
+	"54 Mbps Wireless PC Card",
+	"Wireless PC Card",
+	"Wireless PC",
+	"PC Card with XJACK(r) Antenna",
+	"Wireless cardbus",
+	"Wireless LAN PC Card",
+	"Technology Group Ltd.",
+	"Communication S.p.A.",
+	"Business Mobile Networks BV",
+	"Mobile Broadband Minicard Composite Device",
+	"Mobile Communications AB",
+	"(PC-Suite Mode)",
+	NULL
+};
+
+static char *
+fixup_desc_string (const char *desc)
+{
+	char *p, *temp;
+	char **words, **item;
+	GString *str;
+	int i;
+
+	if (!desc)
+		return NULL;
+
+	p = temp = g_strdup (desc);
+	while (*p) {
+		if (*p == '_' || *p == ',')
+			*p = ' ';
+		p++;
+	}
+
+	/* Attempt to shorten ID by ignoring certain phrases */
+	for (i = 0; ignored_phrases[i]; i++) {
+		p = strstr (temp, ignored_phrases[i]);
+		if (p) {
+			guint32 ignored_len = strlen (ignored_phrases[i]);
+
+			memmove (p, p + ignored_len, strlen (p + ignored_len) + 1); /* +1 for the \0 */
+		}
+	}
+
+	/* Attempt to shorten ID by ignoring certain individual words */
+	words = g_strsplit (temp, " ", 0);
+	str = g_string_new_len (NULL, strlen (temp));
+	g_free (temp);
+
+	for (item = words; *item; item++) {
+		gboolean ignore = FALSE;
+
+		if (**item == '\0')
+			continue;
+
+		for (i = 0; ignored_words[i]; i++) {
+			if (!strcmp (*item, ignored_words[i])) {
+				ignore = TRUE;
+				break;
+			}
+		}
+
+		if (!ignore) {
+			if (str->len)
+				g_string_append_c (str, ' ');
+			g_string_append (str, *item);
+		}
+	}
+	g_strfreev (words);
+
+	temp = str->str;
+	g_string_free (str, FALSE);
+
+	return temp;
+}
+
+static void
+get_description (NMDevice *device)
+{
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
+	const char *dev_product;
+	const char *dev_vendor;
+	char *pdown;
+	char *vdown;
+	GString *str;
+
+	dev_product = nm_device_get_product (device);
+	priv->short_product = fixup_desc_string (dev_product);
+
+	dev_vendor = nm_device_get_vendor (device);
+	priv->short_vendor = fixup_desc_string (dev_vendor);
+
+	if (!dev_product || !dev_vendor) {
+		priv->description = g_strdup (nm_device_get_iface (device));
+		return;
+	}
+
+	str = g_string_new_len (NULL, strlen (priv->short_vendor) + strlen (priv->short_product) + 1);
+
+	/* Another quick hack; if all of the fixed up vendor string
+	 * is found in product, ignore the vendor.
+	 */
+	pdown = g_ascii_strdown (priv->short_product, -1);
+	vdown = g_ascii_strdown (priv->short_vendor, -1);
+	if (!strstr (pdown, vdown)) {
+		g_string_append (str, priv->short_vendor);
+		g_string_append_c (str, ' ');
+	}
+	g_free (pdown);
+	g_free (vdown);
+
+	g_string_append (str, priv->short_product);
+
+	priv->description = g_string_free (str, FALSE);
+}
+
+static const char *
+get_short_vendor (NMDevice *device)
+{
+	NMDevicePrivate *priv;
+
+	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+
+	priv = NM_DEVICE_GET_PRIVATE (device);
+
+	if (!priv->description)
+		get_description (device);
+
+	return priv->short_vendor;
+}
+
+/**
+ * nm_device_get_description:
+ * @device: an #NMDevice
+ *
+ * Gets a description of @device, incorporating the results of
+ * nm_device_get_short_vendor() and nm_device_get_short_product().
+ *
+ * Returns: a description of @device. If either the vendor or the
+ *   product name is unknown, this returns the interface name.
+ *
+ * Since: 0.9.10
+ */
+const char *
+nm_device_get_description (NMDevice *device)
+{
+	NMDevicePrivate *priv;
+
+	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+
+	priv = NM_DEVICE_GET_PRIVATE (device);
+
+	if (!priv->description)
+		get_description (device);
+
+	return priv->description;
+}
+
+static const char *
+get_type_name (NMDevice *device)
+{
+	switch (nm_device_get_device_type (device)) {
+	case NM_DEVICE_TYPE_ETHERNET:
+		return _("Ethernet");
+	case NM_DEVICE_TYPE_WIFI:
+		return _("Wi-Fi");
+	case NM_DEVICE_TYPE_BT:
+		return _("Bluetooth");
+	case NM_DEVICE_TYPE_OLPC_MESH:
+		return _("OLPC Mesh");
+	case NM_DEVICE_TYPE_WIMAX:
+		return _("WiMAX");
+	case NM_DEVICE_TYPE_MODEM:
+		return _("Mobile Broadband");
+	case NM_DEVICE_TYPE_INFINIBAND:
+		return _("InfiniBand");
+	case NM_DEVICE_TYPE_BOND:
+		return _("Bond");
+	case NM_DEVICE_TYPE_TEAM:
+		return _("Team");
+	case NM_DEVICE_TYPE_BRIDGE:
+		return _("Bridge");
+	case NM_DEVICE_TYPE_VLAN:
+		return _("VLAN");
+	case NM_DEVICE_TYPE_ADSL:
+		return _("ADSL");
+	default:
+		return _("Unknown");
+	}
+}
+
+static char *
+get_device_type_name_with_iface (NMDevice *device)
+{
+	const char *type_name = get_type_name (device);
+
+	switch (nm_device_get_device_type (device)) {
+	case NM_DEVICE_TYPE_BOND:
+	case NM_DEVICE_TYPE_TEAM:
+	case NM_DEVICE_TYPE_BRIDGE:
+	case NM_DEVICE_TYPE_VLAN:
+		return g_strdup_printf ("%s (%s)", type_name, nm_device_get_iface (device));
+	default:
+		return g_strdup (type_name);
+	}
+}
+
+static char *
+get_device_generic_type_name_with_iface (NMDevice *device)
+{
+	switch (nm_device_get_device_type (device)) {
+	case NM_DEVICE_TYPE_ETHERNET:
+	case NM_DEVICE_TYPE_INFINIBAND:
+		return g_strdup (_("Wired"));
+	default:
+		return get_device_type_name_with_iface (device);
+	}
+}
+
+static const char *
+get_bus_name (NMDevice *device)
+{
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (device);
+	GUdevDevice *udevice;
+	const char *ifname, *bus;
+
+	if (priv->bus_name)
+		goto out;
+
+	if (!ensure_udev_client (device))
+		return NULL;
+
+	ifname = nm_device_get_iface (device);
+	if (!ifname)
+		return NULL;
+
+	udevice = g_udev_client_query_by_subsystem_and_name (priv->client, "net", ifname);
+	if (!udevice)
+		udevice = g_udev_client_query_by_subsystem_and_name (priv->client, "tty", ifname);
+	if (!udevice)
+		return NULL;
+
+	bus = g_udev_device_get_property (udevice, "ID_BUS");
+	if (!g_strcmp0 (bus, "pci"))
+		priv->bus_name = g_strdup (_("PCI"));
+	else if (!g_strcmp0 (bus, "usb"))
+		priv->bus_name = g_strdup (_("USB"));
+	else {
+		/* Use "" instead of NULL so we can tell later that we've
+		 * already tried.
+		 */
+		priv->bus_name = g_strdup ("");
+	}
+
+out:
+	if (*priv->bus_name)
+		return priv->bus_name;
+	else
+		return NULL;
+}
+
+static gboolean
+find_duplicates (char     **names,
+                 gboolean  *duplicates,
+                 int        num_devices)
+{
+	int i, j;
+	gboolean found_any = FALSE;
+
+	memset (duplicates, 0, num_devices * sizeof (gboolean));
+	for (i = 0; i < num_devices; i++) {
+		if (duplicates[i])
+			continue;
+		for (j = i + 1; j < num_devices; j++) {
+			if (duplicates[j])
+				continue;
+			if (!strcmp (names[i], names[j]))
+				duplicates[i] = duplicates[j] = found_any = TRUE;
+		}
+	}
+
+	return found_any;
+}
+
+/**
+ * nm_device_disambiguate_names:
+ * @devices: (array length=num_devices): an array of #NMDevice
+ * @num_devices: length of @devices
+ *
+ * Generates a list of short-ish unique presentation names for the
+ * devices in @devices.
+ *
+ * Returns: (transfer full) (array zero-terminated=1): the device names
+ *
+ * Since: 0.9.10
+ */
+char **
+nm_device_disambiguate_names (NMDevice **devices,
+                              int        num_devices)
+{
+	char **names;
+	gboolean *duplicates;
+	int i;
+
+	names = g_new (char *, num_devices + 1);
+	duplicates = g_new (gboolean, num_devices);
+
+	/* Generic device name */
+	for (i = 0; i < num_devices; i++)
+		names[i] = get_device_generic_type_name_with_iface (devices[i]);
+	if (!find_duplicates (names, duplicates, num_devices))
+		goto done;
+
+	/* Try specific names (eg, "Ethernet" and "InfiniBand" rather
+	 * than "Wired")
+	 */
+	for (i = 0; i < num_devices; i++) {
+		if (duplicates[i]) {
+			g_free (names[i]);
+			names[i] = get_device_type_name_with_iface (devices[i]);
+		}
+	}
+	if (!find_duplicates (names, duplicates, num_devices))
+		goto done;
+
+	/* Try prefixing bus name (eg, "PCI Ethernet" vs "USB Ethernet") */
+	for (i = 0; i < num_devices; i++) {
+		if (duplicates[i]) {
+			const char *bus = get_bus_name (devices[i]);
+			char *name;
+
+			if (!bus)
+				continue;
+
+			g_free (names[i]);
+			name = get_device_type_name_with_iface (devices[i]);
+			/* Translators: the first %s is a bus name (eg, "USB") or
+			 * product name, the second is a device type (eg,
+			 * "Ethernet"). You can change this to something like
+			 * "%2$s (%1$s)" if there's no grammatical way to combine
+			 * the strings otherwise.
+			 */
+			names[i] = g_strdup_printf (C_("long device name", "%s %s"),
+			                            bus, name);
+			g_free (name);
+		}
+	}
+	if (!find_duplicates (names, duplicates, num_devices))
+		goto done;
+
+	/* Try prefixing vendor name */
+	for (i = 0; i < num_devices; i++) {
+		if (duplicates[i]) {
+			const char *vendor = get_short_vendor (devices[i]);
+			char *name;
+
+			if (!vendor)
+				continue;
+
+			g_free (names[i]);
+			name = get_device_type_name_with_iface (devices[i]);
+			names[i] = g_strdup_printf (C_("long device name", "%s %s"),
+			                            vendor,
+			                            get_type_name (devices[i]));
+			g_free (name);
+		}
+	}
+	if (!find_duplicates (names, duplicates, num_devices))
+		goto done;
+
+	/* We have multiple identical network cards, so we have to differentiate
+	 * them by interface name.
+	 */
+	for (i = 0; i < num_devices; i++) {
+		if (duplicates[i]) {
+			const char *interface = nm_device_get_iface (devices[i]);
+
+			if (!interface)
+				continue;
+
+			g_free (names[i]);
+			names[i] = g_strdup_printf ("%s (%s)",
+			                            get_type_name (devices[i]),
+			                            interface);
+		}
+	}
+
+done:
+	g_free (duplicates);
+	names[num_devices] = NULL;
+	return names;
+}
+
+/**
+ * nm_device_get_physical_port_id:
+ * @device: a #NMDevice
+ *
+ * Gets the physical port ID of the #NMDevice. If non-%NULL, this is
+ * an opaque string that can be used to recognize when
+ * seemingly-unrelated #NMDevices are actually just different virtual
+ * ports on a single physical port. (Eg, NPAR / SR-IOV.)
+ *
+ * Returns: the physical port ID of the device, or %NULL if the port
+ *   ID is unknown. This is the internal string used by the device and
+ *   must not be modified.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_device_get_physical_port_id (NMDevice *device)
+{
+	NMDevicePrivate *priv;
+
+	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+
+	priv = NM_DEVICE_GET_PRIVATE (device);
+
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	if (priv->physical_port_id && *priv->physical_port_id)
+		return priv->physical_port_id;
+	else
+		return NULL;
+}
+
+/**
+ * nm_device_get_mtu:
+ * @device: a #NMDevice
+ *
+ * Gets the  MTU of the #NMDevice.
+ *
+ * Returns: the MTU of the device.
+ *
+ * Since: 0.9.10
+ **/
+guint32
+nm_device_get_mtu (NMDevice *device)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (device), 0);
+
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_GET_PRIVATE (device)->mtu;
 }
 
 typedef struct {
@@ -1555,8 +2158,8 @@ nm_device_disconnect (NMDevice *device,
  *
  * Validates a given connection for a given #NMDevice object and returns
  * whether the connection may be activated with the device. For example if
- * @device is a WiFi device that supports only WEP encryption, the connection
- * will only be valid if it is a WiFi connection which describes a WEP or open
+ * @device is a Wi-Fi device that supports only WEP encryption, the connection
+ * will only be valid if it is a Wi-Fi connection which describes a WEP or open
  * network, and will not be valid if it describes a WPA network, or if it is
  * an Ethernet, Bluetooth, WWAN, etc connection that is incompatible with the
  * device.
@@ -1570,6 +2173,26 @@ nm_device_connection_valid (NMDevice *device, NMConnection *connection)
 	return nm_device_connection_compatible (device, connection, NULL);
 }
 
+gboolean
+connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
+{
+	NMSettingConnection *s_con;
+	const char *config_iface, *device_iface;
+
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+
+	config_iface = nm_setting_connection_get_interface_name (s_con);
+	device_iface = nm_device_get_iface (device);
+	if (config_iface && g_strcmp0 (config_iface, device_iface) != 0) {
+		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_INTERFACE_MISMATCH,
+					 "The interface names of the device and the connection didn't match.");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 /**
  * nm_device_connection_compatible:
  * @device: an #NMDevice to validate @connection against
@@ -1578,8 +2201,8 @@ nm_device_connection_valid (NMDevice *device, NMConnection *connection)
  *
  * Validates a given connection for a given #NMDevice object and returns
  * whether the connection may be activated with the device. For example if
- * @device is a WiFi device that supports only WEP encryption, the connection
- * will only be valid if it is a WiFi connection which describes a WEP or open
+ * @device is a Wi-Fi device that supports only WEP encryption, the connection
+ * will only be valid if it is a Wi-Fi connection which describes a WEP or open
  * network, and will not be valid if it describes a WPA network, or if it is
  * an Ethernet, Bluetooth, WWAN, etc connection that is incompatible with the
  * device.
@@ -1594,9 +2217,11 @@ nm_device_connection_valid (NMDevice *device, NMConnection *connection)
 gboolean
 nm_device_connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
 {
-	if (NM_DEVICE_GET_CLASS (device)->connection_compatible)
-		return NM_DEVICE_GET_CLASS (device)->connection_compatible (device, connection, error);
-	return FALSE;
+	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	return NM_DEVICE_GET_CLASS (device)->connection_compatible (device, connection, error);
 }
 
 /**
@@ -1606,10 +2231,10 @@ nm_device_connection_compatible (NMDevice *device, NMConnection *connection, GEr
  *
  * Filters a given list of connections for a given #NMDevice object and return
  * connections which may be activated with the device. For example if @device
- * is a WiFi device that supports only WEP encryption, the returned list will
- * contain any WiFi connections in @connections that allow connection to
+ * is a Wi-Fi device that supports only WEP encryption, the returned list will
+ * contain any Wi-Fi connections in @connections that allow connection to
  * unencrypted or WEP-enabled SSIDs.  The returned list will not contain
- * Ethernet, Bluetooth, WiFi WPA connections, or any other connection that is
+ * Ethernet, Bluetooth, Wi-Fi WPA connections, or any other connection that is
  * incompatible with the device. To get the full list of connections see
  * nm_remote_settings_list_connections().
  *
@@ -1636,3 +2261,22 @@ nm_device_filter_connections (NMDevice *device, const GSList *connections)
 	return g_slist_reverse (filtered);
 }
 
+/**
+ * nm_device_get_setting_type:
+ * @device: an #NMDevice
+ *
+ * Gets the (primary) #NMSetting subtype associated with connections
+ * that can be used on @device.
+ *
+ * Returns: @device's associated #NMSetting type
+ *
+ * Since: 0.9.10
+ */
+GType
+nm_device_get_setting_type (NMDevice *device)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (device), G_TYPE_INVALID);
+	g_return_val_if_fail (NM_DEVICE_GET_CLASS (device)->get_setting_type != NULL, G_TYPE_INVALID);
+
+	return NM_DEVICE_GET_CLASS (device)->get_setting_type (device);
+}

@@ -140,14 +140,14 @@ NMSettingWireless
 
 
 
-<!-- ##### MACRO NM_SETTING_WIRELESS_SEC ##### -->
+<!-- ##### MACRO NM_SETTING_WIRELESS_HIDDEN ##### -->
 <para>
 
 </para>
 
 
 
-<!-- ##### MACRO NM_SETTING_WIRELESS_HIDDEN ##### -->
+<!-- ##### MACRO NM_SETTING_WIRELESS_SEC ##### -->
 <para>
 
 </para>
@@ -174,6 +174,93 @@ NMSettingWireless
 </para>
 
 
+
+<!-- ##### STRUCT NMSettingWireless ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingWireless:band ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:bssid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:channel ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:cloned-mac-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:hidden ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:mac-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:mac-address-blacklist ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:mode ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:mtu ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:rate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:security ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:seen-bssids ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:ssid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWireless:tx-power ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingWirelessClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
 
 <!-- ##### FUNCTION nm_setting_wireless_new ##### -->
 <para>
@@ -274,7 +361,7 @@ NMSettingWireless
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_wireless_get_mtu ##### -->
+<!-- ##### FUNCTION nm_setting_wireless_get_num_mac_blacklist_items ##### -->
 <para>
 
 </para>
@@ -283,7 +370,54 @@ NMSettingWireless
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_setting_wireless_get_security ##### -->
+<!-- ##### FUNCTION nm_setting_wireless_get_mac_blacklist_item ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_add_mac_blacklist_item ##### -->
+<para>
+
+</para>
+
+@setting: 
+@mac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_remove_mac_blacklist_item ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_remove_mac_blacklist_item_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@mac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_clear_mac_blacklist_items ##### -->
+<para>
+
+</para>
+
+@setting: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_get_mtu ##### -->
 <para>
 
 </para>
@@ -341,6 +475,15 @@ NMSettingWireless
 @ap_wpa: 
 @ap_rsn: 
 @ap_mode: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wireless_get_security ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

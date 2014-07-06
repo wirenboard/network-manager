@@ -303,6 +303,18 @@ nm-utils
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_utils_rsa_key_encrypt_aes ##### -->
+<para>
+
+</para>
+
+@data: 
+@in_password: 
+@out_password: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_utils_file_is_pkcs12 ##### -->
 <para>
 
@@ -408,6 +420,66 @@ nm-utils
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_utils_hwaddr_ntoa_len ##### -->
+<para>
+
+</para>
+
+@addr: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_aton_len ##### -->
+<para>
+
+</para>
+
+@asc: 
+@buffer: 
+@length: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hwaddr_valid ##### -->
+<para>
+
+</para>
+
+@asc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_bin2hexstr ##### -->
+<para>
+
+</para>
+
+@bytes: 
+@len: 
+@final_len: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hex2byte ##### -->
+<para>
+
+</para>
+
+@hex: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_hexstr2bin ##### -->
+<para>
+
+</para>
+
+@hex: 
+@len: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_utils_iface_valid_name ##### -->
 <para>
 
@@ -423,6 +495,43 @@ nm-utils
 </para>
 
 @str: 
+@Returns: 
+
+
+<!-- ##### MACRO NM_UTILS_INET_ADDRSTRLEN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_utils_inet4_ntop ##### -->
+<para>
+
+</para>
+
+@inaddr: 
+@dst: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_inet6_ntop ##### -->
+<para>
+
+</para>
+
+@in6addr: 
+@dst: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_check_virtual_device_compatibility ##### -->
+<para>
+
+</para>
+
+@virtual_type: 
+@other_type: 
 @Returns: 
 
 

@@ -141,6 +141,9 @@ crypto_decrypt (const char *cipher,
 	} else if (!strcmp (cipher, CIPHER_DES_CBC)) {
 		cipher_mech = GCRY_CIPHER_DES;
 		real_iv_len = SALT_LEN;
+	} else if (!strcmp (cipher, CIPHER_AES_CBC)) {
+		cipher_mech = GCRY_CIPHER_AES;
+		real_iv_len = 16;
 	} else {
 		g_set_error (error, NM_CRYPTO_ERROR,
 		             NM_CRYPTO_ERR_UNKNOWN_CIPHER,
@@ -158,12 +161,6 @@ crypto_decrypt (const char *cipher,
 	}
 
 	output = g_malloc0 (data->len);
-	if (!output) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Not enough memory for decrypted key buffer."));
-		return NULL;
-	}
 
 	err = gcry_cipher_open (&ctx, cipher_mech, GCRY_CIPHER_MODE_CBC, 0);
 	if (err) {
@@ -256,10 +253,15 @@ crypto_encrypt (const char *cipher,
 	gsize padded_buf_len, pad_len, output_len;
 	char *padded_buf = NULL;
 	guint32 i;
+	gsize salt_len;
 
-	if (!strcmp (cipher, CIPHER_DES_EDE3_CBC))
+	if (!strcmp (cipher, CIPHER_DES_EDE3_CBC)) {
 		cipher_mech = GCRY_CIPHER_3DES;
-	else {
+		salt_len = SALT_LEN;
+	} else if (!strcmp (cipher, CIPHER_AES_CBC)) {
+		cipher_mech = GCRY_CIPHER_AES;
+		salt_len = iv_len;
+	} else {
 		g_set_error (error, NM_CRYPTO_ERROR,
 		             NM_CRYPTO_ERR_UNKNOWN_CIPHER,
 		             _("Private key cipher '%s' was unknown."),
@@ -279,12 +281,6 @@ crypto_encrypt (const char *cipher,
 		padded_buf[data->len + i] = (guint8) (pad_len & 0xFF);
 
 	output = g_malloc0 (output_len);
-	if (!output) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Could not allocate memory for encrypting."));
-		return NULL;
-	}
 
 	err = gcry_cipher_open (&ctx, cipher_mech, GCRY_CIPHER_MODE_CBC, 0);
 	if (err) {
@@ -305,7 +301,7 @@ crypto_encrypt (const char *cipher,
 	}
 
 	/* gcrypt only wants 8 bytes of the IV (same as the DES block length) */
-	err = gcry_cipher_setiv (ctx, iv, SALT_LEN);
+	err = gcry_cipher_setiv (ctx, iv, salt_len);
 	if (err) {
 		g_set_error (error, NM_CRYPTO_ERROR,
 		             NM_CRYPTO_ERR_CIPHER_SET_IV_FAILED,

@@ -29,17 +29,10 @@
 
 G_BEGIN_DECLS
 
-#define PLUGIN_PRINT(pname, fmt, args...) \
-	{ g_message ("   " pname ": " fmt, ##args); }
-
-#define PLUGIN_WARN(pname, fmt, args...) \
-	{ g_warning ("   " pname ": " fmt, ##args); }
-
-
 /* Plugin's factory function that returns a GObject that implements
  * NMSystemConfigInterface.
  */
-GObject * nm_system_config_factory (const char *config_file);
+GObject * nm_system_config_factory (void);
 
 #define NM_TYPE_SYSTEM_CONFIG_INTERFACE      (nm_system_config_interface_get_type ())
 #define NM_SYSTEM_CONFIG_INTERFACE(obj)      (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_SYSTEM_CONFIG_INTERFACE, NMSystemConfigInterface))
@@ -53,6 +46,7 @@ GObject * nm_system_config_factory (const char *config_file);
 #define NM_SYSTEM_CONFIG_INTERFACE_HOSTNAME "hostname"
 
 #define NM_SYSTEM_CONFIG_INTERFACE_UNMANAGED_SPECS_CHANGED "unmanaged-specs-changed"
+#define NM_SYSTEM_CONFIG_INTERFACE_UNRECOGNIZED_SPECS_CHANGED "unrecognized-specs-changed"
 #define NM_SYSTEM_CONFIG_INTERFACE_CONNECTION_ADDED "connection-added"
 
 typedef enum {
@@ -89,33 +83,50 @@ struct _NMSystemConfigInterface {
 	 */
 	GSList * (*get_connections) (NMSystemConfigInterface *config);
 
+	/* Requests that the plugin load/reload a single connection, if it
+	 * recognizes the filename. Returns success or failure.
+	 */
+	gboolean (*load_connection) (NMSystemConfigInterface *config,
+	                             const char *filename);
+
+	/* Requests that the plugin reload all connection files from disk,
+	 * and emit signals reflecting new, changed, and removed connections.
+	 */
+	void (*reload_connections) (NMSystemConfigInterface *config);
+
 	/*
 	 * Return a string list of specifications of devices which NetworkManager
 	 * should not manage.  Returned list will be freed by the system settings
 	 * service, and each element must be allocated using g_malloc() or its
 	 * variants (g_strdup, g_strdup_printf, etc).
 	 *
-	 * Each string in the list must follow the format <method>:<data>, where
-	 * the method and data are one of the following:
-	 *
-	 * Method: mac    Data: device MAC address formatted with leading zeros and
-	 *                      lowercase letters, like 00:0a:0b:0c:0d:0e
-	 *
-	 * Method: s390-subchannels  Data: string of 2 or 3 s390 subchannels
-	 *                                 separated by commas (,) that identify the
-	 *                                 device, like "0.0.09a0,0.0.09a1,0.0.09a2".
-	 *                                 The string may contain only the following
-	 *                                 characters: [a-fA-F0-9,.]
+	 * Each string in the list must be in one of the formats recognized by
+	 * nm_device_spec_match_list().
 	 */
 	GSList * (*get_unmanaged_specs) (NMSystemConfigInterface *config);
 
 	/*
-	 * Save the given connection to backing storage, and return a new
+	 * Return a string list of specifications of devices for which at least
+	 * one non-NetworkManager-based configuration is defined. Returned list
+	 * will be freed by the system settings service, and each element must be
+	 * allocated using g_malloc() or its variants (g_strdup, g_strdup_printf,
+	 * etc).
+	 *
+	 * Each string in the list must be in one of the formats recognized by
+	 * nm_device_spec_match_list().
+	 */
+	GSList * (*get_unrecognized_specs) (NMSystemConfigInterface *config);
+
+	/*
+	 * Initialize the plugin-specific connection and return a new
 	 * NMSettingsConnection subclass that contains the same settings as the
-	 * original connection.
+	 * original connection.  The connection should only be saved to backing
+	 * storage if @save_to_disk is TRUE.  The returned object is owned by the
+	 * plugin and must be referenced by the owner if necessary.
 	 */
 	NMSettingsConnection * (*add_connection) (NMSystemConfigInterface *config,
 	                                          NMConnection *connection,
+	                                          gboolean save_to_disk,
 	                                          GError **error);
 
 	/* Signals */
@@ -126,6 +137,9 @@ struct _NMSystemConfigInterface {
 
 	/* Emitted when the list of unmanaged device specifications changes */
 	void (*unmanaged_specs_changed) (NMSystemConfigInterface *config);
+
+	/* Emitted when the list of devices with unrecognized connections changes */
+	void (*unrecognized_specs_changed) (NMSystemConfigInterface *config);
 };
 
 GType nm_system_config_interface_get_type (void);
@@ -135,10 +149,16 @@ void nm_system_config_interface_init (NMSystemConfigInterface *config,
 
 GSList *nm_system_config_interface_get_connections (NMSystemConfigInterface *config);
 
+gboolean nm_system_config_interface_load_connection (NMSystemConfigInterface *config,
+                                                     const char *filename);
+void nm_system_config_interface_reload_connections (NMSystemConfigInterface *config);
+
 GSList *nm_system_config_interface_get_unmanaged_specs (NMSystemConfigInterface *config);
+GSList *nm_system_config_interface_get_unrecognized_specs (NMSystemConfigInterface *config);
 
 NMSettingsConnection *nm_system_config_interface_add_connection (NMSystemConfigInterface *config,
                                                                  NMConnection *connection,
+                                                                 gboolean save_to_disk,
                                                                  GError **error);
 
 G_END_DECLS

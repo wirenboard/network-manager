@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <dbus/dbus-glib.h>
 
+#include "libgsystem.h"
+
 #include "nm-activation-request.h"
 #include "nm-logging.h"
 #include "nm-setting-wireless-security.h"
@@ -49,14 +51,20 @@ typedef struct {
 } ShareRule;
 
 typedef struct {
-	NMConnection *connection;
-	NMDevice *device;
-	guint device_state_id;
-	char *dbus_sender;
 	GSList *secrets_calls;
 	gboolean shared;
 	GSList *share_rules;
 } NMActRequestPrivate;
+
+enum {
+	PROP_0,
+	PROP_IP4_CONFIG,
+	PROP_DHCP4_CONFIG,
+	PROP_IP6_CONFIG,
+	PROP_DHCP6_CONFIG,
+
+	LAST_PROP
+};
 
 /*******************************************************************/
 
@@ -66,14 +74,6 @@ nm_act_request_get_connection (NMActRequest *req)
 	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), NULL);
 
 	return nm_active_connection_get_connection (NM_ACTIVE_CONNECTION (req));
-}
-
-const char *
-nm_act_request_get_dbus_sender (NMActRequest *req)
-{
-	g_return_val_if_fail (NM_IS_ACT_REQUEST (req), NULL);
-
-	return NM_ACT_REQUEST_GET_PRIVATE (req)->dbus_sender;
 }
 
 /*******************************************************************/
@@ -115,7 +115,7 @@ nm_act_request_get_secrets (NMActRequest *self,
 	GetSecretsInfo *info;
 	guint32 call_id;
 	NMConnection *connection;
-	gboolean user_requested;
+	const char *hints[2] = { hint, NULL };
 
 	g_return_val_if_fail (self, 0);
 	g_return_val_if_fail (NM_IS_ACT_REQUEST (self), 0);
@@ -127,17 +127,15 @@ nm_act_request_get_secrets (NMActRequest *self,
 	info->callback = callback;
 	info->callback_data = callback_data;
 
-	user_requested = nm_active_connection_get_user_requested (NM_ACTIVE_CONNECTION (self));
-	if (user_requested)
+	if (nm_active_connection_get_user_requested (NM_ACTIVE_CONNECTION (self)))
 		flags |= NM_SETTINGS_GET_SECRETS_FLAG_USER_REQUESTED;
 
 	connection = nm_active_connection_get_connection (NM_ACTIVE_CONNECTION (self));
 	call_id = nm_settings_connection_get_secrets (NM_SETTINGS_CONNECTION (connection),
-	                                              user_requested,
-	                                              nm_active_connection_get_user_uid (NM_ACTIVE_CONNECTION (self)),
+	                                              nm_active_connection_get_subject (NM_ACTIVE_CONNECTION (self)),
 	                                              setting_name,
 	                                              flags,
-	                                              hint,
+	                                              hints,
 	                                              get_secrets_cb,
 	                                              info,
 	                                              NULL);
@@ -154,6 +152,7 @@ void
 nm_act_request_cancel_secrets (NMActRequest *self, guint32 call_id)
 {
 	NMActRequestPrivate *priv;
+	NMConnection *connection;
 	GSList *iter;
 
 	g_return_if_fail (self);
@@ -162,6 +161,7 @@ nm_act_request_cancel_secrets (NMActRequest *self, guint32 call_id)
 
 	priv = NM_ACT_REQUEST_GET_PRIVATE (self);
 
+	connection = nm_active_connection_get_connection (NM_ACTIVE_CONNECTION (self));
 	for (iter = priv->secrets_calls; iter; iter = g_slist_next (iter)) {
 		GetSecretsInfo *info = iter->data;
 
@@ -170,7 +170,7 @@ nm_act_request_cancel_secrets (NMActRequest *self, guint32 call_id)
 			priv->secrets_calls = g_slist_remove_link (priv->secrets_calls, iter);
 			g_slist_free (iter);
 
-			nm_settings_connection_cancel_secrets (NM_SETTINGS_CONNECTION (priv->connection), call_id);
+			nm_settings_connection_cancel_secrets (NM_SETTINGS_CONNECTION (connection), call_id);
 			g_free (info);
 			break;
 		}
@@ -226,8 +226,8 @@ nm_act_request_set_shared (NMActRequest *req, gboolean shared)
 	for (iter = list; iter; iter = g_slist_next (iter)) {
 		ShareRule *rule = (ShareRule *) iter->data;
 		char *envp[1] = { NULL };
-		char **argv;
-		char *cmd;
+		gs_strfreev char **argv = NULL;
+		gs_free char *cmd = NULL;
 
 		cmd = g_strdup_printf ("%s --table %s %s %s",
 		                       IPTABLES_PATH,
@@ -254,9 +254,6 @@ nm_act_request_set_shared (NMActRequest *req, gboolean shared)
 				             WEXITSTATUS (status));
 			}
 		}
-		g_free (cmd);
-		if (argv)
-			g_strfreev (argv);
 	}
 
 	g_slist_free (list);
@@ -295,13 +292,47 @@ nm_act_request_add_share_rule (NMActRequest *req,
 /********************************************************************/
 
 static void
-device_state_changed (NMDevice *device, GParamSpec *pspec, NMActRequest *self)
+device_notify (GObject    *object,
+               GParamSpec *pspec,
+               gpointer    self)
 {
-	NMActRequestPrivate *priv = NM_ACT_REQUEST_GET_PRIVATE (self);
+	g_object_notify (self, pspec->name);
+}
+
+static void
+device_state_changed (NMActiveConnection *active,
+                      NMDevice *device,
+                      NMDeviceState new_state,
+                      NMDeviceState old_state)
+{
+	NMActiveConnectionState cur_ac_state = nm_active_connection_get_state (active);
 	NMActiveConnectionState ac_state = NM_ACTIVE_CONNECTION_STATE_UNKNOWN;
 
+	/* Decide which device state changes to handle when this active connection
+	 * is not the device's current request.  Two cases here: (a) the AC is
+	 * pending and not yet active, and (b) the AC was active but the device is
+	 * entering DISCONNECTED state (which clears the device's current AC before
+	 * emitting the state change signal).
+	 */
+	if (NM_ACTIVE_CONNECTION (nm_device_get_act_request (device)) != active) {
+		/* Some other request is activating; this one must be pending */
+		if (new_state >= NM_DEVICE_STATE_PREPARE)
+			return;
+		else if (new_state == NM_DEVICE_STATE_DISCONNECTED) {
+			/* This request hasn't started activating yet; the device is
+			 * disconnecting and cleaning up a previous activation request.
+			 */
+			if (cur_ac_state < NM_ACTIVE_CONNECTION_STATE_ACTIVATING)
+				return;
+
+			/* Catch device disconnections after this request has been active */
+		}
+
+		/* All states < DISCONNECTED are fatal and handled */
+	}
+
 	/* Set NMActiveConnection state based on the device's state */
-	switch (nm_device_get_state (device)) {
+	switch (new_state) {
 	case NM_DEVICE_STATE_PREPARE:
 	case NM_DEVICE_STATE_CONFIG:
 	case NM_DEVICE_STATE_NEED_AUTH:
@@ -312,6 +343,15 @@ device_state_changed (NMDevice *device, GParamSpec *pspec, NMActRequest *self)
 		break;
 	case NM_DEVICE_STATE_ACTIVATED:
 		ac_state = NM_ACTIVE_CONNECTION_STATE_ACTIVATED;
+
+		g_signal_connect (device, "notify::" NM_DEVICE_IP4_CONFIG,
+		                  G_CALLBACK (device_notify), active);
+		g_signal_connect (device, "notify::" NM_DEVICE_DHCP4_CONFIG,
+		                  G_CALLBACK (device_notify), active);
+		g_signal_connect (device, "notify::" NM_DEVICE_IP6_CONFIG,
+		                  G_CALLBACK (device_notify), active);
+		g_signal_connect (device, "notify::" NM_DEVICE_DHCP6_CONFIG,
+		                  G_CALLBACK (device_notify), active);
 		break;
 	case NM_DEVICE_STATE_DEACTIVATING:
 		ac_state = NM_ACTIVE_CONNECTION_STATE_DEACTIVATING;
@@ -322,12 +362,7 @@ device_state_changed (NMDevice *device, GParamSpec *pspec, NMActRequest *self)
 	case NM_DEVICE_STATE_UNAVAILABLE:
 		ac_state = NM_ACTIVE_CONNECTION_STATE_DEACTIVATED;
 
-		/* No longer need to pay attention to device state */
-		if (priv->device && priv->device_state_id) {
-			g_signal_handler_disconnect (priv->device, priv->device_state_id);
-			priv->device_state_id = 0;
-		}
-		g_clear_object (&priv->device);
+		g_signal_handlers_disconnect_by_func (device, G_CALLBACK (device_notify), active);
 		break;
 	default:
 		break;
@@ -335,11 +370,33 @@ device_state_changed (NMDevice *device, GParamSpec *pspec, NMActRequest *self)
 
 	if (   ac_state == NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
 	    || ac_state == NM_ACTIVE_CONNECTION_STATE_UNKNOWN) {
-		nm_active_connection_set_default (NM_ACTIVE_CONNECTION (self), FALSE);
-		nm_active_connection_set_default6 (NM_ACTIVE_CONNECTION (self), FALSE);
+		nm_active_connection_set_default (active, FALSE);
+		nm_active_connection_set_default6 (active, FALSE);
 	}
 
-	nm_active_connection_set_state (NM_ACTIVE_CONNECTION (self), ac_state);
+	nm_active_connection_set_state (active, ac_state);
+}
+
+static void
+master_failed (NMActiveConnection *self)
+{
+	NMDevice *device;
+	NMDeviceState device_state;
+
+	/* If the connection has an active device, fail it */
+	device = nm_active_connection_get_device (self);
+	if (device) {
+		device_state = nm_device_get_state (device);
+		if (nm_device_is_activating (device) || (device_state == NM_DEVICE_STATE_ACTIVATED)) {
+			nm_device_state_changed (device,
+			                         NM_DEVICE_STATE_FAILED,
+			                         NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED);
+			return;
+		}
+	}
+
+	/* If no device, or the device wasn't active, just move to deactivated state */
+	nm_active_connection_set_state (self, NM_ACTIVE_CONNECTION_STATE_DEACTIVATED);
 }
 
 /********************************************************************/
@@ -350,52 +407,31 @@ device_state_changed (NMDevice *device, GParamSpec *pspec, NMActRequest *self)
  * @connection: the connection to activate @device with
  * @specific_object: the object path of the specific object (ie, WiFi access point,
  *    etc) that will be used to activate @connection and @device
- * @user_requested: pass %TRUE if the activation was requested via D-Bus,
- *    otherwise %FALSE if requested internally by NM (ie, autoconnect)
- * @user_uid: if @user_requested is %TRUE, the Unix UID of the user that requested
- * @dbus_sender: if @user_requested is %TRUE, the D-BUS sender that requested
- *    the activation
- * @assumed: pass %TRUE if the activation should "assume" (ie, taking over) an
- *    existing connection made before this instance of NM started
- * @device: the device/interface to configure according to @connection
- * @master: if the activation depends on another device (ie, bond or bridge
- *    master to which this device will be enslaved) pass the #NMDevice that this
- *    activation request be enslaved to
+ * @subject: the #NMAuthSubject representing the requestor of the activation
+ * @device: the device/interface to configure according to @connection; or %NULL
+ * if the connection describes a software device which will be created during
+ * connection activation
  *
- * Begins activation of @device using the given @connection and other details.
+ * Creates a new device-based activation request.
  *
  * Returns: the new activation request on success, %NULL on error.
  */
 NMActRequest *
 nm_act_request_new (NMConnection *connection,
                     const char *specific_object,
-                    gboolean user_requested,
-                    gulong user_uid,
-                    const char *dbus_sender,
-                    gboolean assumed,
-                    NMDevice *device,
-                    NMDevice *master)
+                    NMAuthSubject *subject,
+                    NMDevice *device)
 {
-	GObject *object;
-
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
-	g_return_val_if_fail (NM_DEVICE (device), NULL);
+	g_return_val_if_fail (!device || NM_IS_DEVICE (device), NULL);
+	g_return_val_if_fail (NM_IS_AUTH_SUBJECT (subject), NULL);
 
-	object = g_object_new (NM_TYPE_ACT_REQUEST,
-	                       NM_ACTIVE_CONNECTION_INT_CONNECTION, connection,
-	                       NM_ACTIVE_CONNECTION_INT_DEVICE, device,
-	                       NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT, specific_object,
-	                       NM_ACTIVE_CONNECTION_INT_USER_REQUESTED, user_requested,
-	                       NM_ACTIVE_CONNECTION_INT_USER_UID, user_uid,
-	                       NM_ACTIVE_CONNECTION_INT_ASSUMED, assumed,
-	                       NM_ACTIVE_CONNECTION_INT_MASTER, master,
-	                       NULL);
-	if (object) {
-		nm_active_connection_export (NM_ACTIVE_CONNECTION (object));
-		NM_ACT_REQUEST_GET_PRIVATE (object)->dbus_sender = g_strdup (dbus_sender);
-	}
-
-	return (NMActRequest *) object;
+	return (NMActRequest *) g_object_new (NM_TYPE_ACT_REQUEST,
+	                                      NM_ACTIVE_CONNECTION_INT_CONNECTION, connection,
+	                                      NM_ACTIVE_CONNECTION_INT_DEVICE, device,
+	                                      NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT, specific_object,
+	                                      NM_ACTIVE_CONNECTION_INT_SUBJECT, subject,
+	                                      NULL);
 }
 
 static void
@@ -404,37 +440,11 @@ nm_act_request_init (NMActRequest *req)
 }
 
 static void
-constructed (GObject *object)
-{
-	NMActRequestPrivate *priv = NM_ACT_REQUEST_GET_PRIVATE (object);
-	NMConnection *connection;
-	NMDevice *device;
-
-	G_OBJECT_CLASS (nm_act_request_parent_class)->constructed (object);
-
-	connection = nm_active_connection_get_connection (NM_ACTIVE_CONNECTION (object));
-	priv->connection = g_object_ref (connection);
-
-	device = nm_active_connection_get_device (NM_ACTIVE_CONNECTION (object));
-	if (device) {
-		priv->device = g_object_ref (device);
-		priv->device_state_id = g_signal_connect (priv->device,
-		                                          "notify::" NM_DEVICE_STATE,
-		                                          G_CALLBACK (device_state_changed),
-		                                          NM_ACT_REQUEST (object));
-	}
-}
-
-static void
 dispose (GObject *object)
 {
 	NMActRequestPrivate *priv = NM_ACT_REQUEST_GET_PRIVATE (object);
+	NMConnection *connection;
 	GSList *iter;
-
-	if (priv->device && priv->device_state_id) {
-		g_signal_handler_disconnect (priv->device, priv->device_state_id);
-		priv->device_state_id = 0;
-	}
 
 	/* Clear any share rules */
 	if (priv->share_rules) {
@@ -443,34 +453,72 @@ dispose (GObject *object)
 	}
 
 	/* Kill any in-progress secrets requests */
-	for (iter = priv->secrets_calls; iter; iter = g_slist_next (iter)) {
+	connection = nm_active_connection_get_connection (NM_ACTIVE_CONNECTION (object));
+	for (iter = priv->secrets_calls; connection && iter; iter = g_slist_next (iter)) {
 		GetSecretsInfo *info = iter->data;
 
-		g_assert (priv->connection);
-		nm_settings_connection_cancel_secrets (NM_SETTINGS_CONNECTION (priv->connection), info->call_id);
+		nm_settings_connection_cancel_secrets (NM_SETTINGS_CONNECTION (connection), info->call_id);
 		g_free (info);
 	}
 	g_slist_free (priv->secrets_calls);
 	priv->secrets_calls = NULL;
 
-	g_free (priv->dbus_sender);
-	priv->dbus_sender = NULL;
-
-	g_clear_object (&priv->device);
-	g_clear_object (&priv->connection);
-
 	G_OBJECT_CLASS (nm_act_request_parent_class)->dispose (object);
+}
+
+static void
+get_property (GObject *object, guint prop_id,
+              GValue *value, GParamSpec *pspec)
+{
+	NMDevice *device;
+
+	device = nm_active_connection_get_device (NM_ACTIVE_CONNECTION (object));
+	if (!device) {
+		g_value_set_boxed (value, "/");
+		return;
+	}
+
+	switch (prop_id) {
+	case PROP_IP4_CONFIG:
+		g_object_get_property (G_OBJECT (device), NM_DEVICE_IP4_CONFIG, value);
+		break;
+	case PROP_DHCP4_CONFIG:
+		g_object_get_property (G_OBJECT (device), NM_DEVICE_DHCP4_CONFIG, value);
+		break;
+	case PROP_IP6_CONFIG:
+		g_object_get_property (G_OBJECT (device), NM_DEVICE_IP6_CONFIG, value);
+		break;
+	case PROP_DHCP6_CONFIG:
+		g_object_get_property (G_OBJECT (device), NM_DEVICE_DHCP6_CONFIG, value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
 }
 
 static void
 nm_act_request_class_init (NMActRequestClass *req_class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (req_class);
+	NMActiveConnectionClass *active_class = NM_ACTIVE_CONNECTION_CLASS (req_class);
 
 	g_type_class_add_private (req_class, sizeof (NMActRequestPrivate));
 
 	/* virtual methods */
-	object_class->constructed = constructed;
 	object_class->dispose = dispose;
+	object_class->get_property = get_property;
+	active_class->master_failed = master_failed;
+	active_class->device_state_changed = device_state_changed;
+
+	/* properties */
+	g_object_class_override_property (object_class, PROP_IP4_CONFIG,
+	                                  NM_ACTIVE_CONNECTION_IP4_CONFIG);
+	g_object_class_override_property (object_class, PROP_DHCP4_CONFIG,
+	                                  NM_ACTIVE_CONNECTION_DHCP4_CONFIG);
+	g_object_class_override_property (object_class, PROP_IP6_CONFIG,
+	                                  NM_ACTIVE_CONNECTION_IP6_CONFIG);
+	g_object_class_override_property (object_class, PROP_DHCP6_CONFIG,
+	                                  NM_ACTIVE_CONNECTION_DHCP6_CONFIG);
 }
 

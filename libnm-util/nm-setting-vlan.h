@@ -18,7 +18,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2011 Red Hat, Inc.
+ * (C) Copyright 2011 - 2014 Red Hat, Inc.
  */
 
 #ifndef NM_SETTING_VLAN_H
@@ -94,7 +94,7 @@ typedef enum {
 /**
  * NMVlanFlags:
  * @NM_VLAN_FLAG_REORDER_HEADERS: indicates that this interface should reorder
- *  outgoing packet headers to look more like a non-VLAN ethernet interface
+ *  outgoing packet headers to look more like a non-VLAN Ethernet interface
  * @NM_VLAN_FLAG_GVRP: indicates that this interface should use GVRP to register
  *  itself with it's switch
  * @NM_VLAN_FLAG_LOOSE_BINDING: indicates that this interface's operating
@@ -135,6 +135,17 @@ gboolean nm_setting_vlan_add_priority       (NMSettingVlan *setting,
 void     nm_setting_vlan_remove_priority    (NMSettingVlan *setting,
                                              NMVlanPriorityMap map,
                                              guint32 idx);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean nm_setting_vlan_remove_priority_by_value (NMSettingVlan *setting,
+                                                   NMVlanPriorityMap map,
+                                                   guint32 from,
+                                                   guint32 to);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean nm_setting_vlan_remove_priority_str_by_value (NMSettingVlan *setting,
+                                                       NMVlanPriorityMap map,
+                                                       const char *str);
 
 void     nm_setting_vlan_clear_priorities   (NMSettingVlan *setting, NMVlanPriorityMap map);
 

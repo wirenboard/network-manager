@@ -84,6 +84,14 @@ interface_init (gpointer g_iface)
 				  g_cclosure_marshal_VOID__VOID,
 				  G_TYPE_NONE, 0);
 
+	g_signal_new (NM_SYSTEM_CONFIG_INTERFACE_UNRECOGNIZED_SPECS_CHANGED,
+	              iface_type,
+	              G_SIGNAL_RUN_FIRST,
+	              G_STRUCT_OFFSET (NMSystemConfigInterface, unrecognized_specs_changed),
+	              NULL, NULL,
+	              g_cclosure_marshal_VOID__VOID,
+	              G_TYPE_NONE, 0);
+
 	initialized = TRUE;
 }
 
@@ -137,6 +145,26 @@ nm_system_config_interface_get_connections (NMSystemConfigInterface *config)
 	return NULL;
 }
 
+gboolean
+nm_system_config_interface_load_connection (NMSystemConfigInterface *config,
+                                            const char *filename)
+{
+	g_return_val_if_fail (config != NULL, FALSE);
+
+	if (NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->load_connection)
+		return NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->load_connection (config, filename);
+	return FALSE;
+}
+
+void
+nm_system_config_interface_reload_connections (NMSystemConfigInterface *config)
+{
+	g_return_if_fail (config != NULL);
+
+	if (NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->reload_connections)
+		NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->reload_connections (config);
+}
+
 GSList *
 nm_system_config_interface_get_unmanaged_specs (NMSystemConfigInterface *config)
 {
@@ -147,16 +175,43 @@ nm_system_config_interface_get_unmanaged_specs (NMSystemConfigInterface *config)
 	return NULL;
 }
 
+GSList *
+nm_system_config_interface_get_unrecognized_specs (NMSystemConfigInterface *config)
+{
+	g_return_val_if_fail (config != NULL, NULL);
+
+	if (NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->get_unrecognized_specs)
+		return NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->get_unrecognized_specs (config);
+	return NULL;
+}
+
+/**
+ * nm_system_config_interface_add_connection:
+ * @config: the #NMSystemConfigInterface
+ * @connection: the source connection to create a plugin-specific
+ * #NMSettingsConnection from
+ * @save_to_disk: %TRUE to save the connection to disk immediately, %FALSE to
+ * not save to disk
+ * @error: on return, a location to store any errors that may occur
+ *
+ * Creates a new #NMSettingsConnection for the given source @connection.  If the
+ * plugin cannot handle the given connection type, it should return %NULL and
+ * set @error.  The plugin owns the returned object and the caller must reference
+ * the object if it wishes to continue using it.
+ *
+ * Returns: the new #NMSettingsConnection or %NULL
+ */
 NMSettingsConnection *
 nm_system_config_interface_add_connection (NMSystemConfigInterface *config,
                                            NMConnection *connection,
+                                           gboolean save_to_disk,
                                            GError **error)
 {
 	g_return_val_if_fail (config != NULL, NULL);
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
 
 	if (NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->add_connection)
-		return NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->add_connection (config, connection, error);
+		return NM_SYSTEM_CONFIG_INTERFACE_GET_INTERFACE (config)->add_connection (config, connection, save_to_disk, error);
 
 	return NULL;
 }

@@ -68,7 +68,7 @@ typedef enum /*< flags >*/ {
 /* Short display name of the VPN plugin */
 #define NM_VPN_PLUGIN_UI_INTERFACE_NAME "name"
 
-/* Longer description of the the VPN plugin */
+/* Longer description of the VPN plugin */
 #define NM_VPN_PLUGIN_UI_INTERFACE_DESC "desc"
 
 /* D-Bus service name of the plugin's VPN service */
@@ -86,10 +86,10 @@ typedef enum /*< flags >*/ {
  * information to UI programs.
  **/
 typedef enum {
-	/*< private >*/
+	/* private */
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_FIRST = 0x1000,
 
-	/*< public >*/
+	/* public */
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_NAME = NM_VPN_PLUGIN_UI_INTERFACE_PROP_FIRST,
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_DESC,
 	NM_VPN_PLUGIN_UI_INTERFACE_PROP_SERVICE
@@ -170,6 +170,7 @@ char *nm_vpn_plugin_ui_interface_get_suggested_name (NMVpnPluginUiInterface *ifa
                                                      NMConnection *connection);
 
 /* Deprecated and no longer used */
+NM_DEPRECATED_IN_0_9_10
 gboolean nm_vpn_plugin_ui_interface_delete_connection (NMVpnPluginUiInterface *iface,
                                                        NMConnection *connection,
                                                        GError **error);
@@ -220,6 +221,7 @@ gboolean nm_vpn_plugin_ui_widget_interface_update_connection (NMVpnPluginUiWidge
                                                               GError **error);
 
 /* Deprecated and no longer used */
+NM_DEPRECATED_IN_0_9_10
 gboolean nm_vpn_plugin_ui_widget_interface_save_secrets (NMVpnPluginUiWidgetInterface *iface,
                                                          NMConnection *connection,
                                                          GError **error);

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2007 - 2008 Novell, Inc.
- * Copyright (C) 2007 - 2012 Red Hat, Inc.
+ * Copyright (C) 2007 - 2013 Red Hat, Inc.
  */
 
 #ifndef NM_DEVICE_H
@@ -45,6 +45,21 @@ G_BEGIN_DECLS
 #define NM_IS_DEVICE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_DEVICE))
 #define NM_DEVICE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_DEVICE, NMDeviceClass))
 
+/**
+ * NMDeviceError:
+ * @NM_DEVICE_ERROR_UNKNOWN: unknown or unclassified error
+ * @NM_DEVICE_ERROR_INTERFACE_MISMATCH: the interface names of the connection and the
+ *   device mismatched
+ */
+typedef enum {
+	NM_DEVICE_ERROR_UNKNOWN = 0,        /*< nick=UnknownError >*/
+	NM_DEVICE_ERROR_INTERFACE_MISMATCH, /*< nick=InterfaceMismatch >*/
+} NMDeviceError;
+
+#define NM_DEVICE_ERROR nm_device_error_quark ()
+NM_AVAILABLE_IN_0_9_10
+GQuark nm_device_error_quark (void);
+
 #define NM_DEVICE_DEVICE_TYPE "device-type"
 #define NM_DEVICE_UDI "udi"
 #define NM_DEVICE_INTERFACE "interface"
@@ -66,6 +81,8 @@ G_BEGIN_DECLS
 #define NM_DEVICE_AVAILABLE_CONNECTIONS "available-connections"
 #define NM_DEVICE_VENDOR "vendor"
 #define NM_DEVICE_PRODUCT "product"
+#define NM_DEVICE_PHYSICAL_PORT_ID "physical-port-id"
+#define NM_DEVICE_MTU "mtu"
 
 typedef struct {
 	NMObject parent;
@@ -84,13 +101,15 @@ typedef struct {
 	                                   NMConnection *connection,
 	                                   GError **error);
 
+	const char * (*get_type_description) (NMDevice *device);
+	const char * (*get_hw_address) (NMDevice *device);
+
+	GType (*get_setting_type) (NMDevice *device);
+
 	/* Padding for future expansion */
 	void (*_reserved1) (void);
 	void (*_reserved2) (void);
 	void (*_reserved3) (void);
-	void (*_reserved4) (void);
-	void (*_reserved5) (void);
-	void (*_reserved6) (void);
 } NMDeviceClass;
 
 GType nm_device_get_type (void);
@@ -104,6 +123,10 @@ const char *         nm_device_get_udi              (NMDevice *device);
 const char *         nm_device_get_driver           (NMDevice *device);
 const char *         nm_device_get_driver_version   (NMDevice *device);
 const char *         nm_device_get_firmware_version (NMDevice *device);
+NM_AVAILABLE_IN_0_9_10
+const char *         nm_device_get_type_description (NMDevice *device);
+NM_AVAILABLE_IN_0_9_10
+const char *         nm_device_get_hw_address       (NMDevice *device);
 NMDeviceCapabilities nm_device_get_capabilities     (NMDevice *device);
 gboolean             nm_device_get_managed          (NMDevice *device);
 gboolean             nm_device_get_autoconnect      (NMDevice *device);
@@ -117,8 +140,18 @@ NMDeviceState        nm_device_get_state            (NMDevice *device);
 NMDeviceState        nm_device_get_state_reason     (NMDevice *device, NMDeviceStateReason *reason);
 NMActiveConnection * nm_device_get_active_connection(NMDevice *device);
 const GPtrArray *    nm_device_get_available_connections(NMDevice *device);
-const char *         nm_device_get_product          (NMDevice *device);
-const char *         nm_device_get_vendor           (NMDevice *device);
+NM_AVAILABLE_IN_0_9_10
+const char *         nm_device_get_physical_port_id (NMDevice *device);
+NM_AVAILABLE_IN_0_9_10
+guint32              nm_device_get_mtu              (NMDevice *device);
+
+const char *         nm_device_get_product           (NMDevice  *device);
+const char *         nm_device_get_vendor            (NMDevice  *device);
+NM_AVAILABLE_IN_0_9_10
+const char *         nm_device_get_description       (NMDevice  *device);
+NM_AVAILABLE_IN_0_9_10
+char **              nm_device_disambiguate_names    (NMDevice **devices,
+                                                      int        num_devices);
 
 typedef void (*NMDeviceDeactivateFn) (NMDevice *device, GError *error, gpointer user_data);
 
@@ -135,6 +168,9 @@ gboolean             nm_device_connection_valid     (NMDevice *device,
 gboolean             nm_device_connection_compatible (NMDevice *device,
                                                       NMConnection *connection,
                                                       GError **error);
+
+NM_AVAILABLE_IN_0_9_10
+GType                nm_device_get_setting_type     (NMDevice *device);
 
 G_END_DECLS
 

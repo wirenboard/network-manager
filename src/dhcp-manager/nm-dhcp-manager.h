@@ -31,7 +31,6 @@
 #include "nm-dhcp-client.h"
 #include "nm-ip4-config.h"
 #include "nm-dhcp4-config.h"
-#include "nm-hostname-provider.h"
 
 typedef enum {
 	NM_DHCP_MANAGER_ERROR_BAD_CLIENT = 0, /*< nick=BadClient >*/
@@ -60,32 +59,34 @@ typedef struct {
 
 GType nm_dhcp_manager_get_type (void);
 
-NMDHCPManager *nm_dhcp_manager_get                  (void);
+NMDHCPManager *nm_dhcp_manager_get (void);
 
-void           nm_dhcp_manager_set_hostname_provider(NMDHCPManager *manager,
-													 NMHostnameProvider *provider);
+void           nm_dhcp_manager_set_default_hostname (NMDHCPManager *manager,
+                                                     const char *hostname);
 
 NMDHCPClient * nm_dhcp_manager_start_ip4     (NMDHCPManager *manager,
                                               const char *iface,
                                               const GByteArray *hwaddr,
                                               const char *uuid,
+                                              guint priority,
                                               NMSettingIP4Config *s_ip4,
                                               guint32 timeout,
-                                              guint8 *dhcp_anycast_addr);
+                                              GByteArray *dhcp_anycast_addr);
 
 NMDHCPClient * nm_dhcp_manager_start_ip6     (NMDHCPManager *manager,
                                               const char *iface,
                                               const GByteArray *hwaddr,
                                               const char *uuid,
+                                              guint priority,
                                               NMSettingIP6Config *s_ip6,
                                               guint32 timeout,
-                                              guint8 *dhcp_anycast_addr,
+                                              GByteArray *dhcp_anycast_addr,
                                               gboolean info_only);
 
-GSList *       nm_dhcp_manager_get_lease_config (NMDHCPManager *self,
-                                                 const char *iface,
-                                                 const char *uuid,
-                                                 gboolean ipv6);
+GSList *       nm_dhcp_manager_get_lease_ip_configs (NMDHCPManager *self,
+                                                     const char *iface,
+                                                     const char *uuid,
+                                                     gboolean ipv6);
 
 /* For testing only */
 NMIP4Config *nm_dhcp_manager_test_ip4_options_to_config (const char *dhcp_client,
@@ -93,7 +94,6 @@ NMIP4Config *nm_dhcp_manager_test_ip4_options_to_config (const char *dhcp_client
                                                          GHashTable *options,
                                                          const char *reason);
 
-/* Only for main.c */
-NMDHCPManager *nm_dhcp_manager_new (const char *client, GError **error);
+extern const char* nm_dhcp_helper_path;
 
 #endif /* NM_DHCP_MANAGER_H */

@@ -19,11 +19,13 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2013 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
 #include <string.h>
+#include <glib/gi18n.h>
+
 #include "nm-setting-pppoe.h"
 #include "nm-setting-ppp.h"
 #include "nm-setting-private.h"
@@ -157,24 +159,27 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	NMSettingPPPOEPrivate *priv = NM_SETTING_PPPOE_GET_PRIVATE (setting);
 
 	if (!priv->username) {
-		g_set_error (error,
-		             NM_SETTING_PPPOE_ERROR,
-		             NM_SETTING_PPPOE_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_PPPOE_USERNAME);
+		g_set_error_literal (error,
+		                     NM_SETTING_PPPOE_ERROR,
+		                     NM_SETTING_PPPOE_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_PPPOE_SETTING_NAME, NM_SETTING_PPPOE_USERNAME);
 		return FALSE;
 	} else if (!strlen (priv->username)) {
-		g_set_error (error,
-		             NM_SETTING_PPPOE_ERROR,
-		             NM_SETTING_PPPOE_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_PPPOE_USERNAME);
+		g_set_error_literal (error,
+		                     NM_SETTING_PPPOE_ERROR,
+		                     NM_SETTING_PPPOE_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_PPPOE_SETTING_NAME, NM_SETTING_PPPOE_USERNAME);
 		return FALSE;
 	}
 
 	if (priv->service && !strlen (priv->service)) {
-		g_set_error (error,
-		             NM_SETTING_PPPOE_ERROR,
-		             NM_SETTING_PPPOE_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_PPPOE_SERVICE);
+		g_set_error_literal (error,
+		                     NM_SETTING_PPPOE_ERROR,
+		                     NM_SETTING_PPPOE_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_PPPOE_SETTING_NAME, NM_SETTING_PPPOE_SERVICE);
 		return FALSE;
 	}
 
@@ -201,7 +206,6 @@ need_secrets (NMSetting *setting)
 static void
 nm_setting_pppoe_init (NMSettingPPPOE *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_PPPOE_SETTING_NAME, NULL);
 }
 
 static void
@@ -289,7 +293,7 @@ nm_setting_pppoe_class_init (NMSettingPPPOEClass *setting_class)
 	 * NMSettingPPPOE:service:
 	 *
 	 * If specified, instruct PPPoE to only initiate sessions with access
-	 * concentrators that provide the specified serivce.  For most providers,
+	 * concentrators that provide the specified service.  For most providers,
 	 * this should be left blank.  It is only required if there are multiple
 	 * access concentrators or a specific service is known to be required.
 	 **/
@@ -299,12 +303,12 @@ nm_setting_pppoe_class_init (NMSettingPPPOEClass *setting_class)
 						  "Service",
 						  "If specified, instruct PPPoE to only initiate sessions "
 						  "with access concentrators that provide the specified "
-						  "serivce.  For most providers, this should be left "
+						  "service.  For most providers, this should be left "
 						  "blank.  It is only required if there are multiple "
 						  "access concentrators or a specific service is known "
 						  "to be required.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingPPPOE:username:
@@ -317,7 +321,7 @@ nm_setting_pppoe_class_init (NMSettingPPPOEClass *setting_class)
 						  "Username",
 						  "Username used to authenticate with the PPPoE service.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingPPPOE:password:
@@ -330,12 +334,12 @@ nm_setting_pppoe_class_init (NMSettingPPPOEClass *setting_class)
 						  "Password",
 						  "Password used to authenticate with the PPPoE service.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSettingPPPOE:password-flags:
 	 *
-	 * Flags indicating how to handle #NMSettingPPPOE:password:.
+	 * Flags indicating how to handle the #NMSettingPPPOE:password property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PASSWORD_FLAGS,
 		 g_param_spec_uint (NM_SETTING_PPPOE_PASSWORD_FLAGS,
@@ -344,5 +348,5 @@ nm_setting_pppoe_class_init (NMSettingPPPOEClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 }

@@ -80,7 +80,8 @@ host_triplet = @host@
 subdir = src/settings/plugins/ifcfg-rh/tests/network-scripts
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -144,12 +145,15 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
+DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
+DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
@@ -174,7 +178,6 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
-GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -219,12 +222,16 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
+LIBNDP_CFLAGS = @LIBNDP_CFLAGS@
+LIBNDP_LIBS = @LIBNDP_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
+LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -241,6 +248,8 @@ MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEWT_CFLAGS = @NEWT_CFLAGS@
+NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -268,11 +277,16 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
+PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
+READLINE_LIBS = @READLINE_LIBS@
 SED = @SED@
+SELINUX_CFLAGS = @SELINUX_CFLAGS@
+SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -287,6 +301,7 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VALGRIND_RULES = @VALGRIND_RULES@
 VAPIGEN = @VAPIGEN@
 VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
 VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
@@ -349,6 +364,7 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
@@ -359,13 +375,18 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
+with_valgrind = @with_valgrind@
 EXTRA_DIST = \
 	ifcfg-test-minimal \
 	ifcfg-test-variables-corner-cases-1 \
 	ifcfg-test-nm-controlled \
+	ifcfg-test-nm-controlled-unrecognized \
+	ifcfg-test-unrecognized \
 	ifcfg-test-wired-static \
 	ifcfg-test-wired-static-bootproto \
 	ifcfg-test-wired-dhcp \
+	ifcfg-test-wired-dhcp-plus-ip \
+	ifcfg-test-wired-dhcp-send-hostname \
 	ifcfg-test-wired-dhcp6-only \
 	ifcfg-test-wired-global-gateway \
 	network-test-wired-global-gateway \
@@ -378,7 +399,10 @@ EXTRA_DIST = \
 	keys-test-wired-8021x-peap-mschapv2 \
 	ifcfg-test-wired-8021x-tls-agent \
 	ifcfg-test-wired-8021x-tls-always \
+	ifcfg-test-wired-802-1X-subj-matches \
+	ifcfg-test-wired-802-1x-ttls-eapgtc \
 	ifcfg-test-onboot-no \
+	ifcfg-test-noip \
 	ifcfg-test-wifi-open \
 	ifcfg-test-wifi-open-auto \
 	ifcfg-test-wifi-open-ssid-quoted \
@@ -412,6 +436,7 @@ EXTRA_DIST = \
 	keys-test-wifi-wpa-eap-tls \
 	ifcfg-test-wifi-wpa-eap-ttls-tls \
 	keys-test-wifi-wpa-eap-ttls-tls \
+	ifcfg-test-wifi-hidden \
 	test_ca_cert.pem \
 	test1_key_and_cert.pem \
 	ifcfg-test-ibft-dhcp \
@@ -455,7 +480,34 @@ EXTRA_DIST = \
 	ifcfg-test-infiniband \
 	ifcfg-test-bond-main \
 	ifcfg-test-bond-slave \
-	ifcfg-test-bond-slave-ib
+	ifcfg-test-bond-slave-ib \
+	ifcfg-test-dcb \
+	ifcfg-test-dcb-default-app-priorities \
+	ifcfg-test-dcb-bad-booleans \
+	ifcfg-test-dcb-short-booleans \
+	ifcfg-test-dcb-bad-uints \
+	ifcfg-test-dcb-short-uints \
+	ifcfg-test-dcb-bad-percent \
+	ifcfg-test-dcb-short-percent \
+	ifcfg-test-dcb-pgpct-not-100 \
+	ifcfg-test-fcoe-fabric \
+	ifcfg-test-fcoe-vn2vn \
+	ifcfg-test-team-master \
+	ifcfg-test-team-port \
+	ifcfg-test-team-port-empty-config
+
+
+# make target dependencies can't have colons in their names, which ends up
+# meaning that we can't add the alias files to EXTRA_DIST
+ALIAS_FILES = \
+	ifcfg-aliasem0 \
+	ifcfg-aliasem0:1 \
+	ifcfg-aliasem0:2 \
+	ifcfg-aliasem0:99 \
+	ifcfg-aliasem1 \
+	ifcfg-aliasem1:1 \
+	ifcfg-aliasem2 \
+	ifcfg-aliasem2:1
 
 all: all-am
 
@@ -533,6 +585,9 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-hook
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
@@ -637,7 +692,7 @@ uninstall-am:
 .MAKE: check-am install-am install-strip
 
 .PHONY: all all-am check check-am check-local clean clean-generic \
-	clean-libtool cscopelist-am ctags-am distclean \
+	clean-libtool cscopelist-am ctags-am dist-hook distclean \
 	distclean-generic distclean-libtool distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
@@ -650,8 +705,13 @@ uninstall-am:
 	uninstall-am
 
 
+dist-hook:
+	@for f in $(ALIAS_FILES); do \
+		cp $(abs_srcdir)/$$f $(distdir)/; \
+	done
+
 check-local:
-	@for f in $(EXTRA_DIST); do \
+	@for f in $(EXTRA_DIST) $(ALIAS_FILES); do \
 		chmod 0600 $(abs_srcdir)/$$f; \
 	done
 

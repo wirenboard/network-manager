@@ -33,7 +33,9 @@ IGNORE_HFILES= \
 	crypto.h \
 	nm-setting-template.h \
 	nm-utils-private.h \
-	nm-param-spec-specialized.h
+	nm-setting-private.h \
+	nm-param-spec-specialized.h \
+	nm-test-utils.h
 
 # Images to copy into HTML directory.
 HTML_IMAGES = 
@@ -50,6 +52,7 @@ extra_files =
 GTKDOC_CFLAGS =				\
 	-I$(top_srcdir)/include		\
 	-I$(top_srcdir)/libnm-util	\
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS)			\
 	$(DBUS_CFLAGS)
 

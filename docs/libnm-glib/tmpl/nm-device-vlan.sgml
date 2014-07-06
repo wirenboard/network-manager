@@ -32,6 +32,7 @@ NMDeviceVlan
 @NM_DEVICE_VLAN_ERROR_INVALID_VLAN_CONNECTION: 
 @NM_DEVICE_VLAN_ERROR_ID_MISMATCH: 
 @NM_DEVICE_VLAN_ERROR_INTERFACE_MISMATCH: 
+@NM_DEVICE_VLAN_ERROR_MAC_MISMATCH: 
 
 <!-- ##### MACRO NM_DEVICE_VLAN_ERROR ##### -->
 <para>
@@ -69,6 +70,40 @@ NMDeviceVlan
 </para>
 
 
+
+<!-- ##### STRUCT NMDeviceVlan ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceVlan:carrier ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceVlan:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceVlan:vlan-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceVlanClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
 
 <!-- ##### FUNCTION nm_device_vlan_new ##### -->
 <para>

@@ -174,13 +174,13 @@ nm_ip_up (void *data, int arg)
 	}
 
 	hash = g_hash_table_new_full (g_str_hash, g_str_equal,
-							NULL, value_destroy);
+	                              NULL, value_destroy);
 
 	g_hash_table_insert (hash, NM_PPP_IP4_CONFIG_INTERFACE, 
-					 str_to_gvalue (ifname));
+	                     str_to_gvalue (ifname));
 
 	g_hash_table_insert (hash, NM_PPP_IP4_CONFIG_ADDRESS, 
-					 uint_to_gvalue (opts.ouraddr));
+	                     uint_to_gvalue (opts.ouraddr));
 
 	/* Prefer the peer options remote address first, _unless_ pppd made the
 	 * address up, at which point prefer the local options remote address,
@@ -259,22 +259,22 @@ get_credentials (char *username, char *password)
 	size_t len;
 	GError *err = NULL;
 
-	if (username && !password) {
+	if (!password) {
 		/* pppd is checking pap support; return 1 for supported */
+		g_return_val_if_fail (username, -1);
 		return 1;
 	}
 
+	g_return_val_if_fail (username, -1);
 	g_return_val_if_fail (DBUS_IS_G_PROXY (proxy), -1);
 
 	g_message ("nm-ppp-plugin: (%s): passwd-hook, requesting credentials...", __func__);
 
-	dbus_g_proxy_call (proxy, "NeedSecrets", &err,
-	                   G_TYPE_INVALID,
-	                   G_TYPE_STRING, &my_username,
-	                   G_TYPE_STRING, &my_password,
-	                   G_TYPE_INVALID);
-
-	if (err) {
+	if (!dbus_g_proxy_call (proxy, "NeedSecrets", &err,
+	                        G_TYPE_INVALID,
+	                        G_TYPE_STRING, &my_username,
+	                        G_TYPE_STRING, &my_password,
+	                        G_TYPE_INVALID)) {
 		g_warning ("nm-ppp-plugin: (%s): could not get secrets: (%d) %s",
 		           __func__,
 		           err ? err->code : -1,
@@ -325,7 +325,9 @@ plugin_init (void)
 	DBusGConnection *bus;
 	GError *err = NULL;
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
 	g_message ("nm-ppp-plugin: (%s): initializing", __func__);
 

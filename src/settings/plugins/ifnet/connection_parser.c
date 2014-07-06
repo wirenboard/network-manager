@@ -37,38 +37,25 @@
 #include <nm-setting-wireless.h>
 #include <nm-setting-8021x.h>
 #include <nm-system-config-interface.h>
+#include <nm-logging.h>
 #include <nm-utils.h>
 
 #include "net_utils.h"
 #include "wpa_parser.h"
 #include "connection_parser.h"
 #include "nm-ifnet-connection.h"
+#include "errors.h"
 
-static void
-update_connection_id (NMConnection *connection, const char *conn_name)
+static char *
+connection_id_from_ifnet_name (const char *conn_name)
 {
-	gchar *idstr = NULL;
-	gchar *uuid_base = NULL;
-	gchar *uuid = NULL;
-	int name_len;
-	NMSettingConnection *setting;
+	int name_len = strlen (conn_name);
 
-	name_len = strlen (conn_name);
-	if ((name_len > 2) && (g_str_has_prefix (conn_name, "0x"))) {
-		idstr = utils_hexstr2bin (conn_name + 2, name_len - 2);
-	} else
-		idstr = g_strdup_printf ("%s", conn_name);
-	uuid_base = idstr;
-	uuid = nm_utils_uuid_generate_from_string (uuid_base);
-	setting = nm_connection_get_setting_connection (connection);
-	g_object_set (setting, NM_SETTING_CONNECTION_ID, idstr,
-		      NM_SETTING_CONNECTION_UUID, uuid, NULL);
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-		      "update_connection_setting_from_config_block: name:%s, id:%s, uuid: %s",
-		      conn_name, idstr, uuid);
+	/* Convert a hex-encoded conn_name (only used for wifi SSIDs) to human-readable one */
+	if ((name_len > 2) && (g_str_has_prefix (conn_name, "0x")))
+		return nm_utils_hexstr2bin (conn_name + 2, name_len - 2);
 
-	g_free (uuid);
-	g_free (idstr);
+	return g_strdup (conn_name);
 }
 
 static gboolean eap_simple_reader (const char *eap_method,
@@ -112,6 +99,7 @@ typedef struct {
 
 static EAPReader eap_readers[] = {
 	{"md5", eap_simple_reader, TRUE},
+	{"pwd", eap_simple_reader, TRUE},
 	{"pap", eap_simple_reader, TRUE},
 	{"chap", eap_simple_reader, TRUE},
 	{"mschap", eap_simple_reader, TRUE},
@@ -213,11 +201,9 @@ eap_tls_reader (const char *eap_method,
 				goto done;
 		}
 	} else {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "    warning: missing %s for EAP"
-			     " method '%s'; this is insecure!",
-			     phase2 ? "IEEE_8021X_INNER_CA_CERT" :
-			     "IEEE_8021X_CA_CERT", eap_method);
+		nm_log_warn (LOGD_SETTINGS, "    missing %s for EAP method '%s'; this is insecure!",
+		             phase2 ? "IEEE_8021X_INNER_CA_CERT" :
+		             "IEEE_8021X_CA_CERT", eap_method);
 	}
 
 	/* Private key password */
@@ -323,9 +309,8 @@ eap_peap_reader (const char *eap_method,
 						    NULL, error))
 			goto done;
 	} else {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "    warning: missing "
-			     "IEEE_8021X_CA_CERT for EAP method '%s'; this is"
-			     " insecure!", eap_method);
+		nm_log_warn (LOGD_SETTINGS, "    missing IEEE_8021X_CA_CERT for EAP method '%s'; this is insecure!",
+		             eap_method);
 	}
 
 	peapver = wpa_get_value (ssid, "phase1");
@@ -426,9 +411,8 @@ eap_ttls_reader (const char *eap_method,
 						    NULL, error))
 			goto done;
 	} else {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "    warning: missing "
-			     "IEEE_8021X_CA_CERT for EAP method '%s'; this is"
-			     " insecure!", eap_method);
+		nm_log_warn (LOGD_SETTINGS, "    missing IEEE_8021X_CA_CERT for EAP method '%s'; this is insecure!",
+		             eap_method);
 	}
 
 	/* anonymous indentity for tls */
@@ -468,7 +452,7 @@ eap_ttls_reader (const char *eap_method,
 		} else if ((pos = strstr (*iter, "mschapv2")) != NULL
 			   || (pos = strstr (*iter, "md5")) != NULL) {
 			if (!eap_simple_reader (pos, ssid, s_8021x, TRUE, basepath, error)) {
-				PLUGIN_WARN (IFNET_PLUGIN_NAME, "SIMPLE ERROR");
+				nm_log_warn (LOGD_SETTINGS, "SIMPLE ERROR");
 				goto done;
 			}
 			g_object_set (s_8021x, NM_SETTING_802_1X_PHASE2_AUTHEAP,
@@ -508,8 +492,7 @@ guess_connection_type (const char *conn_name)
 	if (!ret_type)
 		ret_type = NM_SETTING_WIRED_SETTING_NAME;
 
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-		      "guessed connection type (%s) = %s", conn_name, ret_type);
+	nm_log_info (LOGD_SETTINGS, "guessed connection type (%s) = %s", conn_name, ret_type);
 	return ret_type;
 }
 
@@ -552,9 +535,7 @@ make_wired_connection_setting (NMConnection *connection,
 		errno = 0;
 		mtu = strtol (value, NULL, 10);
 		if (errno || mtu < 0 || mtu > 65535) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "    warning: invalid MTU '%s' for %s",
-				     value, conn_name);
+			nm_log_warn (LOGD_SETTINGS, "    invalid MTU '%s' for %s", value, conn_name);
 		} else
 			g_object_set (s_wired, NM_SETTING_WIRED_MTU,
 				      (guint32) mtu, NULL);
@@ -628,8 +609,7 @@ make_ip4_setting (NMConnection *connection,
 			g_object_unref (ip4_setting);
 			return;
 		}
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Using %s method for %s",
-					  method, conn_name);
+		nm_log_info (LOGD_SETTINGS, "Using %s method for %s", method, conn_name);
 	}else {
 		iblock = convert_ip4_config_block (conn_name);
 		if (!iblock) {
@@ -655,8 +635,7 @@ make_ip4_setting (NMConnection *connection,
 					      NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES,
 					      TRUE, NULL);
 			if (!nm_setting_ip4_config_add_address (ip4_setting, ip4_addr))
-				PLUGIN_WARN (IFNET_PLUGIN_NAME,
-					     "ignoring duplicate IP4 address");
+				nm_log_warn (LOGD_SETTINGS, "ignoring duplicate IP4 address");
 			nm_ip4_address_unref (ip4_addr);
 			current_iblock = iblock;
 			iblock = iblock->next;
@@ -678,16 +657,14 @@ make_ip4_setting (NMConnection *connection,
 			g_object_set (ip4_setting,
 				      NM_SETTING_IP4_CONFIG_DHCP_HOSTNAME,
 				      dhcp_hostname, NULL);
-			PLUGIN_PRINT (IFNET_PLUGIN_NAME, "DHCP hostname: %s",
-				      dhcp_hostname);
+			nm_log_info (LOGD_SETTINGS, "DHCP hostname: %s", dhcp_hostname);
 			g_free (dhcp_hostname);
 		}
 		if (client_id) {
 			g_object_set (ip4_setting,
 				      NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID,
 				      client_id, NULL);
-			PLUGIN_PRINT (IFNET_PLUGIN_NAME, "DHCP client id: %s",
-				      client_id);
+			nm_log_info (LOGD_SETTINGS, "DHCP client id: %s", client_id);
 			g_free (client_id);
 		}
 	}
@@ -710,10 +687,7 @@ make_ip4_setting (NMConnection *connection,
 			for (item = searches; *item; item++) {
 				if (strlen (*item)) {
 					if (!nm_setting_ip4_config_add_dns_search (ip4_setting, *item))
-						PLUGIN_WARN
-						    (IFNET_PLUGIN_NAME,
-						     "    warning: duplicate DNS domain '%s'",
-						     *item);
+						nm_log_warn (LOGD_SETTINGS, "    duplicate DNS domain '%s'", *item);
 				}
 			}
 			g_strfreev (searches);
@@ -750,10 +724,8 @@ make_ip4_setting (NMConnection *connection,
 		}
 
 		if (!nm_setting_ip4_config_add_route (ip4_setting, route))
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "warning: duplicate IP4 route");
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-			      "new IP4 route:%d\n", iblock->ip);
+			nm_log_warn (LOGD_SETTINGS, "duplicate IP4 route");
+		nm_log_info (LOGD_SETTINGS, "new IP4 route:%d\n", iblock->ip);
 
 		nm_ip4_route_unref (route);
 
@@ -782,11 +754,6 @@ make_ip6_setting (NMConnection *connection,
 	gboolean never_default = !has_default_ip6_route (conn_name);
 
 	s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
-	if (!s_ip6) {
-		g_set_error (error, ifnet_plugin_error_quark (), 0,
-			     "Could not allocate IP6 setting");
-		return;
-	}
 
 	value = ifnet_get_data (conn_name, "enable_ipv6");
 	if (value && is_true (value))
@@ -810,8 +777,7 @@ make_ip6_setting (NMConnection *connection,
 	else
 		// doesn't have "dhcp6" && has at least one ipv6 address
 		method = NM_SETTING_IP6_CONFIG_METHOD_MANUAL;
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "IPv6 for %s enabled, using %s",
-		      conn_name, method);
+	nm_log_info (LOGD_SETTINGS, "IPv6 for %s enabled, using %s", conn_name, method);
 
 	g_object_set (s_ip6,
 		      NM_SETTING_IP6_CONFIG_METHOD, method,
@@ -837,13 +803,10 @@ make_ip6_setting (NMConnection *connection,
 			nm_ip6_address_set_address (ip6_addr, iblock->ip);
 			nm_ip6_address_set_prefix (ip6_addr, iblock->prefix);
 			if (nm_setting_ip6_config_add_address (s_ip6, ip6_addr)) {
-				PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-					      "ipv6 addresses count: %d",
-					      nm_setting_ip6_config_get_num_addresses
-					      (s_ip6));
+				nm_log_info (LOGD_SETTINGS, "ipv6 addresses count: %d",
+				             nm_setting_ip6_config_get_num_addresses (s_ip6));
 			} else {
-				PLUGIN_WARN (IFNET_PLUGIN_NAME,
-					     "ignoring duplicate IP4 address");
+				nm_log_warn (LOGD_SETTINGS, "ignoring duplicate IP4 address");
 			}
 			nm_ip6_address_unref (ip6_addr);
 			current_iblock = iblock;
@@ -893,10 +856,10 @@ make_ip6_setting (NMConnection *connection,
 				nm_ip6_route_set_metric (route, (guint32) 1);
 		}
 
-		if (!nm_setting_ip6_config_add_route (s_ip6, route))
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "    warning: duplicate IP6 route");
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "    info: new IP6 route");
+		if (nm_setting_ip6_config_add_route (s_ip6, route))
+			nm_log_info (LOGD_SETTINGS, "    new IP6 route");
+		else
+			nm_log_warn (LOGD_SETTINGS, "    duplicate IP6 route");
 		nm_ip6_route_unref (route);
 
 		current_iblock = iblock;
@@ -910,8 +873,7 @@ done:
 
 error:
 	g_object_unref (s_ip6);
-	PLUGIN_WARN (IFNET_PLUGIN_NAME, "    warning: Ignore IPv6 for %s",
-		     conn_name);
+	nm_log_warn (LOGD_SETTINGS, "    Ignore IPv6 for %s", conn_name);
 	return;
 }
 
@@ -932,8 +894,7 @@ make_wireless_connection_setting (const char *conn_name,
 					 "ppp") != 0, NULL);
 	type = ifnet_get_data (conn_name, "type");
 	if (strcmp (type, "ppp") == 0) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "PPP over WIFI is not supported yet");
+		nm_log_warn (LOGD_SETTINGS, "PPP over WIFI is not supported yet");
 		return NULL;
 	}
 
@@ -978,7 +939,7 @@ make_wireless_connection_setting (const char *conn_name,
 				goto error;
 
 			}
-			tmp = utils_hexstr2bin (p, value_len - 2);
+			tmp = nm_utils_hexstr2bin (p, value_len - 2);
 			ssid_len = (value_len - 2) / 2;
 			converted = g_malloc0 (ssid_len + 1);
 			memcpy (converted, tmp, ssid_len);
@@ -1013,7 +974,7 @@ make_wireless_connection_setting (const char *conn_name,
 
 		g_object_set (wireless_setting, NM_SETTING_WIRELESS_MODE, mode,
 			      NULL);
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Using mode: %s", mode);
+		nm_log_info (LOGD_SETTINGS, "Using mode: %s", mode);
 	}
 
 	/* BSSID setting */
@@ -1042,17 +1003,14 @@ make_wireless_connection_setting (const char *conn_name,
 		errno = 0;
 		mtu = strtol (value, NULL, 10);
 		if (errno || mtu < 0 || mtu > 50000) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "    warning: invalid MTU '%s' for %s",
-				     value, conn_name);
+			nm_log_warn (LOGD_SETTINGS, "    invalid MTU '%s' for %s", value, conn_name);
 		} else
 			g_object_set (wireless_setting, NM_SETTING_WIRELESS_MTU,
 				      (guint32) mtu, NULL);
 
 	}
 
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "wireless_setting added for %s",
-		      conn_name);
+	nm_log_info (LOGD_SETTINGS, "wireless_setting added for %s", conn_name);
 	return NM_SETTING (wireless_setting);
 error:
 	if (wireless_setting)
@@ -1146,7 +1104,7 @@ add_one_wep_key (const char *ssid,
 
 		}
 
-		converted = utils_bin2hexstr (tmp, strlen (tmp), strlen (tmp) * 2);
+		converted = nm_utils_bin2hexstr (tmp, strlen (tmp), strlen (tmp) * 2);
 		g_free (tmp);
 	} else {
 		g_set_error (error, ifnet_plugin_error_quark (), 0,
@@ -1201,8 +1159,7 @@ make_wep_setting (const char *ssid, GError **error)
 			g_object_set (s_wireless_sec,
 				      NM_SETTING_WIRELESS_SECURITY_WEP_TX_KEYIDX,
 				      default_key_idx, NULL);
-			PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-				      "Default key index: %d", default_key_idx);
+			nm_log_info (LOGD_SETTINGS, "Default key index: %d", default_key_idx);
 		} else {
 			g_set_error (error, ifnet_plugin_error_quark (), 0,
 				     "Invalid default WEP key '%s'", value);
@@ -1240,14 +1197,12 @@ make_wep_setting (const char *ssid, GError **error)
 			g_object_set (s_wireless_sec,
 				      NM_SETTING_WIRELESS_SECURITY_AUTH_ALG,
 				      "open", NULL);
-			PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-				      "WEP: Use open system authentication");
+			nm_log_info (LOGD_SETTINGS, "WEP: Use open system authentication");
 		} else if (strcmp (auth_alg, "SHARED") == 0) {
 			g_object_set (s_wireless_sec,
 				      NM_SETTING_WIRELESS_SECURITY_AUTH_ALG,
 				      "shared", NULL);
-			PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-				      "WEP: Use shared system authentication");
+			nm_log_info (LOGD_SETTINGS, "WEP: Use shared system authentication");
 		} else {
 			g_set_error (error, ifnet_plugin_error_quark (), 0,
 				     "Invalid WEP authentication algorithm '%s'",
@@ -1292,7 +1247,7 @@ parse_wpa_psk (const char *psk, GError **error)
 		return NULL;
 	}
 
-	/* Passphrase must be between 10 and 66 characters in length becuase WPA
+	/* Passphrase must be between 10 and 66 characters in length because WPA
 	 * hex keys are exactly 64 characters (no quoting), and WPA passphrases
 	 * are between 8 and 63 characters (inclusive), plus optional quoting if
 	 * the passphrase contains spaces.
@@ -1359,14 +1314,12 @@ fill_wpa_ciphers (const char *ssid,
 		 */
 		if (adhoc) {
 			if (group && (i > 0)) {
-				PLUGIN_WARN (IFNET_PLUGIN_NAME,
-					     "    warning: ignoring group cipher '%s' (only one group cipher allowed in Ad-Hoc mode)",
-					     *iter);
+				nm_log_warn (LOGD_SETTINGS, "    ignoring group cipher '%s' (only one group cipher allowed in Ad-Hoc mode)",
+				             *iter);
 				continue;
 			} else if (!group) {
-				PLUGIN_WARN (IFNET_PLUGIN_NAME,
-					     "    warning: ignoring pairwise cipher '%s' (pairwise not used in Ad-Hoc mode)",
-					     *iter);
+				nm_log_warn (LOGD_SETTINGS, "    ignoring pairwise cipher '%s' (pairwise not used in Ad-Hoc mode)",
+				             *iter);
 				continue;
 			}
 		}
@@ -1390,10 +1343,9 @@ fill_wpa_ciphers (const char *ssid,
 		else if (group && !strcmp (*iter, "WEP40"))
 			nm_setting_wireless_security_add_group (wsec, "wep40");
 		else {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "    warning: ignoring invalid %s cipher '%s'",
-				     group ? "CIPHER_GROUP" : "CIPHER_PAIRWISE",
-				     *iter);
+			nm_log_warn (LOGD_SETTINGS, "    ignoring invalid %s cipher '%s'",
+			             group ? "CIPHER_GROUP" : "CIPHER_PAIRWISE",
+			             *iter);
 		}
 	}
 
@@ -1440,10 +1392,8 @@ fill_8021x (const char *ssid,
 			 * used with TTLS or PEAP or whatever.
 			 */
 			if (wifi && eap->wifi_phase2_only) {
-				PLUGIN_WARN (IFNET_PLUGIN_NAME,
-					     "    warning: ignored invalid "
-					     "IEEE_8021X_EAP_METHOD '%s'; not allowed for wifi.",
-					     lower);
+				nm_log_warn (LOGD_SETTINGS, "    ignored invalid IEEE_8021X_EAP_METHOD '%s'; not allowed for wifi.",
+				             lower);
 				goto next;
 			}
 
@@ -1460,9 +1410,7 @@ fill_8021x (const char *ssid,
 		}
 
 		if (!found) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "    warning: ignored unknown"
-				     "IEEE_8021X_EAP_METHOD '%s'.", lower);
+			nm_log_warn (LOGD_SETTINGS, "    ignored unknown IEEE_8021X_EAP_METHOD '%s'.", lower);
 		}
 		g_free (lower);
 	}
@@ -1586,8 +1534,7 @@ make_wireless_security_setting (const char *conn_name,
 					 "ppp") != 0, NULL);
 	if (!wpa_get_value (conn_name, "ssid"))
 		return NULL;
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-		      "updating wireless security settings (%s).", conn_name);
+	nm_log_info (LOGD_SETTINGS, "updating wireless security settings (%s).", conn_name);
 
 	ssid = conn_name;
 	value = wpa_get_value (ssid, "mode");
@@ -1668,11 +1615,10 @@ ifnet_update_connection_from_config_block (const char *conn_name,
 	NMSettingWirelessSecurity *wsec = NULL;
 	gboolean auto_conn = TRUE;
 	const char *value = NULL;
+	gchar *id, *uuid;
 	gboolean success = FALSE;
 
 	connection = nm_connection_new ();
-	if (!connection)
-		return NULL;
 	setting = nm_connection_get_setting_connection (connection);
 	if (!setting) {
 		setting = NM_SETTING_CONNECTION (nm_setting_connection_new ());
@@ -1684,18 +1630,33 @@ ifnet_update_connection_from_config_block (const char *conn_name,
 	value = ifnet_get_data (conn_name, "auto");
 	if (value && !strcmp (value, "false"))
 		auto_conn = FALSE;
-	update_connection_id (connection, conn_name);
-	g_object_set (setting, NM_SETTING_CONNECTION_TYPE, type,
-		      NM_SETTING_CONNECTION_READ_ONLY, FALSE,
-		      NM_SETTING_CONNECTION_AUTOCONNECT, auto_conn, NULL);
+
+	/* Try to read UUID from the ifnet block, otherwise generate UUID from
+	 * the connection ID.
+	 */
+	id = connection_id_from_ifnet_name (conn_name);
+	uuid = g_strdup (ifnet_get_data (conn_name, "uuid"));
+	if (!uuid)
+		uuid = nm_utils_uuid_generate_from_string (id);
+
+	g_object_set (setting,
+	              NM_SETTING_CONNECTION_TYPE, type,
+	              NM_SETTING_CONNECTION_ID, id,
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_INTERFACE_NAME, conn_name,
+	              NM_SETTING_CONNECTION_READ_ONLY, FALSE,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, auto_conn,
+	              NULL);
+	nm_log_info (LOGD_SETTINGS, "name:%s, id:%s, uuid: %s", conn_name, id, uuid);
+	g_free (id);
+	g_free (uuid);
 
 	if (!strcmp (NM_SETTING_WIRED_SETTING_NAME, type)
 	    || !strcmp (NM_SETTING_PPPOE_SETTING_NAME, type)) {
 		/* wired setting */
 		make_wired_connection_setting (connection, conn_name, error);
 		if (error && *error) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "Found error: %s", (*error)->message);
+			nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 			goto error;
 		}
 		/* pppoe setting */
@@ -1703,8 +1664,7 @@ ifnet_update_connection_from_config_block (const char *conn_name,
 			make_pppoe_connection_setting (connection, conn_name,
 						       error);
 		if (error && *error) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "Found error: %s", (*error)->message);
+			nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 			goto error;
 		}
 	} else if (!strcmp (NM_SETTING_WIRELESS_SETTING_NAME, type)) {
@@ -1717,28 +1677,20 @@ ifnet_update_connection_from_config_block (const char *conn_name,
 		nm_connection_add_setting (connection, wireless_setting);
 
 		if (error && *error) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "Found error: %s", (*error)->message);
+			nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 			goto error;
 		}
 
 		/* wireless security setting */
 		wsec = make_wireless_security_setting (conn_name, basepath, &s_8021x, error);
 		if (wsec) {
-			nm_connection_add_setting (connection,
-						   NM_SETTING (wsec));
+			nm_connection_add_setting (connection, NM_SETTING (wsec));
 			if (s_8021x)
-				nm_connection_add_setting (connection,
-							   NM_SETTING
-							   (s_8021x));
-			g_object_set (wireless_setting, NM_SETTING_WIRELESS_SEC,
-				      NM_SETTING_WIRELESS_SECURITY_SETTING_NAME,
-				      NULL);
+				nm_connection_add_setting (connection, NM_SETTING (s_8021x));
 		}
 
 		if (error && *error) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "Found error: %s", (*error)->message);
+			nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 			goto error;
 		}
 
@@ -1748,21 +1700,22 @@ ifnet_update_connection_from_config_block (const char *conn_name,
 	/* IPv4 setting */
 	make_ip4_setting (connection, conn_name, error);
 	if (error && *error) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "Found error: %s", (*error)->message);
+		nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 		goto error;
 	}
 
 	/* IPv6 setting */
 	make_ip6_setting (connection, conn_name, error);
 	if (error && *error) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "Found error: %s", (*error)->message);
+		nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 		goto error;
 	}
 
 	success = nm_connection_verify (connection, error);
 	if (error && *error)
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "Found error: %s", (*error)->message);
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Connection verified %s:%d", conn_name, success);
+		nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
+	else
+		nm_log_info (LOGD_SETTINGS, "Connection verified %s:%d", conn_name, success);
 	if (!success)
 		goto error;
 	return connection;
@@ -1899,10 +1852,8 @@ write_object (NMSetting8021x *s_8021x,
 	}
 
 	/* does not support writing encryption data now */
-	if (blob) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "    warning: Currently we do not support certs writing.");
-	}
+	if (blob)
+		nm_log_warn (LOGD_SETTINGS, "    Currently we do not support cert writing.");
 
 	return TRUE;
 }
@@ -2031,8 +1982,7 @@ write_8021x_setting (NMConnection *connection,
 		return TRUE;
 	}
 
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Adding 8021x setting for %s",
-		      conn_name);
+	nm_log_info (LOGD_SETTINGS, "Adding 8021x setting for %s", conn_name);
 
 	/* If wired, write KEY_MGMT */
 	if (wired)
@@ -2149,7 +2099,7 @@ write_wireless_security_setting (NMConnection * connection,
 		wpa_set_data (conn_name, "key_mgmt", "WPA-EAP");
 		wpa = TRUE;
 	} else
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "Unknown key_mgmt: %s", key_mgmt);
+		nm_log_warn (LOGD_SETTINGS, "Unknown key_mgmt: %s", key_mgmt);
 
 	if (auth_alg) {
 		if (!strcmp (auth_alg, "shared"))
@@ -2342,10 +2292,7 @@ write_wireless_setting (NMConnection *connection,
 	ifnet_set_data (ssid_str, "mac", NULL);
 	mac = nm_setting_wireless_get_mac_address (s_wireless);
 	if (mac) {
-		tmp = g_strdup_printf ("%02X:%02X:%02X:%02X:%02X:%02X",
-				       mac->data[0], mac->data[1], mac->data[2],
-				       mac->data[3], mac->data[4],
-				       mac->data[5]);
+		tmp = nm_utils_hwaddr_ntoa_len (mac->data, mac->len);
 		ifnet_set_data (ssid_str, "mac", tmp);
 		g_free (tmp);
 	}
@@ -2366,24 +2313,20 @@ write_wireless_setting (NMConnection *connection,
 		wpa_set_data (ssid_str, "mode", "1");
 		adhoc = TRUE;
 	} else {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "Invalid mode '%s' in '%s' setting",
-			     mode, NM_SETTING_WIRELESS_SETTING_NAME);
+		nm_log_warn (LOGD_SETTINGS, "Invalid mode '%s' in '%s' setting",
+		             mode, NM_SETTING_WIRELESS_SETTING_NAME);
 		return FALSE;
 	}
 
 	wpa_set_data (ssid_str, "bssid", NULL);
 	bssid = nm_setting_wireless_get_bssid (s_wireless);
 	if (bssid) {
-		tmp = g_strdup_printf ("%02X:%02X:%02X:%02X:%02X:%02X",
-				       bssid->data[0], bssid->data[1],
-				       bssid->data[2], bssid->data[3],
-				       bssid->data[4], bssid->data[5]);
+		tmp = nm_utils_hwaddr_ntoa_len (bssid->data, bssid->len);
 		wpa_set_data (ssid_str, "bssid", tmp);
 		g_free (tmp);
 	}
 
-	if (nm_setting_wireless_get_security (s_wireless)) {
+	if (nm_connection_get_setting_wireless_security (connection)) {
 		if (!write_wireless_security_setting
 		    (connection, ssid_str, adhoc, no_8021x, error))
 			return FALSE;
@@ -2417,10 +2360,7 @@ write_wired_setting (NMConnection *connection,
 	ifnet_set_data (conn_name, "mac", NULL);
 	mac = nm_setting_wired_get_mac_address (s_wired);
 	if (mac) {
-		tmp = g_strdup_printf ("%02X:%02X:%02X:%02X:%02X:%02X",
-				       mac->data[0], mac->data[1], mac->data[2],
-				       mac->data[3], mac->data[4],
-				       mac->data[5]);
+		tmp = nm_utils_hwaddr_ntoa_len (mac->data, mac->len);
 		ifnet_set_data (conn_name, "mac", tmp);
 		g_free (tmp);
 	}
@@ -2436,14 +2376,6 @@ write_wired_setting (NMConnection *connection,
 	//ifnet_set_data (conn_name, "TYPE", TYPE_ETHERNET);
 
 	return TRUE;
-}
-
-static void
-write_connection_setting (NMSettingConnection *s_con, const char *conn_name)
-{
-	ifnet_set_data (conn_name, "auto",
-			nm_setting_connection_get_autoconnect (s_con) ? "true" :
-			"false");
 }
 
 static gboolean
@@ -2819,16 +2751,11 @@ ifnet_update_parsers_by_connection (NMConnection *connection,
 	gboolean wired = FALSE, pppoe = TRUE;
 	const char *new_name = NULL;
 
-	s_con =
-	    NM_SETTING_CONNECTION (nm_connection_get_setting
-				   (connection, NM_TYPE_SETTING_CONNECTION));
-	if (!s_con) {
-		g_set_error (error, ifnet_plugin_error_quark (), 0,
-			     "Missing '%s' setting",
-			     NM_SETTING_CONNECTION_SETTING_NAME);
+	if (!ifnet_can_write_connection (connection, error))
 		return FALSE;
-	}
 
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
 
 	type = nm_setting_connection_get_connection_type (s_con);
 	if (!type) {
@@ -2887,11 +2814,11 @@ ifnet_update_parsers_by_connection (NMConnection *connection,
 	}
 
 	/* Connection Setting */
-	write_connection_setting (s_con, conn_name);
+	ifnet_set_data (conn_name, "auto",
+	                nm_setting_connection_get_autoconnect (s_con) ? "true" : "false");
+	ifnet_set_data (conn_name, "uuid", nm_connection_get_uuid (connection));
 
-	/* connection id will be displayed in nm-applet */
-	update_connection_id (connection, conn_name);
-
+	/* Write changes to disk */
 	success = ifnet_flush_to_file (config_file, out_backup);
 	if (success)
 		wpa_flush_to_file (wpa_file);
@@ -2921,6 +2848,66 @@ ifnet_delete_connection_in_parsers (const char *conn_name,
 	}
 
 	return result;
+}
+
+static void
+check_unsupported_secrets (NMSetting  *setting,
+                           const char *key,
+                           const GValue *value,
+                           GParamFlags flags,
+                           gpointer user_data)
+{
+	gboolean *unsupported_secret = user_data;
+
+	if (flags & NM_SETTING_PARAM_SECRET) {
+		NMSettingSecretFlags secret_flags = NM_SETTING_SECRET_FLAG_NONE;
+
+		nm_setting_get_secret_flags (setting, key, &secret_flags, NULL);
+		if (secret_flags != NM_SETTING_SECRET_FLAG_NONE)
+			*unsupported_secret = TRUE;
+	}
+}
+
+gboolean
+ifnet_can_write_connection (NMConnection *connection, GError **error)
+{
+	NMSettingConnection *s_con;
+	gboolean has_unsupported_secrets = FALSE;
+
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+
+	/* If the connection is not available for all users, ignore
+	 * it as this plugin only deals with System Connections */
+	if (nm_setting_connection_get_num_permissions (s_con)) {
+		g_set_error_literal (error, IFNET_PLUGIN_ERROR, 0,
+		                     "The ifnet plugin does not support non-system-wide connections.");
+		return FALSE;
+	}
+
+	/* If the connection has flagged secrets, ignore
+	 * it as this plugin does not deal with user agent service */
+	nm_connection_for_each_setting_value (connection,
+	                                      check_unsupported_secrets,
+	                                      &has_unsupported_secrets);
+	if (has_unsupported_secrets) {
+		g_set_error_literal (error, IFNET_PLUGIN_ERROR, 0,
+		                     "The ifnet plugin only supports persistent system secrets.");
+		return FALSE;
+	}
+
+	/* Only support wired, wifi, and PPPoE */
+	if (   !nm_connection_is_type (connection, NM_SETTING_WIRED_SETTING_NAME)
+	    && !nm_connection_is_type (connection, NM_SETTING_WIRELESS_SETTING_NAME)
+	    && !nm_connection_is_type (connection, NM_SETTING_PPPOE_SETTING_NAME)) {
+		g_set_error (error, IFNET_PLUGIN_ERROR, 0,
+		             "The ifnet plugin cannot write the connection '%s' (type '%s')",
+		             nm_connection_get_id (connection),
+		             nm_setting_connection_get_connection_type (s_con));
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 /* get the available wired name(eth*). */
@@ -3003,10 +2990,11 @@ get_wireless_name (NMConnection * connection)
 	return result;
 }
 
-char *
+gboolean
 ifnet_add_new_connection (NMConnection *connection,
                           const char *config_file,
                           const char *wpa_file,
+                          gchar **out_new_name,
                           gchar **out_backup,
                           GError **error)
 {
@@ -3015,12 +3003,15 @@ ifnet_add_new_connection (NMConnection *connection,
 	const char *type;
 	gchar *new_type, *new_name = NULL;
 
+	if (!ifnet_can_write_connection (connection, error))
+		return FALSE;
+
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 	type = nm_setting_connection_get_connection_type (s_con);
 	g_assert (type);
 
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Adding %s connection", type);
+	nm_log_info (LOGD_SETTINGS, "Adding %s connection", type);
 
 	/* get name and type
 	 * Wireless type: wireless
@@ -3055,11 +3046,14 @@ ifnet_add_new_connection (NMConnection *connection,
 		                                              error);
 	}
 
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Added new connection: %s, result: %s",
-	              new_name, success ? "success" : "fail");
+	nm_log_info (LOGD_SETTINGS, "Added new connection: %s, result: %s",
+	             new_name, success ? "success" : "fail");
 
 out:
-	if (!success)
+	if (!success || !out_new_name)
 		g_free (new_name);
-	return success ? new_name : NULL;
+	else if (out_new_name)
+		*out_new_name = new_name;
+	return success;
 }
+

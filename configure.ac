@@ -3,11 +3,11 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [0])
 m4_define([nm_minor_version], [9])
-m4_define([nm_micro_version], [8])
-m4_define([nm_nano_version],  [10])
+m4_define([nm_micro_version], [10])
+m4_define([nm_nano_version],  [0])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
-m4_define([nm_git_sha], [m4_esyscmd([ ( [[ -d ./.git/ && "$(realpath ./.git/)" = "$(realpath "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ]] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
+m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
 
 AC_INIT([NetworkManager], [nm_version],
         [http://bugzilla.gnome.org/enter_bug.cgi?product=NetworkManager],
@@ -17,9 +17,22 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
-AM_INIT_AUTOMAKE([1.11 tar-ustar no-dist-gzip dist-bzip2 -Wno-portability])
+dnl Initialize automake.  automake < 1.12 didn't have serial-tests and
+dnl gives an error if it sees this, but for automake >= 1.13
+dnl serial-tests is required so we have to include it.  Solution is to
+dnl test for the version of automake (by running an external command)
+dnl and provide it if necessary.  Note we have to do this entirely using
+dnl m4 macros since automake queries this macro by running
+dnl 'autoconf --trace ...'.
+m4_define([serial_tests], [
+    m4_esyscmd([automake --version |
+                head -1 |
+                awk '{split ($NF,a,"."); if (a[1] == 1 && a[2] >= 12) { print "serial-tests" }}'
+    ])
+])
+AM_INIT_AUTOMAKE(1.11 serial_tests tar-ustar no-dist-gzip dist-bzip2 -Wno-portability)  dnl NB: Do not [quote] this parameter.
 AM_MAINTAINER_MODE([enable])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+AM_SILENT_RULES([yes])
 
 dnl Define _SYSTEM_EXTENSIONS for various things like strcasestr()
 AC_USE_SYSTEM_EXTENSIONS
@@ -29,7 +42,6 @@ dnl Require programs
 dnl
 AC_PROG_CC
 AM_PROG_CC_C_O
-AC_PROG_INSTALL
 
 # C++ only required if --enable-qt=yes
 AC_PROG_CXX
@@ -50,24 +62,9 @@ AC_SUBST(NM_MICRO_VERSION)
 AC_SUBST(NM_VERSION)
 
 dnl
-dnl Required headers
-dnl
-AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h paths.h sys/ioctl.h sys/time.h syslog.h unistd.h)
-
-dnl
 dnl Checks for typedefs, structures, and compiler characteristics.
 dnl
-AC_TYPE_MODE_T
 AC_TYPE_PID_T
-AC_HEADER_TIME
-
-dnl
-dnl Checks for library functions.
-dnl
-AC_PROG_GCC_TRADITIONAL
-AC_FUNC_MEMCMP
-AC_CHECK_FUNCS(select socket uname)
 
 dnl
 dnl translation support
@@ -115,6 +112,12 @@ AM_CONDITIONAL(CONFIG_PLUGIN_IFCFG_RH, test "$enable_ifcfg_rh" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFCFG_SUSE, test "$enable_ifcfg_suse" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFUPDOWN, test "$enable_ifupdown" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFNET, test "$enable_ifnet" = "yes")
+
+if test "$enable_ifcfg_rh" = "yes"; then
+    DISTRO_NETWORK_SERVICE=network.service
+fi
+AC_SUBST(DISTRO_NETWORK_SERVICE)
+
 # Code coverage
 GNOME_CODE_COVERAGE
 
@@ -174,8 +177,28 @@ if test "$ac_have_nl80211" = no; then
 	AC_MSG_ERROR(Linux kernel development header linux/nl80211.h not installed or not functional)
 fi
 
+AC_MSG_CHECKING([Linux kernel nl80211 Critical Protocol Start/Stop])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+              [[#ifndef __user
+                #define __user
+                #endif
+                #include <sys/types.h>
+                #include <linux/types.h>
+                #include <sys/socket.h>
+                #include <linux/nl80211.h>]],
+              [[unsigned int a = NL80211_CMD_CRIT_PROTOCOL_START; a++;]])],
+        [ac_have_nl80211_critproto=yes],
+        [ac_have_nl80211_critproto=no])
+AC_MSG_RESULT($ac_have_nl80211_critproto)
+if test "$ac_have_nl80211_critproto" = yes; then
+	AC_DEFINE(HAVE_NL80211_CRITICAL_PROTOCOL_CMDS, 1, [Define if nl80211 has critical protocol support])
+else
+	AC_DEFINE(HAVE_NL80211_CRITICAL_PROTOCOL_CMDS, 0, [Define if nl80211 has critical protocol support])
+fi
+
 dnl
-dnl Default to using WEXT but allow it to be disabled
+dnl Check for newer VLAN flags
 dnl
 AC_MSG_CHECKING([Linux kernel VLAN_FLAG_LOOSE_BINDING enum value])
 AC_COMPILE_IFELSE(
@@ -214,15 +237,28 @@ PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.1 dbus-glib-1 >= 0.94)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-GLIB_VERSION_DEFINES="-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_26 '-DGLIB_VERSION_MAX_ALLOWED=G_ENCODE_VERSION(2,34)'"
+AC_CHECK_LIB([dbus-glib-1], [dbus_g_method_invocation_get_g_connection], ac_have_gmi_get_con="1", ac_have_gmi_get_con="0")
+AC_DEFINE_UNQUOTED(HAVE_DBUS_GLIB_GMI_GET_CONNECTION, $ac_have_gmi_get_con, [Define if you have a dbus-glib with dbus_g_method_invocation_get_g_connection()])
 
-# dbus-glib uses GValueArray, which is deprecated as of GLib 2.32.
-# Set GLIB_VERSION_MIN_REQUIRED to something less than that to avoid
-# getting warnings. (GLIB_VERSION_2_26 is the oldest defined version.)
-DBUS_CFLAGS="$DBUS_CFLAGS $GLIB_VERSION_DEFINES"
+dnl
+dnl Only dbus-glib >= 0.100 can use private dbus connections
+dnl
+PKG_CHECK_MODULES(DBUS_GLIB_100, [dbus-glib-1 >= 0.100], [have_dbus_glib_100=yes],[have_dbus_glib_100=no])
+if (test "${have_dbus_glib_100}" = "yes"); then
+	AC_DEFINE(HAVE_DBUS_GLIB_100, 1, [Define if you have dbus-glib >= 0.100])
+else
+	AC_DEFINE(HAVE_DBUS_GLIB_100, 0, [Define if you have dbus-glib >= 0.100])
+fi
+AM_CONDITIONAL(HAVE_DBUS_GLIB_100, test "${have_dbus_glib_100}" = "yes")
 
-PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.22 gmodule-2.0)
-GLIB_CFLAGS="$GLIB_CFLAGS $GLIB_VERSION_DEFINES"
+PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.32 gmodule-2.0)
+
+dnl GLIB_VERSION_MIN_REQUIRED should match the version above.
+dnl GLIB_VERSION_MAX_ALLOWED should be set to the same version;
+dnl nm-glib-compat.h will cause it to be overridden for the functions
+dnl we have compat versions of.
+GLIB_CFLAGS="$GLIB_CFLAGS -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_32 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_32"
+
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
@@ -256,18 +292,6 @@ else
 	UDEV_BASE_DIR="/lib/udev"
 fi
 AC_SUBST(UDEV_BASE_DIR)
-
-# BlueZ
-AC_ARG_ENABLE(bluez4, AS_HELP_STRING([--enable-bluez4],
-              [build with BlueZ 4 support instead of BlueZ 5]),
-              [enable_bluez4=${enableval}])
-if (test "${enable_bluez4}" = "yes"); then
-	AC_DEFINE(WITH_BLUEZ4, 1, [Define if you have BlueZ 4 support])
-else
-	AC_DEFINE(WITH_BLUEZ4, 0, [Define if you have BlueZ 4 support])
-	enable_bluez4=no
-fi
-AM_CONDITIONAL(WITH_BLUEZ4, test "${enable_bluez4}" = "yes")
 
 # systemd unit support
 AC_ARG_WITH([systemdsystemunitdir], AS_HELP_STRING([--with-systemdsystemunitdir=DIR],
@@ -336,8 +360,25 @@ esac
 AM_CONDITIONAL(SUSPEND_RESUME_UPOWER, test "x$with_suspend_resume" = "xupower")
 AM_CONDITIONAL(SUSPEND_RESUME_SYSTEMD, test "x$with_suspend_resume" = "xsystemd")
 
+# SELinux support
+AC_ARG_WITH(selinux, AS_HELP_STRING([--with-selinux=yes|no|auto], [Build with SELinux (default: auto)]),,[with_selinux=auto])
+if test "$with_selinux" = "yes" -o "$with_selinux" = "auto"; then
+    PKG_CHECK_MODULES(SELINUX, libselinux, [have_selinux=yes], [have_selinux=no])
+else
+    have_selinux=no
+fi
+if test "$with_selinux" = "yes" -a "$have_selinux" = "no"; then
+    AC_MSG_ERROR([You must have libselinux installed to build --with-selinux=yes.])
+fi
+if test "$have_selinux" = "yes"; then
+    AC_DEFINE(HAVE_SELINUX, 1, [Define if you have SELinux support])
+else
+    AC_DEFINE(HAVE_SELINUX, 0, [Define if you have SELinux support])
+fi
+AM_CONDITIONAL(HAVE_SELINUX, test "${have_selinux}" = "yes")
+
 # libnl support for the linux platform
-PKG_CHECK_MODULES(LIBNL, libnl-3.0 >= 3.2.7 libnl-route-3.0 libnl-genl-3.0)
+PKG_CHECK_MODULES(LIBNL, libnl-3.0 >= 3.2.8 libnl-route-3.0 libnl-genl-3.0)
 AC_SUBST(LIBNL_CFLAGS)
 AC_SUBST(LIBNL_LIBS)
 
@@ -345,6 +386,9 @@ AC_SUBST(LIBNL_LIBS)
 PKG_CHECK_MODULES(UUID, uuid)
 AC_SUBST(UUID_CFLAGS)
 AC_SUBST(UUID_LIBS)
+
+dnl Checks for readline library - used by nmcli
+AX_LIB_READLINE
 
 # Intel WiMAX SDK checks
 PKG_CHECK_MODULES(IWMX_SDK, [libiWmxSdk-0 >= 1.5.1], [have_wimax=yes],[have_wimax=no])
@@ -370,6 +414,25 @@ else
 	AC_DEFINE(WITH_WIMAX, 0, [Define if you have WiMAX support])
 fi
 AM_CONDITIONAL(WITH_WIMAX, test "${enable_wimax}" = "yes")
+
+# Teamd control checks
+PKG_CHECK_MODULES(LIBTEAMDCTL, [libteamdctl >= 1.9], [have_teamdctl=yes],[have_teamdctl=no])
+AC_ARG_ENABLE(teamdctl, AS_HELP_STRING([--enable-teamdctl], [enable Teamd control support]),
+                     [enable_teamdctl=${enableval}], [enable_teamdctl=${have_teamdctl}])
+if (test "${enable_teamdctl}" = "yes"); then
+	if test x"$have_teamdctl" = x"no"; then
+		AC_MSG_ERROR(Teamd control is required)
+	fi
+
+	AC_SUBST(LIBTEAMDCTL_CFLAGS)
+	AC_SUBST(LIBTEAMDCTL_LIBS)
+	# temporary bug workaround
+	LIBTEAMDCTL_CFLAGS=`echo $LIBTEAMDCTL_CFLAGS | sed -e 's:/teamdctl.h::'`
+	AC_DEFINE(WITH_TEAMDCTL, 1, [Define if you have Teamd control support])
+else
+	AC_DEFINE(WITH_TEAMDCTL, 0, [Define if you have Teamd control support])
+fi
+AM_CONDITIONAL(WITH_TEAMDCTL, test "${enable_teamdctl}" = "yes")
 
 PKG_CHECK_MODULES(POLKIT, [polkit-gobject-1 >= 0.97], [have_polkit=yes],[have_polkit=no])
 AC_ARG_ENABLE(polkit, AS_HELP_STRING([--enable-polkit], [enable PolicyKit support]),
@@ -443,7 +506,7 @@ GLIB_MAKEFILE='$(top_srcdir)/Makefile.glib'
 AC_SUBST(GLIB_MAKEFILE)
 GLIB_GENMARSHAL=`pkg-config --variable=glib_genmarshal glib-2.0`
 AC_SUBST(GLIB_GENMARSHAL)
-GLIB_MKENUMS='$(top_srcdir)/tools/glib-mkenums'
+GLIB_MKENUMS=`pkg-config --variable=glib_mkenums glib-2.0`
 AC_SUBST(GLIB_MKENUMS)
 
 AC_ARG_WITH(dbus-sys-dir, AS_HELP_STRING([--with-dbus-sys-dir=DIR], [where D-BUS system.d directory is]))
@@ -476,6 +539,24 @@ else
 	PPPD_PLUGIN_DIR="${libdir}/pppd/2.4.5"
 fi
 AC_SUBST(PPPD_PLUGIN_DIR)
+
+AC_ARG_WITH(pppd, AS_HELP_STRING([--with-pppd=/path/to/pppd], [path to pppd binary]))
+if test "x${with_pppd}" = x; then
+  AC_PATH_PROG(PPPD_PATH, pppd, [], $PATH:/sbin:/usr/sbin)
+else
+  PPPD_PATH="$with_pppd"
+fi
+AC_DEFINE_UNQUOTED(PPPD_PATH, "$PPPD_PATH", [Define to path of pppd binary])
+AC_SUBST(PPPD_PATH)
+
+AC_ARG_WITH(pppoe, AS_HELP_STRING([--with-pppoe=/path/to/pppoe], [path to pppoe binary]))
+if test "x${with_pppoe}" = x; then
+  AC_PATH_PROG(PPPOE_PATH, pppoe, [], $PATH:/sbin:/usr/sbin)
+else
+  PPPOE_PATH="$with_pppoe"
+fi
+AC_DEFINE_UNQUOTED(PPPOE_PATH, "$PPPOE_PATH", [Define to path of pppoe binary])
+AC_SUBST(PPPOE_PATH)
 
 # ModemManager1 with libmm-glib
 AC_ARG_WITH(modem-manager-1, AS_HELP_STRING([--with-modem-manager-1], [Enable new ModemManager1 interface support]),,[with_modem_manager_1=auto])
@@ -612,6 +693,12 @@ AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path 
 AC_SUBST(KERNEL_FIRMWARE_DIR)
 
 PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libsoup=no])
+if test "$have_libsoup" = "yes"; then
+	AC_DEFINE(HAVE_LIBSOUP, 1, [Define if you have libsoup])
+else
+	AC_DEFINE(HAVE_LIBSOUP, 0, [Define if you have libsoup])
+fi
+
 AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
                      [enable_concheck=${enableval}], [enable_concheck=${have_libsoup}])
 if (test "${enable_concheck}" = "yes"); then
@@ -626,6 +713,20 @@ else
 fi
 AM_CONDITIONAL(WITH_CONCHECK, test "${enable_concheck}" = "yes")
 
+PKG_CHECK_MODULES(LIBNDP, [libndp])
+
+AC_ARG_WITH(nmtui, AS_HELP_STRING([--with-nmtui=yes|no], [Build nmtui]))
+if test "$with_nmtui" != no; then
+    PKG_CHECK_MODULES(NEWT, [libnewt >= 0.52.15], [build_nmtui=yes], [build_nmtui=no])
+else
+    build_nmtui=no
+fi
+if test "$with_nmtui" = yes -a "$build_nmtui" = no; then
+    AC_MSG_ERROR([You must have libnewt installed to build nmtui.])
+fi
+AM_CONDITIONAL(BUILD_NMTUI, test "$build_nmtui" = yes)
+
+
 NM_COMPILER_WARNINGS
 
 dnl -------------------------
@@ -636,27 +737,34 @@ VAPIGEN_CHECK(0.17.1.24)
 
 # Tests, utilities and documentation
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests=root|yes|no], [Build NetworkManager tests (default: yes)]))
+AC_ARG_WITH(valgrind, AS_HELP_STRING([--with-valgrind=yes|no|path], [Use valgrind to memory-check the tests (default: yes)]))
 # Fallback to --with-tests
 AC_ARG_WITH(tests, AS_HELP_STRING([--with-tests], [Build NetworkManager tests (deprecated)]))
 AS_IF([test -n "$with_tests"], enable_tests="$with_tests")
-# Default to --enable-tests
+# Default to --enable-tests --with-valgrind
 AS_IF([test -z "$enable_tests"], enable_tests="yes")
+AS_IF([test -z "$with_valgrind"], with_valgrind="yes")
 # Normalize values
 AS_IF([test "$enable_tests" != "yes" -a "$enable_tests" != "root"], enable_tests="no")
-# Add conditionals
+# Search for tools
+AS_IF([test "$with_valgrind" == "yes"],
+	[AC_PATH_PROGS(with_valgrind, valgrind, no)])
+# Add conditionals and substitutions
 AM_CONDITIONAL(ENABLE_TESTS, test "$enable_tests" != "no")
-AM_CONDITIONAL(RUN_ROOT_TESTS, test "$enable_tests" == "root")
+AM_CONDITIONAL(REQUIRE_ROOT_TESTS, test "$enable_tests" == "root")
+AS_IF([test "$with_valgrind" != "no"],
+	AC_SUBST(VALGRIND_RULES, 'TESTS_ENVIRONMENT = "$(top_srcdir)/tools/run-test-valgrind.sh" "$(LIBTOOL)" "$(with_valgrind)" "$(top_srcdir)/valgrind.suppressions"'),
+	AC_SUBST(VALGRIND_RULES, []))
 
-# Backwards compatible documentation enable/disable
-AC_ARG_WITH(docs, AS_HELP_STRING([--with-docs], [Build NetworkManager documentation (deprecated, use --enable-gtk-doc)]))
-AC_ARG_ENABLE(doc, AS_HELP_STRING([--enable-doc], [Build NetworkManager documentation (deprecated, use --enable-gtk-doc)]))
-AS_IF([test "$with_docs" = "yes"], enable_gtk_doc="yes")
-AS_IF([test "$enable_doc" = "yes"], enable_gtk_doc="yes")
 GTK_DOC_CHECK(1.0)
 
 # check for pregenerated manpages to be installed
 install_pregen_manpages=no
-if test "$enable_gtk_doc" != "yes" -a -f man/nm-settings.5; then
+if test "$enable_gtk_doc" != "yes" \
+	-a -f man/NetworkManager.conf.5 \
+	-a -f man/nm-settings.5 \
+	-a -f man/nmcli-examples.5 \
+	-a -f man/NetworkManager.8; then
 	install_pregen_manpages=yes
 fi
 AM_CONDITIONAL(INSTALL_PREGEN_MANPAGES, test "x${install_pregen_manpages}" = "xyes")
@@ -668,23 +776,12 @@ include/Makefile
 include/nm-version.h
 src/Makefile
 src/tests/Makefile
-src/generated/Makefile
-src/logging/Makefile
-src/posix-signals/Makefile
-src/dns-manager/Makefile
-src/vpn-manager/Makefile
+src/config/tests/Makefile
 src/dhcp-manager/Makefile
 src/dhcp-manager/tests/Makefile
-src/ip6-manager/Makefile
-src/supplicant-manager/Makefile
+src/dnsmasq-manager/tests/Makefile
 src/supplicant-manager/tests/Makefile
 src/ppp-manager/Makefile
-src/dnsmasq-manager/Makefile
-src/modem-manager/Makefile
-src/bluez-manager/Makefile
-src/wifi/Makefile
-src/firewall-manager/Makefile
-src/settings/Makefile
 src/settings/plugins/Makefile
 src/settings/plugins/ifupdown/Makefile
 src/settings/plugins/ifupdown/tests/Makefile
@@ -699,7 +796,16 @@ src/settings/plugins/keyfile/tests/Makefile
 src/settings/plugins/keyfile/tests/keyfiles/Makefile
 src/settings/plugins/example/Makefile
 src/settings/tests/Makefile
-src/wimax/Makefile
+src/platform/Makefile
+src/platform/tests/Makefile
+src/rdisc/Makefile
+src/rdisc/tests/Makefile
+src/devices/adsl/Makefile
+src/devices/wimax/Makefile
+src/devices/bluetooth/Makefile
+src/devices/wifi/Makefile
+src/devices/wifi/tests/Makefile
+src/devices/wwan/Makefile
 libnm-util/libnm-util.pc
 libnm-util/Makefile
 libnm-util/tests/Makefile
@@ -714,22 +820,20 @@ tools/Makefile
 cli/Makefile
 cli/src/Makefile
 cli/completion/Makefile
+tui/Makefile
+tui/newt/Makefile
 test/Makefile
 initscript/RedHat/NetworkManager
 initscript/Debian/NetworkManager
 initscript/Slackware/rc.networkmanager
 initscript/SUSE/networkmanager
 initscript/Arch/networkmanager
-initscript/paldo/NetworkManager
 initscript/Mandriva/networkmanager
 initscript/linexa/networkmanager
 introspection/Makefile
 introspection/all.xml
 man/Makefile
-man/NetworkManager.8
-man/NetworkManager.conf.5
 man/nm-system-settings.conf.5
-man/nm-tool.1
 man/nm-online.1
 man/nmcli.1
 po/Makefile.in
@@ -747,6 +851,8 @@ NetworkManager.pc
 examples/Makefile
 examples/shell/Makefile
 examples/python/Makefile
+examples/python/dbus/Makefile
+examples/python/gi/Makefile
 examples/ruby/Makefile
 examples/C/Makefile
 examples/C/glib/Makefile
@@ -754,6 +860,7 @@ examples/C/qt/Makefile
 examples/dispatcher/Makefile
 vapi/Makefile
 ])
+AC_CONFIG_SUBDIRS([libndp])
 AC_OUTPUT
 
 # Print build configuration
@@ -781,6 +888,7 @@ if test "${enable_polkit}" = "yes"; then
 else
 	echo  "  policykit: no"
 fi
+echo "  selinux: $have_selinux"
 echo
 
 echo "Features:"
@@ -789,7 +897,8 @@ echo "  wimax: $enable_wimax"
 echo "  ppp: $enable_ppp"
 echo "  modemmanager-1: $with_modem_manager_1"
 echo "  concheck: $enable_concheck"
-echo "  bluez 4: $enable_bluez4"
+echo "  libteamdctl: $enable_teamdctl"
+echo "  nmtui: $build_nmtui"
 echo
 
 echo "Configuration plugins"
@@ -812,5 +921,6 @@ echo
 echo "Miscellaneous:"
 echo "  documentation: $enable_gtk_doc"
 echo "  tests: $enable_tests"
+echo "  valgrind: $with_valgrind"
 echo "  code coverage: $enable_code_coverage"
 echo

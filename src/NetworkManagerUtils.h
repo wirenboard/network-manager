@@ -31,16 +31,22 @@
 #include "nm-ip6-config.h"
 #include "nm-setting-ip6-config.h"
 #include "nm-connection.h"
+#include "nm-setting-private.h"
 
 gboolean nm_ethernet_address_is_valid (const struct ether_addr *test_addr);
 
+in_addr_t nm_utils_ip4_address_clear_host_address (in_addr_t addr, guint8 plen);
+void nm_utils_ip6_address_clear_host_address (struct in6_addr *dst, const struct in6_addr *src, guint8 plen);
+
 int nm_spawn_process (const char *args);
 
-void nm_utils_merge_ip4_config (NMIP4Config *ip4_config, NMSettingIP4Config *setting);
-void nm_utils_merge_ip6_config (NMIP6Config *ip6_config, NMSettingIP6Config *setting);
+/* macro to return strlen() of a compile time string. */
+#define STRLEN(str)     ( sizeof ("" str) - 1 )
 
+gboolean nm_match_spec_string (const GSList *specs, const char *string);
 gboolean nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr);
 gboolean nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels);
+gboolean nm_match_spec_interface_name (const GSList *specs, const char *interface_name);
 
 const char *nm_utils_get_shared_wifi_permission (NMConnection *connection);
 
@@ -71,17 +77,10 @@ void        value_hash_add_object_property (GHashTable *hash,
                                             const char *prop,
                                             GType val_type);
 
-gboolean nm_utils_do_sysctl (const char *path, const char *value);
-
-gboolean nm_utils_get_proc_sys_net_value (const char *path,
-                                          const char *iface,
-                                          gint32 *out_value);
-
-gboolean nm_utils_get_proc_sys_net_value_with_bounds (const char *path,
-                                                      const char *iface,
-                                                      gint32 *out_value,
-                                                      gint32 valid_min,
-                                                      gint32 valid_max);
+void nm_utils_normalize_connection (NMConnection *connection,
+                                    gboolean      default_enable_ipv6);
+const char *nm_utils_get_ip_config_method (NMConnection *connection,
+                                           GType         ip_setting_type);
 
 void nm_utils_complete_generic (NMConnection *connection,
                                 const char *ctype,
@@ -91,5 +90,26 @@ void nm_utils_complete_generic (NMConnection *connection,
                                 gboolean default_enable_ipv6);
 
 char *nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id);
+
+GPtrArray *nm_utils_read_resolv_conf_nameservers (const char *rc_contents);
+
+typedef gboolean (NMUtilsMatchFilterFunc) (NMConnection *connection, gpointer user_data);
+
+NMConnection *nm_utils_match_connection (GSList *connections,
+                                         NMConnection *original,
+                                         gboolean device_has_carrier,
+                                         NMUtilsMatchFilterFunc match_filter_func,
+                                         gpointer match_filter_data);
+
+gint64 nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback);
+
+#define NM_UTILS_NS_PER_SECOND  ((gint64) 1000000000)
+gint64 nm_utils_get_monotonic_timestamp_ns (void);
+gint64 nm_utils_get_monotonic_timestamp_us (void);
+gint64 nm_utils_get_monotonic_timestamp_ms (void);
+gint32 nm_utils_get_monotonic_timestamp_s (void);
+
+const char *ASSERT_VALID_PATH_COMPONENT (const char *name) G_GNUC_WARN_UNUSED_RESULT;
+const char *nm_utils_ip6_property_path (const char *ifname, const char *property);
 
 #endif /* NETWORK_MANAGER_UTILS_H */

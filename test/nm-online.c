@@ -15,6 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2006 - 2008 Novell, Inc.
+ * Copyright (C) 2008 - 2014 Red Hat, Inc.
  *
  */
 
@@ -37,75 +38,49 @@
 #include <getopt.h>
 #include <locale.h>
 
-#include <glib.h>
 #include <glib/gi18n.h>
-#include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
-#include <dbus/dbus-glib.h>
 
-#include "NetworkManager.h"
-#include "nm-glib-compat.h"
+#include "nm-client.h"
 
 #define PROGRESS_STEPS 15
+#define WAIT_STARTUP_TAG "wait-startup"
 
-typedef struct 
+typedef struct
 {
 	int value;
 	double norm;
 	gboolean quiet;
 } Timeout;
 
-static GMainLoop *loop;
-
-static DBusHandlerResult dbus_filter (DBusConnection *connection G_GNUC_UNUSED,
-				      DBusMessage *message,
-				      void *user_data G_GNUC_UNUSED)
+static void
+client_properties_changed (GObject *object,
+                           GParamSpec *pspec,
+                           gpointer loop)
 {
+	NMClient *client = NM_CLIENT (object);
 	NMState state;
+	gboolean wait_startup = GPOINTER_TO_UINT (g_object_get_data (object, WAIT_STARTUP_TAG));
 
-	if (!dbus_message_is_signal (message, NM_DBUS_INTERFACE, "StateChanged"))
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (!nm_client_get_manager_running (client))
+		return;
 
-	if (!dbus_message_get_args (message, NULL, DBUS_TYPE_UINT32, &state, DBUS_TYPE_INVALID))
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
-	if (   state == NM_STATE_CONNECTED_LOCAL
-	    || state == NM_STATE_CONNECTED_SITE
-	    || state == NM_STATE_CONNECTED_GLOBAL)
-		g_main_loop_quit (loop);
-
-	return DBUS_HANDLER_RESULT_HANDLED;
+	if (wait_startup) {
+		if (!nm_client_get_startup (client))
+			g_main_loop_quit (loop);
+	} else {
+		state = nm_client_get_state (client);
+		if (   state == NM_STATE_CONNECTED_LOCAL
+		    || state == NM_STATE_CONNECTED_SITE
+		    || state == NM_STATE_CONNECTED_GLOBAL)
+			g_main_loop_quit (loop);
+	}
 }
 
-static NMState check_online (DBusConnection *connection)
-{
-	DBusMessage *message, *reply;
-	DBusError error;
-	dbus_uint32_t state;
-	
-	message = dbus_message_new_method_call (NM_DBUS_SERVICE, NM_DBUS_PATH,
-						NM_DBUS_INTERFACE, "state");
-	if (!message)
-		exit (2);
-
-	dbus_error_init (&error);
-	reply = dbus_connection_send_with_reply_and_block (connection, message,
-							   -1, &error);
-	dbus_message_unref (message);
-	if (!reply) 
-		return NM_STATE_UNKNOWN;
-
-	if (!dbus_message_get_args (reply, NULL, DBUS_TYPE_UINT32, &state,
-				    DBUS_TYPE_INVALID))
-		exit (2);
-
-	return state;
-}
-
-static gboolean handle_timeout (gpointer data)
+static gboolean
+handle_timeout (gpointer data)
 {
 	int i = PROGRESS_STEPS;
-	Timeout *timeout = (Timeout *) data;
+	Timeout *timeout = data;
 
 	if (!timeout->quiet) {
 		g_print (_("\rConnecting"));
@@ -126,24 +101,28 @@ static gboolean handle_timeout (gpointer data)
 	return TRUE;
 }
 
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
-	DBusConnection *connection;
-	DBusError error;
-	NMState state;
 	gint t_secs = -1;
 	gboolean exit_no_nm = FALSE;
-	gboolean quiet = FALSE;
+	gboolean wait_startup = FALSE;
 	Timeout timeout;
 	GOptionContext *opt_ctx = NULL;
 	gboolean success;
+	NMClient *client;
+	NMState state = NM_STATE_UNKNOWN;
+	GMainLoop *loop;
 
 	GOptionEntry options[] = {
 		{"timeout", 't', 0, G_OPTION_ARG_INT, &t_secs, N_("Time to wait for a connection, in seconds (without the option, default value is 30)"), "<timeout>"},
 		{"exit", 'x', 0, G_OPTION_ARG_NONE, &exit_no_nm, N_("Exit immediately if NetworkManager is not running or connecting"), NULL},
-		{"quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, N_("Don't print anything"), NULL},
+		{"quiet", 'q', 0, G_OPTION_ARG_NONE, &timeout.quiet, N_("Don't print anything"), NULL},
+		{"wait-for-startup", 's', 0, G_OPTION_ARG_NONE, &wait_startup, N_("Wait for NetworkManager startup instead of a connection"), NULL},
 		{NULL}
 	};
+
+	timeout.quiet = FALSE;
 
 	/* Set locale to be able to use environment variables */
 	setlocale (LC_ALL, "");
@@ -159,13 +138,14 @@ int main (int argc, char *argv[])
 	g_option_context_add_main_entries (opt_ctx, options, NULL);
 
 	g_option_context_set_summary (opt_ctx,
-	                              _("Waits for a successful connection in NetworkManager."));
+	                              _("Waits for NetworkManager to finish activating startup network connections."));
 
 	success = g_option_context_parse (opt_ctx, &argc, &argv, NULL);
 	g_option_context_free (opt_ctx);
 
 	if (!success) {
-		g_warning (_("Invalid option.  Please use --help to see a list of valid options."));
+		g_printerr ("%s: %s\n", argv[0],
+		            _("Invalid option.  Please use --help to see a list of valid options."));
 		return 2;
 	}
 	
@@ -174,51 +154,63 @@ int main (int argc, char *argv[])
 	else
 		timeout.value = 30;
 	if (timeout.value < 0 || timeout.value > 3600)  {
-		g_warning (_("Invalid option.  Please use --help to see a list of valid options."));
+		g_printerr ("%s: %s\n", argv[0],
+		            _("Invalid option.  Please use --help to see a list of valid options."));
 		return 2;
 	}
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
+
+	client = nm_client_new ();
+	if (!client) {
+		g_printerr (_("Error: Could not create NMClient object."));
+		return 2;
+	}
+
 	loop = g_main_loop_new (NULL, FALSE);
 
-	dbus_error_init (&error);
-	connection = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (connection == NULL) {
-		dbus_error_free (&error);
-		return 2;
+	g_object_set_data (G_OBJECT (client), WAIT_STARTUP_TAG, GUINT_TO_POINTER (wait_startup));
+	state = nm_client_get_state (client);
+	if (!nm_client_get_manager_running (client)) {
+		if (exit_no_nm) {
+			g_object_unref (client);
+			return 1;
+		}
+	} else if (wait_startup) {
+		if (!nm_client_get_startup (client)) {
+			g_object_unref (client);
+			return 0;
+		}
+	} else {
+		if (   state == NM_STATE_CONNECTED_LOCAL
+		    || state == NM_STATE_CONNECTED_SITE
+		    || state == NM_STATE_CONNECTED_GLOBAL) {
+			g_object_unref (client);
+			return 0;
+		}
 	}
-
-	dbus_connection_setup_with_g_main (connection, NULL);
-
-	if (!dbus_connection_add_filter (connection, dbus_filter, NULL, NULL))
-		return 2;
-
-	dbus_bus_add_match (connection,
-			    "type='signal',"
-			    "interface='" NM_DBUS_INTERFACE "',"
-			    "sender='" NM_DBUS_SERVICE "',"
-			    "path='" NM_DBUS_PATH "'", &error);
-	if (dbus_error_is_set (&error)) {
-		dbus_error_free (&error);
-		return 2;
-	}
-
-	/* Check after we setup the filter to ensure that we cannot race. */
-	state = check_online (connection);
-	if (   state == NM_STATE_CONNECTED_LOCAL
-	    || state == NM_STATE_CONNECTED_SITE
-	    || state == NM_STATE_CONNECTED_GLOBAL)
-		return 0;
-	if (exit_no_nm && (state != NM_STATE_CONNECTING))
+	if (exit_no_nm && (state != NM_STATE_CONNECTING)) {
+		g_object_unref (client);
 		return 1;
-
-	if (timeout.value) {
-		timeout.norm = (double) timeout.value / (double) PROGRESS_STEPS;
-		g_timeout_add_seconds (1, handle_timeout, &timeout);
 	}
-	timeout.quiet = quiet;
+
+	if (!timeout.value) {
+		g_object_unref (client);
+		return 1;
+	}
+
+	timeout.norm = (double) timeout.value / (double) PROGRESS_STEPS;
+	g_timeout_add_seconds (1, handle_timeout, &timeout);
+
+	g_signal_connect (client, "notify",
+	                  G_CALLBACK (client_properties_changed), loop);
 
 	g_main_loop_run (loop);
+	g_main_loop_unref (loop);
+
+	g_object_unref (client);
 
 	return 0;
 }

@@ -56,10 +56,6 @@ enum {
 	LAST_PROP
 };
 
-#define DBUS_PROP_HW_ADDRESS "HwAddress"
-#define DBUS_PROP_CARRIER "Carrier"
-#define DBUS_PROP_SLAVES "Slaves"
-
 /**
  * nm_device_bridge_error_quark:
  *
@@ -152,7 +148,7 @@ nm_device_bridge_get_carrier (NMDeviceBridge *device)
  * Gets the devices currently slaved to @device.
  *
  * Returns: (element-type NMClient.Device): the #GPtrArray containing
- * #NMDevice<!-- -->s that are slaves of @device. This is the internal
+ * #NMDevices that are slaves of @device. This is the internal
  * copy used by the device, and must not be modified.
  *
  * Since: 0.9.8
@@ -172,8 +168,6 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	NMSettingConnection *s_con;
 	NMSettingBridge *s_bridge;
 	const char *ctype, *dev_iface_name, *bridge_iface_name;
-
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
@@ -202,7 +196,19 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 
 	/* FIXME: check ports? */
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_bridge_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_BRIDGE;
+}
+
+static const char *
+get_hw_address (NMDevice *device)
+{
+	return nm_device_bridge_get_hw_address (NM_DEVICE_BRIDGE (device));
 }
 
 /***********************************************************/
@@ -232,17 +238,11 @@ register_properties (NMDeviceBridge *device)
 static void
 constructed (GObject *object)
 {
-	NMDeviceBridgePrivate *priv;
+	NMDeviceBridgePrivate *priv = NM_DEVICE_BRIDGE_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_bridge_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_BRIDGE_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-	                                         NM_DBUS_SERVICE,
-	                                         nm_object_get_path (NM_OBJECT (object)),
-	                                         NM_DBUS_INTERFACE_DEVICE_BRIDGE);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_BRIDGE);
 	register_properties (NM_DEVICE_BRIDGE (object));
 }
 
@@ -254,7 +254,7 @@ dispose (GObject *object)
 	g_clear_object (&priv->proxy);
 
 	if (priv->slaves) {
-		g_ptr_array_foreach (priv->slaves, (GFunc) g_object_unref, NULL);
+		g_ptr_array_set_free_func (priv->slaves, g_object_unref);
 		g_ptr_array_free (priv->slaves, TRUE);
 		priv->slaves = NULL;
 	}
@@ -312,6 +312,8 @@ nm_device_bridge_class_init (NMDeviceBridgeClass *bridge_class)
 	object_class->finalize = finalize;
 	object_class->get_property = get_property;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
+	device_class->get_hw_address = get_hw_address;
 
 	/* properties */
 

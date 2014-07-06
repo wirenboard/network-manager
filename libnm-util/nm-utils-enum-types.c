@@ -11,9 +11,12 @@
 #include "nm-setting-adsl.h" 
 #include "nm-setting-bluetooth.h" 
 #include "nm-setting-bond.h" 
+#include "nm-setting-team.h" 
+#include "nm-setting-team-port.h" 
 #include "nm-setting-bridge.h" 
 #include "nm-setting-bridge-port.h" 
 #include "nm-setting-connection.h" 
+#include "nm-setting-dcb.h" 
 #include "nm-setting-infiniband.h" 
 #include "nm-setting-ip4-config.h" 
 #include "nm-setting-vlan.h" 
@@ -21,6 +24,7 @@
 #include "nm-setting-ppp.h" 
 #include "nm-setting-pppoe.h" 
 #include "nm-setting-serial.h" 
+#include "nm-setting-generic.h" 
 #include "nm-setting-gsm.h" 
 #include "nm-setting-cdma.h" 
 #include "nm-setting-olpc-mesh.h" 
@@ -282,6 +286,46 @@ nm_setting_bond_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_setting_team_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_TEAM_ERROR_UNKNOWN, "NM_SETTING_TEAM_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_TEAM_ERROR_INVALID_PROPERTY, "NM_SETTING_TEAM_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_TEAM_ERROR_MISSING_PROPERTY, "NM_SETTING_TEAM_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingTeamError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_team_port_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_TEAM_PORT_ERROR_UNKNOWN, "NM_SETTING_TEAM_PORT_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_TEAM_PORT_ERROR_INVALID_PROPERTY, "NM_SETTING_TEAM_PORT_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_TEAM_PORT_ERROR_MISSING_PROPERTY, "NM_SETTING_TEAM_PORT_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingTeamPortError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_setting_bridge_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -338,6 +382,47 @@ nm_setting_connection_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMSettingConnectionError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_dcb_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_DCB_ERROR_UNKNOWN, "NM_SETTING_DCB_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_DCB_ERROR_INVALID_PROPERTY, "NM_SETTING_DCB_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_DCB_ERROR_MISSING_PROPERTY, "NM_SETTING_DCB_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingDcbError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_dcb_flags_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_DCB_FLAG_NONE, "NM_SETTING_DCB_FLAG_NONE", "none" },
+        { NM_SETTING_DCB_FLAG_ENABLE, "NM_SETTING_DCB_FLAG_ENABLE", "enable" },
+        { NM_SETTING_DCB_FLAG_ADVERTISE, "NM_SETTING_DCB_FLAG_ADVERTISE", "advertise" },
+        { NM_SETTING_DCB_FLAG_WILLING, "NM_SETTING_DCB_FLAG_WILLING", "willing" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingDcbFlags"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -544,6 +629,26 @@ nm_setting_serial_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMSettingSerialError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_generic_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_GENERIC_ERROR_UNKNOWN, "NM_SETTING_GENERIC_ERROR_UNKNOWN", "UnknownError" },
+        { NM_SETTING_GENERIC_ERROR_INVALID_PROPERTY, "NM_SETTING_GENERIC_ERROR_INVALID_PROPERTY", "InvalidProperty" },
+        { NM_SETTING_GENERIC_ERROR_MISSING_PROPERTY, "NM_SETTING_GENERIC_ERROR_MISSING_PROPERTY", "MissingProperty" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingGenericError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

@@ -128,6 +128,22 @@ NMSetting
 @Returns: 
 
 
+<!-- ##### STRUCT NMSettingClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@verify: 
+@need_secrets: 
+@update_one_secret: 
+@get_secret_flags: 
+@set_secret_flags: 
+@compare_property: 
+@clear_secrets_with_flags: 
+@get_virtual_iface_name: 
+@_reserved1: 
+
 <!-- ##### USER_FUNCTION NMSettingValueIterFn ##### -->
 <para>
 

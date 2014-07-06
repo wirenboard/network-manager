@@ -20,15 +20,15 @@
  */
 
 #include <string.h>
-#include <nm-system-config-interface.h>
 #include <stdio.h>
-
 #include <sys/ioctl.h>
-#include <net/if.h>
 #include <unistd.h>
 
+#include <nm-system-config-interface.h>
+#include <nm-logging.h>
+
 #include "plugin.h"
-#include "wifi-utils.h"
+#include "nm-platform.h"
 
 #include "net_parser.h"
 #include "net_utils.h"
@@ -71,7 +71,7 @@ ifnet_add_network (const char *name, const char *type)
 	if (ifnet_has_network (name))
 		return TRUE;
 	if (add_new_connection_config (type, name)) {
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Adding network for %s", name);
+		nm_log_info (LOGD_SETTINGS, "Adding network for %s", name);
 		net_parser_data_changed = TRUE;
 		return TRUE;
 	}
@@ -129,24 +129,6 @@ is_global_setting (char *key)
 	return 0;
 }
 
-/* Find out whether the 'iface' is an interface */
-static gboolean
-name_is_interface (const char *iface)
-{
-	int fd;
-	struct ifreq ifr;
-	gboolean is_iface = FALSE;
-
-	fd = socket (PF_INET, SOCK_DGRAM, 0);
-	if (fd >= 0) {
-		strncpy (ifr.ifr_name, iface, IFNAMSIZ);
-		if (ioctl (fd, SIOCGIFHWADDR, &ifr) == 0)
-			is_iface = TRUE;
-		close (fd);
-	}
-	return is_iface;
-}
-
 /* Parse a complete line */
 /* Connection type is determined here */
 static void
@@ -160,8 +142,7 @@ init_block_by_line (gchar * buf)
 
 	key_value = g_strsplit (buf, "=", 2);
 	if (g_strv_length (key_value) != 2) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "Can't handle this line: %s\n",
-			     buf);
+		nm_log_warn (LOGD_SETTINGS, "Can't handle this line: %s\n", buf);
 		g_strfreev (key_value);
 		return;
 	}
@@ -171,7 +152,7 @@ init_block_by_line (gchar * buf)
 		data = g_strdup (key_value[1]);
 		tmp = strip_string (data, '"');
 		strip_string (tmp, '\'');
-		PLUGIN_PRINT (IFNET_PLUGIN_NAME, "global:%s-%s\n", key_value[0], tmp);
+		nm_log_info (LOGD_SETTINGS, "global:%s-%s\n", key_value[0], tmp);
 		g_hash_table_insert (global_settings_table, g_strdup (key_value[0]), g_strdup (tmp));
 		g_strfreev (key_value);
 		g_free (data);
@@ -190,13 +171,16 @@ init_block_by_line (gchar * buf)
 		else if (ignore_connection_name (pos)) {
 			/* ignored connection */
 			conn = add_new_connection_config ("ignore", pos);
-		} else
-			if (name_is_interface (pos) && !wifi_utils_is_wifi (pos, NULL))
+		} else {
+			int ifindex = nm_platform_link_get_ifindex (pos);
+
+			if (ifindex && nm_platform_link_get_type (ifindex) != NM_LINK_TYPE_WIFI)
 				/* wired connection */
 				conn = add_new_connection_config ("wired", pos);
 			else
 				/* wireless connection */
 				conn = add_new_connection_config ("wireless", pos);
+		}
 	}
 	data = g_strdup (key_value[1]);
 	tmp = strip_string (data, '"');
@@ -221,34 +205,6 @@ destroy_connection_config (GHashTable * conn)
 	}
 
 	g_hash_table_destroy (conn);
-}
-
-/* Read settings from NetworkManager's config file */
-const char *
-ifnet_get_global_setting (const char *group, const char *key)
-{
-	GError *error = NULL;
-	GKeyFile *keyfile = g_key_file_new ();
-	gchar *result = NULL;
-	const char *conf_file;
-
-	/* Get confing file name from plugin. */
-	conf_file = ifnet_plugin_get_conf_file ();
-
-	if (!g_key_file_load_from_file (keyfile,
-					conf_file,
-					G_KEY_FILE_NONE, &error)) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "loading system config file (%s) caused error: (%d) %s",
-			     conf_file,
-			     error ? error->code : -1, error
-			     && error->message ? error->message : "(unknown)");
-	} else {
-		result = g_key_file_get_string (keyfile, group, key, &error);
-	}
-	g_key_file_free (keyfile);
-
-	return result;
 }
 
 static void
@@ -308,8 +264,7 @@ is_function (gchar * line)
 
 	for (i = 0; func_names[i]; i++) {
 		if (g_str_has_prefix (line, func_names[i])) {
-			PLUGIN_PRINT (IFNET_PLUGIN_NAME,
-				      "Ignoring function: %s", func_names[i]);
+			nm_log_info (LOGD_SETTINGS, "Ignoring function: %s", func_names[i]);
 			return TRUE;
 		}
 	}
@@ -353,8 +308,7 @@ ifnet_init (gchar * config_file)
 	if (g_file_test (config_file, G_FILE_TEST_IS_REGULAR))
 		channel = g_io_channel_new_file (config_file, "r", NULL);
 	if (channel == NULL) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "Error: Can't open %s\n", config_file);
+		nm_log_warn (LOGD_SETTINGS, "Can't open %s", config_file);
 		return FALSE;
 	}
 
@@ -483,7 +437,7 @@ ifnet_set_data (const char *conn_name, const char *key, const char *value)
 	gchar * stripped = NULL;
 
 	if (!conn) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME, "%s does not exsit!", conn_name);
+		nm_log_warn (LOGD_SETTINGS, "%s does not exist!", conn_name);
 		return;
 	}
 	if (value){
@@ -611,13 +565,12 @@ ifnet_flush_to_file (const char *config_file, gchar **out_backup)
 
 	channel = g_io_channel_new_file (config_file, "w", NULL);
 	if (!channel) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "Can't open file %s for writing", config_file);
+		nm_log_warn (LOGD_SETTINGS, "Can't open file %s for writing", config_file);
 		g_free (backup);
 		return FALSE;
 	}
 	g_hash_table_iter_init (&iter, global_settings_table);
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Writing to %s", config_file);
+	nm_log_info (LOGD_SETTINGS, "Writing to %s", config_file);
 	g_io_channel_write_chars (channel,
 				  "#Generated by NetworkManager\n"
 				  "###### Global Configuration ######\n",
@@ -633,8 +586,7 @@ ifnet_flush_to_file (const char *config_file, gchar **out_backup)
 		g_free (out_line);
 	}
 	if (error && *error) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "Found error: %s", (*error)->message);
+		nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 		goto done;
 	}
 
@@ -680,8 +632,7 @@ ifnet_flush_to_file (const char *config_file, gchar **out_backup)
 		}
 	}
 	if (error && *error) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "Found error: %s", (*error)->message);
+		nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 		goto done;
 	}
 
@@ -702,16 +653,14 @@ ifnet_flush_to_file (const char *config_file, gchar **out_backup)
 			g_free (out_line);
 		}
 		if (error && *error) {
-			PLUGIN_WARN (IFNET_PLUGIN_NAME,
-				     "Found error: %s", (*error)->message);
+			nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 			goto done;
 		}
 	}
 
 	g_io_channel_flush (channel, error);
 	if (error && *error) {
-		PLUGIN_WARN (IFNET_PLUGIN_NAME,
-			     "Found error: %s", (*error)->message);
+		nm_log_warn (LOGD_SETTINGS, "Found error: %s", (*error)->message);
 		goto done;
 	}
 	result = TRUE;
@@ -734,7 +683,7 @@ ifnet_delete_network (const char *conn_name)
 	GHashTable *network = NULL;
 
 	g_return_val_if_fail (conn_table != NULL && conn_name != NULL, FALSE);
-	PLUGIN_PRINT (IFNET_PLUGIN_NAME, "Deleting network for %s", conn_name);
+	nm_log_info (LOGD_SETTINGS, "Deleting network for %s", conn_name);
 	network = g_hash_table_lookup (conn_table, conn_name);
 	if (!network)
 		return FALSE;

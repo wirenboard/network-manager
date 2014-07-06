@@ -78,13 +78,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = nm-tool$(EXEEXT) nm-online$(EXEEXT)
+bin_PROGRAMS = nm-online$(EXEEXT)
 noinst_PROGRAMS = libnm-glib-test$(EXEEXT)
 subdir = test
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -120,13 +121,9 @@ libnm_glib_test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libnm_glib_test_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am_nm_online_OBJECTS = nm-online.$(OBJEXT)
+am_nm_online_OBJECTS = nm_online-nm-online.$(OBJEXT)
 nm_online_OBJECTS = $(am_nm_online_OBJECTS)
-nm_online_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_nm_tool_OBJECTS = nm-tool.$(OBJEXT)
-nm_tool_OBJECTS = $(am_nm_tool_OBJECTS)
-nm_tool_DEPENDENCIES = $(top_builddir)/libnm-glib/libnm-glib.la \
+nm_online_DEPENDENCIES = $(top_builddir)/libnm-glib/libnm-glib.la \
 	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -163,10 +160,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libnm_glib_test_SOURCES) $(nm_online_SOURCES) \
-	$(nm_tool_SOURCES)
-DIST_SOURCES = $(libnm_glib_test_SOURCES) $(nm_online_SOURCES) \
-	$(nm_tool_SOURCES)
+SOURCES = $(libnm_glib_test_SOURCES) $(nm_online_SOURCES)
+DIST_SOURCES = $(libnm_glib_test_SOURCES) $(nm_online_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -217,12 +212,15 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
+DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
+DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
@@ -247,7 +245,6 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
-GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -292,12 +289,16 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
+LIBNDP_CFLAGS = @LIBNDP_CFLAGS@
+LIBNDP_LIBS = @LIBNDP_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
+LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -314,6 +315,8 @@ MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEWT_CFLAGS = @NEWT_CFLAGS@
+NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -341,11 +344,16 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
+PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
+READLINE_LIBS = @READLINE_LIBS@
 SED = @SED@
+SELINUX_CFLAGS = @SELINUX_CFLAGS@
+SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -360,6 +368,7 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VALGRIND_RULES = @VALGRIND_RULES@
 VAPIGEN = @VAPIGEN@
 VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
 VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
@@ -422,6 +431,7 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
@@ -432,28 +442,28 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
+with_valgrind = @with_valgrind@
 AM_CPPFLAGS = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/libnm-util \
 	-I${top_builddir}/libnm-util \
 	-I${top_srcdir}/libnm-glib \
-	-I${top_srcdir}/include  \
+	-I${top_srcdir}/include \
 	-I${top_builddir}/include \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	-DBINDIR=\"$(bindir)\" \
 	-DDATADIR=\"$(datadir)\" \
 	-DNMLOCALEDIR=\"$(datadir)/locale\"
 
-nm_tool_SOURCES = nm-tool.c
-nm_tool_LDADD = \
-	$(top_builddir)/libnm-glib/libnm-glib.la \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(DBUS_LIBS) \
-	$(GLIB_LIBS)
-
 nm_online_SOURCES = nm-online.c
+nm_online_CPPFLAGS = \
+	-DG_LOG_DOMAIN=\""nm-online"\" \
+	$(AM_CPPFLAGS)
+
 nm_online_LDADD = \
+	$(top_builddir)/libnm-glib/libnm-glib.la \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
@@ -570,10 +580,6 @@ nm-online$(EXEEXT): $(nm_online_OBJECTS) $(nm_online_DEPENDENCIES) $(EXTRA_nm_on
 	@rm -f nm-online$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(nm_online_OBJECTS) $(nm_online_LDADD) $(LIBS)
 
-nm-tool$(EXEEXT): $(nm_tool_OBJECTS) $(nm_tool_DEPENDENCIES) $(EXTRA_nm_tool_DEPENDENCIES) 
-	@rm -f nm-tool$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(nm_tool_OBJECTS) $(nm_tool_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -581,8 +587,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_glib_test-libnm-glib-test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-online.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-tool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm_online-nm-online.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -618,6 +623,20 @@ libnm_glib_test-libnm-glib-test.obj: libnm-glib-test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='libnm-glib-test.c' object='libnm_glib_test-libnm-glib-test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_glib_test_CFLAGS) $(CFLAGS) -c -o libnm_glib_test-libnm-glib-test.obj `if test -f 'libnm-glib-test.c'; then $(CYGPATH_W) 'libnm-glib-test.c'; else $(CYGPATH_W) '$(srcdir)/libnm-glib-test.c'; fi`
+
+nm_online-nm-online.o: nm-online.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_online_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_online-nm-online.o -MD -MP -MF $(DEPDIR)/nm_online-nm-online.Tpo -c -o nm_online-nm-online.o `test -f 'nm-online.c' || echo '$(srcdir)/'`nm-online.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_online-nm-online.Tpo $(DEPDIR)/nm_online-nm-online.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-online.c' object='nm_online-nm-online.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_online_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_online-nm-online.o `test -f 'nm-online.c' || echo '$(srcdir)/'`nm-online.c
+
+nm_online-nm-online.obj: nm-online.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_online_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm_online-nm-online.obj -MD -MP -MF $(DEPDIR)/nm_online-nm-online.Tpo -c -o nm_online-nm-online.obj `if test -f 'nm-online.c'; then $(CYGPATH_W) 'nm-online.c'; else $(CYGPATH_W) '$(srcdir)/nm-online.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm_online-nm-online.Tpo $(DEPDIR)/nm_online-nm-online.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-online.c' object='nm_online-nm-online.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(nm_online_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm_online-nm-online.obj `if test -f 'nm-online.c'; then $(CYGPATH_W) 'nm-online.c'; else $(CYGPATH_W) '$(srcdir)/nm-online.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -27,6 +27,7 @@
 #include <dbus/dbus-glib.h>
 #include "nm-device.h"
 #include "nm-settings.h"
+#include "nm-auth-subject.h"
 
 #define NM_TYPE_MANAGER            (nm_manager_get_type ())
 #define NM_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MANAGER, NMManager))
@@ -47,10 +48,13 @@ typedef enum {
 	NM_MANAGER_ERROR_UNSUPPORTED_CONNECTION_TYPE, /*< nick=UnsupportedConnectionType >*/
 	NM_MANAGER_ERROR_DEPENDENCY_FAILED,           /*< nick=DependencyFailed >*/
 	NM_MANAGER_ERROR_AUTOCONNECT_NOT_ALLOWED,     /*< nick=AutoconnectNotAllowed >*/
+	NM_MANAGER_ERROR_CONNECTION_ALREADY_ACTIVE,   /*< nick=ConnectionAlreadyActive >*/
+	NM_MANAGER_ERROR_INTERNAL,                    /*< nick=Internal >*/
 } NMManagerError;
 
 #define NM_MANAGER_VERSION "version"
 #define NM_MANAGER_STATE "state"
+#define NM_MANAGER_STARTUP "startup"
 #define NM_MANAGER_NETWORKING_ENABLED "networking-enabled"
 #define NM_MANAGER_WIRELESS_ENABLED "wireless-enabled"
 #define NM_MANAGER_WIRELESS_HARDWARE_ENABLED "wireless-hardware-enabled"
@@ -62,6 +66,7 @@ typedef enum {
 #define NM_MANAGER_CONNECTIVITY "connectivity"
 #define NM_MANAGER_PRIMARY_CONNECTION "primary-connection"
 #define NM_MANAGER_ACTIVATING_CONNECTION "activating-connection"
+#define NM_MANAGER_DEVICES "devices"
 
 /* Not exported */
 #define NM_MANAGER_HOSTNAME "hostname"
@@ -83,7 +88,6 @@ typedef struct {
 	void (*device_added) (NMManager *manager, NMDevice *device);
 	void (*device_removed) (NMManager *manager, NMDevice *device);
 	void (*state_changed) (NMManager *manager, guint state);
-	void (*properties_changed) (NMManager *manager, GHashTable *properties);
 } NMManagerClass;
 
 GType nm_manager_get_type (void);
@@ -95,9 +99,6 @@ NMManager *nm_manager_new (NMSettings *settings,
                            gboolean initial_wifi_enabled,
                            gboolean initial_wwan_enabled,
                            gboolean initial_wimax_enabled,
-                           const gchar *connectivity_uri,
-                           gint connectivity_interval,
-                           const gchar *connectivity_response,
                            GError **error);
 
 NMManager *nm_manager_get (void);
@@ -105,20 +106,23 @@ NMManager *nm_manager_get (void);
 void nm_manager_start (NMManager *manager);
 
 const GSList *nm_manager_get_active_connections (NMManager *manager);
+GSList *nm_manager_get_activatable_connections (NMManager *manager);
 
 /* Device handling */
 
-GSList *nm_manager_get_devices (NMManager *manager);
+const GSList *nm_manager_get_devices (NMManager *manager);
 
 NMDevice *nm_manager_get_device_by_master (NMManager *manager,
-					   const char *master,
-					   const char *driver);
+                                           const char *master,
+                                           const char *driver);
+NMDevice *nm_manager_get_device_by_ifindex (NMManager *manager,
+                                            int ifindex);
 
 NMActiveConnection *nm_manager_activate_connection (NMManager *manager,
                                                     NMConnection *connection,
                                                     const char *specific_object,
-                                                    const char *device_path,
-                                                    const char *dbus_sender, /* NULL if automatic */
+                                                    NMDevice *device,
+                                                    NMAuthSubject *subject,
                                                     GError **error);
 
 gboolean nm_manager_deactivate_connection (NMManager *manager,

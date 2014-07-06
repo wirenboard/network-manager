@@ -1,5 +1,17 @@
 SUBDIRS = . tests
 
+AM_CPPFLAGS = \
+	-I${top_srcdir}/include \
+	-I${top_builddir}/include \
+	-I${top_srcdir}/libnm-util \
+	-I${top_builddir}/libnm-util \
+	$(GLIB_CFLAGS) \
+	$(DBUS_CFLAGS) \
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
+	-DNMCONFDIR=\"$(nmconfdir)\" \
+	-DSYSCONFDIR=\"$(sysconfdir)\" \
+	-DLIBEXECDIR=\"$(libexecdir)\"
+
 ###########################################
 # Test libraries
 ###########################################
@@ -10,58 +22,29 @@ noinst_LTLIBRARIES = \
 
 dbusservicedir = $(DBUS_SYS_DIR)
 dbusservice_DATA = \
-	nm-dhcp-client.conf \
 	nm-dispatcher.conf \
 	nm-avahi-autoipd.conf
 
 libexec_PROGRAMS = \
-	nm-dhcp-client.action \
-	nm-dispatcher.action \
+	nm-dispatcher \
 	nm-avahi-autoipd.action
-
-nm_dhcp_client_action_SOURCES = \
-	nm-dhcp-client-action.c
-
-nm_dhcp_client_action_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	-DNMCONFDIR=\"$(nmconfdir)\" \
-	-DLIBEXECDIR=\"$(libexecdir)\"
-
-nm_dhcp_client_action_LDADD = $(DBUS_LIBS)
 
 
 nm_avahi_autoipd_action_SOURCES = \
 	nm-avahi-autoipd-action.c
-
-nm_avahi_autoipd_action_CPPFLAGS = 		\
-	$(DBUS_CFLAGS)						\
-	$(GLIB_CFLAGS)					\
-	-DSYSCONFDIR=\"$(sysconfdir)\"		\
-	-DLIBEXECDIR=\"$(libexecdir)\"
 
 nm_avahi_autoipd_action_LDADD = \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
 
 
-nm_dispatcher_action_SOURCES = \
-	nm-dispatcher-action.c \
-	nm-dispatcher-action.h \
+nm_dispatcher_SOURCES = \
+	nm-dispatcher.c \
+	nm-dispatcher-api.h \
 	nm-dispatcher-utils.c \
 	nm-dispatcher-utils.h
 
-nm_dispatcher_action_CPPFLAGS = \
-	-I${top_srcdir} \
-	-I${top_srcdir}/include \
-	-I${top_builddir}/include \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/libnm-util \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS) \
-	-DNMCONFDIR=\"$(nmconfdir)\" \
-	-DLIBEXECDIR=\"$(libexecdir)\"
-
-nm_dispatcher_action_LDADD = \
+nm_dispatcher_LDADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS)
@@ -78,12 +61,7 @@ libtest_dispatcher_envp_la_SOURCES = \
 	nm-dispatcher-utils.h
 
 libtest_dispatcher_envp_la_CPPFLAGS = \
-	-I${top_srcdir}/include \
-	-I${top_builddir}/include \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/libnm-util \
-	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS)
+	$(AM_CPPFLAGS)
 
 libtest_dispatcher_envp_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
@@ -110,6 +88,8 @@ edit = @sed \
 dispatcherdir=$(sysconfdir)/NetworkManager/dispatcher.d
 install-data-hook:
 	   $(mkinstalldirs) -m 0755 $(DESTDIR)$(dispatcherdir)
+	   $(mkinstalldirs) -m 0755 $(DESTDIR)$(dispatcherdir)/pre-down.d
+	   $(mkinstalldirs) -m 0755 $(DESTDIR)$(dispatcherdir)/pre-up.d
 
 BUILT_SOURCES = nm-dispatcher-glue.h
 

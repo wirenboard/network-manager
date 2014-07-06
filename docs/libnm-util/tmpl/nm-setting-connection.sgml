@@ -70,6 +70,13 @@ NMSettingConnection
 
 
 
+<!-- ##### MACRO NM_SETTING_CONNECTION_INTERFACE_NAME ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_CONNECTION_TYPE ##### -->
 <para>
 
@@ -133,6 +140,13 @@ NMSettingConnection
 
 
 
+<!-- ##### MACRO NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingConnection ##### -->
 <para>
 
@@ -144,7 +158,17 @@ NMSettingConnection
 
 </para>
 
+<!-- ##### ARG NMSettingConnection:gateway-ping-timeout ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMSettingConnection:id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:interface-name ##### -->
 <para>
 
 </para>
@@ -194,6 +218,17 @@ NMSettingConnection
 
 </para>
 
+<!-- ##### STRUCT NMSettingConnectionClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_connection_new ##### -->
 <para>
 
@@ -213,6 +248,15 @@ NMSettingConnection
 
 
 <!-- ##### FUNCTION nm_setting_connection_get_uuid ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_interface_name ##### -->
 <para>
 
 </para>
@@ -319,6 +363,18 @@ NMSettingConnection
 @idx: 
 
 
+<!-- ##### FUNCTION nm_setting_connection_remove_permission_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@ptype: 
+@pitem: 
+@detail: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_setting_connection_get_master ##### -->
 <para>
 
@@ -383,5 +439,24 @@ NMSettingConnection
 
 @setting: 
 @idx: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_secondary_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@sec_uuid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_gateway_ping_timeout ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
 
 

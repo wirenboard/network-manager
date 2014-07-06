@@ -21,30 +21,22 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2005 - 2012 Red Hat, Inc.
+ * (C) Copyright 2005 - 2013 Red Hat, Inc.
  */
 
 #include "config.h"
+
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <arpa/inet.h>
 #include <netinet/ether.h>
 #include <linux/if_infiniband.h>
-
-#include <glib.h>
-#include <glib-object.h>
-#include <glib/gi18n.h>
-#include <dbus/dbus-glib.h>
 #include <uuid/uuid.h>
 
 #include "nm-utils.h"
 #include "nm-utils-private.h"
-#include "NetworkManager.h"
+#include "nm-glib-compat.h"
 #include "nm-dbus-glib-types.h"
-#include "nm-setting-ip4-config.h"
-#include "nm-setting-ip6-config.h"
+#include "nm-setting-private.h"
 #include "crypto.h"
 
 /**
@@ -52,7 +44,7 @@
  * @short_description: Utility functions
  * @include: nm-utils.h
  *
- * A collection of utility functions for working SSIDs, IP addresses, WiFi
+ * A collection of utility functions for working SSIDs, IP addresses, Wi-Fi
  * access points and devices, among other things.
  */
 
@@ -239,7 +231,7 @@ nm_utils_init (GError **error)
 		if (!crypto_init (error))
 			return FALSE;
 
-		_nm_utils_register_value_transformations ();
+		_nm_value_transforms_register ();
 	}
 	return TRUE;
 }
@@ -267,7 +259,7 @@ nm_utils_deinit (void)
  * nm_utils_ssid_to_utf8:
  * @ssid: a byte array containing the SSID data
  *
- * WiFi SSIDs are byte arrays, they are _not_ strings.  Thus, an SSID may
+ * Wi-Fi SSIDs are byte arrays, they are _not_ strings.  Thus, an SSID may
  * contain embedded NULLs and other unprintable characters.  Often it is
  * useful to print the SSID out for debugging purposes, but that should be the
  * _only_ use of this function.  Do not use this function for any persistent
@@ -425,7 +417,7 @@ nm_utils_same_ssid (const GByteArray * ssid1,
 
 	if (ssid1 == ssid2)
 		return TRUE;
-	if ((ssid1 && !ssid2) || (!ssid1 && ssid2))
+	if (!ssid1 || !ssid2)
 		return FALSE;
 
 	ssid1_len = ssid1->len;
@@ -470,7 +462,7 @@ value_dup (gpointer key, gpointer val, gpointer user_data)
  * nm_utils_gvalue_hash_dup:
  * @hash: a #GHashTable mapping string:GValue
  *
- * Utility function to duplicate a hash table of GValues.
+ * Utility function to duplicate a hash table of #GValues.
  *
  * Returns: (transfer container) (element-type utf8 GObject.Value): a newly allocated duplicated #GHashTable, caller must free the
  * returned hash with g_hash_table_unref() or g_hash_table_destroy()
@@ -497,17 +489,13 @@ nm_utils_gvalue_hash_dup (GHashTable *hash)
  * @elem_destroy_fn: user function called for each element in @list
  *
  * Utility function to free a #GSList.
+ *
+ * Deprecated: use g_slist_free_full().
  **/
 void
 nm_utils_slist_free (GSList *list, GDestroyNotify elem_destroy_fn)
 {
-	if (!list)
-		return;
-
-	if (elem_destroy_fn)
-		g_slist_foreach (list, (GFunc) elem_destroy_fn, NULL);
-
-	g_slist_free (list);
+	g_slist_free_full (list, elem_destroy_fn);
 }
 
 gboolean
@@ -535,624 +523,28 @@ _nm_utils_string_slist_validate (GSList *list, const char **valid_values)
 	return TRUE;
 }
 
-static void
-_nm_utils_convert_op_to_string (const GValue *src_value, GValue *dest_value)
+gboolean
+_nm_utils_gvalue_array_validate (GValueArray *elements, guint n_expected, ...)
 {
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_OBJECT_PATH));
-
-	g_value_set_string (dest_value, (const char *) g_value_get_boxed (src_value));
-}
-
-static void
-_nm_utils_convert_strv_to_slist (const GValue *src_value, GValue *dest_value)
-{
-	char **str;
-	GSList *list = NULL;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), G_TYPE_STRV));
-
-	str = (char **) g_value_get_boxed (src_value);
-
-	while (str && str[i])
-		list = g_slist_prepend (list, g_strdup (str[i++]));
-
-	g_value_take_boxed (dest_value, g_slist_reverse (list));
-}
-
-static void
-_nm_utils_convert_strv_to_ptrarray (const GValue *src_value, GValue *dest_value)
-{
-	char **str;
-	GPtrArray *array = NULL;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), G_TYPE_STRV));
-
-	str = (char **) g_value_get_boxed (src_value);
-
-	array = g_ptr_array_sized_new (3);
-	while (str && str[i])
-		g_ptr_array_add (array, g_strdup (str[i++]));
-
-	g_value_take_boxed (dest_value, array);
-}
-
-static void
-_nm_utils_convert_strv_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GSList *strings;
-	GString *printable;
-	GSList *iter;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_LIST_OF_STRING));
-
-	strings = (GSList *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	for (iter = strings; iter; iter = g_slist_next (iter)) {
-		if (iter != strings)
-			g_string_append (printable, ", '");
-		else
-			g_string_append_c (printable, '\'');
-		g_string_append (printable, iter->data);
-		g_string_append_c (printable, '\'');
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-_string_array_to_string (const GPtrArray *strings, GValue *dest_value)
-{
-	GString *printable;
+	va_list args;
+	GValue *tmp;
 	int i;
+	gboolean valid = FALSE;
 
-	printable = g_string_new ("[");
-	for (i = 0; strings && i < strings->len; i++) {
-		if (i > 0)
-			g_string_append (printable, ", '");
-		else
-			g_string_append_c (printable, '\'');
-		g_string_append (printable, g_ptr_array_index (strings, i));
-		g_string_append_c (printable, '\'');
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-_nm_utils_convert_string_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	const GPtrArray *strings;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_ARRAY_OF_STRING));
-
-	strings = (const GPtrArray *) g_value_get_boxed (src_value);
-	_string_array_to_string (strings, dest_value);
-}
-
-static void
-_nm_utils_convert_op_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	const GPtrArray *strings;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH));
-
-	strings = (const GPtrArray *) g_value_get_boxed (src_value);
-	_string_array_to_string (strings, dest_value);
-}
-
-static void
-_nm_utils_convert_uint_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GArray *array;
-	GString *printable;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_UINT_ARRAY));
-
-	array = (GArray *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	while (array && (i < array->len)) {
-		char buf[INET_ADDRSTRLEN + 1];
-		struct in_addr addr;
-
-		if (i > 0)
-			g_string_append (printable, ", ");
-
-		memset (buf, 0, sizeof (buf));
-		addr.s_addr = g_array_index (array, guint32, i++);
-		if (!inet_ntop (AF_INET, &addr, buf, INET_ADDRSTRLEN))
-			g_warning ("%s: error converting IP4 address 0x%X",
-			           __func__, ntohl (addr.s_addr));
-		g_string_append_printf (printable, "%u (%s)", addr.s_addr, buf);
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-_nm_utils_convert_ip4_addr_route_struct_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GPtrArray *ptr_array;
-	GString *printable;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_ARRAY_OF_ARRAY_OF_UINT));
-
-	ptr_array = (GPtrArray *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	while (ptr_array && (i < ptr_array->len)) {
-		GArray *array;
-		char buf[INET_ADDRSTRLEN + 1];
-		struct in_addr addr;
-		gboolean is_addr; /* array contains address x route */
-
-		if (i > 0)
-			g_string_append (printable, ", ");
-
-		g_string_append (printable, "{ ");
-		array = (GArray *) g_ptr_array_index (ptr_array, i++);
-		if (array->len < 2) {
-			g_string_append (printable, "invalid");
-			continue;
-		}
-		is_addr = (array->len < 4);
-
-		memset (buf, 0, sizeof (buf));
-		addr.s_addr = g_array_index (array, guint32, 0);
-		if (!inet_ntop (AF_INET, &addr, buf, INET_ADDRSTRLEN))
-			g_warning ("%s: error converting IP4 address 0x%X",
-			           __func__, ntohl (addr.s_addr));
-		if (is_addr)
-			g_string_append_printf (printable, "ip = %s", buf);
-		else
-			g_string_append_printf (printable, "dst = %s", buf);
-		g_string_append (printable, ", ");
-
-		memset (buf, 0, sizeof (buf));
-		g_string_append_printf (printable, "px = %u",
-		                        g_array_index (array, guint32, 1));
-
-		if (array->len > 2) {
-			g_string_append (printable, ", ");
-
-			memset (buf, 0, sizeof (buf));
-			addr.s_addr = g_array_index (array, guint32, 2);
-			if (!inet_ntop (AF_INET, &addr, buf, INET_ADDRSTRLEN))
-				g_warning ("%s: error converting IP4 address 0x%X",
-				           __func__, ntohl (addr.s_addr));
-			if (is_addr)
-				g_string_append_printf (printable, "gw = %s", buf);
-			else
-				g_string_append_printf (printable, "nh = %s", buf);
-		}
-
-		if (array->len > 3) {
-			g_string_append (printable, ", ");
-
-			memset (buf, 0, sizeof (buf));
-			g_string_append_printf (printable, "mt = %u",
-			                        g_array_index (array, guint32, 3));
-		}
-
-		g_string_append (printable, " }");
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-convert_one_gvalue_hash_entry (gpointer key, gpointer value, gpointer user_data)
-{
-	GString *printable = (GString *) user_data;
-	char *value_as_string;
-
-	value_as_string = g_strdup_value_contents ((GValue *) value);
-	g_string_append_printf (printable, " { '%s': %s },", (const char *) key, value_as_string);
-	g_free (value_as_string);
-}
-
-static void
-_nm_utils_convert_gvalue_hash_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GHashTable *hash;
-	GString *printable;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_MAP_OF_VARIANT));
-
-	hash = (GHashTable *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	g_hash_table_foreach (hash, convert_one_gvalue_hash_entry, printable);
-	g_string_append (printable, " ]");
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-convert_one_string_hash_entry (gpointer key, gpointer value, gpointer user_data)
-{
-	GString *printable = (GString *) user_data;
-
-	g_string_append_printf (printable, " { '%s': %s },", (const char *) key, (const char *) value);
-}
-
-static void
-_nm_utils_convert_string_hash_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GHashTable *hash;
-	GString *printable;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_MAP_OF_STRING));
-
-	hash = (GHashTable *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	if (hash)
-		g_hash_table_foreach (hash, convert_one_string_hash_entry, printable);
-	g_string_append (printable, " ]");
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-_nm_utils_convert_byte_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GArray *array;
-	GString *printable;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_UCHAR_ARRAY));
-
-	array = (GArray *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	if (array) {
-		while (i < MIN (array->len, 35)) {
-			if (i > 0)
-				g_string_append_c (printable, ' ');
-			g_string_append_printf (printable, "0x%02X",
-			                        g_array_index (array, unsigned char, i++));
-		}
-		if (i < array->len)
-			g_string_append (printable, " ... ");
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static gboolean
-_nm_utils_inet6_ntop (struct in6_addr *addr, char *buf)
-{
-	if (!inet_ntop (AF_INET6, addr, buf, INET6_ADDRSTRLEN)) {
-		int i;
-		GString *ip6_str = g_string_new (NULL);
-		g_string_append_printf (ip6_str, "%02X", addr->s6_addr[0]);
-		for (i = 1; i < 16; i++)
-			g_string_append_printf (ip6_str, " %02X", addr->s6_addr[i]);
-		g_warning ("%s: error converting IP6 address %s",
-		           __func__, ip6_str->str);
-		g_string_free (ip6_str, TRUE);
+	if (n_expected != elements->n_values)
 		return FALSE;
+
+	va_start (args, n_expected);
+	for (i = 0; i < n_expected; i++) {
+		tmp = g_value_array_get_nth (elements, i);
+		if (G_VALUE_TYPE (tmp) != va_arg (args, GType))
+			goto done;
 	}
-	return TRUE;
-}
+	valid = TRUE;
 
-static void
-_nm_utils_convert_ip6_dns_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GPtrArray *ptr_array;
-	GString *printable;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_ARRAY_OF_ARRAY_OF_UCHAR));
-
-	ptr_array = (GPtrArray *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	while (ptr_array && (i < ptr_array->len)) {
-		GByteArray *bytearray;
-		char buf[INET6_ADDRSTRLEN];
-		struct in6_addr *addr;
-
-		if (i > 0)
-			g_string_append (printable, ", ");
-
-		bytearray = (GByteArray *) g_ptr_array_index (ptr_array, i++);
-		if (bytearray->len != 16) {
-			g_string_append (printable, "invalid");
-			continue;
-		}
-		addr = (struct in6_addr *) bytearray->data;
-		memset (buf, 0, sizeof (buf));
-		_nm_utils_inet6_ntop (addr, buf);
-		g_string_append_printf (printable, "%s", buf);
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-_nm_utils_convert_ip6_addr_struct_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GPtrArray *ptr_array;
-	GString *printable;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_ARRAY_OF_IP6_ADDRESS));
-
-	ptr_array = (GPtrArray *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	while (ptr_array && (i < ptr_array->len)) {
-		GValueArray *elements;
-		GValue *tmp;
-		GByteArray *ba_addr;
-		char buf[INET6_ADDRSTRLEN];
-		struct in6_addr *addr;
-		guint32 prefix;
-
-		if (i > 0)
-			g_string_append (printable, ", ");
-
-		g_string_append (printable, "{ ");
-		elements = (GValueArray *) g_ptr_array_index (ptr_array, i++);
-		if (   (elements->n_values != 3)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 0)) != DBUS_TYPE_G_UCHAR_ARRAY)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 1)) != G_TYPE_UINT)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 2)) != DBUS_TYPE_G_UCHAR_ARRAY)) {
-			g_string_append (printable, "invalid }");
-			continue;
-		}
-
-		/* IPv6 address */
-		tmp = g_value_array_get_nth (elements, 0);
-		ba_addr = g_value_get_boxed (tmp);
-		if (ba_addr->len != 16) {
-			g_string_append (printable, "invalid }");
-			continue;
-		}
-		addr = (struct in6_addr *) ba_addr->data;
-		memset (buf, 0, sizeof (buf));
-		_nm_utils_inet6_ntop (addr, buf);
-		g_string_append_printf (printable, "ip = %s", buf);
-		g_string_append (printable, ", ");
-
-		/* Prefix */
-		tmp = g_value_array_get_nth (elements, 1);
-		prefix = g_value_get_uint (tmp);
-		if (prefix > 128) {
-			g_string_append (printable, "invalid }");
-			continue;
-		}
-		g_string_append_printf (printable, "px = %u", prefix);
-		g_string_append (printable, ", ");
-
-		/* IPv6 Gateway */
-		tmp = g_value_array_get_nth (elements, 2);
-		ba_addr = g_value_get_boxed (tmp);
-		if (ba_addr->len != 16) {
-			g_string_append (printable, "invalid }");
-			continue;
-		}
-		addr = (struct in6_addr *) ba_addr->data;
-		memset (buf, 0, sizeof (buf));
-		_nm_utils_inet6_ntop (addr, buf);
-		g_string_append_printf (printable, "gw = %s", buf);
-		g_string_append (printable, " }");
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-static void
-_nm_utils_convert_ip6_route_struct_array_to_string (const GValue *src_value, GValue *dest_value)
-{
-	GPtrArray *ptr_array;
-	GString *printable;
-	guint i = 0;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), DBUS_TYPE_G_ARRAY_OF_IP6_ROUTE));
-
-	ptr_array = (GPtrArray *) g_value_get_boxed (src_value);
-
-	printable = g_string_new ("[");
-	while (ptr_array && (i < ptr_array->len)) {
-		GValueArray *elements;
-		GValue *tmp;
-		GByteArray *ba_addr;
-		char buf[INET6_ADDRSTRLEN];
-		struct in6_addr *addr;
-		guint32 prefix, metric;
-
-		if (i > 0)
-			g_string_append (printable, ", ");
-
-		g_string_append (printable, "{ ");
-		elements = (GValueArray *) g_ptr_array_index (ptr_array, i++);
-		if (   (elements->n_values != 4)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 0)) != DBUS_TYPE_G_UCHAR_ARRAY)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 1)) != G_TYPE_UINT)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 2)) != DBUS_TYPE_G_UCHAR_ARRAY)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 3)) != G_TYPE_UINT)) {
-			g_string_append (printable, "invalid");
-			continue;
-		}
-
-		/* Destination address */
-		tmp = g_value_array_get_nth (elements, 0);
-		ba_addr = g_value_get_boxed (tmp);
-		if (ba_addr->len != 16) {
-			g_string_append (printable, "invalid");
-			continue;
-		}
-		addr = (struct in6_addr *) ba_addr->data;
-		memset (buf, 0, sizeof (buf));
-		_nm_utils_inet6_ntop (addr, buf);
-		g_string_append_printf (printable, "dst = %s", buf);
-		g_string_append (printable, ", ");
-
-		/* Prefix */
-		tmp = g_value_array_get_nth (elements, 1);
-		prefix = g_value_get_uint (tmp);
-		if (prefix > 128) {
-			g_string_append (printable, "invalid");
-			continue;
-		}
-		g_string_append_printf (printable, "px = %u", prefix);
-		g_string_append (printable, ", ");
-
-		/* Next hop addresses */
-		tmp = g_value_array_get_nth (elements, 2);
-		ba_addr = g_value_get_boxed (tmp);
-		if (ba_addr->len != 16) {
-			g_string_append (printable, "invalid");
-			continue;
-		}
-		addr = (struct in6_addr *) ba_addr->data;
-		memset (buf, 0, sizeof (buf));
-		_nm_utils_inet6_ntop (addr, buf);
-		g_string_append_printf (printable, "nh = %s", buf);
-		g_string_append (printable, ", ");
-
-		/* Metric */
-		tmp = g_value_array_get_nth (elements, 3);
-		metric = g_value_get_uint (tmp);
-		g_string_append_printf (printable, "mt = %u", metric);
-
-		g_string_append (printable, " }");
-	}
-	g_string_append_c (printable, ']');
-
-	g_value_take_string (dest_value, printable->str);
-	g_string_free (printable, FALSE);
-}
-
-#define OLD_DBUS_TYPE_G_IP6_ADDRESS (dbus_g_type_get_struct ("GValueArray", DBUS_TYPE_G_UCHAR_ARRAY, G_TYPE_UINT, G_TYPE_INVALID))
-#define OLD_DBUS_TYPE_G_ARRAY_OF_IP6_ADDRESS (dbus_g_type_get_collection ("GPtrArray", OLD_DBUS_TYPE_G_IP6_ADDRESS))
-
-static void
-_nm_utils_convert_old_ip6_addr_array (const GValue *src_value, GValue *dst_value)
-{
-	GPtrArray *src_outer_array;
-	GPtrArray *dst_outer_array;
-	guint i;
-
-	g_return_if_fail (g_type_is_a (G_VALUE_TYPE (src_value), OLD_DBUS_TYPE_G_ARRAY_OF_IP6_ADDRESS));
-
-	src_outer_array = (GPtrArray *) g_value_get_boxed (src_value);
-	dst_outer_array = g_ptr_array_new ();
-
-	for (i = 0; src_outer_array && (i < src_outer_array->len); i++) {
-		GValueArray *src_addr_array;
-		GValueArray *dst_addr_array;
-		GValue element = {0, };
-		GValue *src_addr, *src_prefix;
-		GByteArray *ba;
-
-		src_addr_array = (GValueArray *) g_ptr_array_index (src_outer_array, i);
-
-		if (   (src_addr_array->n_values != 2)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (src_addr_array, 0)) != DBUS_TYPE_G_UCHAR_ARRAY)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (src_addr_array, 1)) != G_TYPE_UINT)) {
-			g_warning ("%s: invalid old IPv6 address type", __func__);
-			return;
-		}
-
-		dst_addr_array = g_value_array_new (3);
-
-		src_addr = g_value_array_get_nth (src_addr_array, 0);
-		g_value_array_append (dst_addr_array, src_addr);
-		src_prefix = g_value_array_get_nth (src_addr_array, 1);
-		g_value_array_append (dst_addr_array, src_prefix);
-
-		/* Blank Gateway */
-		g_value_init (&element, DBUS_TYPE_G_UCHAR_ARRAY);
-		ba = g_byte_array_new ();
-		g_byte_array_append (ba, (guint8 *) "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 16);
-		g_value_take_boxed (&element, ba);
-		g_value_array_append (dst_addr_array, &element);
-		g_value_unset (&element);
-
-		g_ptr_array_add (dst_outer_array, dst_addr_array);
-	}
-
-	g_value_take_boxed (dst_value, dst_outer_array);
-}
-
-void
-_nm_utils_register_value_transformations (void)
-{
-	static gboolean registered = FALSE;
-
-	if (G_UNLIKELY (!registered)) {
-		g_value_register_transform_func (DBUS_TYPE_G_OBJECT_PATH,
-		                                 G_TYPE_STRING,
-		                                 _nm_utils_convert_op_to_string);
-		g_value_register_transform_func (G_TYPE_STRV, 
-		                                 DBUS_TYPE_G_LIST_OF_STRING,
-		                                 _nm_utils_convert_strv_to_slist);
-		g_value_register_transform_func (G_TYPE_STRV,
-		                                 DBUS_TYPE_G_ARRAY_OF_STRING,
-		                                 _nm_utils_convert_strv_to_ptrarray);
-		g_value_register_transform_func (DBUS_TYPE_G_LIST_OF_STRING,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_strv_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_ARRAY_OF_STRING,
-		                                 G_TYPE_STRING,
-		                                 _nm_utils_convert_string_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH,
-		                                 G_TYPE_STRING,
-		                                 _nm_utils_convert_op_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_UINT_ARRAY,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_uint_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_ARRAY_OF_ARRAY_OF_UINT,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_ip4_addr_route_struct_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_MAP_OF_VARIANT,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_gvalue_hash_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_MAP_OF_STRING,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_string_hash_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_UCHAR_ARRAY,
-		                                 G_TYPE_STRING,
-		                                 _nm_utils_convert_byte_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_ARRAY_OF_ARRAY_OF_UCHAR,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_ip6_dns_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_ARRAY_OF_IP6_ADDRESS,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_ip6_addr_struct_array_to_string);
-		g_value_register_transform_func (DBUS_TYPE_G_ARRAY_OF_IP6_ROUTE,
-		                                 G_TYPE_STRING, 
-		                                 _nm_utils_convert_ip6_route_struct_array_to_string);
-		g_value_register_transform_func (OLD_DBUS_TYPE_G_ARRAY_OF_IP6_ADDRESS,
-		                                 DBUS_TYPE_G_ARRAY_OF_IP6_ADDRESS,
-		                                 _nm_utils_convert_old_ip6_addr_array);
-		registered = TRUE;
-	}
+done:
+	va_end (args);
+	return valid;
 }
 
 static gboolean
@@ -1206,7 +598,7 @@ device_supports_ap_ciphers (guint32 dev_caps,
  * nm_utils_ap_mode_security_valid:
  * @type: the security type to check device capabilties against,
  * e.g. #NMU_SEC_STATIC_WEP
- * @wifi_caps: bitfield of the capabilities of the specific WiFi device, e.g.
+ * @wifi_caps: bitfield of the capabilities of the specific Wi-Fi device, e.g.
  * #NM_WIFI_DEVICE_CAP_CIPHER_WEP40
  *
  * Given a set of device capabilities, and a desired security type to check
@@ -1244,7 +636,7 @@ nm_utils_ap_mode_security_valid (NMUtilsSecurityType type,
  * nm_utils_security_valid:
  * @type: the security type to check AP flags and device capabilties against,
  * e.g. #NMU_SEC_STATIC_WEP
- * @wifi_caps: bitfield of the capabilities of the specific WiFi device, e.g.
+ * @wifi_caps: bitfield of the capabilities of the specific Wi-Fi device, e.g.
  * #NM_WIFI_DEVICE_CAP_CIPHER_WEP40
  * @have_ap: whether the @ap_flags, @ap_wpa, and @ap_rsn arguments are valid
  * @adhoc: whether the capabilities being tested are from an Ad-Hoc AP (IBSS)
@@ -1333,6 +725,7 @@ nm_utils_security_valid (NMUtilsSecurityType type,
 			/* Ad-Hoc WPA APs won't necessarily have the PSK flag set, and
 			 * they don't have any pairwise ciphers. */
 			if (adhoc) {
+				/* coverity[dead_error_line] */
 				if (   (ap_wpa & NM_802_11_AP_SEC_GROUP_TKIP)
 				    && (wifi_caps & NM_WIFI_DEVICE_CAP_CIPHER_TKIP))
 					return TRUE;
@@ -1361,6 +754,7 @@ nm_utils_security_valid (NMUtilsSecurityType type,
 			/* Ad-Hoc WPA APs won't necessarily have the PSK flag set, and
 			 * they don't have any pairwise ciphers, nor any RSA flags yet. */
 			if (adhoc) {
+				/* coverity[dead_error_line] */
 				if (wifi_caps & NM_WIFI_DEVICE_CAP_CIPHER_TKIP)
 					return TRUE;
 				if (wifi_caps & NM_WIFI_DEVICE_CAP_CIPHER_CCMP)
@@ -1492,11 +886,11 @@ nm_utils_wpa_psk_valid (const char *psk)
 
 /**
  * nm_utils_ip4_addresses_from_gvalue:
- * @value: gvalue containing a GPtrArray of GArrays of guint32s
+ * @value: #GValue containing a #GPtrArray of #GArrays of #guint32s
  *
- * Utility function to convert a #GPtrArray of #GArrays of guint32s representing
+ * Utility function to convert a #GPtrArray of #GArrays of #guint32s representing
  * a list of NetworkManager IPv4 addresses (which is a tuple of address, gateway,
- * and prefix) into a GSList of #NMIP4Address objects.  The specific format of
+ * and prefix) into a #GSList of #NMIP4Address objects.  The specific format of
  * this serialization is not guaranteed to be stable and the #GArray may be
  * extended in the future.
  *
@@ -1537,7 +931,7 @@ nm_utils_ip4_addresses_from_gvalue (const GValue *value)
  * g_value_unset().
  *
  * Utility function to convert a #GSList of #NMIP4Address objects into a
- * GPtrArray of GArrays of guint32s representing a list of NetworkManager IPv4
+ * #GPtrArray of #GArrays of #guint32s representing a list of NetworkManager IPv4
  * addresses (which is a tuple of address, gateway, and prefix).   The specific
  * format of this serialization is not guaranteed to be stable and may be
  * extended in the future.
@@ -1574,11 +968,11 @@ nm_utils_ip4_addresses_to_gvalue (GSList *list, GValue *value)
 
 /**
  * nm_utils_ip4_routes_from_gvalue:
- * @value: gvalue containing a GPtrArray of GArrays of guint32s
+ * @value: #GValue containing a #GPtrArray of #GArrays of #guint32s
  *
- * Utility function to convert a GPtrArray of GArrays of guint32s representing
+ * Utility function to convert a #GPtrArray of #GArrays of #guint32s representing
  * a list of NetworkManager IPv4 routes (which is a tuple of route, next hop,
- * prefix, and metric) into a GSList of #NMIP4Route objects.  The specific
+ * prefix, and metric) into a #GSList of #NMIP4Route objects.  The specific
  * format of this serialization is not guaranteed to be stable and may be
  * extended in the future.
  *
@@ -1600,7 +994,7 @@ nm_utils_ip4_routes_from_gvalue (const GValue *value)
 			g_warning ("Ignoring invalid IP4 route");
 			continue;
 		}
-		
+
 		route = nm_ip4_route_new ();
 		nm_ip4_route_set_dest (route, g_array_index (array, guint32, 0));
 		nm_ip4_route_set_prefix (route, g_array_index (array, guint32, 1));
@@ -1620,7 +1014,7 @@ nm_utils_ip4_routes_from_gvalue (const GValue *value)
  * g_value_unset().
  *
  * Utility function to convert a #GSList of #NMIP4Route objects into a
- * GPtrArray of GArrays of guint32s representing a list of NetworkManager IPv4
+ * #GPtrArray of #GArrays of #guint32s representing a list of NetworkManager IPv4
  * routes (which is a tuple of route, next hop, prefix, and metric).   The
  * specific format of this serialization is not guaranteed to be stable and may
  * be extended in the future.
@@ -1731,11 +1125,11 @@ nm_utils_ip4_get_default_prefix (guint32 ip)
 
 /**
  * nm_utils_ip6_addresses_from_gvalue:
- * @value: gvalue containing a GPtrArray of GValueArrays of (GArray of guchars) and guint32
+ * @value: gvalue containing a GPtrArray of GValueArrays of (GArray of guchars) and #guint32
  *
- * Utility function to convert a #GPtrArray of #GValueArrays of (#GArray of guchars) and guint32
+ * Utility function to convert a #GPtrArray of #GValueArrays of (#GArray of guchars) and #guint32
  * representing a list of NetworkManager IPv6 addresses (which is a tuple of address,
- * prefix, and gateway), into a GSList of #NMIP6Address objects.  The specific format of
+ * prefix, and gateway), into a #GSList of #NMIP6Address objects.  The specific format of
  * this serialization is not guaranteed to be stable and the #GValueArray may be
  * extended in the future.
  *
@@ -1763,15 +1157,9 @@ nm_utils_ip6_addresses_from_gvalue (const GValue *value)
 			continue;
 		}
 
-		if (   (G_VALUE_TYPE (g_value_array_get_nth (elements, 0)) != DBUS_TYPE_G_UCHAR_ARRAY)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (elements, 1)) != G_TYPE_UINT)) {
-			g_warning ("%s: ignoring invalid IP6 address structure", __func__);
-			continue;
-		}
-
-		/* Check optional 3rd element (gateway) */
-		if (   elements->n_values == 3
-		    && (G_VALUE_TYPE (g_value_array_get_nth (elements, 2)) != DBUS_TYPE_G_UCHAR_ARRAY)) {
+		/* Third element (gateway) is optional */
+		if (   !_nm_utils_gvalue_array_validate (elements, 2, DBUS_TYPE_G_UCHAR_ARRAY, G_TYPE_UINT)
+		    && !_nm_utils_gvalue_array_validate (elements, 3, DBUS_TYPE_G_UCHAR_ARRAY, G_TYPE_UINT, DBUS_TYPE_G_UCHAR_ARRAY)) {
 			g_warning ("%s: ignoring invalid IP6 address structure", __func__);
 			continue;
 		}
@@ -1822,7 +1210,7 @@ nm_utils_ip6_addresses_from_gvalue (const GValue *value)
  * g_value_unset().
  *
  * Utility function to convert a #GSList of #NMIP6Address objects into a
- * GPtrArray of GValueArrays representing a list of NetworkManager IPv6 addresses
+ * #GPtrArray of #GValueArrays representing a list of NetworkManager IPv6 addresses
  * (which is a tuple of address, prefix, and gateway). The specific format of
  * this serialization is not guaranteed to be stable and may be extended in the
  * future.
@@ -1838,7 +1226,7 @@ nm_utils_ip6_addresses_to_gvalue (GSList *list, GValue *value)
 	for (iter = list; iter; iter = iter->next) {
 		NMIP6Address *addr = (NMIP6Address *) iter->data;
 		GValueArray *array;
-		GValue element = {0, };
+		GValue element = G_VALUE_INIT;
 		GByteArray *ba;
 
 		array = g_value_array_new (3);
@@ -1873,13 +1261,13 @@ nm_utils_ip6_addresses_to_gvalue (GSList *list, GValue *value)
 
 /**
  * nm_utils_ip6_routes_from_gvalue:
- * @value: gvalue containing a GPtrArray of GValueArrays of (GArray or guchars), guint32,
- * (GArray of guchars), and guint32
+ * @value: #GValue containing a #GPtrArray of #GValueArrays of (#GArray of #guchars), #guint32,
+ * (#GArray of #guchars), and #guint32
  *
- * Utility function GPtrArray of GValueArrays of (GArray or guchars), guint32,
- * (GArray of guchars), and guint32 representing a list of NetworkManager IPv6
+ * Utility function #GPtrArray of #GValueArrays of (#GArray of #guchars), #guint32,
+ * (#GArray of #guchars), and #guint32 representing a list of NetworkManager IPv6
  * routes (which is a tuple of destination, prefix, next hop, and metric)
- * into a GSList of #NMIP6Route objects.  The specific format of this serialization
+ * into a #GSList of #NMIP6Route objects.  The specific format of this serialization
  * is not guaranteed to be stable and may be extended in the future.
  *
  * Returns: (transfer full) (element-type NetworkManager.IP6Route): a newly allocated #GSList of #NMIP6Route objects
@@ -1898,11 +1286,11 @@ nm_utils_ip6_routes_from_gvalue (const GValue *value)
 		guint prefix, metric;
 		NMIP6Route *route;
 
-		if (   (route_values->n_values != 4)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (route_values, 0)) != DBUS_TYPE_G_UCHAR_ARRAY)
-			|| (G_VALUE_TYPE (g_value_array_get_nth (route_values, 1)) != G_TYPE_UINT)
-		    || (G_VALUE_TYPE (g_value_array_get_nth (route_values, 2)) != DBUS_TYPE_G_UCHAR_ARRAY)
-			|| (G_VALUE_TYPE (g_value_array_get_nth (route_values, 3)) != G_TYPE_UINT)) {
+		if (!_nm_utils_gvalue_array_validate (route_values, 4,
+		                                      DBUS_TYPE_G_UCHAR_ARRAY,
+		                                      G_TYPE_UINT,
+		                                      DBUS_TYPE_G_UCHAR_ARRAY,
+		                                      G_TYPE_UINT)) {
 			g_warning ("Ignoring invalid IP6 route");
 			continue;
 		}
@@ -1943,8 +1331,8 @@ nm_utils_ip6_routes_from_gvalue (const GValue *value)
  * which should be unset by the caller (when no longer needed) with
  * g_value_unset().
  *
- * Utility function to convert a #GSList of #NMIP6Route objects into a GPtrArray of
- * GValueArrays of (GArray or guchars), guint32, (GArray of guchars), and guint32
+ * Utility function to convert a #GSList of #NMIP6Route objects into a #GPtrArray of
+ * #GValueArrays of (#GArray of #guchars), #guint32, (#GArray of #guchars), and #guint32
  * representing a list of NetworkManager IPv6 routes (which is a tuple of destination,
  * prefix, next hop, and metric).  The specific format of this serialization is not 
  * guaranteed to be stable and may be extended in the future.
@@ -1962,7 +1350,7 @@ nm_utils_ip6_routes_to_gvalue (GSList *list, GValue *value)
 		GValueArray *array;
 		const struct in6_addr *addr;
 		GByteArray *ba;
-		GValue element = {0, };
+		GValue element = G_VALUE_INIT;
 
 		array = g_value_array_new (4);
 
@@ -2003,7 +1391,7 @@ nm_utils_ip6_routes_to_gvalue (GSList *list, GValue *value)
  * @value: a #GValue
  *
  * Converts a #GValue containing a #GPtrArray of IP6 DNS, represented as
- * #GByteArray<!-- -->s into a #GSList of #in6_addr<!-- -->s.
+ * #GByteArrays into a #GSList of <literal><type>struct in6_addr</type></literal>s.
  *
  * Returns: a #GSList of IP6 addresses.
  */
@@ -2040,10 +1428,11 @@ nm_utils_ip6_dns_from_gvalue (const GValue *value)
  * addresses, which should be unset by the caller (when no longer needed) with
  * g_value_unset().
  *
- * Utility function to convert a #GSList of 'struct in6_addr' structs into a
- * GPtrArray of GByteArrays representing each server's IPv6 addresses in
- * network byte order.  The specific format of this serialization is not
- * guaranteed to be stable and may be extended in the future.
+ * Utility function to convert a #GSList of <literal><type>struct
+ * in6_addr</type></literal> structs into a #GPtrArray of #GByteArrays
+ * representing each server's IPv6 addresses in network byte order.
+ * The specific format of this serialization is not guaranteed to be
+ * stable and may be extended in the future.
  */
 void
 nm_utils_ip6_dns_to_gvalue (GSList *list, GValue *value)
@@ -2127,7 +1516,8 @@ out:
 }
 
 static char *
-make_key (const char *salt,
+make_key (const char *cipher,
+          const char *salt,
           const gsize salt_len,
           const char *password,
           gsize *out_len,
@@ -2141,14 +1531,12 @@ make_key (const char *salt,
 	g_return_val_if_fail (password != NULL, NULL);
 	g_return_val_if_fail (out_len != NULL, NULL);
 
+	if (!strcmp (cipher, "DES-EDE3-CBC"))
+		digest_len = 24;
+	else if (!strcmp (cipher, "AES-128-CBC"))
+		digest_len = 16;
+
 	key = g_malloc0 (digest_len + 1);
-	if (!key) {
-		g_set_error (error,
-		             NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Not enough memory to make encryption key."));
-		return NULL;
-	}
 
 	if (!crypto_md5_hash (salt, salt_len, password, strlen (password), key, digest_len, error)) {
 		*out_len = 0;
@@ -2161,46 +1549,9 @@ make_key (const char *salt,
 	return key;
 }
 
-/*
- * utils_bin2hexstr
- *
- * Convert a byte-array into a hexadecimal string.
- *
- * Code originally by Alex Larsson <alexl@redhat.com> and
- *  copyright Red Hat, Inc. under terms of the LGPL.
- *
- */
-static char *
-utils_bin2hexstr (const char *bytes, int len, int final_len)
-{
-	static char hex_digits[] = "0123456789abcdef";
-	char *result;
-	int i;
-	gsize buflen = (len * 2) + 1;
-
-	g_return_val_if_fail (bytes != NULL, NULL);
-	g_return_val_if_fail (len > 0, NULL);
-	g_return_val_if_fail (len < 4096, NULL);   /* Arbitrary limit */
-	if (final_len > -1)
-		g_return_val_if_fail (final_len < buflen, NULL);
-
-	result = g_malloc0 (buflen);
-	for (i = 0; i < len; i++)
-	{
-		result[2*i] = hex_digits[(bytes[i] >> 4) & 0xf];
-		result[2*i+1] = hex_digits[bytes[i] & 0xf];
-	}
-	/* Cut converted key off at the correct length for this cipher type */
-	if (final_len > -1)
-		result[final_len] = '\0';
-	else
-		result[buflen - 1] = '\0';
-
-	return result;
-}
-
 /**
- * nm_utils_rsa_key_encrypt:
+ * nm_utils_rsa_key_encrypt_helper:
+ * @cipher: cipher to use for encryption ("DES-EDE3-CBC" or "AES-128-CBC")
  * @data: RSA private key data to be encrypted
  * @in_password: (allow-none): existing password to use, if any
  * @out_password: (out) (allow-none): if @in_password was %NULL, a random password will be generated
@@ -2214,13 +1565,15 @@ utils_bin2hexstr (const char *bytes, int len, int final_len)
  * Returns: (transfer full): on success, PEM-formatted data suitable for writing to a PEM-formatted
  * certificate/private key file.
  **/
-GByteArray *
-nm_utils_rsa_key_encrypt (const GByteArray *data,
-                          const char *in_password,
-                          char **out_password,
-                          GError **error)
+static GByteArray *
+nm_utils_rsa_key_encrypt_helper (const char *cipher,
+                                 const GByteArray *data,
+                                 const char *in_password,
+                                 char **out_password,
+                                 GError **error)
 {
-	char salt[8];
+	char salt[16];
+	int salt_len;
 	char *key = NULL, *enc = NULL, *pw_buf[32];
 	gsize key_len = 0, enc_len = 0;
 	GString *pem = NULL;
@@ -2229,6 +1582,7 @@ nm_utils_rsa_key_encrypt (const GByteArray *data,
 	const char *p;
 	GByteArray *ret = NULL;
 
+	g_return_val_if_fail (!g_strcmp0 (cipher, CIPHER_DES_EDE3_CBC) || !g_strcmp0 (cipher, CIPHER_AES_CBC), NULL);
 	g_return_val_if_fail (data != NULL, NULL);
 	g_return_val_if_fail (data->len > 0, NULL);
 	if (out_password)
@@ -2238,52 +1592,36 @@ nm_utils_rsa_key_encrypt (const GByteArray *data,
 	if (!in_password) {
 		if (!crypto_randomize (pw_buf, sizeof (pw_buf), error))
 			return NULL;
-		in_password = tmp_password = utils_bin2hexstr ((const char *) pw_buf, sizeof (pw_buf), -1);
+		in_password = tmp_password = nm_utils_bin2hexstr ((const char *) pw_buf, sizeof (pw_buf), -1);
 	}
 
-	if (!crypto_randomize (salt, sizeof (salt), error))
+	if (g_strcmp0 (cipher, CIPHER_AES_CBC) == 0)
+		salt_len = 16;
+	else
+		salt_len = 8;
+
+	if (!crypto_randomize (salt, salt_len, error))
 		goto out;
 
-	key = make_key (&salt[0], sizeof (salt), in_password, &key_len, error);
+	key = make_key (cipher, &salt[0], salt_len, in_password, &key_len, error);
 	if (!key)
 		goto out;
 
-	enc = crypto_encrypt (CIPHER_DES_EDE3_CBC, data, salt, sizeof (salt), key, key_len, &enc_len, error);
+	enc = crypto_encrypt (cipher, data, salt, salt_len, key, key_len, &enc_len, error);
 	if (!enc)
 		goto out;
 
 	pem = g_string_sized_new (enc_len * 2 + 100);
-	if (!pem) {
-		g_set_error_literal (error, NM_CRYPTO_ERROR,
-		                     NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		                     _("Could not allocate memory for PEM file creation."));
-		goto out;
-	}
-
 	g_string_append (pem, "-----BEGIN RSA PRIVATE KEY-----\n");
 	g_string_append (pem, "Proc-Type: 4,ENCRYPTED\n");
 
 	/* Convert the salt to a hex string */
-	tmp = utils_bin2hexstr ((const char *) salt, sizeof (salt), 16);
-	if (!tmp) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Could not allocate memory for writing IV to PEM file."));
-		goto out;
-	}
-
-	g_string_append_printf (pem, "DEK-Info: DES-EDE3-CBC,%s\n\n", tmp);
+	tmp = nm_utils_bin2hexstr ((const char *) salt, salt_len, salt_len * 2);
+	g_string_append_printf (pem, "DEK-Info: %s,%s\n\n", cipher, tmp);
 	g_free (tmp);
 
 	/* Convert the encrypted key to a base64 string */
 	p = tmp = g_base64_encode ((const guchar *) enc, enc_len);
-	if (!tmp) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Could not allocate memory for writing encrypted key to PEM file."));
-		goto out;
-	}
-
 	left = strlen (tmp);
 	while (left > 0) {
 		g_string_append_len (pem, p, (left < 64) ? left : 64);
@@ -2296,12 +1634,6 @@ nm_utils_rsa_key_encrypt (const GByteArray *data,
 	g_string_append (pem, "-----END RSA PRIVATE KEY-----\n");
 
 	ret = g_byte_array_sized_new (pem->len);
-	if (!ret) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Could not allocate memory for PEM file data."));
-		goto out;
-	}
 	g_byte_array_append (ret, (const unsigned char *) pem->str, pem->len);
 	if (tmp_password && out_password)
 		*out_password = g_strdup (tmp_password);
@@ -2324,6 +1656,65 @@ out:
 	}
 
 	return ret;
+}
+
+/**
+ * nm_utils_rsa_key_encrypt:
+ * @data: RSA private key data to be encrypted
+ * @in_password: (allow-none): existing password to use, if any
+ * @out_password: (out) (allow-none): if @in_password was %NULL, a random password will be generated
+ *  and returned in this argument
+ * @error: detailed error information on return, if an error occurred
+ *
+ * Encrypts the given RSA private key data with the given password (or generates
+ * a password if no password was given) and converts the data to PEM format
+ * suitable for writing to a file. It uses Triple DES cipher for the encryption.
+ *
+ * Returns: (transfer full): on success, PEM-formatted data suitable for writing to a PEM-formatted
+ * certificate/private key file.
+ **/
+GByteArray *
+nm_utils_rsa_key_encrypt (const GByteArray *data,
+                          const char *in_password,
+                          char **out_password,
+                          GError **error)
+{
+
+
+	return nm_utils_rsa_key_encrypt_helper (CIPHER_DES_EDE3_CBC,
+	                                        data,
+	                                        in_password,
+	                                        out_password,
+	                                        error);
+}
+
+/**
+ * nm_utils_rsa_key_encrypt_aes:
+ * @data: RSA private key data to be encrypted
+ * @in_password: (allow-none): existing password to use, if any
+ * @out_password: (out) (allow-none): if @in_password was %NULL, a random password will be generated
+ *  and returned in this argument
+ * @error: detailed error information on return, if an error occurred
+ *
+ * Encrypts the given RSA private key data with the given password (or generates
+ * a password if no password was given) and converts the data to PEM format
+ * suitable for writing to a file.  It uses AES cipher for the encryption.
+ *
+ * Returns: (transfer full): on success, PEM-formatted data suitable for writing to a PEM-formatted
+ * certificate/private key file.
+ **/
+GByteArray *
+nm_utils_rsa_key_encrypt_aes (const GByteArray *data,
+                              const char *in_password,
+                              char **out_password,
+                              GError **error)
+{
+
+	return nm_utils_rsa_key_encrypt_helper (CIPHER_AES_CBC,
+	                                        data,
+	                                        in_password,
+	                                        out_password,
+	                                        error);
 }
 
 /**
@@ -2419,7 +1810,7 @@ static struct cf_pair bg_table[] = {
  * nm_utils_wifi_freq_to_channel:
  * @freq: frequency
  *
- * Utility function to translate a WiFi frequency to its corresponding channel.
+ * Utility function to translate a Wi-Fi frequency to its corresponding channel.
  *
  * Returns: the channel represented by the frequency or 0
  **/
@@ -2446,7 +1837,7 @@ nm_utils_wifi_freq_to_channel (guint32 freq)
  * @channel: channel
  * @band: frequency band for wireless ("a" or "bg")
  *
- * Utility function to translate a WiFi channel to its corresponding frequency.
+ * Utility function to translate a Wi-Fi channel to its corresponding frequency.
  *
  * Returns: the frequency represented by the channel of the band,
  *          or -1 when the freq is invalid, or 0 when the band
@@ -2476,7 +1867,7 @@ nm_utils_wifi_channel_to_freq (guint32 channel, const char *band)
  * @direction: whether going downward (0 or less) or upward (1 or more)
  * @band: frequency band for wireless ("a" or "bg")
  *
- * Utility function to find out next/previous WiFi channel for a channel.
+ * Utility function to find out next/previous Wi-Fi channel for a channel.
  *
  * Returns: the next channel in the specified direction or 0
  **/
@@ -2523,7 +1914,7 @@ nm_utils_wifi_find_next_channel (guint32 channel, int direction, char *band)
  * @channel: channel
  * @band: frequency band for wireless ("a" or "bg")
  *
- * Utility function to verify WiFi channel validity.
+ * Utility function to verify Wi-Fi channel validity.
  *
  * Returns: %TRUE or %FALSE
  **/
@@ -2555,7 +1946,7 @@ nm_utils_wifi_is_channel_valid (guint32 channel, const char *band)
  *
  * Returns the length in octets of a hardware address of type @type.
  *
- * Return value: the length
+ * Return value: the positive length, or -1 if the type is unknown/unsupported.
  */
 int
 nm_utils_hwaddr_len (int type)
@@ -2565,18 +1956,25 @@ nm_utils_hwaddr_len (int type)
 	else if (type == ARPHRD_INFINIBAND)
 		return INFINIBAND_ALEN;
 	else
-		g_return_val_if_reached (-1);
+		return -1;
 }
 
 /**
  * nm_utils_hwaddr_type:
  * @len: the length of hardware address in bytes
  *
- * Returns the type (either %ARPHRD_ETHER or %ARPHRD_INFINIBAND) of the raw
- * address given its length.
+ * Returns the type (either %ARPHRD_ETHER or %ARPHRD_INFINIBAND) of
+ * the raw address given its length.
  *
- * Return value: the type, either %ARPHRD_ETHER or %ARPHRD_INFINIBAND, or -1 if
- * the address length was not recognized
+ * Return value: the type, either %ARPHRD_ETHER or %ARPHRD_INFINIBAND.
+ * If the length is unexpected, return -1 (unsupported type/length).
+ *
+ * Deprecated: This could not be extended to cover other types, since
+ * there is not a one-to-one mapping between types and lengths. This
+ * was mostly only used to get a type to pass to
+ * nm_utils_hwaddr_ntoa() or nm_utils_hwaddr_aton() when you only had
+ * a length; but you can just use nm_utils_hwaddr_ntoa_len() or
+ * nm_utils_hwaddr_aton_len() now instead.
  */
 int
 nm_utils_hwaddr_type (int len)
@@ -2586,7 +1984,7 @@ nm_utils_hwaddr_type (int len)
 	else if (len == INFINIBAND_ALEN)
 		return ARPHRD_INFINIBAND;
 	else
-		g_return_val_if_reached (-1);
+		return -1;
 }
 
 #define HEXVAL(c) ((c) <= '9' ? (c) - '0' : ((c) & 0x4F) - 'A' + 10)
@@ -2601,43 +1999,21 @@ nm_utils_hwaddr_type (int len)
  * nm_utils_hwaddr_atoba() if you'd rather have the result in a
  * #GByteArray.
  *
+ * See also nm_utils_hwaddr_aton_len(), which takes an output length
+ * instead of a type.
+ *
  * Return value: @buffer, or %NULL if @asc couldn't be parsed
  */
 guint8 *
 nm_utils_hwaddr_aton (const char *asc, int type, gpointer buffer)
 {
-	const char *in = asc;
-	guint8 *out = (guint8 *)buffer;
-	int left = nm_utils_hwaddr_len (type);
+	int len = nm_utils_hwaddr_len (type);
 
-	while (left && *in) {
-		guint8 d1 = in[0], d2 = in[1];
-
-		if (!g_ascii_isxdigit (d1))
-			return NULL;
-
-		/* If there's no leading zero (ie "aa:b:cc") then fake it */
-		if (d2 && g_ascii_isxdigit (d2)) {
-			*out++ = (HEXVAL (d1) << 4) + HEXVAL (d2);
-			in += 2;
-		} else {
-			/* Fake leading zero */
-			*out++ = (HEXVAL ('0') << 4) + HEXVAL (d1);
-			in += 1;
-		}
-
-		left--;
-		if (*in) {
-			if (*in != ':')
-				return NULL;
-			in++;
-		}
-	}
-
-	if (left == 0 && !*in)
-		return buffer;
-	else
+	if (len <= 0) {
+		g_return_val_if_reached (NULL);
 		return NULL;
+	}
+	return nm_utils_hwaddr_aton_len (asc, buffer, len);
 }
 
 /**
@@ -2657,9 +2033,14 @@ nm_utils_hwaddr_atoba (const char *asc, int type)
 	GByteArray *ba;
 	int len = nm_utils_hwaddr_len (type);
 
+	if (len <= 0) {
+		g_return_val_if_reached (NULL);
+		return NULL;
+	}
+
 	ba = g_byte_array_sized_new (len);
-	ba->len = len;
-	if (!nm_utils_hwaddr_aton (asc, type, ba->data)) {
+	g_byte_array_set_size (ba, len);
+	if (!nm_utils_hwaddr_aton_len (asc, ba->data, len)) {
 		g_byte_array_unref (ba);
 		return NULL;
 	}
@@ -2674,23 +2055,262 @@ nm_utils_hwaddr_atoba (const char *asc, int type)
  *
  * Converts @addr to textual form.
  *
+ * See also nm_utils_hwaddr_ntoa_len(), which takes a length instead of
+ * a type.
+ *
  * Return value: (transfer full): the textual form of @addr
  */
 char *
 nm_utils_hwaddr_ntoa (gconstpointer addr, int type)
 {
-	const guint8 *in = addr;
-	GString *out = g_string_new (NULL);
-	int left = nm_utils_hwaddr_len (type);
+	int len = nm_utils_hwaddr_len (type);
 
-	while (left--) {
-		if (out->len)
-			g_string_append_c (out, ':');
-		g_string_append_printf (out, "%02X", *in++);
+	if (len <= 0) {
+		g_return_val_if_reached (NULL);
+		return NULL;
 	}
 
-	return g_string_free (out, FALSE);
+	return nm_utils_hwaddr_ntoa_len (addr, len);
 }
+
+/**
+ * nm_utils_hwaddr_aton_len:
+ * @asc: the ASCII representation of a hardware address
+ * @buffer: buffer to store the result into
+ * @length: the expected length in bytes of the result and
+ * the size of the buffer in bytes.
+ *
+ * Parses @asc and converts it to binary form in @buffer.
+ * Bytes in @asc can be sepatared by colons (:), or hyphens (-), but not mixed.
+ *
+ * Return value: @buffer, or %NULL if @asc couldn't be parsed
+ *   or would be shorter or longer than @length.
+ *
+ * Since: 0.9.10
+ */
+guint8 *
+nm_utils_hwaddr_aton_len (const char *asc, gpointer buffer, gsize length)
+{
+	const char *in = asc;
+	guint8 *out = (guint8 *)buffer;
+	char delimiter = '\0';
+
+	if (!asc) {
+		g_return_val_if_reached (NULL);
+		return NULL;
+	}
+	g_return_val_if_fail (buffer, NULL);
+	g_return_val_if_fail (length, NULL);
+
+	while (length && *in) {
+		guint8 d1 = in[0], d2 = in[1];
+
+		if (!g_ascii_isxdigit (d1))
+			return NULL;
+
+		/* If there's no leading zero (ie "aa:b:cc") then fake it */
+		if (d2 && g_ascii_isxdigit (d2)) {
+			*out++ = (HEXVAL (d1) << 4) + HEXVAL (d2);
+			in += 2;
+		} else {
+			/* Fake leading zero */
+			*out++ = (HEXVAL ('0') << 4) + HEXVAL (d1);
+			in += 1;
+		}
+
+		length--;
+		if (*in) {
+			if (delimiter == '\0') {
+				if (*in == ':' || *in == '-')
+					delimiter = *in;
+				else
+					return NULL;
+			} else {
+				if (*in != delimiter)
+					return NULL;
+			}
+			in++;
+		}
+	}
+
+	if (length == 0 && !*in)
+		return buffer;
+	else
+		return NULL;
+}
+
+/**
+ * nm_utils_hwaddr_ntoa_len:
+ * @addr: a binary hardware address
+ * @length: the length of @addr
+ *
+ * Converts @addr to textual form.
+ *
+ * Return value: (transfer full): the textual form of @addr
+ *
+ * Since: 0.9.10
+ */
+char *
+nm_utils_hwaddr_ntoa_len (gconstpointer addr, gsize length)
+{
+	const guint8 *in = addr;
+	char *out, *result;
+	const char *LOOKUP = "0123456789ABCDEF";
+
+	g_return_val_if_fail (addr != NULL, g_strdup (""));
+	g_return_val_if_fail (length != 0, g_strdup (""));
+
+	result = out = g_malloc (length * 3);
+	for (;;) {
+		guint8 v = *in++;
+
+		*out++ = LOOKUP[v >> 4];
+		*out++ = LOOKUP[v & 0x0F];
+		if (--length == 0) {
+			*out = 0;
+			return result;
+		}
+		*out++ = ':';
+	}
+}
+
+/**
+ * nm_utils_hwaddr_valid:
+ * @asc: the ASCII representation of a hardware address
+ *
+ * Parses @asc to see if it is a valid hardware address of some type.
+ *
+ * Return value: %TRUE if @asc appears to be a valid hardware address
+ *   of some type, %FALSE if not.
+ *
+ * Since: 0.9.10
+ */
+gboolean
+nm_utils_hwaddr_valid (const char *asc)
+{
+	guint8 buf[NM_UTILS_HWADDR_LEN_MAX];
+	gsize in_len, out_len;
+
+	if (!asc || !*asc)
+		return FALSE;
+	in_len = strlen (asc);
+	if ((in_len + 1) % 3 != 0)
+		return FALSE;
+	out_len = (in_len + 1) / 3;
+	if (out_len > NM_UTILS_HWADDR_LEN_MAX)
+		return FALSE;
+	return nm_utils_hwaddr_aton_len (asc, buf, out_len) != NULL;
+}
+
+/**
+ * nm_utils_bin2hexstr:
+ * @bytes: an array of bytes
+ * @len: the length of the @bytes array
+ * @final_len: an index where to cut off the returned string, or -1
+ *
+ * Converts a byte-array @bytes into a hexadecimal string.
+ * If @final_len is greater than -1, the returned string is terminated at
+ * that index (returned_string[final_len] == '\0'),
+ *
+ * Return value: (transfer full): the textual form of @bytes
+ *
+ * Since: 0.9.10
+ */
+/*
+ * Code originally by Alex Larsson <alexl@redhat.com> and
+ *  copyright Red Hat, Inc. under terms of the LGPL.
+ */
+char *
+nm_utils_bin2hexstr (const char *bytes, int len, int final_len)
+{
+	static char hex_digits[] = "0123456789abcdef";
+	char *result;
+	int i;
+	gsize buflen = (len * 2) + 1;
+
+	g_return_val_if_fail (bytes != NULL, NULL);
+	g_return_val_if_fail (len > 0, NULL);
+	g_return_val_if_fail (len < 4096, NULL);   /* Arbitrary limit */
+	if (final_len > -1)
+		g_return_val_if_fail (final_len < buflen, NULL);
+
+	result = g_malloc0 (buflen);
+	for (i = 0; i < len; i++)
+	{
+		result[2*i] = hex_digits[(bytes[i] >> 4) & 0xf];
+		result[2*i+1] = hex_digits[bytes[i] & 0xf];
+	}
+	/* Cut converted key off at the correct length for this cipher type */
+	if (final_len > -1)
+		result[final_len] = '\0';
+	else
+		result[buflen - 1] = '\0';
+
+	return result;
+}
+
+/* From hostap, Copyright (c) 2002-2005, Jouni Malinen <jkmaline@cc.hut.fi> */
+/**
+ * nm_utils_hex2byte:
+ * @hex: a string representing a hex byte
+ *
+ * Converts a hex string (2 characters) into its byte representation.
+ *
+ * Return value: a byte, or -1 if @hex doesn't represent a hex byte
+ *
+ * Since: 0.9.10
+ */
+int
+nm_utils_hex2byte (const char *hex)
+{
+	int a, b;
+	a = g_ascii_xdigit_value (*hex++);
+	if (a < 0)
+		return -1;
+	b = g_ascii_xdigit_value (*hex++);
+	if (b < 0)
+		return -1;
+	return (a << 4) | b;
+}
+
+/**
+ * nm_utils_hexstr2bin:
+ * @hex: an hex string
+ * @len: the length of the @hex string (it has to be even)
+ *
+ * Converts a hexadecimal string @hex into a byte-array. The returned array
+ * length is @len/2.
+ *
+ * Return value: (transfer full): a array of bytes, or %NULL on error
+ *
+ * Since: 0.9.10
+ */
+char *
+nm_utils_hexstr2bin (const char *hex, size_t len)
+{
+	size_t       i;
+	int          a;
+	const char * ipos = hex;
+	char *       buf = NULL;
+	char *       opos;
+
+	/* Length must be a multiple of 2 */
+	if ((len % 2) != 0)
+		return NULL;
+
+	opos = buf = g_malloc0 ((len / 2) + 1);
+	for (i = 0; i < len; i += 2) {
+		a = nm_utils_hex2byte (ipos);
+		if (a < 0) {
+			g_free (buf);
+			return NULL;
+		}
+		*opos++ = a;
+		ipos += 2;
+	}
+	return buf;
+}
+/* End from hostap */
 
 /**
  * nm_utils_iface_valid_name:
@@ -2758,4 +2378,162 @@ nm_utils_is_uuid (const char *str)
 		return TRUE;
 
 	return FALSE;
+}
+
+static char _nm_utils_inet_ntop_buffer[NM_UTILS_INET_ADDRSTRLEN];
+
+/**
+ * nm_utils_inet4_ntop: (skip)
+ * @inaddr: the address that should be converted to string.
+ * @dst: the destination buffer, it must contain at least %INET_ADDRSTRLEN
+ *  or %NM_UTILS_INET_ADDRSTRLEN characters. If set to %NULL, it will return
+ *  a pointer to an internal, static buffer (shared with nm_utils_inet6_ntop()).
+ *  Beware, that the internal buffer will be overwritten with ever new call
+ *  of nm_utils_inet4_ntop() or nm_utils_inet6_ntop() that does not provied it's
+ *  own @dst buffer. Also, using the internal buffer is not thread safe. When
+ *  in doubt, pass your own @dst buffer to avoid these issues.
+ *
+ * Wrapper for inet_ntop.
+ *
+ * Returns: the input buffer @dst, or a pointer to an
+ *  internal, static buffer. This function cannot fail.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_utils_inet4_ntop (in_addr_t inaddr, char *dst)
+{
+	return inet_ntop (AF_INET, &inaddr, dst ? dst : _nm_utils_inet_ntop_buffer,
+	                  INET_ADDRSTRLEN);
+}
+
+/**
+ * nm_utils_inet6_ntop: (skip)
+ * @in6addr: the address that should be converted to string.
+ * @dst: the destination buffer, it must contain at least %INET6_ADDRSTRLEN
+ *  or %NM_UTILS_INET_ADDRSTRLEN characters. If set to %NULL, it will return
+ *  a pointer to an internal, static buffer (shared with nm_utils_inet4_ntop()).
+ *  Beware, that the internal buffer will be overwritten with ever new call
+ *  of nm_utils_inet4_ntop() or nm_utils_inet6_ntop() that does not provied it's
+ *  own @dst buffer. Also, using the internal buffer is not thread safe. When
+ *  in doubt, pass your own @dst buffer to avoid these issues.
+ *
+ * Wrapper for inet_ntop.
+ *
+ * Returns: the input buffer @dst, or a pointer to an
+ *  internal, static buffer. %NULL is not allowed as @in6addr,
+ *  otherwise, this function cannot fail.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_utils_inet6_ntop (const struct in6_addr *in6addr, char *dst)
+{
+	g_return_val_if_fail (in6addr, NULL);
+	return inet_ntop (AF_INET6, in6addr, dst ? dst : _nm_utils_inet_ntop_buffer,
+	                  INET6_ADDRSTRLEN);
+}
+
+/**
+ * nm_utils_check_virtual_device_compatibility:
+ * @virtual_type: a virtual connection type
+ * @other_type: a connection type to test against @virtual_type
+ *
+ * Determines if a connection of type @virtual_type can (in the
+ * general case) work with connections of type @other_type.
+ *
+ * If @virtual_type is %NM_TYPE_SETTING_VLAN, then this checks if
+ * @other_type is a valid type for the parent of a VLAN.
+ *
+ * If @virtual_type is a "master" type (eg, %NM_TYPE_SETTING_BRIDGE),
+ * then this checks if @other_type is a valid type for a slave of that
+ * master.
+ *
+ * Note that even if this returns %TRUE it is not guaranteed that
+ * <emphasis>every</emphasis> connection of type @other_type is
+ * compatible with @virtual_type; it may depend on the exact
+ * configuration of the two connections, or on the capabilities of an
+ * underlying device driver.
+ *
+ * Returns: %TRUE or %FALSE
+ *
+ * Since: 0.9.10
+ */
+gboolean
+nm_utils_check_virtual_device_compatibility (GType virtual_type, GType other_type)
+{
+	g_return_val_if_fail (_nm_setting_type_is_base_type (virtual_type), FALSE);
+	g_return_val_if_fail (_nm_setting_type_is_base_type (other_type), FALSE);
+
+	if (virtual_type == NM_TYPE_SETTING_BOND) {
+		return (   other_type == NM_TYPE_SETTING_INFINIBAND
+		        || other_type == NM_TYPE_SETTING_WIRED
+		        || other_type == NM_TYPE_SETTING_BRIDGE
+		        || other_type == NM_TYPE_SETTING_BOND
+		        || other_type == NM_TYPE_SETTING_TEAM
+		        || other_type == NM_TYPE_SETTING_VLAN);
+	} else if (virtual_type == NM_TYPE_SETTING_BRIDGE) {
+		return (   other_type == NM_TYPE_SETTING_WIRED
+		        || other_type == NM_TYPE_SETTING_BOND
+		        || other_type == NM_TYPE_SETTING_TEAM
+		        || other_type == NM_TYPE_SETTING_VLAN);
+	} else if (virtual_type == NM_TYPE_SETTING_TEAM) {
+		return (   other_type == NM_TYPE_SETTING_WIRED
+		        || other_type == NM_TYPE_SETTING_BRIDGE
+		        || other_type == NM_TYPE_SETTING_BOND
+		        || other_type == NM_TYPE_SETTING_TEAM
+		        || other_type == NM_TYPE_SETTING_VLAN);
+	} else if (virtual_type == NM_TYPE_SETTING_VLAN) {
+		return (   other_type == NM_TYPE_SETTING_WIRED
+		        || other_type == NM_TYPE_SETTING_WIRELESS
+		        || other_type == NM_TYPE_SETTING_BRIDGE
+		        || other_type == NM_TYPE_SETTING_BOND
+		        || other_type == NM_TYPE_SETTING_TEAM
+		        || other_type == NM_TYPE_SETTING_VLAN);
+	} else {
+		g_warn_if_reached ();
+		return FALSE;
+	}
+}
+
+/***********************************************************/
+
+/* Unused prototype to make the compiler happy */
+const NMUtilsPrivateData *nm_util_get_private (void);
+
+static const NMUtilsPrivateData data = {
+	.nm_setting_ip4_config_get_address_label = nm_setting_ip4_config_get_address_label,
+	.nm_setting_ip4_config_add_address_with_label = nm_setting_ip4_config_add_address_with_label,
+};
+
+/**
+ * nm_utils_get_private:
+ *
+ * Entry point for NetworkManager-internal API.  You should not use this
+ * function for any reason.
+ *
+ * Returns: Who knows? It's a mystery.
+ *
+ * Since: 0.9.10
+ */
+const NMUtilsPrivateData *
+nm_utils_get_private (void)
+{
+	return &data;
+}
+
+/**
+ * nm_util_get_private:
+ *
+ * You should not use this function for any reason.
+ *
+ * Returns: Who knows? It's a mystery.
+ *
+ * Since: 0.9.10
+ */
+const NMUtilsPrivateData *
+nm_util_get_private (void)
+{
+	/* Compat function to preserve ABI */
+	return nm_utils_get_private ();
 }

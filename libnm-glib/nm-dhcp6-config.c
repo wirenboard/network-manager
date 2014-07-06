@@ -51,26 +51,23 @@ nm_dhcp6_config_init (NMDHCP6Config *config)
 {
 }
 
-static void
-copy_options (gpointer key, gpointer data, gpointer user_data)
-{
-	GHashTable *options = (GHashTable *) user_data;
-	GValue *value = (GValue *) data;
-
-	g_hash_table_insert (options, g_strdup (key), g_value_dup_string (value));
-}
-
 static gboolean
 demarshal_dhcp6_options (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field)
 {
 	NMDHCP6ConfigPrivate *priv = NM_DHCP6_CONFIG_GET_PRIVATE (object);
 	GHashTable *new_options;
+	GHashTableIter iter;
+	const char *key;
+	GValue *opt;
 
 	g_hash_table_remove_all (priv->options);
 
 	new_options = g_value_get_boxed (value);
-	if (new_options)
-		g_hash_table_foreach (new_options, copy_options, priv->options);
+	if (new_options) {
+		g_hash_table_iter_init (&iter, new_options);
+		while (g_hash_table_iter_next (&iter, (gpointer) &key, (gpointer) &opt))
+			g_hash_table_insert (priv->options, g_strdup (key), g_value_dup_string (opt));
+	}
 
 	_nm_object_queue_notify (object, NM_DHCP6_CONFIG_OPTIONS);
 	return TRUE;
@@ -93,21 +90,13 @@ register_properties (NMDHCP6Config *config)
 static void
 constructed (GObject *object)
 {
-	DBusGConnection *connection;
-	NMDHCP6ConfigPrivate *priv;
+	NMDHCP6ConfigPrivate *priv = NM_DHCP6_CONFIG_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_dhcp6_config_parent_class)->constructed (object);
 
-	priv = NM_DHCP6_CONFIG_GET_PRIVATE (object);
 	priv->options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
-	connection = nm_object_get_connection (NM_OBJECT (object));
-
-	priv->proxy = dbus_g_proxy_new_for_name (connection,
-										   NM_DBUS_SERVICE,
-										   nm_object_get_path (NM_OBJECT (object)),
-										   NM_DBUS_INTERFACE_DHCP6_CONFIG);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DHCP6_CONFIG);
 	register_properties (NM_DHCP6_CONFIG (object));
 }
 

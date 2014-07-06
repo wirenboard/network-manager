@@ -46,7 +46,6 @@ enum {
 	PROP_CARRIER,
 	LAST_PROP
 };
-#define DBUS_PROP_CARRIER "Carrier"
 
 /**
  * nm_device_adsl_error_quark:
@@ -131,7 +130,13 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 		return FALSE;
 	}
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_adsl_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_ADSL;
 }
 
 /******************************************************************/
@@ -159,17 +164,11 @@ register_properties (NMDeviceAdsl *device)
 static void
 constructed (GObject *object)
 {
-	NMDeviceAdslPrivate *priv;
+	NMDeviceAdslPrivate *priv = NM_DEVICE_ADSL_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_adsl_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_ADSL_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-	                                         NM_DBUS_SERVICE,
-	                                         nm_object_get_path (NM_OBJECT (object)),
-	                                         NM_DBUS_INTERFACE_DEVICE_ADSL);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_ADSL);
 	register_properties (NM_DEVICE_ADSL (object));
 }
 
@@ -228,6 +227,7 @@ nm_device_adsl_class_init (NMDeviceAdslClass *adsl_class)
 	object_class->finalize = finalize;
 	object_class->get_property = get_property;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
 
 	/* properties */
 	/**

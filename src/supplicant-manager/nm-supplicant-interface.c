@@ -24,10 +24,10 @@
 #include <string.h>
 #include <glib.h>
 
+#include "NetworkManagerUtils.h"
 #include "nm-supplicant-interface.h"
 #include "nm-supplicant-manager.h"
 #include "nm-logging.h"
-#include "nm-marshal.h"
 #include "nm-supplicant-config.h"
 #include "nm-dbus-manager.h"
 #include "nm-call-store.h"
@@ -100,119 +100,19 @@ typedef struct {
 	gboolean              scanning;
 
 	DBusGProxy *          wpas_proxy;
+	DBusGProxy *          introspect_proxy;
 	DBusGProxy *          iface_proxy;
 	DBusGProxy *          props_proxy;
 	char *                net_path;
 	guint32               blobs_left;
 	GHashTable *          bss_proxies;
 
-	time_t                last_scan;
+	gint32                last_scan; /* timestamp as returned by nm_utils_get_monotonic_timestamp_s() */
 
 	NMSupplicantConfig *  cfg;
 
 	gboolean              disposed;
 } NMSupplicantInterfacePrivate;
-
-/* FIXME: remove this and just store the standard D-Bus properties
- * proxy object in bss_proxies when we drop support for wpa_supplicant
- * 0.7.x.
- */
-typedef struct {
-	/* Proxy for standard D-Bus Properties interface */
-	DBusGProxy *props;
-	/* Proxy for old wpa_supplicant-specific PropertiesChanged signal */
-	DBusGProxy *old_props;
-} BssProxies;
-
-static void
-bss_proxies_free (gpointer data)
-{
-	BssProxies *proxies = data;
-
-	g_object_unref (proxies->props);
-	g_object_unref (proxies->old_props);
-	memset (proxies, 0, sizeof (*proxies));
-	g_free (proxies);
-}
-
-static gboolean
-cancel_all_cb (GObject *object, gpointer call_id, gpointer user_data)
-{
-	dbus_g_proxy_cancel_call (DBUS_G_PROXY (object), (DBusGProxyCall *) call_id);
-
-	return TRUE;
-}
-
-static void
-cancel_all_callbacks (NMCallStore *store)
-{
-	nm_call_store_foreach (store, NULL, cancel_all_cb, NULL);
-	nm_call_store_clear (store);
-}
-
-typedef struct {
-	NMSupplicantInterface *interface;
-	DBusGProxy *proxy;
-	NMCallStore *store;
-	DBusGProxyCall *call;
-	gboolean disposing;
-} NMSupplicantInfo;
-
-static NMSupplicantInfo *
-nm_supplicant_info_new (NMSupplicantInterface *interface,
-                        DBusGProxy *proxy,
-                        NMCallStore *store)
-{
-	NMSupplicantInfo *info;
-
-	info = g_slice_new0 (NMSupplicantInfo);
-	info->interface = g_object_ref (interface);
-	info->proxy = g_object_ref (proxy);
-	info->store = store;
-
-	return info;
-}
-
-static void
-nm_supplicant_info_set_call (NMSupplicantInfo *info, DBusGProxyCall *call)
-{
-	g_return_if_fail (info != NULL);
-	g_return_if_fail (call != NULL);
-
-	nm_call_store_add (info->store, G_OBJECT (info->proxy), (gpointer) call);
-	info->call = call;
-}
-
-static void
-nm_supplicant_info_destroy (gpointer user_data)
-{
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-
-	/* Guard against double-disposal; since DBusGProxy doesn't guard against
-	 * double-disposal, we could infinite loop here if we're in the middle of
-	 * some wpa_supplicant D-Bus calls.  When the supplicant dies we'll dispose
-	 * of the proxy, which kills all its pending calls, which brings us here.
-	 * Then when we unref the proxy here, its dispose() function will get called
-	 * again, and we get right back here until we segfault because our callstack
-	 * is too long.
-	 */
-	if (!info->disposing) {
-		info->disposing = TRUE;
-
-		if (info->call) {
-			nm_call_store_remove (info->store, G_OBJECT (info->proxy), info->call);
-			info->call = NULL;
-		}
-
-		g_object_unref (info->proxy);
-		info->proxy = NULL;
-		g_object_unref (info->interface);
-		info->interface = NULL;
-
-		memset (info, 0, sizeof (NMSupplicantInfo));
-		g_slice_free (NMSupplicantInfo, info);
-	}
-}
 
 static void
 emit_error_helper (NMSupplicantInterface *self,
@@ -237,14 +137,16 @@ signal_new_bss (NMSupplicantInterface *self,
 static void
 bssid_properties_cb  (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *error = NULL;
 	GHashTable *props = NULL;
 
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
 	if (dbus_g_proxy_end_call (proxy, call_id, &error,
 	                           DBUS_TYPE_G_MAP_OF_VARIANT, &props,
 	                           G_TYPE_INVALID)) {
-		signal_new_bss (info->interface, dbus_g_proxy_get_path (proxy), props);
+		signal_new_bss (self, dbus_g_proxy_get_path (proxy), props);
 		g_hash_table_destroy (props);
 	} else {
 		if (!strstr (error->message, "The BSSID requested was invalid")) {
@@ -266,24 +168,10 @@ bss_properties_changed (DBusGProxy *proxy,
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 
 	if (priv->scanning)
-		priv->last_scan = time (NULL);
+		priv->last_scan = nm_utils_get_monotonic_timestamp_s ();
 
 	if (g_strcmp0 (interface, WPAS_DBUS_IFACE_BSS) == 0)
 		g_signal_emit (self, signals[BSS_UPDATED], 0, dbus_g_proxy_get_path (proxy), props);
-}
-
-static void
-old_bss_properties_changed (DBusGProxy *proxy,
-                            GHashTable *props,
-                            gpointer user_data)
-{
-	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-
-	if (priv->scanning)
-		priv->last_scan = time (NULL);
-
-	g_signal_emit (self, signals[BSS_UPDATED], 0, dbus_g_proxy_get_path (proxy), props);
 }
 
 static void
@@ -292,65 +180,44 @@ handle_new_bss (NMSupplicantInterface *self,
                 GHashTable *props)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	NMSupplicantInfo *info;
+	DBusGProxy *bss_proxy;
 	DBusGProxyCall *call;
-	BssProxies *proxies;
 
 	g_return_if_fail (object_path != NULL);
 
 	if (g_hash_table_lookup (priv->bss_proxies, object_path))
 		return;
 
-	proxies = g_malloc0 (sizeof (*proxies));
-	proxies->props = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
-	                                            WPAS_DBUS_SERVICE,
-	                                            object_path,
-	                                            DBUS_INTERFACE_PROPERTIES);
-	proxies->old_props = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
-	                                                WPAS_DBUS_SERVICE,
-	                                                object_path,
-	                                                WPAS_DBUS_IFACE_BSS);
+	bss_proxy = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
+	                                       WPAS_DBUS_SERVICE,
+	                                       object_path,
+	                                       DBUS_INTERFACE_PROPERTIES);
 	g_hash_table_insert (priv->bss_proxies,
-	                     (gpointer) dbus_g_proxy_get_path (proxies->props),
-	                     proxies);
+	                     (gpointer) dbus_g_proxy_get_path (bss_proxy),
+	                     bss_proxy);
 
 	/* Standard D-Bus PropertiesChanged signal */
-	dbus_g_object_register_marshaller (_nm_marshal_VOID__STRING_BOXED_BOXED,
+	dbus_g_object_register_marshaller (g_cclosure_marshal_generic,
 	                                   G_TYPE_NONE,
 	                                   G_TYPE_STRING, DBUS_TYPE_G_MAP_OF_VARIANT, G_TYPE_STRV,
 	                                   G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxies->props, "PropertiesChanged",
+	dbus_g_proxy_add_signal (bss_proxy, "PropertiesChanged",
 	                         G_TYPE_STRING, DBUS_TYPE_G_MAP_OF_VARIANT, G_TYPE_STRV,
 	                         G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxies->props, "PropertiesChanged",
+	dbus_g_proxy_connect_signal (bss_proxy, "PropertiesChanged",
 	                             G_CALLBACK (bss_properties_changed),
-	                             self, NULL);
-
-	/* Old wpa_supplicant-specific PropertiesChanged signal; since it's using
-	 * a different interface, we have to use a different DBusGProxy
-	 */
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOXED,
-	                                   G_TYPE_NONE,
-	                                   DBUS_TYPE_G_MAP_OF_VARIANT,
-	                                   G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxies->old_props, "PropertiesChanged",
-	                         DBUS_TYPE_G_MAP_OF_VARIANT,
-	                         G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxies->old_props, "PropertiesChanged",
-	                             G_CALLBACK (old_bss_properties_changed),
 	                             self, NULL);
 
 	if (props) {
 		signal_new_bss (self, object_path, props);
 	} else {
-		info = nm_supplicant_info_new (self, proxies->props, priv->other_pcalls);
-		call = dbus_g_proxy_begin_call (proxies->props, "GetAll",
+		call = dbus_g_proxy_begin_call (bss_proxy, "GetAll",
 		                                bssid_properties_cb,
-		                                info,
-		                                nm_supplicant_info_destroy,
+		                                self,
+		                                NULL,
 		                                G_TYPE_STRING, WPAS_DBUS_IFACE_BSS,
 		                                G_TYPE_INVALID);
-		nm_supplicant_info_set_call (info, call);
+		nm_call_store_add (priv->other_pcalls, bss_proxy, call);
 	}
 }
 
@@ -364,7 +231,7 @@ wpas_iface_bss_added (DBusGProxy *proxy,
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 
 	if (priv->scanning)
-		priv->last_scan = time (NULL);
+		priv->last_scan = nm_utils_get_monotonic_timestamp_s ();
 
 	handle_new_bss (self, object_path, props);
 }
@@ -435,8 +302,8 @@ set_state (NMSupplicantInterface *self, guint32 new_state)
 		wpas_iface_get_props (self);
 	} else if (new_state == NM_SUPPLICANT_INTERFACE_STATE_DOWN) {
 		/* Cancel all pending calls when going down */
-		cancel_all_callbacks (priv->other_pcalls);
-		cancel_all_callbacks (priv->assoc_pcalls);
+		nm_call_store_clear (priv->other_pcalls);
+		nm_call_store_clear (priv->assoc_pcalls);
 
 		/* Disconnect supplicant manager state listeners since we're done */
 		if (priv->smgr_avail_id) {
@@ -468,7 +335,7 @@ set_state (NMSupplicantInterface *self, guint32 new_state)
 
 	if (   priv->state == NM_SUPPLICANT_INTERFACE_STATE_SCANNING
 	    || old_state == NM_SUPPLICANT_INTERFACE_STATE_SCANNING)
-		priv->last_scan = time (NULL);
+		priv->last_scan = nm_utils_get_monotonic_timestamp_s ();
 
 	/* Disconnect reason is no longer relevant when not in the DISCONNECTED state */
 	if (priv->state != NM_SUPPLICANT_INTERFACE_STATE_DISCONNECTED)
@@ -501,7 +368,7 @@ set_scanning (NMSupplicantInterface *self, gboolean new_scanning)
 
 		/* Cache time of last scan completion */
 		if (priv->scanning == FALSE)
-			priv->last_scan = time (NULL);
+			priv->last_scan = nm_utils_get_monotonic_timestamp_s ();
 
 		g_object_notify (G_OBJECT (self), "scanning");
 	}
@@ -522,7 +389,7 @@ nm_supplicant_interface_get_scanning (NMSupplicantInterface *self)
 	return FALSE;
 }
 
-time_t
+gint32
 nm_supplicant_interface_get_last_scan_time (NMSupplicantInterface *self)
 {
 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->last_scan;
@@ -537,7 +404,7 @@ wpas_iface_scan_done (DBusGProxy *proxy,
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 
 	/* Cache last scan completed time */
-	priv->last_scan = time (NULL);
+	priv->last_scan = nm_utils_get_monotonic_timestamp_s ();
 	g_signal_emit (self, signals[SCAN_DONE], 0, success);
 }
 
@@ -648,38 +515,38 @@ iface_check_ready (NMSupplicantInterface *self)
 static void
 iface_get_props_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GHashTable *props = NULL;
 	GError *error = NULL;
 
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
 	if (dbus_g_proxy_end_call (proxy, call_id, &error,
 	                           DBUS_TYPE_G_MAP_OF_VARIANT, &props,
 	                           G_TYPE_INVALID)) {
-		wpas_iface_properties_changed (NULL, props, info->interface);
+		wpas_iface_properties_changed (NULL, props, self);
 		g_hash_table_destroy (props);
 	} else {
 		nm_log_warn (LOGD_SUPPLICANT, "could not get interface properties: %s.",
 		             error && error->message ? error->message : "(unknown)");
 		g_clear_error (&error);
 	}
-	iface_check_ready (info->interface);
+	iface_check_ready (self);
 }
 
 static void
 wpas_iface_get_props (NMSupplicantInterface *self)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
 
-	info = nm_supplicant_info_new (self, priv->props_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->props_proxy, "GetAll",
 	                                iface_get_props_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                G_TYPE_STRING, WPAS_DBUS_IFACE_INTERFACE,
 	                                G_TYPE_INVALID);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->other_pcalls, priv->props_proxy, call);
 }
 
 gboolean
@@ -690,7 +557,6 @@ nm_supplicant_interface_credentials_reply (NMSupplicantInterface *self,
 {
 	NMSupplicantInterfacePrivate *priv;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), FALSE);
 	g_return_val_if_fail (field != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
@@ -729,10 +595,11 @@ wpas_iface_network_request (DBusGProxy *proxy,
 static void
 iface_check_netreply_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *error = NULL;
 
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
 	if (   dbus_g_proxy_end_call (proxy, call_id, &error, G_TYPE_INVALID)
 	    || dbus_g_error_has_name (error, "fi.w1.wpa_supplicant1.InvalidArgs")) {
 		/* We know NetworkReply is supported if the NetworkReply method returned
@@ -748,27 +615,25 @@ iface_check_netreply_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer us
 	}
 	g_clear_error (&error);
 
-	iface_check_ready (info->interface);
+	iface_check_ready (self);
 }
 
 static void
 wpas_iface_check_network_reply (NMSupplicantInterface *self)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
 
 	priv->ready_count++;
-	info = nm_supplicant_info_new (self, priv->props_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->iface_proxy, "NetworkReply",
 	                                iface_check_netreply_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                DBUS_TYPE_G_OBJECT_PATH, "/foobaraasdfasdf",
 	                                G_TYPE_STRING, "foobar",
 	                                G_TYPE_STRING, "foobar",
 	                                G_TYPE_INVALID);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->other_pcalls, priv->iface_proxy, call);
 }
 
 ApSupport
@@ -793,11 +658,12 @@ nm_supplicant_interface_set_ap_support (NMSupplicantInterface *self,
 static void
 iface_check_ap_mode_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	char *data;
 
 	/* The ProbeRequest method only exists if AP mode has been enabled */
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
 	if (dbus_g_proxy_end_call (proxy, call_id, NULL,
 	                           G_TYPE_STRING,
 	                           &data,
@@ -807,38 +673,28 @@ iface_check_ap_mode_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer use
 		g_free (data);
 	}
 
-	iface_check_ready (info->interface);
+	iface_check_ready (self);
 }
 
 static void
 wpas_iface_check_ap_mode (NMSupplicantInterface *self)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
-	DBusGProxy *proxy;
 
 	priv->ready_count++;
-
-	proxy = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
-	                                   WPAS_DBUS_SERVICE,
-	                                   priv->object_path,
-	                                   DBUS_INTERFACE_INTROSPECTABLE);
-
-	info = nm_supplicant_info_new (self, proxy, priv->other_pcalls);
-	g_object_unref (proxy);
 
 	/* If the global supplicant capabilities property is not present, we can
 	 * fall back to checking whether the ProbeRequest method is supported.  If
 	 * neither of these works we have no way of determining if AP mode is
 	 * supported or not.  hostap 1.0 and earlier don't support either of these.
 	 */
-	call = dbus_g_proxy_begin_call (proxy, "Introspect",
+	call = dbus_g_proxy_begin_call (priv->introspect_proxy, "Introspect",
 	                                iface_check_ap_mode_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                G_TYPE_INVALID);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->other_pcalls, priv->introspect_proxy, call);
 }
 
 static void
@@ -872,7 +728,7 @@ interface_add_done (NMSupplicantInterface *self, char *path)
 	                             self,
 	                             NULL);
 
-	dbus_g_object_register_marshaller (_nm_marshal_VOID__STRING_BOXED,
+	dbus_g_object_register_marshaller (g_cclosure_marshal_generic,
 	                                   G_TYPE_NONE,
 	                                   DBUS_TYPE_G_OBJECT_PATH, DBUS_TYPE_G_MAP_OF_VARIANT,
 	                                   G_TYPE_INVALID);
@@ -896,7 +752,7 @@ interface_add_done (NMSupplicantInterface *self, char *path)
 	                             self,
 	                             NULL);
 
-	dbus_g_object_register_marshaller (_nm_marshal_VOID__STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (g_cclosure_marshal_generic,
 	                                   G_TYPE_NONE,
 	                                   DBUS_TYPE_G_OBJECT_PATH, G_TYPE_STRING, G_TYPE_STRING,
 	                                   G_TYPE_INVALID);
@@ -907,6 +763,11 @@ interface_add_done (NMSupplicantInterface *self, char *path)
 	                             G_CALLBACK (wpas_iface_network_request),
 	                             self,
 	                             NULL);
+
+	priv->introspect_proxy = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
+	                                                    WPAS_DBUS_SERVICE,
+	                                                    priv->object_path,
+	                                                    DBUS_INTERFACE_INTROSPECTABLE);
 
 	priv->props_proxy = dbus_g_proxy_new_for_name (nm_dbus_manager_get_connection (priv->dbus_mgr),
 	                                               WPAS_DBUS_SERVICE,
@@ -923,24 +784,23 @@ interface_add_done (NMSupplicantInterface *self, char *path)
 }
 
 static void
-interface_get_cb (DBusGProxy *proxy,
-                  DBusGProxyCall *call_id,
-                  gpointer user_data)
+interface_get_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *error = NULL;
 	char *path = NULL;
 
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
 	if (dbus_g_proxy_end_call (proxy, call_id, &error,
 	                           DBUS_TYPE_G_OBJECT_PATH, &path,
 	                           G_TYPE_INVALID)) {
-		interface_add_done (info->interface, path);
+		interface_add_done (self, path);
 	} else {
 		nm_log_err (LOGD_SUPPLICANT, "(%s): error getting interface: %s",
 		            priv->dev, error->message);
 		g_clear_error (&error);
-		set_state (info->interface, NM_SUPPLICANT_INTERFACE_STATE_DOWN);
+		set_state (self, NM_SUPPLICANT_INTERFACE_STATE_DOWN);
 	}
 }
 
@@ -948,54 +808,53 @@ static void
 interface_get (NMSupplicantInterface *self)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
-	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
 
-	info = nm_supplicant_info_new (self, priv->wpas_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->wpas_proxy, "GetInterface",
 	                                interface_get_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                G_TYPE_STRING, priv->dev,
 	                                G_TYPE_INVALID);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->other_pcalls, priv->wpas_proxy, call);
 }
 
 static void
-interface_add_cb (DBusGProxy *proxy,
-                  DBusGProxyCall *call_id,
-                  gpointer user_data)
+interface_add_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *error = NULL;
 	char *path = NULL;
 
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
 	if (dbus_g_proxy_end_call (proxy, call_id, &error,
 	                           DBUS_TYPE_G_OBJECT_PATH, &path,
 	                           G_TYPE_INVALID)) {
-		interface_add_done (info->interface, path);
+		interface_add_done (self, path);
 	} else {
 		if (dbus_g_error_has_name (error, WPAS_ERROR_EXISTS_ERROR)) {
 			/* Interface already added, just get its object path */
-			interface_get (info->interface);
+			interface_get (self);
 		} else if (   g_error_matches (error, DBUS_GERROR, DBUS_GERROR_SERVICE_UNKNOWN)
 		           || g_error_matches (error, DBUS_GERROR, DBUS_GERROR_SPAWN_EXEC_FAILED)
 		           || g_error_matches (error, DBUS_GERROR, DBUS_GERROR_SPAWN_FORK_FAILED)
 		           || g_error_matches (error, DBUS_GERROR, DBUS_GERROR_SPAWN_FAILED)
 		           || g_error_matches (error, DBUS_GERROR, DBUS_GERROR_TIMEOUT)
+		           || g_error_matches (error, DBUS_GERROR, DBUS_GERROR_NO_REPLY)
+		           || g_error_matches (error, DBUS_GERROR, DBUS_GERROR_TIMED_OUT)
 		           || dbus_g_error_has_name (error, DBUS_ERROR_SPAWN_SERVICE_NOT_FOUND)) {
-			/* Supplicant wasn't running and could be launched via service
+			/* Supplicant wasn't running and could not be launched via service
 			 * activation.  Wait for it to start by moving back to the INIT
 			 * state.
 			 */
 			nm_log_dbg (LOGD_SUPPLICANT, "(%s): failed to activate supplicant: %s",
 			            priv->dev, error->message);
-			set_state (info->interface, NM_SUPPLICANT_INTERFACE_STATE_INIT);
+			set_state (self, NM_SUPPLICANT_INTERFACE_STATE_INIT);
 		} else {
 			nm_log_err (LOGD_SUPPLICANT, "(%s): error adding interface: %s",
 			            priv->dev, error->message);
-			set_state (info->interface, NM_SUPPLICANT_INTERFACE_STATE_DOWN);
+			set_state (self, NM_SUPPLICANT_INTERFACE_STATE_DOWN);
 		}
 		g_clear_error (&error);
 	}
@@ -1012,9 +871,9 @@ interface_add (NMSupplicantInterface *self, gboolean is_wireless)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	DBusGProxyCall *call;
-	NMSupplicantInfo *info;
 	GHashTable *hash;
-	GValue *driver, *ifname;
+	GValue driver = G_VALUE_INIT;
+	GValue ifname = G_VALUE_INIT;
 
 	/* Can only start the interface from INIT state */
 	g_return_if_fail (priv->state == NM_SUPPLICANT_INTERFACE_STATE_INIT);
@@ -1029,34 +888,27 @@ interface_add (NMSupplicantInterface *self, gboolean is_wireless)
 	 * when the supplicant has started.
 	 */
 
-	info = nm_supplicant_info_new (self, priv->wpas_proxy, priv->other_pcalls);
-
 	hash = g_hash_table_new (g_str_hash, g_str_equal);
 
-	driver = g_new0 (GValue, 1);
-	g_value_init (driver, G_TYPE_STRING);
-	g_value_set_string (driver, is_wireless ? DEFAULT_WIFI_DRIVER : "wired");
-	g_hash_table_insert (hash, "Driver", driver);
+	g_value_init (&driver, G_TYPE_STRING);
+	g_value_set_string (&driver, is_wireless ? DEFAULT_WIFI_DRIVER : "wired");
+	g_hash_table_insert (hash, "Driver", &driver);
 
-	ifname = g_new0 (GValue, 1);
-	g_value_init (ifname, G_TYPE_STRING);
-	g_value_set_string (ifname, priv->dev);
-	g_hash_table_insert (hash, "Ifname", ifname);
+	g_value_init (&ifname, G_TYPE_STRING);
+	g_value_set_string (&ifname, priv->dev);
+	g_hash_table_insert (hash, "Ifname", &ifname);
 
 	call = dbus_g_proxy_begin_call (priv->wpas_proxy, "CreateInterface",
 	                                interface_add_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                DBUS_TYPE_G_MAP_OF_VARIANT, hash,
 	                                G_TYPE_INVALID);
+	nm_call_store_add (priv->other_pcalls, priv->wpas_proxy, call);
 
 	g_hash_table_destroy (hash);
-	g_value_unset (driver);
-	g_free (driver);
-	g_value_unset (ifname);
-	g_free (ifname);
-
-	nm_supplicant_info_set_call (info, call);
+	g_value_unset (&driver);
+	g_value_unset (&ifname);
 }
 
 static void
@@ -1115,7 +967,7 @@ nm_supplicant_interface_disconnect (NMSupplicantInterface * self)
 	/* Clear and cancel all pending calls related to a prior
 	 * connection attempt.
 	 */
-	cancel_all_callbacks (priv->assoc_pcalls);
+	nm_call_store_clear (priv->assoc_pcalls);
 
 	/* Don't do anything if there is no connection to the supplicant yet. */
 	if (!priv->iface_proxy)
@@ -1145,12 +997,14 @@ nm_supplicant_interface_disconnect (NMSupplicantInterface * self)
 static void
 select_network_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *err = NULL;
 
+	nm_call_store_remove (priv->assoc_pcalls, proxy, call_id);
 	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_INVALID)) {
 		nm_log_warn (LOGD_SUPPLICANT, "Couldn't select network config: %s.", err->message);
-		emit_error_helper (info->interface, err);
+		emit_error_helper (self, err);
 		g_error_free (err);
 	}
 }
@@ -1160,61 +1014,59 @@ call_select_network (NMSupplicantInterface *self)
 {
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	DBusGProxyCall *call;
-	NMSupplicantInfo *info;
 
 	/* We only select the network after all blobs (if any) have been set */
-	if (priv->blobs_left > 0)
-		return;
-
-	info = nm_supplicant_info_new (self, priv->iface_proxy, priv->assoc_pcalls);
-	call = dbus_g_proxy_begin_call (priv->iface_proxy, "SelectNetwork",
-	                                select_network_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
-	                                DBUS_TYPE_G_OBJECT_PATH, priv->net_path,
-	                                G_TYPE_INVALID);
-	nm_supplicant_info_set_call (info, call);
+	if (priv->blobs_left == 0) {
+		call = dbus_g_proxy_begin_call (priv->iface_proxy, "SelectNetwork",
+		                                select_network_cb,
+		                                self,
+		                                NULL,
+		                                DBUS_TYPE_G_OBJECT_PATH, priv->net_path,
+		                                G_TYPE_INVALID);
+		nm_call_store_add (priv->assoc_pcalls, priv->iface_proxy, call);
+	}
 }
 
 static void
 add_blob_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *err = NULL;
 	guint tmp;
 
 	priv->blobs_left--;
 
+	nm_call_store_remove (priv->assoc_pcalls, proxy, call_id);
 	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_UINT, &tmp, G_TYPE_INVALID)) {
 		nm_log_warn (LOGD_SUPPLICANT, "Couldn't set network certificates: %s.", err->message);
-		emit_error_helper (info->interface, err);
+		emit_error_helper (self, err);
 		g_error_free (err);
 	} else
-		call_select_network (info->interface);
+		call_select_network (self);
 }
 
 static void
 add_network_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *err = NULL;
 	GHashTable *blobs;
 	GHashTableIter iter;
 	gpointer name, data;
 	DBusGProxyCall *call;
-	NMSupplicantInfo *blob_info;
 
 	g_free (priv->net_path);
 	priv->net_path = NULL;
 
+	nm_call_store_remove (priv->assoc_pcalls, proxy, call_id);
 	if (!dbus_g_proxy_end_call (proxy, call_id, &err,
 	                            DBUS_TYPE_G_OBJECT_PATH, &priv->net_path,
 	                            G_TYPE_INVALID)) {
 		nm_log_warn (LOGD_SUPPLICANT, "Couldn't add a network to the supplicant interface: %s.",
 		             err->message);
-		emit_error_helper (info->interface, err);
+		emit_error_helper (self, err);
 		g_error_free (err);
 		return;
 	}
@@ -1224,33 +1076,33 @@ add_network_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 	priv->blobs_left = g_hash_table_size (blobs);
 	g_hash_table_iter_init (&iter, blobs);
 	while (g_hash_table_iter_next (&iter, &name, &data)) {
-		blob_info = nm_supplicant_info_new (info->interface, priv->iface_proxy, priv->assoc_pcalls);
 		call = dbus_g_proxy_begin_call (priv->iface_proxy, "AddBlob",
 			                            add_blob_cb,
-			                            blob_info,
-			                            nm_supplicant_info_destroy,
+			                            self,
+			                            NULL,
 			                            DBUS_TYPE_STRING, name,
-			                            DBUS_TYPE_G_UCHAR_ARRAY, blobs,
+			                            DBUS_TYPE_G_UCHAR_ARRAY, data,
 			                            G_TYPE_INVALID);
-		nm_supplicant_info_set_call (blob_info, call);
+		nm_call_store_add (priv->assoc_pcalls, priv->iface_proxy, call);
 	}
 
-	call_select_network (info->interface);
+	call_select_network (self);
 }
 
 static void
 set_ap_scan_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
-	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (info->interface);
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *err = NULL;
 	DBusGProxyCall *call;
 	GHashTable *config_hash;
 
+	nm_call_store_remove (priv->assoc_pcalls, proxy, call_id);
 	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_INVALID)) {
 		nm_log_warn (LOGD_SUPPLICANT, "Couldn't send AP scan mode to the supplicant interface: %s.",
 		             err->message);
-		emit_error_helper (info->interface, err);
+		emit_error_helper (self, err);
 		g_error_free (err);
 		return;
 	}
@@ -1258,26 +1110,24 @@ set_ap_scan_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 	nm_log_info (LOGD_SUPPLICANT, "Config: set interface ap_scan to %d",
 	             nm_supplicant_config_get_ap_scan (priv->cfg));
 
-	info = nm_supplicant_info_new (info->interface, priv->iface_proxy, info->store);
 	config_hash = nm_supplicant_config_get_hash (priv->cfg);
 	call = dbus_g_proxy_begin_call (priv->iface_proxy, "AddNetwork",
 	                                add_network_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                DBUS_TYPE_G_MAP_OF_VARIANT, config_hash,
 	                                G_TYPE_INVALID);
 	g_hash_table_destroy (config_hash);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->assoc_pcalls, priv->iface_proxy, call);
 }
 
 gboolean
-nm_supplicant_interface_set_config (NMSupplicantInterface * self,
-                                    NMSupplicantConfig * cfg)
+nm_supplicant_interface_set_config (NMSupplicantInterface *self,
+                                    NMSupplicantConfig *cfg)
 {
 	NMSupplicantInterfacePrivate *priv;
-	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
-	GValue value = { 0, };
+	GValue value = G_VALUE_INIT;
 
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), FALSE);
 
@@ -1305,16 +1155,15 @@ nm_supplicant_interface_set_config (NMSupplicantInterface * self,
 	g_value_init (&value, G_TYPE_UINT);
 	g_value_set_uint (&value, nm_supplicant_config_get_ap_scan (priv->cfg));
 
-	info = nm_supplicant_info_new (self, priv->props_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->props_proxy, "Set",
 	                                set_ap_scan_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                G_TYPE_STRING, WPAS_DBUS_IFACE_INTERFACE,
 	                                G_TYPE_STRING, "ApScan",
 	                                G_TYPE_VALUE, &value,
 	                                G_TYPE_INVALID);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->assoc_pcalls, priv->props_proxy, call);
 
 	g_value_unset (&value);
 	return call != NULL;
@@ -1323,13 +1172,15 @@ nm_supplicant_interface_set_config (NMSupplicantInterface * self,
 static void
 scan_request_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 {
-	NMSupplicantInfo *info = (NMSupplicantInfo *) user_data;
+	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
+	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *err = NULL;
 
-	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_INVALID)) {
+	nm_call_store_remove (priv->other_pcalls, proxy, call_id);
+	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_INVALID))
 		nm_log_warn (LOGD_SUPPLICANT, "Could not get scan request result: %s", err->message);
-	} 
-	g_signal_emit (info->interface, signals[SCAN_DONE], 0, err ? FALSE : TRUE);
+
+	g_signal_emit (self, signals[SCAN_DONE], 0, err ? FALSE : TRUE);
 	g_clear_error (&err);
 }
 
@@ -1366,7 +1217,6 @@ gboolean
 nm_supplicant_interface_request_scan (NMSupplicantInterface *self, const GPtrArray *ssids)
 {
 	NMSupplicantInterfacePrivate *priv;
-	NMSupplicantInfo *info;
 	DBusGProxyCall *call;
 	GHashTable *hash;
 
@@ -1380,15 +1230,14 @@ nm_supplicant_interface_request_scan (NMSupplicantInterface *self, const GPtrArr
 	if (ssids)
 		g_hash_table_insert (hash, "SSIDs", byte_array_array_to_gvalue (ssids));
 
-	info = nm_supplicant_info_new (self, priv->iface_proxy, priv->other_pcalls);
 	call = dbus_g_proxy_begin_call (priv->iface_proxy, "Scan",
 	                                scan_request_cb,
-	                                info,
-	                                nm_supplicant_info_destroy,
+	                                self,
+	                                NULL,
 	                                DBUS_TYPE_G_MAP_OF_VARIANT, hash,
 	                                G_TYPE_INVALID);
 	g_hash_table_destroy (hash);
-	nm_supplicant_info_set_call (info, call);
+	nm_call_store_add (priv->other_pcalls, priv->iface_proxy, call);
 
 	return call != NULL;
 }
@@ -1442,7 +1291,6 @@ nm_supplicant_interface_state_to_string (guint32 state)
 const char *
 nm_supplicant_interface_get_device (NMSupplicantInterface * self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), NULL);
 
 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->dev;
@@ -1451,7 +1299,6 @@ nm_supplicant_interface_get_device (NMSupplicantInterface * self)
 const char *
 nm_supplicant_interface_get_object_path (NMSupplicantInterface *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), NULL);
 
 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->object_path;
@@ -1460,7 +1307,6 @@ nm_supplicant_interface_get_object_path (NMSupplicantInterface *self)
 const char *
 nm_supplicant_interface_get_ifname (NMSupplicantInterface *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), NULL);
 
 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->dev;
@@ -1469,7 +1315,6 @@ nm_supplicant_interface_get_ifname (NMSupplicantInterface *self)
 guint
 nm_supplicant_interface_get_max_scan_ssids (NMSupplicantInterface *self)
 {
-	g_return_val_if_fail (self != NULL, 0);
 	g_return_val_if_fail (NM_IS_SUPPLICANT_INTERFACE (self), 0);
 
 	return NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self)->max_scan_ssids;
@@ -1493,24 +1338,22 @@ nm_supplicant_interface_new (NMSupplicantManager *smgr,
 	g_return_val_if_fail (ifname != NULL, NULL);
 
 	self = g_object_new (NM_TYPE_SUPPLICANT_INTERFACE, NULL);
-	if (self) {
-		priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
+	priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 
-		priv->smgr = g_object_ref (smgr);
-		id = g_signal_connect (priv->smgr,
-		                       "notify::" NM_SUPPLICANT_MANAGER_AVAILABLE,
-		                       G_CALLBACK (smgr_avail_cb),
-		                       self);
-		priv->smgr_avail_id = id;
+	priv->smgr = g_object_ref (smgr);
+	id = g_signal_connect (priv->smgr,
+	                       "notify::" NM_SUPPLICANT_MANAGER_AVAILABLE,
+	                       G_CALLBACK (smgr_avail_cb),
+	                       self);
+	priv->smgr_avail_id = id;
 
-		priv->dev = g_strdup (ifname);
-		priv->is_wireless = is_wireless;
-		priv->fast_supported = fast_supported;
-		priv->ap_support = ap_support;
+	priv->dev = g_strdup (ifname);
+	priv->is_wireless = is_wireless;
+	priv->fast_supported = fast_supported;
+	priv->ap_support = ap_support;
 
-		if (start_now)
-			interface_add (self, priv->is_wireless);
-	}
+	if (start_now)
+		interface_add (self, priv->is_wireless);
 
 	return self;
 }
@@ -1532,7 +1375,7 @@ nm_supplicant_interface_init (NMSupplicantInterface * self)
 	                                              WPAS_DBUS_PATH,
 	                                              WPAS_DBUS_INTERFACE);
 
-	priv->bss_proxies = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, bss_proxies_free);
+	priv->bss_proxies = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
 }
 
 static void
@@ -1576,10 +1419,10 @@ dispose (GObject *object)
 	priv->disposed = TRUE;
 
 	/* Cancel pending calls before unrefing the dbus manager */
-	cancel_all_callbacks (priv->other_pcalls);
+	nm_call_store_clear (priv->other_pcalls);
 	nm_call_store_destroy (priv->other_pcalls);
 
-	cancel_all_callbacks (priv->assoc_pcalls);
+	nm_call_store_clear (priv->assoc_pcalls);
 	nm_call_store_destroy (priv->assoc_pcalls);
 
 	if (priv->props_proxy)
@@ -1589,6 +1432,9 @@ dispose (GObject *object)
 		g_object_unref (priv->iface_proxy);
 
 	g_free (priv->net_path);
+
+	if (priv->introspect_proxy)
+		g_object_unref (priv->introspect_proxy);
 
 	if (priv->wpas_proxy)
 		g_object_unref (priv->wpas_proxy);
@@ -1603,8 +1449,7 @@ dispose (GObject *object)
 
 	g_free (priv->dev);
 
-	if (priv->dbus_mgr)
-		g_object_unref (priv->dbus_mgr);
+	priv->dbus_mgr = NULL;
 
 	if (priv->cfg)
 		g_object_unref (priv->cfg);
@@ -1640,8 +1485,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, state),
-		              NULL, NULL,
-		              _nm_marshal_VOID__UINT_UINT_INT,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INT);
 
 	signals[REMOVED] =
@@ -1649,8 +1493,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, removed),
-		              NULL, NULL,
-		              g_cclosure_marshal_VOID__VOID,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 0);
 
 	signals[NEW_BSS] =
@@ -1658,8 +1501,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, new_bss),
-		              NULL, NULL,
-		              _nm_marshal_VOID__STRING_POINTER,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_POINTER);
 
 	signals[BSS_UPDATED] =
@@ -1667,8 +1509,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, bss_updated),
-		              NULL, NULL,
-		              _nm_marshal_VOID__STRING_POINTER,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_POINTER);
 
 	signals[BSS_REMOVED] =
@@ -1676,8 +1517,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, bss_removed),
-		              NULL, NULL,
-		              g_cclosure_marshal_VOID__STRING,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	signals[SCAN_DONE] =
@@ -1685,8 +1525,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, scan_done),
-		              NULL, NULL,
-		              g_cclosure_marshal_VOID__BOOLEAN,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
 	signals[CONNECTION_ERROR] =
@@ -1694,8 +1533,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, connection_error),
-		              NULL, NULL,
-		              _nm_marshal_VOID__STRING_STRING,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 
 	signals[CREDENTIALS_REQUEST] =
@@ -1703,8 +1541,7 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (NMSupplicantInterfaceClass, credentials_request),
-		              NULL, NULL,
-		              _nm_marshal_VOID__STRING_STRING,
+		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 }
 

@@ -33,6 +33,9 @@
 #include <nm-connection.h>
 #include <nm-setting.h>
 #include <nm-setting-connection.h>
+#include <nm-utils.h>
+#include <nm-config.h>
+#include <nm-logging.h>
 
 #include "plugin.h"
 #include "nm-system-config-interface.h"
@@ -98,7 +101,7 @@ typedef struct {
 	 * plugin has some specific options (like unmanaged devices) that
 	 * might be changed at runtime.
 	 */
-	char *conf_file;
+	const char *conf_file;
 	GFileMonitor *conf_file_monitor;
 	guint conf_file_monitor_id;
 
@@ -134,7 +137,7 @@ _internal_new_connection (SCPluginExample *self,
 	connection = nm_example_connection_new (full_path, source, error);
 	if (connection) {
 		g_hash_table_insert (priv->connections,
-		                     (gpointer) nm_example_connection_get_path (connection),
+		                     g_strdup (nm_example_connection_get_path (connection)),
 		                     connection);
 	}
 
@@ -154,7 +157,7 @@ read_connections (NMSystemConfigInterface *config)
 
 	dir = g_dir_open (EXAMPLE_DIR, 0, &error);
 	if (!dir) {
-		PLUGIN_WARN (EXAMPLE_PLUGIN_NAME, "Cannot read directory '%s': (%d) %s",
+		nm_log_warn (LOGD_SETTINGS, "Cannot read directory '%s': (%d) %s",
 		             EXAMPLE_DIR,
 		             error ? error->code : -1,
 		             error && error->message ? error->message : "(unknown)");
@@ -169,15 +172,15 @@ read_connections (NMSystemConfigInterface *config)
 		/* XXX: Check file extension and ignore "~", ".tmp", ".bak", etc */
 
 		full_path = g_build_filename (EXAMPLE_DIR, item, NULL);
-		PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "parsing %s ... ", item);
+		nm_log_info (LOGD_SETTINGS, "parsing %s ... ", item);
 
 		connection = _internal_new_connection (self, full_path, NULL, &error);
 		if (connection) {
-			PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "    read connection '%s'",
-			              nm_connection_get_id (NM_CONNECTION (connection)));
+			nm_log_info (LOGD_SETTINGS, "    read connection '%s'",
+			             nm_connection_get_id (NM_CONNECTION (connection)));
 		} else {
-			PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "    error: %s",
-				          (error && error->message) ? error->message : "(unknown)");
+			nm_log_info (LOGD_SETTINGS, "    error: %s",
+			             (error && error->message) ? error->message : "(unknown)");
 		}
 		g_clear_error (&error);
 		g_free (full_path);
@@ -195,11 +198,11 @@ update_connection_settings_commit_cb (NMSettingsConnection *orig, GError *error,
 	 * an error here.
 	 */
 	if (error) {
-		g_warning ("%s: '%s' / '%s' invalid: %d",
-		       	   __func__,
-		       	   error ? g_type_name (nm_connection_lookup_setting_type_by_quark (error->domain)) : "(none)",
-		       	   (error && error->message) ? error->message : "(none)",
-		       	   error ? error->code : -1);
+		nm_log_warn (LOGD_SETTINGS, "%s: '%s' / '%s' invalid: %d",
+		             __func__,
+		             error ? g_type_name (nm_connection_lookup_setting_type_by_quark (error->domain)) : "(none)",
+		             (error && error->message) ? error->message : "(none)",
+		             error ? error->code : -1);
 		g_clear_error (&error);
 
 		nm_settings_connection_signal_remove (orig);
@@ -286,7 +289,7 @@ dir_changed (GFileMonitor *monitor,
 	switch (event_type) {
 	case G_FILE_MONITOR_EVENT_DELETED:
 		if (connection) {
-			PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "removed %s.", full_path);
+			nm_log_info (LOGD_SETTINGS, "removed %s.", full_path);
 			remove_connection (SC_PLUGIN_EXAMPLE (config), connection, full_path);
 		}
 		break;
@@ -306,7 +309,7 @@ dir_changed (GFileMonitor *monitor,
 				                            NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS |
 				                              NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS)) {
 					/* Connection changed; update our internal connection object */
-					PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "updating %s", full_path);
+					nm_log_info (LOGD_SETTINGS, "updating %s", full_path);
 					update_connection_settings (connection, tmp);
 				}
 				g_object_unref (tmp);
@@ -316,13 +319,13 @@ dir_changed (GFileMonitor *monitor,
 				 * becomes valid again later we'll get another change
 				 * notification, we'll re-read it, and we'll treat it as new.
 				 */
-				PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "    error: %s",
-						      (error && error->message) ? error->message : "(unknown)");
+				nm_log_info (LOGD_SETTINGS, "    error: %s",
+				             (error && error->message) ? error->message : "(unknown)");
 				remove_connection (SC_PLUGIN_EXAMPLE (config), connection, full_path);
 			}
 			g_clear_error (&error);
 		} else {
-			PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "updating %s", full_path);
+			nm_log_info (LOGD_SETTINGS, "updating %s", full_path);
 
 			/* We don't know about the connection yet, so the change represents
 			 * a completely new connection.
@@ -353,7 +356,7 @@ dir_changed (GFileMonitor *monitor,
 
 					/* Re-insert the connection back into the hash with the new filename */
 					g_hash_table_insert (priv->connections,
-					                     (gpointer) nm_example_connection_get_path (found),
+					                     g_strdup (nm_example_connection_get_path (found)),
 					                     found);
 
 					/* Get rid of the temporary connection */
@@ -361,14 +364,13 @@ dir_changed (GFileMonitor *monitor,
 				} else {
 					/* Completely new connection, not a rename. */
 					g_hash_table_insert (priv->connections,
-					                     (gpointer) nm_example_connection_get_path (connection),
+					                     g_strdup (nm_example_connection_get_path (connection)),
 					                     connection);
 					/* Tell NM we found a new connection */
 					g_signal_emit_by_name (config, NM_SYSTEM_CONFIG_INTERFACE_CONNECTION_ADDED, connection);
 				}
 			} else {
-				PLUGIN_PRINT (EXAMPLE_PLUGIN_NAME, "    error: %s",
-						      (error && error->message) ? error->message : "(unknown)");
+				nm_log_info (LOGD_SETTINGS, "    error: %s", (error && error->message) ? error->message : "(unknown)");
 				g_clear_error (&error);
 			}
 		}
@@ -419,10 +421,9 @@ conf_file_changed (GFileMonitor *monitor,
 }
 
 /* This function starts the inotify monitors that watch the plugin's config
- * file directory for new connections and changes to existing connections.
- * At this time all plugins are expected to make NM aware of changes on-the-fly
- * instead of requiring a SIGHUP or SIGUSR1 or some D-Bus method to say
- * "reload".
+ * file directory for new connections and changes to existing connections
+ * (if not disabled by NetworkManager.conf), and for changes to the plugin's
+ * non-connection config files.
  */
 static void
 setup_monitoring (NMSystemConfigInterface *config)
@@ -434,18 +435,20 @@ setup_monitoring (NMSystemConfigInterface *config)
 	/* Initialize connection hash here; we use the connection hash as the 
 	 * "are we initialized yet" variable.
 	 */
-	priv->connections = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
+	priv->connections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
-	/* Set up the watch for our config directory */
-	file = g_file_new_for_path (EXAMPLE_DIR);
-	monitor = g_file_monitor_directory (file, G_FILE_MONITOR_NONE, NULL, NULL);
-	g_object_unref (file);
-	if (monitor) {
-		/* This registers the dir_changed() function to be called whenever
-		 * the GFileMonitor object notices a change in the directory.
-		 */
-		priv->monitor_id = g_signal_connect (monitor, "changed", G_CALLBACK (dir_changed), config);
-		priv->monitor = monitor;
+	if (nm_config_get_monitor_connection_files (nm_config_get ())) {
+		/* Set up the watch for our config directory */
+		file = g_file_new_for_path (EXAMPLE_DIR);
+		monitor = g_file_monitor_directory (file, G_FILE_MONITOR_NONE, NULL, NULL);
+		g_object_unref (file);
+		if (monitor) {
+			/* This registers the dir_changed() function to be called whenever
+			 * the GFileMonitor object notices a change in the directory.
+			 */
+			priv->monitor_id = g_signal_connect (monitor, "changed", G_CALLBACK (dir_changed), config);
+			priv->monitor = monitor;
+		}
 	}
 
 	/* Set up a watch on our configuration file, basically just for watching
@@ -501,6 +504,7 @@ get_connections (NMSystemConfigInterface *config)
 static NMSettingsConnection *
 add_connection (NMSystemConfigInterface *config,
                 NMConnection *connection,
+                gboolean save_to_disk,
                 GError **error)
 {
 	SCPluginExample *self = SC_PLUGIN_EXAMPLE (config);
@@ -511,18 +515,20 @@ add_connection (NMSystemConfigInterface *config,
 	 * way we don't trigger the new NMSettingsConnection subclass' file watch
 	 * functions needlessly.
 	 */
-	if (write_connection (connection, NULL, &path, error)) {
-		added = _internal_new_connection (self, path, connection, error);
-		g_free (path);
-	}
+	if (save_to_disk && !write_connection (connection, NULL, &path, error))
+		return NULL;
+
+	added = _internal_new_connection (self, path, connection, error);
+	g_free (path);
 	return added;
 }
 
 /* This function returns a list of "unmanaged device specs" which represent
  * a list of devices that NetworkManager should not manage.  Each unmanaged
  * spec item has a specific format starting with a "tag" and followed by
- * tag-specific data.  The only currently specified item is "mac:" followed
- * by the MAC address of the interface NM should not manage.  This function
+ * tag-specific data.  The only currently specified items are "mac:" followed
+ * by the MAC address of the interface NM should not manage, or "interface-name:"
+ * followed by the name of the interface NM should not manage.  This function
  * reads the list of unmanaged devices from wherever the plugin wants to
  * store them and returns that list to NetworkManager.
  */
@@ -533,7 +539,7 @@ get_unmanaged_specs (NMSystemConfigInterface *config)
 	GKeyFile *key_file;
 	GSList *specs = NULL;
 	GError *error = NULL;
-	char *str, **macs;
+	char *str, **ids;
 	int i;
 
 	if (!priv->conf_file)
@@ -541,7 +547,7 @@ get_unmanaged_specs (NMSystemConfigInterface *config)
 
 	key_file = g_key_file_new ();
 	if (!g_key_file_load_from_file (key_file, priv->conf_file, G_KEY_FILE_NONE, &error)) {
-		g_warning ("Error parsing file '%s': %s", priv->conf_file, error->message);
+		nm_log_warn (LOGD_SETTINGS, "Error parsing file '%s': %s", priv->conf_file, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -551,29 +557,20 @@ get_unmanaged_specs (NMSystemConfigInterface *config)
 	if (!str)
 		goto out;
 
-	macs = g_strsplit (str, ";", -1);
-	for (i = 0; macs[i] != NULL; i++) {
+	ids = g_strsplit (str, ";", -1);
+	for (i = 0; ids[i] != NULL; i++) {
 		/* Verify unmanaged specification and add it to the list */
-		if (strlen (macs[i]) > 4 && !strncmp (macs[i], "mac:", 4) && ether_aton (macs[i] + 4)) {
-			char *p = macs[i];
-
-			/* To accept uppercase MACs in configuration file, we have to
-			 * convert values to lowercase here. Unmanaged MACs in specs are
-			 * always in lowercase.
-			 */
-			while (*p) {
-				*p = g_ascii_tolower (*p);
-				p++;
-			}
-
-			specs = g_slist_append (specs, macs[i]);
+		if (!strncmp (ids[i], "mac:", 4) && nm_utils_hwaddr_valid (ids[i] + 4)) {
+			specs = g_slist_append (specs, ids[i]);
+		} else if (!strncmp (ids[i], "interface-name:", 15) && nm_utils_iface_valid_name (ids[i] + 15)) {
+			specs = g_slist_append (specs, ids[i]);
 		} else {
-			g_warning ("Error in file '%s': invalid unmanaged-devices entry: '%s'", priv->conf_file, macs[i]);
-			g_free (macs[i]);
+			nm_log_warn (LOGD_SETTINGS, "Error in file '%s': invalid unmanaged-devices entry: '%s'", priv->conf_file, ids[i]);
+			g_free (ids[i]);
 		}
 	}
 
-	g_free (macs); /* Yes, g_free, not g_strfreev because we need the strings in the list */
+	g_free (ids); /* Yes, g_free, not g_strfreev because we need the strings in the list */
 	g_free (str);
 
 out:
@@ -601,7 +598,7 @@ plugin_get_hostname (SCPluginExample *plugin)
 	if (g_key_file_load_from_file (key_file, priv->conf_file, G_KEY_FILE_NONE, &error))
 		hostname = g_key_file_get_value (key_file, "keyfile", "hostname", NULL);
 	else {
-		g_warning ("Error parsing file '%s': %s", priv->conf_file, error->message);
+		nm_log_warn (LOGD_SETTINGS, "Error parsing file '%s': %s", priv->conf_file, error->message);
 		g_error_free (error);
 	}
 
@@ -620,7 +617,7 @@ plugin_set_hostname (SCPluginExample *plugin, const char *hostname)
 	gsize len;
 
 	if (!priv->conf_file) {
-		g_warning ("Error saving hostname: no config file");
+		nm_log_warn (LOGD_SETTINGS, "Error saving hostname: no config file");
 		return FALSE;
 	}
 
@@ -629,7 +626,7 @@ plugin_set_hostname (SCPluginExample *plugin, const char *hostname)
 	 */
 	key_file = g_key_file_new ();
 	if (!g_key_file_load_from_file (key_file, priv->conf_file, G_KEY_FILE_NONE, &error)) {
-		g_warning ("Error parsing file '%s': %s", priv->conf_file, error->message);
+		nm_log_warn (LOGD_SETTINGS, "Error parsing file '%s': %s", priv->conf_file, error->message);
 		g_error_free (error);
 		goto out;
 	}
@@ -649,7 +646,7 @@ plugin_set_hostname (SCPluginExample *plugin, const char *hostname)
 	}
 
 	if (error) {
-		g_warning ("Error saving hostname: %s", error->message);
+		nm_log_warn (LOGD_SETTINGS, "Error saving hostname: %s", error->message);
 		g_error_free (error);
 	}
 
@@ -771,8 +768,6 @@ dispose (GObject *object)
 
 	g_free (priv->hostname);
 	priv->hostname = NULL;
-	g_free (priv->conf_file);
-	priv->conf_file = NULL;
 
 	/* Chain up to the superclass */
 	G_OBJECT_CLASS (sc_plugin_example_parent_class)->dispose (object);
@@ -838,13 +833,13 @@ system_config_interface_init (NMSystemConfigInterface *sci_intf)
 /*******************************************************************/
 
 /* Factory function: this is the first entry point for NetworkManager, which
- * gets called during NM startup to create the the instance of this plugin
+ * gets called during NM startup to create the instance of this plugin
  * that NetworkManager will actually use.  Since every plugin is a singleton
  * we just return a singleton instance.  This function should never be called
  * twice.
  */
 G_MODULE_EXPORT GObject *
-nm_system_config_factory (const char *config_file)
+nm_system_config_factory (void)
 {
 	static SCPluginExample *singleton = NULL;
 	SCPluginExamplePrivate *priv;
@@ -852,12 +847,10 @@ nm_system_config_factory (const char *config_file)
 	if (!singleton) {
 		/* Instantiate our plugin */
 		singleton = SC_PLUGIN_EXAMPLE (g_object_new (SC_TYPE_PLUGIN_EXAMPLE, NULL));
-		if (singleton) {
-			priv = SC_PLUGIN_EXAMPLE_GET_PRIVATE (singleton);
+		priv = SC_PLUGIN_EXAMPLE_GET_PRIVATE (singleton);
 
-			/* Cache the config file path */
-			priv->conf_file = g_strdup (config_file);
-		}
+		/* Cache the config file path */
+		priv->conf_file = nm_config_get_path (nm_config_get ());
 	} else {
 		/* This function should never be called twice */
 		g_assert_not_reached ();

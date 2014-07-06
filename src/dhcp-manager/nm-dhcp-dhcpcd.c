@@ -34,6 +34,7 @@
 #include <arpa/inet.h>
 
 #include "nm-dhcp-dhcpcd.h"
+#include "nm-dhcp-manager.h"
 #include "nm-utils.h"
 #include "nm-logging.h"
 #include "nm-posix-signals.h"
@@ -41,8 +42,6 @@
 G_DEFINE_TYPE (NMDHCPDhcpcd, nm_dhcp_dhcpcd, NM_TYPE_DHCP_CLIENT)
 
 #define NM_DHCP_DHCPCD_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DHCP_DHCPCD, NMDHCPDhcpcdPrivate))
-
-#define ACTION_SCRIPT_PATH	LIBEXECDIR "/nm-dhcp-client.action"
 
 typedef struct {
 	const char *path;
@@ -73,12 +72,6 @@ nm_dhcp_dhcpcd_get_path (const char *try_first)
 	return *path;
 }
 
-GSList *
-nm_dhcp_dhcpcd_get_lease_config (const char *iface, const char *uuid, gboolean ipv6)
-{
-	return NULL;
-}
-
 static void
 dhcpcd_child_setup (gpointer user_data G_GNUC_UNUSED)
 {
@@ -95,8 +88,8 @@ dhcpcd_child_setup (gpointer user_data G_GNUC_UNUSED)
 
 static GPid
 ip4_start (NMDHCPClient *client,
-           NMSettingIP4Config *s_ip4,
-           guint8 *dhcp_anycast_addr,
+           const char *dhcp_client_id,
+           GByteArray *dhcp_anycast_addr,
            const char *hostname)
 {
 	NMDHCPDhcpcdPrivate *priv = NM_DHCP_DHCPCD_GET_PRIVATE (client);
@@ -104,21 +97,16 @@ ip4_start (NMDHCPClient *client,
 	GPid pid = -1;
 	GError *error = NULL;
 	char *pid_contents = NULL, *binary_name, *cmd_str;
-	const char *iface, *uuid;
+	const char *iface;
 
 	g_return_val_if_fail (priv->pid_file == NULL, -1);
 
 	iface = nm_dhcp_client_get_iface (client);
-	uuid = nm_dhcp_client_get_uuid (client);
 
 	/* dhcpcd does not allow custom pidfiles; the pidfile is always
 	 * RUNDIR "dhcpcd-<ifname>.pid".
 	 */
 	priv->pid_file = g_strdup_printf (RUNDIR "/dhcpcd-%s.pid", iface);
-	if (!priv->pid_file) {
-		nm_log_warn (LOGD_DHCP4, "(%s): not enough memory for dhcpcd options.", iface);
-		return -1;
-	}
 
 	if (!g_file_test (priv->path, G_FILE_TEST_EXISTS)) {
 		nm_log_warn (LOGD_DHCP4, "%s does not exist.", priv->path);
@@ -142,7 +130,7 @@ ip4_start (NMDHCPClient *client,
 	g_ptr_array_add (argv, (gpointer) "-G");	/* Let NM handle routing */
 
 	g_ptr_array_add (argv, (gpointer) "-c");	/* Set script file */
-	g_ptr_array_add (argv, (gpointer) ACTION_SCRIPT_PATH );
+	g_ptr_array_add (argv, (gpointer) nm_dhcp_helper_path);
 
 #ifdef DHCPCD_SUPPORTS_IPV6
 	/* IPv4-only for now.  NetworkManager knows better than dhcpcd when to
@@ -179,8 +167,7 @@ ip4_start (NMDHCPClient *client,
 
 static GPid
 ip6_start (NMDHCPClient *client,
-           NMSettingIP6Config *s_ip6,
-           guint8 *dhcp_anycast_addr,
+           GByteArray *dhcp_anycast_addr,
            const char *hostname,
            gboolean info_only,
            const GByteArray *duid)
@@ -197,8 +184,10 @@ stop (NMDHCPClient *client, gboolean release, const GByteArray *duid)
 	/* Chain up to parent */
 	NM_DHCP_CLIENT_CLASS (nm_dhcp_dhcpcd_parent_class)->stop (client, release, duid);
 
-	if (priv->pid_file)
-		remove (priv->pid_file);
+	if (priv->pid_file) {
+		if (remove (priv->pid_file) == -1)
+			nm_log_dbg (LOGD_DHCP, "Could not remove dhcp pid file \"%s\": %d (%s)", priv->pid_file, errno, g_strerror (errno));
+	}
 
 	/* FIXME: implement release... */
 }

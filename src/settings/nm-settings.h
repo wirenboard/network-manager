@@ -43,12 +43,13 @@
 #define NM_SETTINGS_UNMANAGED_SPECS "unmanaged-specs"
 #define NM_SETTINGS_HOSTNAME        "hostname"
 #define NM_SETTINGS_CAN_MODIFY      "can-modify"
+#define NM_SETTINGS_CONNECTIONS     "connections"
 
 #define NM_SETTINGS_SIGNAL_CONNECTION_ADDED              "connection-added"
 #define NM_SETTINGS_SIGNAL_CONNECTION_UPDATED            "connection-updated"
+#define NM_SETTINGS_SIGNAL_CONNECTION_UPDATED_BY_USER    "connection-updated-by-user"
 #define NM_SETTINGS_SIGNAL_CONNECTION_REMOVED            "connection-removed"
 #define NM_SETTINGS_SIGNAL_CONNECTION_VISIBILITY_CHANGED "connection-visibility-changed"
-#define NM_SETTINGS_SIGNAL_CONNECTIONS_LOADED            "connections-loaded"
 #define NM_SETTINGS_SIGNAL_AGENT_REGISTERED              "agent-registered"
 
 typedef struct {
@@ -69,16 +70,12 @@ typedef struct {
 
 	void (*connection_visibility_changed) (NMSettings *self, NMSettingsConnection *connection);
 
-	void (*connections_loaded) (NMSettings *self);
-
 	void (*agent_registered) (NMSettings *self, NMSecretAgent *agent);
 } NMSettingsClass;
 
 GType nm_settings_get_type (void);
 
-NMSettings *nm_settings_new (const char *config_file,
-                             const char **plugins,
-                             GError **error);
+NMSettings *nm_settings_new (GError **error);
 
 typedef void (*NMSettingsForEachFunc) (NMSettings *settings,
                                        NMSettingsConnection *connection,
@@ -94,17 +91,22 @@ typedef void (*NMSettingsAddCallback) (NMSettings *settings,
                                        DBusGMethodInvocation *context,
                                        gpointer user_data);
 
-void nm_settings_add_connection (NMSettings *self,
-                                 NMConnection *connection,
-                                 DBusGMethodInvocation *context,
-                                 NMSettingsAddCallback callback,
-                                 gpointer user_data);
+void nm_settings_add_connection_dbus (NMSettings *self,
+                                      NMConnection *connection,
+                                      gboolean save_to_disk,
+                                      DBusGMethodInvocation *context,
+                                      NMSettingsAddCallback callback,
+                                      gpointer user_data);
 
 /* Returns a list of NMSettingsConnections.  Caller must free the list with
  * g_slist_free().
  */
 GSList *nm_settings_get_connections (NMSettings *settings);
 
+NMSettingsConnection *nm_settings_add_connection (NMSettings *settings,
+                                                  NMConnection *connection,
+                                                  gboolean save_to_disk,
+                                                  GError **error);
 NMSettingsConnection *nm_settings_get_connection_by_path (NMSettings *settings,
                                                           const char *path);
 
@@ -117,6 +119,8 @@ char *nm_settings_get_hostname (NMSettings *self);
 
 void nm_settings_device_added (NMSettings *self, NMDevice *device);
 
-void nm_settings_device_removed (NMSettings *self, NMDevice *device);
+void nm_settings_device_removed (NMSettings *self, NMDevice *device, gboolean quitting);
+
+gint nm_settings_sort_connections (gconstpointer a, gconstpointer b);
 
 #endif  /* __NM_SETTINGS_H__ */

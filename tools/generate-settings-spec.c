@@ -30,29 +30,32 @@
 #include <dbus/dbus-glib.h>
 #include "config.h"
 
+#include <nm-setting.h>
 #include <nm-setting-8021x.h>
 #include <nm-setting-adsl.h>
 #include <nm-setting-bluetooth.h>
+#include <nm-setting-bond.h>
+#include <nm-setting-bridge.h>
+#include <nm-setting-bridge-port.h>
 #include <nm-setting-cdma.h>
 #include <nm-setting-connection.h>
+#include <nm-setting-dcb.h>
 #include <nm-setting-gsm.h>
-#include <nm-setting.h>
+#include <nm-setting-infiniband.h>
 #include <nm-setting-ip4-config.h>
 #include <nm-setting-ip6-config.h>
 #include <nm-setting-olpc-mesh.h>
 #include <nm-setting-ppp.h>
 #include <nm-setting-pppoe.h>
 #include <nm-setting-serial.h>
+#include <nm-setting-team.h>
+#include <nm-setting-team-port.h>
+#include <nm-setting-vlan.h>
 #include <nm-setting-vpn.h>
 #include <nm-setting-wimax.h>
 #include <nm-setting-wired.h>
 #include <nm-setting-wireless.h>
 #include <nm-setting-wireless-security.h>
-#include <nm-setting-infiniband.h>
-#include <nm-setting-bond.h>
-#include <nm-setting-bridge.h>
-#include <nm-setting-bridge-port.h>
-#include <nm-setting-vlan.h>
 
 #include <nm-utils.h>
 
@@ -67,6 +70,7 @@ static SettingNewFunc funcs[] = {
 	nm_setting_bridge_port_new,
 	nm_setting_cdma_new,
 	nm_setting_connection_new,
+	nm_setting_dcb_new,
 	nm_setting_gsm_new,
 	nm_setting_infiniband_new,
 	nm_setting_ip4_config_new,
@@ -75,6 +79,8 @@ static SettingNewFunc funcs[] = {
 	nm_setting_ppp_new,
 	nm_setting_pppoe_new,
 	nm_setting_serial_new,
+	nm_setting_team_new,
+	nm_setting_team_port_new,
 	nm_setting_vlan_new,
 	nm_setting_vpn_new,
 	nm_setting_wimax_new,
@@ -138,7 +144,7 @@ write_one_setting (FILE *f, gboolean book, SettingNewFunc func)
 		const char *key_name, *value_type, *value_desc;
 		char *default_value;
 		TypeNameElement *name_iter;
-		GValue value = { 0, };
+		GValue value = G_VALUE_INIT;
 		char *flags_str = NULL;
 
 		value_type = g_type_name (G_PARAM_SPEC_VALUE_TYPE (*iter));
@@ -255,20 +261,23 @@ writer_header_docbook_manpage (FILE *f)
 		"  </refmeta>\n"
 		"  <refnamediv>\n"
 		"    <refname>nm-settings</refname>\n"
-		"    <refpurpose>Description of settings and parameters of NetworkManager connections.</refpurpose>\n"
+		"    <refpurpose>Description of settings and properties of NetworkManager connection profiles</refpurpose>\n"
 		"  </refnamediv>\n"
 		"  <refsect1>\n"
 		"    <title>DESCRIPTION</title>\n"
 		"    <para>\n"
-		"      NetworkManager is based on a concept of connections. These connections are\n"
-		"      then applied to a device to make an active network connection. Users can create\n"
-		"      as many connections as they see fit. The connections are handled by NetworkManager\n"
-		"      via <emphasis>settings service</emphasis> and are exported on D-Bus \n"
+		"      NetworkManager is based on a concept of connection profiles, sometimes referred to as\n"
+		"      connections only. These connection profiles contain a network configuration. When\n"
+		"      NetworkManager activates a connection profile on a network device the configuration will\n"
+		"      be applied and an active network connection will be established. Users are free to create\n"
+		"      as many connection profiles as they see fit. Thus they are flexible in having various network\n"
+		"      configurations for different networking needs. The connection profiles are handled by\n"
+		"      NetworkManager via <emphasis>settings service</emphasis> and are exported on D-Bus\n"
 		"      (<emphasis>/org/freedesktop/NetworkManager/Settings/&lt;num&gt;</emphasis> objects).\n"
 		"      The conceptual objects can be described as follows:\n"
 		"      <variablelist>\n"
 		"        <varlistentry>\n"
-		"          <term>Connection</term>\n"
+		"          <term>Connection (profile)</term>\n"
 		"          <listitem>\n"
 		"            <para>\n"
 		"              A specific, encapsulated, independent group of settings describing\n"
@@ -279,7 +288,7 @@ writer_header_docbook_manpage (FILE *f)
 		"              objects.\n"
 		"            </para>\n"
 		"          </listitem>\n"
-		"      </varlistentry>\n"
+		"        </varlistentry>\n"
 		"      </variablelist>\n"
 		"      <variablelist>\n"
 		"        <varlistentry>\n"
@@ -287,13 +296,25 @@ writer_header_docbook_manpage (FILE *f)
 		"          <listitem>\n"
 		"            <para>\n"
 		"              A group of related key/value pairs describing a specific piece of a\n"
-		"              <emphasis>Connection</emphasis>. Settings keys and allowed values are\n"
-		"              described in the tables below. Developers can find the settings\n"
-		"              objects in the libnm-util sources. Look for the <function>class_init</function>\n"
-		"              functions near the bottoms of each setting source file.\n"
+		"              <emphasis>Connection (profile)</emphasis>. Settings keys and allowed values are\n"
+		"              described in the tables below. Keys are also reffered to as properties.\n"
+		"              Developers can find the setting objects and their properties in the libnm-util\n"
+		"              sources. Look for the <function>class_init</function> functions near the bottom of\n"
+		"              each setting source file.\n"
 		"            </para>\n"
 		"          </listitem>\n"
-		"      </varlistentry>\n"
+		"        </varlistentry>\n"
+		"      </variablelist>\n"
+		"      <variablelist>\n"
+		"        <para>\n"
+		"          The settings and properties shown in tables below list all available connection\n"
+		"          configuration options. However, note that not all settings are applicable to all\n"
+		"          connection types. NetworkManager provides a command-line tool <emphasis>nmcli</emphasis>\n"
+		"          that allows direct configuration of the settings and properties according to a connection\n"
+		"          profile type. <emphasis>nmcli</emphasis> connection editor has also a built-in\n"
+		"          <emphasis>describe</emphasis> command that can display description of particular settings\n"
+		"          and properties of this page.\n"
+		"        </para>\n"
 		"      </variablelist>\n",
 		time_str, VERSION);
 }
@@ -346,7 +367,7 @@ writer_footer_docbook_manpage (FILE *f)
 		"  <refsect1>\n"
 		"    <title>SEE ALSO</title>\n"
 		"    <para>https://live.gnome.org/NetworkManagerConfiguration</para>\n"
-		"    <para>NetworkManager(8), nmcli(1), NetworkManager.conf(5)</para>\n"
+		"    <para>NetworkManager(8), nmcli(1), nmcli-examples(5), NetworkManager.conf(5)</para>\n"
 		"  </refsect1>\n"
 		"</refentry>\n");
 }
@@ -387,7 +408,9 @@ main (int argc, char *argv[])
 			usage (argv[0]);
 	}
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
 	if (!nm_utils_init (&error)) {
 		fprintf (stderr, "ERR: failed to initialize libnm-util: %s", error->message);

@@ -31,12 +31,21 @@
 
 static gboolean impl_vpn_plugin_connect    (NMVPNPlugin *plugin,
                                             GHashTable *connection,
-                                            GError **err);
+                                            GError **error);
+
+static gboolean impl_vpn_plugin_connect_interactive (NMVPNPlugin *plugin,
+                                                     GHashTable *connection,
+                                                     GHashTable *details,
+                                                     GError **error);
 
 static gboolean impl_vpn_plugin_need_secrets (NMVPNPlugin *plugin,
                                               GHashTable *connection,
                                               char **service_name,
                                               GError **err);
+
+static gboolean impl_vpn_plugin_new_secrets (NMVPNPlugin *plugin,
+                                             GHashTable *connection,
+                                             GError **err);
 
 static gboolean impl_vpn_plugin_disconnect (NMVPNPlugin *plugin,
                                             GError **err);
@@ -59,7 +68,6 @@ static gboolean impl_vpn_plugin_set_failure (NMVPNPlugin *plugin,
 
 #include "nm-vpn-plugin-glue.h"
 
-#define NM_VPN_PLUGIN_CONNECT_TIMER 60
 #define NM_VPN_PLUGIN_QUIT_TIMER    20
 
 G_DEFINE_ABSTRACT_TYPE (NMVPNPlugin, nm_vpn_plugin, G_TYPE_OBJECT)
@@ -75,6 +83,7 @@ typedef struct {
 	guint connect_timer;
 	guint quit_timer;
 	guint fail_stop_id;
+	gboolean interactive;
 
 	gboolean got_config;
 	gboolean has_ip4, got_ip4;
@@ -94,6 +103,7 @@ enum {
 	LOGIN_BANNER,
 	FAILURE,
 	QUIT,
+	SECRETS_REQUIRED,
 
 	LAST_SIGNAL
 };
@@ -276,60 +286,28 @@ fail_stop (gpointer data)
 	return FALSE;
 }
 
-static gboolean
-nm_vpn_plugin_connect (NMVPNPlugin *plugin,
-                       NMConnection *connection,
-                       GError **err)
+static void
+schedule_fail_stop (NMVPNPlugin *plugin)
 {
 	NMVPNPluginPrivate *priv = NM_VPN_PLUGIN_GET_PRIVATE (plugin);
-	gboolean ret = FALSE;
-	NMVPNServiceState state;
 
-	g_return_val_if_fail (NM_IS_VPN_PLUGIN (plugin), FALSE);
+	if (priv->fail_stop_id)
+		g_source_remove (priv->fail_stop_id);
+	priv->fail_stop_id = g_idle_add (fail_stop, plugin);
+}
 
-	state = nm_vpn_plugin_get_state (plugin);
-	switch (state) {
-	case NM_VPN_SERVICE_STATE_STARTING:
-		g_set_error (err,
-		             NM_VPN_PLUGIN_ERROR,
-		             NM_VPN_PLUGIN_ERROR_STARTING_IN_PROGRESS,
-		             "%s",
-		             "Could not process the request because the VPN connection is already being started.");
-		break;
-	case NM_VPN_SERVICE_STATE_STARTED:
-		g_set_error (err,
-		             NM_VPN_PLUGIN_ERROR,
-		             NM_VPN_PLUGIN_ERROR_ALREADY_STARTED,
-		             "%s",
-		             "Could not process the request because a VPN connection was already active.");
-		break;
-	case NM_VPN_SERVICE_STATE_STOPPING:
-		g_set_error (err,
-		             NM_VPN_PLUGIN_ERROR,
-		             NM_VPN_PLUGIN_ERROR_STOPPING_IN_PROGRESS,
-		             "%s",
-		             "Could not process the request because the VPN connection is being stopped.");
-		break;
-	case NM_VPN_SERVICE_STATE_STOPPED:
-	case NM_VPN_SERVICE_STATE_INIT:
-		nm_vpn_plugin_set_state (plugin, NM_VPN_SERVICE_STATE_STARTING);
-		ret = NM_VPN_PLUGIN_GET_CLASS (plugin)->connect (plugin, connection, err);
-		if (!ret) {
-			/* Stop the plugin from and idle handler so that the Connect
-			 * method return gets sent before the STOP StateChanged signal.
-			 */
-			if (priv->fail_stop_id)
-				g_source_remove (priv->fail_stop_id);
-			priv->fail_stop_id = g_idle_add (fail_stop, plugin);
-		}
-		break;
+static void
+_g_value_set (GValue *dst, GValue *src)
+{
+	if (src) {
+		GType type = G_VALUE_TYPE (src);
 
-	default:
-		g_assert_not_reached ();
-		break;
-	}
-
-	return ret;
+		if (G_IS_VALUE (dst))
+			g_value_unset (dst);
+		g_value_init (dst, type);
+		g_value_copy (src, dst);
+	} else if (G_IS_VALUE (dst))
+		g_value_unset (dst);
 }
 
 void
@@ -356,26 +334,10 @@ nm_vpn_plugin_set_config (NMVPNPlugin *plugin,
 	/* Record the items that need to also be inserted into the
 	 * ip4config, for compatibility with older daemons.
 	 */
-	val = g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_BANNER);
-	if (val) {
-		g_value_init (&priv->banner, G_VALUE_TYPE (val));
-		g_value_copy (val, &priv->banner);
-	}
-	val = g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_TUNDEV);
-	if (val) {
-		g_value_init (&priv->tundev, G_VALUE_TYPE (val));
-		g_value_copy (val, &priv->tundev);
-	}
-	val = g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_EXT_GATEWAY);
-	if (val) {
-		g_value_init (&priv->gateway, G_VALUE_TYPE (val));
-		g_value_copy (val, &priv->gateway);
-	}
-	val = g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_MTU);
-	if (val) {
-		g_value_init (&priv->mtu, G_VALUE_TYPE (val));
-		g_value_copy (val, &priv->mtu);
-	}
+	_g_value_set (&priv->banner, g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_BANNER));
+	_g_value_set (&priv->tundev, g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_TUNDEV));
+	_g_value_set (&priv->gateway, g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_EXT_GATEWAY));
+	_g_value_set (&priv->mtu, g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_MTU));
 
 	g_signal_emit (plugin, signals[CONFIG], 0, config);
 }
@@ -446,29 +408,101 @@ nm_vpn_plugin_set_ip6_config (NMVPNPlugin *plugin,
 		nm_vpn_plugin_set_state (plugin, NM_VPN_SERVICE_STATE_STARTED);
 }
 
+static void
+connect_timer_removed (gpointer data)
+{
+	NM_VPN_PLUGIN_GET_PRIVATE (data)->connect_timer = 0;
+}
+
+static void
+connect_timer_start (NMVPNPlugin *plugin)
+{
+	NMVPNPluginPrivate *priv = NM_VPN_PLUGIN_GET_PRIVATE (plugin);
+
+	priv->connect_timer = g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
+	                                                  60,
+	                                                  connect_timer_expired,
+	                                                  plugin,
+	                                                  connect_timer_removed);
+}
+
+static gboolean
+_connect_generic (NMVPNPlugin *plugin,
+                  GHashTable *properties,
+                  GHashTable *details,
+                  GError **error)
+{
+	NMVPNPluginPrivate *priv = NM_VPN_PLUGIN_GET_PRIVATE (plugin);
+	NMVPNPluginClass *vpn_class = NM_VPN_PLUGIN_GET_CLASS (plugin);
+	NMConnection *connection;
+	gboolean success = FALSE;
+	GError *local = NULL;
+
+	if (priv->state != NM_VPN_SERVICE_STATE_STOPPED &&
+	    priv->state != NM_VPN_SERVICE_STATE_INIT) {
+		g_set_error (error, NM_VPN_PLUGIN_ERROR, NM_VPN_PLUGIN_ERROR_WRONG_STATE,
+		             "Could not start connection: wrong plugin state %d",
+		             priv->state);
+		return FALSE;
+	}
+
+	connection = nm_connection_new_from_hash (properties, &local);
+	if (!connection) {
+		g_set_error (error, NM_VPN_PLUGIN_ERROR, NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS,
+		             "Invalid connection: (%d) %s",
+		             local->code, local->message);
+		g_clear_error (&local);
+		return FALSE;
+	}
+
+
+	priv->interactive = FALSE;
+	if (details && !vpn_class->connect_interactive) {
+		g_set_error_literal (error, NM_VPN_PLUGIN_ERROR, NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED,
+		                     "Plugin does not implement ConnectInteractive()");
+		return FALSE;
+	}
+
+	nm_vpn_plugin_set_state (plugin, NM_VPN_SERVICE_STATE_STARTING);
+
+	if (details) {
+		priv->interactive = TRUE;
+		success = vpn_class->connect_interactive (plugin, connection, details, error);
+	} else
+		success = vpn_class->connect (plugin, connection, error);
+
+	if (success) {
+		/* Add a timer to make sure we do not wait indefinitely for the successful connect. */
+		connect_timer_start (plugin);
+	} else {
+		/* Stop the plugin from an idle handler so that the Connect
+		 * method return gets sent before the STOP StateChanged signal.
+		 */
+		schedule_fail_stop (plugin);
+	}
+
+	g_object_unref (connection);
+	return success;
+}
 
 static gboolean
 impl_vpn_plugin_connect (NMVPNPlugin *plugin,
-                         GHashTable *properties,
+                         GHashTable *connection,
                          GError **error)
 {
-	NMConnection *connection;
-	gboolean success = FALSE;
-
-	connection = nm_connection_new_from_hash (properties, error);
-	if (!connection) {
-		g_warning ("%s: Invalid connection: '%s' / '%s' invalid: %d",
-		           __func__,
-		           g_type_name (nm_connection_lookup_setting_type_by_quark ((*error)->domain)),
-		           (*error)->message,
-		           (*error)->code);
-	} else {
-		success = nm_vpn_plugin_connect (plugin, connection, error);
-		g_object_unref (connection);
-	}
-
-	return success;
+	return _connect_generic (plugin, connection, NULL, error);
 }
+
+static gboolean
+impl_vpn_plugin_connect_interactive (NMVPNPlugin *plugin,
+                                     GHashTable *connection,
+                                     GHashTable *details,
+                                     GError **error)
+{
+	return _connect_generic (plugin, connection, details, error);
+}
+
+/***************************************************************/
 
 static gboolean
 impl_vpn_plugin_need_secrets (NMVPNPlugin *plugin,
@@ -523,6 +557,94 @@ impl_vpn_plugin_need_secrets (NMVPNPlugin *plugin,
 out:
 	return ret;
 }
+
+static gboolean
+impl_vpn_plugin_new_secrets (NMVPNPlugin *plugin,
+                             GHashTable *properties,
+                             GError **error)
+{
+	NMVPNPluginPrivate *priv = NM_VPN_PLUGIN_GET_PRIVATE (plugin);
+	NMConnection *connection;
+	GError *local = NULL;
+	gboolean success;
+
+	if (priv->state != NM_VPN_SERVICE_STATE_STARTING) {
+		g_set_error (error, NM_VPN_PLUGIN_ERROR, NM_VPN_PLUGIN_ERROR_WRONG_STATE,
+		             "Could not accept new secrets: wrong plugin state %d",
+		             priv->state);
+		return FALSE;
+	}
+
+	connection = nm_connection_new_from_hash (properties, &local);
+	if (!connection) {
+		g_set_error (error, NM_VPN_PLUGIN_ERROR, NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS,
+		             "Invalid connection: (%d) %s",
+		             local->code, local->message);
+		g_clear_error (&local);
+		return FALSE;
+	}
+
+	if (!NM_VPN_PLUGIN_GET_CLASS (plugin)->new_secrets) {
+		g_set_error_literal (error, NM_VPN_PLUGIN_ERROR, NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED,
+		                     "Could not accept new secrets: plugin cannot process interactive secrets");
+		g_object_unref (connection);
+		return FALSE;
+	}
+
+	success = NM_VPN_PLUGIN_GET_CLASS (plugin)->new_secrets (plugin, connection, error);
+	if (success) {
+		/* Add a timer to make sure we do not wait indefinitely for the successful connect. */
+		connect_timer_start (plugin);
+	} else {
+		/* Stop the plugin from and idle handler so that the NewSecrets
+		 * method return gets sent before the STOP StateChanged signal.
+		 */
+		schedule_fail_stop (plugin);
+	}
+
+	g_object_unref (connection);
+	return success;
+}
+
+/**
+ * nm_vpn_plugin_secrets_required:
+ * @plugin: the #NMVPNPlugin
+ * @message: an information message about why secrets are required, if any
+ * @hints: VPN specific secret names for required new secrets
+ *
+ * Called by VPN plugin implementations to signal to NetworkManager that secrets
+ * are required during the connection process.  This signal may be used to
+ * request new secrets when the secrets originally provided by NetworkManager
+ * are insufficient, or the VPN process indicates that it needs additional
+ * information to complete the request.
+ *
+ * Since: 0.9.10
+ */
+void
+nm_vpn_plugin_secrets_required (NMVPNPlugin *plugin,
+                                const char *message,
+                                const char **hints)
+{
+	NMVPNPluginPrivate *priv = NM_VPN_PLUGIN_GET_PRIVATE (plugin);
+
+	/* Plugin must be able to accept the new secrets if it calls this method */
+	g_return_if_fail (NM_VPN_PLUGIN_GET_CLASS (plugin)->new_secrets);
+
+	/* Plugin cannot call this method if NetworkManager didn't originally call
+	 * ConnectInteractive().
+	 */
+	g_return_if_fail (priv->interactive == TRUE);
+
+	/* Cancel the connect timer since secrets might take a while.  It'll
+	 * get restarted when the secrets come back via NewSecrets().
+	 */
+	if (priv->connect_timer)
+		g_source_remove (priv->connect_timer);
+
+	g_signal_emit (plugin, signals[SECRETS_REQUIRED], 0, message, hints);
+}
+
+/***************************************************************/
 
 static gboolean
 impl_vpn_plugin_disconnect (NMVPNPlugin *plugin,
@@ -767,12 +889,6 @@ finalize (GObject *object)
 }
 
 static void
-connect_timer_removed (gpointer data)
-{
-	NM_VPN_PLUGIN_GET_PRIVATE (data)->connect_timer = 0;
-}
-
-static void
 quit_timer_removed (gpointer data)
 {
 	NM_VPN_PLUGIN_GET_PRIVATE (data)->quit_timer = 0;
@@ -793,13 +909,6 @@ state_changed (NMVPNPlugin *plugin, NMVPNServiceState state)
 			g_source_remove (priv->fail_stop_id);
 			priv->fail_stop_id = 0;
 		}
-
-		/* Add a timer to make sure we do not wait indefinitely for the successful connect. */
-		priv->connect_timer = g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
-		                                                  NM_VPN_PLUGIN_CONNECT_TIMER,
-		                                                  connect_timer_expired,
-		                                                  plugin,
-		                                                  connect_timer_removed);
 		break;
 	case NM_VPN_SERVICE_STATE_STOPPED:
 		priv->quit_timer = g_timeout_add_seconds_full (G_PRIORITY_DEFAULT,
@@ -873,6 +982,14 @@ nm_vpn_plugin_class_init (NMVPNPluginClass *plugin_class)
 		              G_TYPE_NONE, 1,
 		              G_TYPE_UINT);
 
+	signals[SECRETS_REQUIRED] =
+		g_signal_new ("secrets-required",
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL,
+		              NULL,
+		              G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRV);
+
 	signals[CONFIG] =
 		g_signal_new ("config",
 		              G_OBJECT_CLASS_TYPE (object_class),
@@ -934,7 +1051,7 @@ nm_vpn_plugin_class_init (NMVPNPluginClass *plugin_class)
 		              G_TYPE_NONE);
 
 	dbus_g_error_domain_register (NM_VPN_PLUGIN_ERROR,
-	                              NULL,
+	                              NM_DBUS_VPN_ERROR_PREFIX,
 	                              NM_TYPE_VPN_PLUGIN_ERROR);
 
 	setup_unix_signal_handler ();

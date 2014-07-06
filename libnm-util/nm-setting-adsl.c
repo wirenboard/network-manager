@@ -20,14 +20,16 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2008 Red Hat, Inc.
+ * (C) Copyright 2011 - 2013 Red Hat, Inc.
  */
+
+#include <string.h>
+#include <glib/gi18n.h>
 
 #include "nm-setting-adsl.h"
 #include "nm-setting-ppp.h"
 #include "nm-setting-private.h"
 #include "nm-utils.h"
-#include <string.h>
 
 /**
  * SECTION:nm-setting-adsl
@@ -204,34 +206,39 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	NMSettingAdslPrivate *priv = NM_SETTING_ADSL_GET_PRIVATE (setting);
 
 	if (!priv->username) {
-		g_set_error (error,
-		             NM_SETTING_ADSL_ERROR,
-		             NM_SETTING_ADSL_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_ADSL_USERNAME);
+		g_set_error_literal (error,
+		                     NM_SETTING_ADSL_ERROR,
+		                     NM_SETTING_ADSL_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_ADSL_SETTING_NAME, NM_SETTING_ADSL_USERNAME);
 		return FALSE;
 	} else if (!strlen (priv->username)) {
-		g_set_error (error,
-		             NM_SETTING_ADSL_ERROR,
-		             NM_SETTING_ADSL_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_ADSL_USERNAME);
+		g_set_error_literal (error,
+		                     NM_SETTING_ADSL_ERROR,
+		                     NM_SETTING_ADSL_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_ADSL_SETTING_NAME, NM_SETTING_ADSL_USERNAME);
 		return FALSE;
 	}
 
 	if (priv->password && !strlen (priv->password)) {
-		g_set_error (error,
-		             NM_SETTING_ADSL_ERROR,
-		             NM_SETTING_ADSL_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_ADSL_PASSWORD);
+		g_set_error_literal (error,
+		                     NM_SETTING_ADSL_ERROR,
+		                     NM_SETTING_ADSL_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_ADSL_SETTING_NAME, NM_SETTING_ADSL_PASSWORD);
 		return FALSE;
 	}
 
 	if (strcmp (priv->protocol, NM_SETTING_ADSL_PROTOCOL_PPPOA) &&
-		strcmp (priv->protocol, NM_SETTING_ADSL_PROTOCOL_PPPOE) &&
-		strcmp (priv->protocol, NM_SETTING_ADSL_PROTOCOL_IPOATM)) {
+	    strcmp (priv->protocol, NM_SETTING_ADSL_PROTOCOL_PPPOE) &&
+	    strcmp (priv->protocol, NM_SETTING_ADSL_PROTOCOL_IPOATM)) {
 		g_set_error (error,
 		             NM_SETTING_ADSL_ERROR,
 		             NM_SETTING_ADSL_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_ADSL_PROTOCOL);
+		             _("'%s' is not a valid value for the property"),
+		             priv->protocol);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_ADSL_SETTING_NAME, NM_SETTING_ADSL_PROTOCOL);
 		return FALSE;
 	}
 
@@ -240,7 +247,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_ADSL_ERROR,
 		             NM_SETTING_ADSL_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_ADSL_ENCAPSULATION);
+		             _("'%s' is not a valid value for the property"),
+		             priv->encapsulation);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_ADSL_SETTING_NAME, NM_SETTING_ADSL_ENCAPSULATION);
 		return FALSE;
 	}
 
@@ -267,7 +276,6 @@ need_secrets (NMSetting *setting)
 static void
 nm_setting_adsl_init (NMSettingAdsl *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_ADSL_SETTING_NAME, NULL);
 }
 
 static void
@@ -383,7 +391,7 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 						  "Username",
 						  "Username used to authenticate with the pppoa service.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingAdsl:password:
@@ -396,12 +404,12 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 						  "Password",
 						  "Password used to authenticate with the pppoa service.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSettingAdsl:password-flags:
 	 *
-	 * Flags indicating how to handle #NMSettingAdsl:password:.
+	 * Flags indicating how to handle the #NMSettingAdsl:password property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PASSWORD_FLAGS,
 		 g_param_spec_uint (NM_SETTING_ADSL_PASSWORD_FLAGS,
@@ -410,12 +418,12 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingAdsl:protocol:
 	 *
-	 * ADSL connection protocol, can be pppoa, pppoe or ipoatm.
+	 * ADSL connection protocol.  Can be "pppoa", "pppoe" or "ipoatm".
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PROTOCOL,
@@ -423,12 +431,12 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 						  "Protocol",
 						  "ADSL connection protocol.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingAdsl:encapsulation:
 	 *
-	 * ADSL connection encapsulation, can be vcmux or llc.
+	 * Encapsulation of ADSL connection.  Can be "vcmux" or "llc".
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_ENCAPSULATION,
@@ -436,12 +444,12 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 						  "Encapsulation",
 						  "Encapsulation of ADSL connection",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingAdsl:vpi:
 	 *
-	 * ADSL connection vpi.
+	 * VPI of ADSL connection
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_VPI,
@@ -449,12 +457,12 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 						  "VPI",
 						  "VPI of ADSL connection",
 						  0, 65536, 0,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingAdsl:vci:
 	 *
-	 * ADSL connection vci.
+	 * VCI of ADSL connection
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_VCI,
@@ -462,5 +470,5 @@ nm_setting_adsl_class_init (NMSettingAdslClass *setting_class)
 						  "VCI",
 						  "VCI of ADSL connection",
 						  0, 65536, 0,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 }

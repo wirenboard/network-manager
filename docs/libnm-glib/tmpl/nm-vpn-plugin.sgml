@@ -50,6 +50,35 @@ NMVPNPlugin
 @NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS: 
 @NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED: 
 @NM_VPN_PLUGIN_ERROR_CONNECTION_INVALID: 
+@NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED: 
+
+<!-- ##### STRUCT NMVPNPlugin ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### STRUCT NMVPNPluginClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@connect: 
+@need_secrets: 
+@disconnect: 
+@state_changed: 
+@ip4_config: 
+@login_banner: 
+@failure: 
+@quit: 
+@config: 
+@ip6_config: 
+@new_secrets: 
+@connect_interactive: 
+@_reserved1: 
+@_reserved2: 
 
 <!-- ##### FUNCTION nm_vpn_plugin_error_quark ##### -->
 <para>
@@ -85,6 +114,16 @@ NMVPNPlugin
 
 @plugin: 
 @state: 
+
+
+<!-- ##### FUNCTION nm_vpn_plugin_secrets_required ##### -->
+<para>
+
+</para>
+
+@plugin: 
+@message: 
+@hints: 
 
 
 <!-- ##### FUNCTION nm_vpn_plugin_set_login_banner ##### -->

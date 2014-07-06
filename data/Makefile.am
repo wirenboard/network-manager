@@ -25,25 +25,38 @@ service_DATA = $(service_in_files:.service.in=.service)
 
 $(service_DATA): $(service_in_files) Makefile
 	$(edit) $< >$@
+
+install-exec-local:
+	install -d $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
+	ln -sf $(systemdsystemunitdir)/NetworkManager-wait-online.service $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
 endif
+
+examplesdir = $(docdir)/examples
+examples_DATA = server.conf
+
+server.conf: server.conf.in
+	$(edit) $< >$@
 
 edit = sed \
 	-e 's|@bindir[@]|$(bindir)|g' \
 	-e 's|@sbindir[@]|$(sbindir)|g' \
 	-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
 	-e 's|@localstatedir[@]|$(localstatedir)|g' \
-	-e 's|@libexecdir[@]|$(libexecdir)|g'
+	-e 's|@libexecdir[@]|$(libexecdir)|g' \
+	-e 's|@DISTRO_NETWORK_SERVICE[@]|$(DISTRO_NETWORK_SERVICE)|g'
 
 EXTRA_DIST = \
 	NetworkManager.service.in \
 	NetworkManager-wait-online.service.in \
 	NetworkManager-wait-online-systemd-pre200.service.in \
 	NetworkManager-dispatcher.service.in \
-	org.freedesktop.NetworkManager.service.in
+	org.freedesktop.NetworkManager.service.in \
+	server.conf.in
 
 CLEANFILES = \
 	NetworkManager.service \
 	NetworkManager-wait-online.service \
 	NetworkManager-dispatcher.service \
-	org.freedesktop.NetworkManager.service
+	org.freedesktop.NetworkManager.service \
+	server.conf
 
