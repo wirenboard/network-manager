@@ -1369,6 +1369,7 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+m4_include([m4/ax_lib_readline.m4])
 m4_include([m4/compiler_warnings.m4])
 m4_include([m4/gettext.m4])
 m4_include([m4/gnome-code-coverage.m4])

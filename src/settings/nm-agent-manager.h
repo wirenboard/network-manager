@@ -41,7 +41,8 @@ typedef enum {
 	NM_AGENT_MANAGER_ERROR_INVALID_IDENTIFIER, /*< nick=InvalidIdentifier >*/
 	NM_AGENT_MANAGER_ERROR_NOT_REGISTERED,     /*< nick=NotRegistered >*/
 	NM_AGENT_MANAGER_ERROR_INTERNAL_ERROR,     /*< nick=InternalError >*/
-	NM_AGENT_MANAGER_ERROR_NO_SECRETS          /*< nick=NoSecrets >*/
+	NM_AGENT_MANAGER_ERROR_NO_SECRETS,         /*< nick=NoSecrets >*/
+	NM_AGENT_MANAGER_ERROR_USER_CANCELED       /*< nick=UserCanceled >*/
 } NMAgentManagerError;
 
 typedef struct {
@@ -75,12 +76,11 @@ typedef void (*NMAgentSecretsResultFunc) (NMAgentManager *manager,
 
 guint32 nm_agent_manager_get_secrets (NMAgentManager *manager,
                                       NMConnection *connection,
-                                      gboolean filter_by_uid,
-                                      gulong uid,
+                                      NMAuthSubject *subject,
                                       GHashTable *existing_secrets,
                                       const char *setting_name,
                                       NMSettingsGetSecretsFlags flags,
-                                      const char *hint,
+                                      const char **hints,
                                       NMAgentSecretsResultFunc callback,
                                       gpointer callback_data,
                                       gpointer other_data2,
@@ -91,15 +91,16 @@ void nm_agent_manager_cancel_secrets (NMAgentManager *manager,
 
 guint32 nm_agent_manager_save_secrets (NMAgentManager *manager,
                                        NMConnection *connection,
-                                       gboolean filter_by_uid,
-                                       gulong uid_filter);
+                                       NMAuthSubject *subject);
 
 guint32 nm_agent_manager_delete_secrets (NMAgentManager *manager,
-                                         NMConnection *connection,
-                                         gboolean filter_by_uid,
-                                         gulong uid_filter);
+                                         NMConnection *connection);
 
 NMSecretAgent *nm_agent_manager_get_agent_by_user (NMAgentManager *manager,
                                                    const char *username);
+
+gboolean nm_agent_manager_all_agents_have_capability (NMAgentManager *manager,
+                                                      NMAuthSubject *subject,
+                                                      NMSecretAgentCapabilities capability);
 
 #endif /* NM_AGENT_MANAGER_H */

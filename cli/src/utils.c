@@ -14,7 +14,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2010 - 2012 Red Hat, Inc.
+ * (C) Copyright 2010 - 2014 Red Hat, Inc.
  */
 
 /* Generated configuration file */
@@ -22,6 +22,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -36,8 +38,8 @@
 int
 matches (const char *cmd, const char *pattern)
 {
-	int len = strlen (cmd);
-	if (len > strlen (pattern))
+	size_t len = strlen (cmd);
+	if (!len || len > strlen (pattern))
 		return -1;
 	return memcmp (pattern, cmd, len);
 }
@@ -57,14 +59,116 @@ next_arg (int *argc, char ***argv)
 	return 0;
 }
 
+gboolean
+nmc_arg_is_help (const char *arg)
+{
+	if (!arg)
+		return FALSE;
+	if (   matches (arg, "help") == 0
+	    || (g_str_has_prefix (arg, "-")  && matches (arg+1, "help") == 0)
+	    || (g_str_has_prefix (arg, "--") && matches (arg+2, "help") == 0)) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+gboolean
+nmc_arg_is_option (const char *str, const char *opt_name)
+{
+	const char *p;
+
+	if (!str || !*str)
+		return FALSE;
+
+	if (str[0] != '-')
+		return FALSE;
+
+	p = (str[1] == '-') ? str + 2 : str + 1;
+
+	return (*p ? (matches (p, opt_name) == 0) : FALSE);
+}
+
+
 /*
- *  Convert SSID to a printable form.
- *  If it is an UTF-8 string, enclose it in quotes and return it.
- *  Otherwise convert it to a hex string representation.
+ * Helper function to parse command-line arguments.
+ * arg_arr: description of arguments to look for
+ * last:    whether these are last expected arguments
+ * argc:    command-line argument array
+ * argv:    command-line argument array size
+ * error:   error set on a failure (when FALSE is returned)
+ * Returns: TRUE on success, FALSE on an error and sets 'error'
+ */
+gboolean
+nmc_parse_args (nmc_arg_t *arg_arr, gboolean last, int *argc, char ***argv, GError **error)
+{
+	nmc_arg_t *p;
+	gboolean found;
+	gboolean have_mandatory;
+
+	g_return_val_if_fail (arg_arr != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	while (*argc > 0) {
+		found = FALSE;
+
+		for (p = arg_arr; p->name; p++) {
+			if (strcmp (**argv, p->name) == 0) {
+
+				if (p->found) {
+					/* Don't allow repeated arguments, because the argument of the same
+					 * name could be used later on the line for another purpose. Assume
+					 * that's the case and return.
+					 */
+					return TRUE;
+				}
+
+				if (p->has_value) {
+					if (next_arg (argc, argv) != 0) {
+						g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+						             _("Error: value for '%s' argument is required."), *(*argv-1));
+						return FALSE;
+					}
+					*(p->value) = **argv;
+				}
+				p->found = TRUE;
+				found = TRUE;
+				break;
+			}
+		}
+
+		if (!found) {
+			have_mandatory = TRUE;
+			for (p = arg_arr; p->name; p++) {
+				if (p->mandatory && !p->found) {
+					have_mandatory = FALSE;
+					break;
+				}
+			}
+
+			if (have_mandatory && !last)
+				return TRUE;
+
+			if (p->name)
+				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+				             _("Error: Argument '%s' was expected, but '%s' provided."), p->name, **argv);
+			else
+				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+				             _("Error: Unexpected argument '%s'"), **argv);
+			return FALSE;
+		}
+
+		next_arg (argc, argv);
+	}
+
+	return TRUE;
+}
+
+/*
+ *  Convert SSID to a hex string representation.
  *  Caller has to free the returned string using g_free()
  */
 char *
-ssid_to_printable (const char *str, gsize len)
+ssid_to_hex (const char *str, gsize len)
 {
 	GString *printable;
 	char *printable_str;
@@ -72,9 +176,6 @@ ssid_to_printable (const char *str, gsize len)
 
 	if (str == NULL || len == 0)
 		return NULL;
-
-	if (g_utf8_validate (str, len, NULL))
-		return g_strdup_printf ("'%.*s'", (int) len, str);
 
 	printable = g_string_new (NULL);
 	for (i = 0; i < len; i++) {
@@ -91,19 +192,19 @@ ssid_to_printable (const char *str, gsize len)
 char *
 nmc_ip4_address_as_string (guint32 ip, GError **error)
 {
-	struct in_addr tmp_addr;
+	guint32 tmp_addr;
 	char buf[INET_ADDRSTRLEN];
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	memset (&buf, '\0', sizeof (buf));
-	tmp_addr.s_addr = ip;
+	tmp_addr = ip;
 
 	if (inet_ntop (AF_INET, &tmp_addr, buf, INET_ADDRSTRLEN)) {
 		return g_strdup (buf);
 	} else {
 		g_set_error (error, NMCLI_ERROR, 0, _("Error converting IP4 address '0x%X' to text form"),
-		             ntohl (tmp_addr.s_addr));
+		             ntohl (tmp_addr));
 		return NULL;
 	}
 }
@@ -170,6 +271,298 @@ nmc_terminal_show_progress (const char *str)
 		idx = 0;
 }
 
+const char *
+nmc_term_color_sequence (NmcTermColor color)
+{
+	switch (color) {
+        case NMC_TERM_COLOR_BLACK:
+		return "\33[30m";
+		break;
+        case NMC_TERM_COLOR_RED:
+		return "\33[31m";
+		break;
+        case NMC_TERM_COLOR_GREEN:
+		return "\33[32m";
+		break;
+        case NMC_TERM_COLOR_YELLOW:
+		return "\33[33m";
+		break;
+        case NMC_TERM_COLOR_BLUE:
+		return "\33[34m";
+		break;
+        case NMC_TERM_COLOR_MAGENTA:
+		return "\33[35m";
+		break;
+        case NMC_TERM_COLOR_CYAN:
+		return "\33[36m";
+		break;
+        case NMC_TERM_COLOR_WHITE:
+		return "\33[37m";
+		break;
+	default:
+		return "";
+		break;
+	}
+}
+
+char *
+nmc_colorize (NmcTermColor color, const char *fmt, ...)
+{
+	va_list args;
+	char *str, *colored;
+	const char *ansi_color, *color_end;
+
+	va_start (args, fmt);
+	str = g_strdup_vprintf (fmt, args);
+	va_end (args);
+
+	ansi_color = nmc_term_color_sequence (color);
+	if (*ansi_color)
+		color_end = "\33[0m";
+	else
+		color_end = "";
+
+	colored = g_strdup_printf ("%s%s%s", ansi_color, str, color_end);
+	g_free (str);
+	return colored;
+}
+
+/*
+ * Convert string to signed integer.
+ * If required, the resulting number is checked to be in the <min,max> range.
+ */
+gboolean
+nmc_string_to_int_base (const char *str,
+                        int base,
+                        gboolean range_check,
+                        long int min,
+                        long int max,
+                        long int *value)
+{
+	char *end;
+	long int tmp;
+
+	errno = 0;
+	tmp = strtol (str, &end, base);
+	if (errno || *end != '\0' || (range_check && (tmp < min || tmp > max))) {
+		return FALSE;
+	}
+	*value = tmp;
+	return TRUE;
+}
+
+/*
+ * Convert string to unsigned integer.
+ * If required, the resulting number is checked to be in the <min,max> range.
+ */
+gboolean
+nmc_string_to_uint_base (const char *str,
+                         int base,
+                         gboolean range_check,
+                         unsigned long int min,
+                         unsigned long int max,
+                         unsigned long int *value)
+{
+	char *end;
+	unsigned long int tmp;
+
+	errno = 0;
+	tmp = strtoul (str, &end, base);
+	if (errno || *end != '\0' || (range_check && (tmp < min || tmp > max))) {
+		return FALSE;
+	}
+	*value = tmp;
+	return TRUE;
+}
+
+gboolean
+nmc_string_to_int (const char *str,
+                   gboolean range_check,
+                   long int min,
+                   long int max,
+                   long int *value)
+{
+	return nmc_string_to_int_base (str, 10, range_check, min, max, value);
+}
+
+gboolean
+nmc_string_to_uint (const char *str,
+                    gboolean range_check,
+                    unsigned long int min,
+                    unsigned long int max,
+                    unsigned long int *value)
+{
+	return nmc_string_to_uint_base (str, 10, range_check, min, max, value);
+}
+
+gboolean
+nmc_string_to_bool (const char *str, gboolean *val_bool, GError **error)
+{
+	const char *s_true[] = { "true", "yes", "on", NULL };
+	const char *s_false[] = { "false", "no", "off", NULL };
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (g_strcmp0 (str, "o") == 0) {
+		g_set_error (error, 1, 0,
+		             _("'%s' is ambiguous (on x off)"), str);
+		return FALSE;
+	}
+
+	if (nmc_string_is_valid (str, s_true, NULL))
+		*val_bool = TRUE;
+	else if (nmc_string_is_valid (str, s_false, NULL))
+		*val_bool = FALSE;
+	else {
+		g_set_error (error, 1, 0,
+		             _("'%s' is not valid; use [%s] or [%s]"),
+		             str, "true, yes, on", "false, no, off");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/*
+ * Ask user for input and return the string.
+ * The caller is responsible for freeing the returned string.
+ */
+char *
+nmc_get_user_input (const char *ask_str)
+{
+	char *line = NULL;
+	size_t line_ln = 0;
+	ssize_t num;
+
+	fprintf (stdout, "%s", ask_str);
+	num = getline (&line, &line_ln, stdin);
+
+	/* Remove newline from the string */
+	if (num < 1 || (num == 1 && line[0] == '\n')) {
+		g_free (line);
+		line = NULL;
+	} else {
+		if (line[num-1] == '\n')
+			line[num-1] = '\0';
+	}
+
+	return line;
+}
+
+/*
+ * Split string in 'line' according to 'delim' to (argument) array.
+ */
+int
+nmc_string_to_arg_array (const char *line, const char *delim, char ***argv, int *argc)
+{
+	int i = 0;
+	char **arr;
+
+	arr = g_strsplit_set (line ? line : "", delim ? delim : " \t", 0);
+	while (arr && arr[i])
+		i++;
+
+	*argc = i;
+	*argv = arr;
+
+	return 0;
+}
+
+/*
+ * Check whether 'input' is contained in 'allowed' array. It performs case
+ * insensitive comparison and supports shortcut strings if they are unique.
+ * Returns: a pointer to found string in allowed array on success or NULL.
+ * On failure: error->code : 0 - string not found; 1 - string is ambiguous
+ */
+const char *
+nmc_string_is_valid (const char *input, const char **allowed, GError **error)
+{
+	const char **p;
+	size_t input_ln, p_len;
+	gboolean prev_match = FALSE;
+	const char *ret = NULL;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	if (!input || !*input)
+		goto finish;
+
+	input_ln = strlen (input);
+	for (p = allowed; p && *p; p++) {
+		p_len = strlen (*p);
+		if (g_ascii_strncasecmp (input, *p, input_ln) == 0) {
+			if (input_ln == p_len) {
+				ret = *p;
+				break;
+			}
+			if (!prev_match)
+				ret = *p;
+			else {
+				g_set_error (error, 1, 1, _("'%s' is ambiguous (%s x %s)"),
+				             input, ret, *p);
+				return NULL;
+			}
+			prev_match = TRUE;
+		}
+	}
+
+finish:
+	if (ret == NULL) {
+		char *valid_vals = g_strjoinv (", ", (char **) allowed);
+		if (!input || !*input) {
+			g_set_error (error, 1, 0, _("missing name, try one of [%s]"),
+			             valid_vals);
+		} else {
+			g_set_error (error, 1, 0, _("'%s' not among [%s]"),
+			             input ? input : "", valid_vals);
+		}
+
+		g_free (valid_vals);
+	}
+	return ret;
+}
+
+/*
+ * Convert string array (char **) to GSList.
+ *
+ * Returns: pointer to newly created GSList. Caller should free it.
+ */
+GSList *
+nmc_util_strv_to_slist (char **strv)
+{
+	GSList *list = NULL;
+	guint i = 0;
+
+	while (strv && strv[i])
+		list = g_slist_prepend (list, g_strdup (strv[i++]));
+
+	return g_slist_reverse (list);
+}
+
+/*
+ * Wrapper function for g_strsplit_set() that removes empty strings
+ * from the vector as they are not useful in most cases.
+ */
+char **
+nmc_strsplit_set (const char *str, const char *delimiter, int max_tokens)
+{
+	char **result;
+	uint i;
+	uint j;
+
+	result = g_strsplit_set (str, delimiter, max_tokens);
+
+	/* remove empty strings */
+	for (i = 0; result && result[i]; i++) {
+		if (*(result[i]) == '\0') {
+			g_free (result[i]);
+			for (j = i; result[j]; j++)
+				result[j] = result[j + 1];
+			i--;
+		}
+	}
+	return result;
+}
+
 /*
  * Find out how many columns an UTF-8 string occupies on the screen
  */
@@ -189,54 +582,165 @@ nmc_string_screen_width (const char *start, const char *end)
 }
 
 void
-set_val_str (NmcOutputField fields_array[], guint32 idx, const char *value)
+set_val_str (NmcOutputField fields_array[], guint32 idx, char *value)
 {
-	fields_array[idx].flags = 0;
 	fields_array[idx].value = value;
+	fields_array[idx].value_is_array = FALSE;
+	fields_array[idx].free_value = TRUE;
 }
 
 void
-set_val_arr (NmcOutputField fields_array[], guint32 idx, const char **value)
+set_val_strc (NmcOutputField fields_array[], guint32 idx, const char *value)
 {
-	fields_array[idx].flags = NMC_OF_FLAG_ARRAY;
+	fields_array[idx].value = (char *) value;
+	fields_array[idx].value_is_array = FALSE;
+	fields_array[idx].free_value = FALSE;
+}
+
+void
+set_val_arr (NmcOutputField fields_array[], guint32 idx, char **value)
+{
 	fields_array[idx].value = value;
+	fields_array[idx].value_is_array = TRUE;
+	fields_array[idx].free_value = TRUE;
+}
+
+void
+set_val_arrc (NmcOutputField fields_array[], guint32 idx, const char **value)
+{
+	fields_array[idx].value = (char **) value;
+	fields_array[idx].value_is_array = TRUE;
+	fields_array[idx].free_value = FALSE;
 }
 
 /*
- * Parse comma separated fields in 'fields_str' according to 'fields_array'.
- * IN:  'field_str':    comma-separated fields names
- *      'fields_array': array of allowed fields
- * RETURN: GArray with indices representing fields in 'fields_array'.
- *         Caller is responsible to free it.
+ * Free 'value' members in array of NmcOutputField
+ */
+void
+nmc_free_output_field_values (NmcOutputField fields_array[])
+{
+	NmcOutputField *iter = fields_array;
+
+	while (iter && iter->name) {
+		if (iter->free_value) {
+			if (iter->value_is_array)
+				g_strfreev ((char **) iter->value);
+			else
+				g_free ((char *) iter->value);
+			iter->value = NULL;
+		}
+		iter++;
+	}
+}
+
+/**
+ * parse_output_fields:
+ * @field_str: comma-separated field names to parse
+ * @fields_array: array of allowed fields
+ * @parse_groups: whether the fields can contain group prefix (e.g. general.driver)
+ * @group_fields: (out) (allow-none): array of field names for particular groups
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Parses comma separated fields in @fields_str according to @fields_array.
+ * When @parse_groups is %TRUE, fields can be in the form 'group.field'. Then
+ * @group_fields will be filled with the required field for particular group.
+ * @group_fields array corresponds to the returned array.
+ * Examples:
+ *   @field_str:     "type,name,uuid" | "ip4,general.device" | "ip4.address,ip6"
+ *   returned array:   2    0    1    |   7         0        |     7         9
+ *   @group_fields:   NULL NULL NULL  |  NULL    "device"    | "address"    NULL
+ *
+ * Returns: #GArray with indices representing fields in @fields_array.
+ *   Caller is responsible for freeing the array.
  */
 GArray *
-parse_output_fields (const char *fields_str, const NmcOutputField fields_array[], GError **error)
+parse_output_fields (const char *fields_str,
+                     const NmcOutputField fields_array[],
+                     gboolean parse_groups,
+                     GPtrArray **group_fields,
+                     GError **error)
 {
 	char **fields, **iter;
 	GArray *array;
-	int i;
+	int i, j;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+	g_return_val_if_fail (group_fields == NULL || *group_fields == NULL, NULL);
 
 	array = g_array_new (FALSE, FALSE, sizeof (int));
+	if (parse_groups && group_fields)
+		*group_fields = g_ptr_array_new_full (20, (GDestroyNotify) g_free);
 
 	/* Split supplied fields string */
 	fields = g_strsplit_set (fields_str, ",", -1);
 	for (iter = fields; iter && *iter; iter++) {
-		for (i = 0; fields_array[i].name; i++) {
-			if (strcasecmp (*iter, fields_array[i].name) == 0) {
-				g_array_append_val (array, i);
-				break;
+		int idx = -1;
+
+		g_strstrip (*iter);
+		if (parse_groups) {
+			/* e.g. "general.device,general.driver,ip4,ip6" */
+			gboolean found = FALSE;
+			char *left = *iter;
+			char *right = strchr (*iter, '.');
+
+			if (right)
+				*right++ = '\0';
+
+			for (i = 0; fields_array[i].name; i++) {
+				if (strcasecmp (left, fields_array[i].name) == 0) {
+					NmcOutputField *valid_names = fields_array[i].group;
+					idx = i;
+					if (!right && !valid_names) {
+						found = TRUE;
+						break;
+					}
+					for (j = 0; valid_names && valid_names[j].name; j++) {
+						if (!right || strcasecmp (right, valid_names[j].name) == 0) {
+							found = TRUE;
+							break;
+						}
+					}
+				}
+				if (found)
+					break;
+			}
+			if (found) {
+				/* Add index to array, and field name (or NULL) to group_fields array */
+				g_array_append_val (array, idx);
+				if (group_fields && *group_fields)
+					g_ptr_array_add (*group_fields, g_strdup (right));
+			}
+			if (right)
+				*(right-1) = '.';  /* Restore the original string */
+		} else {
+			/* e.g. "general,ip4,ip6" */
+			for (i = 0; fields_array[i].name; i++) {
+				if (strcasecmp (*iter, fields_array[i].name) == 0) {
+					g_array_append_val (array, i);
+					break;
+				}
 			}
 		}
+
+		/* Field was not found - error case */
 		if (fields_array[i].name == NULL) {
+			/* Set GError */
 			if (!strcasecmp (*iter, "all") || !strcasecmp (*iter, "common"))
 				g_set_error (error, NMCLI_ERROR, 0, _("field '%s' has to be alone"), *iter);
+			else {
+				char *allowed_fields = nmc_get_allowed_fields (fields_array, idx);
+				g_set_error (error, NMCLI_ERROR, 1, _("invalid field '%s'; allowed fields: %s"),
+				             *iter, allowed_fields);
+				g_free (allowed_fields);
+			}
 
-			else
-				g_set_error (error, NMCLI_ERROR, 1, _("invalid field '%s'"), *iter);
+			/* Free arrays on error */
 			g_array_free (array, TRUE);
 			array = NULL;
+			if (group_fields && *group_fields) {
+				g_ptr_array_free (*group_fields, TRUE);
+				*group_fields = NULL;
+			}
 			goto done;
 		}
 	}
@@ -244,6 +748,35 @@ done:
 	if (fields)
 		g_strfreev (fields);
 	return array;
+}
+
+/**
+* nmc_get_allowed_fields:
+* @fields_array: array of fields
+* @group_idx: index to the array (for second-level array in 'group' member),
+*   or -1
+*
+* Returns: string of allowed fields names.
+*   Caller is responsible for freeing the array.
+*/
+char *
+nmc_get_allowed_fields (const NmcOutputField fields_array[], int group_idx)
+{
+	GString *allowed_fields = g_string_sized_new (256);
+	int i;
+
+	if (group_idx != -1 && fields_array[group_idx].group) {
+		NmcOutputField *second_level = fields_array[group_idx].group;
+		for (i = 0; second_level[i].name; i++)
+			g_string_append_printf (allowed_fields, "%s.%s,",
+			                        fields_array[group_idx].name, second_level[i].name);
+	} else {
+		for (i = 0; fields_array[i].name; i++)
+			g_string_append_printf (allowed_fields, "%s,", fields_array[i].name);
+	}
+	g_string_truncate (allowed_fields, allowed_fields->len - 1);
+
+	return g_string_free (allowed_fields, FALSE);
 }
 
 gboolean
@@ -264,14 +797,68 @@ nmc_terse_option_check (NMCPrintOutput print_output, const char *fields, GError 
 	return TRUE;
 }
 
+NmcOutputField *
+nmc_dup_fields_array (NmcOutputField fields[], size_t size, guint32 flags)
+{
+	NmcOutputField *row;
+
+	row = g_malloc0 (size);
+	memcpy (row, fields, size);
+	row[0].flags = flags;
+
+	return row;
+}
+
+void
+nmc_empty_output_fields (NmCli *nmc)
+{
+	guint i;
+
+	/* Free values in field structure */
+	for (i = 0; i < nmc->output_data->len; i++) {
+		NmcOutputField *fld_arr = g_ptr_array_index (nmc->output_data, i);
+		nmc_free_output_field_values (fld_arr);
+	}
+
+	/* Empty output_data array */
+	if (nmc->output_data->len > 0)
+		g_ptr_array_remove_range (nmc->output_data, 0, nmc->output_data->len);
+
+	if (nmc->print_fields.indices) {
+		g_array_free (nmc->print_fields.indices, TRUE);
+		nmc->print_fields.indices = NULL;
+	}
+}
+
+static char *
+get_value_to_print (NmcOutputField *fields,
+                    gboolean field_name,
+                    const char *not_set_str,
+                    gboolean *dealloc)
+{
+	gboolean is_array = fields->value_is_array;
+	char *value;
+
+	if (field_name)
+		value = _(fields->name_l10n);
+	else
+		value = fields->value ?
+		          (is_array ? g_strjoinv (" | ", (char **) fields->value) :
+		                      (char *) fields->value) :
+		          (char *) not_set_str;
+	*dealloc = fields->value && is_array && !field_name;
+	return value;
+}
+
 /*
  * Print both headers or values of 'field_values' array.
- * Entries to print and their order are specified via indices
- * in 'fields.indices' array.
- * 'fields.flags' specify various aspects influencing the output.
+ * Entries to print and their order are specified via indices in
+ * 'nmc->print_fields.indices' array.
+ * Various flags influencing the output of fields are set up in the first item
+ * of 'field_values' array.
  */
 void
-print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
+print_required_fields (NmCli *nmc, const NmcOutputField field_values[])
 {
 	GString *str;
 	int width1, width2;
@@ -280,14 +867,15 @@ print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
 	char *indent_str;
 	const char *not_set_str = "--";
 	int i;
-	gboolean multiline = fields.flags & NMC_PF_FLAG_MULTILINE;
-	gboolean terse = fields.flags & NMC_PF_FLAG_TERSE;
-	gboolean pretty = fields.flags & NMC_PF_FLAG_PRETTY;
-	gboolean main_header_add = fields.flags & NMC_PF_FLAG_MAIN_HEADER_ADD;
-	gboolean main_header_only = fields.flags & NMC_PF_FLAG_MAIN_HEADER_ONLY;
-	gboolean field_names = fields.flags & NMC_PF_FLAG_FIELD_NAMES;
-	gboolean escape = fields.flags & NMC_PF_FLAG_ESCAPE;
-	gboolean section_prefix = fields.flags & NMC_PF_FLAG_SECTION_PREFIX;
+	const NmcPrintFields fields = nmc->print_fields;
+	gboolean multiline = nmc->multiline_output;
+	gboolean terse = (nmc->print_output == NMC_PRINT_TERSE);
+	gboolean pretty = (nmc->print_output == NMC_PRINT_PRETTY);
+	gboolean escape = nmc->escape_values;
+	gboolean main_header_add = field_values[0].flags & NMC_OF_FLAG_MAIN_HEADER_ADD;
+	gboolean main_header_only = field_values[0].flags & NMC_OF_FLAG_MAIN_HEADER_ONLY;
+	gboolean field_names = field_values[0].flags & NMC_OF_FLAG_FIELD_NAMES;
+	gboolean section_prefix = field_values[0].flags & NMC_OF_FLAG_SECTION_PREFIX;
 	gboolean main_header = main_header_add || main_header_only;
 
 	/* No headers are printed in terse mode:
@@ -319,25 +907,29 @@ print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
 			for (i = 0; i < fields.indices->len; i++) {
 				char *tmp;
 				int idx = g_array_index (fields.indices, int, i);
-				guint32 value_is_array = field_values[idx].flags & NMC_OF_FLAG_ARRAY;
+				gboolean is_array = field_values[idx].value_is_array;
 
 				/* section prefix can't be an array */
-				g_assert (!value_is_array || !section_prefix || idx != 0);
+				g_assert (!is_array || !section_prefix || idx != 0);
 
 				if (section_prefix && idx == 0)  /* The first field is section prefix */
 					continue;
 
-				if (value_is_array) {
+				if (is_array) {
 					/* value is a null-terminated string array */
 					const char **p;
 					int j;
 
 					for (p = (const char **) field_values[idx].value, j = 1; p && *p; p++, j++) {
-						tmp = g_strdup_printf ("%s%s%s[%d]:", section_prefix ? (const char*) field_values[0].value : "",
-						                                      section_prefix ? "." : "",
-						                                      _(field_values[idx].name_l10n),
-						                                      j);
-						printf ("%-*s%s\n", terse ? 0 : ML_VALUE_INDENT, tmp, *p ? *p : not_set_str);
+						tmp = g_strdup_printf ("%s%s%s[%d]:",
+						                       section_prefix ? (const char*) field_values[0].value : "",
+						                       section_prefix ? "." : "",
+						                       _(field_values[idx].name_l10n),
+						                       j);
+						width1 = strlen (tmp);
+						width2 = nmc_string_screen_width (tmp, NULL);
+						printf ("%-*s%s\n", terse ? 0 : ML_VALUE_INDENT+width1-width2, tmp,
+						                    *p ? *p : not_set_str);
 						g_free (tmp);
 					}
 				} else {
@@ -345,10 +937,14 @@ print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
 					const char *hdr_name = (const char*) field_values[0].value;
 					const char *val = (const char*) field_values[idx].value;
 
-					tmp = g_strdup_printf ("%s%s%s:", section_prefix ? hdr_name : "",
-					                                  section_prefix ? "." : "",
-					                                  _(field_values[idx].name_l10n));
-					printf ("%-*s%s\n", terse ? 0 : ML_VALUE_INDENT, tmp, val ? val : not_set_str);
+					tmp = g_strdup_printf ("%s%s%s:",
+					                       section_prefix ? hdr_name : "",
+					                       section_prefix ? "." : "",
+					                       _(field_values[idx].name_l10n));
+					width1 = strlen (tmp);
+					width2 = nmc_string_screen_width (tmp, NULL);
+					printf ("%-*s%s\n", terse ? 0 : ML_VALUE_INDENT+width1-width2, tmp,
+					                    val ? val : not_set_str);
 					g_free (tmp);
 				}
 			}
@@ -366,14 +962,8 @@ print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
 
 	for (i = 0; i < fields.indices->len; i++) {
 		int idx = g_array_index (fields.indices, int, i);
-		guint32 value_is_array = field_values[idx].flags & NMC_OF_FLAG_ARRAY;
-		char *value;
-		if (field_names)
-			value = _(field_values[idx].name_l10n);
-		else
-			value = field_values[idx].value ?
-			        (value_is_array ? g_strjoinv (" | ", (char **) field_values[idx].value) : (char *) field_values[idx].value) :
-			        (char *) not_set_str;
+		gboolean dealloc;
+		char *value = get_value_to_print ((NmcOutputField *) field_values+idx, field_names, not_set_str, &dealloc);
 
 		if (terse) {
 			if (escape) {
@@ -396,7 +986,7 @@ print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
 			table_width += field_values[idx].width + width1 - width2 + 1;
 		}
 
-		if (value_is_array && field_values[idx].value && !field_values)
+		if (dealloc)
 			g_free (value);
 	}
 
@@ -438,57 +1028,56 @@ print_fields (const NmcPrintFields fields, const NmcOutputField field_values[])
 }
 
 /*
- * Find out whether NetworkManager is running (via D-Bus NameHasOwner), assuring
- * NetworkManager won't be autostart (by D-Bus) if not running.
- * We can't use NMClient (nm_client_get_manager_running()) because NMClient
- * constructor calls GetPermissions of NM_DBUS_SERVICE, which would autostart
- * NetworkManger if it is configured as D-Bus launchable service.
+ * Print nmc->output_data
+ *
+ * It first finds out maximal string length in columns and fill the value to
+ * 'width' member of NmcOutputField, so that columns in tabular output are
+ * properly aligned. Then each object (row in tabular) is printed using
+ * print_required_fields() function.
  */
-gboolean
-nmc_is_nm_running (NmCli *nmc, GError **error)
+void
+print_data (NmCli *nmc)
 {
-	DBusGConnection *connection = NULL;
-	DBusGProxy *proxy = NULL;
-	GError *err = NULL;
-	gboolean has_owner = FALSE;
+	int i, j;
+	size_t len;
+	NmcOutputField *row;
+	int num_fields = 0;
 
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	if (!nmc->output_data || nmc->output_data->len < 1)
+		return;
 
-	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &err);
-	if (!connection) {
-		g_string_printf (nmc->return_text, _("Error: Couldn't connect to system bus: %s"), err->message);
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		g_propagate_error (error, err);
-		goto done;
+	/* How many fields? */
+	row = g_ptr_array_index (nmc->output_data, 0);
+	while (row->name) {
+		num_fields++;
+		row++;
 	}
 
-	proxy = dbus_g_proxy_new_for_name (connection,
-	                                   "org.freedesktop.DBus",
-	                                   "/org/freedesktop/DBus",
-	                                   "org.freedesktop.DBus");
-	if (!proxy) {
-		g_string_printf (nmc->return_text, _("Error: Couldn't create D-Bus object proxy for org.freedesktop.DBus"));
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		if (error)
-			g_set_error_literal (error, NMCLI_ERROR, 0, nmc->return_text->str);
-		goto done;
+	/* Find out maximal string lengths */
+	for (i = 0; i < num_fields; i++) {
+		size_t max_width = 0;
+		for (j = 0; j < nmc->output_data->len; j++) {
+			gboolean field_names, dealloc;
+			char *value;
+			row = g_ptr_array_index (nmc->output_data, j);
+			field_names = row[0].flags & NMC_OF_FLAG_FIELD_NAMES;
+			value = get_value_to_print (row+i, field_names, "--", &dealloc);
+			len = nmc_string_screen_width (value, NULL);
+			max_width = len > max_width ? len : max_width;
+			if (dealloc)
+				g_free (value);
+		}
+		for (j = 0; j < nmc->output_data->len; j++) {
+			row = g_ptr_array_index (nmc->output_data, j);
+			row[i].width = max_width + 1;
+		}
 	}
 
-	if (!org_freedesktop_DBus_name_has_owner (proxy, NM_DBUS_SERVICE, &has_owner, &err)) {
-		g_string_printf (nmc->return_text, _("Error: NameHasOwner request failed: %s"),
-		                 (err && err->message) ? err->message : _("(unknown)"));
-		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
-		g_propagate_error (error, err);
-		goto done;
+	/* Now we can print the data. */
+	for (i = 0; i < nmc->output_data->len; i++) {
+		row = g_ptr_array_index (nmc->output_data, i);
+		print_required_fields (nmc, row);
 	}
-
-done:
-	if (connection)
-		dbus_g_connection_unref (connection);
-	if (proxy)
-		g_object_unref (proxy);
-
-	return has_owner;
 }
 
 /*

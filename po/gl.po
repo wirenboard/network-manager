@@ -1194,7 +1194,7 @@ msgstr ""
 "  disconnect iface <interface> [--nowait] [--timeout <tempo de espera>]\n"
 "  wifi [list [iface <interface>] [bssid <BSSID>]]\n"
 "  wifi connect <(B)SSID> [password <contrasinal>] [wep-key-type chave|frase] "
-"[iface <inteface>] [bssid <BSSID>] [name <nome>]\n"
+"[iface <interface>] [bssid <BSSID>] [name <nome>]\n"
 "               [--private] [--nowait] [--timeout <tempo de espera>]\n"
 "  wimax [list [iface <interface>] [nsp <nome>]]\n"
 "\n"
@@ -1210,8 +1210,8 @@ msgstr "%u MHz"
 
 #: ../cli/src/devices.c:404
 #, c-format
-msgid "%u MB/s"
-msgstr "%u MB/s"
+msgid "%u Mbit/s"
+msgstr "%u Mbit/s"
 
 #: ../cli/src/devices.c:413
 msgid "Encrypted: "

@@ -58,11 +58,6 @@ enum {
 	LAST_PROP
 };
 
-#define DBUS_PROP_HW_ADDRESS "HwAddress"
-#define DBUS_PROP_PERM_HW_ADDRESS "PermHwAddress"
-#define DBUS_PROP_SPEED "Speed"
-#define DBUS_PROP_CARRIER "Carrier"
-
 /**
  * nm_device_ethernet_error_quark:
  *
@@ -183,8 +178,6 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	const char *ctype;
 	gboolean is_pppoe = FALSE;
 
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
@@ -201,7 +194,7 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	/* Wired setting optional for PPPoE */
 	if (!is_pppoe && !s_wired) {
 		g_set_error (error, NM_DEVICE_ETHERNET_ERROR, NM_DEVICE_ETHERNET_ERROR_INVALID_ETHERNET_CONNECTION,
-		             "The connection was not a valid ethernet connection.");
+		             "The connection was not a valid Ethernet connection.");
 		return FALSE;
 	}
 
@@ -230,7 +223,19 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 		}
 	}
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_ethernet_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_WIRED;
+}
+
+static const char *
+get_hw_address (NMDevice *device)
+{
+	return nm_device_ethernet_get_hw_address (NM_DEVICE_ETHERNET (device));
 }
 
 /***********************************************************/
@@ -261,17 +266,11 @@ register_properties (NMDeviceEthernet *device)
 static void
 constructed (GObject *object)
 {
-	NMDeviceEthernetPrivate *priv;
+	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_ethernet_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_ETHERNET_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-	                                         NM_DBUS_SERVICE,
-	                                         nm_object_get_path (NM_OBJECT (object)),
-	                                         NM_DBUS_INTERFACE_DEVICE_WIRED);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_WIRED);
 	register_properties (NM_DEVICE_ETHERNET (object));
 }
 
@@ -339,6 +338,8 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *eth_class)
 	object_class->finalize = finalize;
 	object_class->get_property = get_property;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
+	device_class->get_hw_address = get_hw_address;
 
 	/* properties */
 

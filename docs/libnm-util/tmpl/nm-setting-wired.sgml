@@ -131,6 +131,78 @@ NMSettingWired
 
 
 
+<!-- ##### STRUCT NMSettingWired ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingWired:auto-negotiate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:cloned-mac-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:duplex ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:mac-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:mac-address-blacklist ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:mtu ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:port ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:s390-nettype ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:s390-options ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:s390-subchannels ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingWired:speed ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingWiredClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_wired_new ##### -->
 <para>
 
@@ -203,6 +275,62 @@ NMSettingWired
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_setting_wired_get_num_mac_blacklist_items ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_get_mac_blacklist_item ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_add_mac_blacklist_item ##### -->
+<para>
+
+</para>
+
+@setting: 
+@mac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_remove_mac_blacklist_item ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_remove_mac_blacklist_item_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@mac: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_clear_mac_blacklist_items ##### -->
+<para>
+
+</para>
+
+@setting: 
+
+
 <!-- ##### FUNCTION nm_setting_wired_get_mtu ##### -->
 <para>
 
@@ -268,7 +396,7 @@ NMSettingWired
 
 @setting: 
 @key: 
-@item: 
+@value: 
 @Returns: 
 
 
@@ -279,6 +407,15 @@ NMSettingWired
 
 @setting: 
 @key: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_wired_get_valid_s390_options ##### -->
+<para>
+
+</para>
+
+@setting: 
 @Returns: 
 
 

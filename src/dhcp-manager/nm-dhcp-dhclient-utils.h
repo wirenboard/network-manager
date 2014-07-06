@@ -27,9 +27,8 @@
 
 char *nm_dhcp_dhclient_create_config (const char *interface,
                                       gboolean is_ip6,
-                                      NMSettingIP4Config *s_ip4,
-                                      NMSettingIP6Config *s_ip6,
-                                      guint8 *anycast_addr,
+                                      const char *dhcp_client_id,
+                                      GByteArray *anycast_addr,
                                       const char *hostname,
                                       const char *orig_path,
                                       const char *orig_contents);
@@ -43,6 +42,11 @@ GByteArray *nm_dhcp_dhclient_read_duid (const char *leasefile, GError **error);
 gboolean nm_dhcp_dhclient_save_duid (const char *leasefile,
                                      const char *escaped_duid,
                                      GError **error);
+
+GSList *nm_dhcp_dhclient_read_lease_ip_configs (const char *iface,
+                                                const char *contents,
+                                                gboolean ipv6,
+                                                GDateTime *now);
 
 #endif /* NM_DHCP_DHCLIENT_UTILS_H */
 

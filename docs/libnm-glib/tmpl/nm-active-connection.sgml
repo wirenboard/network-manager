@@ -29,7 +29,21 @@ NMActiveConnection
 
 
 
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_ID ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_ACTIVE_CONNECTION_UUID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_TYPE ##### -->
 <para>
 
 </para>
@@ -64,7 +78,42 @@ NMActiveConnection
 
 
 
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_IP4_CONFIG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_DHCP4_CONFIG ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_ACTIVE_CONNECTION_DEFAULT6 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_IP6_CONFIG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_DHCP6_CONFIG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_ACTIVE_CONNECTION_VPN ##### -->
 <para>
 
 </para>
@@ -77,6 +126,100 @@ NMActiveConnection
 </para>
 
 
+
+<!-- ##### STRUCT NMActiveConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMActiveConnection:connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:default ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:default6 ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:devices ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:dhcp4-config ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:dhcp6-config ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:ip4-config ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:ip6-config ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:master ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:specific-object ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:state ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:uuid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMActiveConnection:vpn ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMActiveConnectionClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
 
 <!-- ##### FUNCTION nm_active_connection_new ##### -->
 <para>
@@ -97,7 +240,25 @@ NMActiveConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_active_connection_get_id ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_active_connection_get_uuid ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_active_connection_get_connection_type ##### -->
 <para>
 
 </para>
@@ -133,7 +294,34 @@ NMActiveConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_active_connection_get_master ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_active_connection_get_default ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_active_connection_get_ip4_config ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_active_connection_get_dhcp4_config ##### -->
 <para>
 
 </para>
@@ -151,7 +339,25 @@ NMActiveConnection
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_active_connection_get_master ##### -->
+<!-- ##### FUNCTION nm_active_connection_get_ip6_config ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_active_connection_get_dhcp6_config ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_active_connection_get_vpn ##### -->
 <para>
 
 </para>

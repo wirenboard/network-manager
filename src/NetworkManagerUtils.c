@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <resolv.h>
 
 #include "NetworkManagerUtils.h"
 #include "nm-utils.h"
@@ -74,6 +75,50 @@ nm_ethernet_address_is_valid (const struct ether_addr *test_addr)
 }
 
 
+/* nm_utils_ip4_address_clear_host_address:
+ * @addr: source ip6 address
+ * @plen: prefix length of network
+ *
+ * returns: the input address, with the host address set to 0.
+ */
+in_addr_t
+nm_utils_ip4_address_clear_host_address (in_addr_t addr, guint8 plen)
+{
+	return addr & nm_utils_ip4_prefix_to_netmask (plen);
+}
+
+/* nm_utils_ip6_address_clear_host_address:
+ * @dst: destination output buffer, will contain the network part of the @src address
+ * @src: source ip6 address
+ * @plen: prefix length of network
+ *
+ * Note: this function is self assignment save, to update @src inplace, set both
+ * @dst and @src to the same destination.
+ */
+void
+nm_utils_ip6_address_clear_host_address (struct in6_addr *dst, const struct in6_addr *src, guint8 plen)
+{
+	g_return_if_fail (plen <= 128);
+	g_return_if_fail (src);
+	g_return_if_fail (dst);
+
+	if (plen < 128) {
+		guint nbytes = plen / 8;
+		guint nbits = plen % 8;
+
+		if (nbytes && dst != src)
+			memcpy (dst, src, nbytes);
+		if (nbits) {
+			dst->s6_addr[nbytes] = (src->s6_addr[nbytes] & (0xFF << (8 - nbits)));
+			nbytes++;
+		}
+		if (nbytes <= 15)
+			memset (&dst->s6_addr[nbytes], 0, 16 - nbytes);
+	} else if (src != dst)
+		*dst = *src;
+}
+
+
 int
 nm_spawn_process (const char *args)
 {
@@ -99,240 +144,45 @@ nm_spawn_process (const char *args)
 	return status;
 }
 
-void
-nm_utils_merge_ip4_config (NMIP4Config *ip4_config, NMSettingIP4Config *setting)
+gboolean
+nm_match_spec_string (const GSList *specs, const char *match)
 {
-	int i, j;
-	gboolean setting_never_default;
+	const GSList *iter;
 
-	if (!setting)
-		return; /* Defaults are just fine */
-
-	if (nm_setting_ip4_config_get_ignore_auto_dns (setting)) {
-		nm_ip4_config_reset_nameservers (ip4_config);
-		nm_ip4_config_reset_domains (ip4_config);
-		nm_ip4_config_reset_searches (ip4_config);
+	for (iter = specs; iter; iter = g_slist_next (iter)) {
+		if (!g_ascii_strcasecmp ((const char *) iter->data, match))
+			return TRUE;
 	}
 
-	if (nm_setting_ip4_config_get_ignore_auto_routes (setting))
-		nm_ip4_config_reset_routes (ip4_config);
-
-	for (i = 0; i < nm_setting_ip4_config_get_num_dns (setting); i++) {
-		guint32 ns;
-		gboolean found = FALSE;
-
-		/* Avoid dupes */
-		ns = nm_setting_ip4_config_get_dns (setting, i);
-		for (j = 0; j < nm_ip4_config_get_num_nameservers (ip4_config); j++) {
-			if (nm_ip4_config_get_nameserver (ip4_config, j) == ns) {
-				found = TRUE;
-				break;
-			}
-		}
-
-		if (!found)
-			nm_ip4_config_add_nameserver (ip4_config, ns);
-	}
-
-	/* DNS search domains */
-	for (i = 0; i < nm_setting_ip4_config_get_num_dns_searches (setting); i++) {
-		const char *search = nm_setting_ip4_config_get_dns_search (setting, i);
-		gboolean found = FALSE;
-
-		/* Avoid dupes */
-		for (j = 0; j < nm_ip4_config_get_num_searches (ip4_config); j++) {
-			if (!strcmp (search, nm_ip4_config_get_search (ip4_config, j))) {
-				found = TRUE;
-				break;
-			}
-		}
-
-		if (!found)
-			nm_ip4_config_add_search (ip4_config, search);
-	}
-
-	/* IPv4 addresses */
-	for (i = 0; i < nm_setting_ip4_config_get_num_addresses (setting); i++) {
-		NMIP4Address *setting_addr = nm_setting_ip4_config_get_address (setting, i);
-		guint32 num;
-
-		num = nm_ip4_config_get_num_addresses (ip4_config);
-		for (j = 0; j < num; j++) {
-			NMIP4Address *cfg_addr = nm_ip4_config_get_address (ip4_config, j);
-
-			/* Dupe, override with user-specified address */
-			if (nm_ip4_address_get_address (cfg_addr) == nm_ip4_address_get_address (setting_addr)) {
-				nm_ip4_config_replace_address (ip4_config, j, setting_addr);
-				break;
-			}
-		}
-
-		if (j == num)
-			nm_ip4_config_add_address (ip4_config, setting_addr);
-	}
-
-	/* IPv4 routes */
-	for (i = 0; i < nm_setting_ip4_config_get_num_routes (setting); i++) {
-		NMIP4Route *setting_route = nm_setting_ip4_config_get_route (setting, i);
-		guint32 num;
-
-		num = nm_ip4_config_get_num_routes (ip4_config);
-		for (j = 0; j < num; j++) {
-			NMIP4Route *cfg_route = nm_ip4_config_get_route (ip4_config, j);
-
-			/* Dupe, override with user-specified route */
-			if (   (nm_ip4_route_get_dest (cfg_route) == nm_ip4_route_get_dest (setting_route))
-			    && (nm_ip4_route_get_prefix (cfg_route) == nm_ip4_route_get_prefix (setting_route))
-			    && (nm_ip4_route_get_next_hop (cfg_route) == nm_ip4_route_get_next_hop (setting_route))) {
-				nm_ip4_config_replace_route (ip4_config, j, setting_route);
-				break;
-			}
-		}
-
-		if (j == num)
-			nm_ip4_config_add_route (ip4_config, setting_route);
-	}
-
-	setting_never_default = nm_setting_ip4_config_get_never_default (setting);
-
-	if (nm_setting_ip4_config_get_ignore_auto_routes (setting))
-		nm_ip4_config_set_never_default (ip4_config, setting_never_default);
-	else {
-		if (setting_never_default)
-			nm_ip4_config_set_never_default (ip4_config, TRUE);
-	}
-}
-
-static inline gboolean
-ip6_addresses_equal (const struct in6_addr *a, const struct in6_addr *b)
-{
-	return memcmp (a, b, sizeof (struct in6_addr)) == 0;
-}
-
-/* This is exactly identical to nm_utils_merge_ip4_config, with s/4/6/,
- * except that we can't compare addresses with ==.
- */
-void
-nm_utils_merge_ip6_config (NMIP6Config *ip6_config, NMSettingIP6Config *setting)
-{
-	int i, j;
-
-	if (!setting)
-		return; /* Defaults are just fine */
-
-	if (nm_setting_ip6_config_get_ignore_auto_dns (setting)) {
-		nm_ip6_config_reset_nameservers (ip6_config);
-		nm_ip6_config_reset_domains (ip6_config);
-		nm_ip6_config_reset_searches (ip6_config);
-	}
-
-	if (nm_setting_ip6_config_get_ignore_auto_routes (setting))
-		nm_ip6_config_reset_routes (ip6_config);
-
-	for (i = 0; i < nm_setting_ip6_config_get_num_dns (setting); i++) {
-		const struct in6_addr *ns;
-		gboolean found = FALSE;
-
-		/* Avoid dupes */
-		ns = nm_setting_ip6_config_get_dns (setting, i);
-		for (j = 0; j < nm_ip6_config_get_num_nameservers (ip6_config); j++) {
-			if (ip6_addresses_equal (nm_ip6_config_get_nameserver (ip6_config, j), ns)) {
-				found = TRUE;
-				break;
-			}
-		}
-
-		if (!found)
-			nm_ip6_config_add_nameserver (ip6_config, ns);
-	}
-
-	/* DNS search domains */
-	for (i = 0; i < nm_setting_ip6_config_get_num_dns_searches (setting); i++) {
-		const char *search = nm_setting_ip6_config_get_dns_search (setting, i);
-		gboolean found = FALSE;
-
-		/* Avoid dupes */
-		for (j = 0; j < nm_ip6_config_get_num_searches (ip6_config); j++) {
-			if (!strcmp (search, nm_ip6_config_get_search (ip6_config, j))) {
-				found = TRUE;
-				break;
-			}
-		}
-
-		if (!found)
-			nm_ip6_config_add_search (ip6_config, search);
-	}
-
-	/* IPv6 addresses */
-	for (i = 0; i < nm_setting_ip6_config_get_num_addresses (setting); i++) {
-		NMIP6Address *setting_addr = nm_setting_ip6_config_get_address (setting, i);
-		guint32 num;
-
-		num = nm_ip6_config_get_num_addresses (ip6_config);
-		for (j = 0; j < num; j++) {
-			NMIP6Address *cfg_addr = nm_ip6_config_get_address (ip6_config, j);
-
-			/* Dupe, override with user-specified address */
-			if (ip6_addresses_equal (nm_ip6_address_get_address (cfg_addr), nm_ip6_address_get_address (setting_addr))) {
-				nm_ip6_config_replace_address (ip6_config, j, setting_addr);
-				break;
-			}
-		}
-
-		if (j == num)
-			nm_ip6_config_add_address (ip6_config, setting_addr);
-	}
-
-	/* IPv6 routes */
-	for (i = 0; i < nm_setting_ip6_config_get_num_routes (setting); i++) {
-		NMIP6Route *setting_route = nm_setting_ip6_config_get_route (setting, i);
-		guint32 num;
-
-		num = nm_ip6_config_get_num_routes (ip6_config);
-		for (j = 0; j < num; j++) {
-			NMIP6Route *cfg_route = nm_ip6_config_get_route (ip6_config, j);
-
-			/* Dupe, override with user-specified route */
-			if (   ip6_addresses_equal (nm_ip6_route_get_dest (cfg_route), nm_ip6_route_get_dest (setting_route))
-			    && (nm_ip6_route_get_prefix (cfg_route) == nm_ip6_route_get_prefix (setting_route))
-				&& ip6_addresses_equal (nm_ip6_route_get_next_hop (cfg_route), nm_ip6_route_get_next_hop (setting_route))) {
-				nm_ip6_config_replace_route (ip6_config, j, setting_route);
-				break;
-			}
-		}
-
-		if (j == num)
-			nm_ip6_config_add_route (ip6_config, setting_route);
-	}
-
-	if (nm_setting_ip6_config_get_never_default (setting))
-		nm_ip6_config_set_never_default (ip6_config, TRUE);
+	return FALSE;
 }
 
 gboolean
 nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr)
 {
-	const GSList *iter;
-	char *hwaddr_match, *p;
+	char *hwaddr_match;
+	gboolean matched;
 
 	g_return_val_if_fail (hwaddr != NULL, FALSE);
 
-	p = hwaddr_match = g_strdup_printf ("mac:%s", hwaddr);
-
-	while (*p) {
-		*p = g_ascii_tolower (*p);
-		p++;
-	}
-
-	for (iter = specs; iter; iter = g_slist_next (iter)) {
-		if (!strcmp ((const char *) iter->data, hwaddr_match)) {
-			g_free (hwaddr_match);
-			return TRUE;
-		}
-	}
-
+	hwaddr_match = g_strdup_printf ("mac:%s", hwaddr);
+	matched = nm_match_spec_string (specs, hwaddr_match);
 	g_free (hwaddr_match);
-	return FALSE;
+	return matched;
+}
+
+gboolean
+nm_match_spec_interface_name (const GSList *specs, const char *interface_name)
+{
+	char *iface_match;
+	gboolean matched;
+
+	g_return_val_if_fail (interface_name != NULL, FALSE);
+
+	iface_match = g_strdup_printf ("interface-name:%s", interface_name);
+	matched = nm_match_spec_string (specs, iface_match);
+	g_free (iface_match);
+	return matched;
 }
 
 #define BUFSIZE 10
@@ -435,20 +285,16 @@ nm_utils_get_shared_wifi_permission (NMConnection *connection)
 {
 	NMSettingWireless *s_wifi;
 	NMSettingWirelessSecurity *s_wsec;
-	NMSettingIP4Config *s_ip4;
 	const char *method = NULL;
 
-	s_ip4 = nm_connection_get_setting_ip4_config (connection);
-	if (s_ip4)
-		method = nm_setting_ip4_config_get_method (s_ip4);
-
-	if (g_strcmp0 (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED) != 0)
+	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
+	if (strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED) != 0)
 		return NULL;  /* Not shared */
 
 	s_wifi = nm_connection_get_setting_wireless (connection);
 	if (s_wifi) {
 		s_wsec = nm_connection_get_setting_wireless_security (connection);
-		if (nm_setting_wireless_get_security (s_wifi) || s_wsec)
+		if (s_wsec)
 			return NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED;
 		else
 			return NM_AUTH_PERMISSION_WIFI_SHARE_OPEN;
@@ -553,116 +399,6 @@ value_hash_add_object_property (GHashTable *hash,
 	value_hash_add (hash, key, value);
 }
 
-/**
- * nm_utils_do_sysctl:
- * @path: path to write @value to
- * @value: value to write to @path
- *
- * Writes @value to the file at @path, trying 3 times on failure.
- *
- * Returns: %TRUE on success.  On failure, returns %FALSE and sets errno.
- */
-gboolean
-nm_utils_do_sysctl (const char *path, const char *value)
-{
-	int fd, len, nwrote, tries, saved_errno = 0;
-	char *actual;
-
-	g_return_val_if_fail (path != NULL, FALSE);
-	g_return_val_if_fail (value != NULL, FALSE);
-
-	fd = open (path, O_WRONLY | O_TRUNC);
-	if (fd == -1) {
-		saved_errno = errno;
-		nm_log_warn (LOGD_CORE, "sysctl: failed to open '%s': (%d) %s",
-		             path, saved_errno, strerror (saved_errno));
-		errno = saved_errno;
-		return FALSE;
-	}
-
-	nm_log_dbg (LOGD_CORE, "sysctl: setting '%s' to '%s'", path, value);
-
-	/* Most sysfs and sysctl options don't care about a trailing CR, while some
-	 * (like infiniband) do.  So always add the CR.  Also, neither sysfs nor
-	 * sysctl support partial writes so the CR must be added to the string we're
-	 * about to write.
-	 */
-	actual = g_strdup_printf ("%s\n", value);
-
-	/* Try to write the entire value three times if a partial write occurs */
-	len = strlen (actual);
-	for (tries = 0, nwrote = 0; tries < 3 && nwrote != len; tries++) {
-		errno = 0;
-		nwrote = write (fd, actual, len);
-		if (nwrote == -1) {
-			if (errno == EINTR)
-				continue;
-			saved_errno = errno;
-			break;
-		}
-	}
-	g_free (actual);
-	close (fd);
-
-	if (nwrote != len && saved_errno != EEXIST) {
-		nm_log_warn (LOGD_CORE, "sysctl: failed to set '%s' to '%s': (%d) %s",
-		             path, value, saved_errno, strerror (saved_errno));
-	}
-
-	errno = saved_errno;
-	return (nwrote == len);
-}
-
-gboolean
-nm_utils_get_proc_sys_net_value (const char *path,
-                                 const char *iface,
-                                 gint32 *out_value)
-{
-	GError *error = NULL;
-	char *contents = NULL;
-	gboolean success = FALSE;
-	long int tmp;
-
-	if (!g_file_get_contents (path, &contents, NULL, &error)) {
-		nm_log_dbg (LOGD_DEVICE, "(%s): error reading %s: (%d) %s",
-		            iface, path,
-		            error ? error->code : -1,
-		            error && error->message ? error->message : "(unknown)");
-		g_clear_error (&error);
-	} else {
-		errno = 0;
-		tmp = strtol (contents, NULL, 10);
-		if (errno == 0) {
-			*out_value = (gint32) tmp;
-			success = TRUE;
-		}
-		g_free (contents);
-	}
-
-	return success;
-}
-
-gboolean
-nm_utils_get_proc_sys_net_value_with_bounds (const char *path,
-                                             const char *iface,
-                                             gint32 *out_value,
-                                             gint32 valid_min,
-                                             gint32 valid_max)
-{
-	gboolean result;
-	gint32 val;
-
-	result = nm_utils_get_proc_sys_net_value (path, iface, &val);
-
-	if (result) {
-		if (val >= valid_min && val <= valid_max)
-			*out_value = val;
-		else
-			result = FALSE;
-	}
-
-	return result;
-}
 
 static char *
 get_new_connection_name (const GSList *existing,
@@ -718,6 +454,113 @@ get_new_connection_name (const GSList *existing,
 }
 
 void
+nm_utils_normalize_connection (NMConnection *connection,
+                               gboolean default_enable_ipv6)
+{
+	NMSettingConnection *s_con = nm_connection_get_setting_connection (connection);
+	const char *default_ip4_method = NM_SETTING_IP4_CONFIG_METHOD_AUTO;
+	const char *default_ip6_method =
+		default_enable_ipv6 ? NM_SETTING_IP6_CONFIG_METHOD_AUTO : NM_SETTING_IP6_CONFIG_METHOD_IGNORE;
+	NMSettingIP4Config *s_ip4;
+	NMSettingIP6Config *s_ip6;
+	NMSetting *setting;
+	const char *method;
+
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+	s_ip6 = nm_connection_get_setting_ip6_config (connection);
+
+	if (nm_setting_connection_get_master (s_con)) {
+		/* Slave connections don't have IP configuration. */
+
+		if (s_ip4) {
+			method = nm_setting_ip4_config_get_method (s_ip4);
+			if (g_strcmp0 (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) != 0) {
+				nm_log_warn (LOGD_SETTINGS, "ignoring IP4 config on slave '%s'",
+				             nm_connection_get_id (connection));
+			}
+			nm_connection_remove_setting (connection, NM_TYPE_SETTING_IP4_CONFIG);
+			s_ip4 = NULL;
+		}
+
+		if (s_ip6) {
+			method = nm_setting_ip6_config_get_method (s_ip6);
+			if (g_strcmp0 (method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE) != 0) {
+				nm_log_warn (LOGD_SETTINGS, "ignoring IP6 config on slave '%s'",
+				             nm_connection_get_id (connection));
+			}
+			nm_connection_remove_setting (connection, NM_TYPE_SETTING_IP6_CONFIG);
+			s_ip6 = NULL;
+		}
+	} else {
+		/* Ensure all non-slave connections have IP4 and IP6 settings objects. If no
+		 * IP6 setting was specified, then assume that means IP6 config is allowed
+		 * to fail. But if no IP4 setting was specified, assume the caller was just
+		 * being lazy.
+		 */
+		if (!s_ip4) {
+			setting = nm_setting_ip4_config_new ();
+			nm_connection_add_setting (connection, setting);
+
+			g_object_set (setting,
+			              NM_SETTING_IP4_CONFIG_METHOD, default_ip4_method,
+			              NULL);
+		}
+		if (!s_ip6) {
+			setting = nm_setting_ip6_config_new ();
+			nm_connection_add_setting (connection, setting);
+
+			g_object_set (setting,
+			              NM_SETTING_IP6_CONFIG_METHOD, default_ip6_method,
+			              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
+			              NULL);
+		}
+	}
+}
+
+const char *
+nm_utils_get_ip_config_method (NMConnection *connection,
+                               GType         ip_setting_type)
+{
+	NMSettingConnection *s_con;
+	NMSettingIP4Config *s_ip4;
+	NMSettingIP6Config *s_ip6;
+	const char *method;
+
+	s_con = nm_connection_get_setting_connection (connection);
+
+	if (ip_setting_type == NM_TYPE_SETTING_IP4_CONFIG) {
+		g_return_val_if_fail (s_con != NULL, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+		if (nm_setting_connection_get_master (s_con))
+			return NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
+		else {
+			s_ip4 = nm_connection_get_setting_ip4_config (connection);
+			g_return_val_if_fail (s_ip4 != NULL, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+			method = nm_setting_ip4_config_get_method (s_ip4);
+			g_return_val_if_fail (method != NULL, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+			return method;
+		}
+
+	} else if (ip_setting_type == NM_TYPE_SETTING_IP6_CONFIG) {
+		g_return_val_if_fail (s_con != NULL, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+
+		if (nm_setting_connection_get_master (s_con))
+			return NM_SETTING_IP6_CONFIG_METHOD_IGNORE;
+		else {
+			s_ip6 = nm_connection_get_setting_ip6_config (connection);
+			g_return_val_if_fail (s_ip6 != NULL, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+			method = nm_setting_ip6_config_get_method (s_ip6);
+			g_return_val_if_fail (method != NULL, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+
+			return method;
+		}
+
+	} else
+		g_assert_not_reached ();
+}
+
+void
 nm_utils_complete_generic (NMConnection *connection,
                            const char *ctype,
                            const GSList *existing,
@@ -726,9 +569,6 @@ nm_utils_complete_generic (NMConnection *connection,
                            gboolean default_enable_ipv6)
 {
 	NMSettingConnection *s_con;
-	NMSettingIP4Config *s_ip4;
-	NMSettingIP6Config *s_ip6;
-	const char *method;
 	char *id, *uuid;
 
 	s_con = nm_connection_get_setting_connection (connection);
@@ -751,31 +591,8 @@ nm_utils_complete_generic (NMConnection *connection,
 		g_free (id);
 	}
 
-	/* Add an 'auto' IPv4 connection if present */
-	s_ip4 = nm_connection_get_setting_ip4_config (connection);
-	if (!s_ip4) {
-		s_ip4 = (NMSettingIP4Config *) nm_setting_ip4_config_new ();
-		nm_connection_add_setting (connection, NM_SETTING (s_ip4));
-	}
-	method = nm_setting_ip4_config_get_method (s_ip4);
-	if (!method) {
-		g_object_set (G_OBJECT (s_ip4),
-		              NM_SETTING_IP4_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_AUTO,
-		              NULL);
-	}
-
-	/* Add an 'auto' IPv6 setting if allowed and not preset */
-	s_ip6 = nm_connection_get_setting_ip6_config (connection);
-	if (!s_ip6 && default_enable_ipv6) {
-		s_ip6 = (NMSettingIP6Config *) nm_setting_ip6_config_new ();
-		nm_connection_add_setting (connection, NM_SETTING (s_ip6));
-	}
-	if (s_ip6 && !nm_setting_ip6_config_get_method (s_ip6)) {
-		g_object_set (G_OBJECT (s_ip6),
-		              NM_SETTING_IP6_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_AUTO,
-		              NM_SETTING_IP6_CONFIG_MAY_FAIL, TRUE,
-		              NULL);
-	}
+	/* Normalize */
+	nm_utils_normalize_connection (connection, default_enable_ipv6);
 }
 
 char *
@@ -783,5 +600,613 @@ nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id)
 {
 	/* Basically VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD */
 	return g_strdup_printf ("%s.%d", parent_iface, vlan_id);
+}
+
+/**
+ * nm_utils_read_resolv_conf_nameservers():
+ * @rc_contents: contents of a resolv.conf; or %NULL to read /etc/resolv.conf
+ *
+ * Reads all nameservers out of @rc_contents or /etc/resolv.conf and returns
+ * them.
+ *
+ * Returns: a #GPtrArray of 'char *' elements of each nameserver line from
+ * @contents or resolv.conf
+ */
+GPtrArray *
+nm_utils_read_resolv_conf_nameservers (const char *rc_contents)
+{
+	GPtrArray *nameservers = NULL;
+	char *contents = NULL;
+	char **lines, **iter;
+	char *p;
+
+	if (rc_contents)
+		contents = g_strdup (rc_contents);
+	else {
+		if (!g_file_get_contents (_PATH_RESCONF, &contents, NULL, NULL))
+			return NULL;
+	}
+
+	nameservers = g_ptr_array_new_full (3, g_free);
+
+	lines = g_strsplit_set (contents, "\r\n", -1);
+	for (iter = lines; *iter; iter++) {
+		if (!g_str_has_prefix (*iter, "nameserver"))
+			continue;
+		p = *iter + strlen ("nameserver");
+		if (!g_ascii_isspace (*p++))
+			continue;
+		/* Skip intermediate whitespace */
+		while (g_ascii_isspace (*p))
+			p++;
+		g_strchomp (p);
+
+		g_ptr_array_add (nameservers, g_strdup (p));
+	}
+	g_strfreev (lines);
+	g_free (contents);
+
+	return nameservers;
+}
+
+static GHashTable *
+check_property_in_hash (GHashTable *hash,
+                        const char *s_name,
+                        const char *p_name)
+{
+	GHashTable *props;
+
+	props = g_hash_table_lookup (hash, s_name);
+	if (   !props
+	    || !g_hash_table_lookup (props, p_name)) {
+		return NULL;
+	}
+	return props;
+}
+
+static void
+remove_from_hash (GHashTable *s_hash,
+                  GHashTable *p_hash,
+                  const char *s_name,
+                  const char *p_name)
+{
+	g_hash_table_remove (p_hash, p_name);
+	if (g_hash_table_size (p_hash) == 0)
+		g_hash_table_remove (s_hash, s_name);
+}
+
+static gboolean
+check_ip6_method (NMConnection *orig,
+                  NMConnection *candidate,
+                  GHashTable *settings)
+{
+	GHashTable *props;
+	const char *orig_ip6_method, *candidate_ip6_method;
+	NMSettingIP6Config *candidate_ip6;
+	gboolean allow = FALSE;
+
+	props = check_property_in_hash (settings,
+	                                NM_SETTING_IP6_CONFIG_SETTING_NAME,
+	                                NM_SETTING_IP6_CONFIG_METHOD);
+	if (!props)
+		return TRUE;
+
+	/* If the generated connection is 'link-local' and the candidate is both 'auto'
+	 * and may-fail=TRUE, then the candidate is OK to use.  may-fail is included
+	 * in the decision because if the candidate is 'auto' but may-fail=FALSE, then
+	 * the connection could not possibly have been previously activated on the
+	 * device if the device has no non-link-local IPv6 address.
+	 */
+	orig_ip6_method = nm_utils_get_ip_config_method (orig, NM_TYPE_SETTING_IP6_CONFIG);
+	candidate_ip6_method = nm_utils_get_ip_config_method (candidate, NM_TYPE_SETTING_IP6_CONFIG);
+	candidate_ip6 = nm_connection_get_setting_ip6_config (candidate);
+
+	if (   strcmp (orig_ip6_method, NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL) == 0
+	    && strcmp (candidate_ip6_method, NM_SETTING_IP6_CONFIG_METHOD_AUTO) == 0
+	    && (!candidate_ip6 || nm_setting_ip6_config_get_may_fail (candidate_ip6))) {
+		allow = TRUE;
+	}
+
+	/* If the generated connection method is 'link-local' or 'auto' and the candidate
+	 * method is 'ignore' we can take the connection, because NM didn't simply take care
+	 * of IPv6.
+	 */
+	if (  (   strcmp (orig_ip6_method, NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL) == 0
+	       || strcmp (orig_ip6_method, NM_SETTING_IP6_CONFIG_METHOD_AUTO) == 0)
+	    && strcmp (candidate_ip6_method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE) == 0) {
+		allow = TRUE;
+	}
+
+	if (allow) {
+		remove_from_hash (settings, props,
+		                  NM_SETTING_IP6_CONFIG_SETTING_NAME,
+		                  NM_SETTING_IP6_CONFIG_METHOD);
+	}
+	return allow;
+}
+
+static gboolean
+check_ip4_method (NMConnection *orig,
+                  NMConnection *candidate,
+                  GHashTable *settings,
+                  gboolean device_has_carrier)
+{
+	GHashTable *props;
+	const char *orig_ip4_method, *candidate_ip4_method;
+	NMSettingIP4Config *candidate_ip4;
+
+	props = check_property_in_hash (settings,
+	                                NM_SETTING_IP4_CONFIG_SETTING_NAME,
+	                                NM_SETTING_IP4_CONFIG_METHOD);
+	if (!props)
+		return TRUE;
+
+	/* If the generated connection is 'disabled' (device had no IP addresses)
+	 * but it has no carrier, that most likely means that IP addressing could
+	 * not complete and thus no IP addresses were assigned.  In that case, allow
+	 * matching to the "auto" method.
+	 */
+	orig_ip4_method = nm_utils_get_ip_config_method (orig, NM_TYPE_SETTING_IP4_CONFIG);
+	candidate_ip4_method = nm_utils_get_ip_config_method (candidate, NM_TYPE_SETTING_IP4_CONFIG);
+	candidate_ip4 = nm_connection_get_setting_ip4_config (candidate);
+
+	if (   strcmp (orig_ip4_method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) == 0
+	    && strcmp (candidate_ip4_method, NM_SETTING_IP4_CONFIG_METHOD_AUTO) == 0
+	    && (!candidate_ip4 || nm_setting_ip4_config_get_may_fail (candidate_ip4))
+	    && (device_has_carrier == FALSE)) {
+		remove_from_hash (settings, props,
+		                  NM_SETTING_IP4_CONFIG_SETTING_NAME,
+		                  NM_SETTING_IP4_CONFIG_METHOD);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static gboolean
+check_connection_interface_name (NMConnection *orig,
+                                 NMConnection *candidate,
+                                 GHashTable *settings)
+{
+	GHashTable *props;
+	const char *orig_ifname, *cand_ifname;
+	NMSettingConnection *s_con_orig, *s_con_cand;
+
+	props = check_property_in_hash (settings,
+	                                NM_SETTING_CONNECTION_SETTING_NAME,
+	                                NM_SETTING_CONNECTION_INTERFACE_NAME);
+	if (!props)
+		return TRUE;
+
+	/* If one of the interface names is NULL, we accept that connection */
+	s_con_orig = nm_connection_get_setting_connection (orig);
+	s_con_cand = nm_connection_get_setting_connection (candidate);
+	orig_ifname = nm_setting_connection_get_interface_name (s_con_orig);
+	cand_ifname = nm_setting_connection_get_interface_name (s_con_cand);
+
+	if (!orig_ifname || !cand_ifname) {
+		remove_from_hash (settings, props,
+		                  NM_SETTING_CONNECTION_SETTING_NAME,
+		                  NM_SETTING_CONNECTION_INTERFACE_NAME);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static gboolean
+check_connection_mac_address (NMConnection *orig,
+                              NMConnection *candidate,
+                              GHashTable *settings)
+{
+	GHashTable *props;
+	const GByteArray *orig_mac = NULL, *cand_mac = NULL;
+	NMSettingWired *s_wired_orig, *s_wired_cand;
+
+	props = check_property_in_hash (settings,
+	                                NM_SETTING_WIRED_SETTING_NAME,
+	                                NM_SETTING_WIRED_MAC_ADDRESS);
+	if (!props)
+		return TRUE;
+
+	/* If one of the MAC addresses is NULL, we accept that connection */
+	s_wired_orig = nm_connection_get_setting_wired (orig);
+	if (s_wired_orig)
+		orig_mac = nm_setting_wired_get_mac_address (s_wired_orig);
+
+	s_wired_cand = nm_connection_get_setting_wired (candidate);
+	if (s_wired_cand)
+		cand_mac = nm_setting_wired_get_mac_address (s_wired_cand);
+
+	if (!orig_mac || !cand_mac) {
+		remove_from_hash (settings, props,
+		                  NM_SETTING_WIRED_SETTING_NAME,
+		                  NM_SETTING_WIRED_MAC_ADDRESS);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static NMConnection *
+check_possible_match (NMConnection *orig,
+                      NMConnection *candidate,
+                      GHashTable *settings,
+                      gboolean device_has_carrier)
+{
+	g_return_val_if_fail (settings != NULL, NULL);
+
+	if (!check_ip6_method (orig, candidate, settings))
+		return NULL;
+
+	if (!check_ip4_method (orig, candidate, settings, device_has_carrier))
+		return NULL;
+
+	if (!check_connection_interface_name (orig, candidate, settings))
+		return NULL;
+
+	if (!check_connection_mac_address (orig, candidate, settings))
+		return NULL;
+
+	if (g_hash_table_size (settings) == 0)
+		return candidate;
+	else
+		return NULL;
+}
+
+/**
+ * nm_utils_match_connection:
+ * @connections: a (optionally pre-sorted) list of connections from which to
+ * find a matching connection to @original based on "inferrable" properties
+ * @original: the #NMConnection to find a match for from @connections
+ * @device_has_carrier: pass %TRUE if the device that generated @original has
+ * a carrier, %FALSE if not
+ * @match_filter_func: a function to check whether each connection from @connections
+ * should be considered for matching.  This function should return %TRUE if the
+ * connection should be considered, %FALSE if the connection should be ignored
+ * @match_compat_data: data pointer passed to @match_filter_func
+ *
+ * Checks each connection from @connections until a matching connection is found
+ * considering only setting properties marked with %NM_SETTING_PARAM_INFERRABLE
+ * and checking a few other characteristics like IPv6 method.  If the caller
+ * desires some priority order of the connections, @connections should be
+ * sorted before calling this function.
+ *
+ * Returns: the best #NMConnection matching @original, or %NULL if no connection
+ * matches well enough.
+ */
+NMConnection *
+nm_utils_match_connection (GSList *connections,
+                           NMConnection *original,
+                           gboolean device_has_carrier,
+                           NMUtilsMatchFilterFunc match_filter_func,
+                           gpointer match_filter_data)
+{
+	NMConnection *best_match = NULL;
+	GSList *iter;
+
+	for (iter = connections; iter; iter = iter->next) {
+		NMConnection *candidate = NM_CONNECTION (iter->data);
+		GHashTable *diffs = NULL;
+
+		if (match_filter_func) {
+			if (!match_filter_func (candidate, match_filter_data))
+				continue;
+		}
+
+		if (!nm_connection_diff (original, candidate, NM_SETTING_COMPARE_FLAG_INFERRABLE, &diffs)) {
+			if (!best_match)
+				best_match = check_possible_match (original, candidate, diffs, device_has_carrier);
+
+			if (!best_match && nm_logging_enabled (LOGL_DEBUG, LOGD_CORE)) {
+				GString *diff_string;
+				GHashTableIter s_iter, p_iter;
+				gpointer setting_name, setting;
+				gpointer property_name, value;
+
+				diff_string = g_string_new (NULL);
+				g_hash_table_iter_init (&s_iter, diffs);
+				while (g_hash_table_iter_next (&s_iter, &setting_name, &setting)) {
+					g_hash_table_iter_init (&p_iter, setting);
+					while (g_hash_table_iter_next (&p_iter, &property_name, &value)) {
+						if (diff_string->len)
+							g_string_append (diff_string, ", ");
+						g_string_append_printf (diff_string, "%s.%s",
+						                        (char *) setting_name,
+						                        (char *) property_name);
+					}
+				}
+
+				nm_log_dbg (LOGD_CORE, "Connection '%s' differs from candidate '%s' in %s",
+				            nm_connection_get_id (original),
+				            nm_connection_get_id (candidate),
+				            diff_string->str);
+				g_string_free (diff_string, TRUE);
+			}
+
+			g_hash_table_unref (diffs);
+			continue;
+		}
+
+		/* Exact match */
+		return candidate;
+	}
+
+	/* Best match (if any) */
+	return best_match;
+}
+
+/* nm_utils_ascii_str_to_int64:
+ *
+ * A wrapper for g_ascii_strtoll, that checks whether the whole string
+ * can be successfully converted to a number and is within a given
+ * range. On any error, @fallback will be returned and %errno will be set
+ * to a non-zero value. On success, %errno will be set to zero, check %errno
+ * for errors. Any trailing or leading (ascii) white space is ignored and the
+ * functions is locale independent.
+ *
+ * The function is guaranteed to return a value between @min and @max
+ * (inclusive) or @fallback. Also, the parsing is rather strict, it does
+ * not allow for any unrecognized characters, except leading and trailing
+ * white space.
+ **/
+gint64
+nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback)
+{
+	gint64 v;
+	size_t len;
+	char buf[64], *s, *str_free = NULL;
+
+	if (str) {
+		while (g_ascii_isspace (str[0]))
+			str++;
+	}
+	if (!str || !str[0]) {
+		errno = EINVAL;
+		return fallback;
+	}
+
+	len = strlen (str);
+	if (g_ascii_isspace (str[--len])) {
+		/* backward search the first non-ws character.
+		 * We already know that str[0] is non-ws. */
+		while (g_ascii_isspace (str[--len]))
+			;
+
+		/* str[len] is now the last non-ws character... */
+		len++;
+
+		if (len >= sizeof (buf))
+			s = str_free = g_malloc (len + 1);
+		else
+			s = buf;
+
+		memcpy (s, str, len);
+		s[len] = 0;
+
+		/*
+		g_assert (len > 0 && len < strlen (str) && len == strlen (s));
+		g_assert (!g_ascii_isspace (str[len-1]) && g_ascii_isspace (str[len]));
+		g_assert (strncmp (str, s, len) == 0);
+		*/
+
+		str = s;
+	}
+
+	errno = 0;
+	v = g_ascii_strtoll (str, &s, base);
+
+	if (errno != 0)
+		v = fallback;
+	else if (s[0] != 0) {
+		errno = EINVAL;
+		v = fallback;
+	} else if (v > max || v < min) {
+		errno = ERANGE;
+		v = fallback;
+	}
+
+	if (G_UNLIKELY (str_free))
+		g_free (str_free);
+	return v;
+}
+
+
+static gint64 monotonic_timestamp_offset_sec;
+
+static void
+monotonic_timestamp_get (struct timespec *tp)
+{
+	static gboolean initialized = FALSE;
+	int err;
+
+	err = clock_gettime (CLOCK_BOOTTIME, tp);
+
+	g_assert (err == 0); (void)err;
+	g_assert (tp->tv_nsec >= 0 && tp->tv_nsec < NM_UTILS_NS_PER_SECOND);
+
+	if (G_LIKELY (initialized))
+		return;
+
+	/* Calculate an offset for the time stamp.
+	 *
+	 * We always want positive values, because then we can initialize
+	 * a timestamp with 0 and be sure, that it will be less then any
+	 * value nm_utils_get_monotonic_timestamp_*() might return.
+	 * For this to be true also for nm_utils_get_monotonic_timestamp_s() at
+	 * early boot, we have to shift the timestamp to start counting at
+	 * least from 1 second onward.
+	 *
+	 * Another advantage of shifting is, that this way we make use of the whole 31 bit
+	 * range of signed int, before the time stamp for nm_utils_get_monotonic_timestamp_s()
+	 * wraps (~68 years).
+	 **/
+	monotonic_timestamp_offset_sec = (- ((gint64) tp->tv_sec)) + 1;
+	initialized = TRUE;
+
+	if (nm_logging_enabled (LOGL_DEBUG, LOGD_CORE)) {
+		time_t now = time (NULL);
+		struct tm tm;
+		char s[255];
+
+		strftime (s, sizeof (s), "%Y-%m-%d %H:%M:%S", localtime_r (&now, &tm));
+		nm_log_dbg (LOGD_CORE, "monotonic timestamp started counting 1.%09ld seconds ago with "
+		                       "an offset of %lld.0 seconds to CLOCK_BOOTTIME (local time is %s)",
+		                       tp->tv_nsec, (long long) -monotonic_timestamp_offset_sec, s);
+	}
+}
+
+/**
+ * nm_utils_get_monotonic_timestamp_ns:
+ *
+ * Returns: a monotonically increasing time stamp in nanoseconds,
+ * starting at an unspecified offset. See clock_gettime(), %CLOCK_BOOTTIME.
+ *
+ * The returned value will start counting at an undefined point
+ * in the past and will always be positive.
+ *
+ * All the nm_utils_get_monotonic_timestamp_*s functions return the same
+ * timestamp but in different scales (nsec, usec, msec, sec).
+ **/
+gint64
+nm_utils_get_monotonic_timestamp_ns (void)
+{
+	struct timespec tp;
+
+	monotonic_timestamp_get (&tp);
+
+	/* Although the result will always be positive, we return a signed
+	 * integer, which makes it easier to calculate time differences (when
+	 * you want to subtract signed values).
+	 **/
+	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec) * NM_UTILS_NS_PER_SECOND +
+	       tp.tv_nsec;
+}
+
+/**
+ * nm_utils_get_monotonic_timestamp_us:
+ *
+ * Returns: a monotonically increasing time stamp in microseconds,
+ * starting at an unspecified offset. See clock_gettime(), %CLOCK_BOOTTIME.
+ *
+ * The returned value will start counting at an undefined point
+ * in the past and will always be positive.
+ *
+ * All the nm_utils_get_monotonic_timestamp_*s functions return the same
+ * timestamp but in different scales (nsec, usec, msec, sec).
+ **/
+gint64
+nm_utils_get_monotonic_timestamp_us (void)
+{
+	struct timespec tp;
+
+	monotonic_timestamp_get (&tp);
+
+	/* Although the result will always be positive, we return a signed
+	 * integer, which makes it easier to calculate time differences (when
+	 * you want to subtract signed values).
+	 **/
+	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec) * ((gint64) G_USEC_PER_SEC) +
+	       (tp.tv_nsec / (NM_UTILS_NS_PER_SECOND/G_USEC_PER_SEC));
+}
+
+/**
+ * nm_utils_get_monotonic_timestamp_ms:
+ *
+ * Returns: a monotonically increasing time stamp in milliseconds,
+ * starting at an unspecified offset. See clock_gettime(), %CLOCK_BOOTTIME.
+ *
+ * The returned value will start counting at an undefined point
+ * in the past and will always be positive.
+ *
+ * All the nm_utils_get_monotonic_timestamp_*s functions return the same
+ * timestamp but in different scales (nsec, usec, msec, sec).
+ **/
+gint64
+nm_utils_get_monotonic_timestamp_ms (void)
+{
+	struct timespec tp;
+
+	monotonic_timestamp_get (&tp);
+
+	/* Although the result will always be positive, we return a signed
+	 * integer, which makes it easier to calculate time differences (when
+	 * you want to subtract signed values).
+	 **/
+	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec) * ((gint64) 1000) +
+	       (tp.tv_nsec / (NM_UTILS_NS_PER_SECOND/1000));
+}
+
+/**
+ * nm_utils_get_monotonic_timestamp_s:
+ *
+ * Returns: nm_utils_get_monotonic_timestamp_ms() in seconds (throwing
+ * away sub second parts). The returned value will always be positive.
+ *
+ * This value wraps after roughly 68 years which should be fine for any
+ * practical purpose.
+ *
+ * All the nm_utils_get_monotonic_timestamp_*s functions return the same
+ * timestamp but in different scales (nsec, usec, msec, sec).
+ **/
+gint32
+nm_utils_get_monotonic_timestamp_s (void)
+{
+	struct timespec tp;
+
+	monotonic_timestamp_get (&tp);
+	return (((gint64) tp.tv_sec) + monotonic_timestamp_offset_sec);
+}
+
+
+/**
+ * nm_utils_ip6_property_path:
+ * @ifname: an interface name
+ * @property: a property name
+ *
+ * Returns the path to IPv6 property @property on @ifname. Note that
+ * this uses a static buffer.
+ */
+const char *
+nm_utils_ip6_property_path (const char *ifname, const char *property)
+{
+#define IPV6_PROPERTY_DIR "/proc/sys/net/ipv6/conf/"
+	static char path[sizeof (IPV6_PROPERTY_DIR) + IFNAMSIZ + 32];
+	int len;
+
+	ifname = ASSERT_VALID_PATH_COMPONENT (ifname);
+	property = ASSERT_VALID_PATH_COMPONENT (property);
+
+	len = g_snprintf (path, sizeof (path), IPV6_PROPERTY_DIR "%s/%s",
+	                  ifname, property);
+	g_assert (len < sizeof (path) - 1);
+
+	return path;
+}
+
+const char *
+ASSERT_VALID_PATH_COMPONENT (const char *name)
+{
+	const char *n;
+
+	if (name == NULL || name[0] == '\0')
+		goto fail;
+
+	if (name[0] == '.') {
+		if (name[1] == '\0')
+			goto fail;
+		if (name[1] == '.' && name[2] == '\0')
+			goto fail;
+	}
+	n = name;
+	do {
+		if (*n == '/')
+			goto fail;
+	} while (*(++n) != '\0');
+
+	return name;
+fail:
+	if (name)
+		nm_log_err (LOGD_CORE, "Failed asserting path component: NULL");
+	else
+		nm_log_err (LOGD_CORE, "Failed asserting path component: \"%s\"", name);
+	g_error ("FATAL: Failed asserting path component: %s", name ? name : "(null)");
 }
 

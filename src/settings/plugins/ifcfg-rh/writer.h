@@ -25,6 +25,9 @@
 #include <glib.h>
 #include <nm-connection.h>
 
+gboolean writer_can_write_connection (NMConnection *connection,
+                                      GError **error);
+
 gboolean writer_new_connection (NMConnection *connection,
                                 const char *ifcfg_dir,
                                 char **out_filename,

@@ -67,7 +67,7 @@ typedef struct {
 
 GType nm_dns_manager_get_type (void);
 
-NMDnsManager * nm_dns_manager_get (const char **plugins);
+NMDnsManager * nm_dns_manager_get (void);
 
 /* Allow changes to be batched together */
 void nm_dns_manager_begin_updates (NMDnsManager *mgr, const char *func);
@@ -87,8 +87,30 @@ gboolean nm_dns_manager_add_ip6_config (NMDnsManager *mgr,
 
 gboolean nm_dns_manager_remove_ip6_config (NMDnsManager *mgr, NMIP6Config *config);
 
-void nm_dns_manager_set_hostname (NMDnsManager *mgr,
-                                  const char *hostname);
+void nm_dns_manager_set_initial_hostname (NMDnsManager *mgr,
+                                          const char *hostname);
+void nm_dns_manager_set_hostname         (NMDnsManager *mgr,
+                                          const char *hostname);
+
+/**
+ * NMDnsManagerResolvConfMode:
+ * @NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED: NM is not managing resolv.conf
+ * @NM_DNS_MANAGER_RESOLV_CONF_EXPLICIT: NM is managing resolv.conf by
+ *   adding and removing "nameserver" lines corresponding to the currently
+ *   active connections
+ * @NM_DNS_MANAGER_RESOLV_CONF_PROXY: NM is managing resolv.conf by
+ *   pointing it to some other service (eg, dnsmasq) that knows the
+ *   nameservers corresponding to the currently active connections.
+ *
+ * NMDnsManager's behavior toward /etc/resolv.conf.
+ */
+typedef enum {
+	NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED,
+	NM_DNS_MANAGER_RESOLV_CONF_EXPLICIT,
+	NM_DNS_MANAGER_RESOLV_CONF_PROXY
+} NMDnsManagerResolvConfMode;
+
+NMDnsManagerResolvConfMode nm_dns_manager_get_resolv_conf_mode (NMDnsManager *mgr);
 
 G_END_DECLS
 

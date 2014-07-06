@@ -29,6 +29,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include <nm-version.h>
+
 G_BEGIN_DECLS
 
 #define NM_TYPE_SETTING            (nm_setting_get_type ())
@@ -64,7 +66,7 @@ typedef enum
 GQuark nm_setting_error_quark (void);
 
 
-/* The property of the #NMSetting should be serialized */
+/* DEPRECATED AND UNUSED */
 #define NM_SETTING_PARAM_SERIALIZE    (1 << (0 + G_PARAM_USER_SHIFT))
 
 /* The property of the #NMSetting is required for the setting to be valid */
@@ -77,6 +79,9 @@ GQuark nm_setting_error_quark (void);
  * use the %NM_SETTING_COMPARE_FLAG_FUZZY flag.
  */
 #define NM_SETTING_PARAM_FUZZY_IGNORE (1 << (3 + G_PARAM_USER_SHIFT))
+
+/* Note: all non-glib GParamFlags bits are reserved by NetworkManager */
+
 
 #define NM_SETTING_NAME "name"
 
@@ -134,6 +139,8 @@ typedef enum {
 	NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS = 0x00000004,
 	NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS = 0x00000008,
 	NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS = 0x00000010
+
+	/* 0x80000000 is used for a private flag */
 } NMSettingCompareFlags;
 
 
@@ -172,7 +179,7 @@ typedef struct {
 
 	GPtrArray  *(*need_secrets)      (NMSetting  *setting);
 
-	gboolean    (*update_one_secret) (NMSetting  *setting,
+	int         (*update_one_secret) (NMSetting  *setting,
 	                                  const char *key,
 	                                  GValue     *value,
 	                                  GError    **error);
@@ -195,7 +202,7 @@ typedef struct {
 	                                  const GParamSpec *prop_spec,
 	                                  NMSettingCompareFlags flags);
 
-	void        (*clear_secrets_with_flags) (NMSetting *setting,
+	gboolean    (*clear_secrets_with_flags) (NMSetting *setting,
 	                                         GParamSpec *pspec,
 	                                         NMSettingClearSecretsWithFlagsFn func,
 	                                         gpointer user_data);

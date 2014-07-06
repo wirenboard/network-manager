@@ -73,16 +73,10 @@ enum {
 	PROP_BITRATE,
 	PROP_ACTIVE_ACCESS_POINT,
 	PROP_WIRELESS_CAPABILITIES,
+	PROP_ACCESS_POINTS,
 
 	LAST_PROP
 };
-
-#define DBUS_PROP_HW_ADDRESS "HwAddress"
-#define DBUS_PROP_PERM_HW_ADDRESS "PermHwAddress"
-#define DBUS_PROP_MODE "Mode"
-#define DBUS_PROP_BITRATE "Bitrate"
-#define DBUS_PROP_ACTIVE_ACCESS_POINT "ActiveAccessPoint"
-#define DBUS_PROP_WIRELESS_CAPABILITIES "WirelessCapabilities"
 
 enum {
 	ACCESS_POINT_ADDED,
@@ -90,7 +84,6 @@ enum {
 
 	LAST_SIGNAL
 };
-
 static guint signals[LAST_SIGNAL] = { 0 };
 
 /**
@@ -117,7 +110,7 @@ nm_device_wifi_error_quark (void)
  *
  * Creates a new #NMDeviceWifi.
  *
- * Returns: (transfer full): a new WiFi device
+ * Returns: (transfer full): a new Wi-Fi device
  **/
 GObject *
 nm_device_wifi_new (DBusGConnection *connection, const char *path)
@@ -192,9 +185,9 @@ nm_device_wifi_get_mode (NMDeviceWifi *device)
  * nm_device_wifi_get_bitrate:
  * @device: a #NMDeviceWifi
  *
- * Gets the bit rate of the #NMDeviceWifi.
+ * Gets the bit rate of the #NMDeviceWifi in kbit/s.
  *
- * Returns: the bit rate
+ * Returns: the bit rate (kbit/s)
  **/
 guint32
 nm_device_wifi_get_bitrate (NMDeviceWifi *device)
@@ -223,7 +216,7 @@ nm_device_wifi_get_bitrate (NMDeviceWifi *device)
  * nm_device_wifi_get_capabilities:
  * @device: a #NMDeviceWifi
  *
- * Gets the WIFI capabilities of the #NMDeviceWifi.
+ * Gets the Wi-Fi capabilities of the #NMDeviceWifi.
  *
  * Returns: the capabilities
  **/
@@ -278,7 +271,7 @@ nm_device_wifi_get_active_access_point (NMDeviceWifi *device)
  * Gets all the scanned access points of the #NMDeviceWifi.
  *
  * Returns: (element-type NMClient.AccessPoint): a #GPtrArray containing all the
- * scanned #NMAccessPoint<!-- -->s.
+ * scanned #NMAccessPoints.
  * The returned array is owned by the client and should not be modified.
  **/
 const GPtrArray *
@@ -390,31 +383,6 @@ nm_device_wifi_request_scan_simple (NMDeviceWifi *device,
 }
 
 static void
-access_point_added (NMObject *self, NMObject *ap)
-{
-	g_signal_emit (self, signals[ACCESS_POINT_ADDED], 0, ap);
-}
-
-static void
-access_point_removed (NMObject *self_obj, NMObject *ap_obj)
-{
-	NMDeviceWifi *self = NM_DEVICE_WIFI (self_obj);
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-	NMAccessPoint *ap = NM_ACCESS_POINT (ap_obj);
-
-	if (ap == priv->active_ap) {
-		g_object_unref (priv->active_ap);
-		priv->active_ap = NULL;
-		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT);
-
-		priv->rate = 0;
-		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_BITRATE);
-	}
-
-	g_signal_emit (self, signals[ACCESS_POINT_REMOVED], 0, ap);
-}
-
-static void
 clean_up_aps (NMDeviceWifi *self, gboolean notify)
 {
 	NMDeviceWifiPrivate *priv;
@@ -491,8 +459,6 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	NMDeviceWifiCapabilities wifi_caps;
 	const char *key_mgmt;
 
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
@@ -554,7 +520,19 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 		}
 	}
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_wifi_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_WIRELESS;
+}
+
+static const char *
+get_hw_address (NMDevice *device)
+{
+	return nm_device_wifi_get_hw_address (NM_DEVICE_WIFI (device));
 }
 
 /**************************************************************/
@@ -593,6 +571,9 @@ get_property (GObject *object,
 		break;
 	case PROP_WIRELESS_CAPABILITIES:
 		g_value_set_uint (value, nm_device_wifi_get_capabilities (self));
+		break;
+	case PROP_ACCESS_POINTS:
+		g_value_set_boxed (value, nm_device_wifi_get_access_points (self));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -637,36 +618,38 @@ register_properties (NMDeviceWifi *device)
 		{ NM_DEVICE_WIFI_BITRATE,              &priv->rate },
 		{ NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT,  &priv->active_ap, NULL, NM_TYPE_ACCESS_POINT },
 		{ NM_DEVICE_WIFI_CAPABILITIES,         &priv->wireless_caps },
+		{ NM_DEVICE_WIFI_ACCESS_POINTS,        &priv->aps, NULL, NM_TYPE_ACCESS_POINT, "access-point" },
 		{ NULL },
 	};
 
 	_nm_object_register_properties (NM_OBJECT (device),
 	                                priv->proxy,
 	                                property_info);
+}
 
-	_nm_object_register_pseudo_property (NM_OBJECT (device),
-	                                     priv->proxy,
-	                                     "AccessPoints",
-	                                     &priv->aps,
-	                                     NM_TYPE_ACCESS_POINT,
-	                                     access_point_added,
-	                                     access_point_removed);
+static void
+access_point_removed (NMDeviceWifi *self, NMAccessPoint *ap)
+{
+	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+
+	if (ap == priv->active_ap) {
+		g_object_unref (priv->active_ap);
+		priv->active_ap = NULL;
+		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT);
+
+		priv->rate = 0;
+		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIFI_BITRATE);
+	}
 }
 
 static void
 constructed (GObject *object)
 {
-	NMDeviceWifiPrivate *priv;
+	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_wifi_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_WIFI_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-											NM_DBUS_SERVICE,
-											nm_object_get_path (NM_OBJECT (object)),
-											NM_DBUS_INTERFACE_DEVICE_WIRELESS);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_WIRELESS);
 	register_properties (NM_DEVICE_WIFI (object));
 
 	g_signal_connect (NM_DEVICE (object),
@@ -727,6 +710,9 @@ nm_device_wifi_class_init (NMDeviceWifiClass *wifi_class)
 	object_class->dispose = dispose;
 	object_class->finalize = finalize;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
+	device_class->get_hw_address = get_hw_address;
+	wifi_class->access_point_removed = access_point_removed;
 
 	/* properties */
 
@@ -772,7 +758,7 @@ nm_device_wifi_class_init (NMDeviceWifiClass *wifi_class)
 	/**
 	 * NMDeviceWifi:bitrate:
 	 *
-	 * The bit rate of the device.
+	 * The bit rate of the device in kbit/s.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_BITRATE,
@@ -808,14 +794,29 @@ nm_device_wifi_class_init (NMDeviceWifiClass *wifi_class)
 		                    0, G_MAXUINT32, 0,
 		                    G_PARAM_READABLE));
 
+	/**
+	 * NMDeviceWifi:access-points:
+	 *
+	 * List of all Wi-Fi access points the device can see.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_ACCESS_POINTS,
+		 g_param_spec_boxed (NM_DEVICE_WIFI_ACCESS_POINTS,
+		                     "AccessPoints",
+		                     "Access Points",
+		                     NM_TYPE_OBJECT_ARRAY,
+		                     G_PARAM_READABLE));
+
 	/* signals */
 
 	/**
 	 * NMDeviceWifi::access-point-added:
-	 * @device: the wifi device that received the signal
+	 * @device: the Wi-Fi device that received the signal
 	 * @ap: the new access point
 	 *
-	 * Notifies that a #NMAccessPoint is added to the wifi device.
+	 * Notifies that a #NMAccessPoint is added to the Wi-Fi device.
 	 **/
 	signals[ACCESS_POINT_ADDED] =
 		g_signal_new ("access-point-added",
@@ -829,10 +830,10 @@ nm_device_wifi_class_init (NMDeviceWifiClass *wifi_class)
 
 	/**
 	 * NMDeviceWifi::access-point-removed:
-	 * @device: the wifi device that received the signal
+	 * @device: the Wi-Fi device that received the signal
 	 * @ap: the removed access point
 	 *
-	 * Notifies that a #NMAccessPoint is removed from the wifi device.
+	 * Notifies that a #NMAccessPoint is removed from the Wi-Fi device.
 	 **/
 	signals[ACCESS_POINT_REMOVED] =
 		g_signal_new ("access-point-removed",

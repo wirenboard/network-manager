@@ -56,6 +56,26 @@ typedef enum {
 } NMSecretAgentError;
 
 /**
+ * NMSecretAgentCapabilities:
+ * @NM_SECRET_AGENT_CAPABILITY_NONE: the agent supports no special capabilities
+ * @NM_SECRET_AGENT_CAPABILITY_VPN_HINTS: the agent supports sending hints given
+ * by the NMSecretAgentClass::get_secrets() class method to VPN plugin
+ * authentication dialogs.
+ * @NM_SECRET_AGENT_CAPABILITY_LAST: bounds checking value; should not be used.
+ *
+ * #NMSecretAgentCapabilities indicate various capabilities of the agent.
+ *
+ * Since: 0.9.10
+ */
+typedef enum /*< flags >*/ {
+	NM_SECRET_AGENT_CAPABILITY_NONE = 0x0,
+	NM_SECRET_AGENT_CAPABILITY_VPN_HINTS = 0x1,
+
+	/* boundary value */
+	NM_SECRET_AGENT_CAPABILITY_LAST = NM_SECRET_AGENT_CAPABILITY_VPN_HINTS
+} NMSecretAgentCapabilities;
+
+/**
  * NMSecretAgentGetSecretsFlags:
  * @NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE: no special behavior; by default no
  * user interaction is allowed and requests for secrets are fulfilled from
@@ -91,6 +111,7 @@ typedef enum /*< flags >*/ {
 #define NM_SECRET_AGENT_IDENTIFIER          "identifier"
 #define NM_SECRET_AGENT_AUTO_REGISTER       "auto-register"
 #define NM_SECRET_AGENT_REGISTERED          "registered"
+#define NM_SECRET_AGENT_CAPABILITIES        "capabilities"
 
 #define NM_SECRET_AGENT_REGISTRATION_RESULT "registration-result"
 
@@ -120,7 +141,7 @@ typedef struct {
  * return them, or to return an error, this function should be called with
  * those secrets or the error.
  *
- * To easily create the hash table to return the WiFi PSK, you could do
+ * To easily create the hash table to return the Wi-Fi PSK, you could do
  * something like this:
  * <example>
  *  <title>Creating a secrets hash</title>

@@ -87,7 +87,8 @@ DIST_COMMON = $(top_srcdir)/gtk-doc.make $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.am $(srcdir)/version.xml.in
 subdir = docs/libnm-util
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -151,12 +152,15 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
+DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
+DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
@@ -181,7 +185,6 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
-GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -226,12 +229,16 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
+LIBNDP_CFLAGS = @LIBNDP_CFLAGS@
+LIBNDP_LIBS = @LIBNDP_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
+LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -248,6 +255,8 @@ MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEWT_CFLAGS = @NEWT_CFLAGS@
+NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -275,11 +284,16 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
+PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
+READLINE_LIBS = @READLINE_LIBS@
 SED = @SED@
+SELINUX_CFLAGS = @SELINUX_CFLAGS@
+SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -294,6 +308,7 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VALGRIND_RULES = @VALGRIND_RULES@
 VAPIGEN = @VAPIGEN@
 VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
 VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
@@ -356,6 +371,7 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
@@ -366,6 +382,7 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
+with_valgrind = @with_valgrind@
 AUTOMAKE_OPTIONS = 1.6
 
 # The name of the module
@@ -400,7 +417,9 @@ IGNORE_HFILES = \
 	crypto.h \
 	nm-setting-template.h \
 	nm-utils-private.h \
-	nm-param-spec-specialized.h
+	nm-setting-private.h \
+	nm-param-spec-specialized.h \
+	nm-test-utils.h
 
 
 # Images to copy into HTML directory.
@@ -417,6 +436,7 @@ extra_files =
 GTKDOC_CFLAGS = \
 	-I$(top_srcdir)/include		\
 	-I$(top_srcdir)/libnm-util	\
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS)			\
 	$(DBUS_CFLAGS)
 
@@ -464,12 +484,12 @@ REPORT_FILES = \
 	$(DOC_MODULE)-unused.txt
 
 CLEANFILES = $(SCANOBJ_FILES) $(REPORT_FILES) $(DOC_STAMPS) \
-	gtkdoc-check.test libnm-util-sections.txt \
-	libnm-util-overrides.txt html/* tmpl/* xml/*
-@GTK_DOC_BUILD_HTML_FALSE@HTML_BUILD_STAMP = 
-@GTK_DOC_BUILD_HTML_TRUE@HTML_BUILD_STAMP = html-build.stamp
-@GTK_DOC_BUILD_PDF_FALSE@PDF_BUILD_STAMP = 
-@GTK_DOC_BUILD_PDF_TRUE@PDF_BUILD_STAMP = pdf-build.stamp
+	libnm-util-sections.txt libnm-util-overrides.txt html/* tmpl/* \
+	xml/*
+@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_FALSE@HTML_BUILD_STAMP = 
+@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_HTML_TRUE@HTML_BUILD_STAMP = html-build.stamp
+@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_PDF_FALSE@PDF_BUILD_STAMP = 
+@ENABLE_GTK_DOC_TRUE@@GTK_DOC_BUILD_PDF_TRUE@PDF_BUILD_STAMP = pdf-build.stamp
 
 #### setup ####
 GTK_DOC_V_SETUP = $(GTK_DOC_V_SETUP_$(V))
@@ -590,7 +610,6 @@ distdir: $(DISTFILES)
 	  dist-hook
 check-am: all-am
 check: check-am
-@ENABLE_GTK_DOC_FALSE@all-local:
 all-am: Makefile all-local
 installdirs:
 install: install-am
@@ -708,15 +727,8 @@ uninstall-am: uninstall-local
 	uninstall-am uninstall-local
 
 
-gtkdoc-check.test: Makefile
-	$(AM_V_GEN)echo "#!/bin/sh -e" > $@; \
-		echo "$(GTKDOC_CHECK_PATH) || exit 1" >> $@; \
-		chmod +x $@
-
-all-gtk-doc: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
-.PHONY: all-gtk-doc
-
-@ENABLE_GTK_DOC_TRUE@all-local: all-gtk-doc
+@ENABLE_GTK_DOC_TRUE@all-local: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
+@ENABLE_GTK_DOC_FALSE@all-local:
 
 docs: $(HTML_BUILD_STAMP) $(PDF_BUILD_STAMP)
 
@@ -727,19 +739,17 @@ setup-build.stamp:
 	    files=`echo $(SETUP_FILES) $(expand_content_files) $(DOC_MODULE).types`; \
 	    if test "x$$files" != "x" ; then \
 	        for file in $$files ; do \
-	            destdir=`dirname $(abs_builddir)/$$file` ;\
-	            test -d "$$destdir" || mkdir -p "$$destdir"; \
 	            test -f $(abs_srcdir)/$$file && \
-	                cp -pf $(abs_srcdir)/$$file $(abs_builddir)/$$file || true; \
+	                cp -pu $(abs_srcdir)/$$file $(abs_builddir)/$$file || true; \
 	        done; \
 	    fi; \
 	    test -d $(abs_srcdir)/tmpl && \
-	        { cp -pR $(abs_srcdir)/tmpl $(abs_builddir)/; \
+	        { cp -rp $(abs_srcdir)/tmpl $(abs_builddir)/; \
 	        chmod -R u+w $(abs_builddir)/tmpl; } \
 	fi
 	$(AM_V_at)touch setup-build.stamp
 
-scan-build.stamp: setup-build.stamp $(HFILE_GLOB) $(CFILE_GLOB)
+scan-build.stamp: $(HFILE_GLOB) $(CFILE_GLOB)
 	$(GTK_DOC_V_SCAN)_source_dir='' ; \
 	for i in $(DOC_SOURCE_DIR) ; do \
 	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
@@ -769,7 +779,7 @@ tmpl-build.stamp: setup-build.stamp $(DOC_MODULE)-decl.txt $(SCANOBJ_FILES) $(DO
 	$(GTK_DOC_V_TMPL)gtkdoc-mktmpl --module=$(DOC_MODULE) $(MKTMPL_OPTIONS)
 	$(AM_V_at)if test "$(abs_srcdir)" != "$(abs_builddir)" ; then \
 	  if test -w $(abs_srcdir) ; then \
-	    cp -pR $(abs_builddir)/tmpl $(abs_srcdir)/; \
+	    cp -rp $(abs_builddir)/tmpl $(abs_srcdir)/; \
 	  fi \
 	fi
 	$(AM_V_at)touch tmpl-build.stamp
@@ -781,7 +791,7 @@ $(srcdir)/tmpl/*.sgml:
 	@true
 
 sgml-build.stamp: tmpl.stamp $(DOC_MODULE)-sections.txt $(srcdir)/tmpl/*.sgml $(expand_content_files)
-	-$(GTK_DOC_V_XML)chmod -R u+w $(srcdir) && _source_dir='' ; \
+	$(GTK_DOC_V_XML)-chmod -R u+w $(srcdir) && _source_dir='' ; \
 	for i in $(DOC_SOURCE_DIR) ; do \
 	    _source_dir="$${_source_dir} --source-dir=$$i" ; \
 	done ; \
@@ -843,9 +853,6 @@ pdf-build.stamp: sgml.stamp $(DOC_MAIN_SGML_FILE) $(content_files)
 clean-local:
 	@rm -f *~ *.bak
 	@rm -rf .libs
-	@if echo $(SCAN_OPTIONS) | grep -q "\-\-rebuild-types" ; then \
-	  rm -f $(DOC_MODULE).types; \
-	fi
 
 distclean-local:
 	@rm -rf xml html $(REPORT_FILES) $(DOC_MODULE).pdf \
@@ -891,14 +898,12 @@ uninstall-local:
 #
 # Require gtk-doc when making dist
 #
-@HAVE_GTK_DOC_TRUE@dist-check-gtkdoc: docs
-@HAVE_GTK_DOC_FALSE@dist-check-gtkdoc:
-@HAVE_GTK_DOC_FALSE@	@echo "*** gtk-doc is needed to run 'make dist'.         ***"
-@HAVE_GTK_DOC_FALSE@	@echo "*** gtk-doc was not found when 'configure' ran.   ***"
-@HAVE_GTK_DOC_FALSE@	@echo "*** please install gtk-doc and rerun 'configure'. ***"
-@HAVE_GTK_DOC_FALSE@	@false
+@ENABLE_GTK_DOC_TRUE@dist-check-gtkdoc: docs
+@ENABLE_GTK_DOC_FALSE@dist-check-gtkdoc:
+@ENABLE_GTK_DOC_FALSE@	@echo "*** gtk-doc must be installed and enabled in order to make dist"
+@ENABLE_GTK_DOC_FALSE@	@false
 
-dist-hook: dist-check-gtkdoc all-gtk-doc dist-hook-local
+dist-hook: dist-check-gtkdoc dist-hook-local
 	@mkdir $(distdir)/tmpl
 	@mkdir $(distdir)/html
 	@-cp ./tmpl/*.sgml $(distdir)/tmpl

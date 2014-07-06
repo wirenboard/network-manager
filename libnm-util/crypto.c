@@ -148,13 +148,6 @@ parse_old_openssl_key_file (const GByteArray *contents,
 	}
 
 	str = g_string_new_len (NULL, end - start);
-	if (!str) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Not enough memory to store PEM file data."));
-		goto parse_error;
-	}
-
 	for (ln = lines; *ln; ln++) {
 		char *p = *ln;
 
@@ -212,6 +205,8 @@ parse_old_openssl_key_file (const GByteArray *contents,
 			if (!strcasecmp (p, "DES-EDE3-CBC")) {
 				cipher = g_strdup (p);
 			} else if (!strcasecmp (p, "DES-CBC")) {
+				cipher = g_strdup (p);
+			} else if (!strcasecmp (p, "AES-128-CBC")) {
 				cipher = g_strdup (p);
 			} else {
 				g_set_error (error, NM_CRYPTO_ERROR,
@@ -308,15 +303,9 @@ parse_pkcs8_key_file (const GByteArray *contents,
 
 	if (der && length) {
 		key = g_byte_array_sized_new (length);
-		if (key) {
-			g_byte_array_append (key, der, length);
-			g_assert (key->len == length);
-			*out_encrypted = encrypted;
-		} else {
-			g_set_error_literal (error, NM_CRYPTO_ERROR,
-			                     NM_CRYPTO_ERR_OUT_OF_MEMORY,
-			                     _("Not enough memory to store private key data."));
-		}
+		g_byte_array_append (key, der, length);
+		g_assert (key->len == length);
+		*out_encrypted = encrypted;
 	} else {
 		g_set_error_literal (error, NM_CRYPTO_ERROR,
 		                     NM_CRYPTO_ERR_DECODE_FAILED,
@@ -336,14 +325,8 @@ file_to_g_byte_array (const char *filename, GError **error)
 
 	if (g_file_get_contents (filename, &contents, &length, error)) {
 		array = g_byte_array_sized_new (length);
-		if (array) {
-			g_byte_array_append (array, (guint8 *) contents, length);
-			g_assert (array->len == length);
-		} else {
-			g_set_error (error, NM_CRYPTO_ERROR,
-				         NM_CRYPTO_ERR_OUT_OF_MEMORY,
-				         _("Not enough memory to store certificate data."));
-		}
+		g_byte_array_append (array, (guint8 *) contents, length);
+		g_assert (array->len == length);
 		g_free (contents);
 	}
 	return array;
@@ -374,12 +357,6 @@ convert_iv (const char *src,
 
 	num /= 2;
 	c = g_malloc0 (num + 1);
-	if (c == NULL) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Not enough memory to store the IV."));
-        return NULL;
-	}
 
 	conv[2] = '\0';
 	for (i = 0; i < num; i++) {
@@ -403,12 +380,12 @@ error:
 }
 
 static char *
-make_des_key (const char *cipher,
-              const char *salt,
-              const gsize salt_len,
-              const char *password,
-              gsize *out_len,
-              GError **error)
+make_des_aes_key (const char *cipher,
+                  const char *salt,
+                  const gsize salt_len,
+                  const char *password,
+                  gsize *out_len,
+                  GError **error)
 {
 	char *key;
 	guint32 digest_len;
@@ -423,6 +400,8 @@ make_des_key (const char *cipher,
 		digest_len = 24;
 	else if (!strcmp (cipher, "DES-CBC"))
 		digest_len = 8;
+	else if (!strcmp (cipher, "AES-128-CBC"))
+		digest_len = 16;
 	else {
 		g_set_error (error, NM_CRYPTO_ERROR,
 		             NM_CRYPTO_ERR_UNKNOWN_CIPHER,
@@ -431,13 +410,10 @@ make_des_key (const char *cipher,
 		return NULL;
 	}
 
-	key = g_malloc0 (digest_len + 1);
-	if (!key) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Not enough memory to decrypt private key."));
+	if (password[0] == '\0')
 		return NULL;
-	}
+
+	key = g_malloc0 (digest_len + 1);
 
 	if (!crypto_md5_hash (salt,
 	                      salt_len,
@@ -482,8 +458,8 @@ decrypt_key (const char *cipher,
 	if (!bin_iv)
 		return NULL;
 
-	/* Convert the PIN and IV into a DES key */
-	key = make_des_key (cipher, bin_iv, bin_iv_len, password, &key_len, error);
+	/* Convert the password and IV into a DES or AES key */
+	key = make_des_aes_key (cipher, bin_iv, bin_iv_len, password, &key_len, error);
 	if (!key || !key_len)
 		goto out;
 
@@ -495,13 +471,7 @@ decrypt_key (const char *cipher,
 	                         error);
 	if (output && decrypted_len) {
 		decrypted = g_byte_array_sized_new (decrypted_len);
-		if (decrypted)
-			g_byte_array_append (decrypted, (guint8 *) output, decrypted_len);
-		else {
-			g_set_error (error, NM_CRYPTO_ERROR,
-					     NM_CRYPTO_ERR_OUT_OF_MEMORY,
-					     _("Not enough memory to store decrypted private key."));
-		}
+		g_byte_array_append (decrypted, (guint8 *) output, decrypted_len);
 	}
 
 out:
@@ -622,14 +592,8 @@ extract_pem_cert_data (GByteArray *contents, GError **error)
 
 	if (der && length) {
 		cert = g_byte_array_sized_new (length);
-		if (cert) {
-			g_byte_array_append (cert, der, length);
-			g_assert (cert->len == length);
-		} else {
-			g_set_error (error, NM_CRYPTO_ERROR,
-						 NM_CRYPTO_ERR_OUT_OF_MEMORY,
-						 _("Not enough memory to store certificate data."));
-		}
+		g_byte_array_append (cert, der, length);
+		g_assert (cert->len == length);
 	} else {
 		g_set_error (error, NM_CRYPTO_ERROR,
 			         NM_CRYPTO_ERR_DECODE_FAILED,

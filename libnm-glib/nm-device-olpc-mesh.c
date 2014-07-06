@@ -55,10 +55,6 @@ enum {
 	LAST_PROP
 };
 
-#define DBUS_PROP_HW_ADDRESS      "HwAddress"
-#define DBUS_PROP_COMPANION       "Companion"
-#define DBUS_PROP_ACTIVE_CHANNEL  "ActiveChannel"
-
 /**
  * nm_device_olpc_mesh_error_quark:
  *
@@ -154,14 +150,18 @@ nm_device_olpc_mesh_get_active_channel (NMDeviceOlpcMesh *device)
 	return NM_DEVICE_OLPC_MESH_GET_PRIVATE (device)->active_channel;
 }
 
+static const char *
+get_hw_address (NMDevice *device)
+{
+	return nm_device_olpc_mesh_get_hw_address (NM_DEVICE_OLPC_MESH (device));
+}
+
 static gboolean
 connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
 {
 	NMSettingConnection *s_con;
 	NMSettingOlpcMesh *s_olpc_mesh;
 	const char *ctype;
-
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
@@ -180,7 +180,13 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 		return FALSE;
 	}
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_olpc_mesh_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_OLPC_MESH;
 }
 
 /**************************************************************/
@@ -210,17 +216,11 @@ register_properties (NMDeviceOlpcMesh *device)
 static void
 constructed (GObject *object)
 {
-	NMDeviceOlpcMeshPrivate *priv;
+	NMDeviceOlpcMeshPrivate *priv = NM_DEVICE_OLPC_MESH_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_olpc_mesh_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_OLPC_MESH_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-	                                         NM_DBUS_SERVICE,
-	                                         nm_object_get_path (NM_OBJECT (object)),
-	                                         NM_DBUS_INTERFACE_DEVICE_OLPC_MESH);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_OLPC_MESH);
 	register_properties (NM_DEVICE_OLPC_MESH (object));
 }
 
@@ -285,6 +285,8 @@ nm_device_olpc_mesh_class_init (NMDeviceOlpcMeshClass *olpc_mesh_class)
 	object_class->finalize = finalize;
 	object_class->get_property = get_property;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
+	device_class->get_hw_address = get_hw_address;
 
 	/* properties */
 

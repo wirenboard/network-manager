@@ -29,7 +29,6 @@ typedef struct _NMConnectionProvider NMConnectionProvider;
 #define NM_CP_SIGNAL_CONNECTION_ADDED        "cp-connection-added"
 #define NM_CP_SIGNAL_CONNECTION_UPDATED      "cp-connection-updated"
 #define NM_CP_SIGNAL_CONNECTION_REMOVED      "cp-connection-removed"
-#define NM_CP_SIGNAL_CONNECTIONS_LOADED      "cp-connections-loaded"
 
 
 /**
@@ -58,11 +57,13 @@ struct _NMConnectionProvider {
 
 	const GSList * (*get_connections) (NMConnectionProvider *self);
 
-	gboolean (*has_connections_loaded) (NMConnectionProvider *self);
-
 	NMConnection * (*add_connection) (NMConnectionProvider *self,
 	                                  NMConnection *connection,
+	                                  gboolean save_to_disk,
 	                                  GError **error);
+
+	NMConnection * (*get_connection_by_uuid) (NMConnectionProvider *self,
+	                                          const char *uuid);
 
 	/* Signals */
 	void (*connection_added)   (NMConnectionProvider *self, NMConnection *connection);
@@ -71,10 +72,16 @@ struct _NMConnectionProvider {
 
 	void (*connection_removed) (NMConnectionProvider *self, NMConnection *connection);
 
-	void (*connections_loaded) (NMConnectionProvider *self);
 };
 
 GType nm_connection_provider_get_type (void);
+
+/**
+ * nm_connection_provider_get:
+ *
+ * Returns: the global #NMConnectionProvider
+ */
+NMConnectionProvider *nm_connection_provider_get (void);
 
 /**
  * nm_connection_provider_get_best_connections:
@@ -110,28 +117,20 @@ GSList *nm_connection_provider_get_best_connections (NMConnectionProvider *self,
 const GSList *nm_connection_provider_get_connections (NMConnectionProvider *self);
 
 /**
- * nm_connection_provider_has_connections_loaded:
- * @self: the #NMConnectionProvider
- *
- * Returns: TRUE or FALSE indicating whether the connections of the provider are already
- *   loaded. If they are not yet loaded, the provider will not emit the signals
- *   NM_CP_SIGNAL_CONNECTION_ADDED, NM_CP_SIGNAL_CONNECTION_UPDATED and
- *   NM_CP_SIGNAL_CONNECTION_REMOVED until NM_CP_SIGNAL_CONNECTIONS_LOADED gets
- *   emited.
- */
-gboolean nm_connection_provider_has_connections_loaded (NMConnectionProvider *self);
-
-
-/**
  * nm_connection_provider_add_connection:
  * @self: the #NMConnectionProvider
  * @connection: the connection to be added
+ * @save_to_disk: whether to store the connection on disk
  * @error: returns any error if adding fails
  *
  * returns: a newly added #NMConnection.
  */
 NMConnection *nm_connection_provider_add_connection (NMConnectionProvider *self,
                                                      NMConnection *connection,
+                                                     gboolean save_to_disk,
                                                      GError **error);
+
+NMConnection *nm_connection_provider_get_connection_by_uuid (NMConnectionProvider *self,
+                                                             const char *uuid);
 
 #endif /* NM_CONNECTION_PROVIDER_H */

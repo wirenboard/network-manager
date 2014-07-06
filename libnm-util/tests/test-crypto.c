@@ -28,9 +28,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "nm-test-helpers.h"
 #include "crypto.h"
 #include "nm-utils.h"
+
+#include "nm-test-utils.h"
 
 #if 0
 static const char *pem_rsa_key_begin = "-----BEGIN RSA PRIVATE KEY-----";
@@ -69,10 +70,6 @@ dump_key_to_pem (const char *key, gsize key_len, int key_type)
 	}
 
 	str = g_string_new (NULL);
-	if (!str) {
-		g_warning ("Couldn't allocate buffer to write out key.");
-		goto out;
-	}
 
 	g_string_append (str, start_tag);
 	g_string_append_c (str, '\n');
@@ -122,10 +119,8 @@ file_to_byte_array (const char *filename)
 
 	if (g_file_get_contents (filename, &contents, &length, NULL)) {
 		array = g_byte_array_sized_new (length);
-		if (array) {
-			g_byte_array_append (array, (guint8 *) contents, length);
-			g_assert (array->len == length);
-		}
+		g_byte_array_append (array, (guint8 *) contents, length);
+		g_assert (array->len == length);
 		g_free (contents);
 	}
 	return array;
@@ -261,6 +256,28 @@ test_load_pkcs8 (const char *path,
 	}
 }
 
+static gboolean
+is_cipher_aes (const char *path)
+{
+	char *contents;
+	gsize length = 0;
+	const char *cipher;
+	gboolean is_aes = FALSE;
+
+	if (!g_file_get_contents (path, &contents, &length, NULL))
+		return FALSE;
+
+	cipher = strstr (contents, "DEK-Info: ");
+	if (cipher) {
+		cipher += strlen ("DEK-Info: ");
+		if (g_str_has_prefix (cipher, "AES-128-CBC"))
+			is_aes = TRUE;
+	}
+
+	g_free (contents);
+        return is_aes;
+}
+
 static void
 test_encrypt_private_key (const char *path,
                           const char *password,
@@ -280,7 +297,10 @@ test_encrypt_private_key (const char *path,
 	        path, NM_CRYPTO_KEY_TYPE_RSA, key_type);
 
 	/* Now re-encrypt the private key */
-	encrypted = nm_utils_rsa_key_encrypt (array, password, NULL, &error);
+	if (is_cipher_aes (path))
+		encrypted = nm_utils_rsa_key_encrypt_aes (array, password, NULL, &error);
+	else
+		encrypted = nm_utils_rsa_key_encrypt (array, password, NULL, &error);
 	ASSERT (encrypted != NULL, desc,
 	        "couldn't re-encrypt private key file '%s': %d %s",
 	        path, error->code, error->message);

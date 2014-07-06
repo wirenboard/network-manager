@@ -55,7 +55,10 @@ typedef enum {
 	NMC_RESULT_ERROR_NM_NOT_RUNNING = 8,
 
 	/* nmcli and NetworkManager versions mismatch */
-	NMC_RESULT_ERROR_VERSIONS_MISMATCH = 9
+	NMC_RESULT_ERROR_VERSIONS_MISMATCH = 9,
+
+	/* Connection/Device/AP not found */
+	NMC_RESULT_ERROR_NOT_FOUND = 10
 } NMCResultCode;
 
 typedef enum {
@@ -66,32 +69,39 @@ typedef enum {
 
 /* === Output fields === */
 /* Flags for NmcOutputField */
-#define NMC_OF_FLAG_ARRAY              0x00000001   /* 'value' is an NULL-terminated array rather then a single string */
+#define NMC_OF_FLAG_FIELD_NAMES        0x00000001   /* Print field names instead of values */
+#define NMC_OF_FLAG_SECTION_PREFIX     0x00000002   /* Use the first value as section prefix for the other field names - just in multiline */
+#define NMC_OF_FLAG_MAIN_HEADER_ADD    0x00000004   /* Print main header in addition to values/field names */
+#define NMC_OF_FLAG_MAIN_HEADER_ONLY   0x00000008   /* Print main header only */
 
-typedef struct {
-	const char *name;       /* Field's name */
-	const char *name_l10n;  /* Field's name for translation */
-	int width;              /* Width in screen columns */
-	const void *value;      /* Value of current field - char* or char** */
-	guint32 flags;          /* Flags */
+typedef struct _NmcOutputField {
+	const char *name;               /* Field's name */
+	const char *name_l10n;          /* Field's name for translation */
+	int width;                      /* Width in screen columns */
+	struct _NmcOutputField *group;  /* Points to an array with available section field names if this is a section (group) field */
+	void *value;                    /* Value of current field - char* or char** (NULL-terminated array) */
+	gboolean value_is_array;        /* Whether value is char** instead of char* */
+	gboolean free_value;            /* Whether to free the value */
+	guint32 flags;                  /* Flags - whether and how to print values/field names/headers */
 } NmcOutputField;
-
-/* Flags for NmcPrintFields */
-#define NMC_PF_FLAG_MULTILINE          0x00000001   /* Multiline output instead of tabular */
-#define NMC_PF_FLAG_TERSE              0x00000002   /* Terse output mode */
-#define NMC_PF_FLAG_PRETTY             0x00000004   /* Pretty output mode */
-#define NMC_PF_FLAG_MAIN_HEADER_ADD    0x00000008   /* Print main header in addition to values/field names */
-#define NMC_PF_FLAG_MAIN_HEADER_ONLY   0x00000010   /* Print main header only */
-#define NMC_PF_FLAG_FIELD_NAMES        0x00000020   /* Print field names instead of values */
-#define NMC_PF_FLAG_ESCAPE             0x00000040   /* Escape column separator and '\' */
-#define NMC_PF_FLAG_SECTION_PREFIX     0x00000080   /* Use the first value as section prefix for the other field names - just in multiline */
 
 typedef struct {
 	GArray *indices;      /* Array of field indices to the array of allowed fields */
 	char *header_name;    /* Name of the output */
 	int indent;           /* Indent by this number of spaces */
-	guint32 flags;        /* Various flags for controlling output: see NMC_PF_FLAG_* values */
 } NmcPrintFields;
+
+typedef enum {
+	NMC_TERM_COLOR_NORMAL  = 0,
+	NMC_TERM_COLOR_BLACK   = 1,
+	NMC_TERM_COLOR_RED     = 2,
+	NMC_TERM_COLOR_GREEN   = 3,
+	NMC_TERM_COLOR_YELLOW  = 4,
+	NMC_TERM_COLOR_BLUE    = 5,
+	NMC_TERM_COLOR_MAGENTA = 6,
+	NMC_TERM_COLOR_CYAN    = 7,
+	NMC_TERM_COLOR_WHITE   = 8
+} NmcTermColor;
 
 /* NmCli - main structure */
 typedef struct _NmCli {
@@ -114,9 +124,13 @@ typedef struct _NmCli {
 	gboolean mode_specified;                          /* Whether tabular/multiline mode was specified via '--mode' option */
 	gboolean escape_values;                           /* Whether to escape ':' and '\' in terse tabular mode */
 	char *required_fields;                            /* Required fields in output: '--fields' option */
-	NmcOutputField *allowed_fields;                   /* Array of allowed fields for particular commands */
+	GPtrArray *output_data;                           /* GPtrArray of arrays of NmcOutputField structs - accumulates data for output */
 	NmcPrintFields print_fields;                      /* Structure with field indices to print */
 	gboolean nocheck_ver;                             /* Don't check nmcli and NM versions: option '--nocheck' */
+	gboolean ask;                                     /* Ask for missing parameters: option '--ask' */
+	gboolean editor_status_line;                      /* Whether to display status line in connection editor */
+	gboolean editor_save_confirmation;                /* Whether to ask for confirmation on saving connections with 'autoconnect=yes' */
+	NmcTermColor editor_prompt_color;                 /* Color of prompt in connection editor */
 } NmCli;
 
 /* Error quark for GError domain */

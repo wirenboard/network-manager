@@ -1,8 +1,15 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
+set -e
+
 srcdir=`dirname $0`
-test -z "$srcdir" && srcdir=.
+if test -z "$srcdir"; then
+    srcdir=.
+fi
+
+olddir=`pwd`
+
 REQUIRED_AUTOMAKE_VERSION=1.9
 PKG_NAME=NetworkManager
 
@@ -13,12 +20,20 @@ PKG_NAME=NetworkManager
     exit 1
 }
 
-(cd $srcdir;
-    gtkdocize || exit 1
-    autopoint --force
-    AUTOPOINT='intltoolize --automake --copy' autoreconf --force --install --verbose
-)
+cd $srcdir
 
+# Fetch submodules if needed
+if test -d $srcdir/.git; then
+    echo "+ Setting up submodules"
+    git submodule init
+    git submodule update
+fi
+
+gtkdocize
+autopoint --force
+AUTOPOINT='intltoolize --automake --copy' autoreconf --force --install --verbose
+
+cd $olddir
 if test -z "$NOCONFIGURE"; then
-	$srcdir/configure --enable-maintainer-mode "$@"
+	exec $srcdir/configure --enable-maintainer-mode "$@"
 fi

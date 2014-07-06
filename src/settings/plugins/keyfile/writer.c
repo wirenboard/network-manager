@@ -44,8 +44,35 @@
 
 #include "nm-dbus-glib-types.h"
 #include "nm-glib-compat.h"
+#include "nm-logging.h"
 #include "writer.h"
 #include "common.h"
+#include "utils.h"
+
+/* Some setting properties also contain setting names, such as
+ * NMSettingConnection's 'type' property (which specifies the base type of the
+ * connection, eg ethernet or wifi) or the 802-11-wireless setting's
+ * 'security' property which specifies whether or not the AP requires
+ * encrpytion.  This function handles translating those properties' values
+ * from the real setting name to the more-readable alias.
+ */
+static void
+setting_alias_writer (GKeyFile *file,
+                      const char *keyfile_dir,
+                      const char *uuid,
+                      NMSetting *setting,
+                      const char *key,
+                      const GValue *value)
+{
+	const char *str, *alias;
+
+	str = g_value_get_string (value);
+	alias = nm_keyfile_plugin_get_alias_for_setting_name (str);
+	nm_keyfile_plugin_kf_set_string (file,
+	                                 nm_setting_get_name (setting),
+	                                 key,
+	                                 alias ? alias : str);
+}
 
 static gboolean
 write_array_of_uint (GKeyFile *file,
@@ -65,7 +92,7 @@ write_array_of_uint (GKeyFile *file,
 	for (i = 0; i < array->len; i++)
 		tmp_array[i] = g_array_index (array, int, i);
 
-	g_key_file_set_integer_list (file, nm_setting_get_name (setting), key, tmp_array, array->len);
+	nm_keyfile_plugin_kf_set_integer_list (file, nm_setting_get_name (setting), key, tmp_array, array->len);
 	g_free (tmp_array);
 	return TRUE;
 }
@@ -91,71 +118,63 @@ ip4_dns_writer (GKeyFile *file,
 	list = g_new0 (char *, array->len + 1);
 
 	for (i = 0; i < array->len; i++) {
-		char buf[INET_ADDRSTRLEN + 1];
-		struct in_addr addr;
+		char *buf = g_new (char, INET_ADDRSTRLEN);
+		guint32 addr;
 
-		addr.s_addr = g_array_index (array, guint32, i);
-		if (!inet_ntop (AF_INET, &addr, buf, sizeof (buf))) {
-			g_warning ("%s: error converting IP4 address 0x%X",
-			           __func__, ntohl (addr.s_addr));
-		} else
-			list[num++] = g_strdup (buf);
+		addr = g_array_index (array, guint32, i);
+		nm_utils_inet4_ntop (addr, buf);
+		list[num++] = buf;
 	}
 
-	g_key_file_set_string_list (file, nm_setting_get_name (setting), key, (const char **) list, num);
+	nm_keyfile_plugin_kf_set_string_list (file, nm_setting_get_name (setting), key, (const char **) list, num);
 	g_strfreev (list);
 }
 
 static void
 write_ip4_values (GKeyFile *file,
                   const char *setting_name,
-                  const char *key,
                   GPtrArray *array,
-                  guint32 tuple_len,
-                  guint32 addr1_pos,
-                  guint32 addr2_pos)
+                  gboolean is_route)
 {
 	GString *output;
-	int i, j;
+	int i;
+	guint32 addr, gw, plen, metric;
+	char key_name[30], *key_name_idx;
 
-	for (i = 0, j = 0; i < array->len; i++, j++) {
+	if (!array->len)
+		return;
+
+	strcpy (key_name, is_route ? "route" : "address");
+	key_name_idx = key_name + strlen (key_name);
+
+	output = g_string_sized_new (2*INET_ADDRSTRLEN + 10);
+	for (i = 0; i < array->len; i++) {
 		GArray *tuple = g_ptr_array_index (array, i);
-		gboolean success = TRUE;
-		char *key_name;
-		int k;
 
-		output = g_string_new ("");
+		addr = g_array_index (tuple, guint32, 0);
+		plen = g_array_index (tuple, guint32, 1);
+		gw = g_array_index (tuple, guint32, 2);
+		metric = is_route ? g_array_index (tuple, guint32, 3) : 0;
 
-		for (k = 0; k < tuple_len; k++) {
-			if (k == addr1_pos || k == addr2_pos) {
-				char buf[INET_ADDRSTRLEN + 1];
-				struct in_addr addr;
-
-				/* IP addresses */
-				addr.s_addr = g_array_index (tuple, guint32, k);
-				if (!inet_ntop (AF_INET, &addr, buf, sizeof (buf))) {
-					g_warning ("%s: error converting IP4 address 0x%X",
-					           __func__, ntohl (addr.s_addr));
-					success = FALSE;
-					break;
-				} else {
-					g_string_append_printf (output, "%s%s", k == 0 ? "" : ",", buf);
-				}
-			} else {
-				/* prefix, metric */
-				g_string_append_printf (output, "%c%d", k == 1 ? '/' : ',', g_array_index (tuple, guint32, k));
-			}
+		g_string_set_size (output, 0);
+		g_string_append_printf (output, "%s/%u",
+		                        nm_utils_inet4_ntop (addr, NULL),
+		                        (unsigned) plen);
+		if (metric || gw) {
+			/* Older versions of the plugin do not support the form
+			 * "a.b.c.d/plen,,metric", so, we always have to write the
+			 * gateway, even if it's 0.0.0.0.
+			 * The current version support reading of the above form. */
+			g_string_append_c (output, ',');
+			g_string_append (output, nm_utils_inet4_ntop (gw, NULL));
+			if (metric)
+				g_string_append_printf (output, ",%lu", (unsigned long) metric);
 		}
 
-		if (success) {
-			key_name = g_strdup_printf ("%s%d", key, j + 1);
-			g_key_file_set_string (file, setting_name, key_name, output->str);
-			g_free (key_name);
-		}
-
-		g_string_free (output, TRUE);
-
+		sprintf (key_name_idx, "%d", i + 1);
+		nm_keyfile_plugin_kf_set_string (file, setting_name, key_name, output->str);
 	}
+	g_string_free (output, TRUE);
 }
 
 static void
@@ -173,7 +192,18 @@ ip4_addr_writer (GKeyFile *file,
 
 	array = (GPtrArray *) g_value_get_boxed (value);
 	if (array && array->len)
-		write_ip4_values (file, setting_name, "address", array, 3, 0, 2);
+		write_ip4_values (file, setting_name, array, FALSE);
+}
+
+static void
+ip4_addr_label_writer (GKeyFile *file,
+                       const char *keyfile_dir,
+                       const char *uuid,
+                       NMSetting *setting,
+                       const char *key,
+                       const GValue *value)
+{
+	/* skip */
 }
 
 static void
@@ -191,7 +221,7 @@ ip4_route_writer (GKeyFile *file,
 
 	array = (GPtrArray *) g_value_get_boxed (value);
 	if (array && array->len)
-		write_ip4_values (file, setting_name, "route", array, 4, 0, 2);
+		write_ip4_values (file, setting_name, array, TRUE);
 }
 
 static void
@@ -216,90 +246,63 @@ ip6_dns_writer (GKeyFile *file,
 	list = g_new0 (char *, array->len + 1);
 
 	for (i = 0; i < array->len; i++) {
-		char buf[INET6_ADDRSTRLEN];
+		char *buf = g_new (char, INET6_ADDRSTRLEN);
 
 		byte_array = g_ptr_array_index (array, i);
-		if (!inet_ntop (AF_INET6, (struct in6_addr *) byte_array->data, buf, sizeof (buf))) {
-			int j;
-			GString *ip6_str = g_string_new (NULL);
-			g_string_append_printf (ip6_str, "%02X", byte_array->data[0]);
-			for (j = 1; j < 16; j++)
-				g_string_append_printf (ip6_str, " %02X", byte_array->data[j]);
-			g_warning ("%s: error converting IP6 address %s",
-			           __func__, ip6_str->str);
-			g_string_free (ip6_str, TRUE);
-		} else
-			list[num++] = g_strdup (buf);
+		nm_utils_inet6_ntop ((const struct in6_addr *) byte_array->data, buf);
+		list[num++] = buf;
 	}
 
-	g_key_file_set_string_list (file, nm_setting_get_name (setting), key, (const char **) list, num);
+	nm_keyfile_plugin_kf_set_string_list (file, nm_setting_get_name (setting), key, (const char **) list, num);
 	g_strfreev (list);
 }
 
-static gboolean
+static void
 ip6_array_to_addr (GValueArray *values,
                    guint32 idx,
                    char *buf,
-                   size_t buflen,
-                   gboolean *out_is_unspec)
+                   struct in6_addr *out_addr)
 {
 	GByteArray *byte_array;
 	GValue *addr_val;
-	struct in6_addr *addr;
-
-	g_return_val_if_fail (buflen >= INET6_ADDRSTRLEN, FALSE);
+	const struct in6_addr *addr;
 
 	addr_val = g_value_array_get_nth (values, idx);
 	byte_array = g_value_get_boxed (addr_val);
-	addr = (struct in6_addr *) byte_array->data;
+	addr = (const struct in6_addr *) byte_array->data;
 
-	if (out_is_unspec && IN6_IS_ADDR_UNSPECIFIED (addr))
-		*out_is_unspec = TRUE;
+	nm_utils_inet6_ntop (addr, buf);
 
-	errno = 0;
-	if (!inet_ntop (AF_INET6, addr, buf, buflen)) {
-		GString *ip6_str = g_string_sized_new (INET6_ADDRSTRLEN + 10);
-
-		/* error converting the address */
-		g_string_append_printf (ip6_str, "%02X", byte_array->data[0]);
-		for (idx = 1; idx < 16; idx++)
-			g_string_append_printf (ip6_str, " %02X", byte_array->data[idx]);
-		g_warning ("%s: error %d converting IP6 address %s",
-		           __func__, errno, ip6_str->str);
-		g_string_free (ip6_str, TRUE);
-		return FALSE;
-	}
-
-	return TRUE;
+	if (out_addr)
+		*out_addr = *addr;
 }
 
 static char *
-ip6_array_to_addr_prefix (GValueArray *values)
+ip6_array_to_addr_prefix (GValueArray *values, gboolean force_write_gateway)
 {
 	GValue *prefix_val;
 	char *ret = NULL;
 	GString *ip6_str;
-	char buf[INET6_ADDRSTRLEN + 1];
-	gboolean is_unspec = FALSE;
+	char buf[INET6_ADDRSTRLEN];
+	struct in6_addr addr;
 
 	/* address */
-	if (ip6_array_to_addr (values, 0, buf, sizeof (buf), NULL)) {
-		/* Enough space for the address, '/', and the prefix */
-		ip6_str = g_string_sized_new ((INET6_ADDRSTRLEN * 2) + 5);
+	ip6_array_to_addr (values, 0, buf, NULL);
 
-		/* prefix */
-		g_string_append (ip6_str, buf);
-		prefix_val = g_value_array_get_nth (values, 1);
-		g_string_append_printf (ip6_str, "/%u", g_value_get_uint (prefix_val));
+	/* Enough space for the address, '/', and the prefix */
+	ip6_str = g_string_sized_new ((INET6_ADDRSTRLEN * 2) + 5);
 
-		if (ip6_array_to_addr (values, 2, buf, sizeof (buf), &is_unspec)) {
-			if (!is_unspec)
-				g_string_append_printf (ip6_str, ",%s", buf);
-		}
+	/* prefix */
+	g_string_append (ip6_str, buf);
+	prefix_val = g_value_array_get_nth (values, 1);
+	g_string_append_printf (ip6_str, "/%u", g_value_get_uint (prefix_val));
 
-		ret = ip6_str->str;
-		g_string_free (ip6_str, FALSE);
-	}
+	ip6_array_to_addr (values, 2, buf, &addr);
+	if (force_write_gateway || !IN6_IS_ADDR_UNSPECIFIED (&addr))
+		g_string_append_printf (ip6_str, ",%s", buf);
+
+	ret = ip6_str->str;
+	g_string_free (ip6_str, FALSE);
 
 	return ret;
 }
@@ -327,20 +330,18 @@ ip6_addr_writer (GKeyFile *file,
 		char *key_name, *ip6_addr;
 
 		if (values->n_values != 3) {
-			g_warning ("%s: error writing IP6 address %d (address array length "
-			           "%d is not 3)",
-			           __func__, i, values->n_values);
+			nm_log_warn (LOGD_SETTINGS, "%s: error writing IP6 address %d (address array "
+			             "length %d is not 3)", __func__, i, values->n_values);
 			continue;
 		}
 
-		ip6_addr = ip6_array_to_addr_prefix (values);
-		if (ip6_addr) {
-			/* Write it out */
-			key_name = g_strdup_printf ("address%d", j++);
-			g_key_file_set_string (file, setting_name, key_name, ip6_addr);
-			g_free (key_name);
-			g_free (ip6_addr);
-		}
+		/* we allow omitting the gateway if it's :: */
+		ip6_addr = ip6_array_to_addr_prefix (values, FALSE);
+		/* Write it out */
+		key_name = g_strdup_printf ("address%d", j++);
+		nm_keyfile_plugin_kf_set_string (file, setting_name, key_name, ip6_addr);
+		g_free (key_name);
+		g_free (ip6_addr);
 	}
 }
 
@@ -366,21 +367,35 @@ ip6_route_writer (GKeyFile *file,
 	for (i = 0, j = 1; i < array->len; i++) {
 		GValueArray *values = g_ptr_array_index (array, i);
 		char *key_name;
-		guint32 int_val;
+		char *addr_str;
+		guint metric;
 
 		output = g_string_new ("");
 
-		/* Address, prefix and next hop*/
-		g_string_append (output, ip6_array_to_addr_prefix (values));
-
 		/* Metric */
 		value = g_value_array_get_nth (values, 3);
-		int_val = g_value_get_uint (value);
-		g_string_append_printf (output, ",%d", int_val);
+		metric = g_value_get_uint (value);
+
+		/* Address, prefix and next hop
+		 * We allow omitting the gateway ::, if we also omit the metric
+		 * and force writing of the gateway, if we add a non zero metric.
+		 * The current version of the reader also supports the syntax
+		 * "a:b:c::/plen,,metric" for a gateway ::.
+		 * As older versions of the plugin, cannot read this form,
+		 * we always write the gateway, whenever we also write the metric.
+		 * But if possible, we omit them both (",::,0") or only the metric
+		 * (",0").
+		 **/
+		addr_str = ip6_array_to_addr_prefix (values, metric != 0);
+		g_string_append (output, addr_str);
+		g_free (addr_str);
+
+		if (metric != 0)
+			g_string_append_printf (output, ",%u", metric);
 
 		/* Write it out */
 		key_name = g_strdup_printf ("route%d", j++);
-		g_key_file_set_string (file, setting_name, key_name, output->str);
+		nm_keyfile_plugin_kf_set_string (file, setting_name, key_name, output->str);
 		g_free (key_name);
 
 		g_string_free (output, TRUE);
@@ -399,23 +414,15 @@ mac_address_writer (GKeyFile *file,
 	GByteArray *array;
 	const char *setting_name = nm_setting_get_name (setting);
 	char *mac;
-	int type;
 
 	g_return_if_fail (G_VALUE_HOLDS (value, DBUS_TYPE_G_UCHAR_ARRAY));
 
 	array = (GByteArray *) g_value_get_boxed (value);
-	if (!array)
+	if (!array || !array->len)
 		return;
 
-	type = nm_utils_hwaddr_type (array->len);
-	if (type < 0) {
-		g_warning ("%s: invalid %s / %s MAC address length %d",
-		           __func__, setting_name, key, array->len);
-		return;
-	}
-
-	mac = nm_utils_hwaddr_ntoa (array->data, type);
-	g_key_file_set_string (file, setting_name, key, mac);
+	mac = nm_utils_hwaddr_ntoa_len (array->data, array->len);
+	nm_keyfile_plugin_kf_set_string (file, setting_name, key, mac);
 	g_free (mac);
 }
 
@@ -453,7 +460,7 @@ write_hash_of_string (GKeyFile *file,
 		}
 
 		if (write_item)
-			g_key_file_set_string (file, group_name, property, data);
+			nm_keyfile_plugin_kf_set_string (file, group_name, property, data);
 	}
 }
 
@@ -505,13 +512,13 @@ ssid_writer (GKeyFile *file,
 				ssid[j++] = array->data[i];
 			}
 		}
-		g_key_file_set_string (file, setting_name, key, ssid);
+		nm_keyfile_plugin_kf_set_string (file, setting_name, key, ssid);
 		g_free (ssid);
 	} else {
 		tmp_array = g_new (gint, array->len);
 		for (i = 0; i < array->len; i++)
 			tmp_array[i] = (int) array->data[i];
-		g_key_file_set_integer_list (file, setting_name, key, tmp_array, array->len);
+		nm_keyfile_plugin_kf_set_integer_list (file, setting_name, key, tmp_array, array->len);
 		g_free (tmp_array);
 	}
 }
@@ -537,7 +544,7 @@ password_raw_writer (GKeyFile *file,
 	tmp_array = g_new (gint, array->len);
 	for (i = 0; i < array->len; i++)
 		tmp_array[i] = (int) array->data[i];
-	g_key_file_set_integer_list (file, setting_name, key, tmp_array, array->len);
+	nm_keyfile_plugin_kf_set_integer_list (file, setting_name, key, tmp_array, array->len);
 	g_free (tmp_array);
 }
 
@@ -686,7 +693,10 @@ cert_writer (GKeyFile *file,
 			break;
 		}
 	}
-	g_return_if_fail (objtype != NULL);
+	if (!objtype) {
+		g_return_if_fail (objtype);
+		return;
+	}
 
 	scheme = objtype->scheme_func (NM_SETTING_802_1X (setting));
 	if (scheme == NM_SETTING_802_1X_CK_SCHEME_PATH) {
@@ -702,7 +712,7 @@ cert_writer (GKeyFile *file,
 				path++;
 		}
 
-		g_key_file_set_string (file, setting_name, key, path);
+		nm_keyfile_plugin_kf_set_string (file, setting_name, key, path);
 	} else if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
 		const GByteArray *blob;
 		gboolean success;
@@ -732,9 +742,10 @@ cert_writer (GKeyFile *file,
 		success = write_cert_key_file (new_path, blob, &error);
 		if (success) {
 			/* Write the path value to the keyfile */
-			g_key_file_set_string (file, setting_name, key, new_path);
+			nm_keyfile_plugin_kf_set_string (file, setting_name, key, new_path);
 		} else {
-			g_warning ("Failed to write certificate/key %s: %s", new_path, error->message);
+			nm_log_warn (LOGD_SETTINGS, "Failed to write certificate/key %s: %s",
+			             new_path, error->message);
 			g_error_free (error);
 		}
 		g_free (new_path);
@@ -760,9 +771,18 @@ typedef struct {
  * in struct in6_addr internally, but as string in keyfiles.
  */
 static KeyWriter key_writers[] = {
+	{ NM_SETTING_CONNECTION_SETTING_NAME,
+	  NM_SETTING_CONNECTION_TYPE,
+	  setting_alias_writer },
+	{ NM_SETTING_BRIDGE_SETTING_NAME,
+	  NM_SETTING_BRIDGE_MAC_ADDRESS,
+	  mac_address_writer },
 	{ NM_SETTING_IP4_CONFIG_SETTING_NAME,
 	  NM_SETTING_IP4_CONFIG_ADDRESSES,
 	  ip4_addr_writer },
+	{ NM_SETTING_IP4_CONFIG_SETTING_NAME,
+	  "address-labels",
+	  ip4_addr_label_writer },
 	{ NM_SETTING_IP6_CONFIG_SETTING_NAME,
 	  NM_SETTING_IP6_CONFIG_ADDRESSES,
 	  ip6_addr_writer },
@@ -873,7 +893,7 @@ write_setting_value (NMSetting *setting,
 	 * the secret flags there are in a third-level hash in the 'secrets'
 	 * property.
 	 */
-	if (pspec->flags & NM_SETTING_PARAM_SECRET && !NM_IS_SETTING_VPN (setting)) {
+	if (pspec && (pspec->flags & NM_SETTING_PARAM_SECRET) && !NM_IS_SETTING_VPN (setting)) {
 		NMSettingSecretFlags secret_flags = NM_SETTING_SECRET_FLAG_NONE;
 
 		nm_setting_get_secret_flags (setting, key, &secret_flags, NULL);
@@ -895,21 +915,21 @@ write_setting_value (NMSetting *setting,
 
 		str = g_value_get_string (value);
 		if (str)
-			g_key_file_set_string (info->keyfile, setting_name, key, str);
+			nm_keyfile_plugin_kf_set_string (info->keyfile, setting_name, key, str);
 	} else if (type == G_TYPE_UINT)
-		g_key_file_set_integer (info->keyfile, setting_name, key, (int) g_value_get_uint (value));
+		nm_keyfile_plugin_kf_set_integer (info->keyfile, setting_name, key, (int) g_value_get_uint (value));
 	else if (type == G_TYPE_INT)
-		g_key_file_set_integer (info->keyfile, setting_name, key, g_value_get_int (value));
+		nm_keyfile_plugin_kf_set_integer (info->keyfile, setting_name, key, g_value_get_int (value));
 	else if (type == G_TYPE_UINT64) {
 		char *numstr;
 
 		numstr = g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (value));
-		g_key_file_set_value (info->keyfile, setting_name, key, numstr);
+		nm_keyfile_plugin_kf_set_value (info->keyfile, setting_name, key, numstr);
 		g_free (numstr);
 	} else if (type == G_TYPE_BOOLEAN) {
-		g_key_file_set_boolean (info->keyfile, setting_name, key, g_value_get_boolean (value));
+		nm_keyfile_plugin_kf_set_boolean (info->keyfile, setting_name, key, g_value_get_boolean (value));
 	} else if (type == G_TYPE_CHAR) {
-		g_key_file_set_integer (info->keyfile, setting_name, key, (int) g_value_get_schar (value));
+		nm_keyfile_plugin_kf_set_integer (info->keyfile, setting_name, key, (int) g_value_get_schar (value));
 	} else if (type == DBUS_TYPE_G_UCHAR_ARRAY) {
 		GByteArray *array;
 
@@ -922,7 +942,7 @@ write_setting_value (NMSetting *setting,
 			for (i = 0; i < array->len; i++)
 				tmp_array[i] = (int) array->data[i];
 
-			g_key_file_set_integer_list (info->keyfile, setting_name, key, tmp_array, array->len);
+			nm_keyfile_plugin_kf_set_integer_list (info->keyfile, setting_name, key, tmp_array, array->len);
 			g_free (tmp_array);
 		}
 	} else if (type == DBUS_TYPE_G_LIST_OF_STRING) {
@@ -938,19 +958,19 @@ write_setting_value (NMSetting *setting,
 			for (iter = list; iter; iter = iter->next)
 				array[i++] = iter->data;
 
-			g_key_file_set_string_list (info->keyfile, setting_name, key, (const gchar **const) array, i);
+			nm_keyfile_plugin_kf_set_string_list (info->keyfile, setting_name, key, (const gchar **const) array, i);
 			g_free (array);
 		}
 	} else if (type == DBUS_TYPE_G_MAP_OF_STRING) {
 		write_hash_of_string (info->keyfile, setting, key, value);
 	} else if (type == DBUS_TYPE_G_UINT_ARRAY) {
 		if (!write_array_of_uint (info->keyfile, setting, key, value)) {
-			g_warning ("Unhandled setting property type (write) '%s/%s' : '%s'", 
-					 setting_name, key, g_type_name (type));
+			nm_log_warn (LOGD_SETTINGS, "Unhandled setting property type (write) '%s/%s' : '%s'", 
+			             setting_name, key, g_type_name (type));
 		}
 	} else {
-		g_warning ("Unhandled setting property type (write) '%s/%s' : '%s'", 
-				 setting_name, key, g_type_name (type));
+		nm_log_warn (LOGD_SETTINGS, "Unhandled setting property type (write) '%s/%s' : '%s'", 
+		             setting_name, key, g_type_name (type));
 	}
 }
 
@@ -994,6 +1014,11 @@ _internal_write_connection (NMConnection *connection,
 
 	if (out_path)
 		g_return_val_if_fail (*out_path == NULL, FALSE);
+
+	if (!nm_connection_verify (connection, error)) {
+		g_return_val_if_reached (FALSE);
+		return FALSE;
+	}
 
 	id = nm_connection_get_id (connection);
 	if (!id) {

@@ -112,6 +112,89 @@ NMSettingBond
 
 
 
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_ARP_VALIDATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_PRIMARY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_PRIMARY_RESELECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_FAIL_OVER_MAC ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_USE_CARRIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_AD_SELECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_XMIT_HASH_POLICY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_RESEND_IGMP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingBond ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingBond:interface-name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingBond:options ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingBondClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_bond_new ##### -->
 <para>
 
@@ -179,6 +262,16 @@ NMSettingBond
 
 @setting: 
 @name: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_bond_validate_option ##### -->
+<para>
+
+</para>
+
+@name: 
+@value: 
 @Returns: 
 
 

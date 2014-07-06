@@ -66,17 +66,10 @@ enum {
 	PROP_CINR,
 	PROP_TX_POWER,
 	PROP_BSID,
+	PROP_NSPS,
 
 	LAST_PROP
 };
-
-#define DBUS_PROP_HW_ADDRESS       "HwAddress"
-#define DBUS_PROP_ACTIVE_NSP       "ActiveNsp"
-#define DBUS_PROP_CENTER_FREQUENCY "CenterFrequency"
-#define DBUS_PROP_RSSI             "Rssi"
-#define DBUS_PROP_CINR             "Cinr"
-#define DBUS_PROP_TX_POWER         "TxPower"
-#define DBUS_PROP_BSID             "Bsid"
 
 enum {
 	NSP_ADDED,
@@ -84,7 +77,6 @@ enum {
 
 	LAST_SIGNAL
 };
-
 static guint signals[LAST_SIGNAL] = { 0 };
 
 /**
@@ -189,7 +181,7 @@ nm_device_wimax_get_active_nsp (NMDeviceWimax *wimax)
  * Gets all the scanned NSPs of the #NMDeviceWimax.
  *
  * Returns: (element-type NMClient.WimaxNsp): a #GPtrArray containing
- *          all the scanned #NMWimaxNsp<!-- -->s.
+ *          all the scanned #NMWimaxNsps.
  * The returned array is owned by the client and should not be modified.
  **/
 const GPtrArray *
@@ -234,28 +226,6 @@ nm_device_wimax_get_nsp_by_path (NMDeviceWimax *wimax,
 	}
 
 	return nsp;
-}
-
-static void
-nsp_added (NMObject *self, NMObject *nsp)
-{
-	g_signal_emit (self, signals[NSP_ADDED], 0, nsp);
-}
-
-static void
-nsp_removed (NMObject *self_obj, NMObject *nsp_obj)
-{
-	NMDeviceWimax *self = NM_DEVICE_WIMAX (self_obj);
-	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
-	NMWimaxNsp *nsp = NM_WIMAX_NSP (nsp_obj);
-
-	if (nsp == priv->active_nsp) {
-		g_object_unref (priv->active_nsp);
-		priv->active_nsp = NULL;
-		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIMAX_ACTIVE_NSP);
-	}
-
-	g_signal_emit (self, signals[NSP_REMOVED], 0, nsp);
 }
 
 static void
@@ -390,8 +360,6 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	const char *hw_str;
 	struct ether_addr *hw_mac;
 
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
 
@@ -426,7 +394,19 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 		}
 	}
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_wimax_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_WIMAX;
+}
+
+static const char *
+get_hw_address (NMDevice *device)
+{
+	return nm_device_wimax_get_hw_address (NM_DEVICE_WIMAX (device));
 }
 
 /**************************************************************/
@@ -468,6 +448,9 @@ get_property (GObject *object,
 		break;
 	case PROP_BSID:
 		g_value_set_string (value, nm_device_wimax_get_bsid (self));
+		break;
+	case PROP_NSPS:
+		g_value_set_boxed (value, nm_device_wimax_get_nsps (self));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -544,43 +527,42 @@ register_properties (NMDeviceWimax *wimax)
 {
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (wimax);
 	const NMPropertiesInfo property_info[] = {
-		{ NM_DEVICE_WIMAX_HW_ADDRESS, &priv->hw_address },
-		{ NM_DEVICE_WIMAX_ACTIVE_NSP, &priv->active_nsp, NULL, NM_TYPE_WIMAX_NSP },
+		{ NM_DEVICE_WIMAX_HW_ADDRESS,       &priv->hw_address },
+		{ NM_DEVICE_WIMAX_ACTIVE_NSP,       &priv->active_nsp, NULL, NM_TYPE_WIMAX_NSP },
 		{ NM_DEVICE_WIMAX_CENTER_FREQUENCY, &priv->center_freq },
-		{ NM_DEVICE_WIMAX_RSSI, &priv->rssi },
-		{ NM_DEVICE_WIMAX_CINR, &priv->cinr },
-		{ NM_DEVICE_WIMAX_TX_POWER, &priv->tx_power },
-		{ NM_DEVICE_WIMAX_BSID, &priv->bsid },
+		{ NM_DEVICE_WIMAX_RSSI,             &priv->rssi },
+		{ NM_DEVICE_WIMAX_CINR,             &priv->cinr },
+		{ NM_DEVICE_WIMAX_TX_POWER,         &priv->tx_power },
+		{ NM_DEVICE_WIMAX_BSID,             &priv->bsid },
+		{ NM_DEVICE_WIMAX_NSPS,             &priv->nsps,       NULL, NM_TYPE_WIMAX_NSP, "nsp" },
 		{ NULL },
 	};
 
 	_nm_object_register_properties (NM_OBJECT (wimax),
 	                                priv->proxy,
 	                                property_info);
+}
 
-	_nm_object_register_pseudo_property (NM_OBJECT (wimax),
-	                                     priv->proxy,
-	                                     "NspList",
-	                                     &priv->nsps,
-	                                     NM_TYPE_WIMAX_NSP,
-	                                     nsp_added,
-	                                     nsp_removed);
+static void
+nsp_removed (NMDeviceWimax *self, NMWimaxNsp *nsp)
+{
+	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
+
+	if (nsp == priv->active_nsp) {
+		g_object_unref (priv->active_nsp);
+		priv->active_nsp = NULL;
+		_nm_object_queue_notify (NM_OBJECT (self), NM_DEVICE_WIMAX_ACTIVE_NSP);
+	}
 }
 
 static void
 constructed (GObject *object)
 {
-	NMDeviceWimaxPrivate *priv;
+	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_wimax_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_WIMAX_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-											 NM_DBUS_SERVICE,
-											 nm_object_get_path (NM_OBJECT (object)),
-											 NM_DBUS_INTERFACE_DEVICE_WIMAX);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_WIMAX);
 	register_properties (NM_DEVICE_WIMAX (object));
 
 	g_signal_connect (object,
@@ -623,6 +605,9 @@ nm_device_wimax_class_init (NMDeviceWimaxClass *wimax_class)
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
+	device_class->get_hw_address = get_hw_address;
+	wimax_class->nsp_removed = nsp_removed;
 
 	/* properties */
 
@@ -726,6 +711,21 @@ nm_device_wimax_class_init (NMDeviceWimaxClass *wimax_class)
 		                      "BSID",
 		                      NULL,
 		                      G_PARAM_READABLE));
+
+	/**
+	 * NMDeviceWimax:nsps:
+	 *
+	 * List of all WiMAX Network Service Providers the device can see.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_NSPS,
+		 g_param_spec_boxed (NM_DEVICE_WIMAX_NSPS,
+		                     "NSPs",
+		                     "Network Service Providers",
+		                     NM_TYPE_OBJECT_ARRAY,
+		                     G_PARAM_READABLE));
 
 	/* signals */
 

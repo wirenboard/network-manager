@@ -27,6 +27,7 @@
 #include <nm-connection.h>
 #include "nm-dbus-manager.h"
 #include "nm-session-monitor.h"
+#include "nm-auth-subject.h"
 
 #define NM_AUTH_PERMISSION_ENABLE_DISABLE_NETWORK     "org.freedesktop.NetworkManager.enable-disable-network"
 #define NM_AUTH_PERMISSION_SLEEP_WAKE                 "org.freedesktop.NetworkManager.sleep-wake"
@@ -55,18 +56,19 @@ typedef void (*NMAuthChainResultFunc) (NMAuthChain *chain,
                                        DBusGMethodInvocation *context,
                                        gpointer user_data);
 
-NMAuthChain *nm_auth_chain_new (DBusGMethodInvocation *context,
-                                DBusGProxy *proxy,
-                                NMAuthChainResultFunc done_func,
-                                gpointer user_data);
-
-NMAuthChain *nm_auth_chain_new_raw_message (DBusMessage *message,
-                                            NMAuthChainResultFunc done_func,
-                                            gpointer user_data);
-
 NMAuthChain *nm_auth_chain_new_dbus_sender (const char *dbus_sender,
+                                            gulong user_uid,
                                             NMAuthChainResultFunc done_func,
                                             gpointer user_data);
+
+NMAuthChain *nm_auth_chain_new_context (DBusGMethodInvocation *context,
+                                        NMAuthChainResultFunc done_func,
+                                        gpointer user_data);
+
+NMAuthChain *nm_auth_chain_new_subject (NMAuthSubject *subject,
+                                        DBusGMethodInvocation *context,
+                                        NMAuthChainResultFunc done_func,
+                                        gpointer user_data);
 
 gpointer nm_auth_chain_get_data (NMAuthChain *chain, const char *tag);
 
@@ -91,12 +93,6 @@ gboolean nm_auth_chain_add_call (NMAuthChain *chain,
                                  gboolean allow_interaction);
 
 void nm_auth_chain_unref (NMAuthChain *chain);
-
-/* Utils */
-gboolean nm_auth_get_caller_uid (DBusGMethodInvocation *context,
-                                 NMDBusManager *dbus_mgr,
-                                 gulong *out_uid,
-                                 char **out_error_desc);
 
 /* Caller must free returned error description */
 gboolean nm_auth_uid_in_acl (NMConnection *connection,

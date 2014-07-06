@@ -20,7 +20,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2005 - 2012 Red Hat, Inc.
+ * (C) Copyright 2005 - 2013 Red Hat, Inc.
  */
 
 #ifndef NM_UTILS_H
@@ -47,6 +47,7 @@ char *      nm_utils_ssid_to_utf8  (const GByteArray *ssid);
 
 GHashTable *nm_utils_gvalue_hash_dup  (GHashTable *hash);
 
+NM_DEPRECATED_IN_0_9_10
 void        nm_utils_slist_free    (GSList *list, GDestroyNotify elem_destroy_fn);
 
 /**
@@ -119,6 +120,10 @@ GByteArray *nm_utils_rsa_key_encrypt (const GByteArray *data,
                                       const char *in_password,
                                       char **out_password,
                                       GError **error);
+GByteArray *nm_utils_rsa_key_encrypt_aes (const GByteArray *data,
+                                          const char *in_password,
+                                          char **out_password,
+                                          GError **error);
 gboolean nm_utils_file_is_pkcs12 (const char *filename);
 
 guint32 nm_utils_wifi_freq_to_channel (guint32 freq);
@@ -136,14 +141,45 @@ gboolean nm_utils_wifi_is_channel_valid (guint32 channel, const char *band);
 #define NM_UTILS_HWADDR_LEN_MAX 20 /* INFINIBAND_ALEN */
 
 int         nm_utils_hwaddr_len   (int type) G_GNUC_PURE;
+NM_DEPRECATED_IN_0_9_10
 int         nm_utils_hwaddr_type  (int len) G_GNUC_PURE;
 char       *nm_utils_hwaddr_ntoa  (gconstpointer addr, int type);
 GByteArray *nm_utils_hwaddr_atoba (const char *asc, int type);
 guint8     *nm_utils_hwaddr_aton  (const char *asc, int type, gpointer buffer);
 
+NM_AVAILABLE_IN_0_9_10
+char       *nm_utils_hwaddr_ntoa_len  (gconstpointer addr, gsize length);
+NM_AVAILABLE_IN_0_9_10
+guint8     *nm_utils_hwaddr_aton_len  (const char *asc, gpointer buffer, gsize length);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean    nm_utils_hwaddr_valid (const char *asc);
+
+NM_AVAILABLE_IN_0_9_10
+char *nm_utils_bin2hexstr (const char *bytes, int len, int final_len);
+NM_AVAILABLE_IN_0_9_10
+int   nm_utils_hex2byte   (const char *hex);
+NM_AVAILABLE_IN_0_9_10
+char *nm_utils_hexstr2bin (const char *hex, size_t len);
+
 gboolean    nm_utils_iface_valid_name(const char *name);
 
 gboolean nm_utils_is_uuid (const char *str);
+
+/**
+ * NM_UTILS_INET_ADDRSTRLEN:
+ *
+ * Defines the minimal length for a char buffer that is suitable as @dst argument
+ * for both nm_utils_inet4_ntop() and nm_utils_inet6_ntop().
+ **/
+#define NM_UTILS_INET_ADDRSTRLEN     INET6_ADDRSTRLEN
+NM_AVAILABLE_IN_0_9_10
+const char *nm_utils_inet4_ntop (in_addr_t inaddr, char *dst);
+NM_AVAILABLE_IN_0_9_10
+const char *nm_utils_inet6_ntop (const struct in6_addr *in6addr, char *dst);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean nm_utils_check_virtual_device_compatibility (GType virtual_type, GType other_type);
 
 G_END_DECLS
 

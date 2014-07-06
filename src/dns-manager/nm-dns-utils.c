@@ -46,7 +46,10 @@ add_ip4_to_rdns_array (guint32 ip, GPtrArray *domains) /* network byte order */
 	else if (defprefix == 24)
 		str = g_strdup_printf ("%u.%u.%u.in-addr.arpa", p[2] & 0xFF, p[1] & 0xFF, p[0] & 0xFF);
 
-	g_return_if_fail (str != NULL);
+	if (!str) {
+		g_return_if_fail (str != NULL);
+		return;
+	}
 
 	/* Suppress duplicates */
 	for (i = 0; i < domains->len; i++) {
@@ -79,15 +82,15 @@ nm_dns_utils_get_ip4_rdns_domains (NMIP4Config *ip4)
 	 */
 
 	for (i = 0; i < nm_ip4_config_get_num_addresses (ip4); i++) {
-		NMIP4Address *addr = nm_ip4_config_get_address (ip4, i);
+		const NMPlatformIP4Address *address = nm_ip4_config_get_address (ip4, i);
 
-		add_ip4_to_rdns_array (nm_ip4_address_get_address (addr), domains);
+		add_ip4_to_rdns_array (address->address, domains);
 	}
 
 	for (i = 0; i < nm_ip4_config_get_num_routes (ip4); i++) {
-		NMIP4Route *route = nm_ip4_config_get_route (ip4, i);
+		const NMPlatformIP4Route *route = nm_ip4_config_get_route (ip4, i);
 
-		add_ip4_to_rdns_array (nm_ip4_route_get_dest (route), domains);
+		add_ip4_to_rdns_array (route->network, domains);
 	}
 
 	/* Terminating NULL so we can use g_strfreev() to free it */

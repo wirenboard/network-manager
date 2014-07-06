@@ -20,7 +20,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2008 Red Hat, Inc.
+ * (C) Copyright 2007 - 2013 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  * (C) Copyright 2009 One Laptop per Child
  */
@@ -28,6 +28,7 @@
 #include <string.h>
 #include <netinet/ether.h>
 #include <dbus/dbus-glib.h>
+#include <glib/gi18n.h>
 
 #include "NetworkManager.h"
 #include "nm-setting-olpc-mesh.h"
@@ -88,7 +89,6 @@ NMSetting *nm_setting_olpc_mesh_new (void)
 static void
 nm_setting_olpc_mesh_init (NMSettingOlpcMesh *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_OLPC_MESH_SETTING_NAME, NULL);
 }
 
 const GByteArray *
@@ -121,18 +121,20 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	NMSettingOlpcMeshPrivate *priv = NM_SETTING_OLPC_MESH_GET_PRIVATE (setting);
 
 	if (!priv->ssid) {
-		g_set_error (error,
-		             NM_SETTING_OLPC_MESH_ERROR,
-		             NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_OLPC_MESH_SSID);
+		g_set_error_literal (error,
+		                     NM_SETTING_OLPC_MESH_ERROR,
+		                     NM_SETTING_OLPC_MESH_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_OLPC_MESH_SETTING_NAME, NM_SETTING_OLPC_MESH_SSID);
 		return FALSE;
 	}
 
 	if (!priv->ssid->len || priv->ssid->len > 32) {
-		g_set_error (error,
-		             NM_SETTING_OLPC_MESH_ERROR,
-		             NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_OLPC_MESH_SSID);
+		g_set_error_literal (error,
+		                     NM_SETTING_OLPC_MESH_ERROR,
+		                     NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY,
+		                     _("SSID length is out of range <1-32> bytes"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_OLPC_MESH_SETTING_NAME, NM_SETTING_OLPC_MESH_SSID);
 		return FALSE;
 	}
 
@@ -140,15 +142,18 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_OLPC_MESH_ERROR,
 		             NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_OLPC_MESH_CHANNEL);
+		             _("'%d' is not a valid channel"),
+		             priv->channel);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_OLPC_MESH_SETTING_NAME, NM_SETTING_OLPC_MESH_CHANNEL);
 		return FALSE;
 	}
 
 	if (priv->dhcp_anycast_addr && priv->dhcp_anycast_addr->len != ETH_ALEN) {
-		g_set_error (error,
-		             NM_SETTING_OLPC_MESH_ERROR,
-		             NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS);
+		g_set_error_literal (error,
+		                     NM_SETTING_OLPC_MESH_ERROR,
+		                     NM_SETTING_OLPC_MESH_ERROR_INVALID_PROPERTY,
+		                     _("property is invalid"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_OLPC_MESH_SETTING_NAME, NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS);
 		return FALSE;
 	}
 
@@ -242,7 +247,7 @@ nm_setting_olpc_mesh_class_init (NMSettingOlpcMeshClass *setting_class)
 		                             "SSID",
 		                             "SSID of the mesh network to join.",
 		                             DBUS_TYPE_G_UCHAR_ARRAY,
-		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                             G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingOlpcMesh:channel:
@@ -255,14 +260,14 @@ nm_setting_olpc_mesh_class_init (NMSettingOlpcMeshClass *setting_class)
 		                    "Channel",
 		                    "Channel on which the mesh network to join is located.",
 		                    0, G_MAXUINT32, 0,
-		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingOlpcMesh:dhcp-anycast-address:
 	 *
-	 * Anycast DHCP address used when requesting an IP address via DHCP.  The
-	 * specific anycast address used determines which DHCP server class answers
-	 * the request.
+	 * Anycast DHCP MAC address used when requesting an IP address via DHCP.
+	 * The specific anycast address used determines which DHCP server class
+	 * answers the request.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_DHCP_ANYCAST_ADDRESS,
@@ -274,6 +279,5 @@ nm_setting_olpc_mesh_class_init (NMSettingOlpcMeshClass *setting_class)
 		                             "which DHCP server class answers the "
 		                             "the request.",
 		                             DBUS_TYPE_G_UCHAR_ARRAY,
-		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
-
+		                             G_PARAM_READWRITE));
 }

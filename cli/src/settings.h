@@ -14,7 +14,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2010 - 2012 Red Hat, Inc.
+ * (C) Copyright 2010 - 2013 Red Hat, Inc.
  */
 
 #ifndef NMC_SETTINGS_H
@@ -42,33 +42,48 @@
 #include <nm-setting-bridge.h>
 #include <nm-setting-bridge-port.h>
 #include <nm-setting-vlan.h>
+#include <nm-setting-dcb.h>
 
 #include "nmcli.h"
 #include "utils.h"
 
+/* --- Functions --- */
 
-gboolean setting_details (NMSetting *ssetting, NmCli *nmc);
-gboolean setting_connection_details (NMSettingConnection *s_con, NmCli *nmc);
-gboolean setting_wired_details (NMSettingWired *s_wired, NmCli *nmc);
-gboolean setting_802_1X_details (NMSetting8021x *s_8021X, NmCli *nmc);
-gboolean setting_wireless_details (NMSettingWireless *s_wireless, NmCli *nmc);
-gboolean setting_wireless_security_details (NMSettingWirelessSecurity *s_wsec, NmCli *nmc);
-gboolean setting_ip4_config_details (NMSettingIP4Config *s_ip4, NmCli *nmc);
-gboolean setting_ip6_config_details (NMSettingIP6Config *s_ip6, NmCli *nmc);
-gboolean setting_serial_details (NMSettingSerial *s_serial, NmCli *nmc);
-gboolean setting_ppp_details (NMSettingPPP *s_ppp, NmCli *nmc);
-gboolean setting_pppoe_details (NMSettingPPPOE *s_pppoe, NmCli *nmc);
-gboolean setting_gsm_details (NMSettingGsm *s_gsm, NmCli *nmc);
-gboolean setting_cdma_details (NMSettingCdma *s_cdma, NmCli *nmc);
-gboolean setting_bluetooth_details (NMSettingBluetooth *s_bluetooth, NmCli *nmc);
-gboolean setting_olpc_mesh_details (NMSettingOlpcMesh *s_olpc_mesh, NmCli *nmc);
-gboolean setting_vpn_details (NMSettingVPN *s_vpn, NmCli *nmc);
-gboolean setting_wimax_details (NMSettingWimax *s_wimax, NmCli *nmc);
-gboolean setting_infiniband_details (NMSettingInfiniband *s_infiniband, NmCli *nmc);
-gboolean setting_bond_details (NMSettingBond *s_bond, NmCli *nmc);
-gboolean setting_vlan_details (NMSettingVlan *s_vlan, NmCli *nmc);
-gboolean setting_adsl_details (NMSettingAdsl *s_adsl, NmCli *nmc);
-gboolean setting_bridge_details (NMSettingBridge *s_bridge, NmCli *nmc);
-gboolean setting_bridge_port_details (NMSettingBridgePort *s_bridge_port, NmCli *nmc);
+void nmc_properties_init (void);
+void nmc_properties_cleanup (void);
+
+NMSetting *nmc_setting_new_for_name (const char *name);
+void nmc_setting_custom_init (NMSetting *setting);
+void nmc_setting_ip4_connect_handlers (NMSettingIP4Config *setting);
+void nmc_setting_ip6_connect_handlers (NMSettingIP6Config *setting);
+void nmc_setting_wireless_connect_handlers (NMSettingWireless *setting);
+
+char      **nmc_setting_get_valid_properties (NMSetting *setting);
+char       *nmc_setting_get_property_desc (NMSetting *setting, const char *prop);
+const char *nmc_setting_get_property_allowed_values (NMSetting *setting, const char *prop);
+char       *nmc_setting_get_property (NMSetting *setting,
+                                      const char *prop,
+                                      GError **error);
+char       *nmc_setting_get_property_out2in (NMSetting *setting,
+                                             const char *prop,
+                                             GError **error);
+gboolean    nmc_setting_set_property (NMSetting *setting,
+                                      const char *prop,
+                                      const char *val,
+                                      GError **error);
+gboolean    nmc_setting_reset_property (NMSetting *setting,
+                                        const char *prop,
+                                        GError **error);
+gboolean    nmc_setting_remove_property_option (NMSetting *setting,
+                                                const char *prop,
+                                                const char *option,
+                                                guint32 idx,
+                                                GError **error);
+void nmc_property_set_default_value (NMSetting *setting, const char *prop);
+
+gboolean nmc_property_get_gvalue (NMSetting *setting, const char *prop, GValue *value);
+gboolean nmc_property_set_gvalue (NMSetting *setting, const char *prop, GValue *value);
+
+gboolean setting_details (NMSetting *ssetting, NmCli *nmc, const char *one_prop);
 
 #endif /* NMC_SETTINGS_H */

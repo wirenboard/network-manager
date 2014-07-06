@@ -51,8 +51,15 @@
 #define NM_DBUS_INTERFACE_DHCP6_CONFIG      NM_DBUS_INTERFACE ".DHCP6Config"
 #define NM_DBUS_INTERFACE_DEVICE_INFINIBAND NM_DBUS_INTERFACE_DEVICE ".Infiniband"
 #define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
+#define NM_DBUS_INTERFACE_DEVICE_TEAM       NM_DBUS_INTERFACE_DEVICE ".Team"
 #define NM_DBUS_INTERFACE_DEVICE_VLAN       NM_DBUS_INTERFACE_DEVICE ".Vlan"
 #define NM_DBUS_INTERFACE_DEVICE_BRIDGE     NM_DBUS_INTERFACE_DEVICE ".Bridge"
+#define NM_DBUS_INTERFACE_DEVICE_GENERIC    NM_DBUS_INTERFACE_DEVICE ".Generic"
+#define NM_DBUS_INTERFACE_DEVICE_VETH       NM_DBUS_INTERFACE_DEVICE ".Veth"
+#define NM_DBUS_INTERFACE_DEVICE_TUN        NM_DBUS_INTERFACE_DEVICE ".Tun"
+#define NM_DBUS_INTERFACE_DEVICE_MACVLAN    NM_DBUS_INTERFACE_DEVICE ".Macvlan"
+#define NM_DBUS_INTERFACE_DEVICE_VXLAN      NM_DBUS_INTERFACE_DEVICE ".Vxlan"
+#define NM_DBUS_INTERFACE_DEVICE_GRE        NM_DBUS_INTERFACE_DEVICE ".Gre"
 
 
 #define NM_DBUS_IFACE_SETTINGS            "org.freedesktop.NetworkManager.Settings"
@@ -106,7 +113,7 @@ typedef enum {
  * @NM_CONNECTIVITY_FULL: The host is connected to a network, and
  *   appears to be able to reach the full Internet.
  *
- * Since: 0.9.8.4
+ * Since: 0.9.8.6
  */
 typedef enum {
 	NM_CONNECTIVITY_UNKNOWN,
@@ -119,6 +126,7 @@ typedef enum {
 /**
  * NMDeviceType:
  * @NM_DEVICE_TYPE_UNKNOWN: unknown device
+ * @NM_DEVICE_TYPE_GENERIC: generic support for unrecognized device types
  * @NM_DEVICE_TYPE_ETHERNET: a wired ethernet device
  * @NM_DEVICE_TYPE_WIFI: an 802.11 WiFi device
  * @NM_DEVICE_TYPE_UNUSED1: not used
@@ -133,6 +141,7 @@ typedef enum {
  * @NM_DEVICE_TYPE_VLAN: an 802.1Q VLAN interface
  * @NM_DEVICE_TYPE_ADSL: ADSL modem
  * @NM_DEVICE_TYPE_BRIDGE: a bridge master interface
+ * @NM_DEVICE_TYPE_TEAM: a team master interface
  *
  * #NMDeviceType values indicate the type of hardware represented by
  * an #NMDevice.
@@ -152,6 +161,8 @@ typedef enum {
 	NM_DEVICE_TYPE_VLAN       = 11,
 	NM_DEVICE_TYPE_ADSL       = 12,
 	NM_DEVICE_TYPE_BRIDGE     = 13,
+	NM_DEVICE_TYPE_GENERIC    = 14,
+	NM_DEVICE_TYPE_TEAM       = 15,
 } NMDeviceType;
 
 /**
@@ -534,6 +545,21 @@ typedef enum {
 
 	/* A secondary connection of the base connection failed */
 	NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED = 54,
+
+	/* DCB or FCoE setup failed */
+	NM_DEVICE_STATE_REASON_DCB_FCOE_FAILED = 55,
+
+	/* teamd control failed */
+	NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED = 56,
+
+	/* Modem failed or no longer available */
+	NM_DEVICE_STATE_REASON_MODEM_FAILED = 57,
+
+	/* Modem now ready and available */
+	NM_DEVICE_STATE_REASON_MODEM_AVAILABLE = 58,
+
+	/* SIM PIN was incorrect */
+	NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT = 59,
 
 	/* Unused */
 	NM_DEVICE_STATE_REASON_LAST = 0xFFFF

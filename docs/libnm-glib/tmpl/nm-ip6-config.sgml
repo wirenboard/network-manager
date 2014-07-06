@@ -22,7 +22,70 @@ NMIP6Config
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### STRUCT NMIP6Config ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMIP6Config:addresses ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIP6Config:domains ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIP6Config:gateway ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIP6Config:nameservers ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIP6Config:routes ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIP6Config:searches ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMIP6ConfigClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
+<!-- ##### MACRO NM_IP6_CONFIG_GATEWAY ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_IP6_CONFIG_ADDRESSES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP6_CONFIG_ROUTES ##### -->
 <para>
 
 </para>
@@ -43,7 +106,7 @@ NMIP6Config
 
 
 
-<!-- ##### MACRO NM_IP6_CONFIG_ROUTES ##### -->
+<!-- ##### MACRO NM_IP6_CONFIG_SEARCHES ##### -->
 <para>
 
 </para>
@@ -60,12 +123,49 @@ NMIP6Config
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_ip6_config_get_gateway ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_ip6_config_get_addresses ##### -->
 <para>
 
 </para>
 
 @config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip6_config_get_routes ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip6_config_get_num_nameservers ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip6_config_get_nameserver ##### -->
+<para>
+
+</para>
+
+@config: 
+@idx: 
 @Returns: 
 
 
@@ -87,7 +187,7 @@ NMIP6Config
 @Returns: 
 
 
-<!-- ##### FUNCTION nm_ip6_config_get_routes ##### -->
+<!-- ##### FUNCTION nm_ip6_config_get_searches ##### -->
 <para>
 
 </para>

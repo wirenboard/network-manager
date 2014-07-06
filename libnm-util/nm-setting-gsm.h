@@ -64,11 +64,13 @@ GQuark nm_setting_gsm_error_quark (void);
 #define NM_SETTING_GSM_PASSWORD_FLAGS "password-flags"
 #define NM_SETTING_GSM_APN            "apn"
 #define NM_SETTING_GSM_NETWORK_ID     "network-id"
-#define NM_SETTING_GSM_NETWORK_TYPE   "network-type"
-#define NM_SETTING_GSM_ALLOWED_BANDS  "allowed-bands"
 #define NM_SETTING_GSM_PIN            "pin"
 #define NM_SETTING_GSM_PIN_FLAGS      "pin-flags"
 #define NM_SETTING_GSM_HOME_ONLY      "home-only"
+
+/* Deprecated */
+#define NM_SETTING_GSM_ALLOWED_BANDS  "allowed-bands"
+#define NM_SETTING_GSM_NETWORK_TYPE   "network-type"
 
 /**
  * NMSettingGsmNetworkType:
@@ -88,6 +90,8 @@ GQuark nm_setting_gsm_error_quark (void);
  *
  * #NMSettingGsmNetworkType values indicate the allowed access technologies
  * the device may use when connecting to this network.
+ *
+ * Deprecated: 0.9.10: No longer used.
  */
 typedef enum {
 	NM_SETTING_GSM_NETWORK_TYPE_ANY = -1,
@@ -119,6 +123,8 @@ typedef enum {
  *
  * #NMSettingGsmNetworkBand values indicate the allowed frequency bands
  * the device may use when connecting to this network.
+ *
+ * Deprecated: 0.9.10: No longer used.
  */
 typedef enum {
 	NM_SETTING_GSM_BAND_UNKNOWN      = 0x00000000,
@@ -137,6 +143,30 @@ typedef enum {
 	NM_SETTING_GSM_BAND_U1900        = 0x00001000, /* WCDMA 3GPP UMTS 1900 MHz     (Class II) */
 	NM_SETTING_GSM_BAND_U2600        = 0x00002000, /* WCDMA 3GPP UMTS 2600 MHz     (Class VII, internal) */
 } NMSettingGsmNetworkBand;
+
+/**
+ * NM_SETTING_GSM_BANDS_MAX:
+ *
+ * #NM_SETTING_GSM_BANDS_MAX macro indicate the maximal value that can be used
+ * as the allowed frequency bands (#NMSettingGsm:allowed-bands property).
+ *
+ * Deprecated: 0.9.10: No longer used.
+ */
+#define NM_SETTING_GSM_BANDS_MAX (  NM_SETTING_GSM_BAND_UNKNOWN \
+                                  | NM_SETTING_GSM_BAND_ANY \
+                                  | NM_SETTING_GSM_BAND_EGSM \
+                                  | NM_SETTING_GSM_BAND_DCS \
+                                  | NM_SETTING_GSM_BAND_PCS \
+                                  | NM_SETTING_GSM_BAND_G850 \
+                                  | NM_SETTING_GSM_BAND_U2100 \
+                                  | NM_SETTING_GSM_BAND_U1800 \
+                                  | NM_SETTING_GSM_BAND_U17IV \
+                                  | NM_SETTING_GSM_BAND_U800 \
+                                  | NM_SETTING_GSM_BAND_U850 \
+                                  | NM_SETTING_GSM_BAND_U900 \
+                                  | NM_SETTING_GSM_BAND_U17IX \
+                                  | NM_SETTING_GSM_BAND_U1900 \
+                                  | NM_SETTING_GSM_BAND_U2600)
 
 typedef struct {
 	NMSetting parent;
@@ -160,13 +190,17 @@ const char *nm_setting_gsm_get_username      (NMSettingGsm *setting);
 const char *nm_setting_gsm_get_password      (NMSettingGsm *setting);
 const char *nm_setting_gsm_get_apn           (NMSettingGsm *setting);
 const char *nm_setting_gsm_get_network_id    (NMSettingGsm *setting);
-int         nm_setting_gsm_get_network_type  (NMSettingGsm *setting);
-guint32     nm_setting_gsm_get_allowed_bands (NMSettingGsm *setting);
 const char *nm_setting_gsm_get_pin           (NMSettingGsm *setting);
 gboolean    nm_setting_gsm_get_home_only     (NMSettingGsm *setting);
 
 NMSettingSecretFlags nm_setting_gsm_get_pin_flags      (NMSettingGsm *setting);
 NMSettingSecretFlags nm_setting_gsm_get_password_flags (NMSettingGsm *setting);
+
+/* Deprecated */
+NM_DEPRECATED_IN_0_9_10
+int     nm_setting_gsm_get_network_type  (NMSettingGsm *setting);
+NM_DEPRECATED_IN_0_9_10
+guint32 nm_setting_gsm_get_allowed_bands (NMSettingGsm *setting);
 
 G_END_DECLS
 

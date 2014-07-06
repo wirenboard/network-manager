@@ -16,13 +16,14 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2011 Red Hat, Inc.
+ * (C) Copyright 2011 - 2013 Red Hat, Inc.
  * (C) Copyright 2009 Novell, Inc.
  */
 
 #include <string.h>
 #include <net/ethernet.h>
 #include <dbus/dbus-glib.h>
+#include <glib/gi18n.h>
 
 #include "nm-setting-wimax.h"
 #include "nm-param-spec-specialized.h"
@@ -130,28 +131,29 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	NMSettingWimaxPrivate *priv = NM_SETTING_WIMAX_GET_PRIVATE (setting);
 
 	if (!priv->network_name) {
-		g_set_error (error,
-					 NM_SETTING_WIMAX_ERROR,
-					 NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY,
-					 NM_SETTING_WIMAX_NETWORK_NAME);
-
+		g_set_error_literal (error,
+		                     NM_SETTING_WIMAX_ERROR,
+		                     NM_SETTING_WIMAX_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_WIMAX_SETTING_NAME, NM_SETTING_WIMAX_NETWORK_NAME);
 		return FALSE;
 	}
 
 	if (!strlen (priv->network_name)) {
-		g_set_error (error,
-					 NM_SETTING_WIMAX_ERROR,
-					 NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
-					 NM_SETTING_WIMAX_NETWORK_NAME);
-
+		g_set_error_literal (error,
+		                     NM_SETTING_WIMAX_ERROR,
+		                     NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_WIMAX_SETTING_NAME, NM_SETTING_WIMAX_NETWORK_NAME);
 		return FALSE;
 	}
 
 	if (priv->mac_address && priv->mac_address->len != ETH_ALEN) {
-		g_set_error (error,
-		             NM_SETTING_WIMAX_ERROR,
-		             NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_WIMAX_MAC_ADDRESS);
+		g_set_error_literal (error,
+		                     NM_SETTING_WIMAX_ERROR,
+		                     NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
+		                     _("property is invalid"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_WIMAX_SETTING_NAME, NM_SETTING_WIMAX_MAC_ADDRESS);
 		return FALSE;
 	}
 
@@ -161,7 +163,6 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 static void
 nm_setting_wimax_init (NMSettingWimax *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_WIMAX_SETTING_NAME, NULL);
 }
 
 static void
@@ -245,14 +246,14 @@ nm_setting_wimax_class_init (NMSettingWimaxClass *setting_class)
 							  "Network Service Provider (NSP) name of the WiMAX "
 							  "network this connection should use.",
 							  NULL,
-							  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingWimax:mac-address:
 	 *
-	 * If specified, this connection will only apply to the WiMAX device
-	 * whose MAC address matches. This property does not change the MAC address
-	 * of the device (known as MAC spoofing).
+	 * If specified, this connection will only apply to the WiMAX device whose
+	 * MAC address matches. This property does not change the MAC address of the
+	 * device (known as MAC spoofing).
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_MAC_ADDRESS,
@@ -263,5 +264,5 @@ nm_setting_wimax_class_init (NMSettingWimaxClass *setting_class)
 							   "This property does not change the MAC address "
 							   "of the device (known as MAC spoofing).",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 }

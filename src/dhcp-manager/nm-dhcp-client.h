@@ -38,7 +38,12 @@
 #define NM_DHCP_CLIENT_HWADDR    "hwaddr"
 #define NM_DHCP_CLIENT_IPV6      "ipv6"
 #define NM_DHCP_CLIENT_UUID      "uuid"
+#define NM_DHCP_CLIENT_PRIORITY  "priority"
 #define NM_DHCP_CLIENT_TIMEOUT   "timeout"
+
+#define NM_DHCP_CLIENT_SIGNAL_TIMEOUT       "timeout"
+#define NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED "state-changed"
+#define NM_DHCP_CLIENT_SIGNAL_REMOVE        "remove"
 
 typedef enum {
 	DHC_NBI = 0,     /* no broadcast interfaces found */
@@ -78,13 +83,12 @@ typedef struct {
 	/* Methods */
 
 	GPid (*ip4_start)     (NMDHCPClient *self,
-	                       NMSettingIP4Config *s_ip4,
-	                       guint8 *anycast_addr,
+	                       const char *dhcp_client_id,
+	                       GByteArray *anycast_addr,
 	                       const char *hostname);
 
 	GPid (*ip6_start)     (NMDHCPClient *self,
-	                       NMSettingIP6Config *s_ip6,
-	                       guint8 *anycast_addr,
+	                       GByteArray *anycast_addr,
 	                       const char *hostname,
 	                       gboolean info_only,
 	                       const GByteArray *duid);
@@ -121,13 +125,12 @@ gboolean nm_dhcp_client_get_ipv6 (NMDHCPClient *self);
 const char *nm_dhcp_client_get_uuid (NMDHCPClient *self);
 
 gboolean nm_dhcp_client_start_ip4 (NMDHCPClient *self,
-                                   NMSettingIP4Config *s_ip4,
-                                   guint8 *dhcp_anycast_addr,
+                                   const char *dhcp_client_id,
+                                   GByteArray *dhcp_anycast_addr,
                                    const char *hostname);
 
 gboolean nm_dhcp_client_start_ip6 (NMDHCPClient *self,
-                                   NMSettingIP6Config *s_ip6,
-                                   guint8 *dhcp_anycast_addr,
+                                   GByteArray *dhcp_anycast_addr,
                                    const char *hostname,
                                    gboolean info_only);
 
@@ -148,7 +151,7 @@ NMIP6Config *nm_dhcp_client_get_ip6_config   (NMDHCPClient *self, gboolean test)
 /* Backend helpers */
 void nm_dhcp_client_stop_existing (const char *pid_file, const char *binary_name);
 
-void nm_dhcp_client_stop_pid (GPid pid, const char *iface, guint timeout_secs);
+void nm_dhcp_client_stop_pid (GPid pid, const char *iface);
 
 #endif /* NM_DHCP_CLIENT_H */
 

@@ -23,9 +23,11 @@
 
 #include <nm-utils.h>
 
-#include "nm-test-helpers.h"
+#include "nm-logging.h"
 #include "interface_parser.h"
 #include "parser.h"
+
+#include "nm-test-utils.h"
 
 typedef struct {
 	char *key;
@@ -48,17 +50,16 @@ expected_key_new (const char *key, const char *data)
 	ExpectedKey *k;
 
 	k = g_malloc0 (sizeof (ExpectedKey));
-	g_assert (k);
 	k->key = g_strdup (key);
-	g_assert (k->key);
 	k->data = g_strdup (data);
-	g_assert (k->data);
 	return k;
 }
 
 static void
-expected_key_free (ExpectedKey *k)
+expected_key_free (gpointer ptr)
 {
+	ExpectedKey *k = ptr;
+
 	g_assert (k);
 	g_free (k->key);
 	g_free (k->data);
@@ -81,11 +82,12 @@ expected_block_new (const char *type, const char *name)
 }
 
 static void
-expected_block_free (ExpectedBlock *b)
+expected_block_free (gpointer ptr)
 {
+	ExpectedBlock *b = ptr;
+
 	g_assert (b);
-	g_slist_foreach (b->keys, (GFunc) expected_key_free, NULL);
-	g_slist_free (b->keys);
+	g_slist_free_full (b->keys, expected_key_free);
 	g_free (b->type);
 	g_free (b->name);
 	memset (b, 0, sizeof (ExpectedBlock));
@@ -103,11 +105,7 @@ expected_block_add_key (ExpectedBlock *b, ExpectedKey *k)
 static Expected *
 expected_new (void)
 {
-	Expected *e;
-
-	e = g_malloc0 (sizeof (Expected));
-	g_assert (e);
-	return e;
+	return g_malloc0 (sizeof (Expected));
 }
 
 static void
@@ -122,8 +120,7 @@ static void
 expected_free (Expected *e)
 {
 	g_assert (e);
-	g_slist_foreach (e->blocks, (GFunc) expected_block_free, NULL);
-	g_slist_free (e->blocks);
+	g_slist_free_full (e->blocks, expected_block_free);
 	memset (e, 0, sizeof (Expected));
 	g_free (e);
 }
@@ -476,7 +473,7 @@ test17_read_static_ipv4 (const char *path)
 	const char *expected_search2 = "foo.example.com";
 	guint32 expected_prefix = 8;
 	NMIP4Address *ip4_addr;
-	struct in_addr addr;
+	guint32 addr;
 #define TEST17_NAME "wired-static-verify-ip4"
 	if_block *block = NULL;
 
@@ -561,9 +558,9 @@ test17_read_static_ipv4 (const char *path)
 			TEST17_NAME, "failed to verify %s: unexpected IP4 address prefix",
 			file);
 
-	ASSERT (nm_ip4_address_get_address (ip4_addr) == addr.s_addr,
+	ASSERT (nm_ip4_address_get_address (ip4_addr) == addr,
 			TEST17_NAME, "failed to verify %s: unexpected IP4 address: %s",
-			file, addr.s_addr);
+			file, addr);
 
 	/* DNS Addresses */
 	ASSERT (nm_setting_ip4_config_get_num_dns (s_ip4) == 2,
@@ -578,7 +575,7 @@ test17_read_static_ipv4 (const char *path)
 			NM_SETTING_IP4_CONFIG_SETTING_NAME,
 			NM_SETTING_IP4_CONFIG_DNS);
 
-	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 0) == addr.s_addr,
+	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 0) == addr,
 			TEST17_NAME, "failed to verify %s: unexpected %s / %s key value #1",
 			file,
 			NM_SETTING_IP4_CONFIG_SETTING_NAME,
@@ -590,7 +587,7 @@ test17_read_static_ipv4 (const char *path)
 			NM_SETTING_IP4_CONFIG_SETTING_NAME,
 			NM_SETTING_IP4_CONFIG_DNS);
 
-	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 1) == addr.s_addr,
+	ASSERT (nm_setting_ip4_config_get_dns (s_ip4, 1) == addr,
 			TEST17_NAME, "failed to verify %s: unexpected %s / %s key value #2",
 			file,
 			NM_SETTING_IP4_CONFIG_SETTING_NAME,
@@ -848,7 +845,7 @@ test19_read_static_ipv4_plen (const char *path)
 	const char *expected_address = "10.0.0.3";
 	guint32 expected_prefix = 8;
 	NMIP4Address *ip4_addr;
-	struct in_addr addr;
+	guint32 addr;
 #define TEST19_NAME "wired-static-verify-ip4-plen"
 	if_block *block = NULL;
 
@@ -896,57 +893,96 @@ test19_read_static_ipv4_plen (const char *path)
 			TEST19_NAME, "failed to verify %s: unexpected IP4 address prefix",
 			file);
 
-	ASSERT (nm_ip4_address_get_address (ip4_addr) == addr.s_addr,
+	ASSERT (nm_ip4_address_get_address (ip4_addr) == addr,
 			TEST19_NAME, "failed to verify %s: unexpected IP4 address: %s",
-			file, addr.s_addr);
+			file, addr);
 
 	g_object_unref (connection);
 }
 
-
-#if GLIB_CHECK_VERSION(2,25,12)
-typedef GTestFixtureFunc TCFunc;
-#else
-typedef void (*TCFunc)(void);
-#endif
-
-#define TESTCASE(t, d) g_test_create_case (#t, 0, d, NULL, (TCFunc) t, NULL)
-
-int main (int argc, char **argv)
+static void
+test20_source_stanza (const char *path)
 {
-	GTestSuite *suite;
+	Expected *e;
+	ExpectedBlock *b;
+
+	e = expected_new ();
+
+	b = expected_block_new ("auto", "eth0");
+	expected_add_block (e, b);
+	b = expected_block_new ("iface", "eth0");
+	expected_add_block (e, b);
+	expected_block_add_key (b, expected_key_new ("inet", "dhcp"));
+
+	b = expected_block_new ("auto", "eth1");
+	expected_add_block (e, b);
+	b = expected_block_new ("iface", "eth1");
+	expected_add_block (e, b);
+	expected_block_add_key (b, expected_key_new ("inet", "dhcp"));
+
+	init_ifparser_with_file (path, "test20-source-stanza");
+	compare_expected_to_ifparser (e);
+
+	ifparser_destroy ();
+	expected_free (e);
+}
+
+int
+main (int argc, char **argv)
+{
 	GError *error = NULL;
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
 	if (!nm_utils_init (&error))
 		FAIL ("nm-utils-init", "failed to initialize libnm-util: %s", error->message);
+	nm_logging_setup ("WARN", "DEFAULT", NULL, NULL);
 
 	g_test_init (&argc, &argv, NULL);
-
-	suite = g_test_get_root ();
 
 	if (0)
 		dump_blocks ();
 
-	g_test_suite_add (suite, TESTCASE (test1_ignore_line_before_first_block, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test2_wrapped_line, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test3_wrapped_multiline_multiarg, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test4_allow_auto_is_auto, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test5_allow_auto_multiarg, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test6_mixed_whitespace, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test7_long_line, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test8_long_line_wrapped, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test9_wrapped_lines_in_block, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test11_complex_wrap, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test12_complex_wrap_split_word, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test13_more_mixed_whitespace, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test14_mixed_whitespace_block_start, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test15_trailing_space, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test16_missing_newline, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test17_read_static_ipv4, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test18_read_static_ipv6, TEST_ENI_DIR));
-	g_test_suite_add (suite, TESTCASE (test19_read_static_ipv4_plen, TEST_ENI_DIR));
+	g_test_add_data_func ("/ifupdate/ignore_line_before_first_block", TEST_ENI_DIR,
+	                      (GTestDataFunc) test1_ignore_line_before_first_block);
+	g_test_add_data_func ("/ifupdate/wrapped_line", TEST_ENI_DIR,
+	                      (GTestDataFunc) test2_wrapped_line);
+	g_test_add_data_func ("/ifupdate/wrapped_multiline_multiarg", TEST_ENI_DIR,
+	                      (GTestDataFunc) test3_wrapped_multiline_multiarg);
+	g_test_add_data_func ("/ifupdate/allow_auto_is_auto", TEST_ENI_DIR,
+	                      (GTestDataFunc) test4_allow_auto_is_auto);
+	g_test_add_data_func ("/ifupdate/allow_auto_multiarg", TEST_ENI_DIR,
+	                      (GTestDataFunc) test5_allow_auto_multiarg);
+	g_test_add_data_func ("/ifupdate/mixed_whitespace", TEST_ENI_DIR,
+	                      (GTestDataFunc) test6_mixed_whitespace);
+	g_test_add_data_func ("/ifupdate/long_line", TEST_ENI_DIR,
+	                      (GTestDataFunc) test7_long_line);
+	g_test_add_data_func ("/ifupdate/long_line_wrapped", TEST_ENI_DIR,
+	                      (GTestDataFunc) test8_long_line_wrapped);
+	g_test_add_data_func ("/ifupdate/wrapped_lines_in_block", TEST_ENI_DIR,
+	                      (GTestDataFunc) test9_wrapped_lines_in_block);
+	g_test_add_data_func ("/ifupdate/complex_wrap", TEST_ENI_DIR,
+	                      (GTestDataFunc) test11_complex_wrap);
+	g_test_add_data_func ("/ifupdate/complex_wrap_split_word", TEST_ENI_DIR,
+	                      (GTestDataFunc) test12_complex_wrap_split_word);
+	g_test_add_data_func ("/ifupdate/more_mixed_whitespace", TEST_ENI_DIR,
+	                      (GTestDataFunc) test13_more_mixed_whitespace);
+	g_test_add_data_func ("/ifupdate/mixed_whitespace_block_start", TEST_ENI_DIR,
+	                      (GTestDataFunc) test14_mixed_whitespace_block_start);
+	g_test_add_data_func ("/ifupdate/trailing_space", TEST_ENI_DIR,
+	                      (GTestDataFunc) test15_trailing_space);
+	g_test_add_data_func ("/ifupdate/missing_newline", TEST_ENI_DIR,
+	                      (GTestDataFunc) test16_missing_newline);
+	g_test_add_data_func ("/ifupdate/read_static_ipv4", TEST_ENI_DIR,
+	                      (GTestDataFunc) test17_read_static_ipv4);
+	g_test_add_data_func ("/ifupdate/read_static_ipv6", TEST_ENI_DIR,
+	                      (GTestDataFunc) test18_read_static_ipv6);
+	g_test_add_data_func ("/ifupdate/read_static_ipv4_plen", TEST_ENI_DIR,
+	                      (GTestDataFunc) test19_read_static_ipv4_plen);
+	g_test_add_data_func ("/ifupdate/source_stanza", TEST_ENI_DIR,
+	                      (GTestDataFunc) test20_source_stanza);
 
 	return g_test_run ();
 }

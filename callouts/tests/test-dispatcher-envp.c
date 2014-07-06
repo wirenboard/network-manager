@@ -29,7 +29,7 @@
 #include "nm-setting-connection.h"
 #include "nm-dispatcher-utils.h"
 #include "nm-dbus-glib-types.h"
-#include "nm-dispatcher-action.h"
+#include "nm-dispatcher-api.h"
 #include "nm-utils.h"
 
 /*******************************************/
@@ -238,10 +238,10 @@ add_uint_array (GKeyFile *kf,
 		items = g_array_sized_new (FALSE, TRUE, sizeof (guint32), g_strv_length (split));
 		for (iter = split; iter && *iter; iter++) {
 			if (strlen (g_strstrip (*iter))) {
-				struct in_addr addr;
+				guint32 addr;
 
 				g_assert_cmpint (inet_pton (AF_INET, *iter, &addr), ==, 1);
-				g_array_append_val (items, addr.s_addr);
+				g_array_append_val (items, addr);
 			}
 		}
 		value_hash_add_uint_array (props, key, items);
@@ -294,7 +294,7 @@ parse_ip4 (GKeyFile *kf, GHashTable **out_props, const char *section, GError **e
 		list = NULL;
 		for (iter = split; iter && *iter; iter++) {
 			NMIP4Address *addr;
-			struct in_addr a;
+			guint32 a;
 			char *p;
 
 			if (strlen (g_strstrip (*iter)) == 0)
@@ -307,7 +307,7 @@ parse_ip4 (GKeyFile *kf, GHashTable **out_props, const char *section, GError **e
 			*p++ = '\0';
 
 			g_assert_cmpint (inet_pton (AF_INET, *iter, &a), ==, 1);
-			nm_ip4_address_set_address (addr, a.s_addr);
+			nm_ip4_address_set_address (addr, a);
 			nm_ip4_address_set_prefix (addr, (guint) atoi (p));
 
 			p = strchr (p, ' ');
@@ -315,7 +315,7 @@ parse_ip4 (GKeyFile *kf, GHashTable **out_props, const char *section, GError **e
 			p++;
 
 			g_assert_cmpint (inet_pton (AF_INET, p, &a), ==, 1);
-			nm_ip4_address_set_gateway (addr, a.s_addr);
+			nm_ip4_address_set_gateway (addr, a);
 
 			list = g_slist_append (list, addr);
 		}
@@ -338,7 +338,7 @@ parse_ip4 (GKeyFile *kf, GHashTable **out_props, const char *section, GError **e
 			list = NULL;
 			for (iter = split; iter && *iter; iter++) {
 				NMIP4Route *route;
-				struct in_addr a;
+				guint32 a;
 				char *p;
 
 				if (strlen (g_strstrip (*iter)) == 0)
@@ -351,7 +351,7 @@ parse_ip4 (GKeyFile *kf, GHashTable **out_props, const char *section, GError **e
 				*p++ = '\0';
 
 				g_assert_cmpint (inet_pton (AF_INET, *iter, &a), ==, 1);
-				nm_ip4_route_set_dest (route, a.s_addr);
+				nm_ip4_route_set_dest (route, a);
 				nm_ip4_route_set_prefix (route, (guint) atoi (p));
 
 				p = strchr (p, ' ');
@@ -359,7 +359,7 @@ parse_ip4 (GKeyFile *kf, GHashTable **out_props, const char *section, GError **e
 				p++;
 
 				g_assert_cmpint (inet_pton (AF_INET, p, &a), ==, 1);
-				nm_ip4_route_set_next_hop (route, a.s_addr);
+				nm_ip4_route_set_next_hop (route, a);
 
 				p = strchr (p, ' ');
 				g_assert (p);
@@ -560,10 +560,18 @@ test_generic (const char *path, const char *file, const char *override_vpn_ip_if
 	/* Compare dispatcher generated env and expected env */
 	for (iter = denv; iter && *iter; iter++) {
 		gpointer foo;
+		const char *i_value = *iter;
 
-		foo = g_hash_table_lookup (expected_env, *iter);
+		if (strstr (i_value, "PATH=") == i_value) {
+			g_assert_cmpstr (&i_value[strlen("PATH=")], ==, g_getenv ("PATH"));
+
+			/* The path is constructed dynamically. Ignore the actual value. */
+			i_value = "PATH=";
+		}
+
+		foo = g_hash_table_lookup (expected_env, i_value);
 		if (!foo)
-			g_warning ("Failed to find %s in environment", *iter);
+			g_warning ("Failed to find %s in environment", i_value);
 		g_assert (foo);
 	}
 
@@ -628,31 +636,23 @@ test_up_empty_vpn_iface (const char *path)
 
 /*******************************************/
 
-#if GLIB_CHECK_VERSION(2,25,12)
-typedef GTestFixtureFunc TCFunc;
-#else
-typedef void (*TCFunc)(void);
-#endif
-
-#define TESTCASE(t, d) g_test_create_case (#t, 0, d, NULL, (TCFunc) t, NULL)
-
-int main (int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-	GTestSuite *suite;
-
 	g_assert (argc > 1);
 
 	g_test_init (&argc, &argv, NULL);
+
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
-	suite = g_test_get_root ();
+	g_test_add_data_func ("/dispatcher/old_up", argv[1], (GTestDataFunc) test_old_up);
+	g_test_add_data_func ("/dispatcher/old_down", argv[1], (GTestDataFunc) test_old_down);
+	g_test_add_data_func ("/dispatcher/old_vpn_up", argv[1], (GTestDataFunc) test_old_vpn_up);
+	g_test_add_data_func ("/dispatcher/old_vpn_down", argv[1], (GTestDataFunc) test_old_vpn_down);
 
-	g_test_suite_add (suite, TESTCASE (test_old_up, argv[1]));
-	g_test_suite_add (suite, TESTCASE (test_old_down, argv[1]));
-	g_test_suite_add (suite, TESTCASE (test_old_vpn_up, argv[1]));
-	g_test_suite_add (suite, TESTCASE (test_old_vpn_down, argv[1]));
-
-	g_test_suite_add (suite, TESTCASE (test_up_empty_vpn_iface, argv[1]));
+	g_test_add_data_func ("/dispatcher/up_empty_vpn_iface", argv[1], (GTestDataFunc) test_up_empty_vpn_iface);
 
 	return g_test_run ();
 }

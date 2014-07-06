@@ -18,13 +18,15 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2011 - 2012 Red Hat, Inc.
+ * (C) Copyright 2011 - 2013 Red Hat, Inc.
  */
 
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <dbus/dbus-glib.h>
+#include <glib/gi18n.h>
+#include <linux/if_ether.h>
 
 #include "nm-setting-bridge.h"
 #include "nm-param-spec-specialized.h"
@@ -75,6 +77,7 @@ NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_BRIDGE)
 
 typedef struct {
 	char *   interface_name;
+	GByteArray *mac_address;
 	gboolean stp;
 	guint16  priority;
 	guint16  forward_delay;
@@ -86,6 +89,7 @@ typedef struct {
 enum {
 	PROP_0,
 	PROP_INTERFACE_NAME,
+	PROP_MAC_ADDRESS,
 	PROP_STP,
 	PROP_PRIORITY,
 	PROP_FORWARD_DELAY,
@@ -124,6 +128,22 @@ nm_setting_bridge_get_interface_name (NMSettingBridge *setting)
 	g_return_val_if_fail (NM_IS_SETTING_BRIDGE (setting), 0);
 
 	return NM_SETTING_BRIDGE_GET_PRIVATE (setting)->interface_name;
+}
+
+/**
+ * nm_setting_bridge_get_mac_address:
+ * @setting: the #NMSettingBridge
+ *
+ * Returns: the #NMSettingBridge:mac-address property of the setting
+ *
+ * Since: 0.9.10
+ **/
+const GByteArray *
+nm_setting_bridge_get_mac_address (NMSettingBridge *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_BRIDGE (setting), NULL);
+
+	return NM_SETTING_BRIDGE_GET_PRIVATE (setting)->mac_address;
 }
 
 /**
@@ -244,10 +264,12 @@ check_range (guint32 val,
              GError **error)
 {
 	if ((val != 0) && (val < min || val > max)) {
-		g_set_error_literal (error,
-		                     NM_SETTING_BRIDGE_ERROR,
-		                     NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY,
-		                     prop);
+		g_set_error (error,
+		             NM_SETTING_BRIDGE_ERROR,
+		             NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY,
+		             _("value '%d' is out of range <%d-%d>"),
+		             val, min, max);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_BRIDGE_SETTING_NAME, prop);
 		return FALSE;
 	}
 	return TRUE;
@@ -259,10 +281,11 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	NMSettingBridgePrivate *priv = NM_SETTING_BRIDGE_GET_PRIVATE (setting);
 
 	if (!priv->interface_name || !strlen(priv->interface_name)) {
-		g_set_error (error,
-		             NM_SETTING_BRIDGE_ERROR,
-		             NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_BRIDGE_INTERFACE_NAME);
+		g_set_error_literal (error,
+		                     NM_SETTING_BRIDGE_ERROR,
+		                     NM_SETTING_BRIDGE_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_BRIDGE_SETTING_NAME, NM_SETTING_BRIDGE_INTERFACE_NAME);
 		return FALSE;
 	}
 
@@ -270,7 +293,18 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_BRIDGE_ERROR,
 		             NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_BRIDGE_INTERFACE_NAME);
+		             _("'%s' is not a valid interface name"),
+		             priv->interface_name);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_BRIDGE_SETTING_NAME, NM_SETTING_BRIDGE_INTERFACE_NAME);
+		return FALSE;
+	}
+
+	if (priv->mac_address && priv->mac_address->len != ETH_ALEN) {
+		g_set_error_literal (error,
+		                     NM_SETTING_BRIDGE_ERROR,
+		                     NM_SETTING_BRIDGE_ERROR_INVALID_PROPERTY,
+		                     _("is not a valid MAC address"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_BRIDGE_SETTING_NAME, NM_SETTING_BRIDGE_MAC_ADDRESS);
 		return FALSE;
 	}
 
@@ -316,7 +350,6 @@ get_virtual_iface_name (NMSetting *setting)
 static void
 nm_setting_bridge_init (NMSettingBridge *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_BRIDGE_SETTING_NAME, NULL);
 }
 
 static void
@@ -325,6 +358,9 @@ finalize (GObject *object)
 	NMSettingBridgePrivate *priv = NM_SETTING_BRIDGE_GET_PRIVATE (object);
 
 	g_free (priv->interface_name);
+
+	if (priv->mac_address)
+		g_byte_array_free (priv->mac_address, TRUE);
 
 	G_OBJECT_CLASS (nm_setting_bridge_parent_class)->finalize (object);
 }
@@ -339,6 +375,11 @@ set_property (GObject *object, guint prop_id,
 	case PROP_INTERFACE_NAME:
 		g_free (priv->interface_name);
 		priv->interface_name = g_value_dup_string (value);
+		break;
+	case PROP_MAC_ADDRESS:
+		if (priv->mac_address)
+			g_byte_array_free (priv->mac_address, TRUE);
+		priv->mac_address = g_value_dup_boxed (value);
 		break;
 	case PROP_STP:
 		priv->stp = g_value_get_boolean (value);
@@ -374,6 +415,9 @@ get_property (GObject *object, guint prop_id,
 	switch (prop_id) {
 	case PROP_INTERFACE_NAME:
 		g_value_set_string (value, nm_setting_bridge_get_interface_name (setting));
+		break;
+	case PROP_MAC_ADDRESS:
+		g_value_set_boxed (value, nm_setting_bridge_get_mac_address (setting));
 		break;
 	case PROP_STP:
 		g_value_set_boolean (value, priv->stp);
@@ -418,7 +462,7 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 	/**
 	 * NMSettingBridge:interface-name:
 	 *
-	 * The name of the virtual in-kernel briding network interface
+	 * The name of the virtual in-kernel bridging network interface
 	 *
 	 * Since: 0.9.8
 	 **/
@@ -428,7 +472,24 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		                      "InterfaceName",
 		                      "The name of the virtual in-kernel bridging network interface",
 		                      NULL,
-		                      G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                      G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
+
+	/**
+	 * NMSettingBridge:mac-address:
+	 *
+	 * If specified, the MAC address of bridge. When creating a new bridge, this
+	 * MAC address will be set. When matching an existing (outside
+	 * NetworkManager created) bridge, this MAC address must match.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+	    (object_class, PROP_MAC_ADDRESS,
+	     _nm_param_spec_specialized (NM_SETTING_BRIDGE_MAC_ADDRESS,
+	                          "MAC Address",
+	                          "The MAC address of the bridge",
+	                          DBUS_TYPE_G_UCHAR_ARRAY,
+	                          G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridge:stp:
@@ -444,7 +505,7 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		                        "Controls whether Spanning Tree Protocol (STP) "
 		                        "is enabled for this bridge.",
 		                        TRUE,
-		                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridge:priority:
@@ -464,7 +525,7 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		                     "lowest priority bridge will be elected the root "
 		                     "bridge.",
 		                     0, G_MAXUINT16, 0x8000,
-		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridge:forward-delay:
@@ -480,7 +541,7 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		                     "The Spanning Tree Protocol (STP) forwarding "
 		                     "delay, in seconds.",
 		                     0, BR_MAX_FORWARD_DELAY, 15,
-		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridge:hello-time:
@@ -496,7 +557,7 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		                     "The Spanning Tree Protocol (STP) hello time, in "
 		                     "seconds.",
 		                     0, BR_MAX_HELLO_TIME, 2,
-		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridge:max-age:
@@ -512,12 +573,12 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		                     "The Spanning Tree Protocol (STP) maximum message "
 		                     "age, in seconds.",
 		                     0, BR_MAX_MAX_AGE, 20,
-		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridge:ageing-time:
 	 *
-	 * The ethernet MAC address aging time, in seconds.
+	 * The Ethernet MAC address aging time, in seconds.
 	 *
 	 * Since: 0.9.8
 	 **/
@@ -525,8 +586,8 @@ nm_setting_bridge_class_init (NMSettingBridgeClass *setting_class)
 		 (object_class, PROP_AGEING_TIME,
 		  g_param_spec_uint (NM_SETTING_BRIDGE_AGEING_TIME,
 		                     "AgeingTime",
-		                     "The ethernet MAC address aging time, in seconds.",
+		                     "The Ethernet MAC address aging time, in seconds.",
 		                     0, BR_MAX_AGEING_TIME, 300,
-		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 }
 

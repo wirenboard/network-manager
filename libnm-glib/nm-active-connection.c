@@ -17,7 +17,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2007 - 2011 Red Hat, Inc.
+ * Copyright (C) 2007 - 2014 Red Hat, Inc.
  * Copyright (C) 2008 Novell, Inc.
  */
 
@@ -32,6 +32,7 @@
 #include "nm-connection.h"
 #include "nm-vpn-connection.h"
 #include "nm-glib-compat.h"
+#include "nm-dbus-helpers-private.h"
 
 static GType _nm_active_connection_type_for_path (DBusGConnection *connection,
                                                   const char *path);
@@ -52,37 +53,42 @@ typedef struct {
 	DBusGProxy *proxy;
 
 	char *connection;
+	char *id;
 	char *uuid;
+	char *type;
 	char *specific_object;
 	GPtrArray *devices;
 	NMActiveConnectionState state;
 	gboolean is_default;
+	NMIP4Config *ip4_config;
+	NMDHCP4Config *dhcp4_config;
 	gboolean is_default6;
+	NMIP6Config *ip6_config;
+	NMDHCP6Config *dhcp6_config;
+	gboolean is_vpn;
 	char *master;
 } NMActiveConnectionPrivate;
 
 enum {
 	PROP_0,
 	PROP_CONNECTION,
+	PROP_ID,
 	PROP_UUID,
+	PROP_TYPE,
 	PROP_SPECIFIC_OBJECT,
 	PROP_DEVICES,
 	PROP_STATE,
 	PROP_DEFAULT,
+	PROP_IP4_CONFIG,
+	PROP_DHCP4_CONFIG,
 	PROP_DEFAULT6,
+	PROP_IP6_CONFIG,
+	PROP_DHCP6_CONFIG,
+	PROP_VPN,
 	PROP_MASTER,
 
 	LAST_PROP
 };
-
-#define DBUS_PROP_CONNECTION "Connection"
-#define DBUS_PROP_UUID "Uuid"
-#define DBUS_PROP_SPECIFIC_OBJECT "SpecificObject"
-#define DBUS_PROP_DEVICES "Devices"
-#define DBUS_PROP_STATE "State"
-#define DBUS_PROP_DEFAULT "Default"
-#define DBUS_PROP_DEFAULT6 "Default6"
-#define DBUS_PROP_MASTER "Master"
 
 /**
  * nm_active_connection_new:
@@ -111,13 +117,10 @@ _nm_active_connection_type_for_path (DBusGConnection *connection,
 {
 	DBusGProxy *proxy;
 	GError *error = NULL;
-	GValue value = {0,};
+	GValue value = G_VALUE_INIT;
 	GType type;
 
-	proxy = dbus_g_proxy_new_for_name (connection,
-	                                   NM_DBUS_SERVICE,
-	                                   path,
-	                                   "org.freedesktop.DBus.Properties");
+	proxy = _nm_dbus_new_proxy_for_connection (connection, path, "org.freedesktop.DBus.Properties");
 	if (!proxy) {
 		g_warning ("%s: couldn't create D-Bus object proxy.", __func__);
 		return G_TYPE_INVALID;
@@ -194,8 +197,7 @@ _nm_active_connection_type_for_path_async (DBusGConnection *connection,
 	async_data->callback = callback;
 	async_data->user_data = user_data;
 
-	proxy = dbus_g_proxy_new_for_name (connection, NM_DBUS_SERVICE, path,
-	                                   "org.freedesktop.DBus.Properties");
+	proxy = _nm_dbus_new_proxy_for_connection (connection, path, "org.freedesktop.DBus.Properties");
 	dbus_g_proxy_begin_call (proxy, "Get",
 	                         async_got_type, async_data, NULL,
 	                         G_TYPE_STRING, NM_DBUS_INTERFACE_ACTIVE_CONNECTION,
@@ -207,10 +209,13 @@ _nm_active_connection_type_for_path_async (DBusGConnection *connection,
  * nm_active_connection_get_connection:
  * @connection: a #NMActiveConnection
  *
- * Gets the #NMConnection<!-- -->'s DBus object path.
+ * Gets the #NMConnection's DBus object path.  This is often used with
+ * nm_remote_settings_get_connection_by_path() to retrieve the
+ * #NMRemoteConnection object that describes the connection.
  *
- * Returns: the object path of the #NMConnection inside of #NMActiveConnection.
- * This is the internal string used by the connection, and must not be modified.
+ * Returns: the object path of the #NMConnection which this #NMActiveConnection
+ * is an active instance of.  This is the internal string used by the
+ * connection, and must not be modified.
  **/
 const char *
 nm_active_connection_get_connection (NMActiveConnection *connection)
@@ -222,10 +227,30 @@ nm_active_connection_get_connection (NMActiveConnection *connection)
 }
 
 /**
+ * nm_active_connection_get_id:
+ * @connection: a #NMActiveConnection
+ *
+ * Gets the #NMConnection's ID.
+ *
+ * Returns: the ID of the #NMConnection that backs the #NMActiveConnection.
+ * This is the internal string used by the connection, and must not be modified.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_active_connection_get_id (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->id;
+}
+
+/**
  * nm_active_connection_get_uuid:
  * @connection: a #NMActiveConnection
  *
- * Gets the #NMConnection<!-- -->'s UUID.
+ * Gets the #NMConnection's UUID.
  *
  * Returns: the UUID of the #NMConnection that backs the #NMActiveConnection.
  * This is the internal string used by the connection, and must not be modified.
@@ -237,6 +262,26 @@ nm_active_connection_get_uuid (NMActiveConnection *connection)
 
 	_nm_object_ensure_inited (NM_OBJECT (connection));
 	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->uuid;
+}
+
+/**
+ * nm_active_connection_get_connection_type:
+ * @connection: a #NMActiveConnection
+ *
+ * Gets the #NMConnection's type.
+ *
+ * Returns: the type of the #NMConnection that backs the #NMActiveConnection.
+ * This is the internal string used by the connection, and must not be modified.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_active_connection_get_connection_type (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->type;
 }
 
 /**
@@ -261,9 +306,9 @@ nm_active_connection_get_specific_object (NMActiveConnection *connection)
  * nm_active_connection_get_devices:
  * @connection: a #NMActiveConnection
  *
- * Gets the #NMDevice<!-- -->s used for the active connections.
+ * Gets the #NMDevices used for the active connections.
  *
- * Returns: (element-type NMClient.Device): the #GPtrArray containing #NMDevice<!-- -->s.
+ * Returns: (element-type NMClient.Device): the #GPtrArray containing #NMDevices.
  * This is the internal copy used by the connection, and must not be modified.
  **/
 const GPtrArray *
@@ -311,6 +356,49 @@ nm_active_connection_get_default (NMActiveConnection *connection)
 }
 
 /**
+ * nm_active_connection_get_ip4_config:
+ * @connection: an #NMActiveConnection
+ *
+ * Gets the current #NMIP4Config associated with the #NMActiveConnection.
+ *
+ * Returns: (transfer none): the #NMIP4Config, or %NULL if the
+ *   connection is not in the %NM_ACTIVE_CONNECTION_STATE_ACTIVATED
+ *   state.
+ *
+ * Since: 0.9.10
+ **/
+NMIP4Config *
+nm_active_connection_get_ip4_config (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->ip4_config;
+}
+
+/**
+ * nm_active_connection_get_dhcp4_config:
+ * @connection: an #NMActiveConnection
+ *
+ * Gets the current #NMDHCP4Config (if any) associated with the
+ * #NMActiveConnection.
+ *
+ * Returns: (transfer none): the #NMDHCP4Config, or %NULL if the
+ *   connection does not use DHCP, or is not in the
+ *   %NM_ACTIVE_CONNECTION_STATE_ACTIVATED state.
+ *
+ * Since: 0.9.10
+ **/
+NMDHCP4Config *
+nm_active_connection_get_dhcp4_config (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->dhcp4_config;
+}
+
+/**
  * nm_active_connection_get_default6:
  * @connection: a #NMActiveConnection
  *
@@ -326,6 +414,68 @@ nm_active_connection_get_default6 (NMActiveConnection *connection)
 
 	_nm_object_ensure_inited (NM_OBJECT (connection));
 	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->is_default6;
+}
+
+/**
+ * nm_active_connection_get_ip6_config:
+ * @connection: an #NMActiveConnection
+ *
+ * Gets the current #NMIP6Config associated with the #NMActiveConnection.
+ *
+ * Returns: (transfer none): the #NMIP6Config, or %NULL if the
+ *   connection is not in the %NM_ACTIVE_CONNECTION_STATE_ACTIVATED
+ *   state.
+ *
+ * Since: 0.9.10
+ **/
+NMIP6Config *
+nm_active_connection_get_ip6_config (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->ip6_config;
+}
+
+/**
+ * nm_active_connection_get_dhcp6_config:
+ * @connection: an #NMActiveConnection
+ *
+ * Gets the current #NMDHCP6Config (if any) associated with the
+ * #NMActiveConnection.
+ *
+ * Returns: (transfer none): the #NMDHCP6Config, or %NULL if the
+ *   connection does not use DHCPv6, or is not in the
+ *   %NM_ACTIVE_CONNECTION_STATE_ACTIVATED state.
+ *
+ * Since: 0.9.10
+ **/
+NMDHCP6Config *
+nm_active_connection_get_dhcp6_config (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->dhcp6_config;
+}
+
+/**
+ * nm_active_connection_get_vpn:
+ * @connection: a #NMActiveConnection
+ *
+ * Whether the active connection is a VPN connection.
+ *
+ * Returns: %TRUE if the active connection is a VPN connection
+ *
+ * Since: 0.9.10
+ **/
+gboolean
+nm_active_connection_get_vpn (NMActiveConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_ACTIVE_CONNECTION (connection), FALSE);
+
+	_nm_object_ensure_inited (NM_OBJECT (connection));
+	return NM_ACTIVE_CONNECTION_GET_PRIVATE (connection)->is_vpn;
 }
 
 /**
@@ -357,10 +507,15 @@ dispose (GObject *object)
 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
 
 	if (priv->devices) {
-		g_ptr_array_foreach (priv->devices, (GFunc) g_object_unref, NULL);
+		g_ptr_array_set_free_func (priv->devices, g_object_unref);
 		g_ptr_array_free (priv->devices, TRUE);
 		priv->devices = NULL;
 	}
+
+	g_clear_object (&priv->ip4_config);
+	g_clear_object (&priv->dhcp4_config);
+	g_clear_object (&priv->ip6_config);
+	g_clear_object (&priv->dhcp6_config);
 
 	g_clear_object (&priv->proxy);
 
@@ -373,7 +528,9 @@ finalize (GObject *object)
 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
 
 	g_free (priv->connection);
+	g_free (priv->id);
 	g_free (priv->uuid);
+	g_free (priv->type);
 	g_free (priv->specific_object);
 	g_free (priv->master);
 
@@ -394,8 +551,14 @@ get_property (GObject *object,
 	case PROP_CONNECTION:
 		g_value_set_string (value, nm_active_connection_get_connection (self));
 		break;
+	case PROP_ID:
+		g_value_set_string (value, nm_active_connection_get_id (self));
+		break;
 	case PROP_UUID:
 		g_value_set_string (value, nm_active_connection_get_uuid (self));
+		break;
+	case PROP_TYPE:
+		g_value_set_string (value, nm_active_connection_get_connection_type (self));
 		break;
 	case PROP_SPECIFIC_OBJECT:
 		g_value_set_boxed (value, nm_active_connection_get_specific_object (self));
@@ -409,8 +572,23 @@ get_property (GObject *object,
 	case PROP_DEFAULT:
 		g_value_set_boolean (value, nm_active_connection_get_default (self));
 		break;
+	case PROP_IP4_CONFIG:
+		g_value_set_object (value, nm_active_connection_get_ip4_config (self));
+		break;
+	case PROP_DHCP4_CONFIG:
+		g_value_set_object (value, nm_active_connection_get_dhcp4_config (self));
+		break;
 	case PROP_DEFAULT6:
 		g_value_set_boolean (value, nm_active_connection_get_default6 (self));
+		break;
+	case PROP_IP6_CONFIG:
+		g_value_set_object (value, nm_active_connection_get_ip6_config (self));
+		break;
+	case PROP_DHCP6_CONFIG:
+		g_value_set_object (value, nm_active_connection_get_dhcp6_config (self));
+		break;
+	case PROP_VPN:
+		g_value_set_boolean (value, nm_active_connection_get_vpn (self));
 		break;
 	case PROP_MASTER:
 		g_value_set_string (value, nm_active_connection_get_master (self));
@@ -427,16 +605,20 @@ register_properties (NMActiveConnection *connection)
 	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (connection);
 	const NMPropertiesInfo property_info[] = {
 		{ NM_ACTIVE_CONNECTION_CONNECTION,          &priv->connection },
+		{ NM_ACTIVE_CONNECTION_ID,                  &priv->id },
 		{ NM_ACTIVE_CONNECTION_UUID,                &priv->uuid },
+		{ NM_ACTIVE_CONNECTION_TYPE,                &priv->type },
 		{ NM_ACTIVE_CONNECTION_SPECIFIC_OBJECT,     &priv->specific_object },
 		{ NM_ACTIVE_CONNECTION_DEVICES,             &priv->devices, NULL, NM_TYPE_DEVICE },
 		{ NM_ACTIVE_CONNECTION_STATE,               &priv->state },
 		{ NM_ACTIVE_CONNECTION_DEFAULT,             &priv->is_default },
+		{ NM_ACTIVE_CONNECTION_IP4_CONFIG,          &priv->ip4_config, NULL, NM_TYPE_IP4_CONFIG },
+		{ NM_ACTIVE_CONNECTION_DHCP4_CONFIG,        &priv->dhcp4_config, NULL, NM_TYPE_DHCP4_CONFIG },
 		{ NM_ACTIVE_CONNECTION_DEFAULT6,            &priv->is_default6 },
+		{ NM_ACTIVE_CONNECTION_IP6_CONFIG,          &priv->ip6_config, NULL, NM_TYPE_IP6_CONFIG },
+		{ NM_ACTIVE_CONNECTION_DHCP6_CONFIG,        &priv->dhcp6_config, NULL, NM_TYPE_DHCP6_CONFIG },
+		{ NM_ACTIVE_CONNECTION_VPN,                 &priv->is_vpn },
 		{ NM_ACTIVE_CONNECTION_MASTER,              &priv->master },
-
-		/* not tracked after construction time */
-		{ "vpn", NULL },
 
 		{ NULL },
 	};
@@ -449,17 +631,11 @@ register_properties (NMActiveConnection *connection)
 static void
 constructed (GObject *object)
 {
-	NMActiveConnectionPrivate *priv;
+	NMActiveConnectionPrivate *priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_active_connection_parent_class)->constructed (object);
 
-	priv = NM_ACTIVE_CONNECTION_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-									    NM_DBUS_SERVICE,
-									    nm_object_get_path (NM_OBJECT (object)),
-									    NM_DBUS_INTERFACE_ACTIVE_CONNECTION);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_ACTIVE_CONNECTION);
 	register_properties (NM_ACTIVE_CONNECTION (object));
 }
 
@@ -493,6 +669,21 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 						      G_PARAM_READABLE));
 
 	/**
+	 * NMActiveConnection:id:
+	 *
+	 * The active connection's ID
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_ID,
+		 g_param_spec_string (NM_ACTIVE_CONNECTION_ID,
+						      "ID",
+						      "ID",
+						      NULL,
+						      G_PARAM_READABLE));
+
+	/**
 	 * NMActiveConnection:uuid:
 	 *
 	 * The active connection's UUID
@@ -502,6 +693,21 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 		 g_param_spec_string (NM_ACTIVE_CONNECTION_UUID,
 						      "UUID",
 						      "UUID",
+						      NULL,
+						      G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:type:
+	 *
+	 * The active connection's type
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_TYPE,
+		 g_param_spec_string (NM_ACTIVE_CONNECTION_TYPE,
+						      "Type",
+						      "Type",
 						      NULL,
 						      G_PARAM_READABLE));
 
@@ -560,6 +766,36 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 							   G_PARAM_READABLE));
 
 	/**
+	 * NMActiveConnection:ip4-config:
+	 *
+	 * The #NMIP4Config of the connection.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_IP4_CONFIG,
+		 g_param_spec_object (NM_ACTIVE_CONNECTION_IP4_CONFIG,
+		                      "IP4 Config",
+		                      "IP4 Config",
+		                      NM_TYPE_IP4_CONFIG,
+		                      G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:dhcp4-config:
+	 *
+	 * The #NMDHCP4Config of the connection.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_DHCP4_CONFIG,
+		 g_param_spec_object (NM_ACTIVE_CONNECTION_DHCP4_CONFIG,
+		                      "DHCP4 Config",
+		                      "DHCP4 Config",
+		                      NM_TYPE_DHCP4_CONFIG,
+		                      G_PARAM_READABLE));
+
+	/**
 	 * NMActiveConnection:default6:
 	 *
 	 * Whether the active connection is the default IPv6 one.
@@ -571,6 +807,51 @@ nm_active_connection_class_init (NMActiveConnectionClass *ap_class)
 							   "Is the default IPv6 active connection",
 							   FALSE,
 							   G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:ip6-config:
+	 *
+	 * The #NMIP6Config of the connection.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_IP6_CONFIG,
+		 g_param_spec_object (NM_ACTIVE_CONNECTION_IP6_CONFIG,
+		                      "IP6 Config",
+		                      "IP6 Config",
+		                      NM_TYPE_IP6_CONFIG,
+		                      G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:dhcp6-config:
+	 *
+	 * The #NMDHCP6Config of the connection.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_DHCP6_CONFIG,
+		 g_param_spec_object (NM_ACTIVE_CONNECTION_DHCP6_CONFIG,
+		                      "DHCP6 Config",
+		                      "DHCP6 Config",
+		                      NM_TYPE_DHCP6_CONFIG,
+		                      G_PARAM_READABLE));
+
+	/**
+	 * NMActiveConnection:vpn:
+	 *
+	 * Whether the active connection is a VPN connection.
+	 *
+	 * Since: 0.9.10
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_VPN,
+		 g_param_spec_boolean (NM_ACTIVE_CONNECTION_VPN,
+		                       "VPN",
+		                       "Is a VPN connection",
+		                       FALSE,
+		                       G_PARAM_READABLE));
 
 	/**
 	 * NMActiveConnection:master:

@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2014 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -90,7 +90,25 @@ const char *      nm_setting_wired_get_duplex           (NMSettingWired *setting
 gboolean          nm_setting_wired_get_auto_negotiate   (NMSettingWired *setting);
 const GByteArray *nm_setting_wired_get_mac_address      (NMSettingWired *setting);
 const GByteArray *nm_setting_wired_get_cloned_mac_address (NMSettingWired *setting);
-const GSList     *nm_setting_wired_get_mac_address_blacklist (NMSettingWired *setting);
+
+const GSList     *nm_setting_wired_get_mac_address_blacklist   (NMSettingWired *setting);
+NM_AVAILABLE_IN_0_9_10
+guint32           nm_setting_wired_get_num_mac_blacklist_items (NMSettingWired *setting);
+NM_AVAILABLE_IN_0_9_10
+const char *      nm_setting_wired_get_mac_blacklist_item      (NMSettingWired *setting,
+                                                                guint32 idx);
+NM_AVAILABLE_IN_0_9_10
+gboolean          nm_setting_wired_add_mac_blacklist_item      (NMSettingWired *setting,
+                                                                const char *mac);
+NM_AVAILABLE_IN_0_9_10
+void              nm_setting_wired_remove_mac_blacklist_item   (NMSettingWired *setting,
+                                                                guint32 idx);
+NM_AVAILABLE_IN_0_9_10
+gboolean          nm_setting_wired_remove_mac_blacklist_item_by_value (NMSettingWired *setting,
+                                                                       const char *mac);
+NM_AVAILABLE_IN_0_9_10
+void              nm_setting_wired_clear_mac_blacklist_items   (NMSettingWired *setting);
+
 guint32           nm_setting_wired_get_mtu              (NMSettingWired *setting);
 
 const GPtrArray * nm_setting_wired_get_s390_subchannels (NMSettingWired *setting);
@@ -105,9 +123,11 @@ const char *      nm_setting_wired_get_s390_option_by_key (NMSettingWired *setti
                                                            const char *key);
 gboolean          nm_setting_wired_add_s390_option      (NMSettingWired *setting,
                                                          const char *key,
-                                                         const char *item);
+                                                         const char *value);
 gboolean          nm_setting_wired_remove_s390_option   (NMSettingWired *setting,
                                                          const char *key);
+NM_AVAILABLE_IN_0_9_10
+const char **     nm_setting_wired_get_valid_s390_options (NMSettingWired *setting);
 
 G_END_DECLS
 

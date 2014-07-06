@@ -297,6 +297,183 @@ NMSetting8021x
 
 
 
+<!-- ##### STRUCT NMSetting8021x ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSetting8021x:altsubject-matches ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:anonymous-identity ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:ca-cert ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:ca-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:client-cert ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:eap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:identity ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:pac-file ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:password-raw ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:password-raw-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase1-fast-provisioning ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase1-peaplabel ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase1-peapver ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-altsubject-matches ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-auth ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-autheap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-ca-cert ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-ca-path ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-client-cert ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-private-key ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-private-key-password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-private-key-password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:phase2-subject-match ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:pin ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:pin-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:private-key ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:private-key-password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:private-key-password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:subject-match ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSetting8021x:system-ca-certs ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSetting8021xClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_802_1x_new ##### -->
 <para>
 
@@ -342,6 +519,16 @@ NMSetting8021x
 
 @setting: 
 @i: 
+
+
+<!-- ##### FUNCTION nm_setting_802_1x_remove_eap_method_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@eap: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_setting_802_1x_clear_eap_methods ##### -->
@@ -491,6 +678,16 @@ NMSetting8021x
 
 @setting: 
 @i: 
+
+
+<!-- ##### FUNCTION nm_setting_802_1x_remove_altsubject_match_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@altsubject_match: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_setting_802_1x_clear_altsubject_matches ##### -->
@@ -671,6 +868,16 @@ NMSetting8021x
 
 @setting: 
 @i: 
+
+
+<!-- ##### FUNCTION nm_setting_802_1x_remove_phase2_altsubject_match_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@phase2_altsubject_match: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_setting_802_1x_clear_phase2_altsubject_matches ##### -->

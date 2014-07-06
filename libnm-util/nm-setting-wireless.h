@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2014 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
@@ -75,8 +75,10 @@ GQuark nm_setting_wireless_error_quark (void);
 #define NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST "mac-address-blacklist"
 #define NM_SETTING_WIRELESS_MTU         "mtu"
 #define NM_SETTING_WIRELESS_SEEN_BSSIDS "seen-bssids"
-#define NM_SETTING_WIRELESS_SEC         "security"
 #define NM_SETTING_WIRELESS_HIDDEN      "hidden"
+
+/* Deprecated */
+#define NM_SETTING_WIRELESS_SEC         "security"
 
 /**
  * NM_SETTING_WIRELESS_MODE_ADHOC:
@@ -130,9 +132,26 @@ guint32           nm_setting_wireless_get_rate               (NMSettingWireless 
 guint32           nm_setting_wireless_get_tx_power           (NMSettingWireless *setting);
 const GByteArray *nm_setting_wireless_get_mac_address        (NMSettingWireless *setting);
 const GByteArray *nm_setting_wireless_get_cloned_mac_address (NMSettingWireless *setting);
-const GSList     *nm_setting_wireless_get_mac_address_blacklist (NMSettingWireless *setting);
+
+const GSList     *nm_setting_wireless_get_mac_address_blacklist   (NMSettingWireless *setting);
+NM_AVAILABLE_IN_0_9_10
+guint32           nm_setting_wireless_get_num_mac_blacklist_items (NMSettingWireless *setting);
+NM_AVAILABLE_IN_0_9_10
+const char *      nm_setting_wireless_get_mac_blacklist_item      (NMSettingWireless *setting,
+                                                                   guint32 idx);
+NM_AVAILABLE_IN_0_9_10
+gboolean          nm_setting_wireless_add_mac_blacklist_item      (NMSettingWireless *setting,
+                                                                   const char *mac);
+NM_AVAILABLE_IN_0_9_10
+void              nm_setting_wireless_remove_mac_blacklist_item   (NMSettingWireless *setting,
+                                                                   guint32 idx);
+NM_AVAILABLE_IN_0_9_10
+gboolean          nm_setting_wireless_remove_mac_blacklist_item_by_value (NMSettingWireless *setting,
+                                                                          const char *mac);
+NM_AVAILABLE_IN_0_9_10
+void              nm_setting_wireless_clear_mac_blacklist_items   (NMSettingWireless *setting);
+
 guint32           nm_setting_wireless_get_mtu                (NMSettingWireless *setting);
-const char       *nm_setting_wireless_get_security           (NMSettingWireless *setting);
 gboolean          nm_setting_wireless_get_hidden             (NMSettingWireless *setting);
 
 gboolean          nm_setting_wireless_add_seen_bssid         (NMSettingWireless *setting,
@@ -148,6 +167,10 @@ gboolean          nm_setting_wireless_ap_security_compatible (NMSettingWireless 
                                                               NM80211ApSecurityFlags ap_wpa,
                                                               NM80211ApSecurityFlags ap_rsn,
                                                               NM80211Mode ap_mode);
+
+/* Deprecated */
+NM_DEPRECATED_IN_0_9_10
+const char *nm_setting_wireless_get_security (NMSettingWireless *setting);
 
 G_END_DECLS
 

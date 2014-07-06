@@ -24,6 +24,8 @@
 #include <nm-connection.h>
 #include "net_parser.h"
 
+gboolean ifnet_can_write_connection (NMConnection *connection, GError **error);
+
 NMConnection *ifnet_update_connection_from_config_block (const char *conn_name,
                                                          const char *basepath,
                                                          GError **error);
@@ -42,9 +44,10 @@ gboolean ifnet_delete_connection_in_parsers (const char *conn_name,
                                              const char *wpa_file,
                                              gchar **out_backup);
 
-char * ifnet_add_new_connection (NMConnection *connection,
-                                 const char *config_file,
-                                 const char *wpa_file,
-                                 gchar **out_backup,
-                                 GError ** error);
+gboolean ifnet_add_new_connection (NMConnection *connection,
+                                   const char *config_file,
+                                   const char *wpa_file,
+                                   gchar **out_new_name,
+                                   gchar **out_backup,
+                                   GError ** error);
 #endif

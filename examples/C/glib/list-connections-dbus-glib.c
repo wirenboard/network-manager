@@ -40,13 +40,19 @@ list_connections (DBusGProxy *proxy)
 	int i;
 	GError *error = NULL;
 	GPtrArray *con_array;
+	gboolean success;
 
 	/* Call ListConnections D-Bus method */
-	dbus_g_proxy_call (proxy, "ListConnections", &error,
-	                   /* No input arguments */
-	                   G_TYPE_INVALID,
-	                   DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH, &con_array, /* Return values */
-	                   G_TYPE_INVALID);
+	success = dbus_g_proxy_call (proxy, "ListConnections", &error,
+	                             /* No input arguments */
+	                             G_TYPE_INVALID,
+	                             DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH, &con_array, /* Return values */
+	                             G_TYPE_INVALID);
+	if (!success) {
+		printf ("ListConnections failed: %s", error->message);
+		g_error_free (error);
+		return;
+	}
 
 	for (i = 0; con_array && i < con_array->len; i++) {
 		char *connection_path = g_ptr_array_index (con_array, i);
@@ -61,8 +67,10 @@ int main (int argc, char *argv[])
 	DBusGConnection *bus;
 	DBusGProxy *proxy;
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	/* Initialize GType system */
 	g_type_init ();
+#endif
 
 	/* Get system bus */
 	bus = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);

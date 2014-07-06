@@ -24,6 +24,7 @@
 
 #include "nm-dhcp-dhclient-utils.h"
 #include "nm-utils.h"
+#include "nm-ip4-config.h"
 
 #define DEBUG 0
 
@@ -33,18 +34,13 @@ test_config (const char *orig,
              const char *hostname,
              const char *dhcp_client_id,
              const char *iface,
-             guint8 *anycast_addr)
+             GByteArray *anycast_addr)
 {
-	NMSettingIP4Config *s_ip4;
 	char *new;
-
-	s_ip4 = (NMSettingIP4Config *) nm_setting_ip4_config_new ();
-	g_object_set (s_ip4, NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID, dhcp_client_id, NULL);
 
 	new = nm_dhcp_dhclient_create_config (iface,
 	                                      FALSE,
-	                                      s_ip4,
-	                                      NULL,
+	                                      dhcp_client_id,
 	                                      anycast_addr,
 	                                      hostname,
 	                                      "/path/to/dhclient.conf",
@@ -121,6 +117,62 @@ test_override_client_id (void)
 	test_config (override_client_id_orig, override_client_id_expected,
 	             NULL,
 	             "11:22:33:44:55:66",
+	             "eth0",
+	             NULL);
+}
+
+/*******************************************/
+
+static const char *quote_client_id_expected = \
+	"# Created by NetworkManager\n"
+	"\n"
+	"send dhcp-client-identifier \"1234\"; # added by NetworkManager\n"
+	"\n"
+	"option rfc3442-classless-static-routes code 121 = array of unsigned integer 8;\n"
+	"option ms-classless-static-routes code 249 = array of unsigned integer 8;\n"
+	"option wpad code 252 = string;\n"
+	"\n"
+	"also request rfc3442-classless-static-routes;\n"
+	"also request ms-classless-static-routes;\n"
+	"also request static-routes;\n"
+	"also request wpad;\n"
+	"also request ntp-servers;\n"
+	"\n";
+
+static void
+test_quote_client_id (void)
+{
+	test_config (NULL, quote_client_id_expected,
+	             NULL,
+	             "1234",
+	             "eth0",
+	             NULL);
+}
+
+/*******************************************/
+
+static const char *ascii_client_id_expected = \
+	"# Created by NetworkManager\n"
+	"\n"
+	"send dhcp-client-identifier \"qb:cd:ef:12:34:56\"; # added by NetworkManager\n"
+	"\n"
+	"option rfc3442-classless-static-routes code 121 = array of unsigned integer 8;\n"
+	"option ms-classless-static-routes code 249 = array of unsigned integer 8;\n"
+	"option wpad code 252 = string;\n"
+	"\n"
+	"also request rfc3442-classless-static-routes;\n"
+	"also request ms-classless-static-routes;\n"
+	"also request static-routes;\n"
+	"also request wpad;\n"
+	"also request ntp-servers;\n"
+	"\n";
+
+static void
+test_ascii_client_id (void)
+{
+	test_config (NULL, ascii_client_id_expected,
+	             NULL,
+	             "qb:cd:ef:12:34:56",
 	             "eth0",
 	             NULL);
 }
@@ -398,37 +450,164 @@ test_write_existing_commented_duid (void)
 
 /*******************************************/
 
-#if GLIB_CHECK_VERSION(2,25,12)
-typedef GTestFixtureFunc TCFunc;
-#else
-typedef void (*TCFunc)(void);
-#endif
-
-#define TESTCASE(t, d) g_test_create_case (#t, 0, d, NULL, (TCFunc) t, NULL)
-
-int main (int argc, char **argv)
+static void
+test_read_lease_ip4_config_basic (void)
 {
-	GTestSuite *suite;
+	GError *error = NULL;
+	char *contents = NULL;
+	gboolean success;
+	const char *path = TESTDIR "/leases/basic.leases";
+	GSList *leases;
+	GDateTime *now;
+	NMIP4Config *config;
+	const NMPlatformIP4Address *addr;
+	guint32 expected_addr;
 
+	success = g_file_get_contents (path, &contents, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Date from before the least expiration */
+	now = g_date_time_new_utc (2013, 11, 1, 19, 55, 32);
+	leases = nm_dhcp_dhclient_read_lease_ip_configs ("wlan0", contents, FALSE, now);
+	g_assert_cmpint (g_slist_length (leases), ==, 2);
+
+	/* IP4Config #1 */
+	config = g_slist_nth_data (leases, 0);
+	g_assert (NM_IS_IP4_CONFIG (config));
+
+	/* Address */
+	g_assert_cmpint (nm_ip4_config_get_num_addresses (config), ==, 1);
+	g_assert (inet_aton ("192.168.1.180", (struct in_addr *) &expected_addr));
+	addr = nm_ip4_config_get_address (config, 0);
+	g_assert_cmpint (addr->address, ==, expected_addr);
+	g_assert_cmpint (addr->plen, ==, 24);
+
+	/* Gateway */
+	g_assert (inet_aton ("192.168.1.1", (struct in_addr *) &expected_addr));
+	g_assert_cmpint (nm_ip4_config_get_gateway (config), ==, expected_addr);
+
+	/* DNS */
+	g_assert_cmpint (nm_ip4_config_get_num_nameservers (config), ==, 1);
+	g_assert (inet_aton ("192.168.1.1", (struct in_addr *) &expected_addr));
+	g_assert_cmpint (nm_ip4_config_get_nameserver (config, 0), ==, expected_addr);
+
+	g_assert_cmpint (nm_ip4_config_get_num_domains (config), ==, 0);
+
+	/* IP4Config #2 */
+	config = g_slist_nth_data (leases, 1);
+	g_assert (NM_IS_IP4_CONFIG (config));
+
+	/* Address */
+	g_assert_cmpint (nm_ip4_config_get_num_addresses (config), ==, 1);
+	g_assert (inet_aton ("10.77.52.141", (struct in_addr *) &expected_addr));
+	addr = nm_ip4_config_get_address (config, 0);
+	g_assert_cmpint (addr->address, ==, expected_addr);
+	g_assert_cmpint (addr->plen, ==, 8);
+
+	/* Gateway */
+	g_assert (inet_aton ("10.77.52.254", (struct in_addr *) &expected_addr));
+	g_assert_cmpint (nm_ip4_config_get_gateway (config), ==, expected_addr);
+
+	/* DNS */
+	g_assert_cmpint (nm_ip4_config_get_num_nameservers (config), ==, 2);
+	g_assert (inet_aton ("8.8.8.8", (struct in_addr *) &expected_addr));
+	g_assert_cmpint (nm_ip4_config_get_nameserver (config, 0), ==, expected_addr);
+	g_assert (inet_aton ("8.8.4.4", (struct in_addr *) &expected_addr));
+	g_assert_cmpint (nm_ip4_config_get_nameserver (config, 1), ==, expected_addr);
+
+	/* Domains */
+	g_assert_cmpint (nm_ip4_config_get_num_domains (config), ==, 1);
+	g_assert_cmpstr (nm_ip4_config_get_domain (config, 0), ==, "morriesguest.local");
+
+	g_slist_free_full (leases, g_object_unref);
+	g_date_time_unref (now);
+	g_free (contents);
+}
+
+static void
+test_read_lease_ip4_config_expired (void)
+{
+	GError *error = NULL;
+	char *contents = NULL;
+	gboolean success;
+	const char *path = TESTDIR "/leases/basic.leases";
+	GSList *leases;
+	GDateTime *now;
+
+	success = g_file_get_contents (path, &contents, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Date from *after* the lease expiration */
+	now = g_date_time_new_utc (2013, 12, 1, 19, 55, 32);
+	leases = nm_dhcp_dhclient_read_lease_ip_configs ("wlan0", contents, FALSE, now);
+	g_assert (leases == NULL);
+
+	g_date_time_unref (now);
+	g_free (contents);
+}
+
+static void
+test_read_lease_ip4_config_expect_failure (gconstpointer user_data)
+{
+	GError *error = NULL;
+	char *contents = NULL;
+	gboolean success;
+	GSList *leases;
+	GDateTime *now;
+
+	success = g_file_get_contents ((const char *) user_data, &contents, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Date from before the least expiration */
+	now = g_date_time_new_utc (2013, 11, 1, 1, 1, 1);
+	leases = nm_dhcp_dhclient_read_lease_ip_configs ("wlan0", contents, FALSE, now);
+	g_assert (leases == NULL);
+
+	g_date_time_unref (now);
+	g_free (contents);
+}
+
+/*******************************************/
+
+int
+main (int argc, char **argv)
+{
 	g_test_init (&argc, &argv, NULL);
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
-	suite = g_test_get_root ();
+	g_test_add_func ("/dhcp/dhclient/orig_missing", test_orig_missing);
+	g_test_add_func ("/dhcp/dhclient/override_client_id", test_override_client_id);
+	g_test_add_func ("/dhcp/dhclient/quote_client_id", test_quote_client_id);
+	g_test_add_func ("/dhcp/dhclient/ascii_client_id", test_ascii_client_id);
+	g_test_add_func ("/dhcp/dhclient/override_hostname", test_override_hostname);
+	g_test_add_func ("/dhcp/dhclient/existing_alsoreq", test_existing_alsoreq);
+	g_test_add_func ("/dhcp/dhclient/existing_multiline_alsoreq", test_existing_multiline_alsoreq);
+	g_test_add_func ("/dhcp/dhclient/duids", test_duids);
 
-	g_test_suite_add (suite, TESTCASE (test_orig_missing, NULL));
-	g_test_suite_add (suite, TESTCASE (test_override_client_id, NULL));
-	g_test_suite_add (suite, TESTCASE (test_override_hostname, NULL));
-	g_test_suite_add (suite, TESTCASE (test_existing_alsoreq, NULL));
-	g_test_suite_add (suite, TESTCASE (test_existing_multiline_alsoreq, NULL));
-	g_test_suite_add (suite, TESTCASE (test_duids, NULL));
+	g_test_add_func ("/dhcp/dhclient/read_duid_from_leasefile", test_read_duid_from_leasefile);
+	g_test_add_func ("/dhcp/dhclient/read_commented_duid_from_leasefile", test_read_commented_duid_from_leasefile);
 
-	g_test_suite_add (suite, TESTCASE (test_read_duid_from_leasefile, NULL));
-	g_test_suite_add (suite, TESTCASE (test_read_commented_duid_from_leasefile, NULL));
+	g_test_add_func ("/dhcp/dhclient/write_duid", test_write_duid);
+	g_test_add_func ("/dhcp/dhclient/write_existing_duid", test_write_existing_duid);
+	g_test_add_func ("/dhcp/dhclient/write_existing_commented_duid", test_write_existing_commented_duid);
 
-	g_test_suite_add (suite, TESTCASE (test_write_duid, NULL));
-	g_test_suite_add (suite, TESTCASE (test_write_existing_duid, NULL));
-	g_test_suite_add (suite, TESTCASE (test_write_existing_commented_duid, NULL));
+	g_test_add_func ("/dhcp/dhclient/leases/ip4-config/basic", test_read_lease_ip4_config_basic);
+	g_test_add_func ("/dhcp/dhclient/leases/ip4-config/expired", test_read_lease_ip4_config_expired);
+	g_test_add_data_func ("/dhcp/dhclient/leases/ip4-config/missing-address",
+	                      TESTDIR "/leases/malformed1.leases",
+	                      test_read_lease_ip4_config_expect_failure);
+	g_test_add_data_func ("/dhcp/dhclient/leases/ip4-config/missing-gateway",
+	                      TESTDIR "/leases/malformed2.leases",
+	                      test_read_lease_ip4_config_expect_failure);
+	g_test_add_data_func ("/dhcp/dhclient/leases/ip4-config/missing-expire",
+	                      TESTDIR "/leases/malformed3.leases",
+	                      test_read_lease_ip4_config_expect_failure);
 
 	return g_test_run ();
 }

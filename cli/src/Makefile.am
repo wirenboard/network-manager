@@ -1,7 +1,7 @@
 bin_PROGRAMS = \
 	nmcli
 
-nmcli_CPPFLAGS = \
+AM_CPPFLAGS = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/include \
 	-I${top_builddir}/include \
@@ -10,6 +10,8 @@ nmcli_CPPFLAGS = \
 	-I${top_srcdir}/libnm-glib \
 	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	-DG_LOG_DOMAIN=\""nmcli"\" \
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	-DNMCLI_LOCALEDIR=\"$(datadir)/locale\"
 
 nmcli_SOURCES = \
@@ -31,6 +33,7 @@ nmcli_SOURCES = \
 nmcli_LDADD = \
 	$(DBUS_LIBS) \
 	$(GLIB_LIBS) \
+	$(READLINE_LIBS) \
 	$(top_builddir)/libnm-util/libnm-util.la \
 	$(top_builddir)/libnm-glib/libnm-glib.la
 

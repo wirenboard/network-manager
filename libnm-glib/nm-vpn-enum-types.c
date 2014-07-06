@@ -26,6 +26,7 @@ nm_vpn_plugin_error_get_type (void)
         { NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS, "NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS", "BadArguments" },
         { NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED, "NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED", "LaunchFailed" },
         { NM_VPN_PLUGIN_ERROR_CONNECTION_INVALID, "NM_VPN_PLUGIN_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
+        { NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED, "NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED", "InteractiveNotSupported" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

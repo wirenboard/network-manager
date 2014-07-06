@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2010 - 2011 Red Hat, Inc.
+ * Copyright (C) 2010 - 2013 Red Hat, Inc.
  */
 
 #include <config.h>
@@ -47,7 +47,6 @@ typedef struct {
 	gboolean disposed;
 
 	NMDBusManager *dbus_mgr;
-	NMSessionMonitor *session_monitor;
 
 	/* Auth chains for checking agent permissions */
 	GSList *chains;
@@ -70,15 +69,20 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 typedef struct _Request Request;
 
-static void request_add_agent (Request *req,
-                               NMSecretAgent *agent,
-                               NMSessionMonitor *session_monitor);
+static void request_add_agent (Request *req, NMSecretAgent *agent);
 
-static void request_remove_agent (gpointer key, gpointer value, gpointer user_data);
+static void request_remove_agent (Request *req, NMSecretAgent *agent, GSList **pending_reqs);
+
+static void request_next_agent (Request *req);
 
 static void impl_agent_manager_register (NMAgentManager *self,
                                          const char *identifier,
                                          DBusGMethodInvocation *context);
+
+static void impl_agent_manager_register_with_capabilities (NMAgentManager *self,
+                                                           const char *identifier,
+                                                           NMSecretAgentCapabilities capabilities,
+                                                           DBusGMethodInvocation *context);
 
 static void impl_agent_manager_unregister (NMAgentManager *self,
                                            DBusGMethodInvocation *context);
@@ -101,60 +105,14 @@ nm_agent_manager_error_quark (void)
 
 /*************************************************************/
 
-/*----------------------------------------------------------------------------*/
-/* GHashTable safe iterating function: x_g_hash_table_safe_for_each()
- * GHashTable can't be modified while iterating, the common solution for that is
- * to flatten the hash table first and iterate over list.
- * Taken from https://github.com/linuxmint/nemo/blob/master/eel/eel-glib-extensions.c
- */
-typedef struct {
-	GList *keys;
-	GList *values;
-} FlattenedHashTable;
-
-static void
-flatten_hash_table_element (gpointer key, gpointer value, gpointer callback_data)
-{
-	FlattenedHashTable *flattened_table;
-
-	flattened_table = callback_data;
-	flattened_table->keys = g_list_prepend
-	        (flattened_table->keys, key);
-	flattened_table->values = g_list_prepend
-	        (flattened_table->values, value);
-}
-
-static void
-x_g_hash_table_safe_for_each (GHashTable *hash_table,
-                              GHFunc callback,
-                              gpointer callback_data)
-{
-	FlattenedHashTable flattened;
-	GList *p, *q;
-
-	flattened.keys = NULL;
-	flattened.values = NULL;
-
-	g_hash_table_foreach (hash_table,
-	                      flatten_hash_table_element,
-	                      &flattened);
-
-	for (p = flattened.keys, q = flattened.values;
-	     p != NULL;
-	     p = p->next, q = q->next) {
-	        (* callback) (p->data, q->data, callback_data);
-	}
-
-	g_list_free (flattened.keys);
-	g_list_free (flattened.values);
-}
-/*----------------------------------------------------------------------------*/
-
 static gboolean
 remove_agent (NMAgentManager *self, const char *owner)
 {
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
 	NMSecretAgent *agent;
+	GHashTableIter iter;
+	gpointer data;
+	GSList *pending_reqs = NULL;
 
 	g_return_val_if_fail (owner != NULL, FALSE);
 
@@ -163,11 +121,20 @@ remove_agent (NMAgentManager *self, const char *owner)
 	if (!agent)
 		return FALSE;
 
-	nm_log_dbg (LOGD_AGENTS, "(%s) agent unregistered",
+	nm_log_dbg (LOGD_AGENTS, "(%s) agent unregistered or disappeared",
 	            nm_secret_agent_get_description (agent));
 
 	/* Remove this agent from any in-progress secrets requests */
-	x_g_hash_table_safe_for_each (priv->requests, request_remove_agent, agent);
+	g_hash_table_iter_init (&iter, priv->requests);
+	while (g_hash_table_iter_next (&iter, NULL, &data))
+		request_remove_agent ((Request *) data, agent, &pending_reqs);
+
+	/* We cannot call request_next_agent() from from within hash iterating loop,
+	 * because it may remove the request from the hash table, which invalidates
+	 * the iterator. So, only remove the agent from requests. And store the requests
+	 * that should be sent to other agent to a temporary list to proceed afterwards.
+	 */
+	g_slist_free_full (pending_reqs, (GDestroyNotify) request_next_agent);
 
 	/* And dispose of the agent */
 	g_hash_table_remove (priv->agents, owner);
@@ -246,6 +213,8 @@ agent_register_permissions_done (NMAuthChain *chain,
 	GHashTableIter iter;
 	Request *req;
 
+	g_assert (context);
+
 	priv->chains = g_slist_remove (priv->chains, chain);
 
 	if (error) {
@@ -257,6 +226,7 @@ agent_register_permissions_done (NMAuthChain *chain,
 		g_error_free (local);
 	} else {
 		agent = nm_auth_chain_steal_data (chain, "agent");
+		g_assert (agent);
 
 		result = nm_auth_chain_get_result (chain, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED);
 		if (result == NM_AUTH_CALL_RESULT_YES)
@@ -278,37 +248,54 @@ agent_register_permissions_done (NMAuthChain *chain,
 		/* Add this agent to any in-progress secrets requests */
 		g_hash_table_iter_init (&iter, priv->requests);
 		while (g_hash_table_iter_next (&iter, NULL, (gpointer) &req))
-			request_add_agent (req, agent, priv->session_monitor);
+			request_add_agent (req, agent);
 	}
 
 	nm_auth_chain_unref (chain);
 }
 
-static void
-impl_agent_manager_register (NMAgentManager *self,
-                             const char *identifier,
-                             DBusGMethodInvocation *context)
+static NMSecretAgent *
+find_agent_by_identifier_and_uid (NMAgentManager *self,
+                                  const char *identifier,
+                                  gulong sender_uid)
 {
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
-	char *error_desc = NULL, *sender = NULL;
+	GHashTableIter iter;
+	NMSecretAgent *agent;
+
+	g_hash_table_iter_init (&iter, priv->agents);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &agent)) {
+		if (   g_strcmp0 (nm_secret_agent_get_identifier (agent), identifier) == 0
+		    && nm_secret_agent_get_owner_uid (agent) == sender_uid)
+			return agent;
+	}
+	return NULL;
+}
+
+static void
+impl_agent_manager_register_with_capabilities (NMAgentManager *self,
+                                               const char *identifier,
+                                               NMSecretAgentCapabilities capabilities,
+                                               DBusGMethodInvocation *context)
+{
+	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
+	NMAuthSubject *subject;
 	gulong sender_uid = G_MAXULONG;
 	GError *error = NULL, *local = NULL;
 	NMSecretAgent *agent;
 	NMAuthChain *chain;
 
-	if (!nm_auth_get_caller_uid (context, 
-		                         priv->dbus_mgr,
-	                             &sender_uid,
-	                             &error_desc)) {
+	subject = nm_auth_subject_new_from_context (context);
+	if (!subject) {
 		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
 		                             NM_AGENT_MANAGER_ERROR_SENDER_UNKNOWN,
-		                             error_desc);
-		g_free (error_desc);
+		                             "Unable to determine request sender and UID.");
 		goto done;
 	}
+	sender_uid = nm_auth_subject_get_uid (subject);
 
 	if (   0 != sender_uid
-	    && !nm_session_monitor_uid_has_session (priv->session_monitor,
+	    && !nm_session_monitor_uid_has_session (nm_session_monitor_get (),
 	                                            sender_uid,
 	                                            NULL,
 	                                            &local)) {
@@ -318,20 +305,20 @@ impl_agent_manager_register (NMAgentManager *self,
 		goto done;
 	}
 
-	sender = dbus_g_method_get_sender (context);
-	if (!sender) {
-		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
-		                             NM_AGENT_MANAGER_ERROR_SENDER_UNKNOWN,
-		                             "Failed to get D-Bus request sender");
-		goto done;
-	}
-
 	/* Validate the identifier */
 	if (!validate_identifier (identifier, &error))
 		goto done;
 
+	/* Only one agent for each identifier is allowed per user */
+	if (find_agent_by_identifier_and_uid (self, identifier, sender_uid)) {
+		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
+		                             NM_AGENT_MANAGER_ERROR_PERMISSION_DENIED,
+		                             "An agent with this ID is already registered for this user.");
+		goto done;
+	}
+
 	/* Success, add the new agent */
-	agent = nm_secret_agent_new (priv->dbus_mgr, sender, identifier, sender_uid);
+	agent = nm_secret_agent_new (context, subject, identifier, capabilities);
 	if (!agent) {
 		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
 		                             NM_AGENT_MANAGER_ERROR_INTERNAL_ERROR,
@@ -343,33 +330,51 @@ impl_agent_manager_register (NMAgentManager *self,
 	            nm_secret_agent_get_description (agent));
 
 	/* Kick off permissions requests for this agent */
-	chain = nm_auth_chain_new (context, NULL, agent_register_permissions_done, self);
-	nm_auth_chain_set_data (chain, "agent", agent, g_object_unref);
-	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED, FALSE);
-	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN, FALSE);
+	chain = nm_auth_chain_new_subject (subject, context, agent_register_permissions_done, self);
+	if (chain) {
+		nm_auth_chain_set_data (chain, "agent", agent, g_object_unref);
+		nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED, FALSE);
+		nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN, FALSE);
 
-	priv->chains = g_slist_append (priv->chains, chain);
+		priv->chains = g_slist_append (priv->chains, chain);
+	} else {
+		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
+		                             NM_AGENT_MANAGER_ERROR_SENDER_UNKNOWN,
+		                             "Unable to start agent authentication.");
+	}
 
 done:
 	if (error)
 		dbus_g_method_return_error (context, error);
 	g_clear_error (&error);
 	g_clear_error (&local);
-	g_free (sender);
+	g_clear_object (&subject);
+}
+
+static void
+impl_agent_manager_register (NMAgentManager *self,
+                             const char *identifier,
+                             DBusGMethodInvocation *context)
+{
+	impl_agent_manager_register_with_capabilities (self, identifier, 0, context);
 }
 
 static void
 impl_agent_manager_unregister (NMAgentManager *self,
                                DBusGMethodInvocation *context)
 {
+	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
 	GError *error = NULL;
 	char *sender = NULL;
 
-	sender = dbus_g_method_get_sender (context);
-	if (!sender) {
+	if (!nm_dbus_manager_get_caller_info (priv->dbus_mgr,
+	                                      context,
+	                                      &sender,
+	                                      NULL,
+	                                      NULL)) {
 		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
 		                             NM_AGENT_MANAGER_ERROR_SENDER_UNKNOWN,
-		                             "Failed to get D-Bus request sender");
+		                             "Unable to determine request sender.");
 		goto done;
 	}
 
@@ -396,27 +401,23 @@ typedef void (*RequestCompleteFunc) (Request *req,
                                      GHashTable *secrets,
                                      const char *agent_dbus_owner,
                                      const char *agent_username,
-                                     gboolean agent_has_modify,
                                      GError *error,
                                      gpointer user_data);
+typedef gboolean (*RequestAddAgentFunc) (Request *req, NMSecretAgent *agent);
 typedef void (*RequestNextFunc) (Request *req);
 typedef void (*RequestCancelFunc) (Request *req);
 
+/* Basic secrets request structure */
 struct _Request {
 	guint32 reqid;
-	NMAuthChain *chain;
+	char *detail;
+	char *verb;
 
-	NMConnection *connection;
-	gboolean filter_by_uid;
-	gulong uid_filter;
-	char *setting_name;
-	NMSettingsGetSecretsFlags flags;
-	char *hint;
+	NMAuthSubject *subject;
 
 	/* Current agent being asked for secrets */
 	NMSecretAgent *current;
 	gconstpointer current_call_id;
-	gboolean current_has_modify;
 
 	/* Stores the sorted list of NMSecretAgents which will be asked for secrets */
 	GSList *pending;
@@ -429,102 +430,64 @@ struct _Request {
 
 	guint32 idle_id;
 
-	GHashTable *existing_secrets;
-
-	NMAgentSecretsResultFunc callback;
-	gpointer callback_data;
-	gpointer other_data2;
-	gpointer other_data3;
-
+	RequestAddAgentFunc add_agent_callback;
 	RequestCancelFunc cancel_callback;
 	RequestNextFunc next_callback;
 	RequestCompleteFunc complete_callback;
 	gpointer complete_callback_data;
+	gboolean completed;
+
+	GDestroyNotify free_func;
 };
 
 static guint32 next_req_id = 1;
 
 static Request *
-request_new_get (NMConnection *connection,
-                 gboolean filter_by_uid,
-                 gulong uid_filter,
-                 GHashTable *existing_secrets,
-                 const char *setting_name,
-                 NMSettingsGetSecretsFlags flags,
-                 const char *hint,
-                 NMAgentSecretsResultFunc callback,
-                 gpointer callback_data,
-                 gpointer other_data2,
-                 gpointer other_data3,
-                 RequestCompleteFunc complete_callback,
-                 gpointer complete_callback_data,
-                 RequestNextFunc next_callback,
-                 RequestCancelFunc cancel_callback)
+request_new (gsize struct_size,
+             const char *detail,
+             const char *verb,
+             NMAuthSubject *subject,
+             RequestCompleteFunc complete_callback,
+             gpointer complete_callback_data,
+             RequestAddAgentFunc add_agent_callback,
+             RequestNextFunc next_callback,
+             RequestCancelFunc cancel_callback,
+             GDestroyNotify free_func)
 {
 	Request *req;
 
-	req = g_malloc0 (sizeof (Request));
+	req = g_malloc0 (struct_size);
 	req->reqid = next_req_id++;
-	req->connection = g_object_ref (connection);
-	req->filter_by_uid = filter_by_uid;
-	req->uid_filter = uid_filter;
-	if (existing_secrets)
-		req->existing_secrets = g_hash_table_ref (existing_secrets);
-	req->setting_name = g_strdup (setting_name);
-	req->flags = flags;
-	req->hint = g_strdup (hint);
-	req->callback = callback;
-	req->callback_data = callback_data;
-	req->other_data2 = other_data2;
-	req->other_data3 = other_data3;
+	req->detail = g_strdup (detail);
+	req->verb = g_strdup (verb);
+	req->subject = g_object_ref (subject);
 	req->complete_callback = complete_callback;
 	req->complete_callback_data = complete_callback_data;
+	req->add_agent_callback = add_agent_callback,
 	req->next_callback = next_callback;
 	req->cancel_callback = cancel_callback;
-
-	return req;
-}
-
-static Request *
-request_new_other (NMConnection *connection,
-                   gboolean filter_by_uid,
-                   gulong uid_filter,
-                   RequestCompleteFunc complete_callback,
-                   gpointer complete_callback_data,
-                   RequestNextFunc next_callback)
-{
-	Request *req;
-
-	req = g_malloc0 (sizeof (Request));
-	req->reqid = next_req_id++;
-	req->connection = g_object_ref (connection);
-	req->filter_by_uid = filter_by_uid;
-	req->uid_filter = uid_filter;
-	req->complete_callback = complete_callback;
-	req->complete_callback_data = complete_callback_data;
-	req->next_callback = next_callback;
-
+	req->free_func = free_func;
 	return req;
 }
 
 static void
 request_free (Request *req)
 {
+	if (req->free_func)
+		req->free_func ((gpointer) req);
+
 	if (req->idle_id)
 		g_source_remove (req->idle_id);
 
-	if (req->cancel_callback)
+	if (!req->completed && req->cancel_callback)
 		req->cancel_callback (req);
 
+	g_object_unref (req->subject);
+
+	g_free (req->detail);
+	g_free (req->verb);
 	g_slist_free_full (req->pending, g_object_unref);
 	g_slist_free (req->asked);
-	g_object_unref (req->connection);
-	g_free (req->setting_name);
-	g_free (req->hint);
-	if (req->existing_secrets)
-		g_hash_table_unref (req->existing_secrets);
-	if (req->chain)
-		nm_auth_chain_unref (req->chain);
 	memset (req, 0, sizeof (Request));
 	g_free (req);
 }
@@ -533,14 +496,13 @@ static void
 req_complete_success (Request *req,
                       GHashTable *secrets,
                       const char *agent_dbus_owner,
-                      const char *agent_uname,
-                      gboolean agent_has_modify)
+                      const char *agent_uname)
 {
+	req->completed = TRUE;
 	req->complete_callback (req,
 	                        secrets,
 	                        agent_dbus_owner,
 	                        agent_uname,
-	                        agent_has_modify,
 	                        NULL,
 	                        req->complete_callback_data);
 }
@@ -548,27 +510,38 @@ req_complete_success (Request *req,
 static void
 req_complete_error (Request *req, GError *error)
 {
-	req->complete_callback (req, NULL, NULL, NULL, FALSE, error, req->complete_callback_data);
+	req->completed = TRUE;
+	req->complete_callback (req, NULL, NULL, NULL, error, req->complete_callback_data);
 }
 
 static gint
-agent_compare_func (NMSecretAgent *a, NMSecretAgent *b, gpointer user_data)
+agent_compare_func (gconstpointer aa, gconstpointer bb, gpointer user_data)
 {
-	NMSessionMonitor *session_monitor = NM_SESSION_MONITOR (user_data);
+	NMSecretAgent *a = (NMSecretAgent *)aa;
+	NMSecretAgent *b = (NMSecretAgent *)bb;
+	Request *req = user_data;
 	gboolean a_active, b_active;
+	gulong a_pid, b_pid, requester;
 
-	if (a && !b)
-		return -1;
-	else if (a == b)
-		return 0;
-	else if (!a && b)
-		return 1;
+	/* Prefer agents in the process the request came from */
+	requester = nm_auth_subject_get_pid (req->subject);
+	if (requester != G_MAXULONG) {
+		a_pid = nm_secret_agent_get_pid (a);
+		b_pid = nm_secret_agent_get_pid (b);
+
+		if (a_pid != b_pid) {
+			if (a_pid == requester)
+				return -1;
+			else if (b_pid == requester)
+				return 1;
+		}
+	}
 
 	/* Prefer agents in active sessions */
-	a_active = nm_session_monitor_uid_active (session_monitor,
+	a_active = nm_session_monitor_uid_active (nm_session_monitor_get (),
 	                                          nm_secret_agent_get_owner_uid (a),
 	                                          NULL);
-	b_active = nm_session_monitor_uid_active (session_monitor,
+	b_active = nm_session_monitor_uid_active (nm_session_monitor_get (),
 	                                          nm_secret_agent_get_owner_uid (b),
 	                                          NULL);
 	if (a_active && !b_active)
@@ -582,48 +555,42 @@ agent_compare_func (NMSecretAgent *a, NMSecretAgent *b, gpointer user_data)
 }
 
 static void
-request_add_agent (Request *req,
-                   NMSecretAgent *agent,
-                   NMSessionMonitor *session_monitor)
+request_add_agent (Request *req, NMSecretAgent *agent)
 {
-	uid_t agent_uid;
-
 	g_return_if_fail (req != NULL);
 	g_return_if_fail (agent != NULL);
 
 	if (g_slist_find (req->asked, GUINT_TO_POINTER (nm_secret_agent_get_hash (agent))))
 		return;
 
-	/* Ensure the caller's username exists in the connection's permissions,
-	 * or that the permissions is empty (ie, visible by everyone).
-	 */
-	agent_uid = nm_secret_agent_get_owner_uid (agent);
-	if (!nm_auth_uid_in_acl (req->connection, session_monitor, agent_uid, NULL)) {
-		nm_log_dbg (LOGD_AGENTS, "(%s) agent ignored for secrets request %p/%s (not in ACL)",
-		            nm_secret_agent_get_description (agent),
-		            req, req->setting_name);
-		/* Connection not visible to this agent's user */
+	if (req->add_agent_callback && !req->add_agent_callback (req, agent))
 		return;
-	}
 
 	/* If the request should filter agents by UID, do that now */
-	if (req->filter_by_uid && (agent_uid != req->uid_filter)) {
-		nm_log_dbg (LOGD_AGENTS, "(%s) agent ignored for secrets request %p/%s "
-		            "(uid %d not required %ld)",
-				    nm_secret_agent_get_description (agent),
-				    req, req->setting_name, agent_uid, req->uid_filter);
-		return;
+	if (!nm_auth_subject_get_internal (req->subject)) {
+		uid_t agent_uid, subject_uid;
+
+		agent_uid = nm_secret_agent_get_owner_uid (agent);
+		subject_uid = nm_auth_subject_get_uid (req->subject);
+		if (agent_uid != subject_uid) {
+			nm_log_dbg (LOGD_AGENTS, "(%s) agent ignored for secrets request %p/%s "
+			            "(uid %ld not required %ld)",
+			            nm_secret_agent_get_description (agent),
+			            req, req->detail,
+			            (long)agent_uid, (long)subject_uid);
+			return;
+		}
 	}
 
 	nm_log_dbg (LOGD_AGENTS, "(%s) agent allowed for secrets request %p/%s",
-			    nm_secret_agent_get_description (agent),
-			    req, req->setting_name);
+	            nm_secret_agent_get_description (agent),
+	            req, req->detail);
 
-	/* Add this agent to the list, preferring active sessions */
+	/* Add this agent to the list, sorted appropriately */
 	req->pending = g_slist_insert_sorted_with_data (req->pending,
 	                                                g_object_ref (agent),
-	                                                (GCompareDataFunc) agent_compare_func,
-	                                                session_monitor);
+	                                                agent_compare_func,
+	                                                req);
 }
 
 static void
@@ -635,93 +602,196 @@ request_add_agents (NMAgentManager *self, Request *req)
 
 	g_hash_table_iter_init (&iter, priv->agents);
 	while (g_hash_table_iter_next (&iter, NULL, &data))
-		request_add_agent (req, NM_SECRET_AGENT (data), priv->session_monitor);
+		request_add_agent (req, NM_SECRET_AGENT (data));
 }
 
 static void
-request_remove_agent (gpointer key, gpointer value, gpointer user_data)
-{
-	Request *req = (Request *) value;
-	NMSecretAgent *agent = (NMSecretAgent *) user_data;
-	gboolean try_next = FALSE;
-	const char *detail = "";
-	GSList *found;
-
-	g_return_if_fail (req != NULL);
-	g_return_if_fail (agent != NULL);
-
-	/* If this agent is being asked right now, cancel the request */
-	if (agent == req->current) {
-		if (req->cancel_callback)
-			req->cancel_callback (req);
-		req->current_has_modify = FALSE;
-		req->current = NULL;
-		req->current_call_id = NULL;
-		try_next = TRUE;
-		detail = " current";
-	}
-
-	nm_log_dbg (LOGD_AGENTS, "(%s)%s agent removed from secrets request %p/%s",
-				nm_secret_agent_get_description (agent),
-				detail, req, req->setting_name);
-
-	found = g_slist_find (req->pending, agent);
-	if (found) {
-		req->pending = g_slist_remove_link (req->pending, found);
-		g_object_unref (found->data);
-		g_slist_free_1 (found);
-	}
-
-	if (try_next) {
-		/* If the agent serving the in-progress secrets request went away then
-		 * we need to send the request to the next agent.
-		 */
-		req->next_callback (req);
-	}
-}
-
-static gboolean
-next_generic (Request *req, const char *detail)
+request_next_agent (Request *req)
 {
 	GError *error = NULL;
-	gboolean success = FALSE;
 
-	if (req->pending == NULL) {
-		/* No more secret agents are available to fulfill this secrets request */
-		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
-		                             NM_AGENT_MANAGER_ERROR_NO_SECRETS,
-		                             "No agents were available for this request.");
-		req_complete_error (req, error);
-		g_error_free (error);
-	} else {
-		/* Send a secrets request to the next agent */
-		req->current_has_modify = FALSE;
+	if (req->pending) {
+		/* Send the request to the next agent */
+		req->current_call_id = NULL;
 		if (req->current)
 			g_object_unref (req->current);
 		req->current = req->pending->data;
 		req->pending = g_slist_remove (req->pending, req->current);
 
 		nm_log_dbg (LOGD_AGENTS, "(%s) agent %s secrets for request %p/%s",
-					nm_secret_agent_get_description (req->current),
-					detail, req, req->setting_name);
-		success = TRUE;
-	}
+		            nm_secret_agent_get_description (req->current),
+		            req->verb, req, req->detail);
 
-	return success;
+		req->next_callback (req);
+	} else {
+		req->current_call_id = NULL;
+		req->current = NULL;
+
+		/* No more secret agents are available to fulfill this secrets request */
+		error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
+		                             NM_AGENT_MANAGER_ERROR_NO_SECRETS,
+		                             "No agents were available for this request.");
+		req_complete_error (req, error);
+		g_error_free (error);
+	}
+}
+
+static void
+request_remove_agent (Request *req, NMSecretAgent *agent, GSList **pending_reqs)
+{
+	g_return_if_fail (req != NULL);
+	g_return_if_fail (agent != NULL);
+
+	req->pending = g_slist_remove (req->pending, agent);
+
+	if (agent == req->current) {
+		nm_log_dbg (LOGD_AGENTS, "(%s) current agent removed from secrets request %p/%s",
+		            nm_secret_agent_get_description (agent), req, req->detail);
+		*pending_reqs = g_slist_prepend (*pending_reqs, req);
+	} else {
+		nm_log_dbg (LOGD_AGENTS, "(%s) agent removed from secrets request %p/%s",
+		            nm_secret_agent_get_description (agent), req, req->detail);
+	}
 }
 
 static gboolean
-start_generic (gpointer user_data)
+request_start (gpointer user_data)
 {
 	Request *req = user_data;
 
 	req->idle_id = 0;
-	req->next_callback (req);
+	request_next_agent (req);
 	return FALSE;
 }
 
-
 /*************************************************************/
+
+/* Request subclass for connection secrets */
+typedef struct {
+	Request parent;
+
+	NMSettingsGetSecretsFlags flags;
+	NMConnection *connection;
+	char *setting_name;
+	char **hints;
+
+	GHashTable *existing_secrets;
+
+	NMAgentSecretsResultFunc callback;
+	gpointer callback_data;
+	gpointer other_data2;
+	gpointer other_data3;
+
+	NMAuthChain *chain;
+
+	/* Whether the agent currently being asked for secrets
+	 * has the system.modify privilege.
+	 */
+	gboolean current_has_modify;
+} ConnectionRequest;
+
+static void
+connection_request_free (gpointer data)
+{
+	ConnectionRequest *req = data;
+
+	g_object_unref (req->connection);
+	g_free (req->setting_name);
+	g_strfreev (req->hints);
+	if (req->existing_secrets)
+		g_hash_table_unref (req->existing_secrets);
+	if (req->chain)
+		nm_auth_chain_unref (req->chain);
+}
+
+static gboolean
+connection_request_add_agent (Request *parent, NMSecretAgent *agent)
+{
+	ConnectionRequest *req = (ConnectionRequest *) parent;
+	uid_t agent_uid = nm_secret_agent_get_owner_uid (agent);
+
+	/* Ensure the caller's username exists in the connection's permissions,
+	 * or that the permissions is empty (ie, visible by everyone).
+	 */
+	if (!nm_auth_uid_in_acl (req->connection, nm_session_monitor_get (), agent_uid, NULL)) {
+		nm_log_dbg (LOGD_AGENTS, "(%s) agent ignored for secrets request %p/%s (not in ACL)",
+		            nm_secret_agent_get_description (agent),
+		            parent, parent->detail);
+		/* Connection not visible to this agent's user */
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static ConnectionRequest *
+connection_request_new_get (NMConnection *connection,
+                            NMAuthSubject *subject,
+                            GHashTable *existing_secrets,
+                            const char *setting_name,
+                            const char *verb,
+                            NMSettingsGetSecretsFlags flags,
+                            const char **hints,
+                            NMAgentSecretsResultFunc callback,
+                            gpointer callback_data,
+                            gpointer other_data2,
+                            gpointer other_data3,
+                            RequestCompleteFunc complete_callback,
+                            gpointer complete_callback_data,
+                            RequestNextFunc next_callback,
+                            RequestCancelFunc cancel_callback)
+{
+	ConnectionRequest *req;
+
+	req = (ConnectionRequest *) request_new (sizeof (ConnectionRequest),
+	                                         nm_connection_get_id (connection),
+	                                         verb,
+	                                         subject,
+	                                         complete_callback,
+	                                         complete_callback_data,
+	                                         connection_request_add_agent,
+	                                         next_callback,
+	                                         cancel_callback,
+	                                         connection_request_free);
+	g_assert (req);
+
+	req->connection = g_object_ref (connection);
+	if (existing_secrets)
+		req->existing_secrets = g_hash_table_ref (existing_secrets);
+	req->setting_name = g_strdup (setting_name);
+	req->hints = g_strdupv ((char **) hints);
+	req->flags = flags;
+	req->callback = callback;
+	req->callback_data = callback_data;
+	req->other_data2 = other_data2;
+	req->other_data3 = other_data3;
+	return req;
+}
+
+static ConnectionRequest *
+connection_request_new_other (NMConnection *connection,
+                              NMAuthSubject *subject,
+                              const char *verb,
+                              RequestCompleteFunc complete_callback,
+                              gpointer complete_callback_data,
+                              RequestNextFunc next_callback)
+{
+	ConnectionRequest *req;
+
+	req = (ConnectionRequest *) request_new (sizeof (ConnectionRequest),
+	                                         nm_connection_get_id (connection),
+	                                         verb,
+	                                         subject,
+	                                         complete_callback,
+	                                         complete_callback_data,
+	                                         NULL,
+	                                         next_callback,
+	                                         NULL,
+	                                         connection_request_free);
+	g_assert (req);
+	req->connection = g_object_ref (connection);
+	return req;
+}
 
 static void
 get_done_cb (NMSecretAgent *agent,
@@ -730,47 +800,49 @@ get_done_cb (NMSecretAgent *agent,
              GError *error,
              gpointer user_data)
 {
-	Request *req = user_data;
+	Request *parent = user_data;
+	ConnectionRequest *req = user_data;
 	GHashTable *setting_secrets;
 	const char *agent_dbus_owner;
-	gboolean agent_has_modify;
 	struct passwd *pw;
 	char *agent_uname = NULL;
 
-	g_return_if_fail (call_id == req->current_call_id);
-
-	agent_has_modify = req->current_has_modify;
-	req->current_has_modify = FALSE;
-	req->current = NULL;
-	req->current_call_id = NULL;
+	g_return_if_fail (call_id == parent->current_call_id);
 
 	if (error) {
-		nm_log_dbg (LOGD_AGENTS, "(%s) agent failed secrets request %p/%s: (%d) %s",
+		nm_log_dbg (LOGD_AGENTS, "(%s) agent failed secrets request %p/%s/%s: (%d) %s",
 		            nm_secret_agent_get_description (agent),
-		            req, req->setting_name,
+		            req, parent->detail, req->setting_name,
 		            error ? error->code : -1,
 		            (error && error->message) ? error->message : "(unknown)");
 
-		/* Try the next agent */
-		req->next_callback (req);
+		if (dbus_g_error_has_name (error, NM_DBUS_INTERFACE_SECRET_AGENT ".UserCanceled")) {
+			error = g_error_new_literal (NM_AGENT_MANAGER_ERROR,
+			                             NM_AGENT_MANAGER_ERROR_USER_CANCELED,
+			                             "User canceled the secrets request.");
+			req_complete_error (parent, error);
+			g_error_free (error);
+		} else {
+			/* Try the next agent */
+			request_next_agent (parent);
+		}
 		return;
 	}
 
 	/* Ensure the setting we wanted secrets for got returned and has something in it */
 	setting_secrets = g_hash_table_lookup (secrets, req->setting_name);
 	if (!setting_secrets || !g_hash_table_size (setting_secrets)) {
-		nm_log_dbg (LOGD_AGENTS, "(%s) agent returned no secrets for request %p/%s",
+		nm_log_dbg (LOGD_AGENTS, "(%s) agent returned no secrets for request %p/%s/%s",
 		            nm_secret_agent_get_description (agent),
-		            req, req->setting_name);
-
+		            req, parent->detail, req->setting_name);
 		/* Try the next agent */
-		req->next_callback (req);
+		request_next_agent (parent);
 		return;
 	}
 
-	nm_log_dbg (LOGD_AGENTS, "(%s) agent returned secrets for request %p/%s",
+	nm_log_dbg (LOGD_AGENTS, "(%s) agent returned secrets for request %p/%s/%s",
 	            nm_secret_agent_get_description (agent),
-	            req, req->setting_name);
+	            req, parent->detail, req->setting_name);
 
 	/* Get the agent's username */
 	pw = getpwuid (nm_secret_agent_get_owner_uid (agent));
@@ -781,7 +853,7 @@ get_done_cb (NMSecretAgent *agent,
 	}
 
 	agent_dbus_owner = nm_secret_agent_get_dbus_owner (agent);
-	req_complete_success (req, secrets, agent_dbus_owner, agent_uname, agent_has_modify);
+	req_complete_success (parent, secrets, agent_dbus_owner, agent_uname);
 	g_free (agent_uname);
 }
 
@@ -827,15 +899,16 @@ set_secrets_not_required (NMConnection *connection, GHashTable *hash)
 }
 
 static void
-get_agent_request_secrets (Request *req, gboolean include_system_secrets)
+get_agent_request_secrets (ConnectionRequest *req, gboolean include_system_secrets)
 {
+	Request *parent = (Request *) req;
 	NMConnection *tmp;
 
 	tmp = nm_connection_duplicate (req->connection);
 	nm_connection_clear_secrets (tmp);
 	if (include_system_secrets) {
 		if (req->existing_secrets)
-			nm_connection_update_secrets (tmp, req->setting_name, req->existing_secrets, NULL);
+			(void) nm_connection_update_secrets (tmp, req->setting_name, req->existing_secrets, NULL);
 	} else {
 		/* Update secret flags in the temporary connection to indicate that
 		 * the system secrets we're not sending to the agent aren't required,
@@ -845,19 +918,17 @@ get_agent_request_secrets (Request *req, gboolean include_system_secrets)
 			set_secrets_not_required (tmp, req->existing_secrets);
 	}
 
-	req->current_call_id = nm_secret_agent_get_secrets (NM_SECRET_AGENT (req->current),
-	                                                    tmp,
-	                                                    req->setting_name,
-	                                                    req->hint,
-	                                                    req->flags,
-	                                                    get_done_cb,
-	                                                    req);
-	if (req->current_call_id == NULL) {
+	parent->current_call_id = nm_secret_agent_get_secrets (parent->current,
+	                                                       tmp,
+	                                                       req->setting_name,
+	                                                       (const char **) req->hints,
+	                                                       req->flags,
+	                                                       get_done_cb,
+	                                                       req);
+	if (parent->current_call_id == NULL) {
 		/* Shouldn't hit this, but handle it anyway */
-		g_warn_if_fail (req->current_call_id != NULL);
-		req->current_has_modify = FALSE;
-		req->current = NULL;
-		req->next_callback (req);
+		g_warn_if_fail (parent->current_call_id != NULL);
+		request_next_agent (parent);
 	}
 
 	g_object_unref (tmp);
@@ -869,19 +940,19 @@ get_agent_modify_auth_cb (NMAuthChain *chain,
                           DBusGMethodInvocation *context,
                           gpointer user_data)
 {
-	Request *req = user_data;
-	NMAuthCallResult result;
+	Request *parent = user_data;
+	ConnectionRequest *req = user_data;
 	const char *perm;
 
 	req->chain = NULL;
 
 	if (error) {
-		nm_log_dbg (LOGD_AGENTS, "(%p/%s) agent MODIFY check error: (%d) %s",
-		            req, req->setting_name,
+		nm_log_dbg (LOGD_AGENTS, "(%s) agent %p/%s/%s MODIFY check error: (%d) %s",
+		            nm_secret_agent_get_description (parent->current),
+		            req, parent->detail, req->setting_name,
 		            error->code, error->message ? error->message : "(unknown)");
-
 		/* Try the next agent */
-		req->next_callback (req);
+		request_next_agent (parent);
 	} else {
 		/* If the agent obtained the 'modify' permission, we send all system secrets
 		 * to it.  If it didn't, we still ask it for secrets, but we don't send
@@ -889,15 +960,17 @@ get_agent_modify_auth_cb (NMAuthChain *chain,
 		 */
 		perm = nm_auth_chain_get_data (chain, "perm");
 		g_assert (perm);
-		result = nm_auth_chain_get_result (chain, perm);
-		if (result == NM_AUTH_CALL_RESULT_YES)
+		if (nm_auth_chain_get_result (chain, perm) == NM_AUTH_CALL_RESULT_YES)
 			req->current_has_modify = TRUE;
 
-		nm_log_dbg (LOGD_AGENTS, "(%p/%s) agent MODIFY check result %d",
-		            req, req->setting_name, result);
+		nm_log_dbg (LOGD_AGENTS, "(%s) agent %p/%s/%s MODIFY check result %s",
+		            nm_secret_agent_get_description (parent->current),
+		            req, parent->detail, req->setting_name,
+		            req->current_has_modify ? "YES" : "NO");
 
 		get_agent_request_secrets (req, req->current_has_modify);
 	}
+
 	nm_auth_chain_unref (chain);
 }
 
@@ -944,15 +1017,15 @@ has_system_secrets (NMConnection *connection)
 }
 
 static void
-get_next_cb (Request *req)
+get_next_cb (Request *parent)
 {
+	ConnectionRequest *req = (ConnectionRequest *) parent;
 	NMSettingConnection *s_con;
 	const char *agent_dbus_owner, *perm;
 
-	if (!next_generic (req, "getting"))
-		return;
+	req->current_has_modify = FALSE;
 
-	agent_dbus_owner = nm_secret_agent_get_dbus_owner (NM_SECRET_AGENT (req->current));
+	agent_dbus_owner = nm_secret_agent_get_dbus_owner (parent->current);
 
 	/* If the request flags allow user interaction, and there are existing
 	 * system secrets (or blank secrets that are supposed to be system-owned),
@@ -962,12 +1035,13 @@ get_next_cb (Request *req)
 	 */
 	if (   (req->flags != NM_SETTINGS_GET_SECRETS_FLAG_NONE)
 	    && (req->existing_secrets || has_system_secrets (req->connection))) {
-		nm_log_dbg (LOGD_AGENTS, "(%p/%s) request has system secrets; checking agent %s for MODIFY",
-		            req, req->setting_name, agent_dbus_owner);
+		nm_log_dbg (LOGD_AGENTS, "(%p/%s/%s) request has system secrets; checking agent %s for MODIFY",
+		            req, parent->detail, req->setting_name, agent_dbus_owner);
 
-		req->chain = nm_auth_chain_new_dbus_sender (agent_dbus_owner,
-		                                            get_agent_modify_auth_cb,
-		                                            req);
+		req->chain = nm_auth_chain_new_subject (nm_secret_agent_get_subject (parent->current),
+		                                        NULL,
+		                                        get_agent_modify_auth_cb,
+		                                        req);
 		g_assert (req->chain);
 
 		/* If the caller is the only user in the connection's permissions, then
@@ -984,8 +1058,8 @@ get_next_cb (Request *req)
 
 		nm_auth_chain_add_call (req->chain, perm, TRUE);
 	} else {
-		nm_log_dbg (LOGD_AGENTS, "(%p/%s) requesting user-owned secrets from agent %s",
-			        req, req->setting_name, agent_dbus_owner);
+		nm_log_dbg (LOGD_AGENTS, "(%p/%s/%s) requesting user-owned secrets from agent %s",
+		            req, parent->detail, req->setting_name, agent_dbus_owner);
 
 		get_agent_request_secrets (req, FALSE);
 	}
@@ -994,10 +1068,11 @@ get_next_cb (Request *req)
 static gboolean
 get_start (gpointer user_data)
 {
-	Request *req = user_data;
+	Request *parent = user_data;
+	ConnectionRequest *req = user_data;
 	GHashTable *setting_secrets = NULL;
 
-	req->idle_id = 0;
+	parent->idle_id = 0;
 
 	/* Check if there are any existing secrets */
 	if (req->existing_secrets)
@@ -1006,7 +1081,7 @@ get_start (gpointer user_data)
 	if (setting_secrets && g_hash_table_size (setting_secrets)) {
 		NMConnection *tmp;
 		GError *error = NULL;
-		gboolean request_new = (req->flags & NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW);
+		gboolean new_secrets = (req->flags & NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW);
 
 		/* The connection already had secrets; check if any more are required.
 		 * If no more are required, we're done.  If secrets are still needed,
@@ -1017,23 +1092,23 @@ get_start (gpointer user_data)
 		g_assert (tmp);
 
 		if (!nm_connection_update_secrets (tmp, req->setting_name, req->existing_secrets, &error)) {
-			req_complete_error (req, error);
+			req_complete_error (parent, error);
 			g_clear_error (&error);
 		} else {
 			/* Do we have everything we need? */
 			if (   (req->flags & NM_SETTINGS_GET_SECRETS_FLAG_ONLY_SYSTEM)
-			    || ((nm_connection_need_secrets (tmp, NULL) == NULL) && (request_new == FALSE))) {
-				nm_log_dbg (LOGD_AGENTS, "(%p/%s) system settings secrets sufficient",
-				            req, req->setting_name);
+			    || ((nm_connection_need_secrets (tmp, NULL) == NULL) && (new_secrets == FALSE))) {
+				nm_log_dbg (LOGD_AGENTS, "(%p/%s/%s) system settings secrets sufficient",
+				            req, parent->detail, req->setting_name);
 
 				/* Got everything, we're done */
-				req_complete_success (req, req->existing_secrets, NULL, NULL, FALSE);
+				req_complete_success (parent, req->existing_secrets, NULL, NULL);
 			} else {
-				nm_log_dbg (LOGD_AGENTS, "(%p/%s) system settings secrets insufficient, asking agents",
-				            req, req->setting_name);
+				nm_log_dbg (LOGD_AGENTS, "(%p/%s/%s) system settings secrets insufficient, asking agents",
+				            req, parent->detail, req->setting_name);
 
 				/* We don't, so ask some agents for additional secrets */
-				req->next_callback (req);
+				request_next_agent (parent);
 			}
 		}
 		g_object_unref (tmp);
@@ -1042,30 +1117,30 @@ get_start (gpointer user_data)
 		 * agents for secrets.  Let the Agent Manager handle which agents
 		 * we'll ask and in which order.
 		 */
-		req->next_callback (req);
+		request_next_agent (parent);
 	}
 
 	return FALSE;
 }
 
 static void
-get_complete_cb (Request *req,
+get_complete_cb (Request *parent,
                  GHashTable *secrets,
                  const char *agent_dbus_owner,
                  const char *agent_username,
-                 gboolean agent_has_modify,
                  GError *error,
                  gpointer user_data)
 {
 	NMAgentManager *self = NM_AGENT_MANAGER (user_data);
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
+	ConnectionRequest *req = (ConnectionRequest *) parent;
 
 	/* Send secrets back to the requesting object */
 	req->callback (self,
-	               req->reqid,
+	               parent->reqid,
 	               agent_dbus_owner,
 	               agent_username,
-	               agent_has_modify,
+	               req->current_has_modify,
 	               req->setting_name,
 	               req->flags,
 	               error ? NULL : secrets,
@@ -1074,41 +1149,44 @@ get_complete_cb (Request *req,
 	               req->other_data2,
 	               req->other_data3);
 
-	g_hash_table_remove (priv->requests, GUINT_TO_POINTER (req->reqid));
+	g_hash_table_remove (priv->requests, GUINT_TO_POINTER (parent->reqid));
 }
 
 static void
-get_cancel_cb (Request *req)
+get_cancel_cb (Request *parent)
 {
-	if (req->current && req->current_call_id)
-		nm_secret_agent_cancel_secrets (req->current, req->current_call_id);
+	ConnectionRequest *req = (ConnectionRequest *) parent;
+
+	req->current_has_modify = FALSE;
+	if (parent->current && parent->current_call_id)
+		nm_secret_agent_cancel_secrets (parent->current, parent->current_call_id);
 }
 
 guint32
 nm_agent_manager_get_secrets (NMAgentManager *self,
                               NMConnection *connection,
-                              gboolean filter_by_uid,
-                              gulong uid_filter,
+                              NMAuthSubject *subject,
                               GHashTable *existing_secrets,
                               const char *setting_name,
                               NMSettingsGetSecretsFlags flags,
-                              const char *hint,
+                              const char **hints,
                               NMAgentSecretsResultFunc callback,
                               gpointer callback_data,
                               gpointer other_data2,
                               gpointer other_data3)
 {
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
-	Request *req;
+	Request *parent;
+	ConnectionRequest *req;
 
 	g_return_val_if_fail (self != NULL, 0);
-	g_return_val_if_fail (connection != NULL, 0);
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), 0);
 	g_return_val_if_fail (callback != NULL, 0);
 
 	nm_log_dbg (LOGD_SETTINGS,
-	            "Secrets requested for connection %s (%s)",
+	            "Secrets requested for connection %s (%s/%s)",
 	            nm_connection_get_path (connection),
+	            nm_connection_get_id (connection),
 	            setting_name);
 
 	/* NOTE: a few things in the Request handling depend on existing_secrets
@@ -1117,29 +1195,29 @@ nm_agent_manager_get_secrets (NMAgentManager *self,
 	 * both returning NULL if they didn't hash anything.
 	 */
 
-	req = request_new_get (connection,
-	                       filter_by_uid,
-	                       uid_filter,
-	                       existing_secrets,
-	                       setting_name,
-	                       flags,
-	                       hint,
-	                       callback,
-	                       callback_data,
-	                       other_data2,
-	                       other_data3,
-	                       get_complete_cb,
-	                       self,
-	                       get_next_cb,
-	                       get_cancel_cb);
-	g_hash_table_insert (priv->requests, GUINT_TO_POINTER (req->reqid), req);
+	req = connection_request_new_get (connection,
+	                                  subject,
+	                                  existing_secrets,
+	                                  setting_name,
+	                                  "getting",
+	                                  flags,
+	                                  hints,
+	                                  callback,
+	                                  callback_data,
+	                                  other_data2,
+	                                  other_data3,
+	                                  get_complete_cb,
+	                                  self,
+	                                  get_next_cb,
+	                                  get_cancel_cb);
+	parent = (Request *) req;
+	g_hash_table_insert (priv->requests, GUINT_TO_POINTER (parent->reqid), req);
 
 	/* Kick off the request */
 	if (!(req->flags & NM_SETTINGS_GET_SECRETS_FLAG_ONLY_SYSTEM))
-		request_add_agents (self, req);
-	req->idle_id = g_idle_add (get_start, req);
-
-	return req->reqid;
+		request_add_agents (self, parent);
+	parent->idle_id = g_idle_add (get_start, req);
+	return parent->reqid;
 }
 
 void
@@ -1162,49 +1240,44 @@ save_done_cb (NMSecretAgent *agent,
               GError *error,
               gpointer user_data)
 {
-	Request *req = user_data;
+	Request *parent = user_data;
+	ConnectionRequest *req = user_data;
 	const char *agent_dbus_owner;
 
-	g_return_if_fail (call_id == req->current_call_id);
-
-	req->current = NULL;
-	req->current_call_id = NULL;
+	g_return_if_fail (call_id == parent->current_call_id);
 
 	if (error) {
 		nm_log_dbg (LOGD_AGENTS, "(%s) agent failed save secrets request %p/%s: (%d) %s",
 		            nm_secret_agent_get_description (agent),
-		            req, req->setting_name,
+		            req, parent->detail,
 		            error ? error->code : -1,
 		            (error && error->message) ? error->message : "(unknown)");
-
 		/* Try the next agent */
-		req->next_callback (req);
+		request_next_agent (parent);
 		return;
 	}
 
 	nm_log_dbg (LOGD_AGENTS, "(%s) agent saved secrets for request %p/%s",
 	            nm_secret_agent_get_description (agent),
-	            req, req->setting_name);
+	            req, parent->detail);
 
 	agent_dbus_owner = nm_secret_agent_get_dbus_owner (agent);
-	req_complete_success (req, NULL, NULL, agent_dbus_owner, FALSE);
+	req_complete_success (parent, NULL, NULL, agent_dbus_owner);
 }
 
 static void
-save_next_cb (Request *req)
+save_next_cb (Request *parent)
 {
-	if (!next_generic (req, "saving"))
-		return;
+	ConnectionRequest *req = (ConnectionRequest *) parent;
 
-	req->current_call_id = nm_secret_agent_save_secrets (NM_SECRET_AGENT (req->current),
-	                                                     req->connection,
-	                                                     save_done_cb,
-	                                                     req);
-	if (req->current_call_id == NULL) {
+	parent->current_call_id = nm_secret_agent_save_secrets (parent->current,
+	                                                        req->connection,
+	                                                        save_done_cb,
+	                                                        req);
+	if (parent->current_call_id == NULL) {
 		/* Shouldn't hit this, but handle it anyway */
-		g_warn_if_fail (req->current_call_id != NULL);
-		req->current = NULL;
-		req->next_callback (req);
+		g_warn_if_fail (parent->current_call_id != NULL);
+		request_next_agent (parent);
 	}
 }
 
@@ -1213,46 +1286,43 @@ save_complete_cb (Request *req,
                   GHashTable *secrets,
                   const char *agent_dbus_owner,
                   const char *agent_username,
-                  gboolean agent_has_modify,
                   GError *error,
                   gpointer user_data)
 {
-	NMAgentManager *self = NM_AGENT_MANAGER (user_data);
-	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
-
-	g_hash_table_remove (priv->requests, GUINT_TO_POINTER (req->reqid));
+	g_hash_table_remove (NM_AGENT_MANAGER_GET_PRIVATE (user_data)->requests,
+	                     GUINT_TO_POINTER (req->reqid));
 }
 
 guint32
 nm_agent_manager_save_secrets (NMAgentManager *self,
                                NMConnection *connection,
-                               gboolean filter_by_uid,
-                               gulong uid_filter)
+                               NMAuthSubject *subject)
 {
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
-	Request *req;
+	ConnectionRequest *req;
+	Request *parent;
 
 	g_return_val_if_fail (self != NULL, 0);
-	g_return_val_if_fail (connection != NULL, 0);
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), 0);
 
 	nm_log_dbg (LOGD_SETTINGS,
-	            "Saving secrets for connection %s",
-	            nm_connection_get_path (connection));
+	            "Saving secrets for connection %s (%s)",
+	            nm_connection_get_path (connection),
+	            nm_connection_get_id (connection));
 
-	req = request_new_other (connection,
-	                         filter_by_uid,
-	                         uid_filter,
-	                         save_complete_cb,
-	                         self,
-	                         save_next_cb);
-	g_hash_table_insert (priv->requests, GUINT_TO_POINTER (req->reqid), req);
+	req = connection_request_new_other (connection,
+	                                    subject,
+	                                    "saving",
+	                                    save_complete_cb,
+	                                    self,
+	                                    save_next_cb);
+	parent = (Request *) req;
+	g_hash_table_insert (priv->requests, GUINT_TO_POINTER (parent->reqid), req);
 
 	/* Kick off the request */
-	request_add_agents (self, req);
-	req->idle_id = g_idle_add (start_generic, req);
-
-	return req->reqid;
+	request_add_agents (self, parent);
+	parent->idle_id = g_idle_add (request_start, req);
+	return parent->reqid;
 }
 
 /*************************************************************/
@@ -1268,40 +1338,33 @@ delete_done_cb (NMSecretAgent *agent,
 
 	g_return_if_fail (call_id == req->current_call_id);
 
-	req->current = NULL;
-	req->current_call_id = NULL;
-
 	if (error) {
 		nm_log_dbg (LOGD_AGENTS, "(%s) agent failed delete secrets request %p/%s: (%d) %s",
-		            nm_secret_agent_get_description (agent),
-		            req, req->setting_name,
+		            nm_secret_agent_get_description (agent), req, req->detail,
 		            error ? error->code : -1,
 		            (error && error->message) ? error->message : "(unknown)");
 	} else {
 		nm_log_dbg (LOGD_AGENTS, "(%s) agent deleted secrets for request %p/%s",
-		            nm_secret_agent_get_description (agent),
-		            req, req->setting_name);
+		            nm_secret_agent_get_description (agent), req, req->detail);
 	}
 
 	/* Tell the next agent to delete secrets */
-	req->next_callback (req);
+	request_next_agent (req);
 }
 
 static void
-delete_next_cb (Request *req)
+delete_next_cb (Request *parent)
 {
-	if (!next_generic (req, "deleting"))
-		return;
+	ConnectionRequest *req = (ConnectionRequest *) parent;
 
-	req->current_call_id = nm_secret_agent_delete_secrets (NM_SECRET_AGENT (req->current),
-	                                                       req->connection,
-	                                                       delete_done_cb,
-	                                                       req);
-	if (req->current_call_id == NULL) {
+	parent->current_call_id = nm_secret_agent_delete_secrets (parent->current,
+	                                                          req->connection,
+	                                                          delete_done_cb,
+	                                                          req);
+	if (parent->current_call_id == NULL) {
 		/* Shouldn't hit this, but handle it anyway */
-		g_warn_if_fail (req->current_call_id != NULL);
-		req->current = NULL;
-		req->next_callback (req);
+		g_warn_if_fail (parent->current_call_id != NULL);
+		request_next_agent (parent);
 	}
 }
 
@@ -1310,46 +1373,45 @@ delete_complete_cb (Request *req,
                     GHashTable *secrets,
                     const char *agent_dbus_owner,
                     const char *agent_username,
-                    gboolean agent_has_modify,
                     GError *error,
                     gpointer user_data)
 {
-	NMAgentManager *self = NM_AGENT_MANAGER (user_data);
-	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
-
-	g_hash_table_remove (priv->requests, GUINT_TO_POINTER (req->reqid));
+	g_hash_table_remove (NM_AGENT_MANAGER_GET_PRIVATE (user_data)->requests,
+	                     GUINT_TO_POINTER (req->reqid));
 }
 
 guint32
 nm_agent_manager_delete_secrets (NMAgentManager *self,
-                                 NMConnection *connection,
-                                 gboolean filter_by_uid,
-                                 gulong uid_filter)
+                                 NMConnection *connection)
 {
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
-	Request *req;
+	NMAuthSubject *subject;
+	ConnectionRequest *req;
+	Request *parent;
 
 	g_return_val_if_fail (self != NULL, 0);
-	g_return_val_if_fail (connection != NULL, 0);
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), 0);
 
 	nm_log_dbg (LOGD_SETTINGS,
-	            "Deleting secrets for connection %s",
-	            nm_connection_get_path (connection));
+	            "Deleting secrets for connection %s (%s)",
+	            nm_connection_get_path (connection),
+	            nm_connection_get_id (connection));
 
-	req = request_new_other (connection,
-	                         filter_by_uid,
-	                         uid_filter,
-	                         delete_complete_cb,
-	                         self,
-	                         delete_next_cb);
-	g_hash_table_insert (priv->requests, GUINT_TO_POINTER (req->reqid), req);
+	subject = nm_auth_subject_new_internal ();
+	req = connection_request_new_other (connection,
+	                                    subject,
+	                                    "deleting",
+	                                    delete_complete_cb,
+	                                    self,
+	                                    delete_next_cb);
+	g_object_unref (subject);
+	parent = (Request *) req;
+	g_hash_table_insert (priv->requests, GUINT_TO_POINTER (parent->reqid), req);
 
 	/* Kick off the request */
-	request_add_agents (self, req);
-	req->idle_id = g_idle_add (start_generic, req);
-
-	return req->reqid;
+	request_add_agents (self, parent);
+	parent->idle_id = g_idle_add (request_start, req);
+	return parent->reqid;
 }
 
 /*************************************************************/
@@ -1368,6 +1430,30 @@ nm_agent_manager_get_agent_by_user (NMAgentManager *self, const char *username)
 	}
 
 	return NULL;
+}
+
+/*************************************************************/
+
+gboolean
+nm_agent_manager_all_agents_have_capability (NMAgentManager *manager,
+                                             NMAuthSubject *subject,
+                                             NMSecretAgentCapabilities capability)
+{
+	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (manager);
+	GHashTableIter iter;
+	NMSecretAgent *agent;
+
+	g_hash_table_iter_init (&iter, priv->agents);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &agent)) {
+		if (   !nm_auth_subject_get_internal (subject)
+		    && nm_secret_agent_get_owner_uid (agent) != nm_auth_subject_get_uid (subject))
+			continue;
+
+		if (!(nm_secret_agent_get_capabilities (agent) & capability))
+			return FALSE;
+	}
+
+	return TRUE;
 }
 
 /*************************************************************/
@@ -1394,31 +1480,28 @@ agent_permissions_changed_done (NMAuthChain *chain,
 	NMAgentManager *self = NM_AGENT_MANAGER (user_data);
 	NMAgentManagerPrivate *priv = NM_AGENT_MANAGER_GET_PRIVATE (self);
 	NMSecretAgent *agent;
-	NMAuthCallResult result;
+	gboolean share_protected = FALSE, share_open = FALSE;
 
 	priv->chains = g_slist_remove (priv->chains, chain);
 
 	agent = nm_auth_chain_get_data (chain, "agent");
+	g_assert (agent);
 
 	if (error) {
 		nm_log_dbg (LOGD_AGENTS, "(%s) failed to request updated agent permissions",
 		            nm_secret_agent_get_description (agent));
-		nm_secret_agent_add_permission (agent, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED, FALSE);
-		nm_secret_agent_add_permission (agent, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN, FALSE);
 	} else {
 		nm_log_dbg (LOGD_AGENTS, "(%s) updated agent permissions",
 		            nm_secret_agent_get_description (agent));
 
-		result = nm_auth_chain_get_result (chain, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED);
-		nm_secret_agent_add_permission (agent,
-		                                NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED,
-		                                (result == NM_AUTH_CALL_RESULT_YES));
-
-		result = nm_auth_chain_get_result (chain, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN);
-		nm_secret_agent_add_permission (agent,
-		                                NM_AUTH_PERMISSION_WIFI_SHARE_OPEN,
-		                                (result == NM_AUTH_CALL_RESULT_YES));
+		if (nm_auth_chain_get_result (chain, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED) == NM_AUTH_CALL_RESULT_YES)
+			share_protected = TRUE;
+		if (nm_auth_chain_get_result (chain, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN) == NM_AUTH_CALL_RESULT_YES)
+			share_open = TRUE;
 	}
+
+	nm_secret_agent_add_permission (agent, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED, share_protected);
+	nm_secret_agent_add_permission (agent, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN, share_open);
 
 	nm_auth_chain_unref (chain);
 }
@@ -1435,11 +1518,14 @@ authority_changed_cb (gpointer user_data)
 	g_hash_table_iter_init (&iter, priv->agents);
 	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &agent)) {
 		NMAuthChain *chain;
-		const char *sender;
 
 		/* Kick off permissions requests for this agent */
-		sender = nm_secret_agent_get_dbus_owner (agent);
-		chain = nm_auth_chain_new_dbus_sender (sender, agent_permissions_changed_done, self);
+		chain = nm_auth_chain_new_subject (nm_secret_agent_get_subject (agent),
+		                                   NULL,
+		                                   agent_permissions_changed_done,
+		                                   self);
+		g_assert (chain);
+		priv->chains = g_slist_append (priv->chains, chain);
 
 		/* Make sure if the agent quits while the permissions call is in progress
 		 * that the object sticks around until our callback.
@@ -1447,8 +1533,6 @@ authority_changed_cb (gpointer user_data)
 		nm_auth_chain_set_data (chain, "agent", g_object_ref (agent), g_object_unref);
 		nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED, FALSE);
 		nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN, FALSE);
-
-		priv->chains = g_slist_append (priv->chains, chain);
 	}
 }
 
@@ -1459,7 +1543,6 @@ nm_agent_manager_get (void)
 {
 	static NMAgentManager *singleton = NULL;
 	NMAgentManagerPrivate *priv;
-	DBusGConnection *connection;
 
 	if (singleton)
 		return g_object_ref (singleton);
@@ -1468,13 +1551,9 @@ nm_agent_manager_get (void)
 	g_assert (singleton);
 
 	priv = NM_AGENT_MANAGER_GET_PRIVATE (singleton);
-	priv->session_monitor = nm_session_monitor_get ();
 	priv->dbus_mgr = nm_dbus_manager_get ();
 
-	connection = nm_dbus_manager_get_connection (priv->dbus_mgr);
-	dbus_g_connection_register_g_object (connection,
-	                                     NM_DBUS_PATH_AGENT_MANAGER,
-	                                     G_OBJECT (singleton));
+	nm_dbus_manager_register_object (priv->dbus_mgr, NM_DBUS_PATH_AGENT_MANAGER, singleton);
 
 	g_signal_connect (priv->dbus_mgr,
 	                  NM_DBUS_MANAGER_NAME_OWNER_CHANGED,
@@ -1513,8 +1592,7 @@ dispose (GObject *object)
 		g_hash_table_destroy (priv->agents);
 		g_hash_table_destroy (priv->requests);
 
-		g_object_unref (priv->session_monitor);
-		g_object_unref (priv->dbus_mgr);
+		priv->dbus_mgr = NULL;
 	}
 
 	G_OBJECT_CLASS (nm_agent_manager_parent_class)->dispose (object);

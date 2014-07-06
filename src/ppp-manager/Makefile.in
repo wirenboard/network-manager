@@ -82,7 +82,8 @@ subdir = src/ppp-manager
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -128,19 +129,8 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(pppd_plugindir)"
-LTLIBRARIES = $(noinst_LTLIBRARIES) $(pppd_plugin_LTLIBRARIES)
+LTLIBRARIES = $(pppd_plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libppp_manager_la_DEPENDENCIES =  \
-	$(top_builddir)/src/generated/libnm-generated.la \
-	$(top_builddir)/src/logging/libnm-logging.la \
-	$(top_builddir)/src/posix-signals/libnm-posix-signals.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_libppp_manager_la_OBJECTS = libppp_manager_la-nm-ppp-manager.lo
-libppp_manager_la_OBJECTS = $(am_libppp_manager_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 @WITH_PPP_TRUE@nm_pppd_plugin_la_DEPENDENCIES =  \
 @WITH_PPP_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
 @WITH_PPP_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -148,6 +138,10 @@ am__nm_pppd_plugin_la_SOURCES_DIST = nm-pppd-plugin.c nm-pppd-plugin.h \
 	nm-ppp-status.h
 @WITH_PPP_TRUE@am_nm_pppd_plugin_la_OBJECTS = nm-pppd-plugin.lo
 nm_pppd_plugin_la_OBJECTS = $(am_nm_pppd_plugin_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 nm_pppd_plugin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(nm_pppd_plugin_la_LDFLAGS) $(LDFLAGS) \
@@ -187,9 +181,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libppp_manager_la_SOURCES) $(nm_pppd_plugin_la_SOURCES)
-DIST_SOURCES = $(libppp_manager_la_SOURCES) \
-	$(am__nm_pppd_plugin_la_SOURCES_DIST)
+SOURCES = $(nm_pppd_plugin_la_SOURCES)
+DIST_SOURCES = $(am__nm_pppd_plugin_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -240,12 +233,15 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
+DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
+DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
@@ -270,7 +266,6 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
-GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -315,12 +310,16 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
+LIBNDP_CFLAGS = @LIBNDP_CFLAGS@
+LIBNDP_LIBS = @LIBNDP_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
+LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -337,6 +336,8 @@ MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEWT_CFLAGS = @NEWT_CFLAGS@
+NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -364,11 +365,16 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
+PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
+READLINE_LIBS = @READLINE_LIBS@
 SED = @SED@
+SELINUX_CFLAGS = @SELINUX_CFLAGS@
+SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -383,6 +389,7 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VALGRIND_RULES = @VALGRIND_RULES@
 VAPIGEN = @VAPIGEN@
 VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
 VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
@@ -445,6 +452,7 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
@@ -455,39 +463,14 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
-AM_CPPFLAGS = \
-	-I${top_srcdir} \
-	-I${top_builddir}/include \
-	-I${top_srcdir}/include \
-	-I${top_builddir}/libnm-util \
-	-I${top_srcdir}/libnm-util \
-	-I${top_srcdir}/src \
-	-I${top_builddir}/src/generated \
-	-I${top_srcdir}/src/generated \
-	-I${top_srcdir}/src/logging \
-	-I${top_srcdir}/src/posix-signals \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS)
-
-noinst_LTLIBRARIES = libppp-manager.la
-libppp_manager_la_SOURCES = \
-	nm-ppp-manager.c \
-	nm-ppp-manager.h \
-	nm-ppp-status.h
-
-built_sources = nm-ppp-manager-glue.h
-libppp_manager_la_CPPFLAGS = \
-	$(AM_CPPFLAGS) \
-	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-DLIBDIR=\"$(libdir)\" \
-	-DPLUGINDIR=\"$(PPPD_PLUGIN_DIR)\"
-
-libppp_manager_la_LIBADD = \
-	$(top_builddir)/src/generated/libnm-generated.la \
-	$(top_builddir)/src/logging/libnm-logging.la \
-	$(top_builddir)/src/posix-signals/libnm-posix-signals.la \
-	$(DBUS_LIBS) \
-	$(GLIB_LIBS)
+with_valgrind = @with_valgrind@
+@WITH_PPP_TRUE@AM_CPPFLAGS = \
+@WITH_PPP_TRUE@	-I${top_builddir}/include \
+@WITH_PPP_TRUE@	-I${top_srcdir}/include \
+@WITH_PPP_TRUE@	-DG_LOG_DOMAIN=\""nm-pppd-plugin"\" \
+@WITH_PPP_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
+@WITH_PPP_TRUE@	$(DBUS_CFLAGS) \
+@WITH_PPP_TRUE@	$(GLIB_CFLAGS)
 
 @WITH_PPP_TRUE@pppd_plugindir = $(PPPD_PLUGIN_DIR)
 @WITH_PPP_TRUE@pppd_plugin_LTLIBRARIES = nm-pppd-plugin.la
@@ -502,10 +485,7 @@ libppp_manager_la_LIBADD = \
 @WITH_PPP_TRUE@	$(DBUS_LIBS) \
 @WITH_PPP_TRUE@	$(GLIB_LIBS)
 
-BUILT_SOURCES = nm-ppp-manager-glue.h
-CLEANFILES = $(BUILT_SOURCES)
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -539,17 +519,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	test -z "$$locs" || { \
-	  echo rm -f $${locs}; \
-	  rm -f $${locs}; \
-	}
 
 install-pppd_pluginLTLIBRARIES: $(pppd_plugin_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -586,9 +555,6 @@ clean-pppd_pluginLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libppp-manager.la: $(libppp_manager_la_OBJECTS) $(libppp_manager_la_DEPENDENCIES) $(EXTRA_libppp_manager_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libppp_manager_la_OBJECTS) $(libppp_manager_la_LIBADD) $(LIBS)
-
 nm-pppd-plugin.la: $(nm_pppd_plugin_la_OBJECTS) $(nm_pppd_plugin_la_DEPENDENCIES) $(EXTRA_nm_pppd_plugin_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(nm_pppd_plugin_la_LINK) $(am_nm_pppd_plugin_la_rpath) $(nm_pppd_plugin_la_OBJECTS) $(nm_pppd_plugin_la_LIBADD) $(LIBS)
 
@@ -598,7 +564,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libppp_manager_la-nm-ppp-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-pppd-plugin.Plo@am__quote@
 
 .c.o:
@@ -621,13 +586,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-libppp_manager_la-nm-ppp-manager.lo: nm-ppp-manager.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libppp_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libppp_manager_la-nm-ppp-manager.lo -MD -MP -MF $(DEPDIR)/libppp_manager_la-nm-ppp-manager.Tpo -c -o libppp_manager_la-nm-ppp-manager.lo `test -f 'nm-ppp-manager.c' || echo '$(srcdir)/'`nm-ppp-manager.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libppp_manager_la-nm-ppp-manager.Tpo $(DEPDIR)/libppp_manager_la-nm-ppp-manager.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nm-ppp-manager.c' object='libppp_manager_la-nm-ppp-manager.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libppp_manager_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libppp_manager_la-nm-ppp-manager.lo `test -f 'nm-ppp-manager.c' || echo '$(srcdir)/'`nm-ppp-manager.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -718,15 +676,13 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
+check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
 	for dir in "$(DESTDIR)$(pppd_plugindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -748,7 +704,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -757,11 +712,10 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	clean-pppd_pluginLTLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-pppd_pluginLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -829,12 +783,11 @@ ps-am:
 
 uninstall-am: uninstall-pppd_pluginLTLIBRARIES
 
-.MAKE: all check install install-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES \
-	clean-pppd_pluginLTLIBRARIES cscopelist-am ctags ctags-am \
-	distclean distclean-compile distclean-generic \
+	clean-libtool clean-pppd_pluginLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
@@ -847,11 +800,6 @@ uninstall-am: uninstall-pppd_pluginLTLIBRARIES
 	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
 	uninstall-pppd_pluginLTLIBRARIES
 
-
-nm-ppp-manager-glue.h: $(top_srcdir)/introspection/nm-ppp-manager.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_ppp_manager --mode=glib-server --output=$@ $<
-
-$(libppp_manager_la_OBJECTS): $(built_sources)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

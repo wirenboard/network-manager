@@ -6,7 +6,11 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util \
-	-I$(top_builddir)/libnm-util
+	-I$(top_builddir)/libnm-util \
+	-DG_LOG_DOMAIN=\""libnm-glib"\" \
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
+	$(DBUS_CFLAGS) \
+	$(GLIB_CFLAGS)
 
 BUILT_SOURCES = \
 	nm-vpn-plugin-glue.h \
@@ -26,8 +30,6 @@ libdeprecated_nm_glib_la_SOURCES = \
 	libnm_glib.c
 
 libdeprecated_nm_glib_la_CPPFLAGS = \
-	$(DBUS_CFLAGS) \
-	$(GLIB_CFLAGS) \
 	$(AM_CPPFLAGS) \
 	-Wno-deprecated-declarations \
 	-Wno-deprecated
@@ -48,7 +50,8 @@ lib_LTLIBRARIES = libnm-glib.la libnm-glib-vpn.la
 libnm_glib_la_CFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	$(GUDEV_CFLAGS)
+	$(GUDEV_CFLAGS) \
+	-DNMRUNDIR=\"$(nmrundir)\"
 
 libnmincludedir = $(includedir)/libnm-glib
 libnmvpndir = $(includedir)/libnm-glib
@@ -64,8 +67,10 @@ libnminclude_HEADERS = \
 	nm-device-bt.h \
 	nm-device-olpc-mesh.h \
 	nm-device-bond.h \
+	nm-device-team.h \
 	nm-device-bridge.h \
 	nm-device-vlan.h \
+	nm-device-generic.h \
 	nm-access-point.h \
 	nm-ip4-config.h \
 	nm-device-modem.h \
@@ -90,6 +95,7 @@ libnmvpn_HEADERS = \
 
 libnm_glib_la_csources = \
 	nm-object.c \
+	nm-dbus-helpers.c \
 	nm-client.c \
 	nm-device.c \
 	nm-device-ethernet.c \
@@ -99,8 +105,10 @@ libnm_glib_la_csources = \
 	nm-device-bt.c \
 	nm-device-olpc-mesh.c \
 	nm-device-bond.c \
+	nm-device-team.c \
 	nm-device-bridge.c \
 	nm-device-vlan.c \
+	nm-device-generic.c \
 	nm-access-point.c \
 	nm-ip4-config.c \
 	nm-device-modem.c \
@@ -116,8 +124,7 @@ libnm_glib_la_csources = \
 	nm-secret-agent.c \
 	nm-device-wimax.c \
 	nm-wimax-nsp.c \
-	nm-glib-enum-types.c \
-	nm-glib-marshal.c
+	nm-glib-enum-types.c
 
 libnm_glib_la_private_headers = \
 	nm-object-private.h \
@@ -125,7 +132,7 @@ libnm_glib_la_private_headers = \
 	nm-types-private.h \
 	nm-object-cache.h \
 	nm-remote-connection-private.h \
-	nm-glib-marshal.h
+	nm-dbus-helpers-private.h
 
 libnm_glib_la_SOURCES = \
 	$(libnm_glib_la_csources) \
@@ -135,9 +142,6 @@ GLIB_GENERATED = nm-glib-enum-types.h nm-glib-enum-types.c
 nm_glib_enum_types_sources = $(libnminclude_HEADERS)
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
-
-GLIB_GENERATED += nm-glib-marshal.h nm-glib-marshal.c
-nm_glib_marshal_sources = $(libnm_glib_la_SOURCES)
 
 libnm_glib_la_LIBADD = \
 	$(top_builddir)/libnm-util/libnm-util.la \
@@ -149,7 +153,7 @@ libnm_glib_la_LIBADD = \
 SYMBOL_VIS_FILE=$(srcdir)/libnm-glib.ver
 
 libnm_glib_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "10:0:6"
+	-version-info "12:0:8"
 
 noinst_PROGRAMS = libnm-glib-test
 
@@ -168,7 +172,7 @@ nm_vpn_enum_types_sources = $(libnmvpn_HEADERS)
 libnm_glib_vpn_la_CFLAGS = $(GLIB_CFLAGS) $(DBUS_CFLAGS)
 libnm_glib_vpn_la_LIBADD = $(top_builddir)/libnm-util/libnm-util.la $(GLIB_LIBS) $(DBUS_LIBS)
 libnm_glib_vpn_la_LDFLAGS = -Wl,--version-script=$(srcdir)/libnm-glib-vpn.ver \
-	-version-info "2:0:1"
+	-version-info "3:0:2"
 
 BUILT_SOURCES += $(GLIB_GENERATED)
 
@@ -180,10 +184,11 @@ libnm_glib_test_la_CFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(GUDEV_CFLAGS) \
-	-DLIBNM_GLIB_TEST
+	-DLIBNM_GLIB_TEST \
+	-DNMRUNDIR=\"$(nmrundir)\"
 
 libnm_glib_test_la_SOURCES = \
-	$(li0bnminclude_HEADERS) \
+	$(libnminclude_HEADERS) \
 	$(libnm_glib_la_SOURCES)
 
 libnm_glib_test_la_LIBADD = \

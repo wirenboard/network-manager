@@ -18,10 +18,12 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2011 Red Hat, Inc.
+ * (C) Copyright 2007 - 2013 Red Hat, Inc.
  */
 
 #include <string.h>
+#include <glib/gi18n.h>
+
 #include "nm-setting-cdma.h"
 #include "nm-utils.h"
 #include "nm-setting-private.h"
@@ -155,32 +157,36 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 	NMSettingCdmaPrivate *priv = NM_SETTING_CDMA_GET_PRIVATE (setting);
 
 	if (!priv->number) {
-		g_set_error (error,
-		             NM_SETTING_CDMA_ERROR,
-		             NM_SETTING_CDMA_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_CDMA_NUMBER);
+		g_set_error_literal (error,
+		                     NM_SETTING_CDMA_ERROR,
+		                     NM_SETTING_CDMA_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_CDMA_SETTING_NAME, NM_SETTING_CDMA_NUMBER);
 		return FALSE;
 	} else if (!strlen (priv->number)) {
-		g_set_error (error,
-		             NM_SETTING_CDMA_ERROR,
-		             NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_CDMA_NUMBER);
+		g_set_error_literal (error,
+		                     NM_SETTING_CDMA_ERROR,
+		                     NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
+		                     _("property is empty'"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_CDMA_SETTING_NAME, NM_SETTING_CDMA_NUMBER);
 		return FALSE;
 	}
 
 	if (priv->username && !strlen (priv->username)) {
-		g_set_error (error,
-		             NM_SETTING_CDMA_ERROR,
-		             NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_CDMA_USERNAME);
+		g_set_error_literal (error,
+		                     NM_SETTING_CDMA_ERROR,
+		                     NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_CDMA_SETTING_NAME, NM_SETTING_CDMA_USERNAME);
 		return FALSE;
 	}
 
 	if (priv->password && !strlen (priv->password)) {
-		g_set_error (error,
-		             NM_SETTING_CDMA_ERROR,
-		             NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_CDMA_PASSWORD);
+		g_set_error_literal (error,
+		                     NM_SETTING_CDMA_ERROR,
+		                     NM_SETTING_CDMA_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_CDMA_SETTING_NAME, NM_SETTING_CDMA_PASSWORD);
 		return FALSE;
 	}
 
@@ -209,7 +215,6 @@ need_secrets (NMSetting *setting)
 static void
 nm_setting_cdma_init (NMSettingCdma *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_CDMA_SETTING_NAME, NULL);
 }
 
 static void
@@ -310,7 +315,7 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 						  "specified, the default number (#777) is used when "
 						  "required.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingCdma:username:
@@ -327,7 +332,7 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 						  "required.  Note that many providers do not require "
 						  "a username or accept any username.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSettingCdma:password:
@@ -344,12 +349,12 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 						  "required.  Note that many providers do not require "
 						  "a password or accept any password.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSettingCdma:password-flags:
 	 *
-	 * Flags indicating how to handle #NMSettingCdma:password:.
+	 * Flags indicating how to handle the #NMSettingCdma:password property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PASSWORD_FLAGS,
 		 g_param_spec_uint (NM_SETTING_CDMA_PASSWORD_FLAGS,
@@ -358,5 +363,5 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 }

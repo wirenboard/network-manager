@@ -33,7 +33,6 @@
 #include "nm-device-modem.h"
 #include "nm-device-private.h"
 #include "nm-object-private.h"
-#include "nm-glib-marshal.h"
 
 G_DEFINE_TYPE (NMDeviceModem, nm_device_modem, NM_TYPE_DEVICE)
 
@@ -54,9 +53,6 @@ enum {
 	PROP_CURRENT_CAPS,
 	LAST_PROP
 };
-
-#define DBUS_PROP_MODEM_CAPS "ModemCapabilities"
-#define DBUS_PROP_CURRENT_CAPS "CurrentCapabilities"
 
 /**
  * nm_device_modem_error_quark:
@@ -88,7 +84,6 @@ nm_device_modem_error_quark (void)
 NMDeviceModemCapabilities
 nm_device_modem_get_modem_capabilities (NMDeviceModem *self)
 {
-	g_return_val_if_fail (self != NULL, NM_DEVICE_MODEM_CAPABILITY_NONE);
 	g_return_val_if_fail (NM_IS_DEVICE_MODEM (self), NM_DEVICE_MODEM_CAPABILITY_NONE);
 
 	_nm_object_ensure_inited (NM_OBJECT (self));
@@ -109,12 +104,30 @@ nm_device_modem_get_modem_capabilities (NMDeviceModem *self)
 NMDeviceModemCapabilities
 nm_device_modem_get_current_capabilities (NMDeviceModem *self)
 {
-	g_return_val_if_fail (self != NULL, NM_DEVICE_MODEM_CAPABILITY_NONE);
 	g_return_val_if_fail (NM_IS_DEVICE_MODEM (self), NM_DEVICE_MODEM_CAPABILITY_NONE);
 
 	_nm_object_ensure_inited (NM_OBJECT (self));
 	return NM_DEVICE_MODEM_GET_PRIVATE (self)->current_caps;
 }
+
+static const char *
+get_type_description (NMDevice *device)
+{
+	NMDeviceModemCapabilities caps;
+
+	caps = nm_device_modem_get_current_capabilities (NM_DEVICE_MODEM (device));
+	if (caps & NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS)
+		return "gsm";
+	else if (caps & NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO)
+		return "cdma";
+	else
+		return NULL;
+}
+
+#define MODEM_CAPS_3GPP(caps) (caps & (NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS |    \
+                                       NM_DEVICE_MODEM_CAPABILITY_LTE))
+
+#define MODEM_CAPS_3GPP2(caps) (caps & (NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO))
 
 static gboolean
 connection_compatible (NMDevice *device, NMConnection *connection, GError **error)
@@ -124,8 +137,6 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	NMSettingCdma *s_cdma;
 	const char *ctype;
 	NMDeviceModemCapabilities current_caps;
-
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
@@ -147,14 +158,27 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 	}
 
 	current_caps = nm_device_modem_get_current_capabilities (NM_DEVICE_MODEM (device));
-	if (   !(s_gsm && (current_caps & NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS))
-	    && !(s_cdma && (current_caps & NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO))) {
+	if (!(s_gsm && MODEM_CAPS_3GPP (current_caps)) && !(s_cdma && MODEM_CAPS_3GPP2 (current_caps))) {
 		g_set_error (error, NM_DEVICE_MODEM_ERROR, NM_DEVICE_MODEM_ERROR_MISSING_DEVICE_CAPS,
 		             "The device missed capabilities required by the GSM/CDMA connection.");
 		return FALSE;
 	}
 
-	return TRUE;
+	return NM_DEVICE_CLASS (nm_device_modem_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	NMDeviceModemCapabilities caps;
+
+	caps = nm_device_modem_get_current_capabilities (NM_DEVICE_MODEM (device));
+	if (caps & (NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS | NM_DEVICE_MODEM_CAPABILITY_LTE))
+		return NM_TYPE_SETTING_GSM;
+	else if (caps & NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO)
+		return NM_TYPE_SETTING_CDMA;
+	else
+		return G_TYPE_INVALID;
 }
 
 /*******************************************************************/
@@ -183,17 +207,11 @@ register_properties (NMDeviceModem *device)
 static void
 constructed (GObject *object)
 {
-	NMDeviceModemPrivate *priv;
+	NMDeviceModemPrivate *priv = NM_DEVICE_MODEM_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_modem_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_MODEM_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-	                                         NM_DBUS_SERVICE,
-	                                         nm_object_get_path (NM_OBJECT (object)),
-	                                         NM_DBUS_INTERFACE_DEVICE_MODEM);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_MODEM);
 	register_properties (NM_DEVICE_MODEM (object));
 }
 
@@ -242,7 +260,10 @@ nm_device_modem_class_init (NMDeviceModemClass *modem_class)
 	object_class->constructed = constructed;
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
+
+	device_class->get_type_description = get_type_description;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
 
 	/**
 	 * NMDeviceModem:modem-capabilities:

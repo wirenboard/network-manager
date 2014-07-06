@@ -19,12 +19,14 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2012 Red Hat, Inc.
+ * (C) Copyright 2007 - 2013 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
 
 #include <string.h>
 #include <dbus/dbus-glib.h>
+#include <glib/gi18n.h>
+
 #include "nm-setting-8021x.h"
 #include "nm-param-spec-specialized.h"
 #include "nm-utils.h"
@@ -40,7 +42,7 @@
  *
  * The #NMSetting8021x object is a #NMSetting subclass that describes
  * properties necessary for connection to 802.1x-authenticated networks, such as
- * WPA and WPA2 Enterprise WiFi networks and wired 802.1x networks.  802.1x
+ * WPA and WPA2 Enterprise Wi-Fi networks and wired 802.1x networks.  802.1x
  * connections typically use certificates and/or EAP authentication methods to
  * securely verify, identify, and authenticate the client to the network itself,
  * instead of simply relying on a widely shared static key.
@@ -50,7 +52,7 @@
  * the relevant wpa_supplicant configuration options.
  *
  * Furthermore, to get a good idea of 802.1x, EAP, TLS, TTLS, etc and their
- * applications to WiFi and wired networks, you'll want to get copies of the
+ * applications to Wi-Fi and wired networks, you'll want to get copies of the
  * following books.
  *
  *  802.11 Wireless Networks: The Definitive Guide, Second Edition
@@ -246,6 +248,7 @@ nm_setting_802_1x_add_eap_method (NMSetting8021x *setting, const char *eap)
 	}
 
 	priv->eap = g_slist_append (priv->eap, g_ascii_strdown (eap, -1));
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_EAP);
 	return TRUE;
 }
 
@@ -270,6 +273,39 @@ nm_setting_802_1x_remove_eap_method (NMSetting8021x *setting, guint32 i)
 
 	g_free (elt->data);
 	priv->eap = g_slist_delete_link (priv->eap, elt);
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_EAP);
+}
+
+/**
+ * nm_setting_802_1x_remove_eap_method_by_value:
+ * @setting: the #NMSetting8021x
+ * @eap: the name of the EAP method to remove
+ *
+ * Removes the allowed EAP method @method.
+ *
+ * Returns: %TRUE if the EAP method was founs and removed, %FALSE if it was not.
+ *
+ * Since: 0.9.10
+ **/
+gboolean
+nm_setting_802_1x_remove_eap_method_by_value (NMSetting8021x *setting,
+                                              const char *eap)
+{
+	NMSetting8021xPrivate *priv;
+	GSList *iter;
+
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
+	g_return_val_if_fail (eap != NULL, FALSE);
+
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
+	for (iter = priv->eap; iter; iter = g_slist_next (iter)) {
+		if (!strcmp (eap, (char *) iter->data)) {
+			priv->eap = g_slist_delete_link (priv->eap, iter);
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_EAP);
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 /**
@@ -286,8 +322,9 @@ nm_setting_802_1x_clear_eap_methods (NMSetting8021x *setting)
 	g_return_if_fail (NM_IS_SETTING_802_1X (setting));
 
 	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
-	nm_utils_slist_free (priv->eap, g_free);
+	g_slist_free_full (priv->eap, g_free);
 	priv->eap = NULL;
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_EAP);
 }
 
 /**
@@ -502,7 +539,7 @@ path_to_scheme_value (const char *path)
  * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
-nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
+nm_setting_802_1x_set_ca_cert (NMSetting8021x *setting,
                                const char *cert_path,
                                NMSetting8021xCKScheme scheme,
                                NMSetting8021xCKFormat *out_format,
@@ -512,7 +549,7 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
 	GByteArray *data;
 
-	g_return_val_if_fail (NM_IS_SETTING_802_1X (self), FALSE);
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
 
 	if (cert_path) {
 		g_return_val_if_fail (g_utf8_validate (cert_path, -1, NULL), FALSE);
@@ -524,7 +561,7 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
 	if (out_format)
 		g_return_val_if_fail (*out_format == NM_SETTING_802_1X_CK_FORMAT_UNKNOWN, FALSE);
 
-	priv = NM_SETTING_802_1X_GET_PRIVATE (self);
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
 
 	/* Clear out any previous ca_cert blob */
 	if (priv->ca_cert) {
@@ -532,8 +569,10 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
 		priv->ca_cert = NULL;
 	}
 
-	if (!cert_path)
+	if (!cert_path) {
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_CA_CERT);
 		return TRUE;
+	}
 
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
@@ -549,14 +588,16 @@ nm_setting_802_1x_set_ca_cert (NMSetting8021x *self,
 			else
 				g_assert_not_reached ();
 		} else {
-			g_set_error (error,
+			g_set_error_literal (error,
 			             NM_SETTING_802_1X_ERROR,
 			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_CA_CERT);
+			             _("CA certificate must be in X.509 format"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CA_CERT);
 		}
 		g_byte_array_unref (data);
 	}
 
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_CA_CERT);
 	return priv->ca_cert != NULL;
 }
 
@@ -646,6 +687,7 @@ nm_setting_802_1x_add_altsubject_match (NMSetting8021x *setting,
 
 	priv->altsubject_matches = g_slist_append (priv->altsubject_matches,
 	                                           g_strdup (altsubject_match));
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_ALTSUBJECT_MATCHES);
 	return TRUE;
 }
 
@@ -670,6 +712,40 @@ nm_setting_802_1x_remove_altsubject_match (NMSetting8021x *setting, guint32 i)
 
 	g_free (elt->data);
 	priv->altsubject_matches = g_slist_delete_link (priv->altsubject_matches, elt);
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_ALTSUBJECT_MATCHES);
+}
+
+/**
+ * nm_setting_802_1x_remove_altsubject_match_by_value:
+ * @setting: the #NMSetting8021x
+ * @altsubject_match: the altSubjectName to remove
+ *
+ * Removes the allowed altSubjectName @altsubject_match.
+ *
+ * Returns: %TRUE if the alternative subject name match was found and removed,
+ *          %FALSE if it was not.
+ *
+ * Since: 0.9.10
+ **/
+gboolean
+nm_setting_802_1x_remove_altsubject_match_by_value (NMSetting8021x *setting,
+                                                    const char *altsubject_match)
+{
+	NMSetting8021xPrivate *priv;
+	GSList *iter;
+
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
+	g_return_val_if_fail (altsubject_match != NULL, FALSE);
+
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
+	for (iter = priv->altsubject_matches; iter; iter = g_slist_next (iter)) {
+		if (!strcmp (altsubject_match, (char *) iter->data)) {
+			priv->altsubject_matches = g_slist_delete_link (priv->altsubject_matches, iter);
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_ALTSUBJECT_MATCHES);
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 /**
@@ -686,8 +762,9 @@ nm_setting_802_1x_clear_altsubject_matches (NMSetting8021x *setting)
 	g_return_if_fail (NM_IS_SETTING_802_1X (setting));
 
 	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
-	nm_utils_slist_free (priv->altsubject_matches, g_free);
+	g_slist_free_full (priv->altsubject_matches, g_free);
 	priv->altsubject_matches = NULL;
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_ALTSUBJECT_MATCHES);
 }
 
 /**
@@ -778,7 +855,7 @@ nm_setting_802_1x_get_client_cert_path (NMSetting8021x *setting)
  * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
-nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
+nm_setting_802_1x_set_client_cert (NMSetting8021x *setting,
                                    const char *cert_path,
                                    NMSetting8021xCKScheme scheme,
                                    NMSetting8021xCKFormat *out_format,
@@ -788,7 +865,7 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
 	GByteArray *data;
 
-	g_return_val_if_fail (NM_IS_SETTING_802_1X (self), FALSE);
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
 
 	if (cert_path) {
 		g_return_val_if_fail (g_utf8_validate (cert_path, -1, NULL), FALSE);
@@ -800,7 +877,7 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 	if (out_format)
 		g_return_val_if_fail (*out_format == NM_SETTING_802_1X_CK_FORMAT_UNKNOWN, FALSE);
 
-	priv = NM_SETTING_802_1X_GET_PRIVATE (self);
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
 
 	/* Clear out any previous ca_cert blob */
 	if (priv->client_cert) {
@@ -808,8 +885,10 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 		priv->client_cert = NULL;
 	}
 
-	if (!cert_path)
+	if (!cert_path) {
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_CLIENT_CERT);
 		return TRUE;
+	}
 
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
@@ -827,10 +906,11 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 			valid = TRUE;
 			break;
 		default:
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_CLIENT_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("invalid certificate format"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
 			break;
 		}
 
@@ -845,6 +925,7 @@ nm_setting_802_1x_set_client_cert (NMSetting8021x *self,
 		g_byte_array_unref (data);
 	}
 
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_CLIENT_CERT);
 	return priv->client_cert != NULL;
 }
 
@@ -1039,7 +1120,7 @@ nm_setting_802_1x_get_phase2_ca_cert_path (NMSetting8021x *setting)
  * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
-nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
+nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *setting,
                                       const char *cert_path,
                                       NMSetting8021xCKScheme scheme,
                                       NMSetting8021xCKFormat *out_format,
@@ -1049,7 +1130,7 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
 	GByteArray *data;
 
-	g_return_val_if_fail (NM_IS_SETTING_802_1X (self), FALSE);
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
 
 	if (cert_path) {
 		g_return_val_if_fail (g_utf8_validate (cert_path, -1, NULL), FALSE);
@@ -1061,7 +1142,7 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
 	if (out_format)
 		g_return_val_if_fail (*out_format == NM_SETTING_802_1X_CK_FORMAT_UNKNOWN, FALSE);
 
-	priv = NM_SETTING_802_1X_GET_PRIVATE (self);
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
 
 	/* Clear out any previous ca_cert blob */
 	if (priv->phase2_ca_cert) {
@@ -1069,8 +1150,10 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
 		priv->phase2_ca_cert = NULL;
 	}
 
-	if (!cert_path)
+	if (!cert_path) {
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CA_CERT);
 		return TRUE;
+	}
 
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
@@ -1086,14 +1169,16 @@ nm_setting_802_1x_set_phase2_ca_cert (NMSetting8021x *self,
 			else
 				g_assert_not_reached ();
 		} else {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_CA_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("invalid certificate format"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_CA_CERT);
 		}
 		g_byte_array_unref (data);
 	}
 
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CA_CERT);
 	return priv->phase2_ca_cert != NULL;
 }
 
@@ -1184,6 +1269,7 @@ nm_setting_802_1x_add_phase2_altsubject_match (NMSetting8021x *setting,
 
 	priv->phase2_altsubject_matches = g_slist_append (priv->phase2_altsubject_matches,
 	                                                  g_strdup (phase2_altsubject_match));
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES);
 	return TRUE;
 }
 
@@ -1208,6 +1294,41 @@ nm_setting_802_1x_remove_phase2_altsubject_match (NMSetting8021x *setting, guint
 
 	g_free (elt->data);
 	priv->phase2_altsubject_matches = g_slist_delete_link (priv->phase2_altsubject_matches, elt);
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES);
+}
+
+
+/**
+ * nm_setting_802_1x_remove_phase2_altsubject_match_by_value:
+ * @setting: the #NMSetting8021x
+ * @phase2_altsubject_match: the "phase 2" altSubjectName to remove
+ *
+ * Removes the allowed "phase 2" altSubjectName @phase2_altsubject_match.
+ *
+ * Returns: %TRUE if the alternative subject name match for "phase 2" was found and removed,
+ *          %FALSE if it was not.
+ *
+ * Since: 0.9.10
+ **/
+gboolean
+nm_setting_802_1x_remove_phase2_altsubject_match_by_value (NMSetting8021x *setting,
+                                                           const char *phase2_altsubject_match)
+{
+	NMSetting8021xPrivate *priv;
+	GSList *iter;
+
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
+	g_return_val_if_fail (phase2_altsubject_match != NULL, FALSE);
+
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
+	for (iter = priv->phase2_altsubject_matches; iter; iter = g_slist_next (iter)) {
+		if (!strcmp (phase2_altsubject_match, (char *) iter->data)) {
+			priv->phase2_altsubject_matches = g_slist_delete_link (priv->phase2_altsubject_matches, iter);
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES);
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 /**
@@ -1224,8 +1345,9 @@ nm_setting_802_1x_clear_phase2_altsubject_matches (NMSetting8021x *setting)
 	g_return_if_fail (NM_IS_SETTING_802_1X (setting));
 
 	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
-	nm_utils_slist_free (priv->phase2_altsubject_matches, g_free);
+	g_slist_free_full (priv->phase2_altsubject_matches, g_free);
 	priv->phase2_altsubject_matches = NULL;
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES);
 }
 
 /**
@@ -1318,7 +1440,7 @@ nm_setting_802_1x_get_phase2_client_cert_path (NMSetting8021x *setting)
  * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
-nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
+nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *setting,
                                           const char *cert_path,
                                           NMSetting8021xCKScheme scheme,
                                           NMSetting8021xCKFormat *out_format,
@@ -1328,7 +1450,7 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
 	GByteArray *data;
 
-	g_return_val_if_fail (NM_IS_SETTING_802_1X (self), FALSE);
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
 
 	if (cert_path) {
 		g_return_val_if_fail (g_utf8_validate (cert_path, -1, NULL), FALSE);
@@ -1340,7 +1462,7 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 	if (out_format)
 		g_return_val_if_fail (*out_format == NM_SETTING_802_1X_CK_FORMAT_UNKNOWN, FALSE);
 
-	priv = NM_SETTING_802_1X_GET_PRIVATE (self);
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
 
 	/* Clear out any previous ca_cert blob */
 	if (priv->phase2_client_cert) {
@@ -1348,8 +1470,10 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 		priv->phase2_client_cert = NULL;
 	}
 
-	if (!cert_path)
+	if (!cert_path) {
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 		return TRUE;
+	}
 
 	data = crypto_load_and_verify_certificate (cert_path, &format, error);
 	if (data) {
@@ -1368,10 +1492,11 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 			valid = TRUE;
 			break;
 		default:
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("invalid certificate format"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 			break;
 		}
 
@@ -1386,6 +1511,7 @@ nm_setting_802_1x_set_phase2_client_cert (NMSetting8021x *self,
 		g_byte_array_unref (data);
 	}
 
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 	return priv->phase2_client_cert != NULL;
 }
 
@@ -1558,10 +1684,8 @@ file_to_byte_array (const char *filename)
 
 	if (g_file_get_contents (filename, &contents, &length, NULL)) {
 		array = g_byte_array_sized_new (length);
-		if (array) {
-			g_byte_array_append (array, (guint8 *) contents, length);
-			g_assert (array->len == length);
-		}
+		g_byte_array_append (array, (guint8 *) contents, length);
+		g_assert (array->len == length);
 		g_free (contents);
 	}
 	return array;
@@ -1607,7 +1731,7 @@ file_to_byte_array (const char *filename)
  * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
-nm_setting_802_1x_set_private_key (NMSetting8021x *self,
+nm_setting_802_1x_set_private_key (NMSetting8021x *setting,
                                    const char *key_path,
                                    const char *password,
                                    NMSetting8021xCKScheme scheme,
@@ -1616,8 +1740,10 @@ nm_setting_802_1x_set_private_key (NMSetting8021x *self,
 {
 	NMSetting8021xPrivate *priv;
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
+	gboolean key_cleared = FALSE, password_cleared = FALSE;
+	GError *local_err = NULL;
 
-	g_return_val_if_fail (NM_IS_SETTING_802_1X (self), FALSE);
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
 
 	if (key_path) {
 		g_return_val_if_fail (g_utf8_validate (key_path, -1, NULL), FALSE);
@@ -1633,17 +1759,19 @@ nm_setting_802_1x_set_private_key (NMSetting8021x *self,
 	 * given, that it decrypts the private key.
 	 */
 	if (key_path) {
-		format = crypto_verify_private_key (key_path, password, NULL);
+		format = crypto_verify_private_key (key_path, password, &local_err);
 		if (format == NM_CRYPTO_FILE_FORMAT_UNKNOWN) {
-			g_set_error (error,
-				         NM_SETTING_802_1X_ERROR,
-				         NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-				         NM_SETTING_802_1X_PRIVATE_KEY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     local_err ? local_err->message : _("invalid private key"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PRIVATE_KEY);
+			g_clear_error (&local_err);
 			return FALSE;
 		}
 	}
 
-	priv = NM_SETTING_802_1X_GET_PRIVATE (self);
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
 
 	/* Clear out any previous private key data */
 	if (priv->private_key) {
@@ -1651,13 +1779,22 @@ nm_setting_802_1x_set_private_key (NMSetting8021x *self,
 		memset (priv->private_key->data, 0, priv->private_key->len);
 		g_byte_array_free (priv->private_key, TRUE);
 		priv->private_key = NULL;
+		key_cleared = TRUE;
 	}
 
-	g_free (priv->private_key_password);
-	priv->private_key_password = NULL;
+	if (priv->private_key_password) {
+		g_free (priv->private_key_password);
+		priv->private_key_password = NULL;
+		password_cleared = TRUE;
+	}
 
-	if (key_path == NULL)
+	if (key_path == NULL) {
+		if (key_cleared)
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PRIVATE_KEY);
+		if (password_cleared)
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD);
 		return TRUE;
+	}
 
 	priv->private_key_password = g_strdup (password);
 	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
@@ -1679,7 +1816,12 @@ nm_setting_802_1x_set_private_key (NMSetting8021x *self,
 
 		priv->client_cert = g_byte_array_sized_new (priv->private_key->len);
 		g_byte_array_append (priv->client_cert, priv->private_key->data, priv->private_key->len);
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_CLIENT_CERT);
 	}
+
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PRIVATE_KEY);
+	if (password_cleared || password)
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD);
 
 	if (out_format)
 		*out_format = format;
@@ -1900,7 +2042,7 @@ nm_setting_802_1x_get_phase2_private_key_path (NMSetting8021x *setting)
  * Returns: %TRUE if the operation succeeded, %FALSE if it was unsuccessful
  **/
 gboolean
-nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *self,
+nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *setting,
                                           const char *key_path,
                                           const char *password,
                                           NMSetting8021xCKScheme scheme,
@@ -1909,8 +2051,10 @@ nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *self,
 {
 	NMSetting8021xPrivate *priv;
 	NMCryptoFileFormat format = NM_CRYPTO_FILE_FORMAT_UNKNOWN;
+	gboolean key_cleared = FALSE, password_cleared = FALSE;
+	GError *local_err = NULL;
 
-	g_return_val_if_fail (NM_IS_SETTING_802_1X (self), FALSE);
+	g_return_val_if_fail (NM_IS_SETTING_802_1X (setting), FALSE);
 
 	if (key_path) {
 		g_return_val_if_fail (g_utf8_validate (key_path, -1, NULL), FALSE);
@@ -1926,17 +2070,19 @@ nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *self,
 	 * given, that it decrypts the private key.
 	 */
 	if (key_path) {
-		format = crypto_verify_private_key (key_path, password, NULL);
+		format = crypto_verify_private_key (key_path, password, &local_err);
 		if (format == NM_CRYPTO_FILE_FORMAT_UNKNOWN) {
-			g_set_error (error,
-				         NM_SETTING_802_1X_ERROR,
-				         NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-				         NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     local_err ? local_err->message : _("invalid phase2 private key"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+			g_clear_error (&local_err);
 			return FALSE;
 		}
 	}
 
-	priv = NM_SETTING_802_1X_GET_PRIVATE (self);
+	priv = NM_SETTING_802_1X_GET_PRIVATE (setting);
 
 	/* Clear out any previous private key data */
 	if (priv->phase2_private_key) {
@@ -1944,13 +2090,22 @@ nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *self,
 		memset (priv->phase2_private_key->data, 0, priv->phase2_private_key->len);
 		g_byte_array_free (priv->phase2_private_key, TRUE);
 		priv->phase2_private_key = NULL;
+		key_cleared = TRUE;
 	}
 
-	g_free (priv->phase2_private_key_password);
-	priv->phase2_private_key_password = NULL;
+	if (priv->phase2_private_key_password) {
+		g_free (priv->phase2_private_key_password);
+		priv->phase2_private_key_password = NULL;
+		password_cleared = TRUE;
+	}
 
-	if (key_path == NULL)
+	if (key_path == NULL) {
+		if (key_cleared)
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+		if (password_cleared)
+			g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD);
 		return TRUE;
+	}
 
 	priv->phase2_private_key_password = g_strdup (password);
 	if (scheme == NM_SETTING_802_1X_CK_SCHEME_BLOB) {
@@ -1972,7 +2127,12 @@ nm_setting_802_1x_set_phase2_private_key (NMSetting8021x *self,
 
 		priv->phase2_client_cert = g_byte_array_sized_new (priv->phase2_private_key->len);
 		g_byte_array_append (priv->phase2_client_cert, priv->phase2_private_key->data, priv->phase2_private_key->len);
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 	}
+
+	g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+	if (password_cleared || password)
+		g_object_notify (G_OBJECT (setting), NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD);
 
 	if (out_format)
 		*out_format = format;
@@ -2114,31 +2274,35 @@ verify_tls (NMSetting8021x *self, gboolean phase2, GError **error)
 
 	if (phase2) {
 		if (!priv->phase2_client_cert) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 			return FALSE;
 		} else if (!priv->phase2_client_cert->len) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 			return FALSE;
 		}
 
 		/* Private key is required for TLS */
 		if (!priv->phase2_private_key) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
 			return FALSE;
 		} else if (!priv->phase2_private_key->len) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
 			return FALSE;
 		}
 
@@ -2148,7 +2312,9 @@ verify_tls (NMSetting8021x *self, gboolean phase2, GError **error)
 				g_set_error (error,
 				             NM_SETTING_802_1X_ERROR,
 				             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-				             NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
+				             _("has to match '%s' property for PKCS#12"),
+				             NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 				return FALSE;
 			}
 
@@ -2158,37 +2324,43 @@ verify_tls (NMSetting8021x *self, gboolean phase2, GError **error)
 				g_set_error (error,
 				             NM_SETTING_802_1X_ERROR,
 				             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-				             NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
+				             _("has to match '%s' property for PKCS#12"),
+				             NM_SETTING_802_1X_PHASE2_PRIVATE_KEY);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_CLIENT_CERT);
 				return FALSE;
 			}
 		}
 	} else {
 		if (!priv->client_cert) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_CLIENT_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
 			return FALSE;
 		} else if (!priv->client_cert->len) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_CLIENT_CERT);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
 			return FALSE;
 		}
 
 		/* Private key is required for TLS */
 		if (!priv->private_key) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_PRIVATE_KEY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PRIVATE_KEY);
 			return FALSE;
 		} else if (!priv->private_key->len) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PRIVATE_KEY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PRIVATE_KEY);
 			return FALSE;
 		}
 
@@ -2198,7 +2370,9 @@ verify_tls (NMSetting8021x *self, gboolean phase2, GError **error)
 				g_set_error (error,
 				             NM_SETTING_802_1X_ERROR,
 				             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-				             NM_SETTING_802_1X_CLIENT_CERT);
+				             _("has to match '%s' property for PKCS#12"),
+				             NM_SETTING_802_1X_PRIVATE_KEY);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
 				return FALSE;
 			}
 
@@ -2208,7 +2382,9 @@ verify_tls (NMSetting8021x *self, gboolean phase2, GError **error)
 				g_set_error (error,
 				             NM_SETTING_802_1X_ERROR,
 				             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-				             NM_SETTING_802_1X_CLIENT_CERT);
+				             _("has to match '%s' property for PKCS#12"),
+				             NM_SETTING_802_1X_PRIVATE_KEY);
+				g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_CLIENT_CERT);
 				return FALSE;
 			}
 		}
@@ -2225,25 +2401,29 @@ verify_ttls (NMSetting8021x *self, gboolean phase2, GError **error)
 	if (   (!priv->identity || !strlen (priv->identity))
 	    && (!priv->anonymous_identity || !strlen (priv->anonymous_identity))) {
 		if (!priv->identity) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_IDENTITY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_IDENTITY);
 		} else if (!strlen (priv->identity)) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_IDENTITY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_IDENTITY);
 		} else if (!priv->anonymous_identity) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_ANONYMOUS_IDENTITY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_ANONYMOUS_IDENTITY);
 		} else {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_ANONYMOUS_IDENTITY);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_ANONYMOUS_IDENTITY);
 		}
 		return FALSE;
 	}
@@ -2251,25 +2431,29 @@ verify_ttls (NMSetting8021x *self, gboolean phase2, GError **error)
 	if (   (!priv->phase2_auth || !strlen (priv->phase2_auth))
 	    && (!priv->phase2_autheap || !strlen (priv->phase2_autheap))) {
 		if (!priv->phase2_auth) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_AUTH);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_AUTH);
 		} else if (!strlen (priv->phase2_auth)) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_AUTH);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_AUTH);
 		} else if (!priv->phase2_autheap) {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_AUTHEAP);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+			                     _("property is missing"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_AUTHEAP);
 		} else {
-			g_set_error (error,
-			             NM_SETTING_802_1X_ERROR,
-			             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_802_1X_PHASE2_AUTHEAP);
+			g_set_error_literal (error,
+			                     NM_SETTING_802_1X_ERROR,
+			                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+			                     _("property is empty"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_AUTHEAP);
 		}
 		return FALSE;
 	}
@@ -2283,16 +2467,18 @@ verify_identity (NMSetting8021x *self, gboolean phase2, GError **error)
 	NMSetting8021xPrivate *priv = NM_SETTING_802_1X_GET_PRIVATE (self);
 
 	if (!priv->identity) {
-		g_set_error (error,
-		             NM_SETTING_802_1X_ERROR,
-		             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_802_1X_IDENTITY);
+		g_set_error_literal (error,
+		                     NM_SETTING_802_1X_ERROR,
+		                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_IDENTITY);
 		return FALSE;
 	} else if (!strlen (priv->identity)) {
-		g_set_error (error,
-		             NM_SETTING_802_1X_ERROR,
-		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_IDENTITY);
+		g_set_error_literal (error,
+		                     NM_SETTING_802_1X_ERROR,
+		                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_IDENTITY);
 		return FALSE;
 	}
 
@@ -2321,6 +2507,7 @@ typedef struct {
 
 static EAPMethodsTable eap_methods_table[] = {
 	{ "leap", need_secrets_password, verify_identity },
+	{ "pwd", need_secrets_password, verify_identity },
 	{ "md5", need_secrets_password, verify_identity },
 	{ "pap", need_secrets_password, verify_identity },
 	{ "chap", need_secrets_password, verify_identity },
@@ -2433,10 +2620,11 @@ verify_cert (GByteArray *array, const char *prop_name, GError **error)
 		break;
 	}
 
-	g_set_error (error,
-	             NM_SETTING_802_1X_ERROR,
-	             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-	             "%s", prop_name);
+	g_set_error_literal (error,
+	                     NM_SETTING_802_1X_ERROR,
+	                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+	                     _("property is invalid"));
+	g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, prop_name);
 	return FALSE;
 }
 
@@ -2445,7 +2633,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 {
 	NMSetting8021x *self = NM_SETTING_802_1X (setting);
 	NMSetting8021xPrivate *priv = NM_SETTING_802_1X_GET_PRIVATE (self);
-	const char *valid_eap[] = { "leap", "md5", "tls", "peap", "ttls", "sim", "fast", NULL };
+	const char *valid_eap[] = { "leap", "md5", "tls", "peap", "ttls", "sim", "fast", "pwd", NULL };
 	const char *valid_phase1_peapver[] = { "0", "1", NULL };
 	const char *valid_phase1_peaplabel[] = { "0", "1", NULL };
 	const char *valid_phase1_fast_pac[] = { "0", "1", "2", "3", NULL };
@@ -2457,18 +2645,20 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_return_val_if_fail (*error == NULL, FALSE);
 
 	if (!priv->eap) {
-		g_set_error (error,
-		             NM_SETTING_802_1X_ERROR,
-		             NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
-		             NM_SETTING_802_1X_EAP);
+		g_set_error_literal (error,
+		                     NM_SETTING_802_1X_ERROR,
+		                     NM_SETTING_802_1X_ERROR_MISSING_PROPERTY,
+		                     _("property is missing"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_EAP);
 		return FALSE;
 	}
 
 	if (!_nm_utils_string_slist_validate (priv->eap, valid_eap)) {
-		g_set_error (error,
-		             NM_SETTING_802_1X_ERROR,
-		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_EAP);
+		g_set_error_literal (error,
+		                     NM_SETTING_802_1X_ERROR,
+		                     NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
+		                     _("property is invalid"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_EAP);
 		return FALSE;
 	}
 
@@ -2492,7 +2682,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_PHASE1_PEAPVER);
+		             _("'%s' is not a valid value for the property"),
+		             priv->phase1_peapver);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE1_PEAPVER);
 		return FALSE;
 	}
 
@@ -2500,7 +2692,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_PHASE1_PEAPLABEL);
+		             _("'%s' is not a valid value for the property"),
+		             priv->phase1_peaplabel);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE1_PEAPLABEL);
 		return FALSE;
 	}
 
@@ -2508,7 +2702,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_PHASE1_FAST_PROVISIONING);
+		             _("'%s' is not a valid value for the property"),
+		             priv->phase1_fast_provisioning);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE1_FAST_PROVISIONING);
 		return FALSE;
 	}
 
@@ -2516,7 +2712,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_PHASE2_AUTH);
+		             _("'%s' is not a valid value for the property"),
+		             priv->phase2_auth);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_AUTH);
 		return FALSE;
 	}
 
@@ -2524,7 +2722,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_802_1X_ERROR,
 		             NM_SETTING_802_1X_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_802_1X_PHASE2_AUTHEAP);
+		             _("'%s' is not a valid value for the property"),
+		             priv->phase2_autheap);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_802_1X_SETTING_NAME, NM_SETTING_802_1X_PHASE2_AUTHEAP);
 		return FALSE;
 	}
 
@@ -2551,7 +2751,6 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 static void
 nm_setting_802_1x_init (NMSetting8021x *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_802_1X_SETTING_NAME, NULL);
 }
 
 static void
@@ -2578,9 +2777,9 @@ finalize (GObject *object)
 		g_byte_array_free (priv->password_raw, TRUE);
 	g_free (priv->pin);
 
-	nm_utils_slist_free (priv->eap, g_free);
-	nm_utils_slist_free (priv->altsubject_matches, g_free);
-	nm_utils_slist_free (priv->phase2_altsubject_matches, g_free);
+	g_slist_free_full (priv->eap, g_free);
+	g_slist_free_full (priv->altsubject_matches, g_free);
+	g_slist_free_full (priv->phase2_altsubject_matches, g_free);
 
 	if (priv->ca_cert)
 		g_byte_array_free (priv->ca_cert, TRUE);
@@ -2628,7 +2827,7 @@ set_property (GObject *object, guint prop_id,
 
 	switch (prop_id) {
 	case PROP_EAP:
-		nm_utils_slist_free (priv->eap, g_free);
+		g_slist_free_full (priv->eap, g_free);
 		priv->eap = g_value_dup_boxed (value);
 		break;
 	case PROP_IDENTITY:
@@ -2664,7 +2863,7 @@ set_property (GObject *object, guint prop_id,
 		priv->subject_match = g_value_dup_string (value);
 		break;
 	case PROP_ALTSUBJECT_MATCHES:
-		nm_utils_slist_free (priv->altsubject_matches, g_free);
+		g_slist_free_full (priv->altsubject_matches, g_free);
 		priv->altsubject_matches = g_value_dup_boxed (value);
 		break;
 	case PROP_CLIENT_CERT:
@@ -2720,7 +2919,7 @@ set_property (GObject *object, guint prop_id,
 		priv->phase2_subject_match = g_value_dup_string (value);
 		break;
 	case PROP_PHASE2_ALTSUBJECT_MATCHES:
-		nm_utils_slist_free (priv->phase2_altsubject_matches, g_free);
+		g_slist_free_full (priv->phase2_altsubject_matches, g_free);
 		priv->phase2_altsubject_matches = g_value_dup_boxed (value);
 		break;
 	case PROP_PHASE2_CLIENT_CERT:
@@ -2937,9 +3136,9 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 	 * NMSetting8021x:eap:
 	 *
 	 * The allowed EAP method to be used when authenticating to the network with
-	 * 802.1x.  Valid methods are: "leap", "md5", "tls", "peap", "ttls", and
-	 * "fast".  Each method requires different configuration using the
-	 * properties of this object; refer to wpa_supplicant documentation for the
+	 * 802.1x.  Valid methods are: "leap", "md5", "tls", "peap", "ttls", "pwd",
+	 * and "fast".  Each method requires different configuration using the
+	 * properties of this setting; refer to wpa_supplicant documentation for the
 	 * allowed combinations.
 	 **/
 	g_object_class_install_property
@@ -2949,18 +3148,18 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "The allowed EAP method to be used when "
 							   "authenticating to the network with 802.1x. "
 							   "Valid methods are: 'leap', 'md5', 'tls', 'peap', "
-							   "'ttls', and 'fast'. Each method requires "
+							   "'ttls', 'pwd', and 'fast'. Each method requires "
 							   "different configuration using the properties of "
 							   "this setting; refer to wpa_supplicant "
 							   "documentation for the allowed combinations.",
 							   DBUS_TYPE_G_LIST_OF_STRING,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:identity:
 	 *
-	 * Identity string for EAP authentication methods.  Often the user's
-	 * user or login name.
+	 * Identity string for EAP authentication methods.  Often the user's user or
+	 * login name.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_IDENTITY,
@@ -2969,7 +3168,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "Identity string for EAP authentication methods.  "
 						  "Often the user's user or login name.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:anonymous-identity:
@@ -2987,7 +3186,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "types that support different tunneled identity like "
 						  "EAP-TTLS.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:pac-file:
@@ -3000,14 +3199,25 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "PAC file",
 						  "UTF-8 encoded file path containing PAC for EAP-FAST.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:ca-cert:
 	 *
 	 * Contains the CA certificate if used by the EAP method specified in the
-	 * #NMSetting8021x:eap property.  Setting this property directly is
-	 * discouraged; use the nm_setting_802_1x_set_ca_cert() function instead.
+	 * #NMSetting8021x:eap property.
+	 *
+	 * Certificate data is specified using a "scheme"; two are currently
+	 * supported: blob and path. When using the blob scheme (which is backwards
+	 * compatible with NM 0.7.x) this property should be set to the
+	 * certificate's DER encoded data. When using the path scheme, this property
+	 * should be set to the full UTF-8 encoded path of the certificate, prefixed
+	 * with the string "file://" and ending with a terminating NUL byte. This
+	 * property can be unset even if the EAP method supports CA certificates,
+	 * but this allows man-in-the-middle attacks and is NOT recommended.
+	 *
+	 * Setting this property directly is discouraged; use the
+	 * nm_setting_802_1x_set_ca_cert() function instead.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_CA_CERT,
@@ -3028,7 +3238,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "supports CA certificates, but this allows "
 							   "man-in-the-middle attacks and is NOT recommended.",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:ca-path:
@@ -3046,15 +3256,14 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "verification chain in addition to the certificate "
 						  "specified in the 'ca-cert' property.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:subject-match:
 	 *
-	 * Substring to be matched against the subject of the certificate
-	 * presented by the authentication server. When unset, no
-	 * verification of the authentication server certificate's subject
-	 * is performed.
+	 * Substring to be matched against the subject of the certificate presented
+	 * by the authentication server. When unset, no verification of the
+	 * authentication server certificate's subject is performed.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_SUBJECT_MATCH,
@@ -3066,15 +3275,14 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							  "authentication server certificate's subject is "
 							  "performed.",
 							  NULL,
-							  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:altsubject-matches:
 	 *
 	 * List of strings to be matched against the altSubjectName of the
-	 * certificate presented by the authentication server. If the list
-	 * is empty, no verification of the server certificate's
-	 * altSubjectName is performed.
+	 * certificate presented by the authentication server. If the list is empty,
+	 * no verification of the server certificate's altSubjectName is performed.
 	 **/
 	 g_object_class_install_property
 		 (object_class, PROP_ALTSUBJECT_MATCHES,
@@ -3087,14 +3295,23 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 									  "of the server certificate's "
 									  "altSubjectName is performed.",
 									  DBUS_TYPE_G_LIST_OF_STRING,
-									  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+									  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:client-cert:
 	 *
 	 * Contains the client certificate if used by the EAP method specified in
-	 * the #NMSetting8021x:eap property.  Setting this property directly is
-	 * discouraged; use the nm_setting_802_1x_set_client_cert() function instead.
+	 * the #NMSetting8021x:eap property.
+	 *
+	 * Certificate data is specified using a "scheme"; two are currently
+	 * supported: blob and path. When using the blob scheme (which is backwards
+	 * compatible with NM 0.7.x) this property should be set to the
+	 * certificate's DER encoded data. When using the path scheme, this property
+	 * should be set to the full UTF-8 encoded path of the certificate, prefixed
+	 * with the string "file://" and ending with a terminating NUL byte.
+	 *
+	 * Setting this property directly is discouraged; use the
+	 * nm_setting_802_1x_set_client_cert() function instead.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_CLIENT_CERT,
@@ -3112,7 +3329,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "certificate, prefixed with the string 'file://' "
 							   "and ending with a terminating NULL byte.",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase1-peapver:
@@ -3136,7 +3353,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "PEAP version.  To do so, this property may be set to "
 						  "'0' or '1' to force that specific PEAP version.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase1-peaplabel:
@@ -3156,7 +3373,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "Set to '1' to force use of the new PEAP label.  See "
 						  "the wpa_supplicant documentation for more details.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase1-fast-provisioning:
@@ -3181,16 +3398,16 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "provisioning).  See the wpa_supplicant documentation "
 						  "for more details.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-auth:
 	 *
 	 * Specifies the allowed "phase 2" inner non-EAP authentication methods when
 	 * an EAP method that uses an inner TLS tunnel is specified in the
-	 * #NMSetting8021x:eap property.  Recognized non-EAP phase2 methods are
+	 * #NMSetting8021x:eap property.  Recognized non-EAP "phase 2" methods are
 	 * "pap", "chap", "mschap", "mschapv2", "gtc", "otp", "md5", and "tls".
-	 * Each 'phase 2' inner method requires specific parameters for successful
+	 * Each "phase 2" inner method requires specific parameters for successful
 	 * authentication; see the wpa_supplicant documentation for more details.
 	 **/
 	g_object_class_install_property
@@ -3206,15 +3423,15 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "specific parameters for successful authentication; "
 						  "see the wpa_supplicant documentation for more details.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-autheap:
 	 *
 	 * Specifies the allowed "phase 2" inner EAP-based authentication methods
 	 * when an EAP method that uses an inner TLS tunnel is specified in the
-	 * #NMSetting8021x:eap property.  Recognized EAP-based phase2 methods are
-	 * "md5", "mschapv2", "otp", "gtc", and "tls". Each 'phase 2' inner method
+	 * #NMSetting8021x:eap property.  Recognized EAP-based "phase 2" methods are
+	 * "md5", "mschapv2", "otp", "gtc", and "tls". Each "phase 2" inner method
 	 * requires specific parameters for successful authentication; see the
 	 * wpa_supplicant documentation for more details.
 	 **/
@@ -3231,13 +3448,24 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "for successful authentication; see the wpa_supplicant "
 						  "documentation for more details.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-ca-cert:
 	 *
-	 * Contains the CA certificate if used by the EAP method specified in the
-	 * #NMSetting8021x:phase2-auth or #NMSetting8021x:phase2-autheap properties.
+	 * Contains the "phase 2" CA certificate if used by the EAP method specified
+	 * in the #NMSetting8021x:phase2-auth or #NMSetting8021x:phase2-autheap
+	 * properties.
+	 *
+	 * Certificate data is specified using a "scheme"; two are currently
+	 * supported: blob and path. When using the blob scheme (which is backwards
+	 * compatible with NM 0.7.x) this property should be set to the
+	 * certificate's DER encoded data. When using the path scheme, this property
+	 * should be set to the full UTF-8 encoded path of the certificate, prefixed
+	 * with the string "file://" and ending with a terminating NUL byte. This
+	 * property can be unset even if the EAP method supports CA certificates,
+	 * but this allows man-in-the-middle attacks and is NOT recommended.
+	 *
 	 * Setting this property directly is discouraged; use the
 	 * nm_setting_802_1x_set_phase2_ca_cert() function instead.
 	 **/
@@ -3261,7 +3489,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "certificates, but this allows man-in-the-middle "
 							   "attacks and is NOT recommended.",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-ca-path:
@@ -3279,15 +3507,15 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "verification chain in addition to the certificate "
 						  "specified in the 'phase2-ca-cert' property.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+						  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-subject-match:
 	 *
-	 * Substring to be matched against the subject of the certificate
-	 * presented by the authentication server during the inner "phase
-	 * 2" authentication. When unset, no verification of the
-	 * authentication server certificate's subject is performed.
+	 * Substring to be matched against the subject of the certificate presented
+	 * by the authentication server during the inner "phase 2"
+	 * authentication. When unset, no verification of the authentication server
+	 * certificate's subject is performed.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PHASE2_SUBJECT_MATCH,
@@ -3300,16 +3528,15 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							  "the authentication server certificate's subject "
 							  "is performed.",
 							  NULL,
-							  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-altsubject-matches:
 	 *
 	 * List of strings to be matched against the altSubjectName of the
-	 * certificate presented by the authentication server during the
-	 * inner "phase 2" authentication. If the list is empty, no
-	 * verification of the server certificate's altSubjectName is
-	 * performed.
+	 * certificate presented by the authentication server during the inner
+	 * "phase 2" authentication. If the list is empty, no verification of the
+	 * server certificate's altSubjectName is performed.
 	 **/
 	 g_object_class_install_property
 		 (object_class, PROP_PHASE2_ALTSUBJECT_MATCHES,
@@ -3324,14 +3551,25 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 									  "verification of the server certificate's "
 									  "altSubjectName is performed.",
 									  DBUS_TYPE_G_LIST_OF_STRING,
-									  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+									  G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-client-cert:
 	 *
-	 * Contains the client certificate if used by the EAP method specified in
-	 * the #NMSetting8021x:phase2-auth or #NMSetting8021x:phase2-autheap
-	 * properties.  Setting this property directly is discouraged; use the
+	 * Contains the "phase 2" client certificate if used by the EAP method
+	 * specified in the #NMSetting8021x:phase2-auth or
+	 * #NMSetting8021x:phase2-autheap properties.
+	 *
+	 * Certificate data is specified using a "scheme"; two are currently
+	 * supported: blob and path. When using the blob scheme (which is backwards
+	 * compatible with NM 0.7.x) this property should be set to the
+	 * certificate's DER encoded data. When using the path scheme, this property
+	 * should be set to the full UTF-8 encoded path of the certificate, prefixed
+	 * with the string "file://" and ending with a terminating NUL byte. This
+	 * property can be unset even if the EAP method supports CA certificates,
+	 * but this allows man-in-the-middle attacks and is NOT recommended.
+	 *
+	 * Setting this property directly is discouraged; use the
 	 * nm_setting_802_1x_set_phase2_client_cert() function instead.
 	 **/
 	g_object_class_install_property
@@ -3351,14 +3589,14 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "certificate, prefixed with the string 'file://' "
 							   "and ending with a terminating NULL byte.",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:password:
 	 *
-	 * Password used for EAP authentication methods. If both
-	 * #NMSetting8021x:password and #NMSetting8021x:password-raw are
-	 * specified, #NMSetting8021x:password is preferred.
+	 * UTF-8 encoded password used for EAP authentication methods. If both the
+	 * #NMSetting8021x:password property and the #NMSetting8021x:password-raw
+	 * property are specified, #NMSetting8021x:password is preferred.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PASSWORD,
@@ -3366,12 +3604,12 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "Password",
 						  "UTF-8 encoded password used for EAP authentication methods.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSetting8021x:password-flags:
 	 *
-	 * Flags indicating how to handle #NMSetting8021x:password:.
+	 * Flags indicating how to handle the #NMSetting8021x:password property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PASSWORD_FLAGS,
 		 g_param_spec_uint (NM_SETTING_802_1X_PASSWORD_FLAGS,
@@ -3380,15 +3618,15 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:password-raw:
 	 *
-	 * Password used for EAP authentication methods delivered as a
-	 * UTF-8-encoded array of bytes. If both #NMSetting8021x:password
-	 * and #NMSetting8021x:password-raw are specified,
-	 * #NMSetting8021x:password is preferred.
+	 * Password used for EAP authentication methods, given as a byte array to
+	 * allow passwords in other encodings than UTF-8 to be used. If both the
+	 * #NMSetting8021x:password property and the #NMSetting8021x:password-raw
+	 * property are specified, #NMSetting8021x:password is preferred.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PASSWORD_RAW,
@@ -3401,12 +3639,12 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                             "'password-raw' are given, 'password' is "
 		                             "preferred.",
 		                             DBUS_TYPE_G_UCHAR_ARRAY,
-		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+		                             G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSetting8021x:password-raw-flags:
 	 *
-	 * Flags indicating how to handle #NMSetting8021x:password-raw:.
+	 * Flags indicating how to handle the #NMSetting8021x:password-raw property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PASSWORD_RAW_FLAGS,
 		 g_param_spec_uint (NM_SETTING_802_1X_PASSWORD_RAW_FLAGS,
@@ -3415,13 +3653,30 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:private-key:
 	 *
-	 * Contains the private key if the #NMSetting8021x:eap property is set to
-	 * 'tls'.  Setting this property directly is discouraged; use the
+	 * Contains the private key when the #NMSetting8021x:eap property is set to
+	 * "tls".
+	 *
+	 * Key data is specified using a "scheme"; two are currently supported: blob
+	 * and path. When using the blob scheme and private keys, this property
+	 * should be set to the key's encrypted PEM encoded data. When using private
+	 * keys with the path scheme, this property should be set to the full UTF-8
+	 * encoded path of the key, prefixed with the string "file://" and ending
+	 * with a terminating NUL byte. When using PKCS#12 format private keys and
+	 * the blob scheme, this property should be set to the PKCS#12 data and the
+	 * #NMSetting8021x:private-key-password property must be set to password
+	 * used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files
+	 * and the path scheme, this property should be set to the full UTF-8
+	 * encoded path of the key, prefixed with the string "file://" and and
+	 * ending with a terminating NUL byte, and as with the blob scheme the
+	 * "private-key-password" property must be set to the password used to
+	 * decode the PKCS#12 private key and certificate.
+	 *
+	 * Setting this property directly is discouraged; use the
 	 * nm_setting_802_1x_set_private_key() function instead.
 	 *
 	 * WARNING: #NMSetting8021x:private-key is not a "secret" property, and thus
@@ -3458,14 +3713,14 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "the password used to decode the PKCS#12 private "
 							   "key and certificate.",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:private-key-password:
 	 *
-	 * The password used to decrypt the private key specified in
-	 * #NMSetting8021x:private-key when the private key either uses the path
-	 * scheme, or if the private key is a PKCS#12 format key.  Setting this
+	 * The password used to decrypt the private key specified in the
+	 * #NMSetting8021x:private-key property when the private key either uses the
+	 * path scheme, or if the private key is a PKCS#12 format key.  Setting this
 	 * property directly is not generally necessary except when returning
 	 * secrets to NetworkManager; it is generally set automatically when setting
 	 * the private key by the nm_setting_802_1x_set_private_key() function.
@@ -3479,12 +3734,13 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "private key either uses the path scheme, or if the "
 						  "private key is a PKCS#12 format key.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSetting8021x:private-key-password-flags:
 	 *
-	 * Flags indicating how to handle #NMSetting8021x:private-key-password:.
+	 * Flags indicating how to handle the #NMSetting8021x:private-key-password
+	 * property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PRIVATE_KEY_PASSWORD_FLAGS,
 		 g_param_spec_uint (NM_SETTING_802_1X_PRIVATE_KEY_PASSWORD_FLAGS,
@@ -3494,16 +3750,31 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-private-key:
 	 *
-	 * Private key data used by "phase 2" inner authentication methods.
+	 * Contains the "phase 2" inner private key when the
+	 * #NMSetting8021x:phase2-auth or #NMSetting8021x:phase2-autheap property is
+	 * set to "tls".
 	 *
-	 * Contains the "phase 2" inner private key if the #NMSetting8021x:phase2-auth
-	 * or #NMSetting8021x:phase2-autheap property is set to 'tls'.  Setting this
-	 * property directly is discouraged; use the
+	 * Key data is specified using a "scheme"; two are currently supported: blob
+	 * and path. When using the blob scheme and private keys, this property
+	 * should be set to the key's encrypted PEM encoded data. When using private
+	 * keys with the path scheme, this property should be set to the full UTF-8
+	 * encoded path of the key, prefixed with the string "file://" and ending
+	 * with a terminating NUL byte. When using PKCS#12 format private keys and
+	 * the blob scheme, this property should be set to the PKCS#12 data and the
+	 * #NMSetting8021x:phase2-private-key-password property must be set to
+	 * password used to decrypt the PKCS#12 certificate and key. When using
+	 * PKCS#12 files and the path scheme, this property should be set to the
+	 * full UTF-8 encoded path of the key, prefixed with the string "file://"
+	 * and and ending with a terminating NUL byte, and as with the blob scheme
+	 * the #NMSetting8021x:phase2-private-key-password property must be set to
+	 * the password used to decode the PKCS#12 private key and certificate.
+	 *
+	 * Setting this property directly is discouraged; use the
 	 * nm_setting_802_1x_set_phase2_private_key() function instead.
 	 **/
 	g_object_class_install_property
@@ -3535,17 +3806,17 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "set to the password used to decode the PKCS#12 "
 							   "private key and certificate.",
 							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:phase2-private-key-password:
 	 *
-	 * The password used to decrypt the private key specified in
-	 * #NMSetting8021x:phase2-private-key when the private key either uses the
-	 * path scheme, or if the private key is a PKCS#12 format key.  Setting this
-	 * property directly is not generally necessary except when returning
-	 * secrets to NetworkManager; it is generally set automatically when setting
-	 * the private key by the nm_setting_802_1x_set_phase2_private_key() function.
+	 * The password used to decrypt the "phase 2" private key specified in the
+	 * #NMSetting8021x:phase2-private-key property when the private key either
+	 * uses the path scheme, or is a PKCS#12 format key.  Setting this property
+	 * directly is not generally necessary except when returning secrets to
+	 * NetworkManager; it is generally set automatically when setting the
+	 * private key by the nm_setting_802_1x_set_phase2_private_key() function.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PHASE2_PRIVATE_KEY_PASSWORD,
@@ -3556,12 +3827,13 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 						  "phase2 private key either uses the path scheme, or "
 						  "if the phase2 private key is a PKCS#12 format key.",
 						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSetting8021x:phase2-private-key-password-flags:
 	 *
-	 * Flags indicating how to handle #NMSetting8021x:phase2-private-key-password:.
+	 * Flags indicating how to handle the
+	 * #NMSetting8021x:phase2-private-key-password property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PHASE2_PRIVATE_KEY_PASSWORD_FLAGS,
 		 g_param_spec_uint (NM_SETTING_802_1X_PHASE2_PRIVATE_KEY_PASSWORD_FLAGS,
@@ -3571,7 +3843,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:pin:
@@ -3584,12 +3856,12 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                      "PIN",
 		                      "PIN used for EAP authentication methods.",
 		                      NULL,
-		                      G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_SECRET));
+		                      G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
 
 	/**
 	 * NMSetting8021x:pin-flags:
 	 *
-	 * Flags indicating how to handle #NMSetting8021x:pin:.
+	 * Flags indicating how to handle the #NMSetting8021x:pin property.
 	 **/
 	g_object_class_install_property (object_class, PROP_PIN_FLAGS,
 		 g_param_spec_uint (NM_SETTING_802_1X_PIN_FLAGS,
@@ -3598,17 +3870,17 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE));
 
 	/**
 	 * NMSetting8021x:system-ca-certs:
 	 *
-	 * When TRUE, overrides #NMSetting8021x:ca-path and
+	 * When %TRUE, overrides the #NMSetting8021x:ca-path and
 	 * #NMSetting8021x:phase2-ca-path properties using the system CA directory
 	 * specified at configure time with the --system-ca-path switch.  The
 	 * certificates in this directory are added to the verification chain in
-	 * addition to any certificates specified by the #NMSetting8021x:ca-cert
-	 * and #NMSetting8021x:phase2-ca-cert properties.
+	 * addition to any certificates specified by the #NMSetting8021x:ca-cert and
+	 * #NMSetting8021x:phase2-ca-cert properties.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_SYSTEM_CA_CERTS,
@@ -3622,7 +3894,7 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 							   "chain in addition to any certificates specified "
 							   "by the 'ca-cert' and 'phase2-ca-cert' properties.",
 							   FALSE,
-							   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+							   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/* Initialize crypto lbrary. */
 	if (!nm_utils_init (&error)) {

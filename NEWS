@@ -1,122 +1,59 @@
-================================================
-NetworkManager-0.9.8.10
-Overview of changes since NetworkManager-0.9.8.8
-================================================
-
-This is a new stable release of NetworkManager.  Notable changes include:
-
-* Fixed two problems that could result in gnome-shell showing
-  incorrect icons. (In particular, fixed the problem where the network
-  icon would disappear when certain VPNs were activated.)
-* Fixed a bug that allowed a user to disconnect a connection that
-  they didn't have permissions on.
-* Dispatcher scripts now receive correct IPv6 addresses, and also
-  correct DHCP information on lease-change events.
-* NetworkManager no longer tries to start ModemManager itself on
-  systemd-using systems
-* Activating a second ethernet connection while another is already
-  active will now not move the default route.
-* Fixed some edge cases where one user could deactivate a connection
-  owned by another.
-* Fix handling of dhcp-send-hostname property with ifcfg-rh
-* DHCP now works even if you have a global dhclient.conf that
-  specifies a (non-NetworkManager) script to run
-* The dhcpcd backend now requests that dhcpcd only do DHCPv4, fixing
-  some WWAN devices that don't react well to seeing IPv6 packets.
-* Fixed the default value of bridge priority
-* The D-Bus policy file has been updated to include the
-  NetworkManager-iodine VPN plugin
-* It is possible to specify the path to dnsmasq at build time
-* Removed a GLib 2.32 dependency that accidentally snuck into 0.9.8.8
-* Fixed a bunch of memory leaks
-* Fixed a bunch of miscellaneous crashes
-* Removed some less-useful bits of logging output
-
-
-================================================
-NetworkManager-0.9.8.8
-Overview of changes since NetworkManager-0.9.8.6
-================================================
-
-This is a new stable release of NetworkManager.  Notable changes include:
-
-* Fixes to the BlueZ code
-* A few memory leak fixes
-* Minor docs fixes
-
-================================================
-NetworkManager-0.9.8.6
-Overview of changes since NetworkManager-0.9.8.4
-================================================
-
-This is a new stable release of NetworkManager.  Notable changes include:
-
-* Now supports BlueZ 5. If you are still using BlueZ 4, configure with
-  --enable-bluez4 to disable BlueZ 5 support and enable BlueZ 4 support.
-  (It is not possible to build with support for both versions.)
-
-
-================================================
-NetworkManager-0.9.8.4
-Overview of changes since NetworkManager-0.9.8.2
-================================================
-
-This is a new stable release of NetworkManager.  Notable changes include:
-
-* Removed some spurious warnings
-* Root clients running outside a login session now have the right permissions
-* WiFi AP mode and EAP-FAST support are now detected correctly
-* Bonding config removes inappropriate options when switching modes
-* Fix reading of bond connections with keyfile plugin
-* Fix hang when dbus-daemon restarts
-* Fix crash when VPN disconnection fails
-* The dispatcher now exposes IPv6 VPN info, and IPv4/IPv6 DNS search domains
-* Build fix to support dhcpcd 6.x
-* Fix crash on startup when no dhcp client is available
-* Fix device descriptions when using the latest udev
-* Fix some possible obscure problems at startup
-* Always clear the default route correctly when disconnecting mobile broadband
-* Keyfile plugin now ignores more emacs temporary files
-* When using dnsmasq, pass all nameservers to it, not just the first
-* Kill dhclient if nm-dhcp-client-action encounters a fatal error
-* Fix dispatcher systemd unit install
-* Make ifcfg-rh VLAN parsing match initscripts better
-* Change threshold for WiFi background scanning under WPA Enterprise
-* Fix crash when deleting a currently-active connection
-* Fix ifcfg-rh's handling of IPV6_DEFAULTGW
-* Fix manager State transitions when connectivity checking is enabled
-* Add Connectivity property to distinguish portals from "limited connectivity"
-* Add PrimaryConnection and ActivatingConnection properties to simplify UI code
-* Old connection files containing UUIDs without hyphens work again
-
-
 ==============================================
-NetworkManager-0.9.8.2
+NetworkManager-0.9.10
 Overview of changes since NetworkManager-0.9.8
 ==============================================
 
 This is a new stable release of NetworkManager.  Notable changes include:
 
-* Memory leak fixes
-* Ensure the ifcfg-rh plugin saves the bridging STP setting correctly
-* Also request static routes from DHCP servers
-* Fix crash when dbus-daemon restarts
-* Look harder for the machine ID and don't crash if we don't have one
-* Copy DHCP leasefiles from the previous location if necessary
-* Wait up to 120 seconds for modems to connect
-* Don't crash for PPPoE connections with no wired setting
-* Fix AvailableConnections for some WiFi connections
-* Ensure new available connections generate the PropertiesChanged signal
-* Ensure the keyfile plugin reads all-default VLAN connections correctly
-* Suppress the kernel's automatic creation of bond0
-* Make the SecretAgent API introspectable for bindings
-* Ensure ActiveConnections get torn down when device is unavailable
-* Ensure ifupdown plugin rechecks unmanaged devices on interface changes
-* Don't prematurely think IPv6 has succeeded due to left-over addresses
-* Fix various systemd issues and add service file for the dispatcher
-* Updates for new ModemManager API changes
-* Fix crash on Wi-Fi when IP configuration times out
-
+* Added a new curses-based client called "nmtui" for easier console operation
+* Added interactive connection editing and creation mode to nmcli with detailed
+    help and tab completion support
+* nmcli bash completion has been greatly improved
+* Added support for Data Center Bridging (DCB) and FibreChannel over Ethernet (FCoE)
+* IPv6 autoconfiguration is now done in userspace with libndp instead of the kernel
+* The D-Bus daemon is no longer required for root-only operation
+* WiFi, ADSL, WWAN, and Bluetooth are now optional plugins, reducing install size
+* Added support for Infiniband Partitions
+* Network connection files are no longer watched by default, use "nmcli con reload"
+    to notice changes made externally or set "monitor-connection-files=true" in
+    NetworkManager.conf's [main] section
+* Connections can now be locked to interface names in addition to hardware/MAC addresses
+* A new "ignore-carrier" configuration option is available to ignore the carrier
+    on selected interfaces
+* A new "dns=none" option has been added to suppress changes to /etc/resolv.conf
+* Changes made to IP addresses, IP routes, and master/slave relationships from
+    external tools are now recognized and reflected in the D-Bus API
+* Assuming the existing configuration of interfaces without changing that
+    configuration is now more reliable
+* The 'root' user is no longer subject to PolicyKit access controls and usage
+    of D-Bus "at_console" permissions has been removed
+* Configuration file snippets can be dropped in /etc/NetworkManager/conf.d to
+    change smaller sets of configuration options
+* Added IP-level support for more software/virtual interfaces types including
+    GRE, macvlan, macvtap, tun, tap, veth, and vxlan interfaces
+* All network interfaces known to the kernel are now exposed through
+    the D-Bus interface
+* Improved support for routing-only VPNs like openswan/libreswan/strongswan
+* Added support for "temporary" connections which are not saved to disk until
+    requested
+* Added WWAN autoconnect support and fixed issues with airplane mode handling
+* NetworkManager-wait-online systemd service behavior is more reliable
+* The dispatcher timeout has increased to 10 minutes, and new "pre-up" and
+    "pre-down" events have been added which block activation until complete
+* NetworkManager no longer prevents Wake-on-LAN functionality from working
+* PPPoE now requires userland "rp-pppoe" to work around kernel bugs with
+    that prevent detecting server-side termination of the PPP link
+* An ARP announcement is now sent after IPv4 addresses are configured
+* Added a DNS plugin for dnssec-trigger for better DNSSEC operation
+* More properties are now exposed via the D-Bus properties interface in
+    addition to getter/setter functions
+* Added support for custom IP address ranges for Shared connections
+* Fatal connection failures now block automatic reconnection more reliably
+* VPN connection IP details are now available via the D-Bus interface
+* VPN plugins can now request additional/new secrets from the user during the
+    connection process
+* 'veth' interfaces are now unmanaged by default to cooperate better with
+    external tools
 
 ==============================================
 NetworkManager-0.9.8
@@ -152,21 +89,6 @@ This is a new stable release of NetworkManager.  Notable changes include:
 * Fix canceling secrets requests in GUI agents
 * Always enable Proactive Key Caching (PKC, also called OKC) for WPA Enterprise
     WiFi configurations
-* libnl 3.2.7 or later is required
-* The internal crashdump handling has been removed
-* A DHCPv6 DUID is now generated from /etc/machine-id and sent to the DHCPv6 server
-    if not overridden by an administrator-defined DUID
-* Bond interfaces now wait for a ready slave before starting automatic IP configuration
-* The kernel WiFi rfkill state is now synced to the user-requested WirelessEnabled
-    state at startup
-* Fix issue with duplicate ActiveConnection objects if a connection was reactivated
-    on a device
-* Fix race when looking up hostname and concurrently updating DNS
-* Always load the 'keyfile' settings plugin, even if no plugins are specified
-* Add a new WiFi device ADHOC capability; not all devices/drivers support IBSS mode
-* Fix an issue with quick wpa_supplicant restarts not being noticed
-* Expose the AvailableConnections property through libnm-glib
-* Fix usage of libnm-glib's NMRemoteConnection from GObject Introspection bindings
 
 
 ==============================================

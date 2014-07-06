@@ -83,6 +83,43 @@ NMSettingPPPOE
 
 
 
+<!-- ##### STRUCT NMSettingPPPOE ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingPPPOE:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPPOE:password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPPOE:service ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPPOE:username ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingPPPOEClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_pppoe_new ##### -->
 <para>
 

@@ -78,13 +78,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@ENABLE_TESTS_TRUE@noinst_PROGRAMS =  \
+@ENABLE_TESTS_TRUE@noinst_PROGRAMS = test-nm-client$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-remote-settings-client$(EXEEXT)
 subdir = libnm-glib/tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_warnings.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -103,13 +104,12 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am__test_remote_settings_client_SOURCES_DIST =  \
-	test-remote-settings-client.c
-@ENABLE_TESTS_TRUE@am_test_remote_settings_client_OBJECTS = test_remote_settings_client-test-remote-settings-client.$(OBJEXT)
-test_remote_settings_client_OBJECTS =  \
-	$(am_test_remote_settings_client_OBJECTS)
+am__test_nm_client_SOURCES_DIST = test-nm-client.c
+@ENABLE_TESTS_TRUE@am_test_nm_client_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test-nm-client.$(OBJEXT)
+test_nm_client_OBJECTS = $(am_test_nm_client_OBJECTS)
 am__DEPENDENCIES_1 =
-@ENABLE_TESTS_TRUE@test_remote_settings_client_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@test_nm_client_DEPENDENCIES =  \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib-test.la \
 @ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -117,6 +117,16 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am__test_remote_settings_client_SOURCES_DIST =  \
+	test-remote-settings-client.c
+@ENABLE_TESTS_TRUE@am_test_remote_settings_client_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test-remote-settings-client.$(OBJEXT)
+test_remote_settings_client_OBJECTS =  \
+	$(am_test_remote_settings_client_OBJECTS)
+@ENABLE_TESTS_TRUE@test_remote_settings_client_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib-test.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -151,8 +161,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_remote_settings_client_SOURCES)
-DIST_SOURCES = $(am__test_remote_settings_client_SOURCES_DIST)
+SOURCES = $(test_nm_client_SOURCES) \
+	$(test_remote_settings_client_SOURCES)
+DIST_SOURCES = $(am__test_nm_client_SOURCES_DIST) \
+	$(am__test_remote_settings_client_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -203,12 +215,15 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATADIRNAME = @DATADIRNAME@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
+DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
+DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DSYMUTIL = @DSYMUTIL@
@@ -233,7 +248,6 @@ GNUTLS_CFLAGS = @GNUTLS_CFLAGS@
 GNUTLS_LIBS = @GNUTLS_LIBS@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
-GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
@@ -278,12 +292,16 @@ LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
+LIBNDP_CFLAGS = @LIBNDP_CFLAGS@
+LIBNDP_LIBS = @LIBNDP_LIBS@
 LIBNL_CFLAGS = @LIBNL_CFLAGS@
 LIBNL_LIBS = @LIBNL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
+LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -300,6 +318,8 @@ MOC = @MOC@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEWT_CFLAGS = @NEWT_CFLAGS@
+NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -327,11 +347,16 @@ PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POLKIT_CFLAGS = @POLKIT_CFLAGS@
 POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
+PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
+PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
+READLINE_LIBS = @READLINE_LIBS@
 SED = @SED@
+SELINUX_CFLAGS = @SELINUX_CFLAGS@
+SELINUX_LIBS = @SELINUX_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -346,6 +371,7 @@ UDEV_BASE_DIR = @UDEV_BASE_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
+VALGRIND_RULES = @VALGRIND_RULES@
 VAPIGEN = @VAPIGEN@
 VAPIGEN_MAKEFILE = @VAPIGEN_MAKEFILE@
 VAPIGEN_VAPIDIR = @VAPIGEN_VAPIDIR@
@@ -408,6 +434,7 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 systemdsystemunitdir = @systemdsystemunitdir@
 target_alias = @target_alias@
@@ -418,22 +445,32 @@ with_dhclient = @with_dhclient@
 with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
+with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-glib
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-glib \
+@ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
+@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
+
+
+####### NMClient and non-settings tests #######
+@ENABLE_TESTS_TRUE@test_nm_client_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-nm-client.c
+
+@ENABLE_TESTS_TRUE@test_nm_client_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib-test.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
 
 ####### remote settings client test #######
 @ENABLE_TESTS_TRUE@test_remote_settings_client_SOURCES = \
 @ENABLE_TESTS_TRUE@	test-remote-settings-client.c
-
-@ENABLE_TESTS_TRUE@test_remote_settings_client_CPPFLAGS = \
-@ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(AM_CPPFLAGS)
 
 @ENABLE_TESTS_TRUE@test_remote_settings_client_LDADD = \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
@@ -443,8 +480,9 @@ with_resolvconf = @with_resolvconf@
 
 
 ###########################################
+@ENABLE_TESTS_TRUE@TEST_NM_BIN = test-fake-nm.py
 @ENABLE_TESTS_TRUE@TEST_RSS_BIN = test-remote-settings-service.py
-@ENABLE_TESTS_TRUE@EXTRA_DIST = $(TEST_RSS_BIN)
+@ENABLE_TESTS_TRUE@EXTRA_DIST = $(TEST_RSS_BIN) $(TEST_NM_BIN)
 all: all-am
 
 .SUFFIXES:
@@ -489,6 +527,10 @@ clean-noinstPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
+test-nm-client$(EXEEXT): $(test_nm_client_OBJECTS) $(test_nm_client_DEPENDENCIES) $(EXTRA_test_nm_client_DEPENDENCIES) 
+	@rm -f test-nm-client$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_nm_client_OBJECTS) $(test_nm_client_LDADD) $(LIBS)
+
 test-remote-settings-client$(EXEEXT): $(test_remote_settings_client_OBJECTS) $(test_remote_settings_client_DEPENDENCIES) $(EXTRA_test_remote_settings_client_DEPENDENCIES) 
 	@rm -f test-remote-settings-client$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_remote_settings_client_OBJECTS) $(test_remote_settings_client_LDADD) $(LIBS)
@@ -499,7 +541,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-nm-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-remote-settings-client.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -521,20 +564,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-test_remote_settings_client-test-remote-settings-client.o: test-remote-settings-client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_remote_settings_client_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_remote_settings_client-test-remote-settings-client.o -MD -MP -MF $(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Tpo -c -o test_remote_settings_client-test-remote-settings-client.o `test -f 'test-remote-settings-client.c' || echo '$(srcdir)/'`test-remote-settings-client.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Tpo $(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-remote-settings-client.c' object='test_remote_settings_client-test-remote-settings-client.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_remote_settings_client_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_remote_settings_client-test-remote-settings-client.o `test -f 'test-remote-settings-client.c' || echo '$(srcdir)/'`test-remote-settings-client.c
-
-test_remote_settings_client-test-remote-settings-client.obj: test-remote-settings-client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_remote_settings_client_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_remote_settings_client-test-remote-settings-client.obj -MD -MP -MF $(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Tpo -c -o test_remote_settings_client-test-remote-settings-client.obj `if test -f 'test-remote-settings-client.c'; then $(CYGPATH_W) 'test-remote-settings-client.c'; else $(CYGPATH_W) '$(srcdir)/test-remote-settings-client.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Tpo $(DEPDIR)/test_remote_settings_client-test-remote-settings-client.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-remote-settings-client.c' object='test_remote_settings_client-test-remote-settings-client.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_remote_settings_client_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_remote_settings_client-test-remote-settings-client.obj `if test -f 'test-remote-settings-client.c'; then $(CYGPATH_W) 'test-remote-settings-client.c'; else $(CYGPATH_W) '$(srcdir)/test-remote-settings-client.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -748,8 +777,14 @@ uninstall-am:
 	tags tags-am uninstall uninstall-am
 
 
-@ENABLE_TESTS_TRUE@check-local: test-remote-settings-client
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-remote-settings-client $(abs_srcdir) $(TEST_RSS_BIN)
+@ENABLE_TESTS_TRUE@check-local: test-nm-client test-remote-settings-client
+@ENABLE_TESTS_TRUE@	if test -z "$$DBUS_SESSION_BUS_ADDRESS" ; then \
+@ENABLE_TESTS_TRUE@	    dbus-launch --exit-with-session $(abs_builddir)/test-nm-client $(abs_srcdir) $(TEST_NM_BIN); \
+@ENABLE_TESTS_TRUE@	    dbus-launch --exit-with-session $(abs_builddir)/test-remote-settings-client $(abs_srcdir) $(TEST_RSS_BIN); \
+@ENABLE_TESTS_TRUE@	else \
+@ENABLE_TESTS_TRUE@	    $(abs_builddir)/test-nm-client $(abs_srcdir) $(TEST_NM_BIN); \
+@ENABLE_TESTS_TRUE@	    $(abs_builddir)/test-remote-settings-client $(abs_srcdir) $(TEST_RSS_BIN); \
+@ENABLE_TESTS_TRUE@	fi;
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

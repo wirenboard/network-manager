@@ -50,6 +50,7 @@
 #include "nm-inotify-helper.h"
 
 #include "nm-logging.h"
+#include "nm-config.h"
 
 #include <arpa/inet.h>
 
@@ -85,7 +86,6 @@ typedef struct {
 	GHashTable *kernel_ifaces;
 
 	gboolean unmanage_well_known;
-	char *conf_file;
 
 	gulong inotify_event_id;
 	int inotify_system_hostname_wd;
@@ -182,13 +182,6 @@ sc_plugin_ifupdown_class_init (SCPluginIfupdownClass *req_class)
 }
 
 static void
-ignore_cb (NMSettingsConnection *connection,
-           GError *error,
-           gpointer user_data)
-{
-}
-
-static void
 bind_device_to_connection (SCPluginIfupdown *self,
                            GUdevDevice *device,
                            NMIfupdownConnection *exported)
@@ -200,19 +193,19 @@ bind_device_to_connection (SCPluginIfupdown *self,
 
 	iface = g_udev_device_get_name (device);
 	if (!iface) {
-		PLUGIN_WARN ("SCPluginIfupdown", "failed to get ifname for device.");
+		nm_log_warn (LOGD_SETTINGS, "failed to get ifname for device.");
 		return;
 	}
 
 	address = g_udev_device_get_sysfs_attr (device, "address");
 	if (!address || !strlen (address)) {
-		PLUGIN_WARN ("SCPluginIfupdown", "failed to get MAC address for %s", iface);
+		nm_log_warn (LOGD_SETTINGS, "failed to get MAC address for %s", iface);
 		return;
 	}
 
 	mac_address = nm_utils_hwaddr_atoba (address, ARPHRD_ETHER);
 	if (!mac_address) {
-		PLUGIN_WARN ("SCPluginIfupdown", "failed to parse MAC address '%s' for %s",
+		nm_log_warn (LOGD_SETTINGS, "failed to parse MAC address '%s' for %s",
 		             address, iface);
 		return;
 	}
@@ -220,15 +213,15 @@ bind_device_to_connection (SCPluginIfupdown *self,
 	s_wired = nm_connection_get_setting_wired (NM_CONNECTION (exported));
 	s_wifi = nm_connection_get_setting_wireless (NM_CONNECTION (exported));
 	if (s_wired) {
-		PLUGIN_PRINT ("SCPluginIfupdown", "locking wired connection setting");
+		nm_log_info (LOGD_SETTINGS, "locking wired connection setting");
 		g_object_set (s_wired, NM_SETTING_WIRED_MAC_ADDRESS, mac_address, NULL);
 	} else if (s_wifi) {
-		PLUGIN_PRINT ("SCPluginIfupdown", "locking wireless connection setting");
+		nm_log_info (LOGD_SETTINGS, "locking wireless connection setting");
 		g_object_set (s_wifi, NM_SETTING_WIRELESS_MAC_ADDRESS, mac_address, NULL);
 	}
 	g_byte_array_free (mac_address, TRUE);
 
-	nm_settings_connection_commit_changes (NM_SETTINGS_CONNECTION (exported), ignore_cb, NULL);
+	nm_settings_connection_commit_changes (NM_SETTINGS_CONNECTION (exported), NULL, NULL);
 }    
 
 static void
@@ -243,16 +236,15 @@ udev_device_added (SCPluginIfupdown *self, GUdevDevice *device)
 	if (!iface || !path)
 		return;
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown",
-	             "devices added (path: %s, iface: %s)", path, iface);
+	nm_log_info (LOGD_SETTINGS, "devices added (path: %s, iface: %s)", path, iface);
 
 	/* if we have a configured connection for this particular iface
 	 * we want to either unmanage the device or lock it
 	 */
 	exported = g_hash_table_lookup (priv->connections, iface);
 	if (!exported && !g_hash_table_lookup (priv->eni_ifaces, iface)) {
-		PLUGIN_PRINT("SCPlugin-Ifupdown",
-			"device added (path: %s, iface: %s): no ifupdown configuration found.", path, iface);
+		nm_log_info (LOGD_SETTINGS, "device added (path: %s, iface: %s): no ifupdown configuration found.",
+		             path, iface);
 		return;
 	}
 
@@ -276,8 +268,7 @@ udev_device_removed (SCPluginIfupdown *self, GUdevDevice *device)
 	if (!iface || !path)
 		return;
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown",
-	             "devices removed (path: %s, iface: %s)", path, iface);
+	nm_log_info (LOGD_SETTINGS, "devices removed (path: %s, iface: %s)", path, iface);
 
 	if (!g_hash_table_remove (priv->kernel_ifaces, iface))
 		return;
@@ -297,7 +288,7 @@ udev_device_changed (SCPluginIfupdown *self, GUdevDevice *device)
 	if (!iface || !path)
 		return;
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown", "device changed (path: %s, iface: %s)", path, iface);
+	nm_log_info (LOGD_SETTINGS, "device changed (path: %s, iface: %s)", path, iface);
 
 	if (!g_hash_table_lookup (priv->kernel_ifaces, iface))
 		return;
@@ -338,7 +329,7 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 	GHashTable *auto_ifaces;
 	if_block *block = NULL;
 	NMInotifyHelper *inotify_helper;
-	GKeyFile* keyfile;
+	char *value;
 	GError *error = NULL;
 	GList *keys, *iter;
 	GHashTableIter con_iter;
@@ -357,11 +348,11 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 	if(!priv->eni_ifaces)
 		priv->eni_ifaces = g_hash_table_new (g_str_hash, g_str_equal);
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown", "init!");
+	nm_log_info (LOGD_SETTINGS, "init!");
 
 	priv->client = g_udev_client_new (subsys);
 	if (!priv->client) {
-		PLUGIN_WARN ("SCPlugin-Ifupdown", "    error initializing libgudev");
+		nm_log_warn (LOGD_SETTINGS, "    error initializing libgudev");
 	} else
 		g_signal_connect (priv->client, "uevent", G_CALLBACK (handle_uevent), self);
 
@@ -396,7 +387,7 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 					int state = 0;
 					char **port_ifaces;
 
-					PLUGIN_PRINT("SCPlugin-Ifupdown", "found bridge ports %s for %s", ports, block->name);
+					nm_log_info (LOGD_SETTINGS, "found bridge ports %s for %s", ports, block->name);
 
 					port_ifaces = g_strsplit_set (ports, " \t", -1);
 					for (i = 0; i < g_strv_length (port_ifaces); i++) {
@@ -415,7 +406,7 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 							continue;
 						}
 						if (state == 0 && strlen (token) > 0) {
-							PLUGIN_PRINT("SCPlugin-Ifupdown", "adding bridge port %s to eni_ifaces", token);
+							nm_log_info (LOGD_SETTINGS, "adding bridge port %s to eni_ifaces", token);
 							g_hash_table_insert (priv->eni_ifaces, g_strdup (token), "known");
 						}
 					}
@@ -432,22 +423,22 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 			/* Remove any connection for this block that was previously found */
 			exported = g_hash_table_lookup (priv->connections, block->name);
 			if (exported) {
-				PLUGIN_PRINT("SCPlugin-Ifupdown", "deleting %s from connections", block->name);
-				nm_settings_connection_delete (NM_SETTINGS_CONNECTION (exported), ignore_cb, NULL);
+				nm_log_info (LOGD_SETTINGS, "deleting %s from connections", block->name);
+				nm_settings_connection_delete (NM_SETTINGS_CONNECTION (exported), NULL, NULL);
 				g_hash_table_remove (priv->connections, block->name);
 			}
 
 			/* add the new connection */
 			exported = nm_ifupdown_connection_new (block);
 			if (exported) {
-				PLUGIN_PRINT("SCPlugin-Ifupdown", "adding %s to connections", block->name);
+				nm_log_info (LOGD_SETTINGS, "adding %s to connections", block->name);
 				g_hash_table_insert (priv->connections, block->name, exported);
 			}
-			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding iface %s to eni_ifaces", block->name);
+			nm_log_info (LOGD_SETTINGS, "adding iface %s to eni_ifaces", block->name);
 			g_hash_table_insert (priv->eni_ifaces, block->name, "known");
 		} else if (!strcmp ("mapping", block->type)) {
 			g_hash_table_insert (priv->eni_ifaces, block->name, "known");
-			PLUGIN_PRINT("SCPlugin-Ifupdown", "adding mapping %s to eni_ifaces", block->name);
+			nm_log_info (LOGD_SETTINGS, "adding mapping %s to eni_ifaces", block->name);
 		}
 	next:
 		block = block->next;
@@ -461,41 +452,28 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 		if (g_hash_table_lookup (auto_ifaces, block_name)) {
 			setting = nm_connection_get_setting_connection (NM_CONNECTION (connection));
 			g_object_set (setting, NM_SETTING_CONNECTION_AUTOCONNECT, TRUE, NULL);
-			PLUGIN_PRINT("SCPlugin-Ifupdown", "autoconnect");
+			nm_log_info (LOGD_SETTINGS, "autoconnect");
 		}
 	}
 	g_hash_table_destroy (auto_ifaces);
 
-	/* Read the config file to find out whether to manage interfaces */
-	keyfile = g_key_file_new ();
-	if (!g_key_file_load_from_file (keyfile,
-	                                priv->conf_file,
-	                                G_KEY_FILE_NONE,
-	                                &error)) {
-		nm_log_info (LOGD_SETTINGS, "loading system config file (%s) caused error: (%d) %s",
-		         priv->conf_file,
-		         error ? error->code : -1,
-		         error && error->message ? error->message : "(unknown)");
+	/* Check the config file to find out whether to manage interfaces */
+	value = nm_config_get_value (nm_config_get (),
+	                             IFUPDOWN_KEY_FILE_GROUP, IFUPDOWN_KEY_FILE_KEY_MANAGED,
+	                             &error);
+	if (error) {
+		nm_log_info (LOGD_SETTINGS, "loading system config file (%s) caused error: %s",
+		             nm_config_get_path (nm_config_get ()),
+		             error->message);
 	} else {
 		gboolean manage_well_known;
 		error = NULL;
 
-		manage_well_known = g_key_file_get_boolean (keyfile,
-		                                            IFUPDOWN_KEY_FILE_GROUP,
-		                                            IFUPDOWN_KEY_FILE_KEY_MANAGED,
-		                                            &error);
-		if (error) {
-			nm_log_info (LOGD_SETTINGS, "getting keyfile key '%s' in group '%s' failed: (%d) %s",
-			         IFUPDOWN_KEY_FILE_GROUP,
-			         IFUPDOWN_KEY_FILE_KEY_MANAGED,
-			         error ? error->code : -1,
-			         error && error->message ? error->message : "(unknown)");
-		} else
-			priv->unmanage_well_known = !manage_well_known;
+		manage_well_known = !g_strcmp0 (value, "true") || !g_strcmp0 (value, "1");
+		priv->unmanage_well_known = !manage_well_known;
+		g_free (value);
 	}
-	PLUGIN_PRINT ("SCPluginIfupdown", "management mode: %s", priv->unmanage_well_known ? "unmanaged" : "managed");
-	if (keyfile)
-		g_key_file_free (keyfile);
+	nm_log_info (LOGD_SETTINGS, "management mode: %s", priv->unmanage_well_known ? "unmanaged" : "managed");
 
 	/* Add well-known interfaces */
 	keys = g_udev_client_query_by_subsystem (priv->client, "net");
@@ -518,7 +496,7 @@ SCPluginIfupdown_init (NMSystemConfigInterface *config)
 		g_list_free (con_list);
 	}
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown", "end _init.");
+	nm_log_info (LOGD_SETTINGS, "end _init.");
 }
 
 
@@ -533,10 +511,10 @@ SCPluginIfupdown_get_connections (NMSystemConfigInterface *config)
 	GHashTableIter iter;
 	gpointer value;
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown", "(%d) ... get_connections.", GPOINTER_TO_UINT(config));
+	nm_log_info (LOGD_SETTINGS, "(%d) ... get_connections.", GPOINTER_TO_UINT(config));
 
 	if(priv->unmanage_well_known) {
-		PLUGIN_PRINT("SCPlugin-Ifupdown", "(%d) ... get_connections (managed=false): return empty list.", GPOINTER_TO_UINT(config));
+		nm_log_info (LOGD_SETTINGS, "(%d) ... get_connections (managed=false): return empty list.", GPOINTER_TO_UINT(config));
 		return NULL;
 	}
 
@@ -544,7 +522,7 @@ SCPluginIfupdown_get_connections (NMSystemConfigInterface *config)
 	while (g_hash_table_iter_next (&iter, NULL, &value))
 		connections = g_slist_prepend (connections, value);
 
-	PLUGIN_PRINT("SCPlugin-Ifupdown", "(%d) connections count: %d", GPOINTER_TO_UINT(config), g_slist_length(connections));
+	nm_log_info (LOGD_SETTINGS, "(%d) connections count: %d", GPOINTER_TO_UINT(config), g_slist_length(connections));
 	return connections;
 }
 
@@ -559,22 +537,24 @@ SCPluginIfupdown_get_unmanaged_specs (NMSystemConfigInterface *config)
 	SCPluginIfupdownPrivate *priv = SC_PLUGIN_IFUPDOWN_GET_PRIVATE (config);
 	GSList *specs = NULL;
 	GHashTableIter iter;
-	gpointer value;
+	GUdevDevice *device;
+	const char *iface;
 
 	if (!ALWAYS_UNMANAGE && !priv->unmanage_well_known)
 		return NULL;
 
-	PLUGIN_PRINT("Ifupdown", "get unmanaged devices count: %d",
+	nm_log_info (LOGD_SETTINGS, "get unmanaged devices count: %d",
 	             g_hash_table_size (priv->kernel_ifaces));
 
 	g_hash_table_iter_init (&iter, priv->kernel_ifaces);
-	while (g_hash_table_iter_next (&iter, NULL, &value)) {
-		GUdevDevice *device = G_UDEV_DEVICE (value);
+	while (g_hash_table_iter_next (&iter, (gpointer) &iface, (gpointer) &device)) {
 		const char *address;
 
 		address = g_udev_device_get_sysfs_attr (device, "address");
 		if (address)
 			specs = g_slist_append (specs, g_strdup_printf ("mac:%s", address));
+		else
+			specs = g_slist_append (specs, g_strdup_printf ("interface-name:%s", iface));
 	}
 	return specs;
 }
@@ -598,7 +578,7 @@ update_system_hostname(NMInotifyHelper *inotify_helper,
 	gsize hostname_file_len = 0;
 	GError *error = NULL;
 
-	PLUGIN_PRINT ("SCPlugin-Ifupdown", "update_system_hostname");
+	nm_log_info (LOGD_SETTINGS, "update_system_hostname");
 
 	if (evt && evt->wd != priv->inotify_system_hostname_wd)
 		return;
@@ -608,8 +588,8 @@ update_system_hostname(NMInotifyHelper *inotify_helper,
 						 &hostname_file_len,
 						 &error)) {
 		nm_log_warn (LOGD_SETTINGS, "update_system_hostname() - couldn't read "
-				  IFUPDOWN_SYSTEM_HOSTNAME_FILE " (%d/%s)",
-				  error->code, error->message);
+		             IFUPDOWN_SYSTEM_HOSTNAME_FILE " (%d/%s)",
+		             error->code, error->message);
 		return;
 	}
 
@@ -631,7 +611,7 @@ write_system_hostname(NMSystemConfigInterface *config,
 {
 	GError *error = NULL;
 	SCPluginIfupdownPrivate *priv = SC_PLUGIN_IFUPDOWN_GET_PRIVATE (config);
-	PLUGIN_PRINT ("SCPlugin-Ifupdown", "write_system_hostname: %s", newhostname);
+	nm_log_info (LOGD_SETTINGS, "write_system_hostname: %s", newhostname);
 
 	g_return_if_fail (newhostname);
 
@@ -640,8 +620,8 @@ write_system_hostname(NMSystemConfigInterface *config,
 						 -1,
 						 &error)) {
 		nm_log_warn (LOGD_SETTINGS, "update_system_hostname() - couldn't write hostname (%s) to "
-				  IFUPDOWN_SYSTEM_HOSTNAME_FILE " (%d/%s)",
-				  newhostname, error->code, error->message);	
+		             IFUPDOWN_SYSTEM_HOSTNAME_FILE " (%d/%s)",
+		             newhostname, error->code, error->message);	
 	} else {
 		priv->hostname = g_strdup (newhostname);
 	}
@@ -719,8 +699,6 @@ GObject__dispose (GObject *object)
 	if (priv->eni_ifaces)
 		g_hash_table_destroy(priv->eni_ifaces);
 
-	g_free (priv->conf_file);
-
 	if (priv->client)
 		g_object_unref (priv->client);
 
@@ -729,17 +707,14 @@ GObject__dispose (GObject *object)
 }
 
 G_MODULE_EXPORT GObject *
-nm_system_config_factory (const char *config_file)
+nm_system_config_factory (void)
 {
 	static SCPluginIfupdown *singleton = NULL;
 	SCPluginIfupdownPrivate *priv;
 
 	if (!singleton) {
 		singleton = SC_PLUGIN_IFUPDOWN (g_object_new (SC_TYPE_PLUGIN_IFUPDOWN, NULL));
-		if (singleton) {
-			priv = SC_PLUGIN_IFUPDOWN_GET_PRIVATE (singleton);
-			priv->conf_file = strdup (config_file);
-		}
+		priv = SC_PLUGIN_IFUPDOWN_GET_PRIVATE (singleton);
 	} else
 		g_object_ref (singleton);
 

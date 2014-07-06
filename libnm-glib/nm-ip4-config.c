@@ -37,19 +37,23 @@ G_DEFINE_TYPE (NMIP4Config, nm_ip4_config, NM_TYPE_OBJECT)
 typedef struct {
 	DBusGProxy *proxy;
 
+	char *gateway;
 	GSList *addresses;
+	GSList *routes;
 	GArray *nameservers;
 	GPtrArray *domains;
-	GSList *routes;
+	GPtrArray *searches;
 	GArray *wins;
 } NMIP4ConfigPrivate;
 
 enum {
 	PROP_0,
+	PROP_GATEWAY,
 	PROP_ADDRESSES,
+	PROP_ROUTES,
 	PROP_NAMESERVERS,
 	PROP_DOMAINS,
-	PROP_ROUTES,
+	PROP_SEARCHES,
 	PROP_WINS_SERVERS,
 
 	LAST_PROP
@@ -65,8 +69,7 @@ demarshal_ip4_address_array (NMObject *object, GParamSpec *pspec, GValue *value,
 {
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (object);
 
-	g_slist_foreach (priv->addresses, (GFunc) nm_ip4_address_unref, NULL);
-	g_slist_free (priv->addresses);
+	g_slist_free_full (priv->addresses, (GDestroyNotify) nm_ip4_address_unref);
 	priv->addresses = NULL;
 
 	priv->addresses = nm_utils_ip4_addresses_from_gvalue (value);
@@ -90,12 +93,12 @@ demarshal_ip4_array (NMObject *object, GParamSpec *pspec, GValue *value, gpointe
 }
 
 static gboolean
-demarshal_domains (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field)
+demarshal_string_array (NMObject *object, GParamSpec *pspec, GValue *value, gpointer field)
 {
 	if (!_nm_string_array_demarshal (value, (GPtrArray **) field))
 		return FALSE;
 
-	_nm_object_queue_notify (object, NM_IP4_CONFIG_DOMAINS);
+	_nm_object_queue_notify (object, pspec->name);
 	return TRUE;
 }
 
@@ -104,8 +107,7 @@ demarshal_ip4_routes_array (NMObject *object, GParamSpec *pspec, GValue *value, 
 {
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (object);
 
-	g_slist_foreach (priv->routes, (GFunc) nm_ip4_route_unref, NULL);
-	g_slist_free (priv->routes);
+	g_slist_free_full (priv->routes, (GDestroyNotify) nm_ip4_route_unref);
 	priv->routes = NULL;
 
 	priv->routes = nm_utils_ip4_routes_from_gvalue (value);
@@ -119,10 +121,12 @@ register_properties (NMIP4Config *config)
 {
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 	const NMPropertiesInfo property_info[] = {
+		{ NM_IP4_CONFIG_GATEWAY,      &priv->gateway, },
 		{ NM_IP4_CONFIG_ADDRESSES,    &priv->addresses, demarshal_ip4_address_array },
-		{ NM_IP4_CONFIG_NAMESERVERS,  &priv->nameservers, demarshal_ip4_array },
-		{ NM_IP4_CONFIG_DOMAINS,      &priv->domains, demarshal_domains },
 		{ NM_IP4_CONFIG_ROUTES,       &priv->routes, demarshal_ip4_routes_array },
+		{ NM_IP4_CONFIG_NAMESERVERS,  &priv->nameservers, demarshal_ip4_array },
+		{ NM_IP4_CONFIG_DOMAINS,      &priv->domains, demarshal_string_array },
+		{ NM_IP4_CONFIG_SEARCHES,     &priv->searches, demarshal_string_array },
 		{ NM_IP4_CONFIG_WINS_SERVERS, &priv->wins, demarshal_ip4_array },
 		{ NULL },
 	};
@@ -135,19 +139,11 @@ register_properties (NMIP4Config *config)
 static void
 constructed (GObject *object)
 {
-	DBusGConnection *connection;
-	NMIP4ConfigPrivate *priv;
+	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_ip4_config_parent_class)->constructed (object);
 
-	priv = NM_IP4_CONFIG_GET_PRIVATE (object);
-	connection = nm_object_get_connection (NM_OBJECT (object));
-
-	priv->proxy = dbus_g_proxy_new_for_name (connection,
-										   NM_DBUS_SERVICE,
-										   nm_object_get_path (NM_OBJECT (object)),
-										   NM_DBUS_INTERFACE_IP4_CONFIG);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_IP4_CONFIG);
 	register_properties (NM_IP4_CONFIG (object));
 }
 
@@ -156,11 +152,10 @@ finalize (GObject *object)
 {
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (object);
 
-	g_slist_foreach (priv->addresses, (GFunc) nm_ip4_address_unref, NULL);
-	g_slist_free (priv->addresses);
+	g_free (priv->gateway);
 
-	g_slist_foreach (priv->routes, (GFunc) nm_ip4_route_unref, NULL);
-	g_slist_free (priv->routes);
+	g_slist_free_full (priv->addresses, (GDestroyNotify) nm_ip4_address_unref);
+	g_slist_free_full (priv->routes, (GDestroyNotify) nm_ip4_route_unref);
 
 	if (priv->nameservers)
 		g_array_free (priv->nameservers, TRUE);
@@ -169,8 +164,13 @@ finalize (GObject *object)
 		g_array_free (priv->wins, TRUE);
 
 	if (priv->domains) {
-		g_ptr_array_foreach (priv->domains, (GFunc) g_free, NULL);
+		g_ptr_array_set_free_func (priv->domains, g_free);
 		g_ptr_array_free (priv->domains, TRUE);
+	}
+
+	if (priv->searches) {
+		g_ptr_array_set_free_func (priv->searches, g_free);
+		g_ptr_array_free (priv->searches, TRUE);
 	}
 
 	g_object_unref (priv->proxy);
@@ -190,8 +190,14 @@ get_property (GObject *object,
 	_nm_object_ensure_inited (NM_OBJECT (object));
 
 	switch (prop_id) {
+	case PROP_GATEWAY:
+		g_value_set_string (value, nm_ip4_config_get_gateway (self));
+		break;
 	case PROP_ADDRESSES:
 		nm_utils_ip4_addresses_to_gvalue (priv->addresses, value);
+		break;
+	case PROP_ROUTES:
+		nm_utils_ip4_routes_to_gvalue (priv->routes, value);
 		break;
 	case PROP_NAMESERVERS:
 		g_value_set_boxed (value, nm_ip4_config_get_nameservers (self));
@@ -199,8 +205,8 @@ get_property (GObject *object,
 	case PROP_DOMAINS:
 		g_value_set_boxed (value, nm_ip4_config_get_domains (self));
 		break;
-	case PROP_ROUTES:
-		nm_utils_ip4_routes_to_gvalue (priv->routes, value);
+	case PROP_SEARCHES:
+		g_value_set_boxed (value, nm_ip4_config_get_searches (self));
 		break;
 	case PROP_WINS_SERVERS:
 		g_value_set_boxed (value, nm_ip4_config_get_wins_servers (self));
@@ -226,29 +232,56 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	/* properties */
 
 	/**
-	 * NMIP4Config:addresses:
+	 * NMIP4Config:gateway:
 	 *
-	 * The #GPtrArray containing #NMSettingIP4Address<!-- -->es of the configuration.
+	 * The IP4 gateway address of the configuration as string.
+	 *
+	 * Since: 0.9.10
 	 **/
 	g_object_class_install_property
-		(object_class, PROP_ADDRESSES,
-		 g_param_spec_pointer (NM_IP4_CONFIG_ADDRESSES,
-						       "Addresses",
-						       "Addresses",
-						       G_PARAM_READABLE));
+	    (object_class, PROP_GATEWAY,
+	     g_param_spec_string (NM_IP4_CONFIG_GATEWAY,
+	                          "Gateway",
+	                          "Gateway",
+	                          NULL,
+	                          G_PARAM_READABLE));
+
+	/**
+	 * NMIP4Config:addresses:
+	 *
+	 * The #GPtrArray containing #NMIP4Address<!-- -->es of the configuration.
+	 **/
+	g_object_class_install_property
+	    (object_class, PROP_ADDRESSES,
+	     g_param_spec_pointer (NM_IP4_CONFIG_ADDRESSES,
+	                           "Addresses",
+	                           "Addresses",
+	                           G_PARAM_READABLE));
+
+	/**
+	 * NMIP4Config:routes:
+	 *
+	 * The #GPtrArray containing #NMSettingIP4Routes of the configuration.
+	 **/
+	g_object_class_install_property
+	    (object_class, PROP_ROUTES,
+	     g_param_spec_pointer (NM_IP4_CONFIG_ROUTES,
+	                           "Routes",
+	                           "Routes",
+	                           G_PARAM_READABLE));
 
 	/**
 	 * NMIP4Config:nameservers:
 	 *
-	 * The #GArray containing name servers (%guint32<!-- -->es) of the configuration.
+	 * The #GArray containing name servers (#guint32s) of the configuration.
 	 **/
 	g_object_class_install_property
-		(object_class, PROP_NAMESERVERS,
-		 g_param_spec_boxed (NM_IP4_CONFIG_NAMESERVERS,
-						    "Nameservers",
-						    "Nameservers",
-						    NM_TYPE_UINT_ARRAY,
-						    G_PARAM_READABLE));
+	    (object_class, PROP_NAMESERVERS,
+	     g_param_spec_boxed (NM_IP4_CONFIG_NAMESERVERS,
+	                         "Nameservers",
+	                         "Nameservers",
+	                         NM_TYPE_UINT_ARRAY,
+	                         G_PARAM_READABLE));
 
 	/**
 	 * NMIP4Config:domains:
@@ -256,37 +289,40 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	 * The #GPtrArray containing domain strings of the configuration.
 	 **/
 	g_object_class_install_property
-		(object_class, PROP_DOMAINS,
-		 g_param_spec_boxed (NM_IP4_CONFIG_DOMAINS,
-						    "Domains",
-						    "Domains",
-						    NM_TYPE_STRING_ARRAY,
-						    G_PARAM_READABLE));
+	    (object_class, PROP_DOMAINS,
+	     g_param_spec_boxed (NM_IP4_CONFIG_DOMAINS,
+	                         "Domains",
+	                         "Domains",
+	                         NM_TYPE_STRING_ARRAY,
+	                         G_PARAM_READABLE));
 
 	/**
-	 * NMIP4Config:routes:
+	 * NMIP4Config:searches:
 	 *
-	 * The #GPtrArray containing #NMSettingIP4Route<!-- -->s of the configuration.
+	 * The #GPtrArray containing dns search strings of the configuration.
+	 *
+	 * Since: 0.9.10
 	 **/
 	g_object_class_install_property
-		(object_class, PROP_ROUTES,
-		 g_param_spec_pointer (NM_IP4_CONFIG_ROUTES,
-						       "Routes",
-						       "Routes",
-						       G_PARAM_READABLE));
+	    (object_class, PROP_SEARCHES,
+	     g_param_spec_boxed (NM_IP4_CONFIG_SEARCHES,
+	                         "Searches",
+	                         "DNS searches",
+	                         NM_TYPE_STRING_ARRAY,
+	                         G_PARAM_READABLE));
 
 	/**
 	 * NMIP4Config:wins-servers:
 	 *
-	 * The #GArray containing WINS servers (%guint32<!-- -->es) of the configuration.
+	 * The #GArray containing WINS servers (#guint32s) of the configuration.
 	 **/
 	g_object_class_install_property
-		(object_class, PROP_WINS_SERVERS,
-		 g_param_spec_boxed (NM_IP4_CONFIG_WINS_SERVERS,
-						    "WINS Servers",
-						    "WINS Servers",
-						    NM_TYPE_UINT_ARRAY,
-						    G_PARAM_READABLE));
+	    (object_class, PROP_WINS_SERVERS,
+	     g_param_spec_boxed (NM_IP4_CONFIG_WINS_SERVERS,
+	                         "WINS Servers",
+	                         "WINS Servers",
+	                         NM_TYPE_UINT_ARRAY,
+	                         G_PARAM_READABLE));
 }
 
 /**
@@ -302,9 +338,28 @@ GObject *
 nm_ip4_config_new (DBusGConnection *connection, const char *object_path)
 {
 	return (GObject *) g_object_new (NM_TYPE_IP4_CONFIG,
-									 NM_OBJECT_DBUS_CONNECTION, connection,
-									 NM_OBJECT_DBUS_PATH, object_path,
-									 NULL);
+	                                 NM_OBJECT_DBUS_CONNECTION, connection,
+	                                 NM_OBJECT_DBUS_PATH, object_path,
+	                                 NULL);
+}
+
+/**
+ * nm_ip4_config_get_gateway:
+ * @config: a #NMIP4Config
+ *
+ * Gets the IP4 gateway address.
+ *
+ * Returns: the IP4 address of the gateway.
+ *
+ * Since: 0.9.10
+ **/
+const char *
+nm_ip4_config_get_gateway (NMIP4Config *config)
+{
+	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return NM_IP4_CONFIG_GET_PRIVATE (config)->gateway;
 }
 
 /**
@@ -331,8 +386,9 @@ nm_ip4_config_get_addresses (NMIP4Config *config)
  *
  * Gets the domain name servers (DNS).
  *
- * Returns: (element-type guint32): the #GArray containing %guint32<!-- -->s. This is the internal copy used by the
- * configuration and must not be modified.
+ * Returns: (element-type guint32): the #GArray containing #guint32s.
+ * This is the internal copy used by the configuration and must not be
+ * modified.
  **/
 const GArray *
 nm_ip4_config_get_nameservers (NMIP4Config *config)
@@ -362,13 +418,34 @@ nm_ip4_config_get_domains (NMIP4Config *config)
 }
 
 /**
+ * nm_ip4_config_get_searches:
+ * @config: a #NMIP4Config
+ *
+ * Gets the dns searches.
+ *
+ * Returns: (element-type utf8): the #GPtrArray containing dns searches as strings. This is the
+ * internal copy used by the configuration, and must not be modified.
+ *
+ * Since: 0.9.10
+ **/
+const GPtrArray *
+nm_ip4_config_get_searches (NMIP4Config *config)
+{
+	g_return_val_if_fail (NM_IS_IP4_CONFIG (config), NULL);
+
+	_nm_object_ensure_inited (NM_OBJECT (config));
+	return handle_ptr_array_return (NM_IP4_CONFIG_GET_PRIVATE (config)->searches);
+}
+
+/**
  * nm_ip4_config_get_wins_servers:
  * @config: a #NMIP4Config
  *
  * Gets the Windows Internet Name Service servers (WINS).
  *
- * Returns: (element-type guint32): the #GArray containing %guint32<!-- -->s.
- * This is the internal copy used by the configuration and must not be modified.
+ * Returns: (element-type guint32): the #GArray containing #guint32s.
+ * This is the internal copy used by the configuration and must not be
+ * modified.
  **/
 const GArray *
 nm_ip4_config_get_wins_servers (NMIP4Config *config)
@@ -386,7 +463,7 @@ nm_ip4_config_get_wins_servers (NMIP4Config *config)
  * Gets the routes.
  *
  * Returns: (element-type NetworkManager.IP4Route): the #GSList containing
- * #NMIP4Route<!-- -->s. This is the internal copy used by the configuration,
+ * #NMIP4Routes. This is the internal copy used by the configuration,
  * and must not be modified.
  **/
 const GSList *

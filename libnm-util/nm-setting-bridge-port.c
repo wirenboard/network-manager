@@ -18,13 +18,14 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2012 Red Hat, Inc.
+ * (C) Copyright 2012 - 2013 Red Hat, Inc.
  */
 
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <dbus/dbus-glib.h>
+#include <glib/gi18n.h>
 
 #include "nm-setting-bridge-port.h"
 #include "nm-utils.h"
@@ -151,7 +152,11 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_BRIDGE_PORT_ERROR,
 		             NM_SETTING_BRIDGE_PORT_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_BRIDGE_PORT_PRIORITY);
+		             _("'%d' is not a valid value for the property (should be <= %d)"),
+		             priv->priority, BR_MAX_PORT_PRIORITY);
+		g_prefix_error (error, "%s.%s: ",
+		                NM_SETTING_BRIDGE_PORT_SETTING_NAME,
+		                NM_SETTING_BRIDGE_PORT_PRIORITY);
 		return FALSE;
 	}
 
@@ -159,7 +164,11 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		g_set_error (error,
 		             NM_SETTING_BRIDGE_PORT_ERROR,
 		             NM_SETTING_BRIDGE_PORT_ERROR_INVALID_PROPERTY,
-		             NM_SETTING_BRIDGE_PORT_PATH_COST);
+		             _("'%d' is not a valid value for the property (should be <= %d)"),
+		             priv->path_cost, BR_MAX_PATH_COST);
+		g_prefix_error (error, "%s.%s: ",
+		                NM_SETTING_BRIDGE_PORT_SETTING_NAME,
+		                NM_SETTING_BRIDGE_PORT_PATH_COST);
 		return FALSE;
 	}
 
@@ -186,7 +195,6 @@ nm_setting_bridge_port_new (void)
 static void
 nm_setting_bridge_port_init (NMSettingBridgePort *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_BRIDGE_PORT_SETTING_NAME, NULL);
 }
 
 static void
@@ -260,12 +268,13 @@ nm_setting_bridge_port_class_init (NMSettingBridgePortClass *setting_class)
 		                    "Priority",
 		                    "The Spanning Tree Protocol (STP) priority of this bridge port",
 		                    0, BR_MAX_PORT_PRIORITY, BR_DEF_PRIORITY,
-		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridgePort:path-cost:
 	 *
-	 * The Spanning Tree Protocol (STP) port cost for destinations via this port.
+	 * The Spanning Tree Protocol (STP) port cost for destinations via this
+	 * port.
 	 *
 	 * Since: 0.9.8
 	 **/
@@ -276,12 +285,12 @@ nm_setting_bridge_port_class_init (NMSettingBridgePortClass *setting_class)
 		                    "The Spanning Tree Protocol (STP) port cost for "
 		                    "destinations via this port.",
 		                    0, BR_MAX_PATH_COST, 100,
-		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_INFERRABLE));
 
 	/**
 	 * NMSettingBridgePort:hairpin-mode:
 	 *
-	 * Enables or disabled 'hairpin mode' for the port, which allows frames to
+	 * Enables or disabled "hairpin mode" for the port, which allows frames to
 	 * be sent back out through the port the frame was received on.
 	 *
 	 * Since: 0.9.8
@@ -294,6 +303,5 @@ nm_setting_bridge_port_class_init (NMSettingBridgePortClass *setting_class)
 		                       "port, which allows frames to be sent back out "
 		                       "through the port the frame was received on.",
 		                       FALSE,
-		                       G_PARAM_READWRITE | NM_SETTING_PARAM_SERIALIZE));
-
+		                       G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
 }

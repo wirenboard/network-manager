@@ -83,6 +83,33 @@ NMSettingBluetooth
 
 
 
+<!-- ##### STRUCT NMSettingBluetooth ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingBluetooth:bdaddr ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingBluetooth:type ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingBluetoothClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_bluetooth_new ##### -->
 <para>
 

@@ -29,6 +29,15 @@
 #include <nm-connection.h>
 #include "nm-dbus-manager.h"
 #include "nm-settings-flags.h"
+#include "nm-auth-subject.h"
+
+/* NOTE: ensure these capabilities match those in introspection/nm-secret-agent.xml and
+ * libnm-glib/nm-secret-agent.h.
+ */
+typedef enum {
+	NM_SECRET_AGENT_CAPABILITY_NONE = 0x0,
+	NM_SECRET_AGENT_CAPABILITY_VPN_HINTS = 0x1,
+} NMSecretAgentCapabilities;
 
 #define NM_TYPE_SECRET_AGENT            (nm_secret_agent_get_type ())
 #define NM_SECRET_AGENT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_SECRET_AGENT, NMSecretAgent))
@@ -47,10 +56,10 @@ typedef struct {
 
 GType nm_secret_agent_get_type (void);
 
-NMSecretAgent *nm_secret_agent_new (NMDBusManager *dbus_mgr,
-                                    const char *owner,
+NMSecretAgent *nm_secret_agent_new (DBusGMethodInvocation *context,
+                                    NMAuthSubject *subject,
                                     const char *identifier,
-                                    uid_t owner_uid);
+                                    NMSecretAgentCapabilities capabilities);
 
 const char *nm_secret_agent_get_description (NMSecretAgent *agent);
 
@@ -58,11 +67,17 @@ const char *nm_secret_agent_get_dbus_owner (NMSecretAgent *agent);
 
 const char *nm_secret_agent_get_identifier (NMSecretAgent *agent);
 
-uid_t       nm_secret_agent_get_owner_uid  (NMSecretAgent *agent);
+gulong      nm_secret_agent_get_owner_uid  (NMSecretAgent *agent);
 
 const char *nm_secret_agent_get_owner_username (NMSecretAgent *agent);
 
+gulong      nm_secret_agent_get_pid        (NMSecretAgent *agent);
+
+NMSecretAgentCapabilities nm_secret_agent_get_capabilities (NMSecretAgent *agent);
+
 guint32     nm_secret_agent_get_hash       (NMSecretAgent *agent);
+
+NMAuthSubject *nm_secret_agent_get_subject (NMSecretAgent *agent);
 
 void        nm_secret_agent_add_permission (NMSecretAgent *agent,
                                             const char *permission,
@@ -80,7 +95,7 @@ typedef void (*NMSecretAgentCallback) (NMSecretAgent *agent,
 gconstpointer nm_secret_agent_get_secrets  (NMSecretAgent *agent,
                                             NMConnection *connection,
                                             const char *setting_name,
-                                            const char *hint,
+                                            const char **hints,
                                             NMSettingsGetSecretsFlags flags,
                                             NMSecretAgentCallback callback,
                                             gpointer callback_data);

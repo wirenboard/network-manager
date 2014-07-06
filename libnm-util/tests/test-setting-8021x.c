@@ -22,11 +22,12 @@
 #include <glib.h>
 #include <string.h>
 
-#include "nm-test-helpers.h"
 #include <nm-utils.h>
 
 #include "nm-setting-connection.h"
 #include "nm-setting-8021x.h"
+
+#include "nm-test-utils.h"
 
 static void
 compare_blob_data (const char *test,
@@ -411,7 +412,9 @@ int main (int argc, char **argv)
 	if (argc < 3)
 		FAIL ("init", "need at least two arguments: <path> <password>");
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
 	if (!nm_utils_init (&error))
 		FAIL ("nm-utils-init", "failed to initialize libnm-util: %s", error->message);

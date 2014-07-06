@@ -161,6 +161,9 @@ crypto_decrypt (const char *cipher,
 	} else if (!strcmp (cipher, CIPHER_DES_CBC)) {
 		cipher_mech = CKM_DES_CBC_PAD;
 		real_iv_len = 8;
+	} else if (!strcmp (cipher, CIPHER_AES_CBC)) {
+		cipher_mech = CKM_AES_CBC_PAD;
+		real_iv_len = 16;
 	} else {
 		g_set_error (error, NM_CRYPTO_ERROR,
 		             NM_CRYPTO_ERR_UNKNOWN_CIPHER,
@@ -178,12 +181,6 @@ crypto_decrypt (const char *cipher,
 	}
 
 	output = g_malloc0 (data->len);
-	if (!output) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Not enough memory for decrypted key buffer."));
-		return NULL;
-	}
 
 	slot = PK11_GetBestSlot (cipher_mech, NULL);
 	if (!slot) {
@@ -326,6 +323,8 @@ crypto_encrypt (const char *cipher,
 
 	if (!strcmp (cipher, CIPHER_DES_EDE3_CBC))
 		cipher_mech = CKM_DES3_CBC_PAD;
+	else if (!strcmp (cipher, CIPHER_AES_CBC))
+		cipher_mech = CKM_AES_CBC_PAD;
 	else {
 		g_set_error (error, NM_CRYPTO_ERROR,
 		             NM_CRYPTO_ERR_UNKNOWN_CIPHER,
@@ -346,12 +345,6 @@ crypto_encrypt (const char *cipher,
 		padded_buf[data->len + i] = (guint8) (pad_len & 0xFF);
 
 	output = g_malloc0 (output_len);
-	if (!output) {
-		g_set_error (error, NM_CRYPTO_ERROR,
-		             NM_CRYPTO_ERR_OUT_OF_MEMORY,
-		             _("Could not allocate memory for encrypting."));
-		return NULL;
-	}
 
 	slot = PK11_GetBestSlot (cipher_mech, NULL);
 	if (!slot) {
@@ -414,11 +407,8 @@ out:
 	if (slot)
 		PK11_FreeSlot (slot);
 
-	if (padded_buf) {
-		memset (padded_buf, 0, padded_buf_len);
-		g_free (padded_buf);
-		padded_buf = NULL;
-	}
+	memset (padded_buf, 0, padded_buf_len);
+	g_free (padded_buf);
 
 	if (!success) {
 		memset (output, 0, output_len);

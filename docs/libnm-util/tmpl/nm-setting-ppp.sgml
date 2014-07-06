@@ -181,6 +181,113 @@ NMSettingPPP
 
 
 
+<!-- ##### STRUCT NMSettingPPP ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingPPP:baud ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:crtscts ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:lcp-echo-failure ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:lcp-echo-interval ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:mppe-stateful ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:mru ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:mtu ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:no-vj-comp ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:noauth ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:nobsdcomp ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:nodeflate ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:refuse-chap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:refuse-eap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:refuse-mschap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:refuse-mschapv2 ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:refuse-pap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:require-mppe ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingPPP:require-mppe-128 ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingPPPClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+
 <!-- ##### FUNCTION nm_setting_ppp_new ##### -->
 <para>
 

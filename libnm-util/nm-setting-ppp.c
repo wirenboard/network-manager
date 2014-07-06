@@ -19,9 +19,11 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2008 Red Hat, Inc.
+ * (C) Copyright 2007 - 2013 Red Hat, Inc.
  * (C) Copyright 2007 - 2008 Novell, Inc.
  */
+
+#include <glib/gi18n.h>
 
 #include "nm-setting-ppp.h"
 #include "nm-setting-private.h"
@@ -385,7 +387,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 			g_set_error (error,
 			             NM_SETTING_PPP_ERROR,
 			             NM_SETTING_PPP_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_PPP_MRU);
+			             _("'%d' is out of valid range <128-16384>"),
+			             priv->mru);
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_PPP_SETTING_NAME, NM_SETTING_PPP_MRU);
 			return FALSE;
 		}
 	}
@@ -396,7 +400,9 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 			g_set_error (error,
 			             NM_SETTING_PPP_ERROR,
 			             NM_SETTING_PPP_ERROR_INVALID_PROPERTY,
-			             NM_SETTING_PPP_LCP_ECHO_FAILURE);
+			             _("setting this property requires non-zero '%s' property"),
+			             NM_SETTING_PPP_LCP_ECHO_INTERVAL);
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_PPP_SETTING_NAME, NM_SETTING_PPP_LCP_ECHO_FAILURE);
 			return FALSE;
 		}
 	}
@@ -407,7 +413,6 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 static void
 nm_setting_ppp_init (NMSettingPPP *setting)
 {
-	g_object_set (setting, NM_SETTING_NAME, NM_SETTING_PPP_SETTING_NAME, NULL);
 }
 
 static void
@@ -561,9 +566,9 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 	/**
 	 * NMSettingPPP:noauth:
 	 *
-	 * If TRUE, do not require the other side (usually the PPP server) to
-	 * authenticate itself to the client.  If FALSE, require authentication from
-	 * the remote side.  In almost all cases, this should be TRUE.
+	 * If %TRUE, do not require the other side (usually the PPP server) to
+	 * authenticate itself to the client.  If %FALSE, require authentication
+	 * from the remote side.  In almost all cases, this should be %TRUE.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_NOAUTH,
@@ -574,12 +579,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "If FALSE, require authentication from the remote "
 						   "side.  In almost all cases, this should be TRUE.",
 						   TRUE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:refuse-eap:
 	 *
-	 * If TRUE, the EAP authentication method will not be used.
+	 * If %TRUE, the EAP authentication method will not be used.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_REFUSE_EAP,
@@ -587,12 +592,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "Refuse EAP",
 						   "If TRUE, the EAP authentication method will not be used.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:refuse-pap:
 	 *
-	 * If TRUE, the PAP authentication method will not be used.
+	 * If %TRUE, the PAP authentication method will not be used.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_REFUSE_PAP,
@@ -600,12 +605,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "Refuse PAP",
 						   "If TRUE, the PAP authentication method will not be used.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:refuse-chap:
 	 *
-	 * If TRUE, the CHAP authentication method will not be used.
+	 * If %TRUE, the CHAP authentication method will not be used.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_REFUSE_CHAP,
@@ -613,12 +618,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "Refuse CHAP",
 						   "If TRUE, the CHAP authentication method will not be used.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:refuse-mschap:
 	 *
-	 * If TRUE, the MSCHAP authentication method will not be used.
+	 * If %TRUE, the MSCHAP authentication method will not be used.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_REFUSE_MSCHAP,
@@ -626,12 +631,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "Refuse MSCHAP",
 						   "If TRUE, the MSCHAP authentication method will not be used.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:refuse-mschapv2:
 	 *
-	 * If TRUE, the MSCHAPv2 authentication method will not be used.
+	 * If %TRUE, the MSCHAPv2 authentication method will not be used.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_REFUSE_MSCHAPV2,
@@ -639,12 +644,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "Refuse MSCHAPv2",
 						   "If TRUE, the MSCHAPv2 authentication method will not be used.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:nobsdcomp:
 	 *
-	 * If TRUE, BSD compression will not be requested.
+	 * If %TRUE, BSD compression will not be requested.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_NOBSDCOMP,
@@ -652,12 +657,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "No BSD compression",
 						   "If TRUE, BSD compression will not be requested.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingPPP:nodeflate:
 	 *
-	 * If TRUE, 'deflate' compression will not be requested.
+	 * If %TRUE, "deflate" compression will not be requested.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_NODEFLATE,
@@ -665,12 +670,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "No deflate",
 						   "If TRUE, 'deflate' compression will not be requested.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingPPP:no-vj-comp:
 	 *
-	 * If TRUE, Van Jacobsen TCP header compression will not be requested.
+	 * If %TRUE, Van Jacobsen TCP header compression will not be requested.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_NO_VJ_COMP,
@@ -678,12 +683,12 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "No VJ compression",
 						   "If TRUE, Van Jacobsen TCP header compression will not be requested.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingPPP:require-mppe:
 	 *
-	 * If TRUE, MPPE (Microsoft Point-to-Point Encrpytion) will be required for
+	 * If %TRUE, MPPE (Microsoft Point-to-Point Encrpytion) will be required for
 	 * the PPP session.  If either 64-bit or 128-bit MPPE is not available the
 	 * session will fail.  Note that MPPE is not used on mobile broadband
 	 * connections.
@@ -698,14 +703,14 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "will fail.  Note that MPPE is not used on mobile "
 						   "broadband connections.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:require-mppe-128:
 	 *
-	 * If TRUE, 128-bit MPPE (Microsoft Point-to-Point Encrpytion) will be
-	 * required for the PPP session, and the 'require-mppe' property must also
-	 * be set to TRUE.  If 128-bit MPPE is not available the session will fail.
+	 * If %TRUE, 128-bit MPPE (Microsoft Point-to-Point Encrpytion) will be
+	 * required for the PPP session, and the "require-mppe" property must also
+	 * be set to %TRUE.  If 128-bit MPPE is not available the session will fail.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_REQUIRE_MPPE_128,
@@ -717,13 +722,13 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "must also be set to TRUE.  If 128-bit MPPE is not "
 						   "available the session will fail.",
 						   FALSE,
-						   G_PARAM_READWRITE  | G_PARAM_CONSTRUCT| NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE  | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:mppe-stateful:
 	 *
-	 * If TRUE, stateful MPPE is used.  See pppd documentation for more
-	 * information on stateful MPPE.",
+	 * If %TRUE, stateful MPPE is used.  See pppd documentation for more
+	 * information on stateful MPPE.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_MPPE_STATEFUL,
@@ -732,14 +737,14 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "If TRUE, stateful MPPE is used.  See pppd documentation "
 						   "for more information on stateful MPPE.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:crtscts:
 	 *
-	 * If TRUE, specify that pppd should set the serial port to use hardware
-	 * flow control with RTS and CTS signals.  This value should normally be
-	 * set to FALSE.
+	 * If %TRUE, specify that pppd should set the serial port to use hardware
+	 * flow control with RTS and CTS signals.  This value should normally be set
+	 * to %FALSE.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_CRTSCTS,
@@ -750,7 +755,7 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						   "signals.  This value should normally be set to "
 						   "FALSE.",
 						   FALSE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:baud:
@@ -767,7 +772,7 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						"the specified baudrate.  This value should normally be "
 						"left as 0 to automatically choose the speed.",
 						0, G_MAXUINT32, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingPPP:mru:
@@ -784,7 +789,7 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						"send packets no larger than the specified size.  If "
 						"non-zero, the MRU should be between 128 and 16384.",
 						0, 16384, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE));
+						G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	/**
 	 * NMSettingPPP:mtu:
@@ -799,14 +804,14 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						"If non-zero, instruct pppd to send packets no larger "
 						"than the specified size.",
 						0, G_MAXUINT32, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingPPP:lcp-echo-failure:
 	 *
 	 * If non-zero, instruct pppd to presume the connection to the peer has
 	 * failed if the specified number of LCP echo-requests go unanswered by the
-	 * peer.  The 'lcp-echo-interval' property must also be set to a non-zero
+	 * peer.  The "lcp-echo-interval" property must also be set to a non-zero
 	 * value if this property is used.
 	 **/
 	g_object_class_install_property
@@ -820,7 +825,7 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						"also be set to a non-zero value if this property is "
 						"used.",
 						0, G_MAXUINT32, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 
 	/**
 	 * NMSettingPPP:lcp-echo-interval:
@@ -840,5 +845,5 @@ nm_setting_ppp_class_init (NMSettingPPPClass *setting_class)
 						"to echo requests and some will not, and it is not "
 						"possible to autodetect this.",
 						0, G_MAXUINT32, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_SERIALIZE | NM_SETTING_PARAM_FUZZY_IGNORE));
+						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
 }

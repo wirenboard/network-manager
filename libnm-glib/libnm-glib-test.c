@@ -70,16 +70,16 @@ static gchar *
 ip4_address_as_string (guint32 ip)
 {
 	char buf[INET_ADDRSTRLEN+1];
-	struct in_addr tmp_addr;
+	guint32 tmp_addr;
 
 	memset (&buf, '\0', sizeof (buf));
-	tmp_addr.s_addr = ip;
+	tmp_addr = ip;
 
 	if (inet_ntop (AF_INET, &tmp_addr, buf, INET_ADDRSTRLEN)) {
 		return g_strdup (buf);
 	} else {
 		g_warning ("%s: error converting IP4 address 0x%X",
-		           __func__, ntohl (tmp_addr.s_addr));
+		           __func__, ntohl (tmp_addr));
 		return NULL;
 	}
 }
@@ -173,7 +173,7 @@ dump_access_point (NMAccessPoint *ap)
 	g_print ("\tSsid: %s\n",
 	         ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(none)");
 
-	str = nm_access_point_get_hw_address (ap);
+	str = nm_access_point_get_bssid (ap);
 	g_print ("\tMAC Address: %s\n", str);
 
 	g_print ("\tFlags: 0x%X\n", nm_access_point_get_flags (ap));
@@ -390,7 +390,9 @@ main (int argc, char *argv[])
 {
 	NMClient *client;
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
 	client = nm_client_new ();
 	if (!client) {

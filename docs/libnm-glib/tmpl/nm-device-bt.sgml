@@ -71,6 +71,40 @@ NMDeviceBt
 
 
 
+<!-- ##### STRUCT NMDeviceBt ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceBt:bt-capabilities ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceBt:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceBt:name ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceBtClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
+
 <!-- ##### FUNCTION nm_device_bt_new ##### -->
 <para>
 

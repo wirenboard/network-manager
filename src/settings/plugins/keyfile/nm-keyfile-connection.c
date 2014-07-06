@@ -41,16 +41,17 @@ typedef struct {
 } NMKeyfileConnectionPrivate;
 
 NMKeyfileConnection *
-nm_keyfile_connection_new (const char *full_path,
-                           NMConnection *source,
+nm_keyfile_connection_new (NMConnection *source,
+                           const char *full_path,
                            GError **error)
 {
 	GObject *object;
 	NMKeyfileConnectionPrivate *priv;
 	NMConnection *tmp;
 	const char *uuid;
+	gboolean update_unsaved = TRUE;
 
-	g_return_val_if_fail (full_path != NULL, NULL);
+	g_assert (source || full_path);
 
 	/* If we're given a connection already, prefer that instead of re-reading */
 	if (source)
@@ -59,31 +60,33 @@ nm_keyfile_connection_new (const char *full_path,
 		tmp = nm_keyfile_plugin_connection_from_file (full_path, error);
 		if (!tmp)
 			return NULL;
+
+		uuid = nm_connection_get_uuid (NM_CONNECTION (tmp));
+		if (!uuid) {
+			g_set_error (error, KEYFILE_PLUGIN_ERROR, 0,
+			             "Connection in file %s had no UUID", full_path);
+			g_object_unref (tmp);
+			return NULL;
+		}
+
+		/* If we just read the connection from disk, it's clearly not Unsaved */
+		update_unsaved = FALSE;
 	}
 
 	object = (GObject *) g_object_new (NM_TYPE_KEYFILE_CONNECTION, NULL);
-	if (!object)
-		goto out;
 
 	priv = NM_KEYFILE_CONNECTION_GET_PRIVATE (object);
 	priv->path = g_strdup (full_path);
 
 	/* Update our settings with what was read from the file */
-	if (!nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (object), tmp, error)) {
-		g_object_unref (object);
-		object = NULL;
-		goto out;
-	}
-
-	uuid = nm_connection_get_uuid (NM_CONNECTION (object));
-	if (!uuid) {
-		g_set_error (error, KEYFILE_PLUGIN_ERROR, 0,
-		             "Connection in file %s had no UUID", full_path);
+	if (!nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (object),
+	                                              tmp,
+	                                              update_unsaved,
+	                                              error)) {
 		g_object_unref (object);
 		object = NULL;
 	}
 
-out:
 	g_object_unref (tmp);
 	return (NMKeyfileConnection *) object;
 }
@@ -145,7 +148,8 @@ do_delete (NMSettingsConnection *connection,
 {
 	NMKeyfileConnectionPrivate *priv = NM_KEYFILE_CONNECTION_GET_PRIVATE (connection);
 
-	g_unlink (priv->path);
+	if (priv->path)
+		g_unlink (priv->path);
 
 	NM_SETTINGS_CONNECTION_CLASS (nm_keyfile_connection_parent_class)->delete (connection,
 	                                                                           callback,

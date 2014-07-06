@@ -34,8 +34,7 @@
 #include "nm-logging.h"
 #include "nm-setting.h"
 #include "NetworkManagerUtils.h"
-
-static char *hexstr2bin (const char *hex, size_t len);
+#include "nm-utils.h"
 
 #define NM_SUPPLICANT_CONFIG_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
                                              NM_TYPE_SUPPLICANT_CONFIG, \
@@ -136,17 +135,7 @@ nm_supplicant_config_add_option_with_type (NMSupplicantConfig *self,
 	}
 
 	opt = g_slice_new0 (ConfigOption);
-	if (opt == NULL) {
-		nm_log_warn (LOGD_SUPPLICANT, "Couldn't allocate memory for new config option.");
-		return FALSE;
-	}
-
 	opt->value = g_malloc0 ((sizeof (char) * len) + 1);
-	if (opt->value == NULL) {
-		nm_log_warn (LOGD_SUPPLICANT, "Couldn't allocate memory for new config option value.");
-		g_slice_free (ConfigOption, opt);
-		return FALSE;
-	}
 	memcpy (opt->value, value, len);
 
 	opt->len = len;
@@ -207,27 +196,10 @@ nm_supplicant_config_add_blob (NMSupplicantConfig *self,
 	}
 
 	blob = g_byte_array_sized_new (value->len);
-	if (!blob) {
-		nm_log_warn (LOGD_SUPPLICANT, "Couldn't allocate memory for new config blob.");
-		return FALSE;
-	}
 	g_byte_array_append (blob, value->data, value->len);
 
 	opt = g_slice_new0 (ConfigOption);
-	if (opt == NULL) {
-		nm_log_warn (LOGD_SUPPLICANT, "Couldn't allocate memory for new config option.");
-		g_byte_array_free (blob, TRUE);
-		return FALSE;
-	}
-
 	opt->value = g_strdup_printf ("blob://%s", blobid);
-	if (opt->value == NULL) {
-		nm_log_warn (LOGD_SUPPLICANT, "Couldn't allocate memory for new config option value.");
-		g_byte_array_free (blob, TRUE);
-		g_slice_free (ConfigOption, opt);
-		return FALSE;
-	}
-
 	opt->len = strlen (opt->value);
 	opt->type = type;	
 
@@ -274,7 +246,7 @@ nm_supplicant_config_set_ap_scan (NMSupplicantConfig * self,
                                   guint32 ap_scan)
 {
 	g_return_if_fail (NM_IS_SUPPLICANT_CONFIG (self));
-	g_return_if_fail (ap_scan >= 0 && ap_scan <= 2);
+	g_return_if_fail (ap_scan <= 2);
 
 	NM_SUPPLICANT_CONFIG_GET_PRIVATE (self)->ap_scan = ap_scan;
 }
@@ -359,16 +331,21 @@ nm_supplicant_config_get_blobs (NMSupplicantConfig * self)
 #define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
 #define MAC_ARG(x) ((guint8*)(x))[0],((guint8*)(x))[1],((guint8*)(x))[2],((guint8*)(x))[3],((guint8*)(x))[4],((guint8*)(x))[5]
 
+#define TWO_GHZ_FREQS  "2412,2417,2422,2427,2432,2437,2442,2447,2452,2457,2462,2467,2472,2484"
+#define FIVE_GHZ_FREQS "4915,4920,4925,4935,4940,4945,4960,4980,5035,5040,5045,5055,5060,5080," \
+                         "5170,5180,5190,5200,5210,5220,5230,5240,5260,5280,5300,5320,5500," \
+                         "5520,5540,5560,5580,5600,5620,5640,5660,5680,5700,5745,5765,5785," \
+                         "5805,5825"
+
+
 gboolean
 nm_supplicant_config_add_setting_wireless (NMSupplicantConfig * self,
                                            NMSettingWireless * setting,
-                                           gboolean is_broadcast,
-                                           guint32 fixed_freq,
-                                           gboolean has_scan_capa_ssid)
+                                           guint32 fixed_freq)
 {
 	NMSupplicantConfigPrivate *priv;
 	gboolean is_adhoc, is_ap;
-	const char *mode;
+	const char *mode, *band;
 	const GByteArray *id;
 
 	g_return_val_if_fail (NM_IS_SUPPLICANT_CONFIG (self), FALSE);
@@ -381,12 +358,8 @@ nm_supplicant_config_add_setting_wireless (NMSupplicantConfig * self,
 	is_ap = (mode && !strcmp (mode, "ap")) ? TRUE : FALSE;
 	if (is_adhoc || is_ap)
 		priv->ap_scan = 2;
-	else if (is_broadcast == FALSE) {
-		/* drivers that support scanning specific SSIDs should use
-		 * ap_scan=1, while those that do not should use ap_scan=2.
-		 */
-		priv->ap_scan = has_scan_capa_ssid ? 1 : 2;
-	}
+	else
+		priv->ap_scan = 1;
 
 	id = nm_setting_wireless_get_ssid (setting);
 	if (!nm_supplicant_config_add_option (self, "ssid", (char *) id->data, id->len, FALSE)) {
@@ -443,7 +416,22 @@ nm_supplicant_config_add_setting_wireless (NMSupplicantConfig * self,
 		g_free (str_bssid);
 	}
 
-	// FIXME: band & channel config items
+	band = nm_setting_wireless_get_band (setting);
+	if (band) {
+		const char *freqs = NULL;
+
+		if (!strcmp (band, "a"))
+			freqs = FIVE_GHZ_FREQS;
+		else if (!strcmp (band, "bg"))
+			freqs = TWO_GHZ_FREQS;
+
+		if (freqs && !nm_supplicant_config_add_option (self, "freq_list", freqs, strlen (freqs), FALSE)) {
+			nm_log_warn (LOGD_SUPPLICANT, "Error adding frequency list/band to supplicant config.");
+			return FALSE;
+		}
+	}
+
+	// FIXME: channel config item
 	
 	return TRUE;
 }
@@ -565,7 +553,7 @@ add_wep_key (NMSupplicantConfig *self,
 	if (   (wep_type == NM_WEP_KEY_TYPE_UNKNOWN)
 	    || (wep_type == NM_WEP_KEY_TYPE_KEY)) {
 		if ((key_len == 10) || (key_len == 26)) {
-			value = hexstr2bin (key, strlen (key));
+			value = nm_utils_hexstr2bin (key, strlen (key));
 			success = nm_supplicant_config_add_option (self, name, value, key_len / 2, TRUE);
 			g_free (value);
 			if (!success) {
@@ -626,7 +614,7 @@ nm_supplicant_config_add_setting_wireless_security (NMSupplicantConfig *self,
 
 		if (psk_len == 64) {
 			/* Hex PSK */
-			value = hexstr2bin (psk, psk_len);
+			value = nm_utils_hexstr2bin (psk, psk_len);
 			success = nm_supplicant_config_add_option (self, "psk", value, psk_len / 2, TRUE);
 			g_free (value);
 			if (!success) {
@@ -1072,57 +1060,4 @@ nm_supplicant_config_add_no_security (NMSupplicantConfig *self)
 {
 	return nm_supplicant_config_add_option (self, "key_mgmt", "NONE", -1, FALSE);
 }
-
-/* From hostap, Copyright (c) 2002-2005, Jouni Malinen <jkmaline@cc.hut.fi> */
-
-static int hex2num (char c)
-{
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	if (c >= 'a' && c <= 'f')
-		return c - 'a' + 10;
-	if (c >= 'A' && c <= 'F')
-		return c - 'A' + 10;
-	return -1;
-}
-
-static int hex2byte (const char *hex)
-{
-	int a, b;
-	a = hex2num(*hex++);
-	if (a < 0)
-		return -1;
-	b = hex2num(*hex++);
-	if (b < 0)
-		return -1;
-	return (a << 4) | b;
-}
-
-static char *
-hexstr2bin (const char *hex, size_t len)
-{
-	size_t       i;
-	int          a;
-	const char * ipos = hex;
-	char *       buf = NULL;
-	char *       opos;
-
-	/* Length must be a multiple of 2 */
-	if ((len % 2) != 0)
-		return NULL;
-
-	opos = buf = g_malloc0 ((len / 2) + 1);
-	for (i = 0; i < len; i += 2) {
-		a = hex2byte (ipos);
-		if (a < 0) {
-			g_free (buf);
-			return NULL;
-		}
-		*opos++ = a;
-		ipos += 2;
-	}
-	return buf;
-}
-
-/* End from hostap */
 

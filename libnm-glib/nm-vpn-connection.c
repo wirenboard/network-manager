@@ -25,7 +25,6 @@
 #include "nm-vpn-connection.h"
 #include "NetworkManager.h"
 #include "nm-utils.h"
-#include "nm-glib-marshal.h"
 #include "nm-object-private.h"
 #include "nm-active-connection.h"
 
@@ -46,9 +45,6 @@ enum {
 
 	LAST_PROP
 };
-
-#define DBUS_PROP_VPN_STATE "VpnState"
-#define DBUS_PROP_BANNER "Banner"
 
 enum {
 	VPN_STATE_CHANGED,
@@ -136,6 +132,7 @@ vpn_state_changed_proxy (DBusGProxy *proxy,
 	if (priv->vpn_state != vpn_state) {
 		priv->vpn_state = vpn_state;
 		g_signal_emit (connection, signals[VPN_STATE_CHANGED], 0, vpn_state, reason);
+		g_object_notify (G_OBJECT (connection), NM_VPN_CONNECTION_VPN_STATE);
 	}
 }
 
@@ -167,18 +164,13 @@ register_properties (NMVPNConnection *connection)
 static void
 constructed (GObject *object)
 {
-	NMVPNConnectionPrivate *priv;
+	NMVPNConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_vpn_connection_parent_class)->constructed (object);
 
-	priv = NM_VPN_CONNECTION_GET_PRIVATE (object);
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_VPN_CONNECTION);
 
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-									 NM_DBUS_SERVICE,
-									 nm_object_get_path (NM_OBJECT (object)),
-									 NM_DBUS_INTERFACE_VPN_CONNECTION);
-
-	dbus_g_object_register_marshaller (_nm_glib_marshal_VOID__UINT_UINT,
+	dbus_g_object_register_marshaller (g_cclosure_marshal_generic,
 	                                   G_TYPE_NONE,
 	                                   G_TYPE_UINT, G_TYPE_UINT,
 	                                   G_TYPE_INVALID);
@@ -272,8 +264,7 @@ nm_vpn_connection_class_init (NMVPNConnectionClass *connection_class)
 				    G_OBJECT_CLASS_TYPE (object_class),
 				    G_SIGNAL_RUN_FIRST,
 				    G_STRUCT_OFFSET (NMVPNConnectionClass, vpn_state_changed),
-				    NULL, NULL,
-				    _nm_glib_marshal_VOID__UINT_UINT,
+				    NULL, NULL, NULL,
 				    G_TYPE_NONE, 2,
 				    G_TYPE_UINT, G_TYPE_UINT);
 }

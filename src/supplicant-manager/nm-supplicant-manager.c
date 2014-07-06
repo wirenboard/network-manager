@@ -210,7 +210,6 @@ check_capabilities (NMSupplicantManager *self)
 gboolean
 nm_supplicant_manager_available (NMSupplicantManager *self)
 {
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_SUPPLICANT_MANAGER (self), FALSE);
 
 	if (die_count_exceeded (NM_SUPPLICANT_MANAGER_GET_PRIVATE (self)->die_count))
@@ -379,7 +378,7 @@ dispose (GObject *object)
 	if (priv->dbus_mgr) {
 		if (priv->name_owner_id)
 			g_signal_handler_disconnect (priv->dbus_mgr, priv->name_owner_id);
-		g_object_unref (G_OBJECT (priv->dbus_mgr));
+		priv->dbus_mgr = NULL;
 	}
 
 	g_hash_table_destroy (priv->ifaces);

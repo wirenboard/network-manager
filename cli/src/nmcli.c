@@ -16,7 +16,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2010 - 2012 Red Hat, Inc.
+ * (C) Copyright 2010 - 2014 Red Hat, Inc.
  */
 
 /* Generated configuration file */
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <pthread.h>
 #include <locale.h>
 
 #include <glib.h>
@@ -36,6 +37,7 @@
 
 #include "nmcli.h"
 #include "utils.h"
+#include "common.h"
 #include "connections.h"
 #include "devices.h"
 #include "network-manager.h"
@@ -46,6 +48,10 @@
 # define NMCLI_VERSION VERSION
 #endif
 
+/* Global NmCli object */
+// FIXME: Currently, we pass NmCli over in most APIs, but we might refactor
+// that and use the global variable directly instead.
+NmCli nm_cli;
 
 typedef struct {
 	NmCli *nmc;
@@ -55,6 +61,7 @@ typedef struct {
 
 /* --- Global variables --- */
 GMainLoop *loop = NULL;
+static sigset_t signal_set;
 
 
 /* Get an error quark for use with GError */
@@ -82,11 +89,15 @@ usage (const char *prog_name)
 	         "  -f[ields] <field1,field2,...>|all|common   specify fields to output\n"
 	         "  -e[scape] yes|no                           escape columns separators in values\n"
 	         "  -n[ocheck]                                 don't check nmcli and NetworkManager versions\n"
+	         "  -a[sk]                                     ask for missing parameters\n"
+	         "  -w[ait] <seconds>                          set timeout waiting for finishing operations\n"
 	         "  -v[ersion]                                 show program version\n"
 	         "  -h[elp]                                    print this help\n"
 	         "\n"
 	         "OBJECT\n"
-	         "  nm              NetworkManager's status\n"
+	         "  g[eneral]       NetworkManager's general status and operations\n"
+	         "  n[etworking]    overall networking control\n"
+	         "  r[adio]         NetworkManager radio switches\n"
 	         "  c[onnection]    NetworkManager's connections\n"
 	         "  d[evice]        devices managed by NetworkManager\n"
 	         "\n"),
@@ -104,7 +115,9 @@ static const struct cmd {
 	const char *cmd;
 	NMCResultCode (*func) (NmCli *nmc, int argc, char **argv);
 } nmcli_cmds[] = {
-	{ "nm",         do_network_manager },
+	{ "general",    do_general },
+	{ "networking", do_networking },
+	{ "radio",      do_radio },
 	{ "connection", do_connections },
 	{ "device",     do_devices },
 	{ "help",       do_help },
@@ -183,9 +196,9 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				return nmc->return_value;
 			}
-			if (!strcmp (argv[1], "tabular"))
+			if (matches (argv[1], "tabular") == 0)
 				nmc->multiline_output = FALSE;
-			else if (!strcmp (argv[1], "multiline"))
+			else if (matches (argv[1], "multiline") == 0)
 				nmc->multiline_output = TRUE;
 			else {
 		 		g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[1], opt);
@@ -199,9 +212,9 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				return nmc->return_value;
 			}
-			if (!strcmp (argv[1], "yes"))
+			if (matches (argv[1], "yes") == 0)
 				nmc->escape_values = TRUE;
-			else if (!strcmp (argv[1], "no"))
+			else if (matches (argv[1], "no") == 0)
 				nmc->escape_values = FALSE;
 			else {
 		 		g_string_printf (nmc->return_text, _("Error: '%s' is not valid argument for '%s' option."), argv[1], opt);
@@ -218,6 +231,23 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 			nmc->required_fields = g_strdup (argv[1]);
 		} else if (matches (opt, "-nocheck") == 0) {
 			nmc->nocheck_ver = TRUE;
+		} else if (matches (opt, "-ask") == 0) {
+			nmc->ask = TRUE;
+		} else if (matches (opt, "-wait") == 0) {
+			unsigned long timeout;
+			next_arg (&argc, &argv);
+			if (argc <= 1) {
+		 		g_string_printf (nmc->return_text, _("Error: missing argument for '%s' option."), opt);
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				return nmc->return_value;
+			}
+			if (!nmc_string_to_uint (argv[1], TRUE, 0, G_MAXINT, &timeout)) {
+		 		g_string_printf (nmc->return_text, _("Error: '%s' is not a valid timeout for '%s' option."),
+				                 argv[1], opt);
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				return nmc->return_value;
+			}
+			nmc->timeout = (int) timeout;
 		} else if (matches (opt, "-version") == 0) {
 			printf (_("nmcli tool, version %s\n"), NMCLI_VERSION);
 			return NMC_RESULT_SUCCESS;
@@ -240,27 +270,68 @@ parse_command_line (NmCli *nmc, int argc, char **argv)
 	return nmc->return_value;
 }
 
-static void
-signal_handler (int signo)
-{
-	if (signo == SIGINT || signo == SIGTERM) {
-		g_message (_("Caught signal %d, shutting down..."), signo);
-		g_main_loop_quit (loop);
+void *signal_handling_thread (void *arg);
+/*
+ * Thread function waiting for signals and processing them.
+ * Wait for signals in signal set. The semantics of sigwait() require that all
+ * threads (including the thread calling sigwait()) have the signal masked, for
+ * reliable operation. Otherwise, a signal that arrives while this thread is
+ * not blocked in sigwait() might be delivered to another thread.
+ */
+void *
+signal_handling_thread (void *arg) {
+	int signo;
+
+	while (1) {
+		sigwait (&signal_set, &signo);
+
+		switch (signo) {
+		case SIGINT:
+		case SIGQUIT:
+		case SIGTERM:
+			nmc_cleanup_readline ();
+			printf (_("\nError: nmcli terminated by signal %d."), signo);
+			exit (1);
+			break;
+		default:
+			break;
+		}
 	}
+	return NULL;
 }
 
-static void
+/*
+ * Mask the signals we are interested in and create a signal handling thread.
+ * Because all threads inherit the signal mask from their creator, all threads
+ * in the process will have the signals masked. That's why setup_signals() has
+ * to be called before creating other threads.
+ */
+static gboolean
 setup_signals (void)
 {
-	struct sigaction action;
-	sigset_t mask;
+	pthread_t signal_thread_id;
+	int status;
 
-	sigemptyset (&mask);
-	action.sa_handler = signal_handler;
-	action.sa_mask = mask;
-	action.sa_flags = 0;
-	sigaction (SIGTERM,  &action, NULL);
-	sigaction (SIGINT,  &action, NULL);
+	sigemptyset (&signal_set);
+	sigaddset (&signal_set, SIGINT);
+	sigaddset (&signal_set, SIGQUIT);
+	sigaddset (&signal_set, SIGTERM);
+
+	/* Block all signals of interest. */
+	status = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
+	if (status != 0) {
+		fprintf (stderr, _("Failed to set signal mask: %d"), status);
+		return FALSE;
+	}
+
+       /* Create the signal handling thread. */
+	status = pthread_create (&signal_thread_id, NULL, signal_handling_thread, NULL);
+	if (status != 0) {
+		fprintf (stderr, _("Failed to create signal handling thread: %d"), status);
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 static NMClient *
@@ -287,7 +358,7 @@ nmc_init (NmCli *nmc)
 	nmc->return_value = NMC_RESULT_SUCCESS;
 	nmc->return_text = g_string_new (_("Success"));
 
-	nmc->timeout = 10;
+	nmc->timeout = -1;
 
 	nmc->system_settings = NULL;
 	nmc->system_settings_running = FALSE;
@@ -300,9 +371,13 @@ nmc_init (NmCli *nmc)
 	nmc->mode_specified = FALSE;
 	nmc->escape_values = TRUE;
 	nmc->required_fields = NULL;
-	nmc->allowed_fields = NULL;
+	nmc->output_data = g_ptr_array_new_full (20, g_free);
 	memset (&nmc->print_fields, '\0', sizeof (NmcPrintFields));
 	nmc->nocheck_ver = FALSE;
+	nmc->ask = FALSE;
+	nmc->editor_status_line = FALSE;
+	nmc->editor_save_confirmation = TRUE;
+	nmc->editor_prompt_color = NMC_TERM_COLOR_NORMAL;
 }
 
 static void
@@ -316,8 +391,8 @@ nmc_cleanup (NmCli *nmc)
 	g_slist_free (nmc->system_connections);
 
 	g_free (nmc->required_fields);
-	if (nmc->print_fields.indices)
-		g_array_free (nmc->print_fields.indices, TRUE);
+	nmc_empty_output_fields (nmc);
+	g_ptr_array_unref (nmc->output_data);
 }
 
 static gboolean
@@ -336,8 +411,11 @@ start (gpointer data)
 int
 main (int argc, char *argv[])
 {
-	NmCli nmc;
-	ArgsInfo args_info = { &nmc, argc, argv };
+	ArgsInfo args_info = { &nm_cli, argc, argv };
+
+	/* Set up unix signal handling */
+	if (!setup_signals ())
+		exit (NMC_RESULT_ERROR_UNKNOWN);
 
 	/* Set locale to use environment variables */
 	setlocale (LC_ALL, "");
@@ -349,22 +427,23 @@ main (int argc, char *argv[])
 	textdomain (GETTEXT_PACKAGE);
 #endif
 
+#if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
+#endif
 
-	nmc_init (&nmc);
+	nmc_init (&nm_cli);
 	g_idle_add (start, &args_info);
 
 	loop = g_main_loop_new (NULL, FALSE);  /* create main loop */
-	setup_signals ();                      /* setup UNIX signals */
 	g_main_loop_run (loop);                /* run main loop */
 
 	/* Print result descripting text */
-	if (nmc.return_value != NMC_RESULT_SUCCESS) {
-		fprintf (stderr, "%s\n", nmc.return_text->str);
+	if (nm_cli.return_value != NMC_RESULT_SUCCESS) {
+		fprintf (stderr, "%s\n", nm_cli.return_text->str);
 	}
 
 	g_main_loop_unref (loop);
-	nmc_cleanup (&nmc);
+	nmc_cleanup (&nm_cli);
 
-	return nmc.return_value;
+	return nm_cli.return_value;
 }

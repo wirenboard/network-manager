@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <uuid/uuid.h>
 
+#include "NetworkManagerUtils.h"
 #include "nm-utils.h"
 #include "nm-logging.h"
 #include "nm-dbus-glib-types.h"
@@ -38,6 +39,7 @@ typedef struct {
 	GByteArray * hwaddr;
 	gboolean     ipv6;
 	char *       uuid;
+	guint        priority;
 	guint32      timeout;
 	GByteArray * duid;
 
@@ -57,9 +59,9 @@ typedef struct {
 G_DEFINE_TYPE_EXTENDED (NMDHCPClient, nm_dhcp_client, G_TYPE_OBJECT, G_TYPE_FLAG_ABSTRACT, {})
 
 enum {
-	STATE_CHANGED,
-	TIMEOUT,
-	REMOVE,
+	SIGNAL_STATE_CHANGED,
+	SIGNAL_TIMEOUT,
+	SIGNAL_REMOVE,
 	LAST_SIGNAL
 };
 
@@ -71,6 +73,7 @@ enum {
 	PROP_HWADDR,
 	PROP_IPV6,
 	PROP_UUID,
+	PROP_PRIORITY,
 	PROP_TIMEOUT,
 	LAST_PROP
 };
@@ -80,7 +83,6 @@ enum {
 GPid
 nm_dhcp_client_get_pid (NMDHCPClient *self)
 {
-	g_return_val_if_fail (self != NULL, -1);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), -1);
 
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->pid;
@@ -89,7 +91,6 @@ nm_dhcp_client_get_pid (NMDHCPClient *self)
 const char *
 nm_dhcp_client_get_iface (NMDHCPClient *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
 
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->iface;
@@ -98,7 +99,6 @@ nm_dhcp_client_get_iface (NMDHCPClient *self)
 gboolean
 nm_dhcp_client_get_ipv6 (NMDHCPClient *self)
 {
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->ipv6;
@@ -107,7 +107,6 @@ nm_dhcp_client_get_ipv6 (NMDHCPClient *self)
 const char *
 nm_dhcp_client_get_uuid (NMDHCPClient *self)
 {
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
 
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->uuid;
@@ -138,9 +137,9 @@ watch_cleanup (NMDHCPClient *self)
 }
 
 void
-nm_dhcp_client_stop_pid (GPid pid, const char *iface, guint timeout_secs)
+nm_dhcp_client_stop_pid (GPid pid, const char *iface)
 {
-	int i = (timeout_secs ? timeout_secs : 3) * 5;  /* default 3 seconds */
+	int i = 5;  /* roughly 0.5 seconds */
 
 	g_return_if_fail (pid > 0);
 
@@ -167,7 +166,7 @@ nm_dhcp_client_stop_pid (GPid pid, const char *iface, guint timeout_secs)
 				break;
 			}
 		}
-		g_usleep (G_USEC_PER_SEC / 5);
+		g_usleep (G_USEC_PER_SEC / 10);
 	}
 
 	if (i <= 0) {
@@ -188,7 +187,6 @@ stop (NMDHCPClient *self, gboolean release, const GByteArray *duid)
 {
 	NMDHCPClientPrivate *priv;
 
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_DHCP_CLIENT (self));
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -197,7 +195,7 @@ stop (NMDHCPClient *self, gboolean release, const GByteArray *duid)
 	/* Clean up the watch handler since we're explicitly killing the daemon */
 	watch_cleanup (self);
 
-	nm_dhcp_client_stop_pid (priv->pid, priv->iface, 0);
+	nm_dhcp_client_stop_pid (priv->pid, priv->iface);
 
 	priv->info_only = FALSE;
 }
@@ -213,7 +211,7 @@ daemon_timeout (gpointer user_data)
 	} else {
 		nm_log_warn (LOGD_DHCP4, "(%s): DHCPv4 request timed out.", priv->iface);
 	}
-	g_signal_emit (G_OBJECT (self), signals[TIMEOUT], 0);
+	g_signal_emit (G_OBJECT (self), signals[SIGNAL_TIMEOUT], 0);
 	return FALSE;
 }
 
@@ -223,7 +221,7 @@ signal_remove (gpointer user_data)
 	NMDHCPClient *self = NM_DHCP_CLIENT (user_data);
 
 	NM_DHCP_CLIENT_GET_PRIVATE (self)->remove_id = 0;
-	g_signal_emit (G_OBJECT (self), signals[REMOVE], 0);
+	g_signal_emit (G_OBJECT (self), signals[SIGNAL_REMOVE], 0);
 	return FALSE;
 }
 
@@ -238,12 +236,12 @@ dhcp_client_set_state (NMDHCPClient *self,
 	priv->state = state;
 
 	if (emit_state)
-		g_signal_emit (G_OBJECT (self), signals[STATE_CHANGED], 0, priv->state);
+		g_signal_emit (G_OBJECT (self), signals[SIGNAL_STATE_CHANGED], 0, priv->state);
 
 	if (state == DHC_END || state == DHC_ABEND) {
 		/* Start the remove signal timer */
 		if (remove_now) {
-			g_signal_emit (G_OBJECT (self), signals[REMOVE], 0);
+			g_signal_emit (G_OBJECT (self), signals[SIGNAL_REMOVE], 0);
 		} else {
 			if (!priv->remove_id)
 				priv->remove_id = g_timeout_add_seconds (5, signal_remove, self);
@@ -299,13 +297,12 @@ start_monitor (NMDHCPClient *self)
 
 gboolean
 nm_dhcp_client_start_ip4 (NMDHCPClient *self,
-                          NMSettingIP4Config *s_ip4,
-                          guint8 *dhcp_anycast_addr,
+                          const char *dhcp_client_id,
+                          GByteArray *dhcp_anycast_addr,
                           const char *hostname)
 {
 	NMDHCPClientPrivate *priv;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -316,7 +313,7 @@ nm_dhcp_client_start_ip4 (NMDHCPClient *self,
 	nm_log_info (LOGD_DHCP, "Activation (%s) Beginning DHCPv4 transaction (timeout in %d seconds)",
 	             priv->iface, priv->timeout);
 
-	priv->pid = NM_DHCP_CLIENT_GET_CLASS (self)->ip4_start (self, s_ip4, dhcp_anycast_addr, hostname);
+	priv->pid = NM_DHCP_CLIENT_GET_CLASS (self)->ip4_start (self, dhcp_client_id, dhcp_anycast_addr, hostname);
 	if (priv->pid)
 		start_monitor (self);
 
@@ -334,7 +331,7 @@ machine_id_parse (const char *in, uuid_t uu)
 	g_return_val_if_fail (in != NULL, FALSE);
 	g_return_val_if_fail (strlen (in) == 32, FALSE);
 
-	for (i = 0; i < 32; i++, cp++) {
+	for (i = 0; i < 32; i++) {
 		if (!g_ascii_isxdigit (in[i]))
 			return FALSE;
 	}
@@ -437,7 +434,7 @@ get_duid (NMDHCPClient *self)
 		duid = generate_duid_from_machine_id ();
 		g_assert (duid);
 
-		if (nm_logging_level_enabled (LOGL_DEBUG)) {
+		if (nm_logging_enabled (LOGL_DEBUG, LOGD_DHCP6)) {
 			escaped = escape_duid (duid);
 			nm_log_dbg (LOGD_DHCP6, "Generated DUID %s", escaped);
 			g_free (escaped);
@@ -454,15 +451,13 @@ get_duid (NMDHCPClient *self)
 
 gboolean
 nm_dhcp_client_start_ip6 (NMDHCPClient *self,
-                          NMSettingIP6Config *s_ip6,
-                          guint8 *dhcp_anycast_addr,
+                          GByteArray *dhcp_anycast_addr,
                           const char *hostname,
                           gboolean info_only)
 {
 	NMDHCPClientPrivate *priv;
 	char *escaped;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -476,7 +471,7 @@ nm_dhcp_client_start_ip6 (NMDHCPClient *self,
 	if (!priv->duid)
 		priv->duid = NM_DHCP_CLIENT_GET_CLASS (self)->get_duid (self);
 
-	if (nm_logging_level_enabled (LOGL_DEBUG)) {
+	if (nm_logging_enabled (LOGL_DEBUG, LOGD_DHCP)) {
 		escaped = escape_duid (priv->duid);
 		nm_log_dbg (LOGD_DHCP, "(%s): DHCPv6 DUID is '%s'", priv->iface, escaped);
 		g_free (escaped);
@@ -488,7 +483,6 @@ nm_dhcp_client_start_ip6 (NMDHCPClient *self,
 	             priv->iface, priv->timeout);
 
 	priv->pid = NM_DHCP_CLIENT_GET_CLASS (self)->ip6_start (self,
-	                                                        s_ip6,
 	                                                        dhcp_anycast_addr,
 	                                                        hostname,
 	                                                        info_only,
@@ -524,11 +518,13 @@ nm_dhcp_client_stop_existing (const char *pid_file, const char *binary_name)
 				exe = proc_contents;
 
 			if (!strcmp (exe, binary_name))
-				nm_dhcp_client_stop_pid ((GPid) tmp, NULL, 0);
+				nm_dhcp_client_stop_pid ((GPid) tmp, NULL);
 		}
 	}
 
-	remove (pid_file);
+	if (remove (pid_file) == -1)
+		nm_log_dbg (LOGD_DHCP, "Could not remove dhcp pid file \"%s\": %d (%s)", pid_file, errno, g_strerror (errno));
+
 	g_free (proc_path);
 	g_free (pid_contents);
 	g_free (proc_contents);
@@ -539,7 +535,6 @@ nm_dhcp_client_stop (NMDHCPClient *self, gboolean release)
 {
 	NMDHCPClientPrivate *priv;
 
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_DHCP_CLIENT (self));
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -582,63 +577,54 @@ state_is_bound (guint32 state)
 	return FALSE;
 }
 
-typedef struct {
-	NMDHCPState state;
-	const char *name;
-} DhcState;
-
-#define STATE_TABLE_SIZE (sizeof (state_table) / sizeof (state_table[0]))
-
-static DhcState state_table[] = {
-	{ DHC_NBI,     "nbi" },
-	{ DHC_PREINIT, "preinit" },
-	{ DHC_PREINIT6,"preinit6" },
-	{ DHC_BOUND4,  "bound" },
-	{ DHC_BOUND6,  "bound6" },
-	{ DHC_IPV4LL,  "ipv4ll" },
-	{ DHC_RENEW4,  "renew" },
-	{ DHC_RENEW6,  "renew6" },
-	{ DHC_REBOOT,  "reboot" },
-	{ DHC_REBIND4, "rebind" },
-	{ DHC_REBIND6, "rebind6" },
-	{ DHC_STOP,    "stop" },
-	{ DHC_STOP6,   "stop6" },
-	{ DHC_MEDIUM,  "medium" },
-	{ DHC_TIMEOUT, "timeout" },
-	{ DHC_FAIL,    "fail" },
-	{ DHC_EXPIRE,  "expire" },
-	{ DHC_EXPIRE6, "expire6" },
-	{ DHC_RELEASE, "release" },
-	{ DHC_RELEASE6,"release6" },
-	{ DHC_START,   "start" },
-	{ DHC_ABEND,   "abend" },
-	{ DHC_END,     "end" },
-	{ DHC_DEPREF6, "depref6" },
+static const char *state_table[] = {
+	[DHC_NBI]             = "nbi",
+	[DHC_PREINIT]         = "preinit",
+	[DHC_PREINIT6]        = "preinit6",
+	[DHC_BOUND4]          = "bound",
+	[DHC_BOUND6]          = "bound6",
+	[DHC_IPV4LL]          = "ipv4ll",
+	[DHC_RENEW4]          = "renew",
+	[DHC_RENEW6]          = "renew6",
+	[DHC_REBOOT]          = "reboot",
+	[DHC_REBIND4]         = "rebind",
+	[DHC_REBIND6]         = "rebind6",
+	[DHC_DEPREF6]         = "depref6",
+	[DHC_STOP]            = "stop",
+	[DHC_STOP6]           = "stop6",
+	[DHC_MEDIUM]          = "medium",
+	[DHC_TIMEOUT]         = "timeout",
+	[DHC_FAIL]            = "fail",
+	[DHC_EXPIRE]          = "expire",
+	[DHC_EXPIRE6]         = "expire6",
+	[DHC_RELEASE]         = "release",
+	[DHC_RELEASE6]        = "release6",
+	[DHC_START]           = "start",
+	[DHC_ABEND]           = "abend",
+	[DHC_END]             = "end",
 };
 
-static inline const char *
-state_to_string (guint32 state)
+static const char *
+state_to_string (NMDHCPState state)
 {
-	int i;
-
-	for (i = 0; i < STATE_TABLE_SIZE; i++) {
-		if (state == state_table[i].state)
-			return state_table[i].name;
-	}
-
+	if (state >= 0 && state < G_N_ELEMENTS (state_table))
+		return state_table[state];
 	return NULL;
 }
 
-static inline NMDHCPState
+static NMDHCPState
 string_to_state (const char *name)
 {
 	int i;
 
-	for (i = 0; i < STATE_TABLE_SIZE; i++) {
-		if (!strcasecmp (name, state_table[i].name))
-			return state_table[i].state;
-	}
+	if (name) {
+		for (i = 0; i < G_N_ELEMENTS (state_table); i++) {
+			const char *n = state_table[i];
 
+			if (n && !strcasecmp (name, n))
+				return i;
+		}
+	}
 	return 255;
 }
 
@@ -705,7 +691,6 @@ nm_dhcp_client_new_options (NMDHCPClient *self,
 	guint32 old_state;
 	guint32 new_state;
 
-	g_return_if_fail (self != NULL);
 	g_return_if_fail (NM_IS_DHCP_CLIENT (self));
 	g_return_if_fail (options != NULL);
 	g_return_if_fail (reason != NULL);
@@ -766,7 +751,6 @@ nm_dhcp_client_foreach_option (NMDHCPClient *self,
 	GHashTableIter iter;
 	gpointer iterkey, itervalue;
 
-	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 	g_return_val_if_fail (func != NULL, FALSE);
 
@@ -813,10 +797,12 @@ nm_dhcp_client_foreach_option (NMDHCPClient *self,
 /********************************************/
 
 static gboolean
-ip4_process_dhcpcd_rfc3442_routes (const char *str,
+ip4_process_dhcpcd_rfc3442_routes (NMDHCPClient *self,
+                                   const char *str,
                                    NMIP4Config *ip4_config,
                                    guint32 *gwaddr)
 {
+	NMDHCPClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 	char **routes, **r;
 	gboolean have_routes = FALSE;
 
@@ -831,10 +817,9 @@ ip4_process_dhcpcd_rfc3442_routes (const char *str,
 
 	for (r = routes; *r; r += 2) {
 		char *slash;
-		NMIP4Route *route;
+		NMPlatformIP4Route route;
 		int rt_cidr = 32;
-		struct in_addr rt_addr;
-		struct in_addr rt_route;
+		guint32 rt_addr, rt_route;
 
 		slash = strchr(*r, '/');
 		if (slash) {
@@ -856,17 +841,18 @@ ip4_process_dhcpcd_rfc3442_routes (const char *str,
 		}
 
 		have_routes = TRUE;
-		if (rt_cidr == 0 && rt_addr.s_addr == 0) {
+		if (rt_cidr == 0 && rt_addr == 0) {
 			/* FIXME: how to handle multiple routers? */
-			*gwaddr = rt_route.s_addr;
+			*gwaddr = rt_route;
 		} else {
-			route = nm_ip4_route_new ();
-			nm_ip4_route_set_dest (route, (guint32) rt_addr.s_addr);
-			nm_ip4_route_set_prefix (route, rt_cidr);
-			nm_ip4_route_set_next_hop (route, (guint32) rt_route.s_addr);
-
-			nm_ip4_config_take_route (ip4_config, route);
 			nm_log_info (LOGD_DHCP4, "  classless static route %s/%d gw %s", *r, rt_cidr, *(r + 1));
+			memset (&route, 0, sizeof (route));
+			route.network = rt_addr;
+			route.plen = rt_cidr;
+			route.gateway = rt_route;
+			route.source = NM_PLATFORM_SOURCE_DHCP;
+			route.metric = priv->priority;
+			nm_ip4_config_add_route (ip4_config, &route);
 		}
 	}
 
@@ -876,14 +862,15 @@ out:
 }
 
 static const char **
-process_dhclient_rfc3442_route (const char **octets, NMIP4Route **out_route)
+process_dhclient_rfc3442_route (const char **octets, NMPlatformIP4Route *route, gboolean *success)
 {
 	const char **o = octets;
 	int addr_len = 0, i = 0;
 	long int tmp;
-	NMIP4Route *route;
 	char *next_hop;
-	struct in_addr tmp_addr;
+	guint32 tmp_addr;
+
+	*success = FALSE;
 
 	if (!*o)
 		return o; /* no prefix */
@@ -892,8 +879,8 @@ process_dhclient_rfc3442_route (const char **octets, NMIP4Route **out_route)
 	if (tmp < 0 || tmp > 32)  /* 32 == max IP4 prefix length */
 		return o;
 
-	route = nm_ip4_route_new ();
-	nm_ip4_route_set_prefix (route, (guint32) tmp);
+	memset (route, 0, sizeof (*route));
+	route->plen = tmp;
 	o++;
 
 	if (tmp > 0)
@@ -915,8 +902,8 @@ process_dhclient_rfc3442_route (const char **octets, NMIP4Route **out_route)
 			g_free (str_addr);
 			goto error;
 		}
-		tmp_addr.s_addr &= nm_utils_ip4_prefix_to_netmask ((guint32) tmp);
-		nm_ip4_route_set_dest (route, tmp_addr.s_addr);
+		tmp_addr &= nm_utils_ip4_prefix_to_netmask ((guint32) tmp);
+		route->network = tmp_addr;
 	}
 
 	/* Handle next hop */
@@ -925,25 +912,27 @@ process_dhclient_rfc3442_route (const char **octets, NMIP4Route **out_route)
 		g_free (next_hop);
 		goto error;
 	}
-	nm_ip4_route_set_next_hop (route, tmp_addr.s_addr);
+	route->gateway = tmp_addr;
 	g_free (next_hop);
 
-	*out_route = route;
+	*success = TRUE;
 	return o + 4; /* advance to past the next hop */
 
 error:
-	nm_ip4_route_unref (route);
 	return o;
 }
 
 static gboolean
-ip4_process_dhclient_rfc3442_routes (const char *str,
+ip4_process_dhclient_rfc3442_routes (NMDHCPClient *self,
+                                     const char *str,
                                      NMIP4Config *ip4_config,
                                      guint32 *gwaddr)
 {
+	NMDHCPClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 	char **octets, **o;
 	gboolean have_routes = FALSE;
-	NMIP4Route *route = NULL;
+	NMPlatformIP4Route route;
+	gboolean success;
 
 	o = octets = g_strsplit_set (str, " .", 0);
 	if (g_strv_length (octets) < 5) {
@@ -952,32 +941,28 @@ ip4_process_dhclient_rfc3442_routes (const char *str,
 	}
 
 	while (*o) {
-		route = NULL;
-		o = (char **) process_dhclient_rfc3442_route ((const char **) o, &route);
-		if (!route) {
+		memset (&route, 0, sizeof (route));
+		o = (char **) process_dhclient_rfc3442_route ((const char **) o, &route, &success);
+		if (!success) {
 			nm_log_warn (LOGD_DHCP4, "ignoring invalid classless static routes");
 			break;
 		}
 
 		have_routes = TRUE;
-		if (nm_ip4_route_get_prefix (route) == 0) {
+		if (!route.plen) {
 			/* gateway passed as classless static route */
-			*gwaddr = nm_ip4_route_get_next_hop (route);
-			nm_ip4_route_unref (route);
+			*gwaddr = route.gateway;
 		} else {
-			char addr[INET_ADDRSTRLEN + 1];
-			char nh[INET_ADDRSTRLEN + 1];
-			struct in_addr tmp;
+			char addr[INET_ADDRSTRLEN];
 
 			/* normal route */
-			nm_ip4_config_take_route (ip4_config, route);
+			route.source = NM_PLATFORM_SOURCE_DHCP;
+			route.metric = priv->priority;
+			nm_ip4_config_add_route (ip4_config, &route);
 
-			tmp.s_addr = nm_ip4_route_get_dest (route);
-			inet_ntop (AF_INET, &tmp, addr, sizeof (addr));
-			tmp.s_addr = nm_ip4_route_get_next_hop (route);
-			inet_ntop (AF_INET, &tmp, nh, sizeof (nh));
 			nm_log_info (LOGD_DHCP4, "  classless static route %s/%d gw %s",
-			             addr, nm_ip4_route_get_prefix (route), nh);
+			             nm_utils_inet4_ntop (route.network, addr), route.plen,
+			             nm_utils_inet4_ntop (route.gateway, NULL));
 		}
 	}
 
@@ -987,7 +972,8 @@ out:
 }
 
 static gboolean
-ip4_process_classless_routes (GHashTable *options,
+ip4_process_classless_routes (NMDHCPClient *self,
+                              GHashTable *options,
                               NMIP4Config *ip4_config,
                               guint32 *gwaddr)
 {
@@ -1043,15 +1029,16 @@ ip4_process_classless_routes (GHashTable *options,
 
 	if (strchr (str, '/')) {
 		/* dhcpcd format */
-		return ip4_process_dhcpcd_rfc3442_routes (str, ip4_config, gwaddr);
+		return ip4_process_dhcpcd_rfc3442_routes (self, str, ip4_config, gwaddr);
 	}
 
-	return ip4_process_dhclient_rfc3442_routes (str, ip4_config, gwaddr);
+	return ip4_process_dhclient_rfc3442_routes (self, str, ip4_config, gwaddr);
 }
 
 static void
-process_classful_routes (GHashTable *options, NMIP4Config *ip4_config)
+process_classful_routes (NMDHCPClient *self, GHashTable *options, NMIP4Config *ip4_config)
 {
+	NMDHCPClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 	const char *str;
 	char **searches, **s;
 
@@ -1066,9 +1053,8 @@ process_classful_routes (GHashTable *options, NMIP4Config *ip4_config)
 	}
 
 	for (s = searches; *s; s += 2) {
-		NMIP4Route *route;
-		struct in_addr rt_addr;
-		struct in_addr rt_route;
+		NMPlatformIP4Route route;
+		guint32 rt_addr, rt_route;
 
 		if (inet_pton (AF_INET, *s, &rt_addr) <= 0) {
 			nm_log_warn (LOGD_DHCP, "DHCP provided invalid static route address: '%s'", *s);
@@ -1079,15 +1065,26 @@ process_classful_routes (GHashTable *options, NMIP4Config *ip4_config)
 			continue;
 		}
 
-		// FIXME: ensure the IP addresse and route are sane
+		// FIXME: ensure the IP address and route are sane
 
-		route = nm_ip4_route_new ();
-		nm_ip4_route_set_dest (route, (guint32) rt_addr.s_addr);
-		nm_ip4_route_set_prefix (route, 32); /* 255.255.255.255 */
-		nm_ip4_route_set_next_hop (route, (guint32) rt_route.s_addr);
+		memset (&route, 0, sizeof (route));
+		route.network = rt_addr;
+		/* RFC 2132, updated by RFC 3442:
+		   The Static Routes option (option 33) does not provide a subnet mask
+		   for each route - it is assumed that the subnet mask is implicit in
+		   whatever network number is specified in each route entry */
+		route.plen = nm_utils_ip4_get_default_prefix (rt_addr);
+		if (rt_addr & ~nm_utils_ip4_prefix_to_netmask (route.plen)) {
+			/* RFC 943: target not "this network"; using host routing */
+			route.plen = 32;
+		}
+		route.gateway = rt_route;
+		route.source = NM_PLATFORM_SOURCE_DHCP;
+		route.metric = priv->priority;
 
-		nm_ip4_config_take_route (ip4_config, route);
-		nm_log_info (LOGD_DHCP, "  static route %s gw %s", *s, *(s + 1));
+		nm_ip4_config_add_route (ip4_config, &route);
+		nm_log_info (LOGD_DHCP, "  static route %s",
+		                        nm_platform_ip4_route_to_string (&route));
 	}
 
 out:
@@ -1145,59 +1142,47 @@ ip4_options_to_config (NMDHCPClient *self)
 {
 	NMDHCPClientPrivate *priv;
 	NMIP4Config *ip4_config = NULL;
-	struct in_addr tmp_addr;
-	NMIP4Address *addr = NULL;
+	guint32 tmp_addr;
+	NMPlatformIP4Address address;
 	char *str = NULL;
-	guint32 gwaddr = 0, prefix = 0;
+	guint32 gwaddr = 0, plen = 0;
 
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 	g_return_val_if_fail (priv->options != NULL, NULL);
 
 	ip4_config = nm_ip4_config_new ();
-	if (!ip4_config) {
-		nm_log_warn (LOGD_DHCP4, "(%s): couldn't allocate memory for an IP4Config!", priv->iface);
-		return NULL;
-	}
-
-	addr = nm_ip4_address_new ();
-	if (!addr) {
-		nm_log_warn (LOGD_DHCP4, "(%s): couldn't allocate memory for an IP4 Address!", priv->iface);
-		goto error;
-	}
+	memset (&address, 0, sizeof (address));
+	address.timestamp = nm_utils_get_monotonic_timestamp_s ();
 
 	str = g_hash_table_lookup (priv->options, "new_ip_address");
 	if (str && (inet_pton (AF_INET, str, &tmp_addr) > 0)) {
-		nm_ip4_address_set_address (addr, tmp_addr.s_addr);
+		address.address = tmp_addr;
 		nm_log_info (LOGD_DHCP4, "  address %s", str);
 	} else
 		goto error;
 
 	str = g_hash_table_lookup (priv->options, "new_subnet_mask");
 	if (str && (inet_pton (AF_INET, str, &tmp_addr) > 0)) {
-		prefix = nm_utils_ip4_netmask_to_prefix (tmp_addr.s_addr);
-		nm_log_info (LOGD_DHCP4, "  prefix %d (%s)", prefix, str);
+		plen = nm_utils_ip4_netmask_to_prefix (tmp_addr);
+		nm_log_info (LOGD_DHCP4, "  plen %d (%s)", plen, str);
 	} else {
 		/* Get default netmask for the IP according to appropriate class. */
-		prefix = nm_utils_ip4_get_default_prefix (nm_ip4_address_get_address (addr));
-		nm_log_info (LOGD_DHCP4, "  prefix %d (default)", prefix);
+		plen = nm_utils_ip4_get_default_prefix (address.address);
+		nm_log_info (LOGD_DHCP4, "  plen %d (default)", plen);
 	}
-	nm_ip4_address_set_prefix (addr, prefix);
+	address.plen = plen;
 
 	/* Routes: if the server returns classless static routes, we MUST ignore
 	 * the 'static_routes' option.
 	 */
-	if (!ip4_process_classless_routes (priv->options, ip4_config, &gwaddr))
-		process_classful_routes (priv->options, ip4_config);
+	if (!ip4_process_classless_routes (self, priv->options, ip4_config, &gwaddr))
+		process_classful_routes (self, priv->options, ip4_config);
 
 	if (gwaddr) {
-		char buf[INET_ADDRSTRLEN + 1];
-
-		inet_ntop (AF_INET, &gwaddr, buf, sizeof (buf));
-		nm_log_info (LOGD_DHCP4, "  gateway %s", buf);
-		nm_ip4_address_set_gateway (addr, gwaddr);
+		nm_log_info (LOGD_DHCP4, "  gateway %s", nm_utils_inet4_ntop (gwaddr, NULL));
+		nm_ip4_config_set_gateway (ip4_config, gwaddr);
 	} else {
 		/* If the gateway wasn't provided as a classless static route with a
 		 * subnet length of 0, try to find it using the old-style 'routers' option.
@@ -1209,8 +1194,8 @@ ip4_options_to_config (NMDHCPClient *self)
 
 			for (s = routers; *s; s++) {
 				/* FIXME: how to handle multiple routers? */
-				if (inet_pton (AF_INET, *s, &tmp_addr) > 0) {
-					nm_ip4_address_set_gateway (addr, tmp_addr.s_addr);
+				if (inet_pton (AF_INET, *s, &gwaddr) > 0) {
+					nm_ip4_config_set_gateway (ip4_config, gwaddr);
 					nm_log_info (LOGD_DHCP4, "  gateway %s", *s);
 					break;
 				} else
@@ -1220,8 +1205,51 @@ ip4_options_to_config (NMDHCPClient *self)
 		}
 	}
 
-	nm_ip4_config_take_address (ip4_config, addr);
-	addr = NULL;
+	/*
+	 * RFC 2132, section 9.7
+	 *   DHCP clients use the contents of the 'server identifier' field
+	 *   as the destination address for any DHCP messages unicast to
+	 *   the DHCP server.
+	 *
+	 * Some ISP's provide leases from central servers that are on
+	 * different subnets that the address offered.  If the host
+	 * does not configure the interface as the default route, the
+	 * dhcp server may not be reachable via unicast, and a host
+	 * specific route is needed.
+	 **/
+	str = g_hash_table_lookup (priv->options, "new_dhcp_server_identifier");
+	if (str) {
+		if (inet_pton (AF_INET, str, &tmp_addr) > 0) {
+			NMPlatformIP4Route route;
+			guint32 mask = nm_utils_ip4_prefix_to_netmask (address.plen);
+
+			nm_log_info (LOGD_DHCP4, "  server identifier %s", str);
+			if ((tmp_addr & mask) != (address.address & mask)) {
+				/* DHCP server not on assigned subnet, route needed */
+				memset (&route, 0, sizeof (route));
+				route.network = tmp_addr;
+				route.plen = 32;
+				/* this will be a device route if gwaddr is 0 */
+				route.gateway = gwaddr;
+				route.source = NM_PLATFORM_SOURCE_DHCP;
+				route.metric = priv->priority;
+				nm_ip4_config_add_route (ip4_config, &route);
+				nm_log_dbg (LOGD_IP, "adding route for server identifier: %s",
+				                      nm_platform_ip4_route_to_string (&route));
+			}
+		}
+		else
+			nm_log_warn (LOGD_DHCP4, "ignoring invalid server identifier '%s'", str);
+	}
+
+	str = g_hash_table_lookup (priv->options, "new_dhcp_lease_time");
+	if (str) {
+		address.lifetime = address.preferred = strtoul (str, NULL, 10);
+		nm_log_info (LOGD_DHCP4, "  lease time %d", address.lifetime);
+	}
+
+	address.source = NM_PLATFORM_SOURCE_DHCP;
+	nm_ip4_config_add_address (ip4_config, &address);
 
 	str = g_hash_table_lookup (priv->options, "new_host_name");
 	if (str)
@@ -1234,7 +1262,7 @@ ip4_options_to_config (NMDHCPClient *self)
 
 		for (s = searches; *s; s++) {
 			if (inet_pton (AF_INET, *s, &tmp_addr) > 0) {
-				nm_ip4_config_add_nameserver (ip4_config, tmp_addr.s_addr);
+				nm_ip4_config_add_nameserver (ip4_config, tmp_addr);
 				nm_log_info (LOGD_DHCP4, "  nameserver '%s'", *s);
 			} else
 				nm_log_warn (LOGD_DHCP4, "ignoring invalid nameserver '%s'", *s);
@@ -1265,7 +1293,7 @@ ip4_options_to_config (NMDHCPClient *self)
 
 		for (s = searches; *s; s++) {
 			if (inet_pton (AF_INET, *s, &tmp_addr) > 0) {
-				nm_ip4_config_add_wins (ip4_config, tmp_addr.s_addr);
+				nm_ip4_config_add_wins (ip4_config, tmp_addr);
 				nm_log_info (LOGD_DHCP4, "  wins '%s'", *s);
 			} else
 				nm_log_warn (LOGD_DHCP4, "ignoring invalid WINS server '%s'", *s);
@@ -1299,7 +1327,7 @@ ip4_options_to_config (NMDHCPClient *self)
 
 		for (s = searches; *s; s++) {
 			if (inet_pton (AF_INET, *s, &tmp_addr) > 0) {
-				nm_ip4_config_add_nis_server (ip4_config, tmp_addr.s_addr);
+				nm_ip4_config_add_nis_server (ip4_config, tmp_addr);
 				nm_log_info (LOGD_DHCP4, "  nis '%s'", *s);
 			} else
 				nm_log_warn (LOGD_DHCP4, "ignoring invalid NIS server '%s'", *s);
@@ -1310,8 +1338,6 @@ ip4_options_to_config (NMDHCPClient *self)
 	return ip4_config;
 
 error:
-	if (addr)
-		nm_ip4_address_unref (addr);
 	g_object_unref (ip4_config);
 	return NULL;
 }
@@ -1321,7 +1347,6 @@ nm_dhcp_client_get_ip4_config (NMDHCPClient *self, gboolean test)
 {
 	NMDHCPClientPrivate *priv;
 
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -1354,13 +1379,16 @@ ip6_options_to_config (NMDHCPClient *self)
 	NMDHCPClientPrivate *priv;
 	NMIP6Config *ip6_config = NULL;
 	struct in6_addr tmp_addr;
-	NMIP6Address *addr = NULL;
+	NMPlatformIP6Address address;
 	char *str = NULL;
 	GHashTableIter iter;
 	gpointer key, value;
 
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
+
+	memset (&address, 0, sizeof (address));
+	address.plen = 128;
+	address.timestamp = nm_utils_get_monotonic_timestamp_s ();
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 	g_return_val_if_fail (priv->options != NULL, NULL);
@@ -1372,9 +1400,17 @@ ip6_options_to_config (NMDHCPClient *self)
 	}
 
 	ip6_config = nm_ip6_config_new ();
-	if (!ip6_config) {
-		nm_log_warn (LOGD_DHCP6, "(%s): couldn't allocate memory for an IP6Config!", priv->iface);
-		return NULL;
+
+	str = g_hash_table_lookup (priv->options, "new_max_life");
+	if (str) {
+		address.lifetime = strtoul (str, NULL, 10);
+		nm_log_info (LOGD_DHCP6, "  valid_lft %d", address.lifetime);
+	}
+
+	str = g_hash_table_lookup (priv->options, "new_preferred_life");
+	if (str) {
+		address.preferred = strtoul (str, NULL, 10);
+		nm_log_info (LOGD_DHCP6, "  preferred_lft %d", address.preferred);
 	}
 
 	str = g_hash_table_lookup (priv->options, "new_ip6_address");
@@ -1385,14 +1421,10 @@ ip6_options_to_config (NMDHCPClient *self)
 			goto error;
 		}
 
-		addr = nm_ip6_address_new ();
-		g_assert (addr);
-		nm_ip6_address_set_address (addr, &tmp_addr);
-		/* DHCPv6 IA_NA assignments are single address only */
-		nm_ip6_address_set_prefix (addr, 128);
-		nm_log_info (LOGD_DHCP6, "  address %s/128", str);
-
-		nm_ip6_config_take_address (ip6_config, addr);
+		address.address = tmp_addr;
+		address.source = NM_PLATFORM_SOURCE_DHCP;
+		nm_ip6_config_add_address (ip6_config, &address);
+		nm_log_info (LOGD_DHCP6, "  address %s", str);
 	} else if (priv->info_only == FALSE) {
 		/* No address in Managed mode is a hard error */
 		goto error;
@@ -1433,7 +1465,6 @@ nm_dhcp_client_get_ip6_config (NMDHCPClient *self, gboolean test)
 {
 	NMDHCPClientPrivate *priv;
 
-	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -1481,6 +1512,9 @@ get_property (GObject *object, guint prop_id,
 	case PROP_UUID:
 		g_value_set_string (value, priv->uuid);
 		break;
+	case PROP_PRIORITY:
+		g_value_set_uint (value, priv->priority);
+		break;
 	case PROP_TIMEOUT:
 		g_value_set_uint (value, priv->timeout);
 		break;
@@ -1512,6 +1546,10 @@ set_property (GObject *object, guint prop_id,
 	case PROP_UUID:
 		/* construct-only */
 		priv->uuid = g_value_dup_string (value);
+		break;
+	case PROP_PRIORITY:
+		/* construct-only */
+		priv->priority = g_value_get_uint (value);
 		break;
 	case PROP_TIMEOUT:
 		priv->timeout = g_value_get_uint (value);
@@ -1605,6 +1643,14 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
 	g_object_class_install_property
+		(object_class, PROP_PRIORITY,
+		 g_param_spec_uint (NM_DHCP_CLIENT_PRIORITY,
+		                    "priority",
+		                    "Priority",
+		                    0, G_MAXUINT, 0,
+		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property
 		(object_class, PROP_TIMEOUT,
 		 g_param_spec_uint (NM_DHCP_CLIENT_TIMEOUT,
 		                    "timeout",
@@ -1613,8 +1659,8 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 		                    G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
 	/* signals */
-	signals[STATE_CHANGED] =
-		g_signal_new ("state-changed",
+	signals[SIGNAL_STATE_CHANGED] =
+		g_signal_new (NM_DHCP_CLIENT_SIGNAL_STATE_CHANGED,
 					  G_OBJECT_CLASS_TYPE (object_class),
 					  G_SIGNAL_RUN_FIRST,
 					  G_STRUCT_OFFSET (NMDHCPClientClass, state_changed),
@@ -1622,8 +1668,8 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 					  g_cclosure_marshal_VOID__UINT,
 					  G_TYPE_NONE, 1, G_TYPE_UINT);
 
-	signals[TIMEOUT] =
-		g_signal_new ("timeout",
+	signals[SIGNAL_TIMEOUT] =
+		g_signal_new (NM_DHCP_CLIENT_SIGNAL_TIMEOUT,
 					  G_OBJECT_CLASS_TYPE (object_class),
 					  G_SIGNAL_RUN_FIRST,
 					  G_STRUCT_OFFSET (NMDHCPClientClass, timeout),
@@ -1631,8 +1677,8 @@ nm_dhcp_client_class_init (NMDHCPClientClass *client_class)
 					  g_cclosure_marshal_VOID__VOID,
 					  G_TYPE_NONE, 0);
 
-	signals[REMOVE] =
-		g_signal_new ("remove",
+	signals[SIGNAL_REMOVE] =
+		g_signal_new (NM_DHCP_CLIENT_SIGNAL_REMOVE,
 					  G_OBJECT_CLASS_TYPE (object_class),
 					  G_SIGNAL_RUN_FIRST,
 					  G_STRUCT_OFFSET (NMDHCPClientClass, remove),

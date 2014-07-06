@@ -45,6 +45,8 @@ G_BEGIN_DECLS
  *   was removed before it was completely initialized
  * @NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE: the #NMRemoteConnection object
  *   is not visible or otherwise unreadable
+ * @NM_REMOTE_SETTINGS_ERROR_SERVICE_UNAVAILABLE: NetworkManager is not running.
+ *   (Since 0.9.10)
  *
  * Describes errors that may result from operations involving a #NMRemoteSettings.
  *
@@ -53,6 +55,7 @@ typedef enum {
 	NM_REMOTE_SETTINGS_ERROR_UNKNOWN = 0,            /*< nick=UnknownError >*/
 	NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED,     /*< nick=ConnectionRemoved >*/
 	NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE, /*< nick=ConnectionUnavailable >*/
+	NM_REMOTE_SETTINGS_ERROR_SERVICE_UNAVAILABLE,    /*< nick=ServiceUnavailable >*/
 } NMRemoteSettingsError;
 
 #define NM_REMOTE_SETTINGS_ERROR nm_remote_settings_error_quark ()
@@ -75,6 +78,11 @@ typedef void (*NMRemoteSettingsAddConnectionFunc) (NMRemoteSettings *settings,
                                                    NMRemoteConnection *connection,
                                                    GError *error,
                                                    gpointer user_data);
+
+typedef void (*NMRemoteSettingsLoadConnectionsFunc) (NMRemoteSettings *settings,
+                                                     char **failures,
+                                                     GError *error,
+                                                     gpointer user_data);
 
 typedef void (*NMRemoteSettingsSaveHostnameFunc) (NMRemoteSettings *settings,
                                                   GError *error,
@@ -116,6 +124,9 @@ NMRemoteSettings *nm_remote_settings_new_finish (GAsyncResult         *result,
 
 GSList *nm_remote_settings_list_connections (NMRemoteSettings *settings);
 
+NMRemoteConnection *nm_remote_settings_get_connection_by_id (NMRemoteSettings *settings,
+                                                             const char *id);
+
 NMRemoteConnection * nm_remote_settings_get_connection_by_path (NMRemoteSettings *settings,
                                                                 const char *path);
 
@@ -126,6 +137,22 @@ gboolean nm_remote_settings_add_connection (NMRemoteSettings *settings,
                                             NMConnection *connection,
                                             NMRemoteSettingsAddConnectionFunc callback,
                                             gpointer user_data);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean nm_remote_settings_add_connection_unsaved (NMRemoteSettings *settings,
+                                                    NMConnection *connection,
+                                                    NMRemoteSettingsAddConnectionFunc callback,
+                                                    gpointer user_data);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean nm_remote_settings_load_connections (NMRemoteSettings *settings,
+                                              char **filenames,
+                                              char ***failures,
+                                              GError **error);
+
+NM_AVAILABLE_IN_0_9_10
+gboolean nm_remote_settings_reload_connections (NMRemoteSettings *settings,
+                                                GError **error);
 
 gboolean nm_remote_settings_save_hostname (NMRemoteSettings *settings,
                                            const char *hostname,

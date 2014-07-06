@@ -37,23 +37,24 @@
 #include <glib/gi18n.h>
 #include <gmodule.h>
 #include <string.h>
+#include <sys/resource.h>
 
+#include "libgsystem.h"
 #include "NetworkManager.h"
 #include "NetworkManagerUtils.h"
 #include "nm-manager.h"
+#include "nm-linux-platform.h"
 #include "nm-dns-manager.h"
 #include "nm-dbus-manager.h"
 #include "nm-supplicant-manager.h"
 #include "nm-dhcp-manager.h"
 #include "nm-firewall-manager.h"
-#include "nm-hostname-provider.h"
-#include "nm-netlink-monitor.h"
 #include "nm-vpn-manager.h"
 #include "nm-logging.h"
-#include "nm-policy-hosts.h"
 #include "nm-config.h"
 #include "nm-posix-signals.h"
-#include "nm-system.h"
+#include "nm-session-monitor.h"
+#include "nm-dispatcher.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -65,7 +66,6 @@
 /*
  * Globals
  */
-static NMManager *manager = NULL;
 static GMainLoop *main_loop = NULL;
 static gboolean quit_early = FALSE;
 static sigset_t signal_set;
@@ -154,7 +154,7 @@ write_pidfile (const char *pidfile)
 		return FALSE;
 	}
 
- 	snprintf (pid, sizeof (pid), "%d", getpid ());
+	g_snprintf (pid, sizeof (pid), "%d", getpid ());
 	if (write (fd, pid, strlen (pid)) < 0)
 		fprintf (stderr, _("Writing to %s failed: %s\n"), pidfile, strerror (errno));
 	else
@@ -233,12 +233,6 @@ parse_state_file (const char *filename,
 	g_return_val_if_fail (wimax_enabled != NULL, FALSE);
 
 	state_file = g_key_file_new ();
-	if (!state_file) {
-		g_set_error (error, NM_CONFIG_ERROR, NM_CONFIG_ERROR_NO_MEMORY,
-		             "Not enough memory to load state file %s.", filename);
-		return FALSE;
-	}
-
 	g_key_file_set_list_separator (state_file, ',');
 	if (!g_key_file_load_from_file (state_file, filename, G_KEY_FILE_KEEP_COMMENTS, &tmp_error)) {
 		gboolean ret = FALSE;
@@ -299,6 +293,37 @@ parse_state_file (const char *filename,
 	return TRUE;
 }
 
+static void
+_init_nm_debug (const char *debug)
+{
+	const guint D_RLIMIT_CORE = 1;
+	GDebugKey keys[] = {
+		{ "RLIMIT_CORE", D_RLIMIT_CORE },
+	};
+	guint flags = 0;
+	const char *env = getenv ("NM_DEBUG");
+
+	if (env && strcasecmp (env, "help") != 0) {
+		/* g_parse_debug_string() prints options to stderr if the variable
+		 * is set to "help". Don't allow that. */
+		flags = g_parse_debug_string (env,  keys, G_N_ELEMENTS (keys));
+	}
+
+	if (debug && strcasecmp (debug, "help") != 0)
+		flags |= g_parse_debug_string (debug,  keys, G_N_ELEMENTS (keys));
+
+	if (flags & D_RLIMIT_CORE) {
+		/* only enable this, if explicitly requested, because it might
+		 * expose sensitive data. */
+
+		struct rlimit limit = {
+			.rlim_cur = RLIM_INFINITY,
+			.rlim_max = RLIM_INFINITY,
+		};
+		setrlimit (RLIMIT_CORE, &limit);
+	}
+}
+
 /*
  * main
  *
@@ -307,49 +332,42 @@ int
 main (int argc, char *argv[])
 {
 	GOptionContext *opt_ctx = NULL;
-	gboolean become_daemon = FALSE;
+	char *opt_log_level = NULL;
+	char *opt_log_domains = NULL;
+	gboolean become_daemon = TRUE, run_from_build_dir = FALSE;
+	gboolean debug = FALSE;
 	gboolean g_fatal_warnings = FALSE;
-	char *pidfile = NULL, *state_file = NULL;
-	char *config_path = NULL, *plugins = NULL;
-	char *log_level = NULL, *log_domains = NULL;
-	char *connectivity_uri = NULL;
-	gint connectivity_interval = -1;
-	char *connectivity_response = NULL;
+	gs_free char *pidfile = NULL;
+	gs_free char *state_file = NULL;
 	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE, wimax_enabled = TRUE;
 	gboolean success, show_version = FALSE;
-	NMVPNManager *vpn_manager = NULL;
-	NMDnsManager *dns_mgr = NULL;
-	NMDBusManager *dbus_mgr = NULL;
-	NMSupplicantManager *sup_mgr = NULL;
-	NMDHCPManager *dhcp_mgr = NULL;
-	NMFirewallManager *fw_mgr = NULL;
-	NMSettings *settings = NULL;
-	NMConfig *config;
-	NMNetlinkMonitor *monitor = NULL;
+	int i;
+	NMManager *manager = NULL;
+	gs_unref_object NMVPNManager *vpn_manager = NULL;
+	gs_unref_object NMDnsManager *dns_mgr = NULL;
+	gs_unref_object NMDBusManager *dbus_mgr = NULL;
+	gs_unref_object NMSupplicantManager *sup_mgr = NULL;
+	gs_unref_object NMDHCPManager *dhcp_mgr = NULL;
+	gs_unref_object NMFirewallManager *fw_mgr = NULL;
+	gs_unref_object NMSettings *settings = NULL;
+	gs_unref_object NMConfig *config = NULL;
+	gs_unref_object NMSessionMonitor *session_monitor = NULL;
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
+	char *bad_domains = NULL;
 
 	GOptionEntry options[] = {
-		{ "version", 0, 0, G_OPTION_ARG_NONE, &show_version, N_("Print NetworkManager version and exit"), NULL },
-		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &become_daemon, N_("Don't become a daemon"), NULL },
+		{ "version", 'V', 0, G_OPTION_ARG_NONE, &show_version, N_("Print NetworkManager version and exit"), NULL },
+		{ "no-daemon", 'n', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &become_daemon, N_("Don't become a daemon"), NULL },
+		{ "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, N_("Don't become a daemon, and log to stderr"), NULL },
+		{ "log-level", 0, 0, G_OPTION_ARG_STRING, &opt_log_level, N_("Log level: one of [%s]"), "INFO" },
+		{ "log-domains", 0, 0, G_OPTION_ARG_STRING, &opt_log_domains,
+		  N_("Log domains separated by ',': any combination of [%s]"),
+		  "PLATFORM,RFKILL,WIFI" },
 		{ "g-fatal-warnings", 0, 0, G_OPTION_ARG_NONE, &g_fatal_warnings, N_("Make all warnings fatal"), NULL },
-		{ "pid-file", 0, 0, G_OPTION_ARG_FILENAME, &pidfile, N_("Specify the location of a PID file"), N_("filename") },
+		{ "pid-file", 'p', 0, G_OPTION_ARG_FILENAME, &pidfile, N_("Specify the location of a PID file"), N_("filename") },
 		{ "state-file", 0, 0, G_OPTION_ARG_FILENAME, &state_file, N_("State file location"), N_("/path/to/state.file") },
-		{ "config", 0, 0, G_OPTION_ARG_FILENAME, &config_path, N_("Config file location"), N_("/path/to/config.file") },
-		{ "plugins", 0, 0, G_OPTION_ARG_STRING, &plugins, N_("List of plugins separated by ','"), N_("plugin1,plugin2") },
-		/* Translators: Do not translate the values in the square brackets */
-		{ "log-level", 0, 0, G_OPTION_ARG_STRING, &log_level, N_("Log level: one of [ERR, WARN, INFO, DEBUG]"), "INFO" },
-		{ "log-domains", 0, 0, G_OPTION_ARG_STRING, &log_domains,
-		        /* Translators: Do not translate the values in the square brackets */
-		        N_("Log domains separated by ',': any combination of\n"
-		        "                                                [NONE,HW,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,\n"
-		        "                                                 WIFI_SCAN,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,SUPPLICANT,\n"
-		        "                                                 AGENTS,SETTINGS,SUSPEND,CORE,DEVICE,OLPC,WIMAX,\n"
-		        "                                                 INFINIBAND,FIREWALL,ADSL]"),
-		        "HW,RFKILL,WIFI" },
-		{ "connectivity-uri", 0, 0, G_OPTION_ARG_STRING, &connectivity_uri, _("An http(s) address for checking internet connectivity"), "http://example.com" },
-		{ "connectivity-interval", 0, 0, G_OPTION_ARG_INT, &connectivity_interval, _("The interval between connectivity checks (in seconds)"), "60" },
-		{ "connectivity-response", 0, 0, G_OPTION_ARG_STRING, &connectivity_response, _("The expected start of the response"), N_("Bingo!") },
+		{ "run-from-build-dir", 0, 0, G_OPTION_ARG_NONE, &run_from_build_dir, "Run from build directory", NULL },
 		{NULL}
 	};
 
@@ -366,11 +384,6 @@ main (int argc, char *argv[])
 	 */
 	umask (022);
 
-	if (!g_module_supported ()) {
-		fprintf (stderr, _("GModules are not supported on your platform!\n"));
-		exit (1);
-	}
-
 	/* Set locale to be able to use environment variables */
 	setlocale (LC_ALL, "");
 
@@ -378,12 +391,33 @@ main (int argc, char *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
+	if (!g_module_supported ()) {
+		fprintf (stderr, _("GModules are not supported on your platform!\n"));
+		exit (1);
+	}
+
+	if (getuid () != 0) {
+		fprintf (stderr, _("You must be root to run NetworkManager!\n"));
+		exit (1);
+	}
+
+	for (i = 0; options[i].long_name; i++) {
+		if (!strcmp (options[i].long_name, "log-level")) {
+			options[i].description = g_strdup_printf (options[i].description,
+			                                          nm_logging_all_levels_to_string ());
+		} else if (!strcmp (options[i].long_name, "log-domains")) {
+			options[i].description = g_strdup_printf (options[i].description,
+			                                          nm_logging_all_domains_to_string ());
+		}
+	}
+
 	/* Parse options */
 	opt_ctx = g_option_context_new (NULL);
 	g_option_context_set_translation_domain (opt_ctx, GETTEXT_PACKAGE);
 	g_option_context_set_ignore_unknown_options (opt_ctx, FALSE);
 	g_option_context_set_help_enabled (opt_ctx, TRUE);
 	g_option_context_add_main_entries (opt_ctx, options, NULL);
+	g_option_context_add_main_entries (opt_ctx, nm_config_get_options (), NULL);
 
 	g_option_context_set_summary (opt_ctx,
 		_("NetworkManager monitors all network connections and automatically\nchooses the best connection to use.  It also allows the user to\nspecify wireless access points which wireless cards in the computer\nshould associate with."));
@@ -403,11 +437,44 @@ main (int argc, char *argv[])
 		exit (0);
 	}
 
-	if (getuid () != 0) {
-		fprintf (stderr, _("You must be root to run NetworkManager!\n"));
+	if (!nm_logging_setup (opt_log_level,
+	                       opt_log_domains,
+	                       &bad_domains,
+	                       &error)) {
+		fprintf (stderr,
+		         _("%s.  Please use --help to see a list of valid options.\n"),
+		         error->message);
 		exit (1);
+	} else if (bad_domains) {
+		fprintf (stderr,
+		         _("Ignoring unrecognized log domain(s) '%s' passed on command line.\n"),
+		         bad_domains);
+		g_clear_pointer (&bad_domains, g_free);
 	}
 
+	/* When running from the build directory, determine our build directory
+	 * base and set helper paths in the build tree */
+	if (run_from_build_dir) {
+		char *path, *slash;
+		int g;
+
+		/* exe is <basedir>/src/.libs/lt-NetworkManager, so chop off
+		 * the last three components */
+		path = realpath ("/proc/self/exe", NULL);
+		g_assert (path != NULL);
+		for (g = 0; g < 3; ++g) {
+			slash = strrchr (path, '/');
+			g_assert (slash != NULL);
+			*slash = '\0';
+		}
+
+		/* don't free these strings, we need them for the entire
+		 * process lifetime */
+		nm_dhcp_helper_path = g_strdup_printf ("%s/src/dhcp-manager/nm-dhcp-helper", path);
+		nm_device_autoipd_helper_path = g_strdup_printf ("%s/callouts/nm-avahi-autoipd.action", path);
+
+		g_free (path);
+	}
 
 	/* Setup runtime directory */
 	if (g_mkdir_with_parents (NMRUNDIR, 0755) != 0) {
@@ -429,8 +496,7 @@ main (int argc, char *argv[])
 		exit (1);
 
 	/* Read the config file and CLI overrides */
-	config = nm_config_new (config_path, plugins, log_level, log_domains,
-	                        connectivity_uri, connectivity_interval, connectivity_response, &error);
+	config = nm_config_new (&error);
 	if (config == NULL) {
 		fprintf (stderr, _("Failed to read configuration: (%d) %s\n"),
 		         error ? error->code : -1,
@@ -438,14 +504,23 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	/* Logging setup */
-	if (!nm_logging_setup (nm_config_get_log_level (config),
-	                       nm_config_get_log_domains (config),
-	                       &error)) {
-		fprintf (stderr,
-		         _("%s.  Please use --help to see a list of valid options.\n"),
-		         error->message);
-		exit (1);
+	/* Initialize logging from config file *only* if not explicitly
+	 * specified by commandline.
+	 */
+	if (opt_log_level == NULL && opt_log_domains == NULL) {
+		if (!nm_logging_setup (nm_config_get_log_level (config),
+		                       nm_config_get_log_domains (config),
+		                       &bad_domains,
+		                       &error)) {
+			fprintf (stderr, _("Error in configuration file: %s.\n"),
+			         error->message);
+			exit (1);
+		} else if (bad_domains) {
+			fprintf (stderr,
+			         _("Ignoring unrecognized log domain(s) '%s' from config files.\n"),
+			         bad_domains);
+			g_clear_pointer (&bad_domains, g_free);
+		}
 	}
 
 	/* Parse the state file */
@@ -458,11 +533,7 @@ main (int argc, char *argv[])
 	}
 	g_clear_error (&error);
 
-	/* Tricky: become_daemon is FALSE by default, so unless it's TRUE because
-	 * of a CLI option, it'll become TRUE after this
-	 */
-	become_daemon = !become_daemon;
-	if (become_daemon) {
+	if (become_daemon && !debug) {
 		if (daemon (0, 0) < 0) {
 			int saved_errno;
 
@@ -476,6 +547,8 @@ main (int argc, char *argv[])
 			wrote_pidfile = TRUE;
 	}
 
+	_init_nm_debug (nm_config_get_debug (config));
+
 	/* Set up unix signal handling - before creating threads, but after daemonizing! */
 	if (!setup_signals ())
 		exit (1);
@@ -488,31 +561,23 @@ main (int argc, char *argv[])
 		g_log_set_always_fatal (fatal_mask);
 	}
 
-	g_type_init ();
+	nm_logging_syslog_openlog (debug);
 
-/*
- * Threading is always enabled starting from GLib 2.31.0.
- * See also http://developer.gnome.org/glib/2.31/glib-Deprecated-Thread-APIs.html.
- */
-#if !GLIB_CHECK_VERSION (2,31,0)
-	if (!g_thread_supported ())
-		g_thread_init (NULL);
-	dbus_g_thread_init ();
-#else
-	dbus_threads_init_default ();
+#if !GLIB_CHECK_VERSION (2, 35, 0)
+	g_type_init ();
 #endif
+
+	dbus_threads_init_default ();
 
 	/* Ensure that non-exported properties don't leak out, and that the
 	 * introspection 'access' permissions are respected.
 	 */
 	dbus_glib_global_set_disable_legacy_property_access ();
 
-	nm_logging_start (become_daemon);
-
 	nm_log_info (LOGD_CORE, "NetworkManager (version " NM_DIST_VERSION ") is starting...");
 	success = FALSE;
 
-	nm_log_info (LOGD_CORE, "Read config file %s", nm_config_get_path (config));
+	nm_log_info (LOGD_CORE, "Read config: %s", nm_config_get_description (config));
 	nm_log_info (LOGD_CORE, "WEXT support is %s",
 #if HAVE_WEXT
 	             "enabled"
@@ -523,27 +588,26 @@ main (int argc, char *argv[])
 
 	main_loop = g_main_loop_new (NULL, FALSE);
 
-	/* Create netlink monitor object */
-	monitor = nm_netlink_monitor_get ();
+	/* Set up platform interaction layer */
+	nm_linux_platform_setup ();
 
 	/* Initialize our DBus service & connection */
 	dbus_mgr = nm_dbus_manager_get ();
+	g_assert (dbus_mgr != NULL);
 
 	vpn_manager = nm_vpn_manager_get ();
-	if (!vpn_manager) {
-		nm_log_err (LOGD_CORE, "failed to start the VPN manager.");
-		goto done;
-	}
+	g_assert (vpn_manager != NULL);
 
-	dns_mgr = nm_dns_manager_get (nm_config_get_dns_plugins (config));
-	if (!dns_mgr) {
-		nm_log_err (LOGD_CORE, "failed to start the DNS manager.");
-		goto done;
-	}
+	dns_mgr = nm_dns_manager_get ();
+	g_assert (dns_mgr != NULL);
 
-	settings = nm_settings_new (nm_config_get_path (config),
-	                            nm_config_get_plugins (config),
-	                            &error);
+	/* Initialize DHCP manager */
+	dhcp_mgr = nm_dhcp_manager_get ();
+	g_assert (dhcp_mgr != NULL);
+
+	nm_dispatcher_init ();
+
+	settings = nm_settings_new (&error);
 	if (!settings) {
 		nm_log_err (LOGD_CORE, "failed to initialize settings storage: %s",
 		            error && error->message ? error->message : "(unknown)");
@@ -556,9 +620,6 @@ main (int argc, char *argv[])
 	                          wifi_enabled,
 	                          wwan_enabled,
 	                          wimax_enabled,
-	                          nm_config_get_connectivity_uri (config),
-	                          nm_config_get_connectivity_interval (config),
-	                          nm_config_get_connectivity_response (config),
 	                          &error);
 	if (manager == NULL) {
 		nm_log_err (LOGD_CORE, "failed to initialize the network manager: %s",
@@ -568,35 +629,30 @@ main (int argc, char *argv[])
 
 	/* Initialize the supplicant manager */
 	sup_mgr = nm_supplicant_manager_get ();
-	if (!sup_mgr) {
-		nm_log_err (LOGD_CORE, "failed to initialize the supplicant manager.");
-		goto done;
-	}
-
-	/* Initialize DHCP manager */
-	dhcp_mgr = nm_dhcp_manager_new (nm_config_get_dhcp_client (config), &error);
-	if (!dhcp_mgr) {
-		nm_log_err (LOGD_CORE, "failed to start the DHCP manager: %s.", error->message);
-		goto done;
-	}
-
-	nm_dhcp_manager_set_hostname_provider (dhcp_mgr, NM_HOSTNAME_PROVIDER (manager));
+	g_assert (sup_mgr != NULL);
 
 	/* Initialize Firewall manager */
 	fw_mgr = nm_firewall_manager_get ();
-	if (!fw_mgr) {
-		nm_log_err (LOGD_CORE, "failed to start the Firewall manager: %s.", error->message);
-		goto done;
-	}
+	g_assert (fw_mgr != NULL);
 
-	/* Start our DBus service */
-	if (!nm_dbus_manager_start_service (dbus_mgr)) {
-		nm_log_err (LOGD_CORE, "failed to start the dbus service.");
-		goto done;
-	}
+	/* Initialize session monitor */
+	session_monitor = nm_session_monitor_get ();
+	g_assert (session_monitor != NULL);
 
-	/* Clean leftover "# Added by NetworkManager" entries from /etc/hosts */
-	nm_policy_hosts_clean_etc_hosts ();
+	if (!nm_dbus_manager_get_connection (dbus_mgr)) {
+#if HAVE_DBUS_GLIB_100
+		nm_log_warn (LOGD_CORE, "Failed to connect to D-Bus; only private bus is available");
+#else
+		nm_log_err (LOGD_CORE, "Failed to connect to D-Bus, exiting...");
+		goto done;
+#endif
+	} else {
+		/* Start our DBus service */
+		if (!nm_dbus_manager_start_service (dbus_mgr)) {
+			nm_log_err (LOGD_CORE, "failed to start the dbus service.");
+			goto done;
+		}
+	}
 
 	nm_manager_start (manager);
 
@@ -611,7 +667,7 @@ main (int argc, char *argv[])
 	 * physical interfaces.
 	 */
 	nm_log_dbg (LOGD_CORE, "setting up local loopback");
-	nm_system_iface_set_up (nm_netlink_iface_to_index ("lo"), TRUE, NULL);
+	nm_platform_link_set_up (nm_platform_link_get_ifindex ("lo"));
 
 	success = TRUE;
 
@@ -622,46 +678,12 @@ main (int argc, char *argv[])
 	g_main_loop_run (main_loop);
 
 done:
-	if (manager)
-		g_object_unref (manager);
+	g_clear_object (&manager);
 
-	if (settings)
-		g_object_unref (settings);
-
-	if (vpn_manager)
-		g_object_unref (vpn_manager);
-
-	if (dns_mgr)
-		g_object_unref (dns_mgr);
-
-	if (dhcp_mgr)
-		g_object_unref (dhcp_mgr);
-
-	if (sup_mgr)
-		g_object_unref (sup_mgr);
-
-	if (fw_mgr)
-		g_object_unref (fw_mgr);
-
-	if (dbus_mgr)
-		g_object_unref (dbus_mgr);
-
-	nm_logging_shutdown ();
+	nm_logging_syslog_closelog ();
 
 	if (pidfile && wrote_pidfile)
 		unlink (pidfile);
-
-	nm_config_free (config);
-
-	/* Free options */
-	g_free (pidfile);
-	g_free (state_file);
-	g_free (config_path);
-	g_free (plugins);
-	g_free (log_level);
-	g_free (log_domains);
-	g_free (connectivity_uri);
-	g_free (connectivity_response);
 
 	nm_log_info (LOGD_CORE, "exiting (%s)", success ? "success" : "error");
 	exit (success ? 0 : 1);

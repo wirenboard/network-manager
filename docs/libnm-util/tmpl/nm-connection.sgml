@@ -22,6 +22,34 @@ NMConnection
 <!-- ##### SECTION Image ##### -->
 
 
+<!-- ##### MACRO NM_CONNECTION_SECRETS_UPDATED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CONNECTION_SECRETS_CLEARED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CONNECTION_CHANGED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CONNECTION_PATH ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### ENUM NMConnectionError ##### -->
 <para>
 
@@ -48,18 +76,18 @@ NMConnection
 @Returns: 
 
 
-<!-- ##### MACRO NM_CONNECTION_PATH ##### -->
-<para>
-
-</para>
-
-
-
 <!-- ##### STRUCT NMConnection ##### -->
 <para>
 
 </para>
 
+
+<!-- ##### SIGNAL NMConnection::changed ##### -->
+<para>
+
+</para>
+
+@nmconnection: the object which received the signal.
 
 <!-- ##### SIGNAL NMConnection::secrets-cleared ##### -->
 <para>
@@ -80,6 +108,14 @@ NMConnection
 <para>
 
 </para>
+
+<!-- ##### STRUCT NMConnectionClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@secrets_updated: 
 
 <!-- ##### FUNCTION nm_connection_new ##### -->
 <para>
@@ -163,6 +199,17 @@ NMConnection
 
 @connection: 
 @new_settings: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_replace_settings_from_connection ##### -->
+<para>
+
+</para>
+
+@connection: 
+@new_connection: 
 @error: 
 @Returns: 
 
@@ -341,6 +388,24 @@ NMConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_connection_get_connection_type ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_virtual_device_description ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_connection_get_setting_802_1x ##### -->
 <para>
 
@@ -360,6 +425,24 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_setting_bond ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_team ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_team_port ##### -->
 <para>
 
 </para>
@@ -396,6 +479,24 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_setting_connection ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_dcb ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_setting_generic ##### -->
 <para>
 
 </para>

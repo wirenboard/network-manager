@@ -3,7 +3,8 @@ EXTRA_DIST = \
      NetworkManagerVPN.h \
      nm-dbus-glib-types.h \
      nm-glib-compat.h \
-     nm-test-helpers.h \
+     nm-gvaluearray-compat.h \
+     nm-test-utils.h \
      nm-version.h.in \
      nm-settings-flags.h
 

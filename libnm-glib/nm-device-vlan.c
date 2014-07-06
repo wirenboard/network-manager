@@ -55,10 +55,6 @@ enum {
 	LAST_PROP
 };
 
-#define DBUS_PROP_HW_ADDRESS "HwAddress"
-#define DBUS_PROP_CARRIER "Carrier"
-#define DBUS_PROP_VLAN_ID "VlanId"
-
 /**
  * nm_device_vlan_error_quark:
  *
@@ -156,9 +152,10 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 {
 	NMSettingConnection *s_con;
 	NMSettingVlan *s_vlan;
+	NMSettingWired *s_wired;
 	const char *ctype, *dev_iface_name, *vlan_iface_name;
-
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	const GByteArray *mac_address;
+	char *mac_address_str;
 
 	s_con = nm_connection_get_setting_connection (connection);
 	g_assert (s_con);
@@ -191,7 +188,33 @@ connection_compatible (NMDevice *device, NMConnection *connection, GError **erro
 		return FALSE;
 	}
 
-	return TRUE;
+	s_wired = nm_connection_get_setting_wired (connection);
+	if (s_wired)
+		mac_address = nm_setting_wired_get_mac_address (s_wired);
+	else
+		mac_address = NULL;
+	if (mac_address) {
+		mac_address_str = nm_utils_hwaddr_ntoa_len (mac_address->data, mac_address->len);
+		if (!g_strcmp0 (mac_address_str, NM_DEVICE_VLAN_GET_PRIVATE (device)->hw_address)) {
+			g_set_error (error, NM_DEVICE_VLAN_ERROR, NM_DEVICE_VLAN_ERROR_MAC_MISMATCH,
+			             "The hardware address of the device and the connection didn't match.");
+		}
+		g_free (mac_address_str);
+	}
+
+	return NM_DEVICE_CLASS (nm_device_vlan_parent_class)->connection_compatible (device, connection, error);
+}
+
+static GType
+get_setting_type (NMDevice *device)
+{
+	return NM_TYPE_SETTING_VLAN;
+}
+
+static const char *
+get_hw_address (NMDevice *device)
+{
+	return nm_device_vlan_get_hw_address (NM_DEVICE_VLAN (device));
 }
 
 /***********************************************************/
@@ -221,17 +244,11 @@ register_properties (NMDeviceVlan *device)
 static void
 constructed (GObject *object)
 {
-	NMDeviceVlanPrivate *priv;
+	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (object);
 
 	G_OBJECT_CLASS (nm_device_vlan_parent_class)->constructed (object);
 
-	priv = NM_DEVICE_VLAN_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-	                                         NM_DBUS_SERVICE,
-	                                         nm_object_get_path (NM_OBJECT (object)),
-	                                         NM_DBUS_INTERFACE_DEVICE_VLAN);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_DEVICE_VLAN);
 	register_properties (NM_DEVICE_VLAN (object));
 }
 
@@ -295,6 +312,8 @@ nm_device_vlan_class_init (NMDeviceVlanClass *eth_class)
 	object_class->finalize = finalize;
 	object_class->get_property = get_property;
 	device_class->connection_compatible = connection_compatible;
+	device_class->get_setting_type = get_setting_type;
+	device_class->get_hw_address = get_hw_address;
 
 	/* properties */
 

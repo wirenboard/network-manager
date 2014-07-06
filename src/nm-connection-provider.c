@@ -14,6 +14,7 @@
  */
 
 #include "nm-connection-provider.h"
+#include "nm-utils.h"
 
 GSList *
 nm_connection_provider_get_best_connections (NMConnectionProvider *self,
@@ -40,24 +41,49 @@ nm_connection_provider_get_connections (NMConnectionProvider *self)
 	return NULL;
 }
 
-gboolean
-nm_connection_provider_has_connections_loaded (NMConnectionProvider *self)
-{
-	g_return_val_if_fail (NM_IS_CONNECTION_PROVIDER (self), FALSE);
-
-	g_assert (NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->has_connections_loaded);
-	return NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->has_connections_loaded (self);
-}
-
+/**
+ * nm_connection_provider_add_connection:
+ * @self: the #NMConnectionProvider
+ * @connection: the source connection to create a new #NMSettingsConnection from
+ * @save_to_disk: %TRUE to save the connection to disk immediately, %FALSE to
+ * not save to disk
+ * @error: on return, a location to store any errors that may occur
+ *
+ * Creates a new #NMSettingsConnection for the given source @connection.  
+ * The plugin owns the returned object and the caller must reference the object
+ * to continue using it.
+ *
+ * Returns: the new #NMSettingsConnection or %NULL
+ */
 NMConnection *
 nm_connection_provider_add_connection (NMConnectionProvider *self,
                                        NMConnection *connection,
+                                       gboolean save_to_disk,
                                        GError **error)
 {
 	g_return_val_if_fail (NM_IS_CONNECTION_PROVIDER (self), NULL);
 
 	g_assert (NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->add_connection);
-	return NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->add_connection (self, connection, error);
+	return NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->add_connection (self, connection, save_to_disk, error);
+}
+
+/**
+ * nm_connection_provider_get_connection_by_uuid:
+ * @self: the #NMConnectionProvider
+ * @uuid: the UUID to search for
+ *
+ * Returns: the connection with the given @uuid, or %NULL
+ */
+NMConnection *
+nm_connection_provider_get_connection_by_uuid (NMConnectionProvider *self,
+                                               const char *uuid)
+{
+	g_return_val_if_fail (NM_IS_CONNECTION_PROVIDER (self), NULL);
+	g_return_val_if_fail (uuid != NULL, NULL);
+	g_return_val_if_fail (nm_utils_is_uuid (uuid), NULL);
+
+	g_assert (NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->get_connection_by_uuid);
+	return NM_CONNECTION_PROVIDER_GET_INTERFACE (self)->get_connection_by_uuid (self, uuid);
 }
 
 /*****************************************************************************/
@@ -96,14 +122,6 @@ nm_connection_provider_init (gpointer g_iface)
 	              NULL, NULL,
 	              g_cclosure_marshal_VOID__OBJECT,
 	              G_TYPE_NONE, 1, G_TYPE_OBJECT);
-
-	g_signal_new (NM_CP_SIGNAL_CONNECTIONS_LOADED,
-	              iface_type,
-	              G_SIGNAL_RUN_FIRST,
-	              G_STRUCT_OFFSET (NMConnectionProvider, connections_loaded),
-	              NULL, NULL,
-	              g_cclosure_marshal_VOID__VOID,
-	              G_TYPE_NONE, 0);
 }
 
 GType

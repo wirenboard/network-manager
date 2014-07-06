@@ -45,6 +45,7 @@ G_BEGIN_DECLS
 
 #define NM_CLIENT_VERSION "version"
 #define NM_CLIENT_STATE "state"
+#define NM_CLIENT_STARTUP "startup"
 #define NM_CLIENT_MANAGER_RUNNING "manager-running"
 #define NM_CLIENT_NETWORKING_ENABLED "networking-enabled"
 #define NM_CLIENT_WIRELESS_ENABLED "wireless-enabled"
@@ -57,13 +58,14 @@ G_BEGIN_DECLS
 #define NM_CLIENT_CONNECTIVITY "connectivity"
 #define NM_CLIENT_PRIMARY_CONNECTION "primary-connection"
 #define NM_CLIENT_ACTIVATING_CONNECTION "activating-connection"
+#define NM_CLIENT_DEVICES "devices"
 
 /**
  * NMClientPermission:
  * @NM_CLIENT_PERMISSION_NONE: unknown or no permission
  * @NM_CLIENT_PERMISSION_ENABLE_DISABLE_NETWORK: controls whether networking
  *  can be globally enabled or disabled
- * @NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI: controls whether WiFi can be
+ * @NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI: controls whether Wi-Fi can be
  *  globally enabled or disabled
  * @NM_CLIENT_PERMISSION_ENABLE_DISABLE_WWAN: controls whether WWAN (3G) can be
  *  globally enabled or disabled
@@ -74,8 +76,8 @@ G_BEGIN_DECLS
  * @NM_CLIENT_PERMISSION_NETWORK_CONTROL: controls whether networking connections
  *  can be started, stopped, and changed
  * @NM_CLIENT_PERMISSION_WIFI_SHARE_PROTECTED: controls whether a password
- *  protected WiFi hotspot can be created
- * @NM_CLIENT_PERMISSION_WIFI_SHARE_OPEN: controls whether an open WiFi hotspot
+ *  protected Wi-Fi hotspot can be created
+ * @NM_CLIENT_PERMISSION_WIFI_SHARE_OPEN: controls whether an open Wi-Fi hotspot
  *  can be created
  * @NM_CLIENT_PERMISSION_SETTINGS_MODIFY_SYSTEM: controls whether connections
  *  that are available to all users can be modified
@@ -124,6 +126,22 @@ typedef enum {
 	NM_CLIENT_PERMISSION_RESULT_NO
 } NMClientPermissionResult;
 
+/**
+ * NMClientError:
+ * @NM_CLIENT_ERROR_UNKNOWN: unknown or unclassified error
+ * @NM_CLIENT_ERROR_MANAGER_NOT_RUNNING: an operation that requires NetworkManager
+ *   failed because NetworkManager is not running
+ *
+ * Describes errors that may result from operations involving a #NMClient.
+ **/
+typedef enum {
+	NM_CLIENT_ERROR_UNKNOWN = 0,            /*< nick=UnknownError >*/
+	NM_CLIENT_ERROR_MANAGER_NOT_RUNNING,    /*< nick=ManagerNotRunning >*/
+} NMClientError;
+
+#define NM_CLIENT_ERROR nm_client_error_quark ()
+NM_AVAILABLE_IN_0_9_10
+GQuark nm_client_error_quark (void);
 
 typedef struct {
 	NMObject parent;
@@ -206,6 +224,8 @@ gboolean  nm_client_wimax_hardware_get_enabled (NMClient *client);
 
 const char *nm_client_get_version        (NMClient *client);
 NMState   nm_client_get_state            (NMClient *client);
+NM_AVAILABLE_IN_0_9_10
+gboolean  nm_client_get_startup          (NMClient *client);
 gboolean  nm_client_get_manager_running  (NMClient *client);
 const GPtrArray *nm_client_get_active_connections (NMClient *client);
 void      nm_client_sleep                (NMClient *client, gboolean sleep_);

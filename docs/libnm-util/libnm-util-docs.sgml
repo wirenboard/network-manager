@@ -58,10 +58,14 @@
     <xi:include href="xml/nm-setting-bond.xml"/>
     <xi:include href="xml/nm-setting-bridge.xml"/>
     <xi:include href="xml/nm-setting-bridge-port.xml"/>
+    <xi:include href="xml/nm-setting-team.xml"/>
+    <xi:include href="xml/nm-setting-team-port.xml"/>
+    <xi:include href="xml/nm-setting-generic.xml"/>
     <xi:include href="xml/nm-setting-infiniband.xml"/>
     <xi:include href="xml/nm-setting-vlan.xml"/>
     <xi:include href="xml/nm-setting-olpc-mesh.xml"/>
     <xi:include href="xml/nm-setting-adsl.xml"/>
+    <xi:include href="xml/nm-setting-dcb.xml"/>
     <xi:include href="xml/nm-setting-8021x.xml"/>
     <xi:include href="xml/nm-setting-ip4-config.xml"/>
     <xi:include href="xml/nm-setting-ip6-config.xml"/>

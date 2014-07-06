@@ -15,8 +15,10 @@
 #include "nm-device-bt.h" 
 #include "nm-device-olpc-mesh.h" 
 #include "nm-device-bond.h" 
+#include "nm-device-team.h" 
 #include "nm-device-bridge.h" 
 #include "nm-device-vlan.h" 
+#include "nm-device-generic.h" 
 #include "nm-access-point.h" 
 #include "nm-ip4-config.h" 
 #include "nm-device-modem.h" 
@@ -97,6 +99,44 @@ nm_client_permission_result_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMClientPermissionResult"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_client_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_CLIENT_ERROR_UNKNOWN, "NM_CLIENT_ERROR_UNKNOWN", "UnknownError" },
+        { NM_CLIENT_ERROR_MANAGER_NOT_RUNNING, "NM_CLIENT_ERROR_MANAGER_NOT_RUNNING", "ManagerNotRunning" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMClientError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_device_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_DEVICE_ERROR_UNKNOWN, "NM_DEVICE_ERROR_UNKNOWN", "UnknownError" },
+        { NM_DEVICE_ERROR_INTERFACE_MISMATCH, "NM_DEVICE_ERROR_INTERFACE_MISMATCH", "InterfaceMismatch" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMDeviceError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -255,6 +295,27 @@ nm_device_bond_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_device_team_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_DEVICE_TEAM_ERROR_UNKNOWN, "NM_DEVICE_TEAM_ERROR_UNKNOWN", "UnknownError" },
+        { NM_DEVICE_TEAM_ERROR_NOT_TEAM_CONNECTION, "NM_DEVICE_TEAM_ERROR_NOT_TEAM_CONNECTION", "NotTeamConnection" },
+        { NM_DEVICE_TEAM_ERROR_INVALID_TEAM_CONNECTION, "NM_DEVICE_TEAM_ERROR_INVALID_TEAM_CONNECTION", "InvalidTeamConnection" },
+        { NM_DEVICE_TEAM_ERROR_INTERFACE_MISMATCH, "NM_DEVICE_TEAM_ERROR_INTERFACE_MISMATCH", "InterfaceMismatch" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMDeviceTeamError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_device_bridge_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -288,10 +349,31 @@ nm_device_vlan_error_get_type (void)
         { NM_DEVICE_VLAN_ERROR_INVALID_VLAN_CONNECTION, "NM_DEVICE_VLAN_ERROR_INVALID_VLAN_CONNECTION", "InvalidVlanConnection" },
         { NM_DEVICE_VLAN_ERROR_ID_MISMATCH, "NM_DEVICE_VLAN_ERROR_ID_MISMATCH", "IdMismatch" },
         { NM_DEVICE_VLAN_ERROR_INTERFACE_MISMATCH, "NM_DEVICE_VLAN_ERROR_INTERFACE_MISMATCH", "InterfaceMismatch" },
+        { NM_DEVICE_VLAN_ERROR_MAC_MISMATCH, "NM_DEVICE_VLAN_ERROR_MAC_MISMATCH", "MacMismatch" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMDeviceVlanError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_device_generic_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_DEVICE_GENERIC_ERROR_UNKNOWN, "NM_DEVICE_GENERIC_ERROR_UNKNOWN", "UnknownError" },
+        { NM_DEVICE_GENERIC_ERROR_NOT_GENERIC_CONNECTION, "NM_DEVICE_GENERIC_ERROR_NOT_GENERIC_CONNECTION", "NotGenericConnection" },
+        { NM_DEVICE_GENERIC_ERROR_MISSING_INTERFACE_NAME, "NM_DEVICE_GENERIC_ERROR_MISSING_INTERFACE_NAME", "MissingInterfaceName" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMDeviceGenericError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -319,6 +401,25 @@ nm_device_modem_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_remote_connection_error_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_REMOTE_CONNECTION_ERROR_UNKNOWN, "NM_REMOTE_CONNECTION_ERROR_UNKNOWN", "UnknownError" },
+        { NM_REMOTE_CONNECTION_ERROR_DISCONNECTED, "NM_REMOTE_CONNECTION_ERROR_DISCONNECTED", "Disconnected" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMRemoteConnectionError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_remote_settings_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -329,6 +430,7 @@ nm_remote_settings_error_get_type (void)
         { NM_REMOTE_SETTINGS_ERROR_UNKNOWN, "NM_REMOTE_SETTINGS_ERROR_UNKNOWN", "UnknownError" },
         { NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED, "NM_REMOTE_SETTINGS_ERROR_CONNECTION_REMOVED", "ConnectionRemoved" },
         { NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE, "NM_REMOTE_SETTINGS_ERROR_CONNECTION_UNAVAILABLE", "ConnectionUnavailable" },
+        { NM_REMOTE_SETTINGS_ERROR_SERVICE_UNAVAILABLE, "NM_REMOTE_SETTINGS_ERROR_SERVICE_UNAVAILABLE", "ServiceUnavailable" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -356,6 +458,26 @@ nm_secret_agent_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMSecretAgentError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_secret_agent_capabilities_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_SECRET_AGENT_CAPABILITY_NONE, "NM_SECRET_AGENT_CAPABILITY_NONE", "none" },
+        { NM_SECRET_AGENT_CAPABILITY_VPN_HINTS, "NM_SECRET_AGENT_CAPABILITY_VPN_HINTS", "vpn-hints" },
+        { NM_SECRET_AGENT_CAPABILITY_LAST, "NM_SECRET_AGENT_CAPABILITY_LAST", "last" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMSecretAgentCapabilities"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

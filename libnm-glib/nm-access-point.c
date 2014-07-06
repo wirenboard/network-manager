@@ -72,16 +72,6 @@ enum {
 	LAST_PROP
 };
 
-#define DBUS_PROP_FLAGS "Flags"
-#define DBUS_PROP_WPA_FLAGS "WpaFlags"
-#define DBUS_PROP_RSN_FLAGS "RsnFlags"
-#define DBUS_PROP_SSID "Ssid"
-#define DBUS_PROP_FREQUENCY "Frequency"
-#define DBUS_PROP_HW_ADDRESS "HwAddress"
-#define DBUS_PROP_MODE "Mode"
-#define DBUS_PROP_MAX_BITRATE "MaxBitrate"
-#define DBUS_PROP_STRENGTH "Strength"
-
 /**
  * nm_access_point_new:
  * @connection: the #DBusGConnection
@@ -194,7 +184,7 @@ nm_access_point_get_frequency (NMAccessPoint *ap)
  * nm_access_point_get_bssid:
  * @ap: a #NMAccessPoint
  *
- * Gets the Basic Service Set ID (BSSID) of the WiFi access point.
+ * Gets the Basic Service Set ID (BSSID) of the Wi-Fi access point.
  *
  * Returns: the BSSID of the access point. This is an internal string and must
  * not be modified or freed.
@@ -246,9 +236,9 @@ nm_access_point_get_mode (NMAccessPoint *ap)
  * nm_access_point_get_max_bitrate:
  * @ap: a #NMAccessPoint
  *
- * Gets the maximum bit rate of the access point.
+ * Gets the maximum bit rate of the access point in kbit/s.
  *
- * Returns: the maximum bit rate
+ * Returns: the maximum bit rate (kbit/s)
  **/
 guint32
 nm_access_point_get_max_bitrate (NMAccessPoint *ap)
@@ -281,12 +271,12 @@ nm_access_point_get_strength (NMAccessPoint *ap)
  * @ap: an #NMAccessPoint to validate @connection against
  * @connection: an #NMConnection to validate against @ap
  *
- * Validates a given connection against a given WiFi access point to ensure that
+ * Validates a given connection against a given Wi-Fi access point to ensure that
  * the connection may be activated with that AP.  The connection must match the
  * @ap's SSID, (if given) BSSID, and other attributes like security settings,
  * channel, band, etc.
  *
- * Returns: %TRUE if the connection may be activated with this WiFi AP,
+ * Returns: %TRUE if the connection may be activated with this Wi-Fi AP,
  * %FALSE if it cannot be.
  **/
 gboolean
@@ -539,12 +529,7 @@ constructed (GObject *object)
 	G_OBJECT_CLASS (nm_access_point_parent_class)->constructed (object);
 
 	priv = NM_ACCESS_POINT_GET_PRIVATE (object);
-
-	priv->proxy = dbus_g_proxy_new_for_name (nm_object_get_connection (NM_OBJECT (object)),
-									    NM_DBUS_SERVICE,
-									    nm_object_get_path (NM_OBJECT (object)),
-									    NM_DBUS_INTERFACE_ACCESS_POINT);
-
+	priv->proxy = _nm_object_new_proxy (NM_OBJECT (object), NULL, NM_DBUS_INTERFACE_ACCESS_POINT);
 	register_properties (NM_ACCESS_POINT (object));
 }
 
@@ -675,7 +660,7 @@ nm_access_point_class_init (NMAccessPointClass *ap_class)
 	/**
 	 * NMAccessPoint:max-bitrate:
 	 *
-	 * The maximum bit rate of the access point.
+	 * The maximum bit rate of the access point in kbit/s.
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_MAX_BITRATE,

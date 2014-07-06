@@ -31,6 +31,7 @@
 #include "nm-manager-auth.h"
 #include "nm-logging.h"
 #include "nm-dbus-manager.h"
+#include "nm-auth-subject.h"
 
 struct NMAuthChain {
 	guint32 refcount;
@@ -42,7 +43,11 @@ struct NMAuthChain {
 
 	DBusGMethodInvocation *context;
 	char *owner;
+	gulong user_uid;
+	NMAuthSubject *subject;
 	GError *error;
+
+	guint idle_id;
 
 	NMAuthChainResultFunc done_func;
 	gpointer user_data;
@@ -52,8 +57,7 @@ typedef struct {
 	NMAuthChain *chain;
 	GCancellable *cancellable;
 	char *permission;
-	guint idle_id;
-	gboolean disposed;
+	guint call_idle_id;
 } AuthCall;
 
 typedef struct {
@@ -72,93 +76,123 @@ free_data (gpointer data)
 	g_free (tmp);
 }
 
+static gboolean
+auth_chain_finish (gpointer user_data)
+{
+	NMAuthChain *self = user_data;
+
+	self->idle_id = 0;
+
+	/* Ensure we say alive across the callback */
+	self->refcount++;
+	self->done_func (self, self->error, self->context, self->user_data);
+	nm_auth_chain_unref (self);
+	return FALSE;
+}
+
 #if WITH_POLKIT
 static PolkitAuthority *
-pk_authority_get (void)
+pk_authority_get (GError **error)
 {
 	static PolkitAuthority *authority = NULL;
-	GError *error = NULL;
 
-	if (authority == NULL) {
-		authority = polkit_authority_get_sync (NULL, &error);
-		if (authority == NULL) {
-			nm_log_err (LOGD_CORE, "Failed to initialize PolicyKit: (%d) %s",
-			            error ? error->code : -1,
-			            (error && error->message) ? error->message : "(unknown)");
-			g_clear_error (&error);
-			return NULL;
-		}
-	}
+	if (authority == NULL)
+		authority = polkit_authority_get_sync (NULL, error);
 
 	/* Yes, ref every time; we want to keep the object alive */
-	return g_object_ref (authority);
+	g_warn_if_fail (authority);
+	return authority ? g_object_ref (authority) : NULL;
 }
 #endif
 
 static NMAuthChain *
-_auth_chain_new (DBusGMethodInvocation *context,
-                 DBusGProxy *proxy,
-                 DBusMessage *message,
+_auth_chain_new (NMAuthSubject *subject,
                  const char *dbus_sender,
+                 gulong user_uid,
+                 DBusGMethodInvocation *context,
                  NMAuthChainResultFunc done_func,
                  gpointer user_data)
 {
 	NMAuthChain *self;
 
-	g_return_val_if_fail (context || proxy || message || dbus_sender, NULL);
+	g_return_val_if_fail (subject || user_uid == 0 || dbus_sender, NULL);
 
 	self = g_malloc0 (sizeof (NMAuthChain));
 	self->refcount = 1;
 #if WITH_POLKIT
-	self->authority = pk_authority_get ();
+	self->authority = pk_authority_get (&self->error);
 #endif
 	self->data = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, free_data);
 	self->done_func = done_func;
 	self->user_data = user_data;
 	self->context = context;
 
-	if (proxy)
-		self->owner = g_strdup (dbus_g_proxy_get_bus_name (proxy));
-	else if (context)
-		self->owner = dbus_g_method_get_sender (context);
-	else if (message)
-		self->owner = g_strdup (dbus_message_get_sender (message));
-	else if (dbus_sender)
+	if (subject) {
+		self->user_uid = nm_auth_subject_get_uid (subject);
+		self->subject = g_object_ref (subject);
+	} else {
+		self->user_uid = user_uid;
 		self->owner = g_strdup (dbus_sender);
-
-	if (!self->owner) {
-		/* Need an owner */
-		g_warn_if_fail (self->owner);
-		nm_auth_chain_unref (self);
-		self = NULL;
+		if (user_uid > 0 && !self->owner) {
+			/* Need an owner */
+			g_warn_if_fail (self->owner);
+			nm_auth_chain_unref (self);
+			self = NULL;
+		}
 	}
 
 	return self;
 }
 
 NMAuthChain *
-nm_auth_chain_new (DBusGMethodInvocation *context,
-                   DBusGProxy *proxy,
-                   NMAuthChainResultFunc done_func,
-                   gpointer user_data)
-{
-	return _auth_chain_new (context, proxy, NULL, NULL, done_func, user_data);
-}
-
-NMAuthChain *
-nm_auth_chain_new_raw_message (DBusMessage *message,
-                               NMAuthChainResultFunc done_func,
-                               gpointer user_data)
-{
-	return _auth_chain_new (NULL, NULL, message, NULL, done_func, user_data);
-}
-
-NMAuthChain *
 nm_auth_chain_new_dbus_sender (const char *dbus_sender,
+                               gulong user_uid,
                                NMAuthChainResultFunc done_func,
                                gpointer user_data)
 {
-	return _auth_chain_new (NULL, NULL, NULL, dbus_sender, done_func, user_data);
+	return _auth_chain_new (NULL, dbus_sender, user_uid, NULL, done_func, user_data);
+}
+
+/* Creates the NMAuthSubject automatically */
+NMAuthChain *
+nm_auth_chain_new_context (DBusGMethodInvocation *context,
+                           NMAuthChainResultFunc done_func,
+                           gpointer user_data)
+{
+	NMAuthSubject *subject;
+	NMAuthChain *chain;
+
+	g_return_val_if_fail (context != NULL, NULL);
+
+	subject = nm_auth_subject_new_from_context (context);
+	if (!subject)
+		return NULL;
+
+	chain = nm_auth_chain_new_subject (subject,
+	                                   context,
+	                                   done_func,
+	                                   user_data);
+	g_object_unref (subject);
+	return chain;
+}
+
+/* Requires an NMAuthSubject */
+NMAuthChain *
+nm_auth_chain_new_subject (NMAuthSubject *subject,
+                           DBusGMethodInvocation *context,
+                           NMAuthChainResultFunc done_func,
+                           gpointer user_data)
+{
+	NMAuthChain *chain;
+
+	g_return_val_if_fail (NM_IS_AUTH_SUBJECT (subject), NULL);
+	chain = _auth_chain_new (subject, NULL, G_MAXULONG, context, done_func, user_data);
+
+	/* Chains creation from a valid NMAuthSubject cannot fail since the
+	 * subject already has all the necessary auth info.
+	 */
+	g_assert (chain);
+	return chain;
 }
 
 gpointer
@@ -269,10 +303,8 @@ nm_auth_chain_check_done (NMAuthChain *self)
 	g_return_if_fail (self != NULL);
 
 	if (g_slist_length (self->calls) == 0) {
-		/* Ensure we say alive across the callback */
-		self->refcount++;
-		self->done_func (self, self->error, self->context, self->user_data);
-		nm_auth_chain_unref (self);
+		g_assert (self->idle_id == 0);
+		self->idle_id = g_idle_add (auth_chain_finish, self);
 	}
 }
 
@@ -293,32 +325,15 @@ auth_call_new (NMAuthChain *chain, const char *permission)
 	call = g_malloc0 (sizeof (AuthCall));
 	call->chain = chain;
 	call->permission = g_strdup (permission);
-	call->cancellable = g_cancellable_new ();
 	chain->calls = g_slist_append (chain->calls, call);
 	return call;
 }
 
 static void
-auth_call_cancel (AuthCall *call)
-{
-	call->disposed = TRUE;
-	g_cancellable_cancel (call->cancellable);
-}
-
-static void
 auth_call_free (AuthCall *call)
 {
-	g_return_if_fail (call != NULL);
-
-	call->disposed = TRUE;
 	g_free (call->permission);
-	call->permission = NULL;
-	call->chain = NULL;
-	g_object_unref (call->cancellable);
-	call->cancellable = NULL;
-	if (call->idle_id)
-		g_source_remove (call->idle_id);
-	memset (call, 0, sizeof (*call));
+	g_clear_object (&call->cancellable);
 	g_free (call);
 }
 
@@ -326,9 +341,6 @@ auth_call_free (AuthCall *call)
 static gboolean
 auth_call_complete (AuthCall *call)
 {
-	g_return_val_if_fail (call != NULL, FALSE);
-
-	call->idle_id = 0;
 	nm_auth_chain_remove_call (call->chain, call);
 	nm_auth_chain_check_done (call->chain);
 	auth_call_free (call);
@@ -336,12 +348,20 @@ auth_call_complete (AuthCall *call)
 }
 
 static void
-auth_call_schedule_early_finish (AuthCall *call, GError *error)
+auth_call_cancel (gpointer user_data)
 {
-	if (!call->chain->error)
-		call->chain->error = error;
-	if (!call->idle_id)
-		call->idle_id = g_idle_add ((GSourceFunc) auth_call_complete, call);
+	AuthCall *call = user_data;
+
+	if (call->cancellable) {
+		/* we don't free call immediately. Instead we cancel the async operation
+		 * and set cancellable to NULL. pk_call_cb() will check for this and
+		 * do the final cleanup. */
+		g_cancellable_cancel (call->cancellable);
+		g_clear_object (&call->cancellable);
+	} else {
+		g_source_remove (call->call_idle_id);
+		auth_call_free (call);
+	}
 }
 
 #if WITH_POLKIT
@@ -349,25 +369,26 @@ static void
 pk_call_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 {
 	AuthCall *call = user_data;
-	NMAuthChain *chain = call->chain;
 	PolkitAuthorizationResult *pk_result;
 	GError *error = NULL;
 
-	/* If the call is already disposed do nothing */
-	if (call->disposed) {
+	pk_result = polkit_authority_check_authorization_finish ((PolkitAuthority *) object, result, &error);
+
+	/* If the call is already canceled do nothing */
+	if (!call->cancellable) {
+		g_clear_error (&error);
+		g_clear_object (&pk_result);
 		auth_call_free (call);
 		return;
 	}
 
-	pk_result = polkit_authority_check_authorization_finish (chain->authority, result, &error);
 	if (error) {
-		if (!chain->error)
-			chain->error = g_error_copy (error);
+		if (!call->chain->error)
+			call->chain->error = g_error_copy (error);
 
 		nm_log_warn (LOGD_CORE, "error requesting auth for %s: (%d) %s",
-		             call->permission,
-		             error ? error->code : -1,
-		             error && error->message ? error->message : "(unknown)");
+		             call->permission, error->code, error->message);
+		g_clear_error (&error);
 	} else {
 		guint call_result = NM_AUTH_CALL_RESULT_UNKNOWN;
 
@@ -380,14 +401,68 @@ pk_call_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 		} else
 			call_result = NM_AUTH_CALL_RESULT_NO;
 
-		nm_auth_chain_set_data (chain, call->permission, GUINT_TO_POINTER (call_result), NULL);
+		nm_auth_chain_set_data (call->chain, call->permission, GUINT_TO_POINTER (call_result), NULL);
+		g_object_unref (pk_result);
 	}
 
-	g_clear_error (&error);
-	if (pk_result)
-		g_object_unref (pk_result);
-
 	auth_call_complete (call);
+}
+
+static void
+auth_call_schedule_complete_with_error (AuthCall *call, const char *msg)
+{
+	if (!call->chain->error)
+		call->chain->error = g_error_new_literal (DBUS_GERROR, DBUS_GERROR_FAILED, msg);
+	call->call_idle_id = g_idle_add ((GSourceFunc) auth_call_complete, call);
+}
+
+static gboolean
+_add_call_polkit (NMAuthChain *self,
+                  const char *permission,
+                  gboolean allow_interaction)
+{
+	PolkitSubject *subject;
+	PolkitCheckAuthorizationFlags flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_NONE;
+	AuthCall *call;
+
+	g_return_val_if_fail (self != NULL, FALSE);
+	g_return_val_if_fail (self->owner || self->subject, FALSE);
+	g_return_val_if_fail (permission != NULL, FALSE);
+
+	call = auth_call_new (self, permission);
+
+	if (self->authority == NULL) {
+		/* No polkit, no authorization */
+		auth_call_schedule_complete_with_error (call, "PolicyKit not running");
+		return FALSE;
+	}
+
+	if (self->subject) {
+		subject = g_object_ref (nm_auth_subject_get_polkit_subject (self->subject));
+		g_assert (subject);
+	} else {
+		g_assert (self->owner);
+		subject = polkit_system_bus_name_new (self->owner);
+		if (!subject) {
+			auth_call_schedule_complete_with_error (call, "Failed to create polkit subject");
+			return FALSE;
+		}
+	}
+
+	if (allow_interaction)
+		flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION;
+
+	call->cancellable = g_cancellable_new ();
+	polkit_authority_check_authorization (self->authority,
+	                                      subject,
+	                                      permission,
+	                                      NULL,
+	                                      flags,
+	                                      call->cancellable,
+	                                      pk_call_cb,
+	                                      call);
+	g_object_unref (subject);
+	return TRUE;
 }
 #endif
 
@@ -398,73 +473,41 @@ nm_auth_chain_add_call (NMAuthChain *self,
 {
 	AuthCall *call;
 
+	g_return_val_if_fail (self != NULL, FALSE);
+
 #if WITH_POLKIT
-	PolkitSubject *subject;
-	PolkitCheckAuthorizationFlags flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_NONE;
-
-	g_return_val_if_fail (self != NULL, FALSE);
-	g_return_val_if_fail (self->owner != NULL, FALSE);
-	g_return_val_if_fail (permission != NULL, FALSE);
-
-	subject = polkit_system_bus_name_new (self->owner);
-	if (!subject)
-		return FALSE;
-
-	call = auth_call_new (self, permission);
-
-	if (self->authority == NULL) {
-		/* No polkit, no authorization */
-		auth_call_schedule_early_finish (call, g_error_new_literal (0, 0, "PolicyKit unavailable"));
-		g_object_unref (subject);
-		return FALSE;
-	}
-
-	if (allow_interaction)
-		flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION;
-
-	polkit_authority_check_authorization (self->authority,
-	                                      subject,
-	                                      permission,
-	                                      NULL,
-	                                      flags,
-	                                      call->cancellable,
-	                                      pk_call_cb,
-	                                      call);
-	g_object_unref (subject);
-#else
-	/* -- NO POLKIT -- */
-
-	g_return_val_if_fail (self != NULL, FALSE);
-
-	/* When PolicyKit is disabled, everything is authorized */
-	call = auth_call_new (self, permission);
-	nm_auth_chain_set_data (self, permission, GUINT_TO_POINTER (NM_AUTH_CALL_RESULT_YES), NULL);
-	auth_call_schedule_early_finish (call, NULL);
+	/* Non-root always gets authenticated when using polkit */
+	if (self->user_uid > 0)
+		return _add_call_polkit (self, permission, allow_interaction);
 #endif
 
+	/* Root user or non-polkit always gets the permission */
+	call = auth_call_new (self, permission);
+	nm_auth_chain_set_data (self, permission, GUINT_TO_POINTER (NM_AUTH_CALL_RESULT_YES), NULL);
+	call->call_idle_id = g_idle_add ((GSourceFunc) auth_call_complete, call);
 	return TRUE;
 }
 
 void
 nm_auth_chain_unref (NMAuthChain *self)
 {
-	GSList *iter;
-
 	g_return_if_fail (self != NULL);
 
 	self->refcount--;
 	if (self->refcount > 0)
 		return;
 
+	if (self->idle_id)
+		g_source_remove (self->idle_id);
+
 #if WITH_POLKIT
 	if (self->authority)
 		g_object_unref (self->authority);
 #endif
 	g_free (self->owner);
+	g_object_unref (self->subject);
 
-	for (iter = self->calls; iter; iter = g_slist_next (iter))
-		auth_call_cancel ((AuthCall *) iter->data);
-	g_slist_free (self->calls);
+	g_slist_free_full (self->calls, auth_call_cancel);
 
 	g_clear_error (&self->error);
 	g_hash_table_destroy (self->data);
@@ -474,59 +517,6 @@ nm_auth_chain_unref (NMAuthChain *self)
 }
 
 /************ utils **************/
-
-gboolean
-nm_auth_get_caller_uid (DBusGMethodInvocation *context,
-                        NMDBusManager *dbus_mgr,
-                        gulong *out_uid,
-                        char **out_error_desc)
-{
-	DBusConnection *connection;
-	char *sender = NULL;
-	gboolean success = FALSE;
-	DBusError dbus_error;
-
-	g_return_val_if_fail (context != NULL, FALSE);
-	g_return_val_if_fail (out_uid != NULL, FALSE);
-
-	if (!dbus_mgr) {
-		dbus_mgr = nm_dbus_manager_get ();
-		g_assert (dbus_mgr);
-	} else
-		g_object_ref (dbus_mgr);
-
-	*out_uid = G_MAXULONG;
-
-	sender = dbus_g_method_get_sender (context);
-	if (!sender) {
-		if (out_error_desc)
-			*out_error_desc = g_strdup ("Could not determine D-Bus requestor");
-		goto out;
-	}
-
-	connection = nm_dbus_manager_get_dbus_connection (dbus_mgr);
-	if (!connection) {
-		if (out_error_desc)
-			*out_error_desc = g_strdup ("Could not get the D-Bus system bus");
-		goto out;
-	}
-
-	dbus_error_init (&dbus_error);
-	/* FIXME: do this async */
-	*out_uid = dbus_bus_get_unix_user (connection, sender, &dbus_error);
-	if (dbus_error_is_set (&dbus_error)) {
-		if (out_error_desc)
-			*out_error_desc = g_strdup_printf ("Could not determine the user ID of the requestor");
-		dbus_error_free (&dbus_error);
-		*out_uid = G_MAXULONG;
-	} else
-		success = TRUE;
-
-out:
-	g_object_unref (dbus_mgr);
-	g_free (sender);
-	return success;
-}
 
 gboolean
 nm_auth_uid_in_acl (NMConnection *connection,
@@ -545,9 +535,6 @@ nm_auth_uid_in_acl (NMConnection *connection,
 	if (0 == uid)
 		return TRUE;
 
-	s_con = nm_connection_get_setting_connection (connection);
-	g_assert (s_con);
-
 	/* Reject the request if the request comes from no session at all */
 	if (!nm_session_monitor_uid_has_session (smon, uid, &user, &local)) {
 		if (out_error_desc) {
@@ -563,6 +550,14 @@ nm_auth_uid_in_acl (NMConnection *connection,
 		if (out_error_desc)
 			*out_error_desc = g_strdup_printf ("Could not determine username for uid %lu", uid);
 		return FALSE;
+	}
+
+	s_con = nm_connection_get_setting_connection (connection);
+	if (!s_con) {
+		/* This can only happen when called from AddAndActivate, so we know
+		 * the user will be authorized when the connection is completed.
+		 */
+		return TRUE;
 	}
 
 	/* Match the username returned by the session check to a user in the ACL */
@@ -608,7 +603,7 @@ nm_auth_changed_func_register (GDestroyNotify callback, gpointer callback_data)
 	gboolean found = FALSE;
 
 #if WITH_POLKIT
-	authority = pk_authority_get ();
+	authority = pk_authority_get (NULL);
 	if (!authority)
 		return;
 

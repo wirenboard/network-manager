@@ -36,6 +36,13 @@ NMClient
 
 
 
+<!-- ##### MACRO NM_CLIENT_STARTUP ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_CLIENT_MANAGER_RUNNING ##### -->
 <para>
 
@@ -120,6 +127,13 @@ NMClient
 
 
 
+<!-- ##### MACRO NM_CLIENT_DEVICES ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### ENUM NMClientPermission ##### -->
 <para>
 
@@ -148,6 +162,157 @@ NMClient
 @NM_CLIENT_PERMISSION_RESULT_YES: 
 @NM_CLIENT_PERMISSION_RESULT_AUTH: 
 @NM_CLIENT_PERMISSION_RESULT_NO: 
+
+<!-- ##### ENUM NMClientError ##### -->
+<para>
+
+</para>
+
+@NM_CLIENT_ERROR_UNKNOWN: 
+@NM_CLIENT_ERROR_MANAGER_NOT_RUNNING: 
+
+<!-- ##### MACRO NM_CLIENT_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_client_error_quark ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### STRUCT NMClient ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NMClient::device-added ##### -->
+<para>
+
+</para>
+
+@nmclient: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL NMClient::device-removed ##### -->
+<para>
+
+</para>
+
+@nmclient: the object which received the signal.
+@arg1: 
+
+<!-- ##### SIGNAL NMClient::permission-changed ##### -->
+<para>
+
+</para>
+
+@nmclient: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### ARG NMClient:activating-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:active-connections ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:connectivity ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:devices ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:manager-running ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:networking-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:primary-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:startup ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:state ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:version ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wimax-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wimax-hardware-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wireless-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wireless-hardware-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wwan-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMClient:wwan-hardware-enabled ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMClientClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@device_added: 
+@device_removed: 
+@permission_changed: 
+@_reserved1: 
+@_reserved2: 
+@_reserved3: 
+@_reserved4: 
+@_reserved5: 
+@_reserved6: 
 
 <!-- ##### FUNCTION nm_client_new ##### -->
 <para>
@@ -374,6 +539,15 @@ NMClient
 
 
 <!-- ##### FUNCTION nm_client_get_state ##### -->
+<para>
+
+</para>
+
+@client: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_client_get_startup ##### -->
 <para>
 
 </para>

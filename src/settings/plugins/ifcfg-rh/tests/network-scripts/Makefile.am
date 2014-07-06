@@ -2,9 +2,13 @@ EXTRA_DIST = \
 	ifcfg-test-minimal \
 	ifcfg-test-variables-corner-cases-1 \
 	ifcfg-test-nm-controlled \
+	ifcfg-test-nm-controlled-unrecognized \
+	ifcfg-test-unrecognized \
 	ifcfg-test-wired-static \
 	ifcfg-test-wired-static-bootproto \
 	ifcfg-test-wired-dhcp \
+	ifcfg-test-wired-dhcp-plus-ip \
+	ifcfg-test-wired-dhcp-send-hostname \
 	ifcfg-test-wired-dhcp6-only \
 	ifcfg-test-wired-global-gateway \
 	network-test-wired-global-gateway \
@@ -17,7 +21,10 @@ EXTRA_DIST = \
 	keys-test-wired-8021x-peap-mschapv2 \
 	ifcfg-test-wired-8021x-tls-agent \
 	ifcfg-test-wired-8021x-tls-always \
+	ifcfg-test-wired-802-1X-subj-matches \
+	ifcfg-test-wired-802-1x-ttls-eapgtc \
 	ifcfg-test-onboot-no \
+	ifcfg-test-noip \
 	ifcfg-test-wifi-open \
 	ifcfg-test-wifi-open-auto \
 	ifcfg-test-wifi-open-ssid-quoted \
@@ -51,6 +58,7 @@ EXTRA_DIST = \
 	keys-test-wifi-wpa-eap-tls \
 	ifcfg-test-wifi-wpa-eap-ttls-tls \
 	keys-test-wifi-wpa-eap-ttls-tls \
+	ifcfg-test-wifi-hidden \
 	test_ca_cert.pem \
 	test1_key_and_cert.pem \
 	ifcfg-test-ibft-dhcp \
@@ -94,10 +102,41 @@ EXTRA_DIST = \
 	ifcfg-test-infiniband \
 	ifcfg-test-bond-main \
 	ifcfg-test-bond-slave \
-	ifcfg-test-bond-slave-ib
+	ifcfg-test-bond-slave-ib \
+	ifcfg-test-dcb \
+	ifcfg-test-dcb-default-app-priorities \
+	ifcfg-test-dcb-bad-booleans \
+	ifcfg-test-dcb-short-booleans \
+	ifcfg-test-dcb-bad-uints \
+	ifcfg-test-dcb-short-uints \
+	ifcfg-test-dcb-bad-percent \
+	ifcfg-test-dcb-short-percent \
+	ifcfg-test-dcb-pgpct-not-100 \
+	ifcfg-test-fcoe-fabric \
+	ifcfg-test-fcoe-vn2vn \
+	ifcfg-test-team-master \
+	ifcfg-test-team-port \
+	ifcfg-test-team-port-empty-config
+
+# make target dependencies can't have colons in their names, which ends up
+# meaning that we can't add the alias files to EXTRA_DIST
+ALIAS_FILES = \
+	ifcfg-aliasem0 \
+	ifcfg-aliasem0:1 \
+	ifcfg-aliasem0:2 \
+	ifcfg-aliasem0:99 \
+	ifcfg-aliasem1 \
+	ifcfg-aliasem1:1 \
+	ifcfg-aliasem2 \
+	ifcfg-aliasem2:1
+
+dist-hook:
+	@for f in $(ALIAS_FILES); do \
+		cp $(abs_srcdir)/$$f $(distdir)/; \
+	done
 
 check-local:
-	@for f in $(EXTRA_DIST); do \
+	@for f in $(EXTRA_DIST) $(ALIAS_FILES); do \
 		chmod 0600 $(abs_srcdir)/$$f; \
 	done
 
