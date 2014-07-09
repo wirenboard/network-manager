@@ -2,6 +2,7 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
 
   * New upstream release.
   * Exclude libtool .la files from list-missing.
+  * Update symbols files.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 

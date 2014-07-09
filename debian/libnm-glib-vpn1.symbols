@@ -6,6 +6,7 @@ libnm-glib-vpn.so.1 libnm-glib-vpn1 #MINVER#
  nm_vpn_plugin_get_connection@Base 0.7.999
  nm_vpn_plugin_get_state@Base 0.7.999
  nm_vpn_plugin_get_type@Base 0.7.999
+ nm_vpn_plugin_secrets_required@Base 0.9.10.0
  nm_vpn_plugin_set_ip4_config@Base 0.7.999
  nm_vpn_plugin_set_login_banner@Base 0.7.999
  nm_vpn_plugin_set_state@Base 0.7.999
