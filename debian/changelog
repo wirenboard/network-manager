@@ -25,6 +25,9 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
     - Add patch to treat virtual ethernet devices as unmanaged to avoid
       interfering with VBox and VMware network interfaces.
     - Refresh remaining patches.
+  * Create /etc/NetworkManager/conf.d/ directory which can be used to extend
+    the NetworkManager configuration without having to modify the
+    distro-provided NetworkManager.conf.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 
