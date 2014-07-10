@@ -6,6 +6,12 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
   * Update Build-Depends as per configure.ac.
   * Build and install nmtui, a curses-based interface for easier console
     operation.
+  * Install new device plugins.
+  * Stop installing the nm-tool binary which was dropped upstream as it has
+    been replaced by the much more powerful nmcli tool.
+  * Stop installing the nm-dhcp-client.conf D-Bus policy. NetworkManager uses
+    a private D-Bus socket now to communicate with that helper, making that
+    file obsolete.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 

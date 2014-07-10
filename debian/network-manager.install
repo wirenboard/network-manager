@@ -1,12 +1,13 @@
 usr/sbin/NetworkManager
-usr/bin/nm-tool
 usr/bin/nm-online
 usr/bin/nmcli
 usr/bin/nmtui*
-usr/lib/NetworkManager/nm-dhcp-client.action
-usr/lib/NetworkManager/nm-dispatcher.action
+usr/lib/NetworkManager/nm-dhcp-helper
+usr/lib/NetworkManager/nm-dispatcher
 usr/lib/NetworkManager/nm-avahi-autoipd.action
 usr/lib/*/NetworkManager/libnm-settings-plugin-ifupdown.so
+usr/lib/*/NetworkManager/libnm-device-plugin-*.so
+usr/lib/*/NetworkManager/libnm-wwan.so
 usr/lib/pppd/*/*.so
 usr/share/locale/
 usr/share/man/
@@ -14,7 +15,6 @@ usr/share/dbus-1/system-services/
 usr/share/polkit-1/
 usr/share/bash-completion/
 etc/dbus-1/system.d/org.freedesktop.NetworkManager.conf
-etc/dbus-1/system.d/nm-dhcp-client.conf
 etc/dbus-1/system.d/nm-dispatcher.conf
 etc/dbus-1/system.d/nm-avahi-autoipd.conf
 etc/NetworkManager/dispatcher.d/
