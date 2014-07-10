@@ -12,6 +12,8 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
   * Stop installing the nm-dhcp-client.conf D-Bus policy. NetworkManager uses
     a private D-Bus socket now to communicate with that helper, making that
     file obsolete.
+  * Remove the obsolete /etc/dbus-1/system.d/nm-dhcp-client.conf conffile on
+    upgrades.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 
