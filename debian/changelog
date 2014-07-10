@@ -14,6 +14,8 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
     file obsolete.
   * Remove the obsolete /etc/dbus-1/system.d/nm-dhcp-client.conf conffile on
     upgrades.
+  * Specify the path to the pppd and pppoe binary via the corresponding
+    configure switch.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 
