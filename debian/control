@@ -32,7 +32,8 @@ Build-Depends: debhelper (>= 9),
                libglib2.0-doc,
                libmm-glib-dev (>=  0.7.991),
                libndp-dev,
-               libreadline-dev
+               libreadline-dev,
+               libnewt-dev (>= 0.52.15)
 Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-utopia/network-manager.git;a=summary

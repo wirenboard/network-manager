@@ -4,6 +4,8 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
   * Exclude libtool .la files from list-missing.
   * Update symbols files.
   * Update Build-Depends as per configure.ac.
+  * Build and install nmtui, a curses-based interface for easier console
+    operation.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 
