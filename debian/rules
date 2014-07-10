@@ -33,9 +33,8 @@ override_dh_auto_configure:
 		--enable-ppp \
 		--enable-ifupdown \
 		--enable-introspection \
-		--enable-doc \
-		--enable-concheck \
-		--enable-bluez4
+		--enable-gtk-doc \
+		--enable-concheck
 
 override_dh_install:
 	dh_install -X.la --list-missing
