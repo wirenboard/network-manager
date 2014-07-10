@@ -16,6 +16,15 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
     upgrades.
   * Specify the path to the pppd and pppoe binary via the corresponding
     configure switch.
+  * Update patches.
+    - Drop "Add D-Bus policy for group netdev" patch. Usage of D-Bus
+      "at_console" permissions has been removed upstream and access for
+      unprivleged users is now handled entirely with PolicyKit.
+    - Add patch to use symbolic links instead of hard links for
+      /usr/bin/nmtui-*.
+    - Add patch to treat virtual ethernet devices as unmanaged to avoid
+      interfering with VBox and VMware network interfaces.
+    - Refresh remaining patches.
 
  -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
 

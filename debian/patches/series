@@ -1,4 +1,5 @@
-0001-Add-D-Bus-policy-for-group-netdev.patch
-0002-Debian-specific-tweaks-for-NetworkManager-systemd-se.patch
-0003-Force-online-state-with-unmanaged-devices.patch
-0004-Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
+0001-Debian-specific-tweaks-for-NetworkManager-systemd-se.patch
+0002-Force-online-state-with-unmanaged-devices.patch
+0003-Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
+0004-Use-symlinks-for-nmtui.patch
+0005-Mark-virtual-ethernet-interfaces-as-unmanaged.patch

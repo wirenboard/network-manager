@@ -17,9 +17,11 @@ Closes: #742933
  src/nm-sleep-monitor-systemd.c | 5 +++++
  3 files changed, 9 insertions(+), 1 deletion(-)
 
+diff --git a/configure.ac b/configure.ac
+index 94b0758..a77d55a 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -327,7 +327,8 @@
+@@ -351,7 +351,8 @@ fi
  case $with_suspend_resume in
      upower) ;;
      systemd)
@@ -29,35 +31,39 @@ Closes: #742933
          ;;
      *)
  	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 2929e18..85f761b 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -304,6 +304,7 @@
- 	$(LIBNL_CFLAGS) \
+@@ -322,6 +322,7 @@ AM_CPPFLAGS += \
+ 	$(LIBSOUP_CFLAGS) \
  	$(POLKIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
 +	$(SYSTEMD_INHIBIT_CFLAGS) \
- 	$(LIBSOUP_CFLAGS) \
- 	$(AM_CPPFLAGS) \
+ 	\
  	-DBINDIR=\"$(bindir)\" \
-@@ -346,6 +347,7 @@
+ 	-DDATADIR=\"$(datadir)\" \
+@@ -364,6 +365,7 @@ libNetworkManager_la_LIBADD = \
  	$(LIBNL_LIBS) \
  	$(POLKIT_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \
 +	$(SYSTEMD_INHIBIT_LIBS) \
- 	$(LIBSOUP_LIBS) \
- 	$(LIBM) \
- 	$(LIBDL)
+ 	$(LIBDL) \
+ 	$(LIBM)
+ 
+diff --git a/src/nm-sleep-monitor-systemd.c b/src/nm-sleep-monitor-systemd.c
+index 55134c4..9bbcd4c 100644
 --- a/src/nm-sleep-monitor-systemd.c
 +++ b/src/nm-sleep-monitor-systemd.c
-@@ -25,6 +25,7 @@
- #include <dbus/dbus-glib.h>
+@@ -26,6 +26,7 @@
+ #include <glib/gi18n.h>
  #include <gio/gio.h>
  #include <gio/gunixfdlist.h>
 +#include <systemd/sd-daemon.h>
  
  #include "nm-logging.h"
  #include "nm-dbus-manager.h"
-@@ -304,6 +305,10 @@
+@@ -164,6 +165,10 @@ sleep_setup (NMSleepMonitor *self)
  static void
  nm_sleep_monitor_init (NMSleepMonitor *self)
  {
