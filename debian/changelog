@@ -1,4 +1,4 @@
-network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
+network-manager (0.9.10.0-1) unstable; urgency=medium
 
   * New upstream release.
   * Exclude libtool .la files from list-missing.
@@ -32,7 +32,7 @@ network-manager (0.9.10.0-1) UNRELEASED; urgency=medium
     /etc/NetworkManager/conf.d/ to change NetworkManager's behaviour to be
     more like what's expected on "traditional UNIX server" type deployments.
 
- -- Michael Biebl <biebl@debian.org>  Sun, 06 Jul 2014 03:04:21 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 10 Jul 2014 06:44:53 +0200
 
 network-manager (0.9.8.10-4) unstable; urgency=medium
 
