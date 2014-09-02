@@ -33,7 +33,8 @@ Build-Depends: debhelper (>= 9),
                libmm-glib-dev (>=  0.7.991),
                libndp-dev,
                libreadline-dev,
-               libnewt-dev (>= 0.52.15)
+               libnewt-dev (>= 0.52.15),
+               libteam-dev (>= 1.9)
 Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-utopia/network-manager.git;a=summary
@@ -57,7 +58,8 @@ Recommends: ppp (>= 2.4.6),
             iptables,
             modemmanager,
             crda
-Suggests: avahi-autoipd
+Suggests: avahi-autoipd,
+          libteam-utils
 Breaks: network-manager-gnome (<< 0.9),
         network-manager-openvpn (<< 0.9),
         network-manager-vpnc (<< 0.9),
@@ -82,6 +84,9 @@ Description: network management framework (daemon and userspace tools)
     connection sharing.
   * avahi-autoipd: Used for IPv4LL, a protocol for automatic Link-Local IP
     address configuration.
+  * libteam-utils: Network Team driver allows multiple network interfaces to be
+    teamed together and act like a single one. This process is called "ethernet
+    bonding", "channel teaming" or "link aggregation".
 
 Package: network-manager-dev
 Architecture: linux-any
