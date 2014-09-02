@@ -3,6 +3,8 @@ network-manager (0.9.10.0-2) UNRELEASED; urgency=medium
   * Use default compression for binary packages.
   * Enable Network Team driver support. This is an optional feature which
     requires the teamd daemon provided by libteam-utils.
+  * Cherry-pick upstream commit to fix Wi-Fi section of "nmtui connect" list
+    in non-UTF-8 locales. (Closes: #760186)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 02 Sep 2014 18:47:13 +0200
 
