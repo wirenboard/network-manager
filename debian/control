@@ -89,8 +89,9 @@ Description: network management framework (daemon and userspace tools)
     bonding", "channel teaming" or "link aggregation".
 
 Package: network-manager-dev
-Architecture: linux-any
 Section: devel
+Architecture: linux-any
+Multi-Arch: same
 Depends: ${misc:Depends}
 Description: network management framework (development files)
  this package provides header files that are needed to
@@ -116,6 +117,7 @@ Description: network management framework (GLib shared library)
 Package: libnm-glib-dev
 Section: libdevel
 Architecture: linux-any
+Multi-Arch: same
 Depends: ${misc:Depends},
          libnm-glib4 (= ${binary:Version}),
          gir1.2-networkmanager-1.0 (= ${binary:Version}),
@@ -153,6 +155,7 @@ Description: network management framework (GLib VPN shared library)
 Package: libnm-glib-vpn-dev
 Section: libdevel
 Architecture: linux-any
+Multi-Arch: same
 Depends: ${misc:Depends},
          libnm-glib-vpn1 (= ${binary:Version}),
          libnm-glib-dev (>= ${binary:Version}),
@@ -187,6 +190,7 @@ Description: network management framework (shared library)
 Package: libnm-util-dev
 Section: libdevel
 Architecture: linux-any
+Multi-Arch: same
 Depends: ${misc:Depends},
          libnm-util2 (= ${binary:Version}),
          gir1.2-networkmanager-1.0 (= ${binary:Version}),
@@ -223,6 +227,7 @@ Description: network management framework (debugging symbols)
 Package: gir1.2-networkmanager-1.0
 Section: introspection
 Architecture: linux-any
+Multi-Arch: same
 Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends}
