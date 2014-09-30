@@ -9,6 +9,7 @@ network-manager (0.9.10.0-3) UNRELEASED; urgency=medium
   * Install typelib files into multiarch paths now that gobject-introspection
     supports multiarch.
   * Mark gir and dev packages as Multi-Arch: same.
+  * Build against libsystemd-dev.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 30 Sep 2014 05:08:49 +0200
 

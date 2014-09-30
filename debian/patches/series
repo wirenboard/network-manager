@@ -6,3 +6,4 @@
 0006-tui-fix-Wi-Fi-section-of-nmtui-connect-list-in-non-U.patch
 0007-core-fix-checks-for-default-routes-by-comparing-the-.patch
 0008-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
+0009-Support-building-against-libsystemd-library.patch
