@@ -1,11 +1,10 @@
-network-manager (0.9.10.0-3) UNRELEASED; urgency=medium
-
-  * Acknowledge NMU, thanks Micah Anderson.
+network-manager (0.9.10.0-3) unstable; urgency=medium
 
   [ Arto Jantunen ]
   * Use the correct path when calling dnssec-trigger-script. (Closes: #763023)
 
   [ Michael Biebl ]
+  * Acknowledge NMU, thanks Micah Anderson.
   * Install typelib files into multiarch paths now that gobject-introspection
     supports multiarch.
   * Mark gir and dev packages as Multi-Arch: same.
@@ -13,7 +12,7 @@ network-manager (0.9.10.0-3) UNRELEASED; urgency=medium
   * Cherry-pick upstream commits to make nmtui-edit properly save and display
     passwords. (Closes: #754382)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 30 Sep 2014 05:08:49 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 30 Sep 2014 06:12:19 +0200
 
 network-manager (0.9.10.0-2.1) unstable; urgency=medium
 
