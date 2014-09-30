@@ -7,3 +7,5 @@
 0007-core-fix-checks-for-default-routes-by-comparing-the-.patch
 0008-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
 0009-Support-building-against-libsystemd-library.patch
+0010-tui-fix-requesting-and-displaying-secrets.patch
+0011-tui-fix-updating-of-NmtPasswordFields-passwords-bgo-.patch

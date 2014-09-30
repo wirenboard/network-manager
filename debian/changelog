@@ -10,6 +10,8 @@ network-manager (0.9.10.0-3) UNRELEASED; urgency=medium
     supports multiarch.
   * Mark gir and dev packages as Multi-Arch: same.
   * Build against libsystemd-dev.
+  * Cherry-pick upstream commits to make nmtui-edit properly save and display
+    passwords. (Closes: #754382)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 30 Sep 2014 05:08:49 +0200
 
