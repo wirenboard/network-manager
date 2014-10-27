@@ -56,7 +56,8 @@ Recommends: ppp (>= 2.4.6),
             dnsmasq-base,
             iptables,
             modemmanager,
-            crda
+            crda,
+            iputils-arping
 Suggests: avahi-autoipd,
           libteam-utils
 Breaks: network-manager-gnome (<< 0.9),
