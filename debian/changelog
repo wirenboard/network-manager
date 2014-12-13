@@ -1,8 +1,11 @@
 network-manager (0.9.10.0-4) UNRELEASED; urgency=medium
 
-  * Fix arping patch and add iputils-arping to the Recommends (Closes:#755039)
+  * Fix arping path and add iputils-arping to the Recommends (Closes:#755039)
+  * Add d/p/0013-fix-dhclient-abnormal-exit-due-to-SIGPIPE.patch,
+    d/p/0014-log-DHCLIENT-exit-status-better.patch: Prevent dhclient to crash
+    when journald is restarted (Closes: #756144)
 
- -- Laurent Bigonville <bigon@debian.org>  Mon, 27 Oct 2014 11:06:47 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 13 Dec 2014 12:13:00 +0100
 
 network-manager (0.9.10.0-3) unstable; urgency=medium
 

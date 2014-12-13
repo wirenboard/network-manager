@@ -10,3 +10,5 @@
 0010-tui-fix-requesting-and-displaying-secrets.patch
 0011-tui-fix-updating-of-NmtPasswordFields-passwords-bgo-.patch
 0012-fix-arping-path.patch
+0013-fix-dhclient-abnormal-exit-due-to-SIGPIPE.patch
+0014-log-DHCLIENT-exit-status-better.patch
