@@ -1,3 +1,15 @@
+From: Laurent Bigonville <bigon@bigon.be>
+Date: Mon, Oct 27 11:08:02 2014 +0100
+Subject: fix arping path
+
+Debian provides two arping implementations:
+/usr/sbin/arping, shipped by the arping package,
+/usr/bin/arping, shipped by the iputils-arping package.
+
+They aren't completely command line compatible, so we choose the one
+which upstream (Fedora) is using, i.e. iputils-arping.
+
+Closes: #755039
 --- a/src/devices/nm-device.c
 +++ b/src/devices/nm-device.c
 @@ -4429,7 +4429,7 @@ start_sharing (NMDevice *self, NMIP4Conf
