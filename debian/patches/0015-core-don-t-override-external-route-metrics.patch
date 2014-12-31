@@ -1,0 +1,61 @@
+From 404f23a93198d0b5e81b87d6d55a479838e934cf Mon Sep 17 00:00:00 2001
+From: Dan Williams <dcbw@redhat.com>
+Date: Mon, 13 Oct 2014 16:27:20 -0500
+Subject: [PATCH 1/2] core: don't override external route metrics (bgo #738268)
+
+A generated connection contains a copy of the device's existing
+configuration, so it's entirely redundant to merge the connection
+back into the device's IP config.  But even though that should
+result in no changes to the IP config, NMSettingIPxConfig treats a
+route metric of '0' as the device priority, while NMIPxConfig
+allows 0 as a valid route metric.  Since the setting values
+are preferred (they are supposed to be user-supplied and thus
+override anythign else, but in this case they are generated and
+thus not user-supplied) external routes with a metric of 0 are
+overwritten with the device priority metric.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=738268
+(cherry picked from commit 8283672451d0b07655a8423af0e17fd26c07a0d1)
+---
+ src/devices/nm-device.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 4788a60..05f0e7b 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -2635,9 +2635,13 @@ ip4_config_merge_and_apply (NMDevice *self,
+ 	if (priv->ext_ip4_config)
+ 		nm_ip4_config_merge (composite, priv->ext_ip4_config);
+ 
+-	/* Merge user overrides into the composite config */
++	/* Merge user overrides into the composite config.  Generated+assumed
++	 * connections come from the system not the user and merging them would
++	 * be redundant, so don't bother.
++	 */
+ 	connection = nm_device_get_connection (self);
+-	if (connection) {
++	if (   connection
++	    && !nm_settings_connection_get_nm_generated (NM_SETTINGS_CONNECTION (connection))) {
+ 		nm_ip4_config_merge_setting (composite,
+ 		                             nm_connection_get_setting_ip4_config (connection),
+ 		                             nm_device_get_priority (self));
+@@ -3080,9 +3084,13 @@ ip6_config_merge_and_apply (NMDevice *self,
+ 	if (priv->ext_ip6_config)
+ 		nm_ip6_config_merge (composite, priv->ext_ip6_config);
+ 
+-	/* Merge user overrides into the composite config */
++	/* Merge user overrides into the composite config.  Generated+assumed
++	 * connections come from the system not the user and merging them would
++	 * be redundant, so don't bother.
++	 */
+ 	connection = nm_device_get_connection (self);
+-	if (connection) {
++	if (   connection
++	    && !nm_settings_connection_get_nm_generated (NM_SETTINGS_CONNECTION (connection))) {
+ 		nm_ip6_config_merge_setting (composite,
+ 		                             nm_connection_get_setting_ip6_config (connection),
+ 		                             nm_device_get_priority (self));
+-- 
+2.1.4
+

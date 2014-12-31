@@ -1,3 +1,10 @@
+network-manager (0.9.10.0-5) UNRELEASED; urgency=medium
+
+  * Cherry-pick upstream commit which prevents breaking PtP TUN interfaces by
+    not overriding external route metrics. (Closes: #767002)
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 31 Dec 2014 00:59:36 +0100
+
 network-manager (0.9.10.0-4) unstable; urgency=medium
 
   * Team upload.

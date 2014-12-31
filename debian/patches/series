@@ -12,3 +12,4 @@
 0012-fix-arping-path.patch
 0013-fix-dhclient-abnormal-exit-due-to-SIGPIPE.patch
 0014-log-DHCLIENT-exit-status-better.patch
+0015-core-don-t-override-external-route-metrics.patch
