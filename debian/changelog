@@ -2,6 +2,8 @@ network-manager (0.9.10.0-5) UNRELEASED; urgency=medium
 
   * Cherry-pick upstream commit which prevents breaking PtP TUN interfaces by
     not overriding external route metrics. (Closes: #767002)
+  * Cherry-pick upstream commit which tells systemd to restart NetworkManager
+    if it exits with a failure. (Closes: #773213)
 
  -- Michael Biebl <biebl@debian.org>  Wed, 31 Dec 2014 00:59:36 +0100
 

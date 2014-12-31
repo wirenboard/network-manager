@@ -1,0 +1,32 @@
+From a2040e059c32021ad9c26e116364197e70721a87 Mon Sep 17 00:00:00 2001
+From: Mikko Rapeli <mikko.rapeli@iki.fi>
+Date: Mon, 15 Dec 2014 16:47:45 +0100
+Subject: [PATCH 2/2] core: tell systemd to restart NetworkManager.service if
+ it exited with failure (bgo #741587)
+
+Crashed NetworkManager.service was not restarted by systemd.
+
+Signed-off-by: Mikko Rapeli <mikko.rapeli@iki.fi>
+
+https://bugzilla.gnome.org/show_bug.cgi?id=741587
+
+(cherry picked from commit fe95185f6f9f0e3bd3a71024b8b916bca2dc397f)
+---
+ data/NetworkManager.service.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
+index 84a9c95..b2e61ff 100644
+--- a/data/NetworkManager.service.in
++++ b/data/NetworkManager.service.in
+@@ -7,6 +7,7 @@ Before=network.target @DISTRO_NETWORK_SERVICE@
+ Type=dbus
+ BusName=org.freedesktop.NetworkManager
+ ExecStart=@sbindir@/NetworkManager --no-daemon
++Restart=on-failure
+ # NM doesn't want systemd to kill its children for it
+ KillMode=process
+ 
+-- 
+2.1.4
+

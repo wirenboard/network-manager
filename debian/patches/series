@@ -13,3 +13,4 @@
 0013-fix-dhclient-abnormal-exit-due-to-SIGPIPE.patch
 0014-log-DHCLIENT-exit-status-better.patch
 0015-core-don-t-override-external-route-metrics.patch
+0016-core-tell-systemd-to-restart-NetworkManager.service-.patch
