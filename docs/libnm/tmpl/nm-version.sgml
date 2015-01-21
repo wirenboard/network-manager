@@ -1,0 +1,158 @@
+<!-- ##### SECTION Title ##### -->
+nm-version
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_MAJOR_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_MINOR_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_MICRO_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_CHECK_VERSION ##### -->
+<para>
+
+</para>
+
+@major: 
+@minor: 
+@micro: 
+
+
+<!-- ##### MACRO NM_ENCODE_VERSION ##### -->
+<para>
+
+</para>
+
+@major: 
+@minor: 
+@micro: 
+
+
+<!-- ##### MACRO NM_VERSION_0_9_8 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VERSION_0_9_10 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VERSION_1_0 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VERSION_CUR_STABLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VERSION_NEXT_STABLE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VERSION_MIN_REQUIRED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VERSION_MAX_ALLOWED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEPRECATED_IN_0_9_10 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEPRECATED_IN_0_9_10_FOR ##### -->
+<para>
+
+</para>
+
+@f: 
+
+
+<!-- ##### MACRO NM_DEPRECATED_IN_1_0 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEPRECATED_IN_1_0_FOR ##### -->
+<para>
+
+</para>
+
+@f: 
+
+
+<!-- ##### MACRO NM_AVAILABLE_IN_0_9_10 ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_AVAILABLE_IN_1_0 ##### -->
+<para>
+
+</para>
+
+
+

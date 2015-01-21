@@ -78,8 +78,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = test-dhcp-dhclient$(EXEEXT)
-TESTS = test-dhcp-dhclient$(EXEEXT)
+noinst_PROGRAMS = test-dhcp-dhclient$(EXEEXT) test-dhcp-utils$(EXEEXT)
+TESTS = test-dhcp-dhclient$(EXEEXT) test-dhcp-utils$(EXEEXT)
 subdir = src/dhcp-manager/tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp
@@ -104,7 +104,8 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_test_dhcp_dhclient_OBJECTS = test-dhcp-dhclient.$(OBJEXT)
+am_test_dhcp_dhclient_OBJECTS = nm-dhcp-dhclient-utils.$(OBJEXT) \
+	nm-dhcp-utils.$(OBJEXT) test-dhcp-dhclient.$(OBJEXT)
 test_dhcp_dhclient_OBJECTS = $(am_test_dhcp_dhclient_OBJECTS)
 test_dhcp_dhclient_DEPENDENCIES =  \
 	$(top_builddir)/src/libNetworkManager.la
@@ -112,6 +113,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_test_dhcp_utils_OBJECTS = test-dhcp-utils.$(OBJEXT)
+test_dhcp_utils_OBJECTS = $(am_test_dhcp_utils_OBJECTS)
+test_dhcp_utils_DEPENDENCIES =  \
+	$(top_builddir)/src/libNetworkManager.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -146,8 +151,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_dhcp_dhclient_SOURCES)
-DIST_SOURCES = $(test_dhcp_dhclient_SOURCES)
+SOURCES = $(test_dhcp_dhclient_SOURCES) $(test_dhcp_utils_SOURCES)
+DIST_SOURCES = $(test_dhcp_dhclient_SOURCES) \
+	$(test_dhcp_utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -204,6 +210,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -327,6 +335,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -346,6 +355,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -372,7 +382,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -453,23 +463,35 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/libnm-util \
+	-I${top_srcdir}/libnm-core \
+	-I${top_builddir}/libnm-core \
 	-I$(top_srcdir)/src/dhcp-manager \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/platform \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	-DTESTDIR="\"$(abs_srcdir)\""
 
 
-####### policy /etc/hosts test #######
+####### dhclient leases test #######
 test_dhcp_dhclient_SOURCES = \
+	$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.h \
+	$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c \
+	$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.h \
+	$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c \
 	test-dhcp-dhclient.c
 
 test_dhcp_dhclient_LDADD = \
+	$(top_builddir)/src/libNetworkManager.la
+
+
+####### DHCP utils test #######
+test_dhcp_utils_SOURCES = \
+	test-dhcp-utils.c
+
+test_dhcp_utils_LDADD = \
 	$(top_builddir)/src/libNetworkManager.la
 
 EXTRA_DIST = \
@@ -528,13 +550,20 @@ test-dhcp-dhclient$(EXEEXT): $(test_dhcp_dhclient_OBJECTS) $(test_dhcp_dhclient_
 	@rm -f test-dhcp-dhclient$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_dhcp_dhclient_OBJECTS) $(test_dhcp_dhclient_LDADD) $(LIBS)
 
+test-dhcp-utils$(EXEEXT): $(test_dhcp_utils_OBJECTS) $(test_dhcp_utils_DEPENDENCIES) $(EXTRA_test_dhcp_utils_DEPENDENCIES) 
+	@rm -f test-dhcp-utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_dhcp_utils_OBJECTS) $(test_dhcp_utils_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dhcp-dhclient-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dhcp-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-dhcp-dhclient.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-dhcp-utils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -556,6 +585,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+nm-dhcp-dhclient-utils.o: $(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-dhcp-dhclient-utils.o -MD -MP -MF $(DEPDIR)/nm-dhcp-dhclient-utils.Tpo -c -o nm-dhcp-dhclient-utils.o `test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c' || echo '$(srcdir)/'`$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-dhcp-dhclient-utils.Tpo $(DEPDIR)/nm-dhcp-dhclient-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c' object='nm-dhcp-dhclient-utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-dhcp-dhclient-utils.o `test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c' || echo '$(srcdir)/'`$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c
+
+nm-dhcp-dhclient-utils.obj: $(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-dhcp-dhclient-utils.obj -MD -MP -MF $(DEPDIR)/nm-dhcp-dhclient-utils.Tpo -c -o nm-dhcp-dhclient-utils.obj `if test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c'; then $(CYGPATH_W) '$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-dhcp-dhclient-utils.Tpo $(DEPDIR)/nm-dhcp-dhclient-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c' object='nm-dhcp-dhclient-utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-dhcp-dhclient-utils.obj `if test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c'; then $(CYGPATH_W) '$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/dhcp-manager/nm-dhcp-dhclient-utils.c'; fi`
+
+nm-dhcp-utils.o: $(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-dhcp-utils.o -MD -MP -MF $(DEPDIR)/nm-dhcp-utils.Tpo -c -o nm-dhcp-utils.o `test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c' || echo '$(srcdir)/'`$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-dhcp-utils.Tpo $(DEPDIR)/nm-dhcp-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c' object='nm-dhcp-utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-dhcp-utils.o `test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c' || echo '$(srcdir)/'`$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c
+
+nm-dhcp-utils.obj: $(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-dhcp-utils.obj -MD -MP -MF $(DEPDIR)/nm-dhcp-utils.Tpo -c -o nm-dhcp-utils.obj `if test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c'; then $(CYGPATH_W) '$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-dhcp-utils.Tpo $(DEPDIR)/nm-dhcp-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c' object='nm-dhcp-utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-dhcp-utils.obj `if test -f '$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c'; then $(CYGPATH_W) '$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/dhcp-manager/nm-dhcp-utils.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

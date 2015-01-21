@@ -1,0 +1,58 @@
+<!-- ##### SECTION Title ##### -->
+NMDeviceAdsl
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_DEVICE_ADSL_CARRIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMDeviceAdsl ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceAdsl:carrier ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceAdslClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_device_adsl_get_carrier ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+

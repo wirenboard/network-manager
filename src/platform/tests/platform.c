@@ -18,12 +18,15 @@
  * Copyright (C) 2013 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <netlink/route/addr.h>
 
+#include "gsystem-local-alloc.h"
 #include "nm-platform.h"
 #include "nm-linux-platform.h"
 #include "nm-fake-platform.h"
@@ -47,7 +50,7 @@ do_sysctl_set (char **argv)
 static gboolean
 do_sysctl_get (char **argv)
 {
-	auto_g_free char *value = nm_platform_sysctl_get (argv[0]);
+	gs_free char *value = nm_platform_sysctl_get (argv[0]);
 
 	printf ("%s\n", value);
 
@@ -281,7 +284,7 @@ do_master_get_option (char **argv)
 {
 	int ifindex = parse_ifindex (*argv++);
 	const char *option = *argv++;
-	auto_g_free char *value = nm_platform_master_get_option (ifindex, option);
+	gs_free char *value = nm_platform_master_get_option (ifindex, option);
 
 	printf ("%s\n", value);
 
@@ -303,7 +306,7 @@ do_slave_get_option (char **argv)
 {
 	int ifindex = parse_ifindex (*argv++);
 	const char *option = *argv++;
-	auto_g_free char *value = nm_platform_slave_get_option (ifindex, option);
+	gs_free char *value = nm_platform_slave_get_option (ifindex, option);
 
 	printf ("%s\n", value);
 
@@ -532,6 +535,9 @@ parse_ip_address (int family, char *str, gpointer address, int *plen)
 {
 	char *endptr;
 
+	if (plen)
+		*plen = 0;
+
 	if (plen) {
 		char *ptr = strchr (str, '/');
 		if (ptr) {
@@ -594,7 +600,7 @@ do_ip6_address_add (char **argv)
 		return FALSE;
 }
 
-#define ADDR_CMD_FULL(v, cmdname, print) \
+#define ADDR_CMD_FULL(v, cmdname, print, ...) \
 	static gboolean \
 	do_##v##_address_##cmdname (char **argv) \
 	{ \
@@ -602,7 +608,7 @@ do_ip6_address_add (char **argv)
 		v##_t address; \
 		int plen; \
 		if (ifindex && parse_##v##_address (*argv++, &address, &plen)) { \
-			gboolean value = nm_platform_##v##_address_##cmdname (ifindex, address, plen); \
+			gboolean value = nm_platform_##v##_address_##cmdname (ifindex, address, plen, ##__VA_ARGS__); \
 			if (print) { \
 				print_boolean (value); \
 				return TRUE; \
@@ -611,7 +617,7 @@ do_ip6_address_add (char **argv)
 		} else \
 			return FALSE; \
 	}
-#define ADDR_CMD(cmdname) ADDR_CMD_FULL (ip4, cmdname, FALSE) ADDR_CMD_FULL (ip6, cmdname, FALSE)
+#define ADDR_CMD(cmdname) ADDR_CMD_FULL (ip4, cmdname, FALSE, 0) ADDR_CMD_FULL (ip6, cmdname, FALSE)
 #define ADDR_CMD_PRINT(cmdname) ADDR_CMD_FULL (ip4, cmdname, TRUE) ADDR_CMD_FULL (ip6, cmdname, TRUE)
 
 ADDR_CMD (delete)
@@ -627,7 +633,7 @@ do_ip4_route_get_all (char **argv)
 	int i;
 
 	if (ifindex) {
-		routes = nm_platform_ip4_route_get_all (ifindex, TRUE);
+		routes = nm_platform_ip4_route_get_all (ifindex, NM_PLATFORM_GET_ROUTE_MODE_ALL);
 		for (i = 0; i < routes->len; i++) {
 			route = &g_array_index (routes, NMPlatformIP4Route, i);
 			inet_ntop (AF_INET, &route->network, networkstr, sizeof (networkstr));
@@ -651,7 +657,7 @@ do_ip6_route_get_all (char **argv)
 	int i;
 
 	if (ifindex) {
-		routes = nm_platform_ip6_route_get_all (ifindex, TRUE);
+		routes = nm_platform_ip6_route_get_all (ifindex, NM_PLATFORM_GET_ROUTE_MODE_ALL);
 		for (i = 0; i < routes->len; i++) {
 			route = &g_array_index (routes, NMPlatformIP6Route, i);
 			inet_ntop (AF_INET6, &route->network, networkstr, sizeof (networkstr));
@@ -677,8 +683,8 @@ do_ip4_route_add (char **argv)
 	metric = strtol (*argv++, NULL, 10);
 	mss = strtol (*argv++, NULL, 10);
 
-	return nm_platform_ip4_route_add (ifindex, NM_PLATFORM_SOURCE_USER,
-	                                  network, plen, gateway,
+	return nm_platform_ip4_route_add (ifindex, NM_IP_CONFIG_SOURCE_USER,
+	                                  network, plen, gateway, 0,
 	                                  metric, mss);
 }
 
@@ -693,7 +699,7 @@ do_ip6_route_add (char **argv)
 	parse_ip6_address (*argv++, &gateway, NULL);
 	metric = strtol (*argv++, NULL, 10);
 	mss = strtol (*argv++, NULL, 10);
-	return nm_platform_ip6_route_add (ifindex, NM_PLATFORM_SOURCE_USER,
+	return nm_platform_ip6_route_add (ifindex, NM_IP_CONFIG_SOURCE_USER,
 	                                  network, plen, gateway,
 	                                  metric, mss);
 }

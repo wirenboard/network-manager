@@ -44,7 +44,7 @@
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="libnm-glib-nm-vpn-plugin-utils.html#nm-vpn-plugin-utils-get-secret-flags" title="nm_vpn_plugin_utils_get_secret_flags ()">nm_vpn_plugin_utils_get_secret_flags</a>
                                                         (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *data</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *secret_name</code></em>,
-                                                         <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> *out_flags</code></em>);
+                                                         <em class="parameter"><code><a href="https://developer.gnome.org/libnm/1.0/NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> *out_flags</code></em>);
 </pre>
 </div>
 <div class="refsect1">
@@ -100,11 +100,11 @@ an applet when the applet calls the authentication dialog of the VPN plugin.
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_vpn_plugin_utils_get_secret_flags
                                                         (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *data</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *secret_name</code></em>,
-                                                         <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> *out_flags</code></em>);</pre>
+                                                         <em class="parameter"><code><a href="https://developer.gnome.org/libnm/1.0/NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> *out_flags</code></em>);</pre>
 <p>
 Given a VPN secret key name, attempts to find the corresponding flags data
 item in <em class="parameter"><code>data</code></em>.  If found, converts the flags data item to
-<a href="https://developer.gnome.org/libnm-util/0.9/NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> and returns it.
+<a href="https://developer.gnome.org/libnm/1.0/NMSetting.html#NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> and returns it.
 </p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>

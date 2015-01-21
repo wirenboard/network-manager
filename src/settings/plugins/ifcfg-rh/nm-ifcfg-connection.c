@@ -18,13 +18,13 @@
  * Copyright (C) 2008 - 2011 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <string.h>
-#include <net/ethernet.h>
-#include <netinet/ether.h>
 
 #include <glib/gstdio.h>
 
-#include <NetworkManager.h>
+#include <nm-dbus-interface.h>
 #include <nm-setting-connection.h>
 #include <nm-setting-wired.h>
 #include <nm-setting-wireless.h>
@@ -119,7 +119,7 @@ nm_ifcfg_connection_new (NMConnection *source,
 	else {
 		char *keyfile = NULL, *routefile = NULL, *route6file = NULL;
 
-		tmp = connection_from_file (full_path, NULL, NULL, NULL,
+		tmp = connection_from_file (full_path, NULL, NULL,
 		                            &unhandled_spec,
 		                            &keyfile,
 		                            &routefile,
@@ -145,20 +145,16 @@ nm_ifcfg_connection_new (NMConnection *source,
 	                                   NM_IFCFG_CONNECTION_UNMANAGED_SPEC, unmanaged_spec,
 	                                   NM_IFCFG_CONNECTION_UNRECOGNIZED_SPEC, unrecognized_spec,
 	                                   NULL);
-	if (object) {
-		/* Update our settings with what was read from the file */
-		if (nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (object),
-		                                             tmp,
-		                                             update_unsaved,
-		                                             error)) {
-			/* Set the path and start monitoring */
-			if (full_path)
-				nm_ifcfg_connection_set_path (NM_IFCFG_CONNECTION (object), full_path);
-		} else {
-			g_object_unref (object);
-			object = NULL;
-		}
-	}
+	/* Update our settings with what was read from the file */
+	if (nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (object),
+	                                             tmp,
+	                                             update_unsaved,
+	                                             error)) {
+		/* Set the path and start monitoring */
+		if (full_path)
+			nm_ifcfg_connection_set_path (NM_IFCFG_CONNECTION (object), full_path);
+	} else
+		g_clear_object (&object);
 
 	g_object_unref (tmp);
 	g_free (unhandled_spec);
@@ -271,7 +267,7 @@ commit_changes (NMSettingsConnection *connection,
 	 * it if it's really changed.
 	 */
 	if (priv->path) {
-		reread = connection_from_file (priv->path, NULL, NULL, NULL,
+		reread = connection_from_file (priv->path, NULL, NULL,
 		                               NULL, NULL, NULL, NULL,
 		                               &error, NULL);
 		g_clear_error (&error);
@@ -345,17 +341,6 @@ nm_ifcfg_connection_init (NMIfcfgConnection *connection)
 }
 
 static void
-finalize (GObject *object)
-{
-	nm_connection_clear_secrets (NM_CONNECTION (object));
-
-	path_watch_stop (NM_IFCFG_CONNECTION (object));
-	g_free (NM_IFCFG_CONNECTION_GET_PRIVATE (object)->path);
-
-	G_OBJECT_CLASS (nm_ifcfg_connection_parent_class)->finalize (object);
-}
-
-static void
 set_property (GObject *object, guint prop_id,
 		    const GValue *value, GParamSpec *pspec)
 {
@@ -394,6 +379,22 @@ get_property (GObject *object, guint prop_id,
 }
 
 static void
+dispose (GObject *object)
+{
+	path_watch_stop (NM_IFCFG_CONNECTION (object));
+
+	G_OBJECT_CLASS (nm_ifcfg_connection_parent_class)->dispose (object);
+}
+
+static void
+finalize (GObject *object)
+{
+	g_free (NM_IFCFG_CONNECTION_GET_PRIVATE (object)->path);
+
+	G_OBJECT_CLASS (nm_ifcfg_connection_parent_class)->finalize (object);
+}
+
+static void
 nm_ifcfg_connection_class_init (NMIfcfgConnectionClass *ifcfg_connection_class)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (ifcfg_connection_class);
@@ -404,6 +405,7 @@ nm_ifcfg_connection_class_init (NMIfcfgConnectionClass *ifcfg_connection_class)
 	/* Virtual methods */
 	object_class->set_property = set_property;
 	object_class->get_property = get_property;
+	object_class->dispose      = dispose;
 	object_class->finalize     = finalize;
 	settings_class->delete = do_delete;
 	settings_class->commit_changes = commit_changes;
@@ -411,18 +413,16 @@ nm_ifcfg_connection_class_init (NMIfcfgConnectionClass *ifcfg_connection_class)
 	/* Properties */
 	g_object_class_install_property
 		(object_class, PROP_UNMANAGED_SPEC,
-		 g_param_spec_string (NM_IFCFG_CONNECTION_UNMANAGED_SPEC,
-						  "Unmanaged spec",
-						  "Unmanaged spec",
-						  NULL,
-						  G_PARAM_READWRITE));
+		 g_param_spec_string (NM_IFCFG_CONNECTION_UNMANAGED_SPEC, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 	g_object_class_install_property
 		(object_class, PROP_UNRECOGNIZED_SPEC,
-		 g_param_spec_string (NM_IFCFG_CONNECTION_UNRECOGNIZED_SPEC,
-		                      "Unrecognized spec",
-		                      "Unrecognized spec",
+		 g_param_spec_string (NM_IFCFG_CONNECTION_UNRECOGNIZED_SPEC, "", "",
 		                      NULL,
-		                      G_PARAM_READWRITE));
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	signals[IFCFG_CHANGED] =
 		g_signal_new ("ifcfg-changed",

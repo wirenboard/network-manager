@@ -18,6 +18,8 @@
  * Copyright (C) 2013 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <string.h>
 #include <arpa/inet.h>
 /* stdarg.h included because of a bug in ndp.h */
@@ -28,6 +30,7 @@
 
 #include "NetworkManagerUtils.h"
 #include "nm-logging.h"
+#include "nm-platform.h"
 
 #define debug(...) nm_log_dbg (LOGD_IP6, __VA_ARGS__)
 #define warning(...) nm_log_warn (LOGD_IP6, __VA_ARGS__)
@@ -39,7 +42,8 @@ typedef struct {
 	guint send_rs_id;
 	GIOChannel *event_channel;
 	guint event_id;
-	guint timeout_id;
+	guint timeout_id;   /* prefix/dns/etc lifetime timeout */
+	guint ra_timeout_id;  /* first RA timeout */
 
 	int solicitations_left;
 } NMLNDPRDiscPrivate;
@@ -174,8 +178,15 @@ add_dns_server (NMRDisc *rdisc, const NMRDiscDNSServer *new)
 		NMRDiscDNSServer *item = &g_array_index (rdisc->dns_servers, NMRDiscDNSServer, i);
 
 		if (IN6_ARE_ADDR_EQUAL (&item->address, &new->address)) {
-			gboolean changed = item->timestamp != new->timestamp ||
-			                   item->lifetime != new->lifetime;
+			gboolean changed;
+
+			if (new->lifetime == 0) {
+				g_array_remove_index (rdisc->dns_servers, i);
+				return TRUE;
+			}
+
+			changed = (item->timestamp != new->timestamp ||
+			           item->lifetime != new->lifetime);
 			if (changed) {
 				item->timestamp = new->timestamp;
 				item->lifetime = new->lifetime;
@@ -183,10 +194,6 @@ add_dns_server (NMRDisc *rdisc, const NMRDiscDNSServer *new)
 			return changed;
 		}
 	}
-
-	/* DNS server should no longer be used */
-	if (new->lifetime == 0)
-		return FALSE;
 
 	g_array_insert_val (rdisc->dns_servers, i, *new);
 	return TRUE;
@@ -203,8 +210,15 @@ add_dns_domain (NMRDisc *rdisc, const NMRDiscDNSDomain *new)
 		item = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
 
 		if (!g_strcmp0 (item->domain, new->domain)) {
-			gboolean changed = item->timestamp != new->timestamp ||
-			                   item->lifetime != new->lifetime;
+			gboolean changed;
+
+			if (new->lifetime == 0) {
+				g_array_remove_index (rdisc->dns_domains, i);
+				return TRUE;
+			}
+
+			changed = (item->timestamp != new->timestamp ||
+			           item->lifetime != new->lifetime);
 			if (changed) {
 				item->timestamp = new->timestamp;
 				item->lifetime = new->lifetime;
@@ -212,10 +226,6 @@ add_dns_domain (NMRDisc *rdisc, const NMRDiscDNSDomain *new)
 			return changed;
 		}
 	}
-
-	/* Domain should no longer be used */
-	if (new->lifetime == 0)
-		return FALSE;
 
 	g_array_insert_val (rdisc->dns_domains, i, *new);
 	item = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
@@ -433,41 +443,37 @@ translate_preference (enum ndp_route_preference preference)
 }
 
 static void
-fill_address_from_mac (struct in6_addr *address, const char *mac)
+clear_rs_timeout (NMLNDPRDisc *rdisc)
 {
-	unsigned char *identifier = address->s6_addr + 8;
+	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 
-	if (!mac)
-		return;
+	if (priv->send_rs_id) {
+		g_source_remove (priv->send_rs_id);
+		priv->send_rs_id = 0;
+	}
+}
 
-	/* Translate 48-bit MAC address to a 64-bit modified interface identifier
-	 * and write it to the second half of the IPv6 address.
-	 *
-	 * See http://tools.ietf.org/html/rfc3513#page-21
-	 */
-	memcpy (identifier, mac, 3);
-	identifier[0] ^= 0x02;
-	identifier[3] = 0xff;
-	identifier[4] = 0xfe;
-	memcpy (identifier + 5, mac + 3, 3);
+static void
+clear_ra_timeout (NMLNDPRDisc *rdisc)
+{
+	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
+
+	if (priv->ra_timeout_id) {
+		g_source_remove (priv->ra_timeout_id);
+		priv->ra_timeout_id = 0;
+	}
 }
 
 static int
 receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 {
 	NMRDisc *rdisc = (NMRDisc *) user_data;
-	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 	NMRDiscConfigMap changed = 0;
-	size_t lladdrlen = 0;
-	const char *lladdr = NULL;
 	struct ndp_msgra *msgra = ndp_msgra (msg);
 	NMRDiscGateway gateway;
 	guint32 now = nm_utils_get_monotonic_timestamp_s ();
 	int offset;
 	int hop_limit;
-
-	if (rdisc->lladdr)
-		lladdr = g_bytes_get_data (rdisc->lladdr, &lladdrlen);
 
 	/* Router discovery is subject to the following RFC documents:
 	 *
@@ -482,10 +488,8 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 	 */
 	debug ("(%s): received router advertisement at %u", rdisc->ifname, now);
 
-	if (priv->send_rs_id) {
-		g_source_remove (priv->send_rs_id);
-		priv->send_rs_id = 0;
-	}
+	clear_ra_timeout (NM_LNDP_RDISC (rdisc));
+	clear_rs_timeout (NM_LNDP_RDISC (rdisc));
 
 	/* DHCP level:
 	 *
@@ -541,7 +545,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 
 		/* Address */
 		if (ndp_msg_opt_prefix_flag_auto_addr_conf (msg, offset)) {
-			if (route.plen == 64 && lladdrlen == 6) {
+			if (route.plen == 64 && rdisc->iid.id) {
 				memset (&address, 0, sizeof (address));
 				address.address = route.network;
 				address.timestamp = now;
@@ -550,7 +554,8 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 				if (address.preferred > address.lifetime)
 					address.preferred = address.lifetime;
 
-				fill_address_from_mac (&address.address, lladdr);
+				/* Add the Interface Identifier to the lower 64 bits */
+				nm_utils_ipv6_addr_set_interface_identfier (&address.address, rdisc->iid);
 
 				if (add_address (rdisc, &address))
 					changed |= NM_RDISC_CONFIG_ADDRESSES;
@@ -624,26 +629,45 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 		changed |= NM_RDISC_CONFIG_HOP_LIMIT;
 	}
 
+	/* MTU */
+	ndp_msg_opt_for_each_offset(offset, msg, NDP_MSG_OPT_MTU) {
+		guint32 mtu = ndp_msg_opt_mtu(msg, offset);
+		if (mtu >= 1280) {
+			rdisc->mtu = mtu;
+			changed |= NM_RDISC_CONFIG_MTU;
+		} else {
+			/* All sorts of bad things would happen if we accepted this.
+			 * Kernel would set it, but would flush out all IPv6 addresses away
+			 * from the link, even the link-local, and we wouldn't be able to
+			 * listen for further RAs that could fix the MTU. */
+			warning ("(%s): MTU too small for IPv6 ignored: %d", rdisc->ifname, mtu);
+		}
+	}
+
 	check_timestamps (rdisc, now, changed);
 
 	return 0;
 }
 
-static void
-process_events (NMRDisc *rdisc)
+static gboolean
+event_ready (GIOChannel *source, GIOCondition condition, NMRDisc *rdisc)
 {
 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 
 	debug ("(%s): processing libndp events.", rdisc->ifname);
 	ndp_callall_eventfd_handler (priv->ndp);
+	return G_SOURCE_CONTINUE;
 }
 
 static gboolean
-event_ready (GIOChannel *source, GIOCondition condition, NMRDisc *rdisc)
+rdisc_ra_timeout_cb (gpointer user_data)
 {
-	process_events (rdisc);
+	NMLNDPRDisc *rdisc = NM_LNDP_RDISC (user_data);
+	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 
-	return TRUE;
+	priv->ra_timeout_id = 0;
+	g_signal_emit_by_name (rdisc, NM_RDISC_RA_TIMEOUT);
+	return G_SOURCE_REMOVE;
 }
 
 static void
@@ -651,14 +675,20 @@ start (NMRDisc *rdisc)
 {
 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 	int fd = ndp_get_eventfd (priv->ndp);
+	guint ra_wait_secs;
 
 	priv->event_channel = g_io_channel_unix_new (fd);
 	priv->event_id = g_io_add_watch (priv->event_channel, G_IO_IN, (GIOFunc) event_ready, rdisc);
 
-	/* Flush any pending messages to avoid using obsolete information */
-	process_events (rdisc);
+	clear_ra_timeout (NM_LNDP_RDISC (rdisc));
+	ra_wait_secs = CLAMP (rdisc->rtr_solicitations * rdisc->rtr_solicitation_interval, 30, 120);
+	priv->ra_timeout_id = g_timeout_add_seconds (ra_wait_secs, rdisc_ra_timeout_cb, rdisc);
+	debug ("(%s): scheduling RA timeout in %d seconds", rdisc->ifname, ra_wait_secs);
 
-	ndp_msgrcv_handler_register (priv->ndp, &receive_ra, NDP_MSG_RA, rdisc->ifindex, rdisc);
+	/* Flush any pending messages to avoid using obsolete information */
+	event_ready (priv->event_channel, 0, rdisc);
+
+	ndp_msgrcv_handler_register (priv->ndp, receive_ra, NDP_MSG_RA, rdisc->ifindex, rdisc);
 	solicit (rdisc);
 }
 
@@ -670,21 +700,29 @@ nm_lndp_rdisc_init (NMLNDPRDisc *lndp_rdisc)
 }
 
 static void
-nm_lndp_rdisc_finalize (GObject *object)
+dispose (GObject *object)
 {
-	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (object);
+	NMLNDPRDisc *rdisc = NM_LNDP_RDISC (object);
+	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 
-	if (priv->send_rs_id)
-		g_source_remove (priv->send_rs_id);
-	if (priv->timeout_id)
+	clear_rs_timeout (rdisc);
+	clear_ra_timeout (rdisc);
+
+	if (priv->timeout_id) {
 		g_source_remove (priv->timeout_id);
-	if (priv->event_channel)
-		g_io_channel_unref (priv->event_channel);
-	if (priv->event_id)
-		g_source_remove (priv->event_id);
+		priv->timeout_id = 0;
+	}
 
-	if (priv->ndp)
+	if (priv->event_id) {
+		g_source_remove (priv->event_id);
+		priv->event_id = 0;
+	}
+	g_clear_pointer (&priv->event_channel, g_io_channel_unref);
+
+	if (priv->ndp) {
 		ndp_close (priv->ndp);
+		priv->ndp = NULL;
+	}
 }
 
 static void
@@ -695,6 +733,6 @@ nm_lndp_rdisc_class_init (NMLNDPRDiscClass *klass)
 
 	g_type_class_add_private (klass, sizeof (NMLNDPRDiscPrivate));
 
-	object_class->finalize = nm_lndp_rdisc_finalize;
+	object_class->dispose = dispose;
 	rdisc_class->start = start;
 }

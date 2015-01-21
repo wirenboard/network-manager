@@ -136,6 +136,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -259,6 +261,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -278,6 +281,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -304,7 +308,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -414,30 +418,13 @@ CFILE_GLOB = $(top_srcdir)/libnm-glib/*.c
 
 # Header files to ignore when scanning.
 IGNORE_HFILES = \
+	common.h \
+	nm-dbus-helpers-private.h \
 	nm-device-private.h \
 	nm-object-cache.h \
 	nm-object-private.h \
 	nm-remote-connection-private.h \
 	nm-types-private.h \
-	nm-access-point-bindings.h \
-	nm-active-connection-bindings.h \
-	nm-client-bindings.h \
-	nm-device-bindings.h \
-	nm-device-bt-bindings.h \
-	nm-device-ethernet-bindings.h \
-	nm-device-wifi-bindings.h \
-	nm-device-modem-bindings.h \
-	nm-device-wimax-bindings.h \
-	nm-dhcp4-config-bindings.h \
-	nm-dhcp6-config-bindings.h \
-	nm-settings-connection-glue.h \
-	nm-ip4-config-bindings.h \
-	nm-ip6-config-bindings.h \
-	nm-settings-bindings.h \
-	nm-settings-glue.h \
-	nm-settings-connection-bindings.h \
-	nm-secret-agent-bindings.h \
-	nm-vpn-connection-bindings.h \
 	nm-secret-agent-glue.h \
 	nm-vpn-plugin-glue.h
 
@@ -454,8 +441,6 @@ extra_files = libnm-glib.png
 # CFLAGS and LDFLAGS for compiling scan program. Only needed
 # if $(DOC_MODULE).types is non-empty.
 GTKDOC_CFLAGS = \
-	-I$(top_srcdir)/include		\
-	-I$(top_builddir)/include	\
 	-I$(top_srcdir)/libnm-util	\
 	-I$(top_builddir)/libnm-util	\
 	-I$(top_srcdir)/libnm-glib	\

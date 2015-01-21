@@ -59,6 +59,14 @@ NMConnection
 @NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND: 
 @NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID: 
 @NM_CONNECTION_ERROR_SETTING_NOT_FOUND: 
+@NM_CONNECTION_ERROR_INVALID_SETTING: 
+
+<!-- ##### MACRO NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD ##### -->
+<para>
+
+</para>
+
+
 
 <!-- ##### MACRO NM_CONNECTION_ERROR ##### -->
 <para>
@@ -247,6 +255,18 @@ NMConnection
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_connection_normalize ##### -->
+<para>
+
+</para>
+
+@connection: 
+@parameters: 
+@modified: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_connection_need_secrets ##### -->
 <para>
 
@@ -306,6 +326,15 @@ NMConnection
 
 
 <!-- ##### FUNCTION nm_connection_get_virtual_iface_name ##### -->
+<para>
+
+</para>
+
+@connection: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_connection_get_interface_name ##### -->
 <para>
 
 </para>

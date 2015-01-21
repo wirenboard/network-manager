@@ -106,18 +106,22 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-libtest_dispatcher_envp_la_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_libtest_dispatcher_envp_la_OBJECTS =  \
-	libtest_dispatcher_envp_la-nm-dispatcher-utils.lo
-libtest_dispatcher_envp_la_OBJECTS =  \
-	$(am_libtest_dispatcher_envp_la_OBJECTS)
+libnmdbus_dispatcher_la_LIBADD =
+nodist_libnmdbus_dispatcher_la_OBJECTS =  \
+	libnmdbus_dispatcher_la-nmdbus-dispatcher.lo
+libnmdbus_dispatcher_la_OBJECTS =  \
+	$(nodist_libnmdbus_dispatcher_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am__DEPENDENCIES_1 =
+libtest_dispatcher_envp_la_DEPENDENCIES =  \
+	$(top_builddir)/libnm/libnm.la $(am__DEPENDENCIES_1)
+am_libtest_dispatcher_envp_la_OBJECTS =  \
+	libtest_dispatcher_envp_la-nm-dispatcher-utils.lo
+libtest_dispatcher_envp_la_OBJECTS =  \
+	$(am_libtest_dispatcher_envp_la_OBJECTS)
 am__installdirs = "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(dbusactivationdir)" "$(DESTDIR)$(dbusservicedir)" \
 	"$(DESTDIR)$(udevrulesdir)"
@@ -131,8 +135,8 @@ nm_avahi_autoipd_action_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 am_nm_dispatcher_OBJECTS = nm-dispatcher.$(OBJEXT) \
 	nm-dispatcher-utils.$(OBJEXT)
 nm_dispatcher_OBJECTS = $(am_nm_dispatcher_OBJECTS)
-nm_dispatcher_DEPENDENCIES = $(top_builddir)/libnm-util/libnm-util.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+nm_dispatcher_DEPENDENCIES = $(top_builddir)/libnm/libnm.la \
+	libnmdbus-dispatcher.la $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -167,7 +171,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libtest_dispatcher_envp_la_SOURCES) \
+SOURCES = $(nodist_libnmdbus_dispatcher_la_SOURCES) \
+	$(libtest_dispatcher_envp_la_SOURCES) \
 	$(nm_avahi_autoipd_action_SOURCES) $(nm_dispatcher_SOURCES)
 DIST_SOURCES = $(libtest_dispatcher_envp_la_SOURCES) \
 	$(nm_avahi_autoipd_action_SOURCES) $(nm_dispatcher_SOURCES)
@@ -275,6 +280,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -398,6 +405,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -417,6 +425,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -443,7 +452,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -525,11 +534,11 @@ with_valgrind = @with_valgrind@
 SUBDIRS = . tests
 AM_CPPFLAGS = \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/include \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/libnm-util \
+	-I${top_srcdir}/libnm-core \
+	-I${top_builddir}/libnm-core \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	-DNMCONFDIR=\"$(nmconfdir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
@@ -539,9 +548,10 @@ AM_CPPFLAGS = \
 ###########################################
 # Test libraries
 ###########################################
-noinst_LTLIBRARIES = \
-	libtest-dispatcher-envp.la
 
+# See note about gdbus-codegen in introspection/Makefile.am
+noinst_LTLIBRARIES = libtest-dispatcher-envp.la \
+	libnmdbus-dispatcher.la
 dbusservicedir = $(DBUS_SYS_DIR)
 dbusservice_DATA = \
 	nm-dispatcher.conf \
@@ -561,10 +571,16 @@ nm_dispatcher_SOURCES = \
 	nm-dispatcher-utils.h
 
 nm_dispatcher_LDADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(DBUS_LIBS) \
+	$(top_builddir)/libnm/libnm.la \
+	libnmdbus-dispatcher.la \
 	$(GLIB_LIBS)
 
+nodist_libnmdbus_dispatcher_la_SOURCES = \
+	nmdbus-dispatcher.c \
+	nmdbus-dispatcher.h
+
+libnmdbus_dispatcher_la_CPPFLAGS = $(filter-out -DGLIB_VERSION_MAX_ALLOWED%,$(AM_CPPFLAGS))
+BUILT_SOURCES = nmdbus-dispatcher.h nmdbus-dispatcher.c
 
 ###########################################
 # dispatcher envp
@@ -577,12 +593,11 @@ libtest_dispatcher_envp_la_CPPFLAGS = \
 	$(AM_CPPFLAGS)
 
 libtest_dispatcher_envp_la_LIBADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS) \
-	$(DBUS_LIBS)
+	$(top_builddir)/libnm/libnm.la \
+	$(GLIB_LIBS)
 
-udevrulesdir = $(UDEV_BASE_DIR)/rules.d
-udevrules_DATA = 77-nm-olpc-mesh.rules
+@WITH_UDEV_DIR_TRUE@udevrulesdir = $(UDEV_DIR)/rules.d
+@WITH_UDEV_DIR_TRUE@udevrules_DATA = 77-nm-olpc-mesh.rules
 dbusactivationdir = $(datadir)/dbus-1/system-services
 dbusactivation_in_files = org.freedesktop.nm_dispatcher.service.in
 dbusactivation_DATA = $(dbusactivation_in_files:.service.in=.service)
@@ -593,8 +608,7 @@ edit = @sed \
 	-e 's|@libexecdir[@]|$(libexecdir)|g'
 
 dispatcherdir = $(sysconfdir)/NetworkManager/dispatcher.d
-BUILT_SOURCES = nm-dispatcher-glue.h
-CLEANFILES = $(BUILT_SOURCES) $(dbusactivation_DATA)
+CLEANFILES = $(nodist_libnmdbus_dispatcher_la_SOURCES) $(dbusactivation_DATA)
 EXTRA_DIST = \
 	$(dbusservice_DATA) \
 	$(udevrules_DATA) \
@@ -647,6 +661,9 @@ clean-noinstLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
+
+libnmdbus-dispatcher.la: $(libnmdbus_dispatcher_la_OBJECTS) $(libnmdbus_dispatcher_la_DEPENDENCIES) $(EXTRA_libnmdbus_dispatcher_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK)  $(libnmdbus_dispatcher_la_OBJECTS) $(libnmdbus_dispatcher_la_LIBADD) $(LIBS)
 
 libtest-dispatcher-envp.la: $(libtest_dispatcher_envp_la_OBJECTS) $(libtest_dispatcher_envp_la_DEPENDENCIES) $(EXTRA_libtest_dispatcher_envp_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libtest_dispatcher_envp_la_OBJECTS) $(libtest_dispatcher_envp_la_LIBADD) $(LIBS)
@@ -714,6 +731,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnmdbus_dispatcher_la-nmdbus-dispatcher.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtest_dispatcher_envp_la-nm-dispatcher-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-avahi-autoipd-action.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dispatcher-utils.Po@am__quote@
@@ -739,6 +757,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libnmdbus_dispatcher_la-nmdbus-dispatcher.lo: nmdbus-dispatcher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmdbus_dispatcher_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libnmdbus_dispatcher_la-nmdbus-dispatcher.lo -MD -MP -MF $(DEPDIR)/libnmdbus_dispatcher_la-nmdbus-dispatcher.Tpo -c -o libnmdbus_dispatcher_la-nmdbus-dispatcher.lo `test -f 'nmdbus-dispatcher.c' || echo '$(srcdir)/'`nmdbus-dispatcher.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnmdbus_dispatcher_la-nmdbus-dispatcher.Tpo $(DEPDIR)/libnmdbus_dispatcher_la-nmdbus-dispatcher.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nmdbus-dispatcher.c' object='libnmdbus_dispatcher_la-nmdbus-dispatcher.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libnmdbus_dispatcher_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libnmdbus_dispatcher_la-nmdbus-dispatcher.lo `test -f 'nmdbus-dispatcher.c' || echo '$(srcdir)/'`nmdbus-dispatcher.c
 
 libtest_dispatcher_envp_la-nm-dispatcher-utils.lo: nm-dispatcher-utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtest_dispatcher_envp_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtest_dispatcher_envp_la-nm-dispatcher-utils.lo -MD -MP -MF $(DEPDIR)/libtest_dispatcher_envp_la-nm-dispatcher-utils.Tpo -c -o libtest_dispatcher_envp_la-nm-dispatcher-utils.lo `test -f 'nm-dispatcher-utils.c' || echo '$(srcdir)/'`nm-dispatcher-utils.c
@@ -1109,8 +1134,15 @@ uninstall-am: uninstall-dbusactivationDATA uninstall-dbusserviceDATA \
 	uninstall-libexecPROGRAMS uninstall-udevrulesDATA
 
 
-nm-dispatcher-glue.h: nm-dispatcher.xml
-	$(AM_V_GEN) dbus-binding-tool --prefix=nm_dispatcher --mode=glib-server --output=$@ $<
+nmdbus-dispatcher.h: nm-dispatcher.xml
+	$(AM_V_GEN) gdbus-codegen \
+		--generate-c-code $(basename $@) \
+		--c-namespace NMDBus \
+		--interface-prefix org.freedesktop \
+		$<
+
+nmdbus-dispatcher.c: nmdbus-dispatcher.h
+	@true
 
 %.service: %.service.in
 	$(edit) $< >$@

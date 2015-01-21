@@ -102,13 +102,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-libnm_settings_plugin_example_la_DEPENDENCIES =  \
-	$(top_builddir)/src/libNetworkManager.la \
-	$(top_builddir)/libnm-util/libnm-util.la $(am__DEPENDENCIES_1)
+libnm_settings_plugin_example_la_LIBADD =
 am_libnm_settings_plugin_example_la_OBJECTS =  \
-	nm-example-connection.lo plugin.lo errors.lo reader.lo \
-	writer.lo
+	nm-example-connection.lo plugin.lo reader.lo writer.lo
 libnm_settings_plugin_example_la_OBJECTS =  \
 	$(am_libnm_settings_plugin_example_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -189,6 +185,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -312,6 +310,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -331,6 +330,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -357,7 +357,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -438,18 +438,15 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/config \
-	-I$(top_srcdir)/src/logging \
 	-I$(top_srcdir)/src/settings \
 	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
-	-I$(top_srcdir)/libnm-util \
-	-I$(top_builddir)/libnm-util \
+	-I$(top_srcdir)/libnm-core \
+	-I$(top_builddir)/libnm-core \
 	-DG_LOG_DOMAIN=\""NetworkManager-example"\" \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	$(POLKIT_CFLAGS) \
 	-DNMCONFDIR=\"$(nmconfdir)\"
 
 
@@ -465,15 +462,9 @@ libnm_settings_plugin_example_la_SOURCES = \
 	nm-example-connection.h \
 	plugin.c \
 	plugin.h \
-	errors.c \
 	common.h \
 	reader.c \
 	writer.c
-
-libnm_settings_plugin_example_la_LIBADD = \
-	$(top_builddir)/src/libNetworkManager.la \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(GLIB_LIBS)
 
 libnm_settings_plugin_example_la_LDFLAGS = -module -avoid-version
 all: all-am
@@ -531,7 +522,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-example-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Plo@am__quote@

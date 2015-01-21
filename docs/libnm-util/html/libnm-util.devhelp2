@@ -32,6 +32,8 @@
       <sub name="NMSettingPPPOE" link="NMSettingPPPOE.html"/>
       <sub name="NMSettingVPN" link="NMSettingVPN.html"/>
       <sub name="nm-utils" link="libnm-util-nm-utils.html"/>
+      <sub name="NetworkManager" link="libnm-util-NetworkManager.html"/>
+      <sub name="NetworkManagerVPN" link="libnm-util-NetworkManagerVPN.html"/>
     </sub>
     <sub name="Object Hierarchy" link="object-tree.html"/>
     <sub name="API Index" link="api-index-full.html"/>
@@ -43,6 +45,7 @@
     <keyword type="macro" name="NM_CONNECTION_CHANGED" link="NMConnection.html#NM-CONNECTION-CHANGED:CAPS"/>
     <keyword type="macro" name="NM_CONNECTION_PATH" link="NMConnection.html#NM-CONNECTION-PATH:CAPS"/>
     <keyword type="enum" name="enum NMConnectionError" link="NMConnection.html#NMConnectionError-enum"/>
+    <keyword type="macro" name="NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD" link="NMConnection.html#NM-CONNECTION-NORMALIZE-PARAM-IP6-CONFIG-METHOD:CAPS"/>
     <keyword type="macro" name="NM_CONNECTION_ERROR" link="NMConnection.html#NM-CONNECTION-ERROR:CAPS"/>
     <keyword type="function" name="nm_connection_error_quark ()" link="NMConnection.html#nm-connection-error-quark"/>
     <keyword type="struct" name="NMConnection" link="NMConnection.html#NMConnection-struct"/>
@@ -60,6 +63,7 @@
     <keyword type="function" name="nm_connection_compare ()" link="NMConnection.html#nm-connection-compare"/>
     <keyword type="function" name="nm_connection_diff ()" link="NMConnection.html#nm-connection-diff"/>
     <keyword type="function" name="nm_connection_verify ()" link="NMConnection.html#nm-connection-verify"/>
+    <keyword type="function" name="nm_connection_normalize ()" link="NMConnection.html#nm-connection-normalize" since="1.0"/>
     <keyword type="function" name="nm_connection_need_secrets ()" link="NMConnection.html#nm-connection-need-secrets"/>
     <keyword type="function" name="nm_connection_clear_secrets ()" link="NMConnection.html#nm-connection-clear-secrets"/>
     <keyword type="function" name="nm_connection_clear_secrets_with_flags ()" link="NMConnection.html#nm-connection-clear-secrets-with-flags"/>
@@ -67,6 +71,7 @@
     <keyword type="function" name="nm_connection_set_path ()" link="NMConnection.html#nm-connection-set-path"/>
     <keyword type="function" name="nm_connection_get_path ()" link="NMConnection.html#nm-connection-get-path"/>
     <keyword type="function" name="nm_connection_get_virtual_iface_name ()" link="NMConnection.html#nm-connection-get-virtual-iface-name"/>
+    <keyword type="function" name="nm_connection_get_interface_name ()" link="NMConnection.html#nm-connection-get-interface-name" since="1.0"/>
     <keyword type="function" name="nm_connection_is_type ()" link="NMConnection.html#nm-connection-is-type"/>
     <keyword type="function" name="nm_connection_for_each_setting_value ()" link="NMConnection.html#nm-connection-for-each-setting-value"/>
     <keyword type="function" name="nm_connection_to_hash ()" link="NMConnection.html#nm-connection-to-hash"/>
@@ -512,6 +517,7 @@
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_AD_SELECT" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-SELECT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_XMIT_HASH_POLICY" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-XMIT-HASH-POLICY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_RESEND_IGMP" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-RESEND-IGMP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_LACP_RATE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-LACP-RATE:CAPS"/>
     <keyword type="struct" name="NMSettingBond" link="NMSettingBond.html#NMSettingBond-struct"/>
     <keyword type="struct" name="NMSettingBondClass" link="NMSettingBond.html#NMSettingBondClass"/>
     <keyword type="function" name="nm_setting_bond_new ()" link="NMSettingBond.html#nm-setting-bond-new"/>
@@ -917,6 +923,7 @@
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_DNS_SEARCH" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DNS-SEARCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_ADDRESSES" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ADDRESSES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_ROUTES" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ROUTES:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_IP4_CONFIG_ROUTE_METRIC" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-ROUTE-METRIC:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-IGNORE-AUTO-ROUTES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_IGNORE_AUTO_DNS" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-IGNORE-AUTO-DNS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID" link="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DHCP-CLIENT-ID:CAPS"/>
@@ -983,6 +990,7 @@
     <keyword type="function" name="nm_setting_ip4_config_remove_route ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-remove-route"/>
     <keyword type="function" name="nm_setting_ip4_config_remove_route_by_value ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-remove-route-by-value" since="0.9.10"/>
     <keyword type="function" name="nm_setting_ip4_config_clear_routes ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-clear-routes"/>
+    <keyword type="function" name="nm_setting_ip4_config_get_route_metric ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-route-metric" since="1.0"/>
     <keyword type="function" name="nm_setting_ip4_config_get_ignore_auto_routes ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-ignore-auto-routes"/>
     <keyword type="function" name="nm_setting_ip4_config_get_ignore_auto_dns ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-ignore-auto-dns"/>
     <keyword type="function" name="nm_setting_ip4_config_get_dhcp_client_id ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-client-id"/>
@@ -990,7 +998,6 @@
     <keyword type="function" name="nm_setting_ip4_config_get_dhcp_hostname ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-hostname"/>
     <keyword type="function" name="nm_setting_ip4_config_get_never_default ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-never-default"/>
     <keyword type="function" name="nm_setting_ip4_config_get_may_fail ()" link="NMSettingIP4Config.html#nm-setting-ip4-config-get-may-fail"/>
-    <keyword type="property" name="The &quot;address-labels&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--address-labels"/>
     <keyword type="property" name="The &quot;addresses&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--addresses"/>
     <keyword type="property" name="The &quot;dhcp-client-id&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-client-id"/>
     <keyword type="property" name="The &quot;dhcp-hostname&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-hostname"/>
@@ -1002,6 +1009,7 @@
     <keyword type="property" name="The &quot;may-fail&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--may-fail"/>
     <keyword type="property" name="The &quot;method&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--method"/>
     <keyword type="property" name="The &quot;never-default&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--never-default"/>
+    <keyword type="property" name="The &quot;route-metric&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--route-metric"/>
     <keyword type="property" name="The &quot;routes&quot; property" link="NMSettingIP4Config.html#NMSettingIP4Config--routes"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_SETTING_NAME" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingIP6ConfigError" link="NMSettingIP6Config.html#NMSettingIP6ConfigError-enum"/>
@@ -1012,6 +1020,7 @@
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_DNS_SEARCH" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-DNS-SEARCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_ADDRESSES" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ADDRESSES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_ROUTES" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ROUTES:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_IP6_CONFIG_ROUTE_METRIC" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-ROUTE-METRIC:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-IGNORE-AUTO-ROUTES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-IGNORE-AUTO-DNS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP6_CONFIG_NEVER_DEFAULT" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-NEVER-DEFAULT:CAPS"/>
@@ -1080,6 +1089,7 @@
     <keyword type="function" name="nm_setting_ip6_config_remove_route_by_value ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-remove-route-by-value" since="0.9.10"/>
     <keyword type="function" name="nm_setting_ip6_config_clear_routes ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-clear-routes"/>
     <keyword type="function" name="nm_setting_ip6_config_get_ignore_auto_routes ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-ignore-auto-routes"/>
+    <keyword type="function" name="nm_setting_ip6_config_get_route_metric ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-route-metric" since="1.0"/>
     <keyword type="function" name="nm_setting_ip6_config_get_ignore_auto_dns ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-ignore-auto-dns"/>
     <keyword type="function" name="nm_setting_ip6_config_get_dhcp_hostname ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-dhcp-hostname" since="0.9.8"/>
     <keyword type="function" name="nm_setting_ip6_config_get_never_default ()" link="NMSettingIP6Config.html#nm-setting-ip6-config-get-never-default"/>
@@ -1095,6 +1105,7 @@
     <keyword type="property" name="The &quot;may-fail&quot; property" link="NMSettingIP6Config.html#NMSettingIP6Config--may-fail"/>
     <keyword type="property" name="The &quot;method&quot; property" link="NMSettingIP6Config.html#NMSettingIP6Config--method"/>
     <keyword type="property" name="The &quot;never-default&quot; property" link="NMSettingIP6Config.html#NMSettingIP6Config--never-default"/>
+    <keyword type="property" name="The &quot;route-metric&quot; property" link="NMSettingIP6Config.html#NMSettingIP6Config--route-metric"/>
     <keyword type="property" name="The &quot;routes&quot; property" link="NMSettingIP6Config.html#NMSettingIP6Config--routes"/>
     <keyword type="macro" name="NM_SETTING_PPP_SETTING_NAME" link="NMSettingPPP.html#NM-SETTING-PPP-SETTING-NAME:CAPS"/>
     <keyword type="enum" name="enum NMSettingPPPError" link="NMSettingPPP.html#NMSettingPPPError-enum"/>
@@ -1182,6 +1193,7 @@
     <keyword type="function" name="nm_setting_vpn_error_quark ()" link="NMSettingVPN.html#nm-setting-vpn-error-quark"/>
     <keyword type="macro" name="NM_SETTING_VPN_SERVICE_TYPE" link="NMSettingVPN.html#NM-SETTING-VPN-SERVICE-TYPE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_VPN_USER_NAME" link="NMSettingVPN.html#NM-SETTING-VPN-USER-NAME:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_VPN_PERSISTENT" link="NMSettingVPN.html#NM-SETTING-VPN-PERSISTENT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_VPN_DATA" link="NMSettingVPN.html#NM-SETTING-VPN-DATA:CAPS"/>
     <keyword type="macro" name="NM_SETTING_VPN_SECRETS" link="NMSettingVPN.html#NM-SETTING-VPN-SECRETS:CAPS"/>
     <keyword type="struct" name="NMSettingVPN" link="NMSettingVPN.html#NMSettingVPN-struct"/>
@@ -1190,6 +1202,7 @@
     <keyword type="function" name="nm_setting_vpn_new ()" link="NMSettingVPN.html#nm-setting-vpn-new"/>
     <keyword type="function" name="nm_setting_vpn_get_service_type ()" link="NMSettingVPN.html#nm-setting-vpn-get-service-type"/>
     <keyword type="function" name="nm_setting_vpn_get_user_name ()" link="NMSettingVPN.html#nm-setting-vpn-get-user-name"/>
+    <keyword type="function" name="nm_setting_vpn_get_persistent ()" link="NMSettingVPN.html#nm-setting-vpn-get-persistent"/>
     <keyword type="function" name="nm_setting_vpn_get_num_data_items ()" link="NMSettingVPN.html#nm-setting-vpn-get-num-data-items"/>
     <keyword type="function" name="nm_setting_vpn_add_data_item ()" link="NMSettingVPN.html#nm-setting-vpn-add-data-item"/>
     <keyword type="function" name="nm_setting_vpn_get_data_item ()" link="NMSettingVPN.html#nm-setting-vpn-get-data-item"/>
@@ -1201,6 +1214,7 @@
     <keyword type="function" name="nm_setting_vpn_remove_secret ()" link="NMSettingVPN.html#nm-setting-vpn-remove-secret"/>
     <keyword type="function" name="nm_setting_vpn_foreach_secret ()" link="NMSettingVPN.html#nm-setting-vpn-foreach-secret"/>
     <keyword type="property" name="The &quot;data&quot; property" link="NMSettingVPN.html#NMSettingVPN--data"/>
+    <keyword type="property" name="The &quot;persistent&quot; property" link="NMSettingVPN.html#NMSettingVPN--persistent"/>
     <keyword type="property" name="The &quot;secrets&quot; property" link="NMSettingVPN.html#NMSettingVPN--secrets"/>
     <keyword type="property" name="The &quot;service-type&quot; property" link="NMSettingVPN.html#NMSettingVPN--service-type"/>
     <keyword type="property" name="The &quot;user-name&quot; property" link="NMSettingVPN.html#NMSettingVPN--user-name"/>
@@ -1235,6 +1249,8 @@
     <keyword type="function" name="nm_utils_rsa_key_encrypt ()" link="libnm-util-nm-utils.html#nm-utils-rsa-key-encrypt"/>
     <keyword type="function" name="nm_utils_rsa_key_encrypt_aes ()" link="libnm-util-nm-utils.html#nm-utils-rsa-key-encrypt-aes"/>
     <keyword type="function" name="nm_utils_file_is_pkcs12 ()" link="libnm-util-nm-utils.html#nm-utils-file-is-pkcs12"/>
+    <keyword type="function" name="NMUtilsFileSearchInPathsPredicate ()" link="libnm-util-nm-utils.html#NMUtilsFileSearchInPathsPredicate"/>
+    <keyword type="function" name="nm_utils_file_search_in_paths ()" link="libnm-util-nm-utils.html#nm-utils-file-search-in-paths"/>
     <keyword type="function" name="nm_utils_wifi_freq_to_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-freq-to-channel"/>
     <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-util-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
     <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-util-nm-utils.html#nm-utils-wifi-find-next-channel"/>
@@ -1257,10 +1273,127 @@
     <keyword type="function" name="nm_utils_inet4_ntop ()" link="libnm-util-nm-utils.html#nm-utils-inet4-ntop" since="0.9.10"/>
     <keyword type="function" name="nm_utils_inet6_ntop ()" link="libnm-util-nm-utils.html#nm-utils-inet6-ntop" since="0.9.10"/>
     <keyword type="function" name="nm_utils_check_virtual_device_compatibility ()" link="libnm-util-nm-utils.html#nm-utils-check-virtual-device-compatibility" since="0.9.10"/>
+    <keyword type="macro" name="NM_DBUS_SERVICE" link="libnm-util-NetworkManager.html#NM-DBUS-SERVICE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH" link="libnm-util-NetworkManager.html#NM-DBUS-PATH:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_WIRED" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-WIRED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_ADSL" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-ADSL:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_WIRELESS" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-WIRELESS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_BLUETOOTH" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-BLUETOOTH:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_OLPC_MESH" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-OLPC-MESH:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_ACCESS_POINT" link="libnm-util-NetworkManager.html#NM-DBUS-PATH-ACCESS-POINT:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_ACCESS_POINT" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-ACCESS-POINT:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_MODEM" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-MODEM:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_WIMAX" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-WIMAX:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_WIMAX_NSP" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-WIMAX-NSP:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_WIMAX_NSP" link="libnm-util-NetworkManager.html#NM-DBUS-PATH-WIMAX-NSP:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_ACTIVE_CONNECTION" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-ACTIVE-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_IP4_CONFIG" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-IP4-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DHCP4_CONFIG" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DHCP4-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_IP6_CONFIG" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-IP6-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DHCP6_CONFIG" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DHCP6-CONFIG:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_INFINIBAND" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-INFINIBAND:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_BOND" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-BOND:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_TEAM" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-TEAM:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_VLAN" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-VLAN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_BRIDGE" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-BRIDGE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_GENERIC" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-GENERIC:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_VETH" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-VETH:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_TUN" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-TUN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_MACVLAN" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_VXLAN" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-VXLAN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_DEVICE_GRE" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-DEVICE-GRE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_IFACE_SETTINGS" link="libnm-util-NetworkManager.html#NM-DBUS-IFACE-SETTINGS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_SETTINGS" link="libnm-util-NetworkManager.html#NM-DBUS-PATH-SETTINGS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_IFACE_SETTINGS_CONNECTION" link="libnm-util-NetworkManager.html#NM-DBUS-IFACE-SETTINGS-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_SETTINGS_CONNECTION" link="libnm-util-NetworkManager.html#NM-DBUS-PATH-SETTINGS-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_IFACE_SETTINGS_CONNECTION_SECRETS" link="libnm-util-NetworkManager.html#NM-DBUS-IFACE-SETTINGS-CONNECTION-SECRETS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_AGENT_MANAGER" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-AGENT-MANAGER:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_AGENT_MANAGER" link="libnm-util-NetworkManager.html#NM-DBUS-PATH-AGENT-MANAGER:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_SECRET_AGENT" link="libnm-util-NetworkManager.html#NM-DBUS-INTERFACE-SECRET-AGENT:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_SECRET_AGENT" link="libnm-util-NetworkManager.html#NM-DBUS-PATH-SECRET-AGENT:CAPS"/>
+    <keyword type="enum" name="enum NMState" link="libnm-util-NetworkManager.html#NMState"/>
+    <keyword type="macro" name="NM_STATE_CONNECTED" link="libnm-util-NetworkManager.html#NM-STATE-CONNECTED:CAPS"/>
+    <keyword type="enum" name="enum NMConnectivityState" link="libnm-util-NetworkManager.html#NMConnectivityState" since="0.9.8.6"/>
+    <keyword type="enum" name="enum NMDeviceType" link="libnm-util-NetworkManager.html#NMDeviceType"/>
+    <keyword type="enum" name="enum NMDeviceCapabilities" link="libnm-util-NetworkManager.html#NMDeviceCapabilities"/>
+    <keyword type="enum" name="enum NMDeviceWifiCapabilities" link="libnm-util-NetworkManager.html#NMDeviceWifiCapabilities"/>
+    <keyword type="enum" name="enum NM80211ApFlags" link="libnm-util-NetworkManager.html#NM80211ApFlags"/>
+    <keyword type="enum" name="enum NM80211ApSecurityFlags" link="libnm-util-NetworkManager.html#NM80211ApSecurityFlags"/>
+    <keyword type="enum" name="enum NM80211Mode" link="libnm-util-NetworkManager.html#NM80211Mode"/>
+    <keyword type="enum" name="enum NMBluetoothCapabilities" link="libnm-util-NetworkManager.html#NMBluetoothCapabilities"/>
+    <keyword type="enum" name="enum NMDeviceModemCapabilities" link="libnm-util-NetworkManager.html#NMDeviceModemCapabilities"/>
+    <keyword type="enum" name="enum NMDeviceState" link="libnm-util-NetworkManager.html#NMDeviceState"/>
+    <keyword type="enum" name="enum NMDeviceStateReason" link="libnm-util-NetworkManager.html#NMDeviceStateReason"/>
+    <keyword type="enum" name="enum NMActiveConnectionState" link="libnm-util-NetworkManager.html#NMActiveConnectionState"/>
+    <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-PATH-VPN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INTERFACE_VPN_CONNECTION" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-INTERFACE-VPN-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_VPN_DBUS_PLUGIN_PATH" link="libnm-util-NetworkManagerVPN.html#NM-VPN-DBUS-PLUGIN-PATH:CAPS"/>
+    <keyword type="macro" name="NM_VPN_DBUS_PLUGIN_INTERFACE" link="libnm-util-NetworkManagerVPN.html#NM-VPN-DBUS-PLUGIN-INTERFACE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_NO_ACTIVE_VPN_CONNECTION" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-NO-ACTIVE-VPN-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_NO_VPN_CONNECTIONS" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-NO-VPN-CONNECTIONS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_INVALID_VPN_CONNECTION" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-INVALID-VPN-CONNECTION:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_ERROR_PREFIX" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-ERROR-PREFIX:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_STARTING_IN_PROGRESS" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-STARTING-IN-PROGRESS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_ALREADY_STARTED" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-ALREADY-STARTED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_STOPPING_IN_PROGRESS" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-STOPPING-IN-PROGRESS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_ALREADY_STOPPED" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-ALREADY-STOPPED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_WRONG_STATE" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-WRONG-STATE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_BAD_ARGUMENTS" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-BAD-ARGUMENTS:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_INTERACTIVE_NOT_SUPPORTED" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-INTERACTIVE-NOT-SUPPORTED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_LOGIN_BANNER" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-LOGIN-BANNER:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_LOGIN_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-LOGIN-FAILED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_LAUNCH_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-LAUNCH-FAILED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_CONNECT_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-CONNECT-FAILED:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_VPN_CONFIG_BAD" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-VPN-CONFIG-BAD:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_IP_CONFIG_BAD" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-IP-CONFIG-BAD:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_STATE_CHANGE" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-STATE-CHANGE:CAPS"/>
+    <keyword type="macro" name="NM_DBUS_VPN_SIGNAL_IP4_CONFIG" link="libnm-util-NetworkManagerVPN.html#NM-DBUS-VPN-SIGNAL-IP4-CONFIG:CAPS"/>
+    <keyword type="enum" name="enum NMVPNServiceState" link="libnm-util-NetworkManagerVPN.html#NMVPNServiceState"/>
+    <keyword type="enum" name="enum NMVPNConnectionState" link="libnm-util-NetworkManagerVPN.html#NMVPNConnectionState"/>
+    <keyword type="enum" name="enum NMVPNConnectionStateReason" link="libnm-util-NetworkManagerVPN.html#NMVPNConnectionStateReason"/>
+    <keyword type="enum" name="enum NMVPNPluginFailure" link="libnm-util-NetworkManagerVPN.html#NMVPNPluginFailure"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_TUNDEV" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CONFIG-TUNDEV:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_BANNER" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CONFIG-BANNER:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_EXT_GATEWAY" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CONFIG-EXT-GATEWAY:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_MTU" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CONFIG-MTU:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_HAS_IP4" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CONFIG-HAS-IP4:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CONFIG_HAS_IP6" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CONFIG-HAS-IP6:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_CAN_PERSIST" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-CAN-PERSIST:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_INT_GATEWAY" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-INT-GATEWAY:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_ADDRESS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_PTP" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-PTP:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_PREFIX" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-PREFIX:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_DNS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-DNS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_NBNS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-NBNS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_MSS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-MSS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_DOMAIN" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-DOMAIN:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_DOMAINS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-DOMAINS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_ROUTES" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-ROUTES:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_NEVER_DEFAULT" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-NEVER-DEFAULT:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_GATEWAY" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-GATEWAY:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_BANNER" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-BANNER:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_EXT_GATEWAY" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-EXT-GATEWAY:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_MTU" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-MTU:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP4_CONFIG_TUNDEV" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP4-CONFIG-TUNDEV:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_INT_GATEWAY" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-INT-GATEWAY:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_ADDRESS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-ADDRESS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_PTP" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-PTP:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_PREFIX" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-PREFIX:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_DNS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-DNS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_MSS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-MSS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_DOMAIN" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-DOMAIN:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_DOMAINS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-DOMAINS:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_ROUTES" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-ROUTES:CAPS"/>
+    <keyword type="macro" name="NM_VPN_PLUGIN_IP6_CONFIG_NEVER_DEFAULT" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-IP6-CONFIG-NEVER-DEFAULT:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_UNKNOWN" link="NMConnection.html#NM-CONNECTION-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-SETTING-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID" link="NMConnection.html#NM-CONNECTION-ERROR-CONNECTION-TYPE-INVALID:CAPS"/>
     <keyword type="constant" name="NM_CONNECTION_ERROR_SETTING_NOT_FOUND" link="NMConnection.html#NM-CONNECTION-ERROR-SETTING-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_INVALID_SETTING" link="NMConnection.html#NM-CONNECTION-ERROR-INVALID-SETTING:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_UNKNOWN" link="NMSetting.html#NM-SETTING-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_FOUND" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-FOUND:CAPS"/>
     <keyword type="constant" name="NM_SETTING_ERROR_PROPERTY_NOT_SECRET" link="NMSetting.html#NM-SETTING-ERROR-PROPERTY-NOT-SECRET:CAPS"/>
@@ -1275,12 +1408,16 @@
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-AGENT-OWNED-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-NOT-SAVED-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-DIFF-RESULT-WITH-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-DIFF-RESULT-NO-DEFAULT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_HASH_FLAG_ALL" link="NMSetting.html#NM-SETTING-HASH-FLAG-ALL:CAPS"/>
     <keyword type="constant" name="NM_SETTING_HASH_FLAG_NO_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-NO-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_HASH_FLAG_ONLY_SECRETS" link="NMSetting.html#NM-SETTING-HASH-FLAG-ONLY-SECRETS:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DIFF_RESULT_UNKNOWN" link="NMSetting.html#NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_A" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A:CAPS"/>
     <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_B" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_A_DEFAULT" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_B_DEFAULT" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B-DEFAULT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_UNKNOWN" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_INVALID_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-INVALID-PROPERTY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_CONNECTION_ERROR_MISSING_PROPERTY" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ERROR-MISSING-PROPERTY:CAPS"/>
@@ -1433,5 +1570,181 @@
     <keyword type="constant" name="NMU_SEC_WPA_ENTERPRISE" link="libnm-util-nm-utils.html#NMU-SEC-WPA-ENTERPRISE:CAPS"/>
     <keyword type="constant" name="NMU_SEC_WPA2_PSK" link="libnm-util-nm-utils.html#NMU-SEC-WPA2-PSK:CAPS"/>
     <keyword type="constant" name="NMU_SEC_WPA2_ENTERPRISE" link="libnm-util-nm-utils.html#NMU-SEC-WPA2-ENTERPRISE:CAPS"/>
+    <keyword type="constant" name="NM_STATE_UNKNOWN" link="libnm-util-NetworkManager.html#NM-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_STATE_ASLEEP" link="libnm-util-NetworkManager.html#NM-STATE-ASLEEP:CAPS"/>
+    <keyword type="constant" name="NM_STATE_DISCONNECTED" link="libnm-util-NetworkManager.html#NM-STATE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_STATE_DISCONNECTING" link="libnm-util-NetworkManager.html#NM-STATE-DISCONNECTING:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTING" link="libnm-util-NetworkManager.html#NM-STATE-CONNECTING:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTED_LOCAL" link="libnm-util-NetworkManager.html#NM-STATE-CONNECTED-LOCAL:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTED_SITE" link="libnm-util-NetworkManager.html#NM-STATE-CONNECTED-SITE:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTED_GLOBAL" link="libnm-util-NetworkManager.html#NM-STATE-CONNECTED-GLOBAL:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_UNKNOWN" link="libnm-util-NetworkManager.html#NM-CONNECTIVITY-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_NONE" link="libnm-util-NetworkManager.html#NM-CONNECTIVITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_PORTAL" link="libnm-util-NetworkManager.html#NM-CONNECTIVITY-PORTAL:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_LIMITED" link="libnm-util-NetworkManager.html#NM-CONNECTIVITY-LIMITED:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_FULL" link="libnm-util-NetworkManager.html#NM-CONNECTIVITY-FULL:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_UNKNOWN" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_ETHERNET" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-ETHERNET:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_WIFI" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-WIFI:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_UNUSED1" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-UNUSED1:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_UNUSED2" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-UNUSED2:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_BT" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-BT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_OLPC_MESH" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-OLPC-MESH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_WIMAX" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-WIMAX:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_MODEM" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-MODEM:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_INFINIBAND" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-INFINIBAND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_BOND" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-BOND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_VLAN" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-VLAN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_ADSL" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-ADSL:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_BRIDGE" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-BRIDGE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_GENERIC" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-GENERIC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_TEAM" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-TEAM:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_NONE" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-NONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_NM_SUPPORTED" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-NM-SUPPORTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_CARRIER_DETECT" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-CARRIER-DETECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_IS_SOFTWARE" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-IS-SOFTWARE:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_NONE" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-NONE:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_WEP40" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-CIPHER-WEP40:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_WEP104" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-CIPHER-WEP104:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_TKIP" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-CIPHER-TKIP:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_CCMP" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-CIPHER-CCMP:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_WPA" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-WPA:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_RSN" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-RSN:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_AP" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-AP:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_ADHOC" link="libnm-util-NetworkManager.html#NM-WIFI-DEVICE-CAP-ADHOC:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_FLAGS_NONE" link="libnm-util-NetworkManager.html#NM-802-11-AP-FLAGS-NONE:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_FLAGS_PRIVACY" link="libnm-util-NetworkManager.html#NM-802-11-AP-FLAGS-PRIVACY:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_NONE" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-NONE:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_WEP40" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-PAIR-WEP40:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_WEP104" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-PAIR-WEP104:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_TKIP" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-PAIR-TKIP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_CCMP" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-PAIR-CCMP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_WEP40" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-GROUP-WEP40:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_WEP104" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-GROUP-WEP104:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_TKIP" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-GROUP-TKIP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_CCMP" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-GROUP-CCMP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_KEY_MGMT_PSK" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-KEY-MGMT-PSK:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_KEY_MGMT_802_1X" link="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-KEY-MGMT-802-1X:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_UNKNOWN" link="libnm-util-NetworkManager.html#NM-802-11-MODE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_ADHOC" link="libnm-util-NetworkManager.html#NM-802-11-MODE-ADHOC:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_INFRA" link="libnm-util-NetworkManager.html#NM-802-11-MODE-INFRA:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_AP" link="libnm-util-NetworkManager.html#NM-802-11-MODE-AP:CAPS"/>
+    <keyword type="constant" name="NM_BT_CAPABILITY_NONE" link="libnm-util-NetworkManager.html#NM-BT-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_BT_CAPABILITY_DUN" link="libnm-util-NetworkManager.html#NM-BT-CAPABILITY-DUN:CAPS"/>
+    <keyword type="constant" name="NM_BT_CAPABILITY_NAP" link="libnm-util-NetworkManager.html#NM-BT-CAPABILITY-NAP:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_NONE" link="libnm-util-NetworkManager.html#NM-DEVICE-MODEM-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_POTS" link="libnm-util-NetworkManager.html#NM-DEVICE-MODEM-CAPABILITY-POTS:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO" link="libnm-util-NetworkManager.html#NM-DEVICE-MODEM-CAPABILITY-CDMA-EVDO:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS" link="libnm-util-NetworkManager.html#NM-DEVICE-MODEM-CAPABILITY-GSM-UMTS:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_LTE" link="libnm-util-NetworkManager.html#NM-DEVICE-MODEM-CAPABILITY-LTE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_UNKNOWN" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_UNMANAGED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-UNMANAGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_UNAVAILABLE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_DISCONNECTED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_PREPARE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-PREPARE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_CONFIG" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-CONFIG:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_NEED_AUTH" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-NEED-AUTH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_IP_CONFIG" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-IP-CONFIG:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_IP_CHECK" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-IP-CHECK:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_SECONDARIES" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-SECONDARIES:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_ACTIVATED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-ACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_DEACTIVATING" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-DEACTIVATING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NONE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-NONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_UNKNOWN" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NOW_MANAGED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-NOW-MANAGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NOW_UNMANAGED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-NOW-UNMANAGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CONFIG_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-CONFIG-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-IP-CONFIG-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-IP-CONFIG-EXPIRED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NO_SECRETS" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SUPPLICANT-DISCONNECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SUPPLICANT-CONFIG-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SUPPLICANT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SUPPLICANT-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PPP_START_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-PPP-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PPP_DISCONNECT" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-PPP-DISCONNECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PPP_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-PPP-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DHCP_START_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-DHCP-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DHCP_ERROR" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-DHCP-ERROR:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DHCP_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-DHCP-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SHARED_START_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SHARED-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SHARED_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SHARED-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_AUTOIP_START_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-AUTOIP-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_AUTOIP_ERROR" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-AUTOIP-ERROR:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_AUTOIP_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-AUTOIP-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_BUSY" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-BUSY:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_NO_DIAL_TONE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-NO-DIAL-TONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-NO-CARRIER:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_DIAL_TIMEOUT" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-DIAL-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_DIAL_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-DIAL-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_INIT_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-INIT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_APN_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-APN-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_NOT_SEARCHING" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-NOT-SEARCHING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_DENIED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-DENIED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_TIMEOUT" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_PIN_CHECK_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-PIN-CHECK-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_FIRMWARE_MISSING" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-FIRMWARE-MISSING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_REMOVED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-REMOVED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SLEEPING" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SLEEPING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CONNECTION_REMOVED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-CONNECTION-REMOVED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_USER_REQUESTED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-USER-REQUESTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CARRIER" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-CARRIER:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-CONNECTION-ASSUMED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SUPPLICANT-AVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_NOT_FOUND" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_BT_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-BT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_NOT_INSERTED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-SIM-NOT-INSERTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_PIN_REQUIRED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-SIM-PIN-REQUIRED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_PUK_REQUIRED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-SIM-PUK-REQUIRED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_WRONG" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-GSM-SIM-WRONG:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_INFINIBAND_MODE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-INFINIBAND-MODE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-DEPENDENCY-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_BR2684_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-BR2684-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-MANAGER-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SSID_NOT_FOUND" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SSID-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SECONDARY-CONNECTION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DCB_FCOE_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-DCB-FCOE-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-TEAMD-CONTROL-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_FAILED" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_AVAILABLE" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-MODEM-AVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-SIM-PIN-INCORRECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_LAST" link="libnm-util-NetworkManager.html#NM-DEVICE-STATE-REASON-LAST:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_UNKNOWN" link="libnm-util-NetworkManager.html#NM-ACTIVE-CONNECTION-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_ACTIVATING" link="libnm-util-NetworkManager.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATING:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_ACTIVATED" link="libnm-util-NetworkManager.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_DEACTIVATING" link="libnm-util-NetworkManager.html#NM-ACTIVE-CONNECTION-STATE-DEACTIVATING:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_DEACTIVATED" link="libnm-util-NetworkManager.html#NM-ACTIVE-CONNECTION-STATE-DEACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_UNKNOWN" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_INIT" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-INIT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_SHUTDOWN" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-SHUTDOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STARTING" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-STARTING:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STARTED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-STARTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STOPPING" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-STOPPING:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STOPPED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-SERVICE-STATE-STOPPED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_UNKNOWN" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_PREPARE" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-PREPARE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_NEED_AUTH" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-NEED-AUTH:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_CONNECT" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-CONNECT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_IP_CONFIG_GET" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-IP-CONFIG-GET:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_ACTIVATED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-ACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_DISCONNECTED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_UNKNOWN" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_NONE" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-NONE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_USER_DISCONNECTED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-USER-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-DEVICE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_SERVICE_STOPPED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-SERVICE-STOPPED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_IP_CONFIG_INVALID" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-IP-CONFIG-INVALID:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_CONNECT_TIMEOUT" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-CONNECT-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-SERVICE-START-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-SERVICE-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_LOGIN_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-LOGIN-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_CONNECTION_REMOVED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-CONNECTION-STATE-REASON-CONNECTION-REMOVED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_FAILURE_LOGIN_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-FAILURE-LOGIN-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_FAILURE_CONNECT_FAILED" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-FAILURE-CONNECT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_FAILURE_BAD_IP_CONFIG" link="libnm-util-NetworkManagerVPN.html#NM-VPN-PLUGIN-FAILURE-BAD-IP-CONFIG:CAPS"/>
   </functions>
 </book>

@@ -130,10 +130,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(pkglibdir)"
 LTLIBRARIES = $(pkglib_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-libnm_settings_plugin_ifcfg_suse_la_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/libnm-glib/libnm-glib.la $(am__DEPENDENCIES_1)
+libnm_settings_plugin_ifcfg_suse_la_LIBADD =
 am_libnm_settings_plugin_ifcfg_suse_la_OBJECTS = plugin.lo
 libnm_settings_plugin_ifcfg_suse_la_OBJECTS =  \
 	$(am_libnm_settings_plugin_ifcfg_suse_la_OBJECTS)
@@ -216,6 +213,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -339,6 +338,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -358,6 +358,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -384,7 +385,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -465,15 +466,13 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS) \
-	$(POLKIT_CFLAGS) \
 	-I${top_srcdir}/src \
 	-I${top_srcdir}/src/settings \
 	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
-	-I$(top_srcdir)/libnm-util \
-	-I$(top_srcdir)/libnm-glib \
+	-I$(top_srcdir)/libnm-core \
+	-I$(top_builddir)/libnm-core \
 	-DG_LOG_DOMAIN=\""NetworkManager-ifcfg-suse"\" \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	-DSYSCONFDIR=\"$(sysconfdir)\"
 
@@ -483,11 +482,6 @@ libnm_settings_plugin_ifcfg_suse_la_SOURCES = \
 	plugin.h
 
 libnm_settings_plugin_ifcfg_suse_la_LDFLAGS = -module -avoid-version
-libnm_settings_plugin_ifcfg_suse_la_LIBADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/libnm-glib/libnm-glib.la \
-	$(GLIB_LIBS)
-
 all: all-am
 
 .SUFFIXES:

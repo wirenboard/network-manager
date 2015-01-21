@@ -90,6 +90,13 @@ NMSettingIP6Config
 
 
 
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_ROUTE_METRIC ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES ##### -->
 <para>
 
@@ -466,6 +473,11 @@ NMSettingIP6Config
 
 </para>
 
+<!-- ##### ARG NMSettingIP6Config:route-metric ##### -->
+<para>
+
+</para>
+
 <!-- ##### ARG NMSettingIP6Config:routes ##### -->
 <para>
 
@@ -725,6 +737,15 @@ NMSettingIP6Config
 
 
 <!-- ##### FUNCTION nm_setting_ip6_config_get_ignore_auto_routes ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ip6_config_get_route_metric ##### -->
 <para>
 
 </para>

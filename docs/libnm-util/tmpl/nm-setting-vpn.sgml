@@ -68,6 +68,13 @@ NMSettingVPN
 
 
 
+<!-- ##### MACRO NM_SETTING_VPN_PERSISTENT ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_VPN_DATA ##### -->
 <para>
 
@@ -89,6 +96,11 @@ NMSettingVPN
 
 
 <!-- ##### ARG NMSettingVPN:data ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingVPN:persistent ##### -->
 <para>
 
 </para>
@@ -148,6 +160,15 @@ NMSettingVPN
 
 
 <!-- ##### FUNCTION nm_setting_vpn_get_user_name ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vpn_get_persistent ##### -->
 <para>
 
 </para>

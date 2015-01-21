@@ -18,7 +18,8 @@
  * Copyright (C) 2013 Red Hat, Inc.
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <sys/wait.h>
 #include <string.h>
 
@@ -28,16 +29,6 @@
 #include "NetworkManagerUtils.h"
 #include "nm-posix-signals.h"
 #include "nm-logging.h"
-
-GQuark
-nm_dcb_error_quark (void)
-{
-	static GQuark ret = 0;
-
-	if (ret == 0)
-		ret = g_quark_from_static_string ("nm-dcb-error");
-	return ret;
-}
 
 static const char *helper_names[] = { "dcbtool", "fcoeadm" };
 
@@ -63,7 +54,7 @@ do_helper (const char *iface,
 
 	split = g_strsplit_set (cmdline, " ", 0);
 	if (!split) {
-		g_set_error (error, NM_DCB_ERROR, NM_DCB_ERROR_INTERNAL,
+		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 		             "failure parsing %s command line", helper_names[which]);
 		goto out;
 	}
@@ -296,47 +287,20 @@ _fcoe_cleanup (const char *iface,
 	return do_helper (NULL, FCOEADM, run_func, user_data, error, "-d %s", iface);
 }
 
-
-static const char *dcbpaths[] = {
-	"/sbin/dcbtool",
-	"/usr/sbin/dcbtool",
-	"/usr/local/sbin/dcbtool",
-	NULL
-};
-static const char *fcoepaths[] = {
-	"/sbin/fcoeadm",
-	"/usr/sbin/fcoeadm",
-	"/usr/local/sbin/fcoeadm",
-	NULL
-};
-
-
 static gboolean
 run_helper (char **argv, guint which, gpointer user_data, GError **error)
 {
-	static const char *helper_path[2] = { NULL, NULL };
+	const char *helper_path;
 	int exit_status = 0;
 	gboolean success;
 	char *errmsg = NULL, *outmsg = NULL;
-	const char **iter;
 	char *cmdline;
 
-	if (G_UNLIKELY (helper_path[which] == NULL)) {
-		iter = (which == DCBTOOL) ? dcbpaths : fcoepaths;
-		while (*iter) {
-			if (g_file_test (*iter, G_FILE_TEST_EXISTS))
-				helper_path[which] = *iter;
-			iter++;
-		}
-		if (!helper_path[which]) {
-			g_set_error (error, NM_DCB_ERROR, NM_DCB_ERROR_HELPER_NOT_FOUND,
-			             "%s not found",
-			             which == DCBTOOL ? "dcbtool" : "fcoadm");
-			return FALSE;
-		}
-	}
+	helper_path = nm_utils_find_helper ((which == DCBTOOL) ? "dcbtool" : "fcoeadm", NULL, error);
+	if (!helper_path)
+		return FALSE;
 
-	argv[0] = (char *) helper_path[which];
+	argv[0] = (char *) helper_path;
 	cmdline = g_strjoinv (" ", argv);
 	nm_log_dbg (LOGD_DCB, "%s", cmdline);
 
@@ -354,14 +318,14 @@ run_helper (char **argv, guint which, gpointer user_data, GError **error)
 		if (ignore_error == FALSE) {
 			nm_log_warn (LOGD_DCB, "'%s' failed: '%s'",
 			             cmdline, (errmsg && strlen (errmsg)) ? errmsg : outmsg);
-			g_set_error (error, NM_DCB_ERROR, NM_DCB_ERROR_HELPER_FAILED,
+			g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 			             "Failed to run '%s'", cmdline);
 			success = FALSE;
 		}
 	}
+
 	g_free (outmsg);
 	g_free (errmsg);
-
 	g_free (cmdline);
 	return success;
 }

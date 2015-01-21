@@ -18,6 +18,8 @@
  * Copyright (C) 2013 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <arpa/inet.h>
 
@@ -32,6 +34,7 @@ G_DEFINE_TYPE (NMRDisc, nm_rdisc, G_TYPE_OBJECT)
 
 enum {
 	CONFIG_CHANGED,
+	RA_TIMEOUT,
 	LAST_SIGNAL
 };
 
@@ -40,11 +43,11 @@ static guint signals[LAST_SIGNAL] = { 0 };
 /******************************************************************/
 
 void
-nm_rdisc_set_lladdr (NMRDisc *rdisc, const char *addr, size_t addrlen)
+nm_rdisc_set_iid (NMRDisc *rdisc, const NMUtilsIPv6IfaceId iid)
 {
-	if (rdisc->lladdr)
-		g_bytes_unref (rdisc->lladdr);
-	rdisc->lladdr = addr ? g_bytes_new (addr, addrlen) : NULL;
+	g_return_if_fail (NM_IS_RDISC (rdisc));
+
+	rdisc->iid = iid;
 }
 
 void
@@ -152,7 +155,6 @@ nm_rdisc_init (NMRDisc *rdisc)
 	rdisc->routes = g_array_new (FALSE, FALSE, sizeof (NMRDiscRoute));
 	rdisc->dns_servers = g_array_new (FALSE, FALSE, sizeof (NMRDiscDNSServer));
 	rdisc->dns_domains = g_array_new (FALSE, FALSE, sizeof (NMRDiscDNSDomain));
-	rdisc->lladdr = NULL;
 	rdisc->hop_limit = 64;
 }
 
@@ -167,9 +169,6 @@ nm_rdisc_finalize (GObject *object)
 	g_array_unref (rdisc->routes);
 	g_array_unref (rdisc->dns_servers);
 	g_array_unref (rdisc->dns_domains);
-
-	if (rdisc->lladdr)
-		g_bytes_unref (rdisc->lladdr);
 }
 
 static void
@@ -188,4 +187,12 @@ nm_rdisc_class_init (NMRDiscClass *klass)
 			G_STRUCT_OFFSET (NMRDiscClass, config_changed),
 			NULL, NULL, NULL,
 			G_TYPE_NONE, 1, G_TYPE_INT);
+
+	signals[RA_TIMEOUT] = g_signal_new (
+			NM_RDISC_RA_TIMEOUT,
+			G_OBJECT_CLASS_TYPE (klass),
+			G_SIGNAL_RUN_FIRST,
+			G_STRUCT_OFFSET (NMRDiscClass, ra_timeout),
+			NULL, NULL, NULL,
+			G_TYPE_NONE, 0);
 }

@@ -1,0 +1,109 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingIP4Config
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_METHOD_AUTO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_METHOD_LINK_LOCAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_METHOD_MANUAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_METHOD_SHARED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_METHOD_DISABLED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingIP4Config ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingIP4Config:dhcp-client-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingIP4ConfigClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_setting_ip4_config_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ip4_config_get_dhcp_client_id ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+

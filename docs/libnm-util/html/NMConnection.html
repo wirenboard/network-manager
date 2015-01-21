@@ -51,6 +51,7 @@
 #define             <a class="link" href="NMConnection.html#NM-CONNECTION-CHANGED:CAPS" title="NM_CONNECTION_CHANGED">NM_CONNECTION_CHANGED</a>
 #define             <a class="link" href="NMConnection.html#NM-CONNECTION-PATH:CAPS" title="NM_CONNECTION_PATH">NM_CONNECTION_PATH</a>
 enum                <a class="link" href="NMConnection.html#NMConnectionError-enum" title="enum NMConnectionError">NMConnectionError</a>;
+#define             <a class="link" href="NMConnection.html#NM-CONNECTION-NORMALIZE-PARAM-IP6-CONFIG-METHOD:CAPS" title="NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD">NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD</a>
 #define             <a class="link" href="NMConnection.html#NM-CONNECTION-ERROR:CAPS" title="NM_CONNECTION_ERROR">NM_CONNECTION_ERROR</a>
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>              <a class="link" href="NMConnection.html#nm-connection-error-quark" title="nm_connection_error_quark ()">nm_connection_error_quark</a>           (<em class="parameter"><code><span class="type">void</span></code></em>);
                     <a class="link" href="NMConnection.html#NMConnection-struct" title="NMConnection">NMConnection</a>;
@@ -84,6 +85,10 @@ enum                <a class="link" href="NMConnection.html#NMConnectionError-en
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> **out_settings</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMConnection.html#nm-connection-verify" title="nm_connection_verify ()">nm_connection_verify</a>                (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMConnection.html#nm-connection-normalize" title="nm_connection_normalize ()">nm_connection_normalize</a>             (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *parameters</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *modified</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMConnection.html#nm-connection-need-secrets" title="nm_connection_need_secrets ()">nm_connection_need_secrets</a>          (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> **hints</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="NMConnection.html#nm-connection-clear-secrets" title="nm_connection_clear_secrets ()">nm_connection_clear_secrets</a>         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
@@ -100,6 +105,7 @@ const <span class="returnvalue">char</span> *        <a class="link" href="NMCon
 const <span class="returnvalue">char</span> *        <a class="link" href="NMConnection.html#nm-connection-get-path" title="nm_connection_get_path ()">nm_connection_get_path</a>              (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 const <span class="returnvalue">char</span> *        <a class="link" href="NMConnection.html#nm-connection-get-virtual-iface-name" title="nm_connection_get_virtual_iface_name ()">nm_connection_get_virtual_iface_name</a>
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
+const <span class="returnvalue">char</span> *        <a class="link" href="NMConnection.html#nm-connection-get-interface-name" title="nm_connection_get_interface_name ()">nm_connection_get_interface_name</a>    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="NMConnection.html#nm-connection-is-type" title="nm_connection_is_type ()">nm_connection_is_type</a>               (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
                                                          <em class="parameter"><code>const <span class="type">char</span> *type</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="NMConnection.html#nm-connection-for-each-setting-value" title="nm_connection_for_each_setting_value ()">nm_connection_for_each_setting_value</a>
@@ -235,7 +241,8 @@ parameters (MTU, SSID, APN, channel, rate, etc) and IP-level parameters
 	NM_CONNECTION_ERROR_UNKNOWN = 0,                  /*&lt; nick=UnknownError &gt;*/
 	NM_CONNECTION_ERROR_CONNECTION_SETTING_NOT_FOUND, /*&lt; nick=ConnectionSettingNotFound &gt;*/
 	NM_CONNECTION_ERROR_CONNECTION_TYPE_INVALID,      /*&lt; nick=ConnectionTypeInvalid &gt;*/
-	NM_CONNECTION_ERROR_SETTING_NOT_FOUND             /*&lt; nick=SettingNotFound &gt;*/
+	NM_CONNECTION_ERROR_SETTING_NOT_FOUND,            /*&lt; nick=SettingNotFound &gt;*/
+	NM_CONNECTION_ERROR_INVALID_SETTING,              /*&lt; nick=InvalidSetting &gt;*/
 } NMConnectionError;
 </pre>
 <p>
@@ -273,8 +280,22 @@ Describes errors that may result from operations involving a <a class="link" hre
   did not contain the specified <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object
 </td>
 </tr>
+<tr>
+<td><p><a name="NM-CONNECTION-ERROR-INVALID-SETTING:CAPS"></a><span class="term"><code class="literal">NM_CONNECTION_ERROR_INVALID_SETTING</code></span></p></td>
+<td>the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> object contains
+  a conflicting setting object
+</td>
+</tr>
 </tbody>
 </table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-CONNECTION-NORMALIZE-PARAM-IP6-CONFIG-METHOD:CAPS"></a><h3>NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD</h3>
+<pre class="programlisting">#define NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD "ip6-config-method"
+</pre>
+<p>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -727,7 +748,7 @@ Validates the connection and all its settings.  Each setting's properties
 have allowed values, and some values are dependent on other values.  For
 example, if a Wi-Fi connection is security enabled, the <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a>
 setting object's 'security' property must contain the setting name of the
-<a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> object, which must also be present in the 
+<a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> object, which must also be present in the
 connection for the connection to be valid.  As another example, the
 <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> object's 'mac-address' property must be a validly formatted
 MAC address.  The returned <a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> contains information about which
@@ -755,6 +776,62 @@ setting and which property failed validation, and how it failed validation.
 </tr>
 </tbody>
 </table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-connection-normalize"></a><h3>nm_connection_normalize ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            nm_connection_normalize             (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *parameters</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> *modified</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
+<p>
+Does some basic normalization and fixup of well known inconsistencies
+and deprecated fields. If the connection was modified in any way,
+the output parameter <em class="parameter"><code>modified</code></em> is set <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>.
+</p>
+<p>
+Finally the connection will be verified and <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> returns if the connection
+is valid. As this function only performs some specific normalization steps
+it cannot repair all connections. If the connection has errors that
+cannot be normalized, the connection will not be modified.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> to normalize</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>parameters</code></em> :</span></p></td>
+<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> with
+normalization parameters to allow customization of the normalization by providing
+specific arguments. Unknown arguments will be ignored and the default will be
+used. The keys must be strings, hashed by <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#g-str-hash"><code class="function">g_str_hash()</code></a> and <a href="http://library.gnome.org/devel/glib/unstable/glib-Hash-Tables.html#g-str-equal"><code class="function">g_str_equal()</code></a> functions.
+The values are opaque and depend on the parameter name. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 gpointer]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>modified</code></em> :</span></p></td>
+<td>outputs whether any settings were modified. <span class="annotation">[<acronym title="Parameter for returning results. Default is transfer full."><span class="acronym">out</span></acronym>][<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
+<td>location to store error, or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a>. Contains the reason,
+why the connection is invalid, if the function returns an error.</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the connection is valid, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if it is not</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -985,6 +1062,39 @@ connection types, this function will return <a href="/usr/share/gtk-doc/html/lib
 </tr>
 </tbody>
 </table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-connection-get-interface-name"></a><h3>nm_connection_get_interface_name ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *        nm_connection_get_interface_name    (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<p>
+Returns the interface name as stored in NMSettingConnection:interface_name.
+If the connection contains no NMSettingConnection, it will return <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<p>
+For hardware devices and software devices created outside of NetworkManager,
+this name is used to match the device. for software devices created by
+NetworkManager, this is the name of the created interface.
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
+<td>The <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>Name of the kernel interface or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+<p class="since">Since 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1247,7 +1357,7 @@ A shortcut to return the type from the connection's <a class="link" href="NMSett
 <pre class="programlisting"><span class="returnvalue">char</span> *              nm_connection_get_virtual_device_description
                                                         (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>
-Returns the name that <a href="https://developer.gnome.org/libnm-glib/0.9/NMDevice.html#nm-device-disambiguate-names"><code class="function">nm_device_disambiguate_names()</code></a> would
+Returns the name that <a href="https://developer.gnome.org/libnm/1.0/NMDevice.html#nm-device-disambiguate-names"><code class="function">nm_device_disambiguate_names()</code></a> would
 return for the virtual device that would be created for <em class="parameter"><code>connection</code></em>.
 Eg, "VLAN (eth1.1)".
 </p>

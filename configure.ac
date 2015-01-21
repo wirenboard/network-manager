@@ -1,12 +1,11 @@
 AC_PREREQ([2.63])
 
 dnl The NM version number
-m4_define([nm_major_version], [0])
-m4_define([nm_minor_version], [9])
-m4_define([nm_micro_version], [10])
-m4_define([nm_nano_version],  [0])
+m4_define([nm_major_version], [1])
+m4_define([nm_minor_version], [0])
+m4_define([nm_micro_version], [0])
 m4_define([nm_version],
-          [nm_major_version.nm_minor_version.nm_micro_version.nm_nano_version])
+          [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
 
 AC_INIT([NetworkManager], [nm_version],
@@ -60,6 +59,7 @@ AC_SUBST(NM_MAJOR_VERSION)
 AC_SUBST(NM_MINOR_VERSION)
 AC_SUBST(NM_MICRO_VERSION)
 AC_SUBST(NM_VERSION)
+AC_DEFINE_UNQUOTED(NM_GIT_SHA,"$NM_GIT_SHA",[git commit id of the original source code version])
 
 dnl
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -91,6 +91,7 @@ AC_SUBST(nmstatedir, "$localstatedir/lib/$PACKAGE", [NetworkManager persistent s
 AC_SUBST(nmrundir, "$localstatedir/run/$PACKAGE", [NetworkManager runtime state directory])
 
 # Alternative configuration plugins
+AC_ARG_ENABLE(config-plugin-ibft, AS_HELP_STRING([--enable-config-plugin-ibft], [enable ibft configuration plugin]))
 AC_ARG_ENABLE(ifcfg-rh, AS_HELP_STRING([--enable-ifcfg-rh], [enable ifcfg-rh configuration plugin (Fedora/RHEL)]))
 AC_ARG_ENABLE(ifcfg-suse, AS_HELP_STRING([--enable-ifcfg-suse], [enable ifcfg-suse configuration plugin (SUSE)]))
 AC_ARG_ENABLE(ifupdown, AS_HELP_STRING([--enable-ifupdown], [enable ifupdown configuration plugin (Debian/Ubuntu)]))
@@ -107,11 +108,26 @@ AS_IF([test -z "$enable_ifcfg_rh"], enable_ifcfg_rh=no)
 AS_IF([test -z "$enable_ifcfg_suse"], enable_ifcfg_suse=no)
 AS_IF([test -z "$enable_ifupdown"], enable_ifupdown=no)
 AS_IF([test -z "$enable_ifnet"], enable_ifnet=no)
+# Enable ibft by default
+AS_IF([test -z "$enable_config_plugin_ibft"], enable_config_plugin_ibft="yes")
 # Create automake conditionals
+AM_CONDITIONAL(CONFIG_PLUGIN_IBFT, test "$enable_config_plugin_ibft" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFCFG_RH, test "$enable_ifcfg_rh" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFCFG_SUSE, test "$enable_ifcfg_suse" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFUPDOWN, test "$enable_ifupdown" = "yes")
 AM_CONDITIONAL(CONFIG_PLUGIN_IFNET, test "$enable_ifnet" = "yes")
+
+AC_ARG_WITH(config-plugins-default, AS_HELP_STRING([--with-config-plugins-default=PLUGINS], [Default configuration option for main.plugins setting, used as fallback if the configuration option is unset]), [config_plugins_default="$withval"], [config_plugins_default=""])
+if test -z "$config_plugins_default" -o "$config_plugins_default" = no; then
+    config_plugins_default=''
+    test "$enable_ifcfg_rh" = "yes"           && config_plugins_default="$config_plugins_default,ifcfg-rh"
+    test "$enable_ifcfg_suse" = "yes"         && config_plugins_default="$config_plugins_default,ifcfg-suse"
+    test "$enable_ifupdown" = "yes"           && config_plugins_default="$config_plugins_default,ifupdown"
+    test "$enable_ifnet" = "yes"              && config_plugins_default="$config_plugins_default,ifnet"
+    test "$enable_config_plugin_ibft" = "yes" && config_plugins_default="$config_plugins_default,ibft"
+    config_plugins_default="${config_plugins_default#,}"
+fi
+AC_DEFINE_UNQUOTED(CONFIG_PLUGINS_DEFAULT, "$config_plugins_default", [Default configuration option for main.plugins setting])
 
 if test "$enable_ifcfg_rh" = "yes"; then
     DISTRO_NETWORK_SERVICE=network.service
@@ -284,14 +300,18 @@ if (test "${enable_qt}" = "yes"); then
 fi
 AM_CONDITIONAL(WITH_QT, test "${enable_qt}" = "yes")
 
-
-AC_ARG_WITH(udev-dir, AS_HELP_STRING([--with-udev-dir=DIR], [where the udev base directory is]))
-if test -n "$with_udev_dir" ; then
-	UDEV_BASE_DIR="$with_udev_dir"
-else
-	UDEV_BASE_DIR="/lib/udev"
+AC_ARG_WITH(udev-dir, AS_HELP_STRING([--with-udev-dir=DIR], [Absolute path of the udev base directory. Set to 'no' not to install the udev rules]), [], [with_udev_dir="yes"])
+if (test "$with_udev_dir" != 'no'); then
+	if (test "$with_udev_dir" != 'yes' && echo -n "$with_udev_dir" | grep -v -q '^/'); then
+		AC_MSG_ERROR([--with-udev-dir must be an absolute path or 'yes' or 'no'. Instead it is '$with_udev_dir'])
+	fi
+	if (test "$with_udev_dir" = 'yes'); then
+		with_udev_dir="/lib/udev"
+	fi
+	UDEV_DIR="$with_udev_dir"
+	AC_SUBST(UDEV_DIR)
 fi
-AC_SUBST(UDEV_BASE_DIR)
+AM_CONDITIONAL(WITH_UDEV_DIR, test "$with_udev_dir" != 'no')
 
 # systemd unit support
 AC_ARG_WITH([systemdsystemunitdir], AS_HELP_STRING([--with-systemdsystemunitdir=DIR],
@@ -327,7 +347,8 @@ AS_IF([! (echo "$with_session_tracking" | grep -q -E "^(systemd|consolekit|no)$"
 AM_CONDITIONAL(SESSION_TRACKING_CK, test "$with_session_tracking" = "consolekit")
 AM_CONDITIONAL(SESSION_TRACKING_SYSTEMD, test "$with_session_tracking" = "systemd")
 if test "$with_session_tracking" = "systemd"; then
-	PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login])
+	PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd],,
+	                  [PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login])])
 	AC_SUBST(SYSTEMD_LOGIN_CFLAGS)
 	AC_SUBST(SYSTEMD_LOGIN_LIBS)
 fi
@@ -338,7 +359,8 @@ AC_MSG_RESULT($with_session_tracking)
 
 AC_ARG_WITH(suspend-resume, AS_HELP_STRING([--with-suspend-resume=upower|systemd], [Build NetworkManager with specific suspend/resume support]))
 if test "z$with_suspend_resume" = "z"; then
-    PKG_CHECK_EXISTS([libsystemd-login >= 183], [have_systemd_inhibit=yes], [have_systemd_inhibit=no])
+    PKG_CHECK_EXISTS([libsystemd >= 209], [have_systemd_inhibit=yes],
+                     [PKG_CHECK_EXISTS([libsystemd-login >= 183], [have_systemd_inhibit=yes], [have_systemd_inhibit=no])])
     if test "z${have_systemd_inhibit}" = "zyes"; then
 	# Use systemd if it's new enough
 	with_suspend_resume="systemd"
@@ -351,7 +373,8 @@ fi
 case $with_suspend_resume in
     upower) ;;
     systemd)
-	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])
+	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd >= 209],,
+	                  [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
         ;;
     *)
 	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
@@ -381,6 +404,29 @@ AM_CONDITIONAL(HAVE_SELINUX, test "${have_selinux}" = "yes")
 PKG_CHECK_MODULES(LIBNL, libnl-3.0 >= 3.2.8 libnl-route-3.0 libnl-genl-3.0)
 AC_SUBST(LIBNL_CFLAGS)
 AC_SUBST(LIBNL_LIBS)
+
+AC_CHECK_LIB([nl-route-3], [rtnl_link_inet6_get_addr_gen_mode],
+	ac_have_addr_gen_mode="1",
+	ac_have_addr_gen_mode="0")
+AC_DEFINE_UNQUOTED(HAVE_LIBNL_INET6_ADDR_GEN_MODE,
+	$ac_have_addr_gen_mode, [Define if libnl has rtnl_link_inet6_get_addr_gen_mode()])
+
+AC_MSG_CHECKING([Linux kernel IN6_ADDR_GEN_MODE enum])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+              [[#ifndef __user
+                #define __user
+                #endif
+                #include <linux/if_link.h>]],
+              [[int a = IN6_ADDR_GEN_MODE_EUI64; a++;]])],
+        [ac_have_kernel_gen_mode=yes],
+        [ac_have_kernel_gen_mode=no])
+AC_MSG_RESULT($ac_have_kernel_gen_mode)
+if test "$ac_have_kernel_gen_mode" = yes; then
+	AC_DEFINE(HAVE_KERNEL_INET6_ADDR_GEN_MODE, 1, [Define if the kernel has IN6_ADDR_GEN_MODE_*])
+else
+	AC_DEFINE(HAVE_KERNEL_INET6_ADDR_GEN_MODE, 0, [Define if the kernel has IN6_ADDR_GEN_MODE_*])
+fi
 
 # uuid library
 PKG_CHECK_MODULES(UUID, uuid)
@@ -434,27 +480,47 @@ else
 fi
 AM_CONDITIONAL(WITH_TEAMDCTL, test "${enable_teamdctl}" = "yes")
 
-PKG_CHECK_MODULES(POLKIT, [polkit-gobject-1 >= 0.97], [have_polkit=yes],[have_polkit=no])
-AC_ARG_ENABLE(polkit, AS_HELP_STRING([--enable-polkit], [enable PolicyKit support]),
-                     [enable_polkit=${enableval}], [enable_polkit=${have_polkit}])
-if (test "${enable_polkit}" = "yes"); then
-	if test x"$have_polkit" = x"no"; then
-		AC_MSG_ERROR(PolicyKit development headers are required)
+# we usually compile with polkit support. --enable-polkit=yes|no only sets the
+# default configuration for main.auth-polkit. User can always enable/disable polkit
+# autorization via config. Only when specifying --enable-polkit=disabled, we do
+# not compile support. In this case, the user cannot enable polkit authorization via
+# configuration.
+AC_ARG_ENABLE(polkit, AS_HELP_STRING([--enable-polkit=yes|no|disabled], [set default value for auth-polkit configuration option. This value can be overwritten by NM configuration. 'disabled' compiles NM without any support]),
+                     [enable_polkit=${enableval}], [enable_polkit=yes])
+if (test "${enable_polkit}" != "no" -a "${enable_polkit}" != "disabled"); then
+	enable_polkit=yes
+	AC_DEFINE(NM_CONFIG_DEFAULT_AUTH_POLKIT, TRUE, [The default value of the auth-polkit configuration option])
+	NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT='true'
+else
+	AC_DEFINE(NM_CONFIG_DEFAULT_AUTH_POLKIT, FALSE, [The default value of the auth-polkit configuration option])
+	NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT='false'
+fi
+if (test "${enable_polkit}" != "disabled"); then
+	AC_DEFINE(WITH_POLKIT, 1, [whether to compile polkit support])
+else
+	AC_DEFINE(WITH_POLKIT, 0, [whether to compile polkit support])
+fi
+AC_SUBST(NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT)
+
+PKG_CHECK_MODULES(POLKIT, [polkit-agent-1 >= 0.97], [have_pk_agent=yes],[have_pk_agent=no])
+AC_ARG_ENABLE(polkit-agent, AS_HELP_STRING([--enable-polkit-agent], [enable polkit agent for clients]),
+                     [enable_polkit_agent=${enableval}], [enable_polkit_agent=${have_pk_agent}])
+if (test "${enable_polkit_agent}" = "yes"); then
+	if test x"$have_pk_agent" = x"no"; then
+		AC_MSG_ERROR(Polkit agent is required)
 	fi
+
 	AC_SUBST(POLKIT_CFLAGS)
 	AC_SUBST(POLKIT_LIBS)
-	AC_DEFINE(WITH_POLKIT, 1, [Define if you have PolicyKit support])
+	AC_DEFINE(WITH_POLKIT_AGENT, 1, [Define if you have polkit agent])
 else
-	AC_DEFINE(WITH_POLKIT, 0, [Define if you have PolicyKit support])
+	AC_DEFINE(WITH_POLKIT_AGENT, 0, [Define if you have polkit agent])
 fi
-AM_CONDITIONAL(WITH_POLKIT, test "${enable_polkit}" = "yes")
+AM_CONDITIONAL(WITH_POLKIT_AGENT, test "${enable_polkit_agent}" = "yes")
 
 AC_ARG_ENABLE(modify-system,
               AS_HELP_STRING([--enable-modify-system], [Allow users to modify system connections]))
 if test "${enable_modify_system}" = "yes"; then
-	if ! test "${enable_polkit}" = "yes"; then
-		AC_MSG_ERROR([--enable-modify-system requires --enable-polkit])
-	fi
 	NM_MODIFY_SYSTEM_POLICY="yes"
 else
 	NM_MODIFY_SYSTEM_POLICY="auth_admin_keep"
@@ -586,6 +652,20 @@ else
 fi
 AM_CONDITIONAL(WITH_MODEM_MANAGER_1, test "${with_modem_manager_1}" = "yes")
 
+# Bluez5 DUN support
+PKG_CHECK_MODULES(BLUEZ5, [bluez >= 5], [have_bluez5=yes],[have_bluez5=no])
+AC_ARG_ENABLE(bluez5-dun, AS_HELP_STRING([--enable-bluez5-dun], [enable Bluez5 DUN support]),
+		[enable_bluez5_dun=${enableval}], [enable_bluez5_dun=${have_bluez5}])
+if (test "${enable_bluez5_dun}" = "yes"); then
+	if test x"$have_bluez5" = x"no"; then
+		AC_MSG_ERROR(Bluez 5.x development headers are required)
+	fi
+	AC_DEFINE(WITH_BLUEZ5_DUN, 1, [Define if you have Bluez 5 libraries])
+else
+	AC_DEFINE(WITH_BLUEZ5_DUN, 0, [Define if you have Bluez 5 libraries])
+fi
+AM_CONDITIONAL(WITH_BLUEZ5_DUN, test "${enable_bluez5_dun}" = "yes")
+
 # DHCP client support
 AC_ARG_WITH([dhclient], AS_HELP_STRING([--with-dhclient=yes|no|path], [Enable dhclient 4.x support]))
 AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
@@ -620,10 +700,16 @@ if test "$with_dhclient" = "no" -a "$with_dhcpcd" = "no"; then
 fi
 # Add substitutions
 if test "$with_dhclient" != "no"; then
+	AC_DEFINE(WITH_DHCLIENT, TRUE, [Define if you have dhclient])
 	AC_SUBST(DHCLIENT_PATH, $with_dhclient)
+else
+	AC_DEFINE(WITH_DHCLIENT, FALSE, [Define if you have dhclient])
 fi
 if test "$with_dhcpcd" != "no"; then
+	AC_DEFINE(WITH_DHCPCD, TRUE, [Define if you have dhcpcd])
 	AC_SUBST(DHCPCD_PATH, $with_dhcpcd)
+else
+	AC_DEFINE(WITH_DHCPCD, FALSE, [Define if you have dhcpcd])
 fi
 
 # resolvconf and netconfig support
@@ -693,17 +779,23 @@ AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path 
 AC_SUBST(KERNEL_FIRMWARE_DIR)
 
 PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libsoup=no])
-if test "$have_libsoup" = "yes"; then
-	AC_DEFINE(HAVE_LIBSOUP, 1, [Define if you have libsoup])
+AC_ARG_WITH(libsoup, AS_HELP_STRING([--with-libsoup=yes|no], [Link against libsoup]), [], [with_libsoup=${have_libsoup}])
+if test "$with_libsoup" != "no"; then
+	if test "$have_libsoup" != "yes"; then
+		AC_MSG_ERROR(libsoup library not found)
+	fi
+	with_libsoup='yes'
+	AC_DEFINE(WITH_LIBSOUP, 1, [Define if you have libsoup])
 else
-	AC_DEFINE(HAVE_LIBSOUP, 0, [Define if you have libsoup])
+	AC_DEFINE(WITH_LIBSOUP, 0, [Define if you have libsoup])
 fi
+AM_CONDITIONAL(WITH_LIBSOUP, test "$with_libsoup" != "no")
 
 AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
-                     [enable_concheck=${enableval}], [enable_concheck=${have_libsoup}])
+                     [enable_concheck=${enableval}], [enable_concheck=${with_libsoup}])
 if (test "${enable_concheck}" = "yes"); then
-	if test x"$have_libsoup" = x"no"; then
-		AC_MSG_ERROR(Connectivity checking requires libsoup development headers)
+	if test x"$with_libsoup" = x"no"; then
+		AC_MSG_ERROR(Connectivity checking requires libsoup)
 	fi
 	AC_SUBST(LIBSOUP_CFLAGS)
 	AC_SUBST(LIBSOUP_LIBS)
@@ -728,6 +820,13 @@ AM_CONDITIONAL(BUILD_NMTUI, test "$build_nmtui" = yes)
 
 
 NM_COMPILER_WARNINGS
+
+AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]),
+              [enable_lto=yes], [enable_lto=no])
+if (test "${enable_lto}" = "yes"); then
+    CFLAGS="-flto $CFLAGS"
+fi
+
 
 dnl -------------------------
 dnl Vala bindings
@@ -763,20 +862,63 @@ install_pregen_manpages=no
 if test "$enable_gtk_doc" != "yes" \
 	-a -f man/NetworkManager.conf.5 \
 	-a -f man/nm-settings.5 \
+	-a -f man/nm-settings-keyfile.5 \
+	-a -f man/nm-settings-ifcfg-rh.5 \
 	-a -f man/nmcli-examples.5 \
 	-a -f man/NetworkManager.8; then
 	install_pregen_manpages=yes
 fi
 AM_CONDITIONAL(INSTALL_PREGEN_MANPAGES, test "x${install_pregen_manpages}" = "xyes")
 
+# check if we can build setting property documentation
+if test -n "$INTROSPECTION_MAKEFILE" -a "$enable_gtk_doc" = "yes"; then
+    # If g-i is installed we know we have python, but we might not have pygobject
+    if python -c 'from gi.repository import GObject' >& /dev/null; then
+        have_pyobject=yes
+    fi
+
+    # gtk-doc depends on perl, but we can check for it anyway
+    AC_PATH_PROG(PERL, perl, no)
+    # check for needed perl modules (use YAML; YAML::XS is better, but may not be so widespread)
+    required_perl_modules="YAML"
+    for module in $required_perl_modules; do
+      AC_MSG_CHECKING([checking for perl module '$module'])
+      if ${PERL} -e 'use '$module 2>/dev/null ; then
+          AC_MSG_RESULT([Ok])
+          have_perl_modules=yes
+      else
+          AC_MSG_RESULT([Failed])
+          AC_MSG_ERROR([You must have Perl modules to build settings plugin docs: $required_perl_modules.])
+      fi
+    done
+
+    if test "$have_pyobject" = "yes" -a "$have_perl_modules" = "yes"; then
+        AC_DEFINE(BUILD_SETTING_DOCS, [1], [Define if you we can build nm-setting-docs.xml, nm-keyfile-docs.xml and nm-ifcfg-rh-docs.xml])
+        build_setting_docs=yes
+    fi
+fi
+
+# check for pre-built setting docs
+if test "$build_setting_docs" != "yes" \
+	-a -f man/nm-settings.xml \
+	-a -f man/nm-settings-keyfile.xml \
+	-a -f man/nm-settings-ifcfg-rh.xml \
+	-a -f docs/api/settings-spec.xml \
+	-a -f clients/cli/settings-docs.c; then
+    AC_DEFINE(HAVE_SETTING_DOCS, [1], [Define if you have pre-built settings docs])
+    have_setting_docs=yes
+fi
+
+AM_CONDITIONAL(BUILD_SETTING_DOCS, test "$build_setting_docs" = "yes")
+AM_CONDITIONAL(SETTING_DOCS_AVAILABLE, test "$build_setting_docs" = "yes" -o "$have_setting_docs" = "yes")
+
 
 AC_CONFIG_FILES([
 Makefile
 include/Makefile
-include/nm-version.h
 src/Makefile
 src/tests/Makefile
-src/config/tests/Makefile
+src/tests/config/Makefile
 src/dhcp-manager/Makefile
 src/dhcp-manager/tests/Makefile
 src/dnsmasq-manager/tests/Makefile
@@ -790,12 +932,13 @@ src/settings/plugins/ifnet/tests/Makefile
 src/settings/plugins/ifcfg-rh/Makefile
 src/settings/plugins/ifcfg-rh/tests/Makefile
 src/settings/plugins/ifcfg-rh/tests/network-scripts/Makefile
+src/settings/plugins/ibft/Makefile
+src/settings/plugins/ibft/tests/Makefile
 src/settings/plugins/ifcfg-suse/Makefile
 src/settings/plugins/keyfile/Makefile
 src/settings/plugins/keyfile/tests/Makefile
 src/settings/plugins/keyfile/tests/keyfiles/Makefile
 src/settings/plugins/example/Makefile
-src/settings/tests/Makefile
 src/platform/Makefile
 src/platform/tests/Makefile
 src/rdisc/Makefile
@@ -803,13 +946,20 @@ src/rdisc/tests/Makefile
 src/devices/adsl/Makefile
 src/devices/wimax/Makefile
 src/devices/bluetooth/Makefile
+src/devices/team/Makefile
 src/devices/wifi/Makefile
 src/devices/wifi/tests/Makefile
 src/devices/wwan/Makefile
+libnm-core/nm-version.h
+libnm-core/Makefile
+libnm-core/tests/Makefile
+libnm/libnm.pc
+libnm/Makefile
+libnm/tests/Makefile
 libnm-util/libnm-util.pc
+libnm-util/nm-version.h
 libnm-util/Makefile
 libnm-util/tests/Makefile
-libnm-util/tests/certs/Makefile
 libnm-glib/libnm-glib.pc
 libnm-glib/libnm-glib-vpn.pc
 libnm-glib/Makefile
@@ -817,12 +967,10 @@ libnm-glib/tests/Makefile
 callouts/Makefile
 callouts/tests/Makefile
 tools/Makefile
-cli/Makefile
-cli/src/Makefile
-cli/completion/Makefile
-tui/Makefile
-tui/newt/Makefile
-test/Makefile
+clients/Makefile
+clients/cli/Makefile
+clients/tui/Makefile
+clients/tui/newt/Makefile
 initscript/RedHat/NetworkManager
 initscript/Debian/NetworkManager
 initscript/Slackware/rc.networkmanager
@@ -833,9 +981,11 @@ initscript/linexa/networkmanager
 introspection/Makefile
 introspection/all.xml
 man/Makefile
+man/NetworkManager.conf.xml
 man/nm-system-settings.conf.5
 man/nm-online.1
 man/nmcli.1
+man/nmtui.1
 po/Makefile.in
 policy/Makefile
 policy/org.freedesktop.NetworkManager.policy.in
@@ -847,6 +997,8 @@ docs/libnm-glib/Makefile
 docs/libnm-glib/version.xml
 docs/libnm-util/Makefile
 docs/libnm-util/version.xml
+docs/libnm/Makefile
+docs/libnm/version.xml
 NetworkManager.pc
 examples/Makefile
 examples/shell/Makefile
@@ -881,13 +1033,14 @@ echo "  session tracking: $with_session_tracking"
 echo "  suspend/resume: $with_suspend_resume"
 if test "${enable_polkit}" = "yes"; then
 	if test "${enable_modify_system}" = "yes"; then
-		echo "  policykit: yes (permissive modify.system)"
+		echo "  policykit: yes (permissive modify.system) (default=${enable_polkit})"
 	else
-		echo "  policykit: yes (restrictive modify.system)"
+		echo "  policykit: yes (restrictive modify.system) (default=${enable_polkit})"
 	fi
 else
 	echo  "  policykit: no"
 fi
+echo "  polkit agent: ${enable_polkit_agent}"
 echo "  selinux: $have_selinux"
 echo
 
@@ -901,7 +1054,8 @@ echo "  libteamdctl: $enable_teamdctl"
 echo "  nmtui: $build_nmtui"
 echo
 
-echo "Configuration plugins"
+echo "Configuration plugins (main.plugins=${config_plugins_default})"
+echo "  ibft: ${enable_config_plugin_ibft}"
 echo "  ifcfg-rh: ${enable_ifcfg_rh}"
 echo "  ifcfg-suse: ${enable_ifcfg_suse}"
 echo "  ifupdown: ${enable_ifupdown}"
@@ -923,4 +1077,5 @@ echo "  documentation: $enable_gtk_doc"
 echo "  tests: $enable_tests"
 echo "  valgrind: $with_valgrind"
 echo "  code coverage: $enable_code_coverage"
+echo "  LTO: $enable_lto"
 echo

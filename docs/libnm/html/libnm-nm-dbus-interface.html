@@ -1,0 +1,1806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>nm-dbus-interface</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<link rel="home" href="index.html" title="libnm Reference Manual">
+<link rel="up" href="ch02.html" title="Client Object API Reference">
+<link rel="prev" href="libnm-nm-errors.html" title="nm-errors">
+<link rel="next" href="ch03.html" title="Connection and Setting API Reference">
+<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="libnm-nm-errors.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">libnm Reference Manual</th>
+<td><a accesskey="n" href="ch03.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#libnm-nm-dbus-interface.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#libnm-nm-dbus-interface.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#libnm-nm-dbus-interface.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="libnm-nm-dbus-interface"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="libnm-nm-dbus-interface.top_of_page"></a>nm-dbus-interface</span></h2>
+<p>nm-dbus-interface</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="libnm-nm-dbus-interface.synopsis"></a><h2>Synopsis</h2>
+<a name="NMState"></a><a name="NMConnectivityState"></a><a name="NMDeviceType"></a><a name="NMDeviceCapabilities"></a><a name="NMDeviceWifiCapabilities"></a><a name="NM80211ApFlags"></a><a name="NM80211ApSecurityFlags"></a><a name="NM80211Mode"></a><a name="NMBluetoothCapabilities"></a><a name="NMDeviceModemCapabilities"></a><a name="NMDeviceState"></a><a name="NMDeviceStateReason"></a><a name="NMActiveConnectionState"></a><a name="NMSecretAgentGetSecretsFlags"></a><a name="NMSecretAgentCapabilities"></a><pre class="synopsis">#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-SERVICE:CAPS" title="NM_DBUS_SERVICE">NM_DBUS_SERVICE</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH:CAPS" title="NM_DBUS_PATH">NM_DBUS_PATH</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE:CAPS" title="NM_DBUS_INTERFACE">NM_DBUS_INTERFACE</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE:CAPS" title="NM_DBUS_INTERFACE_DEVICE">NM_DBUS_INTERFACE_DEVICE</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-WIRED:CAPS" title="NM_DBUS_INTERFACE_DEVICE_WIRED">NM_DBUS_INTERFACE_DEVICE_WIRED</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-ADSL:CAPS" title="NM_DBUS_INTERFACE_DEVICE_ADSL">NM_DBUS_INTERFACE_DEVICE_ADSL</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-WIRELESS:CAPS" title="NM_DBUS_INTERFACE_DEVICE_WIRELESS">NM_DBUS_INTERFACE_DEVICE_WIRELESS</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-BLUETOOTH:CAPS" title="NM_DBUS_INTERFACE_DEVICE_BLUETOOTH">NM_DBUS_INTERFACE_DEVICE_BLUETOOTH</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-OLPC-MESH:CAPS" title="NM_DBUS_INTERFACE_DEVICE_OLPC_MESH">NM_DBUS_INTERFACE_DEVICE_OLPC_MESH</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-ACCESS-POINT:CAPS" title="NM_DBUS_PATH_ACCESS_POINT">NM_DBUS_PATH_ACCESS_POINT</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-ACCESS-POINT:CAPS" title="NM_DBUS_INTERFACE_ACCESS_POINT">NM_DBUS_INTERFACE_ACCESS_POINT</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MODEM:CAPS" title="NM_DBUS_INTERFACE_DEVICE_MODEM">NM_DBUS_INTERFACE_DEVICE_MODEM</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-WIMAX:CAPS" title="NM_DBUS_INTERFACE_DEVICE_WIMAX">NM_DBUS_INTERFACE_DEVICE_WIMAX</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-WIMAX-NSP:CAPS" title="NM_DBUS_INTERFACE_WIMAX_NSP">NM_DBUS_INTERFACE_WIMAX_NSP</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-WIMAX-NSP:CAPS" title="NM_DBUS_PATH_WIMAX_NSP">NM_DBUS_PATH_WIMAX_NSP</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-ACTIVE-CONNECTION:CAPS" title="NM_DBUS_INTERFACE_ACTIVE_CONNECTION">NM_DBUS_INTERFACE_ACTIVE_CONNECTION</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-IP4-CONFIG:CAPS" title="NM_DBUS_INTERFACE_IP4_CONFIG">NM_DBUS_INTERFACE_IP4_CONFIG</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DHCP4-CONFIG:CAPS" title="NM_DBUS_INTERFACE_DHCP4_CONFIG">NM_DBUS_INTERFACE_DHCP4_CONFIG</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-IP6-CONFIG:CAPS" title="NM_DBUS_INTERFACE_IP6_CONFIG">NM_DBUS_INTERFACE_IP6_CONFIG</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DHCP6-CONFIG:CAPS" title="NM_DBUS_INTERFACE_DHCP6_CONFIG">NM_DBUS_INTERFACE_DHCP6_CONFIG</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-INFINIBAND:CAPS" title="NM_DBUS_INTERFACE_DEVICE_INFINIBAND">NM_DBUS_INTERFACE_DEVICE_INFINIBAND</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-BOND:CAPS" title="NM_DBUS_INTERFACE_DEVICE_BOND">NM_DBUS_INTERFACE_DEVICE_BOND</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-TEAM:CAPS" title="NM_DBUS_INTERFACE_DEVICE_TEAM">NM_DBUS_INTERFACE_DEVICE_TEAM</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-VLAN:CAPS" title="NM_DBUS_INTERFACE_DEVICE_VLAN">NM_DBUS_INTERFACE_DEVICE_VLAN</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-BRIDGE:CAPS" title="NM_DBUS_INTERFACE_DEVICE_BRIDGE">NM_DBUS_INTERFACE_DEVICE_BRIDGE</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-GENERIC:CAPS" title="NM_DBUS_INTERFACE_DEVICE_GENERIC">NM_DBUS_INTERFACE_DEVICE_GENERIC</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-VETH:CAPS" title="NM_DBUS_INTERFACE_DEVICE_VETH">NM_DBUS_INTERFACE_DEVICE_VETH</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-TUN:CAPS" title="NM_DBUS_INTERFACE_DEVICE_TUN">NM_DBUS_INTERFACE_DEVICE_TUN</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS" title="NM_DBUS_INTERFACE_DEVICE_MACVLAN">NM_DBUS_INTERFACE_DEVICE_MACVLAN</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-VXLAN:CAPS" title="NM_DBUS_INTERFACE_DEVICE_VXLAN">NM_DBUS_INTERFACE_DEVICE_VXLAN</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-DEVICE-GRE:CAPS" title="NM_DBUS_INTERFACE_DEVICE_GRE">NM_DBUS_INTERFACE_DEVICE_GRE</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-SETTINGS:CAPS" title="NM_DBUS_INTERFACE_SETTINGS">NM_DBUS_INTERFACE_SETTINGS</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-SETTINGS:CAPS" title="NM_DBUS_PATH_SETTINGS">NM_DBUS_PATH_SETTINGS</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-SETTINGS-CONNECTION:CAPS" title="NM_DBUS_INTERFACE_SETTINGS_CONNECTION">NM_DBUS_INTERFACE_SETTINGS_CONNECTION</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-SETTINGS-CONNECTION:CAPS" title="NM_DBUS_PATH_SETTINGS_CONNECTION">NM_DBUS_PATH_SETTINGS_CONNECTION</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-SETTINGS-CONNECTION-SECRETS:CAPS" title="NM_DBUS_INTERFACE_SETTINGS_CONNECTION_SECRETS">NM_DBUS_INTERFACE_SETTINGS_CONNECTION_SECRETS</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-AGENT-MANAGER:CAPS" title="NM_DBUS_INTERFACE_AGENT_MANAGER">NM_DBUS_INTERFACE_AGENT_MANAGER</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-AGENT-MANAGER:CAPS" title="NM_DBUS_PATH_AGENT_MANAGER">NM_DBUS_PATH_AGENT_MANAGER</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE-SECRET-AGENT:CAPS" title="NM_DBUS_INTERFACE_SECRET_AGENT">NM_DBUS_INTERFACE_SECRET_AGENT</a>
+#define             <a class="link" href="libnm-nm-dbus-interface.html#NM-DBUS-PATH-SECRET-AGENT:CAPS" title="NM_DBUS_PATH_SECRET_AGENT">NM_DBUS_PATH_SECRET_AGENT</a>
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMState-enum" title="enum NMState">NMState</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMConnectivityState-enum" title="enum NMConnectivityState">NMConnectivityState</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceType-enum" title="enum NMDeviceType">NMDeviceType</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceCapabilities-enum" title="enum NMDeviceCapabilities">NMDeviceCapabilities</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceWifiCapabilities-enum" title="enum NMDeviceWifiCapabilities">NMDeviceWifiCapabilities</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NM80211ApFlags-enum" title="enum NM80211ApFlags">NM80211ApFlags</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NM80211ApSecurityFlags-enum" title="enum NM80211ApSecurityFlags">NM80211ApSecurityFlags</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NM80211Mode-enum" title="enum NM80211Mode">NM80211Mode</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMBluetoothCapabilities-enum" title="enum NMBluetoothCapabilities">NMBluetoothCapabilities</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceModemCapabilities-enum" title="enum NMDeviceModemCapabilities">NMDeviceModemCapabilities</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceState-enum" title="enum NMDeviceState">NMDeviceState</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceStateReason-enum" title="enum NMDeviceStateReason">NMDeviceStateReason</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionState-enum" title="enum NMActiveConnectionState">NMActiveConnectionState</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentGetSecretsFlags-enum" title="enum NMSecretAgentGetSecretsFlags">NMSecretAgentGetSecretsFlags</a>;
+enum                <a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentCapabilities-enum" title="enum NMSecretAgentCapabilities">NMSecretAgentCapabilities</a>;
+</pre>
+</div>
+<div class="refsect1">
+<a name="libnm-nm-dbus-interface.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GEnum
+   +----NMState
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NMConnectivityState
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NMDeviceType
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NMDeviceCapabilities
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NMDeviceWifiCapabilities
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NM80211ApFlags
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NM80211ApSecurityFlags
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NM80211Mode
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NMBluetoothCapabilities
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NMDeviceModemCapabilities
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NMDeviceState
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NMDeviceStateReason
+</pre>
+<pre class="synopsis">
+  GEnum
+   +----NMActiveConnectionState
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NMSecretAgentGetSecretsFlags
+</pre>
+<pre class="synopsis">
+  GFlags
+   +----NMSecretAgentCapabilities
+</pre>
+</div>
+<div class="refsect1">
+<a name="libnm-nm-dbus-interface.description"></a><h2>Description</h2>
+<p>
+</p>
+</div>
+<div class="refsect1">
+<a name="libnm-nm-dbus-interface.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="NM-DBUS-SERVICE:CAPS"></a><h3>NM_DBUS_SERVICE</h3>
+<pre class="programlisting">#define NM_DBUS_SERVICE                     "org.freedesktop.NetworkManager"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH:CAPS"></a><h3>NM_DBUS_PATH</h3>
+<pre class="programlisting">#define NM_DBUS_PATH                        "/org/freedesktop/NetworkManager"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE:CAPS"></a><h3>NM_DBUS_INTERFACE</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE                   "org.freedesktop.NetworkManager"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE            NM_DBUS_INTERFACE ".Device"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-WIRED:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_WIRED</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIRED      NM_DBUS_INTERFACE_DEVICE ".Wired"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-ADSL:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_ADSL</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_ADSL       NM_DBUS_INTERFACE_DEVICE ".Adsl"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-WIRELESS:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_WIRELESS</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIRELESS   NM_DBUS_INTERFACE_DEVICE ".Wireless"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-BLUETOOTH:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BLUETOOTH</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BLUETOOTH  NM_DBUS_INTERFACE_DEVICE ".Bluetooth"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-OLPC-MESH:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_OLPC_MESH</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_OLPC_MESH  NM_DBUS_INTERFACE_DEVICE ".OlpcMesh"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-ACCESS-POINT:CAPS"></a><h3>NM_DBUS_PATH_ACCESS_POINT</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_ACCESS_POINT           NM_DBUS_PATH "/AccessPoint"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-ACCESS-POINT:CAPS"></a><h3>NM_DBUS_INTERFACE_ACCESS_POINT</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_ACCESS_POINT      NM_DBUS_INTERFACE ".AccessPoint"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-MODEM:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MODEM</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MODEM      NM_DBUS_INTERFACE_DEVICE ".Modem"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-WIMAX:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_WIMAX</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_WIMAX      NM_DBUS_INTERFACE_DEVICE ".WiMax"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-WIMAX-NSP:CAPS"></a><h3>NM_DBUS_INTERFACE_WIMAX_NSP</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_WIMAX_NSP         NM_DBUS_INTERFACE ".WiMax.Nsp"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-WIMAX-NSP:CAPS"></a><h3>NM_DBUS_PATH_WIMAX_NSP</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_WIMAX_NSP              NM_DBUS_PATH "/Nsp"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-ACTIVE-CONNECTION:CAPS"></a><h3>NM_DBUS_INTERFACE_ACTIVE_CONNECTION</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_ACTIVE_CONNECTION NM_DBUS_INTERFACE ".Connection.Active"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-IP4-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_IP4_CONFIG</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_IP4_CONFIG        NM_DBUS_INTERFACE ".IP4Config"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DHCP4-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_DHCP4_CONFIG</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DHCP4_CONFIG      NM_DBUS_INTERFACE ".DHCP4Config"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-IP6-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_IP6_CONFIG</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_IP6_CONFIG        NM_DBUS_INTERFACE ".IP6Config"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DHCP6-CONFIG:CAPS"></a><h3>NM_DBUS_INTERFACE_DHCP6_CONFIG</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DHCP6_CONFIG      NM_DBUS_INTERFACE ".DHCP6Config"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-INFINIBAND:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_INFINIBAND</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_INFINIBAND NM_DBUS_INTERFACE_DEVICE ".Infiniband"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-BOND:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BOND</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BOND       NM_DBUS_INTERFACE_DEVICE ".Bond"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-TEAM:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_TEAM</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_TEAM       NM_DBUS_INTERFACE_DEVICE ".Team"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-VLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_VLAN</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VLAN       NM_DBUS_INTERFACE_DEVICE ".Vlan"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-BRIDGE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_BRIDGE</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_BRIDGE     NM_DBUS_INTERFACE_DEVICE ".Bridge"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-GENERIC:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_GENERIC</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_GENERIC    NM_DBUS_INTERFACE_DEVICE ".Generic"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-VETH:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_VETH</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VETH       NM_DBUS_INTERFACE_DEVICE ".Veth"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-TUN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_TUN</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_TUN        NM_DBUS_INTERFACE_DEVICE ".Tun"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-MACVLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_MACVLAN</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_MACVLAN    NM_DBUS_INTERFACE_DEVICE ".Macvlan"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-VXLAN:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_VXLAN</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_VXLAN      NM_DBUS_INTERFACE_DEVICE ".Vxlan"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-DEVICE-GRE:CAPS"></a><h3>NM_DBUS_INTERFACE_DEVICE_GRE</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_DEVICE_GRE        NM_DBUS_INTERFACE_DEVICE ".Gre"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-SETTINGS:CAPS"></a><h3>NM_DBUS_INTERFACE_SETTINGS</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_SETTINGS        "org.freedesktop.NetworkManager.Settings"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-SETTINGS:CAPS"></a><h3>NM_DBUS_PATH_SETTINGS</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_SETTINGS             "/org/freedesktop/NetworkManager/Settings"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-SETTINGS-CONNECTION:CAPS"></a><h3>NM_DBUS_INTERFACE_SETTINGS_CONNECTION</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_SETTINGS_CONNECTION "org.freedesktop.NetworkManager.Settings.Connection"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-SETTINGS-CONNECTION:CAPS"></a><h3>NM_DBUS_PATH_SETTINGS_CONNECTION</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_SETTINGS_CONNECTION  "/org/freedesktop/NetworkManager/Settings/Connection"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-SETTINGS-CONNECTION-SECRETS:CAPS"></a><h3>NM_DBUS_INTERFACE_SETTINGS_CONNECTION_SECRETS</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_SETTINGS_CONNECTION_SECRETS "org.freedesktop.NetworkManager.Settings.Connection.Secrets"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-AGENT-MANAGER:CAPS"></a><h3>NM_DBUS_INTERFACE_AGENT_MANAGER</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_AGENT_MANAGER   NM_DBUS_INTERFACE ".AgentManager"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-AGENT-MANAGER:CAPS"></a><h3>NM_DBUS_PATH_AGENT_MANAGER</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_AGENT_MANAGER        "/org/freedesktop/NetworkManager/AgentManager"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-INTERFACE-SECRET-AGENT:CAPS"></a><h3>NM_DBUS_INTERFACE_SECRET_AGENT</h3>
+<pre class="programlisting">#define NM_DBUS_INTERFACE_SECRET_AGENT    NM_DBUS_INTERFACE ".SecretAgent"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-DBUS-PATH-SECRET-AGENT:CAPS"></a><h3>NM_DBUS_PATH_SECRET_AGENT</h3>
+<pre class="programlisting">#define NM_DBUS_PATH_SECRET_AGENT         "/org/freedesktop/NetworkManager/SecretAgent"
+</pre>
+<p>
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMState-enum"></a><h3>enum NMState</h3>
+<pre class="programlisting">typedef enum {
+	NM_STATE_UNKNOWN          = 0,
+	NM_STATE_ASLEEP           = 10,
+	NM_STATE_DISCONNECTED     = 20,
+	NM_STATE_DISCONNECTING    = 30,
+	NM_STATE_CONNECTING       = 40,
+	NM_STATE_CONNECTED_LOCAL  = 50,
+	NM_STATE_CONNECTED_SITE   = 60,
+	NM_STATE_CONNECTED_GLOBAL = 70
+} NMState;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMState"><span class="type">NMState</span></a> values indicate the current overall networking state.
+</p>
+<p>
+(Corresponds to the NM_STATE type in nm-manager.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-STATE-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_STATE_UNKNOWN</code></span></p></td>
+<td>networking state is unknown
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-ASLEEP:CAPS"></a><span class="term"><code class="literal">NM_STATE_ASLEEP</code></span></p></td>
+<td>networking is not enabled
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-DISCONNECTED:CAPS"></a><span class="term"><code class="literal">NM_STATE_DISCONNECTED</code></span></p></td>
+<td>there is no active network connection
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-DISCONNECTING:CAPS"></a><span class="term"><code class="literal">NM_STATE_DISCONNECTING</code></span></p></td>
+<td>network connections are being cleaned up
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-CONNECTING:CAPS"></a><span class="term"><code class="literal">NM_STATE_CONNECTING</code></span></p></td>
+<td>a network connection is being started
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-CONNECTED-LOCAL:CAPS"></a><span class="term"><code class="literal">NM_STATE_CONNECTED_LOCAL</code></span></p></td>
+<td>there is only local IPv4 and/or IPv6 connectivity
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-CONNECTED-SITE:CAPS"></a><span class="term"><code class="literal">NM_STATE_CONNECTED_SITE</code></span></p></td>
+<td>there is only site-wide IPv4 and/or IPv6 connectivity
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-STATE-CONNECTED-GLOBAL:CAPS"></a><span class="term"><code class="literal">NM_STATE_CONNECTED_GLOBAL</code></span></p></td>
+<td>there is global IPv4 and/or IPv6 Internet connectivity
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMConnectivityState-enum"></a><h3>enum NMConnectivityState</h3>
+<pre class="programlisting">typedef enum {
+	NM_CONNECTIVITY_UNKNOWN,
+	NM_CONNECTIVITY_NONE,
+	NM_CONNECTIVITY_PORTAL,
+	NM_CONNECTIVITY_LIMITED,
+	NM_CONNECTIVITY_FULL
+} NMConnectivityState;
+</pre>
+<p>
+(Corresponds to the NM_CONNECTIVITY type in nm-manager.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-CONNECTIVITY-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_CONNECTIVITY_UNKNOWN</code></span></p></td>
+<td>Network connectivity is unknown.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CONNECTIVITY-NONE:CAPS"></a><span class="term"><code class="literal">NM_CONNECTIVITY_NONE</code></span></p></td>
+<td>The host is not connected to any network.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CONNECTIVITY-PORTAL:CAPS"></a><span class="term"><code class="literal">NM_CONNECTIVITY_PORTAL</code></span></p></td>
+<td>The host is behind a captive portal and
+  cannot reach the full Internet.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CONNECTIVITY-LIMITED:CAPS"></a><span class="term"><code class="literal">NM_CONNECTIVITY_LIMITED</code></span></p></td>
+<td>The host is connected to a network, but
+  does not appear to be able to reach the full Internet.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-CONNECTIVITY-FULL:CAPS"></a><span class="term"><code class="literal">NM_CONNECTIVITY_FULL</code></span></p></td>
+<td>The host is connected to a network, and
+  appears to be able to reach the full Internet.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceType-enum"></a><h3>enum NMDeviceType</h3>
+<pre class="programlisting">typedef enum {
+	NM_DEVICE_TYPE_UNKNOWN    = 0,
+	NM_DEVICE_TYPE_ETHERNET   = 1,
+	NM_DEVICE_TYPE_WIFI       = 2,
+	NM_DEVICE_TYPE_UNUSED1    = 3,
+	NM_DEVICE_TYPE_UNUSED2    = 4,
+	NM_DEVICE_TYPE_BT         = 5,  /* Bluetooth */
+	NM_DEVICE_TYPE_OLPC_MESH  = 6,
+	NM_DEVICE_TYPE_WIMAX      = 7,
+	NM_DEVICE_TYPE_MODEM      = 8,
+	NM_DEVICE_TYPE_INFINIBAND = 9,
+	NM_DEVICE_TYPE_BOND       = 10,
+	NM_DEVICE_TYPE_VLAN       = 11,
+	NM_DEVICE_TYPE_ADSL       = 12,
+	NM_DEVICE_TYPE_BRIDGE     = 13,
+	NM_DEVICE_TYPE_GENERIC    = 14,
+	NM_DEVICE_TYPE_TEAM       = 15,
+} NMDeviceType;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMDeviceType"><span class="type">NMDeviceType</span></a> values indicate the type of hardware represented by
+an <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.
+</p>
+<p>
+(Corresponds to the NM_DEVICE_TYPE type in nm-device.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_UNKNOWN</code></span></p></td>
+<td>unknown device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-ETHERNET:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_ETHERNET</code></span></p></td>
+<td>a wired ethernet device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-WIFI:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_WIFI</code></span></p></td>
+<td>an 802.11 WiFi device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-UNUSED1:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_UNUSED1</code></span></p></td>
+<td>not used
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-UNUSED2:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_UNUSED2</code></span></p></td>
+<td>not used
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-BT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_BT</code></span></p></td>
+<td>a Bluetooth device supporting PAN or DUN access protocols
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-OLPC-MESH:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_OLPC_MESH</code></span></p></td>
+<td>an OLPC XO mesh networking device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-WIMAX:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_WIMAX</code></span></p></td>
+<td>an 802.16e Mobile WiMAX broadband device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-MODEM:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_MODEM</code></span></p></td>
+<td>a modem supporting analog telephone, CDMA/EVDO,
+GSM/UMTS, or LTE network access protocols
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-INFINIBAND:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_INFINIBAND</code></span></p></td>
+<td>an IP-over-InfiniBand device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-BOND:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_BOND</code></span></p></td>
+<td>a bond master interface
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-VLAN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_VLAN</code></span></p></td>
+<td>an 802.1Q VLAN interface
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-ADSL:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_ADSL</code></span></p></td>
+<td>ADSL modem
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-BRIDGE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_BRIDGE</code></span></p></td>
+<td>a bridge master interface
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-GENERIC:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_GENERIC</code></span></p></td>
+<td>generic support for unrecognized device types
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-TYPE-TEAM:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_TYPE_TEAM</code></span></p></td>
+<td>a team master interface
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceCapabilities-enum"></a><h3>enum NMDeviceCapabilities</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; flags &gt;*/
+	NM_DEVICE_CAP_NONE           = 0x00000000,
+	NM_DEVICE_CAP_NM_SUPPORTED   = 0x00000001,
+	NM_DEVICE_CAP_CARRIER_DETECT = 0x00000002,
+	NM_DEVICE_CAP_IS_SOFTWARE    = 0x00000004,
+} NMDeviceCapabilities;
+</pre>
+<p>
+General device capability flags.
+</p>
+<p>
+(Corresponds to the NM_DEVICE_CAP type in nm-device-wifi.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-CAP-NONE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_CAP_NONE</code></span></p></td>
+<td>device has no special capabilities
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-CAP-NM-SUPPORTED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_CAP_NM_SUPPORTED</code></span></p></td>
+<td>NetworkManager supports this device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-CAP-CARRIER-DETECT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_CAP_CARRIER_DETECT</code></span></p></td>
+<td>this device can indicate carrier status
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-CAP-IS-SOFTWARE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_CAP_IS_SOFTWARE</code></span></p></td>
+<td>this device is a software device
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceWifiCapabilities-enum"></a><h3>enum NMDeviceWifiCapabilities</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; flags &gt;*/
+	NM_WIFI_DEVICE_CAP_NONE          = 0x00000000,
+	NM_WIFI_DEVICE_CAP_CIPHER_WEP40  = 0x00000001,
+	NM_WIFI_DEVICE_CAP_CIPHER_WEP104 = 0x00000002,
+	NM_WIFI_DEVICE_CAP_CIPHER_TKIP   = 0x00000004,
+	NM_WIFI_DEVICE_CAP_CIPHER_CCMP   = 0x00000008,
+	NM_WIFI_DEVICE_CAP_WPA           = 0x00000010,
+	NM_WIFI_DEVICE_CAP_RSN           = 0x00000020,
+	NM_WIFI_DEVICE_CAP_AP            = 0x00000040,
+	NM_WIFI_DEVICE_CAP_ADHOC         = 0x00000080
+} NMDeviceWifiCapabilities;
+</pre>
+<p>
+802.11 specific device encryption and authentication capabilities.
+</p>
+<p>
+(Corresponds to the NM_802_11_DEVICE_CAP type in nm-device-wifi.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-NONE:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_NONE</code></span></p></td>
+<td>device has no encryption/authentication capabilities
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-CIPHER-WEP40:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_CIPHER_WEP40</code></span></p></td>
+<td>device supports 40/64-bit WEP encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-CIPHER-WEP104:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_CIPHER_WEP104</code></span></p></td>
+<td>device supports 104/128-bit WEP encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-CIPHER-TKIP:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_CIPHER_TKIP</code></span></p></td>
+<td>device supports TKIP encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-CIPHER-CCMP:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_CIPHER_CCMP</code></span></p></td>
+<td>device supports AES/CCMP encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-WPA:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_WPA</code></span></p></td>
+<td>device supports WPA1 authentication
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-RSN:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_RSN</code></span></p></td>
+<td>device supports WPA2/RSN authentication
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-AP:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_AP</code></span></p></td>
+<td>device supports Access Point mode
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-WIFI-DEVICE-CAP-ADHOC:CAPS"></a><span class="term"><code class="literal">NM_WIFI_DEVICE_CAP_ADHOC</code></span></p></td>
+<td>device supports Ad-Hoc mode
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM80211ApFlags-enum"></a><h3>enum NM80211ApFlags</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; underscore_name=nm_802_11_ap_flags, flags &gt;*/
+	NM_802_11_AP_FLAGS_NONE    = 0x00000000,
+	NM_802_11_AP_FLAGS_PRIVACY = 0x00000001
+} NM80211ApFlags;
+</pre>
+<p>
+802.11 access point flags.
+</p>
+<p>
+(Corresponds to the NM_802_11_AP_FLAGS type in nm-access-point.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-802-11-AP-FLAGS-NONE:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_FLAGS_NONE</code></span></p></td>
+<td>access point has no special capabilities
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-FLAGS-PRIVACY:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_FLAGS_PRIVACY</code></span></p></td>
+<td>access point requires authentication and
+encryption (usually means WEP)
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM80211ApSecurityFlags-enum"></a><h3>enum NM80211ApSecurityFlags</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; underscore_name=nm_802_11_ap_security_flags, flags &gt;*/
+	NM_802_11_AP_SEC_NONE            = 0x00000000,
+	NM_802_11_AP_SEC_PAIR_WEP40      = 0x00000001,
+	NM_802_11_AP_SEC_PAIR_WEP104     = 0x00000002,
+	NM_802_11_AP_SEC_PAIR_TKIP       = 0x00000004,
+	NM_802_11_AP_SEC_PAIR_CCMP       = 0x00000008,
+	NM_802_11_AP_SEC_GROUP_WEP40     = 0x00000010,
+	NM_802_11_AP_SEC_GROUP_WEP104    = 0x00000020,
+	NM_802_11_AP_SEC_GROUP_TKIP      = 0x00000040,
+	NM_802_11_AP_SEC_GROUP_CCMP      = 0x00000080,
+	NM_802_11_AP_SEC_KEY_MGMT_PSK    = 0x00000100,
+	NM_802_11_AP_SEC_KEY_MGMT_802_1X = 0x00000200
+} NM80211ApSecurityFlags;
+</pre>
+<p>
+802.11 access point security and authentication flags.  These flags describe
+the current security requirements of an access point as determined from the
+access point's beacon.
+</p>
+<p>
+(Corresponds to the NM_802_11_AP_SEC type in nm-access-point.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-NONE:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_NONE</code></span></p></td>
+<td>the access point has no special security requirements
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-PAIR-WEP40:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_PAIR_WEP40</code></span></p></td>
+<td>40/64-bit WEP is supported for
+pairwise/unicast encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-PAIR-WEP104:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_PAIR_WEP104</code></span></p></td>
+<td>104/128-bit WEP is supported for
+pairwise/unicast encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-PAIR-TKIP:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_PAIR_TKIP</code></span></p></td>
+<td>TKIP is supported for pairwise/unicast encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-PAIR-CCMP:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_PAIR_CCMP</code></span></p></td>
+<td>AES/CCMP is supported for pairwise/unicast encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-GROUP-WEP40:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_GROUP_WEP40</code></span></p></td>
+<td>40/64-bit WEP is supported for group/broadcast
+encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-GROUP-WEP104:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_GROUP_WEP104</code></span></p></td>
+<td>104/128-bit WEP is supported for
+group/broadcast encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-GROUP-TKIP:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_GROUP_TKIP</code></span></p></td>
+<td>TKIP is supported for group/broadcast encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-GROUP-CCMP:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_GROUP_CCMP</code></span></p></td>
+<td>AES/CCMP is supported for group/broadcast
+encryption
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-KEY-MGMT-PSK:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_KEY_MGMT_PSK</code></span></p></td>
+<td>WPA/RSN Pre-Shared Key encryption is
+supported
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-AP-SEC-KEY-MGMT-802-1X:CAPS"></a><span class="term"><code class="literal">NM_802_11_AP_SEC_KEY_MGMT_802_1X</code></span></p></td>
+<td>802.1x authentication and key management
+is supported
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM80211Mode-enum"></a><h3>enum NM80211Mode</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; underscore_name=nm_802_11_mode &gt;*/
+	NM_802_11_MODE_UNKNOWN = 0,
+	NM_802_11_MODE_ADHOC,
+	NM_802_11_MODE_INFRA,
+	NM_802_11_MODE_AP
+} NM80211Mode;
+</pre>
+<p>
+Indicates the 802.11 mode an access point or device is currently in.
+</p>
+<p>
+(Corresponds to the NM_802_11_MODE type in generic-types.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-802-11-MODE-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_802_11_MODE_UNKNOWN</code></span></p></td>
+<td>the device or access point mode is unknown
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-MODE-ADHOC:CAPS"></a><span class="term"><code class="literal">NM_802_11_MODE_ADHOC</code></span></p></td>
+<td>for both devices and access point objects, indicates
+  the object is part of an Ad-Hoc 802.11 network without a central
+  coordinating access point.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-MODE-INFRA:CAPS"></a><span class="term"><code class="literal">NM_802_11_MODE_INFRA</code></span></p></td>
+<td>the device or access point is in infrastructure mode.
+  For devices, this indicates the device is an 802.11 client/station.  For
+  access point objects, this indicates the object is an access point that
+  provides connectivity to clients.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-802-11-MODE-AP:CAPS"></a><span class="term"><code class="literal">NM_802_11_MODE_AP</code></span></p></td>
+<td>the device is an access point/hotspot.  Not valid for
+  access point objects; used only for hotspot mode on the local machine.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMBluetoothCapabilities-enum"></a><h3>enum NMBluetoothCapabilities</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; flags &gt;*/
+	NM_BT_CAPABILITY_NONE = 0x00000000,
+	NM_BT_CAPABILITY_DUN  = 0x00000001,
+	NM_BT_CAPABILITY_NAP  = 0x00000002,
+} NMBluetoothCapabilities;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMBluetoothCapabilities"><span class="type">NMBluetoothCapabilities</span></a> values indicate the usable capabilities of a
+Bluetooth device.
+</p>
+<p>
+(Corresponds to the NM_BT_CAPABILITY type in nm-device-bt.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-BT-CAPABILITY-NONE:CAPS"></a><span class="term"><code class="literal">NM_BT_CAPABILITY_NONE</code></span></p></td>
+<td>device has no usable capabilities
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-BT-CAPABILITY-DUN:CAPS"></a><span class="term"><code class="literal">NM_BT_CAPABILITY_DUN</code></span></p></td>
+<td>device provides Dial-Up Networking capability
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-BT-CAPABILITY-NAP:CAPS"></a><span class="term"><code class="literal">NM_BT_CAPABILITY_NAP</code></span></p></td>
+<td>device provides Network Access Point capability
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceModemCapabilities-enum"></a><h3>enum NMDeviceModemCapabilities</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; flags &gt;*/
+	NM_DEVICE_MODEM_CAPABILITY_NONE      = 0x00000000,
+	NM_DEVICE_MODEM_CAPABILITY_POTS      = 0x00000001,
+	NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO = 0x00000002,
+	NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS  = 0x00000004,
+	NM_DEVICE_MODEM_CAPABILITY_LTE       = 0x00000008,
+} NMDeviceModemCapabilities;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMDeviceModemCapabilities"><span class="type">NMDeviceModemCapabilities</span></a> values indicate the generic radio access
+technology families a modem device supports.  For more information on the
+specific access technologies the device supports use the ModemManager D-Bus
+API.
+</p>
+<p>
+(Corresponds to the NM_DEVICE_MODEM_CAPABILITY type in nm-device-modem.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-CAPABILITY-NONE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_CAPABILITY_NONE</code></span></p></td>
+<td>modem has no usable capabilities
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-CAPABILITY-POTS:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_CAPABILITY_POTS</code></span></p></td>
+<td>modem uses the analog wired telephone
+network and is not a wireless/cellular device
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-CAPABILITY-CDMA-EVDO:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO</code></span></p></td>
+<td>modem supports at least one of CDMA
+1xRTT, EVDO revision 0, EVDO revision A, or EVDO revision B
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-CAPABILITY-GSM-UMTS:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS</code></span></p></td>
+<td>modem supports at least one of GSM,
+GPRS, EDGE, UMTS, HSDPA, HSUPA, or HSPA+ packet switched data capability
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-MODEM-CAPABILITY-LTE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_MODEM_CAPABILITY_LTE</code></span></p></td>
+<td>modem has LTE data capability
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceState-enum"></a><h3>enum NMDeviceState</h3>
+<pre class="programlisting">typedef enum {
+	NM_DEVICE_STATE_UNKNOWN      = 0,
+	NM_DEVICE_STATE_UNMANAGED    = 10,
+	NM_DEVICE_STATE_UNAVAILABLE  = 20,
+	NM_DEVICE_STATE_DISCONNECTED = 30,
+	NM_DEVICE_STATE_PREPARE      = 40,
+	NM_DEVICE_STATE_CONFIG       = 50,
+	NM_DEVICE_STATE_NEED_AUTH    = 60,
+	NM_DEVICE_STATE_IP_CONFIG    = 70,
+	NM_DEVICE_STATE_IP_CHECK     = 80,
+	NM_DEVICE_STATE_SECONDARIES  = 90,
+	NM_DEVICE_STATE_ACTIVATED    = 100,
+	NM_DEVICE_STATE_DEACTIVATING = 110,
+	NM_DEVICE_STATE_FAILED       = 120
+} NMDeviceState;
+</pre>
+<p>
+(Corresponds to the NM_DEVICE_STATE type in nm-device.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_UNKNOWN</code></span></p></td>
+<td>the device's state is unknown
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-UNMANAGED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_UNMANAGED</code></span></p></td>
+<td>the device is recognized, but not managed by
+  NetworkManager
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-UNAVAILABLE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_UNAVAILABLE</code></span></p></td>
+<td>the device is managed by NetworkManager, but
+  is not available for use.  Reasons may include the wireless switched off,
+  missing firmware, no ethernet carrier, missing supplicant or modem manager,
+  etc.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-DISCONNECTED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_DISCONNECTED</code></span></p></td>
+<td>the device can be activated, but is currently
+  idle and not connected to a network.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-PREPARE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_PREPARE</code></span></p></td>
+<td>the device is preparing the connection to the
+  network.  This may include operations like changing the MAC address,
+  setting physical link properties, and anything else required to connect
+  to the requested network.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-CONFIG:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_CONFIG</code></span></p></td>
+<td>the device is connecting to the requested network.
+  This may include operations like associating with the WiFi AP, dialing
+  the modem, connecting to the remote Bluetooth device, etc.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-NEED-AUTH:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_NEED_AUTH</code></span></p></td>
+<td>the device requires more information to continue
+  connecting to the requested network.  This includes secrets like WiFi
+  passphrases, login passwords, PIN codes, etc.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-IP-CONFIG:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_IP_CONFIG</code></span></p></td>
+<td>the device is requesting IPv4 and/or IPv6
+  addresses and routing information from the network.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-IP-CHECK:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_IP_CHECK</code></span></p></td>
+<td>the device is checking whether further action is
+  required for the requested network connection.  This may include checking
+  whether only local network access is available, whether a captive portal
+  is blocking access to the Internet, etc.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-SECONDARIES:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_SECONDARIES</code></span></p></td>
+<td>the device is waiting for a secondary
+  connection (like a VPN) which must activated before the device can be
+  activated
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-ACTIVATED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_ACTIVATED</code></span></p></td>
+<td>the device has a network connection, either local
+  or global.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-DEACTIVATING:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_DEACTIVATING</code></span></p></td>
+<td>a disconnection from the current network
+  connection was requested, and the device is cleaning up resources used for
+  that connection.  The network connection may still be valid.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_FAILED</code></span></p></td>
+<td>the device failed to connect to the requested
+  network and is cleaning up the connection request
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDeviceStateReason-enum"></a><h3>enum NMDeviceStateReason</h3>
+<pre class="programlisting">typedef enum {
+	NM_DEVICE_STATE_REASON_NONE = 0,
+	NM_DEVICE_STATE_REASON_UNKNOWN = 1,
+	NM_DEVICE_STATE_REASON_NOW_MANAGED = 2,
+	NM_DEVICE_STATE_REASON_NOW_UNMANAGED = 3,
+	NM_DEVICE_STATE_REASON_CONFIG_FAILED = 4,
+	NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE = 5,
+	NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED = 6,
+	NM_DEVICE_STATE_REASON_NO_SECRETS = 7,
+	NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT = 8,
+	NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED = 9,
+	NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED = 10,
+	NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT = 11,
+	NM_DEVICE_STATE_REASON_PPP_START_FAILED = 12,
+	NM_DEVICE_STATE_REASON_PPP_DISCONNECT = 13,
+	NM_DEVICE_STATE_REASON_PPP_FAILED = 14,
+	NM_DEVICE_STATE_REASON_DHCP_START_FAILED = 15,
+	NM_DEVICE_STATE_REASON_DHCP_ERROR = 16,
+	NM_DEVICE_STATE_REASON_DHCP_FAILED = 17,
+	NM_DEVICE_STATE_REASON_SHARED_START_FAILED = 18,
+	NM_DEVICE_STATE_REASON_SHARED_FAILED = 19,
+	NM_DEVICE_STATE_REASON_AUTOIP_START_FAILED = 20,
+	NM_DEVICE_STATE_REASON_AUTOIP_ERROR = 21,
+	NM_DEVICE_STATE_REASON_AUTOIP_FAILED = 22,
+	NM_DEVICE_STATE_REASON_MODEM_BUSY = 23,
+	NM_DEVICE_STATE_REASON_MODEM_NO_DIAL_TONE = 24,
+	NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER = 25,
+	NM_DEVICE_STATE_REASON_MODEM_DIAL_TIMEOUT = 26,
+	NM_DEVICE_STATE_REASON_MODEM_DIAL_FAILED = 27,
+	NM_DEVICE_STATE_REASON_MODEM_INIT_FAILED = 28,
+	NM_DEVICE_STATE_REASON_GSM_APN_FAILED = 29,
+	NM_DEVICE_STATE_REASON_GSM_REGISTRATION_NOT_SEARCHING = 30,
+	NM_DEVICE_STATE_REASON_GSM_REGISTRATION_DENIED = 31,
+	NM_DEVICE_STATE_REASON_GSM_REGISTRATION_TIMEOUT = 32,
+	NM_DEVICE_STATE_REASON_GSM_REGISTRATION_FAILED = 33,
+	NM_DEVICE_STATE_REASON_GSM_PIN_CHECK_FAILED = 34,
+	NM_DEVICE_STATE_REASON_FIRMWARE_MISSING = 35,
+	NM_DEVICE_STATE_REASON_REMOVED = 36,
+	NM_DEVICE_STATE_REASON_SLEEPING = 37,
+	NM_DEVICE_STATE_REASON_CONNECTION_REMOVED = 38,
+	NM_DEVICE_STATE_REASON_USER_REQUESTED = 39,
+	NM_DEVICE_STATE_REASON_CARRIER = 40,
+	NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED = 41,
+	NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE = 42,
+	NM_DEVICE_STATE_REASON_MODEM_NOT_FOUND = 43,
+	NM_DEVICE_STATE_REASON_BT_FAILED = 44,
+	NM_DEVICE_STATE_REASON_GSM_SIM_NOT_INSERTED = 45,
+	NM_DEVICE_STATE_REASON_GSM_SIM_PIN_REQUIRED = 46,
+	NM_DEVICE_STATE_REASON_GSM_SIM_PUK_REQUIRED = 47,
+	NM_DEVICE_STATE_REASON_GSM_SIM_WRONG = 48,
+	NM_DEVICE_STATE_REASON_INFINIBAND_MODE = 49,
+	NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED = 50,
+	NM_DEVICE_STATE_REASON_BR2684_FAILED = 51,
+	NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE = 52,
+	NM_DEVICE_STATE_REASON_SSID_NOT_FOUND = 53,
+	NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED = 54,
+	NM_DEVICE_STATE_REASON_DCB_FCOE_FAILED = 55,
+	NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED = 56,
+	NM_DEVICE_STATE_REASON_MODEM_FAILED = 57,
+	NM_DEVICE_STATE_REASON_MODEM_AVAILABLE = 58,
+	NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT = 59,
+} NMDeviceStateReason;
+</pre>
+<p>
+Device state change reason codes
+</p>
+<p>
+(Corresponds to the NM_DEVICE_STATE_REASON type in nm-device.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-NONE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_NONE</code></span></p></td>
+<td>No reason given
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_UNKNOWN</code></span></p></td>
+<td>Unknown error
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-NOW-MANAGED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_NOW_MANAGED</code></span></p></td>
+<td>Device is now managed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-NOW-UNMANAGED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_NOW_UNMANAGED</code></span></p></td>
+<td>Device is now unmanaged
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-CONFIG-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_CONFIG_FAILED</code></span></p></td>
+<td>The device could not be readied for configuration
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-IP-CONFIG-UNAVAILABLE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE</code></span></p></td>
+<td>IP configuration could not be reserved (no available address, timeout, etc)
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-IP-CONFIG-EXPIRED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED</code></span></p></td>
+<td>The IP config is no longer valid
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-NO-SECRETS:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_NO_SECRETS</code></span></p></td>
+<td>Secrets were required, but not provided
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SUPPLICANT-DISCONNECT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT</code></span></p></td>
+<td>802.1x supplicant disconnected
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SUPPLICANT-CONFIG-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED</code></span></p></td>
+<td>802.1x supplicant configuration failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SUPPLICANT-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED</code></span></p></td>
+<td>802.1x supplicant failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SUPPLICANT-TIMEOUT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT</code></span></p></td>
+<td>802.1x supplicant took too long to authenticate
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-PPP-START-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_PPP_START_FAILED</code></span></p></td>
+<td>PPP service failed to start
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-PPP-DISCONNECT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_PPP_DISCONNECT</code></span></p></td>
+<td>PPP service disconnected
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-PPP-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_PPP_FAILED</code></span></p></td>
+<td>PPP failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-DHCP-START-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_DHCP_START_FAILED</code></span></p></td>
+<td>DHCP client failed to start
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-DHCP-ERROR:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_DHCP_ERROR</code></span></p></td>
+<td>DHCP client error
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-DHCP-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_DHCP_FAILED</code></span></p></td>
+<td>DHCP client failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SHARED-START-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SHARED_START_FAILED</code></span></p></td>
+<td>Shared connection service failed to start
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SHARED-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SHARED_FAILED</code></span></p></td>
+<td>Shared connection service failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-AUTOIP-START-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_AUTOIP_START_FAILED</code></span></p></td>
+<td>AutoIP service failed to start
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-AUTOIP-ERROR:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_AUTOIP_ERROR</code></span></p></td>
+<td>AutoIP service error
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-AUTOIP-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_AUTOIP_FAILED</code></span></p></td>
+<td>AutoIP service failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-BUSY:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_BUSY</code></span></p></td>
+<td>The line is busy
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-NO-DIAL-TONE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_NO_DIAL_TONE</code></span></p></td>
+<td>No dial tone
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-NO-CARRIER:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER</code></span></p></td>
+<td>No carrier could be established
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-DIAL-TIMEOUT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_DIAL_TIMEOUT</code></span></p></td>
+<td>The dialing request timed out
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-DIAL-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_DIAL_FAILED</code></span></p></td>
+<td>The dialing attempt failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-INIT-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_INIT_FAILED</code></span></p></td>
+<td>Modem initialization failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-APN-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_APN_FAILED</code></span></p></td>
+<td>Failed to select the specified APN
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-REGISTRATION-NOT-SEARCHING:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_REGISTRATION_NOT_SEARCHING</code></span></p></td>
+<td>Not searching for networks
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-REGISTRATION-DENIED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_REGISTRATION_DENIED</code></span></p></td>
+<td>Network registration denied
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-REGISTRATION-TIMEOUT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_REGISTRATION_TIMEOUT</code></span></p></td>
+<td>Network registration timed out
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-REGISTRATION-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_REGISTRATION_FAILED</code></span></p></td>
+<td>Failed to register with the requested network
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-PIN-CHECK-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_PIN_CHECK_FAILED</code></span></p></td>
+<td>PIN check failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-FIRMWARE-MISSING:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_FIRMWARE_MISSING</code></span></p></td>
+<td>Necessary firmware for the device may be missing
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-REMOVED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_REMOVED</code></span></p></td>
+<td>The device was removed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SLEEPING:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SLEEPING</code></span></p></td>
+<td>NetworkManager went to sleep
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-CONNECTION-REMOVED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_CONNECTION_REMOVED</code></span></p></td>
+<td>The device's active connection disappeared
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-USER-REQUESTED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_USER_REQUESTED</code></span></p></td>
+<td>Device disconnected by user or client
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-CARRIER:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_CARRIER</code></span></p></td>
+<td>Carrier/link changed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-CONNECTION-ASSUMED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED</code></span></p></td>
+<td>The device's existing connection was assumed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SUPPLICANT-AVAILABLE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE</code></span></p></td>
+<td>The supplicant is now available
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-NOT-FOUND:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_NOT_FOUND</code></span></p></td>
+<td>The modem could not be found
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-BT-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_BT_FAILED</code></span></p></td>
+<td>The Bluetooth connection failed or timed out
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-SIM-NOT-INSERTED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_SIM_NOT_INSERTED</code></span></p></td>
+<td>GSM Modem's SIM Card not inserted
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-SIM-PIN-REQUIRED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_SIM_PIN_REQUIRED</code></span></p></td>
+<td>GSM Modem's SIM Pin required
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-SIM-PUK-REQUIRED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_SIM_PUK_REQUIRED</code></span></p></td>
+<td>GSM Modem's SIM Puk required
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-GSM-SIM-WRONG:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_GSM_SIM_WRONG</code></span></p></td>
+<td>GSM Modem's SIM wrong
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-INFINIBAND-MODE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_INFINIBAND_MODE</code></span></p></td>
+<td>InfiniBand device does not support connected mode
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-DEPENDENCY-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED</code></span></p></td>
+<td>A dependency of the connection failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-BR2684-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_BR2684_FAILED</code></span></p></td>
+<td>Problem with the RFC 2684 Ethernet over ADSL bridge
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-MANAGER-UNAVAILABLE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE</code></span></p></td>
+<td>ModemManager not running
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SSID-NOT-FOUND:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SSID_NOT_FOUND</code></span></p></td>
+<td>The WiFi network could not be found
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SECONDARY-CONNECTION-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED</code></span></p></td>
+<td>A secondary connection of the base connection failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-DCB-FCOE-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_DCB_FCOE_FAILED</code></span></p></td>
+<td>DCB or FCoE setup failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-TEAMD-CONTROL-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED</code></span></p></td>
+<td>teamd control failed
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-FAILED:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_FAILED</code></span></p></td>
+<td>Modem failed or no longer available
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-MODEM-AVAILABLE:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_MODEM_AVAILABLE</code></span></p></td>
+<td>Modem now ready and available
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-DEVICE-STATE-REASON-SIM-PIN-INCORRECT:CAPS"></a><span class="term"><code class="literal">NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT</code></span></p></td>
+<td>SIM PIN was incorrect
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMActiveConnectionState-enum"></a><h3>enum NMActiveConnectionState</h3>
+<pre class="programlisting">typedef enum {
+	NM_ACTIVE_CONNECTION_STATE_UNKNOWN = 0,
+	NM_ACTIVE_CONNECTION_STATE_ACTIVATING,
+	NM_ACTIVE_CONNECTION_STATE_ACTIVATED,
+	NM_ACTIVE_CONNECTION_STATE_DEACTIVATING,
+	NM_ACTIVE_CONNECTION_STATE_DEACTIVATED
+} NMActiveConnectionState;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionState"><span class="type">NMActiveConnectionState</span></a> values indicate the state of a connection to a
+specific network while it is starting, connected, or disconnecting from that
+network.
+</p>
+<p>
+(Corresponds to the NM_ACTIVE_CONNECTION_STATE type in nm-active-connection.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-ACTIVE-CONNECTION-STATE-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_ACTIVE_CONNECTION_STATE_UNKNOWN</code></span></p></td>
+<td>the state of the connection is unknown
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-ACTIVE-CONNECTION-STATE-ACTIVATING:CAPS"></a><span class="term"><code class="literal">NM_ACTIVE_CONNECTION_STATE_ACTIVATING</code></span></p></td>
+<td>a network connection is being prepared
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-ACTIVE-CONNECTION-STATE-ACTIVATED:CAPS"></a><span class="term"><code class="literal">NM_ACTIVE_CONNECTION_STATE_ACTIVATED</code></span></p></td>
+<td>there is a connection to the network
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-ACTIVE-CONNECTION-STATE-DEACTIVATING:CAPS"></a><span class="term"><code class="literal">NM_ACTIVE_CONNECTION_STATE_DEACTIVATING</code></span></p></td>
+<td>the network connection is being
+  torn down and cleaned up
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-ACTIVE-CONNECTION-STATE-DEACTIVATED:CAPS"></a><span class="term"><code class="literal">NM_ACTIVE_CONNECTION_STATE_DEACTIVATED</code></span></p></td>
+<td>the network connection is disconnected
+  and will be removed
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSecretAgentGetSecretsFlags-enum"></a><h3>enum NMSecretAgentGetSecretsFlags</h3>
+<pre class="programlisting">typedef enum {
+ /*&lt; flags &gt;*/
+	NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE = 0x0,
+	NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION = 0x1,
+	NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW = 0x2,
+	NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED = 0x4,
+
+	/* Internal to NM; not part of the D-Bus API */
+	NM_SECRET_AGENT_GET_SECRETS_FLAG_ONLY_SYSTEM = 0x80000000,
+	NM_SECRET_AGENT_GET_SECRETS_FLAG_NO_ERRORS = 0x40000000,
+} NMSecretAgentGetSecretsFlags;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentGetSecretsFlags"><span class="type">NMSecretAgentGetSecretsFlags</span></a> values modify the behavior of a GetSecrets request.
+</p>
+<p>
+(Corresponds to the NM_SECRET_AGENT_GET_SECRETS_FLAGS type in nm-secret-agent.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-NONE:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE</code></span></p></td>
+<td>no special behavior; by default no
+  user interaction is allowed and requests for secrets are fulfilled from
+  persistent storage, or if no secrets are available an error is returned.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-ALLOW-INTERACTION:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION</code></span></p></td>
+<td>allows the request to
+  interact with the user, possibly prompting via UI for secrets if any are
+  required, or if none are found in persistent storage.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-REQUEST-NEW:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW</code></span></p></td>
+<td>explicitly prompt for new
+  secrets from the user.  This flag signals that NetworkManager thinks any
+  existing secrets are invalid or wrong.  This flag implies that interaction
+  is allowed.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-USER-REQUESTED:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED</code></span></p></td>
+<td>set if the request was
+  initiated by user-requested action via the D-Bus interface, as opposed to
+  automatically initiated by NetworkManager in response to (for example) scan
+  results or carrier changes.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-ONLY-SYSTEM:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_GET_SECRETS_FLAG_ONLY_SYSTEM</code></span></p></td>
+<td>Internal flag, not part of
+  the D-Bus API.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-GET-SECRETS-FLAG-NO-ERRORS:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_GET_SECRETS_FLAG_NO_ERRORS</code></span></p></td>
+<td>Internal flag, not part of
+  the D-Bus API.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSecretAgentCapabilities-enum"></a><h3>enum NMSecretAgentCapabilities</h3>
+<pre class="programlisting">typedef enum {
+	NM_SECRET_AGENT_CAPABILITY_NONE = 0x0,
+	NM_SECRET_AGENT_CAPABILITY_VPN_HINTS = 0x1,
+
+	/* boundary value */
+	NM_SECRET_AGENT_CAPABILITY_LAST = NM_SECRET_AGENT_CAPABILITY_VPN_HINTS
+} NMSecretAgentCapabilities;
+</pre>
+<p>
+<a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentCapabilities"><span class="type">NMSecretAgentCapabilities</span></a> indicate various capabilities of the agent.
+</p>
+<p>
+(Corresponds to the NM_SECRET_AGENT_CAPABILITIES type in nm-secret-agent.xml.)
+</p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-CAPABILITY-NONE:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_CAPABILITY_NONE</code></span></p></td>
+<td>the agent supports no special capabilities
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-CAPABILITY-VPN-HINTS:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_CAPABILITY_VPN_HINTS</code></span></p></td>
+<td>the agent supports passing hints to
+VPN plugin authentication dialogs.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SECRET-AGENT-CAPABILITY-LAST:CAPS"></a><span class="term"><code class="literal">NM_SECRET_AGENT_CAPABILITY_LAST</code></span></p></td>
+<td>bounds checking value; should not be used.
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.19</div>
+</body>
+</html>

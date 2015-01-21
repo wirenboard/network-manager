@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/03/2014
+.\"      Date: 12/19/2014
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 0.9.10
+.\"    Source: NetworkManager 1.0
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 0\&.9\&.10" "Configuration"
+.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -87,7 +87,7 @@ Lists system settings plugin names separated by \*(Aq,\*(Aq\&. These plugins are
 .sp
 If NetworkManager defines a distro\-specific network\-configuration plugin for your system, then that will normally be listed here\&. (See below for the available plugins\&.) Note that the
 keyfile
-plugin is always appended to the end of this list (if it doesn\*(Aqt already appear earlier in the list), so if there is no distro\-specific plugin for your system then you can leave this key unset and NetworkManager will default to using
+plugin is always appended to the end of this list (if it doesn\*(Aqt already appear earlier in the list), so if there is no distro\-specific plugin for your system then you can leave this key unset and NetworkManager will fall back to using
 keyfile\&.
 .RE
 .PP
@@ -96,13 +96,31 @@ keyfile\&.
 Whether the configured settings plugin(s) should set up file monitors and immediately pick up changes made to connection files while NetworkManager is running\&. This is disabled by default; NetworkManager will only read the connection files at startup, and when explicitly requested via the ReloadConnections D\-Bus call\&. If this key is set to \*(Aqtrue\*(Aq, then NetworkManager will reload connection files any time they changed\&.
 .RE
 .PP
+\fIauth\-polkit\fR
+.RS 4
+Whether the system uses PolicyKit for authorization\&. If
+false, all requests will be allowed\&. If
+true, non\-root requests are authorized using PolicyKit\&. The default value is
+true\&.
+.RE
+.PP
 \fIdhcp\fR
 .RS 4
-This key sets up what DHCP client NetworkManager will use\&. Presently
+This key sets up what DHCP client NetworkManager will use\&. Allowed values are
+dhclient,
+dhcpcd, and
+internal\&. The
 dhclient
 and
 dhcpcd
-are supported\&. The client configured here should be available on your system too\&. If this key is missing, available DHCP clients are looked for in this order: dhclient, dhcpcd\&.
+options require the indicated clients to be installed\&. The
+internal
+option uses a built\-in DHCP client which is not currently as featureful as the external clients (and in particular, does not yet support DHCPv6)\&.
+.sp
+If this key is missing, available DHCP clients are looked for in this order:
+dhclient,
+dhcpcd,
+internal\&.
 .RE
 .PP
 \fIno\-auto\-default\fR
@@ -141,6 +159,14 @@ May have the special value
 to apply to all devices\&.
 .sp
 Note that the "carrier" property of NMDevices and device D\-Bus interfaces will still reflect the actual device state; it\*(Aqs just that NetworkManager will not make use of that information\&.
+.RE
+.PP
+\fIconfigure\-and\-quit\fR
+.RS 4
+When set to
+true, NetworkManager quits after performing initial network configuration but spawns small helpers to preserve DHCP leases and IPv6 addresses\&. This is useful in environments where network setup is more or less static or it is desirable to save process time but still handle some dynamic configurations\&. When this option is
+true, network configuration for WiFi, WWAN, Bluetooth, ADSL, and PPPoE interfaces cannot be preserved due to their use of external services, and these devices will be deconfigured when NetworkManager quits even though other interface\*(Aqs configuration may be preserved\&. The default value is
+false, meaning that NetworkManager will continue running after initial network configuration and continue responding to system and hardware events, D\-Bus requests, and user commands\&.
 .RE
 .PP
 \fIdns\fR
@@ -243,7 +269,8 @@ The default logging verbosity level\&. One of
 ERR,
 WARN,
 INFO,
-DEBUG\&. The ERR level logs only critical errors\&. WARN logs warnings that may reflect operation\&. INFO logs various informational messages that are useful for tracking state and operations\&. DEBUG enables verbose logging for debugging purposes\&. Subsequent levels also log all messages from earlier levels; thus setting the log level to INFO also logs error and warning messages\&.
+DEBUG,
+TRACE\&. The ERR level logs only critical errors\&. WARN logs warnings that may reflect operation\&. INFO logs various informational messages that are useful for tracking state and operations\&. DEBUG enables verbose logging for debugging purposes\&. TRACE enables even more verbose logging then DEBUG level\&. Subsequent levels also log all messages from earlier levels; thus setting the log level to INFO also logs error and warning messages\&.
 .RE
 .PP
 \fIdomains\fR
@@ -446,6 +473,11 @@ This plugin is used on the Debian and Ubuntu distributions, and reads Ethernet a
 This plugin is read\-only; any connections (of any type) added from within NetworkManager when you are using this plugin will be saved using the
 keyfile
 plugin instead\&.
+.RE
+.PP
+\fIibft\fR
+.RS 4
+This plugin allows to read iBFT configuration (iSCSI Boot Firmware Table)\&. The configuration is read using /sbin/iscsiadm\&. Users are expected to configure iBFT connections via the firmware interfaces\&.
 .RE
 .SH "SEE ALSO"
 .PP

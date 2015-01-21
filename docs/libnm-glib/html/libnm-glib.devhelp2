@@ -221,16 +221,19 @@
     <keyword type="function" name="nm_device_get_available_connections ()" link="NMDevice.html#nm-device-get-available-connections" since="0.9.8"/>
     <keyword type="function" name="nm_device_get_physical_port_id ()" link="NMDevice.html#nm-device-get-physical-port-id" since="0.9.10"/>
     <keyword type="function" name="nm_device_get_mtu ()" link="NMDevice.html#nm-device-get-mtu" since="0.9.10"/>
+    <keyword type="function" name="nm_device_is_software ()" link="NMDevice.html#nm-device-is-software" since="1.0"/>
     <keyword type="function" name="nm_device_get_product ()" link="NMDevice.html#nm-device-get-product"/>
     <keyword type="function" name="nm_device_get_vendor ()" link="NMDevice.html#nm-device-get-vendor"/>
     <keyword type="function" name="nm_device_get_description ()" link="NMDevice.html#nm-device-get-description" since="0.9.10"/>
     <keyword type="function" name="nm_device_disambiguate_names ()" link="NMDevice.html#nm-device-disambiguate-names" since="0.9.10"/>
-    <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
+    <keyword type="function" name="NMDeviceCallbackFn ()" link="NMDevice.html#NMDeviceCallbackFn"/>
     <keyword type="function" name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
+    <keyword type="function" name="nm_device_delete ()" link="NMDevice.html#nm-device-delete" since="1.0"/>
     <keyword type="function" name="nm_device_filter_connections ()" link="NMDevice.html#nm-device-filter-connections"/>
     <keyword type="function" name="nm_device_connection_valid ()" link="NMDevice.html#nm-device-connection-valid"/>
     <keyword type="function" name="nm_device_connection_compatible ()" link="NMDevice.html#nm-device-connection-compatible"/>
     <keyword type="function" name="nm_device_get_setting_type ()" link="NMDevice.html#nm-device-get-setting-type" since="0.9.10"/>
+    <keyword type="function" name="NMDeviceDeactivateFn ()" link="NMDevice.html#NMDeviceDeactivateFn"/>
     <keyword type="property" name="The &quot;active-connection&quot; property" link="NMDevice.html#NMDevice--active-connection"/>
     <keyword type="property" name="The &quot;autoconnect&quot; property" link="NMDevice.html#NMDevice--autoconnect"/>
     <keyword type="property" name="The &quot;available-connections&quot; property" link="NMDevice.html#NMDevice--available-connections"/>
@@ -446,15 +449,18 @@
     <keyword type="function" name="nm_device_vlan_error_quark ()" link="NMDeviceVlan.html#nm-device-vlan-error-quark"/>
     <keyword type="macro" name="NM_DEVICE_VLAN_HW_ADDRESS" link="NMDeviceVlan.html#NM-DEVICE-VLAN-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_VLAN_CARRIER" link="NMDeviceVlan.html#NM-DEVICE-VLAN-CARRIER:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_VLAN_PARENT" link="NMDeviceVlan.html#NM-DEVICE-VLAN-PARENT:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_VLAN_VLAN_ID" link="NMDeviceVlan.html#NM-DEVICE-VLAN-VLAN-ID:CAPS"/>
     <keyword type="struct" name="NMDeviceVlan" link="NMDeviceVlan.html#NMDeviceVlan-struct"/>
     <keyword type="struct" name="NMDeviceVlanClass" link="NMDeviceVlan.html#NMDeviceVlanClass"/>
     <keyword type="function" name="nm_device_vlan_new ()" link="NMDeviceVlan.html#nm-device-vlan-new"/>
     <keyword type="function" name="nm_device_vlan_get_hw_address ()" link="NMDeviceVlan.html#nm-device-vlan-get-hw-address"/>
     <keyword type="function" name="nm_device_vlan_get_carrier ()" link="NMDeviceVlan.html#nm-device-vlan-get-carrier"/>
+    <keyword type="function" name="nm_device_vlan_get_parent ()" link="NMDeviceVlan.html#nm-device-vlan-get-parent" since="1.0"/>
     <keyword type="function" name="nm_device_vlan_get_vlan_id ()" link="NMDeviceVlan.html#nm-device-vlan-get-vlan-id"/>
     <keyword type="property" name="The &quot;carrier&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--carrier"/>
     <keyword type="property" name="The &quot;hw-address&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--hw-address"/>
+    <keyword type="property" name="The &quot;parent&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--parent"/>
     <keyword type="property" name="The &quot;vlan-id&quot; property" link="NMDeviceVlan.html#NMDeviceVlan--vlan-id"/>
     <keyword type="enum" name="enum NMDeviceOlpcMeshError" link="NMDeviceOlpcMesh.html#NMDeviceOlpcMeshError"/>
     <keyword type="macro" name="NM_DEVICE_OLPC_MESH_ERROR" link="NMDeviceOlpcMesh.html#NM-DEVICE-OLPC-MESH-ERROR:CAPS"/>

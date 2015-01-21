@@ -1,14 +1,13 @@
 AM_CPPFLAGS = \
 	-I${top_srcdir} \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/include \
 	-I${top_srcdir}/src \
 	-I${top_builddir}/src \
-	-I${top_srcdir}/src/logging \
-	-I${top_srcdir}/libnm-util \
-	-I${top_builddir}/libnm-util \
+	-I${top_srcdir}/libnm-core \
+	-I${top_builddir}/libnm-core \
 	-I${srcdir}/.. \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(GUDEV_CFLAGS) \
@@ -111,6 +110,6 @@ test_cleanup_linux_CPPFLAGS = \
 test_cleanup_linux_LDADD = $(PLATFORM_LDADD)
 
 #@VALGRIND_RULES@
-TESTS = test-link-fake test-address-fake test-route-fake test-cleanup-fake test-link-linux test-address-linux test-route-linux test-cleanup-linux
+TESTS = test-link-fake test-address-fake test-route-fake test-cleanup-fake test-address-linux test-route-linux test-cleanup-linux
 
 

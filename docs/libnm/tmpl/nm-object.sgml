@@ -1,0 +1,77 @@
+<!-- ##### SECTION Title ##### -->
+NMObject
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_OBJECT_PATH ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_OBJECT_DBUS_CONNECTION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMObject ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMObject:dbus-connection ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMObject:nm-running-internal ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMObject:path ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMObjectClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@init_dbus: 
+@object_creation_failed: 
+
+<!-- ##### FUNCTION nm_object_get_path ##### -->
+<para>
+
+</para>
+
+@object: 
+@Returns: 
+
+

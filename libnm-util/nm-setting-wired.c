@@ -1,9 +1,6 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 
 /*
- * Dan Williams <dcbw@redhat.com>
- * Tambet Ingo <tambet@gmail.com>
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -19,15 +16,17 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2014 Red Hat, Inc.
- * (C) Copyright 2007 - 2008 Novell, Inc.
+ * Copyright 2007 - 2014 Red Hat, Inc.
+ * Copyright 2007 - 2008 Novell, Inc.
  */
+
+#include "config.h"
 
 #include <string.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
 #include <dbus/dbus-glib.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 
 #include "nm-setting-wired.h"
 #include "nm-param-spec-specialized.h"
@@ -877,16 +876,10 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PORT,
-		 g_param_spec_string (NM_SETTING_WIRED_PORT,
-						  "Port",
-						  "Specific port type to use if multiple the device "
-						  "supports multiple attachment methods.  One of "
-						  "'tp' (Twisted Pair), 'aui' (Attachment Unit Interface), "
-						  "'bnc' (Thin Ethernet) or 'mii' (Media Independent "
-						  "Interface.  If the device supports only one port "
-						  "type, this setting is ignored.",
-						  NULL,
-						  G_PARAM_READWRITE));
+		 g_param_spec_string (NM_SETTING_WIRED_PORT, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:speed:
@@ -896,12 +889,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_SPEED,
-		 g_param_spec_uint (NM_SETTING_WIRED_SPEED,
-						"Speed",
-						"If non-zero, request that the device use only the "
-						"specified speed.  In Mbit/s, ie 100 == 100Mbit/s.",
-						0, G_MAXUINT32, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+		 g_param_spec_uint (NM_SETTING_WIRED_SPEED, "", "",
+		                    0, G_MAXUINT32, 0,
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_CONSTRUCT |
+		                    G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:duplex:
@@ -911,12 +903,10 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_DUPLEX,
-		 g_param_spec_string (NM_SETTING_WIRED_DUPLEX,
-						  "Duplex",
-						  "If specified, request that the device only use the "
-						  "specified duplex mode.  Either 'half' or 'full'.",
-						  NULL,
-						  G_PARAM_READWRITE));
+		 g_param_spec_string (NM_SETTING_WIRED_DUPLEX, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:auto-negotiate:
@@ -927,14 +917,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_AUTO_NEGOTIATE,
-		 g_param_spec_boolean (NM_SETTING_WIRED_AUTO_NEGOTIATE,
-						   "AutoNegotiate",
-						   "If TRUE, allow auto-negotiation of port speed and "
-						   "duplex mode.  If FALSE, do not allow auto-negotiation,"
-						   "in which case the 'speed' and 'duplex' properties "
-						   "should be set.",
-						   TRUE,
-						   G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+		 g_param_spec_boolean (NM_SETTING_WIRED_AUTO_NEGOTIATE, "", "",
+		                       TRUE,
+		                       G_PARAM_READWRITE |
+		                       G_PARAM_CONSTRUCT |
+		                       G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:mac-address:
@@ -945,14 +932,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_MAC_ADDRESS,
-		 _nm_param_spec_specialized (NM_SETTING_WIRED_MAC_ADDRESS,
-							   "Device MAC Address",
-							   "If specified, this connection will only apply to "
-							   "the Ethernet device whose permanent MAC address matches.  "
-							   "This property does not change the MAC address "
-							   "of the device (i.e. MAC spoofing).",
-							   DBUS_TYPE_G_UCHAR_ARRAY,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
+		 _nm_param_spec_specialized (NM_SETTING_WIRED_MAC_ADDRESS, "", "",
+		                             DBUS_TYPE_G_UCHAR_ARRAY,
+		                             G_PARAM_READWRITE |
+		                             NM_SETTING_PARAM_INFERRABLE |
+		                             G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:cloned-mac-address:
@@ -962,13 +946,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_CLONED_MAC_ADDRESS,
-		 _nm_param_spec_specialized (NM_SETTING_WIRED_CLONED_MAC_ADDRESS,
-	                                     "Cloned MAC Address",
-	                                     "If specified, request that the device use "
-	                                     "this MAC address instead of its permanent MAC address.  "
-	                                     "This is known as MAC cloning or spoofing.",
-	                                     DBUS_TYPE_G_UCHAR_ARRAY,
-	                                     G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
+		 _nm_param_spec_specialized (NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "", "",
+		                             DBUS_TYPE_G_UCHAR_ARRAY,
+		                             G_PARAM_READWRITE |
+		                             NM_SETTING_PARAM_INFERRABLE |
+		                             G_PARAM_STATIC_STRINGS));
     
 	/**
 	 * NMSettingWired:mac-address-blacklist:
@@ -980,14 +962,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_MAC_ADDRESS_BLACKLIST,
-		 _nm_param_spec_specialized (NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST,
-		                             "MAC Address Blacklist",
-		                             "If specified, this connection will never apply to "
-		                             "the Ethernet device whose permanent MAC address matches "
-		                             "an address in the list.  Each MAC address is in the "
-		                             "standard hex-digits-and-colons notation (00:11:22:33:44:55).",
+		 _nm_param_spec_specialized (NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST, "", "",
 		                             DBUS_TYPE_G_LIST_OF_STRING,
-		                             G_PARAM_READWRITE | NM_SETTING_PARAM_FUZZY_IGNORE));
+		                             G_PARAM_READWRITE |
+		                             NM_SETTING_PARAM_FUZZY_IGNORE |
+		                             G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:mtu:
@@ -997,13 +976,12 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_MTU,
-		 g_param_spec_uint (NM_SETTING_WIRED_MTU,
-						"MTU",
-						"If non-zero, only transmit packets of the specified "
-						"size or smaller, breaking larger packets up into "
-						"multiple Ethernet frames.",
-						0, G_MAXUINT32, 0,
-						G_PARAM_READWRITE | G_PARAM_CONSTRUCT | NM_SETTING_PARAM_FUZZY_IGNORE));
+		 g_param_spec_uint (NM_SETTING_WIRED_MTU, "", "",
+		                    0, G_MAXUINT32, 0,
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_CONSTRUCT |
+		                    NM_SETTING_PARAM_FUZZY_IGNORE |
+		                    G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:s390-subchannels:
@@ -1018,19 +996,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_S390_SUBCHANNELS,
-		 _nm_param_spec_specialized (NM_SETTING_WIRED_S390_SUBCHANNELS,
-		                       "z/VM Subchannels",
-		                       "Identifies specific subchannels that this "
-		                       "network device uses for communcation with z/VM "
-		                       "or s390 host.  Like the 'mac-address' property "
-		                       "for non-z/VM devices, this property can be used "
-		                       "to ensure this connection only applies to the "
-		                       "network device that uses these subchannels. The "
-		                       "list should contain exactly 3 strings, and each "
-		                       "string may only be composed of hexadecimal "
-		                       "characters and the period (.) character.",
-		                       DBUS_TYPE_G_ARRAY_OF_STRING,
-		                       G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
+		 _nm_param_spec_specialized (NM_SETTING_WIRED_S390_SUBCHANNELS, "", "",
+		                             DBUS_TYPE_G_ARRAY_OF_STRING,
+		                             G_PARAM_READWRITE |
+		                             NM_SETTING_PARAM_INFERRABLE |
+		                             G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:s390-nettype:
@@ -1040,13 +1010,11 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_S390_NETTYPE,
-		 g_param_spec_string (NM_SETTING_WIRED_S390_NETTYPE,
-						  "s390 Net Type",
-						  "s390 network device type; one of 'qeth', 'lcs', or "
-						  "'ctc', representing the different types of virtual "
-						  "network devices available on s390 systems.",
-						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
+		 g_param_spec_string (NM_SETTING_WIRED_S390_NETTYPE, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      NM_SETTING_PARAM_INFERRABLE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingWired:s390-options:
@@ -1058,13 +1026,9 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_S390_OPTIONS,
-		 _nm_param_spec_specialized (NM_SETTING_WIRED_S390_OPTIONS,
-							   "s390 Options",
-							   "Dictionary of key/value pairs of s390-specific "
-							   "device options.  Both keys and values must be "
-							   "strings.  Allowed keys include 'portno', "
-							   "'layer2', 'portname', 'protocol', among others.",
-							   DBUS_TYPE_G_MAP_OF_STRING,
-							   G_PARAM_READWRITE | NM_SETTING_PARAM_INFERRABLE));
+		 _nm_param_spec_specialized (NM_SETTING_WIRED_S390_OPTIONS, "", "",
+		                             DBUS_TYPE_G_MAP_OF_STRING,
+		                             G_PARAM_READWRITE |
+		                             NM_SETTING_PARAM_INFERRABLE |
+		                             G_PARAM_STATIC_STRINGS));
 }
-

@@ -129,6 +129,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -252,6 +254,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -271,6 +274,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -297,7 +301,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -378,6 +382,7 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 EXTRA_DIST = \
 	ifcfg-test-minimal \
+	ifcfg-test-misc-variables \
 	ifcfg-test-variables-corner-cases-1 \
 	ifcfg-test-nm-controlled \
 	ifcfg-test-nm-controlled-unrecognized \
@@ -437,10 +442,12 @@ EXTRA_DIST = \
 	ifcfg-test-wifi-wpa-eap-ttls-tls \
 	keys-test-wifi-wpa-eap-ttls-tls \
 	ifcfg-test-wifi-hidden \
+	ifcfg-test-wifi-band-a \
+	ifcfg-test-wifi-band-a-channel-mismatch \
+	ifcfg-test-wifi-band-bg-channel-mismatch \
 	test_ca_cert.pem \
 	test1_key_and_cert.pem \
-	ifcfg-test-ibft-dhcp \
-	ifcfg-test-ibft-static \
+	ifcfg-test-ibft \
 	ifcfg-test-static-routes-legacy \
 	route-test-static-routes-legacy \
 	ifcfg-test-wired-static-routes \
@@ -494,7 +501,8 @@ EXTRA_DIST = \
 	ifcfg-test-fcoe-vn2vn \
 	ifcfg-test-team-master \
 	ifcfg-test-team-port \
-	ifcfg-test-team-port-empty-config
+	ifcfg-test-team-port-empty-config \
+	ifcfg-test-vlan-trailing-spaces
 
 
 # make target dependencies can't have colons in their names, which ends up

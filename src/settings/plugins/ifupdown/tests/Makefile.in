@@ -109,12 +109,8 @@ am__test_ifupdown_SOURCES_DIST = test-ifupdown.c ../interface_parser.c \
 @ENABLE_TESTS_TRUE@am_test_ifupdown_OBJECTS = test-ifupdown.$(OBJEXT) \
 @ENABLE_TESTS_TRUE@	interface_parser.$(OBJEXT) parser.$(OBJEXT)
 test_ifupdown_OBJECTS = $(am_test_ifupdown_OBJECTS)
-am__DEPENDENCIES_1 =
 @ENABLE_TESTS_TRUE@test_ifupdown_DEPENDENCIES =  \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/src/libNetworkManager.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
-@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1)
+@ENABLE_TESTS_TRUE@	$(top_builddir)/src/libNetworkManager.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -211,6 +207,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -334,6 +332,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -353,6 +352,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -379,7 +379,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -460,19 +460,15 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
-@ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-glib \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-core \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/logging \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/settings \
 @ENABLE_TESTS_TRUE@	-I$(srcdir)/../ \
 @ENABLE_TESTS_TRUE@	-DG_LOG_DOMAIN=\""NetworkManager-ifupdown"\" \
+@ENABLE_TESTS_TRUE@	-DNETWORKMANAGER_COMPILATION \
 @ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(POLKIT_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-DTEST_ENI_DIR=\"$(abs_srcdir)\"
 
 @ENABLE_TESTS_TRUE@test_ifupdown_SOURCES = \
@@ -481,16 +477,13 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	../parser.c
 
 @ENABLE_TESTS_TRUE@test_ifupdown_LDADD = \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/src/libNetworkManager.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
-@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
+@ENABLE_TESTS_TRUE@	$(top_builddir)/src/libNetworkManager.la
 
-@ENABLE_TESTS_TRUE@EXTRA_DIST = \
-@ENABLE_TESTS_TRUE@	test1 test2 test3 test4 test5 test6 test7 test8 test9 test11 test12 \
-@ENABLE_TESTS_TRUE@	test13 test14 test15 test16 test17-wired-static-verify-ip4 \
-@ENABLE_TESTS_TRUE@	test18-wired-static-verify-ip6 test19-wired-static-verify-ip4-plen \
-@ENABLE_TESTS_TRUE@	test20-source-stanza test20-source-stanza.eth0 test20-source-stanza.eth1
+EXTRA_DIST = \
+	test1 test2 test3 test4 test5 test6 test7 test8 test9 test11 test12 \
+	test13 test14 test15 test16 test17-wired-static-verify-ip4 \
+	test18-wired-static-verify-ip6 test19-wired-static-verify-ip4-plen \
+	test20-source-stanza test20-source-stanza.eth0 test20-source-stanza.eth1
 
 all: all-am
 

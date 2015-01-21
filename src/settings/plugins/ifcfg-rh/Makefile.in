@@ -133,18 +133,13 @@ am__installdirs = "$(DESTDIR)$(pkglibdir)" \
 	"$(DESTDIR)$(dbusservicedir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(pkglib_LTLIBRARIES)
 libifcfg_rh_io_la_LIBADD =
-am_libifcfg_rh_io_la_OBJECTS = shvar.lo reader.lo writer.lo errors.lo \
-	utils.lo
+am_libifcfg_rh_io_la_OBJECTS = shvar.lo reader.lo writer.lo utils.lo
 libifcfg_rh_io_la_OBJECTS = $(am_libifcfg_rh_io_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am__DEPENDENCIES_1 =
-libnm_settings_plugin_ifcfg_rh_la_DEPENDENCIES =  \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/libnm-glib/libnm-glib.la libifcfg-rh-io.la \
-	$(am__DEPENDENCIES_1)
+libnm_settings_plugin_ifcfg_rh_la_DEPENDENCIES = libifcfg-rh-io.la
 am_libnm_settings_plugin_ifcfg_rh_la_OBJECTS = plugin.lo \
 	nm-ifcfg-connection.lo
 libnm_settings_plugin_ifcfg_rh_la_OBJECTS =  \
@@ -268,6 +263,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -391,6 +388,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -410,6 +408,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -436,7 +435,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -528,27 +527,21 @@ libifcfg_rh_io_la_SOURCES = \
 	reader.h \
 	writer.c \
 	writer.h \
-	errors.c \
 	common.h \
 	utils.c \
 	utils.h
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/ \
-	-I$(top_srcdir)/src/logging \
 	-I$(top_srcdir)/src/platform \
 	-I$(top_srcdir)/src/settings \
-	-I$(top_srcdir)/src/posix-signals \
-	-I$(top_srcdir)/src/config \
 	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
-	-I$(top_srcdir)/libnm-glib \
-	-I$(top_srcdir)/libnm-util \
-	-I$(top_builddir)/libnm-util \
+	-I$(top_srcdir)/libnm-core \
+	-I$(top_builddir)/libnm-core \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
-	$(POLKIT_CFLAGS) \
 	$(NSS_CFLAGS) \
 	-DG_LOG_DOMAIN=\""NetworkManager-ifcfg-rh"\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
@@ -561,12 +554,7 @@ libnm_settings_plugin_ifcfg_rh_la_SOURCES = \
 	nm-ifcfg-connection.h
 
 libnm_settings_plugin_ifcfg_rh_la_LDFLAGS = -module -avoid-version
-libnm_settings_plugin_ifcfg_rh_la_LIBADD = \
-	$(top_builddir)/libnm-util/libnm-util.la \
-	$(top_builddir)/libnm-glib/libnm-glib.la \
-	libifcfg-rh-io.la \
-	$(GLIB_LIBS)
-
+libnm_settings_plugin_ifcfg_rh_la_LIBADD = libifcfg-rh-io.la
 dbusservicedir = $(DBUS_SYS_DIR)
 dbusservice_DATA = nm-ifcfg-rh.conf
 EXTRA_DIST = \
@@ -668,7 +656,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-ifcfg-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Plo@am__quote@

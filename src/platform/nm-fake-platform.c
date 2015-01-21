@@ -18,11 +18,14 @@
  * Copyright (C) 2012–2013 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <errno.h>
 #include <unistd.h>
 #include <netinet/icmp6.h>
 #include <netinet/in.h>
 
+#include "gsystem-local-alloc.h"
 #include "NetworkManagerUtils.h"
 #include "nm-fake-platform.h"
 #include "nm-logging.h"
@@ -162,12 +165,12 @@ link_get_all (NMPlatform *platform)
 }
 
 static gboolean
-_nm_platform_link_get (NMPlatform *platform, int ifindex, NMPlatformLink *link)
+_nm_platform_link_get (NMPlatform *platform, int ifindex, NMPlatformLink *l)
 {
 	NMFakePlatformLink *device = link_get (platform, ifindex);
 
 	if (device)
-		*link = device->link;
+		*l = device->link;
 	return !!device;
 }
 
@@ -543,7 +546,7 @@ link_get_master (NMPlatform *platform, int slave)
 static gboolean
 master_set_option (NMPlatform *platform, int master, const char *option, const char *value)
 {
-	auto_g_free char *path = g_strdup_printf ("master:%d:%s", master, option);
+	gs_free char *path = g_strdup_printf ("master:%d:%s", master, option);
 
 	return sysctl_set (platform, path, value);
 }
@@ -551,7 +554,7 @@ master_set_option (NMPlatform *platform, int master, const char *option, const c
 static char *
 master_get_option (NMPlatform *platform, int master, const char *option)
 {
-	auto_g_free char *path = g_strdup_printf ("master:%d:%s", master, option);
+	gs_free char *path = g_strdup_printf ("master:%d:%s", master, option);
 
 	return sysctl_get (platform, path);
 }
@@ -559,7 +562,7 @@ master_get_option (NMPlatform *platform, int master, const char *option)
 static gboolean
 slave_set_option (NMPlatform *platform, int slave, const char *option, const char *value)
 {
-	auto_g_free char *path = g_strdup_printf ("slave:%d:%s", slave, option);
+	gs_free char *path = g_strdup_printf ("slave:%d:%s", slave, option);
 
 	return sysctl_set (platform, path, value);
 }
@@ -567,7 +570,7 @@ slave_set_option (NMPlatform *platform, int slave, const char *option, const cha
 static char *
 slave_get_option (NMPlatform *platform, int slave, const char *option)
 {
-	auto_g_free char *path = g_strdup_printf ("slave:%d:%s", slave, option);
+	gs_free char *path = g_strdup_printf ("slave:%d:%s", slave, option);
 
 	return sysctl_get (platform, path);
 }
@@ -688,7 +691,7 @@ wifi_get_capabilities (NMPlatform *platform, int ifindex, NMDeviceWifiCapabiliti
 }
 
 static gboolean
-wifi_get_bssid (NMPlatform *platform, int ifindex, struct ether_addr *bssid)
+wifi_get_bssid (NMPlatform *platform, int ifindex, guint8 *bssid)
 {
 	return FALSE;
 }
@@ -754,7 +757,7 @@ mesh_set_channel (NMPlatform *platform, int ifindex, guint32 channel)
 }
 
 static gboolean
-mesh_set_ssid (NMPlatform *platform, int ifindex, const GByteArray *ssid)
+mesh_set_ssid (NMPlatform *platform, int ifindex, const guint8 *ssid, gsize len)
 {
 	return FALSE;
 }
@@ -827,7 +830,7 @@ ip4_address_add (NMPlatform *platform, int ifindex,
 	int i;
 
 	memset (&address, 0, sizeof (address));
-	address.source = NM_PLATFORM_SOURCE_KERNEL;
+	address.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	address.ifindex = ifindex;
 	address.address = addr;
 	address.peer_address = peer_addr;
@@ -869,7 +872,7 @@ ip6_address_add (NMPlatform *platform, int ifindex,
 	int i;
 
 	memset (&address, 0, sizeof (address));
-	address.source = NM_PLATFORM_SOURCE_KERNEL;
+	address.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	address.ifindex = ifindex;
 	address.address = addr;
 	address.peer_address = peer_addr;
@@ -901,7 +904,7 @@ ip6_address_add (NMPlatform *platform, int ifindex,
 }
 
 static gboolean
-ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, int plen)
+ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, int plen, in_addr_t peer_address)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	int i;
@@ -909,7 +912,8 @@ ip4_address_delete (NMPlatform *platform, int ifindex, in_addr_t addr, int plen)
 	for (i = 0; i < priv->ip4_addresses->len; i++) {
 		NMPlatformIP4Address *address = &g_array_index (priv->ip4_addresses, NMPlatformIP4Address, i);
 
-		if (address->ifindex == ifindex && address->plen == plen && address->address == addr) {
+		if (address->ifindex == ifindex && address->plen == plen && address->address == addr &&
+		    (!peer_address || address->peer_address == peer_address)) {
 			NMPlatformIP4Address deleted_address;
 
 			memcpy (&deleted_address, address, sizeof (deleted_address));
@@ -978,31 +982,37 @@ ip6_address_exists (NMPlatform *platform, int ifindex, struct in6_addr addr, int
 	return FALSE;
 }
 
+static gboolean
+ip4_check_reinstall_device_route (NMPlatform *platform, int ifindex, const NMPlatformIP4Address *address, guint32 device_route_metric)
+{
+	return FALSE;
+}
+
 /******************************************************************/
 
 static GArray *
-ip4_route_get_all (NMPlatform *platform, int ifindex, gboolean include_default)
+ip4_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteMode mode)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	GArray *routes;
 	NMPlatformIP4Route *route;
-	int count = 0, i;
+	guint i;
 
-	/* Count routes */
-	for (i = 0; i < priv->ip4_routes->len; i++) {
-		route = &g_array_index (priv->ip4_routes, NMPlatformIP4Route, i);
-		if (route && route->ifindex == ifindex)
-			count++;
-	}
+	g_return_val_if_fail (NM_IN_SET (mode, NM_PLATFORM_GET_ROUTE_MODE_ALL, NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT, NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT), NULL);
 
-	routes = g_array_sized_new (TRUE, TRUE, sizeof (NMPlatformIP4Route), count);
+	routes = g_array_new (TRUE, TRUE, sizeof (NMPlatformIP4Route));
 
 	/* Fill routes */
 	for (i = 0; i < priv->ip4_routes->len; i++) {
 		route = &g_array_index (priv->ip4_routes, NMPlatformIP4Route, i);
-		if (route && route->ifindex == ifindex) {
-			if (route->plen != 0 || include_default)
-				g_array_append_val (routes, *route);
+		if (route && (!ifindex || route->ifindex == ifindex)) {
+			if (NM_PLATFORM_IP_ROUTE_IS_DEFAULT (route)) {
+				if (mode != NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT)
+					g_array_append_val (routes, *route);
+			} else {
+				if (mode != NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT)
+					g_array_append_val (routes, *route);
+			}
 		}
 	}
 
@@ -1010,28 +1020,28 @@ ip4_route_get_all (NMPlatform *platform, int ifindex, gboolean include_default)
 }
 
 static GArray *
-ip6_route_get_all (NMPlatform *platform, int ifindex, gboolean include_default)
+ip6_route_get_all (NMPlatform *platform, int ifindex, NMPlatformGetRouteMode mode)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	GArray *routes;
 	NMPlatformIP6Route *route;
-	int count = 0, i;
+	guint i;
 
-	/* Count routes */
-	for (i = 0; i < priv->ip6_routes->len; i++) {
-		route = &g_array_index (priv->ip6_routes, NMPlatformIP6Route, i);
-		if (route && route->ifindex == ifindex)
-			count++;
-	}
+	g_return_val_if_fail (NM_IN_SET (mode, NM_PLATFORM_GET_ROUTE_MODE_ALL, NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT, NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT), NULL);
 
-	routes = g_array_sized_new (TRUE, TRUE, sizeof (NMPlatformIP6Route), count);
+	routes = g_array_new (TRUE, TRUE, sizeof (NMPlatformIP6Route));
 
 	/* Fill routes */
 	for (i = 0; i < priv->ip6_routes->len; i++) {
 		route = &g_array_index (priv->ip6_routes, NMPlatformIP6Route, i);
-		if (route && route->ifindex == ifindex) {
-			if (route->plen != 0 || include_default)
-				g_array_append_val (routes, *route);
+		if (route && (!ifindex || route->ifindex == ifindex)) {
+			if (NM_PLATFORM_IP_ROUTE_IS_DEFAULT (route)) {
+				if (mode != NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT)
+					g_array_append_val (routes, *route);
+			} else {
+				if (mode != NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT)
+					g_array_append_val (routes, *route);
+			}
 		}
 	}
 
@@ -1039,16 +1049,16 @@ ip6_route_get_all (NMPlatform *platform, int ifindex, gboolean include_default)
 }
 
 static gboolean
-ip4_route_add (NMPlatform *platform, int ifindex, NMPlatformSource source,
+ip4_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
                in_addr_t network, int plen, in_addr_t gateway,
-               int metric, int mss)
+               guint32 pref_src, guint32 metric, guint32 mss)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	NMPlatformIP4Route route;
 	guint i;
 
 	memset (&route, 0, sizeof (route));
-	route.source = NM_PLATFORM_SOURCE_KERNEL;
+	route.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	route.ifindex = ifindex;
 	route.source = source;
 	route.network = network;
@@ -1079,16 +1089,16 @@ ip4_route_add (NMPlatform *platform, int ifindex, NMPlatformSource source,
 }
 
 static gboolean
-ip6_route_add (NMPlatform *platform, int ifindex, NMPlatformSource source,
+ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
                struct in6_addr network, int plen, struct in6_addr gateway,
-               int metric, int mss)
+               guint32 metric, guint32 mss)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	NMPlatformIP6Route route;
 	guint i;
 
 	memset (&route, 0, sizeof (route));
-	route.source = NM_PLATFORM_SOURCE_KERNEL;
+	route.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	route.ifindex = ifindex;
 	route.source = source;
 	route.network = network;
@@ -1119,7 +1129,7 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMPlatformSource source,
 }
 
 static NMPlatformIP4Route *
-ip4_route_get (NMPlatform *platform, int ifindex, in_addr_t network, int plen, int metric)
+ip4_route_get (NMPlatform *platform, int ifindex, in_addr_t network, int plen, guint32 metric)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	int i;
@@ -1138,7 +1148,7 @@ ip4_route_get (NMPlatform *platform, int ifindex, in_addr_t network, int plen, i
 }
 
 static NMPlatformIP6Route *
-ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, int plen, int metric)
+ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, int plen, guint32 metric)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	int i;
@@ -1157,7 +1167,7 @@ ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, int p
 }
 
 static gboolean
-ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, int plen, int metric)
+ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, int plen, guint32 metric)
 {
 	NMPlatformIP4Route *route = ip4_route_get (platform, ifindex, network, plen, metric);
 	NMPlatformIP4Route deleted_route;
@@ -1172,7 +1182,7 @@ ip4_route_delete (NMPlatform *platform, int ifindex, in_addr_t network, int plen
 }
 
 static gboolean
-ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, int plen, int metric)
+ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, int plen, guint32 metric)
 {
 	NMPlatformIP6Route *route = ip6_route_get (platform, ifindex, network, plen, metric);
 	NMPlatformIP6Route deleted_route;
@@ -1187,13 +1197,13 @@ ip6_route_delete (NMPlatform *platform, int ifindex, struct in6_addr network, in
 }
 
 static gboolean
-ip4_route_exists (NMPlatform *platform, int ifindex, in_addr_t network, int plen, int metric)
+ip4_route_exists (NMPlatform *platform, int ifindex, in_addr_t network, int plen, guint32 metric)
 {
 	return !!ip4_route_get (platform, ifindex, network, plen, metric);
 }
 
 static gboolean
-ip6_route_exists (NMPlatform *platform, int ifindex, struct in6_addr network, int plen, int metric)
+ip6_route_exists (NMPlatform *platform, int ifindex, struct in6_addr network, int plen, guint32 metric)
 {
 	return !!ip6_route_get (platform, ifindex, network, plen, metric);
 }
@@ -1340,6 +1350,8 @@ nm_fake_platform_class_init (NMFakePlatformClass *klass)
 	platform_class->ip6_address_delete = ip6_address_delete;
 	platform_class->ip4_address_exists = ip4_address_exists;
 	platform_class->ip6_address_exists = ip6_address_exists;
+
+	platform_class->ip4_check_reinstall_device_route = ip4_check_reinstall_device_route;
 
 	platform_class->ip4_route_get_all = ip4_route_get_all;
 	platform_class->ip6_route_get_all = ip6_route_get_all;

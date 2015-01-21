@@ -233,7 +233,7 @@ the stored object known to NetworkManager.
 <span class="normal">   </span><span class="keyword">if</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">error</span><span class="symbol">)</span>
 <span class="normal">       </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Error adding connection: %s"</span><span class="symbol">,</span><span class="normal"> error</span><span class="symbol">-&gt;</span><span class="normal">message</span><span class="symbol">);</span>
 <span class="normal">   </span><span class="keyword">else</span><span class="normal"> </span><span class="cbracket">{</span>
-<span class="normal">       </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Added: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html#nm-connection-get-path">nm_connection_get_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">NM_CONNECTION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">remote</span><span class="symbol">)));</span>
+<span class="normal">       </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Warnings-and-Assertions.html#g-print">g_print</a></span><span class="normal"> </span><span class="symbol">(</span><span class="string">"Added: %s</span><span class="specialchar">\n</span><span class="string">"</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/libnm-NMConnection.html#nm-connection-get-path">nm_connection_get_path</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function">NM_CONNECTION</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">remote</span><span class="symbol">)));</span>
 <span class="normal">       </span><span class="comment">/* Use 'remote' with nm_remote_connection_commit_changes() to save</span>
 <span class="comment">        * changes and nm_remote_connection_delete() to delete the connection */</span>
 <span class="normal">   </span><span class="cbracket">}</span>
@@ -251,25 +251,25 @@ the stored object known to NetworkManager.
 <span class="normal">   connection </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html#nm-connection-new">nm_connection_new</a></span><span class="normal"> </span><span class="symbol">();</span>
 
 <span class="normal">   </span><span class="comment">/* Build up the 'connection' setting */</span>
-<span class="normal">   s_con </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="https://developer.gnome.org/libnm-util/0.9/NMSettingConnection.html">NMSettingConnection</a> </span><span class="symbol">*)</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMSettingConnection.html#nm-setting-connection-new">nm_setting_connection_new</a></span><span class="normal"> </span><span class="symbol">();</span>
-<span class="normal">   uuid </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-nm-utils.html#nm-utils-uuid-generate">nm_utils_uuid_generate</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">   s_con </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="https://developer.gnome.org/libnm/1.0/NMSettingConnection.html">NMSettingConnection</a> </span><span class="symbol">*)</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/NMSettingConnection.html#nm-setting-connection-new">nm_setting_connection_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">   uuid </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/libnm-nm-utils.html#nm-utils-uuid-generate">nm_utils_uuid_generate</a></span><span class="normal"> </span><span class="symbol">();</span>
 <span class="normal">   </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-set">g_object_set</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#G-OBJECT:CAPS">G_OBJECT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s_con</span><span class="symbol">),</span>
-<span class="normal">                 <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingConnection.html#NM-SETTING-CONNECTION-UUID:CAPS">NM_SETTING_CONNECTION_UUID</a></span><span class="symbol">,</span><span class="normal"> uuid</span><span class="symbol">,</span>
-<span class="normal">                 <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingConnection.html#NM-SETTING-CONNECTION-ID:CAPS">NM_SETTING_CONNECTION_ID</a></span><span class="symbol">,</span><span class="normal"> human_name</span><span class="symbol">,</span>
-<span class="normal">                 <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingConnection.html#NM-SETTING-CONNECTION-TYPE:CAPS">NM_SETTING_CONNECTION_TYPE</a></span><span class="symbol">,</span><span class="normal"> <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingWired.html#NM-SETTING-WIRED-SETTING-NAME:CAPS">NM_SETTING_WIRED_SETTING_NAME</a></span><span class="symbol">,</span>
+<span class="normal">                 <a href="https://developer.gnome.org/libnm/1.0/NMSettingConnection.html#NM-SETTING-CONNECTION-UUID:CAPS">NM_SETTING_CONNECTION_UUID</a></span><span class="symbol">,</span><span class="normal"> uuid</span><span class="symbol">,</span>
+<span class="normal">                 <a href="https://developer.gnome.org/libnm/1.0/NMSettingConnection.html#NM-SETTING-CONNECTION-ID:CAPS">NM_SETTING_CONNECTION_ID</a></span><span class="symbol">,</span><span class="normal"> human_name</span><span class="symbol">,</span>
+<span class="normal">                 <a href="https://developer.gnome.org/libnm/1.0/NMSettingConnection.html#NM-SETTING-CONNECTION-TYPE:CAPS">NM_SETTING_CONNECTION_TYPE</a></span><span class="symbol">,</span><span class="normal"> <a href="https://developer.gnome.org/libnm/1.0/NMSettingWired.html#NM-SETTING-WIRED-SETTING-NAME:CAPS">NM_SETTING_WIRED_SETTING_NAME</a></span><span class="symbol">,</span>
 <span class="normal">                 <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
 <span class="normal">   </span><span class="function"><a href="http://library.gnome.org/devel/glib/unstable/glib-Memory-Allocation.html#g-free">g_free</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">uuid</span><span class="symbol">);</span>
-<span class="normal">   </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html#nm-connection-add-setting">nm_connection_add_setting</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span><span class="normal"> </span><span class="function">NM_SETTING</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s_con</span><span class="symbol">));</span>
+<span class="normal">   </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/libnm-NMConnection.html#nm-connection-add-setting">nm_connection_add_setting</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span><span class="normal"> </span><span class="function">NM_SETTING</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s_con</span><span class="symbol">));</span>
 
 <span class="normal">   </span><span class="comment">/* Add the required 'wired' setting as this is a wired connection */</span>
-<span class="normal">   </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html#nm-connection-add-setting">nm_connection_add_setting</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMSettingWired.html#nm-setting-wired-new">nm_setting_wired_new</a></span><span class="normal"> </span><span class="symbol">());</span>
+<span class="normal">   </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/libnm-NMConnection.html#nm-connection-add-setting">nm_connection_add_setting</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/NMSettingWired.html#nm-setting-wired-new">nm_setting_wired_new</a></span><span class="normal"> </span><span class="symbol">());</span>
 
 <span class="normal">   </span><span class="comment">/* Add an 'ipv4' setting using AUTO configuration (eg DHCP) */</span>
-<span class="normal">   s_ip4 </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="https://developer.gnome.org/libnm-util/0.9/NMSettingIP4Config.html">NMSettingIP4Config</a> </span><span class="symbol">*)</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMSettingIP4Config.html#nm-setting-ip4-config-new">nm_setting_ip4_config_new</a></span><span class="normal"> </span><span class="symbol">();</span>
+<span class="normal">   s_ip4 </span><span class="symbol">=</span><span class="normal"> </span><span class="symbol">(</span><span class="normal"><a href="https://developer.gnome.org/libnm/1.0/NMSettingIP4Config.html">NMSettingIP4Config</a> </span><span class="symbol">*)</span><span class="normal"> </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/NMSettingIP4Config.html#nm-setting-ip4-config-new">nm_setting_ip4_config_new</a></span><span class="normal"> </span><span class="symbol">();</span>
 <span class="normal">   </span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#g-object-set">g_object_set</a></span><span class="normal"> </span><span class="symbol">(</span><span class="function"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#G-OBJECT:CAPS">G_OBJECT</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s_ip4</span><span class="symbol">),</span>
-<span class="normal">                 <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD:CAPS">NM_SETTING_IP4_CONFIG_METHOD</a></span><span class="symbol">,</span><span class="normal"> <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD-AUTO:CAPS">NM_SETTING_IP4_CONFIG_METHOD_AUTO</a></span><span class="symbol">,</span>
+<span class="normal">                 <a href="https://developer.gnome.org/libnm-util/0.9/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD:CAPS">NM_SETTING_IP4_CONFIG_METHOD</a></span><span class="symbol">,</span><span class="normal"> <a href="https://developer.gnome.org/libnm/1.0/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD-AUTO:CAPS">NM_SETTING_IP4_CONFIG_METHOD_AUTO</a></span><span class="symbol">,</span>
 <span class="normal">                 <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS">NULL</a></span><span class="symbol">);</span>
-<span class="normal">   </span><span class="function"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html#nm-connection-add-setting">nm_connection_add_setting</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span><span class="normal"> </span><span class="function">NM_SETTING</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s_ip4</span><span class="symbol">));</span>
+<span class="normal">   </span><span class="function"><a href="https://developer.gnome.org/libnm/1.0/libnm-NMConnection.html#nm-connection-add-setting">nm_connection_add_setting</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">connection</span><span class="symbol">,</span><span class="normal"> </span><span class="function">NM_SETTING</span><span class="normal"> </span><span class="symbol">(</span><span class="normal">s_ip4</span><span class="symbol">));</span>
 
 <span class="normal">   </span><span class="comment">/* Ask NetworkManager to store the connection */</span>
 <span class="normal">   success </span><span class="symbol">=</span><span class="normal"> </span><span class="function"><a href="NMRemoteSettings.html#nm-remote-settings-add-connection">nm_remote_settings_add_connection</a></span><span class="normal"> </span><span class="symbol">(</span><span class="normal">settings</span><span class="symbol">,</span><span class="normal"> connection</span><span class="symbol">,</span><span class="normal"> added_cb</span><span class="symbol">,</span><span class="normal"> loop</span><span class="symbol">);</span>
@@ -597,7 +597,7 @@ list containing all connections provided by the remote settings service.
 Each element of the returned list is a <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><code class="literal">NMRemoteConnection</code></a> instance, which is
 owned by the <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><code class="literal">NMRemoteSettings</code></a> object and should not be freed by the caller.
 The returned list is, however, owned by the caller and should be freed
-using <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#g-slist-free"><code class="function">g_slist_free()</code></a> when no longer required. <span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMClient.RemoteConnection]</span>
+using <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#g-slist-free"><code class="function">g_slist_free()</code></a> when no longer required. <span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMRemoteConnection]</span>
 </td>
 </tr>
 </tbody>
@@ -952,27 +952,37 @@ hostname operation completes. <span class="annotation">[<acronym title="The call
 <div class="refsect2">
 <a name="NMRemoteSettings--bus"></a><h3>The <code class="literal">"bus"</code> property</h3>
 <pre class="programlisting">  "bus"                      <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a>*      : Read / Write / Construct Only</pre>
-<p>DBusGConnection.</p>
+<p>
+The <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> that the <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> is connected to. Defaults
+to the system bus if not specified.
+</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteSettings--can-modify"></a><h3>The <code class="literal">"can-modify"</code> property</h3>
 <pre class="programlisting">  "can-modify"               <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
-<p>Can modify anything (hostname, connections, etc).</p>
+<p>
+If <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a>, adding and modifying connections is supported.
+</p>
 <p>Default value: FALSE</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteSettings--hostname"></a><h3>The <code class="literal">"hostname"</code> property</h3>
 <pre class="programlisting">  "hostname"                 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a>*                : Read</pre>
-<p>Persistent hostname.</p>
+<p>
+The machine hostname stored in persistent configuration. This can be
+modified by calling <a class="link" href="NMRemoteSettings.html#nm-remote-settings-save-hostname" title="nm_remote_settings_save_hostname ()"><code class="function">nm_remote_settings_save_hostname()</code></a>.
+</p>
 <p>Default value: NULL</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteSettings--service-running"></a><h3>The <code class="literal">"service-running"</code> property</h3>
 <pre class="programlisting">  "service-running"          <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>              : Read</pre>
-<p>Is service running.</p>
+<p>
+Whether the settings service is running.
+</p>
 <p>Default value: FALSE</p>
 </div>
 </div>

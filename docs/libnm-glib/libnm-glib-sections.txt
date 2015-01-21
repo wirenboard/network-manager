@@ -211,16 +211,19 @@ nm_device_get_active_connection
 nm_device_get_available_connections
 nm_device_get_physical_port_id
 nm_device_get_mtu
+nm_device_is_software
 nm_device_get_product
 nm_device_get_vendor
 nm_device_get_description
 nm_device_disambiguate_names
-NMDeviceDeactivateFn
+NMDeviceCallbackFn
 nm_device_disconnect
+nm_device_delete
 nm_device_filter_connections
 nm_device_connection_valid
 nm_device_connection_compatible
 nm_device_get_setting_type
+NMDeviceDeactivateFn
 <SUBSECTION Standard>
 NM_DEVICE
 NM_DEVICE_CLASS
@@ -479,12 +482,14 @@ NM_DEVICE_VLAN_ERROR
 nm_device_vlan_error_quark
 NM_DEVICE_VLAN_HW_ADDRESS
 NM_DEVICE_VLAN_CARRIER
+NM_DEVICE_VLAN_PARENT
 NM_DEVICE_VLAN_VLAN_ID
 NMDeviceVlan
 NMDeviceVlanClass
 nm_device_vlan_new
 nm_device_vlan_get_hw_address
 nm_device_vlan_get_carrier
+nm_device_vlan_get_parent
 nm_device_vlan_get_vlan_id
 <SUBSECTION Standard>
 NM_DEVICE_VLAN

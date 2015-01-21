@@ -23,6 +23,8 @@
  *
  */
 
+#include "config.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -33,6 +35,11 @@
 #include <unistd.h>
 
 #include "shvar.h"
+
+#include "NetworkManagerUtils.h"
+#include "nm-logging.h"
+
+#define PARSE_WARNING(msg...) nm_log_warn (LOGD_SETTINGS, "    " msg)
 
 /* Open the file <name>, returning a shvarFile on success and NULL on failure.
  * Add a wrinkle to let the caller specify whether or not to create the file
@@ -233,8 +240,7 @@ svEscape (const char *s)
 		new[j++] = s[i];
 	}
 	new[j++] = '"';
-	new[j++] = '\0'
-;
+	new[j++] = '\0';
 	g_assert (j == slen + mangle - newline + 3);
 
 	return new;
@@ -261,7 +267,8 @@ svGetValue (shvarFile *s, const char *key, gboolean verbatim)
 	for (s->current = s->lineList; s->current; s->current = s->current->next) {
 		line = s->current->data;
 		if (!strncmp (keyString, line, len)) {
-			value = g_strdup (line + len);
+			/* Strip trailing spaces before unescaping to preserve spaces quoted whitespace */
+			value = g_strchomp (g_strdup (line + len));
 			if (!verbatim)
 				svUnescape (value);
 			break;
@@ -306,6 +313,38 @@ svTrueValue (shvarFile *s, const char *key, gboolean def)
 	return returnValue;
 }
 
+/* svGetValueInt64:
+ * @s: fhe file
+ * @key: the name of the key to read
+ * @base: the numeric base (usually 10). Setting to 0 means "auto". Usually you want 10.
+ * @min: the minimum for range-check
+ * @max: the maximum for range-check
+ * @fallback: the fallback value in any error case
+ *
+ * Reads a value @key and converts it to an integer using nm_utils_ascii_str_to_int64().
+ * In case of error, @errno will be set and @fallback returned. */
+gint64
+svGetValueInt64 (shvarFile *s, const char *key, guint base, gint64 min, gint64 max, gint64 fallback)
+{
+	char *tmp;
+	gint64 result;
+	int errsv;
+
+	tmp = svGetValue (s, key, FALSE);
+	if (!tmp) {
+		errno = 0;
+		return fallback;
+	}
+
+	result = nm_utils_ascii_str_to_int64 (tmp, base, min, max, fallback);
+	errsv = errno;
+	if (errsv != 0)
+		PARSE_WARNING ("Error reading '%s' value '%s' as integer (%d)", key, tmp, errsv);
+
+	g_free (tmp);
+
+	return result;
+}
 
 /* Set the variable <key> equal to the value <value>.
  * If <key> does not exist, and the <current> pointer is set, append

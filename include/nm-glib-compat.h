@@ -1,8 +1,5 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-/* NetworkManager -- Network link manager
- *
- * Dan Williams <dcbw@redhat.com>
- *
+/*
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,43 +14,67 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2008 - 2011 Red Hat, Inc.
+ * Copyright 2008 - 2011 Red Hat, Inc.
  */
 
-#ifndef NM_GLIB_COMPAT_H
-#define NM_GLIB_COMPAT_H
+#ifndef __NM_GLIB_COMPAT_H__
+#define __NM_GLIB_COMPAT_H__
 
 
 #include <glib.h>
 #include <glib-object.h>
 
+
+#ifdef __clang__
+
+#undef G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+#undef G_GNUC_END_IGNORE_DEPRECATIONS
+
+#define G_GNUC_BEGIN_IGNORE_DEPRECATIONS \
+    _Pragma("clang diagnostic push") \
+    _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+
+#define G_GNUC_END_IGNORE_DEPRECATIONS \
+    _Pragma("clang diagnostic pop")
+
+#endif
+
+
 #include "nm-gvaluearray-compat.h"
 
-#if !GLIB_CHECK_VERSION(2,34,0)
-static inline void
-g_type_ensure (GType type)
-{
-  if (G_UNLIKELY (type == (GType)-1))
-    g_error ("can't happen");
-}
 
-#define g_clear_pointer(pp, destroy)	  \
-	G_STMT_START { \
-		G_STATIC_ASSERT (sizeof *(pp) == sizeof (gpointer)); \
-		/* Only one access, please */ \
-		gpointer *_pp = (gpointer *) (pp); \
-		gpointer _p; \
-		/* This assignment is needed to avoid a gcc warning */ \
-		GDestroyNotify _destroy = (GDestroyNotify) (destroy); \
-	  \
-		(void) (0 ? (gpointer) *(pp) : 0); \
-		do \
-			_p = g_atomic_pointer_get (_pp); \
-		while G_UNLIKELY (!g_atomic_pointer_compare_and_exchange (_pp, _p, NULL)); \
-	  \
-		if (_p) \
-			_destroy (_p); \
-	} G_STMT_END
+static inline void
+__g_type_ensure (GType type)
+{
+#if !GLIB_CHECK_VERSION(2,34,0)
+	if (G_UNLIKELY (type == (GType)-1))
+		g_error ("can't happen");
+#else
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+	g_type_ensure (type);
+	G_GNUC_END_IGNORE_DEPRECATIONS;
+#endif
+}
+#define g_type_ensure __g_type_ensure
+
+#if !GLIB_CHECK_VERSION(2,34,0)
+
+#define g_clear_pointer(pp, destroy) \
+    G_STMT_START {                                                                 \
+        G_STATIC_ASSERT (sizeof *(pp) == sizeof (gpointer));                       \
+        /* Only one access, please */                                              \
+        gpointer *_pp = (gpointer *) (pp);                                         \
+        gpointer _p;                                                               \
+        /* This assignment is needed to avoid a gcc warning */                     \
+        GDestroyNotify _destroy = (GDestroyNotify) (destroy);                      \
+                                                                                   \
+        _p = *_pp;                                                                 \
+        if (_p)                                                                    \
+        {                                                                          \
+            *_pp = NULL;                                                           \
+            _destroy (_p);                                                         \
+        }                                                                          \
+    } G_STMT_END
 
 /* These are used to clean up the output of test programs; we can just let
  * them no-op in older glib.
@@ -67,13 +88,6 @@ g_type_ensure (GType type)
  * accidentally use new API that we shouldn't. But we don't want warnings for
  * the APIs that we emulate above.
  */
-
-#define g_type_ensure(t) \
-	G_STMT_START { \
-		G_GNUC_BEGIN_IGNORE_DEPRECATIONS \
-		g_type_ensure (t); \
-		G_GNUC_END_IGNORE_DEPRECATIONS \
-	} G_STMT_END
 
 #define g_test_expect_message(domain, level, format...) \
 	G_STMT_START { \
@@ -110,4 +124,43 @@ __nmtst_g_test_skip (const gchar *msg)
 }
 #define g_test_skip __nmtst_g_test_skip
 
-#endif  /* NM_GLIB_COMPAT_H */
+
+/* g_test_add_data_func_full() is only available since glib 2.34. Add a compatibility wrapper. */
+inline static void
+__g_test_add_data_func_full (const char     *testpath,
+                             gpointer        test_data,
+                             GTestDataFunc   test_func,
+                             GDestroyNotify  data_free_func)
+{
+#if GLIB_CHECK_VERSION (2, 34, 0)
+	G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	g_test_add_data_func_full (testpath, test_data, test_func, data_free_func);
+	G_GNUC_END_IGNORE_DEPRECATIONS
+#else
+	g_return_if_fail (testpath != NULL);
+	g_return_if_fail (testpath[0] == '/');
+	g_return_if_fail (test_func != NULL);
+
+	g_test_add_vtable (testpath, 0, test_data, NULL,
+	                   (GTestFixtureFunc) test_func,
+	                   (GTestFixtureFunc) data_free_func);
+#endif
+}
+#define g_test_add_data_func_full __g_test_add_data_func_full
+
+
+#if !GLIB_CHECK_VERSION (2, 34, 0)
+#define G_DEFINE_QUARK(QN, q_n)               \
+GQuark                                        \
+q_n##_quark (void)                            \
+{                                             \
+	static GQuark q;                          \
+                                              \
+	if G_UNLIKELY (q == 0)                    \
+		q = g_quark_from_static_string (#QN); \
+                                              \
+	return q;                                 \
+}
+#endif
+
+#endif  /* __NM_GLIB_COMPAT_H__ */

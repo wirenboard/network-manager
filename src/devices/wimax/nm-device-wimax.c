@@ -19,14 +19,17 @@
  * Copyright (C) 2009 Novell, Inc.
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <net/ethernet.h>
 #include <sys/socket.h>
-#include <linux/if.h>
-#include <netinet/ether.h>
+
+#include <glib/gi18n.h>
+
+#include "nm-wimax-util.h"
 
 #include <WiMaxAPI.h>
 #include <WiMaxAPIEx.h>
@@ -36,8 +39,10 @@
 #include "nm-logging.h"
 #include "nm-device-private.h"
 #include "NetworkManagerUtils.h"
+#include "nm-active-connection.h"
 #include "nm-dbus-manager.h"
 #include "nm-connection.h"
+#include "nm-platform.h"
 #include "nm-setting-connection.h"
 #include "nm-setting-wimax.h"
 #include "nm-utils.h"
@@ -107,19 +112,6 @@ typedef struct {
 	gint tx_power;
 	char *bsid;
 } NMDeviceWimaxPrivate;
-
-/***********************************************************/
-
-#define NM_WIMAX_ERROR (nm_wimax_error_quark ())
-
-static GQuark
-nm_wimax_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("nm-wimax-error");
-	return quark;
-}
 
 /***********************************************************/
 
@@ -316,7 +308,7 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 	NMSettingConnection *s_con;
 	NMSettingWimax *s_wimax;
 	const char *connection_type;
-	const GByteArray *mac;
+	const char *mac;
 
 	if (!NM_DEVICE_CLASS (nm_device_wimax_parent_class)->check_connection_compatible (device, connection))
 		return FALSE;
@@ -333,7 +325,7 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 		return FALSE;
 
 	mac = nm_setting_wimax_get_mac_address (s_wimax);
-	if (mac && memcmp (mac->data, nm_device_get_hw_address (device, NULL), ETH_ALEN))
+	if (mac && !nm_utils_hwaddr_matches (mac, -1, nm_device_get_hw_address (device), -1))
 		return FALSE;
 
 	return TRUE;
@@ -372,9 +364,8 @@ complete_connection (NMDevice *device,
 	NMDeviceWimax *self = NM_DEVICE_WIMAX (device);
 	NMDeviceWimaxPrivate *priv = NM_DEVICE_WIMAX_GET_PRIVATE (self);
 	NMSettingWimax *s_wimax;
-	const GByteArray *setting_mac;
-	const guint8 *hw_address;
-	char *format;
+	const char *setting_mac;
+	const char *hw_address;
 	const char *nsp_name = NULL;
 	NMWimaxNsp *nsp = NULL;
 	GSList *iter;
@@ -385,8 +376,8 @@ complete_connection (NMDevice *device,
 		/* If not given a specific object, we need at minimum an NSP name */
 		if (!s_wimax) {
 			g_set_error_literal (error,
-			                     NM_WIMAX_ERROR,
-			                     NM_WIMAX_ERROR_CONNECTION_INVALID,
+			                     NM_DEVICE_ERROR,
+			                     NM_DEVICE_ERROR_INVALID_CONNECTION,
 			                     "A 'wimax' setting is required if no NSP path was given.");
 			return FALSE;
 		}
@@ -394,8 +385,8 @@ complete_connection (NMDevice *device,
 		nsp_name = nm_setting_wimax_get_network_name (s_wimax);
 		if (!nsp_name || !strlen (nsp_name)) {
 			g_set_error_literal (error,
-			                     NM_WIMAX_ERROR,
-			                     NM_WIMAX_ERROR_CONNECTION_INVALID,
+			                     NM_DEVICE_ERROR,
+			                     NM_DEVICE_ERROR_INVALID_CONNECTION,
 			                     "A 'wimax' setting with a valid network name is required if no NSP path was given.");
 			return FALSE;
 		}
@@ -422,8 +413,8 @@ complete_connection (NMDevice *device,
 
 		if (!nsp) {
 			g_set_error (error,
-			             NM_WIMAX_ERROR,
-			             NM_WIMAX_ERROR_NSP_NOT_FOUND,
+			             NM_DEVICE_ERROR,
+			             NM_DEVICE_ERROR_SPECIFIC_OBJECT_NOT_FOUND,
 			             "The NSP %s was not in the scan list.",
 			             specific_object);
 			return FALSE;
@@ -439,38 +430,31 @@ complete_connection (NMDevice *device,
 	}
 
 	g_assert (nsp_name);
-	format = g_strdup_printf ("%s %%d", nsp_name);
 	nm_utils_complete_generic (connection,
 	                           NM_SETTING_WIMAX_SETTING_NAME,
 	                           existing_connections,
-	                           format,
 	                           nsp_name,
+	                           nsp_name,
+	                           NULL,
 	                           TRUE);
-	g_free (format);
 	g_object_set (G_OBJECT (s_wimax), NM_SETTING_WIMAX_NETWORK_NAME, nsp_name, NULL);
 
 	setting_mac = nm_setting_wimax_get_mac_address (s_wimax);
-	hw_address = nm_device_get_hw_address (device, NULL);
+	hw_address = nm_device_get_hw_address (device);
 	if (setting_mac) {
 		/* Make sure the setting MAC (if any) matches the device's permanent MAC */
-		if (memcmp (setting_mac->data, hw_address, ETH_ALEN)) {
-			g_set_error (error,
-				         NM_SETTING_WIMAX_ERROR,
-				         NM_SETTING_WIMAX_ERROR_INVALID_PROPERTY,
-				         NM_SETTING_WIMAX_MAC_ADDRESS);
+		if (!nm_utils_hwaddr_matches (setting_mac, -1, hw_address, -1)) {
+			g_set_error_literal (error,
+			                     NM_CONNECTION_ERROR,
+			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+			                     _("connection does not match device"));
+			g_prefix_error (error, "%s.%s: ", NM_SETTING_WIMAX_SETTING_NAME, NM_SETTING_WIMAX_MAC_ADDRESS);
 			return FALSE;
 		}
 	} else {
-		GByteArray *mac;
-		const guint8 null_mac[ETH_ALEN] = { 0, 0, 0, 0, 0, 0 };
-
 		/* Lock the connection to this device by default */
-		if (memcmp (hw_address, null_mac, ETH_ALEN)) {
-			mac = g_byte_array_sized_new (ETH_ALEN);
-			g_byte_array_append (mac, hw_address, ETH_ALEN);
-			g_object_set (G_OBJECT (s_wimax), NM_SETTING_WIMAX_MAC_ADDRESS, mac, NULL);
-			g_byte_array_free (mac, TRUE);
-		}
+		if (!nm_utils_hwaddr_matches (hw_address, -1, NULL, ETH_ALEN))
+			g_object_set (G_OBJECT (s_wimax), NM_SETTING_WIMAX_MAC_ADDRESS, hw_address, NULL);
 	}
 
 	return TRUE;
@@ -1047,7 +1031,7 @@ set_link_status (NMDeviceWimax *self, WIMAX_API_LINK_STATUS_INFO_EX *link_status
 		conv_rssi = sdk_rssi_to_dbm (link_status->RSSI);
 		conv_cinr = sdk_cinr_to_db (link_status->CINR);
 		conv_tx_pow = sdk_tx_pow_to_dbm (link_status->txPWR);
-		new_bsid = nm_utils_hwaddr_ntoa_len (link_status->bsId, 6);
+		new_bsid = nm_utils_hwaddr_ntoa (link_status->bsId, 6);
 	}
 
 	if (priv->center_freq != center_freq) {
@@ -1363,58 +1347,52 @@ nm_device_wimax_class_init (NMDeviceWimaxClass *klass)
 	/* Properties */
 	g_object_class_install_property
 		(object_class, PROP_NSPS,
-		 g_param_spec_boxed (NM_DEVICE_WIMAX_NSPS,
-		                     "Network access points",
-		                     "Network access points",
+		 g_param_spec_boxed (NM_DEVICE_WIMAX_NSPS, "", "",
 		                     DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH,
-		                     G_PARAM_READABLE));
+		                     G_PARAM_READABLE |
+		                     G_PARAM_STATIC_STRINGS));
 
-	g_object_class_install_property (object_class, PROP_ACTIVE_NSP,
-		g_param_spec_boxed (NM_DEVICE_WIMAX_ACTIVE_NSP,
-		                    "Active NSP",
-		                    "Currently active NSP",
-		                    DBUS_TYPE_G_OBJECT_PATH,
-		                    G_PARAM_READABLE));
+	g_object_class_install_property
+		(object_class, PROP_ACTIVE_NSP,
+		 g_param_spec_boxed (NM_DEVICE_WIMAX_ACTIVE_NSP, "", "",
+		                     DBUS_TYPE_G_OBJECT_PATH,
+		                     G_PARAM_READABLE |
+		                     G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
 		(object_class, PROP_CENTER_FREQ,
-		 g_param_spec_uint (NM_DEVICE_WIMAX_CENTER_FREQUENCY,
-		                    "Center frequency",
-		                    "Center frequency",
+		 g_param_spec_uint (NM_DEVICE_WIMAX_CENTER_FREQUENCY, "", "",
 		                    0, G_MAXUINT, 0,
-		                    G_PARAM_READABLE));
+		                    G_PARAM_READABLE |
+		                    G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
 		(object_class, PROP_RSSI,
-		 g_param_spec_int (NM_DEVICE_WIMAX_RSSI,
-		                   "RSSI",
-		                   "RSSI",
+		 g_param_spec_int (NM_DEVICE_WIMAX_RSSI, "", "",
 		                   G_MININT, G_MAXINT, 0,
-		                   G_PARAM_READABLE));
+		                   G_PARAM_READABLE |
+		                   G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
 		(object_class, PROP_CINR,
-		 g_param_spec_int (NM_DEVICE_WIMAX_CINR,
-		                   "CINR",
-		                   "CINR",
+		 g_param_spec_int (NM_DEVICE_WIMAX_CINR, "", "",
 		                   G_MININT, G_MAXINT, 0,
-		                   G_PARAM_READABLE));
+		                   G_PARAM_READABLE |
+		                   G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
 		(object_class, PROP_TX_POWER,
-		 g_param_spec_int (NM_DEVICE_WIMAX_TX_POWER,
-		                   "TX Power",
-		                   "TX Power",
+		 g_param_spec_int (NM_DEVICE_WIMAX_TX_POWER, "", "",
 		                   G_MININT, G_MAXINT, 0,
-		                   G_PARAM_READABLE));
+		                   G_PARAM_READABLE |
+		                   G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
 		(object_class, PROP_BSID,
-		 g_param_spec_string (NM_DEVICE_WIMAX_BSID,
-		                      "BSID",
-		                      "BSID",
+		 g_param_spec_string (NM_DEVICE_WIMAX_BSID, "", "",
 		                      NULL,
-		                      G_PARAM_READABLE));
+		                      G_PARAM_READABLE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/* Signals */
 	signals[NSP_ADDED] =
@@ -1440,6 +1418,4 @@ nm_device_wimax_class_init (NMDeviceWimaxClass *klass)
 	nm_dbus_manager_register_exported_type (nm_dbus_manager_get (),
 	                                        G_TYPE_FROM_CLASS (klass),
 	                                        &dbus_glib_nm_device_wimax_object_info);
-
-	dbus_g_error_domain_register (NM_WIMAX_ERROR, NULL, NM_TYPE_WIMAX_ERROR);
 }

@@ -94,8 +94,9 @@ host_triplet = @host@
 @HAVE_INTROSPECTION_TRUE@am__append_12 = $(gir_DATA) $(typelib_DATA)
 subdir = libnm-util
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(srcdir)/libnm-util.pc.in $(top_srcdir)/build-aux/depcomp \
-	$(libnm_util_include_HEADERS) COPYING
+	$(srcdir)/libnm-util.pc.in $(srcdir)/nm-version.h.in \
+	$(top_srcdir)/build-aux/depcomp $(libnm_util_include_HEADERS) \
+	COPYING
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
 	$(top_srcdir)/m4/compiler_warnings.m4 \
@@ -114,7 +115,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = libnm-util.pc
+CONFIG_CLEAN_FILES = libnm-util.pc nm-version.h
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -145,6 +146,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" \
 	"$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(typelibdir)" \
+	"$(DESTDIR)$(libnm_util_includedir)" \
 	"$(DESTDIR)$(libnm_util_includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
@@ -253,7 +255,8 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 DATA = $(gir_DATA) $(pkgconfig_DATA) $(typelib_DATA)
-HEADERS = $(libnm_util_include_HEADERS)
+HEADERS = $(libnm_util_include_HEADERS) \
+	$(nodist_libnm_util_include_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -317,6 +320,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -440,6 +445,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -459,6 +465,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -485,7 +492,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -566,11 +573,14 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 SUBDIRS = . tests
 AM_CPPFLAGS = -I${top_srcdir} -I${top_srcdir}/include \
-	-I${top_builddir}/include -DG_LOG_DOMAIN=\""libnm-util"\" \
+	-DG_LOG_DOMAIN=\""libnm-util"\" \
+	-DLOCALEDIR=\"$(datadir)/locale\" \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) $(UUID_CFLAGS) $(am__append_1) $(am__append_2)
 lib_LTLIBRARIES = libnm-util.la
 libnm_util_include_HEADERS = \
+	NetworkManager.h		\
+	NetworkManagerVPN.h		\
 	nm-connection.h			\
 	nm-setting.h			\
 	nm-setting-8021x.h		\
@@ -599,8 +609,11 @@ libnm_util_include_HEADERS = \
 	nm-setting-wireless.h		\
 	nm-setting-wireless-security.h	\
 	nm-setting-vpn.h		\
-	nm-utils-enum-types.h		\
 	nm-utils.h
+
+nodist_libnm_util_include_HEADERS = \
+	nm-utils-enum-types.h		\
+	nm-version.h
 
 libnm_util_la_private_headers = \
 	crypto.h			\
@@ -648,14 +661,14 @@ libnm_util_la_SOURCES = $(libnm_util_la_csources) \
 	$(am__append_5)
 GLIB_GENERATED = nm-utils-enum-types.h nm-utils-enum-types.c
 BUILT_SOURCES = $(GLIB_GENERATED)
-nm_utils_enum_types_sources = $(libnm_util_include_HEADERS)
+nm_utils_enum_types_sources = $(filter-out NetworkManager%,$(libnm_util_include_HEADERS))
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
 libnm_util_la_LIBADD = $(GLIB_LIBS) $(DBUS_LIBS) $(UUID_LIBS) \
 	$(am__append_4) $(am__append_6)
 SYMBOL_VIS_FILE = $(srcdir)/libnm-util.ver
 libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "8:0:6"
+	-version-info "9:0:7"
 
 libnm_util_includedir = $(includedir)/NetworkManager
 
@@ -669,12 +682,12 @@ libtest_crypto_la_LIBADD = $(GLIB_LIBS) $(am__append_8) \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnm-util.pc
 DISTCLEANFILES = libnm-util.pc
-CLEANFILES = $(am__append_12)
-EXTRA_DIST = libnm-util.pc.in libnm-util.ver
+CLEANFILES = nm-version.h $(am__append_12)
+EXTRA_DIST = libnm-util.pc.in libnm-util.ver nm-version.h.in
 INTROSPECTION_GIRS = $(am__append_11)
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
-@HAVE_INTROSPECTION_TRUE@introspection_sources = $(libnm_util_include_HEADERS) $(libnm_util_la_csources) $(top_srcdir)/include/NetworkManager.h $(top_srcdir)/include/NetworkManagerVPN.h
+@HAVE_INTROSPECTION_TRUE@introspection_sources = $(libnm_util_include_HEADERS) $(nodist_libnm_util_include_HEADERS) $(libnm_util_la_csources)
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_INCLUDES = GObject-2.0 DBusGLib-1.0
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_PACKAGES = gobject-2.0 dbus-glib-1
 @HAVE_INTROSPECTION_TRUE@NetworkManager_1_0_gir_EXPORT_PACKAGES = libnm-util
@@ -722,6 +735,8 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 libnm-util.pc: $(top_builddir)/config.status $(srcdir)/libnm-util.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+nm-version.h: $(top_builddir)/config.status $(srcdir)/nm-version.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
@@ -928,6 +943,27 @@ uninstall-libnm_util_includeHEADERS:
 	@list='$(libnm_util_include_HEADERS)'; test -n "$(libnm_util_includedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(libnm_util_includedir)'; $(am__uninstall_files_from_dir)
+install-nodist_libnm_util_includeHEADERS: $(nodist_libnm_util_include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_libnm_util_include_HEADERS)'; test -n "$(libnm_util_includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(libnm_util_includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(libnm_util_includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libnm_util_includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libnm_util_includedir)" || exit $$?; \
+	done
+
+uninstall-nodist_libnm_util_includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_libnm_util_include_HEADERS)'; test -n "$(libnm_util_includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(libnm_util_includedir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -1091,7 +1127,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(typelibdir)" "$(DESTDIR)$(libnm_util_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(typelibdir)" "$(DESTDIR)$(libnm_util_includedir)" "$(DESTDIR)$(libnm_util_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1152,7 +1188,8 @@ info: info-recursive
 info-am:
 
 install-data-am: install-girDATA install-libnm_util_includeHEADERS \
-	install-pkgconfigDATA install-typelibDATA
+	install-nodist_libnm_util_includeHEADERS install-pkgconfigDATA \
+	install-typelibDATA
 
 install-dvi: install-dvi-recursive
 
@@ -1199,8 +1236,9 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
-	uninstall-libnm_util_includeHEADERS uninstall-pkgconfigDATA \
-	uninstall-typelibDATA
+	uninstall-libnm_util_includeHEADERS \
+	uninstall-nodist_libnm_util_includeHEADERS \
+	uninstall-pkgconfigDATA uninstall-typelibDATA
 
 .MAKE: $(am__recursive_targets) all check check-am install install-am \
 	install-strip
@@ -1214,7 +1252,8 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-girDATA install-html install-html-am \
 	install-info install-info-am install-libLTLIBRARIES \
-	install-libnm_util_includeHEADERS install-man install-pdf \
+	install-libnm_util_includeHEADERS install-man \
+	install-nodist_libnm_util_includeHEADERS install-pdf \
 	install-pdf-am install-pkgconfigDATA install-ps install-ps-am \
 	install-strip install-typelibDATA installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
@@ -1222,6 +1261,7 @@ uninstall-am: uninstall-girDATA uninstall-libLTLIBRARIES \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-girDATA \
 	uninstall-libLTLIBRARIES uninstall-libnm_util_includeHEADERS \
+	uninstall-nodist_libnm_util_includeHEADERS \
 	uninstall-pkgconfigDATA uninstall-typelibDATA
 
 include $(GLIB_MAKEFILE)

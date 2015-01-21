@@ -1,0 +1,205 @@
+<!-- ##### SECTION Title ##### -->
+NMIPConfig
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT NMIPConfig ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMIPConfig:addresses ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:domains ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:family ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:gateway ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:nameservers ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:routes ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:searches ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMIPConfig:wins-servers ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMIPConfigClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### MACRO NM_IP_CONFIG_FAMILY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_GATEWAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_ADDRESSES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_ROUTES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_NAMESERVERS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_DOMAINS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_SEARCHES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_IP_CONFIG_WINS_SERVERS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION nm_ip_config_get_family ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_gateway ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_addresses ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_routes ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_nameservers ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_domains ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_searches ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_ip_config_get_wins_servers ##### -->
+<para>
+
+</para>
+
+@config: 
+@Returns: 
+
+

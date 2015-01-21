@@ -1,0 +1,100 @@
+<!-- ##### SECTION Title ##### -->
+NMDeviceOlpcMesh
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_DEVICE_OLPC_MESH_HW_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_OLPC_MESH_COMPANION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_OLPC_MESH_ACTIVE_CHANNEL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMDeviceOlpcMesh ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceOlpcMesh:active-channel ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceOlpcMesh:companion ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceOlpcMesh:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceOlpcMeshClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_device_olpc_mesh_get_hw_address ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_olpc_mesh_get_companion ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_olpc_mesh_get_active_channel ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+

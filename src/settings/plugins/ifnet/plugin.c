@@ -20,6 +20,8 @@
  * Copyright (C) 1999-2010 Gentoo Foundation, Inc.
  */
 
+#include "config.h"
+
 #include <string.h>
 
 #include <gmodule.h>
@@ -29,7 +31,7 @@
 #include <nm-utils.h>
 #include <nm-setting-connection.h>
 
-#include "NetworkManager.h"
+#include "nm-dbus-interface.h"
 #include "nm-system-config-interface.h"
 #include "nm-logging.h"
 #include "nm-ifnet-connection.h"

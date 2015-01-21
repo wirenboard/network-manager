@@ -324,6 +324,31 @@ nm-utils
 @Returns: 
 
 
+<!-- ##### USER_FUNCTION NMUtilsFileSearchInPathsPredicate ##### -->
+<para>
+
+</para>
+
+@filename: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_utils_file_search_in_paths ##### -->
+<para>
+
+</para>
+
+@progname: 
+@try_first: 
+@paths: 
+@file_test_flags: 
+@predicate: 
+@user_data: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_utils_wifi_freq_to_channel ##### -->
 <para>
 
