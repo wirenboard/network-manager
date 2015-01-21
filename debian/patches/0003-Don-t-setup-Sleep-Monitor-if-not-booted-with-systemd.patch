@@ -18,44 +18,45 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 94b0758..a77d55a 100644
+index b6bf38e..c21cb9d 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -351,7 +351,8 @@ fi
+@@ -373,8 +373,9 @@ fi
  case $with_suspend_resume in
      upower) ;;
      systemd)
--	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])
 +	# Link against libsystemd-daemon for sd_booted()
-+	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183 libsystemd-daemon])
+ 	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd >= 209],,
+-	                  [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
++	                  [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183 libsystemd-daemon])])
          ;;
      *)
  	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 2929e18..85f761b 100644
+index 808e59e..84ece6c 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -322,6 +322,7 @@ AM_CPPFLAGS += \
+@@ -411,6 +411,7 @@ AM_CPPFLAGS += \
+ 	$(LIBNDP_CFLAGS) \
  	$(LIBSOUP_CFLAGS) \
- 	$(POLKIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
 +	$(SYSTEMD_INHIBIT_CFLAGS) \
+ 	$(SYSTEMD_DHCP_CFLAGS) \
  	\
  	-DBINDIR=\"$(bindir)\" \
- 	-DDATADIR=\"$(datadir)\" \
-@@ -364,6 +365,7 @@ libNetworkManager_la_LIBADD = \
+@@ -449,6 +450,7 @@ libNetworkManager_la_LIBADD = \
+ 	$(GUDEV_LIBS) \
  	$(LIBNL_LIBS) \
- 	$(POLKIT_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \
 +	$(SYSTEMD_INHIBIT_LIBS) \
+ 	$(LIBNDP_LIBS) \
  	$(LIBDL) \
  	$(LIBM)
- 
 diff --git a/src/nm-sleep-monitor-systemd.c b/src/nm-sleep-monitor-systemd.c
-index 55134c4..9bbcd4c 100644
+index c0bc65e..0c97335 100644
 --- a/src/nm-sleep-monitor-systemd.c
 +++ b/src/nm-sleep-monitor-systemd.c
-@@ -26,6 +26,7 @@
+@@ -25,6 +25,7 @@
  #include <glib/gi18n.h>
  #include <gio/gio.h>
  #include <gio/gunixfdlist.h>
@@ -63,7 +64,7 @@ index 55134c4..9bbcd4c 100644
  
  #include "nm-logging.h"
  #include "nm-dbus-manager.h"
-@@ -164,6 +165,10 @@ sleep_setup (NMSleepMonitor *self)
+@@ -193,6 +194,10 @@ on_proxy_acquired (GObject *object,
  static void
  nm_sleep_monitor_init (NMSleepMonitor *self)
  {
@@ -72,5 +73,5 @@ index 55134c4..9bbcd4c 100644
 +		return;
 +	}
  	self->inhibit_fd = -1;
- 	sleep_setup (self);
- 	take_inhibitor (self);
+ 	g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
+ 	                          G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START |

@@ -20,7 +20,7 @@ for network.target.
  1 file changed, 2 deletions(-)
 
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index 84a9c95..2fb510f 100644
+index b2e61ff..1883b40 100644
 --- a/data/NetworkManager.service.in
 +++ b/data/NetworkManager.service.in
 @@ -1,7 +1,5 @@

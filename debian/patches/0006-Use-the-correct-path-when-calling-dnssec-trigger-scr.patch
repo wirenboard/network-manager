@@ -9,10 +9,10 @@ a different path.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/dns-manager/nm-dns-unbound.c b/src/dns-manager/nm-dns-unbound.c
-index 137fd20..439a36d 100644
+index 533290c..b5452bf 100644
 --- a/src/dns-manager/nm-dns-unbound.c
 +++ b/src/dns-manager/nm-dns-unbound.c
-@@ -40,7 +40,7 @@ update (NMDnsPlugin *plugin,
+@@ -42,7 +42,7 @@ update (NMDnsPlugin *plugin,
  	 * without calling custom scripts. The dnssec-trigger functionality
  	 * may be eventually merged into NetworkManager.
  	 */

@@ -3,14 +3,5 @@
 0003-Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
 0004-Use-symlinks-for-nmtui.patch
 0005-Mark-virtual-ethernet-interfaces-as-unmanaged.patch
-0006-tui-fix-Wi-Fi-section-of-nmtui-connect-list-in-non-U.patch
-0007-core-fix-checks-for-default-routes-by-comparing-the-.patch
-0008-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
-0009-Support-building-against-libsystemd-library.patch
-0010-tui-fix-requesting-and-displaying-secrets.patch
-0011-tui-fix-updating-of-NmtPasswordFields-passwords-bgo-.patch
-0012-fix-arping-path.patch
-0013-fix-dhclient-abnormal-exit-due-to-SIGPIPE.patch
-0014-log-DHCLIENT-exit-status-better.patch
-0015-core-don-t-override-external-route-metrics.patch
-0016-core-tell-systemd-to-restart-NetworkManager.service-.patch
+0006-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
+0007-fix-arping-path.patch

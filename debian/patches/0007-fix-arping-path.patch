@@ -1,0 +1,29 @@
+From: Laurent Bigonville <bigon@bigon.be>
+Date: Mon, 27 Oct 2014 11:08:02 +0100
+Subject: fix arping path
+
+Debian provides two arping implementations:
+/usr/sbin/arping, shipped by the arping package,
+/usr/bin/arping, shipped by the iputils-arping package.
+
+They aren't completely command line compatible, so we choose the one
+which upstream (Fedora) is using, i.e. iputils-arping.
+
+Closes: #755039
+---
+ src/devices/nm-device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index a989953..abe99d4 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -5095,7 +5095,7 @@ send_arps (NMDevice *self, const char *mode_arg)
+ 	if (num == 0)
+ 		return;
+ 
+-	argv[0] = nm_utils_find_helper ("arping", NULL, NULL);
++	argv[0] = nm_utils_find_helper ("arping", "/usr/bin/arping", NULL);
+ 	if (!argv[0]) {
+ 		_LOGW (LOGD_DEVICE | LOGD_IP4, "arping could not be found; no ARPs will be sent");
+ 		return;
