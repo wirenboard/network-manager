@@ -1,3 +1,9 @@
+network-manager (1.0.0-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 22 Jan 2015 00:30:26 +0100
+
 network-manager (0.9.10.0-5) unstable; urgency=medium
 
   * Cherry-pick upstream commit which prevents breaking PtP TUN interfaces by
