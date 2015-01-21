@@ -18,9 +18,14 @@
  * (C) Copyright 2008 - 2012 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "nm-core-internal.h"
+
 #include "utils.h"
 #include "shvar.h"
 
@@ -37,7 +42,7 @@
 char *
 utils_single_quote_string (const char *str)
 {
-	static const char const drop_chars[] = "\r\n"; /* drop CR and LF */
+	static const char *drop_chars = "\r\n"; /* drop CR and LF */
 	static const char escape_char = '\\'; /* escape char is backslash */
 	static const char quote_char = '\'';  /* quote char is single quote */
 	size_t i, slen, j = 0;

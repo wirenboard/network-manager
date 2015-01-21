@@ -1,5 +1,4 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
-
 /*
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,7 +15,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2014 Red Hat, Inc.
+ * Copyright 2014 Red Hat, Inc.
  */
 
 #ifndef __NM_TEST_UTILS_H__
@@ -34,7 +33,32 @@
 
 #include "nm-utils.h"
 #include "nm-glib-compat.h"
+#include "gsystem-local-alloc.h"
 
+
+/*******************************************************************************/
+
+/* general purpose functions that have no dependency on other nmtst functions */
+
+inline static void
+nmtst_assert_error (GError *error,
+                    GQuark expect_error_domain,
+                    gint expect_error_code,
+                    const char *expect_error_pattern)
+{
+	if (expect_error_domain)
+		g_assert_error (error, expect_error_domain, expect_error_code);
+	else
+		g_assert (error);
+	g_assert (error->message);
+	if (   expect_error_pattern
+	    && !g_pattern_match_simple (expect_error_pattern, error->message)) {
+		g_error ("error message does not have expected pattern '%s'. Instead it is '%s' (%s, %d)",
+		         expect_error_pattern, error->message, g_quark_to_string (error->domain), error->code);
+	}
+}
+
+/*******************************************************************************/
 
 struct __nmtst_internal
 {
@@ -140,7 +164,6 @@ inline static void
 __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_level, const char *log_domains)
 {
 	static gsize atexit_registered = 0;
-	GError *error = NULL;
 	const char *nmtst_debug;
 	gboolean is_debug = FALSE;
 	char *c_log_level = NULL, *c_log_domains = NULL;
@@ -243,7 +266,7 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 
 	if (!__nmtst_internal.assert_logging) {
 		gboolean success = TRUE;
-#ifdef NM_LOGGING_H
+#ifdef __NETWORKMANAGER_LOGGING_H__
 		success = nm_logging_setup (log_level, log_domains, NULL, NULL);
 #endif
 		g_assert (success);
@@ -276,10 +299,6 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 		g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
 	}
 
-	if (!nm_utils_init (&error))
-		g_error ("failed to initialize libnm-util: %s", error->message);
-	g_assert (!error);
-
 	/* Delay messages until we setup logging. */
 	for (i = 0; i < debug_messages->len; i++)
 		__NMTST_LOG (g_message, "%s", g_array_index (debug_messages, const char *, i));
@@ -292,9 +311,14 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 		atexit (nmtst_free);
 		g_once_init_leave (&atexit_registered, 1);
 	}
+
+#ifdef __NETWORKMANAGER_UTILS_H__
+	/* ensure that monotonic timestamp is called (because it initially logs a line) */
+	nm_utils_get_monotonic_timestamp_s ();
+#endif
 }
 
-#ifdef NM_LOGGING_H
+#ifdef __NETWORKMANAGER_LOGGING_H__
 inline static void
 nmtst_init_with_logging (int *argc, char ***argv, const char *log_level, const char *log_domains)
 {
@@ -336,14 +360,14 @@ nmtst_is_debug (void)
 #endif
 
 inline static GRand *
-nmtst_get_rand0 ()
+nmtst_get_rand0 (void)
 {
 	g_assert (nmtst_initialized ());
 	return __nmtst_internal.rand0;
 }
 
 inline static GRand *
-nmtst_get_rand ()
+nmtst_get_rand (void)
 {
 	g_assert (nmtst_initialized ());
 
@@ -539,7 +563,7 @@ __nmtst_spawn_sync (const char *working_directory, char **standard_out, char **s
 
 /*******************************************************************************/
 
-#ifdef NM_PLATFORM_H
+#ifdef __NETWORKMANAGER_PLATFORM_H__
 
 inline static NMPlatformIP6Address *
 nmtst_platform_ip6_address (const char *address, const char *peer_address, guint plen)
@@ -556,7 +580,7 @@ nmtst_platform_ip6_address (const char *address, const char *peer_address, guint
 
 inline static NMPlatformIP6Address *
 nmtst_platform_ip6_address_full (const char *address, const char *peer_address, guint plen,
-                                 int ifindex, NMPlatformSource source, guint32 timestamp,
+                                 int ifindex, NMIPConfigSource source, guint32 timestamp,
                                  guint32 lifetime, guint32 preferred, guint flags)
 {
 	NMPlatformIP6Address *addr = nmtst_platform_ip6_address (address, peer_address, plen);
@@ -586,7 +610,7 @@ nmtst_platform_ip6_route (const char *network, guint plen, const char *gateway)
 
 inline static NMPlatformIP6Route *
 nmtst_platform_ip6_route_full (const char *network, guint plen, const char *gateway,
-                               int ifindex, NMPlatformSource source,
+                               int ifindex, NMIPConfigSource source,
                                guint metric, guint mss)
 {
 	NMPlatformIP6Route *route = nmtst_platform_ip6_route (network, plen, gateway);
@@ -644,7 +668,7 @@ nmtst_platform_ip6_routes_equal (const NMPlatformIP6Route *a, const NMPlatformIP
 #endif
 
 
-#ifdef NM_IP4_CONFIG_H
+#ifdef __NETWORKMANAGER_IP4_CONFIG_H__
 
 inline static NMIP4Config *
 nmtst_ip4_config_clone (NMIP4Config *config)
@@ -660,7 +684,7 @@ nmtst_ip4_config_clone (NMIP4Config *config)
 #endif
 
 
-#ifdef NM_IP6_CONFIG_H
+#ifdef __NETWORKMANAGER_IP6_CONFIG_H__
 
 inline static NMIP6Config *
 nmtst_ip6_config_clone (NMIP6Config *config)
@@ -675,6 +699,413 @@ nmtst_ip6_config_clone (NMIP6Config *config)
 
 #endif
 
+#ifdef __NM_SIMPLE_CONNECTION_H__
+
+inline static NMConnection *
+nmtst_create_minimal_connection (const char *id, const char *uuid, const char *type, NMSettingConnection **out_s_con)
+{
+	NMConnection *con;
+	NMSetting *s_base = NULL;
+	NMSettingConnection *s_con;
+	gs_free char *uuid_free = NULL;
+
+	g_assert (id);
+
+	if (uuid)
+		g_assert (nm_utils_is_uuid (uuid));
+	else
+		uuid = uuid_free = nm_utils_uuid_generate ();
+
+	if (type) {
+		GType type_g = nm_setting_lookup_type (type);
+
+		g_assert (type_g != G_TYPE_INVALID);
+
+		s_base = g_object_new (type_g, NULL);
+		g_assert (NM_IS_SETTING (s_base));
+	}
+
+	con = nm_simple_connection_new ();
+	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
+
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, id,
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_TYPE, type,
+	              NULL);
+	nm_connection_add_setting (con, NM_SETTING (s_con));
+
+	if (s_base)
+		nm_connection_add_setting (con, s_base);
+
+	if (out_s_con)
+		*out_s_con = s_con;
+	return con;
+}
+
+inline static gboolean
+_nmtst_connection_normalize_v (NMConnection *connection, va_list args)
+{
+	GError *error = NULL;
+	gboolean success;
+	gboolean was_modified = FALSE;
+	GHashTable *parameters = NULL;
+	const char *p_name;
+
+	g_assert (NM_IS_CONNECTION (connection));
+
+	while ((p_name = va_arg (args, const char *))) {
+		if (!parameters)
+			parameters =  g_hash_table_new (g_str_hash, g_str_equal);
+		g_hash_table_insert (parameters, (gpointer *) p_name, va_arg (args, gpointer));
+	}
+
+	success = nm_connection_normalize (connection,
+	                                   parameters,
+	                                   &was_modified,
+	                                   &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	if (parameters)
+		g_hash_table_destroy (parameters);
+
+	return was_modified;
+}
+
+inline static gboolean
+_nmtst_connection_normalize (NMConnection *connection, ...)
+{
+	gboolean was_modified;
+	va_list args;
+
+	va_start (args, connection);
+	was_modified = _nmtst_connection_normalize_v (connection, args);
+	va_end (args);
+
+	return was_modified;
+}
+#define nmtst_connection_normalize(connection, ...) \
+    _nmtst_connection_normalize(connection, ##__VA_ARGS__, NULL)
+
+inline static NMConnection *
+_nmtst_connection_duplicate_and_normalize (NMConnection *connection, ...)
+{
+	gboolean was_modified;
+	va_list args;
+
+	g_assert (NM_IS_CONNECTION (connection));
+
+	connection = nm_simple_connection_new_clone (connection);
+
+	va_start (args, connection);
+	was_modified = _nmtst_connection_normalize_v (connection, args);
+	va_end (args);
+
+	return connection;
+}
+#define nmtst_connection_duplicate_and_normalize(connection, ...) \
+    _nmtst_connection_duplicate_and_normalize(connection, ##__VA_ARGS__, NULL)
+
+inline static void
+nmtst_assert_connection_equals (NMConnection *a, gboolean normalize_a, NMConnection *b, gboolean normalize_b)
+{
+	gboolean compare;
+	gs_unref_object NMConnection *a2 = NULL;
+	gs_unref_object NMConnection *b2 = NULL;
+	GHashTable *out_settings = NULL;
+
+	g_assert (NM_IS_CONNECTION (a));
+	g_assert (NM_IS_CONNECTION (b));
+
+	if (normalize_a)
+		a = a2 = nmtst_connection_duplicate_and_normalize (a);
+	if (normalize_b)
+		b = b2 = nmtst_connection_duplicate_and_normalize (b);
+
+	compare = nm_connection_diff (a, b, NM_SETTING_COMPARE_FLAG_EXACT, &out_settings);
+	if (!compare && out_settings) {
+		const char *name, *pname;
+		GHashTable *setting;
+		GHashTableIter iter, iter2;
+
+		g_hash_table_iter_init (&iter, out_settings);
+		while (g_hash_table_iter_next (&iter, (gpointer *) &name, (gpointer *) &setting)) {
+			__NMTST_LOG (g_message, ">>> differences in setting '%s':", name);
+
+			g_hash_table_iter_init (&iter2, out_settings);
+			while (g_hash_table_iter_next (&iter2, (gpointer *) &pname, NULL))
+				__NMTST_LOG (g_message, ">>> differences in setting '%s.%s':", name, pname);
+		}
+	}
+	g_assert (compare);
+	g_assert (!out_settings);
+
+	compare = nm_connection_compare (a, b, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (compare);
+}
+
+inline static void
+nmtst_assert_connection_verifies_without_normalization (NMConnection *con)
+{
+	/* assert that the connection verifies and does not need any normalization */
+
+	GError *error = NULL;
+	gboolean success;
+	gboolean was_modified = FALSE;
+	gs_unref_object NMConnection *clone = NULL;
+
+	g_assert (NM_IS_CONNECTION (con));
+
+	clone = nm_simple_connection_new_clone (con);
+
+	success = nm_connection_verify (con, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	nmtst_assert_connection_equals (con, FALSE, clone, FALSE);
+	g_assert (!was_modified);
+}
+
+inline static void
+nmtst_assert_connection_verifies_and_normalizable (NMConnection *con)
+{
+	/* assert that the connection does verify, but normalization still modifies it */
+	GError *error = NULL;
+	gboolean success;
+	gboolean was_modified = FALSE;
+
+	g_assert (NM_IS_CONNECTION (con));
+
+	success = nm_connection_verify (con, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_clear_error (&error);
+
+	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (was_modified);
+
+	/* again! */
+	nmtst_assert_connection_verifies_without_normalization (con);
+}
+
+inline static void
+nmtst_assert_connection_verifies_after_normalization (NMConnection *con,
+                                                      GQuark expect_error_domain,
+                                                      gint expect_error_code)
+{
+	/* assert that the connection does not verify, but normalization does fix it */
+	GError *error = NULL;
+	gboolean success;
+	gboolean was_modified = FALSE;
+
+	g_assert (NM_IS_CONNECTION (con));
+
+	success = nm_connection_verify (con, &error);
+	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
+	g_assert (!success);
+	g_clear_error (&error);
+
+	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (was_modified);
+
+	/* again! */
+	nmtst_assert_connection_verifies_without_normalization (con);
+}
+
+inline static void
+nmtst_assert_connection_unnormalizable (NMConnection *con,
+                                        GQuark expect_error_domain,
+                                        gint expect_error_code)
+{
+	/* assert that the connection does not verify, and it cannot be fixed by normalization */
+
+	GError *error = NULL;
+	gboolean success;
+	gboolean was_modified = FALSE;
+
+	g_assert (NM_IS_CONNECTION (con));
+
+	success = nm_connection_verify (con, &error);
+	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
+	g_assert (!success);
+	g_clear_error (&error);
+
+	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
+	g_assert (!success);
+	g_assert (!was_modified);
+	g_clear_error (&error);
+}
+
+inline static void
+nmtst_assert_setting_verifies (NMSetting *setting)
+{
+	/* assert that the setting verifies without an error */
+
+	GError *error = NULL;
+	gboolean success;
+
+	g_assert (NM_IS_SETTING (setting));
+
+	success = nm_setting_verify (setting, NULL, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+}
+
+inline static void
+nmtst_assert_setting_verify_fails (NMSetting *setting,
+                                   GQuark expect_error_domain,
+                                   gint expect_error_code)
+{
+	/* assert that the setting verification fails */
+
+	GError *error = NULL;
+	gboolean success;
+
+	g_assert (NM_IS_SETTING (setting));
+
+	success = nm_setting_verify (setting, NULL, &error);
+	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
+	g_assert (!success);
+	g_clear_error (&error);
+}
+
+#endif
+
+#ifdef __NM_UTILS_H__
+static inline void
+nmtst_assert_hwaddr_equals (gconstpointer hwaddr1, gssize hwaddr1_len, const char *expected, const char *loc)
+{
+	guint8 buf2[NM_UTILS_HWADDR_LEN_MAX];
+	gsize hwaddr2_len = 1;
+	const char *p;
+	gboolean success;
+
+	g_assert (hwaddr1_len > 0 && hwaddr1_len <= NM_UTILS_HWADDR_LEN_MAX);
+
+	g_assert (expected);
+	for (p = expected; *p; p++) {
+		if (*p == ':' || *p == '-')
+			hwaddr2_len++;
+	}
+	g_assert (hwaddr2_len <= NM_UTILS_HWADDR_LEN_MAX);
+	g_assert (nm_utils_hwaddr_aton (expected, buf2, hwaddr2_len));
+
+	/* Manually check the entire hardware address instead of using
+	 * nm_utils_hwaddr_matches() because that function doesn't compare
+	 * entire InfiniBand addresses for various (legitimate) reasons.
+	 */
+	success = (hwaddr1_len == hwaddr2_len);
+	if (success)
+		success = !memcmp (hwaddr1, buf2, hwaddr1_len);
+	if (!success) {
+		g_error ("assert: %s: hwaddr '%s' (%zd) expected, but got %s (%zd)",
+		         loc, expected, hwaddr2_len, nm_utils_hwaddr_ntoa (hwaddr1, hwaddr1_len), hwaddr1_len);
+	}
+}
+#define nmtst_assert_hwaddr_equals(hwaddr1, hwaddr1_len, expected) \
+    nmtst_assert_hwaddr_equals (hwaddr1, hwaddr1_len, expected, G_STRLOC)
+#endif
+
+#ifdef __NM_CONNECTION_H__
+
+typedef enum {
+	NMTST_VARIANT_EDITOR_CONNECTION,
+	NMTST_VARIANT_EDITOR_SETTING,
+	NMTST_VARIANT_EDITOR_PROPERTY
+} NmtstVariantEditorPhase;
+
+#define NMTST_VARIANT_EDITOR(__connection_variant, __code) \
+	G_STMT_START { \
+		GVariantIter __connection_iter, *__setting_iter; \
+		GVariantBuilder __connection_builder, __setting_builder; \
+		const char *__cur_setting_name, *__cur_property_name; \
+		GVariant *__property_val; \
+		NmtstVariantEditorPhase __phase; \
+                                                                        \
+		g_variant_builder_init (&__connection_builder, NM_VARIANT_TYPE_CONNECTION); \
+		g_variant_iter_init (&__connection_iter, __connection_variant); \
+		 \
+		__phase = NMTST_VARIANT_EDITOR_CONNECTION; \
+		__cur_setting_name = NULL; \
+		__cur_property_name = NULL; \
+		__code; \
+		while (g_variant_iter_next (&__connection_iter, "{&sa{sv}}", &__cur_setting_name, &__setting_iter)) { \
+			g_variant_builder_init (&__setting_builder, NM_VARIANT_TYPE_SETTING); \
+			__phase = NMTST_VARIANT_EDITOR_SETTING; \
+			__cur_property_name = NULL; \
+			__code; \
+			 \
+			while (   __cur_setting_name \
+			       && g_variant_iter_next (__setting_iter, "{&sv}", &__cur_property_name, &__property_val)) { \
+				__phase = NMTST_VARIANT_EDITOR_PROPERTY; \
+				__code; \
+				 \
+				if (__cur_property_name) { \
+					g_variant_builder_add (&__setting_builder, "{sv}", \
+					                       __cur_property_name, \
+					                       __property_val); \
+				} else \
+					g_variant_unref (__property_val); \
+			} \
+			 \
+			if (__cur_setting_name) \
+				g_variant_builder_add (&__connection_builder, "{sa{sv}}", __cur_setting_name, &__setting_builder); \
+			g_variant_iter_free (__setting_iter); \
+		} \
+		 \
+		g_variant_unref (__connection_variant); \
+		 \
+		__connection_variant = g_variant_builder_end (&__connection_builder); \
+	} G_STMT_END;
+
+#define NMTST_VARIANT_ADD_SETTING(__setting_name, __setting_variant) \
+	G_STMT_START { \
+		if (__phase == NMTST_VARIANT_EDITOR_CONNECTION) \
+			g_variant_builder_add (&__connection_builder, "{s@a{sv}}", __setting_name, __setting_variant); \
+	} G_STMT_END
+
+#define NMTST_VARIANT_DROP_SETTING(__setting_name) \
+	G_STMT_START { \
+		if (__phase == NMTST_VARIANT_EDITOR_SETTING && __cur_setting_name) { \
+			if (!strcmp (__cur_setting_name, __setting_name)) \
+				__cur_setting_name = NULL; \
+		} \
+	} G_STMT_END
+
+#define NMTST_VARIANT_ADD_PROPERTY(__setting_name, __property_name, __format_string, __value) \
+	G_STMT_START { \
+		if (__phase == NMTST_VARIANT_EDITOR_SETTING) { \
+			if (!strcmp (__cur_setting_name, __setting_name)) { \
+				g_variant_builder_add (&__setting_builder, "{sv}", __property_name, \
+				                       g_variant_new (__format_string, __value)); \
+			} \
+		} \
+	} G_STMT_END
+
+#define NMTST_VARIANT_DROP_PROPERTY(__setting_name, __property_name) \
+	G_STMT_START { \
+		if (__phase == NMTST_VARIANT_EDITOR_PROPERTY && __cur_property_name) { \
+			if (   !strcmp (__cur_setting_name, __setting_name) \
+			    && !strcmp (__cur_property_name, __property_name)) \
+				__cur_property_name = NULL; \
+		} \
+	} G_STMT_END
+
+#define NMTST_VARIANT_CHANGE_PROPERTY(__setting_name, __property_name, __format_string, __value) \
+	G_STMT_START { \
+		NMTST_VARIANT_DROP_PROPERTY (__setting_name, __property_name); \
+		NMTST_VARIANT_ADD_PROPERTY (__setting_name, __property_name, __format_string, __value); \
+	} G_STMT_END
+
+#endif /* __NM_CONNECTION_H__ */
 
 #endif /* __NM_TEST_UTILS_H__ */
-

@@ -19,7 +19,8 @@
  * Copyright (C) 2008 - 2012 Red Hat, Inc.
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -32,7 +33,6 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <asm/types.h>
-#include <linux/if.h>
 #include <sys/stat.h>
 
 #include <linux/ppp_defs.h>
@@ -41,18 +41,14 @@
 #endif
 #include <linux/if_ppp.h>
 
-#include "NetworkManager.h"
+#include "NetworkManagerUtils.h"
 #include "nm-glib-compat.h"
 #include "nm-ppp-manager.h"
-#include "nm-setting-connection.h"
-#include "nm-setting-ppp.h"
-#include "nm-setting-pppoe.h"
-#include "nm-setting-adsl.h"
-#include "nm-setting-gsm.h"
-#include "nm-setting-cdma.h"
 #include "nm-dbus-manager.h"
 #include "nm-logging.h"
 #include "nm-posix-signals.h"
+#include "nm-platform.h"
+#include "nm-core-internal.h"
 
 static void impl_ppp_manager_need_secrets (NMPPPManager *manager,
                                            DBusGMethodInvocation *context);
@@ -62,6 +58,10 @@ static gboolean impl_ppp_manager_set_state (NMPPPManager *manager,
                                             GError **err);
 
 static gboolean impl_ppp_manager_set_ip4_config (NMPPPManager *manager,
+                                                 GHashTable *config,
+                                                 GError **err);
+
+static gboolean impl_ppp_manager_set_ip6_config (NMPPPManager *manager,
                                                  GHashTable *config,
                                                  GError **err);
 
@@ -99,6 +99,7 @@ G_DEFINE_TYPE (NMPPPManager, nm_ppp_manager, G_TYPE_OBJECT)
 enum {
 	STATE_CHANGED,
 	IP4_CONFIG,
+	IP6_CONFIG,
 	STATS,
 
 	LAST_SIGNAL
@@ -112,24 +113,10 @@ enum {
 	LAST_PROP
 };
 
-typedef enum {
-	NM_PPP_MANAGER_ERROR_UNKOWN
-} NMPPPManagerError;
-
-GQuark
-nm_ppp_manager_error_quark (void)
-{
-	static GQuark quark;
-
-	if (!quark)
-		quark = g_quark_from_static_string ("nm_ppp_manager_error");
-
-	return quark;
-}
-
 static void
 nm_ppp_manager_init (NMPPPManager *manager)
 {
+	NM_PPP_MANAGER_GET_PRIVATE (manager)->monitor_fd = -1;
 }
 
 static void
@@ -218,11 +205,10 @@ nm_ppp_manager_class_init (NMPPPManagerClass *manager_class)
 	/* Properties */
 	g_object_class_install_property
 		(object_class, PROP_PARENT_IFACE,
-		 g_param_spec_string (NM_PPP_MANAGER_PARENT_IFACE,
-		                      "ParentIface",
-		                      "Parent interface",
+		 g_param_spec_string (NM_PPP_MANAGER_PARENT_IFACE, "", "",
 		                      NULL,
-		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+		                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/* signals */
 	signals[STATE_CHANGED] =
@@ -243,6 +229,14 @@ nm_ppp_manager_class_init (NMPPPManagerClass *manager_class)
 		              G_TYPE_NONE, 2,
 		              G_TYPE_STRING,
 		              G_TYPE_OBJECT);
+
+	signals[IP6_CONFIG] =
+		g_signal_new ("ip6-config",
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              G_STRUCT_OFFSET (NMPPPManagerClass, ip6_config),
+		              NULL, NULL, NULL,
+		              G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_OBJECT);
 
 	signals[STATS] =
 		g_signal_new ("stats",
@@ -299,8 +293,12 @@ monitor_stats (NMPPPManager *manager)
 {
 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (manager);
 
+	/* already monitoring */
+	if (priv->monitor_fd >= 0)
+		return;
+
 	priv->monitor_fd = socket (AF_INET, SOCK_DGRAM, 0);
-	if (priv->monitor_fd > 0) {
+	if (priv->monitor_fd >= 0) {
 		g_warn_if_fail (priv->monitor_id == 0);
 		if (priv->monitor_id)
 			g_source_remove (priv->monitor_id);
@@ -370,7 +368,8 @@ extract_details_from_connection (NMConnection *connection,
 
 	setting = nm_connection_get_setting_by_name (connection, setting_name);
 	if (!setting) {
-		g_set_error_literal (error, NM_PPP_MANAGER_ERROR, NM_PPP_MANAGER_ERROR_UNKOWN,
+		/* This shouldn't ever happen */
+		g_set_error_literal (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 		                     "Missing type-specific setting; no secrets could be found.");
 		return FALSE;
 	}
@@ -425,7 +424,7 @@ ppp_secrets_cb (NMActRequest *req,
 	/* This is sort of a hack but...
 	 * pppd plugin only ever needs username and password. Passing the full
 	 * connection there would mean some bloat: the plugin would need to link
-	 * against libnm-util just to parse this. So instead, let's just send what
+	 * against libnm just to parse this. So instead, let's just send what
 	 * it needs.
 	 */
 	dbus_g_method_return (priv->pending_secrets_context, username, password);
@@ -447,7 +446,7 @@ impl_ppp_manager_need_secrets (NMPPPManager *manager,
 	guint32 tries;
 	GPtrArray *hints = NULL;
 	GError *error = NULL;
-	NMSettingsGetSecretsFlags flags = NM_SETTINGS_GET_SECRETS_FLAG_ALLOW_INTERACTION;
+	NMSecretAgentGetSecretsFlags flags = NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION;
 
 	connection = nm_act_request_get_connection (priv->act_req);
 
@@ -473,7 +472,7 @@ impl_ppp_manager_need_secrets (NMPPPManager *manager,
 	 */
 	tries = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (connection), PPP_MANAGER_SECRET_TRIES));
 	if (tries > 1)
-		flags |= NM_SETTINGS_GET_SECRETS_FLAG_REQUEST_NEW;
+		flags |= NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW;
 
 	priv->secrets_id = nm_act_request_get_secrets (priv->act_req,
 	                                               priv->secrets_setting_name,
@@ -498,19 +497,51 @@ static gboolean impl_ppp_manager_set_state (NMPPPManager *manager,
 }
 
 static gboolean
+set_ip_config_common (NMPPPManager *self,
+                      GHashTable *hash,
+                      const char *iface_prop,
+                      guint32 *out_mtu)
+{
+	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (self);
+	NMConnection *connection;
+	NMSettingPpp *s_ppp;
+	GValue *val;
+
+	val = g_hash_table_lookup (hash, iface_prop);
+	if (!val || !G_VALUE_HOLDS_STRING (val)) {
+		nm_log_err (LOGD_PPP, "no interface received!");
+		return FALSE;
+	}
+	if (priv->ip_iface == NULL)
+		priv->ip_iface = g_value_dup_string (val);
+
+	/* Got successful IP config; obviously the secrets worked */
+	connection = nm_act_request_get_connection (priv->act_req);
+	g_assert (connection);
+	g_object_set_data (G_OBJECT (connection), PPP_MANAGER_SECRET_TRIES, NULL);
+
+	/* Get any custom MTU */
+	s_ppp = nm_connection_get_setting_ppp (connection);
+	if (s_ppp && out_mtu)
+		*out_mtu = nm_setting_ppp_get_mtu (s_ppp);
+
+	monitor_stats (self);
+	return TRUE;
+}
+
+static gboolean
 impl_ppp_manager_set_ip4_config (NMPPPManager *manager,
                                  GHashTable *config_hash,
                                  GError **err)
 {
 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (manager);
-	NMConnection *connection;
-	NMSettingPPP *s_ppp;
 	NMIP4Config *config;
 	NMPlatformIP4Address address;
 	GValue *val;
 	int i;
+	guint32 mtu = 0;
 
-	nm_log_info (LOGD_PPP, "PPP manager(IP Config Get) reply received.");
+	nm_log_info (LOGD_PPP, "PPP manager (IPv4 Config Get) reply received.");
 
 	remove_timeout_handler (manager);
 
@@ -533,7 +564,7 @@ impl_ppp_manager_set_ip4_config (NMPPPManager *manager,
 		address.plen = g_value_get_uint (val);
 
 	if (address.address && address.plen) {
-		address.source = NM_PLATFORM_SOURCE_PPP;
+		address.source = NM_IP_CONFIG_SOURCE_PPP;
 		nm_ip4_config_add_address (config, &address);
 	} else {
 		nm_log_err (LOGD_PPP, "invalid IPv4 address received!");
@@ -556,35 +587,89 @@ impl_ppp_manager_set_ip4_config (NMPPPManager *manager,
 			nm_ip4_config_add_wins (config, g_array_index (wins, guint, i));
 	}
 
-	val = (GValue *) g_hash_table_lookup (config_hash, NM_PPP_IP4_CONFIG_INTERFACE);
-	if (!val || !G_VALUE_HOLDS_STRING (val)) {
-		nm_log_err (LOGD_PPP, "no interface received!");
+	if (!set_ip_config_common (manager, config_hash, NM_PPP_IP4_CONFIG_INTERFACE, &mtu))
 		goto out;
-	}
-	priv->ip_iface = g_value_dup_string (val);
 
-	/* Got successful IP4 config; obviously the secrets worked */
-	connection = nm_act_request_get_connection (priv->act_req);
-	g_assert (connection);
-	g_object_set_data (G_OBJECT (connection), PPP_MANAGER_SECRET_TRIES, NULL);
-
-	/* Merge in custom MTU */
-	s_ppp = nm_connection_get_setting_ppp (connection);
-	if (s_ppp) {
-		guint32 mtu = nm_setting_ppp_get_mtu (s_ppp);
-
-		if (mtu)
-			nm_ip4_config_set_mtu (config, mtu);
-	}
+	if (mtu)
+		nm_ip4_config_set_mtu (config, mtu, NM_IP_CONFIG_SOURCE_PPP);
 
 	/* Push the IP4 config up to the device */
 	g_signal_emit (manager, signals[IP4_CONFIG], 0, priv->ip_iface, config);
 
-	monitor_stats (manager);
-
- out:
+out:
 	g_object_unref (config);
+	return TRUE;
+}
 
+/* Converts the named Interface Identifier item to an IPv6 LL address and
+ * returns the IID.
+ */
+static gboolean
+iid_value_to_ll6_addr (GHashTable *hash,
+                       const char *prop,
+                       struct in6_addr *out_addr,
+                       NMUtilsIPv6IfaceId *out_iid)
+{
+	GValue *val;
+	guint64 iid;
+
+	val = g_hash_table_lookup (hash, prop);
+	if (!val || !G_VALUE_HOLDS (val, G_TYPE_UINT64)) {
+		nm_log_dbg (LOGD_PPP, "pppd plugin property '%s' missing or not a uint64", prop);
+		return FALSE;
+	}
+
+	iid = g_value_get_uint64 (val);
+	g_return_val_if_fail (iid != 0, FALSE);
+
+	/* Construct an IPv6 LL address from the interface identifier.  See
+	 * http://tools.ietf.org/html/rfc4291#section-2.5.1 (IPv6) and
+	 * http://tools.ietf.org/html/rfc5072#section-4.1 (IPv6 over PPP).
+	 */
+	memset (out_addr->s6_addr, 0, sizeof (out_addr->s6_addr));
+	out_addr->s6_addr16[0] = htons (0xfe80);
+	memcpy (out_addr->s6_addr + 8, &iid, sizeof (iid));
+	if (out_iid)
+		nm_utils_ipv6_interface_identfier_get_from_addr (out_iid, out_addr);
+	return TRUE;
+}
+
+static gboolean
+impl_ppp_manager_set_ip6_config (NMPPPManager *manager,
+                                 GHashTable *hash,
+                                 GError **err)
+{
+	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (manager);
+	NMIP6Config *config;
+	NMPlatformIP6Address addr;
+	struct in6_addr a;
+	NMUtilsIPv6IfaceId iid = NM_UTILS_IPV6_IFACE_ID_INIT;
+
+	nm_log_info (LOGD_PPP, "PPP manager (IPv6 Config Get) reply received.");
+
+	remove_timeout_handler (manager);
+
+	config = nm_ip6_config_new ();
+
+	memset (&addr, 0, sizeof (addr));
+	addr.plen = 64;
+
+	if (iid_value_to_ll6_addr (hash, NM_PPP_IP6_CONFIG_PEER_IID, &a, NULL)) {
+		nm_ip6_config_set_gateway (config, &a);
+		addr.peer_address = a;
+	}
+
+	if (iid_value_to_ll6_addr (hash, NM_PPP_IP6_CONFIG_OUR_IID, &addr.address, &iid)) {
+		nm_ip6_config_add_address (config, &addr);
+
+		if (set_ip_config_common (manager, hash, NM_PPP_IP6_CONFIG_INTERFACE, NULL)) {
+			/* Push the IPv6 config and interface identifier up to the device */
+			g_signal_emit (manager, signals[IP6_CONFIG], 0, priv->ip_iface, &iid, config);
+		}
+	} else
+		nm_log_err (LOGD_PPP, "invalid IPv6 address received!");
+
+	g_object_unref (config);
 	return TRUE;
 }
 
@@ -646,36 +731,6 @@ nm_cmd_line_add_int (NMCmdLine *cmd, int i)
 }
 
 /*******************************************/
-
-static const char *pppd_binary_paths[] = {
-	PPPD_PATH,
-	"/usr/local/sbin/pppd",
-	"/usr/sbin/pppd",
-	"/sbin/pppd",
-	NULL
-};
-
-static const char *pppoe_binary_paths[] = {
-	PPPOE_PATH,
-	"/usr/local/sbin/pppoe",
-	"/usr/sbin/pppoe",
-	"/sbin/pppoe",
-	NULL
-};
-
-static inline const char *
-nm_find_binary (const char *paths[])
-{
-	const char **binary = paths;
-
-	while (*binary != NULL) {
-		if (**binary && g_file_test (*binary, G_FILE_TEST_EXISTS))
-			break;
-		binary++;
-	}
-
-	return *binary;
-}
 
 static void
 ppp_exit_code (guint pppd_exit_status, GPid pid)
@@ -789,34 +844,28 @@ pppd_timed_out (gpointer data)
 
 static NMCmdLine *
 create_pppd_cmd_line (NMPPPManager *self,
-                      NMSettingPPP *setting, 
-                      NMSettingPPPOE *pppoe,
+                      NMSettingPpp *setting,
+                      NMSettingPppoe *pppoe,
                       NMSettingAdsl  *adsl,
                       const char *ppp_name,
                       GError **err)
 {
 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (self);
-	const char *pppd_binary, *pppoe_binary = NULL;
+	const char *pppd_binary = NULL, *pppoe_binary = NULL;
 	NMCmdLine *cmd;
 	gboolean ppp_debug;
 
 	g_return_val_if_fail (setting != NULL, NULL);
 
-	pppd_binary = nm_find_binary (pppd_binary_paths);
-	if (!pppd_binary) {
-		g_set_error (err, NM_PPP_MANAGER_ERROR, NM_PPP_MANAGER_ERROR,
-		             "Could not find pppd binary.");
+	pppd_binary = nm_utils_find_helper ("pppd", NULL, err);
+	if (!pppd_binary)
 		return NULL;
-	}
 
 	if (   pppoe
 	    || (adsl && strcmp (nm_setting_adsl_get_protocol (adsl), NM_SETTING_ADSL_PROTOCOL_PPPOE))) {
-		pppoe_binary = nm_find_binary (pppoe_binary_paths);
-		if (!pppoe_binary) {
-			g_set_error (err, NM_PPP_MANAGER_ERROR, NM_PPP_MANAGER_ERROR,
-			             "Could not find pppoe binary.");
+		pppoe_binary = nm_utils_find_helper ("pppoe", NULL, err);
+		if (!pppoe_binary)
 			return NULL;
-		}
 	}
 
 	/* Create pppd command line */
@@ -888,7 +937,7 @@ create_pppd_cmd_line (NMPPPManager *self,
 
 			if (g_strcmp0 (encaps, NM_SETTING_ADSL_ENCAPSULATION_LLC) == 0)
 				nm_cmd_line_add_string (cmd, "llc-encaps");
-			else if (g_strcmp0 (encaps, NM_SETTING_ADSL_ENCAPSULATION_VCMUX) == 0)
+			else /*if (g_strcmp0 (encaps, NM_SETTING_ADSL_ENCAPSULATION_VCMUX) == 0)*/
 				nm_cmd_line_add_string (cmd, "vc-encaps");
 
 		} else if (!strcmp (protocol, NM_SETTING_ADSL_PROTOCOL_PPPOE)) {
@@ -992,7 +1041,7 @@ pppd_child_setup (gpointer user_data G_GNUC_UNUSED)
 }
 
 static void
-pppoe_fill_defaults (NMSettingPPP *setting)
+pppoe_fill_defaults (NMSettingPpp *setting)
 {
 	if (!nm_setting_ppp_get_mtu (setting))
 		g_object_set (setting, NM_SETTING_PPP_MTU, (guint32) 1492, NULL);
@@ -1005,7 +1054,7 @@ pppoe_fill_defaults (NMSettingPPP *setting)
 	              NM_SETTING_PPP_NODEFLATE, TRUE,
 	              NULL);
 
-	/* FIXME: These commented settings should be set as well, update NMSettingPPP first. */
+	/* FIXME: These commented settings should be set as well, update NMSettingPpp first. */
 #if 0
 	setting->noipdefault = TRUE;
 	setting->default_asyncmap = TRUE;
@@ -1027,9 +1076,9 @@ nm_ppp_manager_start (NMPPPManager *manager,
 {
 	NMPPPManagerPrivate *priv;
 	NMConnection *connection;
-	NMSettingPPP *s_ppp;
+	NMSettingPpp *s_ppp;
 	gboolean s_ppp_created = FALSE;
-	NMSettingPPPOE *pppoe_setting;
+	NMSettingPppoe *pppoe_setting;
 	NMSettingAdsl *adsl_setting;
 	NMCmdLine *ppp_cmd;
 	char *cmd_str;
@@ -1044,8 +1093,8 @@ nm_ppp_manager_start (NMPPPManager *manager,
 #if !WITH_PPP
 	/* PPP support disabled */
 	g_set_error_literal (err,
-	                     NM_PPP_MANAGER_ERROR,
-	                     NM_PPP_MANAGER_ERROR_UNKOWN,
+	                     NM_MANAGER_ERROR,
+	                     NM_MANAGER_ERROR_FAILED,
 	                     "PPP support is not enabled.");
 	return FALSE;
 #endif
@@ -1110,22 +1159,6 @@ out:
 	return priv->pid > 0;
 }
 
-static gboolean
-ensure_killed (gpointer data)
-{
-	int pid = GPOINTER_TO_INT (data);
-
-	if (kill (pid, 0) == 0)
-		kill (pid, SIGKILL);
-
-	/* ensure the child is reaped */
-	nm_log_dbg (LOGD_PPP, "waiting for pppd pid %d to exit", pid);
-	waitpid (pid, NULL, 0);
-	nm_log_dbg (LOGD_PPP, "pppd pid %d cleaned up", pid);
-
-	return FALSE;
-}
-
 static void
 _ppp_cleanup (NMPPPManager *manager)
 {
@@ -1142,11 +1175,11 @@ _ppp_cleanup (NMPPPManager *manager)
 		priv->monitor_id = 0;
 	}
 
-	if (priv->monitor_fd) {
+	if (priv->monitor_fd >= 0) {
 		/* Get the stats one last time */
 		monitor_cb (manager);
 		close (priv->monitor_fd);
-		priv->monitor_fd = 0;
+		priv->monitor_fd = -1;
 	}
 
 	if (priv->ppp_timeout_handler) {
@@ -1160,17 +1193,7 @@ _ppp_cleanup (NMPPPManager *manager)
 	}
 
 	if (priv->pid) {
-		if (kill (priv->pid, SIGTERM) == 0)
-			g_timeout_add_seconds (2, ensure_killed, GINT_TO_POINTER (priv->pid));
-		else {
-			kill (priv->pid, SIGKILL);
-
-			/* ensure the child is reaped */
-			nm_log_dbg (LOGD_PPP, "waiting for pppd pid %d to exit", priv->pid);
-			waitpid (priv->pid, NULL, 0);
-			nm_log_dbg (LOGD_PPP, "pppd pid %d cleaned up", priv->pid);
-		}
-
+		nm_utils_kill_child_async (priv->pid, SIGTERM, LOGD_PPP, "pppd", 2000, NULL, NULL);
 		priv->pid = 0;
 	}
 }

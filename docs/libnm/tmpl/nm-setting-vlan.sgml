@@ -1,0 +1,245 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingVlan
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_VLAN_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_VLAN_PARENT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_VLAN_ID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_VLAN_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_VLAN_INGRESS_PRIORITY_MAP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_VLAN_EGRESS_PRIORITY_MAP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingVlan ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingVlan:egress-priority-map ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingVlan:flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingVlan:id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingVlan:ingress-priority-map ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingVlan:parent ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingVlanClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### ENUM NMVlanPriorityMap ##### -->
+<para>
+
+</para>
+
+@NM_VLAN_INGRESS_MAP: 
+@NM_VLAN_EGRESS_MAP: 
+
+<!-- ##### ENUM NMVlanFlags ##### -->
+<para>
+
+</para>
+
+@NM_VLAN_FLAG_REORDER_HEADERS: 
+@NM_VLAN_FLAG_GVRP: 
+@NM_VLAN_FLAG_LOOSE_BINDING: 
+
+<!-- ##### FUNCTION nm_setting_vlan_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_get_parent ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_get_id ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_get_flags ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_get_num_priorities ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_get_priority ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@idx: 
+@out_from: 
+@out_to: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_add_priority ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@from: 
+@to: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_remove_priority ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@idx: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_remove_priority_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@from: 
+@to: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_remove_priority_str_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@str: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_clear_priorities ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+
+
+<!-- ##### FUNCTION nm_setting_vlan_add_priority_str ##### -->
+<para>
+
+</para>
+
+@setting: 
+@map: 
+@str: 
+@Returns: 
+
+

@@ -20,12 +20,13 @@
  */
 
 #include "config.h"
+
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
 
-#include "NetworkManager.h"
+#include "nm-dbus-interface.h"
 #include "nm-dbus-manager.h"
 #include "nm-glib-compat.h"
 #include "nm-properties-changed-signal.h"
@@ -96,7 +97,7 @@ nm_dbus_manager_get (void)
 /**************************************************************/
 
 struct _PrivateServer {
-	char *tag;
+	const char *tag;
 	GQuark detail;
 	char *address;
 	DBusServer *server;
@@ -110,11 +111,12 @@ private_server_message_filter (DBusConnection *conn,
                                void *data)
 {
 	PrivateServer *s = data;
+	int fd;
 
 	/* Clean up after the connection */
 	if (dbus_message_is_signal (message, DBUS_INTERFACE_LOCAL, "Disconnected")) {
-		nm_log_dbg (LOGD_CORE, "(%s) closed connection %p on private socket.",
-		            s->tag, conn);
+		nm_log_dbg (LOGD_CORE, "(%s) closed connection %p on private socket (fd %d).",
+		            s->tag, conn, dbus_connection_get_unix_fd (conn, &fd) ? fd : -1);
 
 		/* Emit this for the manager */
 		g_signal_emit (s->manager,
@@ -145,6 +147,7 @@ private_server_new_connection (DBusServer *server,
 	PrivateServer *s = user_data;
 	static guint32 counter = 0;
 	char *sender;
+	int fd;
 
 	if (!dbus_connection_add_filter (conn, private_server_message_filter, s, NULL)) {
 		dbus_connection_close (conn);
@@ -157,7 +160,8 @@ private_server_new_connection (DBusServer *server,
 	sender = g_strdup_printf ("x:y:%d", counter++);
 	g_hash_table_insert (s->connections, dbus_connection_ref (conn), sender);
 
-	nm_log_dbg (LOGD_CORE, "(%s) accepted connection %p on private socket.", s->tag, conn);
+	nm_log_dbg (LOGD_CORE, "(%s) accepted connection %p on private socket (fd %d).",
+	            s->tag, conn, dbus_connection_get_unix_fd (conn, &fd) ? fd : -1);
 
 	/* Emit this for the manager */
 	g_signal_emit (s->manager,
@@ -208,8 +212,8 @@ private_server_new (const char *path,
 	                                        (GDestroyNotify) private_server_dbus_connection_destroy,
 	                                        g_free);
 	s->manager = manager;
-	s->tag = g_strdup (tag);
-	s->detail = g_quark_from_string (s->tag);
+	s->detail = g_quark_from_string (tag);
+	s->tag = g_quark_to_string (s->detail);
 
 	return s;
 }
@@ -221,7 +225,6 @@ private_server_free (gpointer ptr)
 
 	unlink (s->address);
 	g_free (s->address);
-	g_free (s->tag);
 	g_hash_table_destroy (s->connections);
 	dbus_server_unref (s->server);
 	memset (s, 0, sizeof (*s));
@@ -448,8 +451,8 @@ private_connection_new (NMDBusManager *self, DBusGConnection *connection)
 	g_hash_table_iter_init (&iter, priv->exported);
 	while (g_hash_table_iter_next (&iter, (gpointer) &object, (gpointer) &path)) {
 		dbus_g_connection_register_g_object (connection, path, object);
-		nm_log_dbg (LOGD_CORE, "(%s) registered %p (%s) at '%s' on private socket.",
-		            PRIV_SOCK_TAG, object, G_OBJECT_TYPE_NAME (object), path);
+		nm_log_trace (LOGD_CORE, "(%s) registered %p (%s) at '%s' on private socket.",
+		              PRIV_SOCK_TAG, object, G_OBJECT_TYPE_NAME (object), path);
 	}
 }
 

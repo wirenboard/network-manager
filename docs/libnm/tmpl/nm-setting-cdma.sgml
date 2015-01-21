@@ -1,0 +1,137 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingCdma
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_NUMBER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_USERNAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_PASSWORD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CDMA_PASSWORD_FLAGS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingCdma ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingCdma:number ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingCdma:password ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingCdma:password-flags ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingCdma:username ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingCdmaClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_setting_cdma_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_cdma_get_number ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_cdma_get_username ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_cdma_get_password ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_cdma_get_password_flags ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+

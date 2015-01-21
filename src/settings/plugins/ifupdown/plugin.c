@@ -22,11 +22,11 @@
  * (C) Copyright 2009 - 2011 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <string.h>
 #include <sys/inotify.h>
 
-#include <net/ethernet.h>
-#include <netinet/ether.h>
 
 #include <gmodule.h>
 #include <glib-object.h>
@@ -36,13 +36,14 @@
 
 #include "interface_parser.h"
 
-#include "NetworkManager.h"
+#include "nm-dbus-interface.h"
 #include "nm-system-config-interface.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-wireless.h"
 #include "nm-setting-wired.h"
 #include "nm-setting-ppp.h"
 #include "nm-utils.h"
+#include "nm-core-internal.h"
 
 #include "nm-ifupdown-connection.h"
 #include "plugin.h"
@@ -186,7 +187,6 @@ bind_device_to_connection (SCPluginIfupdown *self,
                            GUdevDevice *device,
                            NMIfupdownConnection *exported)
 {
-	GByteArray *mac_address;
 	NMSettingWired *s_wired;
 	NMSettingWireless *s_wifi;
 	const char *iface, *address;
@@ -203,8 +203,7 @@ bind_device_to_connection (SCPluginIfupdown *self,
 		return;
 	}
 
-	mac_address = nm_utils_hwaddr_atoba (address, ARPHRD_ETHER);
-	if (!mac_address) {
+	if (!nm_utils_hwaddr_valid (address, ETH_ALEN)) {
 		nm_log_warn (LOGD_SETTINGS, "failed to parse MAC address '%s' for %s",
 		             address, iface);
 		return;
@@ -214,12 +213,11 @@ bind_device_to_connection (SCPluginIfupdown *self,
 	s_wifi = nm_connection_get_setting_wireless (NM_CONNECTION (exported));
 	if (s_wired) {
 		nm_log_info (LOGD_SETTINGS, "locking wired connection setting");
-		g_object_set (s_wired, NM_SETTING_WIRED_MAC_ADDRESS, mac_address, NULL);
+		g_object_set (s_wired, NM_SETTING_WIRED_MAC_ADDRESS, address, NULL);
 	} else if (s_wifi) {
 		nm_log_info (LOGD_SETTINGS, "locking wireless connection setting");
-		g_object_set (s_wifi, NM_SETTING_WIRELESS_MAC_ADDRESS, mac_address, NULL);
+		g_object_set (s_wifi, NM_SETTING_WIRELESS_MAC_ADDRESS, address, NULL);
 	}
-	g_byte_array_free (mac_address, TRUE);
 
 	nm_settings_connection_commit_changes (NM_SETTINGS_CONNECTION (exported), NULL, NULL);
 }    
@@ -507,9 +505,7 @@ static GSList*
 SCPluginIfupdown_get_connections (NMSystemConfigInterface *config)
 {
 	SCPluginIfupdownPrivate *priv = SC_PLUGIN_IFUPDOWN_GET_PRIVATE (config);
-	GSList *connections = NULL;
-	GHashTableIter iter;
-	gpointer value;
+	GSList *connections;
 
 	nm_log_info (LOGD_SETTINGS, "(%d) ... get_connections.", GPOINTER_TO_UINT(config));
 
@@ -518,9 +514,7 @@ SCPluginIfupdown_get_connections (NMSystemConfigInterface *config)
 		return NULL;
 	}
 
-	g_hash_table_iter_init (&iter, priv->connections);
-	while (g_hash_table_iter_next (&iter, NULL, &value))
-		connections = g_slist_prepend (connections, value);
+	connections = _nm_utils_hash_values_to_slist (priv->connections);
 
 	nm_log_info (LOGD_SETTINGS, "(%d) connections count: %d", GPOINTER_TO_UINT(config), g_slist_length(connections));
 	return connections;

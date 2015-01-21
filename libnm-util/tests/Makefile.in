@@ -78,14 +78,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@ENABLE_TESTS_TRUE@noinst_PROGRAMS = test-settings-defaults$(EXEEXT) \
+@ENABLE_TESTS_TRUE@TESTS = test-settings-defaults$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-crypto$(EXEEXT) test-secrets$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-general$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-setting-8021x$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-setting-dcb$(EXEEXT)
-@ENABLE_TESTS_TRUE@TESTS = test-settings-defaults$(EXEEXT) \
-@ENABLE_TESTS_TRUE@	test-secrets$(EXEEXT) test-general$(EXEEXT) \
-@ENABLE_TESTS_TRUE@	test-setting-dcb$(EXEEXT)
+@ENABLE_TESTS_TRUE@noinst_PROGRAMS = $(am__EXEEXT_1) \
+@ENABLE_TESTS_TRUE@	test-libnm-linking$(EXEEXT)
 subdir = libnm-util/tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/build-aux/depcomp
@@ -109,6 +108,11 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@ENABLE_TESTS_TRUE@am__EXEEXT_1 = test-settings-defaults$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-crypto$(EXEEXT) test-secrets$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-general$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-setting-8021x$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-setting-dcb$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am__test_crypto_SOURCES_DIST = test-crypto.c
 @ENABLE_TESTS_TRUE@am_test_crypto_OBJECTS = test-crypto.$(OBJEXT)
@@ -124,7 +128,12 @@ am__v_lt_1 =
 am__test_general_SOURCES_DIST = test-general.c
 @ENABLE_TESTS_TRUE@am_test_general_OBJECTS = test-general.$(OBJEXT)
 test_general_OBJECTS = $(am_test_general_OBJECTS)
-@ENABLE_TESTS_TRUE@test_general_DEPENDENCIES =  \
+am__test_libnm_linking_SOURCES_DIST = test-libnm-linking.c
+@ENABLE_TESTS_TRUE@am_test_libnm_linking_OBJECTS =  \
+@ENABLE_TESTS_TRUE@	test-libnm-linking.$(OBJEXT)
+test_libnm_linking_OBJECTS = $(am_test_libnm_linking_OBJECTS)
+@ENABLE_TESTS_TRUE@test_libnm_linking_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm/libnm.la \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
 @ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__test_secrets_SOURCES_DIST = test-secrets.c
@@ -189,35 +198,21 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(test_crypto_SOURCES) $(test_general_SOURCES) \
-	$(test_secrets_SOURCES) $(test_setting_8021x_SOURCES) \
-	$(test_setting_dcb_SOURCES) $(test_settings_defaults_SOURCES)
+	$(test_libnm_linking_SOURCES) $(test_secrets_SOURCES) \
+	$(test_setting_8021x_SOURCES) $(test_setting_dcb_SOURCES) \
+	$(test_settings_defaults_SOURCES)
 DIST_SOURCES = $(am__test_crypto_SOURCES_DIST) \
 	$(am__test_general_SOURCES_DIST) \
+	$(am__test_libnm_linking_SOURCES_DIST) \
 	$(am__test_secrets_SOURCES_DIST) \
 	$(am__test_setting_8021x_SOURCES_DIST) \
 	$(am__test_setting_dcb_SOURCES_DIST) \
 	$(am__test_settings_defaults_SOURCES_DIST)
-RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
-	ctags-recursive dvi-recursive html-recursive info-recursive \
-	install-data-recursive install-dvi-recursive \
-	install-exec-recursive install-html-recursive \
-	install-info-recursive install-pdf-recursive \
-	install-ps-recursive install-recursive installcheck-recursive \
-	installdirs-recursive pdf-recursive ps-recursive \
-	tags-recursive uninstall-recursive
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
-  distclean-recursive maintainer-clean-recursive
-am__recursive_targets = \
-  $(RECURSIVE_TARGETS) \
-  $(RECURSIVE_CLEAN_TARGETS) \
-  $(am__extra_recursive_targets)
-AM_RECURSIVE_TARGETS = $(am__recursive_targets:-recursive=) TAGS CTAGS \
-	distdir
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -259,33 +254,7 @@ am__tty_colors = { \
     std='[m'; \
   fi; \
 }
-DIST_SUBDIRS = certs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-am__relativize = \
-  dir0=`pwd`; \
-  sed_first='s,^\([^/]*\)/.*$$,\1,'; \
-  sed_rest='s,^[^/]*/*,,'; \
-  sed_last='s,^.*/\([^/]*\)$$,\1,'; \
-  sed_butlast='s,/*[^/]*$$,,'; \
-  while test -n "$$dir1"; do \
-    first=`echo "$$dir1" | sed -e "$$sed_first"`; \
-    if test "$$first" != "."; then \
-      if test "$$first" = ".."; then \
-        dir2=`echo "$$dir0" | sed -e "$$sed_last"`/"$$dir2"; \
-        dir0=`echo "$$dir0" | sed -e "$$sed_butlast"`; \
-      else \
-        first2=`echo "$$dir2" | sed -e "$$sed_first"`; \
-        if test "$$first2" = "$$first"; then \
-          dir2=`echo "$$dir2" | sed -e "$$sed_rest"`; \
-        else \
-          dir2="../$$dir2"; \
-        fi; \
-        dir0="$$dir0"/"$$first"; \
-      fi; \
-    fi; \
-    dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
-  done; \
-  reldir="$$dir2"
 ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
@@ -295,6 +264,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -418,6 +389,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -437,6 +409,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -463,7 +436,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -542,16 +515,15 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
-@ENABLE_TESTS_TRUE@SUBDIRS = certs
 @ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
-@ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
 @ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
-@ENABLE_TESTS_TRUE@	-DTEST_CERT_DIR=\"$(top_srcdir)/libnm-util/tests/certs/\"
+@ENABLE_TESTS_TRUE@	-DBUILD_DIR=\"$(abs_builddir)\" \
+@ENABLE_TESTS_TRUE@	-DTEST_CERT_DIR=\"$(top_srcdir)/libnm-core/tests/certs/\"
 
 @ENABLE_TESTS_TRUE@test_settings_defaults_SOURCES = \
 @ENABLE_TESTS_TRUE@	test-settings-defaults.c
@@ -585,6 +557,7 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
+@ENABLE_TESTS_TRUE@test_general_DEPENDENCIES = test-libnm-linking
 @ENABLE_TESTS_TRUE@test_setting_8021x_SOURCES = \
 @ENABLE_TESTS_TRUE@	test-setting-8021x.c
 
@@ -601,7 +574,16 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
-all: all-recursive
+@ENABLE_TESTS_TRUE@test_libnm_linking_SOURCES = \
+@ENABLE_TESTS_TRUE@	test-libnm-linking.c
+
+@ENABLE_TESTS_TRUE@test_libnm_linking_LDADD = \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm/libnm.la \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
+@ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
+@ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
+
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -653,6 +635,10 @@ test-general$(EXEEXT): $(test_general_OBJECTS) $(test_general_DEPENDENCIES) $(EX
 	@rm -f test-general$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_general_OBJECTS) $(test_general_LDADD) $(LIBS)
 
+test-libnm-linking$(EXEEXT): $(test_libnm_linking_OBJECTS) $(test_libnm_linking_DEPENDENCIES) $(EXTRA_test_libnm_linking_DEPENDENCIES) 
+	@rm -f test-libnm-linking$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_libnm_linking_OBJECTS) $(test_libnm_linking_LDADD) $(LIBS)
+
 test-secrets$(EXEEXT): $(test_secrets_OBJECTS) $(test_secrets_DEPENDENCIES) $(EXTRA_test_secrets_DEPENDENCIES) 
 	@rm -f test-secrets$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_secrets_OBJECTS) $(test_secrets_LDADD) $(LIBS)
@@ -677,6 +663,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-crypto.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-general.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-libnm-linking.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-secrets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setting-8021x.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setting-dcb.Po@am__quote@
@@ -709,61 +696,14 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 
-# This directory's subdirectories are mostly independent; you can cd
-# into them and run 'make' without going through this Makefile.
-# To change the values of 'make' variables: instead of editing Makefiles,
-# (1) if the variable is set in 'config.status', edit 'config.status'
-#     (which will cause the Makefiles to be regenerated when you run 'make');
-# (2) otherwise, pass the desired values on the 'make' command line.
-$(am__recursive_targets):
-	@fail=; \
-	if $(am__make_keepgoing); then \
-	  failcom='fail=yes'; \
-	else \
-	  failcom='exit 1'; \
-	fi; \
-	dot_seen=no; \
-	target=`echo $@ | sed s/-recursive//`; \
-	case "$@" in \
-	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
-	  *) list='$(SUBDIRS)' ;; \
-	esac; \
-	for subdir in $$list; do \
-	  echo "Making $$target in $$subdir"; \
-	  if test "$$subdir" = "."; then \
-	    dot_seen=yes; \
-	    local_target="$$target-am"; \
-	  else \
-	    local_target="$$target"; \
-	  fi; \
-	  ($(am__cd) $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	  || eval $$failcom; \
-	done; \
-	if test "$$dot_seen" = "no"; then \
-	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
-	fi; test -z "$$fail"
-
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
-tags: tags-recursive
+tags: tags-am
 TAGS: tags
 
 tags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
 	set x; \
 	here=`pwd`; \
-	if ($(ETAGS) --etags-include --version) >/dev/null 2>&1; then \
-	  include_option=--etags-include; \
-	  empty_fix=.; \
-	else \
-	  include_option=--include; \
-	  empty_fix=; \
-	fi; \
-	list='$(SUBDIRS)'; for subdir in $$list; do \
-	  if test "$$subdir" = .; then :; else \
-	    test ! -f $$subdir/TAGS || \
-	      set "$$@" "$$include_option=$$here/$$subdir/TAGS"; \
-	  fi; \
-	done; \
 	$(am__define_uniq_tagged_files); \
 	shift; \
 	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
@@ -776,7 +716,7 @@ tags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
 	      $$unique; \
 	  fi; \
 	fi
-ctags: ctags-recursive
+ctags: ctags-am
 
 CTAGS: ctags
 ctags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
@@ -789,7 +729,7 @@ GTAGS:
 	here=`$(am__cd) $(top_builddir) && pwd` \
 	  && $(am__cd) $(top_srcdir) \
 	  && gtags -i $(GTAGS_ARGS) "$$here"
-cscopelist: cscopelist-recursive
+cscopelist: cscopelist-am
 
 cscopelist-am: $(am__tagged_files)
 	list='$(am__tagged_files)'; \
@@ -931,47 +871,20 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-	@list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
-	  if test "$$subdir" = .; then :; else \
-	    $(am__make_dryrun) \
-	      || test -d "$(distdir)/$$subdir" \
-	      || $(MKDIR_P) "$(distdir)/$$subdir" \
-	      || exit 1; \
-	    dir1=$$subdir; dir2="$(distdir)/$$subdir"; \
-	    $(am__relativize); \
-	    new_distdir=$$reldir; \
-	    dir1=$$subdir; dir2="$(top_distdir)"; \
-	    $(am__relativize); \
-	    new_top_distdir=$$reldir; \
-	    echo " (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir="$$new_top_distdir" distdir="$$new_distdir" \\"; \
-	    echo "     am__remove_distdir=: am__skip_length_check=: am__skip_mode_fix=: distdir)"; \
-	    ($(am__cd) $$subdir && \
-	      $(MAKE) $(AM_MAKEFLAGS) \
-	        top_distdir="$$new_top_distdir" \
-	        distdir="$$new_distdir" \
-		am__remove_distdir=: \
-		am__skip_length_check=: \
-		am__skip_mode_fix=: \
-	        distdir) \
-	      || exit 1; \
-	  fi; \
-	done
-@ENABLE_TESTS_FALSE@check-local:
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
-check: check-recursive
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
+check: check-am
 all-am: Makefile $(PROGRAMS)
-installdirs: installdirs-recursive
-installdirs-am:
-install: install-recursive
-install-exec: install-exec-recursive
-install-data: install-data-recursive
-uninstall: uninstall-recursive
+installdirs:
+install: install-am
+install-exec: install-exec-am
+install-data: install-data-am
+uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-recursive
+installcheck: installcheck-am
 install-strip:
 	if test -z '$(STRIP)'; then \
 	  $(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
@@ -993,154 +906,93 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-recursive
+clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
-distclean: distclean-recursive
+distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
 
-dvi: dvi-recursive
+dvi: dvi-am
 
 dvi-am:
 
-html: html-recursive
+html: html-am
 
 html-am:
 
-info: info-recursive
+info: info-am
 
 info-am:
 
 install-data-am:
 
-install-dvi: install-dvi-recursive
+install-dvi: install-dvi-am
 
 install-dvi-am:
 
 install-exec-am:
 
-install-html: install-html-recursive
+install-html: install-html-am
 
 install-html-am:
 
-install-info: install-info-recursive
+install-info: install-info-am
 
 install-info-am:
 
 install-man:
 
-install-pdf: install-pdf-recursive
+install-pdf: install-pdf-am
 
 install-pdf-am:
 
-install-ps: install-ps-recursive
+install-ps: install-ps-am
 
 install-ps-am:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-recursive
+maintainer-clean: maintainer-clean-am
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-recursive
+mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-pdf: pdf-recursive
+pdf: pdf-am
 
 pdf-am:
 
-ps: ps-recursive
+ps: ps-am
 
 ps-am:
 
 uninstall-am:
 
-.MAKE: $(am__recursive_targets) check-am install-am install-strip
+.MAKE: check-am install-am install-strip
 
-.PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am check \
-	check-TESTS check-am check-local clean clean-generic \
-	clean-libtool clean-noinstPROGRAMS cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
+.PHONY: CTAGS GTAGS TAGS all all-am check check-TESTS check-am clean \
+	clean-generic clean-libtool clean-noinstPROGRAMS cscopelist-am \
+	ctags ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am
 
-
-@ENABLE_TESTS_TRUE@check-local: test-crypto test-setting-8021x
-# Private key and CA certificate in the same file (PEM)
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test_key_and_cert.pem "test"
-
-# Private key by itself (PEM)
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-key-only.pem "test"
-
-# PKCS#8 private key by itself (PEM)
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/pkcs8-enc-key.pem "1234567890"
-
-# Private key and CA certificate in the same file (pkcs12)
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-setting-8021x $(srcdir)/certs/test-cert.p12 "test"
-
-# Normal CA certificate
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.pem
-
-# Another CA certificate
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_ca_cert.pem
-
-# Normal CA certificate (DER format)
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_ca_cert.der
-
-# CA certificate without an ending newline
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/ca-no-ending-newline.pem
-
-# Combined user cert and private key
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test_key_and_cert.pem
-
-# Another combined user cert and private key
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --cert $(srcdir)/certs/test2_key_and_cert.pem
-
-# Private key with 8 bytes of tail padding
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key \
-@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test_key_and_cert.pem \
-@ENABLE_TESTS_TRUE@		"test" \
-@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test-key-only-decrypted.der
-
-# Private key only (not combined with a cert)
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key \
-@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test-key-only.pem \
-@ENABLE_TESTS_TRUE@		"test" \
-@ENABLE_TESTS_TRUE@		$(srcdir)/certs/test-key-only-decrypted.der
-
-# Private key with 6 bytes of tail padding
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key $(srcdir)/certs/test2_key_and_cert.pem "12345testing"
-
-# PKCS#12 file
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test-cert.p12 "test"
-
-# Another PKCS#12 file
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --p12 $(srcdir)/certs/test2-cert.p12 "12345testing"
-
-# PKCS#8 encrypted private key
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --pkcs8 \
-@ENABLE_TESTS_TRUE@		$(srcdir)/certs/pkcs8-enc-key.pem \
-@ENABLE_TESTS_TRUE@		"1234567890"
-
-# Private key with AES cipher
-@ENABLE_TESTS_TRUE@	$(abs_builddir)/test-crypto --key $(srcdir)/certs/test-aes-key.pem "test-aes-password"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

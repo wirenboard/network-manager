@@ -1,0 +1,89 @@
+<!-- ##### SECTION Title ##### -->
+NMVpnConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_VPN_CONNECTION_VPN_STATE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_VPN_CONNECTION_BANNER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMVpnConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NMVpnConnection::vpn-state-changed ##### -->
+<para>
+
+</para>
+
+@nmvpnconnection: the object which received the signal.
+@arg1: 
+@arg2: 
+
+<!-- ##### ARG NMVpnConnection:banner ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMVpnConnection:vpn-state ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMVpnConnectionClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+@vpn_state_changed: 
+
+<!-- ##### FUNCTION nm_vpn_connection_get_vpn_state ##### -->
+<para>
+
+</para>
+
+@vpn: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_vpn_connection_get_banner ##### -->
+<para>
+
+</para>
+
+@vpn: 
+@Returns: 
+
+

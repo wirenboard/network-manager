@@ -1,0 +1,74 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingTeam
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_TEAM_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_TEAM_CONFIG ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingTeam ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingTeam:config ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingTeamClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_setting_team_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_team_get_config ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+

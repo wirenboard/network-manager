@@ -21,12 +21,11 @@
  * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <net/ethernet.h>
-#include <netinet/ether.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -49,9 +48,9 @@
 #include "nm-dbus-glib-types.h"
 #include "plugin.h"
 #include "nm-system-config-interface.h"
-#include "nm-settings-error.h"
 #include "nm-config.h"
 #include "nm-logging.h"
+#include "NetworkManagerUtils.h"
 
 #include "nm-ifcfg-connection.h"
 #include "nm-inotify-helper.h"
@@ -143,7 +142,8 @@ _internal_new_connection (SCPluginIfcfg *self,
 		if (local)
 			g_propagate_error (error, local);
 		else
-			g_set_error (error, IFCFG_PLUGIN_ERROR, 0, "(unknown)");
+			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
+			             "(unknown)");
 		return NULL;
 	}
 
@@ -648,10 +648,10 @@ plugin_get_hostname (SCPluginIfcfg *plugin)
 	hostname = svGetValue (network, "HOSTNAME", FALSE);
 	ignore_localhost = svTrueValue (network, "NM_IGNORE_HOSTNAME_LOCALHOST", FALSE);
 	if (ignore_localhost) {
-		/* Ignore a hostname of 'localhost' or 'localhost.localdomain' to preserve
-		 * 'network' service behavior.
+		/* Ignore a default hostname ('localhost[6]' or 'localhost[6].localdomain[6]')
+		 * to preserve 'network' service behavior.
 		 */
-		if (hostname && (!strcmp (hostname, "localhost") || !strcmp (hostname, "localhost.localdomain"))) {
+		if (hostname && !nm_utils_is_specific_hostname (hostname)) {
 			g_free (hostname);
 			hostname = NULL;
 		}
@@ -669,12 +669,14 @@ plugin_set_hostname (SCPluginIfcfg *plugin, const char *hostname)
 	char *hostname_eol;
 	gboolean ret;
 #if HAVE_SELINUX
-	security_context_t se_ctx_prev, se_ctx = NULL;
+	security_context_t se_ctx_prev = NULL, se_ctx = NULL;
 	struct stat file_stat = { .st_mode = 0 };
+	mode_t st_mode = 0;
 
 	/* Get default context for HOSTNAME_FILE and set it for fscreate */
-	stat (HOSTNAME_FILE, &file_stat);
-	matchpathcon (HOSTNAME_FILE, file_stat.st_mode, &se_ctx);
+	if (stat (HOSTNAME_FILE, &file_stat) == 0)
+		st_mode = file_stat.st_mode;
+	matchpathcon (HOSTNAME_FILE, st_mode, &se_ctx);
 	matchpathcon_fini ();
 	getfscreatecon (&se_ctx_prev);
 	setfscreatecon (se_ctx);
@@ -790,7 +792,7 @@ impl_ifcfgrh_get_ifcfg_details (SCPluginIfcfg *plugin,
 	if (!s_con) {
 		g_set_error (error,
 		             NM_SETTINGS_ERROR,
-		             NM_SETTINGS_ERROR_INTERNAL_ERROR,
+		             NM_SETTINGS_ERROR_FAILED,
 		             "unable to retrieve the connection setting");
 		return FALSE;
 	}
@@ -799,7 +801,7 @@ impl_ifcfgrh_get_ifcfg_details (SCPluginIfcfg *plugin,
 	if (!uuid) {
 		g_set_error (error,
 		             NM_SETTINGS_ERROR,
-		             NM_SETTINGS_ERROR_INTERNAL_ERROR,
+		             NM_SETTINGS_ERROR_FAILED,
 		             "unable to get the UUID");
 		return FALSE;
 	}
@@ -808,7 +810,7 @@ impl_ifcfgrh_get_ifcfg_details (SCPluginIfcfg *plugin,
 	if (!path) {
 		g_set_error (error,
 		             NM_SETTINGS_ERROR,
-		             NM_SETTINGS_ERROR_INTERNAL_ERROR,
+		             NM_SETTINGS_ERROR_FAILED,
 		             "unable to get the connection D-Bus path");
 		return FALSE;
 	}

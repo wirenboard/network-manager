@@ -19,7 +19,8 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <errno.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -41,7 +42,6 @@
 #include <sys/types.h>
 #include <linux/types.h>
 #include <sys/socket.h>
-#include <linux/if.h>
 #include <linux/wireless.h>
 
 
@@ -230,7 +230,7 @@ wifi_wext_get_ssid (WifiData *data)
 }
 
 static gboolean
-wifi_wext_get_bssid (WifiData *data, struct ether_addr *out_bssid)
+wifi_wext_get_bssid (WifiData *data, guint8 *out_bssid)
 {
 	WifiDataWext *wext = (WifiDataWext *) data;
 	struct iwreq wrq;
@@ -243,7 +243,7 @@ wifi_wext_get_bssid (WifiData *data, struct ether_addr *out_bssid)
 		             wext->parent.iface, strerror (errno));
 		return FALSE;
 	}
-	memcpy (out_bssid->ether_addr_octet, &(wrq.u.ap_addr.sa_data), ETH_ALEN);
+	memcpy (out_bssid, &(wrq.u.ap_addr.sa_data), ETH_ALEN);
 	return TRUE;
 }
 
@@ -421,18 +421,15 @@ wifi_wext_set_mesh_channel (WifiData *data, guint32 channel)
 }
 
 static gboolean
-wifi_wext_set_mesh_ssid (WifiData *data, const GByteArray *ssid)
+wifi_wext_set_mesh_ssid (WifiData *data, const guint8 *ssid, gsize len)
 {
 	WifiDataWext *wext = (WifiDataWext *) data;
 	struct iwreq wrq;
-	guint32 len = 0;
 	char buf[IW_ESSID_MAX_SIZE + 1];
 
 	memset (buf, 0, sizeof (buf));
-	if (ssid) {
-		len = ssid->len;
-		memcpy (buf, ssid->data, MIN (sizeof (buf) - 1, len));
-	}
+	memcpy (buf, ssid, MIN (sizeof (buf) - 1, len));
+
 	wrq.u.essid.pointer = (caddr_t) buf;
 	wrq.u.essid.length = len;
 	wrq.u.essid.flags = (len > 0) ? 1 : 0; /* 1=enable SSID, 0=disable/any */
@@ -445,7 +442,7 @@ wifi_wext_set_mesh_ssid (WifiData *data, const GByteArray *ssid)
 		nm_log_err (LOGD_HW | LOGD_WIFI | LOGD_OLPC,
 		            "(%s): error setting SSID to '%s': %s",
 		            wext->parent.iface,
-		            ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(null)",
+		            ssid ? nm_utils_escape_ssid (ssid, len) : "(null)",
 		            strerror (errno));
 	}
 

@@ -352,7 +352,9 @@ secret is not required
 	NM_SETTING_COMPARE_FLAG_IGNORE_ID = 0x00000002,
 	NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS = 0x00000004,
 	NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS = 0x00000008,
-	NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS = 0x00000010
+	NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS = 0x00000010,
+	NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT = 0x00000020,
+	NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT = 0x00000040,
 
 	/* 0x80000000 is used for a private flag */
 } NMSettingCompareFlags;
@@ -401,6 +403,28 @@ the secret's flags indicate the secret is owned by a user secret agent
 <td>ignore secrets for which
 the secret's flags indicate the secret should not be saved to persistent
 storage (ie, the secret's flag includes <em class="parameter"><code>NM_SETTING_SECRET_FLAG_NOT_SAVED</code></em>)
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-COMPARE-FLAG-DIFF-RESULT-WITH-DEFAULT:CAPS"></a><span class="term"><code class="literal">NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT</code></span></p></td>
+<td>if this flag is set,
+<a class="link" href="NMSetting.html#nm-setting-diff" title="nm_setting_diff ()"><code class="function">nm_setting_diff()</code></a> and <a class="link" href="NMConnection.html#nm-connection-diff" title="nm_connection_diff ()"><code class="function">nm_connection_diff()</code></a> will also include properties that
+are set to their default value. See also <em class="parameter"><code>NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT</code></em>.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-COMPARE-FLAG-DIFF-RESULT-NO-DEFAULT:CAPS"></a><span class="term"><code class="literal">NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT</code></span></p></td>
+<td>if this flag is set,
+<a class="link" href="NMSetting.html#nm-setting-diff" title="nm_setting_diff ()"><code class="function">nm_setting_diff()</code></a> and <a class="link" href="NMConnection.html#nm-connection-diff" title="nm_connection_diff ()"><code class="function">nm_connection_diff()</code></a> will not include properties that
+are set to their default value. This is the opposite of
+<em class="parameter"><code>NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT</code></em>. If both flags are set together,
+<em class="parameter"><code>NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT</code></em> wins. If both flags are unset,
+this means to exclude default properties if there is a setting to compare,
+but include all properties, if the setting 'b' is missing. This is the legacy
+behaviour of libnm-util, where <a class="link" href="NMSetting.html#nm-setting-diff" title="nm_setting_diff ()"><code class="function">nm_setting_diff()</code></a> behaved differently depending
+on whether the setting 'b' was available. If <em class="parameter"><code>NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT</code></em>
+is set, <a class="link" href="NMSetting.html#nm-setting-diff" title="nm_setting_diff ()"><code class="function">nm_setting_diff()</code></a> will also set the flags <em class="parameter"><code>NM_SETTING_DIFF_RESULT_IN_A_DEFAULT</code></em>
+and <em class="parameter"><code>NM_SETTING_DIFF_RESULT_IN_B_DEFAULT</code></em>, if the values are default values.
 </td>
 </tr>
 </tbody>
@@ -461,7 +485,7 @@ It should only be accessed through the functions described below.
 	GObjectClass parent;
 
 	/* Virtual functions */
-	gboolean    (*verify)            (NMSetting  *setting,
+	gint        (*verify)            (NMSetting  *setting,
 	                                  GSList     *all_settings,
 	                                  GError     **error);
 
@@ -793,6 +817,8 @@ for a description of each flag's behavior.
 	NM_SETTING_DIFF_RESULT_UNKNOWN = 0x00000000,
 	NM_SETTING_DIFF_RESULT_IN_A =    0x00000001,
 	NM_SETTING_DIFF_RESULT_IN_B =    0x00000002,
+	NM_SETTING_DIFF_RESULT_IN_A_DEFAULT = 0x00000004,
+	NM_SETTING_DIFF_RESULT_IN_B_DEFAULT = 0x00000004,
 } NMSettingDiffResult;
 </pre>
 <p>
@@ -817,6 +843,18 @@ These values indicate the result of a setting difference operation.
 <tr>
 <td><p><a name="NM-SETTING-DIFF-RESULT-IN-B:CAPS"></a><span class="term"><code class="literal">NM_SETTING_DIFF_RESULT_IN_B</code></span></p></td>
 <td>the property is present in setting B
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-DIFF-RESULT-IN-A-DEFAULT:CAPS"></a><span class="term"><code class="literal">NM_SETTING_DIFF_RESULT_IN_A_DEFAULT</code></span></p></td>
+<td>the property is present in
+setting A but is set to the default value. This flag is only set,
+if you specify <em class="parameter"><code>NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT</code></em>.
+</td>
+</tr>
+<tr>
+<td><p><a name="NM-SETTING-DIFF-RESULT-IN-B-DEFAULT:CAPS"></a><span class="term"><code class="literal">NM_SETTING_DIFF_RESULT_IN_B_DEFAULT</code></span></p></td>
+<td>analog to <em class="parameter"><code>NM_SETTING_DIFF_RESULT_IN_A_DEFAULT</code></em>.
 </td>
 </tr>
 </tbody>

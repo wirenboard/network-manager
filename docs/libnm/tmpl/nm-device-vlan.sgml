@@ -1,0 +1,121 @@
+<!-- ##### SECTION Title ##### -->
+NMDeviceVlan
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_DEVICE_VLAN_HW_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_VLAN_CARRIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_VLAN_PARENT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_VLAN_VLAN_ID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMDeviceVlan ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceVlan:carrier ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceVlan:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceVlan:parent ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceVlan:vlan-id ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceVlanClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_device_vlan_get_hw_address ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_vlan_get_carrier ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_vlan_get_parent ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_vlan_get_vlan_id ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+

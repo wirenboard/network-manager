@@ -105,16 +105,14 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am__test_keyfile_SOURCES_DIST = test-keyfile.c ../reader.c ../writer.c \
-	../errors.c ../utils.c
+	../utils.c
 @ENABLE_TESTS_TRUE@am_test_keyfile_OBJECTS = test-keyfile.$(OBJEXT) \
 @ENABLE_TESTS_TRUE@	reader.$(OBJEXT) writer.$(OBJEXT) \
-@ENABLE_TESTS_TRUE@	errors.$(OBJEXT) utils.$(OBJEXT)
+@ENABLE_TESTS_TRUE@	utils.$(OBJEXT)
 test_keyfile_OBJECTS = $(am_test_keyfile_OBJECTS)
 am__DEPENDENCIES_1 =
 @ENABLE_TESTS_TRUE@test_keyfile_DEPENDENCIES =  \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/src/libNetworkManager.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
 @ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -254,6 +252,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BLUEZ5_CFLAGS = @BLUEZ5_CFLAGS@
+BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -377,6 +377,7 @@ NEWT_CFLAGS = @NEWT_CFLAGS@
 NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -396,6 +397,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -422,7 +424,7 @@ SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
-UDEV_BASE_DIR = @UDEV_BASE_DIR@
+UDEV_DIR = @UDEV_DIR@
 USE_NLS = @USE_NLS@
 UUID_CFLAGS = @UUID_CFLAGS@
 UUID_LIBS = @UUID_LIBS@
@@ -504,19 +506,16 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@SUBDIRS = keyfiles
 @ENABLE_TESTS_TRUE@AM_CPPFLAGS = \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
-@ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-glib \
+@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-core \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src \
-@ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/logging \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/settings \
 @ENABLE_TESTS_TRUE@	-I$(srcdir)/../ \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
-@ENABLE_TESTS_TRUE@	$(POLKIT_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(CODE_COVERAGE_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-DG_LOG_DOMAIN=\""NetworkManager-keyfile"\" \
+@ENABLE_TESTS_TRUE@	-DNETWORKMANAGER_COMPILATION \
 @ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @ENABLE_TESTS_TRUE@	-DTEST_KEYFILES_DIR=\"$(abs_srcdir)/keyfiles\" \
 @ENABLE_TESTS_TRUE@	-DTEST_SCRATCH_DIR=\"$(abs_builddir)/keyfiles\" \
@@ -526,13 +525,10 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	test-keyfile.c \
 @ENABLE_TESTS_TRUE@	../reader.c \
 @ENABLE_TESTS_TRUE@	../writer.c \
-@ENABLE_TESTS_TRUE@	../errors.c \
 @ENABLE_TESTS_TRUE@	../utils.c
 
 @ENABLE_TESTS_TRUE@test_keyfile_LDADD = \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/src/libNetworkManager.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-glib/libnm-glib.la \
-@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-util/libnm-util.la \
 @ENABLE_TESTS_TRUE@	$(DBUS_LIBS) \
 @ENABLE_TESTS_TRUE@	$(CODE_COVERAGE_LDFLAGS)
 
@@ -590,7 +586,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errors.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-keyfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
@@ -644,20 +639,6 @@ writer.obj: ../writer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../writer.c' object='writer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o writer.obj `if test -f '../writer.c'; then $(CYGPATH_W) '../writer.c'; else $(CYGPATH_W) '$(srcdir)/../writer.c'; fi`
-
-errors.o: ../errors.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT errors.o -MD -MP -MF $(DEPDIR)/errors.Tpo -c -o errors.o `test -f '../errors.c' || echo '$(srcdir)/'`../errors.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/errors.Tpo $(DEPDIR)/errors.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../errors.c' object='errors.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o errors.o `test -f '../errors.c' || echo '$(srcdir)/'`../errors.c
-
-errors.obj: ../errors.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT errors.obj -MD -MP -MF $(DEPDIR)/errors.Tpo -c -o errors.obj `if test -f '../errors.c'; then $(CYGPATH_W) '../errors.c'; else $(CYGPATH_W) '$(srcdir)/../errors.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/errors.Tpo $(DEPDIR)/errors.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../errors.c' object='errors.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o errors.obj `if test -f '../errors.c'; then $(CYGPATH_W) '../errors.c'; else $(CYGPATH_W) '$(srcdir)/../errors.c'; fi`
 
 utils.o: ../utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT utils.o -MD -MP -MF $(DEPDIR)/utils.Tpo -c -o utils.o `test -f '../utils.c' || echo '$(srcdir)/'`../utils.c

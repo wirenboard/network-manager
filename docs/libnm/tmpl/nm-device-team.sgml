@@ -1,0 +1,100 @@
+<!-- ##### SECTION Title ##### -->
+NMDeviceTeam
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_DEVICE_TEAM_HW_ADDRESS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_TEAM_CARRIER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_DEVICE_TEAM_SLAVES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMDeviceTeam ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMDeviceTeam:carrier ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceTeam:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceTeam:slaves ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMDeviceTeamClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_device_team_get_hw_address ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_team_get_carrier ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_team_get_slaves ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+

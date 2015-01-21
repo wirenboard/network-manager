@@ -90,6 +90,13 @@ NMSettingIP4Config
 
 
 
+<!-- ##### MACRO NM_SETTING_IP4_CONFIG_ROUTE_METRIC ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES ##### -->
 <para>
 
@@ -406,11 +413,6 @@ NMSettingIP4Config
 </para>
 
 
-<!-- ##### ARG NMSettingIP4Config:address-labels ##### -->
-<para>
-
-</para>
-
 <!-- ##### ARG NMSettingIP4Config:addresses ##### -->
 <para>
 
@@ -462,6 +464,11 @@ NMSettingIP4Config
 </para>
 
 <!-- ##### ARG NMSettingIP4Config:never-default ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingIP4Config:route-metric ##### -->
 <para>
 
 </para>
@@ -722,6 +729,15 @@ NMSettingIP4Config
 </para>
 
 @setting: 
+
+
+<!-- ##### FUNCTION nm_setting_ip4_config_get_route_metric ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
 
 
 <!-- ##### FUNCTION nm_setting_ip4_config_get_ignore_auto_routes ##### -->

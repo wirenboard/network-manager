@@ -18,12 +18,15 @@
  * Copyright (C) 2011 - 2014 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <gmodule.h>
 
 #include "nm-device-factory.h"
 #include "nm-device-wifi.h"
 #include "nm-device-olpc-mesh.h"
 #include "nm-settings-connection.h"
+#include "nm-platform.h"
 
 #define NM_TYPE_WIFI_FACTORY (nm_wifi_factory_get_type ())
 #define NM_WIFI_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_WIFI_FACTORY, NMWifiFactory))
@@ -45,18 +48,10 @@ G_DEFINE_TYPE_EXTENDED (NMWifiFactory, nm_wifi_factory, G_TYPE_OBJECT, 0,
 
 /**************************************************************************/
 
-#define PLUGIN_TYPE NM_DEVICE_TYPE_WIFI
-
 G_MODULE_EXPORT NMDeviceFactory *
 nm_device_factory_create (GError **error)
 {
 	return (NMDeviceFactory *) g_object_new (NM_TYPE_WIFI_FACTORY, NULL);
-}
-
-G_MODULE_EXPORT NMDeviceType
-nm_device_factory_get_device_type (void)
-{
-	return PLUGIN_TYPE;
 }
 
 /**************************************************************************/
@@ -71,10 +66,17 @@ new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
 	return NULL;
 }
 
+static NMDeviceType
+get_device_type (NMDeviceFactory *factory)
+{
+	return NM_DEVICE_TYPE_WIFI;
+}
+
 static void
 device_factory_interface_init (NMDeviceFactory *factory_iface)
 {
 	factory_iface->new_link = new_link;
+	factory_iface->get_device_type = get_device_type;
 }
 
 static void

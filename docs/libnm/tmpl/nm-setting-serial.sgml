@@ -1,0 +1,167 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingSerial
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingSerialParity ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_SERIAL_PARITY_NONE: 
+@NM_SETTING_SERIAL_PARITY_EVEN: 
+@NM_SETTING_SERIAL_PARITY_ODD: 
+
+<!-- ##### MACRO NM_SETTING_SERIAL_BAUD ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_BITS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_PARITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_STOPBITS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_SERIAL_SEND_DELAY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingSerial ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingSerial:baud ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:bits ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:parity ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:send-delay ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingSerial:stopbits ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingSerialClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_setting_serial_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_serial_get_baud ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_serial_get_bits ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_serial_get_parity ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_serial_get_stopbits ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_serial_get_send_delay ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+

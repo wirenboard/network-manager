@@ -19,8 +19,8 @@
  * Copyright (C) 2007 - 2011 Red Hat, Inc.
  */
 
-#ifndef NM_DEVICE_PRIVATE_H
-#define NM_DEVICE_PRIVATE_H
+#ifndef __NETWORKMANAGER_DEVICE_PRIVATE_H__
+#define __NETWORKMANAGER_DEVICE_PRIVATE_H__
 
 #include "nm-device.h"
 
@@ -37,8 +37,9 @@ enum NMActStageReturn {
 };
 
 #define NM_DEVICE_CAP_NONSTANDARD_CARRIER 0x80000000
+#define NM_DEVICE_CAP_IS_NON_KERNEL       0x40000000
 
-#define NM_DEVICE_CAP_INTERNAL_MASK 0x80000000
+#define NM_DEVICE_CAP_INTERNAL_MASK 0xc0000000
 
 void nm_device_set_ip_iface (NMDevice *self, const char *iface);
 
@@ -52,11 +53,8 @@ gboolean nm_device_bring_up (NMDevice *self, gboolean wait, gboolean *no_firmwar
 
 void nm_device_take_down (NMDevice *self, gboolean block);
 
-gboolean nm_device_update_hw_address (NMDevice *self);
-gboolean nm_device_set_hw_addr (NMDevice *device, const guint8 *addr,
+gboolean nm_device_set_hw_addr (NMDevice *device, const char *addr,
                                 const char *detail, guint64 hw_log_domain);
-
-gboolean nm_device_ip_config_should_fail (NMDevice *self, gboolean ip6);
 
 void nm_device_set_firmware_missing (NMDevice *self, gboolean missing);
 
@@ -76,7 +74,7 @@ gboolean nm_device_activate_ip6_state_in_conf (NMDevice *device);
 gboolean nm_device_activate_ip6_state_in_wait (NMDevice *device);
 
 void nm_device_set_dhcp_timeout (NMDevice *device, guint32 timeout);
-void nm_device_set_dhcp_anycast_address (NMDevice *device, guint8 *addr);
+void nm_device_set_dhcp_anycast_address (NMDevice *device, const char *addr);
 
 gboolean nm_device_dhcp4_renew (NMDevice *device, gboolean release);
 gboolean nm_device_dhcp6_renew (NMDevice *device, gboolean release);
@@ -91,12 +89,17 @@ gboolean nm_device_get_enslaved (NMDevice *device);
 
 NMDevice *nm_device_master_get_slave_by_ifindex (NMDevice *dev, int ifindex);
 
-void nm_device_master_check_slave_physical_port (NMDevice *dev, NMDevice *slave,
+void nm_device_master_check_slave_physical_port (NMDevice *self, NMDevice *slave,
                                                  guint64 log_domain);
 
-void nm_device_set_carrier (NMDevice *device, gboolean carrier);
+void nm_device_set_carrier (NMDevice *self, gboolean carrier);
 
 void nm_device_emit_recheck_auto_activate (NMDevice *device);
 void nm_device_queue_recheck_assume (NMDevice *device);
+
+void nm_device_set_wwan_ip4_config (NMDevice *device, NMIP4Config *config);
+void nm_device_set_wwan_ip6_config (NMDevice *device, NMIP6Config *config);
+
+gboolean nm_device_ipv6_sysctl_set (NMDevice *self, const char *property, const char *value);
 
 #endif	/* NM_DEVICE_PRIVATE_H */

@@ -1,0 +1,126 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingIP6Config
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_IP6_PRIVACY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_IGNORE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_AUTO ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_DHCP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_MANUAL ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_IP6_CONFIG_METHOD_SHARED ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM NMSettingIP6ConfigPrivacy ##### -->
+<para>
+
+</para>
+
+@NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN: 
+@NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED: 
+@NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR: 
+@NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR: 
+
+<!-- ##### STRUCT NMSettingIP6Config ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingIP6Config:ip6-privacy ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingIP6ConfigClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_setting_ip6_config_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_ip6_config_get_ip6_privacy ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+

@@ -5,27 +5,29 @@
 
 #include "nm-enum-types.h"
 
-#include "nm-config.h" 
-#include "nm-config-device.h" 
-#include "nm-device.h" 
 #include "nm-device-bond.h" 
 #include "nm-device-bridge.h" 
 #include "nm-device-ethernet.h" 
-#include "nm-device-factory.h" 
-#include "nm-device-generic.h" 
 #include "nm-device-gre.h" 
 #include "nm-device-infiniband.h" 
 #include "nm-device-macvlan.h" 
-#include "nm-device-private.h" 
-#include "nm-device-team.h" 
 #include "nm-device-tun.h" 
 #include "nm-device-veth.h" 
 #include "nm-device-vlan.h" 
 #include "nm-device-vxlan.h" 
-#include "nm-dhcp-client.h" 
 #include "nm-dhcp-dhclient.h" 
 #include "nm-dhcp-dhclient-utils.h" 
 #include "nm-dhcp-dhcpcd.h" 
+#include "nm-dhcp-systemd.h" 
+#include "nm-device.h" 
+#include "nm-device-ethernet-utils.h" 
+#include "nm-device-factory.h" 
+#include "nm-device-generic.h" 
+#include "nm-device-logging.h" 
+#include "nm-device-private.h" 
+#include "nm-dhcp-client.h" 
+#include "nm-dhcp-utils.h" 
+#include "nm-dhcp-listener.h" 
 #include "nm-dhcp-manager.h" 
 #include "nm-dns-dnsmasq.h" 
 #include "nm-dns-unbound.h" 
@@ -34,8 +36,6 @@
 #include "nm-dns-utils.h" 
 #include "nm-dnsmasq-manager.h" 
 #include "nm-dnsmasq-utils.h" 
-#include "nm-firewall-manager.h" 
-#include "nm-logging.h" 
 #include "nm-fake-platform.h" 
 #include "nm-linux-platform.h" 
 #include "nm-platform.h" 
@@ -45,15 +45,12 @@
 #include "nm-fake-rdisc.h" 
 #include "nm-lndp-rdisc.h" 
 #include "nm-rdisc.h" 
-#include "nm-posix-signals.h" 
 #include "nm-ppp-manager.h" 
 #include "nm-ppp-status.h" 
 #include "nm-agent-manager.h" 
 #include "nm-inotify-helper.h" 
 #include "nm-secret-agent.h" 
 #include "nm-settings-connection.h" 
-#include "nm-settings-error.h" 
-#include "nm-settings-utils.h" 
 #include "nm-settings.h" 
 #include "nm-system-config-interface.h" 
 #include "common.h" 
@@ -73,19 +70,25 @@
 #include "nm-vpn-service.h" 
 #include "nm-activation-request.h" 
 #include "nm-active-connection.h" 
+#include "nm-config.h" 
 #include "nm-connection-provider.h" 
 #include "nm-connectivity.h" 
 #include "nm-dbus-manager.h" 
 #include "nm-dcb.h" 
+#include "nm-default-route-manager.h" 
 #include "nm-dhcp4-config.h" 
 #include "nm-dhcp6-config.h" 
 #include "nm-dispatcher.h" 
+#include "nm-firewall-manager.h" 
 #include "nm-ip4-config.h" 
 #include "nm-ip6-config.h" 
-#include "nm-manager-auth.h" 
+#include "nm-logging.h" 
+#include "nm-auth-manager.h" 
 #include "nm-auth-subject.h" 
+#include "nm-auth-utils.h" 
 #include "nm-manager.h" 
 #include "nm-policy.h" 
+#include "nm-posix-signals.h" 
 #include "nm-properties-changed-signal.h" 
 #include "nm-rfkill-manager.h" 
 #include "nm-session-monitor.h" 
@@ -96,169 +99,6 @@
 #include "wifi-utils-wext.h" 
 #include "nm-device-wimax.h"
 
-GType
-nm_device_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_DEVICE_ERROR_CONNECTION_ACTIVATING, "NM_DEVICE_ERROR_CONNECTION_ACTIVATING", "ConnectionActivating" },
-        { NM_DEVICE_ERROR_CONNECTION_INVALID, "NM_DEVICE_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_DEVICE_ERROR_NOT_ACTIVE, "NM_DEVICE_ERROR_NOT_ACTIVE", "NotActive" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDeviceError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_unmanaged_flags_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_UNMANAGED_NONE, "NM_UNMANAGED_NONE", "nm-unmanaged-none" },
-        { NM_UNMANAGED_DEFAULT, "NM_UNMANAGED_DEFAULT", "nm-unmanaged-default" },
-        { NM_UNMANAGED_INTERNAL, "NM_UNMANAGED_INTERNAL", "nm-unmanaged-internal" },
-        { NM_UNMANAGED_USER, "NM_UNMANAGED_USER", "nm-unmanaged-user" },
-        { __NM_UNMANAGED_LAST, "__NM_UNMANAGED_LAST", "--nm-unmanaged-last" },
-        { NM_UNMANAGED_LAST, "NM_UNMANAGED_LAST", "nm-unmanaged-last" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMUnmanagedFlags"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_bond_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_BOND_ERROR_CONNECTION_NOT_BOND, "NM_BOND_ERROR_CONNECTION_NOT_BOND", "ConnectionNotBond" },
-        { NM_BOND_ERROR_CONNECTION_INVALID, "NM_BOND_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_BOND_ERROR_CONNECTION_INCOMPATIBLE, "NM_BOND_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMBondError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_bridge_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_BRIDGE_ERROR_CONNECTION_NOT_BRIDGE, "NM_BRIDGE_ERROR_CONNECTION_NOT_BRIDGE", "ConnectionNotBridge" },
-        { NM_BRIDGE_ERROR_CONNECTION_INVALID, "NM_BRIDGE_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_BRIDGE_ERROR_CONNECTION_INCOMPATIBLE, "NM_BRIDGE_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMBridgeError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_ethernet_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED, "NM_ETHERNET_ERROR_CONNECTION_NOT_WIRED", "ConnectionNotWired" },
-        { NM_ETHERNET_ERROR_CONNECTION_INVALID, "NM_ETHERNET_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE, "NM_ETHERNET_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMEthernetError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_device_generic_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_DEVICE_GENERIC_ERROR_CONNECTION_NOT_GENERIC, "NM_DEVICE_GENERIC_ERROR_CONNECTION_NOT_GENERIC", "ConnectionNotGeneric" },
-        { NM_DEVICE_GENERIC_ERROR_CONNECTION_INVALID, "NM_DEVICE_GENERIC_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_DEVICE_GENERIC_ERROR_CONNECTION_INCOMPATIBLE, "NM_DEVICE_GENERIC_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDeviceGenericError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_infiniband_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_INFINIBAND_ERROR_CONNECTION_NOT_INFINIBAND, "NM_INFINIBAND_ERROR_CONNECTION_NOT_INFINIBAND", "ConnectionNotInfiniband" },
-        { NM_INFINIBAND_ERROR_CONNECTION_INVALID, "NM_INFINIBAND_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_INFINIBAND_ERROR_CONNECTION_INCOMPATIBLE, "NM_INFINIBAND_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMInfinibandError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_team_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_TEAM_ERROR_CONNECTION_NOT_TEAM, "NM_TEAM_ERROR_CONNECTION_NOT_TEAM", "ConnectionNotTeam" },
-        { NM_TEAM_ERROR_CONNECTION_INVALID, "NM_TEAM_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_TEAM_ERROR_CONNECTION_INCOMPATIBLE, "NM_TEAM_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMTeamError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
 GType
 nm_vlan_error_get_type (void)
 {
@@ -280,6 +120,31 @@ nm_vlan_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_unmanaged_flags_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_UNMANAGED_NONE, "NM_UNMANAGED_NONE", "nm-unmanaged-none" },
+        { NM_UNMANAGED_DEFAULT, "NM_UNMANAGED_DEFAULT", "nm-unmanaged-default" },
+        { NM_UNMANAGED_INTERNAL, "NM_UNMANAGED_INTERNAL", "nm-unmanaged-internal" },
+        { NM_UNMANAGED_USER, "NM_UNMANAGED_USER", "nm-unmanaged-user" },
+        { NM_UNMANAGED_PARENT, "NM_UNMANAGED_PARENT", "nm-unmanaged-parent" },
+        { NM_UNMANAGED_EXTERNAL_DOWN, "NM_UNMANAGED_EXTERNAL_DOWN", "nm-unmanaged-external-down" },
+        { __NM_UNMANAGED_LAST, "__NM_UNMANAGED_LAST", "--nm-unmanaged-last" },
+        { NM_UNMANAGED_LAST, "NM_UNMANAGED_LAST", "nm-unmanaged-last" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMUnmanagedFlags"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_dhcp_state_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -287,75 +152,18 @@ nm_dhcp_state_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { DHC_NBI, "DHC_NBI", "nbi" },
-        { DHC_PREINIT, "DHC_PREINIT", "preinit" },
-        { DHC_PREINIT6, "DHC_PREINIT6", "preinit6" },
-        { DHC_BOUND4, "DHC_BOUND4", "bound4" },
-        { DHC_BOUND6, "DHC_BOUND6", "bound6" },
-        { DHC_IPV4LL, "DHC_IPV4LL", "ipv4ll" },
-        { DHC_RENEW4, "DHC_RENEW4", "renew4" },
-        { DHC_RENEW6, "DHC_RENEW6", "renew6" },
-        { DHC_REBOOT, "DHC_REBOOT", "reboot" },
-        { DHC_REBIND4, "DHC_REBIND4", "rebind4" },
-        { DHC_REBIND6, "DHC_REBIND6", "rebind6" },
-        { DHC_DEPREF6, "DHC_DEPREF6", "depref6" },
-        { DHC_STOP, "DHC_STOP", "stop" },
-        { DHC_STOP6, "DHC_STOP6", "stop6" },
-        { DHC_MEDIUM, "DHC_MEDIUM", "medium" },
-        { DHC_TIMEOUT, "DHC_TIMEOUT", "timeout" },
-        { DHC_FAIL, "DHC_FAIL", "fail" },
-        { DHC_EXPIRE, "DHC_EXPIRE", "expire" },
-        { DHC_EXPIRE6, "DHC_EXPIRE6", "expire6" },
-        { DHC_RELEASE, "DHC_RELEASE", "release" },
-        { DHC_RELEASE6, "DHC_RELEASE6", "release6" },
-        { DHC_START, "DHC_START", "start" },
-        { DHC_ABEND, "DHC_ABEND", "abend" },
-        { DHC_END, "DHC_END", "end" },
-        { DHC_END_OPTIONS, "DHC_END_OPTIONS", "end-options" },
+        { NM_DHCP_STATE_UNKNOWN, "NM_DHCP_STATE_UNKNOWN", "nm-dhcp-state-unknown" },
+        { NM_DHCP_STATE_BOUND, "NM_DHCP_STATE_BOUND", "nm-dhcp-state-bound" },
+        { NM_DHCP_STATE_TIMEOUT, "NM_DHCP_STATE_TIMEOUT", "nm-dhcp-state-timeout" },
+        { NM_DHCP_STATE_DONE, "NM_DHCP_STATE_DONE", "nm-dhcp-state-done" },
+        { NM_DHCP_STATE_EXPIRE, "NM_DHCP_STATE_EXPIRE", "nm-dhcp-state-expire" },
+        { NM_DHCP_STATE_FAIL, "NM_DHCP_STATE_FAIL", "nm-dhcp-state-fail" },
+        { __NM_DHCP_STATE_MAX, "__NM_DHCP_STATE_MAX", "--nm-dhcp-state-max" },
+        { NM_DHCP_STATE_MAX, "NM_DHCP_STATE_MAX", "nm-dhcp-state-max" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDHCPState"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_dhcp_manager_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_DHCP_MANAGER_ERROR_BAD_CLIENT, "NM_DHCP_MANAGER_ERROR_BAD_CLIENT", "BadClient" },
-        { NM_DHCP_MANAGER_ERROR_INTERNAL, "NM_DHCP_MANAGER_ERROR_INTERNAL", "InternalError" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDHCPManagerError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_dns_manager_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_DNS_MANAGER_ERROR_SYSTEM, "NM_DNS_MANAGER_ERROR_SYSTEM", "system" },
-        { NM_DNS_MANAGER_ERROR_INVALID_NAMESERVER, "NM_DNS_MANAGER_ERROR_INVALID_NAMESERVER", "invalid-nameserver" },
-        { NM_DNS_MANAGER_ERROR_INVALID_HOST, "NM_DNS_MANAGER_ERROR_INVALID_HOST", "invalid-host" },
-        { NM_DNS_MANAGER_ERROR_INVALID_ID, "NM_DNS_MANAGER_ERROR_INVALID_ID", "invalid-id" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDnsManagerError"), values);
+        g_enum_register_static (g_intern_static_string ("NMDhcpState"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -422,25 +230,6 @@ nm_dns_masq_status_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_logging_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_LOGGING_ERROR_UNKNOWN_LEVEL, "NM_LOGGING_ERROR_UNKNOWN_LEVEL", "UnknownLevel" },
-        { NM_LOGGING_ERROR_UNKNOWN_DOMAIN, "NM_LOGGING_ERROR_UNKNOWN_DOMAIN", "UnknownDomain" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMLoggingError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
 nm_platform_error_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -485,47 +274,6 @@ nm_platform_reason_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_link_type_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_LINK_TYPE_NONE, "NM_LINK_TYPE_NONE", "none" },
-        { NM_LINK_TYPE_UNKNOWN, "NM_LINK_TYPE_UNKNOWN", "unknown" },
-        { NM_LINK_TYPE_ETHERNET, "NM_LINK_TYPE_ETHERNET", "ethernet" },
-        { NM_LINK_TYPE_INFINIBAND, "NM_LINK_TYPE_INFINIBAND", "infiniband" },
-        { NM_LINK_TYPE_OLPC_MESH, "NM_LINK_TYPE_OLPC_MESH", "olpc-mesh" },
-        { NM_LINK_TYPE_WIFI, "NM_LINK_TYPE_WIFI", "wifi" },
-        { NM_LINK_TYPE_WWAN_ETHERNET, "NM_LINK_TYPE_WWAN_ETHERNET", "wwan-ethernet" },
-        { NM_LINK_TYPE_WIMAX, "NM_LINK_TYPE_WIMAX", "wimax" },
-        { NM_LINK_TYPE_DUMMY, "NM_LINK_TYPE_DUMMY", "dummy" },
-        { NM_LINK_TYPE_GRE, "NM_LINK_TYPE_GRE", "gre" },
-        { NM_LINK_TYPE_GRETAP, "NM_LINK_TYPE_GRETAP", "gretap" },
-        { NM_LINK_TYPE_IFB, "NM_LINK_TYPE_IFB", "ifb" },
-        { NM_LINK_TYPE_LOOPBACK, "NM_LINK_TYPE_LOOPBACK", "loopback" },
-        { NM_LINK_TYPE_MACVLAN, "NM_LINK_TYPE_MACVLAN", "macvlan" },
-        { NM_LINK_TYPE_MACVTAP, "NM_LINK_TYPE_MACVTAP", "macvtap" },
-        { NM_LINK_TYPE_OPENVSWITCH, "NM_LINK_TYPE_OPENVSWITCH", "openvswitch" },
-        { NM_LINK_TYPE_TAP, "NM_LINK_TYPE_TAP", "tap" },
-        { NM_LINK_TYPE_TUN, "NM_LINK_TYPE_TUN", "tun" },
-        { NM_LINK_TYPE_VETH, "NM_LINK_TYPE_VETH", "veth" },
-        { NM_LINK_TYPE_VLAN, "NM_LINK_TYPE_VLAN", "vlan" },
-        { NM_LINK_TYPE_VXLAN, "NM_LINK_TYPE_VXLAN", "vxlan" },
-        { NM_LINK_TYPE_BRIDGE, "NM_LINK_TYPE_BRIDGE", "bridge" },
-        { NM_LINK_TYPE_BOND, "NM_LINK_TYPE_BOND", "bond" },
-        { NM_LINK_TYPE_TEAM, "NM_LINK_TYPE_TEAM", "team" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMLinkType"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
 nm_platform_signal_change_type_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -546,27 +294,20 @@ nm_platform_signal_change_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_platform_source_get_type (void)
+nm_platform_get_route_mode_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_PLATFORM_SOURCE_UNKNOWN, "NM_PLATFORM_SOURCE_UNKNOWN", "unknown" },
-        { NM_PLATFORM_SOURCE_KERNEL, "NM_PLATFORM_SOURCE_KERNEL", "kernel" },
-        { NM_PLATFORM_SOURCE_SHARED, "NM_PLATFORM_SOURCE_SHARED", "shared" },
-        { NM_PLATFORM_SOURCE_IP4LL, "NM_PLATFORM_SOURCE_IP4LL", "ip4ll" },
-        { NM_PLATFORM_SOURCE_PPP, "NM_PLATFORM_SOURCE_PPP", "ppp" },
-        { NM_PLATFORM_SOURCE_WWAN, "NM_PLATFORM_SOURCE_WWAN", "wwan" },
-        { NM_PLATFORM_SOURCE_VPN, "NM_PLATFORM_SOURCE_VPN", "vpn" },
-        { NM_PLATFORM_SOURCE_DHCP, "NM_PLATFORM_SOURCE_DHCP", "dhcp" },
-        { NM_PLATFORM_SOURCE_RDISC, "NM_PLATFORM_SOURCE_RDISC", "rdisc" },
-        { NM_PLATFORM_SOURCE_USER, "NM_PLATFORM_SOURCE_USER", "user" },
+        { NM_PLATFORM_GET_ROUTE_MODE_ALL, "NM_PLATFORM_GET_ROUTE_MODE_ALL", "all" },
+        { NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT, "NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT", "no-default" },
+        { NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT, "NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT", "only-default" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMPlatformSource"), values);
+        g_enum_register_static (g_intern_static_string ("NMPlatformGetRouteMode"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -629,6 +370,7 @@ nm_rdisc_config_map_get_type (void)
         { NM_RDISC_CONFIG_DNS_SERVERS, "NM_RDISC_CONFIG_DNS_SERVERS", "dns-servers" },
         { NM_RDISC_CONFIG_DNS_DOMAINS, "NM_RDISC_CONFIG_DNS_DOMAINS", "dns-domains" },
         { NM_RDISC_CONFIG_HOP_LIMIT, "NM_RDISC_CONFIG_HOP_LIMIT", "hop-limit" },
+        { NM_RDISC_CONFIG_MTU, "NM_RDISC_CONFIG_MTU", "mtu" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -670,77 +412,23 @@ nm_ppp_status_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_agent_manager_error_get_type (void)
+nm_settings_connection_flags_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
-      static const GEnumValue values[] = {
-        { NM_AGENT_MANAGER_ERROR_SENDER_UNKNOWN, "NM_AGENT_MANAGER_ERROR_SENDER_UNKNOWN", "SenderUnknown" },
-        { NM_AGENT_MANAGER_ERROR_PERMISSION_DENIED, "NM_AGENT_MANAGER_ERROR_PERMISSION_DENIED", "PermissionDenied" },
-        { NM_AGENT_MANAGER_ERROR_SESSION_NOT_FOUND, "NM_AGENT_MANAGER_ERROR_SESSION_NOT_FOUND", "SessionNotFound" },
-        { NM_AGENT_MANAGER_ERROR_INVALID_IDENTIFIER, "NM_AGENT_MANAGER_ERROR_INVALID_IDENTIFIER", "InvalidIdentifier" },
-        { NM_AGENT_MANAGER_ERROR_NOT_REGISTERED, "NM_AGENT_MANAGER_ERROR_NOT_REGISTERED", "NotRegistered" },
-        { NM_AGENT_MANAGER_ERROR_INTERNAL_ERROR, "NM_AGENT_MANAGER_ERROR_INTERNAL_ERROR", "InternalError" },
-        { NM_AGENT_MANAGER_ERROR_NO_SECRETS, "NM_AGENT_MANAGER_ERROR_NO_SECRETS", "NoSecrets" },
-        { NM_AGENT_MANAGER_ERROR_USER_CANCELED, "NM_AGENT_MANAGER_ERROR_USER_CANCELED", "UserCanceled" },
+      static const GFlagsValue values[] = {
+        { NM_SETTINGS_CONNECTION_FLAGS_NONE, "NM_SETTINGS_CONNECTION_FLAGS_NONE", "nm-settings-connection-flags-none" },
+        { NM_SETTINGS_CONNECTION_FLAGS_UNSAVED, "NM_SETTINGS_CONNECTION_FLAGS_UNSAVED", "nm-settings-connection-flags-unsaved" },
+        { NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED, "NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED", "nm-settings-connection-flags-nm-generated" },
+        { NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED_ASSUMED, "NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED_ASSUMED", "nm-settings-connection-flags-nm-generated-assumed" },
+        { __NM_SETTINGS_CONNECTION_FLAGS_LAST, "__NM_SETTINGS_CONNECTION_FLAGS_LAST", "--nm-settings-connection-flags-last" },
+        { NM_SETTINGS_CONNECTION_FLAGS_ALL, "NM_SETTINGS_CONNECTION_FLAGS_ALL", "nm-settings-connection-flags-all" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMAgentManagerError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_secret_agent_capabilities_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_SECRET_AGENT_CAPABILITY_NONE, "NM_SECRET_AGENT_CAPABILITY_NONE", "none" },
-        { NM_SECRET_AGENT_CAPABILITY_VPN_HINTS, "NM_SECRET_AGENT_CAPABILITY_VPN_HINTS", "vpn-hints" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMSecretAgentCapabilities"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_settings_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_SETTINGS_ERROR_GENERAL, "NM_SETTINGS_ERROR_GENERAL", "GeneralError" },
-        { NM_SETTINGS_ERROR_INVALID_CONNECTION, "NM_SETTINGS_ERROR_INVALID_CONNECTION", "InvalidConnection" },
-        { NM_SETTINGS_ERROR_READ_ONLY_CONNECTION, "NM_SETTINGS_ERROR_READ_ONLY_CONNECTION", "ReadOnlyConnection" },
-        { NM_SETTINGS_ERROR_INTERNAL_ERROR, "NM_SETTINGS_ERROR_INTERNAL_ERROR", "InternalError" },
-        { NM_SETTINGS_ERROR_SECRETS_UNAVAILABLE, "NM_SETTINGS_ERROR_SECRETS_UNAVAILABLE", "SecretsUnavailable" },
-        { NM_SETTINGS_ERROR_SECRETS_REQUEST_CANCELED, "NM_SETTINGS_ERROR_SECRETS_REQUEST_CANCELED", "SecretsRequestCanceled" },
-        { NM_SETTINGS_ERROR_PERMISSION_DENIED, "NM_SETTINGS_ERROR_PERMISSION_DENIED", "PermissionDenied" },
-        { NM_SETTINGS_ERROR_INVALID_SETTING, "NM_SETTINGS_ERROR_INVALID_SETTING", "InvalidSetting" },
-        { NM_SETTINGS_ERROR_ADD_NOT_SUPPORTED, "NM_SETTINGS_ERROR_ADD_NOT_SUPPORTED", "AddNotSupported" },
-        { NM_SETTINGS_ERROR_UPDATE_NOT_SUPPORTED, "NM_SETTINGS_ERROR_UPDATE_NOT_SUPPORTED", "UpdateNotSupported" },
-        { NM_SETTINGS_ERROR_DELETE_NOT_SUPPORTED, "NM_SETTINGS_ERROR_DELETE_NOT_SUPPORTED", "DeleteNotSupported" },
-        { NM_SETTINGS_ERROR_ADD_FAILED, "NM_SETTINGS_ERROR_ADD_FAILED", "AddFailed" },
-        { NM_SETTINGS_ERROR_SAVE_HOSTNAME_NOT_SUPPORTED, "NM_SETTINGS_ERROR_SAVE_HOSTNAME_NOT_SUPPORTED", "SaveHostnameNotSupported" },
-        { NM_SETTINGS_ERROR_SAVE_HOSTNAME_FAILED, "NM_SETTINGS_ERROR_SAVE_HOSTNAME_FAILED", "SaveHostnameFailed" },
-        { NM_SETTINGS_ERROR_HOSTNAME_INVALID, "NM_SETTINGS_ERROR_HOSTNAME_INVALID", "HostnameInvalid" },
-        { NM_SETTINGS_ERROR_UUID_EXISTS, "NM_SETTINGS_ERROR_UUID_EXISTS", "UuidExists" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMSettingsError"), values);
+        g_flags_register_static (g_intern_static_string ("NMSettingsConnectionFlags"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -832,49 +520,6 @@ nm_opt_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_vpn_manager_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_VPN_MANAGER_ERROR_DEVICE_NOT_ACTIVE, "NM_VPN_MANAGER_ERROR_DEVICE_NOT_ACTIVE", "BaseDeviceNotActive" },
-        { NM_VPN_MANAGER_ERROR_CONNECTION_INVALID, "NM_VPN_MANAGER_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_VPN_MANAGER_ERROR_SERVICE_INVALID, "NM_VPN_MANAGER_ERROR_SERVICE_INVALID", "ServiceInvalid" },
-        { NM_VPN_MANAGER_ERROR_SERVICE_START_FAILED, "NM_VPN_MANAGER_ERROR_SERVICE_START_FAILED", "ServiceStartFailed" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMVPNManagerError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_dcb_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_DCB_ERROR_UNKNOWN, "NM_DCB_ERROR_UNKNOWN", "unknown" },
-        { NM_DCB_ERROR_INTERNAL, "NM_DCB_ERROR_INTERNAL", "internal" },
-        { NM_DCB_ERROR_BAD_CONFIG, "NM_DCB_ERROR_BAD_CONFIG", "bad-config" },
-        { NM_DCB_ERROR_HELPER_NOT_FOUND, "NM_DCB_ERROR_HELPER_NOT_FOUND", "helper-not-found" },
-        { NM_DCB_ERROR_HELPER_FAILED, "NM_DCB_ERROR_HELPER_FAILED", "helper-failed" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDcbError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
 nm_dispatcher_action_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -903,6 +548,26 @@ nm_dispatcher_action_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_auth_subject_type_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_AUTH_SUBJECT_TYPE_INVALID, "NM_AUTH_SUBJECT_TYPE_INVALID", "invalid" },
+        { NM_AUTH_SUBJECT_TYPE_INTERNAL, "NM_AUTH_SUBJECT_TYPE_INTERNAL", "internal" },
+        { NM_AUTH_SUBJECT_TYPE_UNIX_PROCESS, "NM_AUTH_SUBJECT_TYPE_UNIX_PROCESS", "unix-process" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMAuthSubjectType"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_auth_call_result_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -918,36 +583,6 @@ nm_auth_call_result_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMAuthCallResult"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_manager_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_MANAGER_ERROR_UNKNOWN_CONNECTION, "NM_MANAGER_ERROR_UNKNOWN_CONNECTION", "UnknownConnection" },
-        { NM_MANAGER_ERROR_UNKNOWN_DEVICE, "NM_MANAGER_ERROR_UNKNOWN_DEVICE", "UnknownDevice" },
-        { NM_MANAGER_ERROR_UNMANAGED_DEVICE, "NM_MANAGER_ERROR_UNMANAGED_DEVICE", "UnmanagedDevice" },
-        { NM_MANAGER_ERROR_SYSTEM_CONNECTION, "NM_MANAGER_ERROR_SYSTEM_CONNECTION", "SystemConnection" },
-        { NM_MANAGER_ERROR_PERMISSION_DENIED, "NM_MANAGER_ERROR_PERMISSION_DENIED", "PermissionDenied" },
-        { NM_MANAGER_ERROR_CONNECTION_NOT_ACTIVE, "NM_MANAGER_ERROR_CONNECTION_NOT_ACTIVE", "ConnectionNotActive" },
-        { NM_MANAGER_ERROR_ALREADY_ASLEEP_OR_AWAKE, "NM_MANAGER_ERROR_ALREADY_ASLEEP_OR_AWAKE", "AlreadyAsleepOrAwake" },
-        { NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED, "NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED", "AlreadyEnabledOrDisabled" },
-        { NM_MANAGER_ERROR_UNSUPPORTED_CONNECTION_TYPE, "NM_MANAGER_ERROR_UNSUPPORTED_CONNECTION_TYPE", "UnsupportedConnectionType" },
-        { NM_MANAGER_ERROR_DEPENDENCY_FAILED, "NM_MANAGER_ERROR_DEPENDENCY_FAILED", "DependencyFailed" },
-        { NM_MANAGER_ERROR_AUTOCONNECT_NOT_ALLOWED, "NM_MANAGER_ERROR_AUTOCONNECT_NOT_ALLOWED", "AutoconnectNotAllowed" },
-        { NM_MANAGER_ERROR_CONNECTION_ALREADY_ACTIVE, "NM_MANAGER_ERROR_CONNECTION_ALREADY_ACTIVE", "ConnectionAlreadyActive" },
-        { NM_MANAGER_ERROR_INTERNAL, "NM_MANAGER_ERROR_INTERNAL", "Internal" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMManagerError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -996,42 +631,68 @@ nm_rf_kill_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_session_monitor_error_get_type (void)
+nm_ip_config_source_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_SESSION_MONITOR_ERROR_IO_ERROR, "NM_SESSION_MONITOR_ERROR_IO_ERROR", "IOError" },
-        { NM_SESSION_MONITOR_ERROR_MALFORMED_DATABASE, "NM_SESSION_MONITOR_ERROR_MALFORMED_DATABASE", "MalformedDatabase" },
-        { NM_SESSION_MONITOR_ERROR_UNKNOWN_USER, "NM_SESSION_MONITOR_ERROR_UNKNOWN_USER", "UnknownUser" },
-        { NM_SESSION_MONITOR_ERROR_NO_DATABASE, "NM_SESSION_MONITOR_ERROR_NO_DATABASE", "NoDatabase" },
+        { NM_IP_CONFIG_SOURCE_UNKNOWN, "NM_IP_CONFIG_SOURCE_UNKNOWN", "unknown" },
+        { NM_IP_CONFIG_SOURCE_KERNEL, "NM_IP_CONFIG_SOURCE_KERNEL", "kernel" },
+        { NM_IP_CONFIG_SOURCE_SHARED, "NM_IP_CONFIG_SOURCE_SHARED", "shared" },
+        { NM_IP_CONFIG_SOURCE_IP4LL, "NM_IP_CONFIG_SOURCE_IP4LL", "ip4ll" },
+        { NM_IP_CONFIG_SOURCE_PPP, "NM_IP_CONFIG_SOURCE_PPP", "ppp" },
+        { NM_IP_CONFIG_SOURCE_WWAN, "NM_IP_CONFIG_SOURCE_WWAN", "wwan" },
+        { NM_IP_CONFIG_SOURCE_VPN, "NM_IP_CONFIG_SOURCE_VPN", "vpn" },
+        { NM_IP_CONFIG_SOURCE_DHCP, "NM_IP_CONFIG_SOURCE_DHCP", "dhcp" },
+        { NM_IP_CONFIG_SOURCE_RDISC, "NM_IP_CONFIG_SOURCE_RDISC", "rdisc" },
+        { NM_IP_CONFIG_SOURCE_USER, "NM_IP_CONFIG_SOURCE_USER", "user" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMSessionMonitorError"), values);
+        g_enum_register_static (g_intern_static_string ("NMIPConfigSource"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
   return g_define_type_id__volatile;
 }
 GType
-nm_wimax_error_get_type (void)
+nm_link_type_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX, "NM_WIMAX_ERROR_CONNECTION_NOT_WIMAX", "ConnectionNotWimax" },
-        { NM_WIMAX_ERROR_CONNECTION_INVALID, "NM_WIMAX_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE, "NM_WIMAX_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { NM_WIMAX_ERROR_NSP_NOT_FOUND, "NM_WIMAX_ERROR_NSP_NOT_FOUND", "NspNotFound" },
+        { NM_LINK_TYPE_NONE, "NM_LINK_TYPE_NONE", "none" },
+        { NM_LINK_TYPE_UNKNOWN, "NM_LINK_TYPE_UNKNOWN", "unknown" },
+        { NM_LINK_TYPE_ETHERNET, "NM_LINK_TYPE_ETHERNET", "ethernet" },
+        { NM_LINK_TYPE_INFINIBAND, "NM_LINK_TYPE_INFINIBAND", "infiniband" },
+        { NM_LINK_TYPE_OLPC_MESH, "NM_LINK_TYPE_OLPC_MESH", "olpc-mesh" },
+        { NM_LINK_TYPE_WIFI, "NM_LINK_TYPE_WIFI", "wifi" },
+        { NM_LINK_TYPE_WWAN_ETHERNET, "NM_LINK_TYPE_WWAN_ETHERNET", "wwan-ethernet" },
+        { NM_LINK_TYPE_WIMAX, "NM_LINK_TYPE_WIMAX", "wimax" },
+        { NM_LINK_TYPE_DUMMY, "NM_LINK_TYPE_DUMMY", "dummy" },
+        { NM_LINK_TYPE_GRE, "NM_LINK_TYPE_GRE", "gre" },
+        { NM_LINK_TYPE_GRETAP, "NM_LINK_TYPE_GRETAP", "gretap" },
+        { NM_LINK_TYPE_IFB, "NM_LINK_TYPE_IFB", "ifb" },
+        { NM_LINK_TYPE_LOOPBACK, "NM_LINK_TYPE_LOOPBACK", "loopback" },
+        { NM_LINK_TYPE_MACVLAN, "NM_LINK_TYPE_MACVLAN", "macvlan" },
+        { NM_LINK_TYPE_MACVTAP, "NM_LINK_TYPE_MACVTAP", "macvtap" },
+        { NM_LINK_TYPE_OPENVSWITCH, "NM_LINK_TYPE_OPENVSWITCH", "openvswitch" },
+        { NM_LINK_TYPE_TAP, "NM_LINK_TYPE_TAP", "tap" },
+        { NM_LINK_TYPE_TUN, "NM_LINK_TYPE_TUN", "tun" },
+        { NM_LINK_TYPE_VETH, "NM_LINK_TYPE_VETH", "veth" },
+        { NM_LINK_TYPE_VLAN, "NM_LINK_TYPE_VLAN", "vlan" },
+        { NM_LINK_TYPE_VXLAN, "NM_LINK_TYPE_VXLAN", "vxlan" },
+        { NM_LINK_TYPE_BRIDGE, "NM_LINK_TYPE_BRIDGE", "bridge" },
+        { NM_LINK_TYPE_BOND, "NM_LINK_TYPE_BOND", "bond" },
+        { NM_LINK_TYPE_TEAM, "NM_LINK_TYPE_TEAM", "team" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMWimaxError"), values);
+        g_enum_register_static (g_intern_static_string ("NMLinkType"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

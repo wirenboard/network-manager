@@ -1,5 +1,6 @@
 EXTRA_DIST = \
 	ifcfg-test-minimal \
+	ifcfg-test-misc-variables \
 	ifcfg-test-variables-corner-cases-1 \
 	ifcfg-test-nm-controlled \
 	ifcfg-test-nm-controlled-unrecognized \
@@ -59,10 +60,12 @@ EXTRA_DIST = \
 	ifcfg-test-wifi-wpa-eap-ttls-tls \
 	keys-test-wifi-wpa-eap-ttls-tls \
 	ifcfg-test-wifi-hidden \
+	ifcfg-test-wifi-band-a \
+	ifcfg-test-wifi-band-a-channel-mismatch \
+	ifcfg-test-wifi-band-bg-channel-mismatch \
 	test_ca_cert.pem \
 	test1_key_and_cert.pem \
-	ifcfg-test-ibft-dhcp \
-	ifcfg-test-ibft-static \
+	ifcfg-test-ibft \
 	ifcfg-test-static-routes-legacy \
 	route-test-static-routes-legacy \
 	ifcfg-test-wired-static-routes \
@@ -116,7 +119,8 @@ EXTRA_DIST = \
 	ifcfg-test-fcoe-vn2vn \
 	ifcfg-test-team-master \
 	ifcfg-test-team-port \
-	ifcfg-test-team-port-empty-config
+	ifcfg-test-team-port-empty-config \
+	ifcfg-test-vlan-trailing-spaces
 
 # make target dependencies can't have colons in their names, which ends up
 # meaning that we can't add the alias files to EXTRA_DIST

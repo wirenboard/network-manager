@@ -168,6 +168,13 @@ NMSettingBond
 
 
 
+<!-- ##### MACRO NM_SETTING_BOND_OPTION_LACP_RATE ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### STRUCT NMSettingBond ##### -->
 <para>
 

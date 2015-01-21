@@ -1,38 +1,28 @@
+SUBDIRS = config
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
-	-I$(top_srcdir)/libnm-util \
-	-I$(top_builddir)/libnm-util \
-	-I$(top_srcdir)/src/logging \
+	-I$(top_srcdir)/libnm-core \
+	-I$(top_builddir)/libnm-core \
 	-I$(top_srcdir)/src/platform \
 	-I$(top_srcdir)/src/dhcp-manager \
+	-I$(top_srcdir)/src/devices \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/src \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
+	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS)
 
 noinst_PROGRAMS = \
-	test-dhcp-options \
 	test-general \
+	test-general-with-expect \
 	test-ip4-config \
 	test-ip6-config \
 	test-dcb \
-	test-resolvconf-capture
-
-####### DHCP options test #######
-
-test_dhcp_options_SOURCES = \
-	test-dhcp-options.c
-
-test_dhcp_options_CPPFLAGS = \
-	$(AM_CPPFLAGS) \
-	-DDHCLIENT_PATH=\"$(DHCLIENT_PATH)\" \
-	-DDHCPCD_PATH=\"$(DHCPCD_PATH)\"
-
-test_dhcp_options_LDADD = \
-	$(top_builddir)/src/libNetworkManager.la
+	test-resolvconf-capture \
+	test-wired-defname
 
 ####### ip4 config test #######
 
@@ -74,11 +64,50 @@ test_general_SOURCES = \
 test_general_LDADD = \
 	$(top_builddir)/src/libNetworkManager.la
 
+####### general-with-expect test #######
+
+test_general_with_expect_SOURCES = \
+	test-general-with-expect.c
+
+test_general_with_expect_LDADD = \
+	$(top_builddir)/src/libNetworkManager.la
+
+####### wired defname test #######
+
+test_wired_defname_SOURCES = \
+	test-wired-defname.c
+
+test_wired_defname_LDADD = \
+	$(top_builddir)/src/libNetworkManager.la
+
 ####### secret agent interface test #######
 
 EXTRA_DIST = test-secret-agent.py
 
 ###########################################
 
-TESTS = test-dhcp-options test-ip4-config test-ip6-config test-dcb test-resolvconf-capture test-general
+TESTS = \
+	test-ip4-config \
+	test-ip6-config \
+	test-dcb \
+	test-resolvconf-capture \
+	test-general \
+	test-general-with-expect \
+	test-wired-defname
+
+
+if ENABLE_TESTS
+
+check-local:
+	@for t in bond bridge ethernet gre infiniband macvlan tun veth vlan vxlan; do \
+		# Ensure the device subclass factory registration constructors exist \
+		# which could inadvertently break if src/Makefile.am gets changed \
+		if ! LC_ALL=C nm $(top_builddir)/src/NetworkManager | LC_ALL=C grep -q "register_device_factory_internal_$$t" ; then \
+			echo "Testing device factory symbols... FAILED" ; \
+			exit 1 ; \
+		fi \
+	done
+	@echo "Testing device factory symbols... PASSED"
+
+endif
 

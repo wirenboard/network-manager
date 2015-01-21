@@ -1,8 +1,6 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 
 /*
- * Dan Williams <dcbw@redhat.com>
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -18,11 +16,13 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * (C) Copyright 2007 - 2013 Red Hat, Inc.
+ * Copyright 2007 - 2013 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <string.h>
-#include <glib/gi18n.h>
+#include <glib/gi18n-lib.h>
 
 #include "nm-setting-cdma.h"
 #include "nm-utils.h"
@@ -231,7 +231,7 @@ finalize (GObject *object)
 
 static void
 set_property (GObject *object, guint prop_id,
-		    const GValue *value, GParamSpec *pspec)
+              const GValue *value, GParamSpec *pspec)
 {
 	NMSettingCdmaPrivate *priv = NM_SETTING_CDMA_GET_PRIVATE (object);
 
@@ -259,7 +259,7 @@ set_property (GObject *object, guint prop_id,
 
 static void
 get_property (GObject *object, guint prop_id,
-		    GValue *value, GParamSpec *pspec)
+              GValue *value, GParamSpec *pspec)
 {
 	NMSettingCdma *setting = NM_SETTING_CDMA (object);
 
@@ -308,14 +308,10 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_NUMBER,
-		 g_param_spec_string (NM_SETTING_CDMA_NUMBER,
-						  "Number",
-						  "Number to dial when establishing a PPP data session "
-						  "with the CDMA-based mobile broadband network.  If not "
-						  "specified, the default number (#777) is used when "
-						  "required.",
-						  NULL,
-						  G_PARAM_READWRITE));
+		 g_param_spec_string (NM_SETTING_CDMA_NUMBER, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingCdma:username:
@@ -326,13 +322,10 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_USERNAME,
-		 g_param_spec_string (NM_SETTING_CDMA_USERNAME,
-						  "Username",
-						  "Username used to authenticate with the network, if "
-						  "required.  Note that many providers do not require "
-						  "a username or accept any username.",
-						  NULL,
-						  G_PARAM_READWRITE));
+		 g_param_spec_string (NM_SETTING_CDMA_USERNAME, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingCdma:password:
@@ -343,25 +336,23 @@ nm_setting_cdma_class_init (NMSettingCdmaClass *setting_class)
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_PASSWORD,
-		 g_param_spec_string (NM_SETTING_CDMA_PASSWORD,
-						  "Password",
-						  "Password used to authenticate with the network, if "
-						  "required.  Note that many providers do not require "
-						  "a password or accept any password.",
-						  NULL,
-						  G_PARAM_READWRITE | NM_SETTING_PARAM_SECRET));
+		 g_param_spec_string (NM_SETTING_CDMA_PASSWORD, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      NM_SETTING_PARAM_SECRET |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMSettingCdma:password-flags:
 	 *
 	 * Flags indicating how to handle the #NMSettingCdma:password property.
 	 **/
-	g_object_class_install_property (object_class, PROP_PASSWORD_FLAGS,
-		 g_param_spec_uint (NM_SETTING_CDMA_PASSWORD_FLAGS,
-		                    "Password Flags",
-		                    "Flags indicating how to handle the CDMA password.",
+	g_object_class_install_property
+		(object_class, PROP_PASSWORD_FLAGS,
+		 g_param_spec_uint (NM_SETTING_CDMA_PASSWORD_FLAGS, "", "",
 		                    NM_SETTING_SECRET_FLAG_NONE,
 		                    NM_SETTING_SECRET_FLAGS_ALL,
 		                    NM_SETTING_SECRET_FLAG_NONE,
-		                    G_PARAM_READWRITE));
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_STATIC_STRINGS));
 }

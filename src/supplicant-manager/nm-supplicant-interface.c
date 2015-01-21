@@ -19,7 +19,8 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
@@ -1033,12 +1034,11 @@ add_blob_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 	NMSupplicantInterface *self = NM_SUPPLICANT_INTERFACE (user_data);
 	NMSupplicantInterfacePrivate *priv = NM_SUPPLICANT_INTERFACE_GET_PRIVATE (self);
 	GError *err = NULL;
-	guint tmp;
 
 	priv->blobs_left--;
 
 	nm_call_store_remove (priv->assoc_pcalls, proxy, call_id);
-	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_UINT, &tmp, G_TYPE_INVALID)) {
+	if (!dbus_g_proxy_end_call (proxy, call_id, &err, G_TYPE_INVALID)) {
 		nm_log_warn (LOGD_SUPPLICANT, "Couldn't set network certificates: %s.", err->message);
 		emit_error_helper (self, err);
 		g_error_free (err);
@@ -1080,7 +1080,7 @@ add_network_cb (DBusGProxy *proxy, DBusGProxyCall *call_id, gpointer user_data)
 			                            add_blob_cb,
 			                            self,
 			                            NULL,
-			                            DBUS_TYPE_STRING, name,
+			                            G_TYPE_STRING, name,
 			                            DBUS_TYPE_G_UCHAR_ARRAY, data,
 			                            G_TYPE_INVALID);
 		nm_call_store_add (priv->assoc_pcalls, priv->iface_proxy, call);
@@ -1472,12 +1472,12 @@ nm_supplicant_interface_class_init (NMSupplicantInterfaceClass *klass)
 	object_class->get_property = get_property;
 
 	/* Properties */
-	g_object_class_install_property (object_class, PROP_SCANNING,
-		g_param_spec_boolean ("scanning",
-		                      "Scanning",
-		                      "Scanning",
-		                      FALSE,
-		                      G_PARAM_READABLE));
+	g_object_class_install_property
+		(object_class, PROP_SCANNING,
+		 g_param_spec_boolean ("scanning", "", "",
+		                       FALSE,
+		                       G_PARAM_READABLE |
+		                       G_PARAM_STATIC_STRINGS));
 
 	/* Signals */
 	signals[STATE] =

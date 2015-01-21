@@ -123,6 +123,7 @@ NMWimaxNsp implements
 } NMWimaxNspNetworkType;
 </pre>
 <p>
+WiMAX network type.
 </p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
@@ -132,22 +133,22 @@ NMWimaxNsp implements
 <tbody>
 <tr>
 <td><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS"></a><span class="term"><code class="literal">NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN</code></span></p></td>
-<td>
+<td>unknown network type
 </td>
 </tr>
 <tr>
 <td><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS"></a><span class="term"><code class="literal">NM_WIMAX_NSP_NETWORK_TYPE_HOME</code></span></p></td>
-<td>
+<td>home network
 </td>
 </tr>
 <tr>
 <td><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS"></a><span class="term"><code class="literal">NM_WIMAX_NSP_NETWORK_TYPE_PARTNER</code></span></p></td>
-<td>
+<td>partner network
 </td>
 </tr>
 <tr>
 <td><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS"></a><span class="term"><code class="literal">NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER</code></span></p></td>
-<td>
+<td>roaming partner network
 </td>
 </tr>
 </tbody>
@@ -307,7 +308,7 @@ returned connections will match the <em class="parameter"><code>nsp</code></em>'
 <tr>
 <td><p><span class="term"><em class="parameter"><code>connections</code></em> :</span></p></td>
 <td>a list of
-<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> objects to filter. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NetworkManager.Connection]</span>
+<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> objects to filter. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span>
 </td>
 </tr>
 <tr>
@@ -316,7 +317,7 @@ returned connections will match the <em class="parameter"><code>nsp</code></em>'
 list of <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> objects that could be activated with the given <em class="parameter"><code>nsp</code></em>.
 The elements of the list are owned by their creator and should not be freed
 by the caller, but the returned list itself is owned by the caller and should
-be freed with <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#g-slist-free"><code class="function">g_slist_free()</code></a> when it is no longer required. <span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NetworkManager.Connection]</span>
+be freed with <a href="http://library.gnome.org/devel/glib/unstable/glib-Singly-Linked-Lists.html#g-slist-free"><code class="function">g_slist_free()</code></a> when it is no longer required. <span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span>
 </td>
 </tr>
 </tbody>

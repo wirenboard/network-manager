@@ -19,11 +19,11 @@
  * Copyright (C) 2008 - 2013 Red Hat, Inc.
  */
 
-#include <config.h>
+#include "config.h"
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <netinet/ether.h>
 #include <string.h>
 
 #include <gmodule.h>
@@ -37,6 +37,7 @@
 #include <nm-utils.h>
 #include <nm-config.h>
 #include <nm-logging.h>
+#include "nm-core-internal.h"
 
 #include "plugin.h"
 #include "nm-system-config-interface.h"
@@ -373,20 +374,13 @@ static GSList *
 get_connections (NMSystemConfigInterface *config)
 {
 	SCPluginKeyfilePrivate *priv = SC_PLUGIN_KEYFILE_GET_PRIVATE (config);
-	GHashTableIter iter;
-	gpointer data = NULL;
-	GSList *list = NULL;
 
 	if (!priv->initialized) {
 		setup_monitoring (config);
 		read_connections (config);
 		priv->initialized = TRUE;
 	}
-
-	g_hash_table_iter_init (&iter, priv->connections);
-	while (g_hash_table_iter_next (&iter, NULL, &data))
-		list = g_slist_prepend (list, data);
-	return list;
+	return _nm_utils_hash_values_to_slist (priv->connections);
 }
 
 static gboolean
@@ -496,12 +490,12 @@ get_unmanaged_specs (NMSystemConfigInterface *config)
 		char **udis;
 		int i;
 
-		udis = g_strsplit (str, ";", -1);
+		udis = g_strsplit_set (str, ";,", -1);
 		g_free (str);
 
 		for (i = 0; udis[i] != NULL; i++) {
 			/* Verify unmanaged specification and add it to the list */
-			if (!strncmp (udis[i], "mac:", 4) && nm_utils_hwaddr_valid (udis[i] + 4)) {
+			if (!strncmp (udis[i], "mac:", 4) && nm_utils_hwaddr_valid (udis[i] + 4, -1)) {
 				specs = g_slist_append (specs, udis[i]);
 			} else if (!strncmp (udis[i], "interface-name:", 15) && nm_utils_iface_valid_name (udis[i] + 15)) {
 				specs = g_slist_append (specs, udis[i]);

@@ -64,6 +64,13 @@ NMDeviceVlan
 
 
 
+<!-- ##### MACRO NM_DEVICE_VLAN_PARENT ##### -->
+<para>
+
+</para>
+
+
+
 <!-- ##### MACRO NM_DEVICE_VLAN_VLAN_ID ##### -->
 <para>
 
@@ -83,6 +90,11 @@ NMDeviceVlan
 </para>
 
 <!-- ##### ARG NMDeviceVlan:hw-address ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMDeviceVlan:parent ##### -->
 <para>
 
 </para>
@@ -125,6 +137,15 @@ NMDeviceVlan
 
 
 <!-- ##### FUNCTION nm_device_vlan_get_carrier ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_device_vlan_get_parent ##### -->
 <para>
 
 </para>

@@ -19,24 +19,18 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#ifndef NM_DEVICE_H
-#define NM_DEVICE_H
+#ifndef __NETWORKMANAGER_DEVICE_H__
+#define __NETWORKMANAGER_DEVICE_H__
 
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <netinet/in.h>
 
-#include "NetworkManager.h"
+#include "nm-dbus-interface.h"
 #include "nm-types.h"
-#include "nm-activation-request.h"
-#include "nm-ip4-config.h"
-#include "nm-ip6-config.h"
-#include "nm-dhcp4-config.h"
-#include "nm-dhcp6-config.h"
 #include "nm-connection.h"
 #include "nm-rfkill-manager.h"
-#include "nm-connection-provider.h"
-#include "nm-platform.h"
+#include "NetworkManagerUtils.h"
 
 /* Properties */
 #define NM_DEVICE_UDI              "udi"
@@ -62,12 +56,13 @@
 #define NM_DEVICE_AVAILABLE_CONNECTIONS "available-connections"
 #define NM_DEVICE_PHYSICAL_PORT_ID "physical-port-id"
 #define NM_DEVICE_MTU              "mtu"
-#define NM_DEVICE_TYPE_DESC        "type-desc"    /* Internal only */
-#define NM_DEVICE_RFKILL_TYPE      "rfkill-type"  /* Internal only */
-#define NM_DEVICE_IFINDEX          "ifindex"      /* Internal only */
-#define NM_DEVICE_IS_MASTER        "is-master"    /* Internal only */
-#define NM_DEVICE_MASTER           "master"       /* Internal only */
-#define NM_DEVICE_HW_ADDRESS       "hw-address"   /* Internal only */
+#define NM_DEVICE_HW_ADDRESS       "hw-address"
+
+#define NM_DEVICE_TYPE_DESC        "type-desc"      /* Internal only */
+#define NM_DEVICE_RFKILL_TYPE      "rfkill-type"    /* Internal only */
+#define NM_DEVICE_IFINDEX          "ifindex"        /* Internal only */
+#define NM_DEVICE_IS_MASTER        "is-master"      /* Internal only */
+#define NM_DEVICE_MASTER           "master"         /* Internal only */
 #define NM_DEVICE_HAS_PENDING_ACTION "has-pending-action" /* Internal only */
 
 /* Internal signals */
@@ -89,12 +84,6 @@ G_BEGIN_DECLS
 #define NM_DEVICE_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS ((obj),  NM_TYPE_DEVICE, NMDeviceClass))
 
 typedef enum NMActStageReturn NMActStageReturn;
-
-typedef enum {
-	NM_DEVICE_ERROR_CONNECTION_ACTIVATING = 0, /*< nick=ConnectionActivating >*/
-	NM_DEVICE_ERROR_CONNECTION_INVALID,        /*< nick=ConnectionInvalid >*/
-	NM_DEVICE_ERROR_NOT_ACTIVE,                /*< nick=NotActive >*/
-} NMDeviceError;
 
 struct _NMDevice {
 	GObject parent;
@@ -120,10 +109,10 @@ typedef struct {
 	/* Carrier state (IFF_LOWER_UP) */
 	void            (*carrier_changed) (NMDevice *, gboolean carrier);
 
-	void        (* update_hw_address) (NMDevice *self);
 	void        (* update_permanent_hw_address) (NMDevice *self);
 	void        (* update_initial_hw_address) (NMDevice *self);
-	guint       (* get_hw_address_length) (NMDevice *self, gboolean *out_permanent);
+
+	gboolean    (* get_ip_iface_identifier) (NMDevice *self, NMUtilsIPv6IfaceId *out_iid);
 
 	guint32		(* get_generic_capabilities)	(NMDevice *self);
 
@@ -183,7 +172,7 @@ typedef struct {
 
 	/* Called right before IP config is set; use for setting MTU etc */
 	void                (* ip4_config_pre_commit) (NMDevice *self, NMIP4Config *config);
-	void                (* ip6_config_pre_commit) (NMDevice *self);
+	void                (* ip6_config_pre_commit) (NMDevice *self, NMIP6Config *config);
 
 	void			(* deactivate)			(NMDevice *self);
 
@@ -191,6 +180,11 @@ typedef struct {
 
 	/* Update the connection with currently configured L2 settings */
 	void            (* update_connection) (NMDevice *device, NMConnection *connection);
+
+	gboolean (*master_update_slave_connection) (NMDevice *self,
+	                                            NMDevice *slave,
+	                                            NMConnection *connection,
+	                                            GError **error);
 
 	gboolean        (* enslave_slave) (NMDevice *self,
 	                                   NMDevice *slave,
@@ -207,6 +201,8 @@ typedef struct {
 	gboolean        (* component_added) (NMDevice *self, GObject *component);
 
 	gboolean        (* owns_iface) (NMDevice *self, const char *iface);
+
+	NMConnection *  (* new_default_connection) (NMDevice *self);
 } NMDeviceClass;
 
 
@@ -220,6 +216,8 @@ GType nm_device_get_type (void);
 const char *    nm_device_get_path (NMDevice *dev);
 void            nm_device_dbus_export   (NMDevice *device);
 
+void            nm_device_finish_init   (NMDevice *device);
+
 const char *	nm_device_get_udi		(NMDevice *dev);
 const char *	nm_device_get_iface		(NMDevice *dev);
 int             nm_device_get_ifindex	(NMDevice *dev);
@@ -232,11 +230,13 @@ const char *	nm_device_get_type_desc (NMDevice *dev);
 NMDeviceType	nm_device_get_device_type	(NMDevice *dev);
 
 int			nm_device_get_priority (NMDevice *dev);
+guint32     nm_device_get_ip4_route_metric (NMDevice *dev);
+guint32     nm_device_get_ip6_route_metric (NMDevice *dev);
 
-const guint8 *  nm_device_get_hw_address (NMDevice *dev, guint *out_len);
+const char *    nm_device_get_hw_address   (NMDevice *dev);
 
-NMDHCP4Config * nm_device_get_dhcp4_config (NMDevice *dev);
-NMDHCP6Config * nm_device_get_dhcp6_config (NMDevice *dev);
+NMDhcp4Config * nm_device_get_dhcp4_config (NMDevice *dev);
+NMDhcp6Config * nm_device_get_dhcp6_config (NMDevice *dev);
 
 NMIP4Config *	nm_device_get_ip4_config	(NMDevice *dev);
 void            nm_device_set_vpn4_config   (NMDevice *dev, NMIP4Config *config);
@@ -255,14 +255,21 @@ NMDevice *      nm_device_get_master        (NMDevice *dev);
 NMActRequest *	nm_device_get_act_request	(NMDevice *dev);
 NMConnection *  nm_device_get_connection	(NMDevice *dev);
 
+void            nm_device_removed        (NMDevice *dev);
+
 gboolean        nm_device_is_available   (NMDevice *dev);
 gboolean        nm_device_has_carrier    (NMDevice *dev);
 
-NMConnection * nm_device_generate_connection (NMDevice *device);
+NMConnection * nm_device_generate_connection (NMDevice *self, NMDevice *master);
 
-NMConnection * nm_device_get_best_auto_connection (NMDevice *dev,
-                                                   GSList *connections,
-                                                   char **specific_object);
+gboolean nm_device_master_update_slave_connection (NMDevice *master,
+                                                   NMDevice *slave,
+                                                   NMConnection *connection,
+                                                   GError **error);
+
+gboolean nm_device_can_auto_connect (NMDevice *self,
+                                     NMConnection *connection,
+                                     char **specific_object);
 
 gboolean nm_device_complete_connection (NMDevice *device,
                                         NMConnection *connection,
@@ -271,6 +278,8 @@ gboolean nm_device_complete_connection (NMDevice *device,
                                         GError **error);
 
 gboolean nm_device_check_connection_compatible (NMDevice *device, NMConnection *connection);
+
+gboolean nm_device_uses_assumed_connection (NMDevice *device);
 
 gboolean nm_device_can_assume_active_connection (NMDevice *device);
 
@@ -294,12 +303,16 @@ RfKillType nm_device_get_rfkill_type (NMDevice *device);
  * @NM_UNMANAGED_INTERNAL: %TRUE when unmanaged by internal decision (ie,
  *   because NM is sleeping or not managed for some other reason)
  * @NM_UNMANAGED_USER: %TRUE when unmanaged by user decision (via unmanaged-specs)
+ * @NM_UNMANAGED_PARENT: %TRUE when unmanaged due to parent device being unmanaged
+ * @NM_UNMANAGED_EXTERNAL_DOWN: %TRUE when unmanaged because !IFF_UP and not created by NM
  */
 typedef enum {
-	NM_UNMANAGED_NONE     = 0x00,
-	NM_UNMANAGED_DEFAULT  = 0x01,
-	NM_UNMANAGED_INTERNAL = 0x02,
-	NM_UNMANAGED_USER     = 0x04,
+	NM_UNMANAGED_NONE          = 0x00,
+	NM_UNMANAGED_DEFAULT       = 0x01,
+	NM_UNMANAGED_INTERNAL      = 0x02,
+	NM_UNMANAGED_USER          = 0x04,
+	NM_UNMANAGED_PARENT        = 0x08,
+	NM_UNMANAGED_EXTERNAL_DOWN = 0x10,
 
 	/* Boundary value */
 	__NM_UNMANAGED_LAST,
@@ -354,6 +367,13 @@ gboolean   nm_device_connection_is_available (NMDevice *device,
 gboolean nm_device_notify_component_added (NMDevice *device, GObject *component);
 
 gboolean nm_device_owns_iface (NMDevice *device, const char *iface);
+
+NMConnection *nm_device_new_default_connection (NMDevice *self);
+
+const NMPlatformIP4Route *nm_device_get_ip4_default_route (NMDevice *self, gboolean *out_is_assumed);
+const NMPlatformIP6Route *nm_device_get_ip6_default_route (NMDevice *self, gboolean *out_is_assumed);
+
+void nm_device_spawn_iface_helper (NMDevice *self);
 
 G_END_DECLS
 

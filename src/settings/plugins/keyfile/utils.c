@@ -18,6 +18,8 @@
  * (C) Copyright 2010 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -229,6 +231,7 @@ nm_keyfile_plugin_kf_set_##stype (GKeyFile *kf, \
 
 DEFINE_KF_WRAPPER(string, gchar*, const gchar*);
 DEFINE_KF_WRAPPER(integer, gint, gint);
+DEFINE_KF_WRAPPER(uint64, guint64, guint64);
 DEFINE_KF_WRAPPER(boolean, gboolean, gboolean);
 DEFINE_KF_WRAPPER(value, gchar*, const gchar*);
 

@@ -1,0 +1,473 @@
+<!-- ##### SECTION Title ##### -->
+NMSettingConnection
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_SETTING_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_DEFAULT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_ID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_UUID ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_INTERFACE_NAME ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_TIMESTAMP ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_READ_ONLY ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_PERMISSIONS ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_ZONE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_MASTER ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_SLAVE_TYPE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_SECONDARIES ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT NMSettingConnection ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NMSettingConnection:autoconnect ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:autoconnect-priority ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:gateway-ping-timeout ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:id ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:interface-name ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:master ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:permissions ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:read-only ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:secondaries ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:slave-type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:timestamp ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:type ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:uuid ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NMSettingConnection:zone ##### -->
+<para>
+
+</para>
+
+<!-- ##### STRUCT NMSettingConnectionClass ##### -->
+<para>
+
+</para>
+
+@parent: 
+
+<!-- ##### FUNCTION nm_setting_connection_new ##### -->
+<para>
+
+</para>
+
+@void: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_id ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_uuid ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_interface_name ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_connection_type ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_autoconnect ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_autoconnect_priority ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_timestamp ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_read_only ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_num_permissions ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_permission ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+@out_ptype: 
+@out_pitem: 
+@out_detail: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_zone ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_permissions_user_allowed ##### -->
+<para>
+
+</para>
+
+@setting: 
+@uname: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_add_permission ##### -->
+<para>
+
+</para>
+
+@setting: 
+@ptype: 
+@pitem: 
+@detail: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_permission ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_permission_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@ptype: 
+@pitem: 
+@detail: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_master ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_is_slave_type ##### -->
+<para>
+
+</para>
+
+@setting: 
+@type: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_slave_type ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_num_secondaries ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_secondary ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_add_secondary ##### -->
+<para>
+
+</para>
+
+@setting: 
+@sec_uuid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_secondary ##### -->
+<para>
+
+</para>
+
+@setting: 
+@idx: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_remove_secondary_by_value ##### -->
+<para>
+
+</para>
+
+@setting: 
+@sec_uuid: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nm_setting_connection_get_gateway_ping_timeout ##### -->
+<para>
+
+</para>
+
+@setting: 
+@Returns: 
+
+

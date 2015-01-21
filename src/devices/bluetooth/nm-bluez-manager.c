@@ -18,6 +18,8 @@
  * Copyright (C) 2013 - 2014 Red Hat, Inc.
  */
 
+#include "config.h"
+
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -62,18 +64,10 @@ static void check_bluez_and_try_setup (NMBluezManager *self);
 
 /**************************************************************************/
 
-#define PLUGIN_TYPE NM_DEVICE_TYPE_BT
-
 G_MODULE_EXPORT NMDeviceFactory *
 nm_device_factory_create (GError **error)
 {
 	return (NMDeviceFactory *) g_object_new (NM_TYPE_BLUEZ_MANAGER, NULL);
-}
-
-G_MODULE_EXPORT NMDeviceType
-nm_device_factory_get_device_type (void)
-{
-	return PLUGIN_TYPE;
 }
 
 /************************************************************************/
@@ -368,6 +362,18 @@ check_bluez_and_try_setup (NMBluezManager *self)
 	                          async_data_pack (self));
 }
 
+static void
+start (NMDeviceFactory *factory)
+{
+	check_bluez_and_try_setup (NM_BLUEZ_MANAGER (factory));
+}
+
+static NMDeviceType
+get_device_type (NMDeviceFactory *factory)
+{
+	return NM_DEVICE_TYPE_BT;
+}
+
 /*********************************************************************/
 
 static void
@@ -391,16 +397,6 @@ dispose (GObject *object)
 }
 
 static void
-constructed (GObject *object)
-{
-	NMBluezManager *self = NM_BLUEZ_MANAGER (object);
-
-	G_OBJECT_CLASS (nm_bluez_manager_parent_class)->constructed (object);
-
-	check_bluez_and_try_setup (self);
-}
-
-static void
 nm_bluez_manager_init (NMBluezManager *self)
 {
 	NMBluezManagerPrivate *priv = NM_BLUEZ_MANAGER_GET_PRIVATE (self);
@@ -412,6 +408,8 @@ nm_bluez_manager_init (NMBluezManager *self)
 static void
 device_factory_interface_init (NMDeviceFactory *factory_iface)
 {
+	factory_iface->get_device_type = get_device_type;
+	factory_iface->start = start;
 }
 
 static void
@@ -423,6 +421,5 @@ nm_bluez_manager_class_init (NMBluezManagerClass *klass)
 
 	/* virtual methods */
 	object_class->dispose = dispose;
-	object_class->constructed = constructed;
 }
 

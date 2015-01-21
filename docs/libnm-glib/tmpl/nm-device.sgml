@@ -580,6 +580,15 @@ NMDevice
 @Returns: 
 
 
+<!-- ##### FUNCTION nm_device_is_software ##### -->
+<para>
+
+</para>
+
+@device: 
+@Returns: 
+
+
 <!-- ##### FUNCTION nm_device_get_product ##### -->
 <para>
 
@@ -617,7 +626,7 @@ NMDevice
 @Returns: 
 
 
-<!-- ##### USER_FUNCTION NMDeviceDeactivateFn ##### -->
+<!-- ##### USER_FUNCTION NMDeviceCallbackFn ##### -->
 <para>
 
 </para>
@@ -628,6 +637,16 @@ NMDevice
 
 
 <!-- ##### FUNCTION nm_device_disconnect ##### -->
+<para>
+
+</para>
+
+@device: 
+@callback: 
+@user_data: 
+
+
+<!-- ##### FUNCTION nm_device_delete ##### -->
 <para>
 
 </para>
@@ -675,5 +694,15 @@ NMDevice
 
 @device: 
 @Returns: 
+
+
+<!-- ##### USER_FUNCTION NMDeviceDeactivateFn ##### -->
+<para>
+
+</para>
+
+@device: 
+@error: 
+@user_data: 
 
 
