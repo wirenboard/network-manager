@@ -3,6 +3,8 @@ network-manager (1.0.0-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Rebase patches.
   * Update symbols files for libnm-glib and libnm-util.
+  * Add perl and libyaml-perl to Build-Depends, required to build the
+    documentation.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jan 2015 00:30:26 +0100
 
