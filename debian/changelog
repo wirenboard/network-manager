@@ -2,6 +2,7 @@ network-manager (1.0.0-1) UNRELEASED; urgency=medium
 
   * New upstream release.
   * Rebase patches.
+  * Update symbols files for libnm-glib and libnm-util.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jan 2015 00:30:26 +0100
 
