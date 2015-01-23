@@ -37,7 +37,8 @@ override_dh_auto_configure:
 		--enable-introspection \
 		--enable-gtk-doc \
 		--enable-concheck \
-		--enable-teamdctl
+		--enable-teamdctl \
+		--enable-bluez5-dun
 
 override_dh_install:
 	dh_install -X.la --list-missing
