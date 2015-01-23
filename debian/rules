@@ -32,6 +32,7 @@ override_dh_auto_configure:
 		--disable-more-warnings \
 		--disable-modify-system \
 		--enable-polkit \
+		--enable-polkit-agent \
 		--enable-ppp \
 		--enable-ifupdown \
 		--enable-introspection \
