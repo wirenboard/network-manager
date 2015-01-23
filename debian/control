@@ -208,6 +208,40 @@ Description: network management framework (development files)
  .
  This package contains header and development files.
 
+Package: libnm0
+Section: libs
+Architecture: linux-any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: GObject-based client library for NetworkManager
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
+ .
+ This package contains a convenience library to ease the access to
+ NetworkManager.
+
+Package: libnm-dev
+Section: libdevel
+Architecture: linux-any
+Multi-Arch: same
+Depends: ${misc:Depends},
+         gir1.2-networkmanager-1.0 (= ${binary:Version}),
+         libglib2.0-dev,
+         libdbus-glib-1-dev
+Description: GObject-based client library for NetworkManager (development files)
+ NetworkManager is a system network service that manages your network devices
+ and connections, attempting to keep active network connectivity when
+ available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
+ devices, and provides VPN integration with a variety of different VPN
+ services.
+ .
+ This package contains header and development files.
+
 Package: network-manager-dbg
 Architecture: linux-any
 Section: debug

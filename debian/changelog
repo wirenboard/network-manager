@@ -5,6 +5,9 @@ network-manager (1.0.0-1) UNRELEASED; urgency=medium
   * Update symbols files for libnm-glib and libnm-util.
   * Add perl and libyaml-perl to Build-Depends, required to build the
     documentation.
+  * Add libnm0 and libnm-dev packages for libnm, a new GObject-based client
+    library for NetworkManager which is supposed to replace libnm-util and
+    libnm-glib.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jan 2015 00:30:26 +0100
 
