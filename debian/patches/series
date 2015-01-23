@@ -5,3 +5,4 @@
 0005-Mark-virtual-ethernet-interfaces-as-unmanaged.patch
 0006-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
 0007-fix-arping-path.patch
+0008-Fix-dependencies-in-libnm.pc.patch

@@ -8,6 +8,7 @@ network-manager (1.0.0-1) UNRELEASED; urgency=medium
   * Add libnm0 and libnm-dev packages for libnm, a new GObject-based client
     library for NetworkManager which is supposed to replace libnm-util and
     libnm-glib.
+  * Fix incorrect dependencies in libnm.pc.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 22 Jan 2015 00:30:26 +0100
 

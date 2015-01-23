@@ -231,8 +231,7 @@ Architecture: linux-any
 Multi-Arch: same
 Depends: ${misc:Depends},
          gir1.2-networkmanager-1.0 (= ${binary:Version}),
-         libglib2.0-dev,
-         libdbus-glib-1-dev
+         libglib2.0-dev
 Description: GObject-based client library for NetworkManager (development files)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when

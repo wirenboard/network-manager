@@ -1,0 +1,23 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Fri, 23 Jan 2015 21:19:55 +0100
+Subject: Fix dependencies in libnm.pc
+
+The new libnm library doesn't use libdbus-glib, so drop that from
+Requires.
+---
+ libnm/libnm.pc.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libnm/libnm.pc.in b/libnm/libnm.pc.in
+index 6392799..5fe26b6 100644
+--- a/libnm/libnm.pc.in
++++ b/libnm/libnm.pc.in
+@@ -6,7 +6,7 @@ includedir=@includedir@
+ Name: libnm
+ Description: Convenience library for clients of NetworkManager
+ Version: @VERSION@
+-Requires: gio-2.0 dbus-glib-1
++Requires: gio-2.0
+ Cflags: -I${includedir}/libnm
+ Libs: -L${libdir} -lnm
+ 
