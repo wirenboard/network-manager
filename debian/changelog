@@ -1,4 +1,4 @@
-network-manager (1.0.0-1) UNRELEASED; urgency=medium
+network-manager (1.0.0-1) experimental; urgency=medium
 
   * New upstream release.
   * Rebase patches.
@@ -11,7 +11,7 @@ network-manager (1.0.0-1) UNRELEASED; urgency=medium
   * Fix incorrect dependencies in libnm.pc.
   * Bump Standards-Version to 3.9.6. No further changes.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 22 Jan 2015 00:30:26 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 23 Jan 2015 21:26:50 +0100
 
 network-manager (0.9.10.0-5) unstable; urgency=medium
 
