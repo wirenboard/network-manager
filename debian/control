@@ -40,7 +40,7 @@ Build-Depends: debhelper (>= 9),
                libbluetooth-dev (>= 5)
 Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
-Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-utopia/network-manager.git;a=summary
+Vcs-Browser: https://anonscm.debian.org/cgit/pkg-utopia/network-manager.git
 Homepage: https://wiki.gnome.org/Projects/NetworkManager
 
 Package: network-manager

@@ -2,6 +2,7 @@ network-manager (1.0.0-2) UNRELEASED; urgency=medium
 
   * Enable Bluez5 DUN support.
   * Enable polkit agent support for the CLI tools.
+  * Update Vcs-Browser URL to use cgit and https.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 23 Jan 2015 22:21:12 +0100
 
