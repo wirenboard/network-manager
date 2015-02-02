@@ -1,3 +1,9 @@
+network-manager (1.0.0-3) UNRELEASED; urgency=medium
+
+  * Add strictly versioned Depends on libnm0 to libnm-dev.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 02 Feb 2015 14:24:14 +0100
+
 network-manager (1.0.0-2) experimental; urgency=medium
 
   * Enable Bluez5 DUN support.

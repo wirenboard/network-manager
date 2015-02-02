@@ -232,6 +232,7 @@ Section: libdevel
 Architecture: linux-any
 Multi-Arch: same
 Depends: ${misc:Depends},
+         libnm0 (= ${binary:Version}),
          gir1.2-networkmanager-1.0 (= ${binary:Version}),
          libglib2.0-dev
 Description: GObject-based client library for NetworkManager (development files)
