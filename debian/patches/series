@@ -6,3 +6,4 @@
 0006-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
 0007-fix-arping-path.patch
 0008-Fix-dependencies-in-libnm.pc.patch
+0009-Check-at-runtime-whether-to-start-ModemManager.patch
