@@ -1,8 +1,10 @@
 network-manager (1.0.0-3) UNRELEASED; urgency=medium
 
   * Add strictly versioned Depends on libnm0 to libnm-dev.
+  * Detect at runtime whether to start ModemManager. (Closes: #770871)
+  * Don't install nm-settings-ifcfg-rh.5 man page.
 
- -- Michael Biebl <biebl@debian.org>  Mon, 02 Feb 2015 14:24:14 +0100
+ -- Michael Biebl <biebl@debian.org>  Mon, 09 Feb 2015 01:56:12 +0100
 
 network-manager (1.0.0-2) experimental; urgency=medium
 
