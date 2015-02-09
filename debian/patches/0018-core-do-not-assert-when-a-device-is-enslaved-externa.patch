@@ -1,0 +1,60 @@
+From: =?utf-8?q?Ji=C5=99=C3=AD_Klime=C5=A1?= <jklimes@redhat.com>
+Date: Wed, 24 Sep 2014 16:02:37 +0200
+Subject: core: do not assert when a device is enslaved externally (rh
+ #1167345)
+
+Test case:
+ # ip link add name BR type bridge
+ # brctl addif BR eth0
+
+Monitoring external master/slave changes was intruduced by
+08e0cfb484dfc6aa6342871158ffe752c7c50f03.
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1167345
+
+(cherry picked from commit c9b9229c2e7de2bbb12e493a868921b7a788ee92)
+---
+ src/devices/nm-device.c    | 4 ----
+ src/nm-active-connection.c | 4 ++--
+ 2 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
+index 24a1ff1..6ba681b 100644
+--- a/src/devices/nm-device.c
++++ b/src/devices/nm-device.c
+@@ -2960,8 +2960,6 @@ act_stage3_ip4_config_start (NMDevice *self,
+ 	g_assert (connection);
+ 
+ 	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
+-	if (priv->master)
+-		g_assert_cmpstr (method, ==, NM_SETTING_IP4_CONFIG_METHOD_DISABLED);
+ 
+ 	if (   strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_MANUAL) != 0
+ 	    && priv->is_master
+@@ -3847,8 +3845,6 @@ act_stage3_ip6_config_start (NMDevice *self,
+ 	g_assert (connection);
+ 
+ 	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP6_CONFIG);
+-	if (priv->master)
+-		g_assert_cmpstr (method, ==, NM_SETTING_IP6_CONFIG_METHOD_IGNORE);
+ 
+ 	if (   strcmp (method, NM_SETTING_IP6_CONFIG_METHOD_MANUAL) != 0
+ 	    && priv->is_master
+diff --git a/src/nm-active-connection.c b/src/nm-active-connection.c
+index 172aa61..91ba9a9 100644
+--- a/src/nm-active-connection.c
++++ b/src/nm-active-connection.c
+@@ -360,11 +360,11 @@ device_master_changed (GObject *object,
+ 		return;
+ 	if (!nm_device_get_master (device))
+ 		return;
++	if (!nm_active_connection_get_master (self))
++		return;
+ 	g_signal_handlers_disconnect_by_func (device, G_CALLBACK (device_master_changed), self);
+ 
+ 	master = nm_active_connection_get_master (self);
+-	g_assert (master);
+-
+ 	master_state = nm_active_connection_get_state (master);
+ 	if (master_state >= NM_ACTIVE_CONNECTION_STATE_DEACTIVATING) {
+ 		/* Master failed before attaching the slave */
