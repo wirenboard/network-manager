@@ -1,0 +1,71 @@
+From: Didier Raboud <odyx@debian.org>
+Date: Mon, 2 Feb 2015 16:06:32 +0100
+Subject: Check at runtime whether to start ModemManager
+
+This makes NetworkManager use runtime detection to manage the
+ModemManager lifecycle when not run by systemd. Under systemd, we expect
+the ModemManager service to be started by systemd, under non-systemd, we
+use the dbus activation feature to start ModemManager.
+
+Closes: #770871
+---
+ src/devices/wwan/nm-modem-manager.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/src/devices/wwan/nm-modem-manager.c b/src/devices/wwan/nm-modem-manager.c
+index c481170..589fb5c 100644
+--- a/src/devices/wwan/nm-modem-manager.c
++++ b/src/devices/wwan/nm-modem-manager.c
+@@ -21,6 +21,8 @@
+  */
+ 
+ #include <string.h>
++#include <systemd/sd-daemon.h>
++
+ #include "config.h"
+ #include "nm-modem-manager.h"
+ #include "nm-logging.h"
+@@ -466,10 +468,9 @@ modem_manager_1_name_owner_changed (MMManager *modem_manager_1,
+ 	if (!name_owner) {
+ 		nm_log_info (LOGD_MB, "ModemManager disappeared from bus");
+ 
+-#if !HAVE_SYSTEMD
+ 		/* If not managed by systemd, schedule relaunch */
+-		schedule_modem_manager_1_relaunch (self, 0);
+-#endif
++		if (!sd_booted())
++			schedule_modem_manager_1_relaunch (self, 0);
+ 
+ 		return;
+ 	}
+@@ -490,8 +491,6 @@ modem_manager_1_name_owner_changed (MMManager *modem_manager_1,
+ 	 */
+ }
+ 
+-#if !HAVE_SYSTEMD
+-
+ static void
+ modem_manager_1_poke_cb (GDBusConnection *connection,
+                          GAsyncResult *res,
+@@ -540,8 +539,6 @@ modem_manager_1_poke (NMModemManager *self)
+ 	                        g_object_ref (self)); /* user_data */
+ }
+ 
+-#endif /* HAVE_SYSTEMD */
+-
+ static void
+ modem_manager_1_check_name_owner (NMModemManager *self)
+ {
+@@ -555,10 +552,9 @@ modem_manager_1_check_name_owner (NMModemManager *self)
+ 		return;
+ 	}
+ 
+-#if !HAVE_SYSTEMD
+ 	/* If the lifecycle is not managed by systemd, poke */
+-	modem_manager_1_poke (self);
+-#endif
++	if (!sd_booted())
++		modem_manager_1_poke (self);
+ }
+ 
+ static void
