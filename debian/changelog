@@ -1,10 +1,10 @@
-network-manager (1.0.0-4) UNRELEASED; urgency=medium
+network-manager (1.0.0-4) experimental; urgency=medium
 
   * Merge changes from master branch.
   * Bump version check in preinst for the cleanup routine to match the
     experimental version.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 31 Mar 2015 07:26:05 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 31 Mar 2015 07:45:38 +0200
 
 network-manager (1.0.0-3) experimental; urgency=medium
 
