@@ -1,4 +1,4 @@
-network-manager (0.9.10.0-7) UNRELEASED; urgency=medium
+network-manager (0.9.10.0-7) unstable; urgency=medium
 
   * Don't make NetworkManager D-Bus activatable. If the daemon has been
     stopped manually, we don't want it to be autostarted by client requests.
@@ -7,7 +7,7 @@ network-manager (0.9.10.0-7) UNRELEASED; urgency=medium
     it, add a few other minor fixes like the addition of Documentation or
     RemainAfterExit=yes.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 31 Mar 2015 06:58:04 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 31 Mar 2015 07:06:07 +0200
 
 network-manager (0.9.10.0-6) unstable; urgency=medium
 
