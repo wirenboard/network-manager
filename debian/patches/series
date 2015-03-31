@@ -17,3 +17,4 @@
 0017-Check-at-runtime-whether-to-start-ModemManager.patch
 0018-core-do-not-assert-when-a-device-is-enslaved-externa.patch
 0019-Don-t-make-NetworkManager-D-Bus-activatable.patch
+0020-Don-t-block-network.target-on-NetworkManager-wait-on.patch
