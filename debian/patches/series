@@ -16,3 +16,4 @@
 0016-core-tell-systemd-to-restart-NetworkManager.service-.patch
 0017-Check-at-runtime-whether-to-start-ModemManager.patch
 0018-core-do-not-assert-when-a-device-is-enslaved-externa.patch
+0019-Don-t-make-NetworkManager-D-Bus-activatable.patch

@@ -25,6 +25,12 @@ case "$1" in
 	    fi
 	fi
 
+	if dpkg --compare-versions "$2" lt "0.9.10.0-7"; then
+	    if [ -L /etc/systemd/system/dbus-org.freedesktop.NetworkManager.service ]; then
+	        rm -f /etc/systemd/system/dbus-org.freedesktop.NetworkManager.service
+	    fi
+	fi
+
 	# Upgrade from previous versions
 	if dpkg --compare-versions "$2" lt "0.9.7.997-2"; then
 	    # Move old pid file to /var/run/NetworkManager so the init script
