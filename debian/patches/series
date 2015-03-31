@@ -8,3 +8,5 @@
 0008-Fix-dependencies-in-libnm.pc.patch
 0009-Check-at-runtime-whether-to-start-ModemManager.patch
 0010-build-install-nm-settings-ifcfg-rh.5-man-page-condit.patch
+0011-Don-t-make-NetworkManager-D-Bus-activatable.patch
+0012-Don-t-block-network.target-on-NetworkManager-wait-on.patch
