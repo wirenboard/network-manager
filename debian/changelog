@@ -1,3 +1,9 @@
+network-manager (1.0.0-5) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Michael Biebl <biebl@debian.org>  Mon, 27 Apr 2015 15:27:39 +0200
+
 network-manager (1.0.0-4) experimental; urgency=medium
 
   * Merge changes from master branch.
