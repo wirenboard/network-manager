@@ -32,7 +32,8 @@ case "$1" in
 	    fi
 	fi
 
-        # Create netdev group that is used in the D-Bus policy file
+        # Create netdev group. Members of group netdev get access to the PolicyKit action
+        # org.freedesktop.NetworkManager.settings.modify.system without prior authentication
         addgroup --quiet --system netdev
 
         if [ -x "/etc/init.d/dbus" ]; then
