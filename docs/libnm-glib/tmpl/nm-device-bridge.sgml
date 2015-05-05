@@ -69,40 +69,6 @@ NMDeviceBridge
 
 
 
-<!-- ##### STRUCT NMDeviceBridge ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceBridge:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceBridge:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceBridge:slaves ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceBridgeClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_device_bridge_new ##### -->
 <para>
 

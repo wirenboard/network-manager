@@ -767,7 +767,13 @@ nm_dhcp_client_handle_event (gpointer unused,
 				                                                               str_options,
 				                                                               priv->priority);
 			}
-			g_warn_if_fail (ip_config != NULL);
+
+			/* Fail if no valid IP config was received */
+			if (ip_config == NULL) {
+				nm_log_warn (LOGD_DHCP, "(%s): DHCP client bound but IP config not received", iface);
+				new_state = NM_DHCP_STATE_FAIL;
+				g_clear_pointer (&str_options, g_hash_table_unref);
+			}
 		}
 	}
 
@@ -878,6 +884,8 @@ dispose (GObject *object)
 	timeout_cleanup (self);
 
 	g_clear_pointer (&priv->iface, g_free);
+	g_clear_pointer (&priv->hostname, g_free);
+	g_clear_pointer (&priv->uuid, g_free);
 
 	if (priv->hwaddr) {
 		g_byte_array_free (priv->hwaddr, TRUE);

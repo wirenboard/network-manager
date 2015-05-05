@@ -88,24 +88,6 @@ NMSettingIP6Config
 @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR: 
 @NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR: 
 
-<!-- ##### STRUCT NMSettingIP6Config ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingIP6Config:ip6-privacy ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingIP6ConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_ip6_config_new ##### -->
 <para>
 

@@ -22,29 +22,6 @@ NMDhcpConfig
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT NMDhcpConfig ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDhcpConfig:family ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDhcpConfig:options ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDhcpConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### MACRO NM_DHCP_CONFIG_FAMILY ##### -->
 <para>
 

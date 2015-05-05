@@ -1515,6 +1515,7 @@ test_write_intlike_ssid (void)
 	g_assert_no_error (error);
 	g_assert (tmp);
 	g_assert_cmpstr (tmp, ==, "101");
+	g_free (tmp);
 
 	g_key_file_free (keyfile);
 
@@ -1601,6 +1602,7 @@ test_write_intlike_ssid_2 (void)
 	g_assert_no_error (error);
 	g_assert (tmp);
 	g_assert_cmpstr (tmp, ==, "11\\;12\\;13\\;");
+	g_free (tmp);
 
 	g_key_file_free (keyfile);
 
@@ -2511,6 +2513,7 @@ test_write_wired_8021x_tls_connection_path (void)
 	tmp2 = g_path_get_dirname (testfile);
 	if (g_strcmp0 (tmp2, TEST_KEYFILES_DIR) == 0)
 		relative = TRUE;
+	g_free (tmp2);
 
 	/* CA cert */
 	tmp = g_key_file_get_string (keyfile,
@@ -2564,9 +2567,21 @@ test_write_wired_8021x_tls_connection_blob (void)
 	char *new_priv_key;
 	const char *uuid;
 	GError *error = NULL;
+	GBytes *password_raw = NULL;
+#define PASSWORD_RAW "password-raw\0test"
 
 	connection = create_wired_tls_connection (NM_SETTING_802_1X_CK_SCHEME_BLOB);
 	g_assert (connection != NULL);
+
+	s_8021x = nm_connection_get_setting_802_1x (connection);
+	g_assert (s_8021x);
+
+	password_raw = g_bytes_new (PASSWORD_RAW, STRLEN (PASSWORD_RAW));
+	g_object_set (s_8021x,
+	              NM_SETTING_802_1X_PASSWORD_RAW,
+	              password_raw,
+	              NULL);
+	g_bytes_unref (password_raw);
 
 	/* Write out the connection */
 	success = nm_keyfile_plugin_write_test_connection (connection, TEST_SCRATCH_DIR, geteuid (), getegid (), &testfile, &error);
@@ -2609,6 +2624,11 @@ test_write_wired_8021x_tls_connection_blob (void)
 	g_assert (nm_setting_802_1x_get_ca_cert_scheme (s_8021x) == NM_SETTING_802_1X_CK_SCHEME_PATH);
 	g_assert (nm_setting_802_1x_get_client_cert_scheme (s_8021x) == NM_SETTING_802_1X_CK_SCHEME_PATH);
 	g_assert (nm_setting_802_1x_get_private_key_scheme (s_8021x) == NM_SETTING_802_1X_CK_SCHEME_PATH);
+
+	password_raw = nm_setting_802_1x_get_password_raw (s_8021x);
+	g_assert (password_raw);
+	g_assert (g_bytes_get_size (password_raw) == STRLEN (PASSWORD_RAW));
+	g_assert (!memcmp (g_bytes_get_data (password_raw, NULL), PASSWORD_RAW, STRLEN (PASSWORD_RAW)));
 
 	unlink (testfile);
 	g_free (testfile);
@@ -2784,7 +2804,7 @@ test_read_bridge_main (void)
 	/* Bridge setting */
 	s_bridge = nm_connection_get_setting_bridge (connection);
 	g_assert (s_bridge);
-	g_assert_cmpuint (nm_setting_bridge_get_forward_delay (s_bridge), ==, 0);
+	g_assert_cmpuint (nm_setting_bridge_get_forward_delay (s_bridge), ==, 2);
 	g_assert_cmpuint (nm_setting_bridge_get_stp (s_bridge), ==, TRUE);
 	g_assert_cmpuint (nm_setting_bridge_get_priority (s_bridge), ==, 32744);
 	g_assert_cmpuint (nm_setting_bridge_get_hello_time (s_bridge), ==, 7);
@@ -3098,6 +3118,7 @@ test_write_new_wired_group_name (void)
 	unlink (testfile);
 	g_free (testfile);
 
+	g_key_file_unref (kf);
 	g_object_unref (reread);
 	g_object_unref (connection);
 }
@@ -3236,6 +3257,7 @@ test_write_new_wireless_group_names (void)
 	unlink (testfile);
 	g_free (testfile);
 
+	g_key_file_unref (kf);
 	g_object_unref (reread);
 	g_object_unref (connection);
 }
@@ -3548,7 +3570,7 @@ NMTST_DEFINE ();
 
 int main (int argc, char **argv)
 {
-	nmtst_init_assert_logging (&argc, &argv);
+	nmtst_init_assert_logging (&argc, &argv, "INFO", "DEFAULT");
 
 	/* The tests */
 	g_test_add_func ("/keyfile/test_read_valid_wired_connection ", test_read_valid_wired_connection);

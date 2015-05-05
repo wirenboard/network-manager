@@ -83,43 +83,6 @@ NMSettingCdma
 
 
 
-<!-- ##### STRUCT NMSettingCdma ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingCdma:number ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingCdma:password ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingCdma:password-flags ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingCdma:username ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingCdmaClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### FUNCTION nm_setting_cdma_new ##### -->
 <para>
 

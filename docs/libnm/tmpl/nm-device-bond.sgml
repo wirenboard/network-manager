@@ -43,34 +43,6 @@ NMDeviceBond
 
 
 
-<!-- ##### STRUCT NMDeviceBond ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceBond:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceBond:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceBond:slaves ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceBondClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_bond_get_hw_address ##### -->
 <para>
 

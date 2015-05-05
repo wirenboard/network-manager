@@ -30,6 +30,7 @@
 #include "nm-utils.h"
 #include "nm-setting-private.h"
 #include "nm-core-internal.h"
+#include "gsystem-local-alloc.h"
 
 /**
  * SECTION:nm-connection
@@ -303,6 +304,8 @@ nm_connection_replace_settings (NMConnection *connection,
 
 	for (s = settings; s; s = s->next)
 		_nm_connection_add_setting (connection, s->data);
+
+	g_slist_free (settings);
 
 	if (changed)
 		g_signal_emit (connection, signals[CHANGED], 0);
@@ -723,6 +726,27 @@ _normalize_infiniband_mtu (NMConnection *self, GHashTable *parameters)
 	return FALSE;
 }
 
+static gboolean
+_normalize_bond_mode (NMConnection *self, GHashTable *parameters)
+{
+	NMSettingBond *s_bond = nm_connection_get_setting_bond (self);
+
+	/* Convert mode from numeric to string notation */
+	if (s_bond) {
+		const char *mode = nm_setting_bond_get_option_by_name (s_bond, NM_SETTING_BOND_OPTION_MODE);
+		int mode_int = nm_utils_bond_mode_string_to_int (mode);
+
+		if (mode_int != -1) {
+			const char *mode_new = nm_utils_bond_mode_int_to_string (mode_int);
+			if (g_strcmp0 (mode_new, mode) != 0) {
+				nm_setting_bond_add_option (s_bond, NM_SETTING_BOND_OPTION_MODE, mode_new);
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
 /**
  * nm_connection_verify:
  * @connection: the #NMConnection to verify
@@ -936,6 +960,7 @@ nm_connection_normalize (NMConnection *connection,
 	was_modified |= _normalize_connection_slave_type (connection);
 	was_modified |= _normalize_ip_config (connection, parameters);
 	was_modified |= _normalize_infiniband_mtu (connection, parameters);
+	was_modified |= _normalize_bond_mode (connection, parameters);
 
 	/* Verify anew. */
 	success = _nm_connection_verify (connection, error);
@@ -1282,6 +1307,19 @@ nm_connection_is_type (NMConnection *connection, const char *type)
 	return (g_strcmp0 (type2, type) == 0);
 }
 
+static int
+_for_each_sort (NMSetting **p_a, NMSetting **p_b, void *unused)
+{
+	NMSetting *a = *p_a;
+	NMSetting *b = *p_b;
+	int c;
+
+	c = _nm_setting_compare_priority (a, b);
+	if (c != 0)
+		return c;
+	return strcmp (nm_setting_get_name (a), nm_setting_get_name (b));
+}
+
 /**
  * nm_connection_for_each_setting_value:
  * @connection: the #NMConnection
@@ -1296,15 +1334,39 @@ nm_connection_for_each_setting_value (NMConnection *connection,
                                       NMSettingValueIterFn func,
                                       gpointer user_data)
 {
+	NMConnectionPrivate *priv;
+	gs_free NMSetting **arr_free = NULL;
+	NMSetting *arr_temp[20], **arr;
 	GHashTableIter iter;
 	gpointer value;
+	guint i, size;
 
 	g_return_if_fail (NM_IS_CONNECTION (connection));
 	g_return_if_fail (func != NULL);
 
-	g_hash_table_iter_init (&iter, NM_CONNECTION_GET_PRIVATE (connection)->settings);
-	while (g_hash_table_iter_next (&iter, NULL, &value))
-		nm_setting_enumerate_values (NM_SETTING (value), func, user_data);
+	priv = NM_CONNECTION_GET_PRIVATE (connection);
+
+	size = g_hash_table_size (priv->settings);
+	if (!size)
+		return;
+
+	if (size > G_N_ELEMENTS (arr_temp))
+		arr = arr_free = g_new (NMSetting *, size);
+	else
+		arr = arr_temp;
+
+	g_hash_table_iter_init (&iter, priv->settings);
+	for (i = 0; g_hash_table_iter_next (&iter, NULL, &value); i++)
+		arr[i] = NM_SETTING (value);
+	g_assert (i == size);
+
+	/* sort the settings. This has an effect on the order in which keyfile
+	 * prints them. */
+	if (size > 1)
+		g_qsort_with_data (arr, size, sizeof (NMSetting *), (GCompareDataFunc) _for_each_sort, NULL);
+
+	for (i = 0; i < size; i++)
+		nm_setting_enumerate_values (arr[i], func, user_data);
 }
 
 /**

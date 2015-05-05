@@ -22,59 +22,6 @@ NMIPConfig
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT NMIPConfig ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMIPConfig:addresses ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:domains ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:family ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:gateway ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:nameservers ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:searches ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIPConfig:wins-servers ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMIPConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### MACRO NM_IP_CONFIG_FAMILY ##### -->
 <para>
 

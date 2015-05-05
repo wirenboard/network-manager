@@ -210,6 +210,7 @@ construct_device_dhcp4_items (GSList *items, GVariant *dhcp4_config)
 		tmp = g_variant_get_string (val, NULL);
 		items = g_slist_prepend (items, g_strdup_printf ("DHCP4_%s=%s", ucased, tmp));
 		g_free (ucased);
+		g_variant_unref (val);
 	}
 	return items;
 }
@@ -334,6 +335,7 @@ nm_dispatcher_utils_construct_envp (const char *action,
 {
 	const char *iface = NULL, *ip_iface = NULL;
 	const char *uuid = NULL, *id = NULL, *path;
+	const char *filename = NULL;
 	NMDeviceState dev_state = NM_DEVICE_STATE_UNKNOWN;
 	GVariant *value;
 	char **envp = NULL, *path_item;
@@ -348,6 +350,10 @@ nm_dispatcher_utils_construct_envp (const char *action,
 	/* Hostname changes don't require a device nor contain a connection */
 	if (!strcmp (action, "hostname"))
 		goto done;
+
+	/* config filename */
+	if (g_variant_lookup (connection_props, NMD_CONNECTION_PROPS_FILENAME, "&s", &filename))
+		items = g_slist_prepend (items, g_strdup_printf ("CONNECTION_FILENAME=%s", filename));
 
 	/* Canonicalize the VPN interface name; "" is used when passing it through
 	 * D-Bus so make sure that's fixed up here.

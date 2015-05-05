@@ -29,24 +29,6 @@ NMDeviceAdsl
 
 
 
-<!-- ##### STRUCT NMDeviceAdsl ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceAdsl:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceAdslClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_adsl_get_carrier ##### -->
 <para>
 

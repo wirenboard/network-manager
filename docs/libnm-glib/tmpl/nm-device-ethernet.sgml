@@ -77,45 +77,6 @@ NMDeviceEthernet
 
 
 
-<!-- ##### STRUCT NMDeviceEthernet ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceEthernet:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceEthernet:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceEthernet:perm-hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceEthernet:speed ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceEthernetClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_device_ethernet_new ##### -->
 <para>
 

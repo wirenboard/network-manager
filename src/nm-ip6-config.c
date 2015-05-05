@@ -375,7 +375,7 @@ nm_ip6_config_commit (const NMIP6Config *config, int ifindex)
 	g_return_val_if_fail (config != NULL, FALSE);
 
 	/* Addresses */
-	nm_platform_ip6_address_sync (ifindex, priv->addresses);
+	nm_platform_ip6_address_sync (ifindex, priv->addresses, TRUE);
 
 	/* Routes */
 	{
@@ -1583,6 +1583,8 @@ static void
 finalize (GObject *object)
 {
 	NMIP6ConfigPrivate *priv = NM_IP6_CONFIG_GET_PRIVATE (object);
+
+	g_free (priv->path);
 
 	g_array_unref (priv->addresses);
 	g_array_unref (priv->routes);

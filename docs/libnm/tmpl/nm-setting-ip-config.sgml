@@ -22,12 +22,6 @@ NMSettingIPConfig
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### TYPEDEF NMIPAddress ##### -->
-<para>
-
-</para>
-
-
 <!-- ##### FUNCTION nm_ip_address_new ##### -->
 <para>
 
@@ -177,12 +171,6 @@ NMSettingIPConfig
 @address: 
 @name: 
 @value: 
-
-
-<!-- ##### TYPEDEF NMIPRoute ##### -->
-<para>
-
-</para>
 
 
 <!-- ##### FUNCTION nm_ip_route_new ##### -->
@@ -485,85 +473,6 @@ NMSettingIPConfig
 </para>
 
 
-
-<!-- ##### STRUCT NMSettingIPConfig ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingIPConfig:addresses ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:dhcp-hostname ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:dhcp-send-hostname ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:dns ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:dns-search ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:gateway ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:ignore-auto-dns ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:ignore-auto-routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:may-fail ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:method ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:never-default ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:route-metric ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingIPConfig:routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingIPConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@padding: 
 
 <!-- ##### FUNCTION nm_setting_ip_config_get_method ##### -->
 <para>

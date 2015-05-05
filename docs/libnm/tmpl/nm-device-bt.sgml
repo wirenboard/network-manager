@@ -43,34 +43,6 @@ NMDeviceBt
 
 
 
-<!-- ##### STRUCT NMDeviceBt ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceBt:bt-capabilities ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceBt:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceBt:name ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceBtClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_bt_get_hw_address ##### -->
 <para>
 

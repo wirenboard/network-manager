@@ -22,19 +22,6 @@ NMSimpleConnection
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT NMSimpleConnection ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### STRUCT NMSimpleConnectionClass ##### -->
-<para>
-
-</para>
-
-@parent_class: 
-
 <!-- ##### FUNCTION nm_simple_connection_new ##### -->
 <para>
 

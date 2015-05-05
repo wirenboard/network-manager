@@ -98,20 +98,6 @@ NMSetting
 @Returns: 
 
 
-<!-- ##### STRUCT NMSettingClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@verify: 
-@need_secrets: 
-@update_one_secret: 
-@get_secret_flags: 
-@set_secret_flags: 
-@clear_secrets_with_flags: 
-@compare_property: 
-
 <!-- ##### USER_FUNCTION NMSettingValueIterFn ##### -->
 <para>
 

@@ -218,17 +218,6 @@ NMSettingConnection
 
 </para>
 
-<!-- ##### STRUCT NMSettingConnectionClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### FUNCTION nm_setting_connection_new ##### -->
 <para>
 

@@ -52,34 +52,6 @@ NMVPNPlugin
 @NM_VPN_PLUGIN_ERROR_CONNECTION_INVALID: 
 @NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED: 
 
-<!-- ##### STRUCT NMVPNPlugin ##### -->
-<para>
-
-</para>
-
-@parent: 
-
-<!-- ##### STRUCT NMVPNPluginClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@connect: 
-@need_secrets: 
-@disconnect: 
-@state_changed: 
-@ip4_config: 
-@login_banner: 
-@failure: 
-@quit: 
-@config: 
-@ip6_config: 
-@new_secrets: 
-@connect_interactive: 
-@_reserved1: 
-@_reserved2: 
-
 <!-- ##### FUNCTION nm_vpn_plugin_error_quark ##### -->
 <para>
 

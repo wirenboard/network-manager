@@ -224,13 +224,6 @@ NMSettingConnection
 
 </para>
 
-<!-- ##### STRUCT NMSettingConnectionClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_connection_new ##### -->
 <para>
 

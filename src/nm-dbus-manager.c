@@ -78,20 +78,33 @@ static void nm_dbus_manager_cleanup (NMDBusManager *self, gboolean dispose);
 static void start_reconnection_timeout (NMDBusManager *self);
 static void object_destroyed (NMDBusManager *self, gpointer object);
 
+NM_DEFINE_SINGLETON_DESTRUCTOR (NMDBusManager);
+NM_DEFINE_SINGLETON_WEAK_REF (NMDBusManager);
+
 NMDBusManager *
 nm_dbus_manager_get (void)
 {
-	static NMDBusManager *singleton = NULL;
-	static gsize once = 0;
-
-	if (g_once_init_enter (&once)) {
-		singleton = (NMDBusManager *) g_object_new (NM_TYPE_DBUS_MANAGER, NULL);
-		g_assert (singleton);
-		if (!nm_dbus_manager_init_bus (singleton))
-			start_reconnection_timeout (singleton);
-		g_once_init_leave (&once, 1);
+	if (G_UNLIKELY (!singleton_instance)) {
+		nm_dbus_manager_setup (g_object_new (NM_TYPE_DBUS_MANAGER, NULL));
+		if (!nm_dbus_manager_init_bus (singleton_instance))
+			start_reconnection_timeout (singleton_instance);
 	}
-	return singleton;
+	return singleton_instance;
+}
+
+void
+nm_dbus_manager_setup (NMDBusManager *instance)
+{
+	static char already_setup = FALSE;
+
+	g_assert (NM_IS_DBUS_MANAGER (instance));
+	g_assert (!already_setup);
+	g_assert (!singleton_instance);
+
+	already_setup = TRUE;
+	singleton_instance = instance;
+	nm_singleton_instance_weak_ref_register ();
+	nm_log_dbg (LOGD_CORE, "create %s singleton (%p)", "NMDBusManager", singleton_instance);
 }
 
 /**************************************************************/
@@ -199,6 +212,7 @@ private_server_new (const char *path,
 		nm_log_warn (LOGD_CORE, "(%s) failed to set up private socket %s: %s",
 		             tag, address, error.message);
 		dbus_error_free (&error);
+		g_free (address);
 		return NULL;
 	}
 
@@ -876,8 +890,11 @@ nm_dbus_manager_register_object (NMDBusManager *self,
 
 	g_assert (G_IS_OBJECT (object));
 
-	g_warn_if_fail (g_hash_table_lookup (priv->exported, object) == NULL);
+	if (g_hash_table_lookup (priv->exported, G_OBJECT (object)))
+		g_return_if_reached ();
+
 	g_hash_table_insert (priv->exported, G_OBJECT (object), g_strdup (path));
+	g_object_weak_ref (G_OBJECT (object), (GWeakNotify) object_destroyed, self);
 
 	if (priv->g_connection)
 		dbus_g_connection_register_g_object (priv->g_connection, path, G_OBJECT (object));
@@ -890,8 +907,6 @@ nm_dbus_manager_register_object (NMDBusManager *self,
 			                                     G_OBJECT (object));
 		}
 	}
-
-	g_object_weak_ref (G_OBJECT (object), (GWeakNotify) object_destroyed, self);
 }
 
 void
@@ -903,7 +918,10 @@ nm_dbus_manager_unregister_object (NMDBusManager *self, gpointer object)
 
 	g_assert (G_IS_OBJECT (object));
 
-	g_hash_table_remove (NM_DBUS_MANAGER_GET_PRIVATE (self)->exported, G_OBJECT (object));
+	if (!g_hash_table_lookup (priv->exported, G_OBJECT (object)))
+		g_return_if_reached ();
+
+	g_hash_table_remove (priv->exported, G_OBJECT (object));
 	g_object_weak_unref (G_OBJECT (object), (GWeakNotify) object_destroyed, self);
 
 	if (priv->g_connection)

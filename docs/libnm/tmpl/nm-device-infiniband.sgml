@@ -36,29 +36,6 @@ NMDeviceInfiniband
 
 
 
-<!-- ##### STRUCT NMDeviceInfiniband ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceInfiniband:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceInfiniband:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceInfinibandClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_infiniband_get_hw_address ##### -->
 <para>
 

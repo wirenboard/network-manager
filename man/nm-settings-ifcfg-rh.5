@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 19 December 2014
+.\"      Date: 05 May 2015
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.0.0
+.\"    Source: NetworkManager 1.0.2
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.0\&.0" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.0\&.2" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -287,6 +287,27 @@ PEERDNS
 ONBOOT
 \- initscripts use ONBOOT=yes to mark the devices that are to be activated during boot\&. NetworkManager extents this to also mean that this profile can be used for auto\-connecting at any time\&.
 .RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+BOOTPROTO
+\- NetworkManager supports traditional values
+\fInone\fR
+(static),
+\fIdhcp\fR\&. But it also allows additional values to enable new addressing methods\&. They are
+\fIautoip\fR
+for IPv4 link\-local addressing using Avahi daemon and
+\fIshared\fR
+for connection sharing\&. When
+\fIshared\fR
+is used, NetworkManager assigns the interface 10\&.42\&.0\&.1, or it uses the first static address, if configured\&.
+.RE
 .RE
 .PP
 See the next section for detailed mapping of NetworkManager properties and
@@ -423,9 +444,9 @@ Substring to match subject of server certificate against\&.\fB
 Example: \fRIEEE_8021X_SUBJECT_MATCH="Red Hat"
 T}
 T{
-altubject\-matches
+altsubject\-matches
 T}:T{
-IEEE_8021X_AlTSUBJECT_MATCHES\fI(+)\fR
+IEEE_8021X_ALTSUBJECT_MATCHES\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
@@ -1304,6 +1325,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 method
@@ -1422,6 +1444,15 @@ T}:T{
 IPV4_FAILURE_FATAL has the opposite meaning as \*(Aqmay\-fail\*(Aq property\&.
 T}
 T{
+route\-metric
+T}:T{
+IPV4_ROUTE_METRIC\fI(+)\fR
+T}:T{
+\-1
+T}:T{
+IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection\&. If set to \-1, a default metric based on the device type is used\&.
+T}
+T{
 dhcp\-client\-id
 T}:T{
 DHCP_CLIENT_ID\fI(+)\fR
@@ -1453,6 +1484,7 @@ T}:T{
 Description
 T}
 .T&
+l l l l
 l l l l
 l l l l
 l l l l
@@ -1567,6 +1599,15 @@ T}:T{
 no
 T}:T{
 IPV6_FAILURE_FATAL has the opposite meaning as \*(Aqmay\-fail\*(Aq property\&.
+T}
+T{
+route\-metric
+T}:T{
+IPV6_ROUTE_METRIC\fI(+)\fR
+T}:T{
+\-1
+T}:T{
+IPV6_ROUTE_METRIC is the default IPv6 metric for routes on this connection\&. If set to \-1, a default metric based on the device type is used\&.
 T}
 T{
 ip6\-privacy

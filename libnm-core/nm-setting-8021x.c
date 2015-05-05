@@ -1884,6 +1884,7 @@ nm_setting_802_1x_get_private_key_format (NMSetting8021x *setting)
 			g_error_free (error);
 			return NM_SETTING_802_1X_CK_FORMAT_UNKNOWN;
 		}
+		g_error_free (error);
 		return NM_SETTING_802_1X_CK_FORMAT_RAW_KEY;
 	default:
 		break;
@@ -2164,6 +2165,7 @@ nm_setting_802_1x_get_phase2_private_key_format (NMSetting8021x *setting)
 			g_error_free (error);
 			return NM_SETTING_802_1X_CK_FORMAT_UNKNOWN;
 		}
+		g_error_free (error);
 		return NM_SETTING_802_1X_CK_FORMAT_RAW_KEY;
 	default:
 		break;
@@ -3258,8 +3260,8 @@ nm_setting_802_1x_class_init (NMSetting8021xClass *setting_class)
 	 * no verification of the server certificate's altSubjectName is performed.
 	 **/
 	/* ---ifcfg-rh---
-	 * property: altubject-matches
-	 * variable: IEEE_8021X_AlTSUBJECT_MATCHES(+)
+	 * property: altsubject-matches
+	 * variable: IEEE_8021X_ALTSUBJECT_MATCHES(+)
 	 * description: List of strings to be matched against the altSubjectName.
 	 * example: IEEE_8021X_ALTSUBJECT_MATCHES="s1.domain.cc"
 	 * ---end---

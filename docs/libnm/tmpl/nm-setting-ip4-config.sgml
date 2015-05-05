@@ -71,24 +71,6 @@ NMSettingIP4Config
 
 
 
-<!-- ##### STRUCT NMSettingIP4Config ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingIP4Config:dhcp-client-id ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingIP4ConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_ip4_config_new ##### -->
 <para>
 

@@ -50,34 +50,6 @@ NMSettingBridgePort
 
 
 
-<!-- ##### STRUCT NMSettingBridgePort ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingBridgePort:hairpin-mode ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridgePort:path-cost ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingBridgePort:priority ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingBridgePortClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_bridge_port_new ##### -->
 <para>
 

@@ -54,30 +54,6 @@ NMDeviceAdsl
 
 
 
-<!-- ##### STRUCT NMDeviceAdsl ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceAdsl:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceAdslClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_device_adsl_new ##### -->
 <para>
 

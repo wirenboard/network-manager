@@ -43,34 +43,6 @@ NMDeviceTeam
 
 
 
-<!-- ##### STRUCT NMDeviceTeam ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceTeam:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceTeam:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceTeam:slaves ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceTeamClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_team_get_hw_address ##### -->
 <para>
 

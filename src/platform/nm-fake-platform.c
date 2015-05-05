@@ -456,6 +456,15 @@ link_get_physical_port_id (NMPlatform *platform, int ifindex)
 	return NULL;
 }
 
+static guint
+link_get_dev_id (NMPlatform *platform, int ifindex)
+{
+	/* We call link_get just to cause an error to be set if @ifindex is bad. */
+	link_get (platform, ifindex);
+
+	return 0;
+}
+
 static gboolean
 link_get_wake_on_lan (NMPlatform *platform, int ifindex)
 {
@@ -1076,6 +1085,8 @@ ip4_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 			continue;
 		if (item->plen != route.plen)
 			continue;
+		if (item->metric != metric)
+			continue;
 
 		memcpy (item, &route, sizeof (route));
 		g_signal_emit_by_name (platform, NM_PLATFORM_SIGNAL_IP4_ROUTE_CHANGED, ifindex, &route, NM_PLATFORM_SIGNAL_CHANGED, NM_PLATFORM_REASON_INTERNAL);
@@ -1097,6 +1108,8 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 	NMPlatformIP6Route route;
 	guint i;
 
+	metric = nm_utils_ip6_route_metric_normalize (metric);
+
 	memset (&route, 0, sizeof (route));
 	route.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	route.ifindex = ifindex;
@@ -1115,6 +1128,8 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 		if (!IN6_ARE_ADDR_EQUAL (&item->network, &route.network))
 			continue;
 		if (item->plen != route.plen)
+			continue;
+		if (item->metric != metric)
 			continue;
 
 		memcpy (item, &route, sizeof (route));
@@ -1152,6 +1167,8 @@ ip6_route_get (NMPlatform *platform, int ifindex, struct in6_addr network, int p
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	int i;
+
+	metric = nm_utils_ip6_route_metric_normalize (metric);
 
 	for (i = 0; i < priv->ip6_routes->len; i++) {
 		NMPlatformIP6Route *route = &g_array_index (priv->ip6_routes, NMPlatformIP6Route, i);
@@ -1301,6 +1318,7 @@ nm_fake_platform_class_init (NMFakePlatformClass *klass)
 	platform_class->link_set_mtu = link_set_mtu;
 
 	platform_class->link_get_physical_port_id = link_get_physical_port_id;
+	platform_class->link_get_dev_id = link_get_dev_id;
 	platform_class->link_get_wake_on_lan = link_get_wake_on_lan;
 
 	platform_class->link_supports_carrier_detect = link_supports_carrier_detect;

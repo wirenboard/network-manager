@@ -22,55 +22,6 @@ NMIP6Config
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT NMIP6Config ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMIP6Config:addresses ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIP6Config:domains ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIP6Config:gateway ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIP6Config:nameservers ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIP6Config:routes ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMIP6Config:searches ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMIP6ConfigClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### MACRO NM_IP6_CONFIG_GATEWAY ##### -->
 <para>
 

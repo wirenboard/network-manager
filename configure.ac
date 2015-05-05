@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [0])
-m4_define([nm_micro_version], [0])
+m4_define([nm_micro_version], [2])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -302,7 +302,7 @@ AM_CONDITIONAL(WITH_QT, test "${enable_qt}" = "yes")
 
 AC_ARG_WITH(udev-dir, AS_HELP_STRING([--with-udev-dir=DIR], [Absolute path of the udev base directory. Set to 'no' not to install the udev rules]), [], [with_udev_dir="yes"])
 if (test "$with_udev_dir" != 'no'); then
-	if (test "$with_udev_dir" != 'yes' && echo -n "$with_udev_dir" | grep -v -q '^/'); then
+	if (test "$with_udev_dir" != 'yes' && printf '%s' "$with_udev_dir" | grep -v -q '^/'); then
 		AC_MSG_ERROR([--with-udev-dir must be an absolute path or 'yes' or 'no'. Instead it is '$with_udev_dir'])
 	fi
 	if (test "$with_udev_dir" = 'yes'); then
@@ -685,10 +685,10 @@ fi
 if test "$with_dhcpcd" = "yes"; then
 	AC_PATH_PROGS(with_dhcpcd, dhcpcd, no, /sbin:/usr/sbin:/usr/local/sbin)
 	if test "$with_dhcpcd" != "no"; then
-		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[456789]]\."; then
+		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [456789]\."; then
 			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or higher is required])
 			with_dhcpcd=no
-		elif $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[6789]]\."; then
+		elif $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [6789]\."; then
 			AC_DEFINE(DHCPCD_SUPPORTS_IPV6, 1, [Define if dhcpcd supports IPv6 (6.x+)])
 		fi
 	fi
@@ -821,10 +821,11 @@ AM_CONDITIONAL(BUILD_NMTUI, test "$build_nmtui" = yes)
 
 NM_COMPILER_WARNINGS
 
-AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]),
-              [enable_lto=yes], [enable_lto=no])
+AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]))
 if (test "${enable_lto}" = "yes"); then
     CFLAGS="-flto $CFLAGS"
+else
+    enable_lto='no'
 fi
 
 
@@ -836,13 +837,13 @@ VAPIGEN_CHECK(0.17.1.24)
 
 # Tests, utilities and documentation
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests=root|yes|no], [Build NetworkManager tests (default: yes)]))
-AC_ARG_WITH(valgrind, AS_HELP_STRING([--with-valgrind=yes|no|path], [Use valgrind to memory-check the tests (default: yes)]))
+AC_ARG_WITH(valgrind, AS_HELP_STRING([--with-valgrind=yes|no|path], [Use valgrind to memory-check the tests (default: no)]))
 # Fallback to --with-tests
 AC_ARG_WITH(tests, AS_HELP_STRING([--with-tests], [Build NetworkManager tests (deprecated)]))
 AS_IF([test -n "$with_tests"], enable_tests="$with_tests")
-# Default to --enable-tests --with-valgrind
+# Default to --enable-tests --with-valgrind=no
 AS_IF([test -z "$enable_tests"], enable_tests="yes")
-AS_IF([test -z "$with_valgrind"], with_valgrind="yes")
+AS_IF([test -z "$with_valgrind"], with_valgrind="no")
 # Normalize values
 AS_IF([test "$enable_tests" != "yes" -a "$enable_tests" != "root"], enable_tests="no")
 # Search for tools
@@ -854,6 +855,7 @@ AM_CONDITIONAL(REQUIRE_ROOT_TESTS, test "$enable_tests" == "root")
 AS_IF([test "$with_valgrind" != "no"],
 	AC_SUBST(VALGRIND_RULES, 'TESTS_ENVIRONMENT = "$(top_srcdir)/tools/run-test-valgrind.sh" "$(LIBTOOL)" "$(with_valgrind)" "$(top_srcdir)/valgrind.suppressions"'),
 	AC_SUBST(VALGRIND_RULES, []))
+AM_CONDITIONAL(WITH_VALGRIND, test "${with_valgrind}" != "no")
 
 GTK_DOC_CHECK(1.0)
 

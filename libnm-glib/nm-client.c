@@ -1420,7 +1420,7 @@ nm_client_get_connectivity (NMClient *client)
 {
 	NMClientPrivate *priv;
 
-	g_return_val_if_fail (NM_IS_CLIENT (client), NM_STATE_UNKNOWN);
+	g_return_val_if_fail (NM_IS_CLIENT (client), NM_CONNECTIVITY_UNKNOWN);
 	priv = NM_CLIENT_GET_PRIVATE (client);
 
 	_nm_object_ensure_inited (NM_OBJECT (client));
@@ -1548,7 +1548,7 @@ nm_client_check_connectivity_async (NMClient *client,
 	g_return_if_fail (NM_IS_CLIENT (client));
 	priv = NM_CLIENT_GET_PRIVATE (client);
 
-	ccd = g_slice_new (CheckConnectivityData);
+	ccd = g_slice_new0 (CheckConnectivityData);
 	ccd->client = client;
 
 	simple = g_simple_async_result_new (G_OBJECT (client), callback, user_data,

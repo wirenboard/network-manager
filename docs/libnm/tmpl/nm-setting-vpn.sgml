@@ -64,44 +64,6 @@ NMSettingVpn
 
 
 
-<!-- ##### STRUCT NMSettingVpn ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingVpn:data ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVpn:persistent ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVpn:secrets ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVpn:service-type ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVpn:user-name ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingVpnClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### USER_FUNCTION NMVpnIterFunc ##### -->
 <para>
 

@@ -61,35 +61,6 @@ NMDeviceGeneric
 
 
 
-<!-- ##### STRUCT NMDeviceGeneric ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceGeneric:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceGeneric:type-description ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceGenericClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_device_generic_new ##### -->
 <para>
 

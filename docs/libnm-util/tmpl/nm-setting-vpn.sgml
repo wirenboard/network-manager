@@ -89,48 +89,6 @@ NMSettingVPN
 
 
 
-<!-- ##### STRUCT NMSettingVPN ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingVPN:data ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVPN:persistent ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVPN:secrets ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVPN:service-type ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingVPN:user-name ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingVPNClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### USER_FUNCTION NMVPNIterFunc ##### -->
 <para>
 

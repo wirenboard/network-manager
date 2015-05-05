@@ -44,6 +44,7 @@
 #include <nm-utils.h>
 
 #include "nm-logging.h"
+#include "gsystem-local-alloc.h"
 #include "common.h"
 #include "shvar.h"
 #include "reader.h"
@@ -695,9 +696,15 @@ write_wireless_security_setting (NMConnection *connection,
 				 * keys.
 				 */
 				key_type = nm_setting_wireless_security_get_wep_key_type (s_wsec);
+				if (key_type == NM_WEP_KEY_TYPE_UNKNOWN) {
+					if (nm_utils_wep_key_valid (key, NM_WEP_KEY_TYPE_KEY))
+						key_type = NM_WEP_KEY_TYPE_KEY;
+					else if (nm_utils_wep_key_valid (key, NM_WEP_KEY_TYPE_PASSPHRASE))
+						key_type = NM_WEP_KEY_TYPE_PASSPHRASE;
+				}
 				if (key_type == NM_WEP_KEY_TYPE_PASSPHRASE)
 					tmp = g_strdup_printf ("KEY_PASSPHRASE%d", i + 1);
-				else {
+				else if (key_type == NM_WEP_KEY_TYPE_KEY) {
 					tmp = g_strdup_printf ("KEY%d", i + 1);
 
 					/* Add 's:' prefix for ASCII keys */
@@ -705,7 +712,8 @@ write_wireless_security_setting (NMConnection *connection,
 						ascii_key = g_strdup_printf ("s:%s", key);
 						key = ascii_key;
 					}
-				}
+				} else
+					key = NULL;
 
 				set_secret (ifcfg,
 				            tmp,
@@ -1806,6 +1814,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	char *route_path = NULL;
 	gint32 j;
 	guint32 i, n, num;
+	gint64 route_metric;
 	GString *searches;
 	gboolean success = FALSE;
 	gboolean fake_ip4 = FALSE;
@@ -2015,6 +2024,11 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	            nm_setting_ip_config_get_may_fail (s_ip4) ? "no" : "yes",
 	            FALSE);
 
+	route_metric = nm_setting_ip_config_get_route_metric (s_ip4);
+	tmp = route_metric != -1 ? g_strdup_printf ("%"G_GINT64_FORMAT, route_metric) : NULL;
+	svSetValue (ifcfg, "IPV4_ROUTE_METRIC", tmp, FALSE);
+	g_free (tmp);
+
 	/* Static routes - route-<name> file */
 	route_path = utils_get_route_path (ifcfg->fileName);
 	if (!route_path) {
@@ -2105,13 +2119,16 @@ static void
 write_ip4_aliases (NMConnection *connection, char *base_ifcfg_path)
 {
 	NMSettingIPConfig *s_ip4;
-	char *base_ifcfg_dir, *base_ifcfg_name, *base_name;
+	gs_free char *base_ifcfg_dir = NULL, *base_ifcfg_name = NULL;
+	const char*base_name;
 	int i, num, base_ifcfg_name_len, base_name_len;
 	GDir *dir;
 
 	base_ifcfg_dir = g_path_get_dirname (base_ifcfg_path);
 	base_ifcfg_name = g_path_get_basename (base_ifcfg_path);
 	base_ifcfg_name_len = strlen (base_ifcfg_name);
+	if (!g_str_has_prefix (base_ifcfg_name, IFCFG_TAG))
+		g_return_if_reached ();
 	base_name = base_ifcfg_name + strlen (IFCFG_TAG);
 	base_name_len = strlen (base_name);
 
@@ -2183,9 +2200,6 @@ write_ip4_aliases (NMConnection *connection, char *base_ifcfg_path)
 		svWriteFile (ifcfg, 0644, NULL);
 		svCloseFile (ifcfg);
 	}
-
-	g_free (base_ifcfg_name);
-	g_free (base_ifcfg_dir);
 }
 
 static gboolean
@@ -2249,10 +2263,12 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	NMSettingIPConfig *s_ip4;
 	const char *value;
 	char *addr_key;
+	char *tmp;
 	guint32 i, num, num4;
 	GString *searches;
 	NMIPAddress *addr;
 	const char *dns;
+	gint64 route_metric;
 	GString *ip_str1, *ip_str2, *ip_ptr;
 	char *route6_path;
 
@@ -2266,6 +2282,7 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		svSetValue (ifcfg, "IPV6_PEERDNS", "yes", FALSE);
 		svSetValue (ifcfg, "IPV6_PEERROUTES", "yes", FALSE);
 		svSetValue (ifcfg, "IPV6_FAILURE_FATAL", "no", FALSE);
+		svSetValue (ifcfg, "IPV6_ROUTE_METRIC", NULL, FALSE);
 		return TRUE;
 	}
 
@@ -2379,6 +2396,11 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	svSetValue (ifcfg, "IPV6_FAILURE_FATAL",
 	            nm_setting_ip_config_get_may_fail (s_ip6) ? "no" : "yes",
 	            FALSE);
+
+	route_metric = nm_setting_ip_config_get_route_metric (s_ip6);
+	tmp = route_metric != -1 ? g_strdup_printf ("%"G_GINT64_FORMAT, route_metric) : NULL;
+	svSetValue (ifcfg, "IPV6_ROUTE_METRIC", tmp, FALSE);
+	g_free (tmp);
 
 	/* IPv6 Privacy Extensions */
 	svSetValue (ifcfg, "IPV6_PRIVACY", NULL, FALSE);
@@ -2624,6 +2646,12 @@ writer_update_connection (NMConnection *connection,
                           const char *keyfile,
                           GError **error)
 {
+	if (utils_has_complex_routes (filename)) {
+		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
+		             "Cannot modify a connection that has an associated 'rule-' or 'rule6-' file");
+		return FALSE;
+	}
+
 	return write_connection (connection, ifcfg_dir, filename, keyfile, NULL, error);
 }
 

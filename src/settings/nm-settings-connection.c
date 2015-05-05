@@ -82,7 +82,9 @@ enum {
 	PROP_0 = 0,
 	PROP_VISIBLE,
 	PROP_UNSAVED,
+	PROP_READY,
 	PROP_FLAGS,
+	PROP_FILENAME,
 };
 
 enum {
@@ -99,6 +101,7 @@ typedef struct {
 	guint session_changed_id;
 
 	NMSettingsConnectionFlags flags;
+	gboolean ready;
 
 	guint updated_idle_id;
 
@@ -128,6 +131,8 @@ typedef struct {
 	int autoconnect_retries;
 	gint32 autoconnect_retry_time;
 	NMDeviceStateReason autoconnect_blocked_reason;
+
+	char *filename;
 
 } NMSettingsConnectionPrivate;
 
@@ -442,6 +447,7 @@ gboolean
 nm_settings_connection_replace_settings (NMSettingsConnection *self,
                                          NMConnection *new_connection,
                                          gboolean update_unsaved,
+                                         const char *log_diff_name,
                                          GError **error)
 {
 	NMSettingsConnectionPrivate *priv;
@@ -455,6 +461,15 @@ nm_settings_connection_replace_settings (NMSettingsConnection *self,
 	if (!nm_connection_normalize (new_connection, NULL, NULL, error))
 		return FALSE;
 
+	if (   nm_connection_get_path (NM_CONNECTION (self))
+	    && g_strcmp0 (nm_connection_get_uuid (NM_CONNECTION (self)), nm_connection_get_uuid (new_connection)) != 0) {
+		/* Updating the UUID is not allowed once the path is exported. */
+		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
+		             "connection %s cannot change the UUID from %s to %s", nm_connection_get_id (NM_CONNECTION (self)),
+		             nm_connection_get_uuid (NM_CONNECTION (self)), nm_connection_get_uuid (new_connection));
+		return FALSE;
+	}
+
 	/* Do nothing if there's nothing to update */
 	if (nm_connection_compare (NM_CONNECTION (self),
 	                           new_connection,
@@ -467,7 +482,8 @@ nm_settings_connection_replace_settings (NMSettingsConnection *self,
 	 */
 	g_signal_handlers_block_by_func (self, G_CALLBACK (changed_cb), GUINT_TO_POINTER (TRUE));
 
-	nm_utils_log_connection_diff (new_connection, NM_CONNECTION (self), LOGL_DEBUG, LOGD_CORE, "update connection", "++ ");
+	if (log_diff_name)
+		nm_utils_log_connection_diff (new_connection, NM_CONNECTION (self), LOGL_DEBUG, LOGD_CORE, log_diff_name, "++ ");
 
 	nm_connection_replace_settings_from_connection (NM_CONNECTION (self), new_connection);
 	nm_settings_connection_set_flags (self,
@@ -519,24 +535,34 @@ ignore_cb (NMSettingsConnection *connection,
  * subsystems watching this connection. Before returning, 'callback' is run
  * with the given 'user_data' along with any errors encountered.
  */
+static void
+replace_and_commit (NMSettingsConnection *self,
+                    NMConnection *new_connection,
+                    NMSettingsConnectionCommitFunc callback,
+                    gpointer user_data)
+{
+	GError *error = NULL;
+
+	if (nm_settings_connection_replace_settings (self, new_connection, TRUE, "replace-and-commit-disk", &error))
+		nm_settings_connection_commit_changes (self, callback, user_data);
+	else {
+		g_assert (error);
+		if (callback)
+			callback (self, error, user_data);
+		g_clear_error (&error);
+	}
+}
+
 void
 nm_settings_connection_replace_and_commit (NMSettingsConnection *self,
                                            NMConnection *new_connection,
                                            NMSettingsConnectionCommitFunc callback,
                                            gpointer user_data)
 {
-	GError *error = NULL;
-
 	g_return_if_fail (NM_IS_SETTINGS_CONNECTION (self));
 	g_return_if_fail (NM_IS_CONNECTION (new_connection));
 
-	if (nm_settings_connection_replace_settings (self, new_connection, TRUE, &error)) {
-		nm_settings_connection_commit_changes (self, callback, user_data);
-	} else {
-		if (callback)
-			callback (self, error, user_data);
-		g_clear_error (&error);
-	}
+	NM_SETTINGS_CONNECTION_GET_CLASS (self)->replace_and_commit (self, new_connection, callback, user_data);
 }
 
 static void
@@ -1350,11 +1376,8 @@ update_auth_cb (NMSettingsConnection *self,
 		                                           con_update_cb,
 		                                           info);
 	} else {
-		/* Do nothing if there's nothing to update */
-		if (!nm_connection_compare (NM_CONNECTION (self), info->new_settings, NM_SETTING_COMPARE_FLAG_EXACT)) {
-			if (!nm_settings_connection_replace_settings (self, info->new_settings, TRUE, &local))
-				g_assert (local);
-		}
+		if (!nm_settings_connection_replace_settings (self, info->new_settings, TRUE, "replace-and-commit-memory", &local))
+			g_assert (local);
 		con_update_cb (self, local, info);
 		g_clear_error (&local);
 	}
@@ -2166,6 +2189,64 @@ nm_settings_connection_get_nm_generated_assumed (NMSettingsConnection *connectio
 	return NM_FLAGS_HAS (nm_settings_connection_get_flags (connection), NM_SETTINGS_CONNECTION_FLAGS_NM_GENERATED_ASSUMED);
 }
 
+gboolean
+nm_settings_connection_get_ready (NMSettingsConnection *connection)
+{
+	return NM_SETTINGS_CONNECTION_GET_PRIVATE (connection)->ready;
+}
+
+void
+nm_settings_connection_set_ready (NMSettingsConnection *connection,
+                                  gboolean ready)
+{
+	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection);
+
+	ready = !!ready;
+	if (priv->ready != ready) {
+		priv->ready = ready;
+		g_object_notify (G_OBJECT (connection), NM_SETTINGS_CONNECTION_READY);
+	}
+}
+
+/**
+ * nm_settings_connection_set_filename:
+ * @connection: an #NMSettingsConnection
+ * @filename: @connection's filename
+ *
+ * Called by a backend to sets the filename that @connection is read
+ * from/written to.
+ */
+void
+nm_settings_connection_set_filename (NMSettingsConnection *connection,
+                                     const char *filename)
+{
+	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection);
+
+	if (g_strcmp0 (filename, priv->filename) != 0) {
+		g_free (priv->filename);
+		priv->filename = g_strdup (filename);
+		g_object_notify (G_OBJECT (connection), NM_SETTINGS_CONNECTION_FILENAME);
+	}
+}
+
+/**
+ * nm_settings_connection_get_filename:
+ * @connection: an #NMSettingsConnection
+ *
+ * Gets the filename that @connection was read from/written to.  This may be
+ * %NULL if @connection is unsaved, or if it is associated with a backend that
+ * does not store each connection in a separate file.
+ *
+ * Returns: @connection's filename.
+ */
+const char *
+nm_settings_connection_get_filename (NMSettingsConnection *connection)
+{
+	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (connection);
+
+	return priv->filename;
+}
+
 /**************************************************************/
 
 static void
@@ -2174,6 +2255,7 @@ nm_settings_connection_init (NMSettingsConnection *self)
 	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (self);
 
 	priv->visible = FALSE;
+	priv->ready = TRUE;
 
 	priv->session_monitor = nm_session_monitor_get ();
 	priv->session_changed_id = g_signal_connect (priv->session_monitor,
@@ -2235,6 +2317,8 @@ dispose (GObject *object)
 	}
 	g_clear_object (&priv->agent_mgr);
 
+	g_clear_pointer (&priv->filename, g_free);
+
 	G_OBJECT_CLASS (nm_settings_connection_parent_class)->dispose (object);
 }
 
@@ -2252,8 +2336,14 @@ get_property (GObject *object, guint prop_id,
 	case PROP_UNSAVED:
 		g_value_set_boolean (value, nm_settings_connection_get_unsaved (self));
 		break;
+	case PROP_READY:
+		g_value_set_boolean (value, nm_settings_connection_get_ready (self));
+		break;
 	case PROP_FLAGS:
 		g_value_set_uint (value, nm_settings_connection_get_flags (self));
+		break;
+	case PROP_FILENAME:
+		g_value_set_string (value, nm_settings_connection_get_filename (self));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2268,8 +2358,14 @@ set_property (GObject *object, guint prop_id,
 	NMSettingsConnection *self = NM_SETTINGS_CONNECTION (object);
 
 	switch (prop_id) {
+	case PROP_READY:
+		nm_settings_connection_set_ready (self, g_value_get_boolean (value));
+		break;
 	case PROP_FLAGS:
 		nm_settings_connection_set_flags_all (self, g_value_get_uint (value));
+		break;
+	case PROP_FILENAME:
+		nm_settings_connection_set_filename (self, g_value_get_string (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2289,6 +2385,7 @@ nm_settings_connection_class_init (NMSettingsConnectionClass *class)
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
 
+	class->replace_and_commit = replace_and_commit;
 	class->commit_changes = commit_changes;
 	class->delete = do_delete;
 	class->supports_secrets = supports_secrets;
@@ -2309,6 +2406,13 @@ nm_settings_connection_class_init (NMSettingsConnectionClass *class)
 		                       G_PARAM_STATIC_STRINGS));
 
 	g_object_class_install_property
+		(object_class, PROP_READY,
+		 g_param_spec_boolean (NM_SETTINGS_CONNECTION_READY, "", "",
+		                       TRUE,
+		                       G_PARAM_READWRITE |
+		                       G_PARAM_STATIC_STRINGS));
+
+	g_object_class_install_property
 	    (object_class, PROP_FLAGS,
 	     g_param_spec_uint (NM_SETTINGS_CONNECTION_FLAGS, "", "",
 	                        NM_SETTINGS_CONNECTION_FLAGS_NONE,
@@ -2316,6 +2420,13 @@ nm_settings_connection_class_init (NMSettingsConnectionClass *class)
 	                        NM_SETTINGS_CONNECTION_FLAGS_NONE,
 	                        G_PARAM_READWRITE |
 	                        G_PARAM_STATIC_STRINGS));
+
+	g_object_class_install_property
+		(object_class, PROP_FILENAME,
+		 g_param_spec_string (NM_SETTINGS_CONNECTION_FILENAME, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
 
 	/* Signals */
 

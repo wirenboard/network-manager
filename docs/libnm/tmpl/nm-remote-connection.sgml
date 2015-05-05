@@ -50,29 +50,6 @@ NMRemoteConnection
 
 
 
-<!-- ##### STRUCT NMRemoteConnection ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMRemoteConnection:unsaved ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMRemoteConnection:visible ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMRemoteConnectionClass ##### -->
-<para>
-
-</para>
-
-@parent_class: 
-
 <!-- ##### FUNCTION nm_remote_connection_commit_changes ##### -->
 <para>
 
