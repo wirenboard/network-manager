@@ -63,7 +63,7 @@ read_block (const char *iscsiadm_path, const char *expected_mac)
 	}
 	g_assert (block);
 
-	g_slist_foreach (blocks, (GFunc) g_ptr_array_unref, NULL);
+	g_slist_free_full (blocks, (GDestroyNotify) g_ptr_array_unref);
 	return block;
 }
 
@@ -110,6 +110,7 @@ test_read_ibft_dhcp (void)
 	g_assert_cmpstr (nm_setting_ip_config_get_method (s_ip4), ==, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
 
 	g_object_unref (connection);
+	g_ptr_array_unref (block);
 }
 
 static void
@@ -266,7 +267,7 @@ test_read_ibft_vlan (void)
 	g_assert_cmpstr (nm_setting_ip_config_get_gateway (s_ip4), ==, NULL);
 
 	g_object_unref (connection);
-	g_ptr_array_ref (block);
+	g_ptr_array_unref (block);
 }
 
 NMTST_DEFINE ();
@@ -275,7 +276,7 @@ NMTST_DEFINE ();
 
 int main (int argc, char **argv)
 {
-	nmtst_init_assert_logging (&argc, &argv);
+	nmtst_init_assert_logging (&argc, &argv, "INFO", "DEFAULT");
 
 	g_test_add_func (TPATH "ibft/dhcp", test_read_ibft_dhcp);
 	g_test_add_func (TPATH "ibft/static", test_read_ibft_static);

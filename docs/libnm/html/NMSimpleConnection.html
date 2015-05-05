@@ -2,34 +2,27 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>NMSimpleConnection</title>
+<title>libnm Reference Manual: NMSimpleConnection</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="libnm-NMConnection.html" title="NMConnection">
 <link rel="next" href="NMSetting.html" title="NMSetting">
-<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
-<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
-<tr valign="middle">
-<td><a accesskey="p" href="libnm-NMConnection.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td><a accesskey="u" href="ch03.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
-<th width="100%" align="center">libnm Reference Manual</th>
-<td><a accesskey="n" href="NMSetting.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
-</tr>
-<tr><td colspan="5" class="shortcuts">
-<a href="#NMSimpleConnection.synopsis" class="shortcut">Top</a>
-                   | 
-                  <a href="#NMSimpleConnection.description" class="shortcut">Description</a>
-                   | 
-                  <a href="#NMSimpleConnection.object-hierarchy" class="shortcut">Object Hierarchy</a>
-                   | 
-                  <a href="#NMSimpleConnection.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
-</td></tr>
-</table>
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts">
+<a href="#" class="shortcut">Top</a><span id="nav_description">  <span class="dim">|</span> 
+                  <a href="#NMSimpleConnection.description" class="shortcut">Description</a></span><span id="nav_hierarchy">  <span class="dim">|</span> 
+                  <a href="#NMSimpleConnection.object-hierarchy" class="shortcut">Object Hierarchy</a></span>
+</td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><a accesskey="u" href="ch03.html"><img src="up.png" width="16" height="16" border="0" alt="Up"></a></td>
+<td><a accesskey="p" href="libnm-NMConnection.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="NMSetting.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
+</tr></table>
 <div class="refentry">
 <a name="NMSimpleConnection"></a><div class="titlepage"></div>
 <div class="refnamediv"><table width="100%"><tr>
@@ -37,30 +30,48 @@
 <h2><span class="refentrytitle"><a name="NMSimpleConnection.top_of_page"></a>NMSimpleConnection</span></h2>
 <p>NMSimpleConnection</p>
 </td>
-<td valign="top" align="right"></td>
+<td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
-<div class="refsynopsisdiv">
-<a name="NMSimpleConnection.synopsis"></a><h2>Synopsis</h2>
-<pre class="synopsis">struct              <a class="link" href="NMSimpleConnection.html#NMSimpleConnection-struct" title="struct NMSimpleConnection">NMSimpleConnection</a>;
-                    <a class="link" href="NMSimpleConnection.html#NMSimpleConnectionClass" title="NMSimpleConnectionClass">NMSimpleConnectionClass</a>;
-<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *      <a class="link" href="NMSimpleConnection.html#nm-simple-connection-new" title="nm_simple_connection_new ()">nm_simple_connection_new</a>            (<em class="parameter"><code><span class="type">void</span></code></em>);
-<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *      <a class="link" href="NMSimpleConnection.html#nm-simple-connection-new-from-dbus" title="nm_simple_connection_new_from_dbus ()">nm_simple_connection_new_from_dbus</a>  (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *dict</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);
-<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *      <a class="link" href="NMSimpleConnection.html#nm-simple-connection-new-clone" title="nm_simple_connection_new_clone ()">nm_simple_connection_new_clone</a>      (<em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>);
-</pre>
+<div class="refsect1">
+<a name="NMSimpleConnection.functions"></a><h2>Functions</h2>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="functions_return">
+<col class="functions_name">
+</colgroup>
+<tbody>
+<tr>
+<td class="function_type">
+<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSimpleConnection.html#nm-simple-connection-new" title="nm_simple_connection_new ()">nm_simple_connection_new</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSimpleConnection.html#nm-simple-connection-new-from-dbus" title="nm_simple_connection_new_from_dbus ()">nm_simple_connection_new_from_dbus</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSimpleConnection.html#nm-simple-connection-new-clone" title="nm_simple_connection_new_clone ()">nm_simple_connection_new_clone</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+</tbody>
+</table></div>
 </div>
 <div class="refsect1">
 <a name="NMSimpleConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="synopsis">
-  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-   +----NMSimpleConnection
+<pre class="screen">    GObject
+    <span class="lineart">╰──</span> NMSimpleConnection
 </pre>
-</div>
-<div class="refsect1">
-<a name="NMSimpleConnection.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
-<p>
-NMSimpleConnection implements
- <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html">NMConnection</a>.</p>
 </div>
 <div class="refsect1">
 <a name="NMSimpleConnection.description"></a><h2>Description</h2>
@@ -68,108 +79,94 @@ NMSimpleConnection implements
 </p>
 </div>
 <div class="refsect1">
-<a name="NMSimpleConnection.details"></a><h2>Details</h2>
+<a name="NMSimpleConnection.functions_details"></a><h2>Functions</h2>
 <div class="refsect2">
-<a name="NMSimpleConnection-struct"></a><h3>struct NMSimpleConnection</h3>
-<pre class="programlisting">struct NMSimpleConnection;</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NMSimpleConnectionClass"></a><h3>NMSimpleConnectionClass</h3>
-<pre class="programlisting">typedef struct {
-	GObjectClass parent_class;
-} NMSimpleConnectionClass;
-</pre>
-<p>
-</p>
-</div>
-<hr>
-<div class="refsect2">
-<a name="nm-simple-connection-new"></a><h3>nm_simple_connection_new ()</h3>
-<pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *      nm_simple_connection_new            (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>
-Creates a new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> object with no <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> objects. An
+<a name="nm-simple-connection-new"></a><h3>nm_simple_connection_new ()</h3>
+<pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *
+nm_simple_connection_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Creates a new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> object with no <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> objects. An
 <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> does not directly represent a D-Bus-exported connection,
-but might be used in the process of creating a new one.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
+but might be used in the process of creating a new one.</p>
+<div class="refsect3">
+<a name="id-1.4.3.6.2.5"></a><h4>Returns</h4>
+<p> the new empty <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> object. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-simple-connection-new-from-dbus"></a><h3>nm_simple_connection_new_from_dbus ()</h3>
+<pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *
+nm_simple_connection_new_from_dbus (<em class="parameter"><code><span class="type">GVariant</span> *dict</code></em>,
+                                    <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
+<p>Creates a new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> from a hash table describing the
+connection.  See <a class="link" href="libnm-NMConnection.html#nm-connection-to-dbus" title="nm_connection_to_dbus ()"><code class="function">nm_connection_to_dbus()</code></a> for a description of the expected
+hash table.</p>
+<div class="refsect3">
+<a name="id-1.4.3.6.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
 <colgroup>
-<col align="left" valign="top">
-<col>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>dict</p></td>
+<td class="parameter_description"><p>a <span class="type">GVariant</span> of type <code class="literal">NM_VARIANT_TYPE_CONNECTION</code> describing the connection</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>error</p></td>
+<td class="parameter_description"><p>on unsuccessful return, an error</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.4.3.6.3.6"></a><h4>Returns</h4>
+<p> the new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> object, populated with
+settings created from the values in the hash table, or <code class="literal">NULL</code> if the
+connection failed to validate. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
+</div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-simple-connection-new-clone"></a><h3>nm_simple_connection_new_clone ()</h3>
+<pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *
+nm_simple_connection_new_clone (<em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
+<p>Clones an <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> as an <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.4.3.6.4.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
 </colgroup>
 <tbody><tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the new empty <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> object. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
-</td>
+<td class="parameter_name"><p>connection</p></td>
+<td class="parameter_description"><p>the <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> to clone</p></td>
+<td class="parameter_annotations"> </td>
 </tr></tbody>
 </table></div>
 </div>
-<hr>
-<div class="refsect2">
-<a name="nm-simple-connection-new-from-dbus"></a><h3>nm_simple_connection_new_from_dbus ()</h3>
-<pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *      nm_simple_connection_new_from_dbus  (<em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> *dict</code></em>,
-                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> **error</code></em>);</pre>
-<p>
-Creates a new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> from a hash table describing the
-connection.  See <a class="link" href="libnm-NMConnection.html#nm-connection-to-dbus" title="nm_connection_to_dbus ()"><code class="function">nm_connection_to_dbus()</code></a> for a description of the expected
-hash table.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
-<colgroup>
-<col align="left" valign="top">
-<col>
-</colgroup>
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>dict</code></em> :</span></p></td>
-<td>a <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="type">GVariant</span></a> of type <code class="literal">NM_VARIANT_TYPE_CONNECTION</code> describing the connection</td>
-</tr>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>error</code></em> :</span></p></td>
-<td>on unsuccessful return, an error</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the new <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a> object, populated with
-settings created from the values in the hash table, or <a href="/usr/share/gtk-doc/html/liboil/liboil-liboiljunk.html#NULL:CAPS"><code class="literal">NULL</code></a> if the
-connection failed to validate. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
-</td>
-</tr>
-</tbody>
-</table></div>
+<div class="refsect3">
+<a name="id-1.4.3.6.4.6"></a><h4>Returns</h4>
+<p> a new <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> containing the same settings
+and properties as the source <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a>. </p>
+<p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
-<hr>
-<div class="refsect2">
-<a name="nm-simple-connection-new-clone"></a><h3>nm_simple_connection_new_clone ()</h3>
-<pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="returnvalue">NMConnection</span></a> *      nm_simple_connection_new_clone      (<em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
-<p>
-Clones an <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> as an <a class="link" href="NMSimpleConnection.html" title="NMSimpleConnection"><span class="type">NMSimpleConnection</span></a>.
-</p>
-<div class="variablelist"><table border="0" class="variablelist">
-<colgroup>
-<col align="left" valign="top">
-<col>
-</colgroup>
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>connection</code></em> :</span></p></td>
-<td>the <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> to clone</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>a new <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> containing the same settings
-and properties as the source <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
-</td>
-</tr>
-</tbody>
-</table></div>
 </div>
+</div>
+<div class="refsect1">
+<a name="NMSimpleConnection.other_details"></a><h2>Types and Values</h2>
 </div>
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.19</div>
+          Generated by GTK-Doc V1.21</div>
 </body>
 </html>

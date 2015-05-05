@@ -313,10 +313,13 @@ reload_connections (NMSystemConfigInterface *config)
 				if (!nm_settings_connection_replace_settings (NM_SETTINGS_CONNECTION (old),
 				                                              NM_CONNECTION (new),
 				                                              FALSE,  /* don't set Unsaved */
+				                                              "ifnet-update",
 				                                              &error)) {
-					/* Shouldn't ever get here as 'new' was verified by the reader already */
-					g_assert_no_error (error);
+					/* Shouldn't ever get here as 'new' was verified by the reader already
+					 * and the UUID did not change. */
+					g_assert_not_reached ();
 				}
+				g_assert_no_error (error);
 				nm_log_info (LOGD_SETTINGS, "Connection %s updated",
 				             nm_connection_get_id (NM_CONNECTION (new)));
 			}
@@ -393,7 +396,7 @@ check_unmanaged (gpointer key, gpointer data, gpointer user_data)
 
 	conn_name = nm_ifnet_connection_get_conn_name (connection);
 
-	if (is_managed (conn_name))
+	if (!conn_name || is_managed (conn_name))
 		return;
 
 	nm_log_info (LOGD_SETTINGS, "Checking unmanaged: %s", conn_name);

@@ -998,9 +998,13 @@ nm_utils_wep_key_valid (const char *key, NMWepKeyType wep_type)
 	if (!key)
 		return FALSE;
 
+	if (wep_type == NM_WEP_KEY_TYPE_UNKNOWN) {
+		return nm_utils_wep_key_valid (key, NM_WEP_KEY_TYPE_KEY) ||
+		       nm_utils_wep_key_valid (key, NM_WEP_KEY_TYPE_PASSPHRASE);
+	}
+
 	keylen = strlen (key);
-	if (   wep_type == NM_WEP_KEY_TYPE_KEY
-	    || wep_type == NM_WEP_KEY_TYPE_UNKNOWN) {
+	if (wep_type == NM_WEP_KEY_TYPE_KEY) {
 		if (keylen == 10 || keylen == 26) {
 			/* Hex key */
 			for (i = 0; i < keylen; i++) {
@@ -1015,7 +1019,6 @@ nm_utils_wep_key_valid (const char *key, NMWepKeyType wep_type)
 			}
 		} else
 			return FALSE;
-
 	} else if (wep_type == NM_WEP_KEY_TYPE_PASSPHRASE) {
 		if (!keylen || keylen > 64)
 			return FALSE;
@@ -1802,6 +1805,7 @@ nm_utils_ip_addresses_from_variant (GVariant *value,
 			g_variant_unref (attr_val);
 		}
 
+		g_variant_unref (addr_var);
 		g_ptr_array_add (addresses, addr);
 	}
 
@@ -2218,7 +2222,7 @@ nm_utils_file_is_pkcs12 (const char *filename)
  *   for additional checks. This check is performed after the check for
  *   @file_test_flags. You cannot omit both @file_test_flags and @predicate.
  * @user_data: (closure): (allow-none): user data for @predicate function.
- * @error: on failure, a "not found" error using @error_domain and @error_code
+ * @error: (allow-none): on failure, set a "not found" error %G_IO_ERROR %G_IO_ERROR_NOT_FOUND.
  *
  * Searches for a @progname file in a list of search @paths.
  *
@@ -2771,7 +2775,7 @@ nm_utils_hwaddr_canonical (const char *asc, gssize length)
 	if (nm_utils_hwaddr_aton (asc, buf, length) == NULL)
 		return NULL;
 
-	return g_strdup (nm_utils_hwaddr_ntoa (buf, length));
+	return nm_utils_hwaddr_ntoa (buf, length);
 }
 
 /* This is used to possibly canonicalize values passed to MAC address property
@@ -3212,4 +3216,65 @@ nm_utils_check_virtual_device_compatibility (GType virtual_type, GType other_typ
 		g_warn_if_reached ();
 		return FALSE;
 	}
+}
+
+typedef struct {
+	const char *str;
+	const char *num;
+} BondMode;
+
+static BondMode bond_mode_table[] = {
+	[0] = { "balance-rr",    "0" },
+	[1] = { "active-backup", "1" },
+	[2] = { "balance-xor",   "2" },
+	[3] = { "broadcast",     "3" },
+	[4] = { "802.3ad",       "4" },
+	[5] = { "balance-tlb",   "5" },
+	[6] = { "balance-alb",   "6" },
+};
+
+/**
+ * nm_utils_bond_mode_int_to_string:
+ * @mode: bonding mode as a numeric value
+ *
+ * Convert bonding mode from integer value to descriptive name.
+ * See https://www.kernel.org/doc/Documentation/networking/bonding.txt for
+ * available modes.
+ *
+ * Returns: bonding mode string, or NULL on error
+*/
+
+const char *
+nm_utils_bond_mode_int_to_string (int mode)
+{
+	if (mode >= 0 && mode < G_N_ELEMENTS (bond_mode_table))
+		return bond_mode_table[mode].str;
+	return NULL;
+}
+
+/**
+ * nm_utils_bond_mode_string_to_int:
+ * @mode: bonding mode as string
+ *
+ * Convert bonding mode from string representation to numeric value.
+ * See https://www.kernel.org/doc/Documentation/networking/bonding.txt for
+ * available modes.
+ * The @mode string can be either a descriptive name or a number (as string).
+ *
+ * Returns: numeric bond mode, or -1 on error
+*/
+int
+nm_utils_bond_mode_string_to_int (const char *mode)
+{
+	int i;
+
+	if (!mode || !*mode)
+		return -1;
+
+	for (i = 0; i < G_N_ELEMENTS (bond_mode_table); i++) {
+		if (   strcmp (mode, bond_mode_table[i].str) == 0
+		    || strcmp (mode, bond_mode_table[i].num) == 0)
+			return i;
+	}
+	return -1;
 }

@@ -36,29 +36,6 @@ NMDeviceModem
 
 
 
-<!-- ##### STRUCT NMDeviceModem ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceModem:current-capabilities ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceModem:modem-capabilities ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceModemClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_modem_get_modem_capabilities ##### -->
 <para>
 

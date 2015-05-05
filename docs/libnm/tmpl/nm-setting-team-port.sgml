@@ -36,24 +36,6 @@ NMSettingTeamPort
 
 
 
-<!-- ##### STRUCT NMSettingTeamPort ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingTeamPort:config ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingTeamPortClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_team_port_new ##### -->
 <para>
 

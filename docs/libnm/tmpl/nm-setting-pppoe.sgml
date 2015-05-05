@@ -57,39 +57,6 @@ NMSettingPppoe
 
 
 
-<!-- ##### STRUCT NMSettingPppoe ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingPppoe:password ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingPppoe:password-flags ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingPppoe:service ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMSettingPppoe:username ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingPppoeClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_pppoe_new ##### -->
 <para>
 

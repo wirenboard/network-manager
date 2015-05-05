@@ -50,39 +50,6 @@ NMDeviceVlan
 
 
 
-<!-- ##### STRUCT NMDeviceVlan ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceVlan:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceVlan:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceVlan:parent ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceVlan:vlan-id ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceVlanClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_vlan_get_hw_address ##### -->
 <para>
 

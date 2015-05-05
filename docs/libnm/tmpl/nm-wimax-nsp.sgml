@@ -53,34 +53,6 @@ NMWimaxNsp
 @NM_WIMAX_NSP_NETWORK_TYPE_PARTNER: 
 @NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER: 
 
-<!-- ##### STRUCT NMWimaxNsp ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMWimaxNsp:name ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMWimaxNsp:network-type ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMWimaxNsp:signal-quality ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMWimaxNspClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_wimax_nsp_get_name ##### -->
 <para>
 

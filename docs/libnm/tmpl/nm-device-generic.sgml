@@ -36,29 +36,6 @@ NMDeviceGeneric
 
 
 
-<!-- ##### STRUCT NMDeviceGeneric ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceGeneric:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceGeneric:type-description ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceGenericClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_generic_get_hw_address ##### -->
 <para>
 

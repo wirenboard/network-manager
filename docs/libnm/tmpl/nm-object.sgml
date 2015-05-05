@@ -36,36 +36,6 @@ NMObject
 
 
 
-<!-- ##### STRUCT NMObject ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMObject:dbus-connection ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMObject:nm-running-internal ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMObject:path ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMObjectClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@init_dbus: 
-@object_creation_failed: 
-
 <!-- ##### FUNCTION nm_object_get_path ##### -->
 <para>
 

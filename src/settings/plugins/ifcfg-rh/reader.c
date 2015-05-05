@@ -56,6 +56,7 @@
 #include "nm-posix-signals.h"
 #include "NetworkManagerUtils.h"
 #include "nm-logging.h"
+#include "gsystem-local-alloc.h"
 
 #include "common.h"
 #include "shvar.h"
@@ -292,9 +293,11 @@ get_numbered_tag (char *tag_name, int which)
 }
 
 static gboolean
-is_any_ip4_address_defined (shvarFile *ifcfg)
+is_any_ip4_address_defined (shvarFile *ifcfg, int *idx)
 {
-	int i;
+	int i, ignore, *ret_idx;;
+
+	ret_idx = idx ? idx : &ignore;
 
 	for (i = -1; i <= 2; i++) {
 		char *tag;
@@ -305,6 +308,7 @@ is_any_ip4_address_defined (shvarFile *ifcfg)
 		g_free (tag);
 		if (value) {
 			g_free (value);
+			*ret_idx = i;
 			return TRUE;
 		}
 
@@ -313,6 +317,7 @@ is_any_ip4_address_defined (shvarFile *ifcfg)
 		g_free(tag);
 		if (value) {
 			g_free (value);
+			*ret_idx = i;
 			return TRUE;
 		}
 
@@ -321,6 +326,7 @@ is_any_ip4_address_defined (shvarFile *ifcfg)
 		g_free(tag);
 		if (value) {
 			g_free (value);
+			*ret_idx = i;
 			return TRUE;
 		}
 	}
@@ -534,8 +540,6 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 	char **lines = NULL, **iter;
 	GRegex *regex_to1, *regex_to2, *regex_via, *regex_metric;
 	GMatchInfo *match_info;
-	NMIPRoute *route = NULL;
-	char *dest = NULL, *prefix = NULL, *next_hop = NULL, *metric = NULL;
 	gint64 prefix_int, metric_int;
 	gboolean success = FALSE;
 
@@ -567,6 +571,9 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 	/* Iterate through file lines */
 	lines = g_strsplit_set (contents, "\n\r", -1);
 	for (iter = lines; iter && *iter; iter++) {
+		gs_free char *next_hop = NULL, *dest = NULL;
+		char *prefix, *metric;
+		NMIPRoute *route;
 
 		/* Skip empty lines */
 		if (g_regex_match_simple (pattern_empty, *iter, 0, 0))
@@ -586,11 +593,10 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 		}
 		dest = g_match_info_fetch (match_info, 1);
 		if (!strcmp (dest, "default"))
-			strcpy (dest, "0.0.0.0");
+			strcpy (dest,  "0.0.0.0");
 		if (!nm_utils_ipaddr_valid (AF_INET, dest)) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Invalid IP4 route destination address '%s'", dest);
-			g_free (dest);
 			g_match_info_free (match_info);
 			goto error;
 		}
@@ -605,7 +611,6 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 			if (errno || prefix_int <= 0 || prefix_int > 32) {
 				g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 				             "Invalid IP4 route destination prefix '%s'", prefix);
-				g_free (dest);
 				g_free (prefix);
 				goto error;
 			}
@@ -621,13 +626,10 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 				             "Invalid IP4 route gateway address '%s'",
 				             next_hop);
 				g_match_info_free (match_info);
-				g_free (dest);
-				g_free (next_hop);
 				goto error;
 			}
 		} else {
 			/* we don't make distinction between missing GATEWAY IP and 0.0.0.0 */
-			next_hop = NULL;
 		}
 		g_match_info_free (match_info);
 
@@ -642,8 +644,6 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 				g_match_info_free (match_info);
 				g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 				             "Invalid IP4 route metric '%s'", metric);
-				g_free (dest);
-				g_free (next_hop);
 				g_free (metric);
 				goto error;
 			}
@@ -652,13 +652,11 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 		g_match_info_free (match_info);
 
 		route = nm_ip_route_new (AF_INET, dest, prefix_int, next_hop, metric_int, error);
-		if (!route) {
-			g_free (dest);
-			g_free (next_hop);
+		if (!route)
 			goto error;
-		}
 		if (!nm_setting_ip_config_add_route (s_ip4, route))
 			PARSE_WARNING ("duplicate IP4 route");
+		nm_ip_route_unref (route);
 	}
 
 	success = TRUE;
@@ -666,8 +664,6 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 error:
 	g_free (contents);
 	g_strfreev (lines);
-	if (route)
-		nm_ip_route_unref (route);
 	g_regex_unref (regex_to1);
 	g_regex_unref (regex_to2);
 	g_regex_unref (regex_via);
@@ -743,7 +739,6 @@ read_route6_file (const char *filename, NMSettingIPConfig *s_ip6, GError **error
 	char **lines = NULL, **iter;
 	GRegex *regex_to1, *regex_to2, *regex_via, *regex_metric;
 	GMatchInfo *match_info;
-	NMIPRoute *route = NULL;
 	char *dest = NULL, *prefix = NULL, *next_hop = NULL, *metric = NULL;
 	gint64 prefix_int, metric_int;
 	gboolean success = FALSE;
@@ -776,6 +771,7 @@ read_route6_file (const char *filename, NMSettingIPConfig *s_ip6, GError **error
 	/* Iterate through file lines */
 	lines = g_strsplit_set (contents, "\n\r", -1);
 	for (iter = lines; iter && *iter; iter++) {
+		NMIPRoute *route;
 
 		/* Skip empty lines */
 		if (g_regex_match_simple (pattern_empty, *iter, 0, 0))
@@ -865,6 +861,7 @@ read_route6_file (const char *filename, NMSettingIPConfig *s_ip6, GError **error
 			goto error;
 		if (!nm_setting_ip_config_add_route (s_ip6, route))
 			PARSE_WARNING ("duplicate IP6 route");
+		nm_ip_route_unref (route);
 	}
 
 	success = TRUE;
@@ -872,8 +869,6 @@ read_route6_file (const char *filename, NMSettingIPConfig *s_ip6, GError **error
 error:
 	g_free (contents);
 	g_strfreev (lines);
-	if (route)
-		nm_ip_route_unref (route);
 	g_regex_unref (regex_to1);
 	g_regex_unref (regex_to2);
 	g_regex_unref (regex_via);
@@ -892,7 +887,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	char *value = NULL;
 	char *route_path = NULL;
 	char *method;
-	char *gateway = NULL;
+	gs_free char *gateway = NULL;
 	gint32 i;
 	shvarFile *network_ifcfg;
 	shvarFile *route_ifcfg;
@@ -930,7 +925,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	value = svGetValue (ifcfg, "BOOTPROTO", FALSE);
 
 	if (!value || !*value || !g_ascii_strcasecmp (value, "none")) {
-		if (is_any_ip4_address_defined (ifcfg))
+		if (is_any_ip4_address_defined (ifcfg, NULL))
 			method = NM_SETTING_IP4_CONFIG_METHOD_MANUAL;
 		else
 			method = NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
@@ -946,11 +941,25 @@ make_ip4_setting (shvarFile *ifcfg,
 		              NULL);
 		return NM_SETTING (s_ip4);
 	} else if (!g_ascii_strcasecmp (value, "shared")) {
+		int idx;
+
 		g_free (value);
 		g_object_set (s_ip4,
 		              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_SHARED,
 		              NM_SETTING_IP_CONFIG_NEVER_DEFAULT, never_default,
 		              NULL);
+		/* 1 IP address is allowed for shared connections. Read it. */
+		if (is_any_ip4_address_defined (ifcfg, &idx)) {
+			NMIPAddress *addr = NULL;
+
+			if (!read_full_ip4_address (ifcfg, network_file, idx, NULL, &addr, NULL, error))
+				goto done;
+			if (!read_ip4_address (ifcfg, "GATEWAY", &gateway, error))
+				goto done;
+			(void) nm_setting_ip_config_add_address (s_ip4, addr);
+			nm_ip_address_unref (addr);
+			g_object_set (s_ip4, NM_SETTING_IP_CONFIG_GATEWAY, gateway, NULL);
+		}
 		return NM_SETTING (s_ip4);
 	} else {
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
@@ -966,6 +975,8 @@ make_ip4_setting (shvarFile *ifcfg,
 	              NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES, !svTrueValue (ifcfg, "PEERROUTES", TRUE),
 	              NM_SETTING_IP_CONFIG_NEVER_DEFAULT, never_default,
 	              NM_SETTING_IP_CONFIG_MAY_FAIL, !svTrueValue (ifcfg, "IPV4_FAILURE_FATAL", FALSE),
+	              NM_SETTING_IP_CONFIG_ROUTE_METRIC, svGetValueInt64 (ifcfg, "IPV4_ROUTE_METRIC", 10,
+	                                                                  -1, G_MAXUINT32, -1),
 	              NULL);
 
 	if (strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED) == 0)
@@ -997,6 +1008,8 @@ make_ip4_setting (shvarFile *ifcfg,
 	for (i = -1; i < 256; i++) {
 		NMIPAddress *addr = NULL;
 
+		/* gateway will only be set if still unset. Hence, we don't leak gateway
+		 * here by calling read_full_ip4_address() repeatedly */
 		if (!read_full_ip4_address (ifcfg, network_file, i, NULL, &addr, &gateway, error))
 			goto done;
 
@@ -1075,14 +1088,10 @@ make_ip4_setting (shvarFile *ifcfg,
 
 	/* Static routes  - route-<name> file */
 	route_path = utils_get_route_path (ifcfg->fileName);
-	if (!route_path) {
-		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
-		             "Could not get route file path for '%s'", ifcfg->fileName);
-		goto done;
-	}
 
-	/* First test new/legacy syntax */
-	if (utils_has_route_file_new_syntax (route_path)) {
+	if (utils_has_complex_routes (route_path)) {
+		PARSE_WARNING ("'rule-' or 'rule6-' file is present; you will need to use a dispatcher script to apply these routes");
+	} else if (utils_has_route_file_new_syntax (route_path)) {
 		/* Parse route file in new syntax */
 		route_ifcfg = utils_get_route_ifcfg (ifcfg->fileName, FALSE);
 		if (route_ifcfg) {
@@ -1107,6 +1116,7 @@ make_ip4_setting (shvarFile *ifcfg,
 		if (!read_route_file_legacy (route_path, s_ip4, error))
 			goto done;
 	}
+	g_free (route_path);
 
 	/* Legacy value NM used for a while but is incorrect (rh #459370) */
 	if (!nm_setting_ip_config_get_num_dns_searches (s_ip4)) {
@@ -1132,7 +1142,6 @@ make_ip4_setting (shvarFile *ifcfg,
 	return NM_SETTING (s_ip4);
 
 done:
-	g_free (gateway);
 	g_free (route_path);
 	g_object_unref (s_ip4);
 	return NULL;
@@ -1362,6 +1371,8 @@ make_ip6_setting (shvarFile *ifcfg,
 	              NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES, !svTrueValue (ifcfg, "IPV6_PEERROUTES", TRUE),
 	              NM_SETTING_IP_CONFIG_NEVER_DEFAULT, never_default,
 	              NM_SETTING_IP_CONFIG_MAY_FAIL, !svTrueValue (ifcfg, "IPV6_FAILURE_FATAL", FALSE),
+	              NM_SETTING_IP_CONFIG_ROUTE_METRIC, svGetValueInt64 (ifcfg, "IPV6_ROUTE_METRIC", 10,
+	                                                                  -1, G_MAXUINT32, -1),
 	              NM_SETTING_IP6_CONFIG_IP6_PRIVACY, ip6_privacy_val,
 	              NULL);
 
@@ -1467,18 +1478,15 @@ make_ip6_setting (shvarFile *ifcfg,
 
 	/* DNS searches ('DOMAIN' key) are read by make_ip4_setting() and included in NMSettingIPConfig */
 
-	/* Read static routes from route6-<interface> file */
-	route6_path = utils_get_route6_path (ifcfg->fileName);
-	if (!route6_path) {
-		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
-		             "Could not get route6 file path for '%s'", ifcfg->fileName);
-		goto error;
+	if (!utils_has_complex_routes (ifcfg->fileName)) {
+		/* Read static routes from route6-<interface> file */
+		route6_path = utils_get_route6_path (ifcfg->fileName);
+		if (!read_route6_file (route6_path, s_ip6, error))
+			goto error;
+
+		g_free (route6_path);
 	}
 
-	if (!read_route6_file (route6_path, s_ip6, error))
-		goto error;
-
-	g_free (route6_path);
 	return NM_SETTING (s_ip6);
 
 error:
@@ -3061,7 +3069,8 @@ make_wpa_setting (shvarFile *ifcfg,
 			if (psk) {
 				g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_PSK, psk, NULL);
 				g_free (psk);
-			}
+			} else if (error)
+				goto error;
 		}
 
 		if (adhoc)
@@ -3173,6 +3182,8 @@ make_wireless_security_setting (shvarFile *ifcfg,
                                 GError **error)
 {
 	NMSetting *wsec;
+
+	g_return_val_if_fail (error && !*error, NULL);
 
 	if (!adhoc) {
 		wsec = make_leap_setting (ifcfg, file, error);
@@ -3425,11 +3436,11 @@ wireless_connection_from_ifcfg (const char *file,
 	char *printable_ssid = NULL;
 	const char *mode;
 	gboolean adhoc = FALSE;
+	GError *local = NULL;
 
 	g_return_val_if_fail (file != NULL, NULL);
 	g_return_val_if_fail (ifcfg != NULL, NULL);
-	g_return_val_if_fail (error != NULL, NULL);
-	g_return_val_if_fail (*error == NULL, NULL);
+	g_return_val_if_fail (!error || !*error, NULL);
 
 	connection = nm_simple_connection_new ();
 
@@ -3453,10 +3464,11 @@ wireless_connection_from_ifcfg (const char *file,
 		adhoc = TRUE;
 
 	/* Wireless security */
-	security_setting = make_wireless_security_setting (ifcfg, file, ssid, adhoc, &s_8021x, error);
-	if (*error) {
+	security_setting = make_wireless_security_setting (ifcfg, file, ssid, adhoc, &s_8021x, &local);
+	if (local) {
 		g_free (printable_ssid);
 		g_object_unref (connection);
+		g_propagate_error (error, local);
 		return NULL;
 	}
 	if (security_setting) {
@@ -3838,7 +3850,8 @@ handle_bond_option (NMSettingBond *s_bond,
 	}
 
 	if (!nm_setting_bond_add_option (s_bond, key, sanitized ? sanitized : value))
-		PARSE_WARNING ("invalid bonding option '%s'", key);
+		PARSE_WARNING ("invalid bonding option '%s' = %s",
+		               key, sanitized ? sanitized : value);
 	g_free (sanitized);
 }
 
@@ -4443,6 +4456,7 @@ make_vlan_setting (shvarFile *ifcfg,
 		goto error;
 	}
 	g_object_set (s_vlan, NM_SETTING_VLAN_PARENT, parent, NULL);
+	g_clear_pointer (&parent, g_free);
 
 	if (svTrueValue (ifcfg, "REORDER_HDR", FALSE))
 		vlan_flags |= NM_VLAN_FLAG_REORDER_HEADERS;
@@ -4460,6 +4474,8 @@ make_vlan_setting (shvarFile *ifcfg,
 
 	parse_prio_map_list (s_vlan, ifcfg, "VLAN_INGRESS_PRIORITY_MAP", NM_VLAN_INGRESS_MAP);
 	parse_prio_map_list (s_vlan, ifcfg, "VLAN_EGRESS_PRIORITY_MAP", NM_VLAN_EGRESS_MAP);
+
+	g_free (iface_name);
 
 	return (NMSetting *) s_vlan;
 
@@ -4624,32 +4640,24 @@ check_dns_search_domains (shvarFile *ifcfg, NMSetting *s_ip4, NMSetting *s_ip6)
 	}
 }
 
-NMConnection *
-connection_from_file (const char *filename,
-                      const char *network_file,  /* for unit tests only */
-                      const char *test_type,     /* for unit tests only */
-                      char **out_unhandled,
-                      char **out_keyfile,
-                      char **out_routefile,
-                      char **out_route6file,
-                      GError **error,
-                      gboolean *out_ignore_error)
+static NMConnection *
+connection_from_file_full (const char *filename,
+                           const char *network_file,  /* for unit tests only */
+                           const char *test_type,     /* for unit tests only */
+                           char **out_unhandled,
+                           GError **error,
+                           gboolean *out_ignore_error)
 {
 	NMConnection *connection = NULL;
 	shvarFile *parsed;
-	char *type, *devtype, *bootproto;
+	gs_free char *type = NULL;
+	char *devtype, *bootproto;
 	NMSetting *s_ip4, *s_ip6, *s_port, *s_dcb = NULL;
 	const char *ifcfg_name = NULL;
 
 	g_return_val_if_fail (filename != NULL, NULL);
 	if (out_unhandled)
 		g_return_val_if_fail (*out_unhandled == NULL, NULL);
-	if (out_keyfile)
-		g_return_val_if_fail (*out_keyfile == NULL, NULL);
-	if (out_routefile)
-		g_return_val_if_fail (*out_routefile == NULL, NULL);
-	if (out_route6file)
-		g_return_val_if_fail (*out_route6file == NULL, NULL);
 
 	/* Non-NULL only for unit tests; normally use /etc/sysconfig/network */
 	if (!network_file)
@@ -4685,8 +4693,7 @@ connection_from_file (const char *filename,
 		g_free (bootproto);
 		goto done;
 	}
-
-	type = NULL;
+	g_free (bootproto);
 
 	devtype = svGetValue (parsed, "DEVICETYPE", FALSE);
 	if (devtype) {
@@ -4775,7 +4782,6 @@ connection_from_file (const char *filename,
 			PARSE_WARNING ("connection type was unrecognized but device was not uniquely identified; device may be managed");
 		goto done;
 	}
-	g_free (type);
 
 	if (!connection)
 		goto done;
@@ -4827,15 +4833,64 @@ connection_from_file (const char *filename,
 		connection = NULL;
 	}
 
-	if (out_keyfile)
-		*out_keyfile = utils_get_keys_path (filename);
-	if (out_routefile)
-		*out_routefile = utils_get_route_path (filename);
-	if (out_route6file)
-		*out_route6file = utils_get_route6_path (filename);
-
 done:
 	svCloseFile (parsed);
 	return connection;
 }
 
+NMConnection *
+connection_from_file (const char *filename,
+                      char **out_unhandled,
+                      GError **error)
+{
+	gboolean ignore_error = FALSE;
+	NMConnection *conn;
+
+	conn = connection_from_file_full (filename, NULL, NULL,
+	                                  out_unhandled,
+	                                  error,
+	                                  &ignore_error);
+	if (error && *error && !ignore_error)
+		PARSE_WARNING ("%s", (*error)->message);
+	return conn;
+}
+
+NMConnection *
+connection_from_file_test (const char *filename,
+                           const char *network_file,
+                           const char *test_type,
+                           char **out_unhandled,
+                           GError **error)
+{
+	return connection_from_file_full (filename,
+	                                  network_file,
+	                                  test_type,
+	                                  out_unhandled,
+	                                  error,
+	                                  NULL);
+}
+
+guint
+devtimeout_from_file (const char *filename)
+{
+	shvarFile *ifcfg;
+	char *devtimeout_str;
+	guint devtimeout;
+
+	g_return_val_if_fail (filename != NULL, 0);
+
+	ifcfg = svOpenFile (filename, NULL);
+	if (!ifcfg)
+		return 0;
+
+	devtimeout_str = svGetValue (ifcfg, "DEVTIMEOUT", FALSE);
+	if (devtimeout_str) {
+		devtimeout = nm_utils_ascii_str_to_int64 (devtimeout_str, 10, 0, G_MAXUINT, 0);
+		g_free (devtimeout_str);
+	} else
+		devtimeout = 0;
+
+	svCloseFile (ifcfg);
+
+	return devtimeout;
+}

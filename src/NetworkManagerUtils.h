@@ -49,7 +49,7 @@ nm_utils_ip6_route_metric_normalize (guint32 metric)
 	return metric ? metric : 1024 /*NM_PLATFORM_ROUTE_METRIC_DEFAULT_IP6*/;
 }
 
-int nm_spawn_process (const char *args);
+int nm_spawn_process (const char *args, GError **error);
 
 /* check if @flags has exactly one flag (@check) set. You should call this
  * only with @check being a compile time constant and a power of two. */
@@ -196,6 +196,7 @@ typedef struct {
 gboolean nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
                                                  const guint8 *hwaddr,
                                                  guint len,
+                                                 guint dev_id,
                                                  NMUtilsIPv6IfaceId *out_iid);
 
 void nm_utils_ipv6_addr_set_interface_identfier (struct in6_addr *addr,

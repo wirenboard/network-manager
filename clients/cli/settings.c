@@ -2545,7 +2545,7 @@ nmc_property_con_set_master (NMSetting *setting, const char *prop, const char *v
 static const char *con_valid_slave_types[] = {
 	NM_SETTING_BOND_SETTING_NAME,
 	NM_SETTING_BRIDGE_SETTING_NAME,
-	NM_SETTING_VLAN_SETTING_NAME,
+	NM_SETTING_TEAM_SETTING_NAME,
 	NULL
 };
 
@@ -2759,6 +2759,15 @@ DEFINE_REMOVER_INDEX_OR_VALUE (nmc_property_802_1X_remove_eap,
 /* 'ca-cert' */
 DEFINE_SETTER_CERT (nmc_property_802_1X_set_ca_cert, nm_setting_802_1x_set_ca_cert)
 
+static const char *
+nmc_property_802_1X_describe_ca_cert (NMSetting *setting, const char *prop)
+{
+	return _("Enter file path to CA certificate (optionally prefixed with file://).\n"
+	         "  [file://]<file path>\n"
+	         "Note that nmcli does not support specifying certificates as raw blob data.\n"
+	         "Example: /home/cimrman/cacert.crt\n");
+}
+
 /* 'altsubject-matches' */
 DEFINE_SETTER_STR_LIST (nmc_property_802_1X_set_altsubject_matches, nm_setting_802_1x_add_altsubject_match)
 
@@ -2785,8 +2794,27 @@ DEFINE_REMOVER_INDEX_OR_VALUE (nmc_property_802_1X_remove_altsubject_matches,
 /* 'client-cert' */
 DEFINE_SETTER_CERT (nmc_property_802_1X_set_client_cert, nm_setting_802_1x_set_client_cert)
 
+static const char *
+nmc_property_802_1X_describe_client_cert (NMSetting *setting, const char *prop)
+{
+	return _("Enter file path to client certificate (optionally prefixed with file://).\n"
+	         "  [file://]<file path>\n"
+	         "Note that nmcli does not support specifying certificates as raw blob data.\n"
+	         "Example: /home/cimrman/jara.crt\n");
+}
+
 /* 'phase2-ca-cert' */
 DEFINE_SETTER_CERT (nmc_property_802_1X_set_phase2_ca_cert, nm_setting_802_1x_set_phase2_ca_cert)
+
+static const char *
+nmc_property_802_1X_describe_phase2_ca_cert (NMSetting *setting, const char *prop)
+{
+	return _("Enter file path to CA certificate for inner authentication (optionally prefixed\n"
+	         "with file://).\n"
+	         "  [file://]<file path>\n"
+	         "Note that nmcli does not support specifying certificates as raw blob data.\n"
+	         "Example: /home/cimrman/ca-zweite-phase.crt\n");
+}
 
 /* 'phase2-altsubject-matches' */
 DEFINE_SETTER_STR_LIST (nmc_property_802_1X_set_phase2_altsubject_matches, nm_setting_802_1x_add_phase2_altsubject_match)
@@ -2814,6 +2842,16 @@ DEFINE_REMOVER_INDEX_OR_VALUE (nmc_property_802_1X_remove_phase2_altsubject_matc
 /* 'phase2-client-cert' */
 DEFINE_SETTER_CERT (nmc_property_802_1X_set_phase2_client_cert, nm_setting_802_1x_set_phase2_client_cert)
 
+static const char *
+nmc_property_802_1X_describe_phase2_client_cert (NMSetting *setting, const char *prop)
+{
+	return _("Enter file path to client certificate for inner authentication (optionally prefixed\n"
+	         "with file://).\n"
+	         "  [file://]<file path>\n"
+	         "Note that nmcli does not support specifying certificates as raw blob data.\n"
+	         "Example: /home/cimrman/jara-zweite-phase.crt\n");
+}
+
 /* 'private-key' */
 DEFINE_SETTER_PRIV_KEY (nmc_property_802_1X_set_private_key,
                         nm_setting_802_1x_get_private_key_password,
@@ -2828,7 +2866,8 @@ static const char *
 nmc_property_802_1X_describe_private_key (NMSetting *setting, const char *prop)
 {
 	return _("Enter path to a private key and the key password (if not set yet):\n"
-	         "  <file path> [<password>]\n"
+	         "  [file://]<file path> [<password>]\n"
+	         "Note that nmcli does not support specifying private key as raw blob data.\n"
 	         "Example: /home/cimrman/jara-priv-key Dardanely\n");
 }
 
@@ -3031,7 +3070,7 @@ nmc_property_bond_allowed_options (NMSetting *setting, const char *prop)
 }
 
 /* --- NM_SETTING_INFINIBAND_SETTING_NAME property setter functions --- */
-/* 'mac-addresss' */
+/* 'mac-address' */
 static gboolean
 nmc_property_ib_set_mac (NMSetting *setting, const char *prop, const char *val, GError **error)
 {
@@ -4750,7 +4789,7 @@ nmc_properties_init (void)
 	                    nmc_property_802_1X_get_ca_cert,
 	                    nmc_property_802_1X_set_ca_cert,
 	                    NULL,
-	                    NULL,
+	                    nmc_property_802_1X_describe_ca_cert,
 	                    NULL,
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (802_1X, CA_PATH),
@@ -4778,7 +4817,7 @@ nmc_properties_init (void)
 	                    nmc_property_802_1X_get_client_cert,
 	                    nmc_property_802_1X_set_client_cert,
 	                    NULL,
-	                    NULL,
+	                    nmc_property_802_1X_describe_client_cert,
 	                    NULL,
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (802_1X, PHASE1_PEAPVER),
@@ -4820,7 +4859,7 @@ nmc_properties_init (void)
 	                    nmc_property_802_1X_get_phase2_ca_cert,
 	                    nmc_property_802_1X_set_phase2_ca_cert,
 	                    NULL,
-	                    NULL,
+	                    nmc_property_802_1X_describe_phase2_ca_cert,
 	                    NULL,
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (802_1X, PHASE2_CA_PATH),
@@ -4848,7 +4887,7 @@ nmc_properties_init (void)
 	                    nmc_property_802_1X_get_phase2_client_cert,
 	                    nmc_property_802_1X_set_phase2_client_cert,
 	                    NULL,
-	                    NULL,
+	                    nmc_property_802_1X_describe_phase2_client_cert,
 	                    NULL,
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (802_1X, PASSWORD),
@@ -6449,6 +6488,7 @@ nmc_setting_get_valid_properties (NMSetting *setting)
 			valid_props[i++] = g_strdup (key_name);
 	}
 	valid_props[i] = NULL;
+	g_free (props);
 
 	return valid_props;
 }

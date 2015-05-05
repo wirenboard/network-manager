@@ -2,22 +2,22 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Network Configuration Setting Specification</title>
+<title>NetworkManager D-Bus Reference Manual: Network Configuration Setting Specification</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="NetworkManager D-Bus Reference Manual">
 <link rel="up" href="index.html" title="NetworkManager D-Bus Reference Manual">
 <link rel="prev" href="ref-dbus.html" title="D-Bus API Reference">
 <link rel="next" href="secrets-flags.html" title="Secret flag types">
-<meta name="generator" content="GTK-Doc V1.19 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
-<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2"><tr valign="middle">
-<td><a accesskey="p" href="ref-dbus.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
-<td> </td>
-<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
-<th width="100%" align="center">NetworkManager D-Bus Reference Manual</th>
-<td><a accesskey="n" href="secrets-flags.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="5"><tr valign="middle">
+<td width="100%" align="left" class="shortcuts"></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
+<td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
+<td><a accesskey="p" href="ref-dbus.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="n" href="secrets-flags.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="chapter">
 <div class="titlepage"><div><div><h1 class="title">
@@ -391,7 +391,7 @@
 <tr>
 <td><pre class="screen">options</pre></td>
 <td><pre class="screen">dict of string to string</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">{'mode': 'balance-rr'}</pre></td>
 <td>Dictionary of key/value pairs of bonding options.  Both keys and values must be strings. Option names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</td>
 </tr>
 </tbody>
@@ -743,13 +743,13 @@
 <tr>
 <td><pre class="screen">priority-bandwidth</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[0, 0, 0, 0, 0, 0, 0, 0]</pre></td>
 <td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the percentage of bandwidth of the priority's assigned group that the priority may use.  The sum of all percentages for priorities which belong to the same group must total 100 percent.</td>
 </tr>
 <tr>
 <td><pre class="screen">priority-flow-control</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[0, 0, 0, 0, 0, 0, 0, 0]</pre></td>
 <td>An array of 8 boolean values, where the array index corresponds to the User Priority (0 - 7) and the value indicates whether or not the corresponding priority should transmit priority pause.</td>
 </tr>
 <tr>
@@ -761,7 +761,7 @@
 <tr>
 <td><pre class="screen">priority-group-bandwidth</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[0, 0, 0, 0, 0, 0, 0, 0]</pre></td>
 <td>An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 - 7) and the value indicates the percentage of link bandwidth allocated to that group.  Allowed values are 0 - 100, and the sum of all values must total 100 percent.</td>
 </tr>
 <tr>
@@ -773,19 +773,19 @@
 <tr>
 <td><pre class="screen">priority-group-id</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[0, 0, 0, 0, 0, 0, 0, 0]</pre></td>
 <td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the Priority Group ID.  Allowed Priority Group ID values are 0 - 7 or 15 for the unrestricted group.</td>
 </tr>
 <tr>
 <td><pre class="screen">priority-strict-bandwidth</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[0, 0, 0, 0, 0, 0, 0, 0]</pre></td>
 <td>An array of 8 boolean values, where the array index corresponds to the User Priority (0 - 7) and the value indicates whether or not the priority may use all of the bandwidth allocated to its assigned group.</td>
 </tr>
 <tr>
 <td><pre class="screen">priority-traffic-class</pre></td>
 <td><pre class="screen">array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[0, 0, 0, 0, 0, 0, 0, 0]</pre></td>
 <td>An array of 8 uint values, where the array index corresponds to the User Priority (0 - 7) and the value indicates the traffic class (0 - 7) to which the priority is mapped.</td>
 </tr>
 </tbody>
@@ -977,7 +977,7 @@
 <tr>
 <td><pre class="screen">addresses</pre></td>
 <td><pre class="screen">array of array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[]</pre></td>
 <td>Deprecated in favor of the 'address-data' and 'gateway' properties, but this can be used for backward-compatibility with older daemons. Note that if you send this property the daemon will ignore 'address-data' and 'gateway'.  Array of IPv4 address structures.  Each IPv4 address structure is composed of 3 32-bit values; the first being the IPv4 address (network byte order), the second the prefix (1 - 32), and last the IPv4 gateway (network byte order). The gateway may be left as 0 if no gateway exists for that subnet.</td>
 </tr>
 <tr>
@@ -1067,7 +1067,7 @@
 <tr>
 <td><pre class="screen">routes</pre></td>
 <td><pre class="screen">array of array of uint32</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[]</pre></td>
 <td>Deprecated in favor of the 'route-data' property, but this can be used for backward-compatibility with older daemons. Note that if you send this property the daemon will ignore 'route-data'.  Array of IPv4 route structures.  Each IPv4 route structure is composed of 4 32-bit values; the first being the destination IPv4 network or address (network byte order), the second the destination network or address prefix (1 - 32), the third being the next-hop (network byte order) if any, and the fourth being the route metric. If the metric is 0, NM will choose an appropriate default metric for the device. (There is no way to explicitly specify an actual metric of 0 with this property.)</td>
 </tr>
 </tbody>
@@ -1099,7 +1099,7 @@
 <tr>
 <td><pre class="screen">addresses</pre></td>
 <td><pre class="screen">array of legacy IPv6 address struct (a(ayuay))</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[]</pre></td>
 <td>Deprecated in favor of the 'address-data' and 'gateway' properties, but this can be used for backward-compatibility with older daemons. Note that if you send this property the daemon will ignore 'address-data' and 'gateway'.  Array of IPv6 address structures.  Each IPv6 address structure is composed of an IPv6 address, a prefix length (1 - 128), and an IPv6 gateway address. The gateway may be zeroed out if no gateway exists for that subnet.</td>
 </tr>
 <tr>
@@ -1189,7 +1189,7 @@
 <tr>
 <td><pre class="screen">routes</pre></td>
 <td><pre class="screen">array of legacy IPv6 route struct (a(ayuayu))</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">[]</pre></td>
 <td>Deprecated in favor of the 'route-data' property, but this can be used for backward-compatibility with older daemons. Note that if you send this property the daemon will ignore 'route-data'.  Array of IPv6 route structures.  Each IPv6 route structure is composed of an IPv6 address, a prefix length (1 - 128), an IPv6 next hop address (which may be zeroed out if there is no next hop), and a metric. If the metric is 0, NM will choose an appropriate default metric for the device.</td>
 </tr>
 </tbody>
@@ -1631,7 +1631,7 @@
 <tr>
 <td><pre class="screen">data</pre></td>
 <td><pre class="screen">dict of string to string</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">{}</pre></td>
 <td>Dictionary of key/value pairs of VPN plugin specific data.  Both keys and values must be strings.</td>
 </tr>
 <tr>
@@ -1649,7 +1649,7 @@
 <tr>
 <td><pre class="screen">secrets</pre></td>
 <td><pre class="screen">dict of string to string</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">{}</pre></td>
 <td>Dictionary of key/value pairs of VPN plugin specific secrets like passwords or private keys.  Both keys and values must be strings.</td>
 </tr>
 <tr>
@@ -1779,7 +1779,7 @@
 <tr>
 <td><pre class="screen">s390-options</pre></td>
 <td><pre class="screen">dict of string to string</pre></td>
-<td><pre class="screen"></pre></td>
+<td><pre class="screen">{}</pre></td>
 <td>Dictionary of key/value pairs of s390-specific device options.  Both keys and values must be strings.  Allowed keys include "portno", "layer2", "portname", "protocol", among others.  Key names must contain only alphanumeric characters (ie, [a-zA-Z0-9]).</td>
 </tr>
 <tr>
@@ -2040,6 +2040,6 @@
 </div>
 <div class="footer">
 <hr>
-          Generated by GTK-Doc V1.19</div>
+          Generated by GTK-Doc V1.21</div>
 </body>
 </html>

@@ -2,7 +2,7 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 12/19/2014
+.\"      Date: 05/05/2015
 .\"    Manual: Configuration
 .\"    Source: NetworkManager 1.0
 .\"  Language: English
@@ -163,10 +163,8 @@ Note that the "carrier" property of NMDevices and device D\-Bus interfaces will 
 .PP
 \fIconfigure\-and\-quit\fR
 .RS 4
-When set to
-true, NetworkManager quits after performing initial network configuration but spawns small helpers to preserve DHCP leases and IPv6 addresses\&. This is useful in environments where network setup is more or less static or it is desirable to save process time but still handle some dynamic configurations\&. When this option is
-true, network configuration for WiFi, WWAN, Bluetooth, ADSL, and PPPoE interfaces cannot be preserved due to their use of external services, and these devices will be deconfigured when NetworkManager quits even though other interface\*(Aqs configuration may be preserved\&. The default value is
-false, meaning that NetworkManager will continue running after initial network configuration and continue responding to system and hardware events, D\-Bus requests, and user commands\&.
+When set to \*(Aqtrue\*(Aq, NetworkManager quits after performing initial network configuration but spawns small helpers to preserve DHCP leases and IPv6 addresses\&. This is useful in environments where network setup is more or less static or it is desirable to save process time but still handle some dynamic configurations\&. When this option is
+true, network configuration for WiFi, WWAN, Bluetooth, ADSL, and PPPoE interfaces cannot be preserved due to their use of external services, and these devices will be deconfigured when NetworkManager quits even though other interface\*(Aqs configuration may be preserved\&. Also, to preserve DHCP addresses the \*(Aqdhcp\*(Aq option must be set to \*(Aqinternal\*(Aq\&. The default value of the \*(Aqconfigure\-and\-quit\*(Aq option is \*(Aqfalse\*(Aq, meaning that NetworkManager will continue running after initial network configuration and continue responding to system and hardware events, D\-Bus requests, and user commands\&.
 .RE
 .PP
 \fIdns\fR
@@ -191,7 +189,9 @@ none: NetworkManager will not modify resolv\&.conf\&.
 Comma separated list of options to aid debugging\&. This value will be combined with the environment variable
 NM_DEBUG\&. Currently the following values are supported:
 .sp
-RLIMIT_CORE: set ulimit \-c unlimited to write out core dumps\&.
+RLIMIT_CORE: set ulimit \-c unlimited to write out core dumps\&. Beware, that a core dump can contain sensitive information such as passwords or configuration settings\&.
+.sp
+fatal\-warnings: set g_log_set_always_fatal() to core dump on warning messages from glib\&. This is equivalent to the \-\-g\-fatal\-warnings command line option\&.
 .RE
 .SH "KEYFILE SECTION"
 .PP

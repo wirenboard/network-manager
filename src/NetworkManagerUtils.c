@@ -71,36 +71,36 @@
 gboolean
 nm_ethernet_address_is_valid (gconstpointer addr, gssize len)
 {
-	guint8 invalid_addr1[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-	guint8 invalid_addr2[ETH_ALEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	guint8 invalid_addr3[ETH_ALEN] = {0x44, 0x44, 0x44, 0x44, 0x44, 0x44};
-	guint8 invalid_addr4[ETH_ALEN] = {0x00, 0x30, 0xb4, 0x00, 0x00, 0x00}; /* prism54 dummy MAC */
-	guchar first_octet;
+	guint8 invalid_addr[4][ETH_ALEN] = {
+	    {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+	    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+	    {0x44, 0x44, 0x44, 0x44, 0x44, 0x44},
+	    {0x00, 0x30, 0xb4, 0x00, 0x00, 0x00}, /* prism54 dummy MAC */
+	};
+	guint8 addr_bin[ETH_ALEN];
+	guint i;
 
-	g_return_val_if_fail (addr != NULL, FALSE);
-	g_return_val_if_fail (len == ETH_ALEN || len == -1, FALSE);
-
-	/* Compare the AP address the card has with invalid ethernet MAC addresses. */
-	if (nm_utils_hwaddr_matches (addr, len, invalid_addr1, ETH_ALEN))
+	if (!addr) {
+		g_return_val_if_fail (len == -1 || len == ETH_ALEN, FALSE);
 		return FALSE;
+	}
 
-	if (nm_utils_hwaddr_matches (addr, len, invalid_addr2, ETH_ALEN))
-		return FALSE;
-
-	if (nm_utils_hwaddr_matches (addr, len, invalid_addr3, ETH_ALEN))
-		return FALSE;
-
-	if (nm_utils_hwaddr_matches (addr, len, invalid_addr4, ETH_ALEN))
-		return FALSE;
+	if (len == -1) {
+		if (!nm_utils_hwaddr_aton (addr, addr_bin, ETH_ALEN))
+			return FALSE;
+		addr = addr_bin;
+	} else if (len != ETH_ALEN)
+		g_return_val_if_reached (FALSE);
 
 	/* Check for multicast address */
-	if (len == -1)
-		first_octet = strtoul (addr, NULL, 16);
-	else
-		first_octet = ((guint8 *)addr)[0];
-	if (first_octet & 0x01)
+	if ((((guint8 *) addr)[0]) & 0x01)
+		return FALSE;
+
+	for (i = 0; i < G_N_ELEMENTS (invalid_addr); i++) {
+		if (nm_utils_hwaddr_matches (addr, ETH_ALEN, invalid_addr[i], ETH_ALEN))
 			return FALSE;
-	
+	}
+
 	return TRUE;
 }
 
@@ -152,27 +152,26 @@ nm_utils_ip6_address_clear_host_address (struct in6_addr *dst, const struct in6_
 
 
 int
-nm_spawn_process (const char *args)
+nm_spawn_process (const char *args, GError **error)
 {
+	GError *local = NULL;
 	gint num_args;
 	char **argv = NULL;
 	int status = -1;
-	GError *error = NULL;
 
 	g_return_val_if_fail (args != NULL, -1);
+	g_return_val_if_fail (!error || !*error, -1);
 
-	if (!g_shell_parse_argv (args, &num_args, &argv, &error)) {
-		nm_log_warn (LOGD_CORE, "could not parse arguments for '%s': %s", args, error->message);
-		g_error_free (error);
-		return -1;
+	if (g_shell_parse_argv (args, &num_args, &argv, &local)) {
+		g_spawn_sync ("/", argv, NULL, 0, nm_unblock_posix_signals, NULL, NULL, NULL, &status, &local);
+		g_strfreev (argv);
 	}
 
-	if (!g_spawn_sync ("/", argv, NULL, 0, nm_unblock_posix_signals, NULL, NULL, NULL, &status, &error)) {
-		nm_log_warn (LOGD_CORE, "could not spawn process '%s': %s", args, error->message);
-		g_error_free (error);
+	if (local) {
+		nm_log_warn (LOGD_CORE, "could not spawn process '%s': %s", args, local->message);
+		g_propagate_error (error, local);
 	}
 
-	g_strfreev (argv);
 	return status;
 }
 
@@ -814,6 +813,7 @@ const char *const NM_PATHS_DEFAULT[] = {
 	"/sbin/",
 	"/usr/sbin/",
 	"/usr/local/sbin/",
+	"/bin/",
 	"/usr/bin/",
 	"/usr/local/bin/",
 	NULL,
@@ -1724,10 +1724,10 @@ nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max
  * Returns a variant3 UUID based on the concatenated C strings.
  * It does not simply concatenate them, but also includes the
  * terminating '\0' character. For example "a", "b", gives
- * "a\0b\0\0".
+ * "a\0b\0".
  *
  * This has the advantage, that the following invocations
- * all give different UUIDs: (""), ("",""), ("","a"), ("a",""),
+ * all give different UUIDs: (NULL), (""), ("",""), ("","a"), ("a",""),
  * ("aa"), ("aa", ""), ("", "aa"), ...
  */
 char *
@@ -2090,9 +2090,9 @@ nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base,
 	connection_diff_are_same = nm_connection_diff (connection, diff_base, NM_SETTING_COMPARE_FLAG_EXACT | NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT, &connection_diff);
 	if (connection_diff_are_same) {
 		if (diff_base)
-			nm_log (level, domain, "%sconnection '%s' (%p and %p): no difference", prefix, name, connection, diff_base);
+			nm_log (level, domain, "%sconnection '%s' (%p/%s and %p/%s): no difference", prefix, name, connection, G_OBJECT_TYPE_NAME (connection), diff_base, G_OBJECT_TYPE_NAME (diff_base));
 		else
-			nm_log (level, domain, "%sconnection '%s' (%p): no properties set", prefix, name, connection);
+			nm_log (level, domain, "%sconnection '%s' (%p/%s): no properties set", prefix, name, connection, G_OBJECT_TYPE_NAME (connection));
 		g_assert (!connection_diff);
 		return;
 	}
@@ -2127,9 +2127,9 @@ nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base,
 				GError *err_verify = NULL;
 
 				if (diff_base)
-					nm_log (level, domain, "%sconnection '%s' (%p < %p):", prefix, name, connection, diff_base);
+					nm_log (level, domain, "%sconnection '%s' (%p/%s < %p/%s):", prefix, name, connection, G_OBJECT_TYPE_NAME (connection), diff_base, G_OBJECT_TYPE_NAME (diff_base));
 				else
-					nm_log (level, domain, "%sconnection '%s' (%p):", prefix, name, connection);
+					nm_log (level, domain, "%sconnection '%s' (%p/%s):", prefix, name, connection, G_OBJECT_TYPE_NAME (connection));
 				print_header = FALSE;
 
 				if (!nm_connection_verify (connection, &err_verify)) {
@@ -2312,6 +2312,7 @@ get_gre_eui64_u_bit (guint32 addr)
  * @link_type: the hardware link type
  * @hwaddr: the hardware address of the interface
  * @hwaddr_len: the length (in bytes) of @hwaddr
+ * @dev_id: the device identifier, if any
  * @out_iid: on success, filled with the interface identifier; on failure
  * zeroed out
  *
@@ -2326,6 +2327,7 @@ gboolean
 nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
                                         const guint8 *hwaddr,
                                         guint hwaddr_len,
+                                        guint dev_id,
                                         NMUtilsIPv6IfaceId *out_iid)
 {
 	guint32 addr;
@@ -2360,13 +2362,20 @@ nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
 	default:
 		if (hwaddr_len == ETH_ALEN) {
 			/* Translate 48-bit MAC address to a 64-bit Modified EUI-64.  See
-			 * http://tools.ietf.org/html/rfc4291#appendix-A
+			 * http://tools.ietf.org/html/rfc4291#appendix-A and the Linux
+			 * kernel's net/ipv6/addrconf.c::ipv6_generate_eui64() function.
 			 */
-			out_iid->id_u8[0] = hwaddr[0] ^ 0x02;
+			out_iid->id_u8[0] = hwaddr[0];
 			out_iid->id_u8[1] = hwaddr[1];
 			out_iid->id_u8[2] = hwaddr[2];
-			out_iid->id_u8[3] = 0xff;
-			out_iid->id_u8[4] = 0xfe;
+			if (dev_id) {
+				out_iid->id_u8[3] = (dev_id >> 8) & 0xff;
+				out_iid->id_u8[4] = dev_id & 0xff;
+			} else {
+				out_iid->id_u8[0] ^= 0x02;
+				out_iid->id_u8[3] = 0xff;
+				out_iid->id_u8[4] = 0xfe;
+			}
 			out_iid->id_u8[5] = hwaddr[3];
 			out_iid->id_u8[6] = hwaddr[4];
 			out_iid->id_u8[7] = hwaddr[5];

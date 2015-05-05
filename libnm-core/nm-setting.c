@@ -660,17 +660,40 @@ get_property_for_dbus (NMSetting *setting,
 	return dbus_value;
 }
 
-static void
-set_property_from_dbus (const NMSettingProperty *property, GVariant *src_value, GValue *dst_value)
+static gboolean
+set_property_from_dbus (const NMSettingProperty *property,
+                        GVariant *src_value,
+                        GValue *dst_value)
 {
-	g_return_if_fail (property->param_spec != NULL);
+	g_return_val_if_fail (property->param_spec != NULL, FALSE);
 
-	if (property->from_dbus)
+	if (property->from_dbus) {
+		if (!g_variant_type_equal (g_variant_get_type (src_value), property->dbus_type))
+			return FALSE;
+
 		property->from_dbus (src_value, dst_value);
-	else if (dst_value->g_type == G_TYPE_BYTES)
+	} else if (dst_value->g_type == G_TYPE_BYTES) {
+		if (!g_variant_is_of_type (src_value, G_VARIANT_TYPE_BYTESTRING))
+			return FALSE;
+
 		_nm_utils_bytes_from_dbus (src_value, dst_value);
-	else
-		g_dbus_gvariant_to_gvalue (src_value, dst_value);
+	} else {
+		GValue tmp = G_VALUE_INIT;
+
+		g_dbus_gvariant_to_gvalue (src_value, &tmp);
+		if (G_VALUE_TYPE (&tmp) == G_VALUE_TYPE (dst_value))
+			*dst_value = tmp;
+		else {
+			gboolean success;
+
+			success = g_value_transform (&tmp, dst_value);
+			g_value_unset (&tmp);
+			if (!success)
+				return FALSE;
+		}
+	}
+
+	return TRUE;
 }
 
 
@@ -766,7 +789,6 @@ _nm_setting_new_from_dbus (GType setting_type,
                            GVariant *connection_dict,
                            GError **error)
 {
-	NMSettingClass *class;
 	NMSetting *setting;
 	const NMSettingProperty *properties;
 	guint n_properties;
@@ -781,11 +803,6 @@ _nm_setting_new_from_dbus (GType setting_type,
 	if (connection_dict)
 		g_return_val_if_fail (g_variant_is_of_type (connection_dict, NM_VARIANT_TYPE_CONNECTION), NULL);
 
-	/* g_type_class_ref() ensures the setting class is created if it hasn't
-	 * already been used.
-	 */
-	class = g_type_class_ref (setting_type);
-
 	/* Build the setting object from the properties we know about; we assume
 	 * that any propreties in @setting_dict that we don't know about can
 	 * either be ignored or else has a backward-compatibility equivalent
@@ -793,12 +810,33 @@ _nm_setting_new_from_dbus (GType setting_type,
 	 */
 	setting = (NMSetting *) g_object_new (setting_type, NULL);
 
-	properties = nm_setting_class_get_properties (class, &n_properties);
+	properties = nm_setting_class_get_properties (NM_SETTING_GET_CLASS (setting), &n_properties);
 	for (i = 0; i < n_properties; i++) {
 		const NMSettingProperty *property = &properties[i];
-		GVariant *value = g_variant_lookup_value (setting_dict, property->name, NULL);
+		GVariant *value;
+
+		if (property->param_spec && !(property->param_spec->flags & G_PARAM_WRITABLE))
+			continue;
+
+		value = g_variant_lookup_value (setting_dict, property->name, NULL);
 
 		if (value && property->set_func) {
+			if (!g_variant_type_equal (g_variant_get_type (value), property->dbus_type)) {
+			property_type_error:
+				g_set_error (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_INVALID_PROPERTY,
+				             _("can't set property of type '%s' from value of type '%s'"),
+				             property->dbus_type ?
+				                 g_variant_type_peek_string (property->dbus_type) :
+				                 property->param_spec ?
+				                     g_type_name (property->param_spec->value_type) : "(unknown)",
+				             g_variant_get_type_string (value));
+				g_prefix_error (error, "%s.%s: ", nm_setting_get_name (setting), property->name);
+
+				g_variant_unref (value);
+				g_object_unref (setting);
+				return NULL;
+			}
+
 			property->set_func (setting,
 			                    connection_dict,
 			                    property->name,
@@ -810,11 +848,10 @@ _nm_setting_new_from_dbus (GType setting_type,
 		} else if (value && property->param_spec) {
 			GValue object_value = { 0, };
 
-			if (!(property->param_spec->flags & G_PARAM_WRITABLE))
-				continue;
-
 			g_value_init (&object_value, property->param_spec->value_type);
-			set_property_from_dbus (property, value, &object_value);
+			if (!set_property_from_dbus (property, value, &object_value))
+				goto property_type_error;
+
 			g_object_set_property (G_OBJECT (setting), property->param_spec->name, &object_value);
 			g_value_unset (&object_value);
 		}
@@ -822,8 +859,6 @@ _nm_setting_new_from_dbus (GType setting_type,
 		if (value)
 			g_variant_unref (value);
 	}
-
-	g_type_class_unref (class);
 
 	return setting;
 }
@@ -1279,6 +1314,33 @@ nm_setting_diff (NMSetting *a,
 	return !(*results);
 }
 
+#define CMP_AND_RETURN(n_a, n_b, name) \
+	G_STMT_START { \
+		gboolean _is = (strcmp (n_a, ""name) == 0); \
+		\
+		if (_is || (strcmp (n_b, ""name) == 0)) \
+			return _is ? -1 : 1; \
+	} G_STMT_END
+
+static int
+_enumerate_values_sort (GParamSpec **p_a, GParamSpec **p_b, GType *p_type)
+{
+	const char *n_a = (*p_a)->name;
+	const char *n_b = (*p_b)->name;
+	int c = strcmp (n_a, n_b);
+
+	if (c) {
+		if (*p_type == NM_TYPE_SETTING_CONNECTION) {
+			/* for [connection], report first id, uuid, type in that order. */
+			CMP_AND_RETURN (n_a, n_b, NM_SETTING_CONNECTION_ID);
+			CMP_AND_RETURN (n_a, n_b, NM_SETTING_CONNECTION_UUID);
+			CMP_AND_RETURN (n_a, n_b, NM_SETTING_CONNECTION_TYPE);
+		}
+	}
+	return c;
+}
+#undef CMP_AND_RETURN
+
 /**
  * nm_setting_enumerate_values:
  * @setting: the #NMSetting
@@ -1296,11 +1358,19 @@ nm_setting_enumerate_values (NMSetting *setting,
 	GParamSpec **property_specs;
 	guint n_property_specs;
 	int i;
+	GType type;
 
 	g_return_if_fail (NM_IS_SETTING (setting));
 	g_return_if_fail (func != NULL);
 
 	property_specs = g_object_class_list_properties (G_OBJECT_GET_CLASS (setting), &n_property_specs);
+
+	/* sort the properties. This has an effect on the order in which keyfile
+	 * prints them. */
+	type = G_OBJECT_TYPE (setting);
+	g_qsort_with_data (property_specs, n_property_specs, sizeof (gpointer),
+	                   (GCompareDataFunc) _enumerate_values_sort, &type);
+
 	for (i = 0; i < n_property_specs; i++) {
 		GParamSpec *prop_spec = property_specs[i];
 		GValue value = G_VALUE_INIT;

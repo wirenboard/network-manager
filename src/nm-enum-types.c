@@ -45,6 +45,7 @@
 #include "nm-fake-rdisc.h" 
 #include "nm-lndp-rdisc.h" 
 #include "nm-rdisc.h" 
+#include "nm-rdisc-private.h" 
 #include "nm-ppp-manager.h" 
 #include "nm-ppp-status.h" 
 #include "nm-agent-manager.h" 
@@ -96,8 +97,7 @@
 #include "nm-sleep-monitor.h" 
 #include "nm-types.h" 
 #include "NetworkManagerUtils.h" 
-#include "wifi-utils-wext.h" 
-#include "nm-device-wimax.h"
+#include "wifi-utils-wext.h"
 
 GType
 nm_vlan_error_get_type (void)
@@ -126,7 +126,7 @@ nm_unmanaged_flags_get_type (void)
 
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
-      static const GEnumValue values[] = {
+      static const GFlagsValue values[] = {
         { NM_UNMANAGED_NONE, "NM_UNMANAGED_NONE", "nm-unmanaged-none" },
         { NM_UNMANAGED_DEFAULT, "NM_UNMANAGED_DEFAULT", "nm-unmanaged-default" },
         { NM_UNMANAGED_INTERNAL, "NM_UNMANAGED_INTERNAL", "nm-unmanaged-internal" },
@@ -135,10 +135,11 @@ nm_unmanaged_flags_get_type (void)
         { NM_UNMANAGED_EXTERNAL_DOWN, "NM_UNMANAGED_EXTERNAL_DOWN", "nm-unmanaged-external-down" },
         { __NM_UNMANAGED_LAST, "__NM_UNMANAGED_LAST", "--nm-unmanaged-last" },
         { NM_UNMANAGED_LAST, "NM_UNMANAGED_LAST", "nm-unmanaged-last" },
+        { NM_UNMANAGED_ALL, "NM_UNMANAGED_ALL", "nm-unmanaged-all" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMUnmanagedFlags"), values);
+        g_flags_register_static (g_intern_static_string ("NMUnmanagedFlags"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -260,10 +261,11 @@ nm_platform_reason_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_PLATFORM_REASON_NONE, "NM_PLATFORM_REASON_NONE", "none" },
-        { NM_PLATFORM_REASON_INTERNAL, "NM_PLATFORM_REASON_INTERNAL", "internal" },
-        { NM_PLATFORM_REASON_EXTERNAL, "NM_PLATFORM_REASON_EXTERNAL", "external" },
-        { NM_PLATFORM_REASON_CACHE_CHECK, "NM_PLATFORM_REASON_CACHE_CHECK", "cache-check" },
+        { NM_PLATFORM_REASON_NONE, "NM_PLATFORM_REASON_NONE", "nm-platform-reason-none" },
+        { NM_PLATFORM_REASON_INTERNAL, "NM_PLATFORM_REASON_INTERNAL", "nm-platform-reason-internal" },
+        { NM_PLATFORM_REASON_EXTERNAL, "NM_PLATFORM_REASON_EXTERNAL", "nm-platform-reason-external" },
+        { NM_PLATFORM_REASON_CACHE_CHECK, "NM_PLATFORM_REASON_CACHE_CHECK", "nm-platform-reason-cache-check" },
+        { _NM_PLATFORM_REASON_CACHE_CHECK_INTERNAL, "_NM_PLATFORM_REASON_CACHE_CHECK_INTERNAL", "-nm-platform-reason-cache-check-internal" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

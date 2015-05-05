@@ -54,23 +54,6 @@ NMSettingGeneric
 @Returns: 
 
 
-<!-- ##### STRUCT NMSettingGeneric ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### STRUCT NMSettingGenericClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-
 <!-- ##### FUNCTION nm_setting_generic_new ##### -->
 <para>
 

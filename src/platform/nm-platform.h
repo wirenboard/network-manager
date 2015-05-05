@@ -69,7 +69,10 @@ typedef enum {
 	/* Event came from the kernel. */
 	NM_PLATFORM_REASON_EXTERNAL,
 	/* Event is a result of cache checking and cleanups. */
-	NM_PLATFORM_REASON_CACHE_CHECK
+	NM_PLATFORM_REASON_CACHE_CHECK,
+
+	/* Internal reason to suppress announcing change events */
+	_NM_PLATFORM_REASON_CACHE_CHECK_INTERNAL,
 } NMPlatformReason;
 
 #define __NMPlatformObject_COMMON \
@@ -244,6 +247,23 @@ typedef union {
 
 
 typedef struct {
+	gboolean is_ip4;
+	int addr_family;
+	gsize sizeof_route;
+	int (*route_cmp) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b);
+	const char *(*route_to_string) (const NMPlatformIPXRoute *route);
+	GArray *(*route_get_all) (int ifindex, NMPlatformGetRouteMode mode);
+	gboolean (*route_add) (int ifindex, const NMPlatformIPXRoute *route, guint32 v4_pref_src);
+	gboolean (*route_delete) (int ifindex, const NMPlatformIPXRoute *route);
+	gboolean (*route_delete_default) (int ifindex, guint32 metric);
+	guint32 (*metric_normalize) (guint32 metric);
+} NMPlatformVTableRoute;
+
+extern const NMPlatformVTableRoute nm_platform_vtable_route_v4;
+extern const NMPlatformVTableRoute nm_platform_vtable_route_v6;
+
+
+typedef struct {
 	int peer;
 } NMPlatformVethProperties;
 
@@ -367,7 +387,8 @@ typedef struct {
 	guint32 (*link_get_mtu) (NMPlatform *, int ifindex);
 	gboolean (*link_set_mtu) (NMPlatform *, int ifindex, guint32 mtu);
 
-	char * (*link_get_physical_port_id) (NMPlatform *, int ifindex);
+	char *   (*link_get_physical_port_id) (NMPlatform *, int ifindex);
+	guint    (*link_get_dev_id) (NMPlatform *, int ifindex);
 	gboolean (*link_get_wake_on_lan) (NMPlatform *, int ifindex);
 
 	gboolean (*link_supports_carrier_detect) (NMPlatform *, int ifindex);
@@ -480,6 +501,8 @@ char *nm_platform_sysctl_get (const char *path);
 gint32 nm_platform_sysctl_get_int32 (const char *path, gint32 fallback);
 gint64 nm_platform_sysctl_get_int_checked (const char *path, guint base, gint64 min, gint64 max, gint64 fallback);
 
+gboolean nm_platform_sysctl_set_ip6_hop_limit_safe (const char *iface, int value);
+
 gboolean nm_platform_link_get (int ifindex, NMPlatformLink *link);
 GArray *nm_platform_link_get_all (void);
 gboolean nm_platform_dummy_add (const char *name);
@@ -514,6 +537,7 @@ guint32 nm_platform_link_get_mtu (int ifindex);
 gboolean nm_platform_link_set_mtu (int ifindex, guint32 mtu);
 
 char    *nm_platform_link_get_physical_port_id (int ifindex);
+guint    nm_platform_link_get_dev_id (int ifindex);
 gboolean nm_platform_link_get_wake_on_lan (int ifindex);
 
 gboolean nm_platform_link_supports_carrier_detect (int ifindex);
@@ -569,7 +593,7 @@ gboolean nm_platform_ip6_address_delete (int ifindex, struct in6_addr address, i
 gboolean nm_platform_ip4_address_exists (int ifindex, in_addr_t address, int plen);
 gboolean nm_platform_ip6_address_exists (int ifindex, struct in6_addr address, int plen);
 gboolean nm_platform_ip4_address_sync (int ifindex, const GArray *known_addresses, guint32 device_route_metric);
-gboolean nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses);
+gboolean nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses, gboolean keep_link_local);
 gboolean nm_platform_address_flush (int ifindex);
 
 gboolean nm_platform_ip4_check_reinstall_device_route (int ifindex, const NMPlatformIP4Address *address, guint32 device_route_metric);

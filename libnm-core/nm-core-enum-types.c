@@ -180,6 +180,9 @@ nm_device_wifi_capabilities_get_type (void)
         { NM_WIFI_DEVICE_CAP_RSN, "NM_WIFI_DEVICE_CAP_RSN", "rsn" },
         { NM_WIFI_DEVICE_CAP_AP, "NM_WIFI_DEVICE_CAP_AP", "ap" },
         { NM_WIFI_DEVICE_CAP_ADHOC, "NM_WIFI_DEVICE_CAP_ADHOC", "adhoc" },
+        { NM_WIFI_DEVICE_CAP_FREQ_VALID, "NM_WIFI_DEVICE_CAP_FREQ_VALID", "freq-valid" },
+        { NM_WIFI_DEVICE_CAP_FREQ_2GHZ, "NM_WIFI_DEVICE_CAP_FREQ_2GHZ", "freq-2ghz" },
+        { NM_WIFI_DEVICE_CAP_FREQ_5GHZ, "NM_WIFI_DEVICE_CAP_FREQ_5GHZ", "freq-5ghz" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -397,6 +400,7 @@ nm_device_state_reason_get_type (void)
         { NM_DEVICE_STATE_REASON_MODEM_FAILED, "NM_DEVICE_STATE_REASON_MODEM_FAILED", "modem-failed" },
         { NM_DEVICE_STATE_REASON_MODEM_AVAILABLE, "NM_DEVICE_STATE_REASON_MODEM_AVAILABLE", "modem-available" },
         { NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT, "NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT", "sim-pin-incorrect" },
+        { NM_DEVICE_STATE_REASON_NEW_ACTIVATION, "NM_DEVICE_STATE_REASON_NEW_ACTIVATION", "new-activation" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

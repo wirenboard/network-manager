@@ -36,24 +36,6 @@ NMSettingTeam
 
 
 
-<!-- ##### STRUCT NMSettingTeam ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMSettingTeam:config ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMSettingTeamClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_setting_team_new ##### -->
 <para>
 

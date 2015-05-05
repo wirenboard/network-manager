@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 19 December 2014
+.\"      Date: 05 May 2015
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.0.0
+.\"    Source: NetworkManager 1.0.2
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.0\&.0" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.0\&.2" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -606,7 +606,7 @@ options
 T}:T{
 dict of string to string
 T}:T{
-\ \&
+{\*(Aqmode\*(Aq: \*(Aqbalance\-rr\*(Aq}
 T}:T{
 Dictionary of key/value pairs of bonding options\&.  Both keys and values must be strings\&. Option names must contain only alphanumeric characters (ie, [a\-zA\-Z0\-9])\&.
 T}
@@ -1138,7 +1138,7 @@ priority\-bandwidth
 T}:T{
 array of uint32
 T}:T{
-\ \&
+[0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
 An array of 8 uint values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates the percentage of bandwidth of the priority\*(Aqs assigned group that the priority may use\&.  The sum of all percentages for priorities which belong to the same group must total 100 percent\&.
 T}
@@ -1147,7 +1147,7 @@ priority\-flow\-control
 T}:T{
 array of uint32
 T}:T{
-\ \&
+[0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
 An array of 8 boolean values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates whether or not the corresponding priority should transmit priority pause\&.
 T}
@@ -1165,7 +1165,7 @@ priority\-group\-bandwidth
 T}:T{
 array of uint32
 T}:T{
-\ \&
+[0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
 An array of 8 uint values, where the array index corresponds to the Priority Group ID (0 \- 7) and the value indicates the percentage of link bandwidth allocated to that group\&.  Allowed values are 0 \- 100, and the sum of all values must total 100 percent\&.
 T}
@@ -1183,7 +1183,7 @@ priority\-group\-id
 T}:T{
 array of uint32
 T}:T{
-\ \&
+[0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
 An array of 8 uint values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates the Priority Group ID\&.  Allowed Priority Group ID values are 0 \- 7 or 15 for the unrestricted group\&.
 T}
@@ -1192,7 +1192,7 @@ priority\-strict\-bandwidth
 T}:T{
 array of uint32
 T}:T{
-\ \&
+[0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
 An array of 8 boolean values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates whether or not the priority may use all of the bandwidth allocated to its assigned group\&.
 T}
@@ -1201,7 +1201,7 @@ priority\-traffic\-class
 T}:T{
 array of uint32
 T}:T{
-\ \&
+[0, 0, 0, 0, 0, 0, 0, 0]
 T}:T{
 An array of 8 uint values, where the array index corresponds to the User Priority (0 \- 7) and the value indicates the traffic class (0 \- 7) to which the priority is mapped\&.
 T}
@@ -1490,7 +1490,7 @@ addresses
 T}:T{
 array of array of uint32
 T}:T{
-\ \&
+[]
 T}:T{
 Deprecated in favor of the \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq properties, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq\&.  Array of IPv4 address structures\&.  Each IPv4 address structure is composed of 3 32\-bit values; the first being the IPv4 address (network byte order), the second the prefix (1 \- 32), and last the IPv4 gateway (network byte order)\&. The gateway may be left as 0 if no gateway exists for that subnet\&.
 T}
@@ -1625,7 +1625,7 @@ routes
 T}:T{
 array of array of uint32
 T}:T{
-\ \&
+[]
 T}:T{
 Deprecated in favor of the \*(Aqroute\-data\*(Aq property, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqroute\-data\*(Aq\&.  Array of IPv4 route structures\&.  Each IPv4 route structure is composed of 4 32\-bit values; the first being the destination IPv4 network or address (network byte order), the second the destination network or address prefix (1 \- 32), the third being the next\-hop (network byte order) if any, and the fourth being the route metric\&. If the metric is 0, NM will choose an appropriate default metric for the device\&. (There is no way to explicitly specify an actual metric of 0 with this property\&.)
 T}
@@ -1681,7 +1681,7 @@ addresses
 T}:T{
 array of legacy IPv6 address struct (a(ayuay))
 T}:T{
-\ \&
+[]
 T}:T{
 Deprecated in favor of the \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq properties, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq\&.  Array of IPv6 address structures\&.  Each IPv6 address structure is composed of an IPv6 address, a prefix length (1 \- 128), and an IPv6 gateway address\&. The gateway may be zeroed out if no gateway exists for that subnet\&.
 T}
@@ -1816,7 +1816,7 @@ routes
 T}:T{
 array of legacy IPv6 route struct (a(ayuayu))
 T}:T{
-\ \&
+[]
 T}:T{
 Deprecated in favor of the \*(Aqroute\-data\*(Aq property, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqroute\-data\*(Aq\&.  Array of IPv6 route structures\&.  Each IPv6 route structure is composed of an IPv6 address, a prefix length (1 \- 128), an IPv6 next hop address (which may be zeroed out if there is no next hop), and a metric\&. If the metric is 0, NM will choose an appropriate default metric for the device\&.
 T}
@@ -2459,7 +2459,7 @@ data
 T}:T{
 dict of string to string
 T}:T{
-\ \&
+{}
 T}:T{
 Dictionary of key/value pairs of VPN plugin specific data\&.  Both keys and values must be strings\&.
 T}
@@ -2486,7 +2486,7 @@ secrets
 T}:T{
 dict of string to string
 T}:T{
-\ \&
+{}
 T}:T{
 Dictionary of key/value pairs of VPN plugin specific secrets like passwords or private keys\&.  Both keys and values must be strings\&.
 T}
@@ -2678,7 +2678,7 @@ s390\-options
 T}:T{
 dict of string to string
 T}:T{
-\ \&
+{}
 T}:T{
 Dictionary of key/value pairs of s390\-specific device options\&.  Both keys and values must be strings\&.  Allowed keys include "portno", "layer2", "portname", "protocol", among others\&.  Key names must contain only alphanumeric characters (ie, [a\-zA\-Z0\-9])\&.
 T}

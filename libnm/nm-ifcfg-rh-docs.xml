@@ -11,7 +11,7 @@
 <property name="ca-cert" variable="IEEE_8021X_CA_CERT(+)" format="" values="" default="" example="IEEE_8021X_CA_CERT=/home/joe/cacert.crt" description="CA certificate for EAP."/>
 <property name="ca-path" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
 <property name="subject-match" variable="IEEE_8021X_SUBJECT_MATCH(+)" format="" values="" default="" example="IEEE_8021X_SUBJECT_MATCH=&quot;Red Hat&quot;" description="Substring to match subject of server certificate against."/>
-<property name="altubject-matches" variable="IEEE_8021X_AlTSUBJECT_MATCHES(+)" format="" values="" default="" example="IEEE_8021X_ALTSUBJECT_MATCHES=&quot;s1.domain.cc&quot;" description="List of strings to be matched against the altSubjectName."/>
+<property name="altsubject-matches" variable="IEEE_8021X_ALTSUBJECT_MATCHES(+)" format="" values="" default="" example="IEEE_8021X_ALTSUBJECT_MATCHES=&quot;s1.domain.cc&quot;" description="List of strings to be matched against the altSubjectName."/>
 <property name="client-cert" variable="IEEE_8021X_CLIENT_CERT(+)" format="" values="" default="" example="IEEE_8021X_CLIENT_CERT=/home/joe/mycert.crt" description="Client certificate for EAP."/>
 <property name="phase1-peapver" variable="IEEE_8021X_PEAP_VERSION(+)" format="" values="0, 1" default="" example="" description="Use to force a specific PEAP version."/>
 <property name="phase1-peaplabel" variable="IEEE_8021X_PEAP_FORCE_NEW_LABEL(+)" format="" values="yes, no" default="no" example="" description="Use to force the new PEAP label during key derivation."/>
@@ -146,6 +146,8 @@ but in route-* file instead."/>
 should not be assigned the default route. DEFROUTE has the opposite
 meaning as &apos;never-default&apos; property."/>
 <property name="may-fail" variable="IPV4_FAILURE_FATAL(+)" format="" values="" default="no" example="" description="IPV4_FAILURE_FATAL has the opposite meaning as &apos;may-fail&apos; property."/>
+<property name="route-metric" variable="IPV4_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection.
+If set to -1, a default metric based on the device type is used."/>
 <property name="dhcp-client-id" variable="DHCP_CLIENT_ID(+)" format="" values="" default="" example="DHCP_CLIENT_ID=ax-srv-1" description="A string sent to the DHCP server to identify the local machine."/>
 </setting>
 <setting name="ipv6">
@@ -166,6 +168,8 @@ but in route6-* file instead in the form of command line for &apos;ip route add&
 should not be assigned the default IPv6 route. IPV6_DEFROUTE has the opposite
 meaning as &apos;never-default&apos; property."/>
 <property name="may-fail" variable="IPV6_FAILURE_FATAL(+)" format="" values="" default="no" example="" description="IPV6_FAILURE_FATAL has the opposite meaning as &apos;may-fail&apos; property."/>
+<property name="route-metric" variable="IPV6_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV6_ROUTE_METRIC is the default IPv6 metric for routes on this connection.
+If set to -1, a default metric based on the device type is used."/>
 <property name="ip6-privacy" variable="IPV6_PRIVACY, IPV6_PRIVACY_PREFER_PUBLIC_IP(+)" format="" values="IPV6_PRIVACY: no, yes (rfc3041 or rfc4941);
 IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no" default="no" example="IPV6_PRIVACY=rfc3041 IPV6_PRIVACY_PREFER_PUBLIC_IP=yes" description="Configure IPv6 Privacy Extensions for SLAAC (RFC4941)."/>
 </setting>

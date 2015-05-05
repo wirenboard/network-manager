@@ -258,6 +258,38 @@ nm_platform_sysctl_set (const char *path, const char *value)
 	return klass->sysctl_set (platform, path, value);
 }
 
+gboolean
+nm_platform_sysctl_set_ip6_hop_limit_safe (const char *iface, int value)
+{
+	const char *path;
+	gint64 cur;
+
+	/* the hop-limit provided via RA is uint8. */
+	if (value > 0xFF)
+		return FALSE;
+
+	/* don't allow unreasonable small values */
+	if (value < 10)
+		return FALSE;
+
+	path = nm_utils_ip6_property_path (iface, "hop_limit");
+	cur = nm_platform_sysctl_get_int_checked (path, 10, 1, G_MAXINT32, -1);
+
+	/* only allow increasing the hop-limit to avoid DOS by an attacker
+	 * setting a low hop-limit (CVE-2015-2924, rh#1209902) */
+
+	if (value < cur)
+		return FALSE;
+	if (value != cur) {
+		char svalue[20];
+
+		sprintf (svalue, "%d", value);
+		nm_platform_sysctl_set (path, svalue);
+	}
+
+	return TRUE;
+}
+
 /**
  * nm_platform_sysctl_get:
  * @path: Absolute path to sysctl
@@ -963,8 +995,14 @@ nm_platform_link_get_mtu (int ifindex)
 }
 
 /**
- * nm_platform_link_get_mtu:
+ * nm_platform_link_get_physical_port_id:
  * @ifindex: Interface index
+ *
+ * The physical port ID, if present, indicates some unique identifier of
+ * the parent interface (eg, the physical port of which this link is a child).
+ * Two links that report the same physical port ID can be assumed to be
+ * children of the same physical port and may share resources that limit
+ * their abilities.
  *
  * Returns: physical port ID for the interface, or %NULL on error
  * or if the interface has no physical port ID.
@@ -978,6 +1016,28 @@ nm_platform_link_get_physical_port_id (int ifindex)
 	g_return_val_if_fail (klass->link_get_physical_port_id, NULL);
 
 	return klass->link_get_physical_port_id (platform, ifindex);
+}
+
+/**
+ * nm_platform_link_get_dev_id:
+ * @ifindex: Interface index
+ *
+ * In contrast to the physical device ID (which indicates which parent a
+ * child has) the device ID differentiates sibling devices that may share
+ * the same MAC address.
+ *
+ * Returns: device ID for the interface, or 0 on error or if the
+ * interface has no device ID.
+ */
+guint
+nm_platform_link_get_dev_id (int ifindex)
+{
+	reset_error ();
+
+	g_return_val_if_fail (ifindex >= 0, 0);
+	g_return_val_if_fail (klass->link_get_dev_id, 0);
+
+	return klass->link_get_dev_id (platform, ifindex);
 }
 
 /**
@@ -1826,6 +1886,7 @@ nm_platform_ip4_address_sync (int ifindex, const GArray *known_addresses, guint3
  * nm_platform_ip6_address_sync:
  * @ifindex: Interface index
  * @known_addresses: List of addresses
+ * @keep_link_local: Don't remove link-local address
  *
  * A convenience function to synchronize addresses for a specific interface
  * with the least possible disturbance. It simply removes addresses that are
@@ -1834,7 +1895,7 @@ nm_platform_ip4_address_sync (int ifindex, const GArray *known_addresses, guint3
  * Returns: %TRUE on success.
  */
 gboolean
-nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses)
+nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses, gboolean keep_link_local)
 {
 	GArray *addresses;
 	NMPlatformIP6Address *address;
@@ -1847,7 +1908,7 @@ nm_platform_ip6_address_sync (int ifindex, const GArray *known_addresses)
 		address = &g_array_index (addresses, NMPlatformIP6Address, i);
 
 		/* Leave link local address management to the kernel */
-		if (IN6_IS_ADDR_LINKLOCAL (&address->address))
+		if (keep_link_local && IN6_IS_ADDR_LINKLOCAL (&address->address))
 			continue;
 
 		if (!array_contains_ip6_address (known_addresses, address))
@@ -1880,7 +1941,7 @@ gboolean
 nm_platform_address_flush (int ifindex)
 {
 	return nm_platform_ip4_address_sync (ifindex, NULL, 0)
-			&& nm_platform_ip6_address_sync (ifindex, NULL);
+			&& nm_platform_ip6_address_sync (ifindex, NULL, FALSE);
 }
 
 /******************************************************************/
@@ -2100,7 +2161,8 @@ nm_platform_ip4_route_sync (int ifindex, const GArray *known_routes)
 			if (NM_PLATFORM_IP_ROUTE_IS_DEFAULT (known_route))
 				continue;
 
-			if ((known_route->gateway == 0) ^ (i_type != 0)) {
+			if (   (i_type == 0 && known_route->gateway != 0)
+			    || (i_type == 1 && known_route->gateway == 0)) {
 				/* Make two runs over the list of routes. On the first, only add
 				 * device routes, on the second the others (gateway routes). */
 				continue;
@@ -2174,7 +2236,8 @@ nm_platform_ip6_route_sync (int ifindex, const GArray *known_routes)
 			if (NM_PLATFORM_IP_ROUTE_IS_DEFAULT (known_route))
 				continue;
 
-			if (IN6_IS_ADDR_UNSPECIFIED (&known_route->gateway) ^ (i_type != 0)) {
+			if (   (i_type == 0 && !IN6_IS_ADDR_UNSPECIFIED (&known_route->gateway))
+			    || (i_type == 1 && IN6_IS_ADDR_UNSPECIFIED (&known_route->gateway))) {
 				/* Make two runs over the list of routes. On the first, only add
 				 * device routes, on the second the others (gateway routes). */
 				continue;
@@ -2735,6 +2798,97 @@ log_ip6_route (NMPlatform *p, int ifindex, NMPlatformIP6Route *route, NMPlatform
 {
 	debug ("signal: route   6 %7s: %s", _change_type_to_string (change_type), nm_platform_ip6_route_to_string (route));
 }
+
+/******************************************************************/
+
+static gboolean
+_vtr_v4_route_add (int ifindex, const NMPlatformIPXRoute *route, guint32 v4_pref_src)
+{
+	return nm_platform_ip4_route_add (ifindex > 0 ? ifindex : route->rx.ifindex,
+	                                  route->rx.source,
+	                                  route->r4.network,
+	                                  route->rx.plen,
+	                                  route->r4.gateway,
+	                                  v4_pref_src,
+	                                  route->rx.metric,
+	                                  route->rx.mss);
+}
+
+static gboolean
+_vtr_v6_route_add (int ifindex, const NMPlatformIPXRoute *route, guint32 v4_pref_src)
+{
+	return nm_platform_ip6_route_add (ifindex > 0 ? ifindex : route->rx.ifindex,
+	                                  route->rx.source,
+	                                  route->r6.network,
+	                                  route->rx.plen,
+	                                  route->r6.gateway,
+	                                  route->rx.metric,
+	                                  route->rx.mss);
+}
+
+static gboolean
+_vtr_v4_route_delete (int ifindex, const NMPlatformIPXRoute *route)
+{
+	return nm_platform_ip4_route_delete (ifindex > 0 ? ifindex : route->rx.ifindex,
+	                                     route->r4.network,
+	                                     route->rx.plen,
+	                                     route->rx.metric);
+}
+
+static gboolean
+_vtr_v6_route_delete (int ifindex, const NMPlatformIPXRoute *route)
+{
+	return nm_platform_ip6_route_delete (ifindex > 0 ? ifindex : route->rx.ifindex,
+	                                     route->r6.network,
+	                                     route->rx.plen,
+	                                     route->rx.metric);
+}
+
+static guint32
+_vtr_v4_metric_normalize (guint32 metric)
+{
+	return metric;
+}
+
+static gboolean
+_vtr_v4_route_delete_default (int ifindex, guint32 metric)
+{
+	return nm_platform_ip4_route_delete (ifindex, 0, 0, metric);
+}
+
+static gboolean
+_vtr_v6_route_delete_default (int ifindex, guint32 metric)
+{
+	return nm_platform_ip6_route_delete (ifindex, in6addr_any, 0, metric);
+}
+
+/******************************************************************/
+
+const NMPlatformVTableRoute nm_platform_vtable_route_v4 = {
+	.is_ip4                         = TRUE,
+	.addr_family                    = AF_INET,
+	.sizeof_route                   = sizeof (NMPlatformIP4Route),
+	.route_cmp                      = (int (*) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b)) nm_platform_ip4_route_cmp,
+	.route_to_string                = (const char *(*) (const NMPlatformIPXRoute *route)) nm_platform_ip4_route_to_string,
+	.route_get_all                  = nm_platform_ip4_route_get_all,
+	.route_add                      = _vtr_v4_route_add,
+	.route_delete                   = _vtr_v4_route_delete,
+	.route_delete_default           = _vtr_v4_route_delete_default,
+	.metric_normalize               = _vtr_v4_metric_normalize,
+};
+
+const NMPlatformVTableRoute nm_platform_vtable_route_v6 = {
+	.is_ip4                         = FALSE,
+	.addr_family                    = AF_INET6,
+	.sizeof_route                   = sizeof (NMPlatformIP6Route),
+	.route_cmp                      = (int (*) (const NMPlatformIPXRoute *a, const NMPlatformIPXRoute *b)) nm_platform_ip6_route_cmp,
+	.route_to_string                = (const char *(*) (const NMPlatformIPXRoute *route)) nm_platform_ip6_route_to_string,
+	.route_get_all                  = nm_platform_ip6_route_get_all,
+	.route_add                      = _vtr_v6_route_add,
+	.route_delete                   = _vtr_v6_route_delete,
+	.route_delete_default           = _vtr_v6_route_delete_default,
+	.metric_normalize               = nm_utils_ip6_route_metric_normalize,
+};
 
 /******************************************************************/
 

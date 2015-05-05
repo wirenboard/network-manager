@@ -145,9 +145,6 @@
 /* git commit id of the original source code version */
 #undef NM_GIT_SHA
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
-
 /* Name of package */
 #undef PACKAGE
 

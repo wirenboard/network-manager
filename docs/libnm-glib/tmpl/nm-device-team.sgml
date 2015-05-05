@@ -69,40 +69,6 @@ NMDeviceTeam
 
 
 
-<!-- ##### STRUCT NMDeviceTeam ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceTeam:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceTeam:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceTeam:slaves ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceTeamClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-@_reserved1: 
-@_reserved2: 
-@_reserved3: 
-@_reserved4: 
-@_reserved5: 
-@_reserved6: 
-
 <!-- ##### FUNCTION nm_device_team_new ##### -->
 <para>
 

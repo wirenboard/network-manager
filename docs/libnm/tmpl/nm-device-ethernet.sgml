@@ -50,39 +50,6 @@ NMDeviceEthernet
 
 
 
-<!-- ##### STRUCT NMDeviceEthernet ##### -->
-<para>
-
-</para>
-
-
-<!-- ##### ARG NMDeviceEthernet:carrier ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceEthernet:hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceEthernet:perm-hw-address ##### -->
-<para>
-
-</para>
-
-<!-- ##### ARG NMDeviceEthernet:speed ##### -->
-<para>
-
-</para>
-
-<!-- ##### STRUCT NMDeviceEthernetClass ##### -->
-<para>
-
-</para>
-
-@parent: 
-
 <!-- ##### FUNCTION nm_device_ethernet_get_hw_address ##### -->
 <para>
 
