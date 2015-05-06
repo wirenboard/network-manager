@@ -35,6 +35,7 @@ override_dh_auto_configure:
 		--enable-polkit-agent \
 		--enable-ppp \
 		--enable-ifupdown \
+		--enable-config-plugin-ibft \
 		--enable-introspection \
 		--enable-gtk-doc \
 		--enable-concheck \
