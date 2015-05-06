@@ -22,7 +22,7 @@ index ad9335d..09f2700 100644
  
  uninstall-hook:
 diff --git a/configure.ac b/configure.ac
-index c21cb9d..ae2ec6d 100644
+index f6c79ea..ffcca3d 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -45,6 +45,8 @@ AM_PROG_CC_C_O

@@ -9,15 +9,15 @@ a different path.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/dns-manager/nm-dns-unbound.c b/src/dns-manager/nm-dns-unbound.c
-index 533290c..b5452bf 100644
+index 5723bf8..2dcc220 100644
 --- a/src/dns-manager/nm-dns-unbound.c
 +++ b/src/dns-manager/nm-dns-unbound.c
 @@ -42,7 +42,7 @@ update (NMDnsPlugin *plugin,
  	 * without calling custom scripts. The dnssec-trigger functionality
  	 * may be eventually merged into NetworkManager.
  	 */
--	return nm_spawn_process ("/usr/libexec/dnssec-trigger-script --async --update") == 0;
-+	return nm_spawn_process ("/usr/lib/dnssec-trigger/dnssec-trigger-script --async --update") == 0;
+-	return nm_spawn_process ("/usr/libexec/dnssec-trigger-script --async --update", NULL) == 0;
++	return nm_spawn_process ("/usr/lib/dnssec-trigger/dnssec-trigger-script --async --update", NULL) == 0;
  }
  
  static gboolean
