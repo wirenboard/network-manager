@@ -8,11 +8,11 @@ online state to CONNECTED.
 
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
 ---
- src/nm-manager.c | 122 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 122 insertions(+)
+ src/nm-manager.c | 120 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 120 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index 080cdb8..03a866e 100644
+index 080cdb8..be109d0 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
 @@ -62,6 +62,8 @@
@@ -24,19 +24,18 @@ index 080cdb8..03a866e 100644
  static gboolean impl_manager_get_devices (NMManager *manager,
                                            GPtrArray **devices,
                                            GError **err);
-@@ -191,6 +193,11 @@ typedef struct {
+@@ -191,6 +193,10 @@ typedef struct {
  	GFileMonitor *fw_monitor;
  	guint fw_changed_id;
  
 +	/* ifupdown state file monitor */
 +	GFileMonitor *ifstate_monitor;
-+	guint ifstate_monitor_id;
 +	gboolean ifstate_force_online;
 +
  	guint timestamp_update_id;
  
  	gboolean startup;
-@@ -657,6 +664,29 @@ find_best_device_state (NMManager *manager)
+@@ -657,6 +663,29 @@ find_best_device_state (NMManager *manager)
  	return best_state;
  }
  
@@ -66,7 +65,7 @@ index 080cdb8..03a866e 100644
  static void
  nm_manager_update_state (NMManager *manager)
  {
-@@ -674,6 +704,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -674,6 +703,9 @@ nm_manager_update_state (NMManager *manager)
  
  	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
  
@@ -76,7 +75,7 @@ index 080cdb8..03a866e 100644
  	if (new_state == NM_STATE_CONNECTED_SITE) {
  		nm_connectivity_check_async (priv->connectivity,
  		                             checked_connectivity,
-@@ -4123,6 +4156,65 @@ impl_manager_check_connectivity (NMManager *manager,
+@@ -4123,6 +4155,65 @@ impl_manager_check_connectivity (NMManager *manager,
  }
  
  static void
@@ -142,7 +141,7 @@ index 080cdb8..03a866e 100644
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
  	nm_device_factory_start (factory);
-@@ -4174,6 +4266,9 @@ nm_manager_start (NMManager *self)
+@@ -4174,6 +4265,9 @@ nm_manager_start (NMManager *self)
  	system_create_virtual_devices (self);
  
  	check_if_startup_complete (self);
@@ -152,7 +151,7 @@ index 080cdb8..03a866e 100644
  }
  
  void
-@@ -4877,6 +4972,22 @@ nm_manager_init (NMManager *manager)
+@@ -4877,6 +4971,22 @@ nm_manager_init (NMManager *manager)
  		             KERNEL_FIRMWARE_DIR);
  	}
  
@@ -162,9 +161,9 @@ index 080cdb8..03a866e 100644
 +	g_object_unref (file);
 +
 +	if (priv->ifstate_monitor) {
-+		priv->ifstate_monitor_id = g_signal_connect (priv->ifstate_monitor, "changed",
-+		                                             G_CALLBACK (ifstate_file_changed),
-+		                                             manager);
++		g_signal_connect (priv->ifstate_monitor, "changed",
++		                  G_CALLBACK (ifstate_file_changed),
++		                  manager);
 +		nm_log_info (LOGD_CORE, "monitoring ifupdown state file '%s'.",
 +		             IFUPDOWN_STATE_FILE);
 +	} else {
@@ -175,19 +174,18 @@ index 080cdb8..03a866e 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, manager);
  }
-@@ -5086,6 +5197,17 @@ dispose (GObject *object)
+@@ -5086,6 +5196,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
 +	if (priv->ifstate_monitor) {
-+		if (priv->ifstate_monitor_id)
-+			g_signal_handler_disconnect (priv->ifstate_monitor, priv->ifstate_monitor_id);
++		g_signal_handlers_disconnect_by_func (priv->ifstate_monitor, ifstate_file_changed, manager);
 +
 +		if (priv->ifstate_force_online)
 +			g_source_remove (priv->ifstate_force_online);
 +
 +		g_file_monitor_cancel (priv->ifstate_monitor);
-+		g_object_unref (priv->ifstate_monitor);
++		g_clear_object (&priv->ifstate_monitor);
 +	}
 +
  	nm_device_factory_manager_for_each_factory (_deinit_device_factory, manager);
