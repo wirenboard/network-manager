@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
 <book xmlns="http://www.devhelp.net/book" title="libnm Reference Manual" link="index.html" author="" name="libnm" version="2" language="c">
   <chapters>
     <sub name="Overview" link="ref-overview.html"/>
@@ -394,6 +393,7 @@
     <keyword type="function" name="nm_setting_connection_get_master ()" link="NMSettingConnection.html#nm-setting-connection-get-master"/>
     <keyword type="function" name="nm_setting_connection_is_slave_type ()" link="NMSettingConnection.html#nm-setting-connection-is-slave-type"/>
     <keyword type="function" name="nm_setting_connection_get_slave_type ()" link="NMSettingConnection.html#nm-setting-connection-get-slave-type"/>
+    <keyword type="function" name="nm_setting_connection_get_autoconnect_slaves ()" link="NMSettingConnection.html#nm-setting-connection-get-autoconnect-slaves" since="1.0.4"/>
     <keyword type="function" name="nm_setting_connection_get_num_secondaries ()" link="NMSettingConnection.html#nm-setting-connection-get-num-secondaries"/>
     <keyword type="function" name="nm_setting_connection_get_secondary ()" link="NMSettingConnection.html#nm-setting-connection-get-secondary"/>
     <keyword type="function" name="nm_setting_connection_add_secondary ()" link="NMSettingConnection.html#nm-setting-connection-add-secondary"/>
@@ -416,11 +416,14 @@
     <keyword type="macro" name="NM_SETTING_CONNECTION_ZONE" link="NMSettingConnection.html#NM-SETTING-CONNECTION-ZONE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_MASTER" link="NMSettingConnection.html#NM-SETTING-CONNECTION-MASTER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_SLAVE_TYPE" link="NMSettingConnection.html#NM-SETTING-CONNECTION-SLAVE-TYPE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_SECONDARIES" link="NMSettingConnection.html#NM-SETTING-CONNECTION-SECONDARIES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT" link="NMSettingConnection.html#NM-SETTING-CONNECTION-GATEWAY-PING-TIMEOUT:CAPS"/>
+    <keyword type="enum" name="enum NMSettingConnectionAutoconnectSlaves" link="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves"/>
     <keyword type="struct" name="struct NMSettingConnection" link="NMSettingConnection.html#NMSettingConnection-struct"/>
     <keyword type="property" name="The “autoconnect” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect"/>
     <keyword type="property" name="The “autoconnect-priority” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect-priority"/>
+    <keyword type="property" name="The “autoconnect-slaves” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect-slaves"/>
     <keyword type="property" name="The “gateway-ping-timeout” property" link="NMSettingConnection.html#NMSettingConnection--gateway-ping-timeout"/>
     <keyword type="property" name="The “id” property" link="NMSettingConnection.html#NMSettingConnection--id"/>
     <keyword type="property" name="The “interface-name” property" link="NMSettingConnection.html#NMSettingConnection--interface-name"/>
@@ -501,6 +504,7 @@
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_password_flags ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-password-flags"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_private_key_format ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-private-key-format"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CERT-SCHEME-PREFIX-PATH:CAPS"/>
     <keyword type="enum" name="enum NMSetting8021xCKFormat" link="NMSetting8021x.html#NMSetting8021xCKFormat"/>
     <keyword type="enum" name="enum NMSetting8021xCKScheme" link="NMSetting8021x.html#NMSetting8021xCKScheme"/>
     <keyword type="macro" name="NM_SETTING_802_1X_SETTING_NAME" link="NMSetting8021x.html#NM-SETTING-802-1X-SETTING-NAME:CAPS"/>
@@ -1678,6 +1682,8 @@
     <keyword type="macro" name="NM_VERSION_0_9_8" link="libnm-nm-version.html#NM-VERSION-0-9-8:CAPS"/>
     <keyword type="macro" name="NM_VERSION_0_9_10" link="libnm-nm-version.html#NM-VERSION-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_VERSION_1_0" link="libnm-nm-version.html#NM-VERSION-1-0:CAPS"/>
+    <keyword type="macro" name="NM_VERSION_1_0_2" link="libnm-nm-version.html#NM-VERSION-1-0-2:CAPS"/>
+    <keyword type="macro" name="NM_VERSION_1_0_4" link="libnm-nm-version.html#NM-VERSION-1-0-4:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MIN_REQUIRED" link="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MAX_ALLOWED" link="libnm-nm-version.html#NM-VERSION-MAX-ALLOWED:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS"/>
@@ -1688,6 +1694,7 @@
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_0_9_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_0_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
@@ -1769,5 +1776,346 @@
     <keyword type="property" name="The “name” property" link="NMVpnEditor.html#NMVpnEditorPlugin--name"/>
     <keyword type="property" name="The “service” property" link="NMVpnEditor.html#NMVpnEditorPlugin--service"/>
     <keyword type="signal" name="The “changed” signal" link="NMVpnEditor.html#NMVpnEditor-changed"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_NONE" link="NMClient.html#NM-CLIENT-PERMISSION-NONE:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_NETWORK" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-NETWORK:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIFI" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-WIFI:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_WWAN" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-WWAN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_ENABLE_DISABLE_WIMAX" link="NMClient.html#NM-CLIENT-PERMISSION-ENABLE-DISABLE-WIMAX:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SLEEP_WAKE" link="NMClient.html#NM-CLIENT-PERMISSION-SLEEP-WAKE:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_NETWORK_CONTROL" link="NMClient.html#NM-CLIENT-PERMISSION-NETWORK-CONTROL:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_WIFI_SHARE_PROTECTED" link="NMClient.html#NM-CLIENT-PERMISSION-WIFI-SHARE-PROTECTED:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_WIFI_SHARE_OPEN" link="NMClient.html#NM-CLIENT-PERMISSION-WIFI-SHARE-OPEN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_SYSTEM" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-SYSTEM:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_OWN" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-OWN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-HOSTNAME:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_LAST" link="NMClient.html#NM-CLIENT-PERMISSION-LAST:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_UNKNOWN" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_YES" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-YES:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_AUTH" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-AUTH:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_NO" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-NO:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_ERROR_FAILED" link="NMClient.html#NM-CLIENT-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_ERROR_MANAGER_NOT_RUNNING" link="NMClient.html#NM-CLIENT-ERROR-MANAGER-NOT-RUNNING:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_ERROR_OBJECT_CREATION_FAILED" link="NMClient.html#NM-CLIENT-ERROR-OBJECT-CREATION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_AGENT_MANAGER_ERROR_FAILED" link="libnm-nm-errors.html#NM-AGENT-MANAGER-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_AGENT_MANAGER_ERROR_PERMISSION_DENIED" link="libnm-nm-errors.html#NM-AGENT-MANAGER-ERROR-PERMISSION-DENIED:CAPS"/>
+    <keyword type="constant" name="NM_AGENT_MANAGER_ERROR_INVALID_IDENTIFIER" link="libnm-nm-errors.html#NM-AGENT-MANAGER-ERROR-INVALID-IDENTIFIER:CAPS"/>
+    <keyword type="constant" name="NM_AGENT_MANAGER_ERROR_NOT_REGISTERED" link="libnm-nm-errors.html#NM-AGENT-MANAGER-ERROR-NOT-REGISTERED:CAPS"/>
+    <keyword type="constant" name="NM_AGENT_MANAGER_ERROR_NO_SECRETS" link="libnm-nm-errors.html#NM-AGENT-MANAGER-ERROR-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_AGENT_MANAGER_ERROR_USER_CANCELED" link="libnm-nm-errors.html#NM-AGENT-MANAGER-ERROR-USER-CANCELED:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_FAILED" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_SETTING_NOT_FOUND" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-SETTING-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_PROPERTY_NOT_FOUND" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-PROPERTY-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_PROPERTY_NOT_SECRET" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-PROPERTY-NOT-SECRET:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_MISSING_SETTING" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-MISSING-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_INVALID_SETTING" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-INVALID-SETTING:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_MISSING_PROPERTY" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-MISSING-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_ERROR_INVALID_PROPERTY" link="libnm-nm-errors.html#NM-CONNECTION-ERROR-INVALID-PROPERTY:CAPS"/>
+    <keyword type="constant" name="NM_CRYPTO_ERROR_FAILED" link="libnm-nm-errors.html#NM-CRYPTO-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_CRYPTO_ERROR_INVALID_DATA" link="libnm-nm-errors.html#NM-CRYPTO-ERROR-INVALID-DATA:CAPS"/>
+    <keyword type="constant" name="NM_CRYPTO_ERROR_INVALID_PASSWORD" link="libnm-nm-errors.html#NM-CRYPTO-ERROR-INVALID-PASSWORD:CAPS"/>
+    <keyword type="constant" name="NM_CRYPTO_ERROR_UNKNOWN_CIPHER" link="libnm-nm-errors.html#NM-CRYPTO-ERROR-UNKNOWN-CIPHER:CAPS"/>
+    <keyword type="constant" name="NM_CRYPTO_ERROR_DECRYPTION_FAILED" link="libnm-nm-errors.html#NM-CRYPTO-ERROR-DECRYPTION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_CRYPTO_ERROR_ENCRYPTION_FAILED" link="libnm-nm-errors.html#NM-CRYPTO-ERROR-ENCRYPTION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_FAILED" link="libnm-nm-errors.html#NM-DEVICE-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_CREATION_FAILED" link="libnm-nm-errors.html#NM-DEVICE-ERROR-CREATION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-DEVICE-ERROR-INVALID-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_INCOMPATIBLE_CONNECTION" link="libnm-nm-errors.html#NM-DEVICE-ERROR-INCOMPATIBLE-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_NOT_ACTIVE" link="libnm-nm-errors.html#NM-DEVICE-ERROR-NOT-ACTIVE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_NOT_SOFTWARE" link="libnm-nm-errors.html#NM-DEVICE-ERROR-NOT-SOFTWARE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_NOT_ALLOWED" link="libnm-nm-errors.html#NM-DEVICE-ERROR-NOT-ALLOWED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_ERROR_SPECIFIC_OBJECT_NOT_FOUND" link="libnm-nm-errors.html#NM-DEVICE-ERROR-SPECIFIC-OBJECT-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_FAILED" link="libnm-nm-errors.html#NM-MANAGER-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_PERMISSION_DENIED" link="libnm-nm-errors.html#NM-MANAGER-ERROR-PERMISSION-DENIED:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_CONNECTION" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_DEVICE" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-DEVICE:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_CONNECTION_NOT_AVAILABLE" link="libnm-nm-errors.html#NM-MANAGER-ERROR-CONNECTION-NOT-AVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_CONNECTION_NOT_ACTIVE" link="libnm-nm-errors.html#NM-MANAGER-ERROR-CONNECTION-NOT-ACTIVE:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_CONNECTION_ALREADY_ACTIVE" link="libnm-nm-errors.html#NM-MANAGER-ERROR-CONNECTION-ALREADY-ACTIVE:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_DEPENDENCY_FAILED" link="libnm-nm-errors.html#NM-MANAGER-ERROR-DEPENDENCY-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_ALREADY_ASLEEP_OR_AWAKE" link="libnm-nm-errors.html#NM-MANAGER-ERROR-ALREADY-ASLEEP-OR-AWAKE:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED" link="libnm-nm-errors.html#NM-MANAGER-ERROR-ALREADY-ENABLED-OR-DISABLED:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_LOG_LEVEL" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-LEVEL:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_LOG_DOMAIN" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-DOMAIN:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_FAILED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_PERMISSION_DENIED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-PERMISSION-DENIED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-INVALID-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_USER_CANCELED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-USER-CANCELED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_AGENT_CANCELED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-AGENT-CANCELED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_ERROR_NO_SECRETS" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_FAILED" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_PERMISSION_DENIED" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-PERMISSION-DENIED:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_NOT_SUPPORTED" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-NOT-SUPPORTED:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-INVALID-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_READ_ONLY_CONNECTION" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-READ-ONLY-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_UUID_EXISTS" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-UUID-EXISTS:CAPS"/>
+    <keyword type="constant" name="NM_SETTINGS_ERROR_INVALID_HOSTNAME" link="libnm-nm-errors.html#NM-SETTINGS-ERROR-INVALID-HOSTNAME:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_FAILED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_STARTING_IN_PROGRESS" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-STARTING-IN-PROGRESS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_ALREADY_STARTED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-ALREADY-STARTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_STOPPING_IN_PROGRESS" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-STOPPING-IN-PROGRESS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_ALREADY_STOPPED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-ALREADY-STOPPED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_WRONG_STATE" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-WRONG-STATE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_BAD_ARGUMENTS" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-BAD-ARGUMENTS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_LAUNCH_FAILED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-LAUNCH-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-INVALID-CONNECTION:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_ERROR_INTERACTIVE_NOT_SUPPORTED" link="libnm-nm-errors.html#NM-VPN-PLUGIN-ERROR-INTERACTIVE-NOT-SUPPORTED:CAPS"/>
+    <keyword type="constant" name="NM_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_STATE_ASLEEP" link="libnm-nm-dbus-interface.html#NM-STATE-ASLEEP:CAPS"/>
+    <keyword type="constant" name="NM_STATE_DISCONNECTED" link="libnm-nm-dbus-interface.html#NM-STATE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_STATE_DISCONNECTING" link="libnm-nm-dbus-interface.html#NM-STATE-DISCONNECTING:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTING" link="libnm-nm-dbus-interface.html#NM-STATE-CONNECTING:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTED_LOCAL" link="libnm-nm-dbus-interface.html#NM-STATE-CONNECTED-LOCAL:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTED_SITE" link="libnm-nm-dbus-interface.html#NM-STATE-CONNECTED-SITE:CAPS"/>
+    <keyword type="constant" name="NM_STATE_CONNECTED_GLOBAL" link="libnm-nm-dbus-interface.html#NM-STATE-CONNECTED-GLOBAL:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-CONNECTIVITY-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_NONE" link="libnm-nm-dbus-interface.html#NM-CONNECTIVITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_PORTAL" link="libnm-nm-dbus-interface.html#NM-CONNECTIVITY-PORTAL:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_LIMITED" link="libnm-nm-dbus-interface.html#NM-CONNECTIVITY-LIMITED:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTIVITY_FULL" link="libnm-nm-dbus-interface.html#NM-CONNECTIVITY-FULL:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_ETHERNET" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-ETHERNET:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_WIFI" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-WIFI:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_UNUSED1" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-UNUSED1:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_UNUSED2" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-UNUSED2:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_BT" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-BT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_OLPC_MESH" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-OLPC-MESH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_WIMAX" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-WIMAX:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_MODEM" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-MODEM:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_INFINIBAND" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-INFINIBAND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_BOND" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-BOND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_VLAN" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-VLAN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_ADSL" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-ADSL:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_BRIDGE" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-BRIDGE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_GENERIC" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-GENERIC:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_TEAM" link="libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-TEAM:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_NONE" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-NONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_NM_SUPPORTED" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-NM-SUPPORTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_CARRIER_DETECT" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-CARRIER-DETECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_CAP_IS_SOFTWARE" link="libnm-nm-dbus-interface.html#NM-DEVICE-CAP-IS-SOFTWARE:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_NONE" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-NONE:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_WEP40" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-CIPHER-WEP40:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_WEP104" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-CIPHER-WEP104:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_TKIP" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-CIPHER-TKIP:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_CIPHER_CCMP" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-CIPHER-CCMP:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_WPA" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-WPA:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_RSN" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-RSN:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_AP" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-AP:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_ADHOC" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-ADHOC:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_FREQ_VALID" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-FREQ-VALID:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_FREQ_2GHZ" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-FREQ-2GHZ:CAPS"/>
+    <keyword type="constant" name="NM_WIFI_DEVICE_CAP_FREQ_5GHZ" link="libnm-nm-dbus-interface.html#NM-WIFI-DEVICE-CAP-FREQ-5GHZ:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_FLAGS_NONE" link="libnm-nm-dbus-interface.html#NM-802-11-AP-FLAGS-NONE:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_FLAGS_PRIVACY" link="libnm-nm-dbus-interface.html#NM-802-11-AP-FLAGS-PRIVACY:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_NONE" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-NONE:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_WEP40" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-PAIR-WEP40:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_WEP104" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-PAIR-WEP104:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_TKIP" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-PAIR-TKIP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_PAIR_CCMP" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-PAIR-CCMP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_WEP40" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-GROUP-WEP40:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_WEP104" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-GROUP-WEP104:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_TKIP" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-GROUP-TKIP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_GROUP_CCMP" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-GROUP-CCMP:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_KEY_MGMT_PSK" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-KEY-MGMT-PSK:CAPS"/>
+    <keyword type="constant" name="NM_802_11_AP_SEC_KEY_MGMT_802_1X" link="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-KEY-MGMT-802-1X:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-802-11-MODE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_ADHOC" link="libnm-nm-dbus-interface.html#NM-802-11-MODE-ADHOC:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_INFRA" link="libnm-nm-dbus-interface.html#NM-802-11-MODE-INFRA:CAPS"/>
+    <keyword type="constant" name="NM_802_11_MODE_AP" link="libnm-nm-dbus-interface.html#NM-802-11-MODE-AP:CAPS"/>
+    <keyword type="constant" name="NM_BT_CAPABILITY_NONE" link="libnm-nm-dbus-interface.html#NM-BT-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_BT_CAPABILITY_DUN" link="libnm-nm-dbus-interface.html#NM-BT-CAPABILITY-DUN:CAPS"/>
+    <keyword type="constant" name="NM_BT_CAPABILITY_NAP" link="libnm-nm-dbus-interface.html#NM-BT-CAPABILITY-NAP:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_NONE" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_POTS" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-POTS:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-CDMA-EVDO:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-GSM-UMTS:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_LTE" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-LTE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_UNMANAGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNMANAGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_UNAVAILABLE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_DISCONNECTED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_PREPARE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-PREPARE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_CONFIG" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-CONFIG:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_NEED_AUTH" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-NEED-AUTH:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_IP_CONFIG" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-IP-CONFIG:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_IP_CHECK" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-IP-CHECK:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_SECONDARIES" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-SECONDARIES:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_ACTIVATED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-ACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_DEACTIVATING" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-DEACTIVATING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NONE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NOW_MANAGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NOW-MANAGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NOW_UNMANAGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NOW-UNMANAGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CONFIG_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-CONFIG-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_IP_CONFIG_UNAVAILABLE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-IP-CONFIG-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_IP_CONFIG_EXPIRED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-IP-CONFIG-EXPIRED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NO_SECRETS" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_DISCONNECT" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SUPPLICANT-DISCONNECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SUPPLICANT-CONFIG-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SUPPLICANT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_TIMEOUT" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SUPPLICANT-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PPP_START_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PPP-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PPP_DISCONNECT" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PPP-DISCONNECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PPP_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PPP-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DHCP_START_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-DHCP-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DHCP_ERROR" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-DHCP-ERROR:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DHCP_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-DHCP-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SHARED_START_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SHARED-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SHARED_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SHARED-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_AUTOIP_START_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-AUTOIP-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_AUTOIP_ERROR" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-AUTOIP-ERROR:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_AUTOIP_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-AUTOIP-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_BUSY" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-BUSY:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_NO_DIAL_TONE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-NO-DIAL-TONE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_NO_CARRIER" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-NO-CARRIER:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_DIAL_TIMEOUT" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-DIAL-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_DIAL_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-DIAL-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_INIT_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-INIT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_APN_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-APN-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_NOT_SEARCHING" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-NOT-SEARCHING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_DENIED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-DENIED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_TIMEOUT" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_REGISTRATION_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-REGISTRATION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_PIN_CHECK_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-PIN-CHECK-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_FIRMWARE_MISSING" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-FIRMWARE-MISSING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_REMOVED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-REMOVED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SLEEPING" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SLEEPING:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CONNECTION_REMOVED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-CONNECTION-REMOVED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_USER_REQUESTED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-USER-REQUESTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CARRIER" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-CARRIER:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-CONNECTION-ASSUMED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SUPPLICANT_AVAILABLE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SUPPLICANT-AVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_NOT_FOUND" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_BT_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-BT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_NOT_INSERTED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-SIM-NOT-INSERTED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_PIN_REQUIRED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-SIM-PIN-REQUIRED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_PUK_REQUIRED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-SIM-PUK-REQUIRED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_GSM_SIM_WRONG" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-GSM-SIM-WRONG:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_INFINIBAND_MODE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-INFINIBAND-MODE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DEPENDENCY_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-DEPENDENCY-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_BR2684_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-BR2684-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_MANAGER_UNAVAILABLE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-MANAGER-UNAVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SSID_NOT_FOUND" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SSID-NOT-FOUND:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SECONDARY_CONNECTION_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SECONDARY-CONNECTION-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_DCB_FCOE_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-DCB-FCOE-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-TEAMD-CONTROL-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_FAILED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_MODEM_AVAILABLE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-MODEM-AVAILABLE:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-SIM-PIN-INCORRECT:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_NEW_ACTIVATION" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NEW-ACTIVATION:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PARENT_CHANGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-CHANGED:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-MANAGED-CHANGED:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_ACTIVATING" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATING:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_ACTIVATED" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_DEACTIVATING" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-DEACTIVATING:CAPS"/>
+    <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_DEACTIVATED" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-DEACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_NONE" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-ALLOW-INTERACTION:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-REQUEST-NEW:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_USER_REQUESTED" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-USER-REQUESTED:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_ONLY_SYSTEM" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-ONLY-SYSTEM:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_GET_SECRETS_FLAG_NO_ERRORS" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-GET-SECRETS-FLAG-NO-ERRORS:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_CAPABILITY_NONE" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_CAPABILITY_VPN_HINTS" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-CAPABILITY-VPN-HINTS:CAPS"/>
+    <keyword type="constant" name="NM_SECRET_AGENT_CAPABILITY_LAST" link="libnm-nm-dbus-interface.html#NM-SECRET-AGENT-CAPABILITY-LAST:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_SERIALIZE_ALL" link="libnm-NMConnection.html#NM-CONNECTION-SERIALIZE-ALL:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_SERIALIZE_NO_SECRETS" link="libnm-NMConnection.html#NM-CONNECTION-SERIALIZE-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_CONNECTION_SERIALIZE_ONLY_SECRETS" link="libnm-NMConnection.html#NM-CONNECTION-SERIALIZE-ONLY-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NONE" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_AGENT_OWNED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-AGENT-OWNED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NOT_SAVED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NOT-SAVED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SECRET_FLAG_NOT_REQUIRED" link="NMSetting.html#NM-SETTING-SECRET-FLAG-NOT-REQUIRED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_EXACT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-EXACT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_FUZZY" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-FUZZY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_ID" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-ID:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-AGENT-OWNED-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-NOT-SAVED-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_DIFF_RESULT_WITH_DEFAULT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-DIFF-RESULT-WITH-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-DIFF-RESULT-NO-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_COMPARE_FLAG_IGNORE_TIMESTAMP" link="NMSetting.html#NM-SETTING-COMPARE-FLAG-IGNORE-TIMESTAMP:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_UNKNOWN" link="NMSetting.html#NM-SETTING-DIFF-RESULT-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_A" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_B" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_A_DEFAULT" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-A-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DIFF_RESULT_IN_B_DEFAULT" link="NMSetting.html#NM-SETTING-DIFF-RESULT-IN-B-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_NO" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-NO:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_YES" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-YES:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_X509" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-X509:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_RAW_KEY" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-RAW-KEY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_FORMAT_PKCS12" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-FORMAT-PKCS12:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_UNKNOWN" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_BLOB" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_802_1X_CK_SCHEME_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DCB_FLAG_NONE" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DCB_FLAG_ENABLE" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DCB_FLAG_ADVERTISE" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ADVERTISE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_DCB_FLAG_WILLING" link="NMSettingDcb.html#NM-SETTING-DCB-FLAG-WILLING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-PRIVACY-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_PRIVACY_DISABLED" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-PRIVACY-DISABLED:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_PUBLIC_ADDR" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-PRIVACY-PREFER-PUBLIC-ADDR:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_IP6_CONFIG_PRIVACY_PREFER_TEMP_ADDR" link="NMSettingIP6Config.html#NM-SETTING-IP6-CONFIG-PRIVACY-PREFER-TEMP-ADDR:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_PARITY_NONE" link="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_PARITY_EVEN" link="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY-EVEN:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_SERIAL_PARITY_ODD" link="NMSettingSerial.html#NM-SETTING-SERIAL-PARITY-ODD:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_INGRESS_MAP" link="NMSettingVlan.html#NM-VLAN-INGRESS-MAP:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_EGRESS_MAP" link="NMSettingVlan.html#NM-VLAN-EGRESS-MAP:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_FLAG_REORDER_HEADERS" link="NMSettingVlan.html#NM-VLAN-FLAG-REORDER-HEADERS:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_FLAG_GVRP" link="NMSettingVlan.html#NM-VLAN-FLAG-GVRP:CAPS"/>
+    <keyword type="constant" name="NM_VLAN_FLAG_LOOSE_BINDING" link="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_UNKNOWN" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_KEY" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-KEY:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_PASSPHRASE" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-PASSPHRASE:CAPS"/>
+    <keyword type="constant" name="NM_WEP_KEY_TYPE_LAST" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-LAST:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_HOME" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_PARTNER" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_INVALID" link="libnm-nm-utils.html#NMU-SEC-INVALID:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_NONE" link="libnm-nm-utils.html#NMU-SEC-NONE:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_STATIC_WEP" link="libnm-nm-utils.html#NMU-SEC-STATIC-WEP:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_LEAP" link="libnm-nm-utils.html#NMU-SEC-LEAP:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_DYNAMIC_WEP" link="libnm-nm-utils.html#NMU-SEC-DYNAMIC-WEP:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA_PSK" link="libnm-nm-utils.html#NMU-SEC-WPA-PSK:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA_ENTERPRISE" link="libnm-nm-utils.html#NMU-SEC-WPA-ENTERPRISE:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA2_PSK" link="libnm-nm-utils.html#NMU-SEC-WPA2-PSK:CAPS"/>
+    <keyword type="constant" name="NMU_SEC_WPA2_ENTERPRISE" link="libnm-nm-utils.html#NMU-SEC-WPA2-ENTERPRISE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_UNKNOWN" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_INIT" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-INIT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_SHUTDOWN" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-SHUTDOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STARTING" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-STARTING:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STARTED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-STARTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STOPPING" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-STOPPING:CAPS"/>
+    <keyword type="constant" name="NM_VPN_SERVICE_STATE_STOPPED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-SERVICE-STATE-STOPPED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_UNKNOWN" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_PREPARE" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-PREPARE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_NEED_AUTH" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-NEED-AUTH:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_CONNECT" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-CONNECT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_IP_CONFIG_GET" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-IP-CONFIG-GET:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_ACTIVATED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-ACTIVATED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_FAILED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_DISCONNECTED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_UNKNOWN" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_NONE" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-NONE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_USER_DISCONNECTED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-USER-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-DEVICE-DISCONNECTED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_SERVICE_STOPPED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-SERVICE-STOPPED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_IP_CONFIG_INVALID" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-IP-CONFIG-INVALID:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_CONNECT_TIMEOUT" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-CONNECT-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-SERVICE-START-TIMEOUT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_FAILED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-SERVICE-START-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-NO-SECRETS:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_LOGIN_FAILED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-LOGIN-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_CONNECTION_STATE_REASON_CONNECTION_REMOVED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-CONNECTION-STATE-REASON-CONNECTION-REMOVED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_FAILURE_LOGIN_FAILED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-FAILURE-LOGIN-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_FAILURE_CONNECT_FAILED" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-FAILURE-CONNECT-FAILED:CAPS"/>
+    <keyword type="constant" name="NM_VPN_PLUGIN_FAILURE_BAD_IP_CONFIG" link="libnm-nm-vpn-dbus-interface.html#NM-VPN-PLUGIN-FAILURE-BAD-IP-CONFIG:CAPS"/>
+    <keyword type="constant" name="NM_VPN_EDITOR_PLUGIN_CAPABILITY_NONE" link="NMVpnEditor.html#NM-VPN-EDITOR-PLUGIN-CAPABILITY-NONE:CAPS"/>
+    <keyword type="constant" name="NM_VPN_EDITOR_PLUGIN_CAPABILITY_IMPORT" link="NMVpnEditor.html#NM-VPN-EDITOR-PLUGIN-CAPABILITY-IMPORT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_EDITOR_PLUGIN_CAPABILITY_EXPORT" link="NMVpnEditor.html#NM-VPN-EDITOR-PLUGIN-CAPABILITY-EXPORT:CAPS"/>
+    <keyword type="constant" name="NM_VPN_EDITOR_PLUGIN_CAPABILITY_IPV6" link="NMVpnEditor.html#NM-VPN-EDITOR-PLUGIN-CAPABILITY-IPV6:CAPS"/>
   </functions>
 </book>

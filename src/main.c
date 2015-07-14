@@ -54,7 +54,6 @@
 #include "nm-vpn-manager.h"
 #include "nm-logging.h"
 #include "nm-config.h"
-#include "nm-posix-signals.h"
 #include "nm-session-monitor.h"
 #include "nm-dispatcher.h"
 #include "nm-settings.h"
@@ -69,7 +68,7 @@
 #define NM_DEFAULT_SYSTEM_STATE_FILE NMSTATEDIR "/NetworkManager.state"
 
 static GMainLoop *main_loop = NULL;
-static gboolean quit_early = FALSE;
+static gboolean configure_and_quit = FALSE;
 
 static struct {
 	gboolean show_version;
@@ -164,7 +163,7 @@ parse_state_file (const char *filename,
 }
 
 static void
-_set_g_fatal_warnings ()
+_set_g_fatal_warnings (void)
 {
 	GLogLevelFlags fatal_mask;
 
@@ -208,16 +207,29 @@ _init_nm_debug (const char *debug)
 		_set_g_fatal_warnings ();
 }
 
+void
+nm_main_config_reload (int signal)
+{
+	nm_log_info (LOGD_CORE, "reload configuration (signal %s)...", strsignal (signal));
+	/* The signal handler thread is only installed after
+	 * creating NMConfig instance, and on shut down we
+	 * no longer run the mainloop (to reach this point).
+	 *
+	 * Hence, a NMConfig singleton instance must always be
+	 * available. */
+	nm_config_reload (nm_config_get (), signal);
+}
+
 static void
 manager_configure_quit (NMManager *manager, gpointer user_data)
 {
 	nm_log_info (LOGD_CORE, "quitting now that startup is complete");
 	g_main_loop_quit (main_loop);
-	quit_early = TRUE;
+	configure_and_quit = TRUE;
 }
 
 static void
-do_early_setup (int *argc, char **argv[])
+do_early_setup (int *argc, char **argv[], NMConfigCmdLineOptions *config_cli)
 {
 	GOptionEntry options[] = {
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &global_opt.show_version, N_("Print NetworkManager version and exit"), NULL },
@@ -228,17 +240,19 @@ do_early_setup (int *argc, char **argv[])
 		  N_("Log domains separated by ',': any combination of [%s]"),
 		  "PLATFORM,RFKILL,WIFI" },
 		{ "g-fatal-warnings", 0, 0, G_OPTION_ARG_NONE, &global_opt.g_fatal_warnings, N_("Make all warnings fatal"), NULL },
-		{ "pid-file", 'p', 0, G_OPTION_ARG_FILENAME, &global_opt.pidfile, N_("Specify the location of a PID file"), N_("filename") },
-		{ "state-file", 0, 0, G_OPTION_ARG_FILENAME, &global_opt.state_file, N_("State file location"), N_("/path/to/state.file") },
+		{ "pid-file", 'p', 0, G_OPTION_ARG_FILENAME, &global_opt.pidfile, N_("Specify the location of a PID file"), N_(NM_DEFAULT_PID_FILE) },
+		{ "state-file", 0, 0, G_OPTION_ARG_FILENAME, &global_opt.state_file, N_("State file location"), N_(NM_DEFAULT_SYSTEM_STATE_FILE) },
 		{ "run-from-build-dir", 0, 0, G_OPTION_ARG_NONE, &global_opt.run_from_build_dir, "Run from build directory", NULL },
 		{NULL}
 	};
 
+	config_cli = nm_config_cmd_line_options_new ();
 	if (!nm_main_utils_early_setup ("NetworkManager",
 	                                argc,
 	                                argv,
 	                                options,
-	                                nm_config_get_options (),
+	                                (void (*)(gpointer, GOptionContext *)) nm_config_cmd_line_options_add_to_entries,
+	                                config_cli,
 	                                _("NetworkManager monitors all network connections and automatically\nchooses the best connection to use.  It also allows the user to\nspecify wireless access points which wireless cards in the computer\nshould associate with.")))
 		exit (1);
 
@@ -267,6 +281,7 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
 	char *bad_domains = NULL;
+	NMConfigCmdLineOptions *config_cli;
 
 #if !GLIB_CHECK_VERSION (2, 35, 0)
 	g_type_init ();
@@ -276,7 +291,8 @@ main (int argc, char *argv[])
 
 	main_loop = g_main_loop_new (NULL, FALSE);
 
-	do_early_setup (&argc, &argv);
+	config_cli = nm_config_cmd_line_options_new ();
+	do_early_setup (&argc, &argv, config_cli);
 
 	if (global_opt.g_fatal_warnings)
 		_set_g_fatal_warnings ();
@@ -338,7 +354,9 @@ main (int argc, char *argv[])
 	}
 
 	/* Read the config file and CLI overrides */
-	config = nm_config_new (&error);
+	config = nm_config_setup (config_cli, &error);
+	nm_config_cmd_line_options_free (config_cli);
+	config_cli = NULL;
 	if (config == NULL) {
 		fprintf (stderr, _("Failed to read configuration: (%d) %s\n"),
 		         error ? error->code : -1,
@@ -381,8 +399,7 @@ main (int argc, char *argv[])
 	}
 
 	/* Set up unix signal handling - before creating threads, but after daemonizing! */
-	if (!nm_main_utils_setup_signals (main_loop, &quit_early))
-		exit (1);
+	nm_main_utils_setup_signals (main_loop);
 
 	nm_logging_syslog_openlog (global_opt.debug);
 
@@ -405,8 +422,9 @@ main (int argc, char *argv[])
 	 */
 	dbus_glib_global_set_disable_legacy_property_access ();
 
-	nm_log_info (LOGD_CORE, "Read config: %s", nm_config_get_description (config));
-	nm_log_info (LOGD_CORE, "WEXT support is %s",
+	nm_log_info (LOGD_CORE, "Read config: %s", nm_config_data_get_config_description (nm_config_get_data (config)));
+	nm_config_data_log (nm_config_get_data (config), "CONFIG: ");
+	nm_log_dbg (LOGD_CORE, "WEXT support is %s",
 #if HAVE_WEXT
 	             "enabled"
 #else
@@ -493,12 +511,11 @@ main (int argc, char *argv[])
 	 * physical interfaces.
 	 */
 	nm_log_dbg (LOGD_CORE, "setting up local loopback");
-	nm_platform_link_set_up (nm_platform_link_get_ifindex ("lo"));
+	nm_platform_link_set_up (NM_PLATFORM_GET, 1, NULL);
 
 	success = TRUE;
 
-	/* Told to quit before getting to the mainloop by the signal handler */
-	if (!quit_early)
+	if (configure_and_quit == FALSE)
 		g_main_loop_run (main_loop);
 
 	nm_manager_stop (manager);

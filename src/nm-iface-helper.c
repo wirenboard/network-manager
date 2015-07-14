@@ -104,7 +104,7 @@ dhcp4_state_changed (NMDhcpClient *client,
 			nm_ip4_config_subtract (existing, last_config);
 
 		nm_ip4_config_merge (existing, ip4_config);
-		if (!nm_ip4_config_commit (existing, ifindex, global_opt.priority_v4))
+		if (!nm_ip4_config_commit (existing, ifindex, TRUE, global_opt.priority_v4))
 			nm_log_warn (LOGD_DHCP4, "(%s): failed to apply DHCPv4 config", global_opt.ifname);
 
 		if (last_config)
@@ -145,7 +145,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		 * from adding a prefix route for this address.
 		 **/
 		system_support = nm_platform_check_support_libnl_extended_ifa_flags () &&
-		                 nm_platform_check_support_kernel_extended_ifa_flags ();
+		                 nm_platform_check_support_kernel_extended_ifa_flags (NM_PLATFORM_GET);
 	}
 
 	if (system_support)
@@ -227,13 +227,13 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 	}
 
 	if (changed & NM_RDISC_CONFIG_HOP_LIMIT)
-		nm_platform_sysctl_set_ip6_hop_limit_safe (global_opt.ifname, rdisc->hop_limit);
+		nm_platform_sysctl_set_ip6_hop_limit_safe (NM_PLATFORM_GET, global_opt.ifname, rdisc->hop_limit);
 
 	if (changed & NM_RDISC_CONFIG_MTU) {
 		char val[16];
 
 		g_snprintf (val, sizeof (val), "%d", rdisc->mtu);
-		nm_platform_sysctl_set (nm_utils_ip6_property_path (global_opt.ifname, "mtu"), val);
+		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "mtu"), val);
 	}
 
 	existing = nm_ip6_config_capture (ifindex, FALSE, global_opt.tempaddr);
@@ -241,7 +241,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		nm_ip6_config_subtract (existing, last_config);
 
 	nm_ip6_config_merge (existing, ip6_config);
-	if (!nm_ip6_config_commit (existing, ifindex))
+	if (!nm_ip6_config_commit (existing, ifindex, TRUE))
 		nm_log_warn (LOGD_IP6, "(%s): failed to apply IPv6 config", global_opt.ifname);
 
 	if (last_config)
@@ -263,24 +263,16 @@ rdisc_ra_timeout (NMRDisc *rdisc, gpointer user_data)
 static gboolean
 quit_handler (gpointer user_data)
 {
-	gboolean *quit_early_ptr = user_data;
-
-	*quit_early_ptr = TRUE;
 	g_main_loop_quit (main_loop);
-	return G_SOURCE_CONTINUE;
+	return G_SOURCE_REMOVE;
 }
 
 static void
-setup_signals (gboolean *quit_early_ptr)
+setup_signals (void)
 {
-	sigset_t sigmask;
-
-	sigemptyset (&sigmask);
-	pthread_sigmask (SIG_SETMASK, &sigmask, NULL);
-
 	signal (SIGPIPE, SIG_IGN);
-	g_unix_signal_add (SIGINT, quit_handler, quit_early_ptr);
-	g_unix_signal_add (SIGTERM, quit_handler, quit_early_ptr);
+	g_unix_signal_add (SIGINT, quit_handler, NULL);
+	g_unix_signal_add (SIGTERM, quit_handler, NULL);
 }
 
 static void
@@ -320,6 +312,7 @@ do_early_setup (int *argc, char **argv[])
 	                                argv,
 	                                options,
 	                                NULL,
+	                                NULL,
 	                                _("nm-iface-helper is a small, standalone process that manages a single network interface.")))
 		exit (1);
 
@@ -337,7 +330,6 @@ main (int argc, char *argv[])
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
 	gs_free char *pidfile = NULL;
-	gboolean quit_early = FALSE;
 	gs_unref_object NMDhcpClient *dhcp4_client = NULL;
 	gs_unref_object NMRDisc *rdisc = NULL;
 	GByteArray *hwaddr = NULL;
@@ -414,7 +406,7 @@ main (int argc, char *argv[])
 
 	/* Set up unix signal handling - before creating threads, but after daemonizing! */
 	main_loop = g_main_loop_new (NULL, FALSE);
-	setup_signals (&quit_early);
+	setup_signals ();
 
 	nm_logging_syslog_openlog (global_opt.debug);
 
@@ -423,7 +415,7 @@ main (int argc, char *argv[])
 	/* Set up platform interaction layer */
 	nm_linux_platform_setup ();
 
-	tmp = nm_platform_link_get_address (ifindex, &hwaddr_len);
+	tmp = nm_platform_link_get_address (NM_PLATFORM_GET, ifindex, &hwaddr_len);
 	if (tmp) {
 		hwaddr = g_byte_array_sized_new (hwaddr_len);
 		g_byte_array_append (hwaddr, tmp, hwaddr_len);
@@ -442,7 +434,7 @@ main (int argc, char *argv[])
 	}
 
 	if (global_opt.dhcp4_address) {
-		nm_platform_sysctl_set (nm_utils_ip4_property_path (global_opt.ifname, "promote_secondaries"), "1");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip4_property_path (global_opt.ifname, "promote_secondaries"), "1");
 
 		/* Initialize DHCP manager */
 		dhcp_mgr = nm_dhcp_manager_get ();
@@ -468,7 +460,7 @@ main (int argc, char *argv[])
 	}
 
 	if (global_opt.slaac) {
-		nm_platform_link_set_user_ipv6ll_enabled (ifindex, TRUE);
+		nm_platform_link_set_user_ipv6ll_enabled (NM_PLATFORM_GET, ifindex, TRUE);
 
 		rdisc = nm_lndp_rdisc_new (ifindex, global_opt.ifname);
 		g_assert (rdisc);
@@ -476,10 +468,10 @@ main (int argc, char *argv[])
 		if (iid)
 			nm_rdisc_set_iid (rdisc, *iid);
 
-		nm_platform_sysctl_set (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra"), "1");
-		nm_platform_sysctl_set (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_defrtr"), "0");
-		nm_platform_sysctl_set (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_pinfo"), "0");
-		nm_platform_sysctl_set (nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_rtr_pref"), "0");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra"), "1");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_defrtr"), "0");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_pinfo"), "0");
+		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_rtr_pref"), "0");
 
 		g_signal_connect (rdisc,
 		                  NM_RDISC_CONFIG_CHANGED,
@@ -492,8 +484,7 @@ main (int argc, char *argv[])
 		nm_rdisc_start (rdisc);
 	}
 
-	if (!quit_early)
-		g_main_loop_run (main_loop);
+	g_main_loop_run (main_loop);
 
 	g_clear_pointer (&hwaddr, g_byte_array_unref);
 
@@ -508,6 +499,12 @@ main (int argc, char *argv[])
 
 /*******************************************************/
 /* Stub functions */
+
+void
+nm_main_config_reload (int signal)
+{
+	nm_log_info (LOGD_CORE, "reloading configuration not supported");
+}
 
 gconstpointer nm_config_get (void);
 const char *nm_config_get_dhcp_client (gpointer unused);

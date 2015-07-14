@@ -401,6 +401,8 @@ nm_device_state_reason_get_type (void)
         { NM_DEVICE_STATE_REASON_MODEM_AVAILABLE, "NM_DEVICE_STATE_REASON_MODEM_AVAILABLE", "modem-available" },
         { NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT, "NM_DEVICE_STATE_REASON_SIM_PIN_INCORRECT", "sim-pin-incorrect" },
         { NM_DEVICE_STATE_REASON_NEW_ACTIVATION, "NM_DEVICE_STATE_REASON_NEW_ACTIVATION", "new-activation" },
+        { NM_DEVICE_STATE_REASON_PARENT_CHANGED, "NM_DEVICE_STATE_REASON_PARENT_CHANGED", "parent-changed" },
+        { NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED, "NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED", "parent-managed-changed" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -710,6 +712,26 @@ nm_setting_802_1x_ck_scheme_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMSetting8021xCKScheme"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_connection_autoconnect_slaves_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT, "NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT", "default" },
+        { NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_NO, "NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_NO", "no" },
+        { NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_YES, "NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_YES", "yes" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingConnectionAutoconnectSlaves"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

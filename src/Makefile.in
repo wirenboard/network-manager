@@ -94,9 +94,10 @@ host_triplet = @host@
 @WITH_MODEM_MANAGER_1_TRUE@	devices/wwan			\
 @WITH_MODEM_MANAGER_1_TRUE@	devices/bluetooth
 
-@WITH_WIMAX_TRUE@am__append_2 = devices/wimax
-@WITH_TEAMDCTL_TRUE@am__append_3 = devices/team
-@ENABLE_TESTS_TRUE@am__append_4 = \
+@WITH_WIFI_TRUE@am__append_2 = devices/wifi
+@WITH_WIMAX_TRUE@am__append_3 = devices/wimax
+@WITH_TEAMDCTL_TRUE@am__append_4 = devices/team
+@ENABLE_TESTS_TRUE@am__append_5 = \
 @ENABLE_TESTS_TRUE@	dhcp-manager/tests \
 @ENABLE_TESTS_TRUE@	dnsmasq-manager/tests \
 @ENABLE_TESTS_TRUE@	platform \
@@ -105,21 +106,21 @@ host_triplet = @host@
 @ENABLE_TESTS_TRUE@	tests
 
 sbin_PROGRAMS = NetworkManager$(EXEEXT)
-@SESSION_TRACKING_SYSTEMD_TRUE@am__append_5 = nm-session-monitor-systemd.c
-@SESSION_TRACKING_CK_TRUE@@SESSION_TRACKING_SYSTEMD_FALSE@am__append_6 = nm-session-monitor-ck.c
-@SESSION_TRACKING_CK_FALSE@@SESSION_TRACKING_SYSTEMD_FALSE@am__append_7 = nm-session-monitor-null.c
-@SUSPEND_RESUME_SYSTEMD_TRUE@am__append_8 = nm-sleep-monitor-systemd.c
+@SESSION_TRACKING_SYSTEMD_TRUE@am__append_6 = nm-session-monitor-systemd.c
+@SESSION_TRACKING_CK_TRUE@@SESSION_TRACKING_SYSTEMD_FALSE@am__append_7 = nm-session-monitor-ck.c
+@SESSION_TRACKING_CK_FALSE@@SESSION_TRACKING_SYSTEMD_FALSE@am__append_8 = nm-session-monitor-null.c
+@SUSPEND_RESUME_SYSTEMD_TRUE@am__append_9 = nm-sleep-monitor-systemd.c
 # UPower suspend/resume used whenever systemd is not enabled
-@SUSPEND_RESUME_SYSTEMD_FALSE@am__append_9 = nm-sleep-monitor-upower.c
-@WITH_WEXT_TRUE@am__append_10 = \
+@SUSPEND_RESUME_SYSTEMD_FALSE@am__append_10 = nm-sleep-monitor-upower.c
+@WITH_WEXT_TRUE@am__append_11 = \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.c \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.h
 
-@WITH_WIMAX_TRUE@am__append_11 = devices/wimax/nm-device-wimax.h
-@WITH_WIMAX_TRUE@am__append_12 = -I$(top_srcdir)/src/devices/wimax
-@SESSION_TRACKING_CK_TRUE@am__append_13 = -DCKDB_PATH=\"${CKDB_PATH}\"
-@WITH_LIBSOUP_TRUE@am__append_14 = $(LIBSOUP_LIBS)
-@WITH_WEXT_TRUE@am__append_15 = \
+@WITH_WIMAX_TRUE@am__append_12 = devices/wimax/nm-device-wimax.h
+@WITH_WIMAX_TRUE@am__append_13 = -I$(top_srcdir)/src/devices/wimax
+@SESSION_TRACKING_CK_TRUE@am__append_14 = -DCKDB_PATH=\"${CKDB_PATH}\"
+@WITH_LIBSOUP_TRUE@am__append_15 = $(LIBSOUP_LIBS)
+@WITH_WEXT_TRUE@am__append_16 = \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.c \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.h
 
@@ -185,7 +186,9 @@ am__libNetworkManager_la_SOURCES_DIST = devices/nm-device-bond.h \
 	dnsmasq-manager/nm-dnsmasq-utils.h platform/nm-fake-platform.c \
 	platform/nm-fake-platform.h platform/nm-linux-platform.c \
 	platform/nm-linux-platform.h platform/nm-platform.c \
-	platform/nm-platform.h platform/wifi/wifi-utils-nl80211.c \
+	platform/nm-platform.h platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h platform/nmp-object.c \
+	platform/nmp-object.h platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
 	platform/wifi/wifi-utils.h rdisc/nm-fake-rdisc.c \
@@ -220,30 +223,30 @@ am__libNetworkManager_la_SOURCES_DIST = devices/nm-device-bond.h \
 	supplicant-manager/nm-supplicant-settings-verify.c \
 	supplicant-manager/nm-supplicant-settings-verify.h \
 	supplicant-manager/nm-supplicant-types.h \
-	supplicant-manager/nm-call-store.c \
-	supplicant-manager/nm-call-store.h \
 	vpn-manager/nm-vpn-connection.c \
 	vpn-manager/nm-vpn-connection.h vpn-manager/nm-vpn-manager.c \
 	vpn-manager/nm-vpn-manager.h vpn-manager/nm-vpn-service.c \
 	vpn-manager/nm-vpn-service.h nm-activation-request.c \
 	nm-activation-request.h nm-active-connection.c \
 	nm-active-connection.h nm-config.c nm-config.h \
-	nm-connection-provider.c nm-connection-provider.h \
-	nm-connectivity.c nm-connectivity.h nm-dbus-manager.c \
-	nm-dbus-manager.h nm-dcb.c nm-dcb.h nm-default-route-manager.c \
-	nm-default-route-manager.h nm-dhcp4-config.c nm-dhcp4-config.h \
-	nm-dhcp6-config.c nm-dhcp6-config.h nm-dispatcher.c \
-	nm-dispatcher.h nm-enum-types.c nm-enum-types.h \
-	nm-firewall-manager.c nm-firewall-manager.h nm-ip4-config.c \
-	nm-ip4-config.h nm-ip6-config.c nm-ip6-config.h nm-logging.c \
-	nm-logging.h nm-auth-manager.c nm-auth-manager.h \
-	nm-auth-subject.c nm-auth-subject.h nm-auth-utils.c \
-	nm-auth-utils.h nm-manager.c nm-manager.h nm-policy.c \
-	nm-policy.h nm-posix-signals.c nm-posix-signals.h \
-	nm-properties-changed-signal.c nm-properties-changed-signal.h \
-	nm-rfkill-manager.c nm-rfkill-manager.h nm-session-monitor.h \
-	nm-session-utils.c nm-session-utils.h nm-sleep-monitor.h \
-	nm-types.h NetworkManagerUtils.c NetworkManagerUtils.h \
+	nm-config-data.c nm-config-data.h nm-connection-provider.c \
+	nm-connection-provider.h nm-connectivity.c nm-connectivity.h \
+	nm-dbus-manager.c nm-dbus-manager.h nm-dcb.c nm-dcb.h \
+	nm-route-manager.c nm-route-manager.h \
+	nm-default-route-manager.c nm-default-route-manager.h \
+	nm-dhcp4-config.c nm-dhcp4-config.h nm-dhcp6-config.c \
+	nm-dhcp6-config.h nm-dispatcher.c nm-dispatcher.h \
+	nm-enum-types.c nm-enum-types.h nm-firewall-manager.c \
+	nm-firewall-manager.h nm-ip4-config.c nm-ip4-config.h \
+	nm-ip6-config.c nm-ip6-config.h nm-logging.c nm-logging.h \
+	nm-auth-manager.c nm-auth-manager.h nm-auth-subject.c \
+	nm-auth-subject.h nm-auth-utils.c nm-auth-utils.h nm-manager.c \
+	nm-manager.h nm-multi-index.c nm-multi-index.h nm-policy.c \
+	nm-policy.h nm-properties-changed-signal.c \
+	nm-properties-changed-signal.h nm-rfkill-manager.c \
+	nm-rfkill-manager.h nm-session-monitor.h nm-session-utils.c \
+	nm-session-utils.h nm-sleep-monitor.h nm-types.h \
+	NetworkManagerUtils.c NetworkManagerUtils.h \
 	nm-session-monitor-systemd.c nm-session-monitor-ck.c \
 	nm-session-monitor-null.c nm-sleep-monitor-systemd.c \
 	nm-sleep-monitor-upower.c platform/wifi/wifi-utils-wext.c \
@@ -276,27 +279,27 @@ am__objects_8 = $(am__objects_1) $(am__objects_1) nm-device.lo \
 	nm-dns-unbound.lo nm-dns-manager.lo nm-dns-plugin.lo \
 	nm-dns-utils.lo nm-dnsmasq-manager.lo nm-dnsmasq-utils.lo \
 	nm-fake-platform.lo nm-linux-platform.lo nm-platform.lo \
-	wifi-utils-nl80211.lo wifi-utils.lo nm-fake-rdisc.lo \
-	nm-lndp-rdisc.lo nm-rdisc.lo nm-ppp-manager.lo \
-	nm-agent-manager.lo nm-inotify-helper.lo nm-secret-agent.lo \
-	nm-settings-connection.lo nm-settings.lo \
+	nm-platform-utils.lo nmp-object.lo wifi-utils-nl80211.lo \
+	wifi-utils.lo nm-fake-rdisc.lo nm-lndp-rdisc.lo nm-rdisc.lo \
+	nm-ppp-manager.lo nm-agent-manager.lo nm-inotify-helper.lo \
+	nm-secret-agent.lo nm-settings-connection.lo nm-settings.lo \
 	nm-system-config-interface.lo nm-keyfile-connection.lo \
 	plugin.lo reader.lo utils.lo writer.lo nm-supplicant-config.lo \
 	nm-supplicant-interface.lo nm-supplicant-manager.lo \
-	nm-supplicant-settings-verify.lo nm-call-store.lo \
-	nm-vpn-connection.lo nm-vpn-manager.lo nm-vpn-service.lo \
-	nm-activation-request.lo nm-active-connection.lo nm-config.lo \
+	nm-supplicant-settings-verify.lo nm-vpn-connection.lo \
+	nm-vpn-manager.lo nm-vpn-service.lo nm-activation-request.lo \
+	nm-active-connection.lo nm-config.lo nm-config-data.lo \
 	nm-connection-provider.lo nm-connectivity.lo \
-	nm-dbus-manager.lo nm-dcb.lo nm-default-route-manager.lo \
-	nm-dhcp4-config.lo nm-dhcp6-config.lo nm-dispatcher.lo \
-	nm-enum-types.lo nm-firewall-manager.lo nm-ip4-config.lo \
-	nm-ip6-config.lo nm-logging.lo nm-auth-manager.lo \
-	nm-auth-subject.lo nm-auth-utils.lo nm-manager.lo nm-policy.lo \
-	nm-posix-signals.lo nm-properties-changed-signal.lo \
-	nm-rfkill-manager.lo nm-session-utils.lo \
-	NetworkManagerUtils.lo $(am__objects_2) $(am__objects_3) \
-	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
-	$(am__objects_7)
+	nm-dbus-manager.lo nm-dcb.lo nm-route-manager.lo \
+	nm-default-route-manager.lo nm-dhcp4-config.lo \
+	nm-dhcp6-config.lo nm-dispatcher.lo nm-enum-types.lo \
+	nm-firewall-manager.lo nm-ip4-config.lo nm-ip6-config.lo \
+	nm-logging.lo nm-auth-manager.lo nm-auth-subject.lo \
+	nm-auth-utils.lo nm-manager.lo nm-multi-index.lo nm-policy.lo \
+	nm-properties-changed-signal.lo nm-rfkill-manager.lo \
+	nm-session-utils.lo NetworkManagerUtils.lo $(am__objects_2) \
+	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
+	$(am__objects_6) $(am__objects_7)
 am_libNetworkManager_la_OBJECTS = $(am__objects_8) $(am__objects_1)
 libNetworkManager_la_OBJECTS = $(am_libNetworkManager_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -315,23 +318,26 @@ am__libnm_iface_helper_la_SOURCES_DIST =  \
 	dhcp-manager/nm-dhcp-manager.c dhcp-manager/nm-dhcp-manager.h \
 	platform/nm-linux-platform.c platform/nm-linux-platform.h \
 	platform/nm-platform.c platform/nm-platform.h \
+	platform/nm-platform-utils.c platform/nm-platform-utils.h \
+	platform/nmp-object.c platform/nmp-object.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
 	platform/wifi/wifi-utils.h rdisc/nm-fake-rdisc.c \
 	rdisc/nm-fake-rdisc.h rdisc/nm-lndp-rdisc.c \
 	rdisc/nm-lndp-rdisc.h rdisc/nm-rdisc.c rdisc/nm-rdisc.h \
-	nm-ip4-config.c nm-ip4-config.h nm-ip6-config.c \
-	nm-ip6-config.h nm-enum-types.c nm-enum-types.h nm-logging.c \
-	nm-logging.h nm-posix-signals.c nm-posix-signals.h \
-	NetworkManagerUtils.c NetworkManagerUtils.h \
-	platform/wifi/wifi-utils-wext.c \
+	nm-route-manager.c nm-route-manager.h nm-ip4-config.c \
+	nm-ip4-config.h nm-ip6-config.c nm-ip6-config.h \
+	nm-enum-types.c nm-enum-types.h nm-logging.c nm-logging.h \
+	nm-multi-index.c nm-multi-index.h NetworkManagerUtils.c \
+	NetworkManagerUtils.h platform/wifi/wifi-utils-wext.c \
 	platform/wifi/wifi-utils-wext.h
 am_libnm_iface_helper_la_OBJECTS = nm-dhcp-client.lo nm-dhcp-utils.lo \
 	nm-dhcp-manager.lo nm-linux-platform.lo nm-platform.lo \
-	wifi-utils-nl80211.lo wifi-utils.lo nm-fake-rdisc.lo \
-	nm-lndp-rdisc.lo nm-rdisc.lo nm-ip4-config.lo nm-ip6-config.lo \
-	nm-enum-types.lo nm-logging.lo nm-posix-signals.lo \
+	nm-platform-utils.lo nmp-object.lo wifi-utils-nl80211.lo \
+	wifi-utils.lo nm-fake-rdisc.lo nm-lndp-rdisc.lo nm-rdisc.lo \
+	nm-route-manager.lo nm-ip4-config.lo nm-ip6-config.lo \
+	nm-enum-types.lo nm-logging.lo nm-multi-index.lo \
 	NetworkManagerUtils.lo $(am__objects_7)
 libnm_iface_helper_la_OBJECTS = $(am_libnm_iface_helper_la_OBJECTS)
 libsystemd_dhcp_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -493,10 +499,11 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = . devices/adsl devices/wifi dhcp-manager ppp-manager \
-	settings/plugins devices/wwan devices/bluetooth devices/wimax \
-	devices/team dhcp-manager/tests dnsmasq-manager/tests platform \
-	rdisc supplicant-manager/tests tests
+DIST_SUBDIRS = . devices/adsl dhcp-manager ppp-manager \
+	settings/plugins devices/wwan devices/bluetooth devices/wifi \
+	devices/wimax devices/team dhcp-manager/tests \
+	dnsmasq-manager/tests platform rdisc supplicant-manager/tests \
+	tests
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -529,6 +536,7 @@ ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AM_TESTS_FD_REDIRECT = @AM_TESTS_FD_REDIRECT@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -642,6 +650,7 @@ LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -785,9 +794,9 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
-SUBDIRS = . devices/adsl devices/wifi dhcp-manager ppp-manager \
-	settings/plugins $(am__append_1) $(am__append_2) \
-	$(am__append_3) $(am__append_4)
+SUBDIRS = . devices/adsl dhcp-manager ppp-manager settings/plugins \
+	$(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5)
 
 # add each subdirectory that contains a libNM source file. $(sort) is being used
 # primarily for its side effect of removing duplicates.
@@ -798,7 +807,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/libnm-core \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(foreach \
 	d,$(sort $(dir \
 	$(libNetworkManager_la_SOURCES))),-I$(top_srcdir)/src/$d) \
-	$(am__append_12) $(DBUS_CFLAGS) $(GLIB_CFLAGS) $(GUDEV_CFLAGS) \
+	$(am__append_13) $(DBUS_CFLAGS) $(GLIB_CFLAGS) $(GUDEV_CFLAGS) \
 	$(LIBNL_CFLAGS) $(LIBNDP_CFLAGS) $(LIBSOUP_CFLAGS) \
 	$(SYSTEMD_LOGIN_CFLAGS) $(SYSTEMD_DHCP_CFLAGS) \
 	-DBINDIR=\"$(bindir)\" -DDATADIR=\"$(datadir)\" \
@@ -812,7 +821,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/libnm-core \
 	-DDHCLIENT_PATH=\"$(DHCLIENT_PATH)\" \
 	-DDHCPCD_PATH=\"$(DHCPCD_PATH)\" \
 	-DPPPD_PLUGIN_DIR=\"$(PPPD_PLUGIN_DIR)\" $(NULL) \
-	$(am__append_13)
+	$(am__append_14)
 noinst_LTLIBRARIES = \
 	libNetworkManager.la \
 	libnm-iface-helper.la \
@@ -952,7 +961,9 @@ nm_sources = $(nm_device_headers) $(nm_dhcp_client_headers) \
 	dnsmasq-manager/nm-dnsmasq-utils.h platform/nm-fake-platform.c \
 	platform/nm-fake-platform.h platform/nm-linux-platform.c \
 	platform/nm-linux-platform.h platform/nm-platform.c \
-	platform/nm-platform.h platform/wifi/wifi-utils-nl80211.c \
+	platform/nm-platform.h platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h platform/nmp-object.c \
+	platform/nmp-object.h platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
 	platform/wifi/wifi-utils.h rdisc/nm-fake-rdisc.c \
@@ -987,36 +998,36 @@ nm_sources = $(nm_device_headers) $(nm_dhcp_client_headers) \
 	supplicant-manager/nm-supplicant-settings-verify.c \
 	supplicant-manager/nm-supplicant-settings-verify.h \
 	supplicant-manager/nm-supplicant-types.h \
-	supplicant-manager/nm-call-store.c \
-	supplicant-manager/nm-call-store.h \
 	vpn-manager/nm-vpn-connection.c \
 	vpn-manager/nm-vpn-connection.h vpn-manager/nm-vpn-manager.c \
 	vpn-manager/nm-vpn-manager.h vpn-manager/nm-vpn-service.c \
 	vpn-manager/nm-vpn-service.h nm-activation-request.c \
 	nm-activation-request.h nm-active-connection.c \
 	nm-active-connection.h nm-config.c nm-config.h \
-	nm-connection-provider.c nm-connection-provider.h \
-	nm-connectivity.c nm-connectivity.h nm-dbus-manager.c \
-	nm-dbus-manager.h nm-dcb.c nm-dcb.h nm-default-route-manager.c \
-	nm-default-route-manager.h nm-dhcp4-config.c nm-dhcp4-config.h \
-	nm-dhcp6-config.c nm-dhcp6-config.h nm-dispatcher.c \
-	nm-dispatcher.h nm-enum-types.c nm-enum-types.h \
-	nm-firewall-manager.c nm-firewall-manager.h nm-ip4-config.c \
-	nm-ip4-config.h nm-ip6-config.c nm-ip6-config.h nm-logging.c \
-	nm-logging.h nm-auth-manager.c nm-auth-manager.h \
-	nm-auth-subject.c nm-auth-subject.h nm-auth-utils.c \
-	nm-auth-utils.h nm-manager.c nm-manager.h nm-policy.c \
-	nm-policy.h nm-posix-signals.c nm-posix-signals.h \
-	nm-properties-changed-signal.c nm-properties-changed-signal.h \
-	nm-rfkill-manager.c nm-rfkill-manager.h nm-session-monitor.h \
-	nm-session-utils.c nm-session-utils.h nm-sleep-monitor.h \
-	nm-types.h NetworkManagerUtils.c NetworkManagerUtils.h \
-	$(am__append_5) $(am__append_6) $(am__append_7) \
-	$(am__append_8) $(am__append_9) $(am__append_10)
+	nm-config-data.c nm-config-data.h nm-connection-provider.c \
+	nm-connection-provider.h nm-connectivity.c nm-connectivity.h \
+	nm-dbus-manager.c nm-dbus-manager.h nm-dcb.c nm-dcb.h \
+	nm-route-manager.c nm-route-manager.h \
+	nm-default-route-manager.c nm-default-route-manager.h \
+	nm-dhcp4-config.c nm-dhcp4-config.h nm-dhcp6-config.c \
+	nm-dhcp6-config.h nm-dispatcher.c nm-dispatcher.h \
+	nm-enum-types.c nm-enum-types.h nm-firewall-manager.c \
+	nm-firewall-manager.h nm-ip4-config.c nm-ip4-config.h \
+	nm-ip6-config.c nm-ip6-config.h nm-logging.c nm-logging.h \
+	nm-auth-manager.c nm-auth-manager.h nm-auth-subject.c \
+	nm-auth-subject.h nm-auth-utils.c nm-auth-utils.h nm-manager.c \
+	nm-manager.h nm-multi-index.c nm-multi-index.h nm-policy.c \
+	nm-policy.h nm-properties-changed-signal.c \
+	nm-properties-changed-signal.h nm-rfkill-manager.c \
+	nm-rfkill-manager.h nm-session-monitor.h nm-session-utils.c \
+	nm-session-utils.h nm-sleep-monitor.h nm-types.h \
+	NetworkManagerUtils.c NetworkManagerUtils.h $(am__append_6) \
+	$(am__append_7) $(am__append_8) $(am__append_9) \
+	$(am__append_10) $(am__append_11)
 GLIB_GENERATED = nm-enum-types.h nm-enum-types.c
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM --fhead '\#include <nm-core-enum-types.h>\n'
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
-nm_enum_types_sources = $(nm_sources) $(am__append_11)
+nm_enum_types_sources = $(nm_sources) $(am__append_12)
 BUILT_SOURCES = $(GLIB_GENERATED) $(glue_sources)
 glue_sources = \
 	nm-access-point-glue.h \
@@ -1052,7 +1063,7 @@ libNetworkManager_la_LIBADD =  \
 	$(top_builddir)/libnm-core/libnm-core.la libsystemd-dhcp.la \
 	$(DBUS_LIBS) $(GLIB_LIBS) $(GUDEV_LIBS) $(LIBNL_LIBS) \
 	$(SYSTEMD_LOGIN_LIBS) $(LIBNDP_LIBS) $(LIBDL) $(LIBM) \
-	$(am__append_14)
+	$(am__append_15)
 NetworkManager_LDFLAGS = -rdynamic
 
 ######################
@@ -1061,16 +1072,19 @@ libnm_iface_helper_la_SOURCES = dhcp-manager/nm-dhcp-client.c \
 	dhcp-manager/nm-dhcp-utils.h dhcp-manager/nm-dhcp-manager.c \
 	dhcp-manager/nm-dhcp-manager.h platform/nm-linux-platform.c \
 	platform/nm-linux-platform.h platform/nm-platform.c \
-	platform/nm-platform.h platform/wifi/wifi-utils-nl80211.c \
+	platform/nm-platform.h platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h platform/nmp-object.c \
+	platform/nmp-object.h platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
 	platform/wifi/wifi-utils.h rdisc/nm-fake-rdisc.c \
 	rdisc/nm-fake-rdisc.h rdisc/nm-lndp-rdisc.c \
 	rdisc/nm-lndp-rdisc.h rdisc/nm-rdisc.c rdisc/nm-rdisc.h \
-	nm-ip4-config.c nm-ip4-config.h nm-ip6-config.c \
-	nm-ip6-config.h nm-enum-types.c nm-enum-types.h nm-logging.c \
-	nm-logging.h nm-posix-signals.c nm-posix-signals.h \
-	NetworkManagerUtils.c NetworkManagerUtils.h $(am__append_15)
+	nm-route-manager.c nm-route-manager.h nm-ip4-config.c \
+	nm-ip4-config.h nm-ip6-config.c nm-ip6-config.h \
+	nm-enum-types.c nm-enum-types.h nm-logging.c nm-logging.h \
+	nm-multi-index.c nm-multi-index.h NetworkManagerUtils.c \
+	NetworkManagerUtils.h $(am__append_16)
 libnm_iface_helper_la_LIBADD = \
 	$(top_builddir)/libnm-core/libnm-core.la \
 	libsystemd-dhcp.la \
@@ -1311,7 +1325,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-auth-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-auth-subject.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-auth-utils.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-call-store.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-config-data.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-connection-provider.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-connectivity.Plo@am__quote@
@@ -1363,13 +1377,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-lndp-rdisc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-logging.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-multi-index.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-platform-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-platform.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-policy.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-posix-signals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-ppp-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-properties-changed-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-rdisc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-rfkill-manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-route-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-secret-agent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-session-monitor-ck.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-session-monitor-null.Plo@am__quote@
@@ -1387,6 +1403,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-vpn-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-vpn-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-vpn-service.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmp-object.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Plo@am__quote@
@@ -1542,6 +1559,20 @@ nm-platform.lo: platform/nm-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-platform.lo `test -f 'platform/nm-platform.c' || echo '$(srcdir)/'`platform/nm-platform.c
 
+nm-platform-utils.lo: platform/nm-platform-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-platform-utils.lo -MD -MP -MF $(DEPDIR)/nm-platform-utils.Tpo -c -o nm-platform-utils.lo `test -f 'platform/nm-platform-utils.c' || echo '$(srcdir)/'`platform/nm-platform-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-platform-utils.Tpo $(DEPDIR)/nm-platform-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-platform-utils.c' object='nm-platform-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-platform-utils.lo `test -f 'platform/nm-platform-utils.c' || echo '$(srcdir)/'`platform/nm-platform-utils.c
+
+nmp-object.lo: platform/nmp-object.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nmp-object.lo -MD -MP -MF $(DEPDIR)/nmp-object.Tpo -c -o nmp-object.lo `test -f 'platform/nmp-object.c' || echo '$(srcdir)/'`platform/nmp-object.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nmp-object.Tpo $(DEPDIR)/nmp-object.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nmp-object.c' object='nmp-object.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nmp-object.lo `test -f 'platform/nmp-object.c' || echo '$(srcdir)/'`platform/nmp-object.c
+
 wifi-utils-nl80211.lo: platform/wifi/wifi-utils-nl80211.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT wifi-utils-nl80211.lo -MD -MP -MF $(DEPDIR)/wifi-utils-nl80211.Tpo -c -o wifi-utils-nl80211.lo `test -f 'platform/wifi/wifi-utils-nl80211.c' || echo '$(srcdir)/'`platform/wifi/wifi-utils-nl80211.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/wifi-utils-nl80211.Tpo $(DEPDIR)/wifi-utils-nl80211.Plo
@@ -1688,13 +1719,6 @@ nm-supplicant-settings-verify.lo: supplicant-manager/nm-supplicant-settings-veri
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='supplicant-manager/nm-supplicant-settings-verify.c' object='nm-supplicant-settings-verify.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-supplicant-settings-verify.lo `test -f 'supplicant-manager/nm-supplicant-settings-verify.c' || echo '$(srcdir)/'`supplicant-manager/nm-supplicant-settings-verify.c
-
-nm-call-store.lo: supplicant-manager/nm-call-store.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-call-store.lo -MD -MP -MF $(DEPDIR)/nm-call-store.Tpo -c -o nm-call-store.lo `test -f 'supplicant-manager/nm-call-store.c' || echo '$(srcdir)/'`supplicant-manager/nm-call-store.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-call-store.Tpo $(DEPDIR)/nm-call-store.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='supplicant-manager/nm-call-store.c' object='nm-call-store.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-call-store.lo `test -f 'supplicant-manager/nm-call-store.c' || echo '$(srcdir)/'`supplicant-manager/nm-call-store.c
 
 nm-vpn-connection.lo: vpn-manager/nm-vpn-connection.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-vpn-connection.lo -MD -MP -MF $(DEPDIR)/nm-vpn-connection.Tpo -c -o nm-vpn-connection.lo `test -f 'vpn-manager/nm-vpn-connection.c' || echo '$(srcdir)/'`vpn-manager/nm-vpn-connection.c

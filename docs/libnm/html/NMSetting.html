@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSetting</title>
+<title>NMSetting: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSimpleConnection.html" title="NMSimpleConnection">
 <link rel="next" href="NMSettingConnection.html" title="NMSettingConnection">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -256,24 +256,18 @@ of properties and allowed values.</p>
 <a name="NM-SETTING-PARAM-REQUIRED:CAPS"></a><h3>NM_SETTING_PARAM_REQUIRED</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_REQUIRED     (1 &lt;&lt; (1 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PARAM-SECRET:CAPS"></a><h3>NM_SETTING_PARAM_SECRET</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_SECRET       (1 &lt;&lt; (2 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"></a><h3>NM_SETTING_PARAM_FUZZY_IGNORE</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_FUZZY_IGNORE (1 &lt;&lt; (3 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -318,7 +312,6 @@ of properties and allowed values.</p>
 <div class="refsect3">
 <a name="id-1.4.4.8.5.5"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> to clear the secret, <code class="literal">FALSE</code> to not clear the secret</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -395,7 +388,6 @@ nm_setting_lookup_type (<em class="parameter"><code>const <span class="type">cha
 <p> the <span class="type">GType</span> of the setting's class, or <code class="literal">G_TYPE_INVALID</code> if
 <em class="parameter"><code>name</code></em>
 is not recognized.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -451,7 +443,6 @@ nm_setting_get_name (<em class="parameter"><code><a class="link" href="NMSetting
 <a name="id-1.4.4.8.9.6"></a><h4>Returns</h4>
 <p> a string containing the type name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object,
 like 'ppp' or 'wireless' or 'wired'.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -499,7 +490,6 @@ is being verified in isolation. </p></td>
 <div class="refsect3">
 <a name="id-1.4.4.8.10.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the setting is valid, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -542,7 +532,6 @@ for a description of each flag's behavior.</p>
 <div class="refsect3">
 <a name="id-1.4.4.8.11.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the comparison succeeds, <code class="literal">FALSE</code> if it does not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -605,7 +594,6 @@ in and the settings differ, a new one is created and returned. </p></td>
 <div class="refsect3">
 <a name="id-1.4.4.8.12.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the settings contain the same values, <code class="literal">FALSE</code> if they do not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -674,7 +662,6 @@ output format is not guaranteed to be stable and may change at any time.</p>
 <p> an allocated string containing a textual representation of the
 setting's properties and values (including secrets!), which the caller should
 free with <code class="function">g_free()</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -723,7 +710,6 @@ handle that secret.</p>
 <a name="id-1.4.4.8.15.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success (if the given secret name was a valid property of
 this setting, and if that property is secret), <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -772,7 +758,6 @@ handle that secret.</p>
 <a name="id-1.4.4.8.16.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success (if the given secret name was a valid property of
 this setting, and if that property is secret), <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -812,7 +797,6 @@ to get the type of</p></td>
 <p> the D-Bus marshalling type of <em class="parameter"><code>property</code></em>
 on <em class="parameter"><code>setting</code></em>
 .</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -822,8 +806,6 @@ on <em class="parameter"><code>setting</code></em>
 <a name="NM-SETTING-NAME:CAPS"></a><h3>NM_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_NAME "name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1064,7 +1046,6 @@ example "ppp" or "wireless" or "wired".</p>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

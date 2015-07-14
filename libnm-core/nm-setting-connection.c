@@ -27,6 +27,7 @@
 
 #include "nm-utils.h"
 #include "nm-utils-private.h"
+#include "nm-core-enum-types.h"
 #include "nm-setting-connection.h"
 #include "nm-connection-private.h"
 #include "nm-setting-bond.h"
@@ -66,6 +67,7 @@ typedef struct {
 	char *type;
 	char *master;
 	char *slave_type;
+	NMSettingConnectionAutoconnectSlaves autoconnect_slaves;
 	GSList *permissions; /* list of Permission structs */
 	gboolean autoconnect;
 	gint autoconnect_priority;
@@ -90,6 +92,7 @@ enum {
 	PROP_ZONE,
 	PROP_MASTER,
 	PROP_SLAVE_TYPE,
+	PROP_AUTOCONNECT_SLAVES,
 	PROP_SECONDARIES,
 	PROP_GATEWAY_PING_TIMEOUT,
 
@@ -600,6 +603,25 @@ nm_setting_connection_is_slave_type (NMSettingConnection *setting,
 	g_return_val_if_fail (NM_IS_SETTING_CONNECTION (setting), FALSE);
 
 	return !g_strcmp0 (NM_SETTING_CONNECTION_GET_PRIVATE (setting)->slave_type, type);
+}
+
+/**
+ * nm_setting_connection_get_autoconnect_slaves:
+ * @setting: the #NMSettingConnection
+ *
+ * Returns the #NMSettingConnection:autoconnect-slaves property of the connection.
+ *
+ * Returns: whether slaves of the connection should be activated together
+ *          with the connection.
+ *
+ * Since: 1.0.4
+ **/
+NMSettingConnectionAutoconnectSlaves
+nm_setting_connection_get_autoconnect_slaves (NMSettingConnection *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_CONNECTION (setting), NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT);
+
+	return NM_SETTING_CONNECTION_GET_PRIVATE (setting)->autoconnect_slaves;
 }
 
 /**
@@ -1122,9 +1144,12 @@ set_property (GObject *object, guint prop_id,
 		g_free (priv->slave_type);
 		priv->slave_type = g_value_dup_string (value);
 		break;
+	case PROP_AUTOCONNECT_SLAVES:
+		priv->autoconnect_slaves = g_value_get_enum (value);
+		break;
 	case PROP_SECONDARIES:
 		g_slist_free_full (priv->secondaries, g_free);
-		priv->secondaries = _nm_utils_strv_to_slist (g_value_get_boxed (value));
+		priv->secondaries = _nm_utils_strv_to_slist (g_value_get_boxed (value), TRUE);
 		break;
 	case PROP_GATEWAY_PING_TIMEOUT:
 		priv->gateway_ping_timeout = g_value_get_uint (value);
@@ -1193,8 +1218,11 @@ get_property (GObject *object, guint prop_id,
 	case PROP_SLAVE_TYPE:
 		g_value_set_string (value, nm_setting_connection_get_slave_type (setting));
 		break;
+	case PROP_AUTOCONNECT_SLAVES:
+		g_value_set_enum (value, nm_setting_connection_get_autoconnect_slaves (setting));
+		break;
 	case PROP_SECONDARIES:
-		g_value_take_boxed (value, _nm_utils_slist_to_strv (priv->secondaries));
+		g_value_take_boxed (value, _nm_utils_slist_to_strv (priv->secondaries, TRUE));
 		break;
 	case PROP_GATEWAY_PING_TIMEOUT:
 		g_value_set_uint (value, priv->gateway_ping_timeout);
@@ -1524,6 +1552,37 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 		                      G_PARAM_STATIC_STRINGS));
 
 	/**
+	 * NMSettingConnection:autoconnect-slaves:
+	 *
+	 * Whether or not slaves of this connection should be automatically brought up
+	 * when NetworkManager activates this connection. This only has a real effect
+	 * for master connections.
+	 * The permitted values are: 0: leave slave connections untouched,
+	 * 1: activate all the slave connections with this connection, -1: default.
+	 * If -1 (default) is set, global connection.autoconnect-slaves is read to
+	 * determine the real value. If it is default as well, this fallbacks to 0.
+	 *
+	 * Since: 1.0.4
+	 **/
+	/* ---ifcfg-rh---
+	 * property: autoconnect-slaves
+	 * variable: AUTOCONNECT-SLAVES(+)
+	 * default: missing variable means global default
+	 * description: Whether slaves of this connection should be auto-connected
+	 *   when this connection is activated.
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_AUTOCONNECT_SLAVES,
+		 g_param_spec_enum (NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES, "", "",
+		                    NM_TYPE_SETTING_CONNECTION_AUTOCONNECT_SLAVES,
+		                    NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT,
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_CONSTRUCT |
+		                    NM_SETTING_PARAM_FUZZY_IGNORE |
+		                    G_PARAM_STATIC_STRINGS));
+
+	/**
 	 * NMSettingConnection:secondaries:
 	 *
 	 * List of connection UUIDs that should be activated when the base
@@ -1563,7 +1622,7 @@ nm_setting_connection_class_init (NMSettingConnectionClass *setting_class)
 	g_object_class_install_property
 		(object_class, PROP_GATEWAY_PING_TIMEOUT,
 		 g_param_spec_uint (NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT, "", "",
-		                    0, 30, 0,
+		                    0, 600, 0,
 		                    G_PARAM_READWRITE |
 		                    G_PARAM_CONSTRUCT |
 		                    G_PARAM_STATIC_STRINGS));

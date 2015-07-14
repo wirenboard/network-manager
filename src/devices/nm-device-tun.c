@@ -65,7 +65,7 @@ reload_tun_properties (NMDeviceTun *self)
 	GObject *object = G_OBJECT (self);
 	NMPlatformTunProperties props;
 
-	if (!nm_platform_tun_get_properties (nm_device_get_ifindex (NM_DEVICE (self)), &props)) {
+	if (!nm_platform_tun_get_properties (NM_PLATFORM_GET, nm_device_get_ifindex (NM_DEVICE (self)), &props)) {
 		_LOGD (LOGD_HW, "could not read tun properties");
 		return;
 	}
@@ -123,7 +123,7 @@ constructed (GObject *object)
 	gboolean properties_read;
 	NMDeviceTunPrivate *priv = NM_DEVICE_TUN_GET_PRIVATE (self);
 
-	properties_read = nm_platform_tun_get_properties (nm_device_get_ifindex (NM_DEVICE (self)), &priv->props);
+	properties_read = nm_platform_tun_get_properties (NM_PLATFORM_GET, nm_device_get_ifindex (NM_DEVICE (self)), &priv->props);
 
 	G_OBJECT_CLASS (nm_device_tun_parent_class)->constructed (object);
 
@@ -270,7 +270,7 @@ nm_device_tun_class_init (NMDeviceTunClass *klass)
 #define NM_TUN_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_TUN_FACTORY, NMTunFactory))
 
 static NMDevice *
-new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
+new_link (NMDeviceFactory *factory, NMPlatformLink *plink, gboolean *out_ignore, GError **error)
 {
 	const char *mode = NULL;
 
@@ -278,8 +278,10 @@ new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
 		mode = "tun";
 	else if (plink->type == NM_LINK_TYPE_TAP)
 		mode = "tap";
-	else
-		return NULL;
+	else {
+		g_warn_if_reached ();
+		mode = "unknown";
+	}
 
 	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_TUN,
 	                                  NM_DEVICE_PLATFORM_DEVICE, plink,
@@ -289,7 +291,8 @@ new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
 	                                  NULL);
 }
 
-DEFINE_DEVICE_FACTORY_INTERNAL_WITH_DEVTYPE(TUN, Tun, tun, GENERIC, \
-	factory_iface->new_link = new_link; \
+NM_DEVICE_FACTORY_DEFINE_INTERNAL (TUN, Tun, tun,
+	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES (NM_LINK_TYPE_TUN, NM_LINK_TYPE_TAP),
+	factory_iface->new_link = new_link;
 	)
 

@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [0])
-m4_define([nm_micro_version], [2])
+m4_define([nm_micro_version], [4])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -15,21 +15,9 @@ AC_INIT([NetworkManager], [nm_version],
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 
-dnl Initialize automake.  automake < 1.12 didn't have serial-tests and
-dnl gives an error if it sees this, but for automake >= 1.13
-dnl serial-tests is required so we have to include it.  Solution is to
-dnl test for the version of automake (by running an external command)
-dnl and provide it if necessary.  Note we have to do this entirely using
-dnl m4 macros since automake queries this macro by running
-dnl 'autoconf --trace ...'.
-m4_define([serial_tests], [
-    m4_esyscmd([automake --version |
-                head -1 |
-                awk '{split ($NF,a,"."); if (a[1] == 1 && a[2] >= 12) { print "serial-tests" }}'
-    ])
-])
-AM_INIT_AUTOMAKE(1.11 serial_tests tar-ustar no-dist-gzip dist-bzip2 -Wno-portability)  dnl NB: Do not [quote] this parameter.
+AM_INIT_AUTOMAKE(1.12 tar-ustar no-dist-gzip dist-bzip2 -Wno-portability)  dnl NB: Do not [quote] this parameter.
 AM_MAINTAINER_MODE([enable])
 AM_SILENT_RULES([yes])
 
@@ -145,11 +133,26 @@ if ! test x"$ac_distver" = x""; then
   AC_DEFINE_UNQUOTED(NM_DIST_VERSION, "$ac_distver", [Define the distribution version string])
 fi
 
+AC_ARG_ENABLE(wifi, AS_HELP_STRING([--enable-wifi], [enable Wi-Fi support]))
+if test "${enable_wifi}" != "no"; then
+	enable_wifi='yes'
+	AC_DEFINE(WITH_WIFI, 1, [Define if you have Wi-Fi support])
+else
+	AC_DEFINE(WITH_WIFI, 0, [Define if you have Wi-Fi support])
+fi
+AM_CONDITIONAL(WITH_WIFI, test "${enable_wifi}" = "yes")
+
 dnl
 dnl Default to using WEXT but allow it to be disabled
 dnl
-AC_ARG_WITH(wext, AS_HELP_STRING([--with-wext=yes], [Enable or disable Linux Wireless Extensions]), ac_with_wext=$withval, ac_with_wext="yes")
+AC_ARG_WITH(wext, AS_HELP_STRING([--with-wext=yes], [Enable or disable Linux Wireless Extensions]), ac_with_wext=$withval, ac_with_wext="$enable_wifi")
+if test "$ac_with_wext" != 'no'; then
+	ac_with_wext='yes'
+fi
 if test x"$ac_with_wext" = x"yes"; then
+	if test "$enable_wifi" != "yes"; then
+		AC_MSG_ERROR(Enabling WEXT support and disabling Wi-Fi makes no sense)
+	fi
 	AC_MSG_CHECKING([Linux kernel WEXT headers])
 	AC_COMPILE_IFELSE(
 		[AC_LANG_PROGRAM(
@@ -193,20 +196,24 @@ if test "$ac_have_nl80211" = no; then
 	AC_MSG_ERROR(Linux kernel development header linux/nl80211.h not installed or not functional)
 fi
 
-AC_MSG_CHECKING([Linux kernel nl80211 Critical Protocol Start/Stop])
-AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-              [[#ifndef __user
-                #define __user
-                #endif
-                #include <sys/types.h>
-                #include <linux/types.h>
-                #include <sys/socket.h>
-                #include <linux/nl80211.h>]],
-              [[unsigned int a = NL80211_CMD_CRIT_PROTOCOL_START; a++;]])],
-        [ac_have_nl80211_critproto=yes],
-        [ac_have_nl80211_critproto=no])
-AC_MSG_RESULT($ac_have_nl80211_critproto)
+if test "$with_wifi" = "yes"; then
+	AC_MSG_CHECKING([Linux kernel nl80211 Critical Protocol Start/Stop])
+	AC_COMPILE_IFELSE(
+		[AC_LANG_PROGRAM(
+                  [[#ifndef __user
+                    #define __user
+                    #endif
+                    #include <sys/types.h>
+                    #include <linux/types.h>
+                    #include <sys/socket.h>
+                    #include <linux/nl80211.h>]],
+                  [[unsigned int a = NL80211_CMD_CRIT_PROTOCOL_START; a++;]])],
+		[ac_have_nl80211_critproto=yes],
+		[ac_have_nl80211_critproto=no])
+	AC_MSG_RESULT($ac_have_nl80211_critproto)
+else
+	ac_have_nl80211_critproto='no'
+fi
 if test "$ac_have_nl80211_critproto" = yes; then
 	AC_DEFINE(HAVE_NL80211_CRITICAL_PROTOCOL_CMDS, 1, [Define if nl80211 has critical protocol support])
 else
@@ -267,7 +274,11 @@ else
 fi
 AM_CONDITIONAL(HAVE_DBUS_GLIB_100, test "${have_dbus_glib_100}" = "yes")
 
-PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.32 gmodule-2.0)
+PKG_CHECK_MODULES(GLIB, [gio-unix-2.0 >= 2.37.6 gmodule-2.0],
+	[AC_SUBST(LOG_DRIVER, '$(top_srcdir)/build-aux/tap-driver.sh'),
+	 AC_SUBST(AM_TESTS_FD_REDIRECT, '--tap')],
+	[PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.32 gmodule-2.0)
+	 AC_SUBST(LOG_DRIVER, '$(top_srcdir)/build-aux/test-driver')])
 
 dnl GLIB_VERSION_MIN_REQUIRED should match the version above.
 dnl GLIB_VERSION_MAX_ALLOWED should be set to the same version;
@@ -427,6 +438,13 @@ if test "$ac_have_kernel_gen_mode" = yes; then
 else
 	AC_DEFINE(HAVE_KERNEL_INET6_ADDR_GEN_MODE, 0, [Define if the kernel has IN6_ADDR_GEN_MODE_*])
 fi
+
+# IPv6 tokenized identifiers support in libnl
+AC_CHECK_LIB([nl-route-3], [rtnl_link_inet6_get_token],
+	ac_have_ipv6_token="1",
+	ac_have_ipv6_token="0")
+AC_DEFINE_UNQUOTED(HAVE_LIBNL_INET6_TOKEN,
+	$ac_have_ipv6_token, [Define if libnl has rtnl_link_inet6_get_token()])
 
 # uuid library
 PKG_CHECK_MODULES(UUID, uuid)
@@ -685,10 +703,10 @@ fi
 if test "$with_dhcpcd" = "yes"; then
 	AC_PATH_PROGS(with_dhcpcd, dhcpcd, no, /sbin:/usr/sbin:/usr/local/sbin)
 	if test "$with_dhcpcd" != "no"; then
-		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [456789]\."; then
+		if ! $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[456789]]\."; then
 			AC_MSG_WARN([Cannot use dhcpcd, version 4.x or higher is required])
 			with_dhcpcd=no
-		elif $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [6789]\."; then
+		elif $with_dhcpcd --version 2>&1 | grep -q "^dhcpcd [[6789]]\."; then
 			AC_DEFINE(DHCPCD_SUPPORTS_IPV6, 1, [Define if dhcpcd supports IPv6 (6.x+)])
 		fi
 	fi
@@ -821,6 +839,18 @@ AM_CONDITIONAL(BUILD_NMTUI, test "$build_nmtui" = yes)
 
 NM_COMPILER_WARNINGS
 
+AC_ARG_ENABLE(more-asserts,
+              AS_HELP_STRING([--enable-more-asserts], [Enable more assertions for debugging (default: no)]))
+if test "${enable_more_asserts}" = "yes"; then
+    AC_DEFINE(NM_MORE_ASSERTS, [1], [Define if more asserts are enabled])
+fi
+
+AC_ARG_ENABLE(more-logging,
+              AS_HELP_STRING([--enable-more-logging], [Enable more debug logging (default: no)]))
+if test "${enable_more_logging}" = "yes"; then
+    AC_DEFINE(NM_MORE_LOGGING, [1], [Define if more asserts are enabled])
+fi
+
 AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]))
 if (test "${enable_lto}" = "yes"); then
     CFLAGS="-flto $CFLAGS"
@@ -852,8 +882,16 @@ AS_IF([test "$with_valgrind" == "yes"],
 # Add conditionals and substitutions
 AM_CONDITIONAL(ENABLE_TESTS, test "$enable_tests" != "no")
 AM_CONDITIONAL(REQUIRE_ROOT_TESTS, test "$enable_tests" == "root")
+AC_ARG_WITH(valgrind-suppressions, AS_HELP_STRING([--with-valgrind-suppressions=path], [Use specific valgrind suppression file]))
+if test "$with_valgrind" == no; then
+	with_valgrind_suppressions=
+else
+	if test  "$with_valgrind_suppressions" == ""; then
+		with_valgrind_suppressions='$(top_srcdir)/valgrind.suppressions'
+	fi
+fi
 AS_IF([test "$with_valgrind" != "no"],
-	AC_SUBST(VALGRIND_RULES, 'TESTS_ENVIRONMENT = "$(top_srcdir)/tools/run-test-valgrind.sh" "$(LIBTOOL)" "$(with_valgrind)" "$(top_srcdir)/valgrind.suppressions"'),
+	AC_SUBST(VALGRIND_RULES, 'LOG_COMPILER = "$(top_srcdir)/tools/run-test-valgrind.sh" "$(LIBTOOL)" "$(with_valgrind)" '"$with_valgrind_suppressions"),
 	AC_SUBST(VALGRIND_RULES, []))
 AM_CONDITIONAL(WITH_VALGRIND, test "${with_valgrind}" != "no")
 
@@ -1048,6 +1086,7 @@ echo
 
 echo "Features:"
 echo "  wext: $ac_with_wext"
+echo "  wifi: $enable_wifi"
 echo "  wimax: $enable_wimax"
 echo "  ppp: $enable_ppp"
 echo "  modemmanager-1: $with_modem_manager_1"
@@ -1077,7 +1116,7 @@ echo
 echo "Miscellaneous:"
 echo "  documentation: $enable_gtk_doc"
 echo "  tests: $enable_tests"
-echo "  valgrind: $with_valgrind"
+echo "  valgrind: $with_valgrind   $with_valgrind_suppressions"
 echo "  code coverage: $enable_code_coverage"
 echo "  LTO: $enable_lto"
 echo

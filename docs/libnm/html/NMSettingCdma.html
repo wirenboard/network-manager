@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSettingCdma</title>
+<title>NMSettingCdma: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingBridgePort.html" title="NMSettingBridgePort">
 <link rel="next" href="NMSettingDcb.html" title="NMSettingDcb">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -170,7 +170,6 @@ nm_setting_cdma_new (<em class="parameter"><code><span class="type">void</span><
 <div class="refsect3">
 <a name="id-1.4.12.8.2.5"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingCdma.html" title="NMSettingCdma"><span class="type">NMSettingCdma</span></a> object</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -196,7 +195,6 @@ nm_setting_cdma_get_number (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.4.12.8.3.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingCdma.html#NMSettingCdma--number" title="The “number” property"><span class="type">“number”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -222,7 +220,6 @@ nm_setting_cdma_get_username (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.4.12.8.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingCdma.html#NMSettingCdma--username" title="The “username” property"><span class="type">“username”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -248,7 +245,6 @@ nm_setting_cdma_get_password (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.4.12.8.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingCdma.html#NMSettingCdma--password" title="The “password” property"><span class="type">“password”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -274,7 +270,6 @@ nm_setting_cdma_get_password_flags (<em class="parameter"><code><a class="link" 
 <div class="refsect3">
 <a name="id-1.4.12.8.6.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the <a class="link" href="NMSettingCdma.html#NMSettingCdma--password" title="The “password” property"><span class="type">“password”</span></a></p>
-<p></p>
 </div>
 </div>
 </div>
@@ -284,40 +279,30 @@ nm_setting_cdma_get_password_flags (<em class="parameter"><code><a class="link" 
 <a name="NM-SETTING-CDMA-SETTING-NAME:CAPS"></a><h3>NM_SETTING_CDMA_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_CDMA_SETTING_NAME "cdma"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CDMA-NUMBER:CAPS"></a><h3>NM_SETTING_CDMA_NUMBER</h3>
 <pre class="programlisting">#define NM_SETTING_CDMA_NUMBER         "number"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CDMA-USERNAME:CAPS"></a><h3>NM_SETTING_CDMA_USERNAME</h3>
 <pre class="programlisting">#define NM_SETTING_CDMA_USERNAME       "username"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CDMA-PASSWORD:CAPS"></a><h3>NM_SETTING_CDMA_PASSWORD</h3>
 <pre class="programlisting">#define NM_SETTING_CDMA_PASSWORD       "password"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CDMA-PASSWORD-FLAGS:CAPS"></a><h3>NM_SETTING_CDMA_PASSWORD_FLAGS</h3>
 <pre class="programlisting">#define NM_SETTING_CDMA_PASSWORD_FLAGS "password-flags"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -325,7 +310,9 @@ nm_setting_cdma_get_password_flags (<em class="parameter"><code><a class="link" 
 <div class="refsect2">
 <a name="NMSettingCdma--number"></a><h3>The <code class="literal">“number”</code> property</h3>
 <pre class="programlisting">  “number”                   <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The number to dial to establish the connection to the CDMA-based mobile
+broadband network, if any.  If not specified, the default number (<span class="type">777</span>)
+is used when required.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -333,7 +320,9 @@ nm_setting_cdma_get_password_flags (<em class="parameter"><code><a class="link" 
 <div class="refsect2">
 <a name="NMSettingCdma--password"></a><h3>The <code class="literal">“password”</code> property</h3>
 <pre class="programlisting">  “password”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The password used to authenticate with the network, if required.  Many
+providers do not require a password, or accept any password.  But if a
+password is required, it is specified here.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -341,21 +330,22 @@ nm_setting_cdma_get_password_flags (<em class="parameter"><code><a class="link" 
 <div class="refsect2">
 <a name="NMSettingCdma--password-flags"></a><h3>The <code class="literal">“password-flags”</code> property</h3>
 <pre class="programlisting">  “password-flags”           <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a></pre>
-<p></p>
+<p>Flags indicating how to handle the <a class="link" href="NMSettingCdma.html#NMSettingCdma--password" title="The “password” property"><span class="type">“password”</span></a> property.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingCdma--username"></a><h3>The <code class="literal">“username”</code> property</h3>
 <pre class="programlisting">  “username”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The username used to authenticate with the network, if required.  Many
+providers do not require a username, or accept any username.  But if a
+username is required, it is specified here.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

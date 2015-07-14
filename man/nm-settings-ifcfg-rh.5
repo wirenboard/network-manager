@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 05 May 2015
+.\"      Date: 14 July 2015
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.0.2
+.\"    Source: NetworkManager 1.0.4
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.0\&.2" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.0\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -897,6 +897,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 id
@@ -999,6 +1000,15 @@ T}:T{
 \ \&
 T}:T{
 Slave type doesn\*(Aqt map directly to a variable, but it is recognized using different variables\&.  MASTER for bonding, TEAM_MASTER and DEVICETYPE for teaming, BRIDGE for bridging\&.
+T}
+T{
+autoconnect\-slaves
+T}:T{
+AUTOCONNECT\-SLAVES\fI(+)\fR
+T}:T{
+missing variable means global default
+T}:T{
+Whether slaves of this connection should be auto\-connected when this connection is activated\&.
 T}
 T{
 secondaries

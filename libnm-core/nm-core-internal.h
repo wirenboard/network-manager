@@ -110,17 +110,38 @@ GPtrArray *_nm_utils_copy_array (const GPtrArray *array,
                                  GDestroyNotify free_func);
 GPtrArray *_nm_utils_copy_object_array (const GPtrArray *array);
 
+gssize _nm_utils_ptrarray_find_first (gpointer *list, gssize len, gconstpointer needle);
+
+gssize _nm_utils_ptrarray_find_binary_search (gpointer *list, gsize len, gpointer needle, GCompareDataFunc cmpfcn, gpointer user_data);
+
 gboolean    _nm_utils_string_in_list   (const char *str,
                                         const char **valid_strings);
+
+gssize      _nm_utils_strv_find_first (char **list, gssize len, const char *needle);
+
+char **_nm_utils_strv_cleanup (char **strv,
+                               gboolean strip_whitespace,
+                               gboolean skip_empty,
+                               gboolean skip_repeated);
 
 char **     _nm_utils_strsplit_set (const char *str,
                                     const char *delimiters,
                                     int max_tokens);
 
+GSList *    _nm_utils_strv_to_slist (char **strv, gboolean deep_copy);
+char **     _nm_utils_slist_to_strv (GSList *slist, gboolean deep_copy);
+
+GPtrArray * _nm_utils_strv_to_ptrarray (char **strv);
+char **     _nm_utils_ptrarray_to_strv (GPtrArray *ptrarray);
+
 #define NM_UTILS_UUID_TYPE_LEGACY            0
 #define NM_UTILS_UUID_TYPE_VARIANT3          1
 
 char *nm_utils_uuid_generate_from_string (const char *s, gssize slen, int uuid_type, gpointer type_args);
+
+#define NM_UTILS_UUID_NS "b425e9fb-7598-44b4-9e3b-5a2e3aaa4905"
+
+char *_nm_utils_uuid_generate_from_strings (const char *string1, ...) G_GNUC_NULL_TERMINATED;
 
 void _nm_dbus_errors_init (void);
 
@@ -135,5 +156,7 @@ GByteArray *nm_utils_rsa_key_encrypt (const guint8 *data,
 /* These are public API in NM 1.2, but private on nm-1-0. */
 int nm_utils_bond_mode_string_to_int (const char *mode);
 const char *nm_utils_bond_mode_int_to_string (int mode);
+
+gint64 _nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback);
 
 #endif

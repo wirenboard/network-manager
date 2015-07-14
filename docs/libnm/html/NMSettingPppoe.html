@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSettingPppoe</title>
+<title>NMSettingPppoe: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingPpp.html" title="NMSettingPpp">
 <link rel="next" href="NMSettingSerial.html" title="NMSettingSerial">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -196,7 +196,6 @@ nm_setting_pppoe_get_service (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.4.22.8.3.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingPppoe.html#NMSettingPppoe--service" title="The “service” property"><span class="type">“service”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -222,7 +221,6 @@ nm_setting_pppoe_get_username (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.4.22.8.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingPppoe.html#NMSettingPppoe--username" title="The “username” property"><span class="type">“username”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -248,7 +246,6 @@ nm_setting_pppoe_get_password (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.4.22.8.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingPppoe.html#NMSettingPppoe--password" title="The “password” property"><span class="type">“password”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -274,7 +271,6 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <div class="refsect3">
 <a name="id-1.4.22.8.6.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the <a class="link" href="NMSettingPppoe.html#NMSettingPppoe--password" title="The “password” property"><span class="type">“password”</span></a></p>
-<p></p>
 </div>
 </div>
 </div>
@@ -284,40 +280,30 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <a name="NM-SETTING-PPPOE-SETTING-NAME:CAPS"></a><h3>NM_SETTING_PPPOE_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_SETTING_NAME "pppoe"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-SERVICE:CAPS"></a><h3>NM_SETTING_PPPOE_SERVICE</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_SERVICE        "service"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-USERNAME:CAPS"></a><h3>NM_SETTING_PPPOE_USERNAME</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_USERNAME       "username"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-PASSWORD:CAPS"></a><h3>NM_SETTING_PPPOE_PASSWORD</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_PASSWORD       "password"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-PASSWORD-FLAGS:CAPS"></a><h3>NM_SETTING_PPPOE_PASSWORD_FLAGS</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_PASSWORD_FLAGS "password-flags"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -325,7 +311,7 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <div class="refsect2">
 <a name="NMSettingPppoe--password"></a><h3>The <code class="literal">“password”</code> property</h3>
 <pre class="programlisting">  “password”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Password used to authenticate with the PPPoE service.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -333,14 +319,17 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <div class="refsect2">
 <a name="NMSettingPppoe--password-flags"></a><h3>The <code class="literal">“password-flags”</code> property</h3>
 <pre class="programlisting">  “password-flags”           <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a></pre>
-<p></p>
+<p>Flags indicating how to handle the <a class="link" href="NMSettingPppoe.html#NMSettingPppoe--password" title="The “password” property"><span class="type">“password”</span></a> property.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingPppoe--service"></a><h3>The <code class="literal">“service”</code> property</h3>
 <pre class="programlisting">  “service”                  <span class="type">gchar</span> *</pre>
-<p></p>
+<p>If specified, instruct PPPoE to only initiate sessions with access
+concentrators that provide the specified service.  For most providers,
+this should be left blank.  It is only required if there are multiple
+access concentrators or a specific service is known to be required.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -348,14 +337,13 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <div class="refsect2">
 <a name="NMSettingPppoe--username"></a><h3>The <code class="literal">“username”</code> property</h3>
 <pre class="programlisting">  “username”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Username used to authenticate with the PPPoE service.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

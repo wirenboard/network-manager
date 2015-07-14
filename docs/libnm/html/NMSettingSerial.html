@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSettingSerial</title>
+<title>NMSettingSerial: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingPppoe.html" title="NMSettingPppoe">
 <link rel="next" href="NMSettingTeam.html" title="NMSettingTeam">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -220,7 +220,6 @@ nm_setting_serial_get_baud (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.4.23.8.3.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingSerial.html#NMSettingSerial--baud" title="The “baud” property"><span class="type">“baud”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -246,7 +245,6 @@ nm_setting_serial_get_bits (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.4.23.8.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingSerial.html#NMSettingSerial--bits" title="The “bits” property"><span class="type">“bits”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -272,7 +270,6 @@ nm_setting_serial_get_parity (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.4.23.8.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingSerial.html#NMSettingSerial--parity" title="The “parity” property"><span class="type">“parity”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -298,7 +295,6 @@ nm_setting_serial_get_stopbits (<em class="parameter"><code><a class="link" href
 <div class="refsect3">
 <a name="id-1.4.23.8.6.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingSerial.html#NMSettingSerial--stopbits" title="The “stopbits” property"><span class="type">“stopbits”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -324,7 +320,6 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <div class="refsect3">
 <a name="id-1.4.23.8.7.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingSerial.html#NMSettingSerial--send-delay" title="The “send-delay” property"><span class="type">“send-delay”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -334,8 +329,6 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <a name="NM-SETTING-SERIAL-SETTING-NAME:CAPS"></a><h3>NM_SETTING_SERIAL_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_SETTING_NAME "serial"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -380,40 +373,30 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <a name="NM-SETTING-SERIAL-BAUD:CAPS"></a><h3>NM_SETTING_SERIAL_BAUD</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_BAUD "baud"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-SERIAL-BITS:CAPS"></a><h3>NM_SETTING_SERIAL_BITS</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_BITS "bits"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-SERIAL-PARITY:CAPS"></a><h3>NM_SETTING_SERIAL_PARITY</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_PARITY "parity"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-SERIAL-STOPBITS:CAPS"></a><h3>NM_SETTING_SERIAL_STOPBITS</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_STOPBITS "stopbits"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-SERIAL-SEND-DELAY:CAPS"></a><h3>NM_SETTING_SERIAL_SEND_DELAY</h3>
 <pre class="programlisting">#define NM_SETTING_SERIAL_SEND_DELAY "send-delay"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -421,7 +404,9 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <div class="refsect2">
 <a name="NMSettingSerial--baud"></a><h3>The <code class="literal">“baud”</code> property</h3>
 <pre class="programlisting">  “baud”                     <span class="type">guint</span></pre>
-<p></p>
+<p>Speed to use for communication over the serial port.  Note that this
+value usually has no effect for mobile broadband modems as they generally
+ignore speed settings and use the highest available speed.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 57600</p>
 </div>
@@ -429,7 +414,7 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <div class="refsect2">
 <a name="NMSettingSerial--bits"></a><h3>The <code class="literal">“bits”</code> property</h3>
 <pre class="programlisting">  “bits”                     <span class="type">guint</span></pre>
-<p></p>
+<p>Byte-width of the serial communication. The 8 in "8n1" for example.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: [5,8]</p>
 <p>Default value: 8</p>
@@ -438,7 +423,7 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <div class="refsect2">
 <a name="NMSettingSerial--parity"></a><h3>The <code class="literal">“parity”</code> property</h3>
 <pre class="programlisting">  “parity”                   <a class="link" href="NMSettingSerial.html#NMSettingSerialParity" title="enum NMSettingSerialParity"><span class="type">NMSettingSerialParity</span></a></pre>
-<p></p>
+<p>Parity setting of the serial port.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: NM_SETTING_SERIAL_PARITY_NONE</p>
 </div>
@@ -446,7 +431,7 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <div class="refsect2">
 <a name="NMSettingSerial--send-delay"></a><h3>The <code class="literal">“send-delay”</code> property</h3>
 <pre class="programlisting">  “send-delay”               <span class="type">guint64</span></pre>
-<p></p>
+<p>Time to delay between each byte sent to the modem, in microseconds.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 0</p>
 </div>
@@ -454,7 +439,8 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 <div class="refsect2">
 <a name="NMSettingSerial--stopbits"></a><h3>The <code class="literal">“stopbits”</code> property</h3>
 <pre class="programlisting">  “stopbits”                 <span class="type">guint</span></pre>
-<p></p>
+<p>Number of stop bits for communication on the serial port.  Either 1 or 2.
+The 1 in "8n1" for example.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: [1,2]</p>
 <p>Default value: 1</p>
@@ -462,7 +448,6 @@ nm_setting_serial_get_send_delay (<em class="parameter"><code><a class="link" hr
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

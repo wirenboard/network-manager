@@ -132,14 +132,15 @@ libnm_core_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_3)
 am__libnm_core_la_SOURCES_DIST = $(core_build)/nm-core-enum-types.c \
 	$(core)/crypto.c $(core)/nm-connection.c $(core)/nm-errors.c \
-	$(core)/nm-property-compare.c $(core)/nm-setting-8021x.c \
-	$(core)/nm-setting-adsl.c $(core)/nm-setting-bluetooth.c \
-	$(core)/nm-setting-bond.c $(core)/nm-setting-bridge-port.c \
-	$(core)/nm-setting-bridge.c $(core)/nm-setting-cdma.c \
-	$(core)/nm-setting-connection.c $(core)/nm-setting-dcb.c \
-	$(core)/nm-setting-generic.c $(core)/nm-setting-gsm.c \
-	$(core)/nm-setting-infiniband.c $(core)/nm-setting-ip-config.c \
-	$(core)/nm-setting-ip4-config.c \
+	$(core)/nm-keyfile-reader.c $(core)/nm-keyfile-utils.c \
+	$(core)/nm-keyfile-writer.c $(core)/nm-property-compare.c \
+	$(core)/nm-setting-8021x.c $(core)/nm-setting-adsl.c \
+	$(core)/nm-setting-bluetooth.c $(core)/nm-setting-bond.c \
+	$(core)/nm-setting-bridge-port.c $(core)/nm-setting-bridge.c \
+	$(core)/nm-setting-cdma.c $(core)/nm-setting-connection.c \
+	$(core)/nm-setting-dcb.c $(core)/nm-setting-generic.c \
+	$(core)/nm-setting-gsm.c $(core)/nm-setting-infiniband.c \
+	$(core)/nm-setting-ip-config.c $(core)/nm-setting-ip4-config.c \
 	$(core)/nm-setting-ip6-config.c $(core)/nm-setting-olpc-mesh.c \
 	$(core)/nm-setting-ppp.c $(core)/nm-setting-pppoe.c \
 	$(core)/nm-setting-serial.c $(core)/nm-setting-team-port.c \
@@ -150,14 +151,17 @@ am__libnm_core_la_SOURCES_DIST = $(core_build)/nm-core-enum-types.c \
 	$(core)/nm-setting-wireless.c $(core)/nm-setting.c \
 	$(core)/nm-simple-connection.c $(core)/nm-utils.c \
 	$(core)/crypto.h $(core)/nm-connection-private.h \
-	$(core)/nm-core-internal.h $(core)/nm-property-compare.h \
+	$(core)/nm-core-internal.h $(core)/nm-keyfile-internal.h \
+	$(core)/nm-keyfile-utils.h $(core)/nm-property-compare.h \
 	$(core)/nm-setting-private.h $(core)/nm-utils-private.h \
 	crypto_gnutls.c crypto_nss.c
 am__objects_1 = nm-core-enum-types.lo crypto.lo nm-connection.lo \
-	nm-errors.lo nm-property-compare.lo nm-setting-8021x.lo \
-	nm-setting-adsl.lo nm-setting-bluetooth.lo nm-setting-bond.lo \
-	nm-setting-bridge-port.lo nm-setting-bridge.lo \
-	nm-setting-cdma.lo nm-setting-connection.lo nm-setting-dcb.lo \
+	nm-errors.lo nm-keyfile-reader.lo nm-keyfile-utils.lo \
+	nm-keyfile-writer.lo nm-property-compare.lo \
+	nm-setting-8021x.lo nm-setting-adsl.lo nm-setting-bluetooth.lo \
+	nm-setting-bond.lo nm-setting-bridge-port.lo \
+	nm-setting-bridge.lo nm-setting-cdma.lo \
+	nm-setting-connection.lo nm-setting-dcb.lo \
 	nm-setting-generic.lo nm-setting-gsm.lo \
 	nm-setting-infiniband.lo nm-setting-ip-config.lo \
 	nm-setting-ip4-config.lo nm-setting-ip6-config.lo \
@@ -315,6 +319,7 @@ ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AM_TESTS_FD_REDIRECT = @AM_TESTS_FD_REDIRECT@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -428,6 +433,7 @@ LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -622,6 +628,8 @@ libnm_core_private_headers = \
 	$(core)/crypto.h			\
 	$(core)/nm-connection-private.h		\
 	$(core)/nm-core-internal.h		\
+	$(core)/nm-keyfile-internal.h       \
+	$(core)/nm-keyfile-utils.h          \
 	$(core)/nm-property-compare.h		\
 	$(core)/nm-setting-private.h		\
 	$(core)/nm-utils-private.h
@@ -631,6 +639,9 @@ libnm_core_sources = \
 	$(core)/crypto.c			\
 	$(core)/nm-connection.c			\
 	$(core)/nm-errors.c			\
+	$(core)/nm-keyfile-reader.c         \
+	$(core)/nm-keyfile-utils.c          \
+	$(core)/nm-keyfile-writer.c         \
 	$(core)/nm-property-compare.c		\
 	$(core)/nm-setting-8021x.c		\
 	$(core)/nm-setting-adsl.c		\
@@ -742,6 +753,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-core-enum-types.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-errors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-keyfile-reader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-keyfile-utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-keyfile-writer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-property-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-setting-8021x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-setting-adsl.Plo@am__quote@
@@ -822,6 +836,27 @@ nm-errors.lo: $(core)/nm-errors.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(core)/nm-errors.c' object='nm-errors.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-errors.lo `test -f '$(core)/nm-errors.c' || echo '$(srcdir)/'`$(core)/nm-errors.c
+
+nm-keyfile-reader.lo: $(core)/nm-keyfile-reader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-keyfile-reader.lo -MD -MP -MF $(DEPDIR)/nm-keyfile-reader.Tpo -c -o nm-keyfile-reader.lo `test -f '$(core)/nm-keyfile-reader.c' || echo '$(srcdir)/'`$(core)/nm-keyfile-reader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-keyfile-reader.Tpo $(DEPDIR)/nm-keyfile-reader.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(core)/nm-keyfile-reader.c' object='nm-keyfile-reader.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-keyfile-reader.lo `test -f '$(core)/nm-keyfile-reader.c' || echo '$(srcdir)/'`$(core)/nm-keyfile-reader.c
+
+nm-keyfile-utils.lo: $(core)/nm-keyfile-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-keyfile-utils.lo -MD -MP -MF $(DEPDIR)/nm-keyfile-utils.Tpo -c -o nm-keyfile-utils.lo `test -f '$(core)/nm-keyfile-utils.c' || echo '$(srcdir)/'`$(core)/nm-keyfile-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-keyfile-utils.Tpo $(DEPDIR)/nm-keyfile-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(core)/nm-keyfile-utils.c' object='nm-keyfile-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-keyfile-utils.lo `test -f '$(core)/nm-keyfile-utils.c' || echo '$(srcdir)/'`$(core)/nm-keyfile-utils.c
+
+nm-keyfile-writer.lo: $(core)/nm-keyfile-writer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-keyfile-writer.lo -MD -MP -MF $(DEPDIR)/nm-keyfile-writer.Tpo -c -o nm-keyfile-writer.lo `test -f '$(core)/nm-keyfile-writer.c' || echo '$(srcdir)/'`$(core)/nm-keyfile-writer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-keyfile-writer.Tpo $(DEPDIR)/nm-keyfile-writer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(core)/nm-keyfile-writer.c' object='nm-keyfile-writer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-keyfile-writer.lo `test -f '$(core)/nm-keyfile-writer.c' || echo '$(srcdir)/'`$(core)/nm-keyfile-writer.c
 
 nm-property-compare.lo: $(core)/nm-property-compare.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-property-compare.lo -MD -MP -MF $(DEPDIR)/nm-property-compare.Tpo -c -o nm-property-compare.lo `test -f '$(core)/nm-property-compare.c' || echo '$(srcdir)/'`$(core)/nm-property-compare.c

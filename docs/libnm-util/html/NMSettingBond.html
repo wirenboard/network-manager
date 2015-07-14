@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMSettingBond</title>
+<title>NMSettingBond: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingWimax.html" title="NMSettingWimax">
 <link rel="next" href="NMSettingBridge.html" title="NMSettingBridge">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -271,7 +271,6 @@ nm_setting_bond_error_quark (<em class="parameter"><code><span class="type">void
 <div class="refsect3">
 <a name="id-1.2.13.9.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -309,7 +308,6 @@ nm_setting_bond_get_interface_name (<em class="parameter"><code><a class="link" 
 <div class="refsect3">
 <a name="id-1.2.13.9.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBond.html#NMSettingBond--interface-name" title="The “interface-name” property"><span class="type">“interface-name”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -338,7 +336,6 @@ using <a class="link" href="NMSettingBond.html#nm-setting-bond-get-option" title
 <div class="refsect3">
 <a name="id-1.2.13.9.5.6"></a><h4>Returns</h4>
 <p> the number of bonding options</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -394,7 +391,6 @@ option; this value is owned by the setting and should not be modified. </p></td>
 <p> <code class="literal">TRUE</code> on success if the index was valid and an option was found,
 <code class="literal">FALSE</code> if the index was invalid (ie, greater than the number of options
 currently held by the setting)</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -432,7 +428,6 @@ nm_setting_bond_get_option_by_name (<em class="parameter"><code><a class="link" 
 <a name="id-1.2.13.9.7.6"></a><h4>Returns</h4>
 <p> the value, or <code class="literal">NULL</code> if the key/value pair was never added to the
 setting; the value is owned by the setting and must not be modified</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -479,7 +474,6 @@ that conflict with each other.</p>
 <a name="id-1.2.13.9.8.7"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the option was valid and was added to the internal option
 list, <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -517,7 +511,6 @@ list.</p>
 <a name="id-1.2.13.9.9.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the option was found and removed from the internal option
 list, <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -560,9 +553,8 @@ the <em class="parameter"><code>name</code></em>
 is valid for the given name.
 If the <em class="parameter"><code>name</code></em>
 is not a valid option, <code class="literal">FALSE</code> will be returned.</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -623,7 +615,6 @@ nm_setting_bond_get_option_default (<em class="parameter"><code><a class="link" 
 <a name="id-1.2.13.9.12.5"></a><h4>Returns</h4>
 <p> the value of the bond option if not overridden by an entry in
 the <a class="link" href="NMSettingBond.html#NMSettingBond--options" title="The “options” property"><span class="type">“options”</span></a> property.</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -633,8 +624,6 @@ the <a class="link" href="NMSettingBond.html#NMSettingBond--options" title="The 
 <a name="NM-SETTING-BOND-SETTING-NAME:CAPS"></a><h3>NM_SETTING_BOND_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_SETTING_NAME "bond"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -672,13 +661,13 @@ required</p>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-BOND-ERROR-INVALID-OPTION:CAPS"></a>NM_SETTING_BOND_ERROR_INVALID_OPTION</p></td>
-<td class="enum_member_description"> </td>
-<td class="enum_member_annotations"> </td>
+<td> </td>
+<td> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-BOND-ERROR-MISSING-OPTION:CAPS"></a>NM_SETTING_BOND_ERROR_MISSING_OPTION</p></td>
-<td class="enum_member_description"> </td>
-<td class="enum_member_annotations"> </td>
+<td> </td>
+<td> </td>
 </tr>
 </tbody>
 </table></div>
@@ -689,144 +678,108 @@ required</p>
 <a name="NM-SETTING-BOND-ERROR:CAPS"></a><h3>NM_SETTING_BOND_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_ERROR nm_setting_bond_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-INTERFACE-NAME:CAPS"></a><h3>NM_SETTING_BOND_INTERFACE_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_INTERFACE_NAME "interface-name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTIONS:CAPS"></a><h3>NM_SETTING_BOND_OPTIONS</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTIONS "options"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-MODE:CAPS"></a><h3>NM_SETTING_BOND_OPTION_MODE</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_MODE             "mode"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-MIIMON:CAPS"></a><h3>NM_SETTING_BOND_OPTION_MIIMON</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_MIIMON           "miimon"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-DOWNDELAY:CAPS"></a><h3>NM_SETTING_BOND_OPTION_DOWNDELAY</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_DOWNDELAY        "downdelay"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-UPDELAY:CAPS"></a><h3>NM_SETTING_BOND_OPTION_UPDELAY</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_UPDELAY          "updelay"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-ARP-INTERVAL:CAPS"></a><h3>NM_SETTING_BOND_OPTION_ARP_INTERVAL</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_ARP_INTERVAL     "arp_interval"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-ARP-IP-TARGET:CAPS"></a><h3>NM_SETTING_BOND_OPTION_ARP_IP_TARGET</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_ARP_IP_TARGET    "arp_ip_target"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-ARP-VALIDATE:CAPS"></a><h3>NM_SETTING_BOND_OPTION_ARP_VALIDATE</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_ARP_VALIDATE     "arp_validate"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-PRIMARY:CAPS"></a><h3>NM_SETTING_BOND_OPTION_PRIMARY</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_PRIMARY          "primary"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-PRIMARY-RESELECT:CAPS"></a><h3>NM_SETTING_BOND_OPTION_PRIMARY_RESELECT</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_PRIMARY_RESELECT "primary_reselect"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-FAIL-OVER-MAC:CAPS"></a><h3>NM_SETTING_BOND_OPTION_FAIL_OVER_MAC</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_FAIL_OVER_MAC    "fail_over_mac"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-USE-CARRIER:CAPS"></a><h3>NM_SETTING_BOND_OPTION_USE_CARRIER</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_USE_CARRIER      "use_carrier"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-AD-SELECT:CAPS"></a><h3>NM_SETTING_BOND_OPTION_AD_SELECT</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_AD_SELECT        "ad_select"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-XMIT-HASH-POLICY:CAPS"></a><h3>NM_SETTING_BOND_OPTION_XMIT_HASH_POLICY</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_XMIT_HASH_POLICY "xmit_hash_policy"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-RESEND-IGMP:CAPS"></a><h3>NM_SETTING_BOND_OPTION_RESEND_IGMP</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_RESEND_IGMP      "resend_igmp"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BOND-OPTION-LACP-RATE:CAPS"></a><h3>NM_SETTING_BOND_OPTION_LACP_RATE</h3>
 <pre class="programlisting">#define NM_SETTING_BOND_OPTION_LACP_RATE        "lacp_rate"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -834,7 +787,7 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingBond--interface-name"></a><h3>The <code class="literal">“interface-name”</code> property</h3>
 <pre class="programlisting">  “interface-name”           <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The name of the virtual in-kernel bonding network interface</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -842,13 +795,14 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingBond--options"></a><h3>The <code class="literal">“options”</code> property</h3>
 <pre class="programlisting">  “options”                  <span class="type">GHashTable_gchararray+gchararray_*</span></pre>
-<p></p>
+<p>Dictionary of key/value pairs of bonding options.  Both keys and values
+must be strings. Option names must contain only alphanumeric characters
+(ie, [a-zA-Z0-9]).</p>
 <p>Flags: Read / Write</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

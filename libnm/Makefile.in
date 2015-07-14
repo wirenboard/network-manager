@@ -292,6 +292,7 @@ ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AM_TESTS_FD_REDIRECT = @AM_TESTS_FD_REDIRECT@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -405,6 +406,7 @@ LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -608,6 +610,8 @@ libnm_core_private_headers = \
 	$(core)/crypto.h			\
 	$(core)/nm-connection-private.h		\
 	$(core)/nm-core-internal.h		\
+	$(core)/nm-keyfile-internal.h       \
+	$(core)/nm-keyfile-utils.h          \
 	$(core)/nm-property-compare.h		\
 	$(core)/nm-setting-private.h		\
 	$(core)/nm-utils-private.h
@@ -617,6 +621,9 @@ libnm_core_sources = \
 	$(core)/crypto.c			\
 	$(core)/nm-connection.c			\
 	$(core)/nm-errors.c			\
+	$(core)/nm-keyfile-reader.c         \
+	$(core)/nm-keyfile-utils.c          \
+	$(core)/nm-keyfile-writer.c         \
 	$(core)/nm-property-compare.c		\
 	$(core)/nm-setting-8021x.c		\
 	$(core)/nm-setting-adsl.c		\

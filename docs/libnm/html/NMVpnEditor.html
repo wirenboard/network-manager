@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMVpnEditor</title>
+<title>NMVpnEditor: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch06.html" title="VPN Plugin API Reference">
 <link rel="prev" href="libnm-nm-vpn-dbus-interface.html" title="nm-vpn-dbus-interface">
 <link rel="next" href="object-tree.html" title="Object Hierarchy">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -208,8 +208,6 @@
 </div>
 <div class="refsect1">
 <a name="NMVpnEditor.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMVpnEditor.functions_details"></a><h2>Functions</h2>
@@ -217,24 +215,12 @@
 <a name="NMVpnEditorPluginFactory"></a><h3>NMVpnEditorPluginFactory ()</h3>
 <pre class="programlisting"><a class="link" href="NMVpnEditor.html#NMVpnEditorPlugin"><span class="returnvalue">NMVpnEditorPlugin</span></a> *
 <span class="c_punctuation">(</span>*NMVpnEditorPluginFactory<span class="c_punctuation">)</span> (<em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.7.3.10.2.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
 <a name="nm-vpn-editor-plugin-factory"></a><h3>nm_vpn_editor_plugin_factory ()</h3>
 <pre class="programlisting"><a class="link" href="NMVpnEditor.html#NMVpnEditorPlugin"><span class="returnvalue">NMVpnEditorPlugin</span></a> *
 nm_vpn_editor_plugin_factory (<em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.7.3.10.3.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -254,12 +240,6 @@ nm_vpn_editor_plugin_get_editor (<em class="parameter"><code><a class="link" hre
 <a name="nm-vpn-editor-plugin-get-capabilities"></a><h3>nm_vpn_editor_plugin_get_capabilities ()</h3>
 <pre class="programlisting"><a class="link" href="NMVpnEditor.html#NMVpnEditorPluginCapability" title="enum NMVpnEditorPluginCapability"><span class="returnvalue">NMVpnEditorPluginCapability</span></a>
 nm_vpn_editor_plugin_get_capabilities (<em class="parameter"><code><a class="link" href="NMVpnEditor.html#NMVpnEditorPlugin"><span class="type">NMVpnEditorPlugin</span></a> *plugin</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.7.3.10.5.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -282,12 +262,6 @@ nm_vpn_editor_plugin_export (<em class="parameter"><code><a class="link" href="N
                              <em class="parameter"><code>const <span class="type">char</span> *path</code></em>,
                              <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>,
                              <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.7.3.10.7.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -296,12 +270,6 @@ nm_vpn_editor_plugin_export (<em class="parameter"><code><a class="link" href="N
 nm_vpn_editor_plugin_get_suggested_filename
                                (<em class="parameter"><code><a class="link" href="NMVpnEditor.html#NMVpnEditorPlugin"><span class="type">NMVpnEditorPlugin</span></a> *plugin</code></em>,
                                 <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.7.3.10.8.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -321,12 +289,6 @@ nm_vpn_editor_get_widget (<em class="parameter"><code><a class="link" href="NMVp
 nm_vpn_editor_update_connection (<em class="parameter"><code><a class="link" href="NMVpnEditor.html" title="NMVpnEditor"><span class="type">NMVpnEditor</span></a> *editor</code></em>,
                                  <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a> *connection</code></em>,
                                  <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.7.3.10.10.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 </div>
 <div class="refsect1">
@@ -380,24 +342,18 @@ nm_vpn_editor_update_connection (<em class="parameter"><code><a class="link" hre
 <a name="NM-VPN-EDITOR-PLUGIN-NAME:CAPS"></a><h3>NM_VPN_EDITOR_PLUGIN_NAME</h3>
 <pre class="programlisting">#define NM_VPN_EDITOR_PLUGIN_NAME "name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VPN-EDITOR-PLUGIN-DESCRIPTION:CAPS"></a><h3>NM_VPN_EDITOR_PLUGIN_DESCRIPTION</h3>
 <pre class="programlisting">#define NM_VPN_EDITOR_PLUGIN_DESCRIPTION "description"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VPN-EDITOR-PLUGIN-SERVICE:CAPS"></a><h3>NM_VPN_EDITOR_PLUGIN_SERVICE</h3>
 <pre class="programlisting">#define NM_VPN_EDITOR_PLUGIN_SERVICE "service"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -552,7 +508,7 @@ to write values to the connection.</p></td>
 <div class="refsect2">
 <a name="NMVpnEditorPlugin--description"></a><h3>The <code class="literal">“description”</code> property</h3>
 <pre class="programlisting">  “description”              <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Longer description of the VPN plugin.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -560,7 +516,7 @@ to write values to the connection.</p></td>
 <div class="refsect2">
 <a name="NMVpnEditorPlugin--name"></a><h3>The <code class="literal">“name”</code> property</h3>
 <pre class="programlisting">  “name”                     <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Short display name of the VPN plugin.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -568,7 +524,7 @@ to write values to the connection.</p></td>
 <div class="refsect2">
 <a name="NMVpnEditorPlugin--service"></a><h3>The <code class="literal">“service”</code> property</h3>
 <pre class="programlisting">  “service”                  <span class="type">gchar</span> *</pre>
-<p></p>
+<p>D-Bus service name of the plugin's VPN service.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -585,7 +541,6 @@ user_function (<a class="link" href="NMVpnEditor.html" title="NMVpnEditor"><span
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

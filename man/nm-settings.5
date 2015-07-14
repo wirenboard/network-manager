@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 05 May 2015
+.\"      Date: 14 July 2015
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.0.2
+.\"    Source: NetworkManager 1.0.4
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.0\&.2" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.0\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -405,7 +405,7 @@ boolean
 T}:T{
 FALSE
 T}:T{
-When TRUE, overrides the "ca\-path" and "phase2\-ca\-path" properties using the system CA directory specified at configure time with the \-\-system\-ca\-path switch\&.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the "ca\-cert" and "phase2\-ca\-cert" properties\&.
+When TRUE, overrides the "ca\-path" and "phase2\-ca\-path" properties using the system CA directory specified at configure time with the \-\-system\-ca\-path switch\&.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the "ca\-cert" and "phase2\-ca\-cert" properties\&. If the path provided with \-\-system\-ca\-path is rather a file name (bundle of trusted CA certificates), it overrides "ca\-cert" and "phase2\-ca\-cert" properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant)\&.
 T}
 .TE
 .sp 1
@@ -888,6 +888,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 autoconnect
@@ -906,6 +907,15 @@ T}:T{
 0
 T}:T{
 The autoconnect priority\&. If the connection is set to autoconnect, connections with higher priority will be preferred\&. Defaults to 0\&. The higher number means higher priority\&.
+T}
+T{
+autoconnect\-slaves
+T}:T{
+NMSettingConnectionAutoconnectSlaves (int32)
+T}:T{
+\ \&
+T}:T{
+Whether or not slaves of this connection should be automatically brought up when NetworkManager activates this connection\&. This only has a real effect for master connections\&. The permitted values are: 0: leave slave connections untouched, 1: activate all the slave connections with this connection, \-1: default\&. If \-1 (default) is set, global connection\&.autoconnect\-slaves is read to determine the real value\&. If it is default as well, this fallbacks to 0\&.
 T}
 T{
 gateway\-ping\-timeout
@@ -1755,7 +1765,7 @@ NMSettingIP6ConfigPrivacy (int32)
 T}:T{
 \ \&
 T}:T{
-Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941\&.  If enabled, it makes the kernel generate a temporary IPv6 address in addition to the public one generated from MAC address via modified EUI\-64\&.  This enhances privacy, but could cause problems in some applications, on the other hand\&.  The permitted values are: 0: disabled, 1: enabled (prefer public address), 2: enabled (prefer temporary addresses)\&.
+Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941\&.  If enabled, it makes the kernel generate a temporary IPv6 address in addition to the public one generated from MAC address via modified EUI\-64\&.  This enhances privacy, but could cause problems in some applications, on the other hand\&.  The permitted values are: \-1: unknown, 0: disabled, 1: enabled (prefer public address), 2: enabled (prefer temporary addresses)\&. Having a per\-connection setting set to "\-1" (unknown) means fallback to global configuration "ipv6\&.ip6\-privacy"\&. If also global configuration is unspecified or set to "\-1", fallback to read "/proc/sys/net/ipv6/conf/default/use_tempaddr"\&.
 T}
 T{
 may\-fail

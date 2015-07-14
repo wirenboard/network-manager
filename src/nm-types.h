@@ -26,6 +26,8 @@ typedef struct _NMActiveConnection   NMActiveConnection;
 typedef struct _NMVpnConnection      NMVpnConnection;
 typedef struct _NMActRequest         NMActRequest;
 typedef struct _NMAuthSubject        NMAuthSubject;
+typedef struct _NMConfig             NMConfig;
+typedef struct _NMConfigData         NMConfigData;
 typedef struct _NMConnectionProvider NMConnectionProvider;
 typedef struct _NMConnectivity       NMConnectivity;
 typedef struct _NMDBusManager        NMDBusManager;
@@ -38,12 +40,20 @@ typedef struct _NMIP6Config          NMIP6Config;
 typedef struct _NMManager            NMManager;
 typedef struct _NMPolicy             NMPolicy;
 typedef struct _NMRfkillManager      NMRfkillManager;
+typedef struct _NMRouteManager       NMRouteManager;
 typedef struct _NMSessionMonitor     NMSessionMonitor;
 typedef struct _NMSleepMonitor       NMSleepMonitor;
 
 typedef enum {
 	/* In priority order; higher number == higher priority */
 	NM_IP_CONFIG_SOURCE_UNKNOWN,
+
+	/* platform internal flag used to mark routes with RTM_F_CLONED. */
+	_NM_IP_CONFIG_SOURCE_RTM_F_CLONED,
+
+	/* routes from platform with protocol RTPROT_KERNEL. */
+	NM_IP_CONFIG_SOURCE_RTPROT_KERNEL,
+
 	NM_IP_CONFIG_SOURCE_KERNEL,
 	NM_IP_CONFIG_SOURCE_SHARED,
 	NM_IP_CONFIG_SOURCE_IP4LL,
@@ -98,6 +108,7 @@ typedef enum {
 	NM_LINK_TYPE_VETH,
 	NM_LINK_TYPE_VLAN,
 	NM_LINK_TYPE_VXLAN,
+	NM_LINK_TYPE_BNEP,   /* Bluetooth Ethernet emulation */
 
 	/* Software types with slaves */
 	NM_LINK_TYPE_BRIDGE = 0x10000 | 0x20000,
@@ -105,10 +116,24 @@ typedef enum {
 	NM_LINK_TYPE_TEAM,
 } NMLinkType;
 
+typedef enum {
+	NMP_OBJECT_TYPE_UNKNOWN,
+	NMP_OBJECT_TYPE_LINK,
+	NMP_OBJECT_TYPE_IP4_ADDRESS,
+	NMP_OBJECT_TYPE_IP6_ADDRESS,
+	NMP_OBJECT_TYPE_IP4_ROUTE,
+	NMP_OBJECT_TYPE_IP6_ROUTE,
+	__NMP_OBJECT_TYPE_LAST,
+	NMP_OBJECT_TYPE_MAX = __NMP_OBJECT_TYPE_LAST - 1,
+} NMPObjectType;
+
 /* settings */
 typedef struct _NMAgentManager       NMAgentManager;
 typedef struct _NMSecretAgent        NMSecretAgent;
 typedef struct _NMSettings           NMSettings;
 typedef struct _NMSettingsConnection NMSettingsConnection;
+
+/* utils */
+typedef struct _NMUtilsIPv6IfaceId   NMUtilsIPv6IfaceId;
 
 #endif  /* NM_TYPES_H */

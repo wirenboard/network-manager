@@ -585,45 +585,19 @@ get_unmanaged_specs (NMSystemConfigInterface *config)
 	GKeyFile *key_file;
 	GSList *specs = NULL;
 	GError *error = NULL;
-	char *str;
 
 	if (!priv->conf_file)
 		return NULL;
 
-	key_file = g_key_file_new ();
-	if (!parse_key_file_allow_none (priv, key_file, &error))
-		goto out;
+	key_file = nm_config_create_keyfile ();
+	if (parse_key_file_allow_none (priv, key_file, &error))
+		specs = nm_config_get_device_match_spec (key_file, NM_CONFIG_KEYFILE_GROUP_KEYFILE, "unmanaged-devices", NULL);
 
-	str = g_key_file_get_value (key_file, "keyfile", "unmanaged-devices", NULL);
-	if (str) {
-		char **udis;
-		int i;
-
-		udis = g_strsplit_set (str, ";,", -1);
-		g_free (str);
-
-		for (i = 0; udis[i] != NULL; i++) {
-			/* Verify unmanaged specification and add it to the list */
-			if (!strncmp (udis[i], "mac:", 4) && nm_utils_hwaddr_valid (udis[i] + 4, -1)) {
-				specs = g_slist_append (specs, udis[i]);
-			} else if (!strncmp (udis[i], "interface-name:", 15) && nm_utils_iface_valid_name (udis[i] + 15)) {
-				specs = g_slist_append (specs, udis[i]);
-			} else {
-				nm_log_warn (LOGD_SETTINGS, "keyfile: error in file '%s': invalid unmanaged-devices entry: '%s'", priv->conf_file, udis[i]);
-				g_free (udis[i]);
-			}
-		}
-
-		g_free (udis); /* Yes, g_free, not g_strfreev because we need the strings in the list */
-	}
-
- out:
 	if (error) {
 		nm_log_warn (LOGD_SETTINGS, "keyfile: error getting unmanaged specs: %s", error->message);
 		g_error_free (error);
 	}
-	if (key_file)
-		g_key_file_free (key_file);
+	g_key_file_free (key_file);
 
 	return specs;
 }
@@ -643,7 +617,7 @@ plugin_get_hostname (SCPluginKeyfile *plugin)
 	if (!parse_key_file_allow_none (priv, key_file, &error))
 		goto out;
 
-	hostname = g_key_file_get_value (key_file, "keyfile", "hostname", NULL);
+	hostname = g_key_file_get_value (key_file, NM_CONFIG_KEYFILE_GROUP_KEYFILE, "hostname", NULL);
 
  out:
 	if (error) {
@@ -679,7 +653,7 @@ plugin_set_hostname (SCPluginKeyfile *plugin, const char *hostname)
 	if (!parse_key_file_allow_none (priv, key_file, &error))
 		goto out;
 
-	g_key_file_set_string (key_file, "keyfile", "hostname", hostname);
+	g_key_file_set_string (key_file, NM_CONFIG_KEYFILE_GROUP_KEYFILE, "hostname", hostname);
 
 	data = g_key_file_to_data (key_file, &len, &error);
 	if (!data)
@@ -843,7 +817,7 @@ nm_settings_keyfile_plugin_new (void)
 		singleton = SC_PLUGIN_KEYFILE (g_object_new (SC_TYPE_PLUGIN_KEYFILE, NULL));
 		priv = SC_PLUGIN_KEYFILE_GET_PRIVATE (singleton);
 
-		priv->conf_file = nm_config_get_path (nm_config_get ());
+		priv->conf_file = nm_config_data_get_config_main_file (nm_config_get_data (nm_config_get ()));
 
 		/* plugin_set_hostname() has to be called *after* priv->conf_file is set */
 		priv->hostname = plugin_get_hostname (singleton);

@@ -888,20 +888,22 @@ write_wireless_setting (NMConnection *connection,
 		svSetValue (ifcfg, "ESSID", str->str, TRUE);
 		g_string_free (str, TRUE);
 	} else {
+		const char *tmp_escaped;
+
 		/* Printable SSIDs always get quoted */
 		memset (buf, 0, sizeof (buf));
 		memcpy (buf, ssid_data, ssid_len);
-		tmp = svEscape (buf);
+		tmp_escaped = svEscape (buf, &tmp);
 
 		/* svEscape will usually quote the string, but just for consistency,
 		 * if svEscape doesn't quote the ESSID, we quote it ourselves.
 		 */
-		if (tmp[0] != '"' && tmp[strlen (tmp) - 1] != '"') {
-			tmp2 = g_strdup_printf ("\"%s\"", tmp);
+		if (tmp_escaped[0] != '"' && tmp_escaped[strlen (tmp_escaped) - 1] != '"') {
+			tmp2 = g_strdup_printf ("\"%s\"", tmp_escaped);
 			svSetValue (ifcfg, "ESSID", tmp2, TRUE);
 			g_free (tmp2);
 		} else
-			svSetValue (ifcfg, "ESSID", tmp, TRUE);
+			svSetValue (ifcfg, "ESSID", tmp_escaped, TRUE);
 		g_free (tmp);
 	}
 
@@ -1665,7 +1667,7 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 {
 	guint32 n, i;
 	GString *str;
-	const char *master;
+	const char *master, *type;
 	char *tmp;
 	gint i_int;
 
@@ -1681,6 +1683,20 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 	      ? g_strdup_printf ("%d", i_int) : NULL;
 	svSetValue (ifcfg, "AUTOCONNECT_PRIORITY", tmp, FALSE);
 	g_free (tmp);
+
+	/* Only save the value for master connections */
+	svSetValue (ifcfg, "AUTOCONNECT_SLAVES", NULL, FALSE);
+	type = nm_setting_connection_get_connection_type (s_con);
+	if (   !g_strcmp0 (type, NM_SETTING_BOND_SETTING_NAME)
+	    || !g_strcmp0 (type, NM_SETTING_TEAM_SETTING_NAME)
+	    || !g_strcmp0 (type, NM_SETTING_BRIDGE_SETTING_NAME)) {
+		NMSettingConnectionAutoconnectSlaves autoconnect_slaves;
+		autoconnect_slaves = nm_setting_connection_get_autoconnect_slaves (s_con);
+		svSetValue (ifcfg, "AUTOCONNECT_SLAVES",
+		            autoconnect_slaves == NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_YES ? "yes" :
+		            autoconnect_slaves == NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_NO ? "no" : NULL,
+		            FALSE);
+	}
 
 	/* Permissions */
 	svSetValue (ifcfg, "USERS", NULL, FALSE);
@@ -2448,7 +2464,7 @@ escape_id (const char *id)
 	while (*p) {
 		if (*p == ' ')
 			*p = '_';
-		else if (strchr ("\\][|/=()!", *p))
+		else if (strchr ("\\][|/=()!:", *p))
 			*p = '-';
 		p++;
 	}

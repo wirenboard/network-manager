@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: nm-utils</title>
+<title>nm-utils: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch05.html" title="Utility API Reference">
 <link rel="prev" href="ch05.html" title="Utility API Reference">
 <link rel="next" href="libnm-nm-version.html" title="nm-version">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -532,7 +532,6 @@ number of known SSID-cloaking methods.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.2.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the SSID is "empty", <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -572,7 +571,6 @@ be used for display of SSIDs.</p>
 <a name="id-1.6.2.7.3.6"></a><h4>Returns</h4>
 <p> pointer to the escaped SSID, which uses an internal static buffer
 and will be overwritten by subsequent calls to this function</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -632,7 +630,6 @@ NULLs, even though that is functionally pointless.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.4.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the SSIDs are the same, <code class="literal">FALSE</code> if they are not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -766,7 +763,6 @@ e.g. (<a class="link" href="libnm-nm-dbus-interface.html#NM-802-11-AP-SEC-PAIR-C
 <p> <code class="literal">TRUE</code> if the device capabilities and AP capabilties intersect and are
 compatible with the desired <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if they are not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -807,7 +803,6 @@ e.g. <a class="link" href="libnm-nm-utils.html#NMU-SEC-STATIC-WEP:CAPS"><span cl
 <p> <code class="literal">TRUE</code> if the device capabilities are compatible with the desired
 <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if they are not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -844,7 +839,6 @@ nm_utils_wep_key_valid (<em class="parameter"><code>const <span class="type">cha
 <a name="id-1.6.2.7.8.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>key</code></em>
 is a WEP key, <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -873,7 +867,6 @@ nm_utils_wpa_psk_valid (<em class="parameter"><code>const <span class="type">cha
 <a name="id-1.6.2.7.9.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>psk</code></em>
 is a WPA PSK, <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1099,7 +1092,6 @@ nm_utils_ip4_netmask_to_prefix (<em class="parameter"><code><span class="type">g
 <div class="refsect3">
 <a name="id-1.6.2.7.16.5"></a><h4>Returns</h4>
 <p> the CIDR prefix represented by the netmask</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1125,7 +1117,6 @@ nm_utils_ip4_prefix_to_netmask (<em class="parameter"><code><span class="type">g
 <div class="refsect3">
 <a name="id-1.6.2.7.17.5"></a><h4>Returns</h4>
 <p> the netmask represented by the prefix, in network byte order</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1155,7 +1146,6 @@ falls in the predefined classes.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.18.6"></a><h4>Returns</h4>
 <p> the default class prefix for the given IP</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1509,7 +1499,6 @@ nm_utils_uuid_generate (<em class="parameter"><code><span class="type">void</spa
 <a name="id-1.6.2.7.29.4"></a><h4>Returns</h4>
 <p> a newly allocated UUID suitable for use as the <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>
 object's <a class="link" href="NMSettingConnection.html#NMSettingConnection--id" title="The “id” property"><span class="type">“id”</span></a>: property.  Should be freed with <code class="function">g_free()</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1539,7 +1528,6 @@ recognized by NetworkManager.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.30.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the file is a certificate, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1577,7 +1565,6 @@ recognized by NetworkManager.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.31.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the file is a private key, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1605,7 +1592,6 @@ nm_utils_file_is_pkcs12 (<em class="parameter"><code>const <span class="type">ch
 <div class="refsect3">
 <a name="id-1.6.2.7.32.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the file is PKCS#12, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1614,12 +1600,6 @@ nm_utils_file_is_pkcs12 (<em class="parameter"><code>const <span class="type">ch
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 <span class="c_punctuation">(</span>*NMUtilsFileSearchInPathsPredicate<span class="c_punctuation">)</span> (<em class="parameter"><code>const <span class="type">char</span> *filename</code></em>,
                                       <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.6.2.7.33.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -1726,7 +1706,6 @@ nm_utils_wifi_freq_to_channel (<em class="parameter"><code><span class="type">gu
 <div class="refsect3">
 <a name="id-1.6.2.7.35.6"></a><h4>Returns</h4>
 <p> the channel represented by the frequency or 0</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1763,7 +1742,6 @@ nm_utils_wifi_channel_to_freq (<em class="parameter"><code><span class="type">gu
 <p> the frequency represented by the channel of the band,
 or -1 when the freq is invalid, or 0 when the band
 is invalid</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1804,7 +1782,6 @@ nm_utils_wifi_find_next_channel (<em class="parameter"><code><span class="type">
 <div class="refsect3">
 <a name="id-1.6.2.7.37.6"></a><h4>Returns</h4>
 <p> the next channel in the specified direction or 0</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1839,7 +1816,6 @@ nm_utils_wifi_is_channel_valid (<em class="parameter"><code><span class="type">g
 <div class="refsect3">
 <a name="id-1.6.2.7.38.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1870,7 +1846,6 @@ support it, this will use unicode graphics characters to represent
 <div class="refsect3">
 <a name="id-1.6.2.7.39.6"></a><h4>Returns</h4>
 <p> the graphical representation of the access point strength</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1901,7 +1876,6 @@ nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> t
 <div class="refsect3">
 <a name="id-1.6.2.7.40.7"></a><h4>Returns</h4>
 <p> the length.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2028,7 +2002,6 @@ the size of the buffer in bytes.</p></td>
 couldn't be parsed
 or would be shorter or longer than <em class="parameter"><code>length</code></em>
 .</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2069,7 +2042,6 @@ is expected to convert to
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>asc</code></em>
 appears to be a valid hardware address
 of the indicated length, <code class="literal">FALSE</code> if not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2195,7 +2167,6 @@ is ASCII</p></td>
 and <em class="parameter"><code>hwaddr2</code></em>
 are equivalent, <code class="literal">FALSE</code> if they are
 different (or either of them is invalid).</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2303,7 +2274,6 @@ function in net/core/dev.c.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.49.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if interface name is valid, otherwise <code class="literal">FALSE</code> is returned.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2332,7 +2302,6 @@ nm_utils_is_uuid (<em class="parameter"><code>const <span class="type">char</spa
 <a name="id-1.6.2.7.50.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>str</code></em>
 is a UUID, <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2342,8 +2311,9 @@ is a UUID, <code class="literal">FALSE</code> if not</p>
 nm_utils_inet4_ntop (<em class="parameter"><code><span class="type">in_addr_t</span> inaddr</code></em>,
                      <em class="parameter"><code><span class="type">char</span> *dst</code></em>);</pre>
 <p>Wrapper for inet_ntop.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.6.2.7.51.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.51.6"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2374,11 +2344,10 @@ buffer to avoid these issues.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.51.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.51.7"></a><h4>Returns</h4>
 <p> the input buffer <em class="parameter"><code>dst</code></em>
 , or a pointer to an
 internal, static buffer. This function cannot fail.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2388,8 +2357,9 @@ internal, static buffer. This function cannot fail.</p>
 nm_utils_inet6_ntop (<em class="parameter"><code>const <span class="type">struct in6_addr</span> *in6addr</code></em>,
                      <em class="parameter"><code><span class="type">char</span> *dst</code></em>);</pre>
 <p>Wrapper for inet_ntop.</p>
+<p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.6.2.7.52.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.52.6"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2420,13 +2390,12 @@ buffer to avoid these issues.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.52.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.52.7"></a><h4>Returns</h4>
 <p> the input buffer <em class="parameter"><code>dst</code></em>
 , or a pointer to an
 internal, static buffer. <code class="literal">NULL</code> is not allowed as <em class="parameter"><code>in6addr</code></em>
 ,
 otherwise, this function cannot fail.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2463,7 +2432,6 @@ nm_utils_ipaddr_valid (<em class="parameter"><code><span class="type">int</span>
 <div class="refsect3">
 <a name="id-1.6.2.7.53.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2519,7 +2487,6 @@ underlying device driver.</p>
 <div class="refsect3">
 <a name="id-1.6.2.7.54.9"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
-<p></p>
 </div>
 </div>
 </div>
@@ -2628,7 +2595,6 @@ for both <a class="link" href="libnm-nm-utils.html#nm-utils-inet4-ntop" title="n
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

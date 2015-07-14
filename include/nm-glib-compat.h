@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <string.h>
 
 
 #ifdef __clang__
@@ -162,5 +163,91 @@ q_n##_quark (void)                            \
 	return q;                                 \
 }
 #endif
+
+
+static inline gboolean
+nm_g_hash_table_replace (GHashTable *hash, gpointer key, gpointer value)
+{
+	/* glib 2.40 added a return value indicating whether the key already existed
+	 * (910191597a6c2e5d5d460e9ce9efb4f47d9cc63c). */
+#if GLIB_CHECK_VERSION(2, 40, 0)
+	return g_hash_table_replace (hash, key, value);
+#else
+	gboolean contained = g_hash_table_contains (hash, key);
+
+	g_hash_table_replace (hash, key, value);
+	return !contained;
+#endif
+}
+
+
+#if !GLIB_CHECK_VERSION(2, 40, 0) || defined (NM_GLIB_COMPAT_H_TEST)
+static inline void
+_nm_g_ptr_array_insert (GPtrArray *array,
+                        gint       index_,
+                        gpointer   data)
+{
+	g_return_if_fail (array);
+	g_return_if_fail (index_ >= -1);
+	g_return_if_fail (index_ <= (gint) array->len);
+
+	g_ptr_array_add (array, data);
+
+	if (index_ != -1 && index_ != (gint) (array->len - 1)) {
+		memmove (&(array->pdata[index_ + 1]),
+		         &(array->pdata[index_]),
+		         (array->len - index_ - 1) * sizeof (gpointer));
+		array->pdata[index_] = data;
+	}
+}
+#endif
+#if !GLIB_CHECK_VERSION(2, 40, 0)
+#define g_ptr_array_insert(array, index, data) G_STMT_START { _nm_g_ptr_array_insert (array, index, data); } G_STMT_END
+#else
+#define g_ptr_array_insert(array, index, data) \
+	G_STMT_START { \
+		G_GNUC_BEGIN_IGNORE_DEPRECATIONS \
+		g_ptr_array_insert (array, index, data); \
+		G_GNUC_END_IGNORE_DEPRECATIONS \
+	} G_STMT_END
+#endif
+
+
+#if !GLIB_CHECK_VERSION (2, 40, 0)
+inline static gboolean
+_g_key_file_save_to_file (GKeyFile     *key_file,
+                          const gchar  *filename,
+                          GError      **error)
+{
+	gchar *contents;
+	gboolean success;
+	gsize length;
+
+	g_return_val_if_fail (key_file != NULL, FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	contents = g_key_file_to_data (key_file, &length, NULL);
+	g_assert (contents != NULL);
+
+	success = g_file_set_contents (filename, contents, length, error);
+	g_free (contents);
+
+	return success;
+}
+#define g_key_file_save_to_file(key_file, filename, error) \
+	_g_key_file_save_to_file (key_file, filename, error)
+#else
+#define g_key_file_save_to_file(key_file, filename, error) \
+	({ \
+		gboolean _success; \
+		\
+		G_GNUC_BEGIN_IGNORE_DEPRECATIONS \
+		_success = g_key_file_save_to_file (key_file, filename, error); \
+		G_GNUC_END_IGNORE_DEPRECATIONS \
+		_success; \
+	})
+#endif
+
 
 #endif  /* __NM_GLIB_COMPAT_H__ */

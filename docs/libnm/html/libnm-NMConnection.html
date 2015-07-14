@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMConnection</title>
+<title>NMConnection: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="next" href="NMSimpleConnection.html" title="NMSimpleConnection">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -742,7 +742,6 @@ need to result in a connection that passes <a class="link" href="libnm-NMConnect
 could not
 be deserialized (in which case <em class="parameter"><code>connection</code></em>
 will be unchanged).</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -843,7 +842,6 @@ each flag's behavior.</p>
 <div class="refsect3">
 <a name="id-1.4.2.7.10.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the comparison succeeds, <code class="literal">FALSE</code> if it does not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -899,7 +897,6 @@ differ mapped to one or more of <a class="link" href="NMSetting.html#NMSettingDi
 <a name="id-1.4.2.7.11.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connections contain the same values, <code class="literal">FALSE</code> if they do
 not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -942,7 +939,6 @@ setting and which property failed validation, and how it failed validation.</p>
 <div class="refsect3">
 <a name="id-1.4.2.7.12.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is valid, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1001,7 +997,6 @@ why the connection is invalid, if the function returns an error.</p></td>
 <div class="refsect3">
 <a name="id-1.4.2.7.13.7"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is valid, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1045,7 +1040,6 @@ elements. </p></td>
 <a name="id-1.4.2.7.14.6"></a><h4>Returns</h4>
 <p> the setting name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object which has invalid or
 missing secrets</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1164,7 +1158,6 @@ or <a class="link" href="libnm-NMConnection.html#NM-VARIANT-TYPE-SETTING:CAPS" t
 <a name="id-1.4.2.7.17.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secrets were successfully updated, <code class="literal">FALSE</code> if the update
 failed (tried to update secrets for a setting that doesn't exist, etc)</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1225,7 +1218,6 @@ nm_connection_get_path (<em class="parameter"><code><a href="https://developer.g
 <a name="id-1.4.2.7.19.6"></a><h4>Returns</h4>
 <p> the D-Bus path of the connection, previously set by a call to
 <a class="link" href="libnm-NMConnection.html#nm-connection-set-path" title="nm_connection_set_path ()"><code class="function">nm_connection_set_path()</code></a>.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1256,7 +1248,6 @@ NetworkManager, this is the name of the created interface.</p>
 <div class="refsect3">
 <a name="id-1.4.2.7.20.7"></a><h4>Returns</h4>
 <p> Name of the kernel interface or <code class="literal">NULL</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1297,7 +1288,6 @@ property of the connection and matches that against <em class="parameter"><code>
 <a name="id-1.4.2.7.21.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is of the given <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1386,7 +1376,6 @@ nm_connection_get_uuid (<em class="parameter"><code><a href="https://developer.g
 <div class="refsect3">
 <a name="id-1.4.2.7.24.6"></a><h4>Returns</h4>
 <p> the UUID from the connection's 'connection' setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1413,7 +1402,6 @@ nm_connection_get_id (<em class="parameter"><code><a href="https://developer.gno
 <div class="refsect3">
 <a name="id-1.4.2.7.25.6"></a><h4>Returns</h4>
 <p> the ID from the connection's 'connection' setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1440,7 +1428,6 @@ nm_connection_get_connection_type (<em class="parameter"><code><a href="https://
 <div class="refsect3">
 <a name="id-1.4.2.7.26.6"></a><h4>Returns</h4>
 <p> the type from the connection's 'connection' setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1470,7 +1457,6 @@ activated even if the device it refers to doesn't exist).</p>
 <a name="id-1.4.2.7.27.6"></a><h4>Returns</h4>
 <p> whether <em class="parameter"><code>connection</code></em>
 refers to a virtual device</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2225,32 +2211,24 @@ nm_connection_get_setting_vlan (<em class="parameter"><code><a href="https://dev
 <a name="NM-CONNECTION-SECRETS-UPDATED:CAPS"></a><h3>NM_CONNECTION_SECRETS_UPDATED</h3>
 <pre class="programlisting">#define NM_CONNECTION_SECRETS_UPDATED "secrets-updated"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-SECRETS-CLEARED:CAPS"></a><h3>NM_CONNECTION_SECRETS_CLEARED</h3>
 <pre class="programlisting">#define NM_CONNECTION_SECRETS_CLEARED "secrets-cleared"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-CHANGED:CAPS"></a><h3>NM_CONNECTION_CHANGED</h3>
 <pre class="programlisting">#define NM_CONNECTION_CHANGED         "changed"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-NORMALIZE-PARAM-IP6-CONFIG-METHOD:CAPS"></a><h3>NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD</h3>
 <pre class="programlisting">#define NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD "ip6-config-method"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2349,7 +2327,6 @@ calling <a class="link" href="libnm-NMConnection.html#nm-connection-to-dbus" tit
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

@@ -260,65 +260,44 @@ nm_supplicant_config_fast_required (NMSupplicantConfig *self)
 	return NM_SUPPLICANT_CONFIG_GET_PRIVATE (self)->fast_required;
 }
 
-static void
-get_hash_cb (gpointer key, gpointer value, gpointer user_data)
-{
-	ConfigOption *opt = (ConfigOption *) value;
-	GValue *variant;
-	GByteArray *array;
-
-	variant = g_slice_new0 (GValue);
-
-	switch (opt->type) {
-	case TYPE_INT:
-		g_value_init (variant, G_TYPE_INT);
-		g_value_set_int (variant, atoi (opt->value));
-		break;
-	case TYPE_BYTES:
-	case TYPE_UTF8:
-		array = g_byte_array_sized_new (opt->len);
-		g_byte_array_append (array, (const guint8 *) opt->value, opt->len);
-		g_value_init (variant, DBUS_TYPE_G_UCHAR_ARRAY);
-		g_value_set_boxed (variant, array);
-		g_byte_array_free (array, TRUE);
-		break;
-	case TYPE_KEYWORD:
-	case TYPE_STRING:
-		g_value_init (variant, G_TYPE_STRING);
-		g_value_set_string (variant, opt->value);
-		break;
-	default:
-		g_slice_free (GValue, variant);
-		return;
-	}
-
-	g_hash_table_insert ((GHashTable *) user_data, g_strdup (key), variant);
-}
-
-static void
-destroy_hash_value (gpointer data)
-{
-	GValue *value = (GValue *) data;
-
-	g_value_unset (value);
-	g_slice_free (GValue, value);
-}
-
-GHashTable *
-nm_supplicant_config_get_hash (NMSupplicantConfig * self)
+GVariant *
+nm_supplicant_config_to_variant (NMSupplicantConfig *self)
 {
 	NMSupplicantConfigPrivate *priv;
-	GHashTable *hash;
+	GVariantBuilder builder;
+	GHashTableIter iter;
+	ConfigOption *option;
+	const char *key;
 
 	g_return_val_if_fail (NM_IS_SUPPLICANT_CONFIG (self), NULL);
 
-	hash = g_hash_table_new_full (g_str_hash, g_str_equal,
-	                              (GDestroyNotify) g_free,
-	                              destroy_hash_value);
-
 	priv = NM_SUPPLICANT_CONFIG_GET_PRIVATE (self);
-	g_hash_table_foreach (priv->config, get_hash_cb, hash);
-	return hash;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+
+	g_hash_table_iter_init (&iter, priv->config);
+	while (g_hash_table_iter_next (&iter, (gpointer) &key, (gpointer) &option)) {
+		switch (option->type) {
+		case TYPE_INT:
+			g_variant_builder_add (&builder, "{sv}", key, g_variant_new_int32 (atoi (option->value)));
+			break;
+		case TYPE_BYTES:
+		case TYPE_UTF8:
+			g_variant_builder_add (&builder, "{sv}",
+			                       key,
+			                       g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
+			                                                  option->value, option->len, 1));
+			break;
+		case TYPE_KEYWORD:
+		case TYPE_STRING:
+			g_variant_builder_add (&builder, "{sv}", key, g_variant_new_string (option->value));
+			break;
+		default:
+			break;
+		}
+	}
+
+	return g_variant_builder_end (&builder);
 }
 
 GHashTable *
@@ -754,6 +733,7 @@ nm_supplicant_config_add_setting_8021x (NMSupplicantConfig *self,
 	gboolean fast = FALSE;
 	guint32 i, num_eap;
 	gboolean fast_provisoning_allowed = FALSE;
+	const char *ca_path_override = NULL, *ca_cert_override = NULL;
 
 	g_return_val_if_fail (NM_IS_SUPPLICANT_CONFIG (self), FALSE);
 	g_return_val_if_fail (setting != NULL, FALSE);
@@ -891,10 +871,18 @@ nm_supplicant_config_add_setting_8021x (NMSupplicantConfig *self,
 		}
 	}
 
+	/* If user wants to use system CA certs, either populate ca_path (if the path
+	 * is a directory) or ca_cert (the path is a file name) */
+	if (nm_setting_802_1x_get_system_ca_certs (setting)) {
+		if (g_file_test (SYSTEM_CA_PATH, G_FILE_TEST_IS_DIR))
+			ca_path_override = SYSTEM_CA_PATH;
+		else
+			ca_cert_override = SYSTEM_CA_PATH;
+	}
+
 	/* CA path */
 	path = nm_setting_802_1x_get_ca_path (setting);
-	if (nm_setting_802_1x_get_system_ca_certs (setting))
-		path = SYSTEM_CA_PATH;
+	path = ca_path_override ? ca_path_override : path;
 	if (path) {
 		if (!add_string_val (self, path, "ca_path", FALSE, FALSE))
 			return FALSE;
@@ -902,41 +890,50 @@ nm_supplicant_config_add_setting_8021x (NMSupplicantConfig *self,
 
 	/* Phase2 CA path */
 	path = nm_setting_802_1x_get_phase2_ca_path (setting);
-	if (nm_setting_802_1x_get_system_ca_certs (setting))
-		path = SYSTEM_CA_PATH;
+	path = ca_path_override ? ca_path_override : path;
 	if (path) {
 		if (!add_string_val (self, path, "ca_path2", FALSE, FALSE))
 			return FALSE;
 	}
 
 	/* CA certificate */
-	switch (nm_setting_802_1x_get_ca_cert_scheme (setting)) {
-	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
-		bytes = nm_setting_802_1x_get_ca_cert_blob (setting);
-		ADD_BLOB_VAL (bytes, "ca_cert", con_uuid);
-		break;
-	case NM_SETTING_802_1X_CK_SCHEME_PATH:
-		path = nm_setting_802_1x_get_ca_cert_path (setting);
-		if (!add_string_val (self, path, "ca_cert", FALSE, FALSE))
+	if (ca_cert_override) {
+		if (!add_string_val (self, ca_cert_override, "ca_cert", FALSE, FALSE))
 			return FALSE;
-		break;
-	default:
-		break;
+	} else {
+		switch (nm_setting_802_1x_get_ca_cert_scheme (setting)) {
+		case NM_SETTING_802_1X_CK_SCHEME_BLOB:
+			bytes = nm_setting_802_1x_get_ca_cert_blob (setting);
+			ADD_BLOB_VAL (bytes, "ca_cert", con_uuid);
+			break;
+		case NM_SETTING_802_1X_CK_SCHEME_PATH:
+			path = nm_setting_802_1x_get_ca_cert_path (setting);
+			if (!add_string_val (self, path, "ca_cert", FALSE, FALSE))
+				return FALSE;
+			break;
+		default:
+			break;
+		}
 	}
 
 	/* Phase 2 CA certificate */
-	switch (nm_setting_802_1x_get_phase2_ca_cert_scheme (setting)) {
-	case NM_SETTING_802_1X_CK_SCHEME_BLOB:
-		bytes = nm_setting_802_1x_get_phase2_ca_cert_blob (setting);
-		ADD_BLOB_VAL (bytes, "ca_cert2", con_uuid);
-		break;
-	case NM_SETTING_802_1X_CK_SCHEME_PATH:
-		path = nm_setting_802_1x_get_phase2_ca_cert_path (setting);
-		if (!add_string_val (self, path, "ca_cert2", FALSE, FALSE))
+	if (ca_cert_override) {
+		if (!add_string_val (self, ca_cert_override, "ca_cert2", FALSE, FALSE))
 			return FALSE;
-		break;
-	default:
-		break;
+	} else {
+		switch (nm_setting_802_1x_get_phase2_ca_cert_scheme (setting)) {
+		case NM_SETTING_802_1X_CK_SCHEME_BLOB:
+			bytes = nm_setting_802_1x_get_phase2_ca_cert_blob (setting);
+			ADD_BLOB_VAL (bytes, "ca_cert2", con_uuid);
+			break;
+		case NM_SETTING_802_1X_CK_SCHEME_PATH:
+			path = nm_setting_802_1x_get_phase2_ca_cert_path (setting);
+			if (!add_string_val (self, path, "ca_cert2", FALSE, FALSE))
+				return FALSE;
+			break;
+		default:
+			break;
+		}
 	}
 
 	/* Subject match */

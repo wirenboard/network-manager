@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMRemoteConnection</title>
+<title>NMRemoteConnection: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMVpnConnection.html" title="NMVpnConnection">
 <link rel="next" href="NMAccessPoint.html" title="NMAccessPoint">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -214,8 +214,6 @@
 </div>
 <div class="refsect1">
 <a name="NMRemoteConnection.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMRemoteConnection.functions_details"></a><h2>Functions</h2>
@@ -267,7 +265,6 @@ disk; if <code class="literal">FALSE</code>, then only the in-memory representat
 <a name="id-1.5.18.8.2.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -365,7 +362,6 @@ nm_remote_connection_commit_changes_finish
 <a name="id-1.5.18.8.4.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -408,7 +404,6 @@ been written to disk, or if the connection has never been saved.</p>
 <a name="id-1.5.18.8.5.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -494,7 +489,6 @@ nm_remote_connection_save_finish (<em class="parameter"><code><a class="link" hr
 <a name="id-1.5.18.8.7.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -536,7 +530,6 @@ nm_remote_connection_delete (<em class="parameter"><code><a class="link" href="N
 <a name="id-1.5.18.8.8.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -621,7 +614,6 @@ nm_remote_connection_delete_finish (<em class="parameter"><code><a class="link" 
 <a name="id-1.5.18.8.10.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -671,7 +663,6 @@ not a simple property accessor.</p>
 <p> a <span class="type">GVariant</span> of type <code class="literal">NM_VARIANT_TYPE_CONNECTION</code> containing
 <em class="parameter"><code>connection</code></em>
 's secrets, or <code class="literal">NULL</code> on error.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -793,7 +784,6 @@ nm_remote_connection_get_unsaved (<em class="parameter"><code><a class="link" hr
 <p> <code class="literal">TRUE</code> if the remote connection contains changes that have not
 been saved to disk, <code class="literal">FALSE</code> if the connection is the same as its on-disk
 representation.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -828,7 +818,6 @@ reference to it.)</p>
 <a name="id-1.5.18.8.15.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the remote connection is visible to the current
 user, <code class="literal">FALSE</code> if not.</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -838,32 +827,24 @@ user, <code class="literal">FALSE</code> if not.</p>
 <a name="NM-REMOTE-CONNECTION-DBUS-CONNECTION:CAPS"></a><h3>NM_REMOTE_CONNECTION_DBUS_CONNECTION</h3>
 <pre class="programlisting">#define NM_REMOTE_CONNECTION_DBUS_CONNECTION "dbus-connection"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-CONNECTION-PATH:CAPS"></a><h3>NM_REMOTE_CONNECTION_PATH</h3>
 <pre class="programlisting">#define NM_REMOTE_CONNECTION_PATH            "path"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-CONNECTION-UNSAVED:CAPS"></a><h3>NM_REMOTE_CONNECTION_UNSAVED</h3>
 <pre class="programlisting">#define NM_REMOTE_CONNECTION_UNSAVED         "unsaved"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-CONNECTION-VISIBLE:CAPS"></a><h3>NM_REMOTE_CONNECTION_VISIBLE</h3>
 <pre class="programlisting">#define NM_REMOTE_CONNECTION_VISIBLE         "visible"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -871,7 +852,8 @@ user, <code class="literal">FALSE</code> if not.</p>
 <div class="refsect2">
 <a name="NMRemoteConnection--unsaved"></a><h3>The <code class="literal">“unsaved”</code> property</h3>
 <pre class="programlisting">  “unsaved”                  <span class="type">gboolean</span></pre>
-<p></p>
+<p><code class="literal">TRUE</code> if the remote connection contains changes that have not been saved
+to disk, <code class="literal">FALSE</code> if the connection is the same as its on-disk representation.</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
 </div>
@@ -879,14 +861,19 @@ user, <code class="literal">FALSE</code> if not.</p>
 <div class="refsect2">
 <a name="NMRemoteConnection--visible"></a><h3>The <code class="literal">“visible”</code> property</h3>
 <pre class="programlisting">  “visible”                  <span class="type">gboolean</span></pre>
-<p></p>
+<p><code class="literal">TRUE</code> if the remote connection is visible to the current user, <code class="literal">FALSE</code> if
+not.  If the connection is not visible then it is essentially useless; it
+will not contain any settings, and operations such as
+<a class="link" href="NMRemoteConnection.html#nm-remote-connection-save" title="nm_remote_connection_save ()"><code class="function">nm_remote_connection_save()</code></a> and <a class="link" href="NMRemoteConnection.html#nm-remote-connection-delete" title="nm_remote_connection_delete ()"><code class="function">nm_remote_connection_delete()</code></a> will always
+fail. (<a href="https://developer.gnome.org/libnm-glib/0.9/NMRemoteSettings.html"><span class="type">NMRemoteSettings</span></a> will not normally return non-visible connections
+to callers, but it is possible for a connection's visibility to change
+after you already have a reference to it.)</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

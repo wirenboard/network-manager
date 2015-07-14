@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMSettingIP6Config</title>
+<title>NMSettingIP6Config: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingIP4Config.html" title="NMSettingIP4Config">
 <link rel="next" href="NMSettingPPP.html" title="NMSettingPPP">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -708,7 +708,6 @@ nm_setting_ip6_config_error_quark (<em class="parameter"><code><span class="type
 <div class="refsect3">
 <a name="id-1.2.26.11.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -828,7 +827,6 @@ to.</p></td>
 <div class="refsect3">
 <a name="id-1.2.26.11.7.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the objects contain the same values, <code class="literal">FALSE</code> if they do not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -912,7 +910,6 @@ nm_ip6_address_get_prefix (<em class="parameter"><code><a class="link" href="NMS
 <div class="refsect3">
 <a name="id-1.2.26.11.10.6"></a><h4>Returns</h4>
 <p> the IPv6 address prefix</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1119,7 +1116,6 @@ to.</p></td>
 <div class="refsect3">
 <a name="id-1.2.26.11.18.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the objects contain the same values, <code class="literal">FALSE</code> if they do not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1203,7 +1199,6 @@ nm_ip6_route_get_prefix (<em class="parameter"><code><a class="link" href="NMSet
 <div class="refsect3">
 <a name="id-1.2.26.11.21.6"></a><h4>Returns</h4>
 <p> the IPv6 prefix</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1318,7 +1313,6 @@ nm_ip6_route_get_metric (<em class="parameter"><code><a class="link" href="NMSet
 <div class="refsect3">
 <a name="id-1.2.26.11.25.6"></a><h4>Returns</h4>
 <p> the route metric</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1387,7 +1381,6 @@ nm_setting_ip6_config_get_method (<em class="parameter"><code><a class="link" hr
 <div class="refsect3">
 <a name="id-1.2.26.11.28.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--method" title="The “method” property"><span class="type">“method”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1413,7 +1406,6 @@ nm_setting_ip6_config_get_num_dns (<em class="parameter"><code><a class="link" h
 <div class="refsect3">
 <a name="id-1.2.26.11.29.5"></a><h4>Returns</h4>
 <p> the number of configured DNS servers</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1484,7 +1476,6 @@ nm_setting_ip6_config_add_dns (<em class="parameter"><code><a class="link" href=
 <a name="id-1.2.26.11.31.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS server was added; <code class="literal">FALSE</code> if the server was already
 known</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1552,9 +1543,8 @@ nm_setting_ip6_config_remove_dns_by_value
 <div class="refsect3">
 <a name="id-1.2.26.11.33.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS server was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1602,7 +1592,6 @@ nm_setting_ip6_config_get_num_dns_searches
 <div class="refsect3">
 <a name="id-1.2.26.11.35.5"></a><h4>Returns</h4>
 <p> the number of configured DNS search domains</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1637,7 +1626,6 @@ nm_setting_ip6_config_get_dns_search (<em class="parameter"><code><a class="link
 <a name="id-1.2.26.11.36.5"></a><h4>Returns</h4>
 <p> the DNS search domain at index <em class="parameter"><code>i</code></em>
 </p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1673,7 +1661,6 @@ nm_setting_ip6_config_add_dns_search (<em class="parameter"><code><a class="link
 <a name="id-1.2.26.11.37.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS search domain was added; <code class="literal">FALSE</code> if the search
 domain was already known</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1743,7 +1730,6 @@ nm_setting_ip6_config_remove_dns_search_by_value
 <a name="id-1.2.26.11.39.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS search domain was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 <p>Since 0.9.10</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1793,7 +1779,6 @@ nm_setting_ip6_config_get_num_addresses
 <div class="refsect3">
 <a name="id-1.2.26.11.41.5"></a><h4>Returns</h4>
 <p> the number of configured addresses</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1828,7 +1813,6 @@ nm_setting_ip6_config_get_address (<em class="parameter"><code><a class="link" h
 <a name="id-1.2.26.11.42.5"></a><h4>Returns</h4>
 <p> the address at index <em class="parameter"><code>i</code></em>
 </p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1865,7 +1849,6 @@ given address is duplicated internally and is not changed by this function.</p>
 <a name="id-1.2.26.11.43.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the address was added; <code class="literal">FALSE</code> if the address was already
 known.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1933,9 +1916,8 @@ nm_setting_ip6_config_remove_address_by_value
 <div class="refsect3">
 <a name="id-1.2.26.11.45.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the address was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1982,7 +1964,6 @@ nm_setting_ip6_config_get_num_routes (<em class="parameter"><code><a class="link
 <div class="refsect3">
 <a name="id-1.2.26.11.47.5"></a><h4>Returns</h4>
 <p> the number of configured routes</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2017,7 +1998,6 @@ nm_setting_ip6_config_get_route (<em class="parameter"><code><a class="link" hre
 <a name="id-1.2.26.11.48.5"></a><h4>Returns</h4>
 <p> the route at index <em class="parameter"><code>i</code></em>
 </p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2053,7 +2033,6 @@ given route is duplicated internally and is not changed by this function.</p>
 <div class="refsect3">
 <a name="id-1.2.26.11.49.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the route was added; <code class="literal">FALSE</code> if the route was already known.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2121,9 +2100,8 @@ nm_setting_ip6_config_remove_route_by_value
 <div class="refsect3">
 <a name="id-1.2.26.11.51.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the route was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2174,7 +2152,6 @@ property.</p>
 <a name="id-1.2.26.11.53.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if automatically configured (ie via DHCP) routes should be
 ignored.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2204,9 +2181,8 @@ property.</p>
 <a name="id-1.2.26.11.54.6"></a><h4>Returns</h4>
 <p> the route metric that is used for IPv6 routes that don't explicitly
 specify a metric. See <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--route-metric" title="The “route-metric” property"><span class="type">“route-metric”</span></a> for more details.</p>
-<p></p>
 </div>
-<p class="since">Since 1.0</p>
+<p class="since">Since: 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2235,7 +2211,6 @@ property.</p>
 <a name="id-1.2.26.11.55.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if automatically configured (ie via DHCP or router
 advertisements) DNS information should be ignored.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2264,9 +2239,8 @@ property.</p>
 <div class="refsect3">
 <a name="id-1.2.26.11.56.6"></a><h4>Returns</h4>
 <p> the configured hostname to send to the DHCP server</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.8</p>
+<p class="since">Since: 0.9.8</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2295,7 +2269,6 @@ property.</p>
 <a name="id-1.2.26.11.57.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if this connection should never be the default connection
 for IPv6 addressing</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2324,7 +2297,6 @@ property.</p>
 <a name="id-1.2.26.11.58.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if this connection doesn't require IPv6 addressing to complete
 for the connection to succeed.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -2352,7 +2324,6 @@ property.</p>
 <div class="refsect3">
 <a name="id-1.2.26.11.59.6"></a><h4>Returns</h4>
 <p> IPv6 Privacy Extensions configuration value (<a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy" title="enum NMSettingIP6ConfigPrivacy"><span class="type">NMSettingIP6ConfigPrivacy</span></a>).</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -2362,8 +2333,6 @@ property.</p>
 <a name="NM-SETTING-IP6-CONFIG-SETTING-NAME:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_SETTING_NAME "ipv6"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2416,104 +2385,78 @@ not valid with the given IPv6 method</p>
 <a name="NM-SETTING-IP6-CONFIG-ERROR:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_ERROR nm_setting_ip6_config_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-METHOD:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_METHOD</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_METHOD             "method"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-DNS:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_DNS</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_DNS                "dns"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-DNS-SEARCH:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_DNS_SEARCH</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_DNS_SEARCH         "dns-search"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-ADDRESSES:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_ADDRESSES</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_ADDRESSES          "addresses"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-ROUTES:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_ROUTES</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_ROUTES             "routes"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-ROUTE-METRIC:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_ROUTE_METRIC</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_ROUTE_METRIC       "route-metric"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-IGNORE-AUTO-ROUTES:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_IGNORE_AUTO_ROUTES "ignore-auto-routes"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-IGNORE-AUTO-DNS:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_IGNORE_AUTO_DNS    "ignore-auto-dns"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-NEVER-DEFAULT:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_NEVER_DEFAULT</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_NEVER_DEFAULT      "never-default"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-MAY-FAIL:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_MAY_FAIL</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_MAY_FAIL           "may-fail"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-IP6-PRIVACY:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_IP6_PRIVACY</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_IP6_PRIVACY        "ip6-privacy"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-IP6-CONFIG-DHCP-HOSTNAME:CAPS"></a><h3>NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME</h3>
 <pre class="programlisting">#define NM_SETTING_IP6_CONFIG_DHCP_HOSTNAME      "dhcp-hostname"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2623,37 +2566,61 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--addresses"></a><h3>The <code class="literal">“addresses”</code> property</h3>
 <pre class="programlisting">  “addresses”                <span class="type">GPtrArray_GValueArray_GArray_guchar_+guint+GArray_guchar___*</span></pre>
-<p></p>
+<p>Array of IPv6 address structures.  Each IPv6 address structure is
+composed of 3 members, the first being a byte array containing the IPv6
+address (network byte order), the second a 32-bit integer containing the
+IPv6 address prefix, and the third a byte array containing the IPv6
+address (network byte order) of the gateway associated with this address,
+if any.  If no gateway is given, the third element should be given as all
+zeros.  For the "auto" method, given IP addresses are appended to those
+returned by automatic configuration.  Addresses cannot be used with the
+"shared" or "link-local" methods as the interface is automatically
+assigned an address with these methods.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--dhcp-hostname"></a><h3>The <code class="literal">“dhcp-hostname”</code> property</h3>
 <pre class="programlisting">  “dhcp-hostname”            <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The specified name will be sent to the DHCP server when acquiring a
+lease.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
-<p class="since">Since 0.9.8</p>
+<p class="since">Since: 0.9.8</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--dns"></a><h3>The <code class="literal">“dns”</code> property</h3>
 <pre class="programlisting">  “dns”                      <span class="type">GPtrArray_GArray_guchar__</span> *</pre>
-<p></p>
+<p>Array of DNS servers, where each member of the array is a byte array
+containing the IPv6 address of the DNS server (in network byte order).
+For the "auto" method, these DNS servers are appended to those (if any)
+returned by automatic configuration.  DNS servers cannot be used with the
+"shared" or "link-local" methods as there is no usptream network. In all
+other methods, these DNS servers are used as the only DNS servers for
+this connection.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--dns-search"></a><h3>The <code class="literal">“dns-search”</code> property</h3>
 <pre class="programlisting">  “dns-search”               <span class="type">GSList_gchararray_</span> *</pre>
-<p></p>
+<p>List of DNS search domains.  For the "auto" method, these search domains
+are appended to those returned by automatic configuration. Search domains
+cannot be used with the "shared" or "link-local" methods as there is no
+upstream network.  In all other methods, these search domains are used as
+the only search domains for this connection.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--ignore-auto-dns"></a><h3>The <code class="literal">“ignore-auto-dns”</code> property</h3>
 <pre class="programlisting">  “ignore-auto-dns”          <span class="type">gboolean</span></pre>
-<p></p>
+<p>When the method is set to "auto" or "dhcp" and this property is set to
+<code class="literal">TRUE</code>, automatically configured nameservers and search domains are
+ignored and only nameservers and search domains specified in the
+<a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--dns" title="The “dns” property"><span class="type">“dns”</span></a> and <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--dns-search" title="The “dns-search” property"><span class="type">“dns-search”</span></a> properties, if
+any, are used.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: FALSE</p>
 </div>
@@ -2661,7 +2628,9 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--ignore-auto-routes"></a><h3>The <code class="literal">“ignore-auto-routes”</code> property</h3>
 <pre class="programlisting">  “ignore-auto-routes”       <span class="type">gboolean</span></pre>
-<p></p>
+<p>When the method is set to "auto" or "dhcp" and this property is set to
+<code class="literal">TRUE</code>, automatically configured routes are ignored and only routes
+specified in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--routes" title="The “routes” property"><span class="type">“routes”</span></a> property, if any, are used.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: FALSE</p>
 </div>
@@ -2669,7 +2638,13 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--ip6-privacy"></a><h3>The <code class="literal">“ip6-privacy”</code> property</h3>
 <pre class="programlisting">  “ip6-privacy”              <span class="type">gint</span></pre>
-<p></p>
+<p>Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941.  If
+enabled, it makes the kernel generate a temporary IPv6 address in
+addition to the public one generated from MAC address via modified
+EUI-64.  This enhances privacy, but could cause problems in some
+applications, on the other hand.  The permitted values are: 0: disabled,
+1: enabled (prefer public address), 2: enabled (prefer temporary
+addresses).</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: [-1,2]</p>
 <p>Default value: -1</p>
@@ -2678,7 +2653,12 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--may-fail"></a><h3>The <code class="literal">“may-fail”</code> property</h3>
 <pre class="programlisting">  “may-fail”                 <span class="type">gboolean</span></pre>
-<p></p>
+<p>If <code class="literal">TRUE</code>, allow overall network configuration to proceed even if IPv6
+configuration times out.  Note that at least one IP configuration must
+succeed or overall network configuration will still fail.  For example,
+in IPv4-only networks, setting this property to <code class="literal">TRUE</code> allows the overall
+network configuration to succeed if IPv6 configuration fails but IPv4
+configuration completes successfully.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: TRUE</p>
 </div>
@@ -2686,7 +2666,16 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--method"></a><h3>The <code class="literal">“method”</code> property</h3>
 <pre class="programlisting">  “method”                   <span class="type">gchar</span> *</pre>
-<p></p>
+<p>IPv6 configuration method.  If "auto" is specified then the appropriate
+automatic method (PPP, router advertisement, etc) is used for the device
+and most other properties can be left unset.  To force the use of DHCP
+only, specify "dhcp"; this method is only valid for Ethernet- based
+hardware.  If "link-local" is specified, then an IPv6 link-local address
+will be assigned to the interface.  If "manual" is specified, static IP
+addressing is used and at least one IP address must be given in the
+"addresses" property.  If "ignore" is specified, IPv6 configuration is
+not done. This property must be set.  Note: the "shared" method is not
+yet supported.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -2694,7 +2683,9 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--never-default"></a><h3>The <code class="literal">“never-default”</code> property</h3>
 <pre class="programlisting">  “never-default”            <span class="type">gboolean</span></pre>
-<p></p>
+<p>If <code class="literal">TRUE</code>, this connection will never be the default IPv6 connection,
+meaning it will never be assigned the default IPv6 route by
+NetworkManager.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: FALSE</p>
 </div>
@@ -2702,23 +2693,36 @@ are enabled and temporary addresses are preferred over public addresses</p>
 <div class="refsect2">
 <a name="NMSettingIP6Config--route-metric"></a><h3>The <code class="literal">“route-metric”</code> property</h3>
 <pre class="programlisting">  “route-metric”             <span class="type">gint64</span></pre>
-<p></p>
+<p>The default metric for routes that don't explicitly specify a metric.
+The default value -1 means that the metric is choosen automatically
+based on the device type.
+The metric applies to dynamic routes, manual (static) routes that
+don't have an explicit metric setting, address prefix routes, and
+the default route.
+As the linux kernel replaces zero (0) by 1024 (user-default), setting
+this property to 0 means effectively setting it to 1024.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: [-1,4294967295]</p>
 <p>Default value: -1</p>
-<p class="since">Since 1.0</p>
+<p class="since">Since: 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingIP6Config--routes"></a><h3>The <code class="literal">“routes”</code> property</h3>
 <pre class="programlisting">  “routes”                   <span class="type">GPtrArray_GValueArray_GArray_guchar_+guint+GArray_guchar_+guint__*</span></pre>
-<p></p>
+<p>Array of IPv6 route structures.  Each IPv6 route structure is composed of
+4 members; the first being the destination IPv6 network or address
+(network byte order) as a byte array, the second the destination network
+or address IPv6 prefix, the third being the next-hop IPv6 address
+(network byte order) if any, and the fourth being the route metric. For
+the "auto" method, given IP routes are appended to those returned by
+automatic configuration.  Routes cannot be used with the "shared" or
+"link-local" methods because there is no upstream network.</p>
 <p>Flags: Read / Write</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

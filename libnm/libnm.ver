@@ -844,3 +844,10 @@ global:
 local:
 	*;
 };
+
+libnm_1_0_4 {
+global:
+	nm_setting_connection_autoconnect_slaves_get_type;
+	nm_setting_connection_get_autoconnect_slaves;
+} libnm_1_0_0;
+

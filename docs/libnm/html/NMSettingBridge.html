@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSettingBridge</title>
+<title>NMSettingBridge: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingBond.html" title="NMSettingBond">
 <link rel="next" href="NMSettingBridgePort.html" title="NMSettingBridgePort">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -246,7 +246,6 @@ nm_setting_bridge_get_mac_address (<em class="parameter"><code><a class="link" h
 <div class="refsect3">
 <a name="id-1.4.10.8.3.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--mac-address" title="The “mac-address” property"><span class="type">“mac-address”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -272,7 +271,6 @@ nm_setting_bridge_get_stp (<em class="parameter"><code><a class="link" href="NMS
 <div class="refsect3">
 <a name="id-1.4.10.8.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--stp" title="The “stp” property"><span class="type">“stp”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -298,7 +296,6 @@ nm_setting_bridge_get_priority (<em class="parameter"><code><a class="link" href
 <div class="refsect3">
 <a name="id-1.4.10.8.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--priority" title="The “priority” property"><span class="type">“priority”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -324,7 +321,6 @@ nm_setting_bridge_get_forward_delay (<em class="parameter"><code><a class="link"
 <div class="refsect3">
 <a name="id-1.4.10.8.6.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--forward-delay" title="The “forward-delay” property"><span class="type">“forward-delay”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -350,7 +346,6 @@ nm_setting_bridge_get_hello_time (<em class="parameter"><code><a class="link" hr
 <div class="refsect3">
 <a name="id-1.4.10.8.7.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--hello-time" title="The “hello-time” property"><span class="type">“hello-time”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -376,7 +371,6 @@ nm_setting_bridge_get_max_age (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.4.10.8.8.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--max-age" title="The “max-age” property"><span class="type">“max-age”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -402,7 +396,6 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect3">
 <a name="id-1.4.10.8.9.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridge.html#NMSettingBridge--ageing-time" title="The “ageing-time” property"><span class="type">“ageing-time”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -412,64 +405,48 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <a name="NM-SETTING-BRIDGE-SETTING-NAME:CAPS"></a><h3>NM_SETTING_BRIDGE_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_SETTING_NAME "bridge"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-MAC-ADDRESS:CAPS"></a><h3>NM_SETTING_BRIDGE_MAC_ADDRESS</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_MAC_ADDRESS    "mac-address"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-STP:CAPS"></a><h3>NM_SETTING_BRIDGE_STP</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_STP            "stp"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-PRIORITY:CAPS"></a><h3>NM_SETTING_BRIDGE_PRIORITY</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_PRIORITY       "priority"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-FORWARD-DELAY:CAPS"></a><h3>NM_SETTING_BRIDGE_FORWARD_DELAY</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_FORWARD_DELAY  "forward-delay"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-HELLO-TIME:CAPS"></a><h3>NM_SETTING_BRIDGE_HELLO_TIME</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_HELLO_TIME     "hello-time"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-MAX-AGE:CAPS"></a><h3>NM_SETTING_BRIDGE_MAX_AGE</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_MAX_AGE        "max-age"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-BRIDGE-AGEING-TIME:CAPS"></a><h3>NM_SETTING_BRIDGE_AGEING_TIME</h3>
 <pre class="programlisting">#define NM_SETTING_BRIDGE_AGEING_TIME    "ageing-time"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -477,7 +454,7 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--ageing-time"></a><h3>The <code class="literal">“ageing-time”</code> property</h3>
 <pre class="programlisting">  “ageing-time”              <span class="type">guint</span></pre>
-<p></p>
+<p>The Ethernet MAC address aging time, in seconds.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: &lt;= 1000000</p>
 <p>Default value: 300</p>
@@ -486,7 +463,7 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--forward-delay"></a><h3>The <code class="literal">“forward-delay”</code> property</h3>
 <pre class="programlisting">  “forward-delay”            <span class="type">guint</span></pre>
-<p></p>
+<p>The Spanning Tree Protocol (STP) forwarding delay, in seconds.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: &lt;= 30</p>
 <p>Default value: 15</p>
@@ -495,7 +472,7 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--hello-time"></a><h3>The <code class="literal">“hello-time”</code> property</h3>
 <pre class="programlisting">  “hello-time”               <span class="type">guint</span></pre>
-<p></p>
+<p>The Spanning Tree Protocol (STP) hello time, in seconds.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: &lt;= 10</p>
 <p>Default value: 2</p>
@@ -504,7 +481,9 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--mac-address"></a><h3>The <code class="literal">“mac-address”</code> property</h3>
 <pre class="programlisting">  “mac-address”              <span class="type">gchar</span> *</pre>
-<p></p>
+<p>If specified, the MAC address of bridge. When creating a new bridge, this
+MAC address will be set. When matching an existing (outside
+NetworkManager created) bridge, this MAC address must match.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -512,7 +491,7 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--max-age"></a><h3>The <code class="literal">“max-age”</code> property</h3>
 <pre class="programlisting">  “max-age”                  <span class="type">guint</span></pre>
-<p></p>
+<p>The Spanning Tree Protocol (STP) maximum message age, in seconds.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: &lt;= 40</p>
 <p>Default value: 20</p>
@@ -521,7 +500,9 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--priority"></a><h3>The <code class="literal">“priority”</code> property</h3>
 <pre class="programlisting">  “priority”                 <span class="type">guint</span></pre>
-<p></p>
+<p>Sets the Spanning Tree Protocol (STP) priority for this bridge.  Lower
+values are "better"; the lowest priority bridge will be elected the root
+bridge.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: &lt;= 65535</p>
 <p>Default value: 32768</p>
@@ -530,14 +511,13 @@ nm_setting_bridge_get_ageing_time (<em class="parameter"><code><a class="link" h
 <div class="refsect2">
 <a name="NMSettingBridge--stp"></a><h3>The <code class="literal">“stp”</code> property</h3>
 <pre class="programlisting">  “stp”                      <span class="type">gboolean</span></pre>
-<p></p>
+<p>Controls whether Spanning Tree Protocol (STP) is enabled for this bridge.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: TRUE</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

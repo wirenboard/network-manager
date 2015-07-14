@@ -39,7 +39,6 @@
 #include "nm-dbus-manager.h"
 #include "nm-enum-types.h"
 #include "nm-team-enum-types.h"
-#include "nm-posix-signals.h"
 #include "nm-core-internal.h"
 #include "gsystem-local-alloc.h"
 
@@ -71,18 +70,16 @@ static gboolean teamd_start (NMDevice *device, NMSettingTeam *s_team);
 
 /******************************************************************/
 
-static guint32
+static NMDeviceCapabilities
 get_generic_capabilities (NMDevice *device)
 {
-	return NM_DEVICE_CAP_CARRIER_DETECT;
+	return NM_DEVICE_CAP_CARRIER_DETECT | NM_DEVICE_CAP_IS_SOFTWARE;
 }
 
 static gboolean
 is_available (NMDevice *device, NMDeviceCheckDevAvailableFlags flags)
 {
-	if (NM_DEVICE_GET_CLASS (device)->is_up)
-		return NM_DEVICE_GET_CLASS (device)->is_up (device);
-	return FALSE;
+	return TRUE;
 }
 
 static gboolean
@@ -424,23 +421,6 @@ teamd_process_watch_cb (GPid pid, gint status, gpointer user_data)
 	}
 }
 
-static void
-teamd_child_setup (gpointer user_data G_GNUC_UNUSED)
-{
-	/* We are in the child process at this point.
-	 * Give child it's own program group for signal
-	 * separation.
-	 */
-	pid_t pid = getpid ();
-	setpgid (pid, pid);
-
-	/*
-	 * We blocked signals in main(). We need to restore original signal
-	 * mask for avahi-autoipd here so that it can receive signals.
-	 */
-	nm_unblock_posix_signals (NULL);
-}
-
 static gboolean
 teamd_kill (NMDeviceTeam *self, const char *teamd_binary, GError **error)
 {
@@ -448,7 +428,7 @@ teamd_kill (NMDeviceTeam *self, const char *teamd_binary, GError **error)
 	gs_free char *tmp_str = NULL;
 
 	if (!teamd_binary) {
-		teamd_binary = nm_utils_find_helper ("teamd", NULL, NULL);
+		teamd_binary = nm_utils_find_helper ("teamd", NULL, error);
 		if (!teamd_binary) {
 			_LOGW (LOGD_TEAM, "Activation: (team) failed to start teamd: teamd binary not found");
 			return FALSE;
@@ -463,7 +443,7 @@ teamd_kill (NMDeviceTeam *self, const char *teamd_binary, GError **error)
 	g_ptr_array_add (argv, NULL);
 
 	_LOGD (LOGD_TEAM, "running: %s", (tmp_str = g_strjoinv (" ", (gchar **) argv->pdata)));
-	return g_spawn_sync ("/", (char **) argv->pdata, NULL, 0, nm_unblock_posix_signals, NULL, NULL, NULL, NULL, error);
+	return g_spawn_sync ("/", (char **) argv->pdata, NULL, 0, NULL, NULL, NULL, NULL, NULL, error);
 }
 
 static gboolean
@@ -514,7 +494,7 @@ teamd_start (NMDevice *device, NMSettingTeam *s_team)
 
 	_LOGD (LOGD_TEAM, "running: %s", (tmp_str = g_strjoinv (" ", (gchar **) argv->pdata)));
 	if (!g_spawn_async ("/", (char **) argv->pdata, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
-	                    teamd_child_setup, NULL, &priv->teamd_pid, &error)) {
+	                    nm_utils_setpgid, NULL, &priv->teamd_pid, &error)) {
 		_LOGW (LOGD_TEAM, "Activation: (team) failed to start teamd: %s", error->message);
 		teamd_cleanup (device, TRUE);
 		return FALSE;
@@ -638,7 +618,8 @@ enslave_slave (NMDevice *device,
 				}
 			}
 		}
-		success = nm_platform_link_enslave (nm_device_get_ip_ifindex (device),
+		success = nm_platform_link_enslave (NM_PLATFORM_GET,
+		                                    nm_device_get_ip_ifindex (device),
 		                                    nm_device_get_ip_ifindex (slave));
 		nm_device_bring_up (slave, TRUE, &no_firmware);
 
@@ -663,7 +644,8 @@ release_slave (NMDevice *device,
 	gboolean success = TRUE, no_firmware = FALSE;
 
 	if (configure) {
-		success = nm_platform_link_release (nm_device_get_ip_ifindex (device),
+		success = nm_platform_link_release (NM_PLATFORM_GET,
+		                                    nm_device_get_ip_ifindex (device),
 		                                    nm_device_get_ip_ifindex (slave));
 
 		if (success)
@@ -694,8 +676,6 @@ release_slave (NMDevice *device,
 NMDevice *
 nm_device_team_new (NMPlatformLink *platform_device)
 {
-	g_return_val_if_fail (platform_device != NULL, NULL);
-
 	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_TEAM,
 	                                  NM_DEVICE_PLATFORM_DEVICE, platform_device,
 	                                  NM_DEVICE_DRIVER, "team",
@@ -708,21 +688,18 @@ nm_device_team_new (NMPlatformLink *platform_device)
 NMDevice *
 nm_device_team_new_for_connection (NMConnection *connection, GError **error)
 {
-	const char *iface;
+	const char *iface = nm_connection_get_interface_name (connection);
+	NMPlatformError plerr;
 
-	g_return_val_if_fail (connection != NULL, NULL);
+	g_assert (iface);
 
-	iface = nm_connection_get_interface_name (connection);
-	g_return_val_if_fail (iface != NULL, NULL);
-
-	if (   !nm_platform_team_add (iface)
-	    && nm_platform_get_error () != NM_PLATFORM_ERROR_EXISTS) {
-		g_set_error (error,
-		             NM_DEVICE_ERROR,
-		             NM_DEVICE_ERROR_CREATION_FAILED,
-		             "failed to create team master interface '%s' for connection '%s': %s",
-		             iface, nm_connection_get_id (connection),
-		             nm_platform_get_error_msg ());
+	plerr = nm_platform_team_add (NM_PLATFORM_GET, iface, NULL);
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
+		             "Failed to create team master interface '%s' for '%s': %s",
+		             iface,
+		             nm_connection_get_id (connection),
+		             nm_platform_error_to_string (plerr));
 		return NULL;
 	}
 

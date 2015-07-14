@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMSetting</title>
+<title>NMSetting: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMConnection.html" title="NMConnection">
 <link rel="next" href="NMSettingConnection.html" title="NMSettingConnection">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -331,7 +331,6 @@ nm_setting_error_quark (<em class="parameter"><code><span class="type">void</spa
 <div class="refsect3">
 <a name="id-1.2.3.9.2.5"></a><h4>Returns</h4>
 <p> the error quark used for NMSetting errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -339,32 +338,24 @@ nm_setting_error_quark (<em class="parameter"><code><span class="type">void</spa
 <a name="NM-SETTING-PARAM-SERIALIZE:CAPS"></a><h3>NM_SETTING_PARAM_SERIALIZE</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_SERIALIZE    (1 &lt;&lt; (0 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PARAM-REQUIRED:CAPS"></a><h3>NM_SETTING_PARAM_REQUIRED</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_REQUIRED     (1 &lt;&lt; (1 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PARAM-SECRET:CAPS"></a><h3>NM_SETTING_PARAM_SECRET</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_SECRET       (1 &lt;&lt; (2 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"></a><h3>NM_SETTING_PARAM_FUZZY_IGNORE</h3>
 <pre class="programlisting">#define NM_SETTING_PARAM_FUZZY_IGNORE (1 &lt;&lt; (3 + G_PARAM_USER_SHIFT))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -409,7 +400,6 @@ nm_setting_error_quark (<em class="parameter"><code><span class="type">void</spa
 <div class="refsect3">
 <a name="id-1.2.3.9.7.5"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> to clear the secret, <code class="literal">FALSE</code> to not clear the secret</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -537,7 +527,6 @@ string to GValue mapping of properties that apply to the setting. </p></td>
 <a name="id-1.2.3.9.10.6"></a><h4>Returns</h4>
 <p> a new <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object populated with the properties from the
 hash table, or <code class="literal">NULL</code> on failure</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -593,7 +582,6 @@ nm_setting_get_name (<em class="parameter"><code><a class="link" href="NMSetting
 <a name="id-1.2.3.9.12.6"></a><h4>Returns</h4>
 <p> a string containing the type name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object,
 like 'ppp' or 'wireless' or 'wired'.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -640,7 +628,6 @@ came. </p></td>
 <div class="refsect3">
 <a name="id-1.2.3.9.13.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the setting is valid, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -683,7 +670,6 @@ for a description of each flag's behavior.</p>
 <div class="refsect3">
 <a name="id-1.2.3.9.14.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the comparison succeeds, <code class="literal">FALSE</code> if it does not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -746,7 +732,6 @@ in and the settings differ, a new one is created and returned. </p></td>
 <div class="refsect3">
 <a name="id-1.2.3.9.15.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the settings contain the same values, <code class="literal">FALSE</code> if they do not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -815,7 +800,6 @@ output format is not guaranteed to be stable and may change at any time.</p>
 <p> an allocated string containing a textual representation of the
 setting's properties and values (including secrets!), which the caller should
 free with <code class="function">g_free()</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -955,7 +939,6 @@ string to <span class="type">GValue</span> of setting property names and secrets
 <a name="id-1.2.3.9.21.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secrets were successfully updated, <code class="literal">FALSE</code> on failure to
 update one or more of the secrets.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1004,7 +987,6 @@ handle that secret.</p>
 <a name="id-1.2.3.9.22.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success (if the given secret name was a valid property of
 this setting, and if that property is secret), <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1053,7 +1035,6 @@ handle that secret.</p>
 <a name="id-1.2.3.9.23.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success (if the given secret name was a valid property of
 this setting, and if that property is secret), <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1082,7 +1063,6 @@ needs to use if specified in the settings.</p>
 <a name="id-1.2.3.9.24.6"></a><h4>Returns</h4>
 <p> Name of the virtual interface or <code class="literal">NULL</code> if the setting does not
 support this feature</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -1141,16 +1121,12 @@ support this feature</p>
 <a name="NM-SETTING-ERROR:CAPS"></a><h3>NM_SETTING_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_ERROR nm_setting_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-NAME:CAPS"></a><h3>NM_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_NAME "name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1423,7 +1399,6 @@ example "ppp" or "wireless" or "wired".</p>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

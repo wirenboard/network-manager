@@ -43,7 +43,6 @@
 #include "nm-ip6-config.h"
 #include "nm-logging.h"
 #include "NetworkManagerUtils.h"
-#include "nm-posix-signals.h"
 #include "nm-config.h"
 
 #include "nm-dns-plugin.h"
@@ -87,6 +86,8 @@ typedef struct {
 	NMDnsManagerResolvConfMode resolv_conf_mode;
 	NMDnsPlugin *plugin;
 
+	NMConfig *config;
+
 	gboolean dns_touched;
 } NMDnsManagerPrivate;
 
@@ -129,7 +130,7 @@ add_string_item (GPtrArray *array, const char *str)
 static void
 merge_one_ip4_config (NMResolvConfData *rc, NMIP4Config *src)
 {
-	guint32 num, i;
+	guint32 num, num_domains, num_searches, i;
 
 	num = nm_ip4_config_get_num_nameservers (src);
 	for (i = 0; i < num; i++) {
@@ -137,24 +138,27 @@ merge_one_ip4_config (NMResolvConfData *rc, NMIP4Config *src)
 		                 nm_utils_inet4_ntop (nm_ip4_config_get_nameserver (src, i), NULL));
 	}
 
-	num = nm_ip4_config_get_num_domains (src);
-	for (i = 0; i < num; i++) {
-		const char *domain;
+	num_domains = nm_ip4_config_get_num_domains (src);
+	num_searches = nm_ip4_config_get_num_searches (src);
 
-		domain = nm_ip4_config_get_domain (src, i);
-		if (!DOMAIN_IS_VALID (domain))
-			continue;
-		add_string_item (rc->searches, domain);
-	}
-
-	num = nm_ip4_config_get_num_searches (src);
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < num_searches; i++) {
 		const char *search;
 
 		search = nm_ip4_config_get_search (src, i);
 		if (!DOMAIN_IS_VALID (search))
 			continue;
 		add_string_item (rc->searches, search);
+	}
+
+	if (num_domains > 1 || !num_searches) {
+		for (i = 0; i < num_domains; i++) {
+			const char *domain;
+
+			domain = nm_ip4_config_get_domain (src, i);
+			if (!DOMAIN_IS_VALID (domain))
+				continue;
+			add_string_item (rc->searches, domain);
+		}
 	}
 
 	/* NIS stuff */
@@ -174,7 +178,7 @@ merge_one_ip4_config (NMResolvConfData *rc, NMIP4Config *src)
 static void
 merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src)
 {
-	guint32 num, i;
+	guint32 num, num_domains, num_searches, i;
 	const char *iface;
 
 	iface = g_object_get_data (G_OBJECT (src), IP_CONFIG_IFACE_TAG);
@@ -199,18 +203,10 @@ merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src)
 		add_string_item (rc->nameservers, buf);
 	}
 
-	num = nm_ip6_config_get_num_domains (src);
-	for (i = 0; i < num; i++) {
-		const char *domain;
+	num_domains = nm_ip6_config_get_num_domains (src);
+	num_searches = nm_ip6_config_get_num_searches (src);
 
-		domain = nm_ip6_config_get_domain (src, i);
-		if (!DOMAIN_IS_VALID (domain))
-			continue;
-		add_string_item (rc->searches, domain);
-	}
-
-	num = nm_ip6_config_get_num_searches (src);
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < num_searches; i++) {
 		const char *search;
 
 		search = nm_ip6_config_get_search (src, i);
@@ -218,25 +214,23 @@ merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src)
 			continue;
 		add_string_item (rc->searches, search);
 	}
+
+	if (num_domains > 1 || !num_searches) {
+		for (i = 0; i < num_domains; i++) {
+			const char *domain;
+
+			domain = nm_ip6_config_get_domain (src, i);
+			if (!DOMAIN_IS_VALID (domain))
+				continue;
+			add_string_item (rc->searches, domain);
+		}
+	}
 }
 
 
 #if defined(NETCONFIG_PATH)
 /**********************************/
 /* SUSE */
-
-static void
-netconfig_child_setup (gpointer user_data G_GNUC_UNUSED)
-{
-	pid_t pid = getpid ();
-	setpgid (pid, pid);
-
-	/*
-	 * We blocked signals in main(). We need to restore original signal
-	 * mask for netconfig here so that it can receive signals.
-	 */
-	nm_unblock_posix_signals (NULL);
-}
 
 static GPid
 run_netconfig (GError **error, gint *stdin_fd)
@@ -255,7 +249,7 @@ run_netconfig (GError **error, gint *stdin_fd)
 	nm_log_dbg (LOGD_DNS, "spawning '%s'", tmp);
 	g_free (tmp);
 
-	if (!g_spawn_async_with_pipes (NULL, argv, NULL, 0, netconfig_child_setup,
+	if (!g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL,
 	                               NULL, &pid, stdin_fd, NULL, NULL, error))
 		return -1;
 
@@ -284,10 +278,10 @@ dispatch_netconfig (char **searches,
 	char *str;
 	GPid pid;
 	gint fd;
-	int ret = 1;
+	int status;
 
 	pid = run_netconfig (error, &fd);
-	if (pid < 0)
+	if (pid <= 0)
 		return FALSE;
 
 	/* NM is writing already-merged DNS information to netconfig, so it
@@ -320,24 +314,22 @@ dispatch_netconfig (char **searches,
 	close (fd);
 
 	/* Wait until the process exits */
+	if (!nm_utils_kill_child_sync (pid, 0, LOGD_DNS, "netconfig", &status, 1000, 0)) {
+		int errsv = errno;
 
- again:
-
-	if (waitpid (pid, NULL, 0) < 0) {
-		if (errno == EINTR)
-			goto again;
-		else if (errno == ECHILD) {
-			/* child already exited */
-			ret = pid;
-		} else {
-			g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
-			             "Error waiting for netconfig to exit: %s",
-			             strerror (errno));
-			ret = 0;
-		}
+		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
+		             "Error waiting for netconfig to exit: %s",
+		             strerror (errsv));
+		return FALSE;
 	}
-
-	return ret > 0;
+	if (!WIFEXITED (status) || WEXITSTATUS (status) != EXIT_SUCCESS) {
+		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
+		             "Error calling netconfig: %s %d",
+		             WIFEXITED (status) ? "exited with status" : (WIFSIGNALED (status) ? "exited with signal" : "exited with unknown reason"),
+		             WIFEXITED (status) ? WEXITSTATUS (status) : (WIFSIGNALED (status) ? WTERMSIG (status) : status));
+		return FALSE;
+	}
+	return TRUE;
 }
 #endif
 
@@ -782,13 +774,16 @@ update_dns (NMDnsManager *self,
 
 #ifdef NETCONFIG_PATH
 	if (success == FALSE) {
+		g_clear_error (error);
 		success = dispatch_netconfig (searches, nameservers,
 		                              nis_domain, nis_servers, error);
 	}
 #endif
 
-	if (success == FALSE)
+	if (success == FALSE) {
+		g_clear_error (error);
 		success = update_resolv_conf (searches, nameservers, error);
+	}
 
 	/* signal that resolv.conf was changed */
 	if (success)
@@ -1099,6 +1094,8 @@ init_resolv_conf_mode (NMDnsManager *self)
 	const char *mode;
 	int fd, flags;
 
+	g_clear_object (&priv->plugin);
+
 	fd = open (_PATH_RESCONF, O_RDONLY);
 	if (fd != -1) {
 		if (ioctl (fd, FS_IOC_GETFLAGS, &flags) == -1)
@@ -1112,7 +1109,7 @@ init_resolv_conf_mode (NMDnsManager *self)
 		}
 	}
 
-	mode = nm_config_get_dns_mode (nm_config_get ());
+	mode = nm_config_data_get_dns_mode (nm_config_get_data (priv->config));
 	if (!g_strcmp0 (mode, "none")) {
 		priv->resolv_conf_mode = NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED;
 		nm_log_info (LOGD_DNS, "DNS: not managing " _PATH_RESCONF);
@@ -1127,6 +1124,34 @@ init_resolv_conf_mode (NMDnsManager *self)
 		if (mode && g_strcmp0 (mode, "default") != 0)
 			nm_log_warn (LOGD_DNS, "Unknown DNS mode '%s'", mode);
 	}
+
+	if (priv->plugin) {
+		nm_log_info (LOGD_DNS, "DNS: loaded plugin %s", nm_dns_plugin_get_name (priv->plugin));
+		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_FAILED, G_CALLBACK (plugin_failed), self);
+		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_CHILD_QUIT, G_CALLBACK (plugin_child_quit), self);
+	}
+}
+
+static void
+config_changed_cb (NMConfig *config,
+                   NMConfigData *config_data,
+                   NMConfigChangeFlags changes,
+                   NMConfigData *old_data,
+                   NMDnsManager *self)
+{
+	GError *error = NULL;
+
+	if (NM_FLAGS_HAS (changes, NM_CONFIG_CHANGE_DNS_MODE))
+		init_resolv_conf_mode (self);
+
+	if (NM_FLAGS_ANY (changes, NM_CONFIG_CHANGE_SIGHUP |
+	                           NM_CONFIG_CHANGE_SIGUSR1 |
+	                           NM_CONFIG_CHANGE_DNS_MODE)) {
+		if (!update_dns (self, TRUE, &error)) {
+			nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+			g_clear_error (&error);
+		}
+	}
 }
 
 static void
@@ -1137,13 +1162,12 @@ nm_dns_manager_init (NMDnsManager *self)
 	/* Set the initial hash */
 	compute_hash (self, NM_DNS_MANAGER_GET_PRIVATE (self)->hash);
 
+	priv->config = g_object_ref (nm_config_get ());
+	g_signal_connect (G_OBJECT (priv->config),
+	                  NM_CONFIG_SIGNAL_CONFIG_CHANGED,
+	                  G_CALLBACK (config_changed_cb),
+	                  self);
 	init_resolv_conf_mode (self);
-
-	if (priv->plugin) {
-		nm_log_info (LOGD_DNS, "DNS: loaded plugin %s", nm_dns_plugin_get_name (priv->plugin));
-		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_FAILED, G_CALLBACK (plugin_failed), self);
-		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_CHILD_QUIT, G_CALLBACK (plugin_child_quit), self);
-	}
 }
 
 static void
@@ -1168,6 +1192,11 @@ dispose (GObject *object)
 		nm_log_warn (LOGD_DNS, "could not commit DNS changes on shutdown: %s", error->message);
 		g_clear_error (&error);
 		priv->dns_touched = FALSE;
+	}
+
+	if (priv->config) {
+		g_signal_handlers_disconnect_by_func (priv->config, config_changed_cb, self);
+		g_clear_object (&priv->config);
 	}
 
 	g_slist_free_full (priv->configs, g_object_unref);

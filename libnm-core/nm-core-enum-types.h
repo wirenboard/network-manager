@@ -61,6 +61,8 @@ GType nm_setting_802_1x_ck_format_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_802_1X_CK_FORMAT (nm_setting_802_1x_ck_format_get_type ())
 GType nm_setting_802_1x_ck_scheme_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_802_1X_CK_SCHEME (nm_setting_802_1x_ck_scheme_get_type ())
+GType nm_setting_connection_autoconnect_slaves_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SETTING_CONNECTION_AUTOCONNECT_SLAVES (nm_setting_connection_autoconnect_slaves_get_type ())
 GType nm_setting_dcb_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_DCB_FLAGS (nm_setting_dcb_flags_get_type ())
 GType nm_setting_ip6_config_privacy_get_type (void) G_GNUC_CONST;

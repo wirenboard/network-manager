@@ -53,7 +53,6 @@
 #include <nm-utils.h>
 
 #include "nm-platform.h"
-#include "nm-posix-signals.h"
 #include "NetworkManagerUtils.h"
 #include "nm-logging.h"
 #include "gsystem-local-alloc.h"
@@ -178,6 +177,8 @@ make_connection_setting (const char *file,
 	                                      NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN,
 	                                      NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX,
 	                                      NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_DEFAULT),
+	              NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES,
+	              svTrueValue (ifcfg, "AUTOCONNECT_SLAVES", NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT),
 	              NULL);
 
 	value = svGetValue (ifcfg, "USERS", FALSE);
@@ -507,7 +508,7 @@ read_one_ip4_route (shvarFile *ifcfg,
 	/* Metric */
 	value = svGetValue (ifcfg, metric_tag, FALSE);
 	if (value) {
-		metric = nm_utils_ascii_str_to_int64 (value, 10, 0, G_MAXUINT32, -1);
+		metric = _nm_utils_ascii_str_to_int64 (value, 10, 0, G_MAXUINT32, -1);
 		if (metric < 0) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Invalid IP4 route metric '%s'", value);
@@ -1153,16 +1154,14 @@ read_aliases (NMSettingIPConfig *s_ip4, const char *filename, const char *networ
 	GDir *dir;
 	char *dirname, *base;
 	shvarFile *parsed;
-	NMIPAddress *base_addr;
+	NMIPAddress *base_addr = NULL;
 	GError *err = NULL;
 
 	g_return_if_fail (s_ip4 != NULL);
 	g_return_if_fail (filename != NULL);
 
-	if (nm_setting_ip_config_get_num_addresses (s_ip4) == 0)
-		return;
-
-	base_addr = nm_setting_ip_config_get_address (s_ip4, 0);
+	if (nm_setting_ip_config_get_num_addresses (s_ip4) > 0)
+		base_addr = nm_setting_ip_config_get_address (s_ip4, 0);
 
 	dirname = g_path_get_dirname (filename);
 	g_return_if_fail (dirname != NULL);
@@ -3351,7 +3350,7 @@ make_wireless_setting (shvarFile *ifcfg,
 	value = svGetValue (ifcfg, "CHANNEL", FALSE);
 	if (value) {
 		errno = 0;
-		chan = nm_utils_ascii_str_to_int64 (value, 10, 1, 196, 0);
+		chan = _nm_utils_ascii_str_to_int64 (value, 10, 1, 196, 0);
 		if (errno || (chan == 0)) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Invalid wireless channel '%s'", value);
@@ -4335,11 +4334,11 @@ is_wifi_device (const char *name, shvarFile *parsed)
 	g_return_val_if_fail (name != NULL, FALSE);
 	g_return_val_if_fail (parsed != NULL, FALSE);
 
-	ifindex = nm_platform_link_get_ifindex (name);
+	ifindex = nm_platform_link_get_ifindex (NM_PLATFORM_GET, name);
 	if (ifindex == 0)
 		return FALSE;
 
-	return nm_platform_link_get_type (ifindex) == NM_LINK_TYPE_WIFI;
+	return nm_platform_link_get_type (NM_PLATFORM_GET, ifindex) == NM_LINK_TYPE_WIFI;
 }
 
 static void
@@ -4433,13 +4432,10 @@ make_vlan_setting (shvarFile *ifcfg,
 			/* Grab VLAN ID from interface name; this takes precedence over the
 			 * separate VLAN_ID property for backwards compat.
 			 */
-			vlan_id = (gint) g_ascii_strtoll (p, &end, 10);
-			if (vlan_id < 0 || vlan_id > 4095 || end == p || *end) {
-				g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
-				             "Failed to determine VLAN ID from DEVICE '%s'",
-				             iface_name);
-				goto error;
-			}
+
+			gint device_vlan_id = (gint) g_ascii_strtoll (p, &end, 10);
+			if (device_vlan_id >= 0 && device_vlan_id <= 4095 && end != p && !*end)
+				vlan_id = device_vlan_id;
 		}
 	}
 
@@ -4679,7 +4675,8 @@ connection_from_file_full (const char *filename,
 
 		connection = create_unhandled_connection (filename, parsed, "unmanaged", out_unhandled);
 		if (!connection)
-			PARSE_WARNING ("NM_CONTROLLED was false but device was not uniquely identified; device will be managed");
+			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
+			             "NM_CONTROLLED was false but device was not uniquely identified; device will be managed");
 		goto done;
 	}
 
@@ -4841,18 +4838,13 @@ done:
 NMConnection *
 connection_from_file (const char *filename,
                       char **out_unhandled,
-                      GError **error)
+                      GError **error,
+                      gboolean *out_ignore_error)
 {
-	gboolean ignore_error = FALSE;
-	NMConnection *conn;
-
-	conn = connection_from_file_full (filename, NULL, NULL,
+	return connection_from_file_full (filename, NULL, NULL,
 	                                  out_unhandled,
 	                                  error,
-	                                  &ignore_error);
-	if (error && *error && !ignore_error)
-		PARSE_WARNING ("%s", (*error)->message);
-	return conn;
+	                                  out_ignore_error);
 }
 
 NMConnection *
@@ -4885,7 +4877,7 @@ devtimeout_from_file (const char *filename)
 
 	devtimeout_str = svGetValue (ifcfg, "DEVTIMEOUT", FALSE);
 	if (devtimeout_str) {
-		devtimeout = nm_utils_ascii_str_to_int64 (devtimeout_str, 10, 0, G_MAXUINT, 0);
+		devtimeout = _nm_utils_ascii_str_to_int64 (devtimeout_str, 10, 0, G_MAXUINT, 0);
 		g_free (devtimeout_str);
 	} else
 		devtimeout = 0;

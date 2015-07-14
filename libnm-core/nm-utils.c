@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <netinet/ether.h>
 #include <arpa/inet.h>
@@ -36,7 +37,7 @@
 #include "nm-setting-private.h"
 #include "crypto.h"
 #include "gsystem-local-alloc.h"
-#include "nm-utils-internal.h"
+#include "nm-macros-internal.h"
 
 #include "nm-setting-bond.h"
 #include "nm-setting-bridge.h"
@@ -433,14 +434,84 @@ nm_utils_same_ssid (const guint8 *ssid1, gsize len1,
 gboolean
 _nm_utils_string_in_list (const char *str, const char **valid_strings)
 {
-	int i;
-
-	for (i = 0; valid_strings[i]; i++)
-		if (strcmp (str, valid_strings[i]) == 0)
-			break;
-
-	return valid_strings[i] != NULL;
+	return _nm_utils_strv_find_first ((char **) valid_strings, -1, str) >= 0;
 }
+
+/**
+ * _nm_utils_strv_find_first:
+ * @list: the strv list to search
+ * @len: the length of the list, or a negative value if @list is %NULL terminated.
+ * @needle: the value to search for. The search is done using strcmp().
+ *
+ * Searches @list for @needle and returns the index of the first match (based
+ * on strcmp()).
+ *
+ * For convenience, @list has type 'char**' instead of 'const char **'.
+ *
+ * Returns: index of first occurrence or -1 if @needle is not found in @list.
+ */
+gssize
+_nm_utils_strv_find_first (char **list, gssize len, const char *needle)
+{
+	gssize i;
+
+	if (len > 0) {
+		g_return_val_if_fail (list, -1);
+
+		if (!needle) {
+			/* if we search a list with known length, %NULL is a valid @needle. */
+			for (i = 0; i < len; i++) {
+				if (!list[i])
+					return i;
+			}
+		} else {
+			for (i = 0; i < len; i++) {
+				if (list[i] && !strcmp (needle, list[i]))
+					return i;
+			}
+		}
+	} else if (len < 0) {
+		g_return_val_if_fail (needle, -1);
+
+		if (list) {
+			for (i = 0; list[i]; i++) {
+				if (strcmp (needle, list[i]) == 0)
+					return i;
+			}
+		}
+	}
+	return -1;
+}
+
+char **
+_nm_utils_strv_cleanup (char **strv,
+                        gboolean strip_whitespace,
+                        gboolean skip_empty,
+                        gboolean skip_repeated)
+{
+	guint i, j;
+
+	if (!strv || !*strv)
+		return strv;
+
+	if (strip_whitespace) {
+		for (i = 0; strv[i]; i++)
+			g_strstrip (strv[i]);
+	}
+	if (!skip_empty && !skip_repeated)
+		return strv;
+	j = 0;
+	for (i = 0; strv[i]; i++) {
+		if (   (skip_empty && !*strv[i])
+		    || (skip_repeated && _nm_utils_strv_find_first (strv, j, strv[i]) >= 0))
+			g_free (strv[i]);
+		else
+			strv[j++] = strv[i];
+	}
+	strv[j] = NULL;
+	return strv;
+}
+
 
 gboolean
 _nm_utils_string_slist_validate (GSList *list, const char **valid_values)
@@ -590,6 +661,65 @@ _nm_utils_copy_object_array (const GPtrArray *array)
 	return _nm_utils_copy_array (array, g_object_ref, g_object_unref);
 }
 
+/* have @list of type 'gpointer *' instead of 'gconstpointer *' to
+ * reduce the necessity for annoying const-casts. */
+gssize
+_nm_utils_ptrarray_find_first (gpointer *list, gssize len, gconstpointer needle)
+{
+	gssize i;
+
+	if (len == 0)
+		return -1;
+
+	if (len > 0) {
+		g_return_val_if_fail (list, -1);
+		for (i = 0; i < len; i++) {
+			if (list[i] == needle)
+				return i;
+		}
+	} else {
+		g_return_val_if_fail (needle, -1);
+		for (i = 0; list && list[i]; i++) {
+			if (list[i] == needle)
+				return i;
+		}
+	}
+	return -1;
+}
+
+gssize
+_nm_utils_ptrarray_find_binary_search (gpointer *list, gsize len, gpointer needle, GCompareDataFunc cmpfcn, gpointer user_data)
+{
+	gssize imin, imax, imid;
+	int cmp;
+
+	g_return_val_if_fail (list || !len, ~((gssize) 0));
+	g_return_val_if_fail (cmpfcn, ~((gssize) 0));
+
+	imin = 0;
+	if (len == 0)
+		return ~imin;
+
+	imax = len - 1;
+
+	while (imin <= imax) {
+		imid = imin + (imax - imin) / 2;
+
+		cmp = cmpfcn (list[imid], needle, user_data);
+		if (cmp == 0)
+			return imid;
+
+		if (cmp < 0)
+			imin = imid + 1;
+		else
+			imax = imid - 1;
+	}
+
+	/* return the inverse of @imin. This is a negative number, but
+	 * also is ~imin the position where the value should be inserted. */
+	return ~imin;
+}
+
 GVariant *
 _nm_utils_bytes_to_dbus (const GValue *prop_value)
 {
@@ -625,21 +755,26 @@ _nm_utils_bytes_from_dbus (GVariant *dbus_value,
 }
 
 GSList *
-_nm_utils_strv_to_slist (char **strv)
+_nm_utils_strv_to_slist (char **strv, gboolean deep_copy)
 {
 	int i;
 	GSList *list = NULL;
 
 	if (strv) {
-		for (i = 0; strv[i]; i++)
-			list = g_slist_prepend (list, g_strdup (strv[i]));
+		if (deep_copy) {
+			for (i = 0; strv[i]; i++)
+				list = g_slist_prepend (list, g_strdup (strv[i]));
+		} else {
+			for (i = 0; strv[i]; i++)
+				list = g_slist_prepend (list, strv[i]);
+		}
 	}
 
 	return g_slist_reverse (list);
 }
 
 char **
-_nm_utils_slist_to_strv (GSList *slist)
+_nm_utils_slist_to_strv (GSList *slist, gboolean deep_copy)
 {
 	GSList *iter;
 	char **strv;
@@ -648,8 +783,13 @@ _nm_utils_slist_to_strv (GSList *slist)
 	len = g_slist_length (slist);
 	strv = g_new (char *, len + 1);
 
-	for (i = 0, iter = slist; iter; iter = iter->next, i++)
-		strv[i] = g_strdup (iter->data);
+	if (deep_copy) {
+		for (i = 0, iter = slist; iter; iter = iter->next, i++)
+			strv[i] = g_strdup (iter->data);
+	} else {
+		for (i = 0, iter = slist; iter; iter = iter->next, i++)
+			strv[i] = iter->data;
+	}
 	strv[i] = NULL;
 
 	return strv;
@@ -1942,6 +2082,8 @@ nm_utils_ip_routes_from_variant (GVariant *value,
 	return routes;
 }
 
+/**********************************************************************************************/
+
 /**
  * nm_utils_uuid_generate:
  *
@@ -2013,6 +2155,50 @@ nm_utils_uuid_generate_from_string (const char *s, gssize slen, int uuid_type, g
 
 	return buf;
 }
+
+/**
+ * _nm_utils_uuid_generate_from_strings:
+ * @string1: a variadic list of strings. Must be NULL terminated.
+ *
+ * Returns a variant3 UUID based on the concatenated C strings.
+ * It does not simply concatenate them, but also includes the
+ * terminating '\0' character. For example "a", "b", gives
+ * "a\0b\0".
+ *
+ * This has the advantage, that the following invocations
+ * all give different UUIDs: (NULL), (""), ("",""), ("","a"), ("a",""),
+ * ("aa"), ("aa", ""), ("", "aa"), ...
+ */
+char *
+_nm_utils_uuid_generate_from_strings (const char *string1, ...)
+{
+	GString *str;
+	va_list args;
+	const char *s;
+	char *uuid;
+
+	if (!string1)
+		return nm_utils_uuid_generate_from_string (NULL, 0, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
+
+	str = g_string_sized_new (120); /* effectively allocates power of 2 (128)*/
+
+	g_string_append_len (str, string1, strlen (string1) + 1);
+
+	va_start (args, string1);
+	s = va_arg (args, const char *);
+	while (s) {
+		g_string_append_len (str, s, strlen (s) + 1);
+		s = va_arg (args, const char *);
+	}
+	va_end (args);
+
+	uuid = nm_utils_uuid_generate_from_string (str->str, str->len, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
+
+	g_string_free (str, TRUE);
+	return uuid;
+}
+
+/**********************************************************************************************/
 
 /**
  * nm_utils_rsa_key_encrypt:
@@ -3278,3 +3464,79 @@ nm_utils_bond_mode_string_to_int (const char *mode)
 	}
 	return -1;
 }
+
+/**********************************************************************************************/
+
+/* _nm_utils_ascii_str_to_int64:
+ *
+ * A wrapper for g_ascii_strtoll, that checks whether the whole string
+ * can be successfully converted to a number and is within a given
+ * range. On any error, @fallback will be returned and %errno will be set
+ * to a non-zero value. On success, %errno will be set to zero, check %errno
+ * for errors. Any trailing or leading (ascii) white space is ignored and the
+ * functions is locale independent.
+ *
+ * The function is guaranteed to return a value between @min and @max
+ * (inclusive) or @fallback. Also, the parsing is rather strict, it does
+ * not allow for any unrecognized characters, except leading and trailing
+ * white space.
+ **/
+gint64
+_nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback)
+{
+	gint64 v;
+	size_t len;
+	char buf[64], *s, *str_free = NULL;
+
+	if (str) {
+		while (g_ascii_isspace (str[0]))
+			str++;
+	}
+	if (!str || !str[0]) {
+		errno = EINVAL;
+		return fallback;
+	}
+
+	len = strlen (str);
+	if (g_ascii_isspace (str[--len])) {
+		/* backward search the first non-ws character.
+		 * We already know that str[0] is non-ws. */
+		while (g_ascii_isspace (str[--len]))
+			;
+
+		/* str[len] is now the last non-ws character... */
+		len++;
+
+		if (len >= sizeof (buf))
+			s = str_free = g_malloc (len + 1);
+		else
+			s = buf;
+
+		memcpy (s, str, len);
+		s[len] = 0;
+
+		nm_assert (len > 0 && len < strlen (str) && len == strlen (s));
+		nm_assert (!g_ascii_isspace (str[len-1]) && g_ascii_isspace (str[len]));
+		nm_assert (strncmp (str, s, len) == 0);
+
+		str = s;
+	}
+
+	errno = 0;
+	v = g_ascii_strtoll (str, &s, base);
+
+	if (errno != 0)
+		v = fallback;
+	else if (s[0] != 0) {
+		errno = EINVAL;
+		v = fallback;
+	} else if (v > max || v < min) {
+		errno = ERANGE;
+		v = fallback;
+	}
+
+	if (G_UNLIKELY (str_free))
+		g_free (str_free);
+	return v;
+}
+

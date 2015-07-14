@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMIPConfig</title>
+<title>NMIPConfig: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMWimaxNsp.html" title="NMWimaxNsp">
 <link rel="next" href="NMDhcpConfig.html" title="NMDhcpConfig">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -210,8 +210,6 @@
 </div>
 <div class="refsect1">
 <a name="NMIPConfig.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMIPConfig.functions_details"></a><h2>Functions</h2>
@@ -239,7 +237,6 @@ nm_ip_config_get_family (<em class="parameter"><code><a class="link" href="NMIPC
 <a name="id-1.5.21.8.2.6"></a><h4>Returns</h4>
 <p> the IP address family; either <code class="literal">AF_INET</code> or
 <code class="literal">AF_INET6</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -445,64 +442,48 @@ nm_ip_config_get_wins_servers (<em class="parameter"><code><a class="link" href=
 <a name="NM-IP-CONFIG-FAMILY:CAPS"></a><h3>NM_IP_CONFIG_FAMILY</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_FAMILY "family"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-GATEWAY:CAPS"></a><h3>NM_IP_CONFIG_GATEWAY</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_GATEWAY "gateway"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-ADDRESSES:CAPS"></a><h3>NM_IP_CONFIG_ADDRESSES</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_ADDRESSES "addresses"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-ROUTES:CAPS"></a><h3>NM_IP_CONFIG_ROUTES</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_ROUTES "routes"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-NAMESERVERS:CAPS"></a><h3>NM_IP_CONFIG_NAMESERVERS</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_NAMESERVERS "nameservers"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-DOMAINS:CAPS"></a><h3>NM_IP_CONFIG_DOMAINS</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_DOMAINS "domains"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-SEARCHES:CAPS"></a><h3>NM_IP_CONFIG_SEARCHES</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_SEARCHES "searches"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-IP-CONFIG-WINS-SERVERS:CAPS"></a><h3>NM_IP_CONFIG_WINS_SERVERS</h3>
 <pre class="programlisting">#define NM_IP_CONFIG_WINS_SERVERS "wins-servers"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -510,21 +491,22 @@ nm_ip_config_get_wins_servers (<em class="parameter"><code><a class="link" href=
 <div class="refsect2">
 <a name="NMIPConfig--addresses"></a><h3>The <code class="literal">“addresses”</code> property</h3>
 <pre class="programlisting">  “addresses”                <span class="type">GPtrArray</span> *</pre>
-<p></p>
+<p>A <span class="type">GPtrArray</span> containing the addresses (<a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a>) of the configuration.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMIPConfig--domains"></a><h3>The <code class="literal">“domains”</code> property</h3>
 <pre class="programlisting">  “domains”                  <span class="type">GStrv</span></pre>
-<p></p>
+<p>The array containing domain strings of the configuration.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMIPConfig--family"></a><h3>The <code class="literal">“family”</code> property</h3>
 <pre class="programlisting">  “family”                   <span class="type">gint</span></pre>
-<p></p>
+<p>The IP address family of the configuration; either
+<code class="literal">AF_INET</code> or <code class="literal">AF_INET6</code>.</p>
 <p>Flags: Read</p>
 <p>Allowed values: [0,255]</p>
 <p>Default value: 0</p>
@@ -533,7 +515,7 @@ nm_ip_config_get_wins_servers (<em class="parameter"><code><a class="link" href=
 <div class="refsect2">
 <a name="NMIPConfig--gateway"></a><h3>The <code class="literal">“gateway”</code> property</h3>
 <pre class="programlisting">  “gateway”                  <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The IP gateway address of the configuration as string.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -541,34 +523,34 @@ nm_ip_config_get_wins_servers (<em class="parameter"><code><a class="link" href=
 <div class="refsect2">
 <a name="NMIPConfig--nameservers"></a><h3>The <code class="literal">“nameservers”</code> property</h3>
 <pre class="programlisting">  “nameservers”              <span class="type">GStrv</span></pre>
-<p></p>
+<p>The array containing name server IP addresses of the configuration.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMIPConfig--routes"></a><h3>The <code class="literal">“routes”</code> property</h3>
 <pre class="programlisting">  “routes”                   <span class="type">GPtrArray</span> *</pre>
-<p></p>
+<p>A <span class="type">GPtrArray</span> containing the routes (<a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a>) of the configuration.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMIPConfig--searches"></a><h3>The <code class="literal">“searches”</code> property</h3>
 <pre class="programlisting">  “searches”                 <span class="type">GStrv</span></pre>
-<p></p>
+<p>The array containing DNS search strings of the configuration.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMIPConfig--wins-servers"></a><h3>The <code class="literal">“wins-servers”</code> property</h3>
 <pre class="programlisting">  “wins-servers”             <span class="type">GStrv</span></pre>
-<p></p>
+<p>The array containing WINS server IP addresses of the configuration.
+(This will always be empty for IPv6 configurations.)</p>
 <p>Flags: Read</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>
