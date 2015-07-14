@@ -3,6 +3,7 @@ network-manager (1.0.4-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Refresh patches.
   * Update symbols file for libnm0.
+  * Drop obsolete Breaks from pre-wheezy.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 14 Jul 2015 19:40:02 +0200
 
