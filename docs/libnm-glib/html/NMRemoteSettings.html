@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-glib Reference Manual: NMRemoteSettings</title>
+<title>NMRemoteSettings: libnm-glib Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMRemoteConnection.html" title="NMRemoteConnection">
 <link rel="next" href="libnm-glib-nm-types.html" title="nm-types">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -435,7 +435,6 @@ nm_remote_settings_error_quark (<em class="parameter"><code><span class="type">v
 <div class="refsect3">
 <a name="id-1.3.26.9.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -446,8 +445,6 @@ nm_remote_settings_error_quark (<em class="parameter"><code><span class="type">v
                                       <em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                                       <em class="parameter"><code><span class="type">GError</span> *error</code></em>,
                                       <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -458,8 +455,6 @@ nm_remote_settings_error_quark (<em class="parameter"><code><span class="type">v
                                 <em class="parameter"><code><span class="type">char</span> **failures</code></em>,
                                 <em class="parameter"><code><span class="type">GError</span> *error</code></em>,
                                 <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -468,8 +463,6 @@ nm_remote_settings_error_quark (<em class="parameter"><code><span class="type">v
 <span class="c_punctuation">(</span>*NMRemoteSettingsSaveHostnameFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> *settings</code></em>,
                                      <em class="parameter"><code><span class="type">GError</span> *error</code></em>,
                                      <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -498,7 +491,6 @@ want to avoid that.</p>
 <div class="refsect3">
 <a name="id-1.3.26.9.6.7"></a><h4>Returns</h4>
 <p> the new remote settings object on success, or <code class="literal">NULL</code> on failure</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -580,7 +572,6 @@ nm_remote_settings_new_finish (<em class="parameter"><code><span class="type">GA
 <div class="refsect3">
 <a name="id-1.3.26.9.8.6"></a><h4>Returns</h4>
 <p> a new <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> object, or <code class="literal">NULL</code> on error</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -651,7 +642,7 @@ nm_remote_settings_get_connection_by_id
 matching object was found. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -786,7 +777,6 @@ added, not the object itself</p></td>
 <div class="refsect3">
 <a name="id-1.3.26.9.13.7"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the request was successful, <code class="literal">FALSE</code> if it failed</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -839,9 +829,8 @@ added, not the object itself</p></td>
 <div class="refsect3">
 <a name="id-1.3.26.9.14.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the request was successful, <code class="literal">FALSE</code> if it failed</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -901,9 +890,8 @@ filenames that failed to load. </p></td>
 <p> <code class="literal">TRUE</code> if NetworkManager at least tried to load <em class="parameter"><code>filenames</code></em>
 ,
 <code class="literal">FALSE</code> if an error occurred (eg, permission denied).</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -939,9 +927,8 @@ the in-memory state matches the on-disk state.</p>
 <div class="refsect3">
 <a name="id-1.3.26.9.16.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on failure</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -991,7 +978,6 @@ hostname operation completes. </p></td>
 <div class="refsect3">
 <a name="id-1.3.26.9.17.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the request was successful, <code class="literal">FALSE</code> if it failed</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -1049,56 +1035,42 @@ hostname operation completes. </p></td>
 <a name="NM-REMOTE-SETTINGS-ERROR:CAPS"></a><h3>NM_REMOTE_SETTINGS_ERROR</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_ERROR nm_remote_settings_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-SETTINGS-BUS:CAPS"></a><h3>NM_REMOTE_SETTINGS_BUS</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_BUS             "bus"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-SETTINGS-SERVICE-RUNNING:CAPS"></a><h3>NM_REMOTE_SETTINGS_SERVICE_RUNNING</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_SERVICE_RUNNING "service-running"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-SETTINGS-HOSTNAME:CAPS"></a><h3>NM_REMOTE_SETTINGS_HOSTNAME</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_HOSTNAME        "hostname"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-SETTINGS-CAN-MODIFY:CAPS"></a><h3>NM_REMOTE_SETTINGS_CAN_MODIFY</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_CAN_MODIFY      "can-modify"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-SETTINGS-NEW-CONNECTION:CAPS"></a><h3>NM_REMOTE_SETTINGS_NEW_CONNECTION</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_NEW_CONNECTION    "new-connection"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-REMOTE-SETTINGS-CONNECTIONS-READ:CAPS"></a><h3>NM_REMOTE_SETTINGS_CONNECTIONS_READ</h3>
 <pre class="programlisting">#define NM_REMOTE_SETTINGS_CONNECTIONS_READ  "connections-read"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -1106,14 +1078,15 @@ hostname operation completes. </p></td>
 <div class="refsect2">
 <a name="NMRemoteSettings--bus"></a><h3>The <code class="literal">“bus”</code> property</h3>
 <pre class="programlisting">  “bus”                      <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> *</pre>
-<p></p>
+<p>The <a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="type">DBusGConnection</span></a> that the <a class="link" href="NMRemoteSettings.html" title="NMRemoteSettings"><span class="type">NMRemoteSettings</span></a> is connected to. Defaults
+to the system bus if not specified.</p>
 <p>Flags: Read / Write / Construct Only</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteSettings--can-modify"></a><h3>The <code class="literal">“can-modify”</code> property</h3>
 <pre class="programlisting">  “can-modify”               <span class="type">gboolean</span></pre>
-<p></p>
+<p>If <code class="literal">TRUE</code>, adding and modifying connections is supported.</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
 </div>
@@ -1121,7 +1094,8 @@ hostname operation completes. </p></td>
 <div class="refsect2">
 <a name="NMRemoteSettings--hostname"></a><h3>The <code class="literal">“hostname”</code> property</h3>
 <pre class="programlisting">  “hostname”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The machine hostname stored in persistent configuration. This can be
+modified by calling <a class="link" href="NMRemoteSettings.html#nm-remote-settings-save-hostname" title="nm_remote_settings_save_hostname ()"><code class="function">nm_remote_settings_save_hostname()</code></a>.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -1129,7 +1103,7 @@ hostname operation completes. </p></td>
 <div class="refsect2">
 <a name="NMRemoteSettings--service-running"></a><h3>The <code class="literal">“service-running”</code> property</h3>
 <pre class="programlisting">  “service-running”          <span class="type">gboolean</span></pre>
-<p></p>
+<p>Whether the settings service is running.</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
 </div>
@@ -1159,7 +1133,6 @@ user_function (<a class="link" href="NMRemoteSettings.html" title="NMRemoteSetti
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

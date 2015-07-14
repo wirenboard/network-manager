@@ -45,13 +45,21 @@ enum {
 	LAST_PROP
 };
 
-static guint32
+static NMDeviceCapabilities
 get_generic_capabilities (NMDevice *dev)
 {
-	if (nm_platform_link_supports_carrier_detect (nm_device_get_ifindex (dev)))
+	if (nm_platform_link_supports_carrier_detect (NM_PLATFORM_GET, nm_device_get_ifindex (dev)))
 		return NM_DEVICE_CAP_CARRIER_DETECT;
 	else
 		return NM_DEVICE_CAP_NONE;
+}
+
+static const char *
+get_type_description (NMDevice *device)
+{
+	if (NM_DEVICE_GENERIC_GET_PRIVATE (device)->type_description)
+		return NM_DEVICE_GENERIC_GET_PRIVATE (device)->type_description;
+	return NM_DEVICE_CLASS (nm_device_generic_parent_class)->get_type_description (device);
 }
 
 static gboolean
@@ -117,7 +125,7 @@ constructed (GObject *object)
 		int ifindex = nm_device_get_ip_ifindex (NM_DEVICE (self));
 
 		if (ifindex != 0)
-			priv->type_description = g_strdup (nm_platform_link_get_type_name (ifindex));
+			priv->type_description = g_strdup (nm_platform_link_get_type_name (NM_PLATFORM_GET, ifindex));
 	}
 
 	G_OBJECT_CLASS (nm_device_generic_parent_class)->constructed (object);
@@ -184,6 +192,7 @@ nm_device_generic_class_init (NMDeviceGenericClass *klass)
 	object_class->set_property = set_property;
 
 	parent_class->get_generic_capabilities = get_generic_capabilities;
+	parent_class->get_type_description = get_type_description;
 	parent_class->check_connection_compatible = check_connection_compatible;
 	parent_class->update_connection = update_connection;
 

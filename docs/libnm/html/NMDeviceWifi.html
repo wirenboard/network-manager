@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMDeviceWifi</title>
+<title>NMDeviceWifi: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMDeviceVlan.html" title="NMDeviceVlan">
 <link rel="next" href="NMDeviceWimax.html" title="NMDeviceWimax">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -252,8 +252,6 @@
 </div>
 <div class="refsect1">
 <a name="NMDeviceWifi.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMDeviceWifi.functions_details"></a><h2>Functions</h2>
@@ -281,7 +279,6 @@ nm_device_wifi_get_hw_address (<em class="parameter"><code><a class="link" href=
 <a name="id-1.5.14.9.2.6"></a><h4>Returns</h4>
 <p> the actual hardware address. This is the internal string used by the
 device, and must not be modified.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -310,7 +307,6 @@ nm_device_wifi_get_permanent_hw_address
 <a name="id-1.5.14.9.3.6"></a><h4>Returns</h4>
 <p> the permanent hardware address. This is the internal string used by the
 device, and must not be modified.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -337,7 +333,6 @@ nm_device_wifi_get_mode (<em class="parameter"><code><a class="link" href="NMDev
 <div class="refsect3">
 <a name="id-1.5.14.9.4.6"></a><h4>Returns</h4>
 <p> the mode</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -364,7 +359,6 @@ nm_device_wifi_get_bitrate (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.5.14.9.5.6"></a><h4>Returns</h4>
 <p> the bit rate (kbit/s)</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -391,7 +385,6 @@ nm_device_wifi_get_capabilities (<em class="parameter"><code><a class="link" hre
 <div class="refsect3">
 <a name="id-1.5.14.9.6.6"></a><h4>Returns</h4>
 <p> the capabilities</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -530,7 +523,6 @@ after that for the scan to complete.</p>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be
 set.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -620,7 +612,6 @@ nm_device_wifi_request_scan_finish (<em class="parameter"><code><a class="link" 
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be
 set.</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -630,56 +621,42 @@ set.</p>
 <a name="NM-DEVICE-WIFI-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_WIFI_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_HW_ADDRESS          "hw-address"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS "perm-hw-address"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-MODE:CAPS"></a><h3>NM_DEVICE_WIFI_MODE</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_MODE                "mode"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-BITRATE:CAPS"></a><h3>NM_DEVICE_WIFI_BITRATE</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_BITRATE             "bitrate"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-ACTIVE-ACCESS-POINT:CAPS"></a><h3>NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_ACTIVE_ACCESS_POINT "active-access-point"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-CAPABILITIES:CAPS"></a><h3>NM_DEVICE_WIFI_CAPABILITIES</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_CAPABILITIES        "wireless-capabilities"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIFI-ACCESS-POINTS:CAPS"></a><h3>NM_DEVICE_WIFI_ACCESS_POINTS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIFI_ACCESS_POINTS       "access-points"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -687,21 +664,22 @@ set.</p>
 <div class="refsect2">
 <a name="NMDeviceWifi--access-points"></a><h3>The <code class="literal">“access-points”</code> property</h3>
 <pre class="programlisting">  “access-points”            <span class="type">GPtrArray</span> *</pre>
-<p></p>
+<p>List of all Wi-Fi access points the device can see.</p>
+<p>Element-type: NMAccessPoint</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMDeviceWifi--active-access-point"></a><h3>The <code class="literal">“active-access-point”</code> property</h3>
 <pre class="programlisting">  “active-access-point”      <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> *</pre>
-<p></p>
+<p>The active <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> of the device.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMDeviceWifi--bitrate"></a><h3>The <code class="literal">“bitrate”</code> property</h3>
 <pre class="programlisting">  “bitrate”                  <span class="type">guint</span></pre>
-<p></p>
+<p>The bit rate of the device in kbit/s.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -709,7 +687,7 @@ set.</p>
 <div class="refsect2">
 <a name="NMDeviceWifi--hw-address"></a><h3>The <code class="literal">“hw-address”</code> property</h3>
 <pre class="programlisting">  “hw-address”               <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The hardware (MAC) address of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -717,7 +695,7 @@ set.</p>
 <div class="refsect2">
 <a name="NMDeviceWifi--mode"></a><h3>The <code class="literal">“mode”</code> property</h3>
 <pre class="programlisting">  “mode”                     <a class="link" href="libnm-nm-dbus-interface.html#NM80211Mode" title="enum NM80211Mode"><span class="type">NM80211Mode</span></a></pre>
-<p></p>
+<p>The mode of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NM_802_11_MODE_UNKNOWN</p>
 </div>
@@ -725,7 +703,7 @@ set.</p>
 <div class="refsect2">
 <a name="NMDeviceWifi--perm-hw-address"></a><h3>The <code class="literal">“perm-hw-address”</code> property</h3>
 <pre class="programlisting">  “perm-hw-address”          <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The hardware (MAC) address of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -733,7 +711,7 @@ set.</p>
 <div class="refsect2">
 <a name="NMDeviceWifi--wireless-capabilities"></a><h3>The <code class="literal">“wireless-capabilities”</code> property</h3>
 <pre class="programlisting">  “wireless-capabilities”    <a class="link" href="libnm-nm-dbus-interface.html#NMDeviceWifiCapabilities" title="enum NMDeviceWifiCapabilities"><span class="type">NMDeviceWifiCapabilities</span></a></pre>
-<p></p>
+<p>The wireless capabilities of the device.</p>
 <p>Flags: Read</p>
 </div>
 </div>
@@ -745,6 +723,34 @@ set.</p>
 user_function (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device,
                <span class="type">GObject</span>      *ap,
                <span class="type">gpointer</span>      user_data)</pre>
+<p>Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is added to the Wi-Fi device.</p>
+<div class="refsect3">
+<a name="id-1.5.14.12.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>device</p></td>
+<td class="parameter_description"><p>the Wi-Fi device that received the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ap</p></td>
+<td class="parameter_description"><p>the new access point</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
 <p>Flags: Run First</p>
 </div>
 <hr>
@@ -754,12 +760,39 @@ user_function (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><sp
 user_function (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device,
                <span class="type">GObject</span>      *ap,
                <span class="type">gpointer</span>      user_data)</pre>
+<p>Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is removed from the Wi-Fi device.</p>
+<div class="refsect3">
+<a name="id-1.5.14.12.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>device</p></td>
+<td class="parameter_description"><p>the Wi-Fi device that received the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>ap</p></td>
+<td class="parameter_description"><p>the removed access point</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
 <p>Flags: Run First</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

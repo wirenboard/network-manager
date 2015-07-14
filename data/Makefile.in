@@ -157,8 +157,10 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(examplesdir)" "$(DESTDIR)$(servicedir)" \
-	"$(DESTDIR)$(systemdsystemunitdir)"
-DATA = $(examples_DATA) $(service_DATA) $(systemdsystemunit_DATA)
+	"$(DESTDIR)$(systemdsystemunitdir)" \
+	"$(DESTDIR)$(udevrulesdir)"
+DATA = $(examples_DATA) $(service_DATA) $(systemdsystemunit_DATA) \
+	$(udevrules_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -166,6 +168,7 @@ ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AM_TESTS_FD_REDIRECT = @AM_TESTS_FD_REDIRECT@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -279,6 +282,7 @@ LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -432,6 +436,10 @@ with_valgrind = @with_valgrind@
 @HAVE_SYSTEMD_TRUE@service_DATA = $(service_in_files:.service.in=.service)
 examplesdir = $(docdir)/examples
 examples_DATA = server.conf
+@WITH_UDEV_DIR_TRUE@udevrulesdir = $(UDEV_DIR)/rules.d
+@WITH_UDEV_DIR_TRUE@udevrules_DATA = \
+@WITH_UDEV_DIR_TRUE@	85-nm-unmanaged.rules
+
 edit = sed \
 	-e 's|@bindir[@]|$(bindir)|g' \
 	-e 's|@sbindir[@]|$(sbindir)|g' \
@@ -446,6 +454,7 @@ EXTRA_DIST = \
 	NetworkManager-wait-online-systemd-pre200.service.in \
 	NetworkManager-dispatcher.service.in \
 	org.freedesktop.NetworkManager.service.in \
+	85-nm-unmanaged.rules \
 	server.conf.in
 
 CLEANFILES = \
@@ -556,6 +565,27 @@ uninstall-systemdsystemunitDATA:
 	@list='$(systemdsystemunit_DATA)'; test -n "$(systemdsystemunitdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(systemdsystemunitdir)'; $(am__uninstall_files_from_dir)
+install-udevrulesDATA: $(udevrules_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(udevrules_DATA)'; test -n "$(udevrulesdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(udevrulesdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(udevrulesdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(udevrulesdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(udevrulesdir)" || exit $$?; \
+	done
+
+uninstall-udevrulesDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(udevrules_DATA)'; test -n "$(udevrulesdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(udevrulesdir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -597,7 +627,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(examplesdir)" "$(DESTDIR)$(servicedir)" "$(DESTDIR)$(systemdsystemunitdir)"; do \
+	for dir in "$(DESTDIR)$(examplesdir)" "$(DESTDIR)$(servicedir)" "$(DESTDIR)$(systemdsystemunitdir)" "$(DESTDIR)$(udevrulesdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -653,7 +683,7 @@ info: info-am
 info-am:
 
 install-data-am: install-examplesDATA install-serviceDATA \
-	install-systemdsystemunitDATA
+	install-systemdsystemunitDATA install-udevrulesDATA
 
 install-dvi: install-dvi-am
 
@@ -698,7 +728,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-examplesDATA uninstall-serviceDATA \
-	uninstall-systemdsystemunitDATA
+	uninstall-systemdsystemunitDATA uninstall-udevrulesDATA
 
 .MAKE: install-am install-strip
 
@@ -711,11 +741,12 @@ uninstall-am: uninstall-examplesDATA uninstall-serviceDATA \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-serviceDATA install-strip \
-	install-systemdsystemunitDATA installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am tags-am uninstall uninstall-am uninstall-examplesDATA \
-	uninstall-serviceDATA uninstall-systemdsystemunitDATA
+	install-systemdsystemunitDATA install-udevrulesDATA \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
+	uninstall-am uninstall-examplesDATA uninstall-serviceDATA \
+	uninstall-systemdsystemunitDATA uninstall-udevrulesDATA
 
 .PRECIOUS: Makefile
 

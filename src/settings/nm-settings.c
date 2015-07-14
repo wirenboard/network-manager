@@ -94,9 +94,10 @@ EXPORT(nm_settings_connection_replace_settings)
 EXPORT(nm_settings_connection_replace_and_commit)
 /* END LINKER CRACKROCK */
 
+#define PLUGIN_MODULE_PATH      "plugin-module-path"
+
 static void claim_connection (NMSettings *self,
-                              NMSettingsConnection *connection,
-                              gboolean do_export);
+                              NMSettingsConnection *connection);
 
 static gboolean impl_settings_list_connections (NMSettings *self,
                                                 GPtrArray **connections,
@@ -218,7 +219,7 @@ plugin_connection_added (NMSystemConfigInterface *config,
                          NMSettingsConnection *connection,
                          gpointer user_data)
 {
-	claim_connection (NM_SETTINGS (user_data), connection, TRUE);
+	claim_connection (NM_SETTINGS (user_data), connection);
 }
 
 static void
@@ -239,7 +240,7 @@ load_connections (NMSettings *self)
 		// priority plugin.
 
 		for (elt = plugin_connections; elt; elt = g_slist_next (elt))
-			claim_connection (self, NM_SETTINGS_CONNECTION (elt->data), TRUE);
+			claim_connection (self, NM_SETTINGS_CONNECTION (elt->data));
 
 		g_slist_free (plugin_connections);
 
@@ -468,6 +469,21 @@ notify (GObject *object, GParamSpec *pspec)
 	g_slice_free (GValue, value);
 }
 
+gboolean
+nm_settings_has_connection (NMSettings *self, NMConnection *connection)
+{
+	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+	GHashTableIter iter;
+	gpointer data;
+
+	g_hash_table_iter_init (&iter, priv->connections);
+	while (g_hash_table_iter_next (&iter, NULL, &data))
+		if (data == connection)
+			return TRUE;
+
+	return FALSE;
+}
+
 const GSList *
 nm_settings_get_unmanaged_specs (NMSettings *self)
 {
@@ -489,7 +505,7 @@ get_plugin (NMSettings *self, guint32 capability)
 		NMSystemConfigInterfaceCapabilities caps = NM_SYSTEM_CONFIG_INTERFACE_CAP_NONE;
 
 		g_object_get (G_OBJECT (iter->data), NM_SYSTEM_CONFIG_INTERFACE_CAPABILITIES, &caps, NULL);
-		if (caps & capability)
+		if (NM_FLAGS_ALL (caps, capability))
 			return NM_SYSTEM_CONFIG_INTERFACE (iter->data);
 	}
 
@@ -596,6 +612,7 @@ add_plugin (NMSettings *self, NMSystemConfigInterface *plugin)
 	NMSettingsPrivate *priv;
 	char *pname = NULL;
 	char *pinfo = NULL;
+	const char *path;
 
 	g_return_if_fail (NM_IS_SETTINGS (self));
 	g_return_if_fail (NM_IS_SYSTEM_CONFIG_INTERFACE (plugin));
@@ -613,7 +630,10 @@ add_plugin (NMSettings *self, NMSystemConfigInterface *plugin)
 	              NM_SYSTEM_CONFIG_INTERFACE_INFO, &pinfo,
 	              NULL);
 
-	nm_log_info (LOGD_SETTINGS, "Loaded plugin %s: %s", pname, pinfo);
+	path = g_object_get_data (G_OBJECT (plugin), PLUGIN_MODULE_PATH);
+
+	nm_log_info (LOGD_SETTINGS, "Loaded settings plugin %s: %s%s%s%s", pname, pinfo,
+	             NM_PRINT_FMT_QUOTED (path, " (", path, ")", ""));
 	g_free (pname);
 	g_free (pinfo);
 }
@@ -665,17 +685,13 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 		GModule *plugin;
 		gs_free char *full_name = NULL;
 		gs_free char *path = NULL;
-		gs_free char *pname = NULL;
+		const char *pname;
 		GObject *obj;
 		GObject * (*factory_func) (void);
 		struct stat st;
 		int errsv;
 
-		pname = g_strdup (*iter);
-		g_strstrip (pname);
-
-		if (!*pname)
-			continue;
+		pname = *iter;
 
 		if (!*pname || strchr (pname, '/')) {
 			LOG (LOGL_WARN, "ignore invalid plugin \"%s\"", pname);
@@ -719,7 +735,7 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 		plugin = g_module_open (path, G_MODULE_BIND_LOCAL);
 		if (!plugin) {
 			LOG (LOGL_WARN, "Could not load plugin '%s' from file '%s': %s",
-			     pname, full_name, g_module_error ());
+			     pname, path, g_module_error ());
 			continue;
 		}
 
@@ -730,6 +746,7 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 			             "Could not find plugin '%s' factory function.",
 			             pname);
 			success = FALSE;
+			g_module_close (plugin);
 			break;
 		}
 
@@ -739,11 +756,14 @@ load_plugins (NMSettings *self, const char **plugins, GError **error)
 			             "Plugin '%s' returned invalid system config object.",
 			             pname);
 			success = FALSE;
+			g_module_close (plugin);
 			break;
 		}
 
 		g_module_make_resident (plugin);
 		g_object_weak_ref (obj, (GWeakNotify) g_module_close, plugin);
+		g_object_set_data_full (obj, PLUGIN_MODULE_PATH, path, g_free);
+		path = NULL;
 		add_plugin (self, NM_SYSTEM_CONFIG_INTERFACE (obj));
 		list = g_slist_append (list, obj);
 	}
@@ -794,6 +814,11 @@ static void
 connection_removed (NMSettingsConnection *connection, gpointer user_data)
 {
 	NMSettings *self = NM_SETTINGS (user_data);
+	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
+	const char *cpath = nm_connection_get_path (NM_CONNECTION (connection));
+
+	if (!g_hash_table_lookup (priv->connections, cpath))
+		g_return_if_reached ();
 
 	g_object_ref (connection);
 
@@ -809,8 +834,7 @@ connection_removed (NMSettingsConnection *connection, gpointer user_data)
 	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (connection_ready_changed), self);
 
 	/* Forget about the connection internally */
-	g_hash_table_remove (NM_SETTINGS_GET_PRIVATE (user_data)->connections,
-	                     (gpointer) nm_connection_get_path (NM_CONNECTION (connection)));
+	g_hash_table_remove (priv->connections, (gpointer) cpath);
 
 	/* Notify D-Bus */
 	g_signal_emit (self, signals[CONNECTION_REMOVED], 0, connection);
@@ -877,9 +901,7 @@ openconnect_migrate_hack (NMConnection *connection)
 }
 
 static void
-claim_connection (NMSettings *self,
-                  NMSettingsConnection *connection,
-                  gboolean do_export)
+claim_connection (NMSettings *self, NMSettingsConnection *connection)
 {
 	NMSettingsPrivate *priv = NM_SETTINGS_GET_PRIVATE (self);
 	static guint32 ec_counter = 0;
@@ -1030,7 +1052,7 @@ nm_settings_add_connection (NMSettings *self,
 
 		added = nm_system_config_interface_add_connection (plugin, connection, save_to_disk, &add_error);
 		if (added) {
-			claim_connection (self, added, TRUE);
+			claim_connection (self, added);
 			return added;
 		}
 		nm_log_dbg (LOGD_SETTINGS, "Failed to add %s/'%s': %s",
@@ -1576,6 +1598,9 @@ have_connection_for_device (NMSettings *self, NMDevice *device)
 		NMConnection *connection = NM_CONNECTION (data);
 		const char *ctype, *iface;
 
+		if (!nm_device_check_connection_compatible (device, connection))
+			continue;
+
 		s_con = nm_connection_get_setting_connection (connection);
 
 		iface = nm_setting_connection_get_interface_name (s_con);
@@ -1671,7 +1696,7 @@ default_wired_clear_tag (NMSettings *self,
 	g_signal_handlers_disconnect_by_func (connection, G_CALLBACK (default_wired_connection_updated_by_user_cb), self);
 
 	if (add_to_no_auto_default)
-		nm_config_set_ethernet_no_auto_default (NM_SETTINGS_GET_PRIVATE (self)->config, device);
+		nm_config_set_no_auto_default_for_device (NM_SETTINGS_GET_PRIVATE (self)->config, device);
 }
 
 void

@@ -82,7 +82,7 @@ get_peer (NMDeviceVeth *self)
 	if (priv->ever_had_peer)
 		return priv->peer;
 
-	if (!nm_platform_veth_get_properties (nm_device_get_ifindex (device), &props)) {
+	if (!nm_platform_veth_get_properties (NM_PLATFORM_GET, nm_device_get_ifindex (device), &props)) {
 		_LOGW (LOGD_HW, "could not read veth properties");
 		return NULL;
 	}
@@ -96,13 +96,21 @@ get_peer (NMDeviceVeth *self)
 	return priv->peer;
 }
 
+static gboolean
+can_unmanaged_external_down (NMDevice *self)
+{
+	/* Unless running in a container, an udev rule causes these to be
+	 * unmanaged. If there's no udev then we're probably in a container
+	 * and should IFF_UP and configure the veth ourselves even if we
+	 * didn't create it. */
+	return FALSE;
+}
 
 /**************************************************************/
 
 static void
 nm_device_veth_init (NMDeviceVeth *self)
 {
-	nm_device_set_initial_unmanaged_flag (NM_DEVICE (self), NM_UNMANAGED_DEFAULT, TRUE);
 }
 
 static void
@@ -141,11 +149,14 @@ static void
 nm_device_veth_class_init (NMDeviceVethClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	NMDeviceClass *device_class = NM_DEVICE_CLASS (klass);
 
 	g_type_class_add_private (klass, sizeof (NMDeviceVethPrivate));
 
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
+
+	device_class->can_unmanaged_external_down = can_unmanaged_external_down;
 
 	/* properties */
 	g_object_class_install_property
@@ -166,19 +177,17 @@ nm_device_veth_class_init (NMDeviceVethClass *klass)
 #define NM_VETH_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_VETH_FACTORY, NMVethFactory))
 
 static NMDevice *
-new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
+new_link (NMDeviceFactory *factory, NMPlatformLink *plink, gboolean *out_ignore, GError **error)
 {
-	if (plink->type == NM_LINK_TYPE_VETH) {
-		return (NMDevice *) g_object_new (NM_TYPE_DEVICE_VETH,
-		                                  NM_DEVICE_PLATFORM_DEVICE, plink,
-		                                  NM_DEVICE_TYPE_DESC, "Veth",
-		                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_ETHERNET,
-		                                  NULL);
-	}
-	return NULL;
+	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_VETH,
+	                                  NM_DEVICE_PLATFORM_DEVICE, plink,
+	                                  NM_DEVICE_TYPE_DESC, "Veth",
+	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_ETHERNET,
+	                                  NULL);
 }
 
-DEFINE_DEVICE_FACTORY_INTERNAL_WITH_DEVTYPE(VETH, Veth, veth, ETHERNET, \
-	factory_iface->new_link = new_link; \
+NM_DEVICE_FACTORY_DEFINE_INTERNAL (VETH, Veth, veth,
+	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES (NM_LINK_TYPE_VETH),
+	factory_iface->new_link = new_link;
 	)
 

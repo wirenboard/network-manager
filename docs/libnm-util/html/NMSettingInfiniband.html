@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMSettingInfiniband</title>
+<title>NMSettingInfiniband: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingGeneric.html" title="NMSettingGeneric">
 <link rel="next" href="NMSettingVlan.html" title="NMSettingVlan">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -209,7 +209,6 @@ nm_setting_infiniband_error_quark (<em class="parameter"><code><span class="type
 <div class="refsect3">
 <a name="id-1.2.19.9.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="type">NMSettingInfiniband</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -247,7 +246,6 @@ nm_setting_infiniband_get_mac_address (<em class="parameter"><code><a class="lin
 <div class="refsect3">
 <a name="id-1.2.19.9.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingInfiniband.html#NMSettingInfiniband--mac-address" title="The “mac-address” property"><span class="type">“mac-address”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -273,7 +271,6 @@ nm_setting_infiniband_get_mtu (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.2.19.9.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingInfiniband.html#NMSettingInfiniband--mtu" title="The “mtu” property"><span class="type">“mtu”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -302,7 +299,6 @@ nm_setting_infiniband_get_transport_mode
 <div class="refsect3">
 <a name="id-1.2.19.9.6.6"></a><h4>Returns</h4>
 <p> the IPoIB transport mode</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -331,7 +327,6 @@ a 16-bit unsigned integer.</p>
 <div class="refsect3">
 <a name="id-1.2.19.9.7.6"></a><h4>Returns</h4>
 <p> the IPoIB P_Key</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -358,7 +353,6 @@ nm_setting_infiniband_get_parent (<em class="parameter"><code><a class="link" hr
 <div class="refsect3">
 <a name="id-1.2.19.9.8.6"></a><h4>Returns</h4>
 <p> the parent interface name</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -368,8 +362,6 @@ nm_setting_infiniband_get_parent (<em class="parameter"><code><a class="link" hr
 <a name="NM-SETTING-INFINIBAND-SETTING-NAME:CAPS"></a><h3>NM_SETTING_INFINIBAND_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_SETTING_NAME "infiniband"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -414,48 +406,36 @@ required</p>
 <a name="NM-SETTING-INFINIBAND-ERROR:CAPS"></a><h3>NM_SETTING_INFINIBAND_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_ERROR nm_setting_infiniband_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-INFINIBAND-MAC-ADDRESS:CAPS"></a><h3>NM_SETTING_INFINIBAND_MAC_ADDRESS</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_MAC_ADDRESS    "mac-address"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-INFINIBAND-MTU:CAPS"></a><h3>NM_SETTING_INFINIBAND_MTU</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_MTU            "mtu"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-INFINIBAND-TRANSPORT-MODE:CAPS"></a><h3>NM_SETTING_INFINIBAND_TRANSPORT_MODE</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_TRANSPORT_MODE "transport-mode"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-INFINIBAND-P-KEY:CAPS"></a><h3>NM_SETTING_INFINIBAND_P_KEY</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_P_KEY          "p-key"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-INFINIBAND-PARENT:CAPS"></a><h3>NM_SETTING_INFINIBAND_PARENT</h3>
 <pre class="programlisting">#define NM_SETTING_INFINIBAND_PARENT         "parent"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -463,14 +443,17 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingInfiniband--mac-address"></a><h3>The <code class="literal">“mac-address”</code> property</h3>
 <pre class="programlisting">  “mac-address”              <span class="type">GArray_guchar_</span> *</pre>
-<p></p>
+<p>If specified, this connection will only apply to the IPoIB device whose
+permanent MAC address matches. This property does not change the MAC
+address of the device (i.e. MAC spoofing).</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingInfiniband--mtu"></a><h3>The <code class="literal">“mtu”</code> property</h3>
 <pre class="programlisting">  “mtu”                      <span class="type">guint</span></pre>
-<p></p>
+<p>If non-zero, only transmit packets of the specified size or smaller,
+breaking larger packets up into multiple frames.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 0</p>
 </div>
@@ -478,7 +461,10 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingInfiniband--p-key"></a><h3>The <code class="literal">“p-key”</code> property</h3>
 <pre class="programlisting">  “p-key”                    <span class="type">gint</span></pre>
-<p></p>
+<p>The InfiniBand P_Key to use for this device. A value of -1 means to use
+the default P_Key (aka "the P_Key at index 0").  Otherwise it is a 16-bit
+unsigned integer, whose high bit is set if it is a "full membership"
+P_Key.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: [-1,65535]</p>
 <p>Default value: -1</p>
@@ -487,7 +473,10 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingInfiniband--parent"></a><h3>The <code class="literal">“parent”</code> property</h3>
 <pre class="programlisting">  “parent”                   <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The interface name of the parent device of this device. Normally <code class="literal">NULL</code>,
+but if the <a class="link" href="NMSettingInfiniband.html#NMSettingInfiniband--p-key" title="The “p-key” property"><span class="type">“p_key”</span></a> property is set, then you must
+specify the base device by setting either this property or
+<a class="link" href="NMSettingInfiniband.html#NMSettingInfiniband--mac-address" title="The “mac-address” property"><span class="type">“mac-address”</span></a>.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: NULL</p>
 </div>
@@ -495,14 +484,14 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingInfiniband--transport-mode"></a><h3>The <code class="literal">“transport-mode”</code> property</h3>
 <pre class="programlisting">  “transport-mode”           <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The IP-over-InfiniBand transport mode. Either "datagram" or
+"connected".</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: NULL</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

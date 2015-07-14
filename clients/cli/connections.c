@@ -49,7 +49,8 @@
 #define PROMPT_BOND_MASTER _("Bond master: ")
 #define PROMPT_TEAM_MASTER _("Team master: ")
 #define PROMPT_BRIDGE_MASTER _("Bridge master: ")
-#define PROMPT_CONNECTION _("Connection (name, UUID, or path): ")
+#define PROMPT_CONNECTION  _("Connection (name, UUID, or path): ")
+#define PROMPT_CONNECTIONS _("Connection(s) (name, UUID, or path): ")
 
 static const char *nmc_known_vpns[] =
 	{ "openvpn", "vpnc", "pptp", "openconnect", "openswan", "libreswan",
@@ -237,6 +238,7 @@ typedef struct {
 	char *con_type;
 	NMConnection *connection;
 	NMSetting *setting;
+	const char *property;
 } TabCompletionInfo;
 static TabCompletionInfo nmc_tab_completion = {NULL, NULL, NULL, NULL};
 
@@ -1567,6 +1569,7 @@ find_device_for_connection (NmCli *nmc,
 	int i, j;
 
 	g_return_val_if_fail (nmc != NULL, FALSE);
+	g_return_val_if_fail (iface || ap || nsp, FALSE);
 	g_return_val_if_fail (device != NULL && *device == NULL, FALSE);
 	g_return_val_if_fail (spec_object != NULL && *spec_object == NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
@@ -1726,7 +1729,7 @@ device_state_cb (NMDevice *device, GParamSpec *pspec, gpointer user_data)
 		         nm_object_get_path (NM_OBJECT (active)));
 		quit ();
 	} else if (   ac_state == NM_ACTIVE_CONNECTION_STATE_ACTIVATING
-	           && state == NM_DEVICE_STATE_IP_CONFIG) {
+	           && state >= NM_DEVICE_STATE_IP_CONFIG) {
 		if (nmc->print_output == NMC_PRINT_PRETTY)
 			nmc_terminal_erase_line ();
 		g_print (_("Connection successfully activated (master waiting for slaves) (D-Bus active path: %s)\n"),
@@ -2052,7 +2055,7 @@ nmc_activate_connection (NmCli *nmc,
 	g_return_val_if_fail (nmc != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	if (connection) {
+	if (connection && (ifname || ap || nsp)) {
 		device_found = find_device_for_connection (nmc, connection, ifname, ap, nsp, &device, &spec_object, &local);
 
 		/* Virtual connection may not have their interfaces created yet */
@@ -2070,7 +2073,7 @@ nmc_activate_connection (NmCli *nmc,
 			             _("unknown device '%s'."), ifname);
 			return FALSE;
 		}
-	} else {
+	} else if (!connection) {
 		g_set_error_literal (error, NMCLI_ERROR, NMC_RESULT_ERROR_NOT_FOUND,
 		                     _("neither a valid connection nor device given"));
 		return FALSE;
@@ -2239,25 +2242,26 @@ typedef struct {
 	NmCli *nmc;
 	GSList *queue;
 	guint timeout_id;
-} DeactivateConnectionInfo;
+} ConnectionCbInfo;
 
-static void deactivate_connection_info_finish (DeactivateConnectionInfo *info,
-                                               NMActiveConnection *active);
+static void connection_cb_info_finish (ConnectionCbInfo *info,
+                                       gpointer connection);
 
-static gboolean
-down_timeout_cb (gpointer user_data)
+static void
+connection_removed_cb (NMClient *client, NMConnection *connection, ConnectionCbInfo *info)
 {
-	DeactivateConnectionInfo *info = user_data;
-
-	timeout_cb (info->nmc);
-	deactivate_connection_info_finish (info, NULL);
-	return G_SOURCE_REMOVE;
+	if (!g_slist_find (info->queue, connection))
+		return;
+	g_print (_("Connection '%s' (%s) successfully deleted.\n"),
+	         nm_connection_get_id (connection),
+	         nm_connection_get_uuid (connection));
+	connection_cb_info_finish (info, connection);
 }
 
 static void
 down_active_connection_state_cb (NMActiveConnection *active,
                                  GParamSpec *pspec,
-                                 DeactivateConnectionInfo *info)
+                                 ConnectionCbInfo *info)
 {
 	if (nm_active_connection_get_state (active) < NM_ACTIVE_CONNECTION_STATE_DEACTIVATED)
 		return;
@@ -2267,7 +2271,20 @@ down_active_connection_state_cb (NMActiveConnection *active,
 	g_print (_("Connection '%s' successfully deactivated (D-Bus active path: %s)\n"),
 	         nm_active_connection_get_id (active), nm_object_get_path (NM_OBJECT (active)));
 
-	deactivate_connection_info_finish (info, active);
+	g_signal_handlers_disconnect_by_func (G_OBJECT (active),
+	                                      down_active_connection_state_cb,
+	                                      info);
+	connection_cb_info_finish (info, active);
+}
+
+static gboolean
+connection_op_timeout_cb (gpointer user_data)
+{
+	ConnectionCbInfo *info = user_data;
+
+	timeout_cb (info->nmc);
+	connection_cb_info_finish (info, NULL);
+	return G_SOURCE_REMOVE;
 }
 
 static void
@@ -2279,15 +2296,11 @@ destroy_queue_element (gpointer data)
 }
 
 static void
-deactivate_connection_info_finish (DeactivateConnectionInfo *info,
-                                   NMActiveConnection *active)
+connection_cb_info_finish (ConnectionCbInfo *info, gpointer connection)
 {
-	if (active) {
-		info->queue = g_slist_remove (info->queue, active);
-		g_signal_handlers_disconnect_by_func (active,
-		                                      down_active_connection_state_cb,
-		                                      info);
-		g_object_unref (active);
+	if (connection) {
+		info->queue = g_slist_remove (info->queue, connection);
+		g_object_unref (G_OBJECT (connection));
 	} else {
 		g_slist_free_full (info->queue, destroy_queue_element);
 		info->queue = NULL;
@@ -2298,7 +2311,8 @@ deactivate_connection_info_finish (DeactivateConnectionInfo *info,
 
 	if (info->timeout_id)
 		g_source_remove (info->timeout_id);
-	g_slice_free (DeactivateConnectionInfo, info);
+	g_signal_handlers_disconnect_by_func (info->nmc->client, connection_removed_cb, info);
+	g_slice_free (ConnectionCbInfo, info);
 	quit ();
 }
 
@@ -2306,7 +2320,7 @@ static NMCResultCode
 do_connection_down (NmCli *nmc, int argc, char **argv)
 {
 	NMActiveConnection *active;
-	DeactivateConnectionInfo *info = NULL;
+	ConnectionCbInfo *info = NULL;
 	const GPtrArray *active_cons;
 	GSList *queue = NULL, *iter;
 	char *line = NULL;
@@ -2315,10 +2329,13 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 	int arg_num = argc;
 	int idx = 0;
 
+	if (nmc->timeout == -1)
+		nmc->timeout = 10;
+
 	if (argc == 0) {
 		if (nmc->ask) {
-			line = nmc_readline (PROMPT_CONNECTION);
-			nmc_string_to_arg_array (line, "", &arg_arr, &arg_num);
+			line = nmc_readline (PROMPT_CONNECTIONS);
+			nmc_string_to_arg_array (line, NULL, TRUE, &arg_arr, &arg_num);
 			g_free (line);
 			arg_ptr = arg_arr;
 		}
@@ -2328,9 +2345,6 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 			goto error;
 		}
 	}
-
-	if (nmc->timeout == -1)
-		nmc->timeout = 10;
 
 	/* Get active connections */
 	active_cons = nm_client_get_active_connections (nmc->client);
@@ -2351,9 +2365,13 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 		}
 
 		active = find_active_connection (active_cons, nmc->connections, selector, *arg_ptr, &idx);
-		if (active)
-			queue = g_slist_prepend (queue, active);
-		else {
+		if (active) {
+			/* Check if the connection is unique. */
+			/* Calling down for the same connection repeatedly would result in
+			 * NM responding for the last D-Bus call only and we would stall. */
+			if (!g_slist_find (queue, active))
+				queue = g_slist_prepend (queue, g_object_ref (active));
+		} else {
 			g_printerr (_("Error: '%s' is not an active connection.\n"), *arg_ptr);
 			g_string_printf (nmc->return_text, _("Error: not all active connections found."));
 			nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
@@ -2368,27 +2386,25 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 		nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
 		goto error;
 	}
-
 	queue = g_slist_reverse (queue);
 
 	if (nmc->timeout > 0) {
 		nmc->should_wait = TRUE;
 
-		info = g_slice_new0 (DeactivateConnectionInfo);
+		info = g_slice_new0 (ConnectionCbInfo);
 		info->nmc = nmc;
-		info->timeout_id = g_timeout_add_seconds (nmc->timeout, down_timeout_cb, info);
+		info->queue = queue;
+		info->timeout_id = g_timeout_add_seconds (nmc->timeout, connection_op_timeout_cb, info);
 	}
 
 	for (iter = queue; iter; iter = g_slist_next (iter)) {
 		active = iter->data;
 
-		if (info) {
-			info->queue = g_slist_prepend (info->queue, g_object_ref (active));
+		if (info)
 			g_signal_connect (active,
 			                  "notify::" NM_ACTIVE_CONNECTION_STATE,
 			                  G_CALLBACK (down_active_connection_state_cb),
 			                  info);
-		}
 
 		/* Now deactivate the connection */
 		nm_client_deactivate_connection (nmc->client, active, NULL, NULL);
@@ -2396,7 +2412,6 @@ do_connection_down (NmCli *nmc, int argc, char **argv)
 
 error:
 	g_strfreev (arg_arr);
-	g_slist_free (queue);
 	return nmc->return_value;
 }
 
@@ -2862,7 +2877,7 @@ check_valid_enumeration (char **str,
 	} else {
 		char *options;
 
-		options = nmc_util_strv_for_display (strings);
+		options = nmc_util_strv_for_display (strings, TRUE);
 		g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
 		             _("Error: '%s': '%s' is not a valid %s %s."),
 		             what, *str, what_desc, options);
@@ -5732,7 +5747,6 @@ uuid_display_hook (char **array, int len, int max_len)
 	int i, max = 0;
 	char *tmp;
 	const char *id;
-
 	for (i = 1; i <= len; i++) {
 		con = nmc_find_connection (nmc_tab_completion.nmc->connections, "uuid", array[i], NULL);
 		id = con ? nm_connection_get_id (con) : NULL;
@@ -6087,48 +6101,105 @@ should_complete_cmd (const char *line, int end, const char *cmd,
 	return ret;
 }
 
-static char *
-extract_property_name (const char *prompt, const char *line)
+/*
+ * extract_setting_and_property:
+ * prompt: (in) (allow-none): prompt string, or NULL
+ * line: (in) (allow-none): line, or NULL
+ * setting: (out) (transfer full) (array zero-terminated=1):
+ *   return location for setting name
+ * property: (out) (transfer full) (array zero-terminated=1):
+ *   return location for property name
+ *
+ * Extract setting and property names from prompt and/or line.
+ */
+static void
+extract_setting_and_property (const char *prompt, const char *line,
+                              char **setting, char **property)
 {
 	char *prop = NULL;
+	char *sett = NULL;
 
-	/* If prompt is set take the property name from it, else extract it from line */
-	if (!prompt) {
-		const char *p1;
-		size_t num;
-		p1 = strchr (line, '.');
-		if (p1) {
-			p1++;
-		} else {
-			size_t n1, n2, n3;
-			n1 = strspn  (line,    " \t");
-			n2 = strcspn (line+n1, " \t\0") + n1;
-			n3 = strspn  (line+n2, " \t")   + n2;
-			p1 = line + n3;
-		}
-		num = strcspn (p1, " \t\0");
-		prop = g_strndup (p1, num);
-	} else {
-		const char *p1, *dot;
-		size_t num;
+	if (prompt) {
+		/* prompt looks like this:
+		  "nmcli 802-1x>" or "nmcli 802-1x.pac-file>" */
+		const char *p1, *p2, *dot;
+		size_t num1, num2;
 		p1 = strchr (prompt, ' ');
-		/* prompt looks like this: "nmcli 802-1x>" or "nmcli 802-1x.pac-file>" */
 		if (p1) {
-			dot = strchr (p1 + 1, '.');
-			p1 = dot ? dot + 1 : p1;
-			num = strcspn  (p1, ">");
-			prop = g_strndup (p1, num);
+			dot = strchr (++p1, '.');
+			if (dot) {
+				p2 = dot + 1;
+				num1 = strcspn (p1, ".");
+				num2 = strcspn (p2, ">");
+				sett = num1 > 0 ? g_strndup (p1, num1) : NULL;
+				prop = num2 > 0 ? g_strndup (p2, num2) : NULL;
+			} else {
+				num1 = strcspn (p1, ">");
+				sett = num1 > 0 ? g_strndup (p1, num1) : NULL;
+			}
 		}
 	}
 
-	return prop;
+	if (line) {
+		/* line looks like this:
+		  " set 802-1x.pac-file ..." or " set pac-file ..." */
+		const char *p1, *p2, *dot;
+		size_t n1, n2, n3, n4;
+		size_t num1, num2, len;
+		n1 = strspn  (line,    " \t");         /* white-space */
+		n2 = strcspn (line+n1, " \t\0") + n1;  /* command */
+		n3 = strspn  (line+n2, " \t")   + n2;  /* white-space */
+		n4 = strcspn (line+n3, " \t\0") + n3;  /* setting/property */
+		p1 = line + n3;
+		len = n4 - n3;
+
+		dot = strchr (p1, '.');
+		if (dot && dot < p1 + len) {
+			p2 = dot + 1;
+			num1 = strcspn (p1, ".");
+			num2 = len > num1 + 1 ? len - num1 - 1 : 0;
+			sett = num1 > 0 ? g_strndup (p1, num1) : sett;
+			prop = num2 > 0 ? g_strndup (p2, num2) : prop;
+		} else {
+			if (!prop)
+				prop = len > 0 ? g_strndup (p1, len) : NULL;
+		}
+	}
+
+	if (setting)
+		*setting = sett;
+	else
+		g_free (sett);
+	if (property)
+		*property = prop;
+	else
+		g_free (prop);
+}
+
+static gboolean
+_get_and_check_property (const char *prompt,
+                         const char *line,
+                         const char **array,
+                         const char **array_multi,
+                         gboolean *multi)
+{
+	char *prop;
+	gboolean found = FALSE;
+
+	extract_setting_and_property (prompt, line, NULL, &prop);
+	if (prop) {
+		if (array)
+			found = !!nmc_string_is_valid (prop, array, NULL);
+		if (array_multi && multi)
+			*multi = !!nmc_string_is_valid (prop, array_multi, NULL);
+		g_free (prop);
+	}
+	return found;
 }
 
 static gboolean
 should_complete_files (const char *prompt, const char *line)
 {
-	char *prop;
-	gboolean found = FALSE;
 	const char *file_properties[] = {
 		/* '802-1x' properties */
 		"ca-cert",
@@ -6144,32 +6215,86 @@ should_complete_files (const char *prompt, const char *line)
 		"config",
 		NULL
 	};
-
-	prop = extract_property_name (prompt, line);
-	if (prop) {
-		found = !!nmc_string_is_valid (prop, file_properties, NULL);
-		g_free (prop);
-	}
-	return found;
+	return _get_and_check_property (prompt, line, file_properties, NULL, NULL);
 }
 
 static gboolean
 should_complete_vpn_uuids (const char *prompt, const char *line)
 {
-	char *prop;
-	gboolean found = FALSE;
 	const char *uuid_properties[] = {
 		/* 'connection' properties */
 		"secondaries",
 		NULL
 	};
+	return _get_and_check_property (prompt, line, uuid_properties, NULL, NULL);
+}
 
-	prop = extract_property_name (prompt, line);
-	if (prop) {
-		found = !!nmc_string_is_valid (prop, uuid_properties, NULL);
-		g_free (prop);
-	}
-	return found;
+static char *is_property_valid (NMSetting *setting, const char *property, GError **error);
+static const char **
+get_allowed_property_values (void)
+{
+	const NameItem *valid_settings_arr;
+	const char *setting_name;
+	NMSetting *setting = NULL;
+	char *property = NULL;
+	char *sett = NULL, *prop = NULL;
+	const char **avals = NULL;
+
+	extract_setting_and_property (rl_prompt, rl_line_buffer, &sett, &prop);
+	if (sett) {
+		valid_settings_arr = get_valid_settings_array (nmc_tab_completion.con_type);
+		setting_name = check_valid_name (sett, valid_settings_arr, NULL);
+		setting = nmc_setting_new_for_name (setting_name);
+	} else
+		setting = nmc_tab_completion.setting ? g_object_ref (nmc_tab_completion.setting) : NULL;
+
+	if (setting && prop)
+		property = is_property_valid (setting, prop, NULL);
+	else
+		property = g_strdup (nmc_tab_completion.property);
+
+	if (setting && property)
+		avals = nmc_setting_get_property_allowed_values (setting, property);
+
+	g_free (sett);
+	g_free (prop);
+	if (setting)
+		g_object_unref (setting);
+	g_free (property);
+	return avals;
+}
+
+static gboolean
+should_complete_property_values (const char *prompt, const char *line, gboolean *multi)
+{
+	/* properties allowing multiple values */
+	const char *multi_props[] = {
+		/* '802-1x' properties */
+		NM_SETTING_802_1X_EAP,
+		/* '802-11-wireless-security' properties */
+		NM_SETTING_WIRELESS_SECURITY_PROTO,
+		NM_SETTING_WIRELESS_SECURITY_PAIRWISE,
+		NM_SETTING_WIRELESS_SECURITY_GROUP,
+		/* 'bond' properties */
+		NM_SETTING_BOND_OPTIONS,
+		/* 'ethernet' properties */
+		NM_SETTING_WIRED_S390_OPTIONS,
+		NULL
+	};
+	_get_and_check_property (prompt, line, NULL, multi_props, multi);
+	return get_allowed_property_values () != NULL;
+}
+
+static char *
+gen_property_values (const char *text, int state)
+{
+	char *ret = NULL;
+	const char **avals;
+
+	avals = get_allowed_property_values ();
+	if (avals)
+		ret = nmc_rl_gen_func_basic (text, state, avals);
+	return ret;
 }
 
 /* from readline */
@@ -6239,6 +6364,7 @@ nmcli_editor_tab_completion (const char *text, int start, int end)
 		if (!strchr (prompt_tmp, '.')) {
 			int level = g_str_has_prefix (prompt_tmp, "nmcli>") ? 0 : 1;
 			const char *dot = strchr (line, '.');
+			gboolean multi;
 
 			/* Main menu  - level 0,1 */
 			if (start == n1)
@@ -6259,9 +6385,12 @@ nmcli_editor_tab_completion (const char *text, int start, int end)
 					} else if (num >= 3) {
 						if (num == 3 && should_complete_files (NULL, line))
 							rl_attempted_completion_over = 0;
-						if (should_complete_vpn_uuids (NULL, line)) {
+						else if (should_complete_vpn_uuids (NULL, line)) {
 							rl_completion_display_matches_hook = uuid_display_hook;
 							generator_func = gen_vpn_uuids;
+						} else if (   should_complete_property_values (NULL, line, &multi)
+							   && (num == 3 || multi)) {
+							generator_func = gen_property_values;
 						}
 					}
 				} else if (  (   should_complete_cmd (line, end, "remove", &num, NULL)
@@ -6296,6 +6425,8 @@ nmcli_editor_tab_completion (const char *text, int start, int end)
 			if (start == n1)
 				generator_func = gen_nmcli_cmds_submenu;
 			else {
+				gboolean multi;
+
 				if (   should_complete_cmd (line, end, "add", &num, NULL)
 				    || should_complete_cmd (line, end, "set", &num, NULL)) {
 					if (num <= 2 && should_complete_files (prompt_tmp, line))
@@ -6303,6 +6434,9 @@ nmcli_editor_tab_completion (const char *text, int start, int end)
 					else if (should_complete_vpn_uuids (prompt_tmp, line)) {
 						rl_completion_display_matches_hook = uuid_display_hook;
 						generator_func = gen_vpn_uuids;
+					} else if (   should_complete_property_values (prompt_tmp, NULL, &multi)
+						   && (num <= 2 || multi)) {
+						generator_func = gen_property_values;
 					}
 				}
 				if (should_complete_cmd (line, end, "print", &num, NULL) && num <= 2)
@@ -7016,6 +7150,9 @@ property_edit_submenu (NmCli *nmc,
 	gboolean temp_changes;
 	gboolean removed;
 
+	/* Set global variable for use in TAB completion */
+	nmc_tab_completion.property = prop_name;
+
 	prompt = nmc_colorize (nmc->editor_prompt_color, "nmcli %s.%s> ",
 	                       nm_setting_get_name (curr_setting), prop_name);
 
@@ -7047,9 +7184,16 @@ property_edit_submenu (NmCli *nmc,
 			 *                   ADD adds the new value(s)
 			 * single values:  : both SET and ADD sets the new value
 			 */
-			if (!cmd_property_arg)
+			if (!cmd_property_arg) {
+				const char **avals = nmc_setting_get_property_allowed_values (curr_setting, prop_name);
+				if (avals) {
+					char *avals_str = nmc_util_strv_for_display (avals, FALSE);
+					g_print (_("Allowed values for '%s' property: %s\n"),
+					         prop_name, avals_str);
+					g_free (avals_str);
+				}
 				prop_val_user = nmc_readline (_("Enter '%s' value: "), prop_name);
-			else
+			} else
 				prop_val_user = g_strdup (cmd_property_arg);
 
 			/* nmc_setting_set_property() only adds new value, thus we have to
@@ -7078,7 +7222,7 @@ property_edit_submenu (NmCli *nmc,
 
 		case NMC_EDITOR_SUB_CMD_CHANGE:
 			rl_startup_hook = nmc_rl_set_deftext;
-			nmc_rl_pre_input_deftext = nmc_setting_get_property_out2in (curr_setting, prop_name, NULL);
+			nmc_rl_pre_input_deftext = nmc_setting_get_property_parsable (curr_setting, prop_name, NULL);
 			prop_val_user = nmc_readline (_("Edit '%s' value: "), prop_name);
 
 			nmc_property_get_gvalue (curr_setting, prop_name, &prop_g_value);
@@ -7144,6 +7288,8 @@ property_edit_submenu (NmCli *nmc,
 			break;
 
 		case NMC_EDITOR_SUB_CMD_BACK:
+			/* Set global variable for use in TAB completion */
+			nmc_tab_completion.property = NULL;
 			cmd_property_loop = FALSE;
 			break;
 
@@ -7456,7 +7602,7 @@ editor_menu_main (NmCli *nmc, NMConnection *connection, const char *connection_t
 				if (menu_ctx.level == 1) {
 					const char *prop_name;
 					char *prop_val_user = NULL;
-					const char *avals;
+					const char **avals;
 					GError *tmp_err = NULL;
 
 					prop_name = ask_check_property (cmd_arg,
@@ -7466,9 +7612,12 @@ editor_menu_main (NmCli *nmc, NMConnection *connection, const char *connection_t
 						break;
 
 					avals = nmc_setting_get_property_allowed_values (menu_ctx.curr_setting, prop_name);
-					if (avals)
-						g_print (_("Allowed values for '%s' property: %s\n"), prop_name, avals);
-
+					if (avals) {
+						char *avals_str = nmc_util_strv_for_display (avals, FALSE);
+						g_print (_("Allowed values for '%s' property: %s\n"),
+						         prop_name, avals_str);
+						g_free (avals_str);
+					}
 					prop_val_user = nmc_readline (_("Enter '%s' value: "), prop_name);
 
 					/* Set property value */
@@ -7520,10 +7669,13 @@ editor_menu_main (NmCli *nmc, NMConnection *connection, const char *connection_t
 
 				/* Ask for value */
 				if (!cmd_arg_v) {
-					const char *avals = nmc_setting_get_property_allowed_values (ss, prop_name);
-					if (avals)
-						g_print (_("Allowed values for '%s' property: %s\n"), prop_name, avals);
-
+					const char **avals = nmc_setting_get_property_allowed_values (ss, prop_name);
+					if (avals) {
+						char *avals_str = nmc_util_strv_for_display (avals, FALSE);
+						g_print (_("Allowed values for '%s' property: %s\n"),
+						         prop_name, avals_str);
+						g_free (avals_str);
+					}
 					cmd_arg_v = nmc_readline (_("Enter '%s' value: "), prop_name);
 				}
 
@@ -8646,52 +8798,44 @@ finish:
 	return nmc->return_value;
 }
 
-
-typedef struct {
-	NmCli *nmc;
-	int counter;
-} DeleteStateInfo;
-
 static void
 delete_cb (GObject *con, GAsyncResult *result, gpointer user_data)
 {
-	DeleteStateInfo *info = (DeleteStateInfo *) user_data;
+	ConnectionCbInfo *info = (ConnectionCbInfo *) user_data;
 	GError *error = NULL;
 
 	if (!nm_remote_connection_delete_finish (NM_REMOTE_CONNECTION (con), result, &error)) {
-		g_string_printf (info->nmc->return_text, _("Error: Connection deletion failed: %s"),
-		                 error->message);
+		g_string_printf (info->nmc->return_text, _("Error: not all connections deleted."));
+		g_printerr (_("Error: Connection deletion failed: %s"),
+		            error->message);
 		g_error_free (error);
 		info->nmc->return_value = NMC_RESULT_ERROR_CON_DEL;
-	}
-
-	info->counter--;
-	if (info->counter == 0) {
-		g_free (info);
-		quit ();
+		connection_cb_info_finish (info, con);
+	} else {
+		if (info->nmc->nowait_flag)
+			connection_cb_info_finish (info, con);
 	}
 }
 
 static NMCResultCode
 do_connection_delete (NmCli *nmc, int argc, char **argv)
 {
-	NMConnection *connection = NULL;
-	DeleteStateInfo *del_info = NULL;
-	char *line = NULL;
+	NMConnection *connection;
+	ConnectionCbInfo *info = NULL;
+	GSList *queue = NULL, *iter;
 	char **arg_arr = NULL;
 	char **arg_ptr = argv;
 	int arg_num = argc;
 	GString *invalid_cons = NULL;
-	gboolean del_info_free = FALSE;
 	int pos = 0;
 
-	nmc->return_value = NMC_RESULT_SUCCESS;
-	nmc->should_wait = FALSE;
+	if (nmc->timeout == -1)
+		nmc->timeout = 10;
 
 	if (argc == 0) {
 		if (nmc->ask) {
-			line = nmc_readline (PROMPT_CONNECTION);
-			nmc_string_to_arg_array (line, "", &arg_arr, &arg_num);
+			char *line = nmc_readline (PROMPT_CONNECTIONS);
+			nmc_string_to_arg_array (line, NULL, TRUE, &arg_arr, &arg_num);
 			g_free (line);
 			arg_ptr = arg_arr;
 		}
@@ -8701,11 +8845,6 @@ do_connection_delete (NmCli *nmc, int argc, char **argv)
 			goto finish;
 		}
 	}
-
-	del_info = g_malloc0 (sizeof (DeleteStateInfo));
-	del_info->nmc = nmc;
-	del_info->counter = 0;
-	del_info_free = TRUE;
 
 	while (arg_num > 0) {
 		const char *selector = NULL;
@@ -8722,43 +8861,50 @@ do_connection_delete (NmCli *nmc, int argc, char **argv)
 		}
 
 		connection = nmc_find_connection (nmc->connections, selector, *arg_ptr, &pos);
-		if (!connection) {
-			if (nmc->print_output != NMC_PRINT_TERSE)
-				g_print (_("Error: unknown connection: %s\n"), *arg_ptr);
-
+		if (connection) {
+			/* Check if the connection is unique. */
+			/* Calling delete for the same connection repeatedly would result in
+			 * NM responding for the last D-Bus call only and we would stall. */
+			if (!g_slist_find (queue, connection))
+				queue = g_slist_prepend (queue, g_object_ref (connection));
+		} else {
+			g_printerr (_("Error: unknown connection '%s'\n"), *arg_ptr);
+			g_string_printf (nmc->return_text, _("Error: not all active connections found."));
+			nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
 			if (!invalid_cons)
 				invalid_cons = g_string_new (NULL);
 			g_string_append_printf (invalid_cons, "'%s', ", *arg_ptr);
-
-			/* take the next argument and continue */
-			next_arg (&arg_num, &arg_ptr);
-			continue;
 		}
-
-		/* We need to wait a bit so that nmcli's permissions can be checked.
-		 * We will exit when D-Bus return (error) messages are received.
-		 */
-		nmc->should_wait = TRUE;
-
-		/* del_info deallocation is handled in delete_cb() */
-		del_info_free = FALSE;
-
-		del_info->counter++;
-
-		/* Delete the connection */
-		nm_remote_connection_delete_async (NM_REMOTE_CONNECTION (connection),
-		                                   NULL, delete_cb, del_info);
 
 		/* Take next argument (if there's no other connection of the same name) */
 		if (!pos)
 			next_arg (&arg_num, &arg_ptr);
 	}
 
-finish:
-	if (del_info_free)
-		g_free (del_info);
-	g_strfreev (arg_arr);
+	if (!queue) {
+		g_string_printf (nmc->return_text, _("Error: no connection provided."));
+		nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
+		goto finish;
+	}
+	queue = g_slist_reverse (queue);
 
+	info = g_slice_new0 (ConnectionCbInfo);
+	info->nmc = nmc;
+	info->queue = queue;
+	info->timeout_id = g_timeout_add_seconds (nmc->timeout, connection_op_timeout_cb, info);
+
+	nmc->nowait_flag = (nmc->timeout == 0);
+	nmc->should_wait = TRUE;
+
+	g_signal_connect (nmc->client, NM_CLIENT_CONNECTION_REMOVED,
+	                  G_CALLBACK (connection_removed_cb), info);
+
+	/* Now delete the connections */
+	for (iter = queue; iter; iter = g_slist_next (iter))
+		nm_remote_connection_delete_async (NM_REMOTE_CONNECTION (iter->data),
+		                                   NULL, delete_cb, info);
+
+finish:
 	if (invalid_cons) {
 		g_string_truncate (invalid_cons, invalid_cons->len-2);  /* truncate trailing ", " */
 		g_string_printf (nmc->return_text, _("Error: cannot delete unknown connection(s): %s."),
@@ -8766,6 +8912,7 @@ finish:
 		nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
 		g_string_free (invalid_cons, TRUE);
 	}
+	g_strfreev (arg_arr);
 	return nmc->return_value;
 }
 
@@ -8881,7 +9028,7 @@ gen_func_connection_names (const char *text, int state)
 	for (i = 0; i < nm_cli.connections->len; i++) {
 		NMConnection *con = NM_CONNECTION (nm_cli.connections->pdata[i]);
 		const char *id = nm_connection_get_id (con);
-		connections[i++] = id;
+		connections[i] = id;
 	}
 	connections[i] = NULL;
 
@@ -8900,14 +9047,17 @@ nmcli_con_tab_completion (const char *text, int start, int end)
 	/* Disable readline's default filename completion */
 	rl_attempted_completion_over = 1;
 
-	/* Disable appending space after completion */
-	rl_completion_append_character = '\0';
+	if (g_strcmp0 (rl_prompt, PROMPT_CONNECTION) == 0) {
+		/* Disable appending space after completion */
+		rl_completion_append_character = '\0';
 
-	if (!is_single_word (rl_line_buffer))
-		return NULL;
+		if (!is_single_word (rl_line_buffer))
+			return NULL;
 
-	if (g_strcmp0 (rl_prompt, PROMPT_CONNECTION) == 0)
 		generator_func = gen_func_connection_names;
+	} else if (g_strcmp0 (rl_prompt, PROMPT_CONNECTIONS) == 0) {
+		generator_func = gen_func_connection_names;
+	}
 
 	if (generator_func)
 		match_array = rl_completion_matches (text, generator_func);

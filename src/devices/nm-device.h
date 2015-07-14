@@ -130,19 +130,17 @@ typedef struct {
 	void            (* link_changed) (NMDevice *self, NMPlatformLink *info);
 
 	/* Hardware state (IFF_UP) */
-	gboolean        (*is_up)      (NMDevice *self);
-	gboolean        (*bring_up)   (NMDevice *self, gboolean *no_firmware);
-	gboolean        (*take_down)  (NMDevice *self);
+	gboolean        (*can_unmanaged_external_down)  (NMDevice *self);
+	gboolean        (*is_up)                        (NMDevice *self);
+	gboolean        (*bring_up)                     (NMDevice *self, gboolean *no_firmware);
+	gboolean        (*take_down)                    (NMDevice *self);
 
 	/* Carrier state (IFF_LOWER_UP) */
 	void            (*carrier_changed) (NMDevice *, gboolean carrier);
 
-	void        (* update_permanent_hw_address) (NMDevice *self);
-	void        (* update_initial_hw_address) (NMDevice *self);
-
 	gboolean    (* get_ip_iface_identifier) (NMDevice *self, NMUtilsIPv6IfaceId *out_iid);
 
-	guint32		(* get_generic_capabilities)	(NMDevice *self);
+	NMDeviceCapabilities (* get_generic_capabilities) (NMDevice *self);
 
 	gboolean	(* is_available) (NMDevice *self, NMDeviceCheckDevAvailableFlags flags);
 
@@ -213,7 +211,9 @@ typedef struct {
 	/* Sync deactivating (in the DISCONNECTED phase) */
 	void			(* deactivate)			(NMDevice *self);
 
-	gboolean        (* spec_match_list)     (NMDevice *self, const GSList *specs);
+	const char *(*get_type_description) (NMDevice *self);
+
+	NMMatchSpecMatchType (* spec_match_list)   (NMDevice *self, const GSList *specs);
 
 	/* Update the connection with currently configured L2 settings */
 	void            (* update_connection) (NMDevice *device, NMConnection *connection);
@@ -235,6 +235,21 @@ typedef struct {
 	gboolean        (* have_any_ready_slaves) (NMDevice *self,
 	                                           const GSList *slaves);
 
+	/**
+	 * component_added:
+	 * @self: the #NMDevice
+	 * @component: the component (device, modem, etc) which was added
+	 *
+	 * Notifies @self that a new component was added to the Manager.  This
+	 * may include any kind of %GObject subclass, and the device is expected
+	 * to match only specific components they care about, like %NMModem objects
+	 * or %NMDevice objects.
+	 *
+	 * Returns: %TRUE if the component was claimed exclusively and no further
+	 * devices should be notified of the new component.  %FALSE to indicate
+	 * that the component was not exclusively claimed and other devices should
+	 * be notified.
+	 */
 	gboolean        (* component_added) (NMDevice *self, GObject *component);
 
 	gboolean        (* owns_iface) (NMDevice *self, const char *iface);
@@ -264,13 +279,16 @@ int             nm_device_get_ip_ifindex(NMDevice *dev);
 const char *	nm_device_get_driver	(NMDevice *dev);
 const char *	nm_device_get_driver_version	(NMDevice *dev);
 const char *	nm_device_get_type_desc (NMDevice *dev);
+const char *	nm_device_get_type_description (NMDevice *dev);
 NMDeviceType	nm_device_get_device_type	(NMDevice *dev);
 
 int			nm_device_get_priority (NMDevice *dev);
 guint32     nm_device_get_ip4_route_metric (NMDevice *dev);
 guint32     nm_device_get_ip6_route_metric (NMDevice *dev);
 
-const char *    nm_device_get_hw_address   (NMDevice *dev);
+const char *    nm_device_get_hw_address           (NMDevice *dev);
+const char *    nm_device_get_permanent_hw_address (NMDevice *dev);
+const char *    nm_device_get_initial_hw_address   (NMDevice *dev);
 
 NMDhcp4Config * nm_device_get_dhcp4_config (NMDevice *dev);
 NMDhcp6Config * nm_device_get_dhcp6_config (NMDevice *dev);
@@ -342,6 +360,8 @@ RfKillType nm_device_get_rfkill_type (NMDevice *device);
  * @NM_UNMANAGED_USER: %TRUE when unmanaged by user decision (via unmanaged-specs)
  * @NM_UNMANAGED_PARENT: %TRUE when unmanaged due to parent device being unmanaged
  * @NM_UNMANAGED_EXTERNAL_DOWN: %TRUE when unmanaged because !IFF_UP and not created by NM
+ * @NM_UNMANAGED_PLATFORM_INIT: %TRUE when unmanaged because platform link not
+ *   yet initialized
  */
 typedef enum {
 	NM_UNMANAGED_NONE          = 0x00,
@@ -350,6 +370,7 @@ typedef enum {
 	NM_UNMANAGED_USER          = 0x04,
 	NM_UNMANAGED_PARENT        = 0x08,
 	NM_UNMANAGED_EXTERNAL_DOWN = 0x10,
+	NM_UNMANAGED_PLATFORM_INIT = 0x20,
 
 	/* Boundary value */
 	__NM_UNMANAGED_LAST,
@@ -371,6 +392,8 @@ void nm_device_set_initial_unmanaged_flag (NMDevice *device,
 gboolean nm_device_get_is_nm_owned (NMDevice *device);
 void     nm_device_set_nm_owned    (NMDevice *device);
 
+gboolean nm_device_has_capability (NMDevice *self, NMDeviceCapabilities caps);
+
 gboolean nm_device_get_autoconnect (NMDevice *device);
 
 void nm_device_handle_autoip4_event (NMDevice *self,
@@ -386,6 +409,8 @@ void nm_device_queue_state   (NMDevice *self,
                               NMDeviceStateReason reason);
 
 gboolean nm_device_get_firmware_missing (NMDevice *self);
+
+void nm_device_steal_connection (NMDevice *device, NMConnection *connection);
 
 void nm_device_queue_activation (NMDevice *device, NMActRequest *req);
 

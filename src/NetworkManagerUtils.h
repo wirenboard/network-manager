@@ -51,14 +51,7 @@ nm_utils_ip6_route_metric_normalize (guint32 metric)
 
 int nm_spawn_process (const char *args, GError **error);
 
-/* check if @flags has exactly one flag (@check) set. You should call this
- * only with @check being a compile time constant and a power of two. */
-#define NM_FLAGS_HAS(flags, check)  \
-    ( (G_STATIC_ASSERT_EXPR ( ((check) != 0) && ((check) & ((check)-1)) == 0 )), (NM_FLAGS_ANY ((flags), (check))) )
-
-#define NM_FLAGS_ANY(flags, check)  ( ( ((flags) & (check)) != 0       ) ? TRUE : FALSE )
-#define NM_FLAGS_ALL(flags, check)  ( ( ((flags) & (check)) == (check) ) ? TRUE : FALSE )
-
+int nm_utils_modprobe (GError **error, gboolean suppress_error_loggin, const char *arg1, ...) G_GNUC_NULL_TERMINATED;
 
 /**
  * str_if_set:
@@ -76,11 +69,11 @@ str_if_set (const char *str, const char *fallback)
 	return str ? str : fallback;
 }
 
-guint64 nm_utils_get_start_time_for_pid (pid_t pid);
+guint64 nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid);
 
 void nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_domain,
                                  const char *log_name, guint32 wait_before_kill_msec,
-                                 guint32 sleep_duration_msec);
+                                 guint32 sleep_duration_msec, guint32 max_wait_msec);
 
 typedef void (*NMUtilsKillChildAsyncCb) (pid_t pid, gboolean success, int child_status, void *user_data);
 void nm_utils_kill_child_async (pid_t pid, int sig, guint64 log_domain, const char *log_name,
@@ -94,10 +87,18 @@ const char *nm_utils_find_helper (const char *progname,
                                   const char *try_first,
                                   GError **error);
 
-gboolean nm_match_spec_string (const GSList *specs, const char *string);
-gboolean nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr);
-gboolean nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels);
-gboolean nm_match_spec_interface_name (const GSList *specs, const char *interface_name);
+typedef enum {
+	NM_MATCH_SPEC_NO_MATCH  = 0,
+	NM_MATCH_SPEC_MATCH     = 1,
+	NM_MATCH_SPEC_NEG_MATCH = 2,
+} NMMatchSpecMatchType;
+
+NMMatchSpecMatchType nm_match_spec_device_type (const GSList *specs, const char *device_type);
+NMMatchSpecMatchType nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr);
+NMMatchSpecMatchType nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels);
+NMMatchSpecMatchType nm_match_spec_interface_name (const GSList *specs, const char *interface_name);
+GSList *nm_match_spec_split (const char *value);
+char *nm_match_spec_join (GSList *specs);
 
 const char *nm_utils_get_shared_wifi_permission (NMConnection *connection);
 
@@ -155,19 +156,13 @@ int nm_utils_cmp_connection_by_autoconnect_priority (NMConnection **a, NMConnect
 
 void nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base, guint32 level, guint64 domain, const char *name, const char *prefix);
 
-gint64 nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback);
-
-#define NM_UTILS_UUID_NS "b425e9fb-7598-44b4-9e3b-5a2e3aaa4905"
-
-char *nm_utils_uuid_generate_from_strings (const char *string1, ...) G_GNUC_NULL_TERMINATED;
-
 #define NM_UTILS_NS_PER_SECOND  ((gint64) 1000000000)
 gint64 nm_utils_get_monotonic_timestamp_ns (void);
 gint64 nm_utils_get_monotonic_timestamp_us (void);
 gint64 nm_utils_get_monotonic_timestamp_ms (void);
 gint32 nm_utils_get_monotonic_timestamp_s (void);
 
-const char *ASSERT_VALID_PATH_COMPONENT (const char *name) G_GNUC_WARN_UNUSED_RESULT;
+const char *ASSERT_VALID_PATH_COMPONENT (const char *name);
 const char *nm_utils_ip6_property_path (const char *ifname, const char *property);
 const char *nm_utils_ip4_property_path (const char *ifname, const char *property);
 
@@ -184,12 +179,12 @@ gboolean nm_utils_is_specific_hostname (const char *name);
  * and should not normally be treated as a %guint64, but this is done for
  * convenience of validity checking and initialization.
  */
-typedef struct {
+struct _NMUtilsIPv6IfaceId {
 	union {
 		guint64 id;
 		guint8  id_u8[8];
 	};
-} NMUtilsIPv6IfaceId;
+};
 
 #define NM_UTILS_IPV6_IFACE_ID_INIT { .id = 0 }
 
@@ -210,5 +205,29 @@ GHashTable *nm_utils_connection_dict_to_hash (GVariant *dict);
 
 GSList *nm_utils_ip4_routes_from_gvalue (const GValue *value);
 GSList *nm_utils_ip6_routes_from_gvalue (const GValue *value);
+
+void nm_utils_array_remove_at_indexes (GArray *array, const guint *indexes_to_delete, gsize len);
+
+void nm_utils_setpgid (gpointer unused);
+
+typedef enum {
+	NM_UTILS_TEST_NONE                              = 0,
+
+	/* Internal flag, marking that either nm_utils_get_testing() or _nm_utils_set_testing() was called. */
+	_NM_UTILS_TEST_INITIALIZED                      = (1LL << 0),
+
+	/* Indicate that test mode is enabled in general. Explicitly calling _nm_utils_set_testing() will always set this flag. */
+	_NM_UTILS_TEST_GENERAL                          = (1LL << 1),
+
+	/* Don't check the owner of keyfiles during testing. */
+	NM_UTILS_TEST_NO_KEYFILE_OWNER_CHECK            = (1LL << 2),
+
+	_NM_UTILS_TEST_LAST,
+	NM_UTILS_TEST_ALL                               = (((_NM_UTILS_TEST_LAST - 1) << 1) - 1) & ~(_NM_UTILS_TEST_INITIALIZED),
+} NMUtilsTestFlags;
+
+gboolean nm_utils_get_testing_initialized (void);
+NMUtilsTestFlags nm_utils_get_testing (void);
+void _nm_utils_set_testing (NMUtilsTestFlags flags);
 
 #endif /* __NETWORKMANAGER_UTILS_H__ */

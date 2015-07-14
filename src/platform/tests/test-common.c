@@ -1,8 +1,30 @@
 #include "config.h"
 
+#include <sys/mount.h>
+#include <sched.h>
+
 #include "test-common.h"
 
 #include "nm-test-utils.h"
+
+#define SIGNAL_DATA_FMT "'%s-%s' ifindex %d%s%s%s (%d times received)"
+#define SIGNAL_DATA_ARG(data) (data)->name, nm_platform_signal_change_type_to_string ((data)->change_type), (data)->ifindex, (data)->ifname ? " ifname '" : "", (data)->ifname ? (data)->ifname : "", (data)->ifname ? "'" : "", (data)->received_count
+
+
+gboolean
+nmtst_platform_is_root_test (void)
+{
+	NM_PRAGMA_WARNING_DISABLE("-Wtautological-compare")
+	return (SETUP == nm_linux_platform_setup);
+	NM_PRAGMA_WARNING_REENABLE
+}
+
+gboolean
+nmtst_platform_is_sysfs_writable (void)
+{
+	return    !nmtst_platform_is_root_test ()
+	       || (access ("/sys/devices", W_OK) == 0);
+}
 
 SignalData *
 add_signal_full (const char *name, NMPlatformSignalChangeType change_type, GCallback callback, int ifindex, const char *ifname)
@@ -11,7 +33,7 @@ add_signal_full (const char *name, NMPlatformSignalChangeType change_type, GCall
 
 	data->name = name;
 	data->change_type = change_type;
-	data->received = FALSE;
+	data->received_count = 0;
 	data->handler_id = g_signal_connect (nm_platform_get (), name, callback, data);
 	data->ifindex = ifindex;
 	data->ifname = ifname;
@@ -21,58 +43,60 @@ add_signal_full (const char *name, NMPlatformSignalChangeType change_type, GCall
 	return data;
 }
 
-static const char *
-_change_type_to_string (NMPlatformSignalChangeType change_type)
+void
+_accept_signal (const char *file, int line, const char *func, SignalData *data)
 {
-    switch (change_type) {
-    case NM_PLATFORM_SIGNAL_ADDED:
-        return "added";
-    case NM_PLATFORM_SIGNAL_CHANGED:
-        return "changed";
-    case NM_PLATFORM_SIGNAL_REMOVED:
-        return "removed";
-    default:
-        g_return_val_if_reached ("UNKNOWN");
-    }
+	debug ("NMPlatformSignalAssert: %s:%d, %s(): Accepting signal one time: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
+	if (data->received_count != 1)
+		g_error ("NMPlatformSignalAssert: %s:%d, %s(): failure to accept signal one time: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
+	data->received_count = 0;
 }
 
 void
-accept_signal (SignalData *data)
+_accept_signals (const char *file, int line, const char *func, SignalData *data, int min, int max)
 {
-	debug ("Accepting signal '%s-%s' ifindex %d ifname %s.", data->name, _change_type_to_string (data->change_type), data->ifindex, data->ifname);
-	if (!data->received)
-		g_error ("Attemted to accept a non-received signal '%s-%s'.", data->name, _change_type_to_string (data->change_type));
-
-	data->received = FALSE;
+	debug ("NMPlatformSignalAssert: %s:%d, %s(): Accepting signal [%d,%d] times: "SIGNAL_DATA_FMT, file, line, func, min, max, SIGNAL_DATA_ARG (data));
+	if (data->received_count < min || data->received_count > max)
+		g_error ("NMPlatformSignalAssert: %s:%d, %s(): failure to accept signal [%d,%d] times: "SIGNAL_DATA_FMT, file, line, func, min, max, SIGNAL_DATA_ARG (data));
+	data->received_count = 0;
 }
 
 void
-wait_signal (SignalData *data)
+_ensure_no_signal (const char *file, int line, const char *func, SignalData *data)
 {
-	if (data->received)
-		g_error ("Signal '%s' received before waiting for it.", data->name);
+	debug ("NMPlatformSignalAssert: %s:%d, %s(): Accepting signal 0 times: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
+	if (data->received_count > 0)
+		g_error ("NMPlatformSignalAssert: %s:%d, %s(): failure to accept signal 0 times: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
+}
+
+void
+_wait_signal (const char *file, int line, const char *func, SignalData *data)
+{
+	debug ("NMPlatformSignalAssert: %s:%d, %s(): wait signal: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
+	if (data->received_count)
+		g_error ("NMPlatformSignalAssert: %s:%d, %s(): failure to wait for signal: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
 
 	data->loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (data->loop);
 	g_clear_pointer (&data->loop, g_main_loop_unref);
 
-	accept_signal (data);
+	_accept_signal (file, line, func, data);
 }
 
 void
-free_signal (SignalData *data)
+_free_signal (const char *file, int line, const char *func, SignalData *data)
 {
-	if (data->received)
-		g_error ("Attempted to free received but not accepted signal '%s-%s'.", data->name, _change_type_to_string (data->change_type));
+	debug ("NMPlatformSignalAssert: %s:%d, %s(): free signal: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
+	if (data->received_count != 0)
+		g_error ("NMPlatformSignalAssert: %s:%d, %s(): failure to free non-accepted signal: "SIGNAL_DATA_FMT, file, line, func, SIGNAL_DATA_ARG (data));
 
 	g_signal_handler_disconnect (nm_platform_get (), data->handler_id);
 	g_free (data);
 }
 
 void
-link_callback (NMPlatform *platform, int ifindex, NMPlatformLink *received, NMPlatformSignalChangeType change_type, NMPlatformReason reason, SignalData *data)
+link_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, NMPlatformLink *received, NMPlatformSignalChangeType change_type, NMPlatformReason reason, SignalData *data)
 {
-	
 	GArray *links;
 	NMPlatformLink *cached;
 	int i;
@@ -84,7 +108,7 @@ link_callback (NMPlatform *platform, int ifindex, NMPlatformLink *received, NMPl
 
 	if (data->ifindex && data->ifindex != received->ifindex)
 		return;
-	if (data->ifname && g_strcmp0 (data->ifname, nm_platform_link_get_name (ifindex)) != 0)
+	if (data->ifname && g_strcmp0 (data->ifname, nm_platform_link_get_name (NM_PLATFORM_GET, ifindex)) != 0)
 		return;
 	if (change_type != data->change_type)
 		return;
@@ -94,20 +118,17 @@ link_callback (NMPlatform *platform, int ifindex, NMPlatformLink *received, NMPl
 		g_main_loop_quit (data->loop);
 	}
 
-	if (data->received)
-		g_error ("Received signal '%s-%s' a second time.", data->name, _change_type_to_string (data->change_type));
-
-	debug ("Received signal '%s-%s' ifindex %d ifname '%s'.", data->name, _change_type_to_string (data->change_type), ifindex, received->name);
-	data->received = TRUE;
+	data->received_count++;
+	debug ("Received signal '%s-%s' ifindex %d ifname '%s' %dth time.", data->name, nm_platform_signal_change_type_to_string (data->change_type), ifindex, received->name, data->received_count);
 
 	if (change_type == NM_PLATFORM_SIGNAL_REMOVED)
-		g_assert (!nm_platform_link_get_name (ifindex));
+		g_assert (!nm_platform_link_get_name (NM_PLATFORM_GET, ifindex));
 	else
-		g_assert (nm_platform_link_get_name (ifindex));
+		g_assert (nm_platform_link_get_name (NM_PLATFORM_GET, ifindex));
 
 	/* Check the data */
 	g_assert (received->ifindex > 0);
-	links = nm_platform_link_get_all ();
+	links = nm_platform_link_get_all (NM_PLATFORM_GET);
 	for (i = 0; i < links->len; i++) {
 		cached = &g_array_index (links, NMPlatformLink, i);
 		if (cached->ifindex == received->ifindex) {
@@ -221,9 +242,9 @@ _assert_ip4_route_exists (const char *file, guint line, const char *func, gboole
 		         exists ? "doesn't" : "does");
 	}
 
-	ifindex = nm_platform_link_get_ifindex (ifname);
+	ifindex = nm_platform_link_get_ifindex (NM_PLATFORM_GET, ifname);
 	g_assert (ifindex > 0);
-	if (!nm_platform_ip4_route_exists (ifindex, network, plen, metric) != !exists) {
+	if (!nm_platform_ip4_route_get (NM_PLATFORM_GET, ifindex, network, plen, metric) != !exists) {
 		g_error ("[%s:%u] %s(): The ip4 route %s/%d metric %u %s, but platform thinks %s",
 		         file, line, func,
 		         nm_utils_inet4_ntop (network, NULL), plen, metric,
@@ -249,6 +270,46 @@ run_command (const char *format, ...)
 
 NMTST_DEFINE();
 
+static gboolean
+unshare_user (void)
+{
+	FILE *f;
+	uid_t uid = geteuid ();
+	gid_t gid = getegid ();
+
+	/* Already a root? */
+	if (gid == 0 && uid == 0)
+		return TRUE;
+
+	/* Become a root in new user NS. */
+	if (unshare (CLONE_NEWUSER) != 0)
+		return FALSE;
+
+	/* Since Linux 3.19 we have to disable setgroups() in order to map users.
+	 * Just proceed if the file is not there. */
+	f = fopen ("/proc/self/setgroups", "w");
+	if (f) {
+		fprintf (f, "deny");
+		fclose (f);
+	}
+
+	/* Map current UID to root in NS to be created. */
+	f = fopen ("/proc/self/uid_map", "w");
+	if (!f)
+		return FALSE;
+	fprintf (f, "0 %d 1", uid);
+	fclose (f);
+
+	/* Map current GID to root in NS to be created. */
+	f = fopen ("/proc/self/gid_map", "w");
+	if (!f)
+		return FALSE;
+	fprintf (f, "0 %d 1", gid);
+	fclose (f);
+
+	return TRUE;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -257,20 +318,62 @@ main (int argc, char **argv)
 
 	init_tests (&argc, &argv);
 
-	NM_PRAGMA_WARNING_DISABLE("-Wtautological-compare")
-	if (SETUP == nm_linux_platform_setup && getuid() != 0) {
-		/* Try to exec as sudo, this function does not return, if a sudo-cmd is set. */
-		nmtst_reexec_sudo ();
+	if (   nmtst_platform_is_root_test ()
+	    && (geteuid () != 0 || getegid () != 0)) {
+		if (   g_getenv ("NMTST_FORCE_REAL_ROOT")
+		    || !unshare_user ()) {
+			/* Try to exec as sudo, this function does not return, if a sudo-cmd is set. */
+			nmtst_reexec_sudo ();
 
 #ifdef REQUIRE_ROOT_TESTS
-		g_print ("Fail test: requires root privileges (%s)\n", program);
-		return EXIT_FAILURE;
+			g_print ("Fail test: requires root privileges (%s)\n", program);
+			return EXIT_FAILURE;
 #else
-		g_print ("Skipping test: requires root privileges (%s)\n", program);
-		return 77;
+			g_print ("Skipping test: requires root privileges (%s)\n", program);
+			return g_test_run ();
 #endif
+		}
 	}
-	NM_PRAGMA_WARNING_REENABLE
+
+	if (nmtst_platform_is_root_test () && !g_getenv ("NMTST_NO_UNSHARE")) {
+		int errsv;
+
+		if (unshare (CLONE_NEWNET | CLONE_NEWNS) != 0) {
+			errsv = errno;
+			g_error ("unshare(CLONE_NEWNET|CLONE_NEWNS) failed with %s (%d)", strerror (errsv), errsv);
+		}
+
+		/* Mount our /sys instance, so that gudev sees only our devices.
+		 * Needs to be read-only, because we don't run udev. */
+		if (mount (NULL, "/sys", "sysfs", MS_SLAVE, NULL) != 0) {
+			errsv = errno;
+			g_error ("mount(\"/\", MS_SLAVE) failed with %s (%d)", strerror (errsv), errsv);
+		}
+		if (mount ("sys", "/sys", "sysfs", MS_RDONLY, NULL) != 0) {
+			errsv = errno;
+			g_error ("mount(\"/sys\") failed with %s (%d)", strerror (errsv), errsv);
+		}
+
+		/* Create a writable /sys/devices tree. This makes it possible to run tests
+		 * that modify values via sysfs (such as bridge forward delay). */
+		if (mount ("sys", "/sys/devices", "sysfs", 0, NULL) != 0) {
+			errsv = errno;
+			g_error ("mount(\"/sys/devices\") failed with %s (%d)", strerror (errsv), errsv);
+		}
+		if (mount (NULL, "/sys/devices", "sysfs", MS_REMOUNT, NULL) != 0) {
+			/* Read-write remount failed. Never mind, we're probably just a root in
+			 * our user NS. */
+			if (umount ("/sys/devices") != 0) {
+				errsv = errno;
+				g_error ("umount(\"/sys/devices\") failed with  %s (%d)", strerror (errsv), errsv);
+			}
+		} else {
+			if (mount ("/sys/devices/devices", "/sys/devices", "sysfs", MS_BIND, NULL) != 0) {
+				errsv = errno;
+				g_error ("mount(\"/sys\") failed with %s (%d)", strerror (errsv), errsv);
+			}
+		}
+	}
 
 	SETUP ();
 
@@ -278,8 +381,8 @@ main (int argc, char **argv)
 
 	result = g_test_run ();
 
-	nm_platform_link_delete (nm_platform_link_get_ifindex (DEVICE_NAME));
+	nm_platform_link_delete (NM_PLATFORM_GET, nm_platform_link_get_ifindex (NM_PLATFORM_GET, DEVICE_NAME));
 
-	nm_platform_free ();
+	g_object_unref (nm_platform_get ());
 	return result;
 }

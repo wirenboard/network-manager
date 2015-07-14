@@ -212,6 +212,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/NetworkManager.pc.in \
 	$(top_srcdir)/build-aux/install-sh \
 	$(top_srcdir)/build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/missing \
+	$(top_srcdir)/build-aux/tap-driver.sh \
 	$(top_srcdir)/initscript/Arch/networkmanager.in \
 	$(top_srcdir)/initscript/Debian/NetworkManager.in \
 	$(top_srcdir)/initscript/Mandriva/networkmanager.in \
@@ -221,7 +222,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/NetworkManager.pc.in \
 	$(top_srcdir)/initscript/linexa/networkmanager.in ABOUT-NLS \
 	AUTHORS COPYING ChangeLog INSTALL NEWS README TODO \
 	build-aux/compile build-aux/config.guess \
-	build-aux/config.rpath build-aux/config.sub build-aux/depcomp \
+	build-aux/config.rpath build-aux/config.sub \
 	build-aux/install-sh build-aux/ltmain.sh build-aux/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
@@ -269,6 +270,7 @@ ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AM_TESTS_FD_REDIRECT = @AM_TESTS_FD_REDIRECT@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -382,6 +384,7 @@ LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -559,7 +562,7 @@ DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-tests=yes \
 	--with-valgrind=no \
 	--enable-gtk-doc \
-	--enable-more-warnings=yes \
+	--enable-more-warnings=error \
 	--with-udev-dir=$$dc_install_base/lib/udev \
 	--with-wext=no \
 	--enable-ifcfg-rh \
@@ -570,7 +573,6 @@ DISTCHECK_CONFIGURE_FLAGS = \
 DISTCLEANFILES = intltool-extract intltool-merge intltool-update
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = NetworkManager.pc
-ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 CLEANFILES = cscope.in.out cscope.out cscope.po.out
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive

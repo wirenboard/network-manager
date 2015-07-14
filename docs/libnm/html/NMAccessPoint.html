@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMAccessPoint</title>
+<title>NMAccessPoint: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMRemoteConnection.html" title="NMRemoteConnection">
 <link rel="next" href="NMWimaxNsp.html" title="NMWimaxNsp">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -256,8 +256,6 @@
 </div>
 <div class="refsect1">
 <a name="NMAccessPoint.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMAccessPoint.functions_details"></a><h2>Functions</h2>
@@ -284,7 +282,6 @@ nm_access_point_get_flags (<em class="parameter"><code><a class="link" href="NMA
 <div class="refsect3">
 <a name="id-1.5.19.8.2.6"></a><h4>Returns</h4>
 <p> the flags</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -311,7 +308,6 @@ nm_access_point_get_wpa_flags (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.5.19.8.3.6"></a><h4>Returns</h4>
 <p> the WPA flags</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -339,7 +335,6 @@ point.</p>
 <div class="refsect3">
 <a name="id-1.5.19.8.4.6"></a><h4>Returns</h4>
 <p> the RSN flags</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -395,7 +390,6 @@ nm_access_point_get_bssid (<em class="parameter"><code><a class="link" href="NMA
 <a name="id-1.5.19.8.6.6"></a><h4>Returns</h4>
 <p> the BSSID of the access point. This is an internal string and must
 not be modified or freed.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -422,7 +416,6 @@ nm_access_point_get_frequency (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.5.19.8.7.6"></a><h4>Returns</h4>
 <p> the frequency</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -449,7 +442,6 @@ nm_access_point_get_mode (<em class="parameter"><code><a class="link" href="NMAc
 <div class="refsect3">
 <a name="id-1.5.19.8.8.6"></a><h4>Returns</h4>
 <p> the mode</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -476,7 +468,6 @@ nm_access_point_get_max_bitrate (<em class="parameter"><code><a class="link" hre
 <div class="refsect3">
 <a name="id-1.5.19.8.9.6"></a><h4>Returns</h4>
 <p> the maximum bit rate (kbit/s)</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -503,7 +494,6 @@ nm_access_point_get_strength (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.5.19.8.10.6"></a><h4>Returns</h4>
 <p> the signal strength</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -592,7 +582,6 @@ against</p></td>
 <a name="id-1.5.19.8.12.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection may be activated with this Wi-Fi AP,
 <code class="literal">FALSE</code> if it cannot be.</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -602,80 +591,60 @@ against</p></td>
 <a name="NM-ACCESS-POINT-FLAGS:CAPS"></a><h3>NM_ACCESS_POINT_FLAGS</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_FLAGS       "flags"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-WPA-FLAGS:CAPS"></a><h3>NM_ACCESS_POINT_WPA_FLAGS</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_WPA_FLAGS   "wpa-flags"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-RSN-FLAGS:CAPS"></a><h3>NM_ACCESS_POINT_RSN_FLAGS</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_RSN_FLAGS   "rsn-flags"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-SSID:CAPS"></a><h3>NM_ACCESS_POINT_SSID</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_SSID        "ssid"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-BSSID:CAPS"></a><h3>NM_ACCESS_POINT_BSSID</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_BSSID       "bssid"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-FREQUENCY:CAPS"></a><h3>NM_ACCESS_POINT_FREQUENCY</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_FREQUENCY   "frequency"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-MODE:CAPS"></a><h3>NM_ACCESS_POINT_MODE</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_MODE        "mode"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-MAX-BITRATE:CAPS"></a><h3>NM_ACCESS_POINT_MAX_BITRATE</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_MAX_BITRATE "max-bitrate"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-STRENGTH:CAPS"></a><h3>NM_ACCESS_POINT_STRENGTH</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_STRENGTH    "strength"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-ACCESS-POINT-HW-ADDRESS:CAPS"></a><h3>NM_ACCESS_POINT_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_ACCESS_POINT_HW_ADDRESS  "hw-address"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -683,7 +652,7 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--bssid"></a><h3>The <code class="literal">“bssid”</code> property</h3>
 <pre class="programlisting">  “bssid”                    <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The BSSID of the access point.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -691,14 +660,14 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--flags"></a><h3>The <code class="literal">“flags”</code> property</h3>
 <pre class="programlisting">  “flags”                    <a class="link" href="libnm-nm-dbus-interface.html#NM80211ApFlags" title="enum NM80211ApFlags"><span class="type">NM80211ApFlags</span></a></pre>
-<p></p>
+<p>The flags of the access point.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMAccessPoint--frequency"></a><h3>The <code class="literal">“frequency”</code> property</h3>
 <pre class="programlisting">  “frequency”                <span class="type">guint</span></pre>
-<p></p>
+<p>The frequency of the access point.</p>
 <p>Flags: Read</p>
 <p>Allowed values: &lt;= 10000</p>
 <p>Default value: 0</p>
@@ -707,7 +676,7 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--hw-address"></a><h3>The <code class="literal">“hw-address”</code> property</h3>
 <pre class="programlisting">  “hw-address”               <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Alias for <a class="link" href="NMAccessPoint.html#NMAccessPoint--bssid" title="The “bssid” property"><span class="type">“bssid”</span></a>.</p>
 <div class="warning">
 <p><code class="literal">NMAccessPoint:hw-address</code> has been deprecated since version 1.0 and should not be used in newly-written code.</p>
 <p>use <a class="link" href="NMAccessPoint.html#NMAccessPoint--bssid" title="The “bssid” property"><span class="type">“bssid”</span></a>.</p>
@@ -719,7 +688,7 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--max-bitrate"></a><h3>The <code class="literal">“max-bitrate”</code> property</h3>
 <pre class="programlisting">  “max-bitrate”              <span class="type">guint</span></pre>
-<p></p>
+<p>The maximum bit rate of the access point in kbit/s.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -727,7 +696,9 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--mode"></a><h3>The <code class="literal">“mode”</code> property</h3>
 <pre class="programlisting">  “mode”                     <a class="link" href="libnm-nm-dbus-interface.html#NM80211Mode" title="enum NM80211Mode"><span class="type">NM80211Mode</span></a></pre>
-<p></p>
+<p>The mode of the access point; either "infrastructure" (a central
+coordinator of the wireless network allowing clients to connect) or
+"ad-hoc" (a network with no central controller).</p>
 <p>Flags: Read</p>
 <p>Default value: NM_802_11_MODE_INFRA</p>
 </div>
@@ -735,21 +706,21 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--rsn-flags"></a><h3>The <code class="literal">“rsn-flags”</code> property</h3>
 <pre class="programlisting">  “rsn-flags”                <a class="link" href="libnm-nm-dbus-interface.html#NM80211ApSecurityFlags" title="enum NM80211ApSecurityFlags"><span class="type">NM80211ApSecurityFlags</span></a></pre>
-<p></p>
+<p>The RSN flags of the access point.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMAccessPoint--ssid"></a><h3>The <code class="literal">“ssid”</code> property</h3>
 <pre class="programlisting">  “ssid”                     <span class="type">GBytes</span> *</pre>
-<p></p>
+<p>The SSID of the access point, or <code class="literal">NULL</code> if it is not known.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMAccessPoint--strength"></a><h3>The <code class="literal">“strength”</code> property</h3>
 <pre class="programlisting">  “strength”                 <span class="type">guchar</span></pre>
-<p></p>
+<p>The current signal strength of the access point.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -757,13 +728,12 @@ against</p></td>
 <div class="refsect2">
 <a name="NMAccessPoint--wpa-flags"></a><h3>The <code class="literal">“wpa-flags”</code> property</h3>
 <pre class="programlisting">  “wpa-flags”                <a class="link" href="libnm-nm-dbus-interface.html#NM80211ApSecurityFlags" title="enum NM80211ApSecurityFlags"><span class="type">NM80211ApSecurityFlags</span></a></pre>
-<p></p>
+<p>The WPA flags of the access point.</p>
 <p>Flags: Read</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

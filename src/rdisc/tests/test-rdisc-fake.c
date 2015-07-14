@@ -36,7 +36,7 @@ rdisc_new (void)
 {
 	NMRDisc *rdisc;
 	const int ifindex = 1;
-	const char *ifname = nm_platform_link_get_name (ifindex);
+	const char *ifname = nm_platform_link_get_name (NM_PLATFORM_GET, ifindex);
 
 	rdisc = nm_fake_rdisc_new (ifindex, ifname);
 	g_assert (rdisc);
@@ -439,7 +439,7 @@ main (int argc, char **argv)
 
 	if (nmtst_test_quick ()) {
 		g_print ("Skipping test: don't run long running test %s (NMTST_DEBUG=slow)\n", str_if_set (g_get_prgname (), "test-rdisc-fake"));
-		return EXIT_SKIP;
+		return g_test_run ();
 	}
 
 	nm_fake_platform_setup ();

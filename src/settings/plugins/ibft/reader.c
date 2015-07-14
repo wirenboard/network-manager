@@ -36,29 +36,12 @@
 
 #include "nm-core-internal.h"
 #include "nm-platform.h"
-#include "nm-posix-signals.h"
 #include "NetworkManagerUtils.h"
 #include "nm-logging.h"
 
 #include "reader.h"
 
 #define PARSE_WARNING(msg...) nm_log_warn (LOGD_SETTINGS, "    " msg)
-
-static void
-iscsiadm_child_setup (gpointer user_data G_GNUC_UNUSED)
-{
-	/* We are in the child process here; set a different process group to
-	 * ensure signal isolation between child and parent.
-	 */
-	pid_t pid = getpid ();
-	setpgid (pid, pid);
-
-	/*
-	 * We blocked signals in main(). We need to restore original signal
-	 * mask for iscsiadm here so that it can receive signals.
-	 */
-	nm_unblock_posix_signals (NULL);
-}
 
 /* Removes trailing whitespace and whitespace before and immediately after the '=' */
 static char *
@@ -126,7 +109,7 @@ read_ibft_blocks (const char *iscsiadm_path,
 	g_return_val_if_fail (out_blocks != NULL && *out_blocks == NULL, FALSE);
 
 	if (!g_spawn_sync ("/", (char **) argv, (char **) envp, 0,
-	                   iscsiadm_child_setup, NULL, &out, &err, &status, error))
+	                   NULL, NULL, &out, &err, &status, error))
 		goto done;
 
 	if (!WIFEXITED (status)) {
@@ -136,6 +119,15 @@ read_ibft_blocks (const char *iscsiadm_path,
 	}
 
 	if (WEXITSTATUS (status) != 0) {
+		if (err) {
+			char *nl;
+
+			/* the error message contains newlines. concatenate the lines with whitespace */
+			for (nl = err; *nl; nl++) {
+				if (*nl == '\n')
+					*nl = ' ';
+			}
+		}
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
 		             "iBFT: %s exited with error %d.  Message: '%s'",
 		             iscsiadm_path, WEXITSTATUS (status), err ? err : "(none)");
@@ -405,13 +397,13 @@ connection_setting_add (const GPtrArray *block,
 	                      prefix ? prefix : "",
 	                      iface);
 
-	uuid = nm_utils_uuid_generate_from_strings ("ibft",
-	                                            s_hwaddr,
-	                                            s_vlanid ? "V" : "v",
-	                                            s_vlanid ? s_vlanid : "",
-	                                            s_ip4addr ? "A" : "DHCP",
-	                                            s_ip4addr ? s_ip4addr : "",
-	                                            NULL);
+	uuid = _nm_utils_uuid_generate_from_strings ("ibft",
+	                                             s_hwaddr,
+	                                             s_vlanid ? "V" : "v",
+	                                             s_vlanid ? s_vlanid : "",
+	                                             s_ip4addr ? "A" : "DHCP",
+	                                             s_ip4addr ? s_ip4addr : "",
+	                                             NULL);
 
 	s_con = nm_setting_connection_new ();
 	g_object_set (s_con,
@@ -439,7 +431,7 @@ is_ibft_vlan_device (const GPtrArray *block)
 		/* VLAN 0 is normally a valid VLAN ID, but in the iBFT case it
 		 * means "no VLAN".
 		 */
-		if (nm_utils_ascii_str_to_int64 (s_vlan_id, 10, 1, 4095, -1) != -1)
+		if (_nm_utils_ascii_str_to_int64 (s_vlan_id, 10, 1, 4095, -1) != -1)
 			return TRUE;
 	}
 	return FALSE;
@@ -466,7 +458,7 @@ vlan_setting_add_from_block (const GPtrArray *block,
 	g_assert (vlan_id_str);
 
 	/* VLAN 0 is normally a valid VLAN ID, but in the iBFT case it means "no VLAN" */
-	vlan_id = nm_utils_ascii_str_to_int64 (vlan_id_str, 10, 1, 4095, -1);
+	vlan_id = _nm_utils_ascii_str_to_int64 (vlan_id_str, 10, 1, 4095, -1);
 	if (vlan_id == -1) {
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 		             "Invalid VLAN_ID '%s'", vlan_id_str);

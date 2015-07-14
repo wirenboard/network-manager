@@ -47,8 +47,8 @@
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
 #include "nm-auth-utils.h"
-#include "nm-posix-signals.h"
 #include "nm-dbus-glib-types.h"
+#include "gsystem-local-alloc.h"
 
 /*
  * Some toolchains (E.G. uClibc 0.9.33 and earlier) don't export
@@ -58,6 +58,60 @@
 #ifndef CLOCK_BOOTTIME
 #define CLOCK_BOOTTIME 7
 #endif
+
+G_STATIC_ASSERT (sizeof (NMUtilsTestFlags) <= sizeof (int));
+int _nm_utils_testing = 0;
+
+gboolean
+nm_utils_get_testing_initialized ()
+{
+	NMUtilsTestFlags flags;
+
+	flags = (NMUtilsTestFlags) _nm_utils_testing;
+	if (flags == NM_UTILS_TEST_NONE)
+		flags = (NMUtilsTestFlags) g_atomic_int_get (&_nm_utils_testing);
+	return flags != NM_UTILS_TEST_NONE;
+}
+
+NMUtilsTestFlags
+nm_utils_get_testing ()
+{
+	NMUtilsTestFlags flags;
+
+	flags = (NMUtilsTestFlags) _nm_utils_testing;
+	if (flags != NM_UTILS_TEST_NONE) {
+		/* Flags already initialized. Return them. */
+		return flags & NM_UTILS_TEST_ALL;
+	}
+
+	/* Accessing nm_utils_get_testing() causes us to set the flags to initialized.
+	 * Detecting running tests also based on g_test_initialized(). */
+	flags = _NM_UTILS_TEST_INITIALIZED;
+	if (g_test_initialized ())
+		flags |= _NM_UTILS_TEST_GENERAL;
+
+	if (g_atomic_int_compare_and_exchange (&_nm_utils_testing, 0, (int) flags)) {
+		/* Done. We set it. */
+		return flags & NM_UTILS_TEST_ALL;
+	}
+	/* It changed in the meantime (??). Re-read the value. */
+	return ((NMUtilsTestFlags) _nm_utils_testing) & NM_UTILS_TEST_ALL;
+}
+
+void
+_nm_utils_set_testing (NMUtilsTestFlags flags)
+{
+	g_assert (!NM_FLAGS_ANY (flags, ~NM_UTILS_TEST_ALL));
+
+	/* mask out everything except ALL, and always set GENERAL. */
+	flags = (flags & NM_UTILS_TEST_ALL) | (_NM_UTILS_TEST_GENERAL | _NM_UTILS_TEST_INITIALIZED);
+
+	if (!g_atomic_int_compare_and_exchange (&_nm_utils_testing, 0, (int) flags)) {
+		/* We only allow setting _nm_utils_set_testing() once, before fetching the
+		 * value with nm_utils_get_testing(). */
+		g_return_if_reached ();
+	}
+}
 
 /*
  * nm_ethernet_address_is_valid:
@@ -150,6 +204,80 @@ nm_utils_ip6_address_clear_host_address (struct in6_addr *dst, const struct in6_
 	return dst;
 }
 
+void
+nm_utils_array_remove_at_indexes (GArray *array, const guint *indexes_to_delete, gsize len)
+{
+	gsize elt_size;
+	guint index_to_delete;
+	guint i_src;
+	guint mm_src, mm_dst, mm_len;
+	gsize i_itd;
+	guint res_length;
+
+	g_return_if_fail (array);
+	if (!len)
+		return;
+	g_return_if_fail (indexes_to_delete);
+
+	elt_size = g_array_get_element_size (array);
+
+	i_itd = 0;
+	index_to_delete = indexes_to_delete[0];
+	if (index_to_delete >= array->len)
+		g_return_if_reached ();
+
+	res_length = array->len - 1;
+
+	mm_dst = index_to_delete;
+	mm_src = index_to_delete;
+	mm_len = 0;
+
+	for (i_src = index_to_delete; i_src < array->len; i_src++) {
+		if (i_src < index_to_delete)
+			mm_len++;
+		else {
+			/* we require indexes_to_delete to contain non-repeated, ascending
+			 * indexes. Otherwise we would need to presort the indexes. */
+			while (TRUE) {
+				guint dd;
+
+				if (i_itd + 1 >= len) {
+					index_to_delete = G_MAXUINT;
+					break;
+				}
+
+				dd = indexes_to_delete[++i_itd];
+				if (dd > index_to_delete) {
+					if (dd >= array->len)
+						g_warn_if_reached ();
+					else {
+						g_assert (res_length > 0);
+						res_length--;
+					}
+					index_to_delete = dd;
+					break;
+				}
+				g_warn_if_reached ();
+			}
+
+			if (mm_len) {
+				memmove (&array->data[mm_dst * elt_size],
+				         &array->data[mm_src * elt_size],
+				         mm_len * elt_size);
+				mm_dst += mm_len;
+				mm_src += mm_len + 1;
+				mm_len = 0;
+			} else
+				mm_src++;
+		}
+	}
+	if (mm_len) {
+		memmove (&array->data[mm_dst * elt_size],
+		         &array->data[mm_src * elt_size],
+		         mm_len * elt_size);
+	}
+	g_array_set_size (array, res_length);
+}
 
 int
 nm_spawn_process (const char *args, GError **error)
@@ -163,7 +291,7 @@ nm_spawn_process (const char *args, GError **error)
 	g_return_val_if_fail (!error || !*error, -1);
 
 	if (g_shell_parse_argv (args, &num_args, &argv, &local)) {
-		g_spawn_sync ("/", argv, NULL, 0, nm_unblock_posix_signals, NULL, NULL, NULL, &status, &local);
+		g_spawn_sync ("/", argv, NULL, 0, NULL, NULL, NULL, NULL, &status, &local);
 		g_strfreev (argv);
 	}
 
@@ -175,9 +303,62 @@ nm_spawn_process (const char *args, GError **error)
 	return status;
 }
 
+static const char *
+_trunk_first_line (char *str)
+{
+	char *s;
+
+	s = strchr (str, '\n');
+	if (s)
+		s[0] = '\0';
+	return str;
+}
+
+int
+nm_utils_modprobe (GError **error, gboolean suppress_error_logging, const char *arg1, ...)
+{
+	gs_unref_ptrarray GPtrArray *argv = NULL;
+	int exit_status;
+	gs_free char *_log_str = NULL;
+#define ARGV_TO_STR(argv)   (_log_str ? _log_str : (_log_str = g_strjoinv (" ", (char **) argv->pdata)))
+	GError *local = NULL;
+	va_list ap;
+	NMLogLevel llevel = suppress_error_logging ? LOGL_DEBUG : LOGL_ERR;
+	gs_free char *std_out = NULL, *std_err = NULL;
+
+	g_return_val_if_fail (!error || !*error, -1);
+	g_return_val_if_fail (arg1, -1);
+
+	/* construct the argument list */
+	argv = g_ptr_array_sized_new (4);
+	g_ptr_array_add (argv, "/sbin/modprobe");
+	g_ptr_array_add (argv, (char *) arg1);
+
+	va_start (ap, arg1);
+	while ((arg1 = va_arg (ap, const char *)))
+		g_ptr_array_add (argv, (char *) arg1);
+	va_end (ap);
+
+	g_ptr_array_add (argv, NULL);
+
+	nm_log_dbg (LOGD_CORE, "modprobe: '%s'", ARGV_TO_STR (argv));
+	if (!g_spawn_sync (NULL, (char **) argv->pdata, NULL, 0, NULL, NULL, &std_out, &std_err, &exit_status, &local)) {
+		nm_log (llevel, LOGD_CORE, "modprobe: '%s' failed: %s", ARGV_TO_STR (argv), local->message);
+		g_propagate_error (error, local);
+		return -1;
+	} else if (exit_status != 0)
+		nm_log (llevel, LOGD_CORE, "modprobe: '%s' exited with error %d%s%s%s%s%s%s", ARGV_TO_STR (argv), exit_status,
+		        std_out&&*std_out ? " (" : "", std_out&&*std_out ? _trunk_first_line (std_out) : "", std_out&&*std_out ? ")" : "",
+		        std_err&&*std_err ? " (" : "", std_err&&*std_err ? _trunk_first_line (std_err) : "", std_err&&*std_err ? ")" : "");
+
+	return exit_status;
+}
+
 /**
  * nm_utils_get_start_time_for_pid:
  * @pid: the process identifier
+ * @out_state: return the state character, like R, S, Z. See `man 5 proc`.
+ * @out_ppid: parent process id
  *
  * Originally copied from polkit source (src/polkit/polkitunixprocess.c)
  * and adjusted.
@@ -188,16 +369,18 @@ nm_spawn_process (const char *args, GError **error)
  * The returned start time counts since boot, in the unit HZ (with HZ usually being (1/100) seconds)
  **/
 guint64
-nm_utils_get_start_time_for_pid (pid_t pid)
+nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid)
 {
 	guint64 start_time;
-	gchar *filename;
-	gchar *contents;
+	gs_free gchar *filename = NULL;
+	gs_free gchar *contents = NULL;
 	size_t length;
-	gchar **tokens;
+	gs_strfreev gchar **tokens = NULL;
 	guint num_tokens;
 	gchar *p;
 	gchar *endp;
+	char state = '\0';
+	gint64 ppid = 0;
 
 	start_time = 0;
 	contents = NULL;
@@ -220,6 +403,8 @@ nm_utils_get_start_time_for_pid (pid_t pid)
 	if (p - contents >= (int) length)
 		goto out;
 
+	state = p[0];
+
 	tokens = g_strsplit (p, " ", 0);
 
 	num_tokens = g_strv_length (tokens);
@@ -227,15 +412,19 @@ nm_utils_get_start_time_for_pid (pid_t pid)
 	if (num_tokens < 20)
 		goto out;
 
+	if (out_ppid)
+		ppid = _nm_utils_ascii_str_to_int64 (tokens[1], 10, 1, G_MAXINT, 0);
+
+	errno = 0;
 	start_time = strtoull (tokens[19], &endp, 10);
-	if (endp == tokens[19])
-		goto out;
+	if (*endp != '\0' || errno != 0)
+		start_time = 0;
 
-	g_strfreev (tokens);
-
- out:
-	g_free (filename);
-	g_free (contents);
+out:
+	if (out_state)
+		*out_state = state;
+	if (out_ppid)
+		*out_ppid = ppid;
 
 	return start_time;
 }
@@ -514,13 +703,15 @@ _sleep_duration_convert_ms_to_us (guint32 sleep_duration_msec)
  * sent unless the child already exited. If the child does not exit within @wait_before_kill_msec milliseconds,
  * the function will send %SIGKILL and waits for the child indefinitly. If @wait_before_kill_msec is zero, no
  * %SIGKILL signal will be sent.
+ *
+ * In case of error, errno is preserved to contain the last reason of failure.
  **/
 gboolean
 nm_utils_kill_child_sync (pid_t pid, int sig, guint64 log_domain, const char *log_name,
                           int *child_status, guint32 wait_before_kill_msec,
                           guint32 sleep_duration_msec)
 {
-	int status = 0, errsv;
+	int status = 0, errsv = 0;
 	pid_t ret;
 	gboolean success = FALSE;
 	gboolean was_waiting = FALSE, send_kill = FALSE;
@@ -666,6 +857,7 @@ nm_utils_kill_child_sync (pid_t pid, int sig, guint64 log_domain, const char *lo
 out:
 	if (child_status)
 		*child_status = success ? status : -1;
+	errno = success ? 0 : errsv;
 	return success;
 }
 
@@ -681,30 +873,36 @@ out:
  * @log_name: name of the process to kill for logging.
  * @wait_before_kill_msec: Waittime in milliseconds before sending %SIGKILL signal. Set this value
  *   to zero, not to send %SIGKILL. If @sig is already %SIGKILL, this parameter has no effect.
+ *   If @max_wait_msec is set but less then @wait_before_kill_msec, the final %SIGKILL will also
+ *   not be send.
  * @sleep_duration_msec: the synchronous function sleeps repeatedly waiting for the child to terminate.
  *   Set to zero, to use the default (meaning 20 wakeups per seconds).
+ * @max_wait_msec: if 0, waits indefinitely until the process is gone (or a zombie). Otherwise, this
+ *   is the maxium wait time until returning. If @max_wait_msec is non-zero but smaller then @wait_before_kill_msec,
+ *   we will not send a final %SIGKILL.
  *
  * Kill a non-child process synchronously and wait. This function will not return before the
- * process with PID @pid is gone.
+ * process with PID @pid is gone, the process is a zombie, or @max_wait_msec expires.
  **/
 void
 nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_domain,
                             const char *log_name, guint32 wait_before_kill_msec,
-                            guint32 sleep_duration_msec)
+                            guint32 sleep_duration_msec, guint32 max_wait_msec)
 {
 	int errsv;
 	guint64 start_time0;
-	gint64 wait_until, now, wait_start_us;
+	gint64 wait_until_sigkill, now, wait_start_us, max_wait_until;
 	gulong sleep_time, sleep_duration_usec;
 	int loop_count = 0;
 	gboolean was_waiting = FALSE;
 	char buf_wait[KC_WAITED_TO_STRING];
+	char p_state;
 
 	g_return_if_fail (pid > 0);
 	g_return_if_fail (log_name != NULL);
 	g_return_if_fail (wait_before_kill_msec > 0);
 
-	start_time0 = nm_utils_get_start_time_for_pid (pid);
+	start_time0 = nm_utils_get_start_time_for_pid (pid, &p_state, NULL);
 	if (start_time0 == 0) {
 		nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": cannot kill process %ld because it seems already gone",
 		            LOG_NAME_ARGS, (long int) pid);
@@ -714,6 +912,17 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_
 		nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": don't kill process %ld because the start_time is unexpectedly %lu instead of %ld",
 		            LOG_NAME_ARGS, (long int) pid, (long unsigned) start_time0, (long unsigned) start_time);
 		return;
+	}
+
+	switch (p_state) {
+	case 'Z':
+	case 'x':
+	case 'X':
+		nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": cannot kill process %ld because it is already a zombie (%c)",
+		            LOG_NAME_ARGS, (long int) pid, p_state);
+		return;
+	default:
+		break;
 	}
 
 	if (kill (pid, sig) != 0) {
@@ -734,16 +943,36 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_
 	wait_start_us = nm_utils_get_monotonic_timestamp_us ();
 
 	sleep_duration_usec = _sleep_duration_convert_ms_to_us (sleep_duration_msec);
-	wait_until = wait_start_us + (((gint64) wait_before_kill_msec) * 1000L);
+	if (sig != SIGKILL)
+		wait_until_sigkill = wait_start_us + (((gint64) wait_before_kill_msec) * 1000L);
+	else
+		wait_until_sigkill = 0;
+	if (max_wait_msec > 0) {
+		max_wait_until = wait_start_us + (((gint64) max_wait_msec) * 1000L);
+		if (wait_until_sigkill > 0 && wait_until_sigkill > max_wait_msec)
+			wait_until_sigkill = 0;
+	} else
+		max_wait_until = 0;
 
 	while (TRUE) {
-		start_time = nm_utils_get_start_time_for_pid (pid);
+		start_time = nm_utils_get_start_time_for_pid (pid, &p_state, NULL);
 
 		if (start_time != start_time0) {
 			nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": process is gone after sending signal %s%s",
 			            LOG_NAME_ARGS, _kc_signal_to_string (sig),
 			            was_waiting ? _kc_waited_to_string (buf_wait, wait_start_us) : "");
 			return;
+		}
+		switch (p_state) {
+		case 'Z':
+		case 'x':
+		case 'X':
+			nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": process is a zombie (%c) after sending signal %s%s",
+			            LOG_NAME_ARGS, p_state, _kc_signal_to_string (sig),
+			            was_waiting ? _kc_waited_to_string (buf_wait, wait_start_us) : "");
+			return;
+		default:
+			break;
 		}
 
 		if (kill (pid, 0) != 0) {
@@ -762,9 +991,25 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_
 		}
 
 		sleep_time = sleep_duration_usec;
-		if (wait_until != 0) {
-			now = nm_utils_get_monotonic_timestamp_us ();
-			if (sig != SIGKILL && now >= wait_until) {
+		now = nm_utils_get_monotonic_timestamp_us ();
+
+		if (   max_wait_until != 0
+		    && now >= max_wait_until) {
+			if (wait_until_sigkill != 0) {
+				/* wait_before_kill_msec is not larger then max_wait_until but we did not yet send
+				 * SIGKILL. Although we already reached our timeout, we don't want to skip sending
+				 * the signal. Even if we don't wait for the process to disappear. */
+				nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": sending SIGKILL", LOG_NAME_ARGS);
+				kill (pid, SIGKILL);
+			}
+			nm_log_warn (log_domain, LOG_NAME_PROCESS_FMT ": timeout %u msec waiting for process to disappear (after sending %s)%s",
+			             LOG_NAME_ARGS, (unsigned) max_wait_until, _kc_signal_to_string (sig),
+			             was_waiting ? _kc_waited_to_string (buf_wait, wait_start_us) : "");
+			return;
+		}
+
+		if (wait_until_sigkill != 0) {
+			if (now >= wait_until_sigkill) {
 				/* Still not dead. SIGKILL now... */
 				nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": sending SIGKILL", LOG_NAME_ARGS);
 				if (kill (pid, SIGKILL) != 0) {
@@ -781,17 +1026,24 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_
 					return;
 				}
 				sig = SIGKILL;
-				was_waiting = TRUE;
-				wait_until = 0;
+				wait_until_sigkill = 0;
 				loop_count = 0; /* reset the loop_count. Now we really expect the process to die quickly. */
+			} else
+				sleep_time = MIN (wait_until_sigkill - now, sleep_duration_usec);
+		}
+
+		if (!was_waiting) {
+			if (wait_until_sigkill != 0) {
+				nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": waiting up to %ld milliseconds for process to disappear before sending KILL signal after sending %s...",
+				            LOG_NAME_ARGS, (long) wait_before_kill_msec, _kc_signal_to_string (sig));
+			} else if (max_wait_until != 0) {
+				nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": waiting up to %ld milliseconds for process to disappear after sending %s...",
+				            LOG_NAME_ARGS, (long) max_wait_msec, _kc_signal_to_string (sig));
 			} else {
-				if (!was_waiting) {
-					nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": waiting up to %ld milliseconds for process to disappear after sending %s...",
-					            LOG_NAME_ARGS, (long) wait_before_kill_msec, _kc_signal_to_string (sig));
-					was_waiting = TRUE;
-				}
-				sleep_time = MIN (wait_until - now, sleep_duration_usec);
+				nm_log_dbg (log_domain, LOG_NAME_PROCESS_FMT ": waiting for process to disappear after sending %s...",
+				            LOG_NAME_ARGS, _kc_signal_to_string (sig));
 			}
+			was_waiting = TRUE;
 		}
 
 		if (loop_count < 20) {
@@ -827,55 +1079,133 @@ nm_utils_find_helper(const char *progname, const char *try_first, GError **error
 
 /******************************************************************************************/
 
-gboolean
-nm_match_spec_string (const GSList *specs, const char *match)
+#define MAC_TAG "mac:"
+#define INTERFACE_NAME_TAG "interface-name:"
+#define DEVICE_TYPE_TAG "type:"
+#define SUBCHAN_TAG "s390-subchannels:"
+#define EXCEPT_TAG "except:"
+
+static const char *
+_match_except (const char *spec_str, gboolean *out_except)
 {
-	const GSList *iter;
-
-	for (iter = specs; iter; iter = g_slist_next (iter)) {
-		if (!g_ascii_strcasecmp ((const char *) iter->data, match))
-			return TRUE;
-	}
-
-	return FALSE;
+	if (!g_ascii_strncasecmp (spec_str, EXCEPT_TAG, STRLEN (EXCEPT_TAG))) {
+		spec_str += STRLEN (EXCEPT_TAG);
+		*out_except = TRUE;
+	} else
+		*out_except = FALSE;
+	return spec_str;
 }
 
-gboolean
-nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr)
+NMMatchSpecMatchType
+nm_match_spec_device_type (const GSList *specs, const char *device_type)
 {
 	const GSList *iter;
+	NMMatchSpecMatchType match = NM_MATCH_SPEC_NO_MATCH;
 
-	g_return_val_if_fail (hwaddr != NULL, FALSE);
+	if (!device_type || !*device_type)
+		return NM_MATCH_SPEC_NO_MATCH;
 
 	for (iter = specs; iter; iter = g_slist_next (iter)) {
 		const char *spec_str = iter->data;
+		gboolean except;
 
-		if (   !g_ascii_strncasecmp (spec_str, "mac:", 4)
-		    && nm_utils_hwaddr_matches (spec_str + 4, -1, hwaddr, -1))
-			return TRUE;
+		if (!spec_str || !*spec_str)
+			continue;
 
-		if (nm_utils_hwaddr_matches (spec_str, -1, hwaddr, -1))
-			return TRUE;
+		spec_str = _match_except (spec_str, &except);
+
+		if (g_ascii_strncasecmp (spec_str, DEVICE_TYPE_TAG, STRLEN (DEVICE_TYPE_TAG)) != 0)
+			continue;
+
+		spec_str += STRLEN (DEVICE_TYPE_TAG);
+		if (strcmp (spec_str, device_type) == 0) {
+			if (except)
+				return NM_MATCH_SPEC_NEG_MATCH;
+			match = NM_MATCH_SPEC_MATCH;
+		}
 	}
-
-	return FALSE;
+	return match;
 }
 
-gboolean
+NMMatchSpecMatchType
+nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr)
+{
+	const GSList *iter;
+	NMMatchSpecMatchType match = NM_MATCH_SPEC_NO_MATCH;
+
+	g_return_val_if_fail (hwaddr != NULL, NM_MATCH_SPEC_NO_MATCH);
+
+	for (iter = specs; iter; iter = g_slist_next (iter)) {
+		const char *spec_str = iter->data;
+		gboolean except;
+
+		if (!spec_str || !*spec_str)
+			continue;
+
+		spec_str = _match_except (spec_str, &except);
+
+		if (   !g_ascii_strncasecmp (spec_str, INTERFACE_NAME_TAG, STRLEN (INTERFACE_NAME_TAG))
+		    || !g_ascii_strncasecmp (spec_str, SUBCHAN_TAG, STRLEN (SUBCHAN_TAG))
+		    || !g_ascii_strncasecmp (spec_str, DEVICE_TYPE_TAG, STRLEN (DEVICE_TYPE_TAG)))
+			continue;
+
+		if (!g_ascii_strncasecmp (spec_str, MAC_TAG, STRLEN (MAC_TAG)))
+			spec_str += STRLEN (MAC_TAG);
+		else if (except)
+			continue;
+
+		if (nm_utils_hwaddr_matches (spec_str, -1, hwaddr, -1)) {
+			if (except)
+				return NM_MATCH_SPEC_NEG_MATCH;
+			match = NM_MATCH_SPEC_MATCH;
+		}
+	}
+	return match;
+}
+
+NMMatchSpecMatchType
 nm_match_spec_interface_name (const GSList *specs, const char *interface_name)
 {
-	char *iface_match;
-	gboolean matched;
+	const GSList *iter;
+	NMMatchSpecMatchType match = NM_MATCH_SPEC_NO_MATCH;
 
-	g_return_val_if_fail (interface_name != NULL, FALSE);
+	g_return_val_if_fail (interface_name != NULL, NM_MATCH_SPEC_NO_MATCH);
 
-	if (nm_match_spec_string (specs, interface_name))
-		return TRUE;
+	for (iter = specs; iter; iter = g_slist_next (iter)) {
+		const char *spec_str = iter->data;
+		gboolean use_pattern = FALSE;
+		gboolean except;
 
-	iface_match = g_strdup_printf ("interface-name:%s", interface_name);
-	matched = nm_match_spec_string (specs, iface_match);
-	g_free (iface_match);
-	return matched;
+		if (!spec_str || !*spec_str)
+			continue;
+
+		spec_str = _match_except (spec_str, &except);
+
+		if (   !g_ascii_strncasecmp (spec_str, MAC_TAG, STRLEN (MAC_TAG))
+		    || !g_ascii_strncasecmp (spec_str, SUBCHAN_TAG, STRLEN (SUBCHAN_TAG))
+		    || !g_ascii_strncasecmp (spec_str, DEVICE_TYPE_TAG, STRLEN (DEVICE_TYPE_TAG)))
+			continue;
+
+		if (!g_ascii_strncasecmp (spec_str, INTERFACE_NAME_TAG, STRLEN (INTERFACE_NAME_TAG))) {
+			spec_str += STRLEN (INTERFACE_NAME_TAG);
+			if (spec_str[0] == '=')
+				spec_str += 1;
+			else {
+				if (spec_str[0] == '~')
+					spec_str += 1;
+				use_pattern=TRUE;
+			}
+		} else if (except)
+			continue;
+
+		if (   !strcmp (spec_str, interface_name)
+		    || (use_pattern && g_pattern_match_simple (spec_str, interface_name))) {
+			if (except)
+				return NM_MATCH_SPEC_NEG_MATCH;
+			match = NM_MATCH_SPEC_MATCH;
+		}
+	}
+	return match;
 }
 
 #define BUFSIZE 10
@@ -944,33 +1274,225 @@ parse_subchannels (const char *subchannels, guint32 *a, guint32 *b, guint32 *c)
 	return TRUE;
 }
 
-#define SUBCHAN_TAG "s390-subchannels:"
-
-gboolean
+NMMatchSpecMatchType
 nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels)
 {
 	const GSList *iter;
 	guint32 a = 0, b = 0, c = 0;
 	guint32 spec_a = 0, spec_b = 0, spec_c = 0;
+	NMMatchSpecMatchType match = NM_MATCH_SPEC_NO_MATCH;
 
-	g_return_val_if_fail (subchannels != NULL, FALSE);
+	g_return_val_if_fail (subchannels != NULL, NM_MATCH_SPEC_NO_MATCH);
 
 	if (!parse_subchannels (subchannels, &a, &b, &c))
-		return FALSE;
+		return NM_MATCH_SPEC_NO_MATCH;
 
 	for (iter = specs; iter; iter = g_slist_next (iter)) {
-		const char *spec = iter->data;
+		const char *spec_str = iter->data;
+		gboolean except;
 
-		if (!strncmp (spec, SUBCHAN_TAG, strlen (SUBCHAN_TAG))) {
-			spec += strlen (SUBCHAN_TAG);
-			if (parse_subchannels (spec, &spec_a, &spec_b, &spec_c)) {
-				if (a == spec_a && b == spec_b && c == spec_c)
-					return TRUE;
+		if (!spec_str || !*spec_str)
+			continue;
+
+		spec_str = _match_except (spec_str, &except);
+
+		if (!g_ascii_strncasecmp (spec_str, SUBCHAN_TAG, STRLEN (SUBCHAN_TAG))) {
+			spec_str += STRLEN (SUBCHAN_TAG);
+			if (parse_subchannels (spec_str, &spec_a, &spec_b, &spec_c)) {
+				if (a == spec_a && b == spec_b && c == spec_c) {
+					if (except)
+						return NM_MATCH_SPEC_NEG_MATCH;
+					match = NM_MATCH_SPEC_MATCH;
+				}
 			}
 		}
 	}
+	return match;
+}
 
-	return FALSE;
+/**
+ * nm_match_spec_split:
+ * @value: the string of device specs
+ *
+ * Splits the specs from the string and returns them as individual
+ * entires in a #GSList.
+ *
+ * It does not validate any specs, it basically just does a special
+ * strsplit with ',' or ';' as separators and supporting '\\' as
+ * escape character.
+ *
+ * Leading and trailing spaces of each entry are removed. But the user
+ * can preserve them by specifying "\\s has 2 leading" or "has 2 trailing \\s".
+ *
+ * Specs can have a qualifier like "interface-name:". We still don't strip
+ * any whitespace after the colon, so "interface-name: X" matches an interface
+ * named " X".
+ *
+ * Returns: (transfer-full): the list of device specs.
+ */
+GSList *
+nm_match_spec_split (const char *value)
+{
+	char *string_value, *p, *q0, *q;
+	GSList *pieces = NULL;
+	int trailing_ws;
+
+	if (!value || !*value)
+		return NULL;
+
+	/* Copied from glibs g_key_file_parse_value_as_string() function
+	 * and adjusted. */
+
+	string_value = g_new (gchar, strlen (value) + 1);
+
+	p = (gchar *) value;
+
+	/* skip over leading whitespace */
+	while (g_ascii_isspace (*p))
+		p++;
+
+	q0 = q = string_value;
+	trailing_ws = 0;
+	while (*p) {
+		if (*p == '\\') {
+			p++;
+
+			switch (*p) {
+			case 's':
+				*q = ' ';
+				break;
+			case 'n':
+				*q = '\n';
+				break;
+			case 't':
+				*q = '\t';
+				break;
+			case 'r':
+				*q = '\r';
+				break;
+			case '\\':
+				*q = '\\';
+				break;
+			case '\0':
+				break;
+			default:
+				if (NM_IN_SET (*p, ',', ';'))
+					*q = *p;
+				else {
+					*q++ = '\\';
+					*q = *p;
+				}
+				break;
+			}
+			if (*p == '\0')
+				break;
+			p++;
+			trailing_ws = 0;
+		} else {
+			*q = *p;
+			if (*p == '\0')
+				break;
+			if (g_ascii_isspace (*p)) {
+				trailing_ws++;
+				p++;
+			} else if (NM_IN_SET (*p, ',', ';')) {
+				if (q0 < q - trailing_ws)
+					pieces = g_slist_prepend (pieces, g_strndup (q0, (q - q0) - trailing_ws));
+				q0 = q + 1;
+				p++;
+				trailing_ws = 0;
+				while (g_ascii_isspace (*p))
+					p++;
+			} else
+				p++;
+		}
+		q++;
+	}
+
+	*q = '\0';
+	if (q0 < q - trailing_ws)
+		pieces = g_slist_prepend (pieces, g_strndup (q0, (q - q0) - trailing_ws));
+	g_free (string_value);
+	return g_slist_reverse (pieces);
+}
+
+/**
+ * nm_match_spec_join:
+ * @specs: the device specs to join
+ *
+ * This is based on g_key_file_parse_string_as_value(), analog to
+ * nm_match_spec_split() which is based on g_key_file_parse_value_as_string().
+ *
+ * Returns: (transfer-full): a joined list of device specs that can be
+ *   split again with nm_match_spec_split(). Note that
+ *   nm_match_spec_split (nm_match_spec_join (specs)) yields the original
+ *   result (which is not true the other way around because there are multiple
+ *   ways to encode the same joined specs string).
+ */
+char *
+nm_match_spec_join (GSList *specs)
+{
+	const char *p;
+	GString *str;
+
+	str = g_string_new ("");
+
+	for (; specs; specs = specs->next) {
+		p = specs->data;
+
+		if (!p || !*p)
+			continue;
+
+		if (str->len > 0)
+			g_string_append_c (str, ',');
+
+		/* escape leading whitespace */
+		switch (*p) {
+		case ' ':
+			g_string_append (str, "\\s");
+			p++;
+			break;
+		case '\t':
+			g_string_append (str, "\\t");
+			p++;
+			break;
+		}
+
+		for (; *p; p++) {
+			switch (*p) {
+			case '\n':
+				g_string_append (str, "\\n");
+				break;
+			case '\r':
+				g_string_append (str, "\\r");
+				break;
+			case '\\':
+				g_string_append (str, "\\\\");
+				break;
+			case ',':
+				g_string_append (str, "\\,");
+				break;
+			case ';':
+				g_string_append (str, "\\;");
+				break;
+			default:
+				g_string_append_c (str, *p);
+				break;
+			}
+		}
+
+		/* escape trailing whitespaces */
+		switch (str->str[str->len - 1]) {
+		case ' ':
+			g_string_overwrite (str, str->len - 1, "\\s");
+			break;
+		case '\t':
+			g_string_overwrite (str, str->len - 1, "\\t");
+			break;
+		}
+	}
+
+	return g_string_free (str, FALSE);
 }
 
 const char *
@@ -1165,7 +1687,7 @@ get_new_connection_ifname (const GSList *existing,
 	for (i = 0; i < 500; i++) {
 		name = g_strdup_printf ("%s%d", prefix, i);
 
-		if (nm_platform_link_exists (name))
+		if (nm_platform_link_get_by_ifname (NM_PLATFORM_GET, name))
 			goto next;
 
 		for (iter = existing, found = FALSE; iter; iter = g_slist_next (iter)) {
@@ -1204,7 +1726,8 @@ nm_utils_get_ip_config_method (NMConnection *connection,
 			return NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
 		else {
 			s_ip4 = nm_connection_get_setting_ip4_config (connection);
-			g_return_val_if_fail (s_ip4 != NULL, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+			if (!s_ip4)
+				return NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
 			method = nm_setting_ip_config_get_method (s_ip4);
 			g_return_val_if_fail (method != NULL, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
 
@@ -1218,7 +1741,8 @@ nm_utils_get_ip_config_method (NMConnection *connection,
 			return NM_SETTING_IP6_CONFIG_METHOD_IGNORE;
 		else {
 			s_ip6 = nm_connection_get_setting_ip6_config (connection);
-			g_return_val_if_fail (s_ip6 != NULL, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
+			if (!s_ip6)
+				return NM_SETTING_IP6_CONFIG_METHOD_IGNORE;
 			method = nm_setting_ip_config_get_method (s_ip6);
 			g_return_val_if_fail (method != NULL, NM_SETTING_IP6_CONFIG_METHOD_AUTO);
 
@@ -1640,123 +2164,6 @@ nm_utils_cmp_connection_by_autoconnect_priority (NMConnection **a, NMConnection 
 		return (a_ap > b_ap) ? -1 : 1;
 
 	return 0;
-}
-
-/* nm_utils_ascii_str_to_int64:
- *
- * A wrapper for g_ascii_strtoll, that checks whether the whole string
- * can be successfully converted to a number and is within a given
- * range. On any error, @fallback will be returned and %errno will be set
- * to a non-zero value. On success, %errno will be set to zero, check %errno
- * for errors. Any trailing or leading (ascii) white space is ignored and the
- * functions is locale independent.
- *
- * The function is guaranteed to return a value between @min and @max
- * (inclusive) or @fallback. Also, the parsing is rather strict, it does
- * not allow for any unrecognized characters, except leading and trailing
- * white space.
- **/
-gint64
-nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback)
-{
-	gint64 v;
-	size_t len;
-	char buf[64], *s, *str_free = NULL;
-
-	if (str) {
-		while (g_ascii_isspace (str[0]))
-			str++;
-	}
-	if (!str || !str[0]) {
-		errno = EINVAL;
-		return fallback;
-	}
-
-	len = strlen (str);
-	if (g_ascii_isspace (str[--len])) {
-		/* backward search the first non-ws character.
-		 * We already know that str[0] is non-ws. */
-		while (g_ascii_isspace (str[--len]))
-			;
-
-		/* str[len] is now the last non-ws character... */
-		len++;
-
-		if (len >= sizeof (buf))
-			s = str_free = g_malloc (len + 1);
-		else
-			s = buf;
-
-		memcpy (s, str, len);
-		s[len] = 0;
-
-		/*
-		g_assert (len > 0 && len < strlen (str) && len == strlen (s));
-		g_assert (!g_ascii_isspace (str[len-1]) && g_ascii_isspace (str[len]));
-		g_assert (strncmp (str, s, len) == 0);
-		*/
-
-		str = s;
-	}
-
-	errno = 0;
-	v = g_ascii_strtoll (str, &s, base);
-
-	if (errno != 0)
-		v = fallback;
-	else if (s[0] != 0) {
-		errno = EINVAL;
-		v = fallback;
-	} else if (v > max || v < min) {
-		errno = ERANGE;
-		v = fallback;
-	}
-
-	if (G_UNLIKELY (str_free))
-		g_free (str_free);
-	return v;
-}
-
-/**
- * nm_utils_uuid_generate_from_strings:
- * @string1: a variadic list of strings. Must be NULL terminated.
- *
- * Returns a variant3 UUID based on the concatenated C strings.
- * It does not simply concatenate them, but also includes the
- * terminating '\0' character. For example "a", "b", gives
- * "a\0b\0".
- *
- * This has the advantage, that the following invocations
- * all give different UUIDs: (NULL), (""), ("",""), ("","a"), ("a",""),
- * ("aa"), ("aa", ""), ("", "aa"), ...
- */
-char *
-nm_utils_uuid_generate_from_strings (const char *string1, ...)
-{
-	GString *str;
-	va_list args;
-	const char *s;
-	char *uuid;
-
-	if (!string1)
-		return nm_utils_uuid_generate_from_string (NULL, 0, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
-
-	str = g_string_sized_new (120); /* effectively allocates power of 2 (128)*/
-
-	g_string_append_len (str, string1, strlen (string1) + 1);
-
-	va_start (args, string1);
-	s = va_arg (args, const char *);
-	while (s) {
-		g_string_append_len (str, s, strlen (s) + 1);
-		s = va_arg (args, const char *);
-	}
-	va_end (args);
-
-	uuid = nm_utils_uuid_generate_from_string (str->str, str->len, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
-
-	g_string_free (str, TRUE);
-	return uuid;
 }
 
 /**************************************************************************/
@@ -2253,11 +2660,10 @@ ASSERT_VALID_PATH_COMPONENT (const char *name)
 
 	return name;
 fail:
-	if (name)
-		nm_log_err (LOGD_CORE, "Failed asserting path component: NULL");
-	else
-		nm_log_err (LOGD_CORE, "Failed asserting path component: \"%s\"", name);
-	g_error ("FATAL: Failed asserting path component: %s", name ? name : "(null)");
+	nm_log_err (LOGD_CORE, "Failed asserting path component: %s%s%s",
+	            NM_PRINT_FMT_QUOTED (name, "\"", name, "\"", "(null)"));
+	g_error ("FATAL: Failed asserting path component: %s%s%s",
+	         NM_PRINT_FMT_QUOTED (name, "\"", name, "\"", "(null)"));
 	g_assert_not_reached ();
 }
 
@@ -2554,4 +2960,22 @@ nm_utils_ip6_routes_from_gvalue (const GValue *value)
 	}
 
 	return g_slist_reverse (list);
+}
+
+/**
+ * nm_utils_setpgid:
+ * @unused: unused
+ *
+ * This can be passed as a child setup function to the g_spawn*() family
+ * of functions, to ensure that the child is in its own process group
+ * (and thus, in some situations, will not be killed when NetworkManager
+ * is killed).
+ */
+void
+nm_utils_setpgid (gpointer unused G_GNUC_UNUSED)
+{
+	pid_t pid;
+
+	pid = getpid ();
+	setpgid (pid, pid);
 }

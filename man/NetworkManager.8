@@ -2,7 +2,7 @@
 .\"     Title: NetworkManager
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 05/05/2015
+.\"      Date: 07/14/2015
 .\"    Manual: Network management daemons
 .\"    Source: NetworkManager 1.0
 .\"  Language: English
@@ -239,6 +239,17 @@ in
 \fBNetworkManager.conf\fR(5)
 for more information\&.
 .RE
+.SH "UDEV PROPERTIES"
+.PP
+\fBudev\fR(7)
+device manager is used for the network device discovery\&. The following property influences how NetworkManager manages the devices:
+.PP
+\fINM_UNMANAGED\fR
+.RS 4
+No default connection will be created and automatic activation will not be attempted when this property of a device is set to a true value ("1" or "true")\&. You will still be able to attach a connection to the device manually or observe externally added configuration such as addresses or routes\&.
+.sp
+Create an udev rule that sets this property to prevent NetworkManager from interfering with virtual Ethernet device interfaces that are managed by virtualization tools\&.
+.RE
 .SH "DEBUGGING"
 .PP
 The following environment variables are supported to help debugging\&. When used in conjunction with the
@@ -258,4 +269,4 @@ to enable debug logging inside NetworkManager itself\&.
 \fBnm-online\fR(1),
 \fBnm-settings\fR(5),
 \fBnm-applet\fR(1),
-\fBnm-connection-editor\fR(1)
+\fBnm-connection-editor\fR(1)\fBudev\fR(7)

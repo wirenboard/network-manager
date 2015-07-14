@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSettingConnection</title>
+<title>NMSettingConnection: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSetting.html" title="NMSetting">
 <link rel="next" href="NMSetting8021x.html" title="NMSetting8021x">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -188,6 +188,14 @@
 </tr>
 <tr>
 <td class="function_type">
+<a class="link" href="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves" title="enum NMSettingConnectionAutoconnectSlaves"><span class="returnvalue">NMSettingConnectionAutoconnectSlaves</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingConnection.html#nm-setting-connection-get-autoconnect-slaves" title="nm_setting_connection_get_autoconnect_slaves ()">nm_setting_connection_get_autoconnect_slaves</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
 <span class="returnvalue">guint32</span>
 </td>
 <td class="function_name">
@@ -253,6 +261,11 @@
 <tr>
 <td class="property_type"><span class="type">gint</span></td>
 <td class="property_name"><a class="link" href="NMSettingConnection.html#NMSettingConnection--autoconnect-priority" title="The “autoconnect-priority” property">autoconnect-priority</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+<tr>
+<td class="property_type"><a class="link" href="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves" title="enum NMSettingConnectionAutoconnectSlaves"><span class="type">NMSettingConnectionAutoconnectSlaves</span></a></td>
+<td class="property_name"><a class="link" href="NMSettingConnection.html#NMSettingConnection--autoconnect-slaves" title="The “autoconnect-slaves” property">autoconnect-slaves</a></td>
 <td class="property_flags">Read / Write / Construct</td>
 </tr>
 <tr>
@@ -399,11 +412,19 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS" title="NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES">NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingConnection.html#NM-SETTING-CONNECTION-SECONDARIES:CAPS" title="NM_SETTING_CONNECTION_SECONDARIES">NM_SETTING_CONNECTION_SECONDARIES</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingConnection.html#NM-SETTING-CONNECTION-GATEWAY-PING-TIMEOUT:CAPS" title="NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT">NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves" title="enum NMSettingConnectionAutoconnectSlaves">NMSettingConnectionAutoconnectSlaves</a></td>
 </tr>
 <tr>
 <td class="datatype_keyword">struct</td>
@@ -414,7 +435,9 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    GObject
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+    <span class="lineart">╰──</span> NMSettingConnectionAutoconnectSlaves
+    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> NMSettingConnection
 </pre>
@@ -436,7 +459,6 @@ nm_setting_connection_new (<em class="parameter"><code><span class="type">void</
 <div class="refsect3">
 <a name="id-1.4.5.8.2.5"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> object</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -463,7 +485,6 @@ nm_setting_connection_get_id (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.4.5.8.3.6"></a><h4>Returns</h4>
 <p> the connection ID</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -490,7 +511,6 @@ nm_setting_connection_get_uuid (<em class="parameter"><code><a class="link" href
 <div class="refsect3">
 <a name="id-1.4.5.8.4.6"></a><h4>Returns</h4>
 <p> the connection UUID</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -518,7 +538,6 @@ nm_setting_connection_get_interface_name
 <div class="refsect3">
 <a name="id-1.4.5.8.5.6"></a><h4>Returns</h4>
 <p> the connection's interface name</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -546,7 +565,6 @@ nm_setting_connection_get_connection_type
 <div class="refsect3">
 <a name="id-1.4.5.8.6.6"></a><h4>Returns</h4>
 <p> the connection type</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -573,7 +591,6 @@ nm_setting_connection_get_autoconnect (<em class="parameter"><code><a class="lin
 <div class="refsect3">
 <a name="id-1.4.5.8.7.6"></a><h4>Returns</h4>
 <p> the connection's autoconnect behavior</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -602,7 +619,6 @@ The higher number, the higher priority.</p>
 <div class="refsect3">
 <a name="id-1.4.5.8.8.6"></a><h4>Returns</h4>
 <p> the connection's autoconnect priority</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -629,7 +645,6 @@ nm_setting_connection_get_timestamp (<em class="parameter"><code><a class="link"
 <div class="refsect3">
 <a name="id-1.4.5.8.9.6"></a><h4>Returns</h4>
 <p> the connection's timestamp</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -656,7 +671,6 @@ nm_setting_connection_get_read_only (<em class="parameter"><code><a class="link"
 <div class="refsect3">
 <a name="id-1.4.5.8.10.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is read-only, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -685,7 +699,6 @@ property of this setting.</p>
 <div class="refsect3">
 <a name="id-1.4.5.8.11.6"></a><h4>Returns</h4>
 <p> the number of permissions entires</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -742,7 +755,6 @@ of this setting.</p>
 <a name="id-1.4.5.8.12.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if a permission was returned, <code class="literal">FALSE</code> if <em class="parameter"><code>idx</code></em>
 was invalid</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -769,7 +781,6 @@ nm_setting_connection_get_zone (<em class="parameter"><code><a class="link" href
 <div class="refsect3">
 <a name="id-1.4.5.8.13.6"></a><h4>Returns</h4>
 <p> the trust level of a connection</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -806,7 +817,6 @@ nm_setting_connection_permissions_user_allowed
 <a name="id-1.4.5.8.14.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the requested user is allowed to view this connection,
 <code class="literal">FALSE</code> if the given user is not allowed to view this connection</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -861,7 +871,6 @@ list, <code class="literal">FALSE</code> if <em class="parameter"><code>ptype</c
 or <em class="parameter"><code>pitem</code></em>
 was invalid or it the permission was already
 present in the list</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -945,7 +954,6 @@ be a username. See <a class="link" href="NMSettingConnection.html#NMSettingConne
 <div class="refsect3">
 <a name="id-1.4.5.8.17.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the permission was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -973,7 +981,6 @@ nm_setting_connection_get_master (<em class="parameter"><code><a class="link" hr
 <a name="id-1.4.5.8.18.6"></a><h4>Returns</h4>
 <p> interface name of the master device or UUID of the master
 connection.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1010,7 +1017,6 @@ against <em class="parameter"><code>setting</code></em>
 <a name="id-1.4.5.8.19.5"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if connection is of the given slave <em class="parameter"><code>type</code></em>
 </p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1037,17 +1043,17 @@ nm_setting_connection_get_slave_type (<em class="parameter"><code><a class="link
 <div class="refsect3">
 <a name="id-1.4.5.8.20.6"></a><h4>Returns</h4>
 <p> the type of slave this connection is, if any</p>
-<p></p>
 </div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="nm-setting-connection-get-num-secondaries"></a><h3>nm_setting_connection_get_num_secondaries ()</h3>
-<pre class="programlisting"><span class="returnvalue">guint32</span>
-nm_setting_connection_get_num_secondaries
+<a name="nm-setting-connection-get-autoconnect-slaves"></a><h3>nm_setting_connection_get_autoconnect_slaves ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves" title="enum NMSettingConnectionAutoconnectSlaves"><span class="returnvalue">NMSettingConnectionAutoconnectSlaves</span></a>
+nm_setting_connection_get_autoconnect_slaves
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
+<p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--autoconnect-slaves" title="The “autoconnect-slaves” property"><span class="type">“autoconnect-slaves”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.4.5.8.21.4"></a><h4>Parameters</h4>
+<a name="id-1.4.5.8.21.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1062,9 +1068,36 @@ nm_setting_connection_get_num_secondaries
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.5.8.21.5"></a><h4>Returns</h4>
+<a name="id-1.4.5.8.21.6"></a><h4>Returns</h4>
+<p> whether slaves of the connection should be activated together
+with the connection.</p>
+</div>
+<p class="since">Since: 1.0.4</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-connection-get-num-secondaries"></a><h3>nm_setting_connection_get_num_secondaries ()</h3>
+<pre class="programlisting"><span class="returnvalue">guint32</span>
+nm_setting_connection_get_num_secondaries
+                               (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
+<div class="refsect3">
+<a name="id-1.4.5.8.22.4"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.4.5.8.22.5"></a><h4>Returns</h4>
 <p> the number of configured secondary connection UUIDs</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1074,7 +1107,7 @@ nm_setting_connection_get_num_secondaries
 nm_setting_connection_get_secondary (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>,
                                      <em class="parameter"><code><span class="type">guint32</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.5.8.22.4"></a><h4>Parameters</h4>
+<a name="id-1.4.5.8.23.4"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1096,10 +1129,9 @@ nm_setting_connection_get_secondary (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.5.8.22.5"></a><h4>Returns</h4>
+<a name="id-1.4.5.8.23.5"></a><h4>Returns</h4>
 <p> the secondary connection UUID at index <em class="parameter"><code>idx</code></em>
 </p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1110,7 +1142,7 @@ nm_setting_connection_add_secondary (<em class="parameter"><code><a class="link"
                                      <em class="parameter"><code>const <span class="type">char</span> *sec_uuid</code></em>);</pre>
 <p>Adds a new secondary connetion UUID to the setting.</p>
 <div class="refsect3">
-<a name="id-1.4.5.8.23.5"></a><h4>Parameters</h4>
+<a name="id-1.4.5.8.24.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1132,10 +1164,9 @@ nm_setting_connection_add_secondary (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.5.8.23.6"></a><h4>Returns</h4>
+<a name="id-1.4.5.8.24.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secondary connection UUID was added; <code class="literal">FALSE</code> if the UUID
 was already present</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1148,7 +1179,7 @@ nm_setting_connection_remove_secondary
 <p>Removes the secondary coonnection UUID at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.5.8.24.5"></a><h4>Parameters</h4>
+<a name="id-1.4.5.8.25.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1180,7 +1211,7 @@ nm_setting_connection_remove_secondary_by_value
 <p>Removes the secondary coonnection UUID <em class="parameter"><code>sec_uuid</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.5.8.25.5"></a><h4>Parameters</h4>
+<a name="id-1.4.5.8.26.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1202,9 +1233,8 @@ nm_setting_connection_remove_secondary_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.5.8.25.6"></a><h4>Returns</h4>
+<a name="id-1.4.5.8.26.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secondary connection UUID was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1214,7 +1244,7 @@ nm_setting_connection_remove_secondary_by_value
 nm_setting_connection_get_gateway_ping_timeout
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.5.8.26.4"></a><h4>Parameters</h4>
+<a name="id-1.4.5.8.27.4"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1229,10 +1259,9 @@ nm_setting_connection_get_gateway_ping_timeout
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.5.8.26.5"></a><h4>Returns</h4>
+<a name="id-1.4.5.8.27.5"></a><h4>Returns</h4>
 <p> the value contained in the <a class="link" href="NMSettingConnection.html#NMSettingConnection--gateway-ping-timeout" title="The “gateway-ping-timeout” property"><span class="type">“gateway-ping-timeout”</span></a>
 property.</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -1242,144 +1271,155 @@ property.</p>
 <a name="NM-SETTING-CONNECTION-SETTING-NAME:CAPS"></a><h3>NM_SETTING_CONNECTION_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_SETTING_NAME "connection"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MIN:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN -999
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MAX:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX 999
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-DEFAULT:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_DEFAULT</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_DEFAULT 0
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-ID:CAPS"></a><h3>NM_SETTING_CONNECTION_ID</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_ID             "id"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-UUID:CAPS"></a><h3>NM_SETTING_CONNECTION_UUID</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_UUID           "uuid"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-INTERFACE-NAME:CAPS"></a><h3>NM_SETTING_CONNECTION_INTERFACE_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_INTERFACE_NAME "interface-name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-TYPE:CAPS"></a><h3>NM_SETTING_CONNECTION_TYPE</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_TYPE           "type"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT    "autoconnect"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY "autoconnect-priority"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-TIMESTAMP:CAPS"></a><h3>NM_SETTING_CONNECTION_TIMESTAMP</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_TIMESTAMP      "timestamp"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-READ-ONLY:CAPS"></a><h3>NM_SETTING_CONNECTION_READ_ONLY</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_READ_ONLY      "read-only"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-PERMISSIONS:CAPS"></a><h3>NM_SETTING_CONNECTION_PERMISSIONS</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_PERMISSIONS    "permissions"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-ZONE:CAPS"></a><h3>NM_SETTING_CONNECTION_ZONE</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_ZONE           "zone"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-MASTER:CAPS"></a><h3>NM_SETTING_CONNECTION_MASTER</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_MASTER         "master"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-SLAVE-TYPE:CAPS"></a><h3>NM_SETTING_CONNECTION_SLAVE_TYPE</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_SLAVE_TYPE     "slave-type"
 </pre>
-<p>
-</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS"></a><h3>NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES</h3>
+<pre class="programlisting">#define NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES "autoconnect-slaves"
+</pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-SECONDARIES:CAPS"></a><h3>NM_SETTING_CONNECTION_SECONDARIES</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_SECONDARIES    "secondaries"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-CONNECTION-GATEWAY-PING-TIMEOUT:CAPS"></a><h3>NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT</h3>
 <pre class="programlisting">#define NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT "gateway-ping-timeout"
 </pre>
-<p>
-</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingConnectionAutoconnectSlaves"></a><h3>enum NMSettingConnectionAutoconnectSlaves</h3>
+<p><a class="link" href="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves" title="enum NMSettingConnectionAutoconnectSlaves"><span class="type">NMSettingConnectionAutoconnectSlaves</span></a> values indicate whether slave connections
+should be activated when master is activated.</p>
+<div class="refsect3">
+<a name="id-1.4.5.9.21.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-DEFAULT:CAPS"></a>NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT</p></td>
+<td class="enum_member_description">
+<p>default value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-NO:CAPS"></a>NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_NO</p></td>
+<td class="enum_member_description">
+<p>slaves are not brought up when
+  master is activated</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-YES:CAPS"></a>NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_YES</p></td>
+<td class="enum_member_description">
+<p>slaves are brought up when
+  master is activated</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -1414,12 +1454,27 @@ The higher number means higher priority.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMSettingConnection--autoconnect-slaves"></a><h3>The <code class="literal">“autoconnect-slaves”</code> property</h3>
+<pre class="programlisting">  “autoconnect-slaves”       <a class="link" href="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves" title="enum NMSettingConnectionAutoconnectSlaves"><span class="type">NMSettingConnectionAutoconnectSlaves</span></a></pre>
+<p>Whether or not slaves of this connection should be automatically brought up
+when NetworkManager activates this connection. This only has a real effect
+for master connections.
+The permitted values are: 0: leave slave connections untouched,
+1: activate all the slave connections with this connection, -1: default.
+If -1 (default) is set, global connection.autoconnect-slaves is read to
+determine the real value. If it is default as well, this fallbacks to 0.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES_DEFAULT</p>
+<p class="since">Since: 1.0.4</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NMSettingConnection--gateway-ping-timeout"></a><h3>The <code class="literal">“gateway-ping-timeout”</code> property</h3>
 <pre class="programlisting">  “gateway-ping-timeout”     <span class="type">guint</span></pre>
 <p>If greater than zero, delay success of IP addressing until either the
 timeout is reached, or an IP gateway replies to a ping.</p>
 <p>Flags: Read / Write / Construct</p>
-<p>Allowed values: &lt;= 30</p>
+<p>Allowed values: &lt;= 600</p>
 <p>Default value: 0</p>
 </div>
 <hr>
@@ -1557,7 +1612,6 @@ firewall.</p>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

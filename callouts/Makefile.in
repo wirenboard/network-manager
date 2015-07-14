@@ -132,8 +132,7 @@ am_libtest_dispatcher_envp_la_OBJECTS =  \
 libtest_dispatcher_envp_la_OBJECTS =  \
 	$(am_libtest_dispatcher_envp_la_OBJECTS)
 am__installdirs = "$(DESTDIR)$(libexecdir)" \
-	"$(DESTDIR)$(dbusactivationdir)" "$(DESTDIR)$(dbusservicedir)" \
-	"$(DESTDIR)$(udevrulesdir)"
+	"$(DESTDIR)$(dbusactivationdir)" "$(DESTDIR)$(dbusservicedir)"
 PROGRAMS = $(libexec_PROGRAMS)
 am_nm_avahi_autoipd_action_OBJECTS =  \
 	nm-avahi-autoipd-action.$(OBJEXT)
@@ -225,7 +224,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-DATA = $(dbusactivation_DATA) $(dbusservice_DATA) $(udevrules_DATA)
+DATA = $(dbusactivation_DATA) $(dbusservice_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -286,6 +285,7 @@ ACLOCAL = @ACLOCAL@
 ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+AM_TESTS_FD_REDIRECT = @AM_TESTS_FD_REDIRECT@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -399,6 +399,7 @@ LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
@@ -607,8 +608,6 @@ libtest_dispatcher_envp_la_LIBADD = \
 	$(top_builddir)/libnm/libnm.la \
 	$(GLIB_LIBS)
 
-@WITH_UDEV_DIR_TRUE@udevrulesdir = $(UDEV_DIR)/rules.d
-@WITH_UDEV_DIR_TRUE@udevrules_DATA = 77-nm-olpc-mesh.rules
 dbusactivationdir = $(datadir)/dbus-1/system-services
 dbusactivation_in_files = org.freedesktop.nm_dispatcher.service.in
 dbusactivation_DATA = $(dbusactivation_in_files:.service.in=.service)
@@ -622,7 +621,6 @@ dispatcherdir = $(sysconfdir)/NetworkManager/dispatcher.d
 CLEANFILES = $(nodist_libnmdbus_dispatcher_la_SOURCES) $(dbusactivation_DATA)
 EXTRA_DIST = \
 	$(dbusservice_DATA) \
-	$(udevrules_DATA) \
 	$(dbusactivation_in_files) \
 	nm-dispatcher.xml
 
@@ -829,27 +827,6 @@ uninstall-dbusserviceDATA:
 	@list='$(dbusservice_DATA)'; test -n "$(dbusservicedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(dbusservicedir)'; $(am__uninstall_files_from_dir)
-install-udevrulesDATA: $(udevrules_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(udevrules_DATA)'; test -n "$(udevrulesdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(udevrulesdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(udevrulesdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(udevrulesdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(udevrulesdir)" || exit $$?; \
-	done
-
-uninstall-udevrulesDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(udevrules_DATA)'; test -n "$(udevrulesdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(udevrulesdir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -1011,7 +988,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(dbusactivationdir)" "$(DESTDIR)$(dbusservicedir)" "$(DESTDIR)$(udevrulesdir)"; do \
+	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(dbusactivationdir)" "$(DESTDIR)$(dbusservicedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1070,8 +1047,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dbusactivationDATA install-dbusserviceDATA \
-	install-udevrulesDATA
+install-data-am: install-dbusactivationDATA install-dbusserviceDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-recursive
@@ -1119,7 +1095,7 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-dbusactivationDATA uninstall-dbusserviceDATA \
-	uninstall-libexecPROGRAMS uninstall-udevrulesDATA
+	uninstall-libexecPROGRAMS
 
 .MAKE: $(am__recursive_targets) all check install install-am \
 	install-data-am install-strip
@@ -1135,13 +1111,13 @@ uninstall-am: uninstall-dbusactivationDATA uninstall-dbusserviceDATA \
 	install-exec install-exec-am install-html install-html-am \
 	install-info install-info-am install-libexecPROGRAMS \
 	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip install-udevrulesDATA installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am \
 	uninstall-dbusactivationDATA uninstall-dbusserviceDATA \
-	uninstall-libexecPROGRAMS uninstall-udevrulesDATA
+	uninstall-libexecPROGRAMS
 
 .PRECIOUS: Makefile
 

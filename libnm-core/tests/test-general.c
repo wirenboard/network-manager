@@ -19,6 +19,8 @@
  *
  */
 
+#define NM_GLIB_COMPAT_H_TEST
+
 #include "config.h"
 
 #include <glib.h>
@@ -57,6 +59,7 @@
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
 #include "nm-simple-connection.h"
+#include "nm-glib-compat.h"
 
 #include "nm-test-utils.h"
 
@@ -1963,6 +1966,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_CONNECTION_ZONE,                 NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_MASTER,               NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_SLAVE_TYPE,           NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES,   NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_SECONDARIES,          NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NULL, NM_SETTING_DIFF_RESULT_UNKNOWN }
@@ -4038,6 +4042,410 @@ test_nm_utils_uuid_generate_from_string (void)
 	_test_uuid (NM_UTILS_UUID_TYPE_VARIANT3, "002a0ada-f547-375a-bab5-896a11d1927e", "a\0b", 3, UUID_NS_DNS);
 }
 
+/*******************************************/
+
+static void
+__test_uuid (const char *expected_uuid, const char *str, gssize slen, char *uuid_test)
+{
+	g_assert (uuid_test);
+	g_assert (nm_utils_is_uuid (uuid_test));
+
+	if (strcmp (uuid_test, expected_uuid)) {
+		g_error ("UUID test failed (1): text=%s, len=%lld, expected=%s, uuid_test=%s",
+		         str, (long long) slen, expected_uuid, uuid_test);
+	}
+	g_free (uuid_test);
+
+	uuid_test = nm_utils_uuid_generate_from_string (str, slen, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
+
+	g_assert (uuid_test);
+	g_assert (nm_utils_is_uuid (uuid_test));
+
+	if (strcmp (uuid_test, expected_uuid)) {
+		g_error ("UUID test failed (2): text=%s; len=%lld, expected=%s, uuid2=%s",
+		         str, (long long) slen, expected_uuid, uuid_test);
+	}
+	g_free (uuid_test);
+}
+
+#define _test_uuid(expected_uuid, str, strlen, ...) __test_uuid (expected_uuid, str, strlen, _nm_utils_uuid_generate_from_strings(__VA_ARGS__, NULL))
+
+static void
+test_nm_utils_uuid_generate_from_strings (void)
+{
+	_test_uuid ("b07c334a-399b-32de-8d50-58e4e08f98e3", "",         0, NULL);
+	_test_uuid ("b8a426cb-bcb5-30a3-bd8f-6786fea72df9", "\0",       1, "");
+	_test_uuid ("12a4a982-7aae-39e1-951e-41aeb1250959", "a\0",      2, "a");
+	_test_uuid ("69e22c7e-f89f-3a43-b239-1cb52ed8db69", "aa\0",     3, "aa");
+	_test_uuid ("59829fd3-5ad5-3d90-a7b0-4911747e4088", "\0\0",     2, "",   "");
+	_test_uuid ("01ad0e06-6c50-3384-8d86-ddab81421425", "a\0\0",    3, "a",  "");
+	_test_uuid ("e1ed8647-9ed3-3ec8-8c6d-e8204524d71d", "aa\0\0",   4, "aa", "");
+	_test_uuid ("fb1c7cd6-275c-3489-9382-83b900da8af0", "\0a\0",    3, "",   "a");
+	_test_uuid ("5d79494e-c4ba-31a6-80a2-d6016ccd7e17", "a\0a\0",   4, "a",  "a");
+	_test_uuid ("fd698d86-1b60-3ebe-855f-7aada9950a8d", "aa\0a\0",  5, "aa", "a");
+	_test_uuid ("8c573b48-0f01-30ba-bb94-c5f59f4fe517", "\0aa\0",   4, "",   "aa");
+	_test_uuid ("2bdd3d46-eb83-3c53-a41b-a724d04b5544", "a\0aa\0",  5, "a",  "aa");
+	_test_uuid ("13d4b780-07c1-3ba7-b449-81c4844ef039", "aa\0aa\0", 6, "aa", "aa");
+	_test_uuid ("dd265bf7-c05a-3037-9939-b9629858a477", "a\0b\0",   4, "a",  "b");
+}
+
+/******************************************************************************/
+
+static void
+test_nm_utils_ascii_str_to_int64_check (const char *str, guint base, gint64 min,
+                                        gint64 max, gint64 fallback, int exp_errno,
+                                        gint64 exp_val)
+{
+	gint64 v;
+
+	errno = 1;
+	v = _nm_utils_ascii_str_to_int64 (str, base, min, max, fallback);
+	g_assert_cmpint (errno, ==, exp_errno);
+	g_assert_cmpint (v, ==, exp_val);
+}
+
+static void
+test_nm_utils_ascii_str_to_int64_do (const char *str, guint base, gint64 min,
+                                     gint64 max, gint64 fallback, int exp_errno,
+                                     gint64 exp_val)
+{
+	const char *sign = "";
+	const char *val;
+	static const char *whitespaces[] = {
+		"",
+		" ",
+		"\r\n\t",
+		" \r\n\t ",
+		" \r\n\t \t\r\n\t",
+		NULL,
+	};
+	static const char *nulls[] = {
+		"",
+		"0",
+		"00",
+		"0000",
+		"0000000000000000",
+		"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+		"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+		NULL,
+	};
+	const char **ws_pre, **ws_post, **null;
+	guint i;
+
+	if (str == NULL || exp_errno != 0) {
+		test_nm_utils_ascii_str_to_int64_check (str, base, min, max, fallback, exp_errno, exp_val);
+		return;
+	}
+
+	if (strncmp (str, "-", 1) == 0)
+		sign = "-";
+
+	val = str + strlen (sign);
+
+	for (ws_pre = whitespaces; *ws_pre; ws_pre++) {
+		for (ws_post = whitespaces; *ws_post; ws_post++) {
+			for (null = nulls; *null; null++) {
+				for (i = 0; ; i++) {
+					char *s;
+					const char *str_base = "";
+
+					if (base == 16) {
+						if (i == 1)
+							str_base = "0x";
+						else if (i > 1)
+							break;
+					} else if (base == 8) {
+						if (i == 1)
+							str_base = "0";
+						else if (i > 1)
+							break;
+					} else if (base == 0) {
+						if (i > 0)
+							break;
+						/* with base==0, a leading zero would be interpreted as octal. Only test without *null */
+						if ((*null)[0])
+							break;
+					} else {
+						if (i > 0)
+							break;
+					}
+
+					s = g_strdup_printf ("%s%s%s%s%s%s", *ws_pre, sign, str_base, *null, val, *ws_post);
+
+					test_nm_utils_ascii_str_to_int64_check (s, base, min, max, fallback, exp_errno, exp_val);
+					g_free (s);
+				}
+			}
+		}
+	}
+}
+
+static void
+test_nm_utils_ascii_str_to_int64 (void)
+{
+	test_nm_utils_ascii_str_to_int64_do (NULL, 10, 0, 10000, -1, EINVAL, -1);
+	test_nm_utils_ascii_str_to_int64_do ("", 10, 0, 10000, -1, EINVAL, -1);
+	test_nm_utils_ascii_str_to_int64_do ("1x", 10, 0, 10000, -1, EINVAL, -1);
+	test_nm_utils_ascii_str_to_int64_do ("4711", 10, 0, 10000, -1, 0, 4711);
+	test_nm_utils_ascii_str_to_int64_do ("10000", 10, 0, 10000, -1, 0, 10000);
+	test_nm_utils_ascii_str_to_int64_do ("10001", 10, 0, 10000, -1, ERANGE, -1);
+	test_nm_utils_ascii_str_to_int64_do ("FF", 16, 0, 10000, -1, 0, 255);
+	test_nm_utils_ascii_str_to_int64_do ("FF", 10, 0, 10000, -2, EINVAL, -2);
+	test_nm_utils_ascii_str_to_int64_do ("9223372036854775807", 10, 0, G_MAXINT64, -2, 0, G_MAXINT64);
+	test_nm_utils_ascii_str_to_int64_do ("7FFFFFFFFFFFFFFF", 16, 0, G_MAXINT64, -2, 0, G_MAXINT64);
+	test_nm_utils_ascii_str_to_int64_do ("9223372036854775808", 10, 0, G_MAXINT64, -2, ERANGE, -2);
+	test_nm_utils_ascii_str_to_int64_do ("-9223372036854775808", 10, G_MININT64, 0, -2, 0, G_MININT64);
+	test_nm_utils_ascii_str_to_int64_do ("-9223372036854775808", 10, G_MININT64+1, 0, -2, ERANGE, -2);
+	test_nm_utils_ascii_str_to_int64_do ("-9223372036854775809", 10, G_MININT64, 0, -2, ERANGE, -2);
+	test_nm_utils_ascii_str_to_int64_do ("1.0", 10, 1, 1, -1, EINVAL, -1);
+	test_nm_utils_ascii_str_to_int64_do ("1x0", 16, -10, 10, -100, EINVAL, -100);
+	test_nm_utils_ascii_str_to_int64_do ("0", 16, -10, 10, -100, 0, 0);
+	test_nm_utils_ascii_str_to_int64_do ("10001111", 2, -1000, 1000, -100000, 0, 0x8F);
+	test_nm_utils_ascii_str_to_int64_do ("-10001111", 2, -1000, 1000, -100000, 0, -0x8F);
+	test_nm_utils_ascii_str_to_int64_do ("1111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7F);
+	test_nm_utils_ascii_str_to_int64_do ("111111111111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFF);
+	test_nm_utils_ascii_str_to_int64_do ("11111111111111111111111111111111111111111111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFFFFFFFFFF);
+	test_nm_utils_ascii_str_to_int64_do ("111111111111111111111111111111111111111111111111111111111111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFFFFFFFFFFFFFF);
+	test_nm_utils_ascii_str_to_int64_do ("100000000000000000000000000000000000000000000000000000000000000", 2, G_MININT64, G_MAXINT64, -1, 0,  0x4000000000000000);
+	test_nm_utils_ascii_str_to_int64_do ("1000000000000000000000000000000000000000000000000000000000000000", 2, G_MININT64, G_MAXINT64, -1, ERANGE, -1);
+	test_nm_utils_ascii_str_to_int64_do ("-100000000000000000000000000000000000000000000000000000000000000", 2, G_MININT64, G_MAXINT64, -1, 0,  -0x4000000000000000);
+	test_nm_utils_ascii_str_to_int64_do ("111111111111111111111111111111111111111111111111111111111111111",  2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFFFFFFFFFFFFFF);
+	test_nm_utils_ascii_str_to_int64_do ("-100000000000000000000000000000000000000000000000000000000000000",  2, G_MININT64, G_MAXINT64, -1, 0,  -0x4000000000000000);
+	test_nm_utils_ascii_str_to_int64_do ("0x70",  10, G_MININT64, G_MAXINT64, -1, EINVAL, -1);
+	test_nm_utils_ascii_str_to_int64_do ("4711",  0, G_MININT64, G_MAXINT64, -1, 0, 4711);
+	test_nm_utils_ascii_str_to_int64_do ("04711",  0, G_MININT64, G_MAXINT64, -1, 0, 04711);
+	test_nm_utils_ascii_str_to_int64_do ("0x4711",  0, G_MININT64, G_MAXINT64, -1, 0, 0x4711);
+	test_nm_utils_ascii_str_to_int64_do ("080",  0, G_MININT64, G_MAXINT64, -1, EINVAL, -1);
+	test_nm_utils_ascii_str_to_int64_do ("070",  0, G_MININT64, G_MAXINT64, -1, 0, 7*8);
+	test_nm_utils_ascii_str_to_int64_do ("0x70",  0, G_MININT64, G_MAXINT64, -1, 0, 0x70);
+}
+
+/******************************************************************************/
+
+enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED {
+	_DUMMY_1 = -1,
+};
+
+enum TEST_IS_POWER_OF_TWP_ENUM_UNSIGNED {
+	_DUMMY_2,
+};
+
+enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED_64 {
+	_DUMMY_3 = (1LL << 40),
+};
+
+enum TEST_IS_POWER_OF_TWP_ENUM_UNSIGNED_64 {
+	_DUMMY_4a = -1,
+	_DUMMY_4b = (1LL << 40),
+};
+
+#define test_nm_utils_is_power_of_two_do(type, x, expect) \
+	G_STMT_START { \
+		typeof (x) x1 = (x); \
+		type x2 = (type) x1; \
+		\
+		if (((typeof (x1)) x2) == x1 && (x2 > 0 || x2 == 0)) { \
+			/* x2 equals @x, and is positive. Compare to @expect */ \
+			g_assert_cmpint (expect, ==, nm_utils_is_power_of_two (x2)); \
+		} else if (!(x2 > 0) && !(x2 == 0)) { \
+			/* a (signed) negative value is always FALSE. */ \
+			g_assert_cmpint (FALSE, ==, nm_utils_is_power_of_two (x2));\
+		} \
+		g_assert_cmpint (expect, ==, nm_utils_is_power_of_two (x1)); \
+	} G_STMT_END
+
+static void
+test_nm_utils_is_power_of_two (void)
+{
+	guint64 xyes, xno;
+	gint i, j;
+	GRand *rand = nmtst_get_rand ();
+	int numbits;
+
+	for (i = -1; i < 64; i++) {
+
+		/* find a (positive) x which is a power of two. */
+		if (i == -1)
+			xyes = 0;
+		else {
+			xyes = (1LL << i);
+			g_assert (xyes != 0);
+		}
+
+		xno = xyes;
+		if (xyes != 0) {
+again:
+			/* Find another @xno, that is not a power of two. Do that,
+			 * by randomly setting bits. */
+			numbits = g_rand_int_range (rand, 1, 65);
+			while (xno != ~((guint64) 0) && numbits > 0) {
+				guint64 v = (1LL << g_rand_int_range (rand, 0, 65));
+
+				if ((xno | v) != xno) {
+					xno |= v;
+					--numbits;
+				}
+			}
+			if (xno == xyes)
+				goto again;
+		}
+
+		for (j = 0; j < 2; j++) {
+			gboolean expect = j == 0;
+			guint64 x = expect ? xyes : xno;
+
+			if (!expect && xno == 0)
+				continue;
+
+			/* check if @x is as @expect, when casted to a certain data type. */
+			test_nm_utils_is_power_of_two_do (gint8, x, expect);
+			test_nm_utils_is_power_of_two_do (guint8, x, expect);
+			test_nm_utils_is_power_of_two_do (gint16, x, expect);
+			test_nm_utils_is_power_of_two_do (guint16, x, expect);
+			test_nm_utils_is_power_of_two_do (gint32, x, expect);
+			test_nm_utils_is_power_of_two_do (guint32, x, expect);
+			test_nm_utils_is_power_of_two_do (gint64, x, expect);
+			test_nm_utils_is_power_of_two_do (guint64, x, expect);
+			test_nm_utils_is_power_of_two_do (char, x, expect);
+			test_nm_utils_is_power_of_two_do (unsigned char, x, expect);
+			test_nm_utils_is_power_of_two_do (signed char, x, expect);
+			test_nm_utils_is_power_of_two_do (enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED, x, expect);
+			test_nm_utils_is_power_of_two_do (enum TEST_IS_POWER_OF_TWP_ENUM_UNSIGNED, x, expect);
+			test_nm_utils_is_power_of_two_do (enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED_64, x, expect);
+			test_nm_utils_is_power_of_two_do (enum TEST_IS_POWER_OF_TWP_ENUM_UNSIGNED_64, x, expect);
+		}
+	}
+}
+
+/******************************************************************************/
+
+static void
+test_g_ptr_array_insert (void)
+{
+	/* this test only makes sense on a recent glib, where we compare our compat
+	 * with the original implementation. */
+#if GLIB_CHECK_VERSION(2, 40, 0)
+	gs_unref_ptrarray GPtrArray *arr1 = g_ptr_array_new ();
+	gs_unref_ptrarray GPtrArray *arr2 = g_ptr_array_new ();
+	GRand *rand = nmtst_get_rand ();
+	guint i;
+
+	for (i = 0; i < 560; i++) {
+		gint32 idx = g_rand_int_range (rand, -1, arr1->len + 1);
+
+		g_ptr_array_insert (arr1, idx, GINT_TO_POINTER (i));
+		_nm_g_ptr_array_insert (arr2, idx, GINT_TO_POINTER (i));
+
+		g_assert_cmpint (arr1->len, ==, arr2->len);
+		g_assert (memcmp (arr1->pdata, arr2->pdata, arr1->len * sizeof (gpointer)) == 0);
+	}
+#endif
+}
+
+/******************************************************************************/
+
+static int
+_test_find_binary_search_cmp (gconstpointer a, gconstpointer b, gpointer dummy)
+{
+	int ia, ib;
+
+	ia = GPOINTER_TO_INT (a);
+	ib = GPOINTER_TO_INT (b);
+
+	if (ia == ib)
+		return 0;
+	if (ia < ib)
+		return -1;
+	return 1;
+}
+
+static void
+_test_find_binary_search_do (const int *array, gsize len)
+{
+	gsize i;
+	gssize idx;
+	gs_free gpointer *parray = g_new (gpointer, len);
+	const int needle = 0;
+	gpointer pneedle = GINT_TO_POINTER (needle);
+	gssize expected_result;
+
+	for (i = 0; i < len; i++)
+		parray[i] = GINT_TO_POINTER (array[i]);
+
+	expected_result = _nm_utils_ptrarray_find_first (parray, len, pneedle);
+
+	idx = _nm_utils_ptrarray_find_binary_search (parray, len, pneedle, _test_find_binary_search_cmp, NULL);
+	if (expected_result >= 0)
+		g_assert_cmpint (expected_result, ==, idx);
+	else {
+		gssize idx2 = ~idx;
+		g_assert_cmpint (idx, <, 0);
+
+		g_assert (idx2 >= 0);
+		g_assert (idx2 <= len);
+		g_assert (idx2 - 1 < 0 || _test_find_binary_search_cmp (parray[idx2 - 1], pneedle, NULL) < 0);
+		g_assert (idx2 >= len || _test_find_binary_search_cmp (parray[idx2], pneedle, NULL) > 0);
+	}
+	for (i = 0; i < len; i++) {
+		int cmp;
+
+		cmp = _test_find_binary_search_cmp (parray[i], pneedle, NULL);
+		if (cmp == 0) {
+			g_assert (pneedle == parray[i]);
+			g_assert (idx >= 0);
+			g_assert (i == idx);
+		} else {
+			g_assert (pneedle != parray[i]);
+			if (cmp < 0) {
+				if (idx < 0)
+					g_assert (i < ~idx);
+				else
+					g_assert (i < idx);
+			} else {
+				if (idx < 0)
+					g_assert (i >= ~idx);
+				else
+					g_assert (i >= idx);
+			}
+		}
+	}
+}
+#define test_find_binary_search_do(...) \
+	G_STMT_START { \
+		const int _array[] = { __VA_ARGS__ } ; \
+		_test_find_binary_search_do (_array, G_N_ELEMENTS (_array)); \
+	} G_STMT_END
+
+static void
+test_nm_utils_ptrarray_find_binary_search (void)
+{
+#define _NOT(idx) (~ ((gssize) (idx)))
+	test_find_binary_search_do (            0);
+	test_find_binary_search_do (        -1, 0);
+	test_find_binary_search_do (    -2, -1, 0);
+	test_find_binary_search_do (-3, -2, -1, 0);
+	test_find_binary_search_do (            0, 1);
+	test_find_binary_search_do (            0, 1, 2);
+	test_find_binary_search_do (        -1, 0, 1, 2);
+	test_find_binary_search_do (    -2, -1, 0, 1, 2);
+	test_find_binary_search_do (-3, -2, -1, 0, 1, 2);
+	test_find_binary_search_do (-3, -2, -1, 0, 1, 2);
+	test_find_binary_search_do (-3, -2, -1, 0, 1, 2, 3);
+	test_find_binary_search_do (-3, -2, -1, 0, 1, 2, 3, 4);
+
+	test_find_binary_search_do (        -1);
+	test_find_binary_search_do (    -2, -1);
+	test_find_binary_search_do (-3, -2, -1);
+	test_find_binary_search_do (            1);
+	test_find_binary_search_do (            1, 2);
+	test_find_binary_search_do (        -1, 1, 2);
+	test_find_binary_search_do (    -2, -1, 1, 2);
+	test_find_binary_search_do (-3, -2, -1, 1, 2);
+	test_find_binary_search_do (-3, -2, -1, 1, 2);
+	test_find_binary_search_do (-3, -2, -1, 1, 2, 3);
+	test_find_binary_search_do (-3, -2, -1, 1, 2, 3, 4);
+}
+
 /******************************************************************************/
 
 NMTST_DEFINE ();
@@ -4137,6 +4545,12 @@ int main (int argc, char **argv)
 
 	g_test_add_func ("/core/general/hexstr2bin", test_hexstr2bin);
 	g_test_add_func ("/core/general/test_nm_utils_uuid_generate_from_string", test_nm_utils_uuid_generate_from_string);
+	g_test_add_func ("/core/general/_nm_utils_uuid_generate_from_strings", test_nm_utils_uuid_generate_from_strings);
+
+	g_test_add_func ("/core/general/_nm_utils_ascii_str_to_int64", test_nm_utils_ascii_str_to_int64);
+	g_test_add_func ("/core/general/nm_utils_is_power_of_two", test_nm_utils_is_power_of_two);
+	g_test_add_func ("/core/general/_glib_compat_g_ptr_array_insert", test_g_ptr_array_insert);
+	g_test_add_func ("/core/general/_nm_utils_ptrarray_find_binary_search", test_nm_utils_ptrarray_find_binary_search);
 
 	return g_test_run ();
 }

@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMConnection</title>
+<title>NMConnection: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="ch01.html" title="libnm-util API Reference">
 <link rel="next" href="NMSetting.html" title="NMSetting">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -633,7 +633,6 @@ nm_connection_error_quark (<em class="parameter"><code><span class="type">void</
 <div class="refsect3">
 <a name="id-1.2.2.10.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -645,7 +644,6 @@ nm_connection_new (<em class="parameter"><code><span class="type">void</span></c
 <div class="refsect3">
 <a name="id-1.2.2.10.3.5"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> object</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -684,7 +682,6 @@ the connection. </p></td>
 <p> the new <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> object, populated with settings created
 from the values in the hash table, or <code class="literal">NULL</code> if the connection failed to
 validate</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -918,7 +915,6 @@ nm_connection_replace_settings (<em class="parameter"><code><a class="link" href
 <a name="id-1.2.2.10.11.5"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the settings were valid and added to the connection, <code class="literal">FALSE</code>
 if they were not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -965,9 +961,8 @@ with</p></td>
 <a name="id-1.2.2.10.12.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the settings were valid and added to the connection, <code class="literal">FALSE</code>
 if they were not</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1009,7 +1004,6 @@ each flag's behavior.</p>
 <div class="refsect3">
 <a name="id-1.2.2.10.13.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the comparison succeeds, <code class="literal">FALSE</code> if it does not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1065,7 +1059,6 @@ differ mapped to one or more of <a class="link" href="NMSetting.html#NMSettingDi
 <a name="id-1.2.2.10.14.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connections contain the same values, <code class="literal">FALSE</code> if they do
 not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1108,7 +1101,6 @@ setting and which property failed validation, and how it failed validation.</p>
 <div class="refsect3">
 <a name="id-1.2.2.10.15.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is valid, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1167,9 +1159,8 @@ why the connection is invalid, if the function returns an error.</p></td>
 <div class="refsect3">
 <a name="id-1.2.2.10.16.7"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is valid, <code class="literal">FALSE</code> if it is not</p>
-<p></p>
 </div>
-<p class="since">Since 1.0</p>
+<p class="since">Since: 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1212,7 +1203,6 @@ elements. </p></td>
 <a name="id-1.2.2.10.17.6"></a><h4>Returns</h4>
 <p> the setting name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object which has invalid or
 missing secrets</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1332,7 +1322,6 @@ string:<span class="type">GValue</span> of setting property names and secrets of
 <a name="id-1.2.2.10.20.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secrets were successfully updated, <code class="literal">FALSE</code> if the update
 failed (tried to update secrets for a setting that doesn't exist, etc)</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1393,7 +1382,6 @@ nm_connection_get_path (<em class="parameter"><code><a class="link" href="NMConn
 <a name="id-1.2.2.10.22.6"></a><h4>Returns</h4>
 <p> the D-Bus path of the connection, previously set by a call to
 <a class="link" href="NMConnection.html#nm-connection-set-path" title="nm_connection_set_path ()"><code class="function">nm_connection_set_path()</code></a>.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1423,7 +1411,6 @@ connection types, this function will return <code class="literal">NULL</code>.</
 <div class="refsect3">
 <a name="id-1.2.2.10.23.6"></a><h4>Returns</h4>
 <p> Name of the kernel interface or <code class="literal">NULL</code></p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1454,9 +1441,8 @@ NetworkManager, this is the name of the created interface.</p>
 <div class="refsect3">
 <a name="id-1.2.2.10.24.7"></a><h4>Returns</h4>
 <p> Name of the kernel interface or <code class="literal">NULL</code></p>
-<p></p>
 </div>
-<p class="since">Since 1.0</p>
+<p class="since">Since: 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1496,7 +1482,6 @@ property of the connection and matches that against <em class="parameter"><code>
 <a name="id-1.2.2.10.25.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is of the given <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if not</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1628,7 +1613,6 @@ nm_connection_lookup_setting_type (<em class="parameter"><code>const <span class
 <div class="refsect3">
 <a name="id-1.2.2.10.29.6"></a><h4>Returns</h4>
 <p> the <span class="type">GType</span> of the setting's class</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1657,7 +1641,6 @@ Useful for figuring out which setting a returned error is for.</p>
 <div class="refsect3">
 <a name="id-1.2.2.10.30.6"></a><h4>Returns</h4>
 <p> the <span class="type">GType</span> of the setting's class</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1684,7 +1667,6 @@ nm_connection_get_uuid (<em class="parameter"><code><a class="link" href="NMConn
 <div class="refsect3">
 <a name="id-1.2.2.10.31.6"></a><h4>Returns</h4>
 <p> the UUID from the connection's 'connection' setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1711,7 +1693,6 @@ nm_connection_get_id (<em class="parameter"><code><a class="link" href="NMConnec
 <div class="refsect3">
 <a name="id-1.2.2.10.32.6"></a><h4>Returns</h4>
 <p> the ID from the connection's 'connection' setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -1738,9 +1719,8 @@ nm_connection_get_connection_type (<em class="parameter"><code><a class="link" h
 <div class="refsect3">
 <a name="id-1.2.2.10.33.6"></a><h4>Returns</h4>
 <p> the type from the connection's 'connection' setting</p>
-<p></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1775,7 +1755,7 @@ or <code class="literal">NULL</code> if <em class="parameter"><code>connection</
 is not a virtual connection type. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1884,7 +1864,7 @@ nm_connection_get_setting_team (<em class="parameter"><code><a class="link" href
 <p> an <a class="link" href="NMSettingTeam.html" title="NMSettingTeam"><span class="type">NMSettingTeam</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1912,7 +1892,7 @@ nm_connection_get_setting_team_port (<em class="parameter"><code><a class="link"
 <p> an <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort"><span class="type">NMSettingTeamPort</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2048,7 +2028,7 @@ nm_connection_get_setting_dcb (<em class="parameter"><code><a class="link" href=
 <p> an <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> if the connection contains one, otherwise NULL. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2076,7 +2056,7 @@ nm_connection_get_setting_generic (<em class="parameter"><code><a class="link" h
 <p> an <a class="link" href="NMSettingGeneric.html" title="NMSettingGeneric"><span class="type">NMSettingGeneric</span></a> if the connection contains one, otherwise NULL. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2491,32 +2471,24 @@ nm_connection_get_setting_vlan (<em class="parameter"><code><a class="link" href
 <a name="NM-CONNECTION-SECRETS-UPDATED:CAPS"></a><h3>NM_CONNECTION_SECRETS_UPDATED</h3>
 <pre class="programlisting">#define NM_CONNECTION_SECRETS_UPDATED "secrets-updated"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-SECRETS-CLEARED:CAPS"></a><h3>NM_CONNECTION_SECRETS_CLEARED</h3>
 <pre class="programlisting">#define NM_CONNECTION_SECRETS_CLEARED "secrets-cleared"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-CHANGED:CAPS"></a><h3>NM_CONNECTION_CHANGED</h3>
 <pre class="programlisting">#define NM_CONNECTION_CHANGED         "changed"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-PATH:CAPS"></a><h3>NM_CONNECTION_PATH</h3>
 <pre class="programlisting">#define NM_CONNECTION_PATH "path"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2582,16 +2554,12 @@ nm_connection_get_setting_vlan (<em class="parameter"><code><a class="link" href
 <a name="NM-CONNECTION-NORMALIZE-PARAM-IP6-CONFIG-METHOD:CAPS"></a><h3>NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD</h3>
 <pre class="programlisting">#define NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD "ip6-config-method"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-CONNECTION-ERROR:CAPS"></a><h3>NM_CONNECTION_ERROR</h3>
 <pre class="programlisting">#define NM_CONNECTION_ERROR nm_connection_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2645,7 +2613,7 @@ or when settings are added or removed.</p>
 </table></div>
 </div>
 <p>Flags: Run First</p>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2721,7 +2689,6 @@ updated</p></td>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

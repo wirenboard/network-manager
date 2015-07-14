@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-glib Reference Manual: NMDeviceVlan</title>
+<title>NMDeviceVlan: libnm-glib Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMDeviceInfiniband.html" title="NMDeviceInfiniband">
 <link rel="next" href="NMDeviceOlpcMesh.html" title="NMDeviceOlpcMesh">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -170,8 +170,6 @@
 </div>
 <div class="refsect1">
 <a name="NMDeviceVlan.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMDeviceVlan.functions_details"></a><h2>Functions</h2>
@@ -183,7 +181,6 @@ nm_device_vlan_error_quark (<em class="parameter"><code><span class="type">void<
 <div class="refsect3">
 <a name="id-1.3.16.8.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMDeviceVlan.html" title="NMDeviceVlan"><span class="type">NMDeviceVlan</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -246,7 +243,6 @@ nm_device_vlan_get_hw_address (<em class="parameter"><code><a class="link" href=
 <a name="id-1.3.16.8.4.6"></a><h4>Returns</h4>
 <p> the hardware address. This is the internal string used by the
 device, and must not be modified.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -273,7 +269,6 @@ nm_device_vlan_get_carrier (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.3.16.8.5.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device has carrier</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -301,7 +296,7 @@ nm_device_vlan_get_parent (<em class="parameter"><code><a class="link" href="NMD
 <p> the device's parent device. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
-<p class="since">Since 1.0</p>
+<p class="since">Since: 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -326,7 +321,6 @@ nm_device_vlan_get_vlan_id (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.3.16.8.7.5"></a><h4>Returns</h4>
 <p> the device's VLAN ID</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -394,40 +388,30 @@ nm_device_vlan_get_vlan_id (<em class="parameter"><code><a class="link" href="NM
 <a name="NM-DEVICE-VLAN-ERROR:CAPS"></a><h3>NM_DEVICE_VLAN_ERROR</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_ERROR nm_device_vlan_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-VLAN-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_VLAN_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_HW_ADDRESS  "hw-address"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-VLAN-CARRIER:CAPS"></a><h3>NM_DEVICE_VLAN_CARRIER</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_CARRIER     "carrier"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-VLAN-PARENT:CAPS"></a><h3>NM_DEVICE_VLAN_PARENT</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_PARENT      "parent"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-VLAN-VLAN-ID:CAPS"></a><h3>NM_DEVICE_VLAN_VLAN_ID</h3>
 <pre class="programlisting">#define NM_DEVICE_VLAN_VLAN_ID     "vlan-id"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -435,7 +419,7 @@ nm_device_vlan_get_vlan_id (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect2">
 <a name="NMDeviceVlan--carrier"></a><h3>The <code class="literal">“carrier”</code> property</h3>
 <pre class="programlisting">  “carrier”                  <span class="type">gboolean</span></pre>
-<p></p>
+<p>Whether the device has carrier.</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
 </div>
@@ -443,7 +427,7 @@ nm_device_vlan_get_vlan_id (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect2">
 <a name="NMDeviceVlan--hw-address"></a><h3>The <code class="literal">“hw-address”</code> property</h3>
 <pre class="programlisting">  “hw-address”               <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The hardware (MAC) address of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -451,15 +435,15 @@ nm_device_vlan_get_vlan_id (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect2">
 <a name="NMDeviceVlan--parent"></a><h3>The <code class="literal">“parent”</code> property</h3>
 <pre class="programlisting">  “parent”                   <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *</pre>
-<p></p>
+<p>The devices's parent device.</p>
 <p>Flags: Read</p>
-<p class="since">Since 1.0</p>
+<p class="since">Since: 1.0</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMDeviceVlan--vlan-id"></a><h3>The <code class="literal">“vlan-id”</code> property</h3>
 <pre class="programlisting">  “vlan-id”                  <span class="type">guint</span></pre>
-<p></p>
+<p>The device's VLAN ID.</p>
 <p>Flags: Read</p>
 <p>Allowed values: &lt;= 4095</p>
 <p>Default value: 0</p>
@@ -467,7 +451,6 @@ nm_device_vlan_get_vlan_id (<em class="parameter"><code><a class="link" href="NM
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

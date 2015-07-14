@@ -398,6 +398,8 @@ If <ID> is ambiguous, a keyword \fIid\fP, \fIuuid\fP, \fIpath\fP or
 \fIapath\fP can be used.
 .br
 See \fBconnection show\fP above for the description of the <ID>-specifying keywords.
+.br
+If '--wait' option is not specified, the default timeout will be 10 seconds.
 .TP
 .B add COMMON_OPTIONS TYPE_SPECIFIC_OPTIONS IP_OPTIONS
 .br
@@ -686,6 +688,8 @@ its name, UUID or D-Bus path. If <ID> is ambiguous, a keyword \fIid\fP,
 \fIuuid\fP or \fIpath\fP can be used.
 .br
 See \fBconnection show\fP above for the description of the <ID>-specifying keywords.
+.br
+If '--wait' option is not specified, the default timeout will be 10 seconds.
 .TP
 .B reload
 .br
@@ -730,14 +734,15 @@ will be activated. It will also consider connections that are not set to auto co
 .br
 If '--wait' option is not specified, the default timeout will be 90 seconds.
 .TP
-.B disconnect <ifname>
+.B disconnect <ifname> ...
 .br
 Disconnect a device and prevent the device from automatically activating further
-connections without user/manual intervention.
+connections without user/manual intervention. Note that disconnecting software
+devices may mean that the devices will disappear.
 .br
 If '--wait' option is not specified, the default timeout will be 10 seconds.
 .TP
-.B delete <ifname>
+.B delete <ifname> ...
 .br
 Delete a device. The command removes the interface from the system. Note that
 this only works for software devices like bonds, bridges, teams, etc.

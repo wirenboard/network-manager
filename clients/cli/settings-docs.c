@@ -83,7 +83,7 @@ NmcPropertyDesc setting_802_1x[] = {
 	{ "private-key-password", "The password used to decrypt the private key specified in the \"private-key\" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key." },
 	{ "private-key-password-flags", "Flags indicating how to handle the \"private-key-password\" property." },
 	{ "subject-match", "Substring to be matched against the subject of the certificate presented by the authentication server. When unset, no verification of the authentication server certificate's subject is performed." },
-	{ "system-ca-certs", "When TRUE, overrides the \"ca-path\" and \"phase2-ca-path\" properties using the system CA directory specified at configure time with the --system-ca-path switch.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the \"ca-cert\" and \"phase2-ca-cert\" properties." },
+	{ "system-ca-certs", "When TRUE, overrides the \"ca-path\" and \"phase2-ca-path\" properties using the system CA directory specified at configure time with the --system-ca-path switch.  The certificates in this directory are added to the verification chain in addition to any certificates specified by the \"ca-cert\" and \"phase2-ca-cert\" properties. If the path provided with --system-ca-path is rather a file name (bundle of trusted CA certificates), it overrides \"ca-cert\" and \"phase2-ca-cert\" properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant)." },
 };
   
 NmcPropertyDesc setting_802_3_ethernet[] = {
@@ -152,6 +152,7 @@ NmcPropertyDesc setting_cdma[] = {
 NmcPropertyDesc setting_connection[] = {
 	{ "autoconnect", "Whether or not the connection should be automatically connected by NetworkManager when the resources for the connection are available. TRUE to automatically activate the connection, FALSE to require manual intervention to activate the connection." },
 	{ "autoconnect-priority", "The autoconnect priority. If the connection is set to autoconnect, connections with higher priority will be preferred. Defaults to 0. The higher number means higher priority." },
+	{ "autoconnect-slaves", "Whether or not slaves of this connection should be automatically brought up when NetworkManager activates this connection. This only has a real effect for master connections. The permitted values are: 0: leave slave connections untouched, 1: activate all the slave connections with this connection, -1: default. If -1 (default) is set, global connection.autoconnect-slaves is read to determine the real value. If it is default as well, this fallbacks to 0." },
 	{ "gateway-ping-timeout", "If greater than zero, delay success of IP addressing until either the timeout is reached, or an IP gateway replies to a ping." },
 	{ "id", "A human readable unique identifier for the connection, like \"Work Wi-Fi\" or \"T-Mobile 3G\"." },
 	{ "interface-name", "The name of the network interface this connection is bound to. If not set, then the connection can be attached to any interface of the appropriate type (subject to restrictions imposed by other settings). For software devices this specifies the name of the created device. For connection types where interface names cannot easily be made persistent (e.g. mobile broadband or USB Ethernet), this property should not be used. Setting this property restricts the interfaces a connection can be used with, and if interface names change or are reordered the connection may be applied to the wrong interface." },
@@ -239,7 +240,7 @@ NmcPropertyDesc setting_ipv6[] = {
 	{ "gateway", "The gateway associated with this configuration. This is only meaningful if \"addresses\" is also set." },
 	{ "ignore-auto-dns", "When \"method\" is set to \"auto\" and this property to TRUE, automatically configured nameservers and search domains are ignored and only nameservers and search domains specified in the \"dns\" and \"dns-search\" properties, if any, are used." },
 	{ "ignore-auto-routes", "When \"method\" is set to \"auto\" and this property to TRUE, automatically configured routes are ignored and only routes specified in the \"routes\" property, if any, are used." },
-	{ "ip6-privacy", "Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941.  If enabled, it makes the kernel generate a temporary IPv6 address in addition to the public one generated from MAC address via modified EUI-64.  This enhances privacy, but could cause problems in some applications, on the other hand.  The permitted values are: 0: disabled, 1: enabled (prefer public address), 2: enabled (prefer temporary addresses)." },
+	{ "ip6-privacy", "Configure IPv6 Privacy Extensions for SLAAC, described in RFC4941.  If enabled, it makes the kernel generate a temporary IPv6 address in addition to the public one generated from MAC address via modified EUI-64.  This enhances privacy, but could cause problems in some applications, on the other hand.  The permitted values are: -1: unknown, 0: disabled, 1: enabled (prefer public address), 2: enabled (prefer temporary addresses). Having a per-connection setting set to \"-1\" (unknown) means fallback to global configuration \"ipv6.ip6-privacy\". If also global configuration is unspecified or set to \"-1\", fallback to read \"/proc/sys/net/ipv6/conf/default/use_tempaddr\"." },
 	{ "may-fail", "If TRUE, allow overall network configuration to proceed even if the configuration specified by this property times out.  Note that at least one IP configuration must succeed or overall network configuration will still fail.  For example, in IPv6-only networks, setting this property to TRUE on the NMSettingIP4Config allows the overall network configuration to succeed if IPv4 configuration fails but IPv6 configuration completes successfully." },
 	{ "method", "IP configuration method. NMSettingIP4Config and NMSettingIP6Config both support \"auto\", \"manual\", and \"link-local\". See the subclass-specific documentation for other values. In general, for the \"auto\" method, properties such as \"dns\" and \"routes\" specify information that is added on to the information returned from automatic configuration.  The \"ignore-auto-routes\" and \"ignore-auto-dns\" properties modify this behavior. For methods that imply no upstream network, such as \"shared\" or \"link-local\", these properties must be empty." },
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
@@ -341,7 +342,7 @@ NmcSettingDesc all_settings[] = {
 	{ "bridge", setting_bridge, 8 },
 	{ "bridge-port", setting_bridge_port, 4 },
 	{ "cdma", setting_cdma, 5 },
-	{ "connection", setting_connection, 15 },
+	{ "connection", setting_connection, 16 },
 	{ "dcb", setting_dcb, 16 },
 	{ "generic", setting_generic, 1 },
 	{ "gsm", setting_gsm, 10 },

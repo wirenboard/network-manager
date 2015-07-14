@@ -76,7 +76,7 @@ update_properties (NMDevice *device)
 	GObject *object = G_OBJECT (device);
 	NMPlatformVxlanProperties props;
 
-	if (!nm_platform_vxlan_get_properties (nm_device_get_ifindex (device), &props)) {
+	if (!nm_platform_vxlan_get_properties (NM_PLATFORM_GET, nm_device_get_ifindex (device), &props)) {
 		_LOGW (LOGD_HW, "could not read vxlan properties");
 		return;
 	}
@@ -199,7 +199,7 @@ get_property (GObject *object, guint prop_id,
 		g_value_set_uint (value, priv->props.src_port_max);
 		break;
 	case PROP_PROXY:
-		g_value_set_uint (value, priv->props.proxy);
+		g_value_set_boolean (value, priv->props.proxy);
 		break;
 	case PROP_RSC:
 		g_value_set_boolean (value, priv->props.rsc);
@@ -353,19 +353,17 @@ nm_device_vxlan_class_init (NMDeviceVxlanClass *klass)
 #define NM_VXLAN_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_VXLAN_FACTORY, NMVxlanFactory))
 
 static NMDevice *
-new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
+new_link (NMDeviceFactory *factory, NMPlatformLink *plink, gboolean *out_ignore, GError **error)
 {
-	if (plink->type == NM_LINK_TYPE_VXLAN) {
-		return (NMDevice *) g_object_new (NM_TYPE_DEVICE_VXLAN,
-		                                  NM_DEVICE_PLATFORM_DEVICE, plink,
-		                                  NM_DEVICE_TYPE_DESC, "Vxlan",
-		                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_GENERIC,
-		                                  NULL);
-	}
-	return NULL;
+	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_VXLAN,
+	                                  NM_DEVICE_PLATFORM_DEVICE, plink,
+	                                  NM_DEVICE_TYPE_DESC, "Vxlan",
+	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_GENERIC,
+	                                  NULL);
 }
 
-DEFINE_DEVICE_FACTORY_INTERNAL_WITH_DEVTYPE(VXLAN, Vxlan, vxlan, GENERIC, \
-	factory_iface->new_link = new_link; \
+NM_DEVICE_FACTORY_DEFINE_INTERNAL (VXLAN, Vxlan, vxlan,
+	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES (NM_LINK_TYPE_VXLAN),
+	factory_iface->new_link = new_link;
 	)
 

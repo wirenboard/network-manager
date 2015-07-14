@@ -39,6 +39,8 @@
 #include "nm-fake-platform.h" 
 #include "nm-linux-platform.h" 
 #include "nm-platform.h" 
+#include "nm-platform-utils.h" 
+#include "nmp-object.h" 
 #include "wifi-utils-nl80211.h" 
 #include "wifi-utils-private.h" 
 #include "wifi-utils.h" 
@@ -65,17 +67,18 @@
 #include "nm-supplicant-manager.h" 
 #include "nm-supplicant-settings-verify.h" 
 #include "nm-supplicant-types.h" 
-#include "nm-call-store.h" 
 #include "nm-vpn-connection.h" 
 #include "nm-vpn-manager.h" 
 #include "nm-vpn-service.h" 
 #include "nm-activation-request.h" 
 #include "nm-active-connection.h" 
 #include "nm-config.h" 
+#include "nm-config-data.h" 
 #include "nm-connection-provider.h" 
 #include "nm-connectivity.h" 
 #include "nm-dbus-manager.h" 
 #include "nm-dcb.h" 
+#include "nm-route-manager.h" 
 #include "nm-default-route-manager.h" 
 #include "nm-dhcp4-config.h" 
 #include "nm-dhcp6-config.h" 
@@ -88,8 +91,8 @@
 #include "nm-auth-subject.h" 
 #include "nm-auth-utils.h" 
 #include "nm-manager.h" 
+#include "nm-multi-index.h" 
 #include "nm-policy.h" 
-#include "nm-posix-signals.h" 
 #include "nm-properties-changed-signal.h" 
 #include "nm-rfkill-manager.h" 
 #include "nm-session-monitor.h" 
@@ -133,6 +136,7 @@ nm_unmanaged_flags_get_type (void)
         { NM_UNMANAGED_USER, "NM_UNMANAGED_USER", "nm-unmanaged-user" },
         { NM_UNMANAGED_PARENT, "NM_UNMANAGED_PARENT", "nm-unmanaged-parent" },
         { NM_UNMANAGED_EXTERNAL_DOWN, "NM_UNMANAGED_EXTERNAL_DOWN", "nm-unmanaged-external-down" },
+        { NM_UNMANAGED_PLATFORM_INIT, "NM_UNMANAGED_PLATFORM_INIT", "nm-unmanaged-platform-init" },
         { __NM_UNMANAGED_LAST, "__NM_UNMANAGED_LAST", "--nm-unmanaged-last" },
         { NM_UNMANAGED_LAST, "NM_UNMANAGED_LAST", "nm-unmanaged-last" },
         { NM_UNMANAGED_ALL, "NM_UNMANAGED_ALL", "nm-unmanaged-all" },
@@ -231,29 +235,6 @@ nm_dns_masq_status_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_platform_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_PLATFORM_ERROR_NONE, "NM_PLATFORM_ERROR_NONE", "none" },
-        { NM_PLATFORM_ERROR_NOT_FOUND, "NM_PLATFORM_ERROR_NOT_FOUND", "not-found" },
-        { NM_PLATFORM_ERROR_EXISTS, "NM_PLATFORM_ERROR_EXISTS", "exists" },
-        { NM_PLATFORM_ERROR_WRONG_TYPE, "NM_PLATFORM_ERROR_WRONG_TYPE", "wrong-type" },
-        { NM_PLATFORM_ERROR_NOT_SLAVE, "NM_PLATFORM_ERROR_NOT_SLAVE", "not-slave" },
-        { NM_PLATFORM_ERROR_NO_FIRMWARE, "NM_PLATFORM_ERROR_NO_FIRMWARE", "no-firmware" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMPlatformError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
 nm_platform_reason_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -283,6 +264,7 @@ nm_platform_signal_change_type_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
+        { NM_PLATFORM_SIGNAL_NONE, "NM_PLATFORM_SIGNAL_NONE", "none" },
         { NM_PLATFORM_SIGNAL_ADDED, "NM_PLATFORM_SIGNAL_ADDED", "added" },
         { NM_PLATFORM_SIGNAL_CHANGED, "NM_PLATFORM_SIGNAL_CHANGED", "changed" },
         { NM_PLATFORM_SIGNAL_REMOVED, "NM_PLATFORM_SIGNAL_REMOVED", "removed" },
@@ -290,26 +272,6 @@ nm_platform_signal_change_type_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMPlatformSignalChangeType"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_platform_get_route_mode_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_PLATFORM_GET_ROUTE_MODE_ALL, "NM_PLATFORM_GET_ROUTE_MODE_ALL", "all" },
-        { NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT, "NM_PLATFORM_GET_ROUTE_MODE_NO_DEFAULT", "no-default" },
-        { NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT, "NM_PLATFORM_GET_ROUTE_MODE_ONLY_DEFAULT", "only-default" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMPlatformGetRouteMode"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
@@ -522,6 +484,56 @@ nm_opt_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_config_get_value_flags_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_CONFIG_GET_VALUE_NONE, "NM_CONFIG_GET_VALUE_NONE", "none" },
+        { NM_CONFIG_GET_VALUE_RAW, "NM_CONFIG_GET_VALUE_RAW", "raw" },
+        { NM_CONFIG_GET_VALUE_STRIP, "NM_CONFIG_GET_VALUE_STRIP", "strip" },
+        { NM_CONFIG_GET_VALUE_NO_EMPTY, "NM_CONFIG_GET_VALUE_NO_EMPTY", "no-empty" },
+        { NM_CONFIG_GET_VALUE_TYPE_SPEC, "NM_CONFIG_GET_VALUE_TYPE_SPEC", "type-spec" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMConfigGetValueFlags"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_config_change_flags_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_CONFIG_CHANGE_NONE, "NM_CONFIG_CHANGE_NONE", "nm-config-change-none" },
+        { NM_CONFIG_CHANGE_SIGHUP, "NM_CONFIG_CHANGE_SIGHUP", "nm-config-change-sighup" },
+        { NM_CONFIG_CHANGE_SIGUSR1, "NM_CONFIG_CHANGE_SIGUSR1", "nm-config-change-sigusr1" },
+        { NM_CONFIG_CHANGE_SIGUSR2, "NM_CONFIG_CHANGE_SIGUSR2", "nm-config-change-sigusr2" },
+        { NM_CONFIG_CHANGE_CONFIG_FILES, "NM_CONFIG_CHANGE_CONFIG_FILES", "nm-config-change-config-files" },
+        { NM_CONFIG_CHANGE_VALUES, "NM_CONFIG_CHANGE_VALUES", "nm-config-change-values" },
+        { NM_CONFIG_CHANGE_CONNECTIVITY, "NM_CONFIG_CHANGE_CONNECTIVITY", "nm-config-change-connectivity" },
+        { NM_CONFIG_CHANGE_NO_AUTO_DEFAULT, "NM_CONFIG_CHANGE_NO_AUTO_DEFAULT", "nm-config-change-no-auto-default" },
+        { NM_CONFIG_CHANGE_DNS_MODE, "NM_CONFIG_CHANGE_DNS_MODE", "nm-config-change-dns-mode" },
+        { _NM_CONFIG_CHANGE_LAST, "_NM_CONFIG_CHANGE_LAST", "-nm-config-change-last" },
+        { NM_CONFIG_CHANGE_ALL, "NM_CONFIG_CHANGE_ALL", "nm-config-change-all" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMConfigChangeFlags"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_dispatcher_action_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -640,16 +652,18 @@ nm_ip_config_source_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_IP_CONFIG_SOURCE_UNKNOWN, "NM_IP_CONFIG_SOURCE_UNKNOWN", "unknown" },
-        { NM_IP_CONFIG_SOURCE_KERNEL, "NM_IP_CONFIG_SOURCE_KERNEL", "kernel" },
-        { NM_IP_CONFIG_SOURCE_SHARED, "NM_IP_CONFIG_SOURCE_SHARED", "shared" },
-        { NM_IP_CONFIG_SOURCE_IP4LL, "NM_IP_CONFIG_SOURCE_IP4LL", "ip4ll" },
-        { NM_IP_CONFIG_SOURCE_PPP, "NM_IP_CONFIG_SOURCE_PPP", "ppp" },
-        { NM_IP_CONFIG_SOURCE_WWAN, "NM_IP_CONFIG_SOURCE_WWAN", "wwan" },
-        { NM_IP_CONFIG_SOURCE_VPN, "NM_IP_CONFIG_SOURCE_VPN", "vpn" },
-        { NM_IP_CONFIG_SOURCE_DHCP, "NM_IP_CONFIG_SOURCE_DHCP", "dhcp" },
-        { NM_IP_CONFIG_SOURCE_RDISC, "NM_IP_CONFIG_SOURCE_RDISC", "rdisc" },
-        { NM_IP_CONFIG_SOURCE_USER, "NM_IP_CONFIG_SOURCE_USER", "user" },
+        { NM_IP_CONFIG_SOURCE_UNKNOWN, "NM_IP_CONFIG_SOURCE_UNKNOWN", "nm-ip-config-source-unknown" },
+        { _NM_IP_CONFIG_SOURCE_RTM_F_CLONED, "_NM_IP_CONFIG_SOURCE_RTM_F_CLONED", "-nm-ip-config-source-rtm-f-cloned" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_KERNEL, "NM_IP_CONFIG_SOURCE_RTPROT_KERNEL", "nm-ip-config-source-rtprot-kernel" },
+        { NM_IP_CONFIG_SOURCE_KERNEL, "NM_IP_CONFIG_SOURCE_KERNEL", "nm-ip-config-source-kernel" },
+        { NM_IP_CONFIG_SOURCE_SHARED, "NM_IP_CONFIG_SOURCE_SHARED", "nm-ip-config-source-shared" },
+        { NM_IP_CONFIG_SOURCE_IP4LL, "NM_IP_CONFIG_SOURCE_IP4LL", "nm-ip-config-source-ip4ll" },
+        { NM_IP_CONFIG_SOURCE_PPP, "NM_IP_CONFIG_SOURCE_PPP", "nm-ip-config-source-ppp" },
+        { NM_IP_CONFIG_SOURCE_WWAN, "NM_IP_CONFIG_SOURCE_WWAN", "nm-ip-config-source-wwan" },
+        { NM_IP_CONFIG_SOURCE_VPN, "NM_IP_CONFIG_SOURCE_VPN", "nm-ip-config-source-vpn" },
+        { NM_IP_CONFIG_SOURCE_DHCP, "NM_IP_CONFIG_SOURCE_DHCP", "nm-ip-config-source-dhcp" },
+        { NM_IP_CONFIG_SOURCE_RDISC, "NM_IP_CONFIG_SOURCE_RDISC", "nm-ip-config-source-rdisc" },
+        { NM_IP_CONFIG_SOURCE_USER, "NM_IP_CONFIG_SOURCE_USER", "nm-ip-config-source-user" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -688,6 +702,7 @@ nm_link_type_get_type (void)
         { NM_LINK_TYPE_VETH, "NM_LINK_TYPE_VETH", "veth" },
         { NM_LINK_TYPE_VLAN, "NM_LINK_TYPE_VLAN", "vlan" },
         { NM_LINK_TYPE_VXLAN, "NM_LINK_TYPE_VXLAN", "vxlan" },
+        { NM_LINK_TYPE_BNEP, "NM_LINK_TYPE_BNEP", "bnep" },
         { NM_LINK_TYPE_BRIDGE, "NM_LINK_TYPE_BRIDGE", "bridge" },
         { NM_LINK_TYPE_BOND, "NM_LINK_TYPE_BOND", "bond" },
         { NM_LINK_TYPE_TEAM, "NM_LINK_TYPE_TEAM", "team" },
@@ -695,6 +710,74 @@ nm_link_type_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMLinkType"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_pobject_type_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NMP_OBJECT_TYPE_UNKNOWN, "NMP_OBJECT_TYPE_UNKNOWN", "nmp-object-type-unknown" },
+        { NMP_OBJECT_TYPE_LINK, "NMP_OBJECT_TYPE_LINK", "nmp-object-type-link" },
+        { NMP_OBJECT_TYPE_IP4_ADDRESS, "NMP_OBJECT_TYPE_IP4_ADDRESS", "nmp-object-type-ip4-address" },
+        { NMP_OBJECT_TYPE_IP6_ADDRESS, "NMP_OBJECT_TYPE_IP6_ADDRESS", "nmp-object-type-ip6-address" },
+        { NMP_OBJECT_TYPE_IP4_ROUTE, "NMP_OBJECT_TYPE_IP4_ROUTE", "nmp-object-type-ip4-route" },
+        { NMP_OBJECT_TYPE_IP6_ROUTE, "NMP_OBJECT_TYPE_IP6_ROUTE", "nmp-object-type-ip6-route" },
+        { __NMP_OBJECT_TYPE_LAST, "__NMP_OBJECT_TYPE_LAST", "--nmp-object-type-last" },
+        { NMP_OBJECT_TYPE_MAX, "NMP_OBJECT_TYPE_MAX", "nmp-object-type-max" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMPObjectType"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_match_spec_match_type_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_MATCH_SPEC_NO_MATCH, "NM_MATCH_SPEC_NO_MATCH", "no-match" },
+        { NM_MATCH_SPEC_MATCH, "NM_MATCH_SPEC_MATCH", "match" },
+        { NM_MATCH_SPEC_NEG_MATCH, "NM_MATCH_SPEC_NEG_MATCH", "neg-match" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMMatchSpecMatchType"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_utils_test_flags_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_UTILS_TEST_NONE, "NM_UTILS_TEST_NONE", "nm-utils-test-none" },
+        { _NM_UTILS_TEST_INITIALIZED, "_NM_UTILS_TEST_INITIALIZED", "-nm-utils-test-initialized" },
+        { _NM_UTILS_TEST_GENERAL, "_NM_UTILS_TEST_GENERAL", "-nm-utils-test-general" },
+        { NM_UTILS_TEST_NO_KEYFILE_OWNER_CHECK, "NM_UTILS_TEST_NO_KEYFILE_OWNER_CHECK", "nm-utils-test-no-keyfile-owner-check" },
+        { _NM_UTILS_TEST_LAST, "_NM_UTILS_TEST_LAST", "-nm-utils-test-last" },
+        { NM_UTILS_TEST_ALL, "NM_UTILS_TEST_ALL", "nm-utils-test-all" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMUtilsTestFlags"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

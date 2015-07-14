@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMSettingPPPOE</title>
+<title>NMSettingPPPOE: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingPPP.html" title="NMSettingPPP">
 <link rel="next" href="NMSettingVPN.html" title="NMSettingVPN">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -193,7 +193,6 @@ nm_setting_pppoe_error_quark (<em class="parameter"><code><span class="type">voi
 <div class="refsect3">
 <a name="id-1.2.28.9.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingPPPOE.html" title="NMSettingPPPOE"><span class="type">NMSettingPPPOE</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -231,7 +230,6 @@ nm_setting_pppoe_get_service (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.2.28.9.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--service" title="The “service” property"><span class="type">“service”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -257,7 +255,6 @@ nm_setting_pppoe_get_username (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.2.28.9.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--username" title="The “username” property"><span class="type">“username”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -283,7 +280,6 @@ nm_setting_pppoe_get_password (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.2.28.9.6.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--password" title="The “password” property"><span class="type">“password”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -309,7 +305,6 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <div class="refsect3">
 <a name="id-1.2.28.9.7.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--password" title="The “password” property"><span class="type">“password”</span></a></p>
-<p></p>
 </div>
 </div>
 </div>
@@ -319,8 +314,6 @@ nm_setting_pppoe_get_password_flags (<em class="parameter"><code><a class="link"
 <a name="NM-SETTING-PPPOE-SETTING-NAME:CAPS"></a><h3>NM_SETTING_PPPOE_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_SETTING_NAME "pppoe"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -373,40 +366,30 @@ did not contain a required PPP setting for PPP related options</p>
 <a name="NM-SETTING-PPPOE-ERROR:CAPS"></a><h3>NM_SETTING_PPPOE_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_ERROR nm_setting_pppoe_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-SERVICE:CAPS"></a><h3>NM_SETTING_PPPOE_SERVICE</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_SERVICE        "service"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-USERNAME:CAPS"></a><h3>NM_SETTING_PPPOE_USERNAME</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_USERNAME       "username"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-PASSWORD:CAPS"></a><h3>NM_SETTING_PPPOE_PASSWORD</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_PASSWORD       "password"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-PPPOE-PASSWORD-FLAGS:CAPS"></a><h3>NM_SETTING_PPPOE_PASSWORD_FLAGS</h3>
 <pre class="programlisting">#define NM_SETTING_PPPOE_PASSWORD_FLAGS "password-flags"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -414,7 +397,7 @@ did not contain a required PPP setting for PPP related options</p>
 <div class="refsect2">
 <a name="NMSettingPPPOE--password"></a><h3>The <code class="literal">“password”</code> property</h3>
 <pre class="programlisting">  “password”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Password used to authenticate with the PPPoE service.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -422,7 +405,7 @@ did not contain a required PPP setting for PPP related options</p>
 <div class="refsect2">
 <a name="NMSettingPPPOE--password-flags"></a><h3>The <code class="literal">“password-flags”</code> property</h3>
 <pre class="programlisting">  “password-flags”           <span class="type">guint</span></pre>
-<p></p>
+<p>Flags indicating how to handle the <a class="link" href="NMSettingPPPOE.html#NMSettingPPPOE--password" title="The “password” property"><span class="type">“password”</span></a> property.</p>
 <p>Flags: Read / Write</p>
 <p>Allowed values: &lt;= 7</p>
 <p>Default value: 0</p>
@@ -431,7 +414,10 @@ did not contain a required PPP setting for PPP related options</p>
 <div class="refsect2">
 <a name="NMSettingPPPOE--service"></a><h3>The <code class="literal">“service”</code> property</h3>
 <pre class="programlisting">  “service”                  <span class="type">gchar</span> *</pre>
-<p></p>
+<p>If specified, instruct PPPoE to only initiate sessions with access
+concentrators that provide the specified service.  For most providers,
+this should be left blank.  It is only required if there are multiple
+access concentrators or a specific service is known to be required.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -439,14 +425,13 @@ did not contain a required PPP setting for PPP related options</p>
 <div class="refsect2">
 <a name="NMSettingPPPOE--username"></a><h3>The <code class="literal">“username”</code> property</h3>
 <pre class="programlisting">  “username”                 <span class="type">gchar</span> *</pre>
-<p></p>
+<p>Username used to authenticate with the PPPoE service.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

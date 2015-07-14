@@ -86,6 +86,8 @@ the connection type."/>
 <property name="slave-type" variable="MASTER, TEAM_MASTER, DEVICETYPE, BRIDGE" format="" values="" default="" example="" description="Slave type doesn&apos;t map directly to a variable, but it is
 recognized using different variables.  MASTER for bonding,
 TEAM_MASTER and DEVICETYPE for teaming, BRIDGE for bridging."/>
+<property name="autoconnect-slaves" variable="AUTOCONNECT-SLAVES(+)" format="" values="" default="missing variable means global default" example="" description="Whether slaves of this connection should be auto-connected
+when this connection is activated."/>
 <property name="secondaries" variable="SECONDARY_UUIDS(+)" format="" values="" default="" example="" description="UUID of VPN connections that should be activated
 together with this connection."/>
 <property name="gateway-ping-timeout" variable="GATEWAY_PING_TIMEOUT(+)" format="" values="" default="0" example="GATEWAY_PING_TIMEOUT=5" description="If greater than zero, the IP connectivity will be checked by

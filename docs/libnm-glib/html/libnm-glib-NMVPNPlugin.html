@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-glib Reference Manual: NMVPNPlugin</title>
+<title>NMVPNPlugin: libnm-glib Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-glib Reference Manual">
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMVPNConnection.html" title="NMVPNConnection">
 <link rel="next" href="libnm-glib-NMVpnPluginUiWidget.html" title="NMVpnPluginUiWidget">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -155,8 +155,6 @@
 </div>
 <div class="refsect1">
 <a name="libnm-glib-NMVPNPlugin.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="libnm-glib-NMVPNPlugin.functions_details"></a><h2>Functions</h2>
@@ -164,36 +162,18 @@
 <a name="nm-vpn-plugin-error-quark"></a><h3>nm_vpn_plugin_error_quark ()</h3>
 <pre class="programlisting"><span class="returnvalue">GQuark</span>
 nm_vpn_plugin_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.3.30.6.2.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
 <a name="nm-vpn-plugin-get-connection"></a><h3>nm_vpn_plugin_get_connection ()</h3>
 <pre class="programlisting"><a href="/usr/share/gtk-doc/html/dbus-glib/dbus-glib-DBusGConnection.html#DBusGConnection"><span class="returnvalue">DBusGConnection</span></a> *
 nm_vpn_plugin_get_connection (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.3.30.6.3.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
 <a name="nm-vpn-plugin-get-state"></a><h3>nm_vpn_plugin_get_state ()</h3>
 <pre class="programlisting"><a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManagerVPN.html#NMVPNServiceState"><span class="returnvalue">NMVPNServiceState</span></a>
 nm_vpn_plugin_get_state (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.3.30.6.4.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 <hr>
 <div class="refsect2">
@@ -201,8 +181,6 @@ nm_vpn_plugin_get_state (<em class="parameter"><code><span class="type">NMVPNPlu
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_vpn_plugin_set_state (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                          <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManagerVPN.html#NMVPNServiceState"><span class="type">NMVPNServiceState</span></a> state</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -243,7 +221,7 @@ information to complete the request.</p>
 </tbody>
 </table></div>
 </div>
-<p class="since">Since 0.9.10</p>
+<p class="since">Since: 0.9.10</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -251,8 +229,6 @@ information to complete the request.</p>
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_vpn_plugin_set_login_banner (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                                 <em class="parameter"><code>const <span class="type">char</span> *banner</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -260,8 +236,6 @@ nm_vpn_plugin_set_login_banner (<em class="parameter"><code><span class="type">N
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_vpn_plugin_failure (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                        <em class="parameter"><code><a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManagerVPN.html#NMVPNPluginFailure"><span class="type">NMVPNPluginFailure</span></a> reason</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -269,8 +243,6 @@ nm_vpn_plugin_failure (<em class="parameter"><code><span class="type">NMVPNPlugi
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_vpn_plugin_set_config (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                           <em class="parameter"><code><span class="type">GHashTable</span> *config</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -278,8 +250,6 @@ nm_vpn_plugin_set_config (<em class="parameter"><code><span class="type">NMVPNPl
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_vpn_plugin_set_ip4_config (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                               <em class="parameter"><code><span class="type">GHashTable</span> *ip4_config</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -287,8 +257,6 @@ nm_vpn_plugin_set_ip4_config (<em class="parameter"><code><span class="type">NMV
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_vpn_plugin_set_ip6_config (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                               <em class="parameter"><code><span class="type">GHashTable</span> *ip6_config</code></em>);</pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -296,12 +264,6 @@ nm_vpn_plugin_set_ip6_config (<em class="parameter"><code><span class="type">NMV
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_vpn_plugin_disconnect (<em class="parameter"><code><span class="type">NMVPNPlugin</span> *plugin</code></em>,
                           <em class="parameter"><code><span class="type">GError</span> **err</code></em>);</pre>
-<p>
-</p>
-<div class="refsect3">
-<a name="id-1.3.30.6.12.5"></a><h4>Returns</h4>
-<p></p>
-</div>
 </div>
 </div>
 <div class="refsect1">
@@ -310,16 +272,12 @@ nm_vpn_plugin_disconnect (<em class="parameter"><code><span class="type">NMVPNPl
 <a name="NM-VPN-PLUGIN-DBUS-SERVICE-NAME:CAPS"></a><h3>NM_VPN_PLUGIN_DBUS_SERVICE_NAME</h3>
 <pre class="programlisting">#define NM_VPN_PLUGIN_DBUS_SERVICE_NAME "service-name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VPN-PLUGIN-STATE:CAPS"></a><h3>NM_VPN_PLUGIN_STATE</h3>
 <pre class="programlisting">#define NM_VPN_PLUGIN_STATE             "state"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -423,7 +381,6 @@ nm_vpn_plugin_disconnect (<em class="parameter"><code><span class="type">NMVPNPl
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

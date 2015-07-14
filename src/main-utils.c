@@ -31,103 +31,63 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <glib-unix.h>
 #include <gmodule.h>
+
+#include "nm-glib-compat.h"
 
 #include "gsystem-local-alloc.h"
 #include "main-utils.h"
-#include "nm-posix-signals.h"
 #include "NetworkManagerUtils.h"
 #include "nm-logging.h"
 
-static sigset_t signal_set;
-static gboolean *quit_early = NULL;
-
-/*
- * Thread function waiting for signals and processing them.
- * Wait for signals in signal set. The semantics of sigwait() require that all
- * threads (including the thread calling sigwait()) have the signal masked, for
- * reliable operation. Otherwise, a signal that arrives while this thread is
- * not blocked in sigwait() might be delivered to another thread.
- */
-static void *
-signal_handling_thread (void *arg)
+static gboolean
+sighup_handler (gpointer user_data)
 {
-	GMainLoop *main_loop = arg;
-	int signo;
+	nm_main_config_reload (GPOINTER_TO_INT (user_data));
+	return G_SOURCE_CONTINUE;
+}
 
-	while (1) {
-		sigwait (&signal_set, &signo);
+static gboolean
+sigint_handler (gpointer user_data)
+{
+	GMainLoop *main_loop = user_data;
 
-		switch (signo) {
-		case SIGINT:
-		case SIGTERM:
-			nm_log_info (LOGD_CORE, "caught signal %d, shutting down normally.", signo);
-			*quit_early = TRUE; /* for quitting before entering the main loop */
-			g_main_loop_quit (main_loop);
-			break;
-		case SIGHUP:
-			/* Reread config stuff like system config files, VPN service files, etc */
-			nm_log_info (LOGD_CORE, "caught signal %d, not supported yet.", signo);
-			break;
-		case SIGPIPE:
-			/* silently ignore signal */
-			break;
-		default:
-			nm_log_err (LOGD_CORE, "caught unexpected signal %d", signo);
-			break;
-		}
-    }
-    return NULL;
+	nm_log_info (LOGD_CORE, "caught SIGINT, shutting down normally.");
+	g_main_loop_quit (main_loop);
+
+	return G_SOURCE_REMOVE;
+}
+
+static gboolean
+sigterm_handler (gpointer user_data)
+{
+	GMainLoop *main_loop = user_data;
+
+	nm_log_info (LOGD_CORE, "caught SIGTERM, shutting down normally.");
+	g_main_loop_quit (main_loop);
+
+	return G_SOURCE_REMOVE;
 }
 
 /**
  * nm_main_utils_setup_signals:
  * @main_loop: the #GMainLoop to quit when SIGINT or SIGTERM is received
- * @quit_early: location of a variable that will be set to TRUE when
- *   SIGINT or SIGTERM is received
  *
- * Mask the signals we are interested in and create a signal handling thread.
- * Because all threads inherit the signal mask from their creator, all threads
- * in the process will have the signals masked. That's why setup_signals() has
- * to be called before creating other threads.
- *
- * Returns: %TRUE on success
+ * Sets up signal handling for NetworkManager.
  */
-gboolean
-nm_main_utils_setup_signals (GMainLoop *main_loop, gboolean *quit_early_ptr)
+void
+nm_main_utils_setup_signals (GMainLoop *main_loop)
 {
-	pthread_t signal_thread_id;
-	sigset_t old_sig_mask;
-	int status;
+	g_return_if_fail (main_loop != NULL);
 
-	g_return_val_if_fail (main_loop != NULL, FALSE);
-	g_return_val_if_fail (quit_early_ptr != NULL, FALSE);
+	signal (SIGPIPE, SIG_IGN);
 
-	quit_early = quit_early_ptr;
-
-	sigemptyset (&signal_set);
-	sigaddset (&signal_set, SIGHUP);
-	sigaddset (&signal_set, SIGINT);
-	sigaddset (&signal_set, SIGTERM);
-	sigaddset (&signal_set, SIGPIPE);
-
-	/* Block all signals of interest. */
-	status = pthread_sigmask (SIG_BLOCK, &signal_set, &old_sig_mask);
-	if (status != 0) {
-		fprintf (stderr, _("Failed to set signal mask: %d"), status);
-		return FALSE;
-	}
-	/* Save original mask so that we could use it for child processes. */
-	nm_save_original_signal_mask (old_sig_mask);
-
-	/* Create the signal handling thread. */
-	status = pthread_create (&signal_thread_id, NULL, signal_handling_thread, main_loop);
-	if (status != 0) {
-		fprintf (stderr, _("Failed to create signal handling thread: %d"), status);
-		return FALSE;
-	}
-
-	return TRUE;
+	g_unix_signal_add (SIGHUP, sighup_handler, GINT_TO_POINTER (SIGHUP));
+	g_unix_signal_add (SIGUSR1, sighup_handler, GINT_TO_POINTER (SIGUSR1));
+	g_unix_signal_add (SIGUSR2, sighup_handler, GINT_TO_POINTER (SIGUSR2));
+	g_unix_signal_add (SIGINT, sigint_handler, main_loop);
+	g_unix_signal_add (SIGTERM, sigterm_handler, main_loop);
 }
 
 gboolean
@@ -231,7 +191,8 @@ nm_main_utils_early_setup (const char *progname,
                            int *argc,
                            char **argv[],
                            GOptionEntry *options,
-                           GOptionEntry *more_options,
+                           void (*option_context_hook) (gpointer user_data, GOptionContext *opt_ctx),
+                           gpointer option_context_hook_data,
                            const char *summary)
 {
 	GOptionContext *opt_ctx = NULL;
@@ -276,9 +237,9 @@ nm_main_utils_early_setup (const char *progname,
 	g_option_context_set_ignore_unknown_options (opt_ctx, FALSE);
 	g_option_context_set_help_enabled (opt_ctx, TRUE);
 	g_option_context_add_main_entries (opt_ctx, options, NULL);
-	if (more_options)
-		g_option_context_add_main_entries (opt_ctx, more_options, NULL);
 	g_option_context_set_summary (opt_ctx, summary);
+	if (option_context_hook)
+		option_context_hook (option_context_hook_data, opt_ctx);
 
 	success = g_option_context_parse (opt_ctx, argc, argv, &error);
 	if (!success) {

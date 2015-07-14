@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMSettingVlan</title>
+<title>NMSettingVlan: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingTeamPort.html" title="NMSettingTeamPort">
 <link rel="next" href="NMSettingVpn.html" title="NMSettingVpn">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -272,7 +272,6 @@ nm_setting_vlan_get_parent (<em class="parameter"><code><a class="link" href="NM
 <div class="refsect3">
 <a name="id-1.4.26.8.3.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVlan.html#NMSettingVlan--parent" title="The “parent” property"><span class="type">“parent”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -298,7 +297,6 @@ nm_setting_vlan_get_id (<em class="parameter"><code><a class="link" href="NMSett
 <div class="refsect3">
 <a name="id-1.4.26.8.4.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVlan.html#NMSettingVlan--id" title="The “id” property"><span class="type">“id”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -324,7 +322,6 @@ nm_setting_vlan_get_flags (<em class="parameter"><code><a class="link" href="NMS
 <div class="refsect3">
 <a name="id-1.4.26.8.5.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVlan.html#NMSettingVlan--flags" title="The “flags” property"><span class="type">“flags”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -361,7 +358,6 @@ properties of this setting.</p>
 <div class="refsect3">
 <a name="id-1.4.26.8.6.6"></a><h4>Returns</h4>
 <p> return the number of ingress/egress priority entries, -1 if error</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -415,7 +411,6 @@ or <a class="link" href="NMSettingVlan.html#NMSettingVlan--egress-priority-map" 
 <div class="refsect3">
 <a name="id-1.4.26.8.7.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if a priority map was returned, <code class="literal">FALSE</code> if error</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -480,7 +475,6 @@ to</p></td>
 <a name="id-1.4.26.8.8.8"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the new priority mapping was successfully added to the
 list, <code class="literal">FALSE</code> if error</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -574,7 +568,6 @@ to</p></td>
 <div class="refsect3">
 <a name="id-1.4.26.8.10.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the priority mapping was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -620,7 +613,6 @@ properties.</p>
 <div class="refsect3">
 <a name="id-1.4.26.8.11.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the priority mapping was found and removed; <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -695,7 +687,6 @@ the Linux SKB priorities to 802.1p priorities.</p>
 <a name="id-1.4.26.8.13.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the entry was successfully added to the list, or it
 overwrote the old value, <code class="literal">FALSE</code> if error</p>
-<p></p>
 </div>
 </div>
 </div>
@@ -705,48 +696,36 @@ overwrote the old value, <code class="literal">FALSE</code> if error</p>
 <a name="NM-SETTING-VLAN-SETTING-NAME:CAPS"></a><h3>NM_SETTING_VLAN_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_VLAN_SETTING_NAME "vlan"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VLAN-PARENT:CAPS"></a><h3>NM_SETTING_VLAN_PARENT</h3>
 <pre class="programlisting">#define NM_SETTING_VLAN_PARENT               "parent"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VLAN-ID:CAPS"></a><h3>NM_SETTING_VLAN_ID</h3>
 <pre class="programlisting">#define NM_SETTING_VLAN_ID                   "id"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VLAN-FLAGS:CAPS"></a><h3>NM_SETTING_VLAN_FLAGS</h3>
 <pre class="programlisting">#define NM_SETTING_VLAN_FLAGS                "flags"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VLAN-INGRESS-PRIORITY-MAP:CAPS"></a><h3>NM_SETTING_VLAN_INGRESS_PRIORITY_MAP</h3>
 <pre class="programlisting">#define NM_SETTING_VLAN_INGRESS_PRIORITY_MAP "ingress-priority-map"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VLAN-EGRESS-PRIORITY-MAP:CAPS"></a><h3>NM_SETTING_VLAN_EGRESS_PRIORITY_MAP</h3>
 <pre class="programlisting">#define NM_SETTING_VLAN_EGRESS_PRIORITY_MAP  "egress-priority-map"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -828,21 +807,28 @@ to 802.1p priorities used in VLANs.</p>
 <div class="refsect2">
 <a name="NMSettingVlan--egress-priority-map"></a><h3>The <code class="literal">“egress-priority-map”</code> property</h3>
 <pre class="programlisting">  “egress-priority-map”      <span class="type">GStrv</span></pre>
-<p></p>
+<p>For outgoing packets, a list of mappings from Linux SKB priorities to
+802.1p priorities.  The mapping is given in the format "from:to" where
+both "from" and "to" are unsigned integers, ie "7:3".</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingVlan--flags"></a><h3>The <code class="literal">“flags”</code> property</h3>
 <pre class="programlisting">  “flags”                    <a class="link" href="NMSettingVlan.html#NMVlanFlags" title="enum NMVlanFlags"><span class="type">NMVlanFlags</span></a></pre>
-<p></p>
+<p>One or more flags which control the behavior and features of the VLAN
+interface.  Flags include <a class="link" href="NMSettingVlan.html#NM-VLAN-FLAG-REORDER-HEADERS:CAPS"><code class="literal">NM_VLAN_FLAG_REORDER_HEADERS</code></a> (reordering of
+output packet headers), <a class="link" href="NMSettingVlan.html#NM-VLAN-FLAG-GVRP:CAPS"><code class="literal">NM_VLAN_FLAG_GVRP</code></a> (use of the GVRP protocol),
+and <a class="link" href="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"><code class="literal">NM_VLAN_FLAG_LOOSE_BINDING</code></a> (loose binding of the interface to its
+master device's operating state).</p>
 <p>Flags: Read / Write / Construct</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingVlan--id"></a><h3>The <code class="literal">“id”</code> property</h3>
 <pre class="programlisting">  “id”                       <span class="type">guint</span></pre>
-<p></p>
+<p>The VLAN identifier that the interface created by this connection should
+be assigned.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Allowed values: &lt;= 4095</p>
 <p>Default value: 0</p>
@@ -851,21 +837,25 @@ to 802.1p priorities used in VLANs.</p>
 <div class="refsect2">
 <a name="NMSettingVlan--ingress-priority-map"></a><h3>The <code class="literal">“ingress-priority-map”</code> property</h3>
 <pre class="programlisting">  “ingress-priority-map”     <span class="type">GStrv</span></pre>
-<p></p>
+<p>For incoming packets, a list of mappings from 802.1p priorities to Linux
+SKB priorities.  The mapping is given in the format "from:to" where both
+"from" and "to" are unsigned integers, ie "7:3".</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingVlan--parent"></a><h3>The <code class="literal">“parent”</code> property</h3>
 <pre class="programlisting">  “parent”                   <span class="type">gchar</span> *</pre>
-<p></p>
+<p>If given, specifies the parent interface name or parent connection UUID
+from which this VLAN interface should be created.  If this property is
+not specified, the connection must contain an <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> setting
+with a <a class="link" href="NMSettingWired.html#NMSettingWired--mac-address" title="The “mac-address” property"><span class="type">“mac-address”</span></a> property.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: NULL</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

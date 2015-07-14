@@ -64,7 +64,7 @@ update_properties (NMDevice *device)
 	GObject *object = G_OBJECT (device);
 	NMPlatformMacvlanProperties props;
 
-	if (!nm_platform_macvlan_get_properties (nm_device_get_ifindex (device), &props)) {
+	if (!nm_platform_macvlan_get_properties (NM_PLATFORM_GET, nm_device_get_ifindex (device), &props)) {
 		_LOGW (LOGD_HW, "could not read macvlan properties");
 		return;
 	}
@@ -175,19 +175,17 @@ nm_device_macvlan_class_init (NMDeviceMacvlanClass *klass)
 #define NM_MACVLAN_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_MACVLAN_FACTORY, NMMacvlanFactory))
 
 static NMDevice *
-new_link (NMDeviceFactory *factory, NMPlatformLink *plink, GError **error)
+new_link (NMDeviceFactory *factory, NMPlatformLink *plink, gboolean *out_ignore, GError **error)
 {
-	if (plink->type == NM_LINK_TYPE_MACVLAN || plink->type == NM_LINK_TYPE_MACVTAP) {
-		return (NMDevice *) g_object_new (NM_TYPE_DEVICE_MACVLAN,
-		                                  NM_DEVICE_PLATFORM_DEVICE, plink,
-		                                  NM_DEVICE_TYPE_DESC, "Macvlan",
-		                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_GENERIC,
-		                                  NULL);
-	}
-	return NULL;
+	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_MACVLAN,
+	                                  NM_DEVICE_PLATFORM_DEVICE, plink,
+	                                  NM_DEVICE_TYPE_DESC, "Macvlan",
+	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_GENERIC,
+	                                  NULL);
 }
 
-DEFINE_DEVICE_FACTORY_INTERNAL_WITH_DEVTYPE(MACVLAN, Macvlan, macvlan, ETHERNET, \
-	factory_iface->new_link = new_link; \
+NM_DEVICE_FACTORY_DEFINE_INTERNAL (MACVLAN, Macvlan, macvlan,
+	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES (NM_LINK_TYPE_MACVLAN, NM_LINK_TYPE_MACVTAP),
+	factory_iface->new_link = new_link;
 	)
 

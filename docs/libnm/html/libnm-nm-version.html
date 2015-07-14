@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: nm-version</title>
+<title>nm-version: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch05.html" title="Utility API Reference">
 <link rel="prev" href="libnm-nm-utils.html" title="nm-utils">
 <link rel="next" href="ch06.html" title="VPN Plugin API Reference">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -77,6 +77,14 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-VERSION-1-0-2:CAPS" title="NM_VERSION_1_0_2">NM_VERSION_1_0_2</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-VERSION-1-0-4:CAPS" title="NM_VERSION_1_0_4">NM_VERSION_1_0_4</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS" title="NM_VERSION_MIN_REQUIRED">NM_VERSION_MIN_REQUIRED</a></td>
 </tr>
 <tr>
@@ -130,13 +138,15 @@
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS" title="NM_AVAILABLE_IN_1_0">NM_AVAILABLE_IN_1_0</a></td>
 </tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS" title="NM_AVAILABLE_IN_1_0_4">NM_AVAILABLE_IN_1_0_4</a></td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <div class="refsect1">
 <a name="libnm-nm-version.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="libnm-nm-version.functions_details"></a><h2>Functions</h2>
@@ -158,7 +168,7 @@ is compiled against.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-MICRO-VERSION:CAPS"></a><h3>NM_MICRO_VERSION</h3>
-<pre class="programlisting">#define NM_MICRO_VERSION (2)
+<pre class="programlisting">#define NM_MICRO_VERSION (4)
 </pre>
 <p>Evaluates to the micro version number of NetworkManager which this source
 compiled against.</p>
@@ -198,7 +208,6 @@ compiled against.</p>
 <a name="id-1.6.3.6.5.5"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the version of the NetworkManager header files
 is the same as or newer than the passed-in version.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -206,119 +215,108 @@ is the same as or newer than the passed-in version.</p>
 <a name="NM-ENCODE-VERSION:CAPS"></a><h3>NM_ENCODE_VERSION()</h3>
 <pre class="programlisting">#define NM_ENCODE_VERSION(major,minor,micro) ((major) &lt;&lt; 16 | (minor) &lt;&lt; 8 | (micro))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-0-9-8:CAPS"></a><h3>NM_VERSION_0_9_8</h3>
 <pre class="programlisting">#define NM_VERSION_0_9_8  (NM_ENCODE_VERSION (0, 9, 8))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-0-9-10:CAPS"></a><h3>NM_VERSION_0_9_10</h3>
 <pre class="programlisting">#define NM_VERSION_0_9_10 (NM_ENCODE_VERSION (0, 9, 10))
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-1-0:CAPS"></a><h3>NM_VERSION_1_0</h3>
 <pre class="programlisting">#define NM_VERSION_1_0    (NM_ENCODE_VERSION (1, 0, 0))
 </pre>
-<p>
-</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-VERSION-1-0-2:CAPS"></a><h3>NM_VERSION_1_0_2</h3>
+<pre class="programlisting">#define NM_VERSION_1_0_2  (NM_ENCODE_VERSION (1, 0, 2))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-VERSION-1-0-4:CAPS"></a><h3>NM_VERSION_1_0_4</h3>
+<pre class="programlisting">#define NM_VERSION_1_0_4  (NM_ENCODE_VERSION (1, 0, 4))
+</pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-MIN-REQUIRED:CAPS"></a><h3>NM_VERSION_MIN_REQUIRED</h3>
 <pre class="programlisting"># define NM_VERSION_MIN_REQUIRED (NM_VERSION_CUR_STABLE)
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-MAX-ALLOWED:CAPS"></a><h3>NM_VERSION_MAX_ALLOWED</h3>
 <pre class="programlisting"># define NM_VERSION_MAX_ALLOWED (NM_VERSION_CUR_STABLE)
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEPRECATED-IN-0-9-10-FOR:CAPS"></a><h3>NM_DEPRECATED_IN_0_9_10_FOR()</h3>
 <pre class="programlisting"># define NM_DEPRECATED_IN_0_9_10_FOR(f) G_DEPRECATED_FOR(f)
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEPRECATED-IN-1-0-FOR:CAPS"></a><h3>NM_DEPRECATED_IN_1_0_FOR()</h3>
 <pre class="programlisting"># define NM_DEPRECATED_IN_1_0_FOR(f)    G_DEPRECATED_FOR(f)
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
 <a name="libnm-nm-version.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="NM-VERSION-CUR-STABLE:CAPS"></a><h3>NM_VERSION_CUR_STABLE</h3>
-<pre class="programlisting">#define NM_VERSION_CUR_STABLE  NM_VERSION_1_0
+<pre class="programlisting">#define NM_VERSION_CUR_STABLE  NM_VERSION_1_0_2
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-NEXT-STABLE:CAPS"></a><h3>NM_VERSION_NEXT_STABLE</h3>
-<pre class="programlisting">#define NM_VERSION_NEXT_STABLE NM_VERSION_1_0
+<pre class="programlisting">#define NM_VERSION_NEXT_STABLE NM_VERSION_1_0_4
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEPRECATED-IN-0-9-10:CAPS"></a><h3>NM_DEPRECATED_IN_0_9_10</h3>
 <pre class="programlisting"># define NM_DEPRECATED_IN_0_9_10        G_DEPRECATED
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEPRECATED-IN-1-0:CAPS"></a><h3>NM_DEPRECATED_IN_1_0</h3>
 <pre class="programlisting"># define NM_DEPRECATED_IN_1_0           G_DEPRECATED
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-AVAILABLE-IN-0-9-10:CAPS"></a><h3>NM_AVAILABLE_IN_0_9_10</h3>
 <pre class="programlisting"># define NM_AVAILABLE_IN_0_9_10         G_UNAVAILABLE(0.9,10)
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-AVAILABLE-IN-1-0:CAPS"></a><h3>NM_AVAILABLE_IN_1_0</h3>
 <pre class="programlisting"># define NM_AVAILABLE_IN_1_0            G_UNAVAILABLE(1,0)
 </pre>
-<p>
-</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-AVAILABLE-IN-1-0-4:CAPS"></a><h3>NM_AVAILABLE_IN_1_0_4</h3>
+<pre class="programlisting"># define NM_AVAILABLE_IN_1_0_4          G_UNAVAILABLE(1,0.4)
+</pre>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

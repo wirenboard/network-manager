@@ -64,13 +64,14 @@ const char * nm_ip4_config_get_dbus_path (const NMIP4Config *config);
 
 /* Integration with nm-platform and nm-setting */
 NMIP4Config *nm_ip4_config_capture (int ifindex, gboolean capture_resolv_conf);
-gboolean nm_ip4_config_commit (const NMIP4Config *config, int ifindex, guint32 default_route_metric);
+gboolean nm_ip4_config_commit (const NMIP4Config *config, int ifindex, gboolean routes_full_sync, gint64 default_route_metric);
 void nm_ip4_config_merge_setting (NMIP4Config *config, NMSettingIPConfig *setting, guint32 default_route_metric);
 NMSetting *nm_ip4_config_create_setting (const NMIP4Config *config);
 
 /* Utility functions */
 void nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src);
 void nm_ip4_config_subtract (NMIP4Config *dst, const NMIP4Config *src);
+void nm_ip4_config_intersect (NMIP4Config *dst, const NMIP4Config *src);
 gboolean nm_ip4_config_replace (NMIP4Config *dst, const NMIP4Config *src, gboolean *relevant_changes);
 gboolean nm_ip4_config_destination_is_direct (const NMIP4Config *config, guint32 dest, int plen);
 void nm_ip4_config_dump (const NMIP4Config *config, const char *detail);

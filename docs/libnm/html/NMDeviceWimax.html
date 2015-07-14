@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm Reference Manual: NMDeviceWimax</title>
+<title>NMDeviceWimax: libnm Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm Reference Manual">
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMDeviceWifi.html" title="NMDeviceWifi">
 <link rel="next" href="NMActiveConnection.html" title="NMActiveConnection">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -245,8 +245,6 @@
 </div>
 <div class="refsect1">
 <a name="NMDeviceWimax.description"></a><h2>Description</h2>
-<p>
-</p>
 </div>
 <div class="refsect1">
 <a name="NMDeviceWimax.functions_details"></a><h2>Functions</h2>
@@ -274,7 +272,6 @@ nm_device_wimax_get_hw_address (<em class="parameter"><code><a class="link" href
 <a name="id-1.5.15.9.2.6"></a><h4>Returns</h4>
 <p> the hardware address. This is the internal string used by the
 device, and must not be modified.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -394,7 +391,6 @@ device is not connected.</p>
 <div class="refsect3">
 <a name="id-1.5.15.9.6.6"></a><h4>Returns</h4>
 <p> the center frequency in KHz, or 0</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -424,7 +420,6 @@ device is not connected.</p>
 <div class="refsect3">
 <a name="id-1.5.15.9.7.6"></a><h4>Returns</h4>
 <p> the RSSI in dBm, or 0</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -453,7 +448,6 @@ meaning when the device is not connected.</p>
 <div class="refsect3">
 <a name="id-1.5.15.9.8.6"></a><h4>Returns</h4>
 <p> the CINR in dB, or 0</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -482,7 +476,6 @@ nm_device_wimax_get_tx_power (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.5.15.9.9.6"></a><h4>Returns</h4>
 <p> the TX power in dBm, or 0</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -509,7 +502,6 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect3">
 <a name="id-1.5.15.9.10.6"></a><h4>Returns</h4>
 <p> the ID of the serving Base Station, or <code class="literal">NULL</code></p>
-<p></p>
 </div>
 </div>
 </div>
@@ -519,64 +511,48 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <a name="NM-DEVICE-WIMAX-HW-ADDRESS:CAPS"></a><h3>NM_DEVICE_WIMAX_HW_ADDRESS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_HW_ADDRESS       "hw-address"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-ACTIVE-NSP:CAPS"></a><h3>NM_DEVICE_WIMAX_ACTIVE_NSP</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_ACTIVE_NSP       "active-nsp"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-CENTER-FREQUENCY:CAPS"></a><h3>NM_DEVICE_WIMAX_CENTER_FREQUENCY</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_CENTER_FREQUENCY "center-frequency"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-RSSI:CAPS"></a><h3>NM_DEVICE_WIMAX_RSSI</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_RSSI             "rssi"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-CINR:CAPS"></a><h3>NM_DEVICE_WIMAX_CINR</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_CINR             "cinr"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-TX-POWER:CAPS"></a><h3>NM_DEVICE_WIMAX_TX_POWER</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_TX_POWER         "tx-power"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-BSID:CAPS"></a><h3>NM_DEVICE_WIMAX_BSID</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_BSID             "bsid"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-DEVICE-WIMAX-NSPS:CAPS"></a><h3>NM_DEVICE_WIMAX_NSPS</h3>
 <pre class="programlisting">#define NM_DEVICE_WIMAX_NSPS             "nsps"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -584,14 +560,15 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect2">
 <a name="NMDeviceWimax--active-nsp"></a><h3>The <code class="literal">“active-nsp”</code> property</h3>
 <pre class="programlisting">  “active-nsp”               <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a> *</pre>
-<p></p>
+<p>The active <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a> of the device.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMDeviceWimax--bsid"></a><h3>The <code class="literal">“bsid”</code> property</h3>
 <pre class="programlisting">  “bsid”                     <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The ID of the serving base station as received from the network.  Has
+no meaning when the device is not connected.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -599,7 +576,9 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect2">
 <a name="NMDeviceWimax--center-frequency"></a><h3>The <code class="literal">“center-frequency”</code> property</h3>
 <pre class="programlisting">  “center-frequency”         <span class="type">guint</span></pre>
-<p></p>
+<p>The center frequency (in KHz) of the radio channel the device is using to
+communicate with the network when connected.  Has no meaning when the
+device is not connected.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -607,7 +586,9 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect2">
 <a name="NMDeviceWimax--cinr"></a><h3>The <code class="literal">“cinr”</code> property</h3>
 <pre class="programlisting">  “cinr”                     <span class="type">gint</span></pre>
-<p></p>
+<p>CINR (Carrier to Interference + Noise Ratio) of the current radio link
+in dB.  CINR is a more accurate measure of radio link quality.  Has no
+meaning when the device is not connected.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -615,7 +596,7 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect2">
 <a name="NMDeviceWimax--hw-address"></a><h3>The <code class="literal">“hw-address”</code> property</h3>
 <pre class="programlisting">  “hw-address”               <span class="type">gchar</span> *</pre>
-<p></p>
+<p>The hardware (MAC) address of the device.</p>
 <p>Flags: Read</p>
 <p>Default value: NULL</p>
 </div>
@@ -623,14 +604,18 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect2">
 <a name="NMDeviceWimax--nsps"></a><h3>The <code class="literal">“nsps”</code> property</h3>
 <pre class="programlisting">  “nsps”                     <span class="type">GPtrArray</span> *</pre>
-<p></p>
+<p>List of all WiMAX Network Service Providers the device can see.</p>
+<p>Element-type: NMWimaxNsp</p>
 <p>Flags: Read</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMDeviceWimax--rssi"></a><h3>The <code class="literal">“rssi”</code> property</h3>
 <pre class="programlisting">  “rssi”                     <span class="type">gint</span></pre>
-<p></p>
+<p>RSSI of the current radio link in dBm.  This value indicates how strong
+the raw received RF signal from the base station is, but does not
+indicate the overall quality of the radio link.  Has no meaning when the
+device is not connected.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -638,7 +623,9 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 <div class="refsect2">
 <a name="NMDeviceWimax--tx-power"></a><h3>The <code class="literal">“tx-power”</code> property</h3>
 <pre class="programlisting">  “tx-power”                 <span class="type">gint</span></pre>
-<p></p>
+<p>Average power of the last burst transmitted by the device, in units of
+0.5 dBm.  i.e. a TxPower of -11 represents an actual device TX power of
+-5.5 dBm.  Has no meaning when the device is not connected.</p>
 <p>Flags: Read</p>
 <p>Default value: 0</p>
 </div>
@@ -651,6 +638,34 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 user_function (<a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a> *self,
                <span class="type">GObject</span>       *nsp,
                <span class="type">gpointer</span>       user_data)</pre>
+<p>Notifies that a <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a> is added to the wimax device.</p>
+<div class="refsect3">
+<a name="id-1.5.15.12.2.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>the wimax device that received the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>nsp</p></td>
+<td class="parameter_description"><p>the new NSP</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
 <p>Flags: Run First</p>
 </div>
 <hr>
@@ -660,12 +675,39 @@ user_function (<a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><
 user_function (<a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a> *self,
                <span class="type">GObject</span>       *nsp,
                <span class="type">gpointer</span>       user_data)</pre>
+<p>Notifies that a <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a> is removed from the wimax device.</p>
+<div class="refsect3">
+<a name="id-1.5.15.12.3.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>self</p></td>
+<td class="parameter_description"><p>the wimax device that received the signal</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>nsp</p></td>
+<td class="parameter_description"><p>the removed NSP</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>user_data</p></td>
+<td class="parameter_description"><p>user data set when the signal handler was connected.</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
 <p>Flags: Run First</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>

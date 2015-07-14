@@ -30,135 +30,6 @@
 
 #include "nm-test-utils.h"
 
-static void
-test_nm_utils_ascii_str_to_int64_check (const char *str, guint base, gint64 min,
-                                        gint64 max, gint64 fallback, int exp_errno,
-                                        gint64 exp_val)
-{
-	gint64 v;
-
-	errno = 1;
-	v = nm_utils_ascii_str_to_int64 (str, base, min, max, fallback);
-	g_assert_cmpint (errno, ==, exp_errno);
-	g_assert_cmpint (v, ==, exp_val);
-}
-
-static void
-test_nm_utils_ascii_str_to_int64_do (const char *str, guint base, gint64 min,
-                                     gint64 max, gint64 fallback, int exp_errno,
-                                     gint64 exp_val)
-{
-	const char *sign = "";
-	const char *val;
-	static const char *whitespaces[] = {
-		"",
-		" ",
-		"\r\n\t",
-		" \r\n\t ",
-		" \r\n\t \t\r\n\t",
-		NULL,
-	};
-	static const char *nulls[] = {
-		"",
-		"0",
-		"00",
-		"0000",
-		"0000000000000000",
-		"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-		"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-		NULL,
-	};
-	const char **ws_pre, **ws_post, **null;
-	guint i;
-
-	if (str == NULL || exp_errno != 0) {
-		test_nm_utils_ascii_str_to_int64_check (str, base, min, max, fallback, exp_errno, exp_val);
-		return;
-	}
-
-	if (strncmp (str, "-", 1) == 0)
-		sign = "-";
-
-	val = str + strlen (sign);
-
-	for (ws_pre = whitespaces; *ws_pre; ws_pre++) {
-		for (ws_post = whitespaces; *ws_post; ws_post++) {
-			for (null = nulls; *null; null++) {
-				for (i = 0; ; i++) {
-					char *s;
-					const char *str_base = "";
-
-					if (base == 16) {
-						if (i == 1)
-							str_base = "0x";
-						else if (i > 1)
-							break;
-					} else if (base == 8) {
-						if (i == 1)
-							str_base = "0";
-						else if (i > 1)
-							break;
-					} else if (base == 0) {
-						if (i > 0)
-							break;
-						/* with base==0, a leading zero would be interpreted as octal. Only test without *null */
-						if ((*null)[0])
-							break;
-					} else {
-						if (i > 0)
-							break;
-					}
-
-					s = g_strdup_printf ("%s%s%s%s%s%s", *ws_pre, sign, str_base, *null, val, *ws_post);
-
-					test_nm_utils_ascii_str_to_int64_check (s, base, min, max, fallback, exp_errno, exp_val);
-					g_free (s);
-				}
-			}
-		}
-	}
-}
-
-static void
-test_nm_utils_ascii_str_to_int64 (void)
-{
-	test_nm_utils_ascii_str_to_int64_do (NULL, 10, 0, 10000, -1, EINVAL, -1);
-	test_nm_utils_ascii_str_to_int64_do ("", 10, 0, 10000, -1, EINVAL, -1);
-	test_nm_utils_ascii_str_to_int64_do ("1x", 10, 0, 10000, -1, EINVAL, -1);
-	test_nm_utils_ascii_str_to_int64_do ("4711", 10, 0, 10000, -1, 0, 4711);
-	test_nm_utils_ascii_str_to_int64_do ("10000", 10, 0, 10000, -1, 0, 10000);
-	test_nm_utils_ascii_str_to_int64_do ("10001", 10, 0, 10000, -1, ERANGE, -1);
-	test_nm_utils_ascii_str_to_int64_do ("FF", 16, 0, 10000, -1, 0, 255);
-	test_nm_utils_ascii_str_to_int64_do ("FF", 10, 0, 10000, -2, EINVAL, -2);
-	test_nm_utils_ascii_str_to_int64_do ("9223372036854775807", 10, 0, G_MAXINT64, -2, 0, G_MAXINT64);
-	test_nm_utils_ascii_str_to_int64_do ("7FFFFFFFFFFFFFFF", 16, 0, G_MAXINT64, -2, 0, G_MAXINT64);
-	test_nm_utils_ascii_str_to_int64_do ("9223372036854775808", 10, 0, G_MAXINT64, -2, ERANGE, -2);
-	test_nm_utils_ascii_str_to_int64_do ("-9223372036854775808", 10, G_MININT64, 0, -2, 0, G_MININT64);
-	test_nm_utils_ascii_str_to_int64_do ("-9223372036854775808", 10, G_MININT64+1, 0, -2, ERANGE, -2);
-	test_nm_utils_ascii_str_to_int64_do ("-9223372036854775809", 10, G_MININT64, 0, -2, ERANGE, -2);
-	test_nm_utils_ascii_str_to_int64_do ("1.0", 10, 1, 1, -1, EINVAL, -1);
-	test_nm_utils_ascii_str_to_int64_do ("1x0", 16, -10, 10, -100, EINVAL, -100);
-	test_nm_utils_ascii_str_to_int64_do ("0", 16, -10, 10, -100, 0, 0);
-	test_nm_utils_ascii_str_to_int64_do ("10001111", 2, -1000, 1000, -100000, 0, 0x8F);
-	test_nm_utils_ascii_str_to_int64_do ("-10001111", 2, -1000, 1000, -100000, 0, -0x8F);
-	test_nm_utils_ascii_str_to_int64_do ("1111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7F);
-	test_nm_utils_ascii_str_to_int64_do ("111111111111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFF);
-	test_nm_utils_ascii_str_to_int64_do ("11111111111111111111111111111111111111111111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFFFFFFFFFF);
-	test_nm_utils_ascii_str_to_int64_do ("111111111111111111111111111111111111111111111111111111111111111", 2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFFFFFFFFFFFFFF);
-	test_nm_utils_ascii_str_to_int64_do ("100000000000000000000000000000000000000000000000000000000000000", 2, G_MININT64, G_MAXINT64, -1, 0,  0x4000000000000000);
-	test_nm_utils_ascii_str_to_int64_do ("1000000000000000000000000000000000000000000000000000000000000000", 2, G_MININT64, G_MAXINT64, -1, ERANGE, -1);
-	test_nm_utils_ascii_str_to_int64_do ("-100000000000000000000000000000000000000000000000000000000000000", 2, G_MININT64, G_MAXINT64, -1, 0,  -0x4000000000000000);
-	test_nm_utils_ascii_str_to_int64_do ("111111111111111111111111111111111111111111111111111111111111111",  2, G_MININT64, G_MAXINT64, -1, 0, 0x7FFFFFFFFFFFFFFF);
-	test_nm_utils_ascii_str_to_int64_do ("-100000000000000000000000000000000000000000000000000000000000000",  2, G_MININT64, G_MAXINT64, -1, 0,  -0x4000000000000000);
-	test_nm_utils_ascii_str_to_int64_do ("0x70",  10, G_MININT64, G_MAXINT64, -1, EINVAL, -1);
-	test_nm_utils_ascii_str_to_int64_do ("4711",  0, G_MININT64, G_MAXINT64, -1, 0, 4711);
-	test_nm_utils_ascii_str_to_int64_do ("04711",  0, G_MININT64, G_MAXINT64, -1, 0, 04711);
-	test_nm_utils_ascii_str_to_int64_do ("0x4711",  0, G_MININT64, G_MAXINT64, -1, 0, 0x4711);
-	test_nm_utils_ascii_str_to_int64_do ("080",  0, G_MININT64, G_MAXINT64, -1, EINVAL, -1);
-	test_nm_utils_ascii_str_to_int64_do ("070",  0, G_MININT64, G_MAXINT64, -1, 0, 7*8);
-	test_nm_utils_ascii_str_to_int64_do ("0x70",  0, G_MININT64, G_MAXINT64, -1, 0, 0x70);
-}
-
 /* Reference implementation for nm_utils_ip6_address_clear_host_address.
  * Taken originally from set_address_masked(), src/rdisc/nm-lndp-rdisc.c
  **/
@@ -727,49 +598,134 @@ test_connection_sort_autoconnect_priority (void)
 
 /*******************************************/
 
-static void
-__test_uuid (const char *expected_uuid, const char *str, gssize slen, char *uuid_test)
+static const char *_test_match_spec_all[] = {
+	"e",
+	"em",
+	"em*",
+	"em\\",
+	"em\\*",
+	"em\\1",
+	"em\\11",
+	"em\\2",
+	"em1",
+	"em11",
+	"em2",
+	"=em*",
+	NULL
+};
+
+static gboolean
+_test_match_spec_contains (const char **matches, const char *match)
 {
-	g_assert (uuid_test);
-	g_assert (nm_utils_is_uuid (uuid_test));
+	guint i;
 
-	if (strcmp (uuid_test, expected_uuid)) {
-		g_error ("UUID test failed (1): text=%s, len=%lld, expected=%s, uuid_test=%s",
-		         str, (long long) slen, expected_uuid, uuid_test);
+	for (i = 0; matches && matches[i]; i++) {
+		if (strcmp (match, matches[i]) == 0)
+			return TRUE;
 	}
-	g_free (uuid_test);
-
-	uuid_test = nm_utils_uuid_generate_from_string (str, slen, NM_UTILS_UUID_TYPE_VARIANT3, NM_UTILS_UUID_NS);
-
-	g_assert (uuid_test);
-	g_assert (nm_utils_is_uuid (uuid_test));
-
-	if (strcmp (uuid_test, expected_uuid)) {
-		g_error ("UUID test failed (2): text=%s; len=%lld, expected=%s, uuid2=%s",
-		         str, (long long) slen, expected_uuid, uuid_test);
-	}
-	g_free (uuid_test);
+	return FALSE;
 }
 
-#define _test_uuid(expected_uuid, str, strlen, ...) __test_uuid (expected_uuid, str, strlen, nm_utils_uuid_generate_from_strings(__VA_ARGS__, NULL))
+static void
+test_match_spec_ifname (const char *spec_str, const char **matches, const char **neg_matches)
+{
+	const char *m;
+	GSList *specs, *specs_reverse = NULL, *specs_resplit, *specs_i, *specs_j;
+	guint i;
+	gs_free char *specs_joined = NULL;
+
+	g_assert (spec_str);
+
+	specs = nm_match_spec_split (spec_str);
+
+	/* assert that split(join(specs)) == specs */
+	specs_joined = nm_match_spec_join (specs);
+	specs_resplit = nm_match_spec_split (specs_joined);
+	specs_i = specs;
+	specs_j = specs_resplit;
+	while (specs_i && specs_j && g_strcmp0 (specs_i->data, specs_j->data) == 0) {
+		specs_i = specs_i->next;
+		specs_j = specs_j->next;
+	}
+	g_assert (!specs_i);
+	g_assert (!specs_j);
+	g_slist_free_full (specs_resplit, g_free);
+
+	/* also check the matches in the reverse order. They must yield the same result because
+	 * matches are inclusive -- except "except:" which always wins. */
+	specs_reverse = g_slist_reverse (g_slist_copy (specs));
+
+	for (i = 0; matches && matches[i]; i++) {
+		g_assert (nm_match_spec_interface_name (specs, matches[i]) == NM_MATCH_SPEC_MATCH);
+		g_assert (nm_match_spec_interface_name (specs_reverse, matches[i]) == NM_MATCH_SPEC_MATCH);
+	}
+	for (i = 0; neg_matches && neg_matches[i]; i++) {
+		g_assert (nm_match_spec_interface_name (specs, neg_matches[i]) == NM_MATCH_SPEC_NEG_MATCH);
+		g_assert (nm_match_spec_interface_name (specs_reverse, neg_matches[i]) == NM_MATCH_SPEC_NEG_MATCH);
+	}
+	for (i = 0; (m = _test_match_spec_all[i]); i++) {
+		if (_test_match_spec_contains (matches, m))
+			continue;
+		if (_test_match_spec_contains (neg_matches, m))
+			continue;
+		g_assert (nm_match_spec_interface_name (specs, m) == NM_MATCH_SPEC_NO_MATCH);
+		g_assert (nm_match_spec_interface_name (specs_reverse, m) == NM_MATCH_SPEC_NO_MATCH);
+	}
+
+	g_slist_free (specs_reverse);
+	g_slist_free_full (specs, g_free);
+}
 
 static void
-test_nm_utils_uuid_generate_from_strings (void)
+test_nm_match_spec_interface_name (void)
 {
-	_test_uuid ("b07c334a-399b-32de-8d50-58e4e08f98e3", "",         0, NULL);
-	_test_uuid ("b8a426cb-bcb5-30a3-bd8f-6786fea72df9", "\0",       1, "");
-	_test_uuid ("12a4a982-7aae-39e1-951e-41aeb1250959", "a\0",      2, "a");
-	_test_uuid ("69e22c7e-f89f-3a43-b239-1cb52ed8db69", "aa\0",     3, "aa");
-	_test_uuid ("59829fd3-5ad5-3d90-a7b0-4911747e4088", "\0\0",     2, "",   "");
-	_test_uuid ("01ad0e06-6c50-3384-8d86-ddab81421425", "a\0\0",    3, "a",  "");
-	_test_uuid ("e1ed8647-9ed3-3ec8-8c6d-e8204524d71d", "aa\0\0",   4, "aa", "");
-	_test_uuid ("fb1c7cd6-275c-3489-9382-83b900da8af0", "\0a\0",    3, "",   "a");
-	_test_uuid ("5d79494e-c4ba-31a6-80a2-d6016ccd7e17", "a\0a\0",   4, "a",  "a");
-	_test_uuid ("fd698d86-1b60-3ebe-855f-7aada9950a8d", "aa\0a\0",  5, "aa", "a");
-	_test_uuid ("8c573b48-0f01-30ba-bb94-c5f59f4fe517", "\0aa\0",   4, "",   "aa");
-	_test_uuid ("2bdd3d46-eb83-3c53-a41b-a724d04b5544", "a\0aa\0",  5, "a",  "aa");
-	_test_uuid ("13d4b780-07c1-3ba7-b449-81c4844ef039", "aa\0aa\0", 6, "aa", "aa");
-	_test_uuid ("dd265bf7-c05a-3037-9939-b9629858a477", "a\0b\0",   4, "a",  "b");
+#define S(...) ((const char *[]) { __VA_ARGS__, NULL } )
+	test_match_spec_ifname ("em1",
+	                        S ("em1"),
+	                        NULL);
+	test_match_spec_ifname ("em1,em2",
+	                        S ("em1", "em2"),
+	                        NULL);
+	test_match_spec_ifname ("em1,em2,interface-name:em2",
+	                        S ("em1", "em2"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:em1",
+	                        S ("em1"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:em*",
+	                        S ("em", "em*", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:em\\*",
+	                        S ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:~em\\*",
+	                        S ("em\\", "em\\*", "em\\1", "em\\11", "em\\2"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:=em*",
+	                        S ("em*"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:em*,except:interface-name:em1*",
+	                        S ("em", "em*", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em2", "em3"),
+	                        S ("em1", "em11"));
+	test_match_spec_ifname ("interface-name:em*,except:interface-name:=em*",
+	                        S ("em", "em\\", "em\\*", "em\\1", "em\\11", "em\\2", "em1", "em11", "em2", "em3"),
+	                        S ("em*"));
+	test_match_spec_ifname ("aa,bb,cc\\,dd,e,,",
+	                        S ("aa", "bb", "cc,dd", "e"),
+	                        NULL);
+	test_match_spec_ifname ("aa;bb;cc\\;dd;e,;",
+	                        S ("aa", "bb", "cc;dd", "e"),
+	                        NULL);
+	test_match_spec_ifname ("interface-name:em\\;1,em\\,2,\\,,\\\\,,em\\\\x",
+	                        S ("em;1", "em,2", ",", "\\", "em\\x"),
+	                        NULL);
+	test_match_spec_ifname ("\\s\\s,\\sinterface-name:a,\\s,",
+	                        S ("  ", " ", " interface-name:a"),
+	                        NULL);
+	test_match_spec_ifname (" aa ;  bb   ; cc\\;dd  ;e , ; \t\\t  , ",
+	                        S ("aa", "bb", "cc;dd", "e", "\t"),
+	                        NULL);
+#undef S
 }
 
 /*******************************************/
@@ -781,7 +737,6 @@ main (int argc, char **argv)
 {
 	nmtst_init_with_logging (&argc, &argv, NULL, "ALL");
 
-	g_test_add_func ("/general/nm_utils_ascii_str_to_int64", test_nm_utils_ascii_str_to_int64);
 	g_test_add_func ("/general/nm_utils_ip6_address_clear_host_address", test_nm_utils_ip6_address_clear_host_address);
 	g_test_add_func ("/general/nm_utils_log_connection_diff", test_nm_utils_log_connection_diff);
 
@@ -796,7 +751,7 @@ main (int argc, char **argv)
 
 	g_test_add_func ("/general/connection-sort/autoconnect-priority", test_connection_sort_autoconnect_priority);
 
-	g_test_add_func ("/general/nm_utils_uuid_generate_from_strings", test_nm_utils_uuid_generate_from_strings);
+	g_test_add_func ("/general/nm_match_spec_interface_name", test_nm_match_spec_interface_name);
 
 	return g_test_run ();
 }

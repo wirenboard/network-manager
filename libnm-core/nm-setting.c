@@ -91,7 +91,7 @@ _nm_gtype_hash (gconstpointer v)
 	return *((const GType *) v);
 }
 
-static void __attribute__((constructor))
+static void
 _ensure_registered (void)
 {
 	if (G_UNLIKELY (registered_settings == NULL)) {
@@ -101,6 +101,12 @@ _ensure_registered (void)
 		registered_settings = g_hash_table_new (g_str_hash, g_str_equal);
 		registered_settings_by_type = g_hash_table_new (_nm_gtype_hash, _nm_gtype_equal);
 	}
+}
+
+static void __attribute__((constructor))
+_ensure_registered_constructor (void)
+{
+	_ensure_registered ();
 }
 
 #define _ensure_setting_info(self, priv) \
@@ -1047,13 +1053,15 @@ compare_property (NMSetting *setting,
 	property = nm_setting_class_find_property (NM_SETTING_GET_CLASS (setting), prop_spec->name);
 	g_return_val_if_fail (property != NULL, FALSE);
 
-	value1 = get_property_for_dbus (setting, property, FALSE);
-	value2 = get_property_for_dbus (other, property, FALSE);
+	value1 = get_property_for_dbus (setting, property, TRUE);
+	value2 = get_property_for_dbus (other, property, TRUE);
 
 	cmp = nm_property_compare (value1, value2);
 
-	g_variant_unref (value1);
-	g_variant_unref (value2);
+	if (value1)
+		g_variant_unref (value1);
+	if (value2)
+		g_variant_unref (value2);
 
 	return cmp == 0;
 }

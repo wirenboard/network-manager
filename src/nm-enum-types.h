@@ -22,14 +22,10 @@ GType nm_dns_manager_resolv_conf_mode_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DNS_MANAGER_RESOLV_CONF_MODE (nm_dns_manager_resolv_conf_mode_get_type ())
 GType nm_dns_masq_status_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DNS_MASQ_STATUS (nm_dns_masq_status_get_type ())
-GType nm_platform_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_PLATFORM_ERROR (nm_platform_error_get_type ())
 GType nm_platform_reason_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_PLATFORM_REASON (nm_platform_reason_get_type ())
 GType nm_platform_signal_change_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_PLATFORM_SIGNAL_CHANGE_TYPE (nm_platform_signal_change_type_get_type ())
-GType nm_platform_get_route_mode_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_PLATFORM_GET_ROUTE_MODE (nm_platform_get_route_mode_get_type ())
 GType nm_rdisc_dhcp_level_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_RDISC_DHCP_LEVEL (nm_rdisc_dhcp_level_get_type ())
 GType nm_rdisc_preference_get_type (void) G_GNUC_CONST;
@@ -48,6 +44,10 @@ GType nm_ap_support_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_AP_SUPPORT (nm_ap_support_get_type ())
 GType nm_opt_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_OPT_TYPE (nm_opt_type_get_type ())
+GType nm_config_get_value_flags_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_CONFIG_GET_VALUE_FLAGS (nm_config_get_value_flags_get_type ())
+GType nm_config_change_flags_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_CONFIG_CHANGE_FLAGS (nm_config_change_flags_get_type ())
 GType nm_dispatcher_action_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DISPATCHER_ACTION (nm_dispatcher_action_get_type ())
 GType nm_auth_subject_type_get_type (void) G_GNUC_CONST;
@@ -62,6 +62,12 @@ GType nm_ip_config_source_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_IP_CONFIG_SOURCE (nm_ip_config_source_get_type ())
 GType nm_link_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_LINK_TYPE (nm_link_type_get_type ())
+GType nm_pobject_type_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_POBJECT_TYPE (nm_pobject_type_get_type ())
+GType nm_match_spec_match_type_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_MATCH_SPEC_MATCH_TYPE (nm_match_spec_match_type_get_type ())
+GType nm_utils_test_flags_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_UTILS_TEST_FLAGS (nm_utils_test_flags_get_type ())
 G_END_DECLS
 
 #endif /* __NM_ENUM_TYPES_H__ */

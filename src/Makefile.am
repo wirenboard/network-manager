@@ -5,7 +5,6 @@ include $(GLIB_MAKEFILE)
 SUBDIRS =				\
 	.				\
 	devices/adsl			\
-	devices/wifi			\
 	dhcp-manager			\
 	ppp-manager			\
 	settings/plugins
@@ -14,6 +13,10 @@ if WITH_MODEM_MANAGER_1
 SUBDIRS +=				\
 	devices/wwan			\
 	devices/bluetooth
+endif
+
+if WITH_WIFI
+SUBDIRS += devices/wifi
 endif
 
 if WITH_WIMAX
@@ -217,6 +220,10 @@ nm_sources = \
 	platform/nm-linux-platform.h \
 	platform/nm-platform.c \
 	platform/nm-platform.h \
+	platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h \
+	platform/nmp-object.c \
+	platform/nmp-object.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h \
@@ -269,8 +276,6 @@ nm_sources = \
 	supplicant-manager/nm-supplicant-settings-verify.c \
 	supplicant-manager/nm-supplicant-settings-verify.h \
 	supplicant-manager/nm-supplicant-types.h \
-	supplicant-manager/nm-call-store.c \
-	supplicant-manager/nm-call-store.h \
 	\
 	vpn-manager/nm-vpn-connection.c \
 	vpn-manager/nm-vpn-connection.h \
@@ -285,6 +290,8 @@ nm_sources = \
 	nm-active-connection.h \
 	nm-config.c \
 	nm-config.h \
+	nm-config-data.c \
+	nm-config-data.h \
 	nm-connection-provider.c \
 	nm-connection-provider.h \
 	nm-connectivity.c \
@@ -293,6 +300,8 @@ nm_sources = \
 	nm-dbus-manager.h \
 	nm-dcb.c \
 	nm-dcb.h \
+	nm-route-manager.c \
+	nm-route-manager.h \
 	nm-default-route-manager.c \
 	nm-default-route-manager.h \
 	nm-dhcp4-config.c \
@@ -319,10 +328,10 @@ nm_sources = \
 	nm-auth-utils.h \
 	nm-manager.c \
 	nm-manager.h \
+	nm-multi-index.c \
+	nm-multi-index.h \
 	nm-policy.c \
 	nm-policy.h \
-	nm-posix-signals.c \
-	nm-posix-signals.h \
 	nm-properties-changed-signal.c \
 	nm-properties-changed-signal.h \
 	nm-rfkill-manager.c \
@@ -474,6 +483,10 @@ libnm_iface_helper_la_SOURCES = \
 	platform/nm-linux-platform.h \
 	platform/nm-platform.c \
 	platform/nm-platform.h \
+	platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h \
+	platform/nmp-object.c \
+	platform/nmp-object.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h \
@@ -487,6 +500,9 @@ libnm_iface_helper_la_SOURCES = \
 	rdisc/nm-rdisc.c \
 	rdisc/nm-rdisc.h \
 	\
+	nm-route-manager.c \
+	nm-route-manager.h \
+	\
 	nm-ip4-config.c \
 	nm-ip4-config.h \
 	nm-ip6-config.c \
@@ -496,8 +512,8 @@ libnm_iface_helper_la_SOURCES = \
 	nm-enum-types.h \
 	nm-logging.c \
 	nm-logging.h \
-	nm-posix-signals.c \
-	nm-posix-signals.h \
+	nm-multi-index.c \
+	nm-multi-index.h \
 	NetworkManagerUtils.c \
 	NetworkManagerUtils.h
 

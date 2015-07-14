@@ -276,6 +276,7 @@ NM_TYPE_SETTINGS_ERROR
 NM_TYPE_SETTING_802_1X_CK_FORMAT
 NM_TYPE_SETTING_802_1X_CK_SCHEME
 NM_TYPE_SETTING_COMPARE_FLAGS
+NM_TYPE_SETTING_CONNECTION_AUTOCONNECT_SLAVES
 NM_TYPE_SETTING_DCB_FLAGS
 NM_TYPE_SETTING_DIFF_RESULT
 NM_TYPE_SETTING_IP6_CONFIG_PRIVACY
@@ -315,6 +316,7 @@ nm_secret_agent_get_secrets_flags_get_type
 nm_setting_802_1x_ck_format_get_type
 nm_setting_802_1x_ck_scheme_get_type
 nm_setting_compare_flags_get_type
+nm_setting_connection_autoconnect_slaves_get_type
 nm_setting_dcb_flags_get_type
 nm_setting_diff_result_get_type
 nm_setting_ip6_config_privacy_get_type
@@ -852,6 +854,35 @@ nm_ip_config_get_type
 </SECTION>
 
 <SECTION>
+<FILE>nm-keyfile-internal</FILE>
+NM_KEYFILE_CERT_SCHEME_PREFIX_BLOB
+NM_KEYFILE_CERT_SCHEME_PREFIX_PATH
+nm_keyfile_detect_unqualified_path_scheme
+NMKeyfileReadType
+NMKeyfileReadHandler
+NMKeyfileWarnSeverity
+NMKeyfileReadTypeDataWarn
+nm_keyfile_read
+NMKeyfileWriteType
+NMKeyfileWriteHandler
+NMKeyfileWriteTypeDataCert
+nm_keyfile_write
+nm_keyfile_plugin_kf_get_string
+nm_keyfile_plugin_kf_set_string
+</SECTION>
+
+<SECTION>
+<FILE>nm-keyfile-utils</FILE>
+VPN_SECRETS_GROUP
+nm_keyfile_plugin_get_alias_for_setting_name
+nm_keyfile_plugin_get_setting_name_for_alias
+DEFINE_KF_LIST_WRAPPER_PROTO
+DEFINE_KF_WRAPPER_PROTO
+nm_keyfile_plugin_kf_get_keys
+nm_keyfile_plugin_kf_has_key
+</SECTION>
+
+<SECTION>
 <FILE>nm-object</FILE>
 <TITLE>NMObject</TITLE>
 NM_OBJECT_PATH
@@ -972,6 +1003,7 @@ nm_setting_get_type
 <SECTION>
 <FILE>nm-setting-8021x</FILE>
 <TITLE>NMSetting8021x</TITLE>
+NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH
 NMSetting8021xCKFormat
 NMSetting8021xCKScheme
 NM_SETTING_802_1X_SETTING_NAME
@@ -1285,8 +1317,10 @@ NM_SETTING_CONNECTION_PERMISSIONS
 NM_SETTING_CONNECTION_ZONE
 NM_SETTING_CONNECTION_MASTER
 NM_SETTING_CONNECTION_SLAVE_TYPE
+NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES
 NM_SETTING_CONNECTION_SECONDARIES
 NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT
+NMSettingConnectionAutoconnectSlaves
 NMSettingConnection
 nm_setting_connection_new
 nm_setting_connection_get_id
@@ -1307,6 +1341,7 @@ nm_setting_connection_remove_permission_by_value
 nm_setting_connection_get_master
 nm_setting_connection_is_slave_type
 nm_setting_connection_get_slave_type
+nm_setting_connection_get_autoconnect_slaves
 nm_setting_connection_get_num_secondaries
 nm_setting_connection_get_secondary
 nm_setting_connection_add_secondary
@@ -2130,6 +2165,8 @@ NM_ENCODE_VERSION
 NM_VERSION_0_9_8
 NM_VERSION_0_9_10
 NM_VERSION_1_0
+NM_VERSION_1_0_2
+NM_VERSION_1_0_4
 NM_VERSION_CUR_STABLE
 NM_VERSION_NEXT_STABLE
 NM_VERSION_MIN_REQUIRED
@@ -2140,6 +2177,7 @@ NM_DEPRECATED_IN_1_0
 NM_DEPRECATED_IN_1_0_FOR
 NM_AVAILABLE_IN_0_9_10
 NM_AVAILABLE_IN_1_0
+NM_AVAILABLE_IN_1_0_4
 </SECTION>
 
 <SECTION>

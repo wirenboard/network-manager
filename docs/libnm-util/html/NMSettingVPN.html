@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>libnm-util Reference Manual: NMSettingVPN</title>
+<title>NMSettingVPN: libnm-util Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
 <link rel="home" href="index.html" title="libnm-util Reference Manual">
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingPPPOE.html" title="NMSettingPPPOE">
 <link rel="next" href="libnm-util-nm-utils.html" title="nm-utils">
-<meta name="generator" content="GTK-Doc V1.21 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -284,7 +284,6 @@ nm_setting_vpn_error_quark (<em class="parameter"><code><span class="type">void<
 <div class="refsect3">
 <a name="id-1.2.29.9.2.5"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingVPN.html" title="NMSettingVPN"><span class="type">NMSettingVPN</span></a> errors.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -360,7 +359,6 @@ plugin that should be used to connect to this VPN.</p>
 <div class="refsect3">
 <a name="id-1.2.29.9.5.6"></a><h4>Returns</h4>
 <p> the VPN plugin's service name</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -386,7 +384,6 @@ nm_setting_vpn_get_user_name (<em class="parameter"><code><a class="link" href="
 <div class="refsect3">
 <a name="id-1.2.29.9.6.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVPN.html#NMSettingVPN--user-name" title="The “user-name” property"><span class="type">“user-name”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -412,7 +409,6 @@ nm_setting_vpn_get_persistent (<em class="parameter"><code><a class="link" href=
 <div class="refsect3">
 <a name="id-1.2.29.9.7.5"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVPN.html#NMSettingVPN--persistent" title="The “persistent” property"><span class="type">“persistent”</span></a> property of the setting</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -439,7 +435,6 @@ nm_setting_vpn_get_num_data_items (<em class="parameter"><code><a class="link" h
 <div class="refsect3">
 <a name="id-1.2.29.9.8.6"></a><h4>Returns</h4>
 <p> the number of VPN plugin specific configuration data items</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -517,7 +512,6 @@ by <a class="link" href="NMSettingVPN.html#nm-setting-vpn-add-data-item" title="
 <div class="refsect3">
 <a name="id-1.2.29.9.10.6"></a><h4>Returns</h4>
 <p> the data item, if any</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -554,7 +548,6 @@ nm_setting_vpn_remove_data_item (<em class="parameter"><code><a class="link" hre
 <a name="id-1.2.29.9.11.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the data item was found and removed from the internal list,
 <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -621,7 +614,6 @@ nm_setting_vpn_get_num_secrets (<em class="parameter"><code><a class="link" href
 <div class="refsect3">
 <a name="id-1.2.29.9.13.6"></a><h4>Returns</h4>
 <p> the number of VPN plugin specific secrets</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -698,7 +690,6 @@ by <a class="link" href="NMSettingVPN.html#nm-setting-vpn-add-secret" title="nm_
 <div class="refsect3">
 <a name="id-1.2.29.9.15.6"></a><h4>Returns</h4>
 <p> the secret, if any</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -735,7 +726,6 @@ nm_setting_vpn_remove_secret (<em class="parameter"><code><a class="link" href="
 <a name="id-1.2.29.9.16.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secret was found and removed from the internal list,
 <code class="literal">FALSE</code> if it was not.</p>
-<p></p>
 </div>
 </div>
 <hr>
@@ -785,8 +775,6 @@ iteration will not be part of the iteration.</p>
 <a name="NM-SETTING-VPN-SETTING-NAME:CAPS"></a><h3>NM_SETTING_VPN_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_SETTING_NAME "vpn"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -831,48 +819,36 @@ required</p>
 <a name="NM-SETTING-VPN-ERROR:CAPS"></a><h3>NM_SETTING_VPN_ERROR</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_ERROR nm_setting_vpn_error_quark ()
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VPN-SERVICE-TYPE:CAPS"></a><h3>NM_SETTING_VPN_SERVICE_TYPE</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_SERVICE_TYPE "service-type"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VPN-USER-NAME:CAPS"></a><h3>NM_SETTING_VPN_USER_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_USER_NAME    "user-name"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VPN-PERSISTENT:CAPS"></a><h3>NM_SETTING_VPN_PERSISTENT</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_PERSISTENT   "persistent"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VPN-DATA:CAPS"></a><h3>NM_SETTING_VPN_DATA</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_DATA         "data"
 </pre>
-<p>
-</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-SETTING-VPN-SECRETS:CAPS"></a><h3>NM_SETTING_VPN_SECRETS</h3>
 <pre class="programlisting">#define NM_SETTING_VPN_SECRETS      "secrets"
 </pre>
-<p>
-</p>
 </div>
 </div>
 <div class="refsect1">
@@ -880,14 +856,17 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingVPN--data"></a><h3>The <code class="literal">“data”</code> property</h3>
 <pre class="programlisting">  “data”                     <span class="type">GHashTable_gchararray+gchararray_*</span></pre>
-<p></p>
+<p>Dictionary of key/value pairs of VPN plugin specific data.  Both keys and
+values must be strings.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingVPN--persistent"></a><h3>The <code class="literal">“persistent”</code> property</h3>
 <pre class="programlisting">  “persistent”               <span class="type">gboolean</span></pre>
-<p></p>
+<p>If the VPN service supports persistence, and this property is <code class="literal">TRUE</code>,
+the VPN will attempt to stay connected across link changes and outages,
+until explicitly disconnected.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: FALSE</p>
 </div>
@@ -895,14 +874,17 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingVPN--secrets"></a><h3>The <code class="literal">“secrets”</code> property</h3>
 <pre class="programlisting">  “secrets”                  <span class="type">GHashTable_gchararray+gchararray_*</span></pre>
-<p></p>
+<p>Dictionary of key/value pairs of VPN plugin specific secrets like
+passwords or private keys.  Both keys and values must be strings.</p>
 <p>Flags: Read / Write</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMSettingVPN--service-type"></a><h3>The <code class="literal">“service-type”</code> property</h3>
 <pre class="programlisting">  “service-type”             <span class="type">gchar</span> *</pre>
-<p></p>
+<p>D-Bus service name of the VPN plugin that this setting uses to connect to
+its network.  i.e. org.freedesktop.NetworkManager.vpnc for the vpnc
+plugin.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -910,14 +892,18 @@ required</p>
 <div class="refsect2">
 <a name="NMSettingVPN--user-name"></a><h3>The <code class="literal">“user-name”</code> property</h3>
 <pre class="programlisting">  “user-name”                <span class="type">gchar</span> *</pre>
-<p></p>
+<p>If the VPN connection requires a user name for authentication, that name
+should be provided here.  If the connection is available to more than one
+user, and the VPN requires each user to supply a different name, then
+leave this property empty.  If this property is empty, NetworkManager
+will automatically supply the username of the user which requested the
+VPN connection.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
 </div>
 </div>
 <div class="footer">
-<hr>
-          Generated by GTK-Doc V1.21</div>
+<hr>Generated by GTK-Doc V1.24</div>
 </body>
 </html>
