@@ -18,10 +18,10 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 68dff7a..f6c79ea 100644
+index 381b621..13cf1b3 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -373,8 +373,9 @@ fi
+@@ -384,8 +384,9 @@ fi
  case $with_suspend_resume in
      upower) ;;
      systemd)
@@ -33,10 +33,10 @@ index 68dff7a..f6c79ea 100644
      *)
  	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
 diff --git a/src/Makefile.am b/src/Makefile.am
-index a24ac6c..6339cb7 100644
+index 7339058..7614cad 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -412,6 +412,7 @@ AM_CPPFLAGS += \
+@@ -421,6 +421,7 @@ AM_CPPFLAGS += \
  	$(LIBNDP_CFLAGS) \
  	$(LIBSOUP_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
@@ -44,7 +44,7 @@ index a24ac6c..6339cb7 100644
  	$(SYSTEMD_DHCP_CFLAGS) \
  	\
  	-DBINDIR=\"$(bindir)\" \
-@@ -450,6 +451,7 @@ libNetworkManager_la_LIBADD = \
+@@ -459,6 +460,7 @@ libNetworkManager_la_LIBADD = \
  	$(GUDEV_LIBS) \
  	$(LIBNL_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \

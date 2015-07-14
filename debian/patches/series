@@ -10,4 +10,3 @@ build-install-nm-settings-ifcfg-rh.5-man-page-condit.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Don-t-block-network.target-on-NetworkManager-wait-on.patch
 Fix-iscsiadm-path.patch
-dns-Fix-falling-back-in-the-resolv.conf-methods.patch

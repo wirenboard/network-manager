@@ -1,6 +1,7 @@
 network-manager (1.0.4-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Refresh patches.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 14 Jul 2015 19:40:02 +0200
 

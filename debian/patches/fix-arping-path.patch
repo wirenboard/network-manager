@@ -15,10 +15,10 @@ Closes: #755039
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/devices/nm-device.c b/src/devices/nm-device.c
-index 4752628..25b17b3 100644
+index c5d4c20..d77640c 100644
 --- a/src/devices/nm-device.c
 +++ b/src/devices/nm-device.c
-@@ -5137,7 +5137,7 @@ send_arps (NMDevice *self, const char *mode_arg)
+@@ -5562,7 +5562,7 @@ send_arps (NMDevice *self, const char *mode_arg)
  	if (num == 0)
  		return;
  

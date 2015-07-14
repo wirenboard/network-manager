@@ -19,7 +19,7 @@ https://bugzilla.gnome.org/show_bug.cgi?id=746039
  2 files changed, 4 insertions(+), 7 deletions(-)
 
 diff --git a/data/Makefile.am b/data/Makefile.am
-index a7c8070..60443bf 100644
+index 3f628be..ddaafee 100644
 --- a/data/Makefile.am
 +++ b/data/Makefile.am
 @@ -18,10 +18,6 @@ endif

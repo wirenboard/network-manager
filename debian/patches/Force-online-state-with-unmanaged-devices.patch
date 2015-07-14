@@ -12,10 +12,10 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 122 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index 0fa88d1..0a39dfb 100644
+index 080cdb8..03a866e 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
-@@ -64,6 +64,8 @@
+@@ -62,6 +62,8 @@
  #define NM_AUTOIP_DBUS_SERVICE "org.freedesktop.nm_avahi_autoipd"
  #define NM_AUTOIP_DBUS_IFACE   "org.freedesktop.nm_avahi_autoipd"
  
@@ -24,7 +24,7 @@ index 0fa88d1..0a39dfb 100644
  static gboolean impl_manager_get_devices (NMManager *manager,
                                            GPtrArray **devices,
                                            GError **err);
-@@ -198,6 +200,11 @@ typedef struct {
+@@ -191,6 +193,11 @@ typedef struct {
  	GFileMonitor *fw_monitor;
  	guint fw_changed_id;
  
@@ -36,7 +36,7 @@ index 0fa88d1..0a39dfb 100644
  	guint timestamp_update_id;
  
  	gboolean startup;
-@@ -621,6 +628,29 @@ find_best_device_state (NMManager *manager)
+@@ -657,6 +664,29 @@ find_best_device_state (NMManager *manager)
  	return best_state;
  }
  
@@ -66,7 +66,7 @@ index 0fa88d1..0a39dfb 100644
  static void
  nm_manager_update_state (NMManager *manager)
  {
-@@ -638,6 +668,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -674,6 +704,9 @@ nm_manager_update_state (NMManager *manager)
  
  	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
  
@@ -76,11 +76,10 @@ index 0fa88d1..0a39dfb 100644
  	if (new_state == NM_STATE_CONNECTED_SITE) {
  		nm_connectivity_check_async (priv->connectivity,
  		                             checked_connectivity,
-@@ -4172,6 +4205,65 @@ impl_manager_check_connectivity (NMManager *manager,
- 	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_NETWORK_CONTROL, TRUE);
+@@ -4123,6 +4156,65 @@ impl_manager_check_connectivity (NMManager *manager,
  }
  
-+static void
+ static void
 +check_ifstate_file (gpointer user_data)
 +{
 +	NMManager *self = NM_MANAGER (user_data);
@@ -94,7 +93,7 @@ index 0fa88d1..0a39dfb 100644
 +		nm_log_warn (LOGD_CORE, "Error: failed to open %s", IFUPDOWN_STATE_FILE);
 +		return;
 +	}
-+	
++
 +	while (g_io_channel_read_line (channel, &line, NULL, NULL, NULL)
 +	       != G_IO_STATUS_EOF && !online) {
 +		g_strstrip (line);
@@ -103,7 +102,7 @@ index 0fa88d1..0a39dfb 100644
 +		}
 +		g_free (line);
 +	}
-+	
++
 +	g_io_channel_shutdown (channel, FALSE, NULL);
 +	g_io_channel_unref (channel);
 +
@@ -139,10 +138,11 @@ index 0fa88d1..0a39dfb 100644
 +	}
 +}
 +
- void
- nm_manager_start (NMManager *self)
++static void
+ start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
-@@ -4220,6 +4312,9 @@ nm_manager_start (NMManager *self)
+ 	nm_device_factory_start (factory);
+@@ -4174,6 +4266,9 @@ nm_manager_start (NMManager *self)
  	system_create_virtual_devices (self);
  
  	check_if_startup_complete (self);
@@ -152,7 +152,7 @@ index 0fa88d1..0a39dfb 100644
  }
  
  void
-@@ -4916,6 +5011,22 @@ nm_manager_init (NMManager *manager)
+@@ -4877,6 +4972,22 @@ nm_manager_init (NMManager *manager)
  		             KERNEL_FIRMWARE_DIR);
  	}
  
@@ -175,7 +175,7 @@ index 0fa88d1..0a39dfb 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, manager);
  }
-@@ -5113,6 +5224,17 @@ dispose (GObject *object)
+@@ -5086,6 +5197,17 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
@@ -190,6 +190,6 @@ index 0fa88d1..0a39dfb 100644
 +		g_object_unref (priv->ifstate_monitor);
 +	}
 +
- 	for (iter = priv->factories; iter; iter = iter->next) {
- 		NMDeviceFactory *factory = iter->data;
- 
+ 	nm_device_factory_manager_for_each_factory (_deinit_device_factory, manager);
+ 	
+ 	if (priv->timestamp_update_id) {
