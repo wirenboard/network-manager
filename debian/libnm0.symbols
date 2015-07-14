@@ -1,5 +1,6 @@
 libnm.so.0 libnm0 #MINVER#
  libnm_1_0_0@libnm_1_0_0 1.0.0
+ libnm_1_0_4@libnm_1_0_4 1.0.4
  nm_802_11_ap_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_ap_security_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_mode_get_type@libnm_1_0_0 1.0.0
@@ -466,8 +467,10 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_compare_flags_get_type@libnm_1_0_0 1.0.0
  nm_setting_connection_add_permission@libnm_1_0_0 1.0.0
  nm_setting_connection_add_secondary@libnm_1_0_0 1.0.0
+ nm_setting_connection_autoconnect_slaves_get_type@libnm_1_0_4 1.0.4
  nm_setting_connection_get_autoconnect@libnm_1_0_0 1.0.0
  nm_setting_connection_get_autoconnect_priority@libnm_1_0_0 1.0.0
+ nm_setting_connection_get_autoconnect_slaves@libnm_1_0_4 1.0.4
  nm_setting_connection_get_connection_type@libnm_1_0_0 1.0.0
  nm_setting_connection_get_gateway_ping_timeout@libnm_1_0_0 1.0.0
  nm_setting_connection_get_id@libnm_1_0_0 1.0.0
