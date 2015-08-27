@@ -1,6 +1,7 @@
 libnm.so.0 libnm0 #MINVER#
  libnm_1_0_0@libnm_1_0_0 1.0.0
  libnm_1_0_4@libnm_1_0_4 1.0.4
+ libnm_1_0_6@libnm_1_0_6 1.0.6
  nm_802_11_ap_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_ap_security_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_mode_get_type@libnm_1_0_0 1.0.0
@@ -9,6 +10,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_access_point_get_bssid@libnm_1_0_0 1.0.0
  nm_access_point_get_flags@libnm_1_0_0 1.0.0
  nm_access_point_get_frequency@libnm_1_0_0 1.0.0
+ nm_access_point_get_last_seen@libnm_1_0_6 1.0.6
  nm_access_point_get_max_bitrate@libnm_1_0_0 1.0.0
  nm_access_point_get_mode@libnm_1_0_0 1.0.0
  nm_access_point_get_rsn_flags@libnm_1_0_0 1.0.0
@@ -206,6 +208,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_get_ip6_config@libnm_1_0_0 1.0.0
  nm_device_get_ip_iface@libnm_1_0_0 1.0.0
  nm_device_get_managed@libnm_1_0_0 1.0.0
+ nm_device_get_metered@libnm_1_0_6 1.0.6
  nm_device_get_mtu@libnm_1_0_0 1.0.0
  nm_device_get_physical_port_id@libnm_1_0_0 1.0.0
  nm_device_get_product@libnm_1_0_0 1.0.0
@@ -254,6 +257,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_wifi_request_scan@libnm_1_0_0 1.0.0
  nm_device_wifi_request_scan_async@libnm_1_0_0 1.0.0
  nm_device_wifi_request_scan_finish@libnm_1_0_0 1.0.0
+ nm_device_wifi_request_scan_options@libnm_1_0_6 1.0.6
+ nm_device_wifi_request_scan_options_async@libnm_1_0_6 1.0.6
  nm_device_wimax_get_active_nsp@libnm_1_0_0 1.0.0
  nm_device_wimax_get_bsid@libnm_1_0_0 1.0.0
  nm_device_wimax_get_center_frequency@libnm_1_0_0 1.0.0
@@ -317,6 +322,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_ip_route_unref@libnm_1_0_0 1.0.0
  nm_manager_error_get_type@libnm_1_0_0 1.0.0
  nm_manager_error_quark@libnm_1_0_0 1.0.0
+ nm_metered_get_type@libnm_1_0_6 1.0.6
  nm_object_get_path@libnm_1_0_0 1.0.0
  nm_object_get_type@libnm_1_0_0 1.0.0
  nm_remote_connection_commit_changes@libnm_1_0_0 1.0.0
@@ -476,6 +482,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_connection_get_id@libnm_1_0_0 1.0.0
  nm_setting_connection_get_interface_name@libnm_1_0_0 1.0.0
  nm_setting_connection_get_master@libnm_1_0_0 1.0.0
+ nm_setting_connection_get_metered@libnm_1_0_6 1.0.6
  nm_setting_connection_get_num_permissions@libnm_1_0_0 1.0.0
  nm_setting_connection_get_num_secondaries@libnm_1_0_0 1.0.0
  nm_setting_connection_get_permission@libnm_1_0_0 1.0.0
@@ -688,10 +695,13 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wired_get_speed@libnm_1_0_0 1.0.0
  nm_setting_wired_get_type@libnm_1_0_0 1.0.0
  nm_setting_wired_get_valid_s390_options@libnm_1_0_0 1.0.0
+ nm_setting_wired_get_wake_on_lan@libnm_1_0_6 1.0.6
+ nm_setting_wired_get_wake_on_lan_password@libnm_1_0_6 1.0.6
  nm_setting_wired_new@libnm_1_0_0 1.0.0
  nm_setting_wired_remove_mac_blacklist_item@libnm_1_0_0 1.0.0
  nm_setting_wired_remove_mac_blacklist_item_by_value@libnm_1_0_0 1.0.0
  nm_setting_wired_remove_s390_option@libnm_1_0_0 1.0.0
+ nm_setting_wired_wake_on_lan_get_type@libnm_1_0_6 1.0.6
  nm_setting_wireless_add_mac_blacklist_item@libnm_1_0_0 1.0.0
  nm_setting_wireless_add_seen_bssid@libnm_1_0_0 1.0.0
  nm_setting_wireless_ap_security_compatible@libnm_1_0_0 1.0.0
@@ -758,6 +768,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_utils_ap_mode_security_valid@libnm_1_0_0 1.0.0
  nm_utils_bin2hexstr@libnm_1_0_0 1.0.0
  nm_utils_check_virtual_device_compatibility@libnm_1_0_0 1.0.0
+ nm_utils_enum_from_str@libnm_1_0_6 1.0.6
+ nm_utils_enum_to_str@libnm_1_0_6 1.0.6
  nm_utils_escape_ssid@libnm_1_0_0 1.0.0
  nm_utils_file_is_certificate@libnm_1_0_0 1.0.0
  nm_utils_file_is_pkcs12@libnm_1_0_0 1.0.0
@@ -798,6 +810,8 @@ libnm.so.0 libnm0 #MINVER#
  nm_utils_ssid_to_utf8@libnm_1_0_0 1.0.0
  nm_utils_uuid_generate@libnm_1_0_0 1.0.0
  nm_utils_wep_key_valid@libnm_1_0_0 1.0.0
+ nm_utils_wifi_2ghz_freqs@libnm_1_0_6 1.0.6
+ nm_utils_wifi_5ghz_freqs@libnm_1_0_6 1.0.6
  nm_utils_wifi_channel_to_freq@libnm_1_0_0 1.0.0
  nm_utils_wifi_find_next_channel@libnm_1_0_0 1.0.0
  nm_utils_wifi_freq_to_channel@libnm_1_0_0 1.0.0
