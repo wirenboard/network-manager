@@ -69,7 +69,7 @@ void nm_ip4_config_merge_setting (NMIP4Config *config, NMSettingIPConfig *settin
 NMSetting *nm_ip4_config_create_setting (const NMIP4Config *config);
 
 /* Utility functions */
-void nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src);
+void nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src, NMIPConfigMergeFlags merge_flags);
 void nm_ip4_config_subtract (NMIP4Config *dst, const NMIP4Config *src);
 void nm_ip4_config_intersect (NMIP4Config *dst, const NMIP4Config *src);
 gboolean nm_ip4_config_replace (NMIP4Config *dst, const NMIP4Config *src, gboolean *relevant_changes);
@@ -80,7 +80,10 @@ void nm_ip4_config_dump (const NMIP4Config *config, const char *detail);
 void nm_ip4_config_set_never_default (NMIP4Config *config, gboolean never_default);
 gboolean nm_ip4_config_get_never_default (const NMIP4Config *config);
 void nm_ip4_config_set_gateway (NMIP4Config *config, guint32 gateway);
+void nm_ip4_config_unset_gateway (NMIP4Config *config);
+gboolean nm_ip4_config_has_gateway (const NMIP4Config *config);
 guint32 nm_ip4_config_get_gateway (const NMIP4Config *config);
+gint64 nm_ip4_config_get_route_metric (const NMIP4Config *config);
 
 /* Addresses */
 void nm_ip4_config_reset_addresses (NMIP4Config *config);
@@ -145,6 +148,10 @@ guint32 nm_ip4_config_get_wins (const NMIP4Config *config, guint i);
 void nm_ip4_config_set_mtu (NMIP4Config *config, guint32 mtu, NMIPConfigSource source);
 guint32 nm_ip4_config_get_mtu (const NMIP4Config *config);
 NMIPConfigSource nm_ip4_config_get_mtu_source (const NMIP4Config *config);
+
+/* Metered */
+void nm_ip4_config_set_metered (NMIP4Config *config, gboolean metered);
+gboolean nm_ip4_config_get_metered (const NMIP4Config *config);
 
 void nm_ip4_config_hash (const NMIP4Config *config, GChecksum *sum, gboolean dns_only);
 gboolean nm_ip4_config_equal (const NMIP4Config *a, const NMIP4Config *b);

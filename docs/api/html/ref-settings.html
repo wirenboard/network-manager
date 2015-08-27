@@ -625,6 +625,12 @@
 <td>Interface name of the master device or UUID of the master connection.</td>
 </tr>
 <tr>
+<td><pre class="screen">metered</pre></td>
+<td><pre class="screen">NMMetered (int32)</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Whether the connection is metered.</td>
+</tr>
+<tr>
 <td><pre class="screen">name</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen">connection</pre></td>
@@ -1799,6 +1805,18 @@
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">0</pre></td>
 <td>If non-zero, request that the device use only the specified speed.  In Mbit/s, ie 100 == 100Mbit/s.</td>
+</tr>
+<tr>
+<td><pre class="screen">wake-on-lan</pre></td>
+<td><pre class="screen">uint32</pre></td>
+<td><pre class="screen">1</pre></td>
+<td>The NMSettingWiredWakeOnLan options to enable. Not all devices support all options. May be any combination of NM_SETTING_WIRED_WAKE_ON_LAN_PHY (0x2), NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST (0x4), NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST (0x8), NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST (0x10), NM_SETTING_WIRED_WAKE_ON_LAN_ARP (0x20), NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC (0x40).</td>
+</tr>
+<tr>
+<td><pre class="screen">wake-on-lan-password</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>If specified, the password used with magic-packet-based Wake-on-LAN, represented as an Ethernet MAC address.  If NULL, no password will be required.</td>
 </tr>
 </tbody>
 </table></div>

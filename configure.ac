@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [0])
-m4_define([nm_micro_version], [4])
+m4_define([nm_micro_version], [6])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -588,9 +588,9 @@ fi
 
 GLIB_MAKEFILE='$(top_srcdir)/Makefile.glib'
 AC_SUBST(GLIB_MAKEFILE)
-GLIB_GENMARSHAL=`pkg-config --variable=glib_genmarshal glib-2.0`
+GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
 AC_SUBST(GLIB_GENMARSHAL)
-GLIB_MKENUMS=`pkg-config --variable=glib_mkenums glib-2.0`
+GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
 AC_SUBST(GLIB_MKENUMS)
 
 AC_ARG_WITH(dbus-sys-dir, AS_HELP_STRING([--with-dbus-sys-dir=DIR], [where D-BUS system.d directory is]))
@@ -848,7 +848,7 @@ fi
 AC_ARG_ENABLE(more-logging,
               AS_HELP_STRING([--enable-more-logging], [Enable more debug logging (default: no)]))
 if test "${enable_more_logging}" = "yes"; then
-    AC_DEFINE(NM_MORE_LOGGING, [1], [Define if more asserts are enabled])
+    AC_DEFINE(NM_MORE_LOGGING, [1], [Define if more debug logging is enabled])
 fi
 
 AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto], [Enable Link Time Optimization for smaller size (default: no)]))

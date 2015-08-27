@@ -99,6 +99,8 @@ NmcPropertyDesc setting_802_3_ethernet[] = {
 	{ "s390-options", "Dictionary of key/value pairs of s390-specific device options.  Both keys and values must be strings.  Allowed keys include \"portno\", \"layer2\", \"portname\", \"protocol\", among others.  Key names must contain only alphanumeric characters (ie, [a-zA-Z0-9])." },
 	{ "s390-subchannels", "Identifies specific subchannels that this network device uses for communication with z/VM or s390 host.  Like the \"mac-address\" property for non-z/VM devices, this property can be used to ensure this connection only applies to the network device that uses these subchannels.  The list should contain exactly 3 strings, and each string may only be composed of hexadecimal characters and the period (.) character." },
 	{ "speed", "If non-zero, request that the device use only the specified speed.  In Mbit/s, ie 100 == 100Mbit/s." },
+	{ "wake-on-lan", "The NMSettingWiredWakeOnLan options to enable. Not all devices support all options. May be any combination of NM_SETTING_WIRED_WAKE_ON_LAN_PHY (0x2), NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST (0x4), NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST (0x8), NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST (0x10), NM_SETTING_WIRED_WAKE_ON_LAN_ARP (0x20), NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC (0x40)." },
+	{ "wake-on-lan-password", "If specified, the password used with magic-packet-based Wake-on-LAN, represented as an Ethernet MAC address.  If NULL, no password will be required." },
 };
   
 NmcPropertyDesc setting_adsl[] = {
@@ -157,6 +159,7 @@ NmcPropertyDesc setting_connection[] = {
 	{ "id", "A human readable unique identifier for the connection, like \"Work Wi-Fi\" or \"T-Mobile 3G\"." },
 	{ "interface-name", "The name of the network interface this connection is bound to. If not set, then the connection can be attached to any interface of the appropriate type (subject to restrictions imposed by other settings). For software devices this specifies the name of the created device. For connection types where interface names cannot easily be made persistent (e.g. mobile broadband or USB Ethernet), this property should not be used. Setting this property restricts the interfaces a connection can be used with, and if interface names change or are reordered the connection may be applied to the wrong interface." },
 	{ "master", "Interface name of the master device or UUID of the master connection." },
+	{ "metered", "Whether the connection is metered." },
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
 	{ "permissions", "An array of strings defining what access a given user has to this connection.  If this is NULL or empty, all users are allowed to access this connection.  Otherwise a user is allowed to access this connection if and only if they are in this list. Each entry is of the form \"[type]:[id]:[reserved]\"; for example, \"user:dcbw:blah\". At this time only the \"user\" [type] is allowed.  Any other values are ignored and reserved for future use.  [id] is the username that this permission refers to, which may not contain the \":\" character. Any [reserved] information present must be ignored and is reserved for future use.  All of [type], [id], and [reserved] must be valid UTF-8." },
 	{ "read-only", "FALSE if the connection can be modified using the provided settings service's D-Bus interface with the right privileges, or TRUE if the connection is read-only and cannot be modified." },
@@ -335,14 +338,14 @@ NmcSettingDesc all_settings[] = {
 	{ "802-11-wireless", setting_802_11_wireless, 14 },
 	{ "802-11-wireless-security", setting_802_11_wireless_security, 18 },
 	{ "802-1x", setting_802_1x, 33 },
-	{ "802-3-ethernet", setting_802_3_ethernet, 12 },
+	{ "802-3-ethernet", setting_802_3_ethernet, 14 },
 	{ "adsl", setting_adsl, 8 },
 	{ "bluetooth", setting_bluetooth, 3 },
 	{ "bond", setting_bond, 2 },
 	{ "bridge", setting_bridge, 8 },
 	{ "bridge-port", setting_bridge_port, 4 },
 	{ "cdma", setting_cdma, 5 },
-	{ "connection", setting_connection, 16 },
+	{ "connection", setting_connection, 17 },
 	{ "dcb", setting_dcb, 16 },
 	{ "generic", setting_generic, 1 },
 	{ "gsm", setting_gsm, 10 },

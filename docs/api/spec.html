@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 1.0.4</title><style type="text/css">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 1.0.6</title><style type="text/css">
 
           body {
             font-family: sans-serif;
@@ -97,7 +97,7 @@
             margin-right: 4em;
           }
 
-        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 1.0.4</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
+        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 1.0.6</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
 <p>This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -381,6 +381,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         The connection type of the "primary" active connection being
         used to access the network. This is the same as the Type
         property on the object indicated by PrimaryConnection.
+      </dd><dt><code>Metered</code> -
+      <code>u</code> -
+      <code>(read)</code>
+      (<a xmlns="" href="#type-NM_METERED">NM_METERED</a>)
+    </dt><dd>
+        Wheter the connectivity is metered. This is equivalent to the
+        metered property of the device associated with the primary
+        connection.
       </dd><dt><code>ActivatingConnection</code> -
       <code>o</code> -
       <code>(read)</code></dt><dd>
@@ -478,7 +486,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>u</code> -
       <code>(read)</code></dt><dd>The maximum bitrate this access point is capable of, in kilobits/second (Kb/s).</dd><dt><code>Strength</code> -
       <code>y</code> -
-      <code>(read)</code></dt><dd>The current signal quality of the access point, in percent.</dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_802_11_AP_FLAGS" id="type-NM_802_11_AP_FLAGS">NM_802_11_AP_FLAGS</a></h3>
+      <code>(read)</code></dt><dd>The current signal quality of the access point, in percent.</dd><dt><code>LastSeen</code> -
+      <code>i</code> -
+      <code>(read)</code></dt><dd>
+        The timestamp (in CLOCK_BOOTTIME seconds) for the last time the access
+        point was found in scan results.  A value of -1 means the access point
+        has never been found in scan results.
+      </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_802_11_AP_FLAGS" id="type-NM_802_11_AP_FLAGS">NM_802_11_AP_FLAGS</a></h3>
         Flags describing the general capabilities of the access point.
       <dl><dt><code>NM_802_11_AP_FLAGS_NONE = 0x0</code></dt><dd>Null capability - says nothing about the access point.</dd><dt><code>NM_802_11_AP_FLAGS_PRIVACY = 0x1</code></dt><dd>Access point supports privacy measures.</dd></dl><h3 xmlns=""><a name="type-NM_802_11_AP_SEC" id="type-NM_802_11_AP_SEC">NM_802_11_AP_SEC</a></h3>
         Flags describing the security capabilities of the access point.
@@ -635,6 +649,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>u</code> -
       <code>(read)</code></dt><dd>
         The device MTU (maximum transmission unit).
+      </dd><dt><code>Metered</code> -
+      <code>u</code> -
+      <code>(read)</code>
+      (<a xmlns="" href="#type-NM_METERED">NM_METERED</a>)
+    </dt><dd>
+        Whether the amount of traffic flowing through the device is
+        subject to limitations, for example set by service providers.
       </dd></dl><h2>Enumerated types:</h2><h3><a name="type-NM_DEVICE_STATE" id="type-NM_DEVICE_STATE">NM_DEVICE_STATE</a></h3><dl><dt><code>NM_DEVICE_STATE_UNKNOWN = 0</code></dt><dd>
           The device is in an unknown state.
         </dd><dt><code>NM_DEVICE_STATE_UNMANAGED = 10</code></dt><dd>
@@ -817,6 +838,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The device's parent changed.
         </dd><dt><code>NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED = 62</code></dt><dd>
           The device parent's management changed.
+        </dd></dl><h3><a name="type-NM_METERED" id="type-NM_METERED">NM_METERED</a></h3><dl><dt><code>NM_METERED_UNKNOWN = 0</code></dt><dd>
+          The device metered status is unknown.
+        </dd><dt><code>NM_METERED_YES = 1</code></dt><dd>
+          The device is metered and the value was statically set.
+        </dd><dt><code>NM_METERED_NO = 2</code></dt><dd>
+          The device is not metered and the value was statically set.
+        </dd><dt><code>NM_METERED_GUESS_YES = 3</code></dt><dd>
+          The device is metered and the value was guessed.
+        </dd><dt><code>NM_METERED_GUESS_NO = 4</code></dt><dd>
+          The device is not metered and the value was guessed.
         </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_DEVICE_CAP" id="type-NM_DEVICE_CAP">NM_DEVICE_CAP</a></h3><dl><dt><code>NM_DEVICE_CAP_NONE = 0x0</code></dt><dd>Null capability.</dd><dt><code>NM_DEVICE_CAP_NM_SUPPORTED = 0x1</code></dt><dd>The device is supported by NetworkManager.</dd><dt><code>NM_DEVICE_CAP_CARRIER_DETECT = 0x2</code></dt><dd>The device supports carrier detection.</dd></dl><h2>Structure types:</h2><div class="struct"><h3><a name="type-NM_DEVICE_STATE_REASON_STRUCT" id="type-NM_DEVICE_STATE_REASON_STRUCT">NM_DEVICE_STATE_REASON_STRUCT</a> - (
         u: state, u: reason
         )
@@ -885,7 +916,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
         Request the device to scan
       </div><div><h4>Parameters</h4><dl><dt><code>options</code> -
       <code>a{sv}</code></dt><dd>
-          Options of scan (currently unused argument).
+          Options of scan.
+          Currently 'ssids' option with value of "aay" type is supported.
         </dd></dl></div></div><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Wireless.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Wireless.PropertiesChanged">PropertiesChanged</a> (
         a{sv}: properties
         )</h3><div class="docstring">
@@ -2372,6 +2404,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
     - u</li><li><code><a href="#type-NM_DEVICE_STATE_REASON_STRUCT">NM_DEVICE_STATE_REASON_STRUCT</a></code>
     - ( u, u )
   </li><li><code><a href="#type-NM_DEVICE_TYPE">NM_DEVICE_TYPE</a></code>
+    - u</li><li><code><a href="#type-NM_METERED">NM_METERED</a></code>
     - u</li><li><code><a href="#type-NM_SECRET_AGENT_CAPABILITIES">NM_SECRET_AGENT_CAPABILITIES</a></code>
     - u</li><li><code><a href="#type-NM_SECRET_AGENT_GET_SECRETS_FLAGS">NM_SECRET_AGENT_GET_SECRETS_FLAGS</a></code>
     - u</li><li><code><a href="#type-NM_STATE">NM_STATE</a></code>

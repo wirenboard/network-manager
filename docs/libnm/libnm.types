@@ -41,6 +41,7 @@ nm_ip_address_get_type
 nm_ip_config_get_type
 nm_ip_route_get_type
 nm_manager_error_get_type
+nm_metered_get_type
 nm_object_get_type
 nm_remote_connection_get_type
 nm_secret_agent_capabilities_get_type
@@ -82,6 +83,7 @@ nm_setting_vlan_get_type
 nm_setting_vpn_get_type
 nm_setting_wimax_get_type
 nm_setting_wired_get_type
+nm_setting_wired_wake_on_lan_get_type
 nm_setting_wireless_get_type
 nm_setting_wireless_security_get_type
 nm_settings_error_get_type

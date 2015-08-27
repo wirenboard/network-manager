@@ -67,8 +67,9 @@
 
 /*********************************************************************************************/
 
-#define _LOG_DOMAIN LOGD_PLATFORM
-#define _LOG_PREFIX_NAME "platform-linux"
+#define _NMLOG_DOMAIN                     LOGD_PLATFORM
+#define _NMLOG_PREFIX_NAME                "platform-linux"
+#define _NMLOG(level, ...)                _LOG(level, _NMLOG_DOMAIN, platform, __VA_ARGS__)
 
 #define _LOG(level, domain, self, ...) \
     G_STMT_START { \
@@ -77,11 +78,11 @@
         \
         if (nm_logging_enabled (__level, __domain)) { \
             char __prefix[32]; \
-            const char *__p_prefix = _LOG_PREFIX_NAME; \
+            const char *__p_prefix = _NMLOG_PREFIX_NAME; \
             const void *const __self = (self); \
             \
             if (__self && __self != nm_platform_try_get ()) { \
-                g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _LOG_PREFIX_NAME, __self); \
+                g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _NMLOG_PREFIX_NAME, __self); \
                 __p_prefix = __prefix; \
             } \
             _nm_log (__level, __domain, 0, \
@@ -89,25 +90,12 @@
                      __p_prefix _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
         } \
     } G_STMT_END
-#define _LOG_LEVEL_ENABLED(level, domain) \
-    ( nm_logging_enabled ((level), (domain)) )
 
-#ifdef NM_MORE_LOGGING
-#define _LOGT_ENABLED()     _LOG_LEVEL_ENABLED (LOGL_TRACE, _LOG_DOMAIN)
-#define _LOGT(...)          _LOG (LOGL_TRACE, _LOG_DOMAIN, platform, __VA_ARGS__)
-#else
-#define _LOGT_ENABLED()     FALSE
-#define _LOGT(...)          G_STMT_START { if (FALSE) { _LOG (LOGL_TRACE, _LOG_DOMAIN, platform, __VA_ARGS__); } } G_STMT_END
-#endif
-
-#define _LOGD(...)      _LOG (LOGL_DEBUG, _LOG_DOMAIN, platform, __VA_ARGS__)
-#define _LOGI(...)      _LOG (LOGL_INFO , _LOG_DOMAIN, platform, __VA_ARGS__)
-#define _LOGW(...)      _LOG (LOGL_WARN , _LOG_DOMAIN, platform, __VA_ARGS__)
-#define _LOGE(...)      _LOG (LOGL_ERR  , _LOG_DOMAIN, platform, __VA_ARGS__)
-
-#define debug(...)      _LOG (LOGL_DEBUG, _LOG_DOMAIN, NULL, __VA_ARGS__)
-#define warning(...)    _LOG (LOGL_WARN , _LOG_DOMAIN, NULL, __VA_ARGS__)
-#define error(...)      _LOG (LOGL_ERR  , _LOG_DOMAIN, NULL, __VA_ARGS__)
+#define trace(...)      _LOG (LOGL_TRACE, _NMLOG_DOMAIN, NULL, __VA_ARGS__)
+#define debug(...)      _LOG (LOGL_DEBUG, _NMLOG_DOMAIN, NULL, __VA_ARGS__)
+#define info(...)       _LOG (LOGL_INFO,  _NMLOG_DOMAIN, NULL, __VA_ARGS__)
+#define warning(...)    _LOG (LOGL_WARN , _NMLOG_DOMAIN, NULL, __VA_ARGS__)
+#define error(...)      _LOG (LOGL_ERR  , _NMLOG_DOMAIN, NULL, __VA_ARGS__)
 
 /******************************************************************
  * Forward declarations and enums
@@ -150,8 +138,10 @@ static NMPCacheOpsType cache_remove_netlink (NMPlatform *platform, const NMPObje
 struct libnl_vtable
 {
 	void *handle;
+	void *handle_route;
 
 	int (*f_nl_has_capability) (int capability);
+	int (*f_rtnl_link_get_link_netnsid) (const struct rtnl_link *link, gint32 *out_link_netnsid);
 };
 
 static int
@@ -160,24 +150,25 @@ _nl_f_nl_has_capability (int capability)
 	return FALSE;
 }
 
-static struct libnl_vtable *
+static const struct libnl_vtable *
 _nl_get_vtable (void)
 {
 	static struct libnl_vtable vtable;
 
 	if (G_UNLIKELY (!vtable.f_nl_has_capability)) {
-		void *handle;
-
-		handle = dlopen ("libnl-3.so.200", RTLD_LAZY | RTLD_NOLOAD);
-		if (handle) {
-			vtable.handle = handle;
-			vtable.f_nl_has_capability = dlsym (handle, "nl_has_capability");
+		vtable.handle = dlopen ("libnl-3.so.200", RTLD_LAZY | RTLD_NOLOAD);
+		if (vtable.handle) {
+			vtable.f_nl_has_capability = dlsym (vtable.handle, "nl_has_capability");
+		}
+		vtable.handle_route = dlopen ("libnl-route-3.so.200", RTLD_LAZY | RTLD_NOLOAD);
+		if (vtable.handle_route) {
+			vtable.f_rtnl_link_get_link_netnsid = dlsym (vtable.handle_route, "rtnl_link_get_link_netnsid");
 		}
 
 		if (!vtable.f_nl_has_capability)
 			vtable.f_nl_has_capability = &_nl_f_nl_has_capability;
 
-		g_return_val_if_fail (vtable.handle, &vtable);
+		trace ("libnl: rtnl_link_get_link_netnsid() %s", vtable.f_rtnl_link_get_link_netnsid ? "supported" : "not supported");
 	}
 
 	return &vtable;
@@ -187,6 +178,26 @@ static gboolean
 _nl_has_capability (int capability)
 {
 	return (_nl_get_vtable ()->f_nl_has_capability) (capability);
+}
+
+static int
+_rtnl_link_get_link_netnsid (const struct rtnl_link *link, gint32 *out_link_netnsid)
+{
+	const struct libnl_vtable *vtable;
+
+	g_return_val_if_fail (link, -NLE_INVAL);
+	g_return_val_if_fail (out_link_netnsid, -NLE_INVAL);
+
+	vtable = _nl_get_vtable ();
+	return vtable->f_rtnl_link_get_link_netnsid
+	    ? vtable->f_rtnl_link_get_link_netnsid (link, out_link_netnsid)
+	    : -NLE_OPNOTSUPP;
+}
+
+gboolean
+nm_platform_check_support_libnl_link_netnsid (void)
+{
+	return !!(_nl_get_vtable ()->f_rtnl_link_get_link_netnsid);
 }
 
 /* Automatic deallocation of local variables */
@@ -994,6 +1005,7 @@ _nmp_vt_cmd_plobj_init_from_nl_link (NMPlatform *platform, NMPlatformObject *_ob
 	gboolean completed_from_cache_val = FALSE;
 	gboolean *completed_from_cache = complete_from_cache ? &completed_from_cache_val : NULL;
 	const NMPObject *link_cached = NULL;
+	int parent;
 
 	nm_assert (memcmp (obj, ((char [sizeof (NMPObjectLink)]) { 0 }), sizeof (NMPObjectLink)) == 0);
 
@@ -1013,7 +1025,15 @@ _nmp_vt_cmd_plobj_init_from_nl_link (NMPlatform *platform, NMPlatformObject *_ob
 	obj->flags = rtnl_link_get_flags (nlo);
 	obj->connected = NM_FLAGS_HAS (obj->flags, IFF_LOWER_UP);
 	obj->master = rtnl_link_get_master (nlo);
-	obj->parent = rtnl_link_get_link (nlo);
+	parent = rtnl_link_get_link (nlo);
+	if (parent > 0) {
+		gint32 link_netnsid;
+
+		if (_rtnl_link_get_link_netnsid (nlo, &link_netnsid) == 0)
+			obj->parent = NM_PLATFORM_LINK_OTHER_NETNS;
+		else
+			obj->parent = parent;
+	}
 	obj->mtu = rtnl_link_get_mtu (nlo);
 	obj->arptype = rtnl_link_get_arptype (nlo);
 
@@ -2306,11 +2326,25 @@ event_notification (struct nl_msg *msg, gpointer user_data)
 	if (_support_user_ipv6ll_still_undecided() && msghdr->nlmsg_type == RTM_NEWLINK)
 		_support_user_ipv6ll_detect ((struct rtnl_link *) nlo);
 
-	obj = nmp_object_from_nl (platform, nlo, FALSE, TRUE);
+	switch (msghdr->nlmsg_type) {
+	case RTM_DELADDR:
+	case RTM_DELLINK:
+	case RTM_DELROUTE:
+		/* The event notifies about a deleted object. We don't need to initialize all the
+		 * fields of the nmp-object. Shortcut nmp_object_from_nl(). */
+		obj = nmp_object_from_nl (platform, nlo, TRUE, TRUE);
+		_LOGD ("event-notification: %s, seq %u: %s",
+		       _nl_nlmsg_type_to_str (msghdr->nlmsg_type, buf_nlmsg_type, sizeof (buf_nlmsg_type)),
+		       msghdr->nlmsg_seq, nmp_object_to_string (obj, NMP_OBJECT_TO_STRING_ID, NULL, 0));
+		break;
+	default:
+		obj = nmp_object_from_nl (platform, nlo, FALSE, TRUE);
+		_LOGD ("event-notification: %s, seq %u: %s",
+		       _nl_nlmsg_type_to_str (msghdr->nlmsg_type, buf_nlmsg_type, sizeof (buf_nlmsg_type)),
+		       msghdr->nlmsg_seq, nmp_object_to_string (obj, NMP_OBJECT_TO_STRING_PUBLIC, NULL, 0));
+		break;
+	}
 
-	_LOGD ("event-notification: %s, seq %u: %s",
-	       _nl_nlmsg_type_to_str (msghdr->nlmsg_type, buf_nlmsg_type, sizeof (buf_nlmsg_type)),
-	       msghdr->nlmsg_seq, nmp_object_to_string (obj, NMP_OBJECT_TO_STRING_PUBLIC, NULL, 0));
 	if (obj) {
 		auto_nmp_obj NMPObject *obj_cache = NULL;
 
@@ -4549,7 +4583,7 @@ event_handler_read_netlink_one (NMPlatform *platform)
 			debug ("Uncritical failure to retrieve incoming events: %s (%d)", nl_geterror (nle), nle);
 			break;
 		case -NLE_NOMEM:
-			warning ("Too many netlink events. Need to resynchronize platform cache");
+			info ("Too many netlink events. Need to resynchronize platform cache");
 			/* Drain the event queue, we've lost events and are out of sync anyway and we'd
 			 * like to free up some space. We'll read in the status synchronously. */
 			_nl_sock_flush_data (priv->nlh_event);

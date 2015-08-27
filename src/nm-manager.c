@@ -161,6 +161,7 @@ typedef struct {
 	guint ac_cleanup_id;
 	NMActiveConnection *primary_connection;
 	NMActiveConnection *activating_connection;
+	NMMetered metered;
 
 	GSList *devices;
 	NMState state;
@@ -170,7 +171,6 @@ typedef struct {
 	NMPolicy *policy;
 
 	NMDBusManager *dbus_mgr;
-	gboolean       prop_filter_added;
 	NMRfkillManager *rfkill_mgr;
 
 	NMSettings *settings;
@@ -194,6 +194,7 @@ typedef struct {
 	guint timestamp_update_id;
 
 	gboolean startup;
+	gboolean devices_inited;
 } NMManagerPrivate;
 
 #define NM_MANAGER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_MANAGER, NMManagerPrivate))
@@ -233,6 +234,7 @@ enum {
 	PROP_PRIMARY_CONNECTION_TYPE,
 	PROP_ACTIVATING_CONNECTION,
 	PROP_DEVICES,
+	PROP_METERED,
 
 	/* Not exported */
 	PROP_HOSTNAME,
@@ -658,6 +660,30 @@ find_best_device_state (NMManager *manager)
 }
 
 static void
+nm_manager_update_metered (NMManager *manager)
+{
+	NMManagerPrivate *priv;
+	NMDevice *device;
+	NMMetered value = NM_METERED_UNKNOWN;
+
+	g_return_if_fail (NM_IS_MANAGER (manager));
+	priv = NM_MANAGER_GET_PRIVATE (manager);
+
+	if (priv->primary_connection) {
+		device =  nm_active_connection_get_device (priv->primary_connection);
+		if (device)
+			value = nm_device_get_metered (device);
+	}
+
+	if (value != priv->metered) {
+		priv->metered = value;
+		nm_log_dbg (LOGD_CORE, "New manager metered value: %d",
+		            (int) priv->metered);
+		g_object_notify (G_OBJECT (manager), NM_MANAGER_METERED);
+	}
+}
+
+static void
 nm_manager_update_state (NMManager *manager)
 {
 	NMManagerPrivate *priv;
@@ -716,6 +742,9 @@ check_if_startup_complete (NMManager *self)
 	GSList *iter;
 
 	if (!priv->startup)
+		return;
+
+	if (!priv->devices_inited)
 		return;
 
 	if (!nm_settings_get_startup_complete (priv->settings)) {
@@ -1159,18 +1188,26 @@ system_hostname_changed_cb (NMSettings *settings,
 	char *hostname;
 
 	hostname = nm_settings_get_hostname (priv->settings);
+
+	/* nm_settings_get_hostname() does not return an empty hostname. */
+	nm_assert (!hostname || *hostname);
+
 	if (!hostname && !priv->hostname)
 		return;
-	if (hostname && priv->hostname && !strcmp (hostname, priv->hostname))
+	if (hostname && priv->hostname && !strcmp (hostname, priv->hostname)) {
+		g_free (hostname);
 		return;
+	}
+
+	/* realloc, to free possibly trailing data after NUL. */
+	if (hostname)
+		hostname = g_realloc (hostname, strlen (hostname) + 1);
 
 	g_free (priv->hostname);
-	priv->hostname = (hostname && strlen (hostname)) ? g_strdup (hostname) : NULL;
+	priv->hostname = hostname;
 	g_object_notify (G_OBJECT (self), NM_MANAGER_HOSTNAME);
 
 	nm_dhcp_manager_set_default_hostname (nm_dhcp_manager_get (), priv->hostname);
-
-	g_free (hostname);
 }
 
 /*******************************************************************/
@@ -4173,6 +4210,8 @@ nm_manager_start (NMManager *self)
 	 */
 	system_create_virtual_devices (self);
 
+	priv->devices_inited = TRUE;
+
 	check_if_startup_complete (self);
 }
 
@@ -4260,6 +4299,14 @@ firmware_dir_changed (GFileMonitor *monitor,
 }
 
 static void
+connection_metered_changed (GObject *object,
+                            NMMetered metered,
+                            gpointer user_data)
+{
+	nm_manager_update_metered (NM_MANAGER (user_data));
+}
+
+static void
 policy_default_device_changed (GObject *object, GParamSpec *pspec, gpointer user_data)
 {
 	NMManager *self = NM_MANAGER (user_data);
@@ -4281,11 +4328,23 @@ policy_default_device_changed (GObject *object, GParamSpec *pspec, gpointer user
 		ac = NULL;
 
 	if (ac != priv->primary_connection) {
-		g_clear_object (&priv->primary_connection);
+		if (priv->primary_connection) {
+			g_signal_handlers_disconnect_by_func (priv->primary_connection,
+			                                      G_CALLBACK (connection_metered_changed),
+			                                      self);
+			g_clear_object (&priv->primary_connection);
+		}
+
 		priv->primary_connection = ac ? g_object_ref (ac) : NULL;
+
+		if (priv->primary_connection) {
+			g_signal_connect (priv->primary_connection, NM_ACTIVE_CONNECTION_DEVICE_METERED_CHANGED,
+			                  G_CALLBACK (connection_metered_changed), self);
+		}
 		nm_log_dbg (LOGD_CORE, "PrimaryConnection now %s", ac ? nm_active_connection_get_id (ac) : "(none)");
 		g_object_notify (G_OBJECT (self), NM_MANAGER_PRIMARY_CONNECTION);
 		g_object_notify (G_OBJECT (self), NM_MANAGER_PRIMARY_CONNECTION_TYPE);
+		nm_manager_update_metered (self);
 	}
 }
 
@@ -4625,17 +4684,13 @@ dbus_connection_changed_cb (NMDBusManager *dbus_mgr,
                             gpointer user_data)
 {
 	NMManager *self = NM_MANAGER (user_data);
-	gboolean success = FALSE;
+	gboolean success;
 
 	if (dbus_connection) {
-		/* Register property filter on new connection; there's no reason this
-		 * should fail except out-of-memory or program error; if it does fail
-		 * then there's no Manager property access control, which is bad.
-		 */
+		/* Only fails on ENOMEM */
 		success = dbus_connection_add_filter (dbus_connection, prop_filter, self, NULL);
 		g_assert (success);
 	}
-	NM_MANAGER_GET_PRIVATE (self)->prop_filter_added = success;
 }
 
 /**********************************************************************/
@@ -4663,11 +4718,9 @@ nm_manager_new (NMSettings *settings,
                 gboolean initial_net_enabled,
                 gboolean initial_wifi_enabled,
                 gboolean initial_wwan_enabled,
-                gboolean initial_wimax_enabled,
-                GError **error)
+                gboolean initial_wimax_enabled)
 {
 	NMManagerPrivate *priv;
-	DBusGConnection *bus;
 	DBusConnection *dbus_connection;
 	NMConfigData *config_data;
 
@@ -4680,16 +4733,14 @@ nm_manager_new (NMSettings *settings,
 
 	priv = NM_MANAGER_GET_PRIVATE (singleton);
 
-	bus = nm_dbus_manager_get_connection (priv->dbus_mgr);
-	if (!bus) {
-		g_set_error_literal (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
-		                     "Failed to initialize D-Bus connection");
-		g_object_unref (singleton);
-		return NULL;
-	}
+	dbus_connection = nm_dbus_manager_get_dbus_connection (priv->dbus_mgr);
+	if (dbus_connection) {
+		gboolean success;
 
-	dbus_connection = dbus_g_connection_get_connection (bus);
-	g_assert (dbus_connection);
+		/* Only fails on ENOMEM */
+		success = dbus_connection_add_filter (dbus_connection, prop_filter, singleton, NULL);
+		g_assert (success);
+	}
 
 	priv->policy = nm_policy_new (singleton, settings);
 	g_signal_connect (priv->policy, "notify::" NM_POLICY_DEFAULT_IP4_DEVICE,
@@ -4713,14 +4764,6 @@ nm_manager_new (NMSettings *settings,
 	                                          nm_config_data_get_connectivity_response (config_data));
 	g_signal_connect (priv->connectivity, "notify::" NM_CONNECTIVITY_STATE,
 	                  G_CALLBACK (connectivity_changed), singleton);
-
-	if (!dbus_connection_add_filter (dbus_connection, prop_filter, singleton, NULL)) {
-		g_set_error_literal (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
-		                     "Failed to register DBus connection filter");
-		g_object_unref (singleton);
-		return NULL;
-	}
-	priv->prop_filter_added = TRUE;
 
 	priv->settings = g_object_ref (settings);
 	g_signal_connect (priv->settings, "notify::" NM_SETTINGS_STARTUP_COMPLETE,
@@ -4879,6 +4922,8 @@ nm_manager_init (NMManager *manager)
 
 	/* Update timestamps in active connections */
 	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, manager);
+
+	priv->metered = NM_METERED_UNKNOWN;
 }
 
 static void
@@ -4963,6 +5008,9 @@ get_property (GObject *object, guint prop_id,
 		}
 		g_value_take_boxed (value, array);
 		break;
+	case PROP_METERED:
+		g_value_set_uint (value, priv->metered);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -5013,7 +5061,6 @@ dispose (GObject *object)
 {
 	NMManager *manager = NM_MANAGER (object);
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-	DBusGConnection *bus;
 	DBusConnection *dbus_connection;
 
 	g_slist_free_full (priv->auth_chains, (GDestroyNotify) nm_auth_chain_unref);
@@ -5059,14 +5106,9 @@ dispose (GObject *object)
 
 	/* Unregister property filter */
 	if (priv->dbus_mgr) {
-		bus = nm_dbus_manager_get_connection (priv->dbus_mgr);
-		if (bus) {
-			dbus_connection = dbus_g_connection_get_connection (bus);
-			if (dbus_connection && priv->prop_filter_added) {
-				dbus_connection_remove_filter (dbus_connection, prop_filter, manager);
-				priv->prop_filter_added = FALSE;
-			}
-		}
+		dbus_connection = nm_dbus_manager_get_dbus_connection (priv->dbus_mgr);
+		if (dbus_connection)
+			dbus_connection_remove_filter (dbus_connection, prop_filter, manager);
 		g_signal_handlers_disconnect_by_func (priv->dbus_mgr, dbus_connection_changed_cb, manager);
 		priv->dbus_mgr = NULL;
 	}
@@ -5237,6 +5279,20 @@ nm_manager_class_init (NMManagerClass *manager_class)
 		                     DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH,
 		                     G_PARAM_READABLE |
 		                     G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMManager:metered:
+	 *
+	 * Whether the connectivity is metered.
+	 *
+	 * Since: 1.0.6
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_METERED,
+		 g_param_spec_uint (NM_MANAGER_METERED, "", "",
+		                    0, G_MAXUINT32, NM_METERED_UNKNOWN,
+		                    G_PARAM_READABLE |
+		                    G_PARAM_STATIC_STRINGS));
 
 	/* signals */
 	signals[DEVICE_ADDED] =

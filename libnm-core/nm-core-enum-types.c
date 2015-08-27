@@ -413,6 +413,28 @@ nm_device_state_reason_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_metered_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_METERED_UNKNOWN, "NM_METERED_UNKNOWN", "unknown" },
+        { NM_METERED_YES, "NM_METERED_YES", "yes" },
+        { NM_METERED_NO, "NM_METERED_NO", "no" },
+        { NM_METERED_GUESS_YES, "NM_METERED_GUESS_YES", "guess-yes" },
+        { NM_METERED_GUESS_NO, "NM_METERED_GUESS_NO", "guess-no" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMMetered"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_active_connection_state_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -833,6 +855,30 @@ nm_vlan_flags_get_type (void)
       };
       GType g_define_type_id =
         g_flags_register_static (g_intern_static_string ("NMVlanFlags"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_wired_wake_on_lan_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT, "NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT", "default" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_PHY, "NM_SETTING_WIRED_WAKE_ON_LAN_PHY", "phy" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST, "NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST", "unicast" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST, "NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST", "multicast" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST, "NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST", "broadcast" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_ARP, "NM_SETTING_WIRED_WAKE_ON_LAN_ARP", "arp" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC, "NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC", "magic" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMSettingWiredWakeOnLan"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

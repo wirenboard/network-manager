@@ -42,6 +42,8 @@
 #include <nm-setting-team-port.h>
 #include "nm-core-internal.h"
 #include <nm-utils.h>
+#include "nm-core-internal.h"
+#include "nm-macros-internal.h"
 
 #include "nm-logging.h"
 #include "gsystem-local-alloc.h"
@@ -1048,6 +1050,8 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	const char *const *s390_subchannels;
 	GString *str;
 	const char * const *macaddr_blacklist;
+	NMSettingWiredWakeOnLan wol;
+	const char *wol_password;
 
 	s_wired = nm_connection_get_setting_wired (connection);
 	if (!s_wired) {
@@ -1131,6 +1135,37 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		g_string_free (str, TRUE);
 	}
 
+	wol = nm_setting_wired_get_wake_on_lan (s_wired);
+	wol_password = nm_setting_wired_get_wake_on_lan_password (s_wired);
+	if (wol == NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT)
+		svSetValue (ifcfg, "ETHTOOL_OPTS", NULL, FALSE);
+	else {
+		str = g_string_sized_new (30);
+		g_string_append (str, "wol ");
+
+		if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_PHY))
+			g_string_append (str, "p");
+		if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST))
+			g_string_append (str, "u");
+		if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST))
+			g_string_append (str, "m");
+		if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST))
+			g_string_append (str, "b");
+		if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_ARP))
+			g_string_append (str, "a");
+		if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC))
+			g_string_append (str, "g");
+
+		if (!NM_FLAGS_ANY (wol, NM_SETTING_WIRED_WAKE_ON_LAN_ALL))
+			g_string_append (str, "d");
+
+		if (wol_password && NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC))
+			g_string_append_printf (str, "s sopass %s", wol_password);
+
+		svSetValue (ifcfg, "ETHTOOL_OPTS", str->str, FALSE);
+		g_string_free (str, TRUE);
+	}
+
 	svSetValue (ifcfg, "TYPE", TYPE_ETHERNET, FALSE);
 
 	return TRUE;
@@ -1159,11 +1194,42 @@ vlan_priority_maplist_to_stringlist (NMSettingVlan *s_vlan, NMVlanPriorityMap ma
 }
 
 static gboolean
+write_wired_for_virtual (NMConnection *connection, shvarFile *ifcfg)
+{
+	NMSettingWired *s_wired;
+	gboolean has_wired = FALSE;
+
+	s_wired = nm_connection_get_setting_wired (connection);
+	if (s_wired) {
+		const char *device_mac, *cloned_mac;
+		char *tmp;
+		guint32 mtu;
+
+		has_wired = TRUE;
+
+		device_mac = nm_setting_wired_get_mac_address (s_wired);
+		if (device_mac)
+			svSetValue (ifcfg, "HWADDR", device_mac, FALSE);
+
+		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
+		if (cloned_mac)
+			svSetValue (ifcfg, "MACADDR", cloned_mac, FALSE);
+
+		mtu = nm_setting_wired_get_mtu (s_wired);
+		if (mtu) {
+			tmp = g_strdup_printf ("%u", mtu);
+			svSetValue (ifcfg, "MTU", tmp, FALSE);
+			g_free (tmp);
+		}
+	}
+	return has_wired;
+}
+
+static gboolean
 write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired, GError **error)
 {
 	NMSettingVlan *s_vlan;
 	NMSettingConnection *s_con;
-	NMSettingWired *s_wired;
 	char *tmp;
 	guint32 vlan_flags = 0;
 
@@ -1217,34 +1283,13 @@ write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 	svSetValue (ifcfg, "MACADDR", NULL, FALSE);
 	svSetValue (ifcfg, "MTU", NULL, FALSE);
 
-	s_wired = nm_connection_get_setting_wired (connection);
-	if (s_wired) {
-		const char *device_mac, *cloned_mac;
-		guint32 mtu;
-
-		*wired = TRUE;
-
-		device_mac = nm_setting_wired_get_mac_address (s_wired);
-		if (device_mac)
-			svSetValue (ifcfg, "HWADDR", device_mac, FALSE);
-
-		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac)
-			svSetValue (ifcfg, "MACADDR", cloned_mac, FALSE);
-
-		mtu = nm_setting_wired_get_mtu (s_wired);
-		if (mtu) {
-			tmp = g_strdup_printf ("%u", mtu);
-			svSetValue (ifcfg, "MTU", tmp, FALSE);
-			g_free (tmp);
-		}
-	}
+	*wired = write_wired_for_virtual (connection, ifcfg);
 
 	return TRUE;
 }
 
 static gboolean
-write_bonding_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+write_bonding_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired, GError **error)
 {
 	NMSettingBond *s_bond;
 	const char *iface;
@@ -1292,11 +1337,13 @@ write_bonding_setting (NMConnection *connection, shvarFile *ifcfg, GError **erro
 	svSetValue (ifcfg, "TYPE", TYPE_BOND, FALSE);
 	svSetValue (ifcfg, "BONDING_MASTER", "yes", FALSE);
 
+	*wired = write_wired_for_virtual (connection, ifcfg);
+
 	return TRUE;
 }
 
 static gboolean
-write_team_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
+write_team_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired, GError **error)
 {
 	NMSettingTeam *s_team;
 	const char *iface;
@@ -1320,6 +1367,8 @@ write_team_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	config = nm_setting_team_get_config (s_team);
 	svSetValue (ifcfg, "TEAM_CONFIG", config, FALSE);
 	svSetValue (ifcfg, "DEVICETYPE", TYPE_TEAM, FALSE);
+
+	*wired = write_wired_for_virtual (connection, ifcfg);
 
 	return TRUE;
 }
@@ -1763,6 +1812,17 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 		tmp = g_strdup_printf ("%" G_GUINT32_FORMAT, nm_setting_connection_get_gateway_ping_timeout (s_con));
 		svSetValue (ifcfg, "GATEWAY_PING_TIMEOUT", tmp, FALSE);
 		g_free (tmp);
+	}
+
+	switch (nm_setting_connection_get_metered (s_con)) {
+	case NM_METERED_YES:
+		svSetValue (ifcfg, "CONNECTION_METERED", "yes", FALSE);
+		break;
+	case NM_METERED_NO:
+		svSetValue (ifcfg, "CONNECTION_METERED", "no", FALSE);
+		break;
+	default:
+		svSetValue (ifcfg, "CONNECTION_METERED", NULL, FALSE);
 	}
 }
 
@@ -2564,10 +2624,10 @@ write_connection (NMConnection *connection,
 		if (!write_infiniband_setting (connection, ifcfg, error))
 			goto out;
 	} else if (!strcmp (type, NM_SETTING_BOND_SETTING_NAME)) {
-		if (!write_bonding_setting (connection, ifcfg, error))
+		if (!write_bonding_setting (connection, ifcfg, &wired, error))
 			goto out;
 	} else if (!strcmp (type, NM_SETTING_TEAM_SETTING_NAME)) {
-		if (!write_team_setting (connection, ifcfg, error))
+		if (!write_team_setting (connection, ifcfg, &wired, error))
 			goto out;
 	} else if (!strcmp (type, NM_SETTING_BRIDGE_SETTING_NAME)) {
 		if (!write_bridge_setting (connection, ifcfg, error))

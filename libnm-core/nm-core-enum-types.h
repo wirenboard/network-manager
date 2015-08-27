@@ -35,6 +35,8 @@ GType nm_device_state_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_STATE (nm_device_state_get_type ())
 GType nm_device_state_reason_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_STATE_REASON (nm_device_state_reason_get_type ())
+GType nm_metered_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_METERED (nm_metered_get_type ())
 GType nm_active_connection_state_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_ACTIVE_CONNECTION_STATE (nm_active_connection_state_get_type ())
 GType nm_secret_agent_get_secrets_flags_get_type (void) G_GNUC_CONST;
@@ -73,6 +75,8 @@ GType nm_vlan_priority_map_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_VLAN_PRIORITY_MAP (nm_vlan_priority_map_get_type ())
 GType nm_vlan_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_VLAN_FLAGS (nm_vlan_flags_get_type ())
+GType nm_setting_wired_wake_on_lan_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SETTING_WIRED_WAKE_ON_LAN (nm_setting_wired_wake_on_lan_get_type ())
 GType nm_wep_key_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_WEP_KEY_TYPE (nm_wep_key_type_get_type ())
 GType nm_setting_secret_flags_get_type (void) G_GNUC_CONST;

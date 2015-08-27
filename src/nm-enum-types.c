@@ -741,6 +741,26 @@ nm_pobject_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_ip_config_merge_flags_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GFlagsValue values[] = {
+        { NM_IP_CONFIG_MERGE_DEFAULT, "NM_IP_CONFIG_MERGE_DEFAULT", "default" },
+        { NM_IP_CONFIG_MERGE_NO_ROUTES, "NM_IP_CONFIG_MERGE_NO_ROUTES", "no-routes" },
+        { NM_IP_CONFIG_MERGE_NO_DNS, "NM_IP_CONFIG_MERGE_NO_DNS", "no-dns" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_flags_register_static (g_intern_static_string ("NMIPConfigMergeFlags"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_match_spec_match_type_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;

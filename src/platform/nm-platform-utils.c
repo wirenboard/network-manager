@@ -33,6 +33,7 @@
 #include "nm-utils.h"
 #include "NetworkManagerUtils.h"
 #include "nm-logging.h"
+#include "nm-setting-wired.h"
 
 
 /******************************************************************
@@ -48,8 +49,14 @@ ethtool_get (const char *name, gpointer edata)
 	if (!name || !*name)
 		return FALSE;
 
+	if (!nmp_utils_device_exists (name))
+		return FALSE;
+
+	/* nmp_utils_device_exists() already errors out if @name is invalid. */
+	nm_assert (strlen (name) < IFNAMSIZ);
+
 	memset (&ifr, 0, sizeof (ifr));
-	strncpy (ifr.ifr_name, name, IFNAMSIZ);
+	strcpy (ifr.ifr_name, name);
 	ifr.ifr_data = edata;
 
 	fd = socket (PF_INET, SOCK_DGRAM, 0);
@@ -255,6 +262,43 @@ nmp_utils_ethtool_get_link_speed (const char *ifname, guint32 *out_speed)
 	return TRUE;
 }
 
+gboolean
+nmp_utils_ethtool_set_wake_on_lan (const char *ifname,
+                                   NMSettingWiredWakeOnLan wol,
+                                   const char *wol_password)
+{
+	struct ethtool_wolinfo wol_info = { };
+
+	nm_log_dbg (LOGD_PLATFORM, "setting Wake-on-LAN options 0x%x, password '%s'",
+	            (unsigned int) wol, wol_password);
+
+	wol_info.cmd = ETHTOOL_SWOL;
+	wol_info.wolopts = 0;
+
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_PHY))
+		wol_info.wolopts |= WAKE_PHY;
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST))
+		wol_info.wolopts |= WAKE_UCAST;
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST))
+		wol_info.wolopts |= WAKE_MCAST;
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST))
+		wol_info.wolopts |= WAKE_BCAST;
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_ARP))
+		wol_info.wolopts |= WAKE_ARP;
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC))
+		wol_info.wolopts |= WAKE_MAGIC;
+
+	if (wol_password) {
+		if (!nm_utils_hwaddr_aton (wol_password, wol_info.sopass, ETH_ALEN)) {
+			nm_log_dbg (LOGD_PLATFORM, "couldn't parse Wake-on-LAN password '%s'", wol_password);
+			return FALSE;
+		}
+		wol_info.wolopts |= WAKE_MAGICSECURE;
+	}
+
+	return ethtool_get (ifname, &wol_info);
+}
+
 /******************************************************************
  * mii
  ******************************************************************/
@@ -268,6 +312,9 @@ nmp_utils_mii_supports_carrier_detect (const char *ifname)
 	gboolean supports_mii = FALSE;
 
 	if (!ifname)
+		return FALSE;
+
+	if (!nmp_utils_device_exists (ifname))
 		return FALSE;
 
 	fd = socket (PF_INET, SOCK_DGRAM, 0);
@@ -433,4 +480,17 @@ nmp_utils_lifetime_get (guint32 timestamp,
 	return TRUE;
 }
 
+gboolean
+nmp_utils_device_exists (const char *name)
+{
+#define SYS_CLASS_NET "/sys/class/net/"
+	char sysdir[STRLEN (SYS_CLASS_NET) + IFNAMSIZ] = SYS_CLASS_NET;
 
+	if (   !name
+	    || strlen (name) >= IFNAMSIZ
+	    || !nm_utils_is_valid_path_component (name))
+		g_return_val_if_reached (FALSE);
+
+	strcpy (&sysdir[STRLEN (SYS_CLASS_NET)], name);
+	return g_file_test (sysdir, G_FILE_TEST_EXISTS);
+}

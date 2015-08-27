@@ -81,6 +81,7 @@
 <ANCHOR id="NM-CLIENT-CONNECTIONS:CAPS" href="libnm/NMClient.html#NM-CLIENT-CONNECTIONS:CAPS">
 <ANCHOR id="NM-CLIENT-HOSTNAME:CAPS" href="libnm/NMClient.html#NM-CLIENT-HOSTNAME:CAPS">
 <ANCHOR id="NM-CLIENT-CAN-MODIFY:CAPS" href="libnm/NMClient.html#NM-CLIENT-CAN-MODIFY:CAPS">
+<ANCHOR id="NM-CLIENT-METERED:CAPS" href="libnm/NMClient.html#NM-CLIENT-METERED:CAPS">
 <ANCHOR id="NM-CLIENT-DEVICE-ADDED:CAPS" href="libnm/NMClient.html#NM-CLIENT-DEVICE-ADDED:CAPS">
 <ANCHOR id="NM-CLIENT-DEVICE-REMOVED:CAPS" href="libnm/NMClient.html#NM-CLIENT-DEVICE-REMOVED:CAPS">
 <ANCHOR id="NM-CLIENT-PERMISSION-CHANGED:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-CHANGED:CAPS">
@@ -118,6 +119,7 @@
 <ANCHOR id="NMClient--connectivity" href="libnm/NMClient.html#NMClient--connectivity">
 <ANCHOR id="NMClient--devices" href="libnm/NMClient.html#NMClient--devices">
 <ANCHOR id="NMClient--hostname" href="libnm/NMClient.html#NMClient--hostname">
+<ANCHOR id="NMClient--metered" href="libnm/NMClient.html#NMClient--metered">
 <ANCHOR id="NMClient--networking-enabled" href="libnm/NMClient.html#NMClient--networking-enabled">
 <ANCHOR id="NMClient--nm-running" href="libnm/NMClient.html#NMClient--nm-running">
 <ANCHOR id="NMClient--primary-connection" href="libnm/NMClient.html#NMClient--primary-connection">
@@ -479,6 +481,12 @@
 <ANCHOR id="NM-DEVICE-STATE-REASON-NEW-ACTIVATION:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NEW-ACTIVATION:CAPS">
 <ANCHOR id="NM-DEVICE-STATE-REASON-PARENT-CHANGED:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-CHANGED:CAPS">
 <ANCHOR id="NM-DEVICE-STATE-REASON-PARENT-MANAGED-CHANGED:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-MANAGED-CHANGED:CAPS">
+<ANCHOR id="NMMetered" href="libnm/libnm-nm-dbus-interface.html#NMMetered">
+<ANCHOR id="NM-METERED-UNKNOWN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-METERED-UNKNOWN:CAPS">
+<ANCHOR id="NM-METERED-YES:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-METERED-YES:CAPS">
+<ANCHOR id="NM-METERED-NO:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-METERED-NO:CAPS">
+<ANCHOR id="NM-METERED-GUESS-YES:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-METERED-GUESS-YES:CAPS">
+<ANCHOR id="NM-METERED-GUESS-NO:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-METERED-GUESS-NO:CAPS">
 <ANCHOR id="NMActiveConnectionState" href="libnm/libnm-nm-dbus-interface.html#NMActiveConnectionState">
 <ANCHOR id="NM-ACTIVE-CONNECTION-STATE-UNKNOWN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-UNKNOWN:CAPS">
 <ANCHOR id="NM-ACTIVE-CONNECTION-STATE-ACTIVATING:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATING:CAPS">
@@ -657,6 +665,7 @@
 <ANCHOR id="nm-setting-connection-remove-secondary" href="libnm/NMSettingConnection.html#nm-setting-connection-remove-secondary">
 <ANCHOR id="nm-setting-connection-remove-secondary-by-value" href="libnm/NMSettingConnection.html#nm-setting-connection-remove-secondary-by-value">
 <ANCHOR id="nm-setting-connection-get-gateway-ping-timeout" href="libnm/NMSettingConnection.html#nm-setting-connection-get-gateway-ping-timeout">
+<ANCHOR id="nm-setting-connection-get-metered" href="libnm/NMSettingConnection.html#nm-setting-connection-get-metered">
 <ANCHOR id="NMSettingConnection.other_details" href="libnm/NMSettingConnection.html#NMSettingConnection.other_details">
 <ANCHOR id="NM-SETTING-CONNECTION-SETTING-NAME:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-SETTING-NAME:CAPS">
 <ANCHOR id="NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MIN:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MIN:CAPS">
@@ -677,6 +686,7 @@
 <ANCHOR id="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS">
 <ANCHOR id="NM-SETTING-CONNECTION-SECONDARIES:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-SECONDARIES:CAPS">
 <ANCHOR id="NM-SETTING-CONNECTION-GATEWAY-PING-TIMEOUT:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-GATEWAY-PING-TIMEOUT:CAPS">
+<ANCHOR id="NM-SETTING-CONNECTION-METERED:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-METERED:CAPS">
 <ANCHOR id="NMSettingConnectionAutoconnectSlaves" href="libnm/NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves">
 <ANCHOR id="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-DEFAULT:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-DEFAULT:CAPS">
 <ANCHOR id="NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-NO:CAPS" href="libnm/NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES-NO:CAPS">
@@ -690,6 +700,7 @@
 <ANCHOR id="NMSettingConnection--id" href="libnm/NMSettingConnection.html#NMSettingConnection--id">
 <ANCHOR id="NMSettingConnection--interface-name" href="libnm/NMSettingConnection.html#NMSettingConnection--interface-name">
 <ANCHOR id="NMSettingConnection--master" href="libnm/NMSettingConnection.html#NMSettingConnection--master">
+<ANCHOR id="NMSettingConnection--metered" href="libnm/NMSettingConnection.html#NMSettingConnection--metered">
 <ANCHOR id="NMSettingConnection--permissions" href="libnm/NMSettingConnection.html#NMSettingConnection--permissions">
 <ANCHOR id="NMSettingConnection--read-only" href="libnm/NMSettingConnection.html#NMSettingConnection--read-only">
 <ANCHOR id="NMSettingConnection--secondaries" href="libnm/NMSettingConnection.html#NMSettingConnection--secondaries">
@@ -1601,8 +1612,21 @@
 <ANCHOR id="nm-setting-wired-add-s390-option" href="libnm/NMSettingWired.html#nm-setting-wired-add-s390-option">
 <ANCHOR id="nm-setting-wired-remove-s390-option" href="libnm/NMSettingWired.html#nm-setting-wired-remove-s390-option">
 <ANCHOR id="nm-setting-wired-get-valid-s390-options" href="libnm/NMSettingWired.html#nm-setting-wired-get-valid-s390-options">
+<ANCHOR id="nm-setting-wired-get-wake-on-lan" href="libnm/NMSettingWired.html#nm-setting-wired-get-wake-on-lan">
+<ANCHOR id="nm-setting-wired-get-wake-on-lan-password" href="libnm/NMSettingWired.html#nm-setting-wired-get-wake-on-lan-password">
 <ANCHOR id="NMSettingWired.other_details" href="libnm/NMSettingWired.html#NMSettingWired.other_details">
 <ANCHOR id="NM-SETTING-WIRED-SETTING-NAME:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-SETTING-NAME:CAPS">
+<ANCHOR id="NMSettingWiredWakeOnLan" href="libnm/NMSettingWired.html#NMSettingWiredWakeOnLan">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-NONE:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-NONE:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-LAST:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-LAST:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-ALL:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ALL:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-PORT:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-PORT:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-SPEED:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-SPEED:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-DUPLEX:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-DUPLEX:CAPS">
@@ -1614,6 +1638,8 @@
 <ANCHOR id="NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-S390-NETTYPE:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS">
 <ANCHOR id="NM-SETTING-WIRED-S390-OPTIONS:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-S390-OPTIONS:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN:CAPS">
+<ANCHOR id="NM-SETTING-WIRED-WAKE-ON-LAN-PASSWORD:CAPS" href="libnm/NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PASSWORD:CAPS">
 <ANCHOR id="NMSettingWired.property-details" href="libnm/NMSettingWired.html#NMSettingWired.property-details">
 <ANCHOR id="NMSettingWired--auto-negotiate" href="libnm/NMSettingWired.html#NMSettingWired--auto-negotiate">
 <ANCHOR id="NMSettingWired--cloned-mac-address" href="libnm/NMSettingWired.html#NMSettingWired--cloned-mac-address">
@@ -1626,6 +1652,8 @@
 <ANCHOR id="NMSettingWired--s390-options" href="libnm/NMSettingWired.html#NMSettingWired--s390-options">
 <ANCHOR id="NMSettingWired--s390-subchannels" href="libnm/NMSettingWired.html#NMSettingWired--s390-subchannels">
 <ANCHOR id="NMSettingWired--speed" href="libnm/NMSettingWired.html#NMSettingWired--speed">
+<ANCHOR id="NMSettingWired--wake-on-lan" href="libnm/NMSettingWired.html#NMSettingWired--wake-on-lan">
+<ANCHOR id="NMSettingWired--wake-on-lan-password" href="libnm/NMSettingWired.html#NMSettingWired--wake-on-lan-password">
 <ANCHOR id="NMSettingWireless" href="libnm/NMSettingWireless.html">
 <ANCHOR id="NMSettingWireless.functions" href="libnm/NMSettingWireless.html#NMSettingWireless.functions">
 <ANCHOR id="NMSettingWireless.properties" href="libnm/NMSettingWireless.html#NMSettingWireless.properties">
@@ -1804,6 +1832,7 @@
 <ANCHOR id="nm-device-get-product" href="libnm/NMDevice.html#nm-device-get-product">
 <ANCHOR id="nm-device-get-vendor" href="libnm/NMDevice.html#nm-device-get-vendor">
 <ANCHOR id="nm-device-get-description" href="libnm/NMDevice.html#nm-device-get-description">
+<ANCHOR id="nm-device-get-metered" href="libnm/NMDevice.html#nm-device-get-metered">
 <ANCHOR id="nm-device-disambiguate-names" href="libnm/NMDevice.html#nm-device-disambiguate-names">
 <ANCHOR id="nm-device-disconnect" href="libnm/NMDevice.html#nm-device-disconnect">
 <ANCHOR id="nm-device-disconnect-async" href="libnm/NMDevice.html#nm-device-disconnect-async">
@@ -1839,6 +1868,7 @@
 <ANCHOR id="NM-DEVICE-PRODUCT:CAPS" href="libnm/NMDevice.html#NM-DEVICE-PRODUCT:CAPS">
 <ANCHOR id="NM-DEVICE-PHYSICAL-PORT-ID:CAPS" href="libnm/NMDevice.html#NM-DEVICE-PHYSICAL-PORT-ID:CAPS">
 <ANCHOR id="NM-DEVICE-MTU:CAPS" href="libnm/NMDevice.html#NM-DEVICE-MTU:CAPS">
+<ANCHOR id="NM-DEVICE-METERED:CAPS" href="libnm/NMDevice.html#NM-DEVICE-METERED:CAPS">
 <ANCHOR id="NMDevice.property-details" href="libnm/NMDevice.html#NMDevice.property-details">
 <ANCHOR id="NMDevice--active-connection" href="libnm/NMDevice.html#NMDevice--active-connection">
 <ANCHOR id="NMDevice--autoconnect" href="libnm/NMDevice.html#NMDevice--autoconnect">
@@ -1856,6 +1886,7 @@
 <ANCHOR id="NMDevice--ip4-config" href="libnm/NMDevice.html#NMDevice--ip4-config">
 <ANCHOR id="NMDevice--ip6-config" href="libnm/NMDevice.html#NMDevice--ip6-config">
 <ANCHOR id="NMDevice--managed" href="libnm/NMDevice.html#NMDevice--managed">
+<ANCHOR id="NMDevice--metered" href="libnm/NMDevice.html#NMDevice--metered">
 <ANCHOR id="NMDevice--mtu" href="libnm/NMDevice.html#NMDevice--mtu">
 <ANCHOR id="NMDevice--physical-port-id" href="libnm/NMDevice.html#NMDevice--physical-port-id">
 <ANCHOR id="NMDevice--product" href="libnm/NMDevice.html#NMDevice--product">
@@ -2070,7 +2101,9 @@
 <ANCHOR id="nm-device-wifi-get-access-point-by-path" href="libnm/NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path">
 <ANCHOR id="nm-device-wifi-get-access-points" href="libnm/NMDeviceWifi.html#nm-device-wifi-get-access-points">
 <ANCHOR id="nm-device-wifi-request-scan" href="libnm/NMDeviceWifi.html#nm-device-wifi-request-scan">
+<ANCHOR id="nm-device-wifi-request-scan-options" href="libnm/NMDeviceWifi.html#nm-device-wifi-request-scan-options">
 <ANCHOR id="nm-device-wifi-request-scan-async" href="libnm/NMDeviceWifi.html#nm-device-wifi-request-scan-async">
+<ANCHOR id="nm-device-wifi-request-scan-options-async" href="libnm/NMDeviceWifi.html#nm-device-wifi-request-scan-options-async">
 <ANCHOR id="nm-device-wifi-request-scan-finish" href="libnm/NMDeviceWifi.html#nm-device-wifi-request-scan-finish">
 <ANCHOR id="NMDeviceWifi.other_details" href="libnm/NMDeviceWifi.html#NMDeviceWifi.other_details">
 <ANCHOR id="NM-DEVICE-WIFI-HW-ADDRESS:CAPS" href="libnm/NMDeviceWifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS">
@@ -2246,6 +2279,7 @@
 <ANCHOR id="nm-access-point-get-mode" href="libnm/NMAccessPoint.html#nm-access-point-get-mode">
 <ANCHOR id="nm-access-point-get-max-bitrate" href="libnm/NMAccessPoint.html#nm-access-point-get-max-bitrate">
 <ANCHOR id="nm-access-point-get-strength" href="libnm/NMAccessPoint.html#nm-access-point-get-strength">
+<ANCHOR id="nm-access-point-get-last-seen" href="libnm/NMAccessPoint.html#nm-access-point-get-last-seen">
 <ANCHOR id="nm-access-point-filter-connections" href="libnm/NMAccessPoint.html#nm-access-point-filter-connections">
 <ANCHOR id="nm-access-point-connection-valid" href="libnm/NMAccessPoint.html#nm-access-point-connection-valid">
 <ANCHOR id="NMAccessPoint.other_details" href="libnm/NMAccessPoint.html#NMAccessPoint.other_details">
@@ -2258,12 +2292,14 @@
 <ANCHOR id="NM-ACCESS-POINT-MODE:CAPS" href="libnm/NMAccessPoint.html#NM-ACCESS-POINT-MODE:CAPS">
 <ANCHOR id="NM-ACCESS-POINT-MAX-BITRATE:CAPS" href="libnm/NMAccessPoint.html#NM-ACCESS-POINT-MAX-BITRATE:CAPS">
 <ANCHOR id="NM-ACCESS-POINT-STRENGTH:CAPS" href="libnm/NMAccessPoint.html#NM-ACCESS-POINT-STRENGTH:CAPS">
+<ANCHOR id="NM-ACCESS-POINT-LAST-SEEN:CAPS" href="libnm/NMAccessPoint.html#NM-ACCESS-POINT-LAST-SEEN:CAPS">
 <ANCHOR id="NM-ACCESS-POINT-HW-ADDRESS:CAPS" href="libnm/NMAccessPoint.html#NM-ACCESS-POINT-HW-ADDRESS:CAPS">
 <ANCHOR id="NMAccessPoint.property-details" href="libnm/NMAccessPoint.html#NMAccessPoint.property-details">
 <ANCHOR id="NMAccessPoint--bssid" href="libnm/NMAccessPoint.html#NMAccessPoint--bssid">
 <ANCHOR id="NMAccessPoint--flags" href="libnm/NMAccessPoint.html#NMAccessPoint--flags">
 <ANCHOR id="NMAccessPoint--frequency" href="libnm/NMAccessPoint.html#NMAccessPoint--frequency">
 <ANCHOR id="NMAccessPoint--hw-address" href="libnm/NMAccessPoint.html#NMAccessPoint--hw-address">
+<ANCHOR id="NMAccessPoint--last-seen" href="libnm/NMAccessPoint.html#NMAccessPoint--last-seen">
 <ANCHOR id="NMAccessPoint--max-bitrate" href="libnm/NMAccessPoint.html#NMAccessPoint--max-bitrate">
 <ANCHOR id="NMAccessPoint--mode" href="libnm/NMAccessPoint.html#NMAccessPoint--mode">
 <ANCHOR id="NMAccessPoint--rsn-flags" href="libnm/NMAccessPoint.html#NMAccessPoint--rsn-flags">
@@ -2387,6 +2423,8 @@
 <ANCHOR id="nm-utils-wifi-channel-to-freq" href="libnm/libnm-nm-utils.html#nm-utils-wifi-channel-to-freq">
 <ANCHOR id="nm-utils-wifi-find-next-channel" href="libnm/libnm-nm-utils.html#nm-utils-wifi-find-next-channel">
 <ANCHOR id="nm-utils-wifi-is-channel-valid" href="libnm/libnm-nm-utils.html#nm-utils-wifi-is-channel-valid">
+<ANCHOR id="nm-utils-wifi-2ghz-freqs" href="libnm/libnm-nm-utils.html#nm-utils-wifi-2ghz-freqs">
+<ANCHOR id="nm-utils-wifi-5ghz-freqs" href="libnm/libnm-nm-utils.html#nm-utils-wifi-5ghz-freqs">
 <ANCHOR id="nm-utils-wifi-strength-bars" href="libnm/libnm-nm-utils.html#nm-utils-wifi-strength-bars">
 <ANCHOR id="nm-utils-hwaddr-len" href="libnm/libnm-nm-utils.html#nm-utils-hwaddr-len">
 <ANCHOR id="nm-utils-hwaddr-ntoa" href="libnm/libnm-nm-utils.html#nm-utils-hwaddr-ntoa">
@@ -2403,6 +2441,8 @@
 <ANCHOR id="nm-utils-inet6-ntop" href="libnm/libnm-nm-utils.html#nm-utils-inet6-ntop">
 <ANCHOR id="nm-utils-ipaddr-valid" href="libnm/libnm-nm-utils.html#nm-utils-ipaddr-valid">
 <ANCHOR id="nm-utils-check-virtual-device-compatibility" href="libnm/libnm-nm-utils.html#nm-utils-check-virtual-device-compatibility">
+<ANCHOR id="nm-utils-enum-to-str" href="libnm/libnm-nm-utils.html#nm-utils-enum-to-str">
+<ANCHOR id="nm-utils-enum-from-str" href="libnm/libnm-nm-utils.html#nm-utils-enum-from-str">
 <ANCHOR id="libnm-nm-utils.other_details" href="libnm/libnm-nm-utils.html#libnm-nm-utils.other_details">
 <ANCHOR id="NMUtilsSecurityType" href="libnm/libnm-nm-utils.html#NMUtilsSecurityType">
 <ANCHOR id="NMU-SEC-INVALID:CAPS" href="libnm/libnm-nm-utils.html#NMU-SEC-INVALID:CAPS">
@@ -2431,6 +2471,8 @@
 <ANCHOR id="NM-VERSION-1-0:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-1-0:CAPS">
 <ANCHOR id="NM-VERSION-1-0-2:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-1-0-2:CAPS">
 <ANCHOR id="NM-VERSION-1-0-4:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-1-0-4:CAPS">
+<ANCHOR id="NM-VERSION-1-0-6:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-1-0-6:CAPS">
+<ANCHOR id="NM-VERSION-1-0-8:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-1-0-8:CAPS">
 <ANCHOR id="NM-VERSION-MIN-REQUIRED:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS">
 <ANCHOR id="NM-VERSION-MAX-ALLOWED:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-MAX-ALLOWED:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-0-9-10-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS">
@@ -2439,10 +2481,11 @@
 <ANCHOR id="NM-VERSION-CUR-STABLE:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-CUR-STABLE:CAPS">
 <ANCHOR id="NM-VERSION-NEXT-STABLE:CAPS" href="libnm/libnm-nm-version.html#NM-VERSION-NEXT-STABLE:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-0-9-10:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS">
-<ANCHOR id="NM-DEPRECATED-IN-1-0:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-0-9-10:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS">
+<ANCHOR id="NM-DEPRECATED-IN-1-0:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-1-0:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-1-0-4:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS">
+<ANCHOR id="NM-AVAILABLE-IN-1-0-6:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-0-6:CAPS">
 <ANCHOR id="libnm-nm-vpn-dbus-interface" href="libnm/libnm-nm-vpn-dbus-interface.html">
 <ANCHOR id="libnm-nm-vpn-dbus-interface.other" href="libnm/libnm-nm-vpn-dbus-interface.html#libnm-nm-vpn-dbus-interface.other">
 <ANCHOR id="libnm-nm-vpn-dbus-interface.object-hierarchy" href="libnm/libnm-nm-vpn-dbus-interface.html#libnm-nm-vpn-dbus-interface.object-hierarchy">

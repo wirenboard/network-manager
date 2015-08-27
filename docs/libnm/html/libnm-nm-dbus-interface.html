@@ -250,6 +250,10 @@
 </tr>
 <tr>
 <td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMMetered" title="enum NMMetered">NMMetered</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
 <td class="function_name"><a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionState" title="enum NMActiveConnectionState">NMActiveConnectionState</a></td>
 </tr>
 <tr>
@@ -272,6 +276,7 @@
     <span class="lineart">├──</span> NMDeviceState
     <span class="lineart">├──</span> NMDeviceStateReason
     <span class="lineart">├──</span> NMDeviceType
+    <span class="lineart">├──</span> NMMetered
     <span class="lineart">╰──</span> NMState
     <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
     <span class="lineart">├──</span> NM80211ApFlags
@@ -1820,13 +1825,66 @@ GPRS, EDGE, UMTS, HSDPA, HSUPA, or HSPA+ packet switched data capability</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NMMetered"></a><h3>enum NMMetered</h3>
+<p>(Corresponds to the NM_METERED type in nm-device.xml.)</p>
+<div class="refsect3">
+<a name="id-1.3.6.7.54.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-METERED-UNKNOWN:CAPS"></a>NM_METERED_UNKNOWN</p></td>
+<td class="enum_member_description">
+<p>The metered status is unknown</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-METERED-YES:CAPS"></a>NM_METERED_YES</p></td>
+<td class="enum_member_description">
+<p>Metered, the value was statically set</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-METERED-NO:CAPS"></a>NM_METERED_NO</p></td>
+<td class="enum_member_description">
+<p>Not metered, the value was statically set</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-METERED-GUESS-YES:CAPS"></a>NM_METERED_GUESS_YES</p></td>
+<td class="enum_member_description">
+<p>Metered, the value was guessed</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-METERED-GUESS-NO:CAPS"></a>NM_METERED_GUESS_NO</p></td>
+<td class="enum_member_description">
+<p>Not metered, the value was guessed</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NMActiveConnectionState"></a><h3>enum NMActiveConnectionState</h3>
 <p><a class="link" href="libnm-nm-dbus-interface.html#NMActiveConnectionState" title="enum NMActiveConnectionState"><span class="type">NMActiveConnectionState</span></a> values indicate the state of a connection to a
 specific network while it is starting, connected, or disconnecting from that
 network.</p>
 <p>(Corresponds to the NM_ACTIVE_CONNECTION_STATE type in nm-active-connection.xml.)</p>
 <div class="refsect3">
-<a name="id-1.3.6.7.54.5"></a><h4>Members</h4>
+<a name="id-1.3.6.7.55.5"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1881,7 +1939,7 @@ network.</p>
 <p><a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentGetSecretsFlags" title="enum NMSecretAgentGetSecretsFlags"><span class="type">NMSecretAgentGetSecretsFlags</span></a> values modify the behavior of a GetSecrets request.</p>
 <p>(Corresponds to the NM_SECRET_AGENT_GET_SECRETS_FLAGS type in nm-secret-agent.xml.)</p>
 <div class="refsect3">
-<a name="id-1.3.6.7.55.5"></a><h4>Members</h4>
+<a name="id-1.3.6.7.56.5"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1953,7 +2011,7 @@ network.</p>
 <p><a class="link" href="libnm-nm-dbus-interface.html#NMSecretAgentCapabilities" title="enum NMSecretAgentCapabilities"><span class="type">NMSecretAgentCapabilities</span></a> indicate various capabilities of the agent.</p>
 <p>(Corresponds to the NM_SECRET_AGENT_CAPABILITIES type in nm-secret-agent.xml.)</p>
 <div class="refsect3">
-<a name="id-1.3.6.7.56.5"></a><h4>Members</h4>
+<a name="id-1.3.6.7.57.5"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">

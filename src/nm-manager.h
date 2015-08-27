@@ -51,6 +51,7 @@
 #define NM_MANAGER_PRIMARY_CONNECTION_TYPE "primary-connection-type"
 #define NM_MANAGER_ACTIVATING_CONNECTION "activating-connection"
 #define NM_MANAGER_DEVICES "devices"
+#define NM_MANAGER_METERED "metered"
 
 /* Not exported */
 #define NM_MANAGER_HOSTNAME "hostname"
@@ -83,8 +84,7 @@ NMManager *   nm_manager_new                           (NMSettings *settings,
                                                         gboolean initial_net_enabled,
                                                         gboolean initial_wifi_enabled,
                                                         gboolean initial_wwan_enabled,
-                                                        gboolean initial_wimax_enabled,
-                                                        GError **error);
+                                                        gboolean initial_wimax_enabled);
 
 NMManager *   nm_manager_get                           (void);
 

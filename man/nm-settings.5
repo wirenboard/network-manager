@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 14 July 2015
+.\"      Date: 27 August 2015
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.0.4
+.\"    Source: NetworkManager 1.0.6
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.0\&.4" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.0\&.6" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -889,6 +889,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 autoconnect
@@ -952,6 +953,15 @@ T}:T{
 \ \&
 T}:T{
 Interface name of the master device or UUID of the master connection\&.
+T}
+T{
+metered
+T}:T{
+NMMetered (int32)
+T}:T{
+\ \&
+T}:T{
+Whether the connection is metered\&.
 T}
 T{
 name
@@ -2601,6 +2611,8 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
 T{
 auto\-negotiate
@@ -2709,6 +2721,24 @@ T}:T{
 0
 T}:T{
 If non\-zero, request that the device use only the specified speed\&.  In Mbit/s, ie 100 == 100Mbit/s\&.
+T}
+T{
+wake\-on\-lan
+T}:T{
+uint32
+T}:T{
+1
+T}:T{
+The NMSettingWiredWakeOnLan options to enable\&. Not all devices support all options\&. May be any combination of NM_SETTING_WIRED_WAKE_ON_LAN_PHY (0x2), NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST (0x4), NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST (0x8), NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST (0x10), NM_SETTING_WIRED_WAKE_ON_LAN_ARP (0x20), NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC (0x40)\&.
+T}
+T{
+wake\-on\-lan\-password
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+If specified, the password used with magic\-packet\-based Wake\-on\-LAN, represented as an Ethernet MAC address\&.  If NULL, no password will be required\&.
 T}
 .TE
 .sp 1

@@ -85,6 +85,14 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-VERSION-1-0-6:CAPS" title="NM_VERSION_1_0_6">NM_VERSION_1_0_6</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-VERSION-1-0-8:CAPS" title="NM_VERSION_1_0_8">NM_VERSION_1_0_8</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS" title="NM_VERSION_MIN_REQUIRED">NM_VERSION_MIN_REQUIRED</a></td>
 </tr>
 <tr>
@@ -128,11 +136,11 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
-<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS" title="NM_DEPRECATED_IN_1_0">NM_DEPRECATED_IN_1_0</a></td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS" title="NM_AVAILABLE_IN_0_9_10">NM_AVAILABLE_IN_0_9_10</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
-<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS" title="NM_AVAILABLE_IN_0_9_10">NM_AVAILABLE_IN_0_9_10</a></td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS" title="NM_DEPRECATED_IN_1_0">NM_DEPRECATED_IN_1_0</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -141,6 +149,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS" title="NM_AVAILABLE_IN_1_0_4">NM_AVAILABLE_IN_1_0_4</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-6:CAPS" title="NM_AVAILABLE_IN_1_0_6">NM_AVAILABLE_IN_1_0_6</a></td>
 </tr>
 </tbody>
 </table></div>
@@ -168,7 +180,7 @@ is compiled against.</p>
 <hr>
 <div class="refsect2">
 <a name="NM-MICRO-VERSION:CAPS"></a><h3>NM_MICRO_VERSION</h3>
-<pre class="programlisting">#define NM_MICRO_VERSION (4)
+<pre class="programlisting">#define NM_MICRO_VERSION (6)
 </pre>
 <p>Evaluates to the micro version number of NetworkManager which this source
 compiled against.</p>
@@ -248,6 +260,18 @@ is the same as or newer than the passed-in version.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-VERSION-1-0-6:CAPS"></a><h3>NM_VERSION_1_0_6</h3>
+<pre class="programlisting">#define NM_VERSION_1_0_6  (NM_ENCODE_VERSION (1, 0, 6))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-VERSION-1-0-8:CAPS"></a><h3>NM_VERSION_1_0_8</h3>
+<pre class="programlisting">#define NM_VERSION_1_0_8  (NM_ENCODE_VERSION (1, 0, 8))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-VERSION-MIN-REQUIRED:CAPS"></a><h3>NM_VERSION_MIN_REQUIRED</h3>
 <pre class="programlisting"># define NM_VERSION_MIN_REQUIRED (NM_VERSION_CUR_STABLE)
 </pre>
@@ -275,13 +299,13 @@ is the same as or newer than the passed-in version.</p>
 <a name="libnm-nm-version.other_details"></a><h2>Types and Values</h2>
 <div class="refsect2">
 <a name="NM-VERSION-CUR-STABLE:CAPS"></a><h3>NM_VERSION_CUR_STABLE</h3>
-<pre class="programlisting">#define NM_VERSION_CUR_STABLE  NM_VERSION_1_0_2
+<pre class="programlisting">#define NM_VERSION_CUR_STABLE  NM_VERSION_1_0_6
 </pre>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NM-VERSION-NEXT-STABLE:CAPS"></a><h3>NM_VERSION_NEXT_STABLE</h3>
-<pre class="programlisting">#define NM_VERSION_NEXT_STABLE NM_VERSION_1_0_4
+<pre class="programlisting">#define NM_VERSION_NEXT_STABLE NM_VERSION_1_0_8
 </pre>
 </div>
 <hr>
@@ -292,14 +316,14 @@ is the same as or newer than the passed-in version.</p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-DEPRECATED-IN-1-0:CAPS"></a><h3>NM_DEPRECATED_IN_1_0</h3>
-<pre class="programlisting"># define NM_DEPRECATED_IN_1_0           G_DEPRECATED
+<a name="NM-AVAILABLE-IN-0-9-10:CAPS"></a><h3>NM_AVAILABLE_IN_0_9_10</h3>
+<pre class="programlisting"># define NM_AVAILABLE_IN_0_9_10         G_UNAVAILABLE(0.9,10)
 </pre>
 </div>
 <hr>
 <div class="refsect2">
-<a name="NM-AVAILABLE-IN-0-9-10:CAPS"></a><h3>NM_AVAILABLE_IN_0_9_10</h3>
-<pre class="programlisting"># define NM_AVAILABLE_IN_0_9_10         G_UNAVAILABLE(0.9,10)
+<a name="NM-DEPRECATED-IN-1-0:CAPS"></a><h3>NM_DEPRECATED_IN_1_0</h3>
+<pre class="programlisting"># define NM_DEPRECATED_IN_1_0           G_DEPRECATED
 </pre>
 </div>
 <hr>
@@ -312,6 +336,12 @@ is the same as or newer than the passed-in version.</p>
 <div class="refsect2">
 <a name="NM-AVAILABLE-IN-1-0-4:CAPS"></a><h3>NM_AVAILABLE_IN_1_0_4</h3>
 <pre class="programlisting"># define NM_AVAILABLE_IN_1_0_4          G_UNAVAILABLE(1,0.4)
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-AVAILABLE-IN-1-0-6:CAPS"></a><h3>NM_AVAILABLE_IN_1_0_6</h3>
+<pre class="programlisting"># define NM_AVAILABLE_IN_1_0_6          G_UNAVAILABLE(1,0.6)
 </pre>
 </div>
 </div>

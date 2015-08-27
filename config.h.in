@@ -151,7 +151,7 @@
 /* Define if more asserts are enabled */
 #undef NM_MORE_ASSERTS
 
-/* Define if more asserts are enabled */
+/* Define if more debug logging is enabled */
 #undef NM_MORE_LOGGING
 
 /* Name of package */

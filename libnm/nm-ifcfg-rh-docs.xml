@@ -92,6 +92,7 @@ when this connection is activated."/>
 together with this connection."/>
 <property name="gateway-ping-timeout" variable="GATEWAY_PING_TIMEOUT(+)" format="" values="" default="0" example="GATEWAY_PING_TIMEOUT=5" description="If greater than zero, the IP connectivity will be checked by
 pinging the gateway and waiting for the specified timeout (in seconds)."/>
+<property name="metered" variable="CONNECTION_METERED" format="" values="yes,no,unknown" default="" example="CONNECTION_METERED=yes" description="Whether the device is metered"/>
 </setting>
 <setting name="dcb">
 <property name="app-fcoe-flags" variable="DCB_APP_FCOE_ENABLE, DCB_APP_FCOE_ADVERTISE, DCB_APP_FCOE_WILLING" format="" values="" default="no" example="DCB_APP_FCOE_ENABLE=yes DCB_APP_FCOE_ADVERTISE=yes" description="FCOE flags."/>
@@ -192,7 +193,7 @@ IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no" default="no" example="IPV6_PRIVACY=rfc30
 <setting name="vlan">
 <property name="parent" variable="DEVICE or PHYSDEV" format="" values="" default="" example="" description="Parent interface of the VLAN."/>
 <property name="id" variable="VLAN_ID or DEVICE" format="" values="" default="" example="" description="VLAN identifier."/>
-<property name="flags" variable="VLAN_FLAGS, REORDER_HDR" format="" values="&quot;GVRP&quot;, &quot;LOOSE_BINDING&quot; for VLAN_FLAGS; 0 or 1 for REORDER_HDR" default="" example="" description="Parent interface of the VLAN."/>
+<property name="flags" variable="VLAN_FLAGS, REORDER_HDR" format="" values="&quot;GVRP&quot;, &quot;LOOSE_BINDING&quot; for VLAN_FLAGS; 0 or 1 for REORDER_HDR" default="" example="" description="VLAN flags."/>
 <property name="ingress-property-map" variable="VLAN_INGRESS_PRIORITY_MAP" format="" values="" default="" example="VLAN_INGRESS_PRIORITY_MAP=4:2,3:5" description="Ingress priority mapping."/>
 <property name="egress-property-map" variable="VLAN_EGRESS_PRIORITY_MAP" format="" values="" default="" example="VLAN_EGRESS_PRIORITY_MAP=5:4,4:1,3:7" description="Egress priority mapping."/>
 <property name="interface-name" variable="PHYSDEV and VLAN_ID, or DEVICE" format="" values="" default="" example="PHYSDEV=eth0, VLAN_ID=12; or DEVICE=eth0.12" description="VLAN interface name.
