@@ -255,6 +255,14 @@
 </tr>
 <tr>
 <td class="function_type">
+<a class="link" href="libnm-nm-dbus-interface.html#NMMetered" title="enum NMMetered"><span class="returnvalue">NMMetered</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMDevice.html#nm-device-get-metered" title="nm_device_get_metered ()">nm_device_get_metered</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
 <span class="returnvalue">char</span> **
 </td>
 <td class="function_name">
@@ -446,6 +454,11 @@
 </tr>
 <tr>
 <td class="property_type"><span class="type">guint</span></td>
+<td class="property_name"><a class="link" href="NMDevice.html#NMDevice--metered" title="The “metered” property">metered</a></td>
+<td class="property_flags">Read</td>
+</tr>
+<tr>
+<td class="property_type"><span class="type">guint</span></td>
 <td class="property_name"><a class="link" href="NMDevice.html#NMDevice--mtu" title="The “mtu” property">mtu</a></td>
 <td class="property_flags">Read</td>
 </tr>
@@ -600,6 +613,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMDevice.html#NM-DEVICE-MTU:CAPS" title="NM_DEVICE_MTU">NM_DEVICE_MTU</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMDevice.html#NM-DEVICE-METERED:CAPS" title="NM_DEVICE_METERED">NM_DEVICE_METERED</a></td>
 </tr>
 </tbody>
 </table></div>
@@ -1410,6 +1427,33 @@ product name is unknown, this returns the interface name.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-device-get-metered"></a><h3>nm_device_get_metered ()</h3>
+<pre class="programlisting"><a class="link" href="libnm-nm-dbus-interface.html#NMMetered" title="enum NMMetered"><span class="returnvalue">NMMetered</span></a>
+nm_device_get_metered (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
+<p>Gets the metered setting of a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
+<div class="refsect3">
+<a name="id-1.5.2.9.30.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>device</p></td>
+<td class="parameter_description"><p>a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.5.2.9.30.6"></a><h4>Returns</h4>
+<p> the metered setting.</p>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-device-disambiguate-names"></a><h3>nm_device_disambiguate_names ()</h3>
 <pre class="programlisting"><span class="returnvalue">char</span> **
 nm_device_disambiguate_names (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> **devices</code></em>,
@@ -1418,7 +1462,7 @@ nm_device_disambiguate_names (<em class="parameter"><code><a class="link" href="
 devices in <em class="parameter"><code>devices</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.30.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.31.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1441,7 +1485,7 @@ devices in <em class="parameter"><code>devices</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.30.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.31.6"></a><h4>Returns</h4>
 <p> the device names. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></p>
 </div>
@@ -1457,7 +1501,7 @@ nm_device_disconnect (<em class="parameter"><code><a class="link" href="NMDevice
 automatically connecting to networks until the next manual network connection
 request.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.31.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.32.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1484,7 +1528,7 @@ request.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.31.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.32.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -1501,7 +1545,7 @@ nm_device_disconnect_async (<em class="parameter"><code><a class="link" href="NM
 prevents the device from automatically connecting to networks until the next
 manual network connection request.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.32.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.33.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1543,7 +1587,7 @@ nm_device_disconnect_finish (<em class="parameter"><code><a class="link" href="N
                              <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Gets the result of a call to <a class="link" href="NMDevice.html#nm-device-disconnect-async" title="nm_device_disconnect_async ()"><code class="function">nm_device_disconnect_async()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.33.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.34.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1570,7 +1614,7 @@ nm_device_disconnect_finish (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.33.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.34.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -1584,7 +1628,7 @@ nm_device_delete (<em class="parameter"><code><a class="link" href="NMDevice.htm
                   <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Deletes the software device. Hardware devices can't be deleted.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.34.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.35.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1611,7 +1655,7 @@ nm_device_delete (<em class="parameter"><code><a class="link" href="NMDevice.htm
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.34.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.35.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -1627,7 +1671,7 @@ nm_device_delete_async (<em class="parameter"><code><a class="link" href="NMDevi
 <p>Asynchronously begins deleteing the software device. Hardware devices can't
 be deleted.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.35.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.36.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1669,7 +1713,7 @@ nm_device_delete_finish (<em class="parameter"><code><a class="link" href="NMDev
                          <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Gets the result of a call to <a class="link" href="NMDevice.html#nm-device-delete-async" title="nm_device_delete_async ()"><code class="function">nm_device_delete_async()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.36.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.37.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1696,7 +1740,7 @@ nm_device_delete_finish (<em class="parameter"><code><a class="link" href="NMDev
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.36.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.37.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -1718,7 +1762,7 @@ Ethernet, Bluetooth, Wi-Fi WPA connections, or any other connection that is
 incompatible with the device. To get the full list of connections see
 <a class="link" href="NMClient.html#nm-client-get-connections" title="nm_client_get_connections ()"><code class="function">nm_client_get_connections()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.37.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.38.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1740,7 +1784,7 @@ incompatible with the device. To get the full list of connections see
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.37.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.38.6"></a><h4>Returns</h4>
 <p> an array of
 <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnections</span></a> that could be activated with the given <em class="parameter"><code>device</code></em>
 .  The array
@@ -1763,7 +1807,7 @@ network, and will not be valid if it describes a WPA network, or if it is
 an Ethernet, Bluetooth, WWAN, etc connection that is incompatible with the
 device.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.38.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.39.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1787,7 +1831,7 @@ against</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.38.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.39.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection may be activated with this device, <code class="literal">FALSE</code>
 if is incompatible with the device's capabilities and characteristics.</p>
 </div>
@@ -1811,7 +1855,7 @@ device.</p>
 compatibility of the given device and connection. But, in addition, it sets
 GError when FALSE is returned.</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.39.6"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.40.6"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1840,7 +1884,7 @@ against</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.39.7"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.40.7"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection may be activated with this device, <code class="literal">FALSE</code>
 if is incompatible with the device's capabilities and characteristics.</p>
 </div>
@@ -1854,7 +1898,7 @@ nm_device_get_setting_type (<em class="parameter"><code><a class="link" href="NM
 that can be used on <em class="parameter"><code>device</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.9.40.5"></a><h4>Parameters</h4>
+<a name="id-1.5.2.9.41.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1869,7 +1913,7 @@ that can be used on <em class="parameter"><code>device</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.9.40.6"></a><h4>Returns</h4>
+<a name="id-1.5.2.9.41.6"></a><h4>Returns</h4>
 <p> <em class="parameter"><code>device</code></em>
 's associated <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> type</p>
 </div>
@@ -2014,6 +2058,12 @@ that can be used on <em class="parameter"><code>device</code></em>
 <pre class="programlisting">#define NM_DEVICE_MTU "mtu"
 </pre>
 </div>
+<hr>
+<div class="refsect2">
+<a name="NM-DEVICE-METERED:CAPS"></a><h3>NM_DEVICE_METERED</h3>
+<pre class="programlisting">#define NM_DEVICE_METERED "metered"
+</pre>
+</div>
 </div>
 <div class="refsect1">
 <a name="NMDevice.property-details"></a><h2>Property Details</h2>
@@ -2139,6 +2189,15 @@ operations like addressing and routing.</p>
 <p>Whether the device is managed by NetworkManager.</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMDevice--metered"></a><h3>The <code class="literal">“metered”</code> property</h3>
+<pre class="programlisting">  “metered”                  <span class="type">guint</span></pre>
+<p>Whether the device is metered.</p>
+<p>Flags: Read</p>
+<p>Default value: 0</p>
+<p class="since">Since: 1.0.6</p>
 </div>
 <hr>
 <div class="refsect2">

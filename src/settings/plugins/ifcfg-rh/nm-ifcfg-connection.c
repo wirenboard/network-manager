@@ -67,6 +67,8 @@ typedef struct {
 
 	gulong devtimeout_link_changed_handler;
 	guint devtimeout_timeout_id;
+
+	NMInotifyHelper *inotify_helper;
 } NMIfcfgConnectionPrivate;
 
 enum {
@@ -83,6 +85,14 @@ enum {
 };
 
 static guint signals[LAST_SIGNAL] = { 0 };
+
+static NMInotifyHelper *
+_get_inotify_helper (NMIfcfgConnectionPrivate *priv)
+{
+	if (!priv->inotify_helper)
+		priv->inotify_helper = g_object_ref (nm_inotify_helper_get ());
+	return priv->inotify_helper;
+}
 
 static gboolean
 devtimeout_ready (gpointer user_data)
@@ -149,6 +159,7 @@ nm_ifcfg_connection_check_devtimeout (NMIfcfgConnection *self)
 	const char *ifname;
 	const char *filename;
 	guint devtimeout;
+	const NMPlatformLink *pllink;
 
 	s_con = nm_connection_get_setting_connection (NM_CONNECTION (self));
 
@@ -160,11 +171,13 @@ nm_ifcfg_connection_check_devtimeout (NMIfcfgConnection *self)
 	filename = nm_settings_connection_get_filename (NM_SETTINGS_CONNECTION (self));
 	if (!filename)
 		return;
-	devtimeout = devtimeout_from_file (filename);
-	if (!devtimeout)
+
+	pllink = nm_platform_link_get_by_ifname (NM_PLATFORM_GET, ifname);
+	if (pllink && pllink->initialized)
 		return;
 
-	if (nm_platform_link_get_ifindex (NM_PLATFORM_GET, ifname) != 0)
+	devtimeout = devtimeout_from_file (filename);
+	if (!devtimeout)
 		return;
 
 	/* ONBOOT=yes, DEVICE and DEVTIMEOUT are set, but device is not present */
@@ -261,7 +274,7 @@ path_watch_stop (NMIfcfgConnection *self)
 	NMIfcfgConnectionPrivate *priv = NM_IFCFG_CONNECTION_GET_PRIVATE (self);
 	NMInotifyHelper *ih;
 
-	ih = nm_inotify_helper_get ();
+	ih = _get_inotify_helper (priv);
 
 	if (priv->ih_event_id) {
 		g_signal_handler_disconnect (ih, priv->ih_event_id);
@@ -315,7 +328,9 @@ filename_changed (GObject *object,
 	priv->route6file = utils_get_route6_path (ifcfg_path);
 
 	if (nm_config_get_monitor_connection_files (nm_config_get ())) {
-		NMInotifyHelper *ih = nm_inotify_helper_get ();
+		NMInotifyHelper *ih;
+
+		ih = _get_inotify_helper (priv);
 
 		priv->ih_event_id = g_signal_connect (ih, "event", G_CALLBACK (files_changed_cb), self);
 		priv->file_wd = nm_inotify_helper_add_watch (ih, ifcfg_path);
@@ -508,6 +523,8 @@ dispose (GObject *object)
 		g_source_remove (priv->devtimeout_timeout_id);
 		priv->devtimeout_timeout_id = 0;
 	}
+
+	g_clear_object (&priv->inotify_helper);
 
 	G_OBJECT_CLASS (nm_ifcfg_connection_parent_class)->dispose (object);
 }

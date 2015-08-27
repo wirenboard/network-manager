@@ -30,6 +30,7 @@
 #include "settings.h"
 #include "nm-glib-compat.h"
 #include "nm-macros-internal.h"
+#include "gsystem-local-alloc.h"
 
 /* Forward declarations */
 static char *wep_key_type_to_string (NMWepKeyType type);
@@ -60,6 +61,7 @@ NmcOutputField nmc_fields_setting_connection[] = {
 	SETTING_FIELD (NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES, 13),    /* 13 */
 	SETTING_FIELD (NM_SETTING_CONNECTION_SECONDARIES, 40),           /* 14 */
 	SETTING_FIELD (NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT, 30),  /* 15 */
+	SETTING_FIELD (NM_SETTING_CONNECTION_METERED, 10),               /* 16 */
 	{NULL, NULL, 0, NULL, FALSE, FALSE, 0}
 };
 #define NMC_FIELDS_SETTING_CONNECTION_ALL     "name"","\
@@ -77,7 +79,8 @@ NmcOutputField nmc_fields_setting_connection[] = {
                                               NM_SETTING_CONNECTION_SLAVE_TYPE","\
                                               NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES","\
                                               NM_SETTING_CONNECTION_SECONDARIES","\
-                                              NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT
+                                              NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT","\
+                                              NM_SETTING_CONNECTION_METERED
 #define NMC_FIELDS_SETTING_CONNECTION_COMMON  NMC_FIELDS_SETTING_CONNECTION_ALL
 
 /* Available fields for NM_SETTING_WIRED_SETTING_NAME */
@@ -94,6 +97,8 @@ NmcOutputField nmc_fields_setting_wired[] = {
 	SETTING_FIELD (NM_SETTING_WIRED_S390_SUBCHANNELS, 20),        /* 9 */
 	SETTING_FIELD (NM_SETTING_WIRED_S390_NETTYPE, 15),            /* 10 */
 	SETTING_FIELD (NM_SETTING_WIRED_S390_OPTIONS, 20),            /* 11 */
+	SETTING_FIELD (NM_SETTING_WIRED_WAKE_ON_LAN, 10),             /* 12 */
+	SETTING_FIELD (NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD, 20),    /* 13 */
 	{NULL, NULL, 0, NULL, FALSE, FALSE, 0}
 };
 #define NMC_FIELDS_SETTING_WIRED_ALL     "name"","\
@@ -107,7 +112,9 @@ NmcOutputField nmc_fields_setting_wired[] = {
                                          NM_SETTING_WIRED_MTU","\
                                          NM_SETTING_WIRED_S390_SUBCHANNELS","\
                                          NM_SETTING_WIRED_S390_NETTYPE","\
-                                         NM_SETTING_WIRED_S390_OPTIONS
+                                         NM_SETTING_WIRED_S390_OPTIONS","\
+                                         NM_SETTING_WIRED_WAKE_ON_LAN","\
+                                         NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD
 #define NMC_FIELDS_SETTING_WIRED_COMMON  NMC_FIELDS_SETTING_WIRED_ALL
 
 /* Available fields for NM_SETTING_802_1X_SETTING_NAME */
@@ -1497,6 +1504,7 @@ DEFINE_GETTER (nmc_property_wired_get_mac_address_blacklist, NM_SETTING_WIRED_MA
 DEFINE_GETTER (nmc_property_wired_get_s390_subchannels, NM_SETTING_WIRED_S390_SUBCHANNELS)
 DEFINE_GETTER (nmc_property_wired_get_s390_nettype, NM_SETTING_WIRED_S390_NETTYPE)
 DEFINE_GETTER (nmc_property_wired_get_s390_options, NM_SETTING_WIRED_S390_OPTIONS)
+DEFINE_GETTER (nmc_property_wired_get_wake_on_lan_password, NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD)
 
 static char *
 nmc_property_wired_get_mtu (NMSetting *setting, NmcPropertyGetType get_type)
@@ -1509,6 +1517,45 @@ nmc_property_wired_get_mtu (NMSetting *setting, NmcPropertyGetType get_type)
 		return g_strdup (_("auto"));
 	else
 		return g_strdup_printf ("%d", mtu);
+}
+
+static char *
+nmc_property_wired_get_wake_on_lan (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingWired *s_wired = NM_SETTING_WIRED (setting);
+	NMSettingWiredWakeOnLan wol;
+
+	wol = nm_setting_wired_get_wake_on_lan (s_wired);
+	return nm_utils_enum_to_str (nm_setting_wired_wake_on_lan_get_type (), wol);
+}
+
+static gboolean
+nmc_property_wired_set_wake_on_lan (NMSetting *setting, const char *prop,
+                                    const char *val, GError **error)
+{
+	NMSettingWiredWakeOnLan wol;
+	gs_free char *err_token = NULL;
+	gboolean ret;
+
+	ret = nm_utils_enum_from_str (nm_setting_wired_wake_on_lan_get_type (), val,
+	                              (int *) &wol, &err_token);
+
+	if (!ret) {
+		g_set_error (error, 1, 0, _("invalid option '%s', use  a combination of %s or 'default'"),
+		             err_token,
+		             nm_utils_enum_to_str (nm_setting_wired_wake_on_lan_get_type (),
+		                                   NM_SETTING_WIRED_WAKE_ON_LAN_ALL));
+		return FALSE;
+	}
+
+	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT) &&
+		NM_FLAGS_ANY (wol, NM_SETTING_WIRED_WAKE_ON_LAN_ALL)) {
+		g_set_error_literal (error, 1, 0, _("'default' is incompatible with other flags"));
+		return FALSE;
+	}
+
+	g_object_set (setting, prop, (guint) wol, NULL);
+	return TRUE;
 }
 
 /* --- NM_SETTING_WIRELESS_SETTING_NAME property get functions --- */
@@ -2034,6 +2081,46 @@ validate_uint (NMSetting *setting, const char* prop, guint val, GError **error)
 	return success;
 }
 
+static char *
+flag_values_to_string (GFlagsValue *array, guint n)
+{
+	GString *str;
+	guint i;
+
+	str = g_string_new (NULL);
+	for (i = 0; i < n; i++)
+		g_string_append_printf (str, "%u, ", array[i].value);
+	if (str->len)
+		g_string_truncate (str, str->len-2);  /* chop off trailing ', ' */
+	return g_string_free (str, FALSE);
+}
+
+static gboolean
+validate_flags (NMSetting *setting, const char* prop, guint val, GError **error)
+{
+	GParamSpec *pspec;
+	GValue value = G_VALUE_INIT;
+	gboolean success = TRUE;
+
+	pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (setting)), prop);
+	g_assert (G_IS_PARAM_SPEC (pspec));
+
+	g_value_init (&value, pspec->value_type);
+	g_value_set_flags (&value, val);
+
+	if (g_param_value_validate (pspec, &value)) {
+		GParamSpecFlags *pspec_flags = (GParamSpecFlags *) pspec;
+		char *flag_values = flag_values_to_string (pspec_flags->flags_class->values,
+		                                           pspec_flags->flags_class->n_values);
+		g_set_error (error, 1, 0, _("'%u' flags are not valid; use combination of %s"),
+		             val, flag_values);
+		g_free (flag_values);
+		success = FALSE;
+	}
+	g_value_unset (&value);
+	return success;
+}
+
 static gboolean
 check_and_set_string (NMSetting *setting,
                       const char *prop,
@@ -2253,6 +2340,26 @@ nmc_property_set_int64 (NMSetting *setting, const char *prop, const char *val, G
 		return FALSE;
 
 	g_object_set (setting, prop, (gint64) val_int, NULL);
+	return TRUE;
+}
+
+static gboolean
+nmc_property_set_flags (NMSetting *setting, const char *prop, const char *val, GError **error)
+{
+	unsigned long val_int;
+
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (!nmc_string_to_uint (val, TRUE, 0, G_MAXUINT, &val_int)) {
+		g_set_error (error, 1, 0, _("'%s' is not a valid number (or out of range)"), val);
+		return FALSE;
+	}
+
+	/* Validate the flags according to the property spec */
+	if (!validate_flags (setting, prop, (guint) val_int, error))
+		return FALSE;
+
+	g_object_set (setting, prop, (guint) val_int, NULL);
 	return TRUE;
 }
 
@@ -2682,6 +2789,62 @@ nmc_property_connection_describe_secondaries (NMSetting *setting, const char *pr
 	         "VPNs as secondary connections at the moment.\n"
 	         "The items can be separated by commas or spaces.\n\n"
 	         "Example: private-openvpn, fe6ba5d8-c2fc-4aae-b2e3-97efddd8d9a7\n");
+}
+
+/* 'metered' */
+static char *
+nmc_property_connection_get_metered (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingConnection *s_conn = NM_SETTING_CONNECTION (setting);
+
+	if (get_type == NMC_PROPERTY_GET_PARSABLE) {
+		switch (nm_setting_connection_get_metered (s_conn)) {
+		case NM_METERED_YES:
+			return g_strdup ("yes");
+		case NM_METERED_NO:
+			return g_strdup ("no");
+		case NM_METERED_UNKNOWN:
+		default:
+			return g_strdup ("unknown");
+		}
+	}
+	switch (nm_setting_connection_get_metered (s_conn)) {
+	case NM_METERED_YES:
+		return g_strdup (_("yes"));
+	case NM_METERED_NO:
+		return g_strdup (_("no"));
+	case NM_METERED_UNKNOWN:
+	default:
+		return g_strdup (_("unknown"));
+	}
+}
+
+static gboolean
+nmc_property_connection_set_metered (NMSetting *setting, const char *prop,
+                                     const char *val, GError **error)
+{
+	NMMetered metered;
+	NMCTriStateValue ts_val;
+
+	if (!nmc_string_to_tristate (val, &ts_val, error))
+		return FALSE;
+
+	switch (ts_val) {
+	case NMC_TRI_STATE_YES:
+		metered = NM_METERED_YES;
+		break;
+	case NMC_TRI_STATE_NO:
+		metered = NM_METERED_NO;
+		break;
+	case NMC_TRI_STATE_UNKNOWN:
+		metered = NM_METERED_UNKNOWN;
+		break;
+	default:
+		g_assert_not_reached();
+	}
+
+	g_object_set (setting, prop, metered, NULL);
+	return TRUE;
 }
 
 /* --- NM_SETTING_802_1X_SETTING_NAME property setter functions --- */
@@ -4495,8 +4658,8 @@ nmc_property_dcb_set_flags (NMSetting *setting, const char *prop, const char *va
 		g_strfreev (strv);
 	}
 
-	/* Validate the number according to the property spec */
-	if (!validate_uint (setting, prop, (guint) flags, error))
+	/* Validate the flags according to the property spec */
+	if (!validate_flags (setting, prop, (guint) flags, error))
 		return FALSE;
 
 	g_object_set (setting, prop, (guint) flags, NULL);
@@ -5264,6 +5427,13 @@ nmc_properties_init (void)
 	                    NULL,
 	                    NULL,
 	                    NULL);
+	nmc_add_prop_funcs (GLUE (CONNECTION, METERED),
+	                    nmc_property_connection_get_metered,
+	                    nmc_property_connection_set_metered,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
 
 	/* Add editable properties for NM_SETTING_DCB_SETTING_NAME */
 	nmc_add_prop_funcs (GLUE (DCB, APP_FCOE_FLAGS),
@@ -5927,7 +6097,7 @@ nmc_properties_init (void)
 	                    NULL);
 	nmc_add_prop_funcs (GLUE (VLAN, FLAGS),
 	                    nmc_property_vlan_get_flags,
-	                    nmc_property_set_uint,
+	                    nmc_property_set_flags,
 	                    NULL,
 	                    NULL,
 	                    NULL,
@@ -6077,6 +6247,20 @@ nmc_properties_init (void)
 	                    nmc_property_wired_remove_option_s390_options,
 	                    nmc_property_wired_describe_s390_options,
 	                    nmc_property_wired_allowed_s390_options,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (WIRED, WAKE_ON_LAN),
+	                    nmc_property_wired_get_wake_on_lan,
+	                    nmc_property_wired_set_wake_on_lan,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE (WIRED, WAKE_ON_LAN_PASSWORD),
+	                    nmc_property_wired_get_wake_on_lan_password,
+	                    nmc_property_set_mac,
+	                    NULL,
+	                    NULL,
+	                    NULL,
 	                    NULL);
 
 	/* Add editable properties for NM_SETTING_WIRELESS_SETTING_NAME */
@@ -6624,6 +6808,7 @@ setting_connection_details (NMSetting *setting, NmCli *nmc,  const char *one_pro
 	set_val_str (arr, 13, nmc_property_connection_get_autoconnect_slaves (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 14, nmc_property_connection_get_secondaries (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 15, nmc_property_connection_get_gateway_ping_timeout (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 16, nmc_property_connection_get_metered (setting, NMC_PROPERTY_GET_PRETTY));
 	g_ptr_array_add (nmc->output_data, arr);
 
 	print_data (nmc);  /* Print all data */
@@ -6660,6 +6845,8 @@ setting_wired_details (NMSetting *setting, NmCli *nmc,  const char *one_prop, gb
 	set_val_str (arr, 9, nmc_property_wired_get_s390_subchannels (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 10, nmc_property_wired_get_s390_nettype (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 11, nmc_property_wired_get_s390_options (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 12, nmc_property_wired_get_wake_on_lan (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 13, nmc_property_wired_get_wake_on_lan_password (setting, NMC_PROPERTY_GET_PRETTY));
 	g_ptr_array_add (nmc->output_data, arr);
 
 	print_data (nmc);  /* Print all data */

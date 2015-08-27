@@ -140,6 +140,10 @@ guint32 nm_utils_wifi_freq_to_channel (guint32 freq);
 guint32 nm_utils_wifi_channel_to_freq (guint32 channel, const char *band);
 guint32 nm_utils_wifi_find_next_channel (guint32 channel, int direction, char *band);
 gboolean nm_utils_wifi_is_channel_valid (guint32 channel, const char *band);
+NM_AVAILABLE_IN_1_0_6
+const guint *nm_utils_wifi_2ghz_freqs (void);
+NM_AVAILABLE_IN_1_0_6
+const guint *nm_utils_wifi_5ghz_freqs (void);
 
 const char *nm_utils_wifi_strength_bars (guint8 strength);
 
@@ -184,6 +188,12 @@ const char *nm_utils_inet6_ntop (const struct in6_addr *in6addr, char *dst);
 gboolean nm_utils_ipaddr_valid (int family, const char *ip);
 
 gboolean nm_utils_check_virtual_device_compatibility (GType virtual_type, GType other_type);
+
+NM_AVAILABLE_IN_1_0_6
+char *nm_utils_enum_to_str (GType type, int value);
+
+NM_AVAILABLE_IN_1_0_6
+gboolean nm_utils_enum_from_str (GType type, const char *str, int *out_value, char **err_token);
 
 G_END_DECLS
 

@@ -150,6 +150,7 @@
     <keyword type="macro" name="NM_CLIENT_CONNECTIONS" link="NMClient.html#NM-CLIENT-CONNECTIONS:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_HOSTNAME" link="NMClient.html#NM-CLIENT-HOSTNAME:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_CAN_MODIFY" link="NMClient.html#NM-CLIENT-CAN-MODIFY:CAPS"/>
+    <keyword type="macro" name="NM_CLIENT_METERED" link="NMClient.html#NM-CLIENT-METERED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DEVICE_ADDED" link="NMClient.html#NM-CLIENT-DEVICE-ADDED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_DEVICE_REMOVED" link="NMClient.html#NM-CLIENT-DEVICE-REMOVED:CAPS"/>
     <keyword type="macro" name="NM_CLIENT_PERMISSION_CHANGED" link="NMClient.html#NM-CLIENT-PERMISSION-CHANGED:CAPS"/>
@@ -166,6 +167,7 @@
     <keyword type="property" name="The “connectivity” property" link="NMClient.html#NMClient--connectivity"/>
     <keyword type="property" name="The “devices” property" link="NMClient.html#NMClient--devices"/>
     <keyword type="property" name="The “hostname” property" link="NMClient.html#NMClient--hostname"/>
+    <keyword type="property" name="The “metered” property" link="NMClient.html#NMClient--metered"/>
     <keyword type="property" name="The “networking-enabled” property" link="NMClient.html#NMClient--networking-enabled"/>
     <keyword type="property" name="The “nm-running” property" link="NMClient.html#NMClient--nm-running"/>
     <keyword type="property" name="The “primary-connection” property" link="NMClient.html#NMClient--primary-connection"/>
@@ -286,6 +288,7 @@
     <keyword type="enum" name="enum NMDeviceModemCapabilities" link="libnm-nm-dbus-interface.html#NMDeviceModemCapabilities"/>
     <keyword type="enum" name="enum NMDeviceState" link="libnm-nm-dbus-interface.html#NMDeviceState"/>
     <keyword type="enum" name="enum NMDeviceStateReason" link="libnm-nm-dbus-interface.html#NMDeviceStateReason"/>
+    <keyword type="enum" name="enum NMMetered" link="libnm-nm-dbus-interface.html#NMMetered" since="1.0.6"/>
     <keyword type="enum" name="enum NMActiveConnectionState" link="libnm-nm-dbus-interface.html#NMActiveConnectionState"/>
     <keyword type="enum" name="enum NMSecretAgentGetSecretsFlags" link="libnm-nm-dbus-interface.html#NMSecretAgentGetSecretsFlags"/>
     <keyword type="enum" name="enum NMSecretAgentCapabilities" link="libnm-nm-dbus-interface.html#NMSecretAgentCapabilities"/>
@@ -400,6 +403,7 @@
     <keyword type="function" name="nm_setting_connection_remove_secondary ()" link="NMSettingConnection.html#nm-setting-connection-remove-secondary"/>
     <keyword type="function" name="nm_setting_connection_remove_secondary_by_value ()" link="NMSettingConnection.html#nm-setting-connection-remove-secondary-by-value"/>
     <keyword type="function" name="nm_setting_connection_get_gateway_ping_timeout ()" link="NMSettingConnection.html#nm-setting-connection-get-gateway-ping-timeout"/>
+    <keyword type="function" name="nm_setting_connection_get_metered ()" link="NMSettingConnection.html#nm-setting-connection-get-metered" since="1.0.6"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_SETTING_NAME" link="NMSettingConnection.html#NM-SETTING-CONNECTION-SETTING-NAME:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MIN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MAX" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-PRIORITY-MAX:CAPS"/>
@@ -419,6 +423,7 @@
     <keyword type="macro" name="NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES" link="NMSettingConnection.html#NM-SETTING-CONNECTION-AUTOCONNECT-SLAVES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_SECONDARIES" link="NMSettingConnection.html#NM-SETTING-CONNECTION-SECONDARIES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT" link="NMSettingConnection.html#NM-SETTING-CONNECTION-GATEWAY-PING-TIMEOUT:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_CONNECTION_METERED" link="NMSettingConnection.html#NM-SETTING-CONNECTION-METERED:CAPS"/>
     <keyword type="enum" name="enum NMSettingConnectionAutoconnectSlaves" link="NMSettingConnection.html#NMSettingConnectionAutoconnectSlaves"/>
     <keyword type="struct" name="struct NMSettingConnection" link="NMSettingConnection.html#NMSettingConnection-struct"/>
     <keyword type="property" name="The “autoconnect” property" link="NMSettingConnection.html#NMSettingConnection--autoconnect"/>
@@ -428,6 +433,7 @@
     <keyword type="property" name="The “id” property" link="NMSettingConnection.html#NMSettingConnection--id"/>
     <keyword type="property" name="The “interface-name” property" link="NMSettingConnection.html#NMSettingConnection--interface-name"/>
     <keyword type="property" name="The “master” property" link="NMSettingConnection.html#NMSettingConnection--master"/>
+    <keyword type="property" name="The “metered” property" link="NMSettingConnection.html#NMSettingConnection--metered"/>
     <keyword type="property" name="The “permissions” property" link="NMSettingConnection.html#NMSettingConnection--permissions"/>
     <keyword type="property" name="The “read-only” property" link="NMSettingConnection.html#NMSettingConnection--read-only"/>
     <keyword type="property" name="The “secondaries” property" link="NMSettingConnection.html#NMSettingConnection--secondaries"/>
@@ -1100,7 +1106,10 @@
     <keyword type="function" name="nm_setting_wired_add_s390_option ()" link="NMSettingWired.html#nm-setting-wired-add-s390-option"/>
     <keyword type="function" name="nm_setting_wired_remove_s390_option ()" link="NMSettingWired.html#nm-setting-wired-remove-s390-option"/>
     <keyword type="function" name="nm_setting_wired_get_valid_s390_options ()" link="NMSettingWired.html#nm-setting-wired-get-valid-s390-options"/>
+    <keyword type="function" name="nm_setting_wired_get_wake_on_lan ()" link="NMSettingWired.html#nm-setting-wired-get-wake-on-lan" since="1.0.6"/>
+    <keyword type="function" name="nm_setting_wired_get_wake_on_lan_password ()" link="NMSettingWired.html#nm-setting-wired-get-wake-on-lan-password" since="1.0.6"/>
     <keyword type="macro" name="NM_SETTING_WIRED_SETTING_NAME" link="NMSettingWired.html#NM-SETTING-WIRED-SETTING-NAME:CAPS"/>
+    <keyword type="enum" name="enum NMSettingWiredWakeOnLan" link="NMSettingWired.html#NMSettingWiredWakeOnLan" since="1.0.6"/>
     <keyword type="macro" name="NM_SETTING_WIRED_PORT" link="NMSettingWired.html#NM-SETTING-WIRED-PORT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_SPEED" link="NMSettingWired.html#NM-SETTING-WIRED-SPEED:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_DUPLEX" link="NMSettingWired.html#NM-SETTING-WIRED-DUPLEX:CAPS"/>
@@ -1112,6 +1121,8 @@
     <keyword type="macro" name="NM_SETTING_WIRED_S390_SUBCHANNELS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-SUBCHANNELS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_S390_NETTYPE" link="NMSettingWired.html#NM-SETTING-WIRED-S390-NETTYPE:CAPS"/>
     <keyword type="macro" name="NM_SETTING_WIRED_S390_OPTIONS" link="NMSettingWired.html#NM-SETTING-WIRED-S390-OPTIONS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_WAKE_ON_LAN" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PASSWORD:CAPS"/>
     <keyword type="property" name="The “auto-negotiate” property" link="NMSettingWired.html#NMSettingWired--auto-negotiate"/>
     <keyword type="property" name="The “cloned-mac-address” property" link="NMSettingWired.html#NMSettingWired--cloned-mac-address"/>
     <keyword type="property" name="The “duplex” property" link="NMSettingWired.html#NMSettingWired--duplex"/>
@@ -1123,6 +1134,8 @@
     <keyword type="property" name="The “s390-options” property" link="NMSettingWired.html#NMSettingWired--s390-options"/>
     <keyword type="property" name="The “s390-subchannels” property" link="NMSettingWired.html#NMSettingWired--s390-subchannels"/>
     <keyword type="property" name="The “speed” property" link="NMSettingWired.html#NMSettingWired--speed"/>
+    <keyword type="property" name="The “wake-on-lan” property" link="NMSettingWired.html#NMSettingWired--wake-on-lan"/>
+    <keyword type="property" name="The “wake-on-lan-password” property" link="NMSettingWired.html#NMSettingWired--wake-on-lan-password"/>
     <keyword type="function" name="nm_setting_wireless_new ()" link="NMSettingWireless.html#nm-setting-wireless-new"/>
     <keyword type="function" name="nm_setting_wireless_get_ssid ()" link="NMSettingWireless.html#nm-setting-wireless-get-ssid"/>
     <keyword type="function" name="nm_setting_wireless_get_mode ()" link="NMSettingWireless.html#nm-setting-wireless-get-mode"/>
@@ -1271,6 +1284,7 @@
     <keyword type="function" name="nm_device_get_product ()" link="NMDevice.html#nm-device-get-product"/>
     <keyword type="function" name="nm_device_get_vendor ()" link="NMDevice.html#nm-device-get-vendor"/>
     <keyword type="function" name="nm_device_get_description ()" link="NMDevice.html#nm-device-get-description"/>
+    <keyword type="function" name="nm_device_get_metered ()" link="NMDevice.html#nm-device-get-metered" since="1.0.6"/>
     <keyword type="function" name="nm_device_disambiguate_names ()" link="NMDevice.html#nm-device-disambiguate-names"/>
     <keyword type="function" name="nm_device_disconnect ()" link="NMDevice.html#nm-device-disconnect"/>
     <keyword type="function" name="nm_device_disconnect_async ()" link="NMDevice.html#nm-device-disconnect-async"/>
@@ -1305,6 +1319,7 @@
     <keyword type="macro" name="NM_DEVICE_PRODUCT" link="NMDevice.html#NM-DEVICE-PRODUCT:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_PHYSICAL_PORT_ID" link="NMDevice.html#NM-DEVICE-PHYSICAL-PORT-ID:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_MTU" link="NMDevice.html#NM-DEVICE-MTU:CAPS"/>
+    <keyword type="macro" name="NM_DEVICE_METERED" link="NMDevice.html#NM-DEVICE-METERED:CAPS"/>
     <keyword type="property" name="The “active-connection” property" link="NMDevice.html#NMDevice--active-connection"/>
     <keyword type="property" name="The “autoconnect” property" link="NMDevice.html#NMDevice--autoconnect"/>
     <keyword type="property" name="The “available-connections” property" link="NMDevice.html#NMDevice--available-connections"/>
@@ -1321,6 +1336,7 @@
     <keyword type="property" name="The “ip4-config” property" link="NMDevice.html#NMDevice--ip4-config"/>
     <keyword type="property" name="The “ip6-config” property" link="NMDevice.html#NMDevice--ip6-config"/>
     <keyword type="property" name="The “managed” property" link="NMDevice.html#NMDevice--managed"/>
+    <keyword type="property" name="The “metered” property" link="NMDevice.html#NMDevice--metered"/>
     <keyword type="property" name="The “mtu” property" link="NMDevice.html#NMDevice--mtu"/>
     <keyword type="property" name="The “physical-port-id” property" link="NMDevice.html#NMDevice--physical-port-id"/>
     <keyword type="property" name="The “product” property" link="NMDevice.html#NMDevice--product"/>
@@ -1427,7 +1443,9 @@
     <keyword type="function" name="nm_device_wifi_get_access_point_by_path ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-point-by-path"/>
     <keyword type="function" name="nm_device_wifi_get_access_points ()" link="NMDeviceWifi.html#nm-device-wifi-get-access-points"/>
     <keyword type="function" name="nm_device_wifi_request_scan ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan"/>
+    <keyword type="function" name="nm_device_wifi_request_scan_options ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-options" since="1.0.6"/>
     <keyword type="function" name="nm_device_wifi_request_scan_async ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-async"/>
+    <keyword type="function" name="nm_device_wifi_request_scan_options_async ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-options-async" since="1.0.6"/>
     <keyword type="function" name="nm_device_wifi_request_scan_finish ()" link="NMDeviceWifi.html#nm-device-wifi-request-scan-finish"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_HW_ADDRESS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-HW-ADDRESS:CAPS"/>
     <keyword type="macro" name="NM_DEVICE_WIFI_PERMANENT_HW_ADDRESS" link="NMDeviceWifi.html#NM-DEVICE-WIFI-PERMANENT-HW-ADDRESS:CAPS"/>
@@ -1553,6 +1571,7 @@
     <keyword type="function" name="nm_access_point_get_mode ()" link="NMAccessPoint.html#nm-access-point-get-mode"/>
     <keyword type="function" name="nm_access_point_get_max_bitrate ()" link="NMAccessPoint.html#nm-access-point-get-max-bitrate"/>
     <keyword type="function" name="nm_access_point_get_strength ()" link="NMAccessPoint.html#nm-access-point-get-strength"/>
+    <keyword type="function" name="nm_access_point_get_last_seen ()" link="NMAccessPoint.html#nm-access-point-get-last-seen" since="1.0.6"/>
     <keyword type="function" name="nm_access_point_filter_connections ()" link="NMAccessPoint.html#nm-access-point-filter-connections"/>
     <keyword type="function" name="nm_access_point_connection_valid ()" link="NMAccessPoint.html#nm-access-point-connection-valid"/>
     <keyword type="macro" name="NM_ACCESS_POINT_FLAGS" link="NMAccessPoint.html#NM-ACCESS-POINT-FLAGS:CAPS"/>
@@ -1564,11 +1583,13 @@
     <keyword type="macro" name="NM_ACCESS_POINT_MODE" link="NMAccessPoint.html#NM-ACCESS-POINT-MODE:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_MAX_BITRATE" link="NMAccessPoint.html#NM-ACCESS-POINT-MAX-BITRATE:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_STRENGTH" link="NMAccessPoint.html#NM-ACCESS-POINT-STRENGTH:CAPS"/>
+    <keyword type="macro" name="NM_ACCESS_POINT_LAST_SEEN" link="NMAccessPoint.html#NM-ACCESS-POINT-LAST-SEEN:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_HW_ADDRESS" link="NMAccessPoint.html#NM-ACCESS-POINT-HW-ADDRESS:CAPS"/>
     <keyword type="property" name="The “bssid” property" link="NMAccessPoint.html#NMAccessPoint--bssid"/>
     <keyword type="property" name="The “flags” property" link="NMAccessPoint.html#NMAccessPoint--flags"/>
     <keyword type="property" name="The “frequency” property" link="NMAccessPoint.html#NMAccessPoint--frequency"/>
     <keyword type="property" name="The “hw-address” property" link="NMAccessPoint.html#NMAccessPoint--hw-address"/>
+    <keyword type="property" name="The “last-seen” property" link="NMAccessPoint.html#NMAccessPoint--last-seen"/>
     <keyword type="property" name="The “max-bitrate” property" link="NMAccessPoint.html#NMAccessPoint--max-bitrate"/>
     <keyword type="property" name="The “mode” property" link="NMAccessPoint.html#NMAccessPoint--mode"/>
     <keyword type="property" name="The “rsn-flags” property" link="NMAccessPoint.html#NMAccessPoint--rsn-flags"/>
@@ -1655,6 +1676,8 @@
     <keyword type="function" name="nm_utils_wifi_channel_to_freq ()" link="libnm-nm-utils.html#nm-utils-wifi-channel-to-freq"/>
     <keyword type="function" name="nm_utils_wifi_find_next_channel ()" link="libnm-nm-utils.html#nm-utils-wifi-find-next-channel"/>
     <keyword type="function" name="nm_utils_wifi_is_channel_valid ()" link="libnm-nm-utils.html#nm-utils-wifi-is-channel-valid"/>
+    <keyword type="function" name="nm_utils_wifi_2ghz_freqs ()" link="libnm-nm-utils.html#nm-utils-wifi-2ghz-freqs" since="1.0.6"/>
+    <keyword type="function" name="nm_utils_wifi_5ghz_freqs ()" link="libnm-nm-utils.html#nm-utils-wifi-5ghz-freqs" since="1.0.6"/>
     <keyword type="function" name="nm_utils_wifi_strength_bars ()" link="libnm-nm-utils.html#nm-utils-wifi-strength-bars"/>
     <keyword type="function" name="nm_utils_hwaddr_len ()" link="libnm-nm-utils.html#nm-utils-hwaddr-len"/>
     <keyword type="function" name="nm_utils_hwaddr_ntoa ()" link="libnm-nm-utils.html#nm-utils-hwaddr-ntoa"/>
@@ -1671,6 +1694,8 @@
     <keyword type="function" name="nm_utils_inet6_ntop ()" link="libnm-nm-utils.html#nm-utils-inet6-ntop"/>
     <keyword type="function" name="nm_utils_ipaddr_valid ()" link="libnm-nm-utils.html#nm-utils-ipaddr-valid"/>
     <keyword type="function" name="nm_utils_check_virtual_device_compatibility ()" link="libnm-nm-utils.html#nm-utils-check-virtual-device-compatibility"/>
+    <keyword type="function" name="nm_utils_enum_to_str ()" link="libnm-nm-utils.html#nm-utils-enum-to-str" since="1.0.6"/>
+    <keyword type="function" name="nm_utils_enum_from_str ()" link="libnm-nm-utils.html#nm-utils-enum-from-str" since="1.0.6"/>
     <keyword type="enum" name="enum NMUtilsSecurityType" link="libnm-nm-utils.html#NMUtilsSecurityType"/>
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
     <keyword type="macro" name="NM_UTILS_INET_ADDRSTRLEN" link="libnm-nm-utils.html#NM-UTILS-INET-ADDRSTRLEN:CAPS"/>
@@ -1684,6 +1709,8 @@
     <keyword type="macro" name="NM_VERSION_1_0" link="libnm-nm-version.html#NM-VERSION-1-0:CAPS"/>
     <keyword type="macro" name="NM_VERSION_1_0_2" link="libnm-nm-version.html#NM-VERSION-1-0-2:CAPS"/>
     <keyword type="macro" name="NM_VERSION_1_0_4" link="libnm-nm-version.html#NM-VERSION-1-0-4:CAPS"/>
+    <keyword type="macro" name="NM_VERSION_1_0_6" link="libnm-nm-version.html#NM-VERSION-1-0-6:CAPS"/>
+    <keyword type="macro" name="NM_VERSION_1_0_8" link="libnm-nm-version.html#NM-VERSION-1-0-8:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MIN_REQUIRED" link="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MAX_ALLOWED" link="libnm-nm-version.html#NM-VERSION-MAX-ALLOWED:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS"/>
@@ -1691,10 +1718,11 @@
     <keyword type="macro" name="NM_VERSION_CUR_STABLE" link="libnm-nm-version.html#NM-VERSION-CUR-STABLE:CAPS"/>
     <keyword type="macro" name="NM_VERSION_NEXT_STABLE" link="libnm-nm-version.html#NM-VERSION-NEXT-STABLE:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS"/>
-    <keyword type="macro" name="NM_DEPRECATED_IN_1_0" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_0_9_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_0" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_0_6" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-6:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
@@ -2005,6 +2033,11 @@
     <keyword type="constant" name="NM_DEVICE_STATE_REASON_NEW_ACTIVATION" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-NEW-ACTIVATION:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_REASON_PARENT_CHANGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-CHANGED:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-REASON-PARENT-MANAGED-CHANGED:CAPS"/>
+    <keyword type="constant" name="NM_METERED_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-METERED-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_METERED_YES" link="libnm-nm-dbus-interface.html#NM-METERED-YES:CAPS"/>
+    <keyword type="constant" name="NM_METERED_NO" link="libnm-nm-dbus-interface.html#NM-METERED-NO:CAPS"/>
+    <keyword type="constant" name="NM_METERED_GUESS_YES" link="libnm-nm-dbus-interface.html#NM-METERED-GUESS-YES:CAPS"/>
+    <keyword type="constant" name="NM_METERED_GUESS_NO" link="libnm-nm-dbus-interface.html#NM-METERED-GUESS-NO:CAPS"/>
     <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_ACTIVATING" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATING:CAPS"/>
     <keyword type="constant" name="NM_ACTIVE_CONNECTION_STATE_ACTIVATED" link="libnm-nm-dbus-interface.html#NM-ACTIVE-CONNECTION-STATE-ACTIVATED:CAPS"/>
@@ -2066,6 +2099,16 @@
     <keyword type="constant" name="NM_VLAN_FLAG_REORDER_HEADERS" link="NMSettingVlan.html#NM-VLAN-FLAG-REORDER-HEADERS:CAPS"/>
     <keyword type="constant" name="NM_VLAN_FLAG_GVRP" link="NMSettingVlan.html#NM-VLAN-FLAG-GVRP:CAPS"/>
     <keyword type="constant" name="NM_VLAN_FLAG_LOOSE_BINDING" link="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_NONE" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-NONE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_PHY" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_ARP" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"/>
+    <keyword type="constant" name="_NM_SETTING_WIRED_WAKE_ON_LAN_LAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-LAST:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_ALL" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ALL:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_UNKNOWN" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_KEY" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-KEY:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_PASSPHRASE" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-PASSPHRASE:CAPS"/>

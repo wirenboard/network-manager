@@ -215,6 +215,21 @@
 <a class="link" href="NMSettingWired.html#nm-setting-wired-get-valid-s390-options" title="nm_setting_wired_get_valid_s390_options ()">nm_setting_wired_get_valid_s390_options</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
+<tr>
+<td class="function_type">
+<a class="link" href="NMSettingWired.html#NMSettingWiredWakeOnLan" title="enum NMSettingWiredWakeOnLan"><span class="returnvalue">NMSettingWiredWakeOnLan</span></a>
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingWired.html#nm-setting-wired-get-wake-on-lan" title="nm_setting_wired_get_wake_on_lan ()">nm_setting_wired_get_wake_on_lan</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingWired.html#nm-setting-wired-get-wake-on-lan-password" title="nm_setting_wired_get_wake_on_lan_password ()">nm_setting_wired_get_wake_on_lan_password</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -288,6 +303,17 @@
 <td class="property_name"><a class="link" href="NMSettingWired.html#NMSettingWired--speed" title="The “speed” property">speed</a></td>
 <td class="property_flags">Read / Write / Construct</td>
 </tr>
+<tr>
+<td class="property_type"><span class="type">guint</span></td>
+<td class="property_name"><a class="link" href="NMSettingWired.html#NMSettingWired--wake-on-lan" title="The “wake-on-lan” property">wake-on-lan</a></td>
+<td class="property_flags">Read / Write / Construct</td>
+</tr>
+<tr>
+<td class="property_type">
+<span class="type">gchar</span> *</td>
+<td class="property_name"><a class="link" href="NMSettingWired.html#NMSettingWired--wake-on-lan-password" title="The “wake-on-lan-password” property">wake-on-lan-password</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
 </tbody>
 </table></div>
 </div>
@@ -302,6 +328,10 @@
 <tr>
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-SETTING-NAME:CAPS" title="NM_SETTING_WIRED_SETTING_NAME">NM_SETTING_WIRED_SETTING_NAME</a></td>
+</tr>
+<tr>
+<td class="datatype_keyword">enum</td>
+<td class="function_name"><a class="link" href="NMSettingWired.html#NMSettingWiredWakeOnLan" title="enum NMSettingWiredWakeOnLan">NMSettingWiredWakeOnLan</a></td>
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
@@ -347,12 +377,22 @@
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-S390-OPTIONS:CAPS" title="NM_SETTING_WIRED_S390_OPTIONS">NM_SETTING_WIRED_S390_OPTIONS</a></td>
 </tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN:CAPS" title="NM_SETTING_WIRED_WAKE_ON_LAN">NM_SETTING_WIRED_WAKE_ON_LAN</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PASSWORD:CAPS" title="NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD">NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD</a></td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <div class="refsect1">
 <a name="NMSettingWired.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    GObject
+<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+    <span class="lineart">╰──</span> NMSettingWiredWakeOnLan
+    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> NMSettingWired
 </pre>
@@ -1055,6 +1095,62 @@ nm_setting_wired_get_valid_s390_options
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
 </div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-wired-get-wake-on-lan"></a><h3>nm_setting_wired_get_wake_on_lan ()</h3>
+<pre class="programlisting"><a class="link" href="NMSettingWired.html#NMSettingWiredWakeOnLan" title="enum NMSettingWiredWakeOnLan"><span class="returnvalue">NMSettingWiredWakeOnLan</span></a>
+nm_setting_wired_get_wake_on_lan (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
+<p>Returns the Wake-on-LAN options enabled for the connection</p>
+<div class="refsect3">
+<a name="id-1.4.29.8.25.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.4.29.8.25.6"></a><h4>Returns</h4>
+<p> the Wake-on-LAN options</p>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-wired-get-wake-on-lan-password"></a><h3>nm_setting_wired_get_wake_on_lan_password ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+nm_setting_wired_get_wake_on_lan_password
+                               (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
+<p>Returns the Wake-on-LAN password. This only applies to
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC</code></a>.</p>
+<div class="refsect3">
+<a name="id-1.4.29.8.26.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.4.29.8.26.6"></a><h4>Returns</h4>
+<p> the Wake-on-LAN setting password, or <code class="literal">NULL</code> if there is no password.</p>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
 </div>
 <div class="refsect1">
 <a name="NMSettingWired.other_details"></a><h2>Types and Values</h2>
@@ -1062,6 +1158,93 @@ nm_setting_wired_get_valid_s390_options
 <a name="NM-SETTING-WIRED-SETTING-NAME:CAPS"></a><h3>NM_SETTING_WIRED_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_WIRED_SETTING_NAME "802-3-ethernet"
 </pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWiredWakeOnLan"></a><h3>enum NMSettingWiredWakeOnLan</h3>
+<p>Options for <a class="link" href="NMSettingWired.html#NMSettingWired--wake-on-lan" title="The “wake-on-lan” property"><span class="type">“wake-on-lan”</span></a>. Note that not all options
+are supported by all devices.</p>
+<div class="refsect3">
+<a name="id-1.4.29.9.3.4"></a><h4>Members</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="300px" class="enum_members_name">
+<col class="enum_members_description">
+<col width="200px" class="enum_members_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-NONE:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_NONE</p></td>
+<td class="enum_member_description">
+<p>Wake-on-LAN disabled</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT</p></td>
+<td class="enum_member_description">
+<p>Use the default value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_PHY</p></td>
+<td class="enum_member_description">
+<p>Wake on PHY activity</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST</p></td>
+<td class="enum_member_description">
+<p>Wake on unicast messages</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST</p></td>
+<td class="enum_member_description">
+<p>Wake on multicast messages</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST</p></td>
+<td class="enum_member_description">
+<p>Wake on broadcast messages</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_ARP</p></td>
+<td class="enum_member_description">
+<p>Wake on ARP</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC</p></td>
+<td class="enum_member_description">
+<p>Wake on magic packet</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-LAST:CAPS"></a>_NM_SETTING_WIRED_WAKE_ON_LAN_LAST</p></td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-ALL:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_ALL</p></td>
+<td class="enum_member_description">
+<p>Wake on all events</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p class="since">Since: 1.0.6</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -1127,6 +1310,18 @@ nm_setting_wired_get_valid_s390_options
 <div class="refsect2">
 <a name="NM-SETTING-WIRED-S390-OPTIONS:CAPS"></a><h3>NM_SETTING_WIRED_S390_OPTIONS</h3>
 <pre class="programlisting">#define NM_SETTING_WIRED_S390_OPTIONS "s390-options"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIRED-WAKE-ON-LAN:CAPS"></a><h3>NM_SETTING_WIRED_WAKE_ON_LAN</h3>
+<pre class="programlisting">#define NM_SETTING_WIRED_WAKE_ON_LAN "wake-on-lan"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-WIRED-WAKE-ON-LAN-PASSWORD:CAPS"></a><h3>NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD</h3>
+<pre class="programlisting">#define NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD "wake-on-lan-password"
 </pre>
 </div>
 </div>
@@ -1240,6 +1435,30 @@ period (.) character.</p>
 Mbit/s, ie 100 == 100Mbit/s.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 0</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWired--wake-on-lan"></a><h3>The <code class="literal">“wake-on-lan”</code> property</h3>
+<pre class="programlisting">  “wake-on-lan”              <span class="type">guint</span></pre>
+<p>The <a class="link" href="NMSettingWired.html#NMSettingWiredWakeOnLan" title="enum NMSettingWiredWakeOnLan"><span class="type">NMSettingWiredWakeOnLan</span></a> options to enable. Not all devices support all options.
+May be any combination of <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_PHY</code></a>,
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST</code></a>, <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST</code></a>,
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST</code></a>, <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_ARP</code></a>,
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC</code></a>.</p>
+<p>Flags: Read / Write / Construct</p>
+<p>Default value: 1</p>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWired--wake-on-lan-password"></a><h3>The <code class="literal">“wake-on-lan-password”</code> property</h3>
+<pre class="programlisting">  “wake-on-lan-password”     <span class="type">gchar</span> *</pre>
+<p>If specified, the password used with magic-packet-based
+Wake-on-LAN, represented as an Ethernet MAC address.  If <code class="literal">NULL</code>,
+no password will be required.</p>
+<p>Flags: Read / Write</p>
+<p>Default value: NULL</p>
+<p class="since">Since: 1.0.6</p>
 </div>
 </div>
 </div>

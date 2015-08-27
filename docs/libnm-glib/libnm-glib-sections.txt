@@ -10,6 +10,7 @@ NM_ACCESS_POINT_FREQUENCY
 NM_ACCESS_POINT_MODE
 NM_ACCESS_POINT_MAX_BITRATE
 NM_ACCESS_POINT_STRENGTH
+NM_ACCESS_POINT_LAST_SEEN
 NM_ACCESS_POINT_HW_ADDRESS
 nm_access_point_new
 nm_access_point_get_flags
@@ -21,6 +22,7 @@ nm_access_point_get_frequency
 nm_access_point_get_mode
 nm_access_point_get_max_bitrate
 nm_access_point_get_strength
+nm_access_point_get_last_seen
 nm_access_point_filter_connections
 nm_access_point_connection_valid
 nm_access_point_get_hw_address

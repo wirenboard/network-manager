@@ -78,11 +78,12 @@ static NmcOutputField nmc_fields_dev_show_general[] = {
 	{"CONNECTION",        N_("CONNECTION"),        20},  /* 20 */
 	{"CON-UUID",          N_("CON-UUID"),          38},  /* 21 */
 	{"CON-PATH",          N_("CON-PATH"),          51},  /* 22 */
+	{"METERED",           N_("METERED"),           10},  /* 23 */
 	{NULL, NULL, 0}
 };
 #define NMC_FIELDS_DEV_SHOW_GENERAL_ALL     "NAME,DEVICE,TYPE,NM-TYPE,VENDOR,PRODUCT,DRIVER,DRIVER-VERSION,FIRMWARE-VERSION,HWADDR,MTU,"\
                                             "STATE,REASON,UDI,IP-IFACE,IS-SOFTWARE,NM-MANAGED,AUTOCONNECT,FIRMWARE-MISSING,PHYS-PORT-ID,"\
-                                            "CONNECTION,CON-UUID,CON-PATH"
+                                            "CONNECTION,CON-UUID,CON-PATH,METERED"
 #define NMC_FIELDS_DEV_SHOW_GENERAL_COMMON  "NAME,DEVICE,TYPE,VENDOR,PRODUCT,DRIVER,HWADDR,STATE"
 
 /* Available fields for 'device show' - CONNECTIONS part */
@@ -275,8 +276,8 @@ usage (void)
 	              "  delete <ifname> ...\n\n"
 	              "  wifi [list [ifname <ifname>] [bssid <BSSID>]]\n\n"
 	              "  wifi connect <(B)SSID> [password <password>] [wep-key-type key|phrase] [ifname <ifname>]\n"
-	              "                         [bssid <BSSID>] [name <name>] [private yes|no]\n\n"
-	              "  wifi rescan [[ifname] <ifname>]\n\n"
+	              "                         [bssid <BSSID>] [name <name>] [private yes|no] [hidden yes|no]\n\n"
+	              "  wifi rescan [ifname <ifname>] [[ssid <SSID to scan>] ...]\n\n"
 #if WITH_WIMAX
 	              "  wimax [list [ifname <ifname>] [nsp <name>]]\n\n"
 #endif
@@ -359,7 +360,7 @@ usage_device_wifi (void)
 	              "used to list APs for a particular interface, or with a specific BSSID.\n"
 	              "\n"
 	              "ARGUMENTS := connect <(B)SSID> [password <password>] [wep-key-type key|phrase] [ifname <ifname>]\n"
-	              "                    [bssid <BSSID>] [name <name>] [private yes|no]\n"
+	              "                    [bssid <BSSID>] [name <name>] [private yes|no] [hidden yes|no]\n"
 	              "\n"
 	              "Connect to a Wi-Fi network specified by SSID or BSSID. The command creates\n"
 	              "a new connection and then activates it on a device. This is a command-line\n"
@@ -370,12 +371,14 @@ usage_device_wifi (void)
 	              "only open, WEP and WPA-PSK networks are supported at the moment. It is also\n"
 	              "assumed that IP configuration is obtained via DHCP.\n"
 	              "\n"
-	              "ARGUMENTS := rescan [[ifname] <ifname>]\n"
+	              "ARGUMENTS := rescan [ifname <ifname>] [[ssid <SSID to scan>] ...]\n"
 	              "\n"
 	              "Request that NetworkManager immediately re-scan for available access points.\n"
 	              "NetworkManager scans Wi-Fi networks periodically, but in some cases it might\n"
-	              "be useful to start scanning manually. Note that this command does not show\n"
-	              "the APs, use 'nmcli device wifi list' for that.\n\n"));
+	              "be useful to start scanning manually. 'ssid' allows scanning for a specific\n"
+	              "SSID, which is useful for APs with hidden SSIDs. More 'ssid' parameters can be\n"
+	              "given. Note that this command does not show the APs,\n"
+	              "use 'nmcli device wifi list' for that.\n\n"));
 }
 
 #if WITH_WIMAX
@@ -858,6 +861,8 @@ show_device_info (NMDevice *device, NmCli *nmc)
 			set_val_strc (arr, 20, get_active_connection_id (device));
 			set_val_strc (arr, 21, acon ? nm_active_connection_get_uuid (acon) : NULL);
 			set_val_strc (arr, 22, acon ? nm_object_get_path (NM_OBJECT (acon)) : NULL);
+			set_val_strc (arr, 23, nmc_device_metered_to_string (nm_device_get_metered (device)));
+
 			g_ptr_array_add (nmc->output_data, arr);
 
 			print_data (nmc);  /* Print all data */
@@ -2300,9 +2305,9 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 {
 	NMDevice *device = NULL;
 	NMAccessPoint *ap = NULL;
-	NM80211ApFlags ap_flags;
-	NM80211ApSecurityFlags ap_wpa_flags;
-	NM80211ApSecurityFlags ap_rsn_flags;
+	NM80211ApFlags ap_flags = NM_802_11_AP_FLAGS_NONE;
+	NM80211ApSecurityFlags ap_wpa_flags = NM_802_11_AP_SEC_NONE;
+	NM80211ApSecurityFlags ap_rsn_flags = NM_802_11_AP_SEC_NONE;
 	NMConnection *connection = NULL;
 	NMSettingConnection *s_con;
 	NMSettingWireless *s_wifi;
@@ -2314,6 +2319,7 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 	const char *password = NULL;
 	const char *con_name = NULL;
 	gboolean private = FALSE;
+	gboolean hidden = FALSE;
 	gboolean wep_passphrase = FALSE;
 	GByteArray *bssid1_arr = NULL;
 	GByteArray *bssid2_arr = NULL;
@@ -2413,6 +2419,19 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 				g_clear_error (&err_tmp);
 				goto error;
 			}
+		} else if (strcmp (*argv, "hidden") == 0) {
+			GError *err_tmp = NULL;
+			if (next_arg (&argc, &argv) != 0) {
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				goto error;
+			}
+			if (!nmc_string_to_bool (*argv, &hidden, &err_tmp)) {
+				g_string_printf (nmc->return_text, _("Error: %s: %s."), *(argv-1), err_tmp->message);
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				g_clear_error (&err_tmp);
+				goto error;
+			}
 		} else {
 			g_printerr (_("Unknown parameter: %s\n"), *argv);
 		}
@@ -2449,14 +2468,41 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 		goto error;
 	}
 
+	/* For hidden SSID first scan it so that NM learns about the AP */
+	if (hidden) {
+		GVariantBuilder builder, array_builder;
+		GVariant *options;
+		GError *scan_err = NULL;
+
+		g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+		g_variant_builder_init (&array_builder, G_VARIANT_TYPE ("aay"));
+		g_variant_builder_add (&array_builder, "@ay",
+		                       g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, param_user, strlen (param_user), 1));
+		g_variant_builder_add (&builder, "{sv}", "ssids", g_variant_builder_end (&array_builder));
+		options = g_variant_builder_end (&builder);
+
+		nm_device_wifi_request_scan_options (NM_DEVICE_WIFI (device), options, NULL, &scan_err);
+		if (scan_err) {
+			g_string_printf (nmc->return_text, _("Error: Failed to scan hidden SSID: %s."),
+			                 scan_err->message);
+			g_clear_error (&scan_err);
+			nmc->return_value = NMC_RESULT_ERROR_NOT_FOUND;
+			goto error;
+		}
+	}
+
 	/* Find an AP to connect to */
 	ap = find_ap_on_device (device, bssid1_arr, bssid1_arr ? NULL : param_user);
 	if (!ap && !ifname) {
-		/* AP not found. ifname was not specified, so try finding the AP on another device. */
-		while ((device = find_wifi_device_by_iface (devices, NULL, &devices_idx)) != NULL) {
-			ap = find_ap_on_device (device, bssid1_arr, bssid1_arr ? NULL : param_user);
-			if (ap)
+		NMDevice *dev;
+
+		/* AP not found, ifname was not specified, so try finding the AP on another device. */
+		while ((dev = find_wifi_device_by_iface (devices, NULL, &devices_idx)) != NULL) {
+			ap = find_ap_on_device (dev, bssid1_arr, bssid1_arr ? NULL : param_user);
+			if (ap) {
+				device = dev;
 				break;
+			}
 		}
 	}
 
@@ -2471,7 +2517,7 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 
 	/* If there are some connection data from user, create a connection and
 	 * fill them into proper settings. */
-	if (con_name || private || bssid2_arr || password)
+	if (con_name || private || bssid2_arr || password || hidden)
 		connection = nm_simple_connection_new ();
 
 	if (con_name || private) {
@@ -2486,12 +2532,24 @@ do_device_wifi_connect_network (NmCli *nmc, int argc, char **argv)
 		if (private)
 			nm_setting_connection_add_permission (s_con, "user", g_get_user_name (), NULL);
 	}
-	if (bssid2_arr) {
+	if (bssid2_arr || hidden) {
 		s_wifi = (NMSettingWireless *) nm_setting_wireless_new ();
 		nm_connection_add_setting (connection, NM_SETTING (s_wifi));
 
-		/* 'bssid' parameter is used to restrict the conenction only to the BSSID */
-		g_object_set (s_wifi, NM_SETTING_WIRELESS_BSSID, bssid2_arr, NULL);
+		/* 'bssid' parameter is used to restrict the connection only to the BSSID */
+		if (bssid2_arr)
+			g_object_set (s_wifi, NM_SETTING_WIRELESS_BSSID, bssid2_arr, NULL);
+
+		/* 'hidden' parameter is used to indicate that SSID is not broadcasted */
+		if (hidden) {
+			GBytes *ssid = g_bytes_new (param_user, strlen (param_user));
+
+			g_object_set (s_wifi,
+			              NM_SETTING_WIRELESS_SSID, ssid,
+			              NM_SETTING_WIRELESS_HIDDEN, hidden,
+			              NULL);
+			g_bytes_unref (ssid);
+		}
 	}
 
 	/* handle password */
@@ -2582,21 +2640,44 @@ do_device_wifi_rescan (NmCli *nmc, int argc, char **argv)
 {
 	NMDevice *device;
 	const char *ifname = NULL;
+	GPtrArray *ssids;
 	const GPtrArray *devices;
 	int devices_idx;
+	GVariantBuilder builder, array_builder;
+	GVariant *options;
+	const char *ssid;
+	int i;
 
 	nmc->should_wait = TRUE;
 
+	ssids = g_ptr_array_new ();
+
 	/* Get the parameters */
-	if (argc > 0) {
+	while (argc > 0) {
 		if (strcmp (*argv, "ifname") == 0) {
+			if (ifname) {
+				g_string_printf (nmc->return_text, _("Error: '%s' cannot repeat."), *(argv-1));
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				goto error;
+			}
 			if (next_arg (&argc, &argv) != 0) {
 				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
 				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 				goto error;
 			}
-		}
-		ifname = *argv;
+			ifname = *argv;
+		} else if (strcmp (*argv, "ssid") == 0) {
+			if (next_arg (&argc, &argv) != 0) {
+				g_string_printf (nmc->return_text, _("Error: %s argument is missing."), *(argv-1));
+				nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+				goto error;
+			}
+			g_ptr_array_add (ssids, *argv);
+		} else
+			g_printerr (_("Unknown parameter: %s\n"), *argv);
+
+		argc--;
+		argv++;
 	}
 
 	/* Find Wi-Fi device to scan on. When no ifname is provided, the first Wi-Fi is used. */
@@ -2605,26 +2686,39 @@ do_device_wifi_rescan (NmCli *nmc, int argc, char **argv)
 	device = find_wifi_device_by_iface (devices, ifname, &devices_idx);
 
 	if (!device) {
-		if (ifname) {
-			const char *err_msg;
-			if (   nm_device_get_device_type (device) == NM_DEVICE_TYPE_GENERIC
-			    && g_strcmp0 (nm_device_get_type_description (device), "wifi") == 0)
-				err_msg = _("Error: Device '%s' was not recognized as a Wi-Fi device, check NetworkManager Wi-Fi plugin.");
-			else
-				err_msg = _("Error: Device '%s' is not a Wi-Fi device.");
-			g_string_printf (nmc->return_text, err_msg, ifname);
-		} else
+		if (ifname)
+			g_string_printf (nmc->return_text, _("Error: Device '%s' is not a Wi-Fi device."), ifname);
+		else
 			g_string_printf (nmc->return_text, _("Error: No Wi-Fi device found."));
 		nmc->return_value = NMC_RESULT_ERROR_UNKNOWN;
 		goto error;
 	}
 
-	nm_device_wifi_request_scan_async (NM_DEVICE_WIFI (device), NULL,
-	                                   request_rescan_cb, nmc);
 
+	if (ssids->len) {
+		g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+		g_variant_builder_init (&array_builder, G_VARIANT_TYPE ("aay"));
+
+		for (i = 0; i < ssids->len; i++) {
+			ssid = g_ptr_array_index (ssids, i);
+			g_variant_builder_add (&array_builder, "@ay",
+			                       g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, ssid, strlen (ssid), 1));
+		}
+
+		g_variant_builder_add (&builder, "{sv}", "ssids", g_variant_builder_end (&array_builder));
+		options = g_variant_builder_end (&builder);
+
+		nm_device_wifi_request_scan_options_async (NM_DEVICE_WIFI (device), options,
+		                                           NULL, request_rescan_cb, nmc);
+	} else
+		nm_device_wifi_request_scan_async (NM_DEVICE_WIFI (device),
+		                                   NULL, request_rescan_cb, nmc);
+
+	g_ptr_array_free (ssids, FALSE);
 	return nmc->return_value;
 error:
 	nmc->should_wait = FALSE;
+	g_ptr_array_free (ssids, FALSE);
 	return nmc->return_value;
 }
 

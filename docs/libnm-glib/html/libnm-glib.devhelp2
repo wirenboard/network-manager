@@ -467,6 +467,7 @@
     <keyword type="function" name="nm_access_point_get_mode ()" link="NMAccessPoint.html#nm-access-point-get-mode"/>
     <keyword type="function" name="nm_access_point_get_max_bitrate ()" link="NMAccessPoint.html#nm-access-point-get-max-bitrate"/>
     <keyword type="function" name="nm_access_point_get_strength ()" link="NMAccessPoint.html#nm-access-point-get-strength"/>
+    <keyword type="function" name="nm_access_point_get_last_seen ()" link="NMAccessPoint.html#nm-access-point-get-last-seen" since="1.0.6"/>
     <keyword type="function" name="nm_access_point_filter_connections ()" link="NMAccessPoint.html#nm-access-point-filter-connections"/>
     <keyword type="function" name="nm_access_point_connection_valid ()" link="NMAccessPoint.html#nm-access-point-connection-valid"/>
     <keyword type="function" name="nm_access_point_get_hw_address ()" link="NMAccessPoint.html#nm-access-point-get-hw-address" deprecated="0.9: Use nm_access_point_get_bssid() instead."/>
@@ -479,11 +480,13 @@
     <keyword type="macro" name="NM_ACCESS_POINT_MODE" link="NMAccessPoint.html#NM-ACCESS-POINT-MODE:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_MAX_BITRATE" link="NMAccessPoint.html#NM-ACCESS-POINT-MAX-BITRATE:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_STRENGTH" link="NMAccessPoint.html#NM-ACCESS-POINT-STRENGTH:CAPS"/>
+    <keyword type="macro" name="NM_ACCESS_POINT_LAST_SEEN" link="NMAccessPoint.html#NM-ACCESS-POINT-LAST-SEEN:CAPS"/>
     <keyword type="macro" name="NM_ACCESS_POINT_HW_ADDRESS" link="NMAccessPoint.html#NM-ACCESS-POINT-HW-ADDRESS:CAPS"/>
     <keyword type="property" name="The “bssid” property" link="NMAccessPoint.html#NMAccessPoint--bssid"/>
     <keyword type="property" name="The “flags” property" link="NMAccessPoint.html#NMAccessPoint--flags"/>
     <keyword type="property" name="The “frequency” property" link="NMAccessPoint.html#NMAccessPoint--frequency"/>
     <keyword type="property" name="The “hw-address” property" link="NMAccessPoint.html#NMAccessPoint--hw-address"/>
+    <keyword type="property" name="The “last-seen” property" link="NMAccessPoint.html#NMAccessPoint--last-seen"/>
     <keyword type="property" name="The “max-bitrate” property" link="NMAccessPoint.html#NMAccessPoint--max-bitrate"/>
     <keyword type="property" name="The “mode” property" link="NMAccessPoint.html#NMAccessPoint--mode"/>
     <keyword type="property" name="The “rsn-flags” property" link="NMAccessPoint.html#NMAccessPoint--rsn-flags"/>

@@ -10,6 +10,7 @@ NM_ACCESS_POINT_FREQUENCY
 NM_ACCESS_POINT_MODE
 NM_ACCESS_POINT_MAX_BITRATE
 NM_ACCESS_POINT_STRENGTH
+NM_ACCESS_POINT_LAST_SEEN
 NM_ACCESS_POINT_HW_ADDRESS
 nm_access_point_get_flags
 nm_access_point_get_wpa_flags
@@ -20,6 +21,7 @@ nm_access_point_get_frequency
 nm_access_point_get_mode
 nm_access_point_get_max_bitrate
 nm_access_point_get_strength
+nm_access_point_get_last_seen
 nm_access_point_filter_connections
 nm_access_point_connection_valid
 <SUBSECTION Standard>
@@ -101,6 +103,7 @@ NM_CLIENT_DEVICES
 NM_CLIENT_CONNECTIONS
 NM_CLIENT_HOSTNAME
 NM_CLIENT_CAN_MODIFY
+NM_CLIENT_METERED
 NM_CLIENT_DEVICE_ADDED
 NM_CLIENT_DEVICE_REMOVED
 NM_CLIENT_PERMISSION_CHANGED
@@ -269,6 +272,7 @@ NM_TYPE_DEVICE_STATE_REASON
 NM_TYPE_DEVICE_TYPE
 NM_TYPE_DEVICE_WIFI_CAPABILITIES
 NM_TYPE_MANAGER_ERROR
+NM_TYPE_METERED
 NM_TYPE_SECRET_AGENT_CAPABILITIES
 NM_TYPE_SECRET_AGENT_ERROR
 NM_TYPE_SECRET_AGENT_GET_SECRETS_FLAGS
@@ -282,6 +286,7 @@ NM_TYPE_SETTING_DIFF_RESULT
 NM_TYPE_SETTING_IP6_CONFIG_PRIVACY
 NM_TYPE_SETTING_SECRET_FLAGS
 NM_TYPE_SETTING_SERIAL_PARITY
+NM_TYPE_SETTING_WIRED_WAKE_ON_LAN
 NM_TYPE_STATE
 NM_TYPE_UTILS_SECURITY_TYPE
 NM_TYPE_VLAN_FLAGS
@@ -310,6 +315,7 @@ nm_device_state_reason_get_type
 nm_device_type_get_type
 nm_device_wifi_capabilities_get_type
 nm_manager_error_get_type
+nm_metered_get_type
 nm_secret_agent_capabilities_get_type
 nm_secret_agent_error_get_type
 nm_secret_agent_get_secrets_flags_get_type
@@ -322,6 +328,7 @@ nm_setting_diff_result_get_type
 nm_setting_ip6_config_privacy_get_type
 nm_setting_secret_flags_get_type
 nm_setting_serial_parity_get_type
+nm_setting_wired_wake_on_lan_get_type
 nm_settings_error_get_type
 nm_state_get_type
 nm_utils_security_type_get_type
@@ -389,6 +396,7 @@ NMBluetoothCapabilities
 NMDeviceModemCapabilities
 NMDeviceState
 NMDeviceStateReason
+NMMetered
 NMActiveConnectionState
 NMSecretAgentGetSecretsFlags
 NMSecretAgentCapabilities
@@ -420,6 +428,7 @@ NM_DEVICE_VENDOR
 NM_DEVICE_PRODUCT
 NM_DEVICE_PHYSICAL_PORT_ID
 NM_DEVICE_MTU
+NM_DEVICE_METERED
 nm_device_get_iface
 nm_device_get_ip_iface
 nm_device_get_device_type
@@ -448,6 +457,7 @@ nm_device_is_software
 nm_device_get_product
 nm_device_get_vendor
 nm_device_get_description
+nm_device_get_metered
 nm_device_disambiguate_names
 nm_device_disconnect
 nm_device_disconnect_async
@@ -714,7 +724,9 @@ nm_device_wifi_get_active_access_point
 nm_device_wifi_get_access_point_by_path
 nm_device_wifi_get_access_points
 nm_device_wifi_request_scan
+nm_device_wifi_request_scan_options
 nm_device_wifi_request_scan_async
+nm_device_wifi_request_scan_options_async
 nm_device_wifi_request_scan_finish
 <SUBSECTION Standard>
 NMDeviceWifi
@@ -1320,6 +1332,7 @@ NM_SETTING_CONNECTION_SLAVE_TYPE
 NM_SETTING_CONNECTION_AUTOCONNECT_SLAVES
 NM_SETTING_CONNECTION_SECONDARIES
 NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT
+NM_SETTING_CONNECTION_METERED
 NMSettingConnectionAutoconnectSlaves
 NMSettingConnection
 nm_setting_connection_new
@@ -1348,6 +1361,7 @@ nm_setting_connection_add_secondary
 nm_setting_connection_remove_secondary
 nm_setting_connection_remove_secondary_by_value
 nm_setting_connection_get_gateway_ping_timeout
+nm_setting_connection_get_metered
 <SUBSECTION Standard>
 NMSettingConnectionClass
 NM_IS_SETTING_CONNECTION
@@ -1911,6 +1925,7 @@ nm_setting_wimax_get_type
 <FILE>nm-setting-wired</FILE>
 <TITLE>NMSettingWired</TITLE>
 NM_SETTING_WIRED_SETTING_NAME
+NMSettingWiredWakeOnLan
 NM_SETTING_WIRED_PORT
 NM_SETTING_WIRED_SPEED
 NM_SETTING_WIRED_DUPLEX
@@ -1922,6 +1937,8 @@ NM_SETTING_WIRED_MTU
 NM_SETTING_WIRED_S390_SUBCHANNELS
 NM_SETTING_WIRED_S390_NETTYPE
 NM_SETTING_WIRED_S390_OPTIONS
+NM_SETTING_WIRED_WAKE_ON_LAN
+NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD
 nm_setting_wired_new
 nm_setting_wired_get_port
 nm_setting_wired_get_speed
@@ -1945,6 +1962,8 @@ nm_setting_wired_get_s390_option_by_key
 nm_setting_wired_add_s390_option
 nm_setting_wired_remove_s390_option
 nm_setting_wired_get_valid_s390_options
+nm_setting_wired_get_wake_on_lan
+nm_setting_wired_get_wake_on_lan_password
 <SUBSECTION Standard>
 NMSettingWired
 NMSettingWiredClass
@@ -2135,6 +2154,8 @@ nm_utils_wifi_freq_to_channel
 nm_utils_wifi_channel_to_freq
 nm_utils_wifi_find_next_channel
 nm_utils_wifi_is_channel_valid
+nm_utils_wifi_2ghz_freqs
+nm_utils_wifi_5ghz_freqs
 nm_utils_wifi_strength_bars
 NM_UTILS_HWADDR_LEN_MAX
 nm_utils_hwaddr_len
@@ -2153,6 +2174,8 @@ nm_utils_inet4_ntop
 nm_utils_inet6_ntop
 nm_utils_ipaddr_valid
 nm_utils_check_virtual_device_compatibility
+nm_utils_enum_to_str
+nm_utils_enum_from_str
 </SECTION>
 
 <SECTION>
@@ -2167,17 +2190,20 @@ NM_VERSION_0_9_10
 NM_VERSION_1_0
 NM_VERSION_1_0_2
 NM_VERSION_1_0_4
+NM_VERSION_1_0_6
+NM_VERSION_1_0_8
 NM_VERSION_CUR_STABLE
 NM_VERSION_NEXT_STABLE
 NM_VERSION_MIN_REQUIRED
 NM_VERSION_MAX_ALLOWED
 NM_DEPRECATED_IN_0_9_10
 NM_DEPRECATED_IN_0_9_10_FOR
+NM_AVAILABLE_IN_0_9_10
 NM_DEPRECATED_IN_1_0
 NM_DEPRECATED_IN_1_0_FOR
-NM_AVAILABLE_IN_0_9_10
 NM_AVAILABLE_IN_1_0
 NM_AVAILABLE_IN_1_0_4
+NM_AVAILABLE_IN_1_0_6
 </SECTION>
 
 <SECTION>
@@ -2320,5 +2346,12 @@ NM_WIMAX_NSP
 NM_WIMAX_NSP_CLASS
 NM_WIMAX_NSP_GET_CLASS
 nm_wimax_nsp_get_type
+</SECTION>
+
+<SECTION>
+<FILE>test-general-enums</FILE>
+NMTestGeneralBoolEnum
+NMTestGeneralMetaFlags
+NMTestGeneralColorFlags
 </SECTION>
 

@@ -53,6 +53,7 @@
 #include "nm-device-factory.h"
 #include "nm-core-internal.h"
 #include "NetworkManagerUtils.h"
+#include "gsystem-local-alloc.h"
 
 #include "nm-device-ethernet-glue.h"
 
@@ -66,6 +67,7 @@ G_DEFINE_TYPE (NMDeviceEthernet, nm_device_ethernet, NM_TYPE_DEVICE)
 #define WIRED_SECRETS_TRIES "wired-secrets-tries"
 
 #define PPPOE_RECONNECT_DELAY 7
+#define PPPOE_ENCAP_OVERHEAD  8 /* 2 bytes for PPP, 6 for PPPoE */
 
 static NMSetting *device_get_setting (NMDevice *device, GType setting_type);
 
@@ -1174,6 +1176,40 @@ dcb_carrier_changed (NMDevice *device, GParamSpec *pspec, gpointer unused)
 
 /****************************************************************/
 
+static gboolean
+wake_on_lan_enable (NMDevice *device)
+{
+	NMSettingWiredWakeOnLan wol;
+	NMSettingWired *s_wired;
+	const char *password = NULL;
+	gs_free char *value = NULL;
+
+	s_wired = (NMSettingWired *) device_get_setting (device, NM_TYPE_SETTING_WIRED);
+	if (s_wired) {
+		wol = nm_setting_wired_get_wake_on_lan (s_wired);
+		password = nm_setting_wired_get_wake_on_lan_password (s_wired);
+		if (wol != NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT)
+			goto found;
+	}
+
+	value = nm_config_data_get_connection_default (NM_CONFIG_GET_DATA,
+	                                               "ethernet.wake-on-lan",
+	                                               device);
+	if (value) {
+		wol = _nm_utils_ascii_str_to_int64 (value, 10,
+		                                    NM_SETTING_WIRED_WAKE_ON_LAN_NONE,
+		                                    NM_SETTING_WIRED_WAKE_ON_LAN_ALL,
+		                                    NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT);
+		if (wol != NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT)
+			goto found;
+	}
+	wol = NM_SETTING_WIRED_WAKE_ON_LAN_NONE;
+found:
+	return nmp_utils_ethtool_set_wake_on_lan (nm_device_get_iface (device), wol, password);
+}
+
+/****************************************************************/
+
 static NMActStageReturn
 act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 {
@@ -1206,6 +1242,8 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 		}
 	}
 
+	wake_on_lan_enable (device);
+
 	/* DCB and FCoE setup */
 	s_dcb = (NMSettingDcb *) device_get_setting (device, NM_TYPE_SETTING_DCB);
 	if (s_dcb) {
@@ -1229,6 +1267,28 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 		                                         G_CALLBACK (dcb_carrier_changed),
 		                                         NULL);
 		ret = NM_ACT_STAGE_RETURN_POSTPONE;
+	}
+
+	/* PPPoE setup */
+	if (nm_connection_is_type (nm_device_get_connection (device),
+	                           NM_SETTING_PPPOE_SETTING_NAME)) {
+		NMSettingPpp *s_ppp;
+
+		s_ppp = (NMSettingPpp *) device_get_setting (device, NM_TYPE_SETTING_PPP);
+		if (s_ppp) {
+			guint32 mtu = 0, mru = 0, mxu;
+
+			mtu = nm_setting_ppp_get_mtu (s_ppp);
+			mru = nm_setting_ppp_get_mru (s_ppp);
+			mxu = mru > mtu ? mru : mtu;
+			if (mxu) {
+				_LOGD (LOGD_PPP, "set MTU to %u (PPP interface MRU %u, MTU %u)",
+				       mxu + PPPOE_ENCAP_OVERHEAD, mru, mtu);
+				nm_platform_link_set_mtu (NM_PLATFORM_GET,
+				                          nm_device_get_ifindex (device),
+				                          mxu + PPPOE_ENCAP_OVERHEAD);
+			}
+		}
 	}
 
 	return ret;

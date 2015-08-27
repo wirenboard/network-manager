@@ -36,23 +36,14 @@ G_DEFINE_TYPE (NMConnectivity, nm_connectivity, G_TYPE_OBJECT)
 
 #define NM_CONNECTIVITY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_CONNECTIVITY, NMConnectivityPrivate))
 
-
-#define _LOG_DEFAULT_DOMAIN  LOGD_CONCHECK
-
-#define _LOG(level, domain, ...) \
+#define _NMLOG_DOMAIN  LOGD_CONCHECK
+#define _NMLOG(level, ...) \
     G_STMT_START { \
-        nm_log ((level), (domain), \
+        nm_log ((level), (_NMLOG_DOMAIN), \
                 "%s" _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                 "connectivity: " \
                 _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
     } G_STMT_END
-
-#define _LOGT(...)      _LOG (LOGL_TRACE, _LOG_DEFAULT_DOMAIN, __VA_ARGS__)
-#define _LOGD(...)      _LOG (LOGL_DEBUG, _LOG_DEFAULT_DOMAIN, __VA_ARGS__)
-#define _LOGI(...)      _LOG (LOGL_INFO,  _LOG_DEFAULT_DOMAIN, __VA_ARGS__)
-#define _LOGW(...)      _LOG (LOGL_WARN,  _LOG_DEFAULT_DOMAIN, __VA_ARGS__)
-#define _LOGE(...)      _LOG (LOGL_ERR,   _LOG_DEFAULT_DOMAIN, __VA_ARGS__)
-
 
 typedef struct {
 	char *uri;
@@ -151,25 +142,31 @@ nm_connectivity_check_cb (SoupSession *session, SoupMessage *msg, gpointer user_
 		goto done;
 	}
 
-	/* Check headers; if we find the NM-specific one we're done */
-	nm_header = soup_message_headers_get_one (msg->response_headers, "X-NetworkManager-Status");
-	if (g_strcmp0 (nm_header, "online") == 0) {
-		_LOGD ("check for uri '%s' with Status header successful.", uri);
-		new_state = NM_CONNECTIVITY_FULL;
-	} else if (msg->status_code == SOUP_STATUS_OK) {
-		/* check response */
-		if (msg->response_body->data && g_str_has_prefix (msg->response_body->data, response)) {
-			_LOGD ("check for uri '%s' successful.", uri);
+	if (msg->status_code == 511) {
+		_LOGD ("check for uri '%s' returned status '%d %s'; captive portal present.",
+			   uri, msg->status_code, msg->reason_phrase);
+		new_state = NM_CONNECTIVITY_PORTAL;
+	} else {
+		/* Check headers; if we find the NM-specific one we're done */
+		nm_header = soup_message_headers_get_one (msg->response_headers, "X-NetworkManager-Status");
+		if (g_strcmp0 (nm_header, "online") == 0) {
+			_LOGD ("check for uri '%s' with Status header successful.", uri);
 			new_state = NM_CONNECTIVITY_FULL;
+		} else if (msg->status_code == SOUP_STATUS_OK) {
+			/* check response */
+			if (msg->response_body->data && g_str_has_prefix (msg->response_body->data, response)) {
+				_LOGD ("check for uri '%s' successful.", uri);
+				new_state = NM_CONNECTIVITY_FULL;
+			} else {
+				_LOGI ("check for uri '%s' did not match expected response '%s'; assuming captive portal.",
+					   uri, response);
+				new_state = NM_CONNECTIVITY_PORTAL;
+			}
 		} else {
-			_LOGI ("check for uri '%s' did not match expected response '%s'; assuming captive portal.",
-			       uri, response);
+			_LOGI ("check for uri '%s' returned status '%d %s'; assuming captive portal.",
+				   uri, msg->status_code, msg->reason_phrase);
 			new_state = NM_CONNECTIVITY_PORTAL;
 		}
-	} else {
-		_LOGI ("check for uri '%s' returned status '%d %s'; assuming captive portal.",
-		       uri, msg->status_code, msg->reason_phrase);
-		new_state = NM_CONNECTIVITY_PORTAL;
 	}
 
  done:
@@ -365,12 +362,14 @@ set_property (GObject *object, guint property_id,
 	NMConnectivityPrivate *priv = NM_CONNECTIVITY_GET_PRIVATE (self);
 	const char *uri, *response;
 	guint interval;
+	gboolean changed;
 
 	switch (property_id) {
 	case PROP_URI:
 		uri = g_value_get_string (value);
 		if (uri && !*uri)
 			uri = NULL;
+		changed = g_strcmp0 (uri, priv->uri) != 0;
 #if WITH_CONCHECK
 		if (uri) {
 			SoupURI *soup_uri = soup_uri_new (uri);
@@ -379,11 +378,14 @@ set_property (GObject *object, guint property_id,
 				_LOGE ("invalid uri '%s' for connectivity check.", uri);
 				uri = NULL;
 			}
+			if (uri && soup_uri && changed &&
+			    soup_uri_get_scheme(soup_uri) == SOUP_URI_SCHEME_HTTPS)
+				_LOGW ("use of HTTPS for connectivity checking is not reliable and is discouraged (URI: %s)", uri);
 			if (soup_uri)
 				soup_uri_free (soup_uri);
 		}
 #endif
-		if (g_strcmp0 (uri, priv->uri) != 0) {
+		if (changed) {
 			g_free (priv->uri);
 			priv->uri = g_strdup (uri);
 			_reschedule_periodic_checks (self, TRUE);

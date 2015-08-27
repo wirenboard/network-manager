@@ -317,6 +317,21 @@ nm_utils_ssid_to_utf8 (const guint8 *ssid, gsize len)
 		                                     "UTF-8", e1, "?", NULL, NULL, NULL);
 	}
 
+	if (!converted) {
+		/* If there is still no converted string, the SSID probably
+		 * contains characters not valid in the current locale. Convert
+		 * the string to ASCII instead.
+		 */
+
+		/* Use the printable range of 0x20-0x7E */
+		gchar *valid_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@"
+		                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+		                     "abcdefghijklmnopqrstuvwxyz{|}~";
+
+		converted = g_strndup ((const gchar *)ssid, len);
+		g_strcanon (converted, valid_chars, '?');
+	}
+
 	return converted;
 }
 
@@ -2677,6 +2692,61 @@ nm_utils_wifi_is_channel_valid (guint32 channel, const char *band)
 		return FALSE;
 }
 
+static const guint *
+_wifi_freqs (gboolean bg_band)
+{
+	static guint *freqs_2ghz = NULL;
+	static guint *freqs_5ghz = NULL;
+	guint *freqs;
+
+	freqs = bg_band ? freqs_2ghz : freqs_5ghz;
+	if (G_UNLIKELY (freqs == NULL)) {
+		struct cf_pair *table;
+		int i;
+
+		table = bg_band ? bg_table : a_table;
+		freqs = g_new0 (guint, bg_band ? G_N_ELEMENTS (bg_table) : G_N_ELEMENTS (a_table));
+		for (i = 0; table[i].chan; i++)
+			freqs[i] = table[i].freq;
+		freqs[i] = 0;
+		if (bg_band)
+			freqs_2ghz = freqs;
+		else
+			freqs_5ghz = freqs;
+	}
+	return freqs;
+}
+
+/**
+ * nm_utils_wifi_2ghz_freqs:
+ *
+ * Utility function to return 2.4 GHz Wi-Fi frequencies (802.11bg band).
+ *
+ * Returns: zero-terminated array of frequencies numbers (in MHz)
+ *
+ * Since: 1.0.6
+ **/
+const guint *
+nm_utils_wifi_2ghz_freqs (void)
+{
+	return _wifi_freqs (TRUE);
+}
+
+/**
+ * nm_utils_wifi_5ghz_freqs:
+ *
+ * Utility function to return 5 GHz Wi-Fi frequencies (802.11a band).
+ *
+ * Returns: zero-terminated array of frequencies numbers (in MHz)
+ *
+ * Since: 1.0.6
+ **/
+const guint *
+nm_utils_wifi_5ghz_freqs (void)
+{
+	return _wifi_freqs (FALSE);
+}
+
 /**
  * nm_utils_wifi_strength_bars:
  * @strength: the access point strength, from 0 to 100
@@ -3338,6 +3408,9 @@ nm_utils_ipaddr_valid (int family, const char *ip)
 
 	g_return_val_if_fail (family == AF_INET || family == AF_INET6 || family == AF_UNSPEC, FALSE);
 
+	if (!ip)
+		return FALSE;
+
 	if (family == AF_UNSPEC)
 		family = strchr (ip, ':') ? AF_INET6 : AF_INET;
 
@@ -3540,3 +3613,150 @@ _nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 ma
 	return v;
 }
 
+/**
+ * _nm_dbus_error_has_name:
+ * @error: (allow-none): a #GError, or %NULL
+ * @dbus_error_name: a D-Bus error name
+ *
+ * Checks if @error is set and corresponds to the D-Bus error @dbus_error_name.
+ *
+ * Returns: %TRUE or %FALSE
+ */
+gboolean
+_nm_dbus_error_has_name (GError     *error,
+                         const char *dbus_error_name)
+{
+	gboolean has_name = FALSE;
+
+	if (error && g_dbus_error_is_remote_error (error)) {
+		char *error_name;
+
+		error_name = g_dbus_error_get_remote_error (error);
+		has_name = !g_strcmp0 (error_name, dbus_error_name);
+		g_free (error_name);
+	}
+
+	return has_name;
+}
+
+/**
+ * nm_utils_enum_to_str:
+ * @type: the %GType of the enum
+ * @value: the value to be translated
+ *
+ * Converts an enum value to its string representation. If the enum is a
+ * %G_TYPE_FLAGS the function returns a comma-separated list of matching values.
+ * If the enum is a %G_TYPE_ENUM and the given value is not valid the
+ * function returns %NULL.
+ *
+ * Returns: a newly allocated string or %NULL
+ *
+ * Since: 1.0.6
+ */
+char *nm_utils_enum_to_str (GType type, int value)
+{
+	GTypeClass *class;
+	char *ret;
+
+	class = g_type_class_ref (type);
+
+	if (G_IS_ENUM_CLASS (class)) {
+		GEnumValue *enum_value;
+
+		enum_value = g_enum_get_value (G_ENUM_CLASS (class), value);
+		ret = enum_value ? strdup (enum_value->value_nick) : NULL;
+	} else if (G_IS_FLAGS_CLASS (class)) {
+		GFlagsValue *flags_value;
+		GString *str = g_string_new ("");
+		gboolean first = TRUE;
+
+		while (value) {
+			flags_value = g_flags_get_first_value (G_FLAGS_CLASS (class), value);
+			if (!flags_value)
+				break;
+
+			if (!first)
+				g_string_append_c (str, ',');
+			g_string_append (str, flags_value->value_nick);
+
+			value &= ~flags_value->value;
+			first = FALSE;
+		}
+		ret = g_string_free (str, FALSE);
+	} else
+		g_return_val_if_reached (NULL);
+
+	g_type_class_unref (class);
+	return ret;
+}
+
+/**
+ * nm_utils_enum_from_str:
+ * @type: the %GType of the enum
+ * @str: the input string
+ * @out_value: (out) (allow-none) the output value
+ * @err_token: (out) (allow-none) location to store the first unrecognized token
+ *
+ * Converts a string to the matching enum value.
+ *
+ * If the enum is a %G_TYPE_FLAGS the function returns the logical OR of values
+ * matching the comma-separated tokens in the string; if an unknown token is found
+ * the function returns %FALSE and stores a pointer to a newly allocated string
+ * containing the unrecognized token in @err_token.
+ *
+ * Returns: %TRUE if the conversion was successful, %FALSE otherwise
+ *
+ * Since: 1.0.6
+ */
+gboolean nm_utils_enum_from_str (GType type, const char *str,
+                                 int *out_value, char **err_token)
+{
+	GTypeClass *class;
+	gboolean ret = FALSE;
+	int value = 0;
+	gs_free char *stripped = NULL;
+
+	g_return_val_if_fail (str, FALSE);
+	stripped = g_strstrip (strdup (str));
+	class = g_type_class_ref (type);
+
+	if (G_IS_ENUM_CLASS (class)) {
+		GEnumValue *enum_value;
+
+		enum_value = g_enum_get_value_by_nick (G_ENUM_CLASS (class), stripped);
+		if (enum_value) {
+			value = enum_value->value;
+			ret = TRUE;
+		}
+	} else if (G_IS_FLAGS_CLASS (class)) {
+		GFlagsValue *flags_value;
+		gs_strfreev char **strv = NULL;
+		int i;
+
+		strv = g_strsplit (stripped, ",", 0);
+		for (i = 0; strv[i]; i++) {
+			if (!strv[i][0])
+				continue;
+
+			flags_value = g_flags_get_value_by_nick (G_FLAGS_CLASS (class), strv[i]);
+			if (!flags_value)
+				break;
+
+			value |= flags_value->value;
+		}
+
+		if (strv[i]) {
+			if (err_token)
+				*err_token = strdup (strv[i]);
+			value = 0;
+		} else
+			ret = TRUE;
+	} else
+		g_return_val_if_reached (FALSE);
+
+	if (out_value)
+		*out_value = value;
+
+	g_type_class_unref (class);
+	return ret;
+}

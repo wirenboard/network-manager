@@ -335,6 +335,20 @@
 </td>
 </tr>
 <tr>
+<td class="function_type">const <span class="returnvalue">guint</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libnm-nm-utils.html#nm-utils-wifi-2ghz-freqs" title="nm_utils_wifi_2ghz_freqs ()">nm_utils_wifi_2ghz_freqs</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">guint</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libnm-nm-utils.html#nm-utils-wifi-5ghz-freqs" title="nm_utils_wifi_5ghz_freqs ()">nm_utils_wifi_5ghz_freqs</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
 <td class="function_type">const <span class="returnvalue">char</span> *
 </td>
 <td class="function_name">
@@ -457,6 +471,22 @@
 </td>
 <td class="function_name">
 <a class="link" href="libnm-nm-utils.html#nm-utils-check-virtual-device-compatibility" title="nm_utils_check_virtual_device_compatibility ()">nm_utils_check_virtual_device_compatibility</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="libnm-nm-utils.html#nm-utils-enum-to-str" title="nm_utils_enum_to_str ()">nm_utils_enum_to_str</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">
+<span class="returnvalue">gboolean</span>
+</td>
+<td class="function_name">
+<a class="link" href="libnm-nm-utils.html#nm-utils-enum-from-str" title="nm_utils_enum_from_str ()">nm_utils_enum_from_str</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 </tbody>
@@ -1820,6 +1850,30 @@ nm_utils_wifi_is_channel_valid (<em class="parameter"><code><span class="type">g
 </div>
 <hr>
 <div class="refsect2">
+<a name="nm-utils-wifi-2ghz-freqs"></a><h3>nm_utils_wifi_2ghz_freqs ()</h3>
+<pre class="programlisting">const <span class="returnvalue">guint</span> *
+nm_utils_wifi_2ghz_freqs (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Utility function to return 2.4 GHz Wi-Fi frequencies (802.11bg band).</p>
+<div class="refsect3">
+<a name="id-1.6.2.7.39.5"></a><h4>Returns</h4>
+<p> zero-terminated array of frequencies numbers (in MHz)</p>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-utils-wifi-5ghz-freqs"></a><h3>nm_utils_wifi_5ghz_freqs ()</h3>
+<pre class="programlisting">const <span class="returnvalue">guint</span> *
+nm_utils_wifi_5ghz_freqs (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>Utility function to return 5 GHz Wi-Fi frequencies (802.11a band).</p>
+<div class="refsect3">
+<a name="id-1.6.2.7.40.5"></a><h4>Returns</h4>
+<p> zero-terminated array of frequencies numbers (in MHz)</p>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
 <a name="nm-utils-wifi-strength-bars"></a><h3>nm_utils_wifi_strength_bars ()</h3>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_utils_wifi_strength_bars (<em class="parameter"><code><span class="type">guint8</span> strength</code></em>);</pre>
@@ -1829,7 +1883,7 @@ strength suitable for printing to stdout. If the current locale and terminal
 support it, this will use unicode graphics characters to represent
 "bars". Otherwise it will use 0 to 4 asterisks.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.39.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.41.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1844,7 +1898,7 @@ support it, this will use unicode graphics characters to represent
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.39.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.41.6"></a><h4>Returns</h4>
 <p> the graphical representation of the access point strength</p>
 </div>
 </div>
@@ -1858,7 +1912,7 @@ nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> t
 <p>It is an error to call this function with any value other than
 <code class="literal">ARPHRD_ETHER</code> or <code class="literal">ARPHRD_INFINIBAND</code>.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.40.6"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.42.6"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1874,7 +1928,7 @@ nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> t
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.40.7"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.42.7"></a><h4>Returns</h4>
 <p> the length.</p>
 </div>
 </div>
@@ -1887,7 +1941,7 @@ nm_utils_hwaddr_ntoa (<em class="parameter"><code><span class="type">gconstpoint
 <p>Converts <em class="parameter"><code>addr</code></em>
  to textual form.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.41.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.43.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1910,7 +1964,7 @@ nm_utils_hwaddr_ntoa (<em class="parameter"><code><span class="type">gconstpoint
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.41.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.43.6"></a><h4>Returns</h4>
 <p> the textual form of <em class="parameter"><code>addr</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -1926,7 +1980,7 @@ nm_utils_hwaddr_atoba (<em class="parameter"><code>const <span class="type">char
  and converts it to binary form in a <span class="type">GByteArray</span>. See
 <a class="link" href="libnm-nm-utils.html#nm-utils-hwaddr-aton" title="nm_utils_hwaddr_aton ()"><code class="function">nm_utils_hwaddr_aton()</code></a> if you don't want a <span class="type">GByteArray</span>.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.42.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.44.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1948,7 +2002,7 @@ nm_utils_hwaddr_atoba (<em class="parameter"><code>const <span class="type">char
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.42.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.44.6"></a><h4>Returns</h4>
 <p> a new <span class="type">GByteArray</span>, or <code class="literal">NULL</code> if <em class="parameter"><code>asc</code></em>
 couldn't
 be parsed. </p>
@@ -1968,7 +2022,7 @@ nm_utils_hwaddr_aton (<em class="parameter"><code>const <span class="type">char<
 Bytes in <em class="parameter"><code>asc</code></em>
  can be sepatared by colons (:), or hyphens (-), but not mixed.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.43.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.45.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1996,7 +2050,7 @@ the size of the buffer in bytes.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.43.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.45.6"></a><h4>Returns</h4>
 <p> <em class="parameter"><code>buffer</code></em>
 , or <code class="literal">NULL</code> if <em class="parameter"><code>asc</code></em>
 couldn't be parsed
@@ -2014,7 +2068,7 @@ nm_utils_hwaddr_valid (<em class="parameter"><code>const <span class="type">char
  to see if it is a valid hardware address of the given
 length.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.44.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.46.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2038,7 +2092,7 @@ is expected to convert to
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.44.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.46.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>asc</code></em>
 appears to be a valid hardware address
 of the indicated length, <code class="literal">FALSE</code> if not.</p>
@@ -2055,7 +2109,7 @@ nm_utils_hwaddr_canonical (<em class="parameter"><code>const <span class="type">
 length, and if so, returns it in canonical form (uppercase, with
 leading 0s as needed, and with colons rather than hyphens).</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.45.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.47.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2079,7 +2133,7 @@ is expected to convert to
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.45.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.47.6"></a><h4>Returns</h4>
 <p> the canonicalized address if <em class="parameter"><code>asc</code></em>
 appears to
 be a valid hardware address of the indicated length, <code class="literal">NULL</code> if not. </p>
@@ -2126,7 +2180,7 @@ match. (This means that externally-provided address strings do not need to be
 sanity-checked before comparing them against known good addresses; they are
 guaranteed to not match if they are invalid.)</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.46.7"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.48.7"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2162,7 +2216,7 @@ is ASCII</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.46.8"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.48.8"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>hwaddr1</code></em>
 and <em class="parameter"><code>hwaddr2</code></em>
 are equivalent, <code class="literal">FALSE</code> if they are
@@ -2182,7 +2236,7 @@ nm_utils_bin2hexstr (<em class="parameter"><code><span class="type">gconstpointe
 greater than -1, the returned string is terminated at that index
 (returned_string[final_len] == '\0'),</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.47.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.49.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2210,7 +2264,7 @@ array</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.47.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.49.6"></a><h4>Returns</h4>
 <p> the textual form of <em class="parameter"><code>bytes</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -2229,7 +2283,7 @@ eg "00:11" or "0:1".  Any "0x" at the beginning of <em class="parameter"><code>h
 
 may not start or end with ':'.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.48.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.50.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2244,7 +2298,7 @@ may not start or end with ':'.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.48.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.50.6"></a><h4>Returns</h4>
 <p> the converted bytes, or <code class="literal">NULL</code> on error. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -2257,7 +2311,7 @@ nm_utils_iface_valid_name (<em class="parameter"><code>const <span class="type">
 <p>This function is a 1:1 copy of the kernel's interface validation
 function in net/core/dev.c.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.49.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.51.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2272,7 +2326,7 @@ function in net/core/dev.c.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.49.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.51.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if interface name is valid, otherwise <code class="literal">FALSE</code> is returned.</p>
 </div>
 </div>
@@ -2284,7 +2338,7 @@ nm_utils_is_uuid (<em class="parameter"><code>const <span class="type">char</spa
 <p>Checks if <em class="parameter"><code>str</code></em>
  is a UUID</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.50.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.52.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2299,7 +2353,7 @@ nm_utils_is_uuid (<em class="parameter"><code>const <span class="type">char</spa
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.50.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.52.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>str</code></em>
 is a UUID, <code class="literal">FALSE</code> if not</p>
 </div>
@@ -2313,7 +2367,7 @@ nm_utils_inet4_ntop (<em class="parameter"><code><span class="type">in_addr_t</s
 <p>Wrapper for inet_ntop.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.6.2.7.51.6"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.53.6"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2344,7 +2398,7 @@ buffer to avoid these issues.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.51.7"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.53.7"></a><h4>Returns</h4>
 <p> the input buffer <em class="parameter"><code>dst</code></em>
 , or a pointer to an
 internal, static buffer. This function cannot fail.</p>
@@ -2359,7 +2413,7 @@ nm_utils_inet6_ntop (<em class="parameter"><code>const <span class="type">struct
 <p>Wrapper for inet_ntop.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.6.2.7.52.6"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.54.6"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2390,7 +2444,7 @@ buffer to avoid these issues.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.52.7"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.54.7"></a><h4>Returns</h4>
 <p> the input buffer <em class="parameter"><code>dst</code></em>
 , or a pointer to an
 internal, static buffer. <code class="literal">NULL</code> is not allowed as <em class="parameter"><code>in6addr</code></em>
@@ -2407,7 +2461,7 @@ nm_utils_ipaddr_valid (<em class="parameter"><code><span class="type">int</span>
 <p>Checks if <em class="parameter"><code>ip</code></em>
  contains a valid IP address of the given family.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.53.5"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.55.5"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2430,7 +2484,7 @@ nm_utils_ipaddr_valid (<em class="parameter"><code><span class="type">int</span>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.53.6"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.55.6"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
 </div>
 </div>
@@ -2462,7 +2516,7 @@ compatible with <em class="parameter"><code>virtual_type</code></em>
 configuration of the two connections, or on the capabilities of an
 underlying device driver.</p>
 <div class="refsect3">
-<a name="id-1.6.2.7.54.8"></a><h4>Parameters</h4>
+<a name="id-1.6.2.7.56.8"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2485,9 +2539,99 @@ underlying device driver.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.6.2.7.54.9"></a><h4>Returns</h4>
+<a name="id-1.6.2.7.56.9"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
 </div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-utils-enum-to-str"></a><h3>nm_utils_enum_to_str ()</h3>
+<pre class="programlisting"><span class="returnvalue">char</span> *
+nm_utils_enum_to_str (<em class="parameter"><code><span class="type">GType</span> type</code></em>,
+                      <em class="parameter"><code><span class="type">int</span> value</code></em>);</pre>
+<p>Converts an enum value to its string representation. If the enum is a
+<code class="literal">G_TYPE_FLAGS</code> the function returns a comma-separated list of matching values.
+If the enum is a <code class="literal">G_TYPE_ENUM</code> and the given value is not valid the
+function returns <code class="literal">NULL</code>.</p>
+<div class="refsect3">
+<a name="id-1.6.2.7.57.5"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <code class="literal">GType</code> of the enum</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>value</p></td>
+<td class="parameter_description"><p>the value to be translated</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.6.2.7.57.6"></a><h4>Returns</h4>
+<p> a newly allocated string or <code class="literal">NULL</code></p>
+</div>
+<p class="since">Since: 1.0.6</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-utils-enum-from-str"></a><h3>nm_utils_enum_from_str ()</h3>
+<pre class="programlisting"><span class="returnvalue">gboolean</span>
+nm_utils_enum_from_str (<em class="parameter"><code><span class="type">GType</span> type</code></em>,
+                        <em class="parameter"><code>const <span class="type">char</span> *str</code></em>,
+                        <em class="parameter"><code><span class="type">int</span> *out_value</code></em>,
+                        <em class="parameter"><code><span class="type">char</span> **err_token</code></em>);</pre>
+<p>Converts a string to the matching enum value.</p>
+<p>If the enum is a <code class="literal">G_TYPE_FLAGS</code> the function returns the logical OR of values
+matching the comma-separated tokens in the string; if an unknown token is found
+the function returns <code class="literal">FALSE</code> and stores a pointer to a newly allocated string
+containing the unrecognized token in <em class="parameter"><code>err_token</code></em>
+.</p>
+<div class="refsect3">
+<a name="id-1.6.2.7.58.6"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody>
+<tr>
+<td class="parameter_name"><p>type</p></td>
+<td class="parameter_description"><p>the <code class="literal">GType</code> of the enum</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>str</p></td>
+<td class="parameter_description"><p>the input string</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>out_value</p></td>
+<td class="parameter_description"><p>(out) (allow-none) the output value</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+<tr>
+<td class="parameter_name"><p>err_token</p></td>
+<td class="parameter_description"><p>(out) (allow-none) location to store the first unrecognized token</p></td>
+<td class="parameter_annotations"> </td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="id-1.6.2.7.58.7"></a><h4>Returns</h4>
+<p> <code class="literal">TRUE</code> if the conversion was successful, <code class="literal">FALSE</code> otherwise</p>
+</div>
+<p class="since">Since: 1.0.6</p>
 </div>
 </div>
 <div class="refsect1">

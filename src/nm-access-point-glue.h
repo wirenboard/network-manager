@@ -68,6 +68,6 @@ const DBusGObjectInfo dbus_glib_nm_access_point_object_info = {  1,
   0,
 "\0",
 "org.freedesktop.NetworkManager.AccessPoint\0PropertiesChanged\0\0",
-"org.freedesktop.NetworkManager.AccessPoint\0Flags\0flags\0read\0org.freedesktop.NetworkManager.AccessPoint\0WpaFlags\0wpa_flags\0read\0org.freedesktop.NetworkManager.AccessPoint\0RsnFlags\0rsn_flags\0read\0org.freedesktop.NetworkManager.AccessPoint\0Ssid\0ssid\0read\0org.freedesktop.NetworkManager.AccessPoint\0Frequency\0frequency\0read\0org.freedesktop.NetworkManager.AccessPoint\0HwAddress\0hw_address\0read\0org.freedesktop.NetworkManager.AccessPoint\0Mode\0mode\0read\0org.freedesktop.NetworkManager.AccessPoint\0MaxBitrate\0max_bitrate\0read\0org.freedesktop.NetworkManager.AccessPoint\0Strength\0strength\0read\0\0"
+"org.freedesktop.NetworkManager.AccessPoint\0Flags\0flags\0read\0org.freedesktop.NetworkManager.AccessPoint\0WpaFlags\0wpa_flags\0read\0org.freedesktop.NetworkManager.AccessPoint\0RsnFlags\0rsn_flags\0read\0org.freedesktop.NetworkManager.AccessPoint\0Ssid\0ssid\0read\0org.freedesktop.NetworkManager.AccessPoint\0Frequency\0frequency\0read\0org.freedesktop.NetworkManager.AccessPoint\0HwAddress\0hw_address\0read\0org.freedesktop.NetworkManager.AccessPoint\0Mode\0mode\0read\0org.freedesktop.NetworkManager.AccessPoint\0MaxBitrate\0max_bitrate\0read\0org.freedesktop.NetworkManager.AccessPoint\0Strength\0strength\0read\0org.freedesktop.NetworkManager.AccessPoint\0LastSeen\0last_seen\0read\0\0"
 };
 
