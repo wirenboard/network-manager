@@ -2,7 +2,6 @@ Debian-specific-tweaks-for-NetworkManager-systemd-se.patch
 Force-online-state-with-unmanaged-devices.patch
 Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
 Use-symlinks-for-nmtui.patch
-Mark-virtual-ethernet-interfaces-as-unmanaged.patch
 Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
 fix-arping-path.patch
 Check-at-runtime-whether-to-start-ModemManager.patch
