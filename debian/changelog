@@ -8,6 +8,7 @@ network-manager (1.0.6-1) UNRELEASED; urgency=medium
     mechanism now to mark virtual interfaces as unmanaged. (Closes: #794083)
   * Use GnuTLS crypto API instead of gcrypt. Patch cherry-picked from upstream
     Git. (Closes: #748675)
+  * Fix command line parsing in nmcli. Patch cherry-picked from upstream Git.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 28 Aug 2015 01:14:04 +0200
 
