@@ -6,6 +6,8 @@ network-manager (1.0.6-1) UNRELEASED; urgency=medium
   * Drop debian/patches/Mark-virtual-ethernet-interfaces-as-unmanaged.patch,
     this patch is obsolete, since upstream provides a udev rules based
     mechanism now to mark virtual interfaces as unmanaged. (Closes: #794083)
+  * Use GnuTLS crypto API instead of gcrypt. Patch cherry-picked from upstream
+    Git. (Closes: #748675)
 
  -- Michael Biebl <biebl@debian.org>  Fri, 28 Aug 2015 01:14:04 +0200
 
