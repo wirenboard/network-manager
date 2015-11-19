@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 9),
                libnl-3-dev (>= 3.2.8),
                libnl-route-3-dev (>= 3.2.8),
                libnl-genl-3-dev (>= 3.2.8),
-               ppp-dev (>= 2.4.6),
+               ppp-dev (>= 2.4.7-1+1),
                libpolkit-gobject-1-dev,
                libpolkit-agent-1-dev (>= 0.97),
                libgnutls28-dev (>= 2.12),
@@ -55,7 +55,7 @@ Depends: ${shlibs:Depends},
          isc-dhcp-client (>= 4.1.1-P1-4),
          libpam-systemd,
          policykit-1
-Recommends: ppp (>= 2.4.6),
+Recommends: ppp,
             dnsmasq-base,
             iptables,
             modemmanager,
@@ -63,7 +63,7 @@ Recommends: ppp (>= 2.4.6),
             iputils-arping
 Suggests: avahi-autoipd,
           libteam-utils
-Breaks: ppp (<< 2.4.6)
+Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
  and connections, attempting to keep active network connectivity when

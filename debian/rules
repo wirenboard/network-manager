@@ -2,8 +2,10 @@
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
+PPPD_PLUGIN_DIR := $(shell dh_ppp --plugin-dir)
+
 %:
-	dh $@ --with gir,systemd,autoreconf
+	dh $@ --with gir,systemd,autoreconf,ppp
 
 autoreconf:
 	gtkdocize --copy
@@ -16,7 +18,7 @@ override_dh_autoreconf:
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		--libexecdir=/usr/lib/NetworkManager \
-		--with-pppd-plugin-dir=/usr/lib/pppd/2.4.6 \
+		--with-pppd-plugin-dir=$(PPPD_PLUGIN_DIR) \
 		--with-pppd=/usr/sbin/pppd \
 		--with-pppoe=/usr/sbin/pppoe \
 		--with-resolvconf=/sbin/resolvconf \
@@ -69,5 +71,8 @@ override_dh_systemd_start:
 	dh_systemd_start -pnetwork-manager --no-start NetworkManager-dispatcher.service
 	dh_systemd_start -pnetwork-manager --no-start NetworkManager-wait-online.service
 	dh_systemd_start -pnetwork-manager --restart-after-upgrade NetworkManager.service
+
+override_dh_ppp:
+	dh_ppp --breaks
 
 override_dh_auto_test:
