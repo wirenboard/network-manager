@@ -1,3 +1,11 @@
+network-manager (1.0.8-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+    - MTU indicated by a VPN gateway is now properly applied.
+      (Closes: #794237)
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 24 Nov 2015 00:06:51 +0100
+
 network-manager (1.0.6-1) unstable; urgency=medium
 
   * New upstream release.
