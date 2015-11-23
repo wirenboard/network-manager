@@ -24,6 +24,7 @@
 
 
 #include <glib.h>
+#include <glib-object.h>
 
 /********************************************************/
 
@@ -83,7 +84,7 @@
  * It's not that bad however, because gcc and clang often have the
  * same name for the same warning. */
 
-#if defined (__GNUC__)
+#if defined (__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define NM_PRAGMA_WARNING_DISABLE(warning) \
         _Pragma("GCC diagnostic push"); \
         _Pragma(_NM_PRAGMA_WARNING_DO(warning))
@@ -95,7 +96,7 @@
 #define NM_PRAGMA_WARNING_DISABLE(warning)
 #endif
 
-#if defined (__GNUC__)
+#if defined (__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define NM_PRAGMA_WARNING_REENABLE \
     _Pragma("GCC diagnostic pop")
 #elif defined (__clang__)
@@ -256,6 +257,17 @@ nm_clear_g_source (guint *id)
 	return FALSE;
 }
 
+static inline gboolean
+nm_clear_g_signal_handler (gpointer self, guint *id)
+{
+	if (id && *id) {
+		g_signal_handler_disconnect (self, *id);
+		*id = 0;
+		return TRUE;
+	}
+	return FALSE;
+}
+
 /*****************************************************************************/
 
 /* Determine whether @x is a power of two (@x being an integer type).
@@ -265,12 +277,12 @@ nm_clear_g_source (guint *id)
 #define nm_utils_is_power_of_two(x) ({ \
 		const typeof(x) __x = (x); \
 		\
-		((__x & (__x - 1)) == 0) && \
-			/* Check if the value is negative. In that case, return FALSE.
-			 * The first expression is a compile time constant, depending on whether
-			 * the type is signed. The second expression is a clumsy way for (__x >= 0),
-			 * which causes a compiler warning for unsigned types. */ \
-			( ( ((typeof(__x)) -1) > ((typeof(__x)) 0) ) || (__x > 0) || (__x == 0) ); \
+		/* Check if the value is negative. In that case, return FALSE.
+		 * The first expression is a compile time constant, depending on whether
+		 * the type is signed. The second expression is a clumsy way for (__x >= 0),
+		 * which causes a compiler warning for unsigned types. */ \
+		    ( ( ((typeof(__x)) -1) > ((typeof(__x)) 0) ) || (__x > 0) || (__x == 0) ) \
+		 && ((__x & (__x - 1)) == 0); \
 	})
 
 /*****************************************************************************/
@@ -314,6 +326,19 @@ nm_strstrip (char *str)
 	/* g_strstrip doesn't like NULL. */
 	return str ? g_strstrip (str) : NULL;
 }
+
+/*****************************************************************************/
+
+#define nm_sprintf_buf(buf, format, ...) ({ \
+		char * _buf = (buf); \
+		\
+		/* some static assert trying to ensure that the buffer is statically allocated.
+		 * It disallows a buffer size of sizeof(gpointer) to catch that. */ \
+		G_STATIC_ASSERT (G_N_ELEMENTS (buf) == sizeof (buf) && sizeof (buf) != sizeof (char *)); \
+		g_snprintf (_buf, sizeof (buf), \
+		            ""format"", __VA_ARGS__); \
+		_buf; \
+	})
 
 /*****************************************************************************/
 

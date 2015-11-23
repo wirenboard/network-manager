@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [0])
-m4_define([nm_micro_version], [6])
+m4_define([nm_micro_version], [8])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -956,6 +956,7 @@ AM_CONDITIONAL(SETTING_DOCS_AVAILABLE, test "$build_setting_docs" = "yes" -o "$h
 AC_CONFIG_FILES([
 Makefile
 include/Makefile
+include/nm-version-macros.h
 src/Makefile
 src/tests/Makefile
 src/tests/config/Makefile
@@ -963,6 +964,7 @@ src/dhcp-manager/Makefile
 src/dhcp-manager/tests/Makefile
 src/dnsmasq-manager/tests/Makefile
 src/supplicant-manager/tests/Makefile
+src/supplicant-manager/tests/certs/Makefile
 src/ppp-manager/Makefile
 src/settings/plugins/Makefile
 src/settings/plugins/ifupdown/Makefile
@@ -990,14 +992,12 @@ src/devices/team/Makefile
 src/devices/wifi/Makefile
 src/devices/wifi/tests/Makefile
 src/devices/wwan/Makefile
-libnm-core/nm-version.h
 libnm-core/Makefile
 libnm-core/tests/Makefile
 libnm/libnm.pc
 libnm/Makefile
 libnm/tests/Makefile
 libnm-util/libnm-util.pc
-libnm-util/nm-version.h
 libnm-util/Makefile
 libnm-util/tests/Makefile
 libnm-glib/libnm-glib.pc

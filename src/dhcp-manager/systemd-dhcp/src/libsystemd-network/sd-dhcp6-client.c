@@ -285,6 +285,11 @@ static void client_notify(sd_dhcp6_client *client, int event) {
 static int client_reset(sd_dhcp6_client *client) {
         assert_return(client, -EINVAL);
 
+	if (client->lease) {
+		dhcp6_lease_clear_timers(&client->lease->ia);
+		client->lease = sd_dhcp6_lease_unref(client->lease);
+	}
+
         client->receive_message =
                 sd_event_source_unref(client->receive_message);
 
@@ -828,7 +833,10 @@ static int client_receive_advertise(sd_dhcp6_client *client,
 
         r = dhcp6_lease_get_preference(client->lease, &pref_lease);
         if (!client->lease || r < 0 || pref_advertise > pref_lease) {
-                sd_dhcp6_lease_unref(client->lease);
+                if (client->lease) {
+                        dhcp6_lease_clear_timers(&client->lease->ia);
+                        sd_dhcp6_lease_unref(client->lease);
+                }
                 client->lease = lease;
                 lease = NULL;
                 r = 0;

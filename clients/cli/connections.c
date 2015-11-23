@@ -397,6 +397,10 @@ usage_connection_add (void)
 	              "    olpc-mesh:    ssid <SSID>\n"
 	              "                  [channel <1-13>]\n"
 	              "                  [dhcp-anycast <MAC address>]\n\n"
+	              "    adsl:         username <username>\n"
+	              "                  protocol pppoa|pppoe|ipoatm\n"
+	              "                  [password <password>]\n"
+	              "                  [encapsulation vcmux|llc]\n\n"
 	              "  IP_OPTIONS:\n"
 	              "                  [ip4 <IPv4 address>] [gw4 <IPv4 gateway>]\n"
 	              "                  [ip6 <IPv6 address>] [gw6 <IPv6 gateway>]\n\n"));
@@ -2471,7 +2475,9 @@ static const NameItem nmc_gsm_settings [] = {
 	{ NM_SETTING_CONNECTION_SETTING_NAME, NULL,       NULL, TRUE  },
 	{ NM_SETTING_GSM_SETTING_NAME,        NULL,       NULL, TRUE  },
 	{ NM_SETTING_SERIAL_SETTING_NAME,     NULL,       NULL, FALSE },
+	{ NM_SETTING_PPP_SETTING_NAME,        NULL,       NULL, FALSE },
 	{ NM_SETTING_IP4_CONFIG_SETTING_NAME, NULL,       NULL, FALSE },
+	{ NM_SETTING_IP6_CONFIG_SETTING_NAME, NULL,       NULL, FALSE },
 	{ NULL, NULL, NULL, FALSE }
 };
 
@@ -2479,7 +2485,9 @@ static const NameItem nmc_cdma_settings [] = {
 	{ NM_SETTING_CONNECTION_SETTING_NAME, NULL,       NULL, TRUE  },
 	{ NM_SETTING_CDMA_SETTING_NAME,       NULL,       NULL, TRUE  },
 	{ NM_SETTING_SERIAL_SETTING_NAME,     NULL,       NULL, FALSE },
+	{ NM_SETTING_PPP_SETTING_NAME,        NULL,       NULL, FALSE },
 	{ NM_SETTING_IP4_CONFIG_SETTING_NAME, NULL,       NULL, FALSE },
+	{ NM_SETTING_IP6_CONFIG_SETTING_NAME, NULL,       NULL, FALSE },
 	{ NULL, NULL, NULL, FALSE }
 };
 
@@ -2902,6 +2910,29 @@ check_infiniband_mode (char **mode, GError **error)
 	const char *modes[] = { "datagram", "connected", NULL };
 
 	return check_valid_enumeration (mode, modes, "mode", _("InfiniBand transport mode"), error);
+}
+
+/* Checks ADSL protocol */
+static gboolean
+check_adsl_protocol (char **protocol, GError **error)
+{
+	const char *protos[] = { NM_SETTING_ADSL_PROTOCOL_PPPOA,
+	                         NM_SETTING_ADSL_PROTOCOL_PPPOE,
+	                         NM_SETTING_ADSL_PROTOCOL_IPOATM,
+	                         NULL };
+
+	return check_valid_enumeration (protocol, protos, "protocol", _("ADSL protocol"), error);
+}
+
+/* Checks ADSL encapsulation */
+static gboolean
+check_adsl_encapsulation (char **encapsulation, GError **error)
+{
+	const char *modes[] = { NM_SETTING_ADSL_ENCAPSULATION_VCMUX,
+	                        NM_SETTING_ADSL_ENCAPSULATION_LLC,
+	                        NULL };
+
+	return check_valid_enumeration (encapsulation, modes, "encapsulation", _("ADSL encapsulation"), error);
 }
 
 static gboolean
@@ -3871,6 +3902,33 @@ do_questionnaire_olpc (char **channel, char **dhcp_anycast)
 	}
 }
 
+#define PROMPT_ADSL_ENCAP "(" NM_SETTING_ADSL_ENCAPSULATION_VCMUX "/" NM_SETTING_ADSL_ENCAPSULATION_LLC ") [none]: "
+static void
+do_questionnaire_adsl (char **password, char **encapsulation)
+{
+	gboolean once_more;
+	GError *error = NULL;
+
+	/* Ask for optional 'adsl' arguments. */
+	if (!want_provide_opt_args (_("ADSL"), 2))
+		return;
+
+	if (!*password)
+		*password = nmc_readline (_("Password [none]: "));
+
+	if (!*encapsulation) {
+		do {
+			*encapsulation = nmc_readline (_("ADSL encapsulation %s"), PROMPT_ADSL_ENCAP);
+			once_more = !check_adsl_encapsulation (encapsulation, &error);
+			if (once_more) {
+				g_print ("%s\n", error->message);
+				g_clear_error (&error);
+				g_free (*encapsulation);
+			}
+		} while (once_more);
+	}
+}
+
 static gboolean
 split_address (char* str, char **ip, char **rest)
 {
@@ -4006,6 +4064,7 @@ complete_connection_by_type (NMConnection *connection,
                              GError **error)
 {
 	NMSettingConnection *s_con;
+	NMSettingGeneric *s_generic;
 	NMSettingWired *s_wired;
 	NMSettingInfiniband *s_infiniband;
 	NMSettingWireless *s_wifi;
@@ -4022,6 +4081,7 @@ complete_connection_by_type (NMConnection *connection,
 	NMSettingBridgePort *s_bridge_port;
 	NMSettingVpn *s_vpn;
 	NMSettingOlpcMesh *s_olpc_mesh;
+	NMSettingAdsl *s_adsl;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
@@ -5232,6 +5292,78 @@ cleanup_olpc:
 		if (!success)
 			return FALSE;
 
+	} else if (!strcmp (con_type, NM_SETTING_ADSL_SETTING_NAME)) {
+		/* Build up the settings required for 'adsl' */
+		gboolean success = FALSE;
+		char *username_ask = NULL;
+		const char *username = NULL;
+		char *protocol_ask = NULL;
+		const char *protocol = NULL;
+		const char *password_c = NULL;
+		char *password = NULL;
+		const char *encapsulation_c = NULL;
+		char *encapsulation = NULL;
+		nmc_arg_t exp_args[] = { {"username",      TRUE, &username,        !ask},
+		                         {"protocol",      TRUE, &protocol,        !ask},
+		                         {"password",      TRUE, &password_c,      FALSE},
+		                         {"encapsulation", TRUE, &encapsulation_c, FALSE},
+		                         {NULL} };
+
+		if (!nmc_parse_args (exp_args, FALSE, &argc, &argv, error))
+			return FALSE;
+
+		if (!username && ask)
+			username = username_ask = nmc_readline (_("Username: "));
+		if (!username) {
+			g_set_error_literal (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			                     _("Error: 'username' is required."));
+			goto cleanup_adsl;
+		}
+
+#define PROMPT_ADSL_PROTO "(" NM_SETTING_ADSL_PROTOCOL_PPPOA "/" NM_SETTING_ADSL_PROTOCOL_PPPOE "/" NM_SETTING_ADSL_PROTOCOL_IPOATM "): "
+		if (!protocol && ask)
+			protocol = protocol_ask = nmc_readline (_("Protocol %s"), PROMPT_ADSL_PROTO);
+		if (!protocol) {
+			g_set_error_literal (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
+			                     _("Error: 'protocol' is required."));
+			goto cleanup_adsl;
+		}
+		if (!check_adsl_protocol (&protocol_ask, error))
+			goto cleanup_adsl;
+
+		/* Also ask for all optional arguments if '--ask' is specified. */
+		password = g_strdup (password_c);
+		encapsulation = g_strdup (encapsulation_c);
+		if (ask)
+			do_questionnaire_adsl (&password, &encapsulation);
+
+		if (!check_adsl_encapsulation (&encapsulation, error))
+			goto cleanup_adsl;
+
+		/* Add ADSL setting */
+		s_adsl = (NMSettingAdsl *) nm_setting_adsl_new ();
+		nm_connection_add_setting (connection, NM_SETTING (s_adsl));
+
+		g_object_set (s_adsl,
+		              NM_SETTING_ADSL_USERNAME, username,
+		              NM_SETTING_ADSL_PROTOCOL, protocol,
+		              NM_SETTING_ADSL_PASSWORD, password,
+		              NM_SETTING_ADSL_ENCAPSULATION, encapsulation,
+		              NULL);
+
+		success = TRUE;
+cleanup_adsl:
+		g_free (username_ask);
+		g_free (password);
+		g_free (protocol_ask);
+		g_free (encapsulation);
+		if (!success)
+			return FALSE;
+
+	} else if (!strcmp (con_type, NM_SETTING_GENERIC_SETTING_NAME)) {
+		/* Add 'generic' setting */
+		s_generic = (NMSettingGeneric *) nm_setting_generic_new ();
+		nm_connection_add_setting (connection, NM_SETTING (s_generic));
 	} else {
 		g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
 		             _("Error: '%s' is not a valid connection type."),
@@ -5465,6 +5597,20 @@ gen_func_bond_mon_mode (const char *text, int state)
 }
 
 static char *
+gen_func_adsl_proto (const char *text, int state)
+{
+	const char *words[] = { "pppoe", "pppoa", "ipoatm", NULL };
+	return nmc_rl_gen_func_basic (text, state, words);
+}
+
+static char *
+gen_func_adsl_encap (const char *text, int state)
+{
+	const char *words[] = { "vcmux", "llc", NULL };
+	return nmc_rl_gen_func_basic (text, state, words);
+}
+
+static char *
 gen_func_master_ifnames (const char *text, int state)
 {
 	int i;
@@ -5552,6 +5698,10 @@ nmcli_con_add_tab_completion (const char *text, int start, int end)
 		generator_func = gen_func_bond_mode;
 	else if (g_str_has_suffix (rl_prompt, PROMPT_BOND_MON_MODE))
 		generator_func = gen_func_bond_mon_mode;
+	else if (g_str_has_suffix (rl_prompt, PROMPT_ADSL_PROTO))
+		generator_func = gen_func_adsl_proto;
+	else if (g_str_has_suffix (rl_prompt, PROMPT_ADSL_ENCAP))
+		generator_func = gen_func_adsl_encap;
 
 	if (generator_func)
 		match_array = rl_completion_matches (text, generator_func);
@@ -5646,15 +5796,20 @@ do_connection_add (NmCli *nmc, int argc, char **argv)
 	    || strcmp (type, NM_SETTING_VLAN_SETTING_NAME) == 0)
 		ifname_mandatory = FALSE;
 
-	if (!ifname && ifname_mandatory && nmc->ask) {
-		ifname = ifname_ask = nmc_readline (_("Interface name [*]: "));
-		if (!ifname)
-			ifname = ifname_ask = g_strdup ("*");
-	}
 	if (!ifname && ifname_mandatory) {
-		g_string_printf (nmc->return_text, _("Error: 'ifname' argument is required."));
-		nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-		goto error;
+		if (nmc->ask) {
+			ifname = ifname_ask = nmc_readline (_("Interface name [*]: "));
+			if (!ifname)
+				ifname = ifname_ask = g_strdup ("*");
+		} else {
+			if (!*argv)
+				g_string_printf (nmc->return_text, _("Error: 'ifname' argument is required."));
+			else
+				g_string_printf (nmc->return_text, _("Error: mandatory 'ifname' not seen before '%s'."),
+				                 *argv);
+			nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
+			goto error;
+		}
 	}
 	if (ifname) {
 		if (!nm_utils_iface_valid_name (ifname) && strcmp (ifname, "*") != 0) {
@@ -8371,6 +8526,14 @@ editor_init_new_connection (NmCli *nmc, NMConnection *connection)
 
 			/* Do custom initialization for wifi setting */
 			nmc_setting_custom_init (base_setting);
+		}
+
+		/* ADSL */
+		if (g_strcmp0 (con_type, NM_SETTING_ADSL_SETTING_NAME) == 0) {
+			/* Initialize a protocol */
+			g_object_set (NM_SETTING_ADSL (base_setting),
+			              NM_SETTING_ADSL_PROTOCOL, NM_SETTING_ADSL_PROTOCOL_PPPOE,
+			              NULL);
 		}
 
 		/* Always add IPv4 and IPv6 settings for non-slave connections */

@@ -5,6 +5,7 @@
 
 #include "nm-enum-types.h"
 
+#include "nm-version-macros.h" 
 #include "NetworkManager.h" 
 #include "nm-access-point.h" 
 #include "nm-active-connection.h" 

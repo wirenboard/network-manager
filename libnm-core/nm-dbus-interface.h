@@ -26,7 +26,11 @@
 #ifndef __NM_DBUS_INTERFACE_H__
 #define __NM_DBUS_INTERFACE_H__
 
-#include "nm-version.h"
+/* This header must not include glib or libnm. */
+
+#ifndef NM_VERSION_H
+#define NM_AVAILABLE_IN_1_0_6
+#endif
 
 /*
  * dbus services details
@@ -638,5 +642,9 @@ typedef enum /*< flags >*/ {
 	/* boundary value */
 	NM_SECRET_AGENT_CAPABILITY_LAST = NM_SECRET_AGENT_CAPABILITY_VPN_HINTS
 } NMSecretAgentCapabilities;
+
+#ifndef NM_VERSION_H
+#undef NM_AVAILABLE_IN_1_0_6
+#endif
 
 #endif /* __NM_DBUS_INTERFACE_H__ */

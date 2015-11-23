@@ -5762,8 +5762,8 @@ msgstr "'%s' ağına bağlanmak için parola gerekiyor."
 
 #: ../clients/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
-msgstr "\rBağlanıyor"
+msgid "Connecting"
+msgstr "Bağlanıyor"
 
 #: ../clients/nm-online.c:149
 #| msgid "Time to wait for a connection, in seconds (default is 30)"
@@ -7249,10 +7249,6 @@ msgstr "'%d' değeri aralığın dışında <%d-%d>"
 #: ../libnm-util/nm-setting-wired.c:635 ../libnm-util/nm-setting-wired.c:693
 msgid "is not a valid MAC address"
 msgstr "geçerli bir MAC adresi değildir"
-
-#: ../libnm-core/nm-setting-cdma.c:147 ../libnm-util/nm-setting-cdma.c:168
-msgid "property is empty'"
-msgstr "özellik boş'"
 
 #: ../libnm-core/nm-setting-connection.c:745
 #, c-format

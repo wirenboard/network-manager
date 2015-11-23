@@ -5958,7 +5958,7 @@ msgstr "Для подключения к «%s» требуется пароль.
 
 #: ../clients/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
+msgid "Connecting"
 msgstr "Подключение..."
 
 #: ../clients/nm-online.c:149
@@ -7409,10 +7409,6 @@ msgstr "значение «%d» выходит за пределы допуст�
 #: ../libnm-util/nm-setting-wired.c:634 ../libnm-util/nm-setting-wired.c:692
 msgid "is not a valid MAC address"
 msgstr "недопустимый MAC-адрес"
-
-#: ../libnm-core/nm-setting-cdma.c:149 ../libnm-util/nm-setting-cdma.c:170
-msgid "property is empty'"
-msgstr "пустое свойство"
 
 #: ../libnm-core/nm-setting-connection.c:747
 #, fuzzy, c-format

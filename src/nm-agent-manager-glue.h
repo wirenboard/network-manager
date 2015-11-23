@@ -79,9 +79,9 @@ dbus_glib_marshal_nm_agent_manager_VOID__STRING_UINT_POINTER (GClosure     *clos
                                                           guint        arg_2,
                                                           gpointer     arg_3,
                                                           gpointer     data2);
-  register GMarshalFunc_VOID__STRING_UINT_POINTER callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
+  GMarshalFunc_VOID__STRING_UINT_POINTER callback;
+  GCClosure *cc = (GCClosure*) closure;
+  gpointer data1, data2;
 
   g_return_if_fail (n_param_values == 4);
 
@@ -124,9 +124,9 @@ dbus_glib_marshal_nm_agent_manager_VOID__STRING_POINTER (GClosure     *closure,
                                                      gpointer     arg_1,
                                                      gpointer     arg_2,
                                                      gpointer     data2);
-  register GMarshalFunc_VOID__STRING_POINTER callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
+  GMarshalFunc_VOID__STRING_POINTER callback;
+  GCClosure *cc = (GCClosure*) closure;
+  gpointer data1, data2;
 
   g_return_if_fail (n_param_values == 3);
 

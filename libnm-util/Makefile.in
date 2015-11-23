@@ -122,7 +122,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(libnm_util_include_HEADERS) \
 	$(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = libnm-util.pc nm-version.h
+CONFIG_CLEAN_FILES = libnm-util.pc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -293,8 +293,7 @@ ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/libnm-util.pc.in \
-	$(srcdir)/nm-version.h.in $(top_srcdir)/build-aux/depcomp \
-	COPYING
+	$(top_srcdir)/build-aux/depcomp COPYING
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -443,6 +442,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -585,12 +585,13 @@ with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 SUBDIRS = . tests
 AM_CPPFLAGS = -I${top_srcdir} -I${top_srcdir}/include \
-	-DG_LOG_DOMAIN=\""libnm-util"\" \
+	-I$(top_builddir)/include -DG_LOG_DOMAIN=\""libnm-util"\" \
 	-DLOCALEDIR=\"$(datadir)/locale\" \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) $(UUID_CFLAGS) $(am__append_1) $(am__append_2)
 lib_LTLIBRARIES = libnm-util.la
 libnm_util_include_HEADERS = \
+	$(top_builddir)/include/nm-version-macros.h \
 	NetworkManager.h		\
 	NetworkManagerVPN.h		\
 	nm-connection.h			\
@@ -621,11 +622,11 @@ libnm_util_include_HEADERS = \
 	nm-setting-wireless.h		\
 	nm-setting-wireless-security.h	\
 	nm-setting-vpn.h		\
-	nm-utils.h
+	nm-utils.h \
+	nm-version.h
 
 nodist_libnm_util_include_HEADERS = \
-	nm-utils-enum-types.h		\
-	nm-version.h
+	nm-utils-enum-types.h
 
 libnm_util_la_private_headers = \
 	crypto.h			\
@@ -694,7 +695,7 @@ libtest_crypto_la_LIBADD = $(GLIB_LIBS) $(am__append_8) \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libnm-util.pc
 DISTCLEANFILES = libnm-util.pc
-EXTRA_DIST = libnm-util.pc.in libnm-util.ver nm-version.h.in
+EXTRA_DIST = libnm-util.pc.in libnm-util.ver
 INTROSPECTION_GIRS = $(am__append_11)
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
@@ -746,8 +747,6 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 libnm-util.pc: $(top_builddir)/config.status $(srcdir)/libnm-util.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-nm-version.h: $(top_builddir)/config.status $(srcdir)/nm-version.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)

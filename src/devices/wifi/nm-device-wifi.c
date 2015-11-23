@@ -499,7 +499,7 @@ update_seen_bssids_cache (NMDeviceWifi *self, NMAccessPoint *ap)
 }
 
 static void
-set_current_ap (NMDeviceWifi *self, NMAccessPoint *new_ap, gboolean recheck_available_connections, gboolean force_remove_old_ap)
+set_current_ap (NMDeviceWifi *self, NMAccessPoint *new_ap, gboolean recheck_available_connections)
 {
 	NMDeviceWifiPrivate *priv;
 	NMAccessPoint *old_ap;
@@ -530,7 +530,7 @@ set_current_ap (NMDeviceWifi *self, NMAccessPoint *new_ap, gboolean recheck_avai
 	if (old_ap) {
 		NM80211Mode mode = nm_ap_get_mode (old_ap);
 
-		if (force_remove_old_ap || mode == NM_802_11_MODE_ADHOC || mode == NM_802_11_MODE_AP || nm_ap_get_fake (old_ap)) {
+		if (mode == NM_802_11_MODE_ADHOC || mode == NM_802_11_MODE_AP || nm_ap_get_fake (old_ap)) {
 			remove_access_point (self, old_ap);
 			if (recheck_available_connections)
 				nm_device_recheck_available_connections (NM_DEVICE (self));
@@ -629,7 +629,7 @@ periodic_update (NMDeviceWifi *self, NMAccessPoint *ignore_ap)
 		       new_bssid ? new_bssid : "(none)",
 		       new_ssid ? nm_utils_escape_ssid (new_ssid->data, new_ssid->len) : "(none)");
 
-		set_current_ap (self, new_ap, TRUE, FALSE);
+		set_current_ap (self, new_ap, TRUE);
 	}
 
 	new_rate = nm_platform_wifi_get_rate (NM_PLATFORM_GET, ifindex);
@@ -690,7 +690,7 @@ remove_all_aps (NMDeviceWifi *self)
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 
 	if (priv->ap_list) {
-		set_current_ap (self, NULL, FALSE, FALSE);
+		set_current_ap (self, NULL, FALSE);
 
 		while (priv->ap_list)
 			remove_access_point (self, NM_AP (priv->ap_list->data));
@@ -728,7 +728,7 @@ deactivate (NMDevice *device)
 	 * was non-broadcasting or something) get rid of it, because 'fake'
 	 * APs should only live for as long as we're connected to them.
 	 **/
-	set_current_ap (self, NULL, TRUE, FALSE);
+	set_current_ap (self, NULL, TRUE);
 
 	/* Clear any critical protocol notification in the Wi-Fi stack */
 	nm_platform_wifi_indicate_addressing_running (NM_PLATFORM_GET, ifindex, FALSE);
@@ -958,8 +958,6 @@ complete_connection (NMDevice *device,
 	NMDeviceWifi *self = NM_DEVICE_WIFI (device);
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	NMSettingWireless *s_wifi;
-	NMSettingWirelessSecurity *s_wsec;
-	NMSetting8021x *s_8021x;
 	const char *setting_mac;
 	char *str_ssid = NULL;
 	NMAccessPoint *ap = NULL;
@@ -971,8 +969,6 @@ complete_connection (NMDevice *device,
 	const char *perm_hw_addr;
 
 	s_wifi = nm_connection_get_setting_wireless (connection);
-	s_wsec = nm_connection_get_setting_wireless_security (connection);
-	s_8021x = nm_connection_get_setting_802_1x (connection);
 
 	if (!specific_object) {
 		/* If not given a specific object, we need at minimum an SSID */
@@ -1548,6 +1544,9 @@ request_wireless_scan (NMDeviceWifi *self, GHashTable *scan_options)
 static gboolean
 request_wireless_scan_periodic (gpointer user_data)
 {
+	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (user_data);
+
+	priv->pending_scan_id = 0;
 	request_wireless_scan (user_data, NULL);
 	return FALSE;
 }
@@ -1650,7 +1649,7 @@ try_fill_ssid_for_hidden_ap (NMAccessPoint *ap)
 	g_return_if_fail (nm_ap_get_ssid (ap) == NULL);
 
 	bssid = nm_ap_get_address (ap);
-	g_assert (bssid);
+	g_return_if_fail (bssid);
 
 	/* Look for this AP's BSSID in the seen-bssids list of a connection,
 	 * and if a match is found, copy over the SSID */
@@ -1692,11 +1691,9 @@ merge_scanned_ap (NMDeviceWifi *self,
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 	NMAccessPoint *found_ap = NULL;
 	const GByteArray *ssid;
-	const char *bssid;
 	gboolean strict_match = TRUE;
 
 	/* Let the manager try to fill in the SSID from seen-bssids lists */
-	bssid = nm_ap_get_address (merge_ap);
 	ssid = nm_ap_get_ssid (merge_ap);
 	if (!ssid || nm_utils_is_empty_ssid (ssid->data, ssid->len)) {
 		/* Try to fill the SSID from the AP database */
@@ -1706,12 +1703,12 @@ merge_scanned_ap (NMDeviceWifi *self,
 		if (ssid && (nm_utils_is_empty_ssid (ssid->data, ssid->len) == FALSE)) {
 			/* Yay, matched it, no longer treat as hidden */
 			_LOGD (LOGD_WIFI_SCAN, "matched hidden AP %s => '%s'",
-			       str_if_set (bssid, "(none)"), nm_utils_escape_ssid (ssid->data, ssid->len));
+			       nm_ap_get_address (merge_ap), nm_utils_escape_ssid (ssid->data, ssid->len));
 			nm_ap_set_broadcast (merge_ap, FALSE);
 		} else {
 			/* Didn't have an entry for this AP in the database */
 			_LOGD (LOGD_WIFI_SCAN, "failed to match hidden AP %s",
-			       str_if_set (bssid, "(none)"));
+			       nm_ap_get_address (merge_ap));
 		}
 	}
 
@@ -1730,7 +1727,7 @@ merge_scanned_ap (NMDeviceWifi *self,
 	if (found_ap) {
 		_LOGD (LOGD_WIFI_SCAN, "merging AP '%s' %s (%p) with existing (%p)",
 		            ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(none)",
-		            str_if_set (bssid, "(none)"),
+		            nm_ap_get_address (merge_ap),
 		            merge_ap,
 		            found_ap);
 
@@ -1753,7 +1750,7 @@ merge_scanned_ap (NMDeviceWifi *self,
 		/* New entry in the list */
 		_LOGD (LOGD_WIFI_SCAN, "adding new AP '%s' %s (%p)",
 		       ssid ? nm_utils_escape_ssid (ssid->data, ssid->len) : "(none)",
-		       str_if_set (bssid, "(none)"), merge_ap);
+		       nm_ap_get_address (merge_ap), merge_ap);
 
 		g_object_ref (merge_ap);
 		priv->ap_list = g_slist_prepend (priv->ap_list, merge_ap);
@@ -1872,7 +1869,7 @@ supplicant_iface_new_bss_cb (NMSupplicantInterface *iface,
 		merge_scanned_ap (self, ap);
 		g_object_unref (ap);
 	} else
-		_LOGW (LOGD_WIFI_SCAN, "invalid AP properties received");
+		_LOGD (LOGD_WIFI_SCAN, "invalid AP properties received for %s", object_path);
 
 	/* Remove outdated access points */
 	schedule_scanlist_cull (self);
@@ -2010,11 +2007,21 @@ link_timeout_cb (gpointer user_data)
 
 	/* If the access point failed, and wasn't found by the supplicant when it
 	 * attempted to reconnect, then it's probably out of range or turned off.
-	 * Remove it from the list and if it's actually still present, it'll be
-	 * found in the next scan.
 	 */
-	if (priv->ssid_found == FALSE && priv->current_ap)
-		set_current_ap (self, NULL, TRUE, TRUE);
+	if (priv->ssid_found == FALSE && priv->current_ap) {
+		NMAccessPoint *old_ap = g_object_ref (priv->current_ap);
+
+		set_current_ap (self, NULL, TRUE);
+
+		/* If it was an external entity and the supplicant doesn't know about
+		 * it, remove it from the scan list.  If it's still around, it'll get
+		 * found in the next scan.
+		 */
+		if (    nm_ap_get_mode (old_ap) == NM_802_11_MODE_INFRA
+		    && g_object_get_data (G_OBJECT (old_ap), WPAS_REMOVED_TAG))
+			remove_access_point (self, old_ap);
+		g_object_unref (old_ap);
+	}
 
 	nm_device_state_changed (device,
 	                         NM_DEVICE_STATE_FAILED,
@@ -2486,13 +2493,16 @@ build_supplicant_config (NMDeviceWifi *self,
 	if (s_wireless_sec) {
 		NMSetting8021x *s_8021x;
 		const char *con_uuid = nm_connection_get_uuid (connection);
+		guint32 mtu = nm_platform_link_get_mtu (NM_PLATFORM_GET,
+		                                        nm_device_get_ifindex (NM_DEVICE (self)));
 
 		g_assert (con_uuid);
 		s_8021x = nm_connection_get_setting_802_1x (connection);
 		if (!nm_supplicant_config_add_setting_wireless_security (config,
 		                                                         s_wireless_sec,
 		                                                         s_8021x,
-		                                                         con_uuid)) {
+		                                                         con_uuid,
+		                                                         mtu)) {
 			_LOGE (LOGD_WIFI, "Couldn't add 802-11-wireless-security setting to supplicant config.");
 			goto error;
 		}
@@ -2609,14 +2619,14 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	priv->ap_list = g_slist_prepend (priv->ap_list, ap);
 	nm_ap_export_to_dbus (ap);
 	g_object_freeze_notify (G_OBJECT (self));
-	set_current_ap (self, ap, FALSE, FALSE);
+	set_current_ap (self, ap, FALSE);
 	emit_ap_added_removed (self, ACCESS_POINT_ADDED, ap, TRUE);
 	g_object_thaw_notify (G_OBJECT (self));
 	nm_active_connection_set_specific_object (NM_ACTIVE_CONNECTION (req), nm_ap_get_dbus_path (ap));
 	return NM_ACT_STAGE_RETURN_SUCCESS;
 
 done:
-	set_current_ap (self, ap, TRUE, FALSE);
+	set_current_ap (self, ap, TRUE);
 	return NM_ACT_STAGE_RETURN_SUCCESS;
 }
 
@@ -3004,10 +3014,10 @@ done:
 		 * then the fake one and reset it. Reset the fake current_ap to NULL
 		 * now, which will remove the fake ap.
 		 **/
-		set_current_ap (self, NULL, TRUE, FALSE);
+		set_current_ap (self, NULL, TRUE);
 	}
 
-	/* No need to update seen BSSIDs cache, that is done by set_current_ap() already */
+	update_seen_bssids_cache (self, priv->current_ap);
 
 	/* Reset scan interval to something reasonable */
 	priv->scan_interval = SCAN_INTERVAL_MIN + (SCAN_INTERVAL_STEP * 2);

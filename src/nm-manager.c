@@ -853,6 +853,14 @@ device_removed_cb (NMDevice *device, gpointer user_data)
 }
 
 static void
+device_link_initialized_cb (NMDevice *device, gpointer user_data)
+{
+	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (user_data);
+
+	nm_settings_device_added (priv->settings, device);
+}
+
+static void
 aipd_handle_event (DBusGProxy *proxy,
                    const char *event,
                    const char *iface,
@@ -1813,6 +1821,10 @@ add_device (NMManager *self, NMDevice *device, gboolean try_assume)
 	                  G_CALLBACK (device_removed_cb),
 	                  self);
 
+	g_signal_connect (device, NM_DEVICE_LINK_INITIALIZED,
+	                  G_CALLBACK (device_link_initialized_cb),
+	                  self);
+
 	g_signal_connect (device, "notify::" NM_DEVICE_IP_IFACE,
 	                  G_CALLBACK (device_ip_iface_changed),
 	                  self);
@@ -1871,6 +1883,9 @@ add_device (NMManager *self, NMDevice *device, gboolean try_assume)
 		                         NM_DEVICE_STATE_REASON_NOW_MANAGED);
 	}
 
+	/* Try to generate a default connection. If this fails because the link is
+	 * not initialized, we will retry again in device_link_initialized_cb().
+	 */
 	nm_settings_device_added (priv->settings, device);
 	g_signal_emit (self, signals[DEVICE_ADDED], 0, device);
 	g_object_notify (G_OBJECT (self), NM_MANAGER_DEVICES);
@@ -2073,20 +2088,24 @@ nm_manager_get_connection_device (NMManager *self,
 
 static NMDevice *
 nm_manager_get_best_device_for_connection (NMManager *self,
-                                           NMConnection *connection)
+                                           NMConnection *connection,
+                                           gboolean for_user_request)
 {
 	const GSList *devices, *iter;
 	NMDevice *act_device = nm_manager_get_connection_device (self, connection);
+	NMDeviceCheckConAvailableFlags flags;
 
 	if (act_device)
 		return act_device;
+
+	flags = for_user_request ? NM_DEVICE_CHECK_CON_AVAILABLE_FOR_USER_REQUEST : NM_DEVICE_CHECK_CON_AVAILABLE_NONE;
 
 	/* Pick the first device that's compatible with the connection. */
 	devices = nm_manager_get_devices (self);
 	for (iter = devices; iter; iter = g_slist_next (iter)) {
 		NMDevice *device = NM_DEVICE (iter->data);
 
-		if (nm_device_check_connection_available (device, connection, NM_DEVICE_CHECK_CON_AVAILABLE_NONE, NULL))
+		if (nm_device_check_connection_available (device, connection, flags, NULL))
 			return device;
 	}
 
@@ -2566,7 +2585,7 @@ autoconnect_slaves (NMManager *manager,
 			nm_manager_activate_connection (manager,
 			                                slave_connection,
 			                                NULL,
-			                                nm_manager_get_best_device_for_connection (manager, slave_connection),
+			                                nm_manager_get_best_device_for_connection (manager, slave_connection, FALSE),
 			                                subject,
 			                                &local_err);
 			if (local_err) {
@@ -3077,7 +3096,7 @@ validate_activation_request (NMManager *self,
 			goto error;
 		}
 	} else
-		device = nm_manager_get_best_device_for_connection (self, connection);
+		device = nm_manager_get_best_device_for_connection (self, connection, TRUE);
 
 	if (!device) {
 		gboolean is_software = nm_connection_is_virtual (connection);
@@ -5100,7 +5119,16 @@ dispose (GObject *object)
 		g_clear_object (&priv->policy);
 	}
 
-	g_clear_object (&priv->settings);
+	if (priv->settings) {
+		g_signal_handlers_disconnect_by_func (priv->settings, settings_startup_complete_changed, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, system_unmanaged_devices_changed_cb, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, system_hostname_changed_cb, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, connection_added, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, connection_changed, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, connection_removed, manager);
+		g_clear_object (&priv->settings);
+	}
+
 	g_free (priv->state_file);
 	g_clear_object (&priv->vpn_manager);
 
@@ -5126,6 +5154,11 @@ dispose (GObject *object)
 
 		g_file_monitor_cancel (priv->fw_monitor);
 		g_clear_object (&priv->fw_monitor);
+	}
+
+	if (priv->rfkill_mgr) {
+		g_signal_handlers_disconnect_by_func (priv->rfkill_mgr, rfkill_manager_rfkill_changed_cb, manager);
+		g_clear_object (&priv->rfkill_mgr);
 	}
 
 	nm_device_factory_manager_for_each_factory (_deinit_device_factory, manager);

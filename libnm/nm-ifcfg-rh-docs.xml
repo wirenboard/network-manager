@@ -194,8 +194,8 @@ IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no" default="no" example="IPV6_PRIVACY=rfc30
 <property name="parent" variable="DEVICE or PHYSDEV" format="" values="" default="" example="" description="Parent interface of the VLAN."/>
 <property name="id" variable="VLAN_ID or DEVICE" format="" values="" default="" example="" description="VLAN identifier."/>
 <property name="flags" variable="VLAN_FLAGS, REORDER_HDR" format="" values="&quot;GVRP&quot;, &quot;LOOSE_BINDING&quot; for VLAN_FLAGS; 0 or 1 for REORDER_HDR" default="" example="" description="VLAN flags."/>
-<property name="ingress-property-map" variable="VLAN_INGRESS_PRIORITY_MAP" format="" values="" default="" example="VLAN_INGRESS_PRIORITY_MAP=4:2,3:5" description="Ingress priority mapping."/>
-<property name="egress-property-map" variable="VLAN_EGRESS_PRIORITY_MAP" format="" values="" default="" example="VLAN_EGRESS_PRIORITY_MAP=5:4,4:1,3:7" description="Egress priority mapping."/>
+<property name="ingress-priority-map" variable="VLAN_INGRESS_PRIORITY_MAP" format="" values="" default="" example="VLAN_INGRESS_PRIORITY_MAP=4:2,3:5" description="Ingress priority mapping."/>
+<property name="egress-priority-map" variable="VLAN_EGRESS_PRIORITY_MAP" format="" values="" default="" example="VLAN_EGRESS_PRIORITY_MAP=5:4,4:1,3:7" description="Egress priority mapping."/>
 <property name="interface-name" variable="PHYSDEV and VLAN_ID, or DEVICE" format="" values="" default="" example="PHYSDEV=eth0, VLAN_ID=12; or DEVICE=eth0.12" description="VLAN interface name.
 If all variables are set, parent device from PHYSDEV takes precedence over DEVICE,
 but VLAN id from DEVICE takes precedence over VLAN_ID."/>

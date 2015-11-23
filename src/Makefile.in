@@ -654,6 +654,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -800,9 +801,10 @@ SUBDIRS = . devices/adsl dhcp-manager ppp-manager settings/plugins \
 
 # add each subdirectory that contains a libNM source file. $(sort) is being used
 # primarily for its side effect of removing duplicates.
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/libnm-core \
-	-I$(top_builddir)/libnm-core -I$(top_srcdir)/callouts \
-	-DPREFIX=\"$(prefix)\" -DG_LOG_DOMAIN=\""NetworkManager"\" \
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include \
+	-I$(top_srcdir)/libnm-core -I$(top_builddir)/libnm-core \
+	-I$(top_srcdir)/callouts -DPREFIX=\"$(prefix)\" \
+	-DG_LOG_DOMAIN=\""NetworkManager"\" \
 	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(foreach \
 	d,$(sort $(dir \
@@ -888,6 +890,7 @@ libsystemd_dhcp_la_SOURCES = \
 
 libsystemd_dhcp_la_CPPFLAGS = \
 	-I$(top_srcdir)/include \
+	-I$(top_builddir)/include		\
 	$(SYSTEMD_DHCP_CFLAGS) \
 	$(GLIB_CFLAGS)
 

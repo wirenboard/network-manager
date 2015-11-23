@@ -69,7 +69,7 @@ static gboolean impl_vpn_plugin_set_failure (NMVPNPlugin *plugin,
 
 #include "nm-vpn-plugin-glue.h"
 
-#define NM_VPN_PLUGIN_QUIT_TIMER    20
+#define NM_VPN_PLUGIN_QUIT_TIMER    180
 
 G_DEFINE_ABSTRACT_TYPE (NMVPNPlugin, nm_vpn_plugin, G_TYPE_OBJECT)
 
@@ -426,6 +426,7 @@ connect_timer_start (NMVPNPlugin *plugin)
 {
 	NMVPNPluginPrivate *priv = NM_VPN_PLUGIN_GET_PRIVATE (plugin);
 
+	nm_clear_g_source (&priv->connect_timer);
 	priv->connect_timer = g_timeout_add_seconds (60, connect_timer_expired, plugin);
 }
 

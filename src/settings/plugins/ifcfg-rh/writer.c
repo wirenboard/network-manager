@@ -714,15 +714,19 @@ write_wireless_security_setting (NMConnection *connection,
 						ascii_key = g_strdup_printf ("s:%s", key);
 						key = ascii_key;
 					}
-				} else
-					key = NULL;
+				} else {
+					nm_log_warn (LOGD_SETTINGS, "    invalid WEP key '%s'", key);
+					tmp = NULL;
+				}
 
-				set_secret (ifcfg,
-				            tmp,
-				            key,
-				            "WEP_KEY_FLAGS",
-				            nm_setting_wireless_security_get_wep_key_flags (s_wsec),
-				            FALSE);
+				if (tmp) {
+					set_secret (ifcfg,
+					            tmp,
+					            key,
+					            "WEP_KEY_FLAGS",
+					            nm_setting_wireless_security_get_wep_key_flags (s_wsec),
+					            FALSE);
+				}
 				g_free (tmp);
 				g_free (ascii_key);
 			}
@@ -1137,7 +1141,9 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 
 	wol = nm_setting_wired_get_wake_on_lan (s_wired);
 	wol_password = nm_setting_wired_get_wake_on_lan_password (s_wired);
-	if (wol == NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT)
+	if (wol == NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE)
+		svSetValueFull (ifcfg, "ETHTOOL_OPTS", "", FALSE);
+	else if (wol == NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT)
 		svSetValue (ifcfg, "ETHTOOL_OPTS", NULL, FALSE);
 	else {
 		str = g_string_sized_new (30);
@@ -1258,9 +1264,9 @@ write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 
 	vlan_flags = nm_setting_vlan_get_flags (s_vlan);
 	if (vlan_flags & NM_VLAN_FLAG_REORDER_HEADERS)
-		svSetValue (ifcfg, "REORDER_HDR", "1", FALSE);
+		svSetValue (ifcfg, "REORDER_HDR", "yes", FALSE);
 	else
-		svSetValue (ifcfg, "REORDER_HDR", "0", FALSE);
+		svSetValue (ifcfg, "REORDER_HDR", "no", FALSE);
 
 	svSetValue (ifcfg, "VLAN_FLAGS", NULL, FALSE);
 	if (vlan_flags & NM_VLAN_FLAG_GVRP) {

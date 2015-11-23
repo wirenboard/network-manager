@@ -329,10 +329,10 @@ When no command is given to the \fIconnection\fP object, the default action
 is 'nmcli connection show'.
 .RE
 .TP
-.B up [ id | uuid | path ] <ID> [ifname <ifname>] [ap <BSSID>] [nsp <name>] [passwd <file with passwords>]
+.B up [ id | uuid | path ] <ID> [ifname <ifname>] [ap <BSSID>] [nsp <name>] [passwd-file <file with passwords>]
 .RE
 .RS
-.B up ifname <ifname> [ap <BSSID>] [nsp <name>] [passwd <file with passwords>]
+.B up ifname <ifname> [ap <BSSID>] [nsp <name>] [passwd-file <file with passwords>]
 .RS
 .br
 Activate a connection.  The connection is identified by its name, UUID or D-Bus
@@ -616,6 +616,18 @@ to be sent back out through the slave the frame was received on (default: yes)
 \(en channel to use for the network
 .IP "\fI[dhcp-anycast <MAC address>]\fP" 42
 \(en anycast DHCP MAC address used when requesting an IP address via DHCP
+.RE
+.RS
+.TP
+.B adsl:
+.IP "\fIusername <username>\fP" 42
+\(en ADSL user name
+.IP "\fIprotocol pppoa|pppoe|ipoatm\fP" 42
+\(en ADSL protocol
+.IP "\fI[password <password>]\fP" 42
+\(en ADSL password
+.IP "\fI[encapsulation vcmux|llc]\fP" 42
+\(en ADSL encapsulation
 .RE
 .RS
 .TP

@@ -868,6 +868,48 @@ test_read_wired_global_gateway (void)
 	g_object_unref (connection);
 }
 
+/* Ignore GATEWAY from /etc/sysconfig/network for automatic connections */
+static void
+test_read_wired_global_gateway_ignore (void)
+{
+	NMConnection *connection;
+	NMSettingConnection *s_con;
+	NMSettingWired *s_wired;
+	NMSettingIPConfig *s_ip4;
+	GError *error = NULL;
+	char *unmanaged = NULL;
+
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	                       "*ignoring GATEWAY (/etc/sysconfig/network) for * because the connection has no static addresses");
+	connection = connection_from_file_test (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-global-gateway-ignore",
+	                                        TEST_IFCFG_DIR"/network-scripts/network-test-wired-global-gateway-ignore",
+	                                        TYPE_ETHERNET, &unmanaged, &error);
+	nmtst_assert_connection_verifies_without_normalization (connection);
+	g_assert (unmanaged == NULL);
+
+	/* ===== CONNECTION SETTING ===== */
+	s_con = nm_connection_get_setting_connection (connection);
+	g_assert (s_con);
+	g_assert_cmpstr (nm_setting_connection_get_id (s_con), ==, "System test-wired-global-gateway-ignore");
+
+	/* ===== WIRED SETTING ===== */
+	s_wired = nm_connection_get_setting_wired (connection);
+	g_assert (s_wired);
+
+	/* ===== IPv4 SETTING ===== */
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+	g_assert (s_ip4);
+	g_assert_cmpstr (nm_setting_ip_config_get_method (s_ip4), ==, NM_SETTING_IP4_CONFIG_METHOD_AUTO);
+
+	/* Addresses */
+	g_assert_cmpint (nm_setting_ip_config_get_num_addresses (s_ip4), ==, 0);
+
+	/* Gateway */
+	g_assert_cmpstr (nm_setting_ip_config_get_gateway (s_ip4), ==, NULL);
+
+	g_object_unref (connection);
+}
+
 static void
 test_read_wired_obsolete_gateway_n (void)
 {
@@ -1633,9 +1675,10 @@ test_read_wired_ipv6_manual (void)
 }
 
 #define TEST_IFCFG_WIRED_IPV6_ONLY TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-ipv6-only"
+#define TEST_IFCFG_WIRED_IPV6_ONLY_1 TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-ipv6-only-1"
 
 static void
-test_read_wired_ipv6_only (void)
+test_read_wired_ipv6_only (const char *file, const char *expected_id)
 {
 	NMConnection *connection;
 	NMSettingConnection *s_con;
@@ -1645,17 +1688,16 @@ test_read_wired_ipv6_only (void)
 	char *unmanaged = NULL;
 	GError *error = NULL;
 	const char *tmp;
-	const char *expected_id = "System test-wired-ipv6-only";
 	NMIPAddress *ip6_addr;
 	const char *method;
 
-	connection = connection_from_file_test (TEST_IFCFG_WIRED_IPV6_ONLY,
+	connection = connection_from_file_test (file,
 	                                        NULL,
 	                                        TYPE_ETHERNET,
 	                                        &unmanaged,
 	                                        &error);
 	ASSERT (connection != NULL,
-	        "wired-ipv6-only-read", "failed to read %s: %s", TEST_IFCFG_WIRED_IPV6_ONLY, error->message);
+	        "wired-ipv6-only-read", "failed to read %s: %s", file, error->message);
 
 	ASSERT (nm_connection_verify (connection, &error),
 	        "wired-ipv6-only-verify", "failed to verify %s: %s", TEST_IFCFG_WIRED_IPV6_ONLY, error->message);
@@ -6080,8 +6122,7 @@ test_write_wired_static (void)
 	g_assert_cmpint (nm_setting_ip_config_get_route_metric (reread_s_ip4), ==, 204);
 	g_assert_cmpint (nm_setting_ip_config_get_route_metric (reread_s_ip6), ==, 206);
 
-	ASSERT (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT) == TRUE,
-	        "wired-static-write", "written and re-read connection weren't the same.");
+	nmtst_assert_connection_equals (connection, FALSE, reread, FALSE);
 
 	route6file = utils_get_route6_path (testfile);
 	unlink (route6file);
@@ -10847,6 +10888,8 @@ test_read_vlan_only_vlan_id (void)
 
 	g_assert_cmpstr (nm_setting_vlan_get_parent (s_vlan), ==, "eth9");
 	g_assert_cmpint (nm_setting_vlan_get_id (s_vlan), ==, 43);
+	/* Ensure that flags are 0 if both REORDER_HDR and VLAN_FLAGS are missing */
+	g_assert_cmpint (nm_setting_vlan_get_flags (s_vlan), ==, 0);
 
 	g_object_unref (connection);
 }
@@ -10901,6 +10944,33 @@ test_read_vlan_physdev (void)
 
 	g_assert_cmpstr (nm_setting_vlan_get_parent (s_vlan), ==, "eth0");
 	g_assert_cmpint (nm_setting_vlan_get_id (s_vlan), ==, 3);
+
+	g_object_unref (connection);
+}
+
+static void
+test_read_vlan_reorder_hdr_1 (void)
+{
+	NMConnection *connection;
+	GError *error = NULL;
+	NMSettingVlan *s_vlan;
+
+	connection = connection_from_file_test (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-vlan-reorder-hdr-1",
+	                                        NULL, TYPE_ETHERNET, NULL,
+	                                        &error);
+	g_assert_no_error (error);
+	g_assert (connection);
+	g_assert (nm_connection_verify (connection, &error));
+
+	g_assert_cmpstr (nm_connection_get_interface_name (connection), ==, "vlan0.3");
+
+	s_vlan = nm_connection_get_setting_vlan (connection);
+	g_assert (s_vlan);
+
+	g_assert_cmpstr (nm_setting_vlan_get_parent (s_vlan), ==, "eth0");
+	g_assert_cmpint (nm_setting_vlan_get_id (s_vlan), ==, 3);
+	/* Check correct read of REORDER_HDR=1 */
+	g_assert_cmpint (nm_setting_vlan_get_flags (s_vlan), ==, 1);
 
 	g_object_unref (connection);
 }
@@ -10978,6 +11048,77 @@ test_write_vlan_only_vlanid (void)
 
 	g_object_unref (connection);
 	g_object_unref (reread);
+}
+
+static void
+test_write_vlan_reorder_hdr (void)
+{
+	NMConnection *connection, *reread;
+	NMSettingConnection *s_con;
+	NMSettingVlan *s_vlan;
+	NMSettingWired *s_wired;
+	char *uuid;
+	GError *error = NULL;
+	gboolean success;
+	char *testfile = NULL;
+
+	connection = nm_simple_connection_new ();
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test Write VLAN reorder_hdr",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, FALSE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_VLAN_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wired setting */
+	s_wired = (NMSettingWired *) nm_setting_wired_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_wired));
+
+	/* VLAN setting */
+	s_vlan = (NMSettingVlan *) nm_setting_vlan_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_vlan));
+
+	g_object_set (s_vlan,
+	              NM_SETTING_VLAN_PARENT, "eth0",
+	              NM_SETTING_VLAN_ID, 444,
+	              NM_SETTING_VLAN_FLAGS, 1,
+	              NULL);
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &testfile,
+	                                 &error);
+	g_assert_no_error (error);
+	g_assert (success);
+	g_assert (testfile);
+
+	/* reread will be normalized, so we must normalize connection too. */
+	nm_connection_normalize (connection, NULL, NULL, NULL);
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file_test (testfile,
+	                                    NULL,
+	                                    TYPE_ETHERNET,
+	                                    NULL,
+	                                    &error);
+	unlink (testfile);
+
+	g_assert_no_error (error);
+	g_assert (reread);
+	g_assert (nm_connection_verify (reread, &error));
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	g_object_unref (connection);
+	g_object_unref (reread);
+	g_free (testfile);
 }
 
 static void
@@ -12604,12 +12745,13 @@ int main (int argc, char **argv)
 	test_read_wired_static (TEST_IFCFG_WIRED_STATIC, "System test-wired-static", TRUE);
 	test_read_wired_static (TEST_IFCFG_WIRED_STATIC_BOOTPROTO, "System test-wired-static-bootproto", FALSE);
 	test_read_wired_dhcp ();
-	g_test_add_func (TPATH "dhcp-plus-ip", test_read_wired_dhcp_plus_ip);
-	g_test_add_func (TPATH "shared-plus-ip", test_read_wired_shared_plus_ip);
-	g_test_add_func (TPATH "dhcp-send-hostname", test_read_write_wired_dhcp_send_hostname);
-	g_test_add_func (TPATH "global-gateway", test_read_wired_global_gateway);
-	g_test_add_func (TPATH "obsolete-gateway-n", test_read_wired_obsolete_gateway_n);
-	g_test_add_func (TPATH "never-default", test_read_wired_never_default);
+	g_test_add_func (TPATH "read-dhcp-plus-ip", test_read_wired_dhcp_plus_ip);
+	g_test_add_func (TPATH "read-shared-plus-ip", test_read_wired_shared_plus_ip);
+	g_test_add_func (TPATH "read-dhcp-send-hostname", test_read_write_wired_dhcp_send_hostname);
+	g_test_add_func (TPATH "read-global-gateway", test_read_wired_global_gateway);
+	g_test_add_func (TPATH "read-global-gateway-ignore", test_read_wired_global_gateway_ignore);
+	g_test_add_func (TPATH "read-obsolete-gateway-n", test_read_wired_obsolete_gateway_n);
+	g_test_add_func (TPATH "read-never-default", test_read_wired_never_default);
 	test_read_wired_defroute_no ();
 	test_read_wired_defroute_no_gatewaydev_yes ();
 	g_test_add_func (TPATH "routes/read-static", test_read_wired_static_routes);
@@ -12619,7 +12761,8 @@ int main (int argc, char **argv)
 	test_read_wired_ipv4_manual (TEST_IFCFG_WIRED_IPV4_MANUAL_3, "System test-wired-ipv4-manual-3");
 	test_read_wired_ipv4_manual (TEST_IFCFG_WIRED_IPV4_MANUAL_4, "System test-wired-ipv4-manual-4");
 	test_read_wired_ipv6_manual ();
-	test_read_wired_ipv6_only ();
+	test_read_wired_ipv6_only (TEST_IFCFG_WIRED_IPV6_ONLY, "System test-wired-ipv6-only");
+	test_read_wired_ipv6_only (TEST_IFCFG_WIRED_IPV6_ONLY_1, "System test-wired-ipv6-only-1");
 	test_read_wired_dhcp6_only ();
 	test_read_onboot_no ();
 	test_read_noip ();
@@ -12672,6 +12815,7 @@ int main (int argc, char **argv)
 	test_read_vlan_only_vlan_id ();
 	test_read_vlan_only_device ();
 	g_test_add_func (TPATH "vlan/physdev", test_read_vlan_physdev);
+	g_test_add_func (TPATH "vlan/reorder-hdr-1", test_read_vlan_reorder_hdr_1);
 	g_test_add_func (TPATH "wired/read-wake-on-lan", test_read_wired_wake_on_lan);
 
 	test_write_wired_static ();
@@ -12679,7 +12823,7 @@ int main (int argc, char **argv)
 	test_write_wired_static_routes ();
 	test_read_write_static_routes_legacy ();
 	test_write_wired_dhcp ();
-	g_test_add_func (TPATH "dhcp-plus-ip", test_write_wired_dhcp_plus_ip);
+	g_test_add_func (TPATH "wired/write-dhcp-plus-ip", test_write_wired_dhcp_plus_ip);
 	test_write_wired_dhcp_8021x_peap_mschapv2 ();
 	test_write_wired_8021x_tls (NM_SETTING_802_1X_CK_SCHEME_PATH, NM_SETTING_SECRET_FLAG_AGENT_OWNED);
 	test_write_wired_8021x_tls (NM_SETTING_802_1X_CK_SCHEME_PATH, NM_SETTING_SECRET_FLAG_NOT_SAVED);
@@ -12751,6 +12895,7 @@ int main (int argc, char **argv)
 	test_write_infiniband ();
 	test_write_vlan ();
 	test_write_vlan_only_vlanid ();
+	g_test_add_func (TPATH "vlan/write-vlan-reorder-hdr", test_write_vlan_reorder_hdr);
 	test_write_ethernet_missing_ipv6 ();
 
 	/* iSCSI / ibft */

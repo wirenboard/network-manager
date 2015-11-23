@@ -14,6 +14,8 @@ EXTRA_DIST = \
 	ifcfg-test-wired-dhcp6-only \
 	ifcfg-test-wired-global-gateway \
 	network-test-wired-global-gateway \
+	ifcfg-test-wired-global-gateway-ignore \
+	network-test-wired-global-gateway-ignore \
 	ifcfg-test-wired-obsolete-gateway-n \
 	ifcfg-test-wired-never-default \
 	network-test-wired-never-default \
@@ -99,6 +101,7 @@ EXTRA_DIST = \
 	ifcfg-test-vlan-only-vlanid \
 	ifcfg-test-vlan-only-device \
 	ifcfg-test-vlan-physdev \
+	ifcfg-test-vlan-reorder-hdr-1 \
 	ifcfg-test-wifi-wep-no-keys \
 	ifcfg-test-permissions \
 	ifcfg-test-wifi-wep-agent-keys \
@@ -124,7 +127,8 @@ EXTRA_DIST = \
 	ifcfg-test-team-port \
 	ifcfg-test-team-port-empty-config \
 	ifcfg-test-vlan-trailing-spaces \
-	ifcfg-test-wired-wake-on-lan
+	ifcfg-test-wired-wake-on-lan \
+	ifcfg-test-wired-ipv6-only-1
 
 # make target dependencies can't have colons in their names, which ends up
 # meaning that we can't add the alias files to EXTRA_DIST

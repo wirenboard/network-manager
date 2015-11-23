@@ -346,7 +346,6 @@ is_any_ip4_address_defined (shvarFile *ifcfg, int *idx)
 /* Returns TRUE on missing address or valid address */
 static gboolean
 read_full_ip4_address (shvarFile *ifcfg,
-                       const char *network_file,
                        gint32 which,
                        NMIPAddress *base_addr,
                        NMIPAddress **out_address,
@@ -362,7 +361,6 @@ read_full_ip4_address (shvarFile *ifcfg,
 
 	g_return_val_if_fail (which >= -1, FALSE);
 	g_return_val_if_fail (ifcfg != NULL, FALSE);
-	g_return_val_if_fail (network_file != NULL, FALSE);
 	g_return_val_if_fail (out_address != NULL, FALSE);
 	g_return_val_if_fail (*out_address == NULL, FALSE);
 	if (error)
@@ -452,7 +450,6 @@ done:
 /* Returns TRUE on missing route or valid route */
 static gboolean
 read_one_ip4_route (shvarFile *ifcfg,
-                    const char *network_file,
                     guint32 which,
                     NMIPRoute **out_route,
                     GError **error)
@@ -463,7 +460,6 @@ read_one_ip4_route (shvarFile *ifcfg,
 	gboolean success = FALSE;
 
 	g_return_val_if_fail (ifcfg != NULL, FALSE);
-	g_return_val_if_fail (network_file != NULL, FALSE);
 	g_return_val_if_fail (out_route != NULL, FALSE);
 	g_return_val_if_fail (*out_route == NULL, FALSE);
 	if (error)
@@ -684,7 +680,6 @@ error:
 
 static gboolean
 parse_full_ip6_address (shvarFile *ifcfg,
-                        const char *network_file,
                         const char *addr_str,
                         int i,
                         NMIPAddress **out_address,
@@ -942,7 +937,10 @@ make_ip4_setting (shvarFile *ifcfg,
 	} else if (!g_ascii_strcasecmp (value, "bootp") || !g_ascii_strcasecmp (value, "dhcp")) {
 		method = NM_SETTING_IP4_CONFIG_METHOD_AUTO;
 	} else if (!g_ascii_strcasecmp (value, "static")) {
-		method = NM_SETTING_IP4_CONFIG_METHOD_MANUAL;
+		if (is_any_ip4_address_defined (ifcfg, NULL))
+			method = NM_SETTING_IP4_CONFIG_METHOD_MANUAL;
+		else
+			method = NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
 	} else if (!g_ascii_strcasecmp (value, "autoip")) {
 		g_free (value);
 		g_object_set (s_ip4,
@@ -962,7 +960,7 @@ make_ip4_setting (shvarFile *ifcfg,
 		if (is_any_ip4_address_defined (ifcfg, &idx)) {
 			NMIPAddress *addr = NULL;
 
-			if (!read_full_ip4_address (ifcfg, network_file, idx, NULL, &addr, NULL, error))
+			if (!read_full_ip4_address (ifcfg, idx, NULL, &addr, NULL, error))
 				goto done;
 			if (!read_ip4_address (ifcfg, "GATEWAY", &gateway, error))
 				goto done;
@@ -1020,7 +1018,7 @@ make_ip4_setting (shvarFile *ifcfg,
 
 		/* gateway will only be set if still unset. Hence, we don't leak gateway
 		 * here by calling read_full_ip4_address() repeatedly */
-		if (!read_full_ip4_address (ifcfg, network_file, i, NULL, &addr, &gateway, error))
+		if (!read_full_ip4_address (ifcfg, i, NULL, &addr, &gateway, error))
 			goto done;
 
 		if (!addr) {
@@ -1046,6 +1044,13 @@ make_ip4_setting (shvarFile *ifcfg,
 			svCloseFile (network_ifcfg);
 			if (!read_success)
 				goto done;
+
+			if (gateway && nm_setting_ip_config_get_num_addresses (s_ip4) == 0) {
+				gs_free char *f = g_path_get_basename (ifcfg->fileName);
+				PARSE_WARNING ("ignoring GATEWAY (/etc/sysconfig/network) for %s "
+				               "because the connection has no static addresses", f);
+				g_clear_pointer (&gateway, g_free);
+			}
 		}
 	}
 	g_object_set (s_ip4, NM_SETTING_IP_CONFIG_GATEWAY, gateway, NULL);
@@ -1108,7 +1113,7 @@ make_ip4_setting (shvarFile *ifcfg,
 			for (i = 0; i < 256; i++) {
 				NMIPRoute *route = NULL;
 
-				if (!read_one_ip4_route (route_ifcfg, network_file, i, &route, error)) {
+				if (!read_one_ip4_route (route_ifcfg, i, &route, error)) {
 					svCloseFile (route_ifcfg);
 					goto done;
 				}
@@ -1158,7 +1163,7 @@ done:
 }
 
 static void
-read_aliases (NMSettingIPConfig *s_ip4, const char *filename, const char *network_file)
+read_aliases (NMSettingIPConfig *s_ip4, const char *filename)
 {
 	GDir *dir;
 	char *dirname, *base;
@@ -1230,7 +1235,7 @@ read_aliases (NMSettingIPConfig *s_ip4, const char *filename, const char *networ
 			}
 
 			addr = NULL;
-			ok = read_full_ip4_address (parsed, network_file, -1, base_addr, &addr, NULL, &err);
+			ok = read_full_ip4_address (parsed, -1, base_addr, &addr, NULL, &err);
 			svCloseFile (parsed);
 			if (ok) {
 				nm_ip_address_set_attribute (addr, "label", g_variant_new_string (device));
@@ -1417,7 +1422,7 @@ make_ip6_setting (shvarFile *ifcfg,
 	for (iter = list, i = 0; iter && *iter; iter++, i++) {
 		NMIPAddress *addr = NULL;
 
-		if (!parse_full_ip6_address (ifcfg, network_file, *iter, i, &addr, error)) {
+		if (!parse_full_ip6_address (ifcfg, *iter, i, &addr, error)) {
 			g_strfreev (list);
 			goto error;
 		}
@@ -3502,21 +3507,46 @@ wireless_connection_from_ifcfg (const char *file,
 }
 
 static void
-parse_ethtool_options (shvarFile *ifcfg, NMSettingWired *s_wired, char *value)
+parse_ethtool_option (const char *value, NMSettingWiredWakeOnLan *out_flags, char **out_password)
 {
-	NMSettingWiredWakeOnLan wol_flags = NM_SETTING_WIRED_WAKE_ON_LAN_NONE;
-	gboolean use_password = FALSE;
-	char **words, **iter, *flag;
+	gs_strfreev char **words = NULL;
+	const char **iter = NULL, *flag;
 
 	if (!value || !value[0])
 		return;
 
-	words = g_strsplit_set (value, " ", 0);
-	iter = words;
+	words = g_strsplit_set (value, "\t ", 0);
+	iter = (const char **) words;
 
 	while (iter[0]) {
-		if (g_str_equal (iter[0], "wol") && iter[1] && *iter[1]) {
-			for (flag = iter[1]; *flag; flag++) {
+		gboolean is_wol;
+
+		if (g_str_equal (iter[0], "wol"))
+			is_wol = TRUE;
+		else if (g_str_equal (iter[0], "sopass"))
+			is_wol = FALSE;
+		else {
+			/* Silently skip unknown options */
+			iter++;
+			continue;
+		}
+
+		iter++;
+
+		/* g_strsplit_set() returns empty tokens, meaning that we must skip over repeated
+		 * space characters like to parse "wol     d". */
+		while (iter[0] && !*iter[0])
+			iter++;
+
+		if (is_wol) {
+			NMSettingWiredWakeOnLan wol_flags = NM_SETTING_WIRED_WAKE_ON_LAN_NONE;
+
+			if (!iter[0]) {
+				PARSE_WARNING ("Wake-on-LAN options missing");
+				break;
+			}
+
+			for (flag = iter[0]; *flag; flag++) {
 				switch (*flag) {
 				case 'p':
 					wol_flags |= NM_SETTING_WIRED_WAKE_ON_LAN_PHY;
@@ -3537,42 +3567,62 @@ parse_ethtool_options (shvarFile *ifcfg, NMSettingWired *s_wired, char *value)
 					wol_flags |= NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC;
 					break;
 				case 's':
-					use_password = TRUE;
 					break;
 				case 'd':
 					wol_flags = NM_SETTING_WIRED_WAKE_ON_LAN_NONE;
-					use_password = FALSE;
 					break;
 				default:
 					PARSE_WARNING ("unrecognized Wake-on-LAN option '%c'", *flag);
 				}
 			}
 
-			if (!NM_FLAGS_HAS (wol_flags, NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC))
-				use_password = FALSE;
+			*out_flags = wol_flags;
+		} else {
+			if (!iter[0]) {
+				PARSE_WARNING ("Wake-on-LAN password missing");
+				break;
+			}
 
-			g_object_set (s_wired, NM_SETTING_WIRED_WAKE_ON_LAN, wol_flags, NULL);
-			iter += 2;
-			continue;
+			g_clear_pointer (out_password, g_free);
+			if (nm_utils_hwaddr_valid (iter[0], ETH_ALEN))
+				*out_password = g_strdup (iter[0]);
+			else
+				PARSE_WARNING ("Wake-on-LAN password '%s' is invalid", iter[0]);
 		}
-
-		if (g_str_equal (iter[0], "sopass") && iter[1] && *iter[1]) {
-			if (use_password) {
-				if (nm_utils_hwaddr_valid (iter[1], ETH_ALEN))
-					g_object_set (s_wired, NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD, iter[1], NULL);
-				else
-					PARSE_WARNING ("Wake-on-LAN password '%s' is invalid", iter[1]);
-			} else
-				PARSE_WARNING ("Wake-on-LAN password not expected");
-			iter += 2;
-			continue;
-		}
-
-		/* Silently skip unknown options */
 		iter++;
 	}
+}
 
-	g_strfreev (words);
+static void
+parse_ethtool_options (shvarFile *ifcfg, NMSettingWired *s_wired, const char *value)
+{
+	NMSettingWiredWakeOnLan wol_flags = NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT;
+	gs_free char *wol_password = NULL;
+	gboolean ignore_wol_password = FALSE;
+
+	if (value) {
+		gs_strfreev char **opts = NULL;
+		const char **iter;
+
+		wol_flags = NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE;
+
+		opts = g_strsplit_set (value, ";", 0);
+		for (iter = (const char **) opts; iter[0]; iter++) {
+			/* in case of repeated wol_passwords, parse_ethtool_option()
+			 * will do the right thing and clear wol_password before resetting. */
+			parse_ethtool_option (iter[0], &wol_flags, &wol_password);
+		}
+	}
+
+	if (   wol_password
+	    && !NM_FLAGS_HAS (wol_flags, NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC)) {
+		PARSE_WARNING ("Wake-on-LAN password not expected");
+		ignore_wol_password = TRUE;
+	}
+	g_object_set (s_wired,
+	              NM_SETTING_WIRED_WAKE_ON_LAN, wol_flags,
+	              NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD, ignore_wol_password ? NULL : wol_password,
+	              NULL);
 }
 
 static NMSetting *
@@ -3710,7 +3760,7 @@ make_wired_setting (shvarFile *ifcfg,
 		g_free (value);
 	}
 
-	value = svGetValue (ifcfg, "ETHTOOL_OPTS", FALSE);
+	value = svGetValueFull (ifcfg, "ETHTOOL_OPTS", FALSE);
 	parse_ethtool_options (ifcfg, s_wired, value);
 	g_free (value);
 
@@ -4884,7 +4934,7 @@ connection_from_file_full (const char *filename,
 		connection = NULL;
 		goto done;
 	} else {
-		read_aliases (NM_SETTING_IP_CONFIG (s_ip4), filename, network_file);
+		read_aliases (NM_SETTING_IP_CONFIG (s_ip4), filename);
 		nm_connection_add_setting (connection, s_ip4);
 	}
 

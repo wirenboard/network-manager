@@ -403,6 +403,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -546,6 +547,7 @@ with_valgrind = @with_valgrind@
 SUBDIRS = . tests
 AM_CPPFLAGS = \
 	-I${top_srcdir}/include \
+	-I${top_builddir}/include \
 	-I${top_srcdir}/libnm-core \
 	-I${top_builddir}/libnm-core \
 	$(GLIB_CFLAGS) \

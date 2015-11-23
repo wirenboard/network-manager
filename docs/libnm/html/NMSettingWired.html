@@ -390,7 +390,7 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingWired.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+<pre class="screen">    GFlags
     <span class="lineart">╰──</span> NMSettingWiredWakeOnLan
     GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
@@ -1181,13 +1181,6 @@ are supported by all devices.</p>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
-<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT</p></td>
-<td class="enum_member_description">
-<p>Use the default value</p>
-</td>
-<td class="enum_member_annotations"> </td>
-</tr>
-<tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_PHY</p></td>
 <td class="enum_member_description">
 <p>Wake on PHY activity</p>
@@ -1230,14 +1223,40 @@ are supported by all devices.</p>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
-<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-LAST:CAPS"></a>_NM_SETTING_WIRED_WAKE_ON_LAN_LAST</p></td>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-LAST-OPT:CAPS"></a>_NM_SETTING_WIRED_WAKE_ON_LAN_LAST_OPT</p></td>
 <td> </td>
 <td> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-ALL:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_ALL</p></td>
 <td class="enum_member_description">
-<p>Wake on all events</p>
+<p>Wake on all events. This does not
+  include the exclusive flags <em class="parameter"><code>NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT</code></em>
+ or
+  <em class="parameter"><code>NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE</code></em>
+.</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT</p></td>
+<td class="enum_member_description">
+<p>Use the default value</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-IGNORE:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE</p></td>
+<td class="enum_member_description">
+<p>Don't change configured settings</p>
+</td>
+<td class="enum_member_annotations"> </td>
+</tr>
+<tr>
+<td class="enum_member_name"><p><a name="NM-SETTING-WIRED-WAKE-ON-LAN-EXCLUSIVE-FLAGS:CAPS"></a>NM_SETTING_WIRED_WAKE_ON_LAN_EXCLUSIVE_FLAGS</p></td>
+<td class="enum_member_description">
+<p>Mask of flags that are
+  incompatible with other flags</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
@@ -1444,7 +1463,10 @@ Mbit/s, ie 100 == 100Mbit/s.</p>
 May be any combination of <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_PHY</code></a>,
 <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST</code></a>, <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST</code></a>,
 <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST</code></a>, <a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_ARP</code></a>,
-<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC</code></a>.</p>
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC</code></a> or the special values
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT</code></a> (to use global settings) and
+<a class="link" href="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-IGNORE:CAPS"><code class="literal">NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE</code></a> (to disable management of Wake-on-LAN in
+NetworkManager).</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 1</p>
 <p class="since">Since: 1.0.6</p>

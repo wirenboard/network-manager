@@ -5343,8 +5343,8 @@ msgstr ""
 
 #: ../clients/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
-msgstr "\rসংযোগ কৰা হৈছে"
+msgid "Connecting"
+msgstr "সংযোগ কৰা হৈছে"
 
 #: ../clients/nm-online.c:149
 msgid ""
@@ -6830,10 +6830,6 @@ msgstr "মান '%d' বিস্তাৰৰ বাহিৰ <%d-%d>"
 #: ../libnm-util/nm-setting-wired.c:635 ../libnm-util/nm-setting-wired.c:693
 msgid "is not a valid MAC address"
 msgstr "এটা বৈধ MAC ঠিকনা নহয়"
-
-#: ../libnm-core/nm-setting-cdma.c:165 ../libnm-util/nm-setting-cdma.c:168
-msgid "property is empty'"
-msgstr "বৈশিষ্ট্য ৰিক্ত'"
 
 #: ../libnm-core/nm-setting-connection.c:740
 #: ../libnm-util/nm-setting-connection.c:861

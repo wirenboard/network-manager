@@ -361,6 +361,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -504,12 +505,12 @@ with_valgrind = @with_valgrind@
 AM_CPPFLAGS = -I${top_srcdir}/src -I${top_builddir}/src \
 	-I${top_srcdir}/src/devices -I${top_srcdir}/src/settings \
 	-I${top_srcdir}/src/platform -I${top_srcdir}/src/devices/wwan \
-	-I${top_srcdir}/include -I${top_builddir}/libnm-core \
-	-I${top_srcdir}/libnm-core \
+	-I${top_srcdir}/include -I$(top_builddir)/include \
+	-I${top_builddir}/libnm-core -I${top_srcdir}/libnm-core \
 	-DG_LOG_DOMAIN=\""NetworkManager-bluetooth"\" \
 	-DNETWORKMANAGER_COMPILATION \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(DBUS_CFLAGS) \
-	$(am__append_1)
+	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(GLIB_CFLAGS) \
+	$(DBUS_CFLAGS) $(am__append_1)
 GLIB_GENERATED = nm-bt-enum-types.h nm-bt-enum-types.c
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
