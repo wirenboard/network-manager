@@ -1524,9 +1524,16 @@ nmc_property_wired_get_wake_on_lan (NMSetting *setting, NmcPropertyGetType get_t
 {
 	NMSettingWired *s_wired = NM_SETTING_WIRED (setting);
 	NMSettingWiredWakeOnLan wol;
+	char *tmp, *str;
 
 	wol = nm_setting_wired_get_wake_on_lan (s_wired);
-	return nm_utils_enum_to_str (nm_setting_wired_wake_on_lan_get_type (), wol);
+	tmp = nm_utils_enum_to_str (nm_setting_wired_wake_on_lan_get_type (), wol);
+	if (get_type == NMC_PROPERTY_GET_PARSABLE)
+		str = g_strdup_printf ("%s", tmp && *tmp ? tmp : "none");
+	else
+		str = g_strdup_printf ("%d (%s)", wol, tmp && *tmp ? tmp : "none");
+	g_free (tmp);
+	return str;
 }
 
 static gboolean
@@ -1536,21 +1543,35 @@ nmc_property_wired_set_wake_on_lan (NMSetting *setting, const char *prop,
 	NMSettingWiredWakeOnLan wol;
 	gs_free char *err_token = NULL;
 	gboolean ret;
+	long int t;
 
-	ret = nm_utils_enum_from_str (nm_setting_wired_wake_on_lan_get_type (), val,
-	                              (int *) &wol, &err_token);
+	if (nmc_string_to_int_base (val, 0, TRUE, 0,
+	                            NM_SETTING_WIRED_WAKE_ON_LAN_ALL
+	                            | NM_SETTING_WIRED_WAKE_ON_LAN_EXCLUSIVE_FLAGS,
+	                            &t))
+		wol = (NMSettingWiredWakeOnLan) t;
+	else {
+		ret = nm_utils_enum_from_str (nm_setting_wired_wake_on_lan_get_type (), val,
+		                              (int *) &wol, &err_token);
 
-	if (!ret) {
-		g_set_error (error, 1, 0, _("invalid option '%s', use  a combination of %s or 'default'"),
-		             err_token,
-		             nm_utils_enum_to_str (nm_setting_wired_wake_on_lan_get_type (),
-		                                   NM_SETTING_WIRED_WAKE_ON_LAN_ALL));
-		return FALSE;
+		if (!ret) {
+			if (   g_ascii_strcasecmp (err_token, "none") == 0
+			    || g_ascii_strcasecmp (err_token, "disable") == 0
+			    || g_ascii_strcasecmp (err_token, "disabled") == 0)
+				wol = NM_SETTING_WIRED_WAKE_ON_LAN_NONE;
+			else {
+				g_set_error (error, 1, 0, _("invalid option '%s', use a combination of [%s] or 'ignore', 'default' or 'none'"),
+				             err_token,
+				             nm_utils_enum_to_str (nm_setting_wired_wake_on_lan_get_type (),
+				                                   NM_SETTING_WIRED_WAKE_ON_LAN_ALL));
+				return FALSE;
+			}
+		}
 	}
 
-	if (NM_FLAGS_HAS (wol, NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT) &&
-		NM_FLAGS_ANY (wol, NM_SETTING_WIRED_WAKE_ON_LAN_ALL)) {
-		g_set_error_literal (error, 1, 0, _("'default' is incompatible with other flags"));
+	if (   NM_FLAGS_ANY (wol, NM_SETTING_WIRED_WAKE_ON_LAN_EXCLUSIVE_FLAGS)
+	    && !nm_utils_is_power_of_two (wol)) {
+		g_set_error_literal (error, 1, 0, _("'default' and 'ignore' are incompatible with other flags"));
 		return FALSE;
 	}
 
@@ -2845,6 +2866,16 @@ nmc_property_connection_set_metered (NMSetting *setting, const char *prop,
 
 	g_object_set (setting, prop, metered, NULL);
 	return TRUE;
+}
+
+static const char *
+nmc_property_connection_describe_metered (NMSetting *setting, const char *prop)
+{
+	return _("Enter a value which indicates whether the connection is subject to a data\n"
+	         "quota, usage costs or other limitations. Accepted options are:\n"
+	         "'true','yes','on' to set the connection as metered\n"
+	         "'false','no','off' to set the connection as not metered\n"
+	         "'unknown' to let NetworkManager choose a value using some heuristics\n");
 }
 
 /* --- NM_SETTING_802_1X_SETTING_NAME property setter functions --- */
@@ -5431,7 +5462,7 @@ nmc_properties_init (void)
 	                    nmc_property_connection_get_metered,
 	                    nmc_property_connection_set_metered,
 	                    NULL,
-	                    NULL,
+	                    nmc_property_connection_describe_metered,
 	                    NULL,
 	                    NULL);
 

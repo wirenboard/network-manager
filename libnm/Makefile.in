@@ -410,6 +410,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -553,6 +554,7 @@ with_valgrind = @with_valgrind@
 SUBDIRS = . tests
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
+	-I$(top_builddir)/include \
 	-I$(top_builddir)/introspection \
 	-I$(top_srcdir)/libnm-core \
 	-I$(top_builddir)/libnm-core \
@@ -568,8 +570,8 @@ AM_CPPFLAGS = \
 core = $(top_srcdir)/libnm-core
 core_build = $(top_builddir)/libnm-core
 libnm_core_headers = \
+	$(top_builddir)/include/nm-version-macros.h \
 	$(core_build)/nm-core-enum-types.h	\
-	$(core_build)/nm-version.h		\
 	$(core)/nm-connection.h			\
 	$(core)/nm-core-types.h			\
 	$(core)/nm-dbus-interface.h		\
@@ -604,6 +606,7 @@ libnm_core_headers = \
 	$(core)/nm-setting.h			\
 	$(core)/nm-simple-connection.h		\
 	$(core)/nm-utils.h			\
+	$(core)/nm-version.h \
 	$(core)/nm-vpn-dbus-interface.h
 
 libnm_core_private_headers = \
@@ -661,6 +664,7 @@ libnm_core_sources = \
 lib_LTLIBRARIES = libnm.la
 libnmincludedir = $(includedir)/libnm
 libnminclude_hfiles = \
+	$(top_builddir)/include/nm-version-macros.h \
 	NetworkManager.h		\
 	nm-access-point.h		\
 	nm-active-connection.h		\

@@ -1878,6 +1878,9 @@ remove_from_hash (GHashTable *s_hash,
                   const char *s_name,
                   const char *p_name)
 {
+	if (!p_hash)
+		return;
+
 	g_hash_table_remove (p_hash, p_name);
 	if (g_hash_table_size (p_hash) == 0)
 		g_hash_table_remove (s_hash, s_name);
@@ -2033,6 +2036,85 @@ check_connection_mac_address (NMConnection *orig,
 	return FALSE;
 }
 
+static gboolean
+check_connection_cloned_mac_address (NMConnection *orig,
+                              NMConnection *candidate,
+                              GHashTable *settings)
+{
+	GHashTable *props;
+	const char *orig_mac = NULL, *cand_mac = NULL;
+	NMSettingWired *s_wired_orig, *s_wired_cand;
+
+	props = check_property_in_hash (settings,
+	                                NM_SETTING_WIRED_SETTING_NAME,
+	                                NM_SETTING_WIRED_CLONED_MAC_ADDRESS);
+	if (!props)
+		return TRUE;
+
+	/* If one of the MAC addresses is NULL, we accept that connection */
+	s_wired_orig = nm_connection_get_setting_wired (orig);
+	if (s_wired_orig)
+		orig_mac = nm_setting_wired_get_cloned_mac_address (s_wired_orig);
+
+	s_wired_cand = nm_connection_get_setting_wired (candidate);
+	if (s_wired_cand)
+		cand_mac = nm_setting_wired_get_cloned_mac_address (s_wired_cand);
+
+	if (!orig_mac || !cand_mac) {
+		remove_from_hash (settings, props,
+		                  NM_SETTING_WIRED_SETTING_NAME,
+		                  NM_SETTING_WIRED_CLONED_MAC_ADDRESS);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static gboolean
+check_connection_s390_props (NMConnection *orig,
+                             NMConnection *candidate,
+                             GHashTable *settings)
+{
+	GHashTable *props1, *props2, *props3;
+	NMSettingWired *s_wired_orig, *s_wired_cand;
+
+	props1 = check_property_in_hash (settings,
+	                                 NM_SETTING_WIRED_SETTING_NAME,
+	                                 NM_SETTING_WIRED_S390_SUBCHANNELS);
+	props2 = check_property_in_hash (settings,
+	                                 NM_SETTING_WIRED_SETTING_NAME,
+	                                 NM_SETTING_WIRED_S390_NETTYPE);
+	props3 = check_property_in_hash (settings,
+	                                 NM_SETTING_WIRED_SETTING_NAME,
+	                                 NM_SETTING_WIRED_S390_OPTIONS);
+	if (!props1 && !props2 && !props3)
+		return TRUE;
+
+	/* If the generated connection did not contain wired setting,
+	 * allow it to match to a connection with a wired setting,
+	 * but default (empty) s390-* properties */
+	s_wired_orig = nm_connection_get_setting_wired (orig);
+	s_wired_cand = nm_connection_get_setting_wired (candidate);
+	if (!s_wired_orig && s_wired_cand) {
+		const char * const *subchans = nm_setting_wired_get_s390_subchannels (s_wired_cand);
+		const char *nettype = nm_setting_wired_get_s390_nettype (s_wired_cand);
+		guint32 num_options = nm_setting_wired_get_num_s390_options (s_wired_cand);
+
+		if ((!subchans || !*subchans) && !nettype && num_options == 0) {
+			remove_from_hash (settings, props1,
+			                  NM_SETTING_WIRED_SETTING_NAME,
+			                  NM_SETTING_WIRED_S390_SUBCHANNELS);
+			remove_from_hash (settings, props2,
+			                  NM_SETTING_WIRED_SETTING_NAME,
+			                  NM_SETTING_WIRED_S390_NETTYPE);
+			remove_from_hash (settings, props3,
+			                  NM_SETTING_WIRED_SETTING_NAME,
+			                  NM_SETTING_WIRED_S390_OPTIONS);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 static NMConnection *
 check_possible_match (NMConnection *orig,
                       NMConnection *candidate,
@@ -2051,6 +2133,12 @@ check_possible_match (NMConnection *orig,
 		return NULL;
 
 	if (!check_connection_mac_address (orig, candidate, settings))
+		return NULL;
+
+	if (!check_connection_cloned_mac_address (orig, candidate, settings))
+		return NULL;
+
+	if (!check_connection_s390_props (orig, candidate, settings))
 		return NULL;
 
 	if (g_hash_table_size (settings) == 0)

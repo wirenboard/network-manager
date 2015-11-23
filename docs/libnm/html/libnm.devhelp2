@@ -236,6 +236,7 @@
     <keyword type="enum" name="enum NMSecretAgentError" link="libnm-nm-errors.html#NMSecretAgentError"/>
     <keyword type="enum" name="enum NMSettingsError" link="libnm-nm-errors.html#NMSettingsError"/>
     <keyword type="enum" name="enum NMVpnPluginError" link="libnm-nm-errors.html#NMVpnPluginError"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_0_6" link="libnm-nm-dbus-interface.html#NM-AVAILABLE-IN-1-0-6:CAPS"/>
     <keyword type="macro" name="NM_DBUS_SERVICE" link="libnm-nm-dbus-interface.html#NM-DBUS-SERVICE:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH" link="libnm-nm-dbus-interface.html#NM-DBUS-PATH:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE" link="libnm-nm-dbus-interface.html#NM-DBUS-INTERFACE:CAPS"/>
@@ -1699,30 +1700,17 @@
     <keyword type="enum" name="enum NMUtilsSecurityType" link="libnm-nm-utils.html#NMUtilsSecurityType"/>
     <keyword type="macro" name="NM_UTILS_HWADDR_LEN_MAX" link="libnm-nm-utils.html#NM-UTILS-HWADDR-LEN-MAX:CAPS"/>
     <keyword type="macro" name="NM_UTILS_INET_ADDRSTRLEN" link="libnm-nm-utils.html#NM-UTILS-INET-ADDRSTRLEN:CAPS"/>
-    <keyword type="macro" name="NM_MAJOR_VERSION" link="libnm-nm-version.html#NM-MAJOR-VERSION:CAPS"/>
-    <keyword type="macro" name="NM_MINOR_VERSION" link="libnm-nm-version.html#NM-MINOR-VERSION:CAPS"/>
-    <keyword type="macro" name="NM_MICRO_VERSION" link="libnm-nm-version.html#NM-MICRO-VERSION:CAPS"/>
-    <keyword type="macro" name="NM_CHECK_VERSION()" link="libnm-nm-version.html#NM-CHECK-VERSION:CAPS"/>
-    <keyword type="macro" name="NM_ENCODE_VERSION()" link="libnm-nm-version.html#NM-ENCODE-VERSION:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_0_9_8" link="libnm-nm-version.html#NM-VERSION-0-9-8:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_0_9_10" link="libnm-nm-version.html#NM-VERSION-0-9-10:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_1_0" link="libnm-nm-version.html#NM-VERSION-1-0:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_1_0_2" link="libnm-nm-version.html#NM-VERSION-1-0-2:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_1_0_4" link="libnm-nm-version.html#NM-VERSION-1-0-4:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_1_0_6" link="libnm-nm-version.html#NM-VERSION-1-0-6:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_1_0_8" link="libnm-nm-version.html#NM-VERSION-1-0-8:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MIN_REQUIRED" link="libnm-nm-version.html#NM-VERSION-MIN-REQUIRED:CAPS"/>
     <keyword type="macro" name="NM_VERSION_MAX_ALLOWED" link="libnm-nm-version.html#NM-VERSION-MAX-ALLOWED:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0-FOR:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_CUR_STABLE" link="libnm-nm-version.html#NM-VERSION-CUR-STABLE:CAPS"/>
-    <keyword type="macro" name="NM_VERSION_NEXT_STABLE" link="libnm-nm-version.html#NM-VERSION-NEXT-STABLE:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_0_9_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0_6" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-6:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_0_8" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-8:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
@@ -2100,15 +2088,17 @@
     <keyword type="constant" name="NM_VLAN_FLAG_GVRP" link="NMSettingVlan.html#NM-VLAN-FLAG-GVRP:CAPS"/>
     <keyword type="constant" name="NM_VLAN_FLAG_LOOSE_BINDING" link="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_NONE" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-NONE:CAPS"/>
-    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_PHY" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-PHY:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-UNICAST:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MULTICAST:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-BROADCAST:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_ARP" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ARP:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-MAGIC:CAPS"/>
-    <keyword type="constant" name="_NM_SETTING_WIRED_WAKE_ON_LAN_LAST" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-LAST:CAPS"/>
+    <keyword type="constant" name="_NM_SETTING_WIRED_WAKE_ON_LAN_LAST_OPT" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-LAST-OPT:CAPS"/>
     <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_ALL" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-ALL:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-DEFAULT:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-IGNORE:CAPS"/>
+    <keyword type="constant" name="NM_SETTING_WIRED_WAKE_ON_LAN_EXCLUSIVE_FLAGS" link="NMSettingWired.html#NM-SETTING-WIRED-WAKE-ON-LAN-EXCLUSIVE-FLAGS:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_UNKNOWN" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_KEY" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-KEY:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_PASSPHRASE" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-PASSPHRASE:CAPS"/>

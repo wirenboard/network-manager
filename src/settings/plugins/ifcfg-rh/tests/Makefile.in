@@ -566,6 +566,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -711,6 +712,7 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(CODE_COVERAGE_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/include \
+@ENABLE_TESTS_TRUE@	-I$(top_builddir)/include \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/src/ \

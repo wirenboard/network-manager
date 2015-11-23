@@ -4284,7 +4284,7 @@ again:
 			 * by randomly setting bits. */
 			numbits = g_rand_int_range (rand, 1, 65);
 			while (xno != ~((guint64) 0) && numbits > 0) {
-				guint64 v = (1LL << g_rand_int_range (rand, 0, 65));
+				guint64 v = (1LL << g_rand_int_range (rand, 0, 64));
 
 				if ((xno | v) != xno) {
 					xno |= v;
@@ -4582,12 +4582,12 @@ static void test_nm_utils_enum (void)
 	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_BAZ, "baz");
 	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_FOO |
 	                                          NM_TEST_GENERAL_META_FLAGS_BAR |
-	                                          NM_TEST_GENERAL_META_FLAGS_BAZ, "foo,bar,baz");
+	                                          NM_TEST_GENERAL_META_FLAGS_BAZ, "foo, bar, baz");
 
 	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED, "red");
 	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_WHITE, "");
 	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED |
-	                                           NM_TEST_GENERAL_COLOR_FLAGS_GREEN, "red,green");
+	                                           NM_TEST_GENERAL_COLOR_FLAGS_GREEN, "red, green");
 
 	test_nm_utils_enum_from_str_do (bool_enum, "", FALSE, 0, NULL);
 	test_nm_utils_enum_from_str_do (bool_enum, " ", FALSE, 0, NULL);
@@ -4601,6 +4601,8 @@ static void test_nm_utils_enum (void)
 	test_nm_utils_enum_from_str_do (meta_flags, "foo", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO, NULL);
 	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
 	                                                             NM_TEST_GENERAL_META_FLAGS_BAZ, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "foo, baz", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
+	                                                              NM_TEST_GENERAL_META_FLAGS_BAZ, NULL);
 	test_nm_utils_enum_from_str_do (meta_flags, "foo,,bar", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
 	                                                              NM_TEST_GENERAL_META_FLAGS_BAR, NULL);
 	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz,quux,bar", FALSE, 0, "quux");
@@ -4637,18 +4639,18 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_to_dbus_enum", test_setting_to_dbus_enum);
 	g_test_add_func ("/core/general/test_setting_compare_id", test_setting_compare_id);
 	g_test_add_func ("/core/general/test_setting_compare_timestamp", test_setting_compare_timestamp);
-#define ADD_FUNC(func, secret_flags, comp_flags, remove_secret) \
-	g_test_add_data_func_full ("/core/general/" G_STRINGIFY (func), \
+#define ADD_FUNC(name, func, secret_flags, comp_flags, remove_secret) \
+	g_test_add_data_func_full ("/core/general/" G_STRINGIFY (func) "_" name, \
 	                           test_data_compare_secrets_new (secret_flags, comp_flags, remove_secret), \
 	                           func, g_free)
-	ADD_FUNC (test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_AGENT_OWNED, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS, TRUE);
-	ADD_FUNC (test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_NOT_SAVED, NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS, TRUE);
-	ADD_FUNC (test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS, TRUE);
-	ADD_FUNC (test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_EXACT, FALSE);
-	ADD_FUNC (test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_AGENT_OWNED, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS, TRUE);
-	ADD_FUNC (test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_NOT_SAVED, NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS, TRUE);
-	ADD_FUNC (test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS, TRUE);
-	ADD_FUNC (test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_EXACT, FALSE);
+	ADD_FUNC ("agent_owned", test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_AGENT_OWNED, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS, TRUE);
+	ADD_FUNC ("not_saved", test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_NOT_SAVED, NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS, TRUE);
+	ADD_FUNC ("secrets", test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS, TRUE);
+	ADD_FUNC ("exact", test_setting_compare_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_EXACT, FALSE);
+	ADD_FUNC ("agent_owned", test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_AGENT_OWNED, NM_SETTING_COMPARE_FLAG_IGNORE_AGENT_OWNED_SECRETS, TRUE);
+	ADD_FUNC ("not_saved", test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_NOT_SAVED, NM_SETTING_COMPARE_FLAG_IGNORE_NOT_SAVED_SECRETS, TRUE);
+	ADD_FUNC ("secrets", test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS, TRUE);
+	ADD_FUNC ("exact", test_setting_compare_vpn_secrets, NM_SETTING_SECRET_FLAG_NONE, NM_SETTING_COMPARE_FLAG_EXACT, FALSE);
 	g_test_add_func ("/core/general/test_setting_old_uuid", test_setting_old_uuid);
 
 	g_test_add_func ("/core/general/test_connection_to_dbus_setting_name", test_connection_to_dbus_setting_name);

@@ -222,9 +222,9 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingVlan.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
+<pre class="screen">    GEnum
     <span class="lineart">╰──</span> NMVlanPriorityMap
-    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GFlags</a>
+    GFlags
     <span class="lineart">╰──</span> NMVlanFlags
     GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
@@ -822,6 +822,7 @@ output packet headers), <a class="link" href="NMSettingVlan.html#NM-VLAN-FLAG-GV
 and <a class="link" href="NMSettingVlan.html#NM-VLAN-FLAG-LOOSE-BINDING:CAPS"><code class="literal">NM_VLAN_FLAG_LOOSE_BINDING</code></a> (loose binding of the interface to its
 master device's operating state).</p>
 <p>Flags: Read / Write / Construct</p>
+<p>Default value: NM_VLAN_FLAG_REORDER_HEADERS</p>
 </div>
 <hr>
 <div class="refsect2">

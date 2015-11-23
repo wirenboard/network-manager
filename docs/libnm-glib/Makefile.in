@@ -260,6 +260,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -454,6 +455,8 @@ extra_files = libnm-glib.png
 # CFLAGS and LDFLAGS for compiling scan program. Only needed
 # if $(DOC_MODULE).types is non-empty.
 GTKDOC_CFLAGS = \
+	-I$(top_srcdir)/include	\
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-util	\
 	-I$(top_builddir)/libnm-util	\
 	-I$(top_srcdir)/libnm-glib	\

@@ -6043,10 +6043,6 @@ msgstr "η τιμή '%d' είναι εκτός εμβέλειας <%d-%d>"
 msgid "is not a valid MAC address"
 msgstr "δεν είναι μια έγκυρη διεύθυνση MAC"
 
-#: ../libnm-util/nm-setting-cdma.c:170
-msgid "property is empty'"
-msgstr "η ιδιότητα είναι κενή"
-
 #: ../libnm-util/nm-setting-connection.c:812
 #, c-format
 msgid "'%s' doesn't match the virtual interface name '%s'"
@@ -6709,8 +6705,8 @@ msgstr "Σύστημα"
 
 #: ../test/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
-msgstr "\rΓίνεται σύνδεση"
+msgid "Connecting"
+msgstr "Γίνεται σύνδεση"
 
 #: ../test/nm-online.c:148
 #| msgid "Time to wait for a connection, in seconds (default is 30)"
@@ -7405,7 +7401,7 @@ msgid "Activation failed"
 msgstr "Αποτυχία ενεργοποίησης"
 
 #: ../tui/nmtui-connect.c:142
-#| msgid "\rConnecting"
+#| msgid "Connecting"
 msgid "Connecting..."
 msgstr "Γίνεται σύνδεση..."
 
@@ -7458,7 +7454,7 @@ msgstr ""
 "VPN."
 
 #: ../tui/nmtui-edit.c:386 ../tui/nmtui-edit.c:402
-#| msgid "\rConnecting"
+#| msgid "Connecting"
 msgid "New Connection"
 msgstr "Νέα σύνδεση"
 

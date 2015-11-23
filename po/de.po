@@ -5259,8 +5259,8 @@ msgstr ""
 
 #: ../clients/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
-msgstr "\rWird verbunden"
+msgid "Connecting"
+msgstr "Wird verbunden"
 
 #: ../clients/nm-online.c:149
 msgid ""
@@ -6692,10 +6692,6 @@ msgstr "Wert »%d« ist außerhalb des Bereichs <%d-%d>"
 #: ../libnm-util/nm-setting-wired.c:635 ../libnm-util/nm-setting-wired.c:693
 msgid "is not a valid MAC address"
 msgstr "ist keine gültige MAC-Adresse"
-
-#: ../libnm-core/nm-setting-cdma.c:167 ../libnm-util/nm-setting-cdma.c:168
-msgid "property is empty'"
-msgstr "Eigenschaft ist leer"
 
 #: ../libnm-core/nm-setting-connection.c:844
 #: ../libnm-util/nm-setting-connection.c:861

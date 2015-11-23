@@ -286,6 +286,7 @@ LOG_DRIVER = @LOG_DRIVER@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -438,6 +439,7 @@ examplesdir = $(docdir)/examples
 examples_DATA = server.conf
 @WITH_UDEV_DIR_TRUE@udevrulesdir = $(UDEV_DIR)/rules.d
 @WITH_UDEV_DIR_TRUE@udevrules_DATA = \
+@WITH_UDEV_DIR_TRUE@	84-nm-drivers.rules \
 @WITH_UDEV_DIR_TRUE@	85-nm-unmanaged.rules
 
 edit = sed \
@@ -454,6 +456,7 @@ EXTRA_DIST = \
 	NetworkManager-wait-online-systemd-pre200.service.in \
 	NetworkManager-dispatcher.service.in \
 	org.freedesktop.NetworkManager.service.in \
+	84-nm-drivers.rules \
 	85-nm-unmanaged.rules \
 	server.conf.in
 

@@ -752,7 +752,7 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingIPConfig.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Boxed-Types.html">GBoxed</a>
+<pre class="screen">    GBoxed
     <span class="lineart">├──</span> NMIPAddress
     <span class="lineart">╰──</span> NMIPRoute
     GObject
@@ -2502,7 +2502,8 @@ nm_setting_ip_config_get_address (<em class="parameter"><code><a class="link" hr
 <div class="refsect3">
 <a name="id-1.4.17.11.54.5"></a><h4>Returns</h4>
 <p> the address at index <em class="parameter"><code>i</code></em>
-</p>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
 </div>
 <hr>
@@ -2712,7 +2713,8 @@ nm_setting_ip_config_get_route (<em class="parameter"><code><a class="link" href
 <div class="refsect3">
 <a name="id-1.4.17.11.61.5"></a><h4>Returns</h4>
 <p> the route at index <em class="parameter"><code>i</code></em>
-</p>
+. </p>
+<p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
 </div>
 <hr>

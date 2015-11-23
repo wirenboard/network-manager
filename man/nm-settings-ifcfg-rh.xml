@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
-<refentry id="nm-settings-ifcfg-rh"><refentryinfo><date>27 August 2015</date></refentryinfo><refmeta><refentrytitle>nm-settings-ifcfg-rh</refentrytitle><manvolnum>5</manvolnum><refmiscinfo class="source">NetworkManager</refmiscinfo><refmiscinfo class="manual">Configuration</refmiscinfo><refmiscinfo class="version">1.0.6</refmiscinfo></refmeta><refnamediv><refname>nm-settings-ifcfg-rh</refname><refpurpose>Description of <emphasis>ifcfg-rh</emphasis> settings plugin</refpurpose></refnamediv><refsect1><title>DESCRIPTION</title><para>
+<refentry id="nm-settings-ifcfg-rh"><refentryinfo><date>23 November 2015</date></refentryinfo><refmeta><refentrytitle>nm-settings-ifcfg-rh</refentrytitle><manvolnum>5</manvolnum><refmiscinfo class="source">NetworkManager</refmiscinfo><refmiscinfo class="manual">Configuration</refmiscinfo><refmiscinfo class="version">1.0.7</refmiscinfo></refmeta><refnamediv><refname>nm-settings-ifcfg-rh</refname><refpurpose>Description of <emphasis>ifcfg-rh</emphasis> settings plugin</refpurpose></refnamediv><refsect1><title>DESCRIPTION</title><para>
           NetworkManager is based on the concept of connection profiles that contain
           network configuration (see <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry> for details). The profiles can be
           stored in various formats. NetworkManager uses plugins for reading and writing
@@ -8,13 +8,13 @@
         </para><para>
           The <emphasis>ifcfg-rh</emphasis> plugin is used on the Fedora and Red Hat
           Enterprise Linux distributions to read/write configuration from/to
-          the standard <filename>/etc/sysconfig/network-scripts/ifcfg-*</filename> files.
+          the traditional <filename>/etc/sysconfig/network-scripts/ifcfg-*</filename> files.
           Each NetworkManager connection maps to one <filename>ifcfg-*</filename> file, with
           possible usage of <filename>keys-*</filename> for passwords, <filename>route-*</filename>
           for static IPv4 routes and <filename>route6-*</filename> for static IPv6 routes.
           The plugin currently supports reading and writing Ethernet, Wi-Fi, InfiniBand,
           VLAN, Bond, Bridge, and Team connections. Unsupported connection types (such as
-          WWAN, PPPoE, VPN, or ADSL are handled by <emphasis>keyfile</emphasis> plugin
+          WWAN, PPPoE, VPN, or ADSL) are handled by <emphasis>keyfile</emphasis> plugin
           (<citerefentry><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
           The main reason for using <emphasis>ifcfg-rh</emphasis> plugin is the compatibility
           with legacy configurations for <emphasis>ifup</emphasis> and <emphasis>ifdown</emphasis>
@@ -290,9 +290,9 @@ Example: </emphasis>IPV6_PRIVACY=rfc3041 IPV6_PRIVACY_PREFER_PUBLIC_IP=yes<empha
 
 Allowed values: </emphasis>IPV6_PRIVACY: no, yes (rfc3041 or rfc4941); IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no</entry></row></tbody></tgroup></table><table><title>team-port setting</title><tgroup cols="4"><thead><row><entry>Property</entry><entry>Ifcfg-rh Variable</entry><entry>Default</entry><entry>Description</entry></row></thead><tbody><row><entry align="left">config</entry><entry align="left">TEAM_PORT_CONFIG</entry><entry align="left"/><entry align="left">Team port configuration in JSON. See man teamd.conf for details.</entry></row></tbody></tgroup></table><table><title>team setting</title><tgroup cols="4"><thead><row><entry>Property</entry><entry>Ifcfg-rh Variable</entry><entry>Default</entry><entry>Description</entry></row></thead><tbody><row><entry align="left">config</entry><entry align="left">TEAM_CONFIG</entry><entry align="left"/><entry align="left">Team configuration in JSON. See man teamd.conf for details.</entry></row></tbody></tgroup></table><table><title>vlan setting</title><tgroup cols="4"><thead><row><entry>Property</entry><entry>Ifcfg-rh Variable</entry><entry>Default</entry><entry>Description</entry></row></thead><tbody><row><entry align="left">parent</entry><entry align="left">DEVICE or PHYSDEV</entry><entry align="left"/><entry align="left">Parent interface of the VLAN.</entry></row><row><entry align="left">id</entry><entry align="left">VLAN_ID or DEVICE</entry><entry align="left"/><entry align="left">VLAN identifier.</entry></row><row><entry align="left">flags</entry><entry align="left">VLAN_FLAGS, REORDER_HDR</entry><entry align="left"/><entry align="left">VLAN flags.<emphasis role="bold">
 
-Allowed values: </emphasis>"GVRP", "LOOSE_BINDING" for VLAN_FLAGS; 0 or 1 for REORDER_HDR</entry></row><row><entry align="left">ingress-property-map</entry><entry align="left">VLAN_INGRESS_PRIORITY_MAP</entry><entry align="left"/><entry align="left">Ingress priority mapping.<emphasis role="bold">
+Allowed values: </emphasis>"GVRP", "LOOSE_BINDING" for VLAN_FLAGS; 0 or 1 for REORDER_HDR</entry></row><row><entry align="left">ingress-priority-map</entry><entry align="left">VLAN_INGRESS_PRIORITY_MAP</entry><entry align="left"/><entry align="left">Ingress priority mapping.<emphasis role="bold">
 
-Example: </emphasis>VLAN_INGRESS_PRIORITY_MAP=4:2,3:5</entry></row><row><entry align="left">egress-property-map</entry><entry align="left">VLAN_EGRESS_PRIORITY_MAP</entry><entry align="left"/><entry align="left">Egress priority mapping.<emphasis role="bold">
+Example: </emphasis>VLAN_INGRESS_PRIORITY_MAP=4:2,3:5</entry></row><row><entry align="left">egress-priority-map</entry><entry align="left">VLAN_EGRESS_PRIORITY_MAP</entry><entry align="left"/><entry align="left">Egress priority mapping.<emphasis role="bold">
 
 Example: </emphasis>VLAN_EGRESS_PRIORITY_MAP=5:4,4:1,3:7</entry></row><row><entry align="left">interface-name</entry><entry align="left">PHYSDEV and VLAN_ID, or DEVICE</entry><entry align="left"/><entry align="left">VLAN interface name. If all variables are set, parent device from PHYSDEV takes precedence over DEVICE, but VLAN id from DEVICE takes precedence over VLAN_ID.<emphasis role="bold">
 

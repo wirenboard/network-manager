@@ -6016,8 +6016,8 @@ msgstr "'%s'ஐ இணைப்பதற்கு ஒரு கடவுச்�
 
 #: ../clients/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
-msgstr "\rஇணைக்கிறது"
+msgid "Connecting"
+msgstr "இணைக்கிறது"
 
 #: ../clients/nm-online.c:149
 msgid ""
@@ -7456,10 +7456,6 @@ msgstr "மதிப்பு '%d' ஆனது வரம்பிற்கு �
 #: ../libnm-util/nm-setting-wired.c:637 ../libnm-util/nm-setting-wired.c:695
 msgid "is not a valid MAC address"
 msgstr "என்பது செல்லுபடியான MAC முகவரியல்ல"
-
-#: ../libnm-core/nm-setting-cdma.c:149 ../libnm-util/nm-setting-cdma.c:170
-msgid "property is empty'"
-msgstr "பண்பு காலியாக உள்ளது'"
 
 #: ../libnm-core/nm-setting-connection.c:747
 #, c-format

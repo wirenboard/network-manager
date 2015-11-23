@@ -10,11 +10,13 @@ AM_CPPFLAGS = \
 	-I${top_srcdir}/src/platform \
 	-I${top_srcdir}/src/devices/wwan \
 	-I${top_srcdir}/include \
+	-I$(top_builddir)/include \
 	-I${top_builddir}/libnm-core \
 	-I${top_srcdir}/libnm-core \
 	-DG_LOG_DOMAIN=\""NetworkManager-bluetooth"\" \
 	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
+	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS)
 
 GLIB_GENERATED = nm-bt-enum-types.h nm-bt-enum-types.c

@@ -1028,7 +1028,7 @@ _set_config_data (NMConfig *self, NMConfigData *new_data, int signal)
 	if (new_data) {
 		nm_log_info (LOGD_CORE, "config: update %s (%s)", nm_config_data_get_config_description (new_data),
 		             (log_str = nm_config_change_flags_to_string (changes)));
-		nm_config_data_log (new_data, "CONFIG: ");
+		nm_config_data_log (new_data, "CONFIG: ", "  ", NULL);
 		priv->config_data = new_data;
 	} else if (had_new_data)
 		nm_log_info (LOGD_CORE, "config: signal %s (no changes from disk)", (log_str = nm_config_change_flags_to_string (changes)));
@@ -1212,9 +1212,19 @@ nm_config_class_init (NMConfigClass *config_class)
 	    g_signal_new (NM_CONFIG_SIGNAL_CONFIG_CHANGED,
 	                  G_OBJECT_CLASS_TYPE (object_class),
 	                  G_SIGNAL_RUN_FIRST,
-	                  G_STRUCT_OFFSET (NMConfigClass, config_changed),
+	                  0,
 	                  NULL, NULL, NULL,
-	                  G_TYPE_NONE, 3, NM_TYPE_CONFIG_DATA, NM_TYPE_CONFIG_CHANGE_FLAGS, NM_TYPE_CONFIG_DATA);
+	                  G_TYPE_NONE,
+	                  3,
+	                  NM_TYPE_CONFIG_DATA,
+	                  /* Use plain guint type for changes argument. This avoids
+	                   * glib/ffi bug https://bugzilla.redhat.com/show_bug.cgi?id=1260577 */
+	                  /* NM_TYPE_CONFIG_CHANGE_FLAGS, */
+	                  G_TYPE_UINT,
+	                  NM_TYPE_CONFIG_DATA);
+
+	G_STATIC_ASSERT_EXPR (sizeof (guint) == sizeof (NMConfigChangeFlags));
+	G_STATIC_ASSERT_EXPR (((gint64) ((NMConfigChangeFlags) -1)) > ((gint64) 0));
 }
 
 static void

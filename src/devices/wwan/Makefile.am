@@ -9,12 +9,14 @@ AM_CPPFLAGS = \
 	-I${top_srcdir}/src/settings \
 	-I${top_srcdir}/src/platform \
 	-I${top_srcdir}/include \
-	-I${top_builddir}/libnm-core \
+	-I$(top_builddir)/include \
 	-I${top_srcdir}/libnm-core \
+	-I${top_builddir}/libnm-core \
 	-DG_LOG_DOMAIN=\""NetworkManager-wwan"\" \
 	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(DBUS_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(MM_GLIB_CFLAGS)
 
 BUILT_SOURCES = $(null)

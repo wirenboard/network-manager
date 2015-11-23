@@ -78,9 +78,9 @@ dbus_glib_marshal_nm_ppp_manager_BOOLEAN__UINT_POINTER (GClosure     *closure,
                                                           guint        arg_1,
                                                           gpointer     arg_2,
                                                           gpointer     data2);
-  register GMarshalFunc_BOOLEAN__UINT_POINTER callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
+  GMarshalFunc_BOOLEAN__UINT_POINTER callback;
+  GCClosure *cc = (GCClosure*) closure;
+  gpointer data1, data2;
   gboolean v_return;
 
   g_return_if_fail (return_value != NULL);
@@ -125,9 +125,9 @@ dbus_glib_marshal_nm_ppp_manager_BOOLEAN__BOXED_POINTER (GClosure     *closure,
                                                            gpointer     arg_1,
                                                            gpointer     arg_2,
                                                            gpointer     data2);
-  register GMarshalFunc_BOOLEAN__BOXED_POINTER callback;
-  register GCClosure *cc = (GCClosure*) closure;
-  register gpointer data1, data2;
+  GMarshalFunc_BOOLEAN__BOXED_POINTER callback;
+  GCClosure *cc = (GCClosure*) closure;
+  gpointer data1, data2;
   gboolean v_return;
 
   g_return_if_fail (return_value != NULL);

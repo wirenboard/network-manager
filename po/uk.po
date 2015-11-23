@@ -5986,8 +5986,8 @@ msgstr "Для встановлення з’єднання з «%s» слід �
 
 #: ../clients/nm-online.c:96
 #, c-format
-msgid "\rConnecting"
-msgstr "\rВстановлюється з’єднання"
+msgid "Connecting"
+msgstr "Встановлюється з’єднання"
 
 #: ../clients/nm-online.c:149
 msgid ""
@@ -7439,10 +7439,6 @@ msgstr "значення «%d» лежить поза діапазоном <%d-%
 #: ../libnm-util/nm-setting-wired.c:637 ../libnm-util/nm-setting-wired.c:695
 msgid "is not a valid MAC address"
 msgstr "не є коректною MAC-адресою"
-
-#: ../libnm-core/nm-setting-cdma.c:149 ../libnm-util/nm-setting-cdma.c:170
-msgid "property is empty'"
-msgstr "властивість є порожньою"
 
 #: ../libnm-core/nm-setting-connection.c:747
 #, c-format

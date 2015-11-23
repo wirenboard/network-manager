@@ -565,7 +565,7 @@ priority_strv_to_maplist (NMVlanPriorityMap map, char **strv)
 	GSList *list = NULL;
 	int i;
 
-	for (i = 0; strv[i]; i++) {
+	for (i = 0; strv && strv[i]; i++) {
 		PriorityMap *item;
 
 		item = priority_map_new_from_str (map, strv[i]);
@@ -749,7 +749,7 @@ nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 		(object_class, PROP_FLAGS,
 		 g_param_spec_flags (NM_SETTING_VLAN_FLAGS, "", "",
 		                     NM_TYPE_VLAN_FLAGS,
-		                     0,
+		                     NM_VLAN_FLAG_REORDER_HEADERS,
 		                     G_PARAM_READWRITE |
 		                     G_PARAM_CONSTRUCT |
 		                     NM_SETTING_PARAM_INFERRABLE |
@@ -763,7 +763,7 @@ nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 	 * "from" and "to" are unsigned integers, ie "7:3".
 	 **/
 	/* ---ifcfg-rh---
-	 * property: ingress-property-map
+	 * property: ingress-priority-map
 	 * variable: VLAN_INGRESS_PRIORITY_MAP
 	 * description: Ingress priority mapping.
 	 * example: VLAN_INGRESS_PRIORITY_MAP=4:2,3:5
@@ -785,7 +785,7 @@ nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 	 * both "from" and "to" are unsigned integers, ie "7:3".
 	 **/
 	/* ---ifcfg-rh---
-	 * property: egress-property-map
+	 * property: egress-priority-map
 	 * variable: VLAN_EGRESS_PRIORITY_MAP
 	 * description: Egress priority mapping.
 	 * example: VLAN_EGRESS_PRIORITY_MAP=5:4,4:1,3:7

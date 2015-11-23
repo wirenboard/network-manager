@@ -5,7 +5,7 @@
 
 #include "nm-core-enum-types.h"
 
-#include "nm-version.h" 
+#include "nm-version-macros.h" 
 #include "nm-connection.h" 
 #include "nm-core-types.h" 
 #include "nm-dbus-interface.h" 
@@ -40,6 +40,7 @@
 #include "nm-setting.h" 
 #include "nm-simple-connection.h" 
 #include "nm-utils.h" 
+#include "nm-version.h" 
 #include "nm-vpn-dbus-interface.h"
 
 GType
@@ -868,13 +869,14 @@ nm_setting_wired_wake_on_lan_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GFlagsValue values[] = {
-        { NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT, "NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT", "default" },
         { NM_SETTING_WIRED_WAKE_ON_LAN_PHY, "NM_SETTING_WIRED_WAKE_ON_LAN_PHY", "phy" },
         { NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST, "NM_SETTING_WIRED_WAKE_ON_LAN_UNICAST", "unicast" },
         { NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST, "NM_SETTING_WIRED_WAKE_ON_LAN_MULTICAST", "multicast" },
         { NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST, "NM_SETTING_WIRED_WAKE_ON_LAN_BROADCAST", "broadcast" },
         { NM_SETTING_WIRED_WAKE_ON_LAN_ARP, "NM_SETTING_WIRED_WAKE_ON_LAN_ARP", "arp" },
         { NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC, "NM_SETTING_WIRED_WAKE_ON_LAN_MAGIC", "magic" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT, "NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT", "default" },
+        { NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE, "NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE", "ignore" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

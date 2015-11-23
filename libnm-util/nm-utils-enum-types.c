@@ -5,6 +5,7 @@
 
 #include "nm-utils-enum-types.h"
 
+#include "nm-version-macros.h" 
 #include "nm-connection.h" 
 #include "nm-setting.h" 
 #include "nm-setting-8021x.h" 
@@ -33,7 +34,8 @@
 #include "nm-setting-wireless.h" 
 #include "nm-setting-wireless-security.h" 
 #include "nm-setting-vpn.h" 
-#include "nm-utils.h"
+#include "nm-utils.h" 
+#include "nm-version.h"
 
 GType
 nm_connection_error_get_type (void)

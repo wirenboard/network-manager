@@ -1,5 +1,8 @@
+SUBDIRS=certs
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
+	-I$(top_builddir)/include \
 	-I$(top_srcdir)/libnm-core \
 	-I$(top_builddir)/libnm-core \
 	-I$(top_srcdir)/src \
@@ -7,6 +10,7 @@ AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
 	-DNETWORKMANAGER_COMPILATION \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
+	-DTEST_CERT_DIR=\"$(srcdir)/certs/\" \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS)
 

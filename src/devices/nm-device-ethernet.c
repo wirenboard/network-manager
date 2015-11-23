@@ -560,15 +560,18 @@ build_supplicant_config (NMDeviceEthernet *self)
 	NMSupplicantConfig *config = NULL;
 	NMSetting8021x *security;
 	NMConnection *connection;
+	guint32 mtu;
 
 	connection = nm_device_get_connection (NM_DEVICE (self));
 	g_assert (connection);
 	con_uuid = nm_connection_get_uuid (connection);
+	mtu = nm_platform_link_get_mtu (NM_PLATFORM_GET,
+	                                nm_device_get_ifindex (NM_DEVICE (self)));
 
 	config = nm_supplicant_config_new ();
 
 	security = nm_connection_get_setting_802_1x (connection);
-	if (!nm_supplicant_config_add_setting_8021x (config, security, con_uuid, TRUE)) {
+	if (!nm_supplicant_config_add_setting_8021x (config, security, con_uuid, mtu, TRUE)) {
 		_LOGW (LOGD_DEVICE, "Couldn't add 802.1X security setting to supplicant config.");
 		g_object_unref (config);
 		config = NULL;
@@ -1195,15 +1198,22 @@ wake_on_lan_enable (NMDevice *device)
 	value = nm_config_data_get_connection_default (NM_CONFIG_GET_DATA,
 	                                               "ethernet.wake-on-lan",
 	                                               device);
+
 	if (value) {
 		wol = _nm_utils_ascii_str_to_int64 (value, 10,
 		                                    NM_SETTING_WIRED_WAKE_ON_LAN_NONE,
-		                                    NM_SETTING_WIRED_WAKE_ON_LAN_ALL,
+		                                    G_MAXINT32,
 		                                    NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT);
+
+		if (   NM_FLAGS_ANY (wol, NM_SETTING_WIRED_WAKE_ON_LAN_EXCLUSIVE_FLAGS)
+		    && !nm_utils_is_power_of_two (wol)) {
+			nm_log_dbg (LOGD_ETHER, "invalid default value %u for wake-on-lan", (guint) wol);
+			wol = NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT;
+		}
 		if (wol != NM_SETTING_WIRED_WAKE_ON_LAN_DEFAULT)
 			goto found;
 	}
-	wol = NM_SETTING_WIRED_WAKE_ON_LAN_NONE;
+	wol = NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE;
 found:
 	return nmp_utils_ethtool_set_wake_on_lan (nm_device_get_iface (device), wol, password);
 }
@@ -1474,6 +1484,7 @@ new_default_connection (NMDevice *self)
 	              NM_SETTING_CONNECTION_ID, defname,
 	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRED_SETTING_NAME,
 	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY, NM_SETTING_CONNECTION_AUTOCONNECT_PRIORITY_MIN,
 	              NM_SETTING_CONNECTION_UUID, uuid,
 	              NM_SETTING_CONNECTION_TIMESTAMP, (guint64) time (NULL),
 	              NULL);
