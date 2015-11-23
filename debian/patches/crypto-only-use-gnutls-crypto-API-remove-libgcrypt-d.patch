@@ -18,7 +18,7 @@ https://bugzilla.gnome.org/show_bug.cgi?id=730294
  5 files changed, 112 insertions(+), 162 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index bb1ff6c..d46f1b8 100644
+index 49fdc2d..aa83a7c 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -566,18 +566,11 @@ if test x"$ac_crypto" = xnss; then
@@ -46,10 +46,10 @@ index bb1ff6c..d46f1b8 100644
    AC_MSG_ERROR([Please choose either 'nss' or 'gnutls' for certificate and crypto operations])
  fi
 diff --git a/libnm-core/Makefile.am b/libnm-core/Makefile.am
-index 8fab84b..73c5eac 100644
+index d76a48d..5bbd012 100644
 --- a/libnm-core/Makefile.am
 +++ b/libnm-core/Makefile.am
-@@ -33,9 +33,9 @@ libnm_core_la_LIBADD =			\
+@@ -34,9 +34,9 @@ libnm_core_la_LIBADD =			\
  	$(UUID_LIBS)
  
  if WITH_GNUTLS
@@ -270,10 +270,10 @@ index 96dddb9..01291f0 100644
  	return TRUE;
  }
 diff --git a/libnm-util/Makefile.am b/libnm-util/Makefile.am
-index fbf8c0b..f508494 100644
+index f83780d..cc0e672 100644
 --- a/libnm-util/Makefile.am
 +++ b/libnm-util/Makefile.am
-@@ -13,7 +13,7 @@ AM_CPPFLAGS = \
+@@ -14,7 +14,7 @@ AM_CPPFLAGS = \
  	$(UUID_CFLAGS)
  
  if WITH_GNUTLS
@@ -282,7 +282,7 @@ index fbf8c0b..f508494 100644
  endif
  
  if WITH_NSS
-@@ -119,7 +119,7 @@ libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
+@@ -121,7 +121,7 @@ libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
  
  if WITH_GNUTLS
  libnm_util_la_SOURCES += crypto_gnutls.c
@@ -291,7 +291,7 @@ index fbf8c0b..f508494 100644
  endif
  
  if WITH_NSS
-@@ -143,7 +143,7 @@ libtest_crypto_la_LIBADD = \
+@@ -145,7 +145,7 @@ libtest_crypto_la_LIBADD = \
  
  if WITH_GNUTLS
  libtest_crypto_la_SOURCES += crypto_gnutls.c

@@ -10,7 +10,7 @@ to be autostarted by a client request.
  2 files changed, 8 deletions(-)
 
 diff --git a/data/Makefile.am b/data/Makefile.am
-index 64ff337..3f628be 100644
+index ce059fc..4ab4106 100644
 --- a/data/Makefile.am
 +++ b/data/Makefile.am
 @@ -19,13 +19,6 @@ endif
@@ -28,10 +28,10 @@ index 64ff337..3f628be 100644
  	install -d $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
  	ln -sf $(systemdsystemunitdir)/NetworkManager-wait-online.service $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index 1883b40..5282e5b 100644
+index 9312122..aae09ba 100644
 --- a/data/NetworkManager.service.in
 +++ b/data/NetworkManager.service.in
-@@ -11,6 +11,5 @@ KillMode=process
+@@ -12,6 +12,5 @@ KillMode=process
  
  [Install]
  WantedBy=multi-user.target

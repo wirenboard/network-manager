@@ -9,10 +9,10 @@ Make /usr/bin/nmtui-* symbolic links to /usr/bin/nmtui.
  2 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/clients/tui/Makefile.am b/clients/tui/Makefile.am
-index ad9335d..09f2700 100644
+index f6d93be..5108cc4 100644
 --- a/clients/tui/Makefile.am
 +++ b/clients/tui/Makefile.am
-@@ -24,7 +24,7 @@ links = nmtui-edit nmtui-connect nmtui-hostname
+@@ -25,7 +25,7 @@ links = nmtui-edit nmtui-connect nmtui-hostname
  
  install-exec-hook:
  	for link in $(links); do \
@@ -22,7 +22,7 @@ index ad9335d..09f2700 100644
  
  uninstall-hook:
 diff --git a/configure.ac b/configure.ac
-index cf4ec63..bb1ff6c 100644
+index 847ddc3..49fdc2d 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -33,6 +33,8 @@ AM_PROG_CC_C_O
