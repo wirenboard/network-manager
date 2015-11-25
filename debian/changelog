@@ -5,6 +5,8 @@ network-manager (1.0.8-1) UNRELEASED; urgency=medium
       (Closes: #794237)
   * Rebase patches.
   * Install new nm-versions-macros.h header file.
+  * Check errors of polkit_unix_session_new_for_process_sync(). Patch
+    cherry-picked from upstream Git.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 24 Nov 2015 00:06:51 +0100
 
