@@ -1,8 +1,10 @@
 From: Michael Biebl <biebl@debian.org>
 Date: Thu, 10 Jul 2014 03:33:18 +0200
-Subject: Use symlinks for nmtui
+Subject: build: Use symlinks for nmtui
 
 Make /usr/bin/nmtui-* symbolic links to /usr/bin/nmtui.
+
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=759824
 ---
  clients/tui/Makefile.am | 2 +-
  configure.ac            | 2 ++
