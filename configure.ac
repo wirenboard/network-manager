@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [0])
-m4_define([nm_micro_version], [8])
+m4_define([nm_micro_version], [10])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -796,7 +796,7 @@ fi
 AC_DEFINE_UNQUOTED(KERNEL_FIRMWARE_DIR, "$KERNEL_FIRMWARE_DIR", [Define to path of the kernel firmware directory])
 AC_SUBST(KERNEL_FIRMWARE_DIR)
 
-PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.26], [have_libsoup=yes],[have_libsoup=no])
+PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4 >= 2.40], [have_libsoup=yes],[have_libsoup=no])
 AC_ARG_WITH(libsoup, AS_HELP_STRING([--with-libsoup=yes|no], [Link against libsoup]), [], [with_libsoup=${have_libsoup}])
 if test "$with_libsoup" != "no"; then
 	if test "$have_libsoup" != "yes"; then
@@ -808,6 +808,7 @@ else
 	AC_DEFINE(WITH_LIBSOUP, 0, [Define if you have libsoup])
 fi
 AM_CONDITIONAL(WITH_LIBSOUP, test "$with_libsoup" != "no")
+LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS -DSOUP_VERSION_MIN_REQUIRED=SOUP_VERSION_2_40 -DSOUP_VERSION_MAX_ALLOWED=SOUP_VERSION_2_40"
 
 AC_ARG_ENABLE(concheck, AS_HELP_STRING([--enable-concheck], [enable connectivity checking support]),
                      [enable_concheck=${enableval}], [enable_concheck=${with_libsoup}])
@@ -891,7 +892,7 @@ else
 	fi
 fi
 AS_IF([test "$with_valgrind" != "no"],
-	AC_SUBST(VALGRIND_RULES, 'LOG_COMPILER = "$(top_srcdir)/tools/run-test-valgrind.sh" "$(LIBTOOL)" "$(with_valgrind)" '"$with_valgrind_suppressions"),
+	AC_SUBST(VALGRIND_RULES, 'LOG_COMPILER = "$(top_srcdir)/tools/run-test-valgrind.sh" --called-from-make "$(LIBTOOL)" "$(with_valgrind)" '"$with_valgrind_suppressions"),
 	AC_SUBST(VALGRIND_RULES, []))
 AM_CONDITIONAL(WITH_VALGRIND, test "${with_valgrind}" != "no")
 

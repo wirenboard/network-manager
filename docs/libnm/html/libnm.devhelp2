@@ -1710,7 +1710,6 @@
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-4:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0_6" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-6:CAPS"/>
-    <keyword type="macro" name="NM_AVAILABLE_IN_1_0_8" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0-8:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>

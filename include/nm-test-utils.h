@@ -69,6 +69,8 @@
  *    If you set the level to DEBUG or TRACE, it also sets G_MESSAGES_DEBUG=all (unless
  *    in assert-logging mode and unless G_MESSAGES_DEBUG is already defined).
  *
+ * "TRACE", this is shorthand for "log-level=TRACE".
+ *
  * "sudo-cmd=PATH": when running root tests as normal user, the test will execute
  *   itself by invoking sudo at PATH.
  *   For example
@@ -79,6 +81,10 @@
  *     - specifying the value in NMTST_DEBUG has highest priority
  *     - respect g_test_quick(), if the command line contains '-mslow', '-mquick', '-mthorough'.
  *     - use compile time default
+ *
+ * "p=PATH"|"s=PATH": passes the path to g_test_init() as "-p" and "-s", respectively.
+ *   Unfortunately, these options conflict with "--tap" which our makefile passes to the
+ *   tests, thus it's only useful outside of `make check`.
  *
  *******************************************************************************/
 
@@ -123,6 +129,28 @@ nmtst_assert_error (GError *error,
 	}
 }
 
+#define NMTST_WAIT(max_wait_ms, wait) \
+	({ \
+		gboolean _not_expired = TRUE; \
+		gint64 _nmtst_end, _nmtst_max_wait_us = (max_wait_ms) * 1000L; \
+		\
+		_nmtst_end = g_get_monotonic_time () + _nmtst_max_wait_us; \
+		while (TRUE) { \
+			{ wait }; \
+			if (g_get_monotonic_time () > _nmtst_end) { \
+				_not_expired = FALSE; \
+				break; \
+			} \
+		} \
+		_not_expired; \
+	})
+
+#define NMTST_WAIT_ASSERT(max_wait_ms, wait) \
+	G_STMT_START { \
+		if (!(NMTST_WAIT (max_wait_ms, wait))) \
+			g_assert_not_reached (); \
+	} G_STMT_END
+
 inline static void
 _nmtst_assert_success (gboolean success, GError *error, const char *file, int line)
 {
@@ -142,6 +170,7 @@ struct __nmtst_internal
 	gboolean assert_logging;
 	gboolean no_expect_message;
 	gboolean test_quick;
+	gboolean test_tap_log;
 	char *sudo_cmd;
 	char **orig_argv;
 };
@@ -256,6 +285,8 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 	gboolean test_quick = FALSE;
 	gboolean test_quick_set = FALSE;
 	gboolean test_quick_argv = FALSE;
+	gs_unref_ptrarray GPtrArray *p_tests = NULL;
+	gs_unref_ptrarray GPtrArray *s_tests = NULL;
 
 	if (!out_set_logging)
 		out_set_logging = &_out_set_logging;
@@ -274,17 +305,6 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 
 	if (argc)
 		__nmtst_internal.orig_argv = g_strdupv (*argv);
-
-	if (argc && !g_test_initialized ()) {
-		/* g_test_init() is a variadic function, so we cannot pass it
-		 * (variadic) arguments. If you need to pass additional parameters,
-		 * call nmtst_init() with argc==NULL and call g_test_init() yourself. */
-
-		/* g_test_init() sets g_log_set_always_fatal() for G_LOG_LEVEL_WARNING
-		 * and G_LOG_LEVEL_CRITICAL. So, beware that the test will fail if you
-		 * have any WARN or ERR log messages -- unless you g_test_expect_message(). */
-		g_test_init (argc, argv, NULL);
-	}
 
 	__nmtst_internal.assert_logging = !!assert_logging;
 
@@ -317,6 +337,9 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 			} else if (!g_ascii_strncasecmp (debug, "log-level=", strlen ("log-level="))) {
 				g_free (c_log_level);
 				log_level = c_log_level = g_strdup (&debug[strlen ("log-level=")]);
+			} else if (!g_ascii_strcasecmp (debug, "TRACE")) {
+				g_free (c_log_level);
+				log_level = c_log_level = g_strdup (debug);
 			} else if (!g_ascii_strncasecmp (debug, "log-domains=", strlen ("log-domains="))) {
 				g_free (c_log_domains);
 				log_domains = c_log_domains = g_strdup (&debug[strlen ("log-domains=")]);
@@ -325,6 +348,14 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 				sudo_cmd = g_strdup (&debug[strlen ("sudo-cmd=")]);
 			} else if (!g_ascii_strcasecmp (debug, "no-expect-message")) {
 				no_expect_message = TRUE;
+			} else if (!g_ascii_strncasecmp (debug, "p=", strlen ("p="))) {
+				if (!p_tests)
+					p_tests = g_ptr_array_new_with_free_func (g_free);
+				g_ptr_array_add (p_tests, g_strdup (&debug[strlen ("p=")]));
+			} else if (!g_ascii_strncasecmp (debug, "s=", strlen ("s="))) {
+				if (!s_tests)
+					s_tests = g_ptr_array_new_with_free_func (g_free);
+				g_ptr_array_add (s_tests, g_strdup (&debug[strlen ("s=")]));
 			} else if (!g_ascii_strcasecmp (debug, "slow") || !g_ascii_strcasecmp (debug, "thorough")) {
 				test_quick = FALSE;
 				test_quick_set = TRUE;
@@ -358,6 +389,90 @@ __nmtst_init (int *argc, char ***argv, gboolean assert_logging, const char *log_
 			                                    || !strcmp (*(a+1), "slow")
 			                                    || !strcmp (*(a+1), "thorough"))))
 				test_quick_argv = TRUE;
+			else if (strcmp (*a, "--tap") == 0)
+				__nmtst_internal.test_tap_log = TRUE;
+		}
+	}
+
+	if (!argc || g_test_initialized ()) {
+		if (p_tests || s_tests) {
+			char *msg = g_strdup_printf (">>> nmtst: ignore -p and -s options for test which calls g_test_init() itself");
+
+			g_array_append_val (debug_messages, msg);
+		}
+	} else {
+		/* g_test_init() is a variadic function, so we cannot pass it
+		 * (variadic) arguments. If you need to pass additional parameters,
+		 * call nmtst_init() with argc==NULL and call g_test_init() yourself. */
+
+		/* g_test_init() sets g_log_set_always_fatal() for G_LOG_LEVEL_WARNING
+		 * and G_LOG_LEVEL_CRITICAL. So, beware that the test will fail if you
+		 * have any WARN or ERR log messages -- unless you g_test_expect_message(). */
+		GPtrArray *arg_array = g_ptr_array_new ();
+		gs_free char **arg_array_c = NULL;
+		int arg_array_n, j;
+		static char **s_tests_x, **p_tests_x;
+
+		if (*argc) {
+			for (i = 0; i < *argc; i++)
+				g_ptr_array_add (arg_array, (*argv)[i]);
+		} else
+			g_ptr_array_add (arg_array, "./test");
+
+		if (test_quick_set && !test_quick_argv)
+			g_ptr_array_add (arg_array, "-m=quick");
+
+		if (!__nmtst_internal.test_tap_log) {
+			for (i = 0; p_tests && i < p_tests->len; i++) {
+				g_ptr_array_add (arg_array, "-p");
+				g_ptr_array_add (arg_array, p_tests->pdata[i]);
+			}
+			for (i = 0; s_tests && i < s_tests->len; i++) {
+				g_ptr_array_add (arg_array, "-s");
+				g_ptr_array_add (arg_array, s_tests->pdata[i]);
+			}
+		} else if (p_tests || s_tests) {
+			char *msg = g_strdup_printf (">>> nmtst: ignore -p and -s options for tap-tests");
+
+			g_array_append_val (debug_messages, msg);
+		}
+
+		g_ptr_array_add (arg_array, NULL);
+
+		arg_array_n = arg_array->len - 1;
+		arg_array_c = (char **) g_ptr_array_free (arg_array, FALSE);
+
+		g_test_init (&arg_array_n, &arg_array_c, NULL);
+
+		if (*argc > 1) {
+			/* collaps argc/argv by removing the arguments detected
+			 * by g_test_init(). */
+			for (i = 1, j = 1; i < *argc; i++) {
+				if ((*argv)[i] == arg_array_c[j])
+					j++;
+				else
+					(*argv)[i] = NULL;
+			}
+			for (i = 1, j = 1; i < *argc; i++) {
+				if ((*argv)[i]) {
+					(*argv)[j++] = (*argv)[i];
+					if (i >= j)
+						(*argv)[i] = NULL;
+				}
+			}
+			*argc = j;
+		}
+
+		/* we must "leak" the test paths because they are not cloned by g_test_init(). */
+		if (!__nmtst_internal.test_tap_log) {
+			if (p_tests) {
+				p_tests_x = (char **) g_ptr_array_free (p_tests, FALSE);
+				p_tests = NULL;
+			}
+			if (s_tests) {
+				s_tests_x = (char **) g_ptr_array_free (s_tests, FALSE);
+				s_tests = NULL;
+			}
 		}
 	}
 

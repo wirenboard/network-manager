@@ -89,12 +89,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @REQUIRE_ROOT_TESTS_TRUE@am__append_1 = -DREQUIRE_ROOT_TESTS=1
-noinst_PROGRAMS = dump$(EXEEXT) monitor$(EXEEXT) platform$(EXEEXT) \
-	test-link-fake$(EXEEXT) test-link-linux$(EXEEXT) \
-	test-address-fake$(EXEEXT) test-address-linux$(EXEEXT) \
-	test-general$(EXEEXT) test-nmp-object$(EXEEXT) \
-	test-route-fake$(EXEEXT) test-route-linux$(EXEEXT) \
-	test-cleanup-fake$(EXEEXT) test-cleanup-linux$(EXEEXT)
+noinst_PROGRAMS = monitor$(EXEEXT) test-link-fake$(EXEEXT) \
+	test-link-linux$(EXEEXT) test-address-fake$(EXEEXT) \
+	test-address-linux$(EXEEXT) test-general$(EXEEXT) \
+	test-nmp-object$(EXEEXT) test-route-fake$(EXEEXT) \
+	test-route-linux$(EXEEXT) test-cleanup-fake$(EXEEXT) \
+	test-cleanup-linux$(EXEEXT)
 TESTS = test-address-fake$(EXEEXT) test-address-linux$(EXEEXT) \
 	test-cleanup-fake$(EXEEXT) test-cleanup-linux$(EXEEXT) \
 	test-general$(EXEEXT) test-link-fake$(EXEEXT) \
@@ -125,19 +125,13 @@ CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am__objects_1 = nm-platform.$(OBJEXT) nm-fake-platform.$(OBJEXT) \
 	nm-linux-platform.$(OBJEXT)
-am_dump_OBJECTS = dump.$(OBJEXT) $(am__objects_1)
-dump_OBJECTS = $(am_dump_OBJECTS)
-dump_DEPENDENCIES = $(PLATFORM_LDADD)
+am_monitor_OBJECTS = monitor.$(OBJEXT) $(am__objects_1)
+monitor_OBJECTS = $(am_monitor_OBJECTS)
+monitor_DEPENDENCIES = $(PLATFORM_LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_monitor_OBJECTS = monitor.$(OBJEXT) $(am__objects_1)
-monitor_OBJECTS = $(am_monitor_OBJECTS)
-monitor_DEPENDENCIES = $(PLATFORM_LDADD)
-am_platform_OBJECTS = platform.$(OBJEXT) $(am__objects_1)
-platform_OBJECTS = $(am_platform_OBJECTS)
-platform_DEPENDENCIES = $(PLATFORM_LDADD)
 am__objects_2 = test_address_fake-nm-platform.$(OBJEXT) \
 	test_address_fake-nm-fake-platform.$(OBJEXT) \
 	test_address_fake-nm-linux-platform.$(OBJEXT)
@@ -251,18 +245,18 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(dump_SOURCES) $(monitor_SOURCES) $(platform_SOURCES) \
-	$(test_address_fake_SOURCES) $(test_address_linux_SOURCES) \
-	$(test_cleanup_fake_SOURCES) $(test_cleanup_linux_SOURCES) \
-	$(test_general_SOURCES) $(test_link_fake_SOURCES) \
-	$(test_link_linux_SOURCES) $(test_nmp_object_SOURCES) \
-	$(test_route_fake_SOURCES) $(test_route_linux_SOURCES)
-DIST_SOURCES = $(dump_SOURCES) $(monitor_SOURCES) $(platform_SOURCES) \
-	$(test_address_fake_SOURCES) $(test_address_linux_SOURCES) \
-	$(test_cleanup_fake_SOURCES) $(test_cleanup_linux_SOURCES) \
-	$(test_general_SOURCES) $(test_link_fake_SOURCES) \
-	$(test_link_linux_SOURCES) $(test_nmp_object_SOURCES) \
-	$(test_route_fake_SOURCES) $(test_route_linux_SOURCES)
+SOURCES = $(monitor_SOURCES) $(test_address_fake_SOURCES) \
+	$(test_address_linux_SOURCES) $(test_cleanup_fake_SOURCES) \
+	$(test_cleanup_linux_SOURCES) $(test_general_SOURCES) \
+	$(test_link_fake_SOURCES) $(test_link_linux_SOURCES) \
+	$(test_nmp_object_SOURCES) $(test_route_fake_SOURCES) \
+	$(test_route_linux_SOURCES)
+DIST_SOURCES = $(monitor_SOURCES) $(test_address_fake_SOURCES) \
+	$(test_address_linux_SOURCES) $(test_cleanup_fake_SOURCES) \
+	$(test_cleanup_linux_SOURCES) $(test_general_SOURCES) \
+	$(test_link_fake_SOURCES) $(test_link_linux_SOURCES) \
+	$(test_nmp_object_SOURCES) $(test_route_fake_SOURCES) \
+	$(test_route_linux_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -779,10 +773,6 @@ PLATFORM_LDADD = \
 EXTRA_DIST = test-common.h
 monitor_SOURCES = monitor.c $(PLATFORM_SOURCES)
 monitor_LDADD = $(PLATFORM_LDADD)
-dump_SOURCES = dump.c $(PLATFORM_SOURCES)
-dump_LDADD = $(PLATFORM_LDADD)
-platform_SOURCES = platform.c $(PLATFORM_SOURCES)
-platform_LDADD = $(PLATFORM_LDADD)
 test_link_fake_SOURCES = test-link.c $(TEST_SOURCES)
 test_link_fake_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
@@ -894,17 +884,9 @@ clean-noinstPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-dump$(EXEEXT): $(dump_OBJECTS) $(dump_DEPENDENCIES) $(EXTRA_dump_DEPENDENCIES) 
-	@rm -f dump$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(dump_OBJECTS) $(dump_LDADD) $(LIBS)
-
 monitor$(EXEEXT): $(monitor_OBJECTS) $(monitor_DEPENDENCIES) $(EXTRA_monitor_DEPENDENCIES) 
 	@rm -f monitor$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(monitor_OBJECTS) $(monitor_LDADD) $(LIBS)
-
-platform$(EXEEXT): $(platform_OBJECTS) $(platform_DEPENDENCIES) $(EXTRA_platform_DEPENDENCIES) 
-	@rm -f platform$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(platform_OBJECTS) $(platform_LDADD) $(LIBS)
 
 test-address-fake$(EXEEXT): $(test_address_fake_OBJECTS) $(test_address_fake_DEPENDENCIES) $(EXTRA_test_address_fake_DEPENDENCIES) 
 	@rm -f test-address-fake$(EXEEXT)
@@ -952,12 +934,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/monitor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-fake-platform.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-linux-platform.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-platform.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/platform.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-general.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-nmp-object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_address_fake-nm-fake-platform.Po@am__quote@
