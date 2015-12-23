@@ -18,7 +18,7 @@ https://bugzilla.gnome.org/show_bug.cgi?id=730294
  5 files changed, 112 insertions(+), 162 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 49fdc2d..aa83a7c 100644
+index 3274fd9..8ca1278 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -566,18 +566,11 @@ if test x"$ac_crypto" = xnss; then

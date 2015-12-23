@@ -12,7 +12,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 120 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index cc52ea7..f81c269 100644
+index a1e4fb4..7f78984 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
 @@ -62,6 +62,8 @@
@@ -174,7 +174,7 @@ index cc52ea7..f81c269 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, manager);
  
-@@ -5156,6 +5266,16 @@ dispose (GObject *object)
+@@ -5160,6 +5270,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  

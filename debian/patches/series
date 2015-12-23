@@ -10,4 +10,3 @@ Don-t-make-NetworkManager-D-Bus-activatable.patch
 Don-t-block-network.target-on-NetworkManager-wait-on.patch
 Fix-iscsiadm-path.patch
 crypto-only-use-gnutls-crypto-API-remove-libgcrypt-d.patch
-clients-check-errors-of-polkit_unix_session_new_for_proce.patch

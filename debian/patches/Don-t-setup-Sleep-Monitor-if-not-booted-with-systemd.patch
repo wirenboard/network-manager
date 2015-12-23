@@ -18,7 +18,7 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 9c461ab..847ddc3 100644
+index 1ed6935..1e9c63d 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -384,8 +384,9 @@ fi
@@ -53,7 +53,7 @@ index e8279e7..ecde266 100644
  	$(LIBDL) \
  	$(LIBM)
 diff --git a/src/nm-sleep-monitor-systemd.c b/src/nm-sleep-monitor-systemd.c
-index c0bc65e..0c97335 100644
+index 44523a4..5ad0715 100644
 --- a/src/nm-sleep-monitor-systemd.c
 +++ b/src/nm-sleep-monitor-systemd.c
 @@ -25,6 +25,7 @@
