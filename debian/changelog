@@ -1,6 +1,7 @@
 network-manager (1.0.10-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Bump Build-Depend on libsoup2.4-dev to (>= 2.40) as per configure.ac.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 24 Dec 2015 00:23:58 +0100
 
