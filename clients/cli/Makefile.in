@@ -122,6 +122,8 @@ am__nmcli_SOURCES_DIST = agent.c agent.h common.c common.h \
 	utils.h polkit-agent.c polkit-agent.h \
 	$(srcdir)/../common/nm-secret-agent-simple.c \
 	$(srcdir)/../common/nm-secret-agent-simple.h \
+	$(srcdir)/../common/nm-vpn-helpers.c \
+	$(srcdir)/../common/nm-vpn-helpers.h \
 	$(srcdir)/../common/nm-polkit-listener.c \
 	$(srcdir)/../common/nm-polkit-listener.h
 @WITH_POLKIT_AGENT_TRUE@am__objects_1 = nm-polkit-listener.$(OBJEXT)
@@ -129,7 +131,7 @@ am_nmcli_OBJECTS = agent.$(OBJEXT) common.$(OBJEXT) \
 	connections.$(OBJEXT) devices.$(OBJEXT) general.$(OBJEXT) \
 	settings.$(OBJEXT) nmcli.$(OBJEXT) utils.$(OBJEXT) \
 	polkit-agent.$(OBJEXT) nm-secret-agent-simple.$(OBJEXT) \
-	$(am__objects_1)
+	nm-vpn-helpers.$(OBJEXT) $(am__objects_1)
 nmcli_OBJECTS = $(am_nmcli_OBJECTS)
 am__DEPENDENCIES_1 =
 @WITH_POLKIT_AGENT_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
@@ -472,14 +474,17 @@ AM_CPPFLAGS = -I${top_srcdir} -I${top_builddir} \
 	-I${top_srcdir}/clients/common $(GLIB_CFLAGS) \
 	-DG_LOG_DOMAIN=\""nmcli"\" \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
-	-DNMCLI_LOCALEDIR=\"$(datadir)/locale\" $(am__append_1)
+	-DNMCLI_LOCALEDIR=\"$(datadir)/locale\" \
+	-DNMCONFDIR=\"$(nmconfdir)\" -DNMLIBDIR=\"$(libdir)\" \
+	$(am__append_1)
 nmcli_SOURCES = agent.c agent.h common.c common.h connections.c \
 	connections.h devices.c devices.h general.c general.h \
 	settings.c settings.h nmcli.c nmcli.h utils.c utils.h \
 	polkit-agent.c polkit-agent.h \
 	$(srcdir)/../common/nm-secret-agent-simple.c \
-	$(srcdir)/../common/nm-secret-agent-simple.h $(NULL) \
-	$(am__append_2)
+	$(srcdir)/../common/nm-secret-agent-simple.h \
+	$(srcdir)/../common/nm-vpn-helpers.c \
+	$(srcdir)/../common/nm-vpn-helpers.h $(NULL) $(am__append_2)
 nmcli_LDADD = $(GLIB_LIBS) $(READLINE_LIBS) \
 	$(top_builddir)/libnm/libnm.la $(am__append_3)
 @BUILD_SETTING_DOCS_TRUE@BUILT_SOURCES = settings-docs.c
@@ -587,6 +592,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/general.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-polkit-listener.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-secret-agent-simple.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-vpn-helpers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmcli.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/polkit-agent.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/settings.Po@am__quote@
@@ -626,6 +632,20 @@ nm-secret-agent-simple.obj: $(srcdir)/../common/nm-secret-agent-simple.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/../common/nm-secret-agent-simple.c' object='nm-secret-agent-simple.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-secret-agent-simple.obj `if test -f '$(srcdir)/../common/nm-secret-agent-simple.c'; then $(CYGPATH_W) '$(srcdir)/../common/nm-secret-agent-simple.c'; else $(CYGPATH_W) '$(srcdir)/$(srcdir)/../common/nm-secret-agent-simple.c'; fi`
+
+nm-vpn-helpers.o: $(srcdir)/../common/nm-vpn-helpers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-vpn-helpers.o -MD -MP -MF $(DEPDIR)/nm-vpn-helpers.Tpo -c -o nm-vpn-helpers.o `test -f '$(srcdir)/../common/nm-vpn-helpers.c' || echo '$(srcdir)/'`$(srcdir)/../common/nm-vpn-helpers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-vpn-helpers.Tpo $(DEPDIR)/nm-vpn-helpers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/../common/nm-vpn-helpers.c' object='nm-vpn-helpers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-vpn-helpers.o `test -f '$(srcdir)/../common/nm-vpn-helpers.c' || echo '$(srcdir)/'`$(srcdir)/../common/nm-vpn-helpers.c
+
+nm-vpn-helpers.obj: $(srcdir)/../common/nm-vpn-helpers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-vpn-helpers.obj -MD -MP -MF $(DEPDIR)/nm-vpn-helpers.Tpo -c -o nm-vpn-helpers.obj `if test -f '$(srcdir)/../common/nm-vpn-helpers.c'; then $(CYGPATH_W) '$(srcdir)/../common/nm-vpn-helpers.c'; else $(CYGPATH_W) '$(srcdir)/$(srcdir)/../common/nm-vpn-helpers.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-vpn-helpers.Tpo $(DEPDIR)/nm-vpn-helpers.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/../common/nm-vpn-helpers.c' object='nm-vpn-helpers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-vpn-helpers.obj `if test -f '$(srcdir)/../common/nm-vpn-helpers.c'; then $(CYGPATH_W) '$(srcdir)/../common/nm-vpn-helpers.c'; else $(CYGPATH_W) '$(srcdir)/$(srcdir)/../common/nm-vpn-helpers.c'; fi`
 
 nm-polkit-listener.o: $(srcdir)/../common/nm-polkit-listener.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-polkit-listener.o -MD -MP -MF $(DEPDIR)/nm-polkit-listener.Tpo -c -o nm-polkit-listener.o `test -f '$(srcdir)/../common/nm-polkit-listener.c' || echo '$(srcdir)/'`$(srcdir)/../common/nm-polkit-listener.c
