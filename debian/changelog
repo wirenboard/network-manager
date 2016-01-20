@@ -6,6 +6,8 @@ network-manager (1.1.90-1) UNRELEASED; urgency=medium
   * Rebase patches.
   * Drop dependency on avahi-autoipd. Native IPv4 link-local addressing
     configuration based on systemd network library is now used instead.
+  * Restore export of nm_vpn_plugin_old_* symbols. Patch cherry-picked from
+    upstream Git.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 20 Jan 2016 16:28:12 +0100
 
