@@ -28,10 +28,10 @@ index ce059fc..4ab4106 100644
  	install -d $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
  	ln -sf $(systemdsystemunitdir)/NetworkManager-wait-online.service $(DESTDIR)$(systemdsystemunitdir)/network-online.target.wants
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index 9312122..aae09ba 100644
+index 10b3de9..90c0664 100644
 --- a/data/NetworkManager.service.in
 +++ b/data/NetworkManager.service.in
-@@ -12,6 +12,5 @@ KillMode=process
+@@ -15,6 +15,5 @@ ProtectHome=read-only
  
  [Install]
  WantedBy=multi-user.target

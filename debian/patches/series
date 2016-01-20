@@ -1,14 +1,9 @@
 Debian-specific-tweaks-for-NetworkManager-systemd-se.patch
 Force-online-state-with-unmanaged-devices.patch
 Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
-Use-symlinks-for-nmtui.patch
-Use-the-correct-path-when-calling-dnssec-trigger-scr.patch
 fix-arping-path.patch
 Check-at-runtime-whether-to-start-ModemManager.patch
 build-install-nm-settings-ifcfg-rh.5-man-page-condit.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Don-t-block-network.target-on-NetworkManager-wait-on.patch
 Fix-iscsiadm-path.patch
-crypto-only-use-gnutls-crypto-API-remove-libgcrypt-d.patch
-core-fix-failure-to-configure-routes-due-to-wrong-device-.patch
-Revert-ppp-manager-don-t-use-kernel-pppoe-rh-1034860-rh-1.patch

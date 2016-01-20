@@ -15,8 +15,8 @@ http://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/
 https://bugzilla.gnome.org/show_bug.cgi?id=746039
 ---
  data/Makefile.am                           | 4 ----
- data/NetworkManager-wait-online.service.in | 7 ++++---
- 2 files changed, 4 insertions(+), 7 deletions(-)
+ data/NetworkManager-wait-online.service.in | 2 ++
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/data/Makefile.am b/data/Makefile.am
 index 4ab4106..bbe6b32 100644
@@ -34,24 +34,21 @@ index 4ab4106..bbe6b32 100644
  
  examplesdir = $(docdir)/examples
 diff --git a/data/NetworkManager-wait-online.service.in b/data/NetworkManager-wait-online.service.in
-index 6ad6942..1753d20 100644
+index 8c4fa67..1753d20 100644
 --- a/data/NetworkManager-wait-online.service.in
 +++ b/data/NetworkManager-wait-online.service.in
-@@ -1,13 +1,14 @@
+@@ -1,5 +1,6 @@
  [Unit]
  Description=Network Manager Wait Online
 +Documentation=man:nm-online(1)
  Requisite=NetworkManager.service
  After=NetworkManager.service
--Wants=network.target
--Before=network.target network-online.target
-+Before=network-online.target
- 
+ Before=network-online.target
+@@ -7,6 +8,7 @@ Before=network-online.target
  [Service]
  Type=oneshot
  ExecStart=@bindir@/nm-online -s -q --timeout=30
 +RemainAfterExit=yes
  
  [Install]
--WantedBy=multi-user.target
-+WantedBy=network-online.target
+ WantedBy=network-online.target

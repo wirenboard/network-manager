@@ -18,53 +18,53 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 1ed6935..1e9c63d 100644
+index 6da6415..b550ab1 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -384,8 +384,9 @@ fi
+@@ -467,8 +467,9 @@ fi
  case $with_suspend_resume in
      upower) ;;
      systemd)
-+	# Link against libsystemd-daemon for sd_booted()
- 	PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd >= 209],,
--	                  [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
-+	                  [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183 libsystemd-daemon])])
++        # Link against libsystemd-daemon for sd_booted()
+         PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd >= 209],,
+-                          [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
++                          [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183 libsystemd-daemon])])
+         AC_DEFINE([SUSPEND_RESUME_SYSTEMD], 1, [Define to 1 to use systemd suspend api])
          ;;
-     *)
- 	AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd])
+     consolekit)
 diff --git a/src/Makefile.am b/src/Makefile.am
-index e8279e7..ecde266 100644
+index 7e85831..ca35e1d 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -423,6 +423,7 @@ AM_CPPFLAGS += \
- 	$(LIBNDP_CFLAGS) \
- 	$(LIBSOUP_CFLAGS) \
+@@ -437,6 +437,7 @@ AM_CPPFLAGS += \
+ 	$(SELINUX_CFLAGS) \
+ 	$(LIBAUDIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
 +	$(SYSTEMD_INHIBIT_CFLAGS) \
- 	$(SYSTEMD_DHCP_CFLAGS) \
+ 	$(SYSTEMD_JOURNAL_CFLAGS) \
+ 	$(SYSTEMD_NM_CFLAGS_PATHS) \
  	\
- 	-DBINDIR=\"$(bindir)\" \
-@@ -461,6 +462,7 @@ libNetworkManager_la_LIBADD = \
+@@ -470,6 +471,7 @@ libNetworkManager_la_LIBADD = \
  	$(GUDEV_LIBS) \
  	$(LIBNL_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \
 +	$(SYSTEMD_INHIBIT_LIBS) \
+ 	$(SYSTEMD_JOURNAL_LIBS) \
  	$(LIBNDP_LIBS) \
  	$(LIBDL) \
- 	$(LIBM)
 diff --git a/src/nm-sleep-monitor-systemd.c b/src/nm-sleep-monitor-systemd.c
-index 44523a4..5ad0715 100644
+index 12db56b..f1baa4e 100644
 --- a/src/nm-sleep-monitor-systemd.c
 +++ b/src/nm-sleep-monitor-systemd.c
-@@ -25,6 +25,7 @@
- #include <glib/gi18n.h>
- #include <gio/gio.h>
+@@ -23,6 +23,7 @@
+ #include <string.h>
+ #include <sys/stat.h>
  #include <gio/gunixfdlist.h>
 +#include <systemd/sd-daemon.h>
  
- #include "nm-logging.h"
- #include "nm-dbus-manager.h"
-@@ -193,6 +194,10 @@ on_proxy_acquired (GObject *object,
+ #include "nm-default.h"
+ #include "nm-core-internal.h"
+@@ -204,6 +205,10 @@ on_proxy_acquired (GObject *object,
  static void
  nm_sleep_monitor_init (NMSleepMonitor *self)
  {
