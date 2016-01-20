@@ -24,6 +24,7 @@ override_dh_auto_configure:
 		--with-dhclient=/sbin/dhclient \
 		--with-iptables=/sbin/iptables \
 		--with-dnsmasq=/usr/sbin/dnsmasq \
+		--with-dnssec-trigger=/usr/lib/dnssec-trigger/dnssec-trigger-script \
 		--with-systemdsystemunitdir=/lib/systemd/system \
 		--with-crypto=gnutls \
 		--with-session-tracking=systemd \
