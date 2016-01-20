@@ -28,11 +28,10 @@
 #include <unistd.h>
 #include <math.h>
 
-#include <glib.h>
 
+#include "nm-default.h"
 #include "wifi-utils-private.h"
 #include "wifi-utils-wext.h"
-#include "nm-logging.h"
 #include "nm-utils.h"
 #include "nm-platform-utils.h"
 
@@ -44,7 +43,6 @@
 #include <linux/types.h>
 #include <sys/socket.h>
 #include <linux/wireless.h>
-
 
 typedef struct {
 	WifiData parent;
@@ -166,6 +164,30 @@ wifi_wext_set_mode (WifiData *data, const NM80211Mode mode)
 	return TRUE;
 }
 
+static gboolean
+wifi_wext_set_powersave (WifiData *data, guint32 powersave)
+{
+	WifiDataWext *wext = (WifiDataWext *) data;
+	struct iwreq wrq;
+
+	memset (&wrq, 0, sizeof (struct iwreq));
+	if (powersave == 1) {
+		wrq.u.power.flags = IW_POWER_ALL_R;
+	} else
+		wrq.u.power.disabled = 1;
+
+	strncpy (wrq.ifr_name, wext->parent.iface, IFNAMSIZ);
+	if (ioctl (wext->fd, SIOCSIWPOWER, &wrq) < 0) {
+		if (errno != ENODEV) {
+			nm_log_err (LOGD_HW | LOGD_WIFI, "(%s): error setting powersave %" G_GUINT32_FORMAT,
+			            wext->parent.iface, powersave);
+		}
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 static guint32
 wifi_wext_get_freq (WifiData *data)
 {
@@ -198,36 +220,6 @@ wifi_wext_find_freq (WifiData *data, const guint32 *freqs)
 		}
 	}
 	return 0;
-}
-
-static GByteArray *
-wifi_wext_get_ssid (WifiData *data)
-{
-	WifiDataWext *wext = (WifiDataWext *) data;
-	struct iwreq wrq;
-	char ssid[IW_ESSID_MAX_SIZE + 2];
-	guint32 len;
-	GByteArray *array = NULL;
-
-	memset (ssid, 0, sizeof (ssid));
-	wrq.u.essid.pointer = (caddr_t) &ssid;
-	wrq.u.essid.length = sizeof (ssid);
-	wrq.u.essid.flags = 0;
-	strncpy (wrq.ifr_name, wext->parent.iface, IFNAMSIZ);
-
-	if (ioctl (wext->fd, SIOCGIWESSID, &wrq) < 0) {
-		nm_log_err (LOGD_HW | LOGD_WIFI, "(%s): couldn't get SSID: %d",
-		            wext->parent.iface, errno);
-		return NULL;
-	}
-
-	len = wrq.u.essid.length;
-	if (nm_utils_is_empty_ssid ((guint8 *) ssid, len) == FALSE) {
-		array = g_byte_array_sized_new (len);
-		g_byte_array_append (array, (const guint8 *) ssid, len);
-	}
-
-	return array;
 }
 
 static gboolean
@@ -575,9 +567,9 @@ wifi_wext_init (const char *iface, int ifindex, gboolean check_scan)
 	wext = wifi_data_new (iface, ifindex, sizeof (*wext));
 	wext->parent.get_mode = wifi_wext_get_mode;
 	wext->parent.set_mode = wifi_wext_set_mode;
+	wext->parent.set_powersave = wifi_wext_set_powersave;
 	wext->parent.get_freq = wifi_wext_get_freq;
 	wext->parent.find_freq = wifi_wext_find_freq;
-	wext->parent.get_ssid = wifi_wext_get_ssid;
 	wext->parent.get_bssid = wifi_wext_get_bssid;
 	wext->parent.get_rate = wifi_wext_get_rate;
 	wext->parent.get_qual = wifi_wext_get_qual;

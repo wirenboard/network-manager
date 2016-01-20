@@ -24,26 +24,20 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>
-#include <glib.h>
-#include <glib/gi18n.h>
-#include <gio/gio.h>
 #include <teamdctl.h>
 #include <stdlib.h>
 
+#include "nm-default.h"
 #include "nm-device-team.h"
-#include "nm-logging.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
 #include "nm-platform.h"
-#include "nm-dbus-glib-types.h"
-#include "nm-dbus-manager.h"
 #include "nm-enum-types.h"
-#include "nm-team-enum-types.h"
 #include "nm-core-internal.h"
 #include "nm-ip4-config.h"
-#include "gsystem-local-alloc.h"
+#include "nm-dbus-compat.h"
 
-#include "nm-device-team-glue.h"
+#include "nmdbus-device-team.h"
 
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF(NMDeviceTeam);
@@ -59,13 +53,6 @@ typedef struct {
 	guint teamd_timeout;
 	guint teamd_dbus_watch;
 } NMDeviceTeamPrivate;
-
-enum {
-	PROP_0,
-	PROP_SLAVES,
-
-	LAST_PROP
-};
 
 static gboolean teamd_start (NMDevice *device, NMSettingTeam *s_team);
 
@@ -265,15 +252,8 @@ teamd_cleanup (NMDevice *device, gboolean free_tdc)
 {
 	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (device);
 
-	if (priv->teamd_process_watch) {
-		g_source_remove (priv->teamd_process_watch);
-		priv->teamd_process_watch = 0;
-	}
-
-	if (priv->teamd_timeout) {
-		g_source_remove (priv->teamd_timeout);
-		priv->teamd_timeout = 0;
-	}
+	nm_clear_g_source (&priv->teamd_process_watch);
+	nm_clear_g_source (&priv->teamd_timeout);
 
 	if (priv->teamd_pid > 0) {
 		nm_utils_kill_child_async (priv->teamd_pid, SIGTERM, LOGD_TEAM, "teamd", 2000, NULL, NULL);
@@ -333,9 +313,9 @@ teamd_dbus_appeared (GDBusConnection *connection,
 		guint32 pid;
 
 		ret = g_dbus_connection_call_sync (connection,
-		                                   "org.freedesktop.DBus",
-		                                   "/org/freedesktop/DBus",
-		                                   "org.freedesktop.DBus",
+		                                   DBUS_SERVICE_DBUS,
+		                                   DBUS_PATH_DBUS,
+		                                   DBUS_INTERFACE_DBUS,
 		                                   "GetConnectionUnixProcessID",
 		                                   g_variant_new ("(s)", name_owner),
 		                                   NULL,
@@ -388,7 +368,7 @@ teamd_dbus_vanished (GDBusConnection *dbus_connection,
 
 	/* Attempt to respawn teamd */
 	if (state >= NM_DEVICE_STATE_PREPARE && state <= NM_DEVICE_STATE_ACTIVATED) {
-		NMConnection *connection = nm_device_get_connection (device);
+		NMConnection *connection = nm_device_get_applied_connection (device);
 
 		g_assert (connection);
 		if (!teamd_start (device, nm_connection_get_setting_team (connection)))
@@ -531,7 +511,7 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	connection = nm_device_get_connection (device);
+	connection = nm_device_get_applied_connection (device);
 	g_assert (connection);
 	s_team = nm_connection_get_setting_team (connection);
 	g_assert (s_team);
@@ -572,7 +552,7 @@ ip4_config_pre_commit (NMDevice *self, NMIP4Config *config)
 	NMSettingWired *s_wired;
 	guint32 mtu;
 
-	connection = nm_device_get_connection (self);
+	connection = nm_device_get_applied_connection (self);
 	g_assert (connection);
 	s_wired = nm_connection_get_setting_wired (connection);
 
@@ -650,18 +630,16 @@ enslave_slave (NMDevice *device,
 	} else
 		_LOGI (LOGD_TEAM, "team port %s was enslaved", slave_iface);
 
-	g_object_notify (G_OBJECT (device), NM_DEVICE_TEAM_SLAVES);
-
 	return TRUE;
 }
 
-static gboolean
+static void
 release_slave (NMDevice *device,
                NMDevice *slave,
                gboolean configure)
 {
 	NMDeviceTeam *self = NM_DEVICE_TEAM (device);
-	gboolean success = TRUE, no_firmware = FALSE;
+	gboolean success, no_firmware = FALSE;
 
 	if (configure) {
 		success = nm_platform_link_release (NM_PLATFORM_GET,
@@ -672,13 +650,7 @@ release_slave (NMDevice *device,
 			_LOGI (LOGD_TEAM, "released team port %s", nm_device_get_ip_iface (slave));
 		else
 			_LOGW (LOGD_TEAM, "failed to release team port %s", nm_device_get_ip_iface (slave));
-	} else
-		_LOGI (LOGD_TEAM, "team port %s was released", nm_device_get_ip_iface (slave));
 
-	if (success)
-		g_object_notify (G_OBJECT (device), NM_DEVICE_TEAM_SLAVES);
-
-	if (configure) {
 		/* Kernel team code "closes" the port when releasing it, (which clears
 		 * IFF_UP), so we must bring it back up here to ensure carrier changes and
 		 * other state is noticed by the now-released port.
@@ -686,50 +658,44 @@ release_slave (NMDevice *device,
 		if (!nm_device_bring_up (slave, TRUE, &no_firmware))
 			_LOGW (LOGD_TEAM, "released team port %s could not be brought up",
 			       nm_device_get_ip_iface (slave));
-	}
-
-	return success;
+	} else
+		_LOGI (LOGD_TEAM, "team port %s was released", nm_device_get_ip_iface (slave));
 }
 
-/******************************************************************/
-
-NMDevice *
-nm_device_team_new (NMPlatformLink *platform_device)
+static gboolean
+create_and_realize (NMDevice *device,
+                    NMConnection *connection,
+                    NMDevice *parent,
+                    const NMPlatformLink **out_plink,
+                    GError **error)
 {
-	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_TEAM,
-	                                  NM_DEVICE_PLATFORM_DEVICE, platform_device,
-	                                  NM_DEVICE_DRIVER, "team",
-	                                  NM_DEVICE_TYPE_DESC, "Team",
-	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_TEAM,
-	                                  NM_DEVICE_IS_MASTER, TRUE,
-	                                  NULL);
-}
-
-NMDevice *
-nm_device_team_new_for_connection (NMConnection *connection, GError **error)
-{
-	const char *iface = nm_connection_get_interface_name (connection);
+	const char *iface = nm_device_get_iface (device);
 	NMPlatformError plerr;
-	const NMPlatformLink *plink;
 
-	g_assert (iface);
-
-	plerr = nm_platform_team_add (NM_PLATFORM_GET, iface, NULL);
+	plerr = nm_platform_link_team_add (NM_PLATFORM_GET, iface, out_plink);
 	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create team master interface '%s' for '%s': %s",
 		             iface,
 		             nm_connection_get_id (connection),
 		             nm_platform_error_to_string (plerr));
-		return NULL;
+		return FALSE;
 	}
-	plink = nm_platform_link_get_by_ifname (NM_PLATFORM_GET, iface);
 
+	return TRUE;
+}
+
+/******************************************************************/
+
+NMDevice *
+nm_device_team_new (const char *iface)
+{
 	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_TEAM,
-	                                  NM_DEVICE_PLATFORM_DEVICE, plink,
+	                                  NM_DEVICE_IFACE, iface,
 	                                  NM_DEVICE_DRIVER, "team",
 	                                  NM_DEVICE_TYPE_DESC, "Team",
 	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_TEAM,
+	                                  NM_DEVICE_LINK_TYPE, NM_LINK_TYPE_TEAM,
 	                                  NM_DEVICE_IS_MASTER, TRUE,
 	                                  NULL);
 }
@@ -761,40 +727,6 @@ constructed (GObject *object)
 }
 
 static void
-get_property (GObject *object, guint prop_id,
-              GValue *value, GParamSpec *pspec)
-{
-	GPtrArray *slaves;
-	GSList *list, *iter;
-
-	switch (prop_id) {
-		break;
-	case PROP_SLAVES:
-		slaves = g_ptr_array_new ();
-		list = nm_device_master_get_slaves (NM_DEVICE (object));
-		for (iter = list; iter; iter = iter->next)
-			g_ptr_array_add (slaves, g_strdup (nm_device_get_path (NM_DEVICE (iter->data))));
-		g_slist_free (list);
-		g_value_take_boxed (value, slaves);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static void
-set_property (GObject *object, guint prop_id,
-			  const GValue *value, GParamSpec *pspec)
-{
-	switch (prop_id) {
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static void
 dispose (GObject *object)
 {
 	NMDevice *device = NM_DEVICE (object);
@@ -818,14 +750,12 @@ nm_device_team_class_init (NMDeviceTeamClass *klass)
 
 	g_type_class_add_private (object_class, sizeof (NMDeviceTeamPrivate));
 
-	parent_class->connection_type = NM_SETTING_TEAM_SETTING_NAME;
+	NM_DEVICE_CLASS_DECLARE_TYPES (klass, NM_SETTING_TEAM_SETTING_NAME, NM_LINK_TYPE_TEAM)
 
-	/* virtual methods */
 	object_class->constructed = constructed;
-	object_class->get_property = get_property;
-	object_class->set_property = set_property;
 	object_class->dispose = dispose;
 
+	parent_class->create_and_realize = create_and_realize;
 	parent_class->get_generic_capabilities = get_generic_capabilities;
 	parent_class->is_available = is_available;
 	parent_class->check_connection_compatible = check_connection_compatible;
@@ -840,15 +770,7 @@ nm_device_team_class_init (NMDeviceTeamClass *klass)
 	parent_class->enslave_slave = enslave_slave;
 	parent_class->release_slave = release_slave;
 
-	/* properties */
-	g_object_class_install_property
-		(object_class, PROP_SLAVES,
-		 g_param_spec_boxed (NM_DEVICE_TEAM_SLAVES, "", "",
-		                     DBUS_TYPE_G_ARRAY_OF_OBJECT_PATH,
-		                     G_PARAM_READABLE |
-		                     G_PARAM_STATIC_STRINGS));
-
-	nm_dbus_manager_register_exported_type (nm_dbus_manager_get (),
-	                                        G_TYPE_FROM_CLASS (klass),
-	                                        &dbus_glib_nm_device_team_object_info);
+	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
+	                                        NMDBUS_TYPE_DEVICE_TEAM_SKELETON,
+	                                        NULL);
 }

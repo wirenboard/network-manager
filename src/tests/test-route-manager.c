@@ -20,15 +20,14 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <arpa/inet.h>
 #include <linux/rtnetlink.h>
 
+#include "nm-default.h"
 #include "test-common.h"
 
 #include "nm-platform.h"
 #include "nm-route-manager.h"
-#include "nm-logging.h"
 
 #include "nm-test-utils.h"
 
@@ -378,8 +377,8 @@ setup_dev0_ip6 (int ifindex)
 	nm_platform_ip6_address_add (NM_PLATFORM_GET,
 	                             ifindex,
 	                             *nmtst_inet6_from_string ("2001:db8:8086::666"),
-	                             in6addr_any,
 	                             64,
+	                             in6addr_any,
 	                             3600,
 	                             3600,
 	                             0);
@@ -482,8 +481,8 @@ update_dev0_ip6 (int ifindex)
 	nm_platform_ip6_address_add (NM_PLATFORM_GET,
 	                             ifindex,
 	                             *nmtst_inet6_from_string ("2001:db8:8086::2"),
-	                             in6addr_any,
 	                             64,
+	                             in6addr_any,
 	                             3600,
 	                             3600,
 	                             0);
@@ -798,10 +797,12 @@ _assert_route_check (const NMPlatformVTableRoute *vtable, gboolean has, const NM
 	if (!has) {
 		g_assert (!r);
 	} else {
+		char buf[sizeof (_nm_utils_to_string_buffer)];
+
 		if (!r || vtable->route_cmp (route, r) != 0)
 			g_error ("Invalid route. Expect %s, has %s",
-			         nmtst_static_1024_01 (vtable->route_to_string (route)),
-			         nmtst_static_1024_02 (vtable->route_to_string (r)));
+			         vtable->route_to_string (route, NULL, 0),
+			         vtable->route_to_string (r, buf, sizeof (buf)));
 		g_assert (r);
 	}
 }
@@ -874,7 +875,8 @@ fixture_setup (test_fixture *fixture, gconstpointer user_data)
 	                                link_callback,
 	                                "nm-test-device0");
 	nm_platform_link_delete (NM_PLATFORM_GET, nm_platform_link_get_ifindex (NM_PLATFORM_GET, "nm-test-device0"));
-	g_assert (nm_platform_dummy_add (NM_PLATFORM_GET, "nm-test-device0", NULL) == NM_PLATFORM_ERROR_SUCCESS);
+	g_assert (!nm_platform_link_get_by_ifname (NM_PLATFORM_GET, "nm-test-device0"));
+	g_assert (nm_platform_link_dummy_add (NM_PLATFORM_GET, "nm-test-device0", NULL) == NM_PLATFORM_ERROR_SUCCESS);
 	accept_signal (link_added);
 	free_signal (link_added);
 	fixture->ifindex0 = nm_platform_link_get_ifindex (NM_PLATFORM_GET, "nm-test-device0");
@@ -885,7 +887,8 @@ fixture_setup (test_fixture *fixture, gconstpointer user_data)
 	                                link_callback,
 	                                "nm-test-device1");
 	nm_platform_link_delete (NM_PLATFORM_GET, nm_platform_link_get_ifindex (NM_PLATFORM_GET, "nm-test-device1"));
-	g_assert (nm_platform_dummy_add (NM_PLATFORM_GET, "nm-test-device1", NULL) == NM_PLATFORM_ERROR_SUCCESS);
+	g_assert (!nm_platform_link_get_by_ifname (NM_PLATFORM_GET, "nm-test-device1"));
+	g_assert (nm_platform_link_dummy_add (NM_PLATFORM_GET, "nm-test-device1", NULL) == NM_PLATFORM_ERROR_SUCCESS);
 	accept_signal (link_added);
 	free_signal (link_added);
 	fixture->ifindex1 = nm_platform_link_get_ifindex (NM_PLATFORM_GET, "nm-test-device1");

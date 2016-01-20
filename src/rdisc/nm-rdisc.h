@@ -21,11 +21,12 @@
 #ifndef __NETWORKMANAGER_RDISC_H__
 #define __NETWORKMANAGER_RDISC_H__
 
-#include <glib-object.h>
 
 #include <stdlib.h>
 #include <netinet/in.h>
 
+#include "nm-default.h"
+#include "nm-setting-ip6-config.h"
 #include "NetworkManagerUtils.h"
 
 #define NM_TYPE_RDISC            (nm_rdisc_get_type ())
@@ -61,6 +62,7 @@ typedef struct {
 
 typedef struct {
 	struct in6_addr address;
+	guint8 dad_counter;
 	guint32 timestamp;
 	guint32 lifetime;
 	guint32 preferred;
@@ -114,6 +116,8 @@ typedef struct {
 
 	int ifindex;
 	char *ifname;
+	char *uuid;
+	NMSettingIP6ConfigAddrGenMode addr_gen_mode;
 	NMUtilsIPv6IfaceId iid;
 	gint32 max_addresses;
 	gint32 rtr_solicitations;
@@ -133,7 +137,7 @@ typedef struct {
 	GObjectClass parent;
 
 	void (*start) (NMRDisc *rdisc);
-	gboolean (*send_rs) (NMRDisc *rdisc);
+	gboolean (*send_rs) (NMRDisc *rdisc, GError **error);
 	void (*config_changed) (NMRDisc *rdisc, NMRDiscConfigMap changed);
 	void (*ra_process) (NMRDisc *rdisc);
 	void (*ra_timeout) (NMRDisc *rdisc);
@@ -143,5 +147,6 @@ GType nm_rdisc_get_type (void);
 
 gboolean nm_rdisc_set_iid (NMRDisc *rdisc, const NMUtilsIPv6IfaceId iid);
 void nm_rdisc_start (NMRDisc *rdisc);
+void nm_rdisc_dad_failed (NMRDisc *rdisc, struct in6_addr *address);
 
 #endif /* __NETWORKMANAGER_RDISC_H__ */

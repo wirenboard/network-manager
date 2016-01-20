@@ -22,9 +22,9 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
 #include <nm-utils.h>
 
+#include "nm-default.h"
 #include "nm-manager.h"
 #include "nm-device-ethernet.h"
 #include "nm-device-wifi.h"
@@ -34,8 +34,8 @@
 #include "nm-active-connection.h"
 #include "nm-vpn-connection.h"
 #include "nm-object-cache.h"
-#include "nm-glib-compat.h"
 #include "nm-dbus-helpers.h"
+#include "nm-macros-internal.h"
 
 #include "nmdbus-manager.h"
 
@@ -60,6 +60,7 @@ typedef struct {
 	NMState state;
 	gboolean startup;
 	GPtrArray *devices;
+	GPtrArray *all_devices;
 	GPtrArray *active_connections;
 	NMConnectivityState connectivity;
 	NMActiveConnection *primary_connection;
@@ -104,6 +105,7 @@ enum {
 	PROP_ACTIVATING_CONNECTION,
 	PROP_DEVICES,
 	PROP_METERED,
+	PROP_ALL_DEVICES,
 
 	LAST_PROP
 };
@@ -111,6 +113,8 @@ enum {
 enum {
 	DEVICE_ADDED,
 	DEVICE_REMOVED,
+	ANY_DEVICE_ADDED,
+	ANY_DEVICE_REMOVED,
 	ACTIVE_CONNECTION_ADDED,
 	ACTIVE_CONNECTION_REMOVED,
 	PERMISSION_CHANGED,
@@ -136,6 +140,7 @@ nm_manager_init (NMManager *manager)
 
 	priv->permissions = g_hash_table_new (g_direct_hash, g_direct_equal);
 	priv->devices = g_ptr_array_new ();
+	priv->all_devices = g_ptr_array_new ();
 	priv->active_connections = g_ptr_array_new ();
 }
 
@@ -145,8 +150,8 @@ poke_wireless_devices_with_rf_status (NMManager *manager)
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
 	int i;
 
-	for (i = 0; i < priv->devices->len; i++) {
-		NMDevice *device = g_ptr_array_index (priv->devices, i);
+	for (i = 0; i < priv->all_devices->len; i++) {
+		NMDevice *device = g_ptr_array_index (priv->all_devices, i);
 
 		if (NM_IS_DEVICE_WIFI (device))
 			_nm_device_wifi_set_wireless_enabled (NM_DEVICE_WIFI (device), priv->wireless_enabled);
@@ -182,6 +187,7 @@ init_dbus (NMObject *object)
 		{ NM_MANAGER_ACTIVATING_CONNECTION,     &priv->activating_connection, NULL, NM_TYPE_ACTIVE_CONNECTION },
 		{ NM_MANAGER_DEVICES,                   &priv->devices, NULL, NM_TYPE_DEVICE, "device" },
 		{ NM_MANAGER_METERED,                   &priv->metered },
+		{ NM_MANAGER_ALL_DEVICES,               &priv->all_devices, NULL, NM_TYPE_DEVICE, "any-device" },
 		{ NULL },
 	};
 
@@ -665,6 +671,14 @@ nm_manager_get_devices (NMManager *manager)
 	g_return_val_if_fail (NM_IS_MANAGER (manager), NULL);
 
 	return NM_MANAGER_GET_PRIVATE (manager)->devices;
+}
+
+const GPtrArray *
+nm_manager_get_all_devices (NMManager *manager)
+{
+	g_return_val_if_fail (NM_IS_MANAGER (manager), NULL);
+
+	return NM_MANAGER_GET_PRIVATE (manager)->all_devices;
 }
 
 NMDevice *
@@ -1180,27 +1194,47 @@ static void
 free_devices (NMManager *manager, gboolean in_dispose)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
-	GPtrArray *devices;
-	NMDevice *device;
-	int i;
+	gs_unref_ptrarray GPtrArray *real_devices = NULL;
+	gs_unref_ptrarray GPtrArray *all_devices = NULL;
+	GPtrArray *devices = NULL;
+	guint i, j;
 
-	if (!priv->devices)
-		return;
+	real_devices = priv->devices;
+	all_devices = priv->all_devices;
 
-	devices = priv->devices;
-
-	if (in_dispose)
+	if (in_dispose) {
 		priv->devices = NULL;
-	else {
-		priv->devices = g_ptr_array_new ();
-
-		for (i = 0; i < devices->len; i++) {
-			device = devices->pdata[i];
-			g_signal_emit (manager, signals[DEVICE_REMOVED], 0, device);
-		}
+		priv->all_devices = NULL;
+		return;
 	}
 
-	g_ptr_array_unref (devices);
+	priv->devices = g_ptr_array_new_with_free_func (g_object_unref);
+	priv->all_devices = g_ptr_array_new_with_free_func (g_object_unref);
+
+	if (all_devices && all_devices->len > 0)
+		devices = all_devices;
+	else if (devices && devices->len > 0)
+		devices = real_devices;
+
+	if (real_devices && devices != real_devices) {
+		for (i = 0; i < real_devices->len; i++) {
+			NMDevice *d = real_devices->pdata[i];
+
+			if (all_devices) {
+				for (j = 0; j < all_devices->len; j++) {
+					if (d == all_devices->pdata[j])
+						goto next;
+				}
+			}
+			g_signal_emit (manager, signals[DEVICE_REMOVED], 0, d);
+next:
+			;
+		}
+	}
+	if (devices) {
+		for (i = 0; i < devices->len; i++)
+			g_signal_emit (manager, signals[DEVICE_REMOVED], 0, devices->pdata[i]);
+	}
 }
 
 static void
@@ -1256,7 +1290,7 @@ nm_running_changed_cb (GObject *object,
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
 
 	if (!nm_manager_get_nm_running (manager)) {
-		NM_UTILS_CLEAR_CANCELLABLE (priv->props_cancellable);
+		nm_clear_g_cancellable (&priv->props_cancellable);
 
 		priv->state = NM_STATE_UNKNOWN;
 		priv->startup = FALSE;
@@ -1282,7 +1316,7 @@ nm_running_changed_cb (GObject *object,
 	} else {
 		_nm_object_suppress_property_updates (NM_OBJECT (manager), FALSE);
 
-		NM_UTILS_CLEAR_CANCELLABLE (priv->props_cancellable);
+		nm_clear_g_cancellable (&priv->props_cancellable);
 		priv->props_cancellable = g_cancellable_new ();
 		_nm_object_reload_properties_async (NM_OBJECT (manager), priv->props_cancellable, updated_properties, manager);
 
@@ -1543,6 +1577,9 @@ get_property (GObject *object,
 	case PROP_METERED:
 		g_value_set_uint (value, priv->metered);
 		break;
+	case PROP_ALL_DEVICES:
+		g_value_take_boxed (value, _nm_utils_copy_object_array (nm_manager_get_all_devices (self)));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -1680,7 +1717,7 @@ nm_manager_class_init (NMManagerClass *manager_class)
 	 *
 	 * Whether the connectivity is metered.
 	 *
-	 * Since: 1.0.6
+	 * Since: 1.2
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_METERED,
@@ -1688,6 +1725,13 @@ nm_manager_class_init (NMManagerClass *manager_class)
 		                    0, G_MAXUINT32, NM_METERED_UNKNOWN,
 		                    G_PARAM_READABLE |
 		                    G_PARAM_STATIC_STRINGS));
+
+	g_object_class_install_property
+		(object_class, PROP_ALL_DEVICES,
+		 g_param_spec_boxed (NM_MANAGER_ALL_DEVICES, "", "",
+		                     G_TYPE_PTR_ARRAY,
+		                     G_PARAM_READABLE |
+		                     G_PARAM_STATIC_STRINGS));
 
 	/* signals */
 
@@ -1704,6 +1748,22 @@ nm_manager_class_init (NMManagerClass *manager_class)
 		              G_OBJECT_CLASS_TYPE (object_class),
 		              G_SIGNAL_RUN_FIRST,
 		              G_STRUCT_OFFSET (NMManagerClass, device_removed),
+		              NULL, NULL, NULL,
+		              G_TYPE_NONE, 1,
+		              G_TYPE_OBJECT);
+	signals[ANY_DEVICE_ADDED] =
+		g_signal_new ("any-device-added",
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0,
+		              NULL, NULL, NULL,
+		              G_TYPE_NONE, 1,
+		              G_TYPE_OBJECT);
+	signals[ANY_DEVICE_REMOVED] =
+		g_signal_new ("any-device-removed",
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0,
 		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 1,
 		              G_TYPE_OBJECT);

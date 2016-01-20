@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dbus/dbus-glib.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-setting-vlan.h"
 #include "nm-param-spec-specialized.h"
@@ -585,9 +584,7 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		}
 	}
 
-	if (priv->flags & ~(NM_VLAN_FLAG_REORDER_HEADERS |
-	                    NM_VLAN_FLAG_GVRP |
-	                    NM_VLAN_FLAG_LOOSE_BINDING)) {
+	if (priv->flags & ~NM_VLAN_FLAGS_ALL) {
 		g_set_error_literal (error,
 		                     NM_SETTING_VLAN_ERROR,
 		                     NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
@@ -801,12 +798,13 @@ nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 	 * interface.  Flags include %NM_VLAN_FLAG_REORDER_HEADERS (reordering of
 	 * output packet headers), %NM_VLAN_FLAG_GVRP (use of the GVRP protocol),
 	 * and %NM_VLAN_FLAG_LOOSE_BINDING (loose binding of the interface to its
-	 * master device's operating state).
+	 * master device's operating state), %NM_VLAN_FLAG_MVRP (use of the MVRP
+	 * protocol).
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_FLAGS,
 		 g_param_spec_uint (NM_SETTING_VLAN_FLAGS, "", "",
-		                    0, G_MAXUINT32, NM_VLAN_FLAG_REORDER_HEADERS,
+		                    0, G_MAXUINT32, 0,
 		                    G_PARAM_READWRITE |
 		                    G_PARAM_CONSTRUCT |
 		                    NM_SETTING_PARAM_INFERRABLE |

@@ -26,8 +26,7 @@
 #include "nm-platform.h"
 #include "nmp-object.h"
 #include "nm-core-internal.h"
-#include "nm-logging.h"
-#include "gsystem-local-alloc.h"
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 
 /* if within half a second after adding an IP address a matching device-route shows
@@ -148,7 +147,7 @@ static gboolean _ip4_device_routes_cancel (NMRouteManager *self);
 
 /*********************************************************************************************/
 
-#if defined (NM_MORE_ASSERTS) && !defined (G_DISABLE_ASSERT)
+#if NM_MORE_ASSERTS && !defined (G_DISABLE_ASSERT)
 inline static void
 ASSERT_route_index_valid (const VTableIP *vtable, const GArray *entries, const RouteIndex *index, gboolean unique_ifindexes)
 {
@@ -468,12 +467,12 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 	if (_LOGt_ENABLED (vtable->vt->addr_family)) {
 		for (i = 0; i < known_routes_idx->len; i++) {
 			_LOGt (vtable->vt->addr_family, "%3d: sync new route #%u: %s",
-			       ifindex, i, vtable->vt->route_to_string (VTABLE_ROUTE_INDEX (vtable, known_routes, i)));
+			       ifindex, i, vtable->vt->route_to_string (VTABLE_ROUTE_INDEX (vtable, known_routes, i), NULL, 0));
 		}
 		for (i = 0; i < ipx_routes->index->len; i++)
 			_LOGt (vtable->vt->addr_family, "%3d: STATE: has     #%u - %s (%lld)",
 			       ifindex, i,
-			       vtable->vt->route_to_string (ipx_routes->index->entries[i]),
+			       vtable->vt->route_to_string (ipx_routes->index->entries[i], NULL, 0),
 			       (long long) g_array_index (ipx_routes->effective_metrics, gint64, i));
 	}
 
@@ -513,7 +512,8 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 				cur_ipx_route->rx.ifindex = ifindex;
 				cur_ipx_route->rx.metric = vtable->vt->metric_normalize (cur_ipx_route->rx.metric);
 				ipx_routes_changed = TRUE;
-				_LOGt (vtable->vt->addr_family, "%3d: STATE: update  #%u - %s", ifindex, i_ipx_routes, vtable->vt->route_to_string (cur_ipx_route));
+				_LOGt (vtable->vt->addr_family, "%3d: STATE: update  #%u - %s", ifindex, i_ipx_routes,
+				       vtable->vt->route_to_string (cur_ipx_route, NULL, 0));
 			}
 		} else if (cur_known_route) {
 			g_assert (!cur_ipx_route || route_id_cmp_result > 0);
@@ -571,7 +571,8 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 			    && cur_plat_route->rx.metric == *p_effective_metric) {
 				/* we are about to delete cur_ipx_route and we have a matching route
 				 * in platform. Delete it. */
-				_LOGt (vtable->vt->addr_family, "%3d: platform rt-rm #%u - %s", ifindex, i_plat_routes, vtable->vt->route_to_string (cur_plat_route));
+				_LOGt (vtable->vt->addr_family, "%3d: platform rt-rm #%u - %s", ifindex, i_plat_routes,
+				       vtable->vt->route_to_string (cur_plat_route, NULL, 0));
 				vtable->vt->route_delete (priv->platform, ifindex, cur_plat_route);
 			}
 		}
@@ -583,7 +584,8 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 			for (i = 0; i < to_delete_indexes->len; i++) {
 				guint idx = g_array_index (to_delete_indexes, guint, i);
 
-				_LOGt (vtable->vt->addr_family, "%3d: STATE: delete  #%u - %s", ifindex, idx, vtable->vt->route_to_string (ipx_routes->index->entries[idx]));
+				_LOGt (vtable->vt->addr_family, "%3d: STATE: delete  #%u - %s", ifindex, idx,
+				       vtable->vt->route_to_string (ipx_routes->index->entries[idx], NULL, 0));
 				g_array_index (to_delete_indexes, guint, i) = _route_index_reverse_idx (vtable, ipx_routes->index, idx, ipx_routes->entries);
 			}
 			g_array_sort (to_delete_indexes, (GCompareFunc) _sort_indexes_cmp);
@@ -607,7 +609,8 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 
 				g_array_index (ipx_routes->effective_metrics_reverse, gint64, j++) = -1;
 
-				_LOGt (vtable->vt->addr_family, "%3d: STATE: added   #%u - %s", ifindex, ipx_routes->entries->len - 1, vtable->vt->route_to_string (ipx_route));
+				_LOGt (vtable->vt->addr_family, "%3d: STATE: added   #%u - %s", ifindex, ipx_routes->entries->len - 1,
+				       vtable->vt->route_to_string (ipx_route, NULL, 0));
 			}
 			g_ptr_array_unref (to_add_routes);
 		}
@@ -694,7 +697,7 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 next:
 			_LOGt (vtable->vt->addr_family, "%3d: new metric     #%u - %s (%lld)",
 			       ifindex, i_ipx_routes,
-			       vtable->vt->route_to_string (cur_ipx_route),
+			       vtable->vt->route_to_string (cur_ipx_route, NULL, 0),
 			       (long long) *p_effective_metric);
 		}
 	}
@@ -717,7 +720,7 @@ next:
 
 			g_assert (cur_plat_route->rx.ifindex == ifindex);
 
-			_LOGt (vtable->vt->addr_family, "%3d: platform rt    #%u - %s", ifindex, i_plat_routes, vtable->vt->route_to_string (cur_plat_route));
+			_LOGt (vtable->vt->addr_family, "%3d: platform rt    #%u - %s", ifindex, i_plat_routes, vtable->vt->route_to_string (cur_plat_route, NULL, 0));
 
 			/* skip over @cur_ipx_route that are ordered before @cur_plat_route */
 			while (   cur_ipx_route
@@ -871,7 +874,7 @@ next:
 						_LOGD (vtable->vt->addr_family,
 						       "ignore error adding IPv%c route to kernel: %s",
 						       vtable->vt->is_ip4 ? '4' : '6',
-						       vtable->vt->route_to_string (cur_ipx_route));
+						       vtable->vt->route_to_string (cur_ipx_route, NULL, 0));
 					} else {
 						/* Remember that there was a failure, but for now continue trying
 						 * to sync the remaining routes. */
@@ -938,8 +941,11 @@ nm_route_manager_ip6_route_sync (NMRouteManager *self, int ifindex, const GArray
 gboolean
 nm_route_manager_route_flush (NMRouteManager *self, int ifindex)
 {
-	return    nm_route_manager_ip4_route_sync (self, ifindex, NULL, FALSE, TRUE)
-	       && nm_route_manager_ip6_route_sync (self, ifindex, NULL, FALSE, TRUE);
+	bool success = TRUE;
+
+	success &= (bool) nm_route_manager_ip4_route_sync (self, ifindex, NULL, FALSE, TRUE);
+	success &= (bool) nm_route_manager_ip6_route_sync (self, ifindex, NULL, FALSE, TRUE);
+	return success;
 }
 
 /*********************************************************************************************/
@@ -1006,7 +1012,6 @@ _ip4_device_routes_ip4_route_changed (NMPlatform *platform,
                                       int ifindex,
                                       const NMPlatformIP4Route *route,
                                       NMPlatformSignalChangeType change_type,
-                                      NMPlatformReason reason,
                                       NMRouteManager *self)
 {
 	NMRouteManagerPrivate *priv;

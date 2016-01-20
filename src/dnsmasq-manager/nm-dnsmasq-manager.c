@@ -28,10 +28,9 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+#include "nm-default.h"
 #include "nm-dnsmasq-manager.h"
 #include "nm-dnsmasq-utils.h"
-#include "nm-logging.h"
-#include "nm-glib-compat.h"
 #include "nm-utils.h"
 #include "NetworkManagerUtils.h"
 
@@ -83,14 +82,14 @@ nm_dnsmasq_manager_class_init (NMDnsMasqManagerClass *manager_class)
 
 	/* signals */
 	signals[STATE_CHANGED] =
-		g_signal_new ("state-changed",
-				    G_OBJECT_CLASS_TYPE (object_class),
-				    G_SIGNAL_RUN_FIRST,
-				    G_STRUCT_OFFSET (NMDnsMasqManagerClass, state_changed),
-				    NULL, NULL,
-				    g_cclosure_marshal_VOID__UINT,
-				    G_TYPE_NONE, 1,
-				    G_TYPE_UINT);
+	     g_signal_new (NM_DNS_MASQ_MANAGER_STATE_CHANGED,
+	                   G_OBJECT_CLASS_TYPE (object_class),
+	                   G_SIGNAL_RUN_FIRST,
+	                   G_STRUCT_OFFSET (NMDnsMasqManagerClass, state_changed),
+	                   NULL, NULL,
+	                   g_cclosure_marshal_VOID__UINT,
+	                   G_TYPE_NONE, 1,
+	                   G_TYPE_UINT);
 }
 
 NMDnsMasqManager *
@@ -103,7 +102,7 @@ nm_dnsmasq_manager_new (const char *iface)
 
 	priv = NM_DNSMASQ_MANAGER_GET_PRIVATE (manager);
 	priv->iface = g_strdup (iface);
-	priv->pidfile = g_strdup_printf (LOCALSTATEDIR "/run/nm-dnsmasq-%s.pid", iface);
+	priv->pidfile = g_strdup_printf (RUNSTATEDIR "/nm-dnsmasq-%s.pid", iface);
 
 	return manager;
 }
@@ -386,10 +385,7 @@ nm_dnsmasq_manager_stop (NMDnsMasqManager *manager)
 
 	priv = NM_DNSMASQ_MANAGER_GET_PRIVATE (manager);
 
-	if (priv->dm_watch_id) {
-		g_source_remove (priv->dm_watch_id);
-		priv->dm_watch_id = 0;
-	}
+	nm_clear_g_source (&priv->dm_watch_id);
 
 	if (priv->pid) {
 		nm_utils_kill_child_async (priv->pid, SIGTERM, LOGD_SHARING, "dnsmasq", 2000, NULL, NULL);

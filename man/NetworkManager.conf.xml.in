@@ -27,23 +27,39 @@ Copyright 2010 - 2014 Red Hat, Inc.
 
   <refsynopsisdiv>
     <para><filename>/etc/NetworkManager/NetworkManager.conf</filename>,
-    <filename>/etc/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</filename>
+    <filename>/etc/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</filename>,
+    <filename>/usr/lib/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</filename>,
+    <filename>/var/lib/NetworkManager/NetworkManager-intern.conf</filename>
     </para>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
-    <para>This is a configuration file for NetworkManager. It is used
+    <para><literal>NetworkManager.conf</literal> is the configuration file for NetworkManager. It is used
     to set up various aspects of NetworkManager's behavior. The
-    location of the file may be changed through use of the
-    <option>--config</option> argument for NetworkManager.
+    location of the main file and configuration directories may be changed
+    through use of the <option>--config</option>, <option>--config-dir</option>,
+    <option>--system-config-dir</option>, and <option>--intern-config</option>
+    argument for NetworkManager, respectively.
     </para>
     <para>If a default <literal>NetworkManager.conf</literal> is
     provided by your distribution's packages, you should not modify
     it, since your changes may get overwritten by package
     updates. Instead, you can add additional <literal>.conf</literal>
-    files to the <literal>conf.d</literal> directory. These will be read in order,
-    with later files overriding earlier ones.
+    files to the <literal>/etc/NetworkManager/conf.d</literal> directory.
+    These will be read in order, with later files overriding earlier ones.
+    Packages might install further configuration snippets to <literal>/usr/lib/NetworkManager/conf.d</literal>.
+    This directory is parsed first, even before <literal>NetworkManager.conf</literal>.
+    The loading of a file <literal>/usr/lib/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</literal>
+    can be prevented by adding a file <literal>/etc/NetworkManager/conf.d/<replaceable>name</replaceable>.conf</literal>.
+    In this case, the file from the etc configuration shadows the file from the
+    system configuration directory.
+    </para>
+    <para>
+    NetworkManager can overwrite certain user configuration options via D-Bus or other internal
+    operations. In this case it writes those changes to <literal>/var/lib/NetworkManager/NetworkManager-intern.conf</literal>.
+    This file is not intended to be modified by the user, but it is read last and can shadow
+    user configuration from <literal>NetworkManager.conf</literal>.
     </para>
 
   </refsect1>
@@ -270,6 +286,20 @@ no-auto-default=*
       </varlistentry>
 
       <varlistentry>
+	<term><varname>rc-manager</varname></term>
+	<listitem><para>Set the <filename>resolv.conf</filename>
+	management mode. The default value depends on how NetworkManager
+	was built.</para>
+	<para><literal>none</literal>: NetworkManager will directly
+	write changes to <filename>resolv.conf</filename>.</para>
+	<para><literal>resolvconf</literal>: NetworkManager will run
+	resolvconf to update the DNS configuration.</para>
+	<para><literal>netconfig</literal>: NetworkManager will run
+	netconfig to update the DNS configuration.</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><varname>debug</varname></term>
         <listitem><para>Comma separated list of options to aid
         debugging. This value will be combined with the environment
@@ -301,8 +331,19 @@ no-auto-default=*
       <variablelist>
 	<varlistentry>
 	  <term><varname>hostname</varname></term>
-	  <listitem><para>Set a persistent hostname.</para></listitem>
+	  <listitem><para>This key is deprecated and has no effect
+	  since the hostname is now stored in /etc/hostname or other
+	  system configuration files according to build options.
+	  </para></listitem>
 	</varlistentry>
+        <varlistentry>
+          <term><varname>path</varname></term>
+          <listitem>
+            <para>The location where keyfiles are read and stored.
+            This defaults to "<literal>@NM_CONFIG_KEYFILE_PATH_DEFAULT@</literal>".
+            </para>
+          </listitem>
+        </varlistentry>
 	<varlistentry>
 	  <term><varname>unmanaged-devices</varname></term>
 	  <listitem><para>Set devices that should be ignored by
@@ -363,7 +404,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
 	<varlistentry>
 	  <term><varname>level</varname></term>
 	  <listitem><para>The default logging verbosity level.
-	  One of <literal>ERR</literal>,
+	  One of <literal>OFF</literal>, <literal>ERR</literal>,
 	  <literal>WARN</literal>, <literal>INFO</literal>,
 	  <literal>DEBUG</literal>, <literal>TRACE</literal>.  The ERR
 	  level logs only critical errors.  WARN logs warnings that may
@@ -381,12 +422,12 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
 	  WIFI_SCAN, IP4, IP6, AUTOIP4, DNS, VPN, SHARING, SUPPLICANT,
 	  AGENTS, SETTINGS, SUSPEND, CORE, DEVICE, OLPC, WIMAX,
 	  INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS,
-	  TEAM, CONCHECK, DCB, DISPATCH.</para>
+	  TEAM, CONCHECK, DCB, DISPATCH, AUDIT.</para>
 	  <para>In addition, these special domains can be used: NONE,
 	  ALL, DEFAULT, DHCP, IP.</para>
 	  <para>You can specify per-domain log level overrides by
 	  adding a colon and a log level to any domain. E.g.,
-	  "<literal>WIFI:DEBUG</literal>".</para></listitem>
+	  "<literal>WIFI:DEBUG,WIFI_SCAN:OFF</literal>".</para></listitem>
 	</varlistentry>
 	<varlistentry>
           <para>Domain descriptions:
@@ -403,7 +444,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           <member>WIFI_SCAN   : Wi-Fi scanning operations</member>
           <member>IP4         : IPv4-related operations</member>
           <member>IP6         : IPv6-related operations</member>
-          <member>AUTOIP4     : AutoIP (avahi) operations</member>
+          <member>AUTOIP4     : AutoIP operations</member>
           <member>DNS         : Domain Name System related operations</member>
           <member>VPN         : Virtual Private Network connections and operations</member>
           <member>SHARING     : Connection sharing</member>
@@ -426,6 +467,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           <member>CONCHECK    : Connectivity check</member>
           <member>DCB         : Data Center Bridging (DCB) operations</member>
           <member>DISPATCH    : Dispatcher scripts</member>
+          <member>AUDIT       : Audit records</member>
           <member> </member>
           <member>NONE        : when given by itself logging is disabled</member>
           <member>ALL         : all log domains</member>
@@ -437,6 +479,29 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           </simplelist>
           </para>
         </varlistentry>
+	<varlistentry>
+	  <term><varname>backend</varname></term>
+	  <listitem><para>The logging backend. Supported values
+	  are "<literal>debug</literal>", "<literal>syslog</literal>",
+	  "<literal>journal</literal>" and "<literal>journal-syslog-style</literal>.
+	  "<literal>debug</literal>" uses syslog and logs to standard error.
+	  "<literal>journal-syslog-style</literal>" prints the same message to journal
+	  as it would print for "<literal>syslog</literal>", containing redundant
+	  fields in the text.
+	  If NetworkManager is started in debug mode (<literal>--debug</literal>)
+	  this option is ignored and "<literal>debug</literal>" is always used.
+	  Otherwise, the default is "<literal>@NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT@</literal>".
+	  </para></listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><varname>audit</varname></term>
+	  <listitem><para>Whether the audit records are delivered to
+	  auditd, the audit daemon.  If <literal>false</literal>, audit
+	  records will be sent only to the NetworkManager logging
+	  system. If set to <literal>true</literal>, they will be also
+	  sent to auditd.  The default value is <literal>@NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT@</literal>.
+	  </para></listitem>
+	</varlistentry>
       </variablelist>
     </para>
   </refsect1>
@@ -454,6 +519,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
 [connection]
 ipv6.ip6-privacy=0
 connection.autoconnect-slaves=1
+vpn.timeout=120
 
 [connection-wifi-wlan0]
 match-device=interface-name:wlan0
@@ -514,7 +580,21 @@ ipv6.ip6-privacy=1
       The following properties are supported to have their default values configured:
       <variablelist>
         <varlistentry>
+          <term><varname>connection.autoconnect-slaves</varname></term>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>connection.lldp</varname></term>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>ethernet.wake-on-lan</varname></term>
+        </varlistentry>
+        <varlistentry>
           <term><varname>ipv4.route-metric</varname></term>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>ipv4.dhcp-timeout</varname></term>
+          <listitem><para>If left unspecified, the default value for
+           the interface type is used.</para></listitem>
         </varlistentry>
         <varlistentry>
           <term><varname>ipv6.ip6-privacy</varname></term>
@@ -525,13 +605,15 @@ ipv6.ip6-privacy=1
         <varlistentry>
           <term><varname>ipv6.route-metric</varname></term>
         </varlistentry>
-        <varlistentry>
-          <term><varname>connection.autoconnect-slaves</varname></term>
-        </varlistentry>
-        <varlistentry>
-          <term><varname>ethernet.wake-on-lan</varname></term>
-        </varlistentry>
       </variablelist>
+      <varlistentry>
+        <term><varname>vpn.timeout</varname></term>
+        <listitem><para>If left unspecified, default value of 60 seconds is used.</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><varname>wifi.mac-address-randomization</varname></term>
+        <listitem><para>If left unspecified, MAC address randomization is disabled.</para></listitem>
+      </varlistentry>
     </para>
   </refsect1>
 
@@ -575,6 +657,153 @@ ipv6.ip6-privacy=1
   </refsect1>
 
   <refsect1>
+    <title><literal>global-dns</literal> section</title>
+    <para>This section specifies global DNS settings that override
+    connection-specific configuration.</para>
+    <para>
+      <variablelist>
+	<varlistentry>
+	  <term><varname>searches</varname></term>
+	  <listitem>
+	    <para>
+	     A list of search domains to be used during hostname lookup.
+	   </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><varname>options</varname></term>
+	  <listitem>
+	    <para>
+	     A list of of options to be passed to the hostname resolver.
+	   </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title><literal>global-dns-domain</literal> sections</title>
+    <para>Sections with a name starting with the "global-dns-domain-"
+    prefix allow to define global DNS configuration for specific
+    domains.  The part of section name after "global-dns-domain-"
+    specifies the domain name a section applies to.  More specific
+    domains have the precedence over less specific ones and the
+    default domain is represented by the wildcard "*".  A default
+    domain section is mandatory.
+    </para>
+    <para>
+      <variablelist>
+	<varlistentry>
+	  <term><varname>servers</varname></term>
+	  <listitem>
+	    <para>
+	     A list of addresses of DNS servers to be used for the given domain.
+	   </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
+	  <term><varname>options</varname></term>
+	  <listitem>
+	    <para>
+	     A list of domain-specific DNS options. Not used at the moment.
+	   </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title><literal>.config</literal> sections</title>
+      <para>This is a special section that contains options which apply
+      to the configuration file that contains the option.
+    </para>
+    <para>
+      <variablelist>
+        <varlistentry>
+          <term><varname>enable</varname></term>
+          <listitem>
+            <para>
+              Defaults to "<literal>true</literal>". If "<literal>false</literal>",
+              the configuration file will be skipped during loading.
+              Note that the main configuration file <literal>NetworkManager.conf</literal>
+              cannot be disabled.
+<programlisting>
+# always skip loading the config file
+[.config]
+enable=false
+</programlisting>
+            </para>
+            <para>
+              You can also match against the version of NetworkManager. For example
+              the following are valid configurations:
+<programlisting>
+# only load on version 1.0.6
+[.config]
+enable=nm-version:1.0.6
+
+# load on all versions 1.0.x, but not 1.2.x
+[.config]
+enable=nm-version:1.0
+
+# only load on versions &gt;= 1.1.6. This does not match
+# with version 1.2.0 or 1.4.4. Only the last digit is considered.
+[.config]
+enable=nm-version-min:1.1.6
+
+# only load on versions &gt;= 1.2. Contrary to the previous
+# example, this also matches with 1.2.0, 1.2.10, 1.4.4, etc.
+[.config]
+enable=nm-version-min:1.2
+
+# Match against the maximum allowed version. The example matches
+# versions 1.2.0, 1.2.2, 1.2.4. Again, only the last version digit
+# is allowed to be smaller. So this would not match match on 1.1.10.
+[.config]
+enable=nm-version-max:1.2.6
+</programlisting>
+            </para>
+            <para>
+              You can also match against the value of the environment variable
+              <literal>NM_CONFIG_ENABLE_TAG</literal>, like:
+<programlisting>
+# always skip loading the file when running NetworkManager with
+# environment variable "NM_CONFIG_ENABLE_TAG=TAG1"
+[.config]
+enable=env:TAG1
+</programlisting>
+            </para>
+            <para>
+              More then one match can be specified. The configuration will be
+              enabled if one of the predicates matches ("or"). The special prefix "except:" can
+              be used to negate the match. Note that if one except-predicate
+              matches, the entire configuration will be disabled.
+              In other words, a except predicate always wins over other predicates.
+<programlisting>
+# enable the configuration either when the environment variable
+# is present or the version is at least 1.2.0.
+[.config]
+enable=env:TAG2,nm-version-min:1.2
+
+# enable the configuration for version &gt;= 1.2.0, but disable
+# it when the environment variable is set to "TAG3"
+[.config]
+enable=except:env:TAG3,nm-version-min:1.2
+
+# enable the configuration on &gt;= 1.3, &gt;= 1.2.6, and &gt;= 1.0.16.
+# Useful if a certain feature is only present since those releases.
+[.config]
+enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
+</programlisting>
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </para>
+  </refsect1>
+
+  <refsect1>
     <title>Plugins</title>
 
     <variablelist>
@@ -592,7 +821,7 @@ ipv6.ip6-privacy=1
 	    The stored connection file may contain passwords and
 	    private keys, so it will be made readable only to root,
 	    and the plugin will ignore files that are readable or
-	    writeable by any user or group other than root.
+	    writable by any user or group other than root.
 	  </para>
 	  <para>
 	    This plugin is always active, and will automatically be
@@ -611,6 +840,9 @@ ipv6.ip6-privacy=1
 	    <filename>/etc/sysconfig/network-scripts/ifcfg-*</filename>
 	    files. It currently supports reading Ethernet, Wi-Fi,
 	    InfiniBand, VLAN, Bond, Bridge, and Team connections.
+	    Enabling <literal>ifcfg-rh</literal> implicitly enables
+	    <literal>ibft</literal> plugin, if it is available.
+	    This can be disabled by adding <literal>no-ibft</literal>.
 	  </para>
 	</listitem>
       </varlistentry>
@@ -619,12 +851,9 @@ ipv6.ip6-privacy=1
 	<term><varname>ifcfg-suse</varname></term>
 	<listitem>
 	  <para>
-	    This plugin is only provided for simple backward
-	    compatibility with SUSE and OpenSUSE configuration. Most
-	    setups should be using the <literal>keyfile</literal>
-	    plugin instead. The <literal>ifcfg-suse</literal> plugin
-	    supports reading Ethernet and Wi-Fi connections, but does
-	    not support saving any connection types.
+	    This plugin is deprecated and its selection has no effect.
+	    The <literal>keyfile</literal> plugin should be used
+	    instead.
 	  </para>
 	</listitem>
       </varlistentry>
@@ -647,12 +876,16 @@ ipv6.ip6-privacy=1
       </varlistentry>
 
       <varlistentry>
-	<term><varname>ibft</varname></term>
+	<term><varname>ibft</varname>, <varname>no-ibft</varname></term>
 	<listitem>
 	  <para>
 	    This plugin allows to read iBFT configuration (iSCSI Boot Firmware Table).
 	    The configuration is read using /sbin/iscsiadm. Users are expected to
 	    configure iBFT connections via the firmware interfaces.
+	    If ibft support is available, it is automatically enabled after
+	    <literal>ifcfg-rh</literal>. This can be disabled by <literal>no-ibft</literal>.
+	    You can also explicitly specify <literal>ibft</literal> to load the
+	    plugin without <literal>ifcfg-rh</literal> or to change the plugin order.
 	  </para>
 	</listitem>
       </varlistentry>
@@ -715,12 +948,16 @@ ipv6.ip6-privacy=1
         </varlistentry>
         <varlistentry>
           <term>SPEC[,;]SPEC</term>
-          <listitem><para>Multiple specs can be concatenated with comman or semicolon. The order does not matter as
-             matches are either positive (inclusive) or negative, with negative matches having higher priority.</para>
+          <listitem><para>Multiple specs can be concatenated with commas or semicolons. The order does not matter as
+            matches are either inclusive or negative (<literal>except:</literal>), with negative matches having higher
+            priority.
+            </para>
             <para>Backslash is supported to escape the separators ';' and ',', and to express special
             characters such as newline ('\n'), tabulator ('\t'), whitespace ('\s') and backslash ('\\'). The globbing of
-            interface names cannot be escaped. Whitespace is taken literally so usually the specs will be concatenated
-            without spaces.</para></listitem>
+            interface names cannot be escaped. Whitespace is not a separator but will be trimmed between
+            two specs (unless escaped as '\s').
+            </para>
+          </listitem>
         </varlistentry>
       </variablelist>
       </para>

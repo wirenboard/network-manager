@@ -25,9 +25,7 @@
 
 #include <stdlib.h>
 
-#include <glib.h>
-#include <glib/gi18n-lib.h>
-
+#include "nm-default.h"
 #include "nmt-page-ip4.h"
 #include "nmt-ip-entry.h"
 #include "nmt-address-list.h"

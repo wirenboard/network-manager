@@ -7,7 +7,7 @@
  * any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT SC WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -23,14 +23,14 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <string.h>
 
 #include <nm-utils.h>
-#include "gsystem-local-alloc.h"
+#include "nm-default.h"
 
 #include "nm-setting-private.h"
 #include "nm-utils.h"
+#include "nm-utils-private.h"
 #include "nm-core-internal.h"
 #include "nm-core-tests-enum-types.h"
 
@@ -60,10 +60,18 @@
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
 #include "nm-simple-connection.h"
-#include "nm-glib-compat.h"
+#include "nm-keyfile-internal.h"
 
 #include "nm-test-utils.h"
 #include "test-general-enums.h"
+
+/* When passing a "bool" typed argument to a variadic function that
+ * expects a gboolean, the compiler will promote the integer type
+ * to have at least size (int). That way:
+ *   g_object_set (obj, PROP_BOOL, bool_val, NULL);
+ * will just work correctly. */
+G_STATIC_ASSERT (sizeof (gboolean) == sizeof (int));
+G_STATIC_ASSERT (sizeof (bool) <= sizeof (int));
 
 static void
 vpn_check_func (const char *key, const char *value, gpointer user_data)
@@ -744,6 +752,35 @@ test_setting_gsm_without_number (void)
 	nmtst_assert_setting_verifies (NM_SETTING (s_gsm));
 
 	g_object_set (s_gsm, NM_SETTING_GSM_NUMBER, "", NULL);
+	nmtst_assert_setting_verify_fails (NM_SETTING (s_gsm), NM_CONNECTION_ERROR,
+	                                   NM_CONNECTION_ERROR_INVALID_PROPERTY);
+}
+
+static void
+test_setting_gsm_sim_operator_id (void)
+{
+	gs_unref_object NMSettingGsm *s_gsm = NULL;
+
+	s_gsm = (NMSettingGsm *) nm_setting_gsm_new ();
+	g_assert (s_gsm);
+
+	/* Valid */
+	g_object_set (s_gsm, NM_SETTING_GSM_SIM_OPERATOR_ID, "12345", NULL);
+	nmtst_assert_setting_verifies (NM_SETTING (s_gsm));
+
+	g_object_set (s_gsm, NM_SETTING_GSM_SIM_OPERATOR_ID, "123456", NULL);
+	nmtst_assert_setting_verifies (NM_SETTING (s_gsm));
+
+	/* Invalid */
+	g_object_set (s_gsm, NM_SETTING_GSM_SIM_OPERATOR_ID, "", NULL);
+	nmtst_assert_setting_verify_fails (NM_SETTING (s_gsm), NM_CONNECTION_ERROR,
+	                                   NM_CONNECTION_ERROR_INVALID_PROPERTY);
+
+	g_object_set (s_gsm, NM_SETTING_GSM_SIM_OPERATOR_ID, "     ", NULL);
+	nmtst_assert_setting_verify_fails (NM_SETTING (s_gsm), NM_CONNECTION_ERROR,
+	                                   NM_CONNECTION_ERROR_INVALID_PROPERTY);
+
+	g_object_set (s_gsm, NM_SETTING_GSM_SIM_OPERATOR_ID, "abcdef", NULL);
 	nmtst_assert_setting_verify_fails (NM_SETTING (s_gsm), NM_CONNECTION_ERROR,
 	                                   NM_CONNECTION_ERROR_INVALID_PROPERTY);
 }
@@ -1972,6 +2009,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_CONNECTION_SECONDARIES,          NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_METERED,              NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_CONNECTION_LLDP,                 NM_SETTING_DIFF_RESULT_IN_A },
 			{ NULL, NM_SETTING_DIFF_RESULT_UNKNOWN }
 		} },
 		{ NM_SETTING_WIRED_SETTING_NAME, {
@@ -1994,6 +2032,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_IP_CONFIG_METHOD,             NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_DNS,                NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_DNS_SEARCH,         NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_IP_CONFIG_DNS_OPTIONS,        NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_ADDRESSES,          NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_GATEWAY,            NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_ROUTES,             NM_SETTING_DIFF_RESULT_IN_A },
@@ -2001,8 +2040,10 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_IGNORE_AUTO_DNS,    NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID,    NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT,      NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_DHCP_HOSTNAME,      NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_IP4_CONFIG_DHCP_FQDN,         NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_NEVER_DEFAULT,      NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP_CONFIG_MAY_FAIL,           NM_SETTING_DIFF_RESULT_IN_A },
 			{ NULL, NM_SETTING_DIFF_RESULT_UNKNOWN },
@@ -2851,7 +2892,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns (s_ip4, "11.22.0.0"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->dns->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2861,7 +2902,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns_search (s_ip4, "foobar.com"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns_search (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->dns_search->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns_search->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns_search (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2873,7 +2914,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_address (s_ip4, addr));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_address (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->addresses->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->addresses->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_address (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2886,12 +2927,19 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_route (s_ip4, route));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_route (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->routes->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->routes->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_route (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
 	nm_setting_ip_config_add_route (s_ip4, route);
 	ASSERT_CHANGED (nm_setting_ip_config_clear_routes (s_ip4));
+
+	ASSERT_CHANGED (nm_setting_ip_config_add_dns_option (s_ip4, "debug"));
+	ASSERT_CHANGED (nm_setting_ip_config_remove_dns_option (s_ip4, 0));
+
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns_options->len*");
+	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns_option (s_ip4, 1));
+	g_test_assert_expected_messages ();
 
 	nm_ip_address_unref (addr);
 	nm_ip_route_unref (route);
@@ -2920,7 +2968,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns (s_ip6, "1:2:3::4:5:6"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->dns->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2930,7 +2978,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns_search (s_ip6, "foobar.com"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns_search (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->dns_search->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns_search->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns_search (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2943,7 +2991,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_address (s_ip6, addr));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_address (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->addresses->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->addresses->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_address (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2956,7 +3004,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_route (s_ip6, route));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_route (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*i < priv->routes->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->routes->len*");
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_route (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -3964,6 +4012,51 @@ typedef struct {
 } HexItem;
 
 static void
+test_setting_compare_default_strv (void)
+{
+	gs_unref_object NMConnection *c1 = NULL, *c2 = NULL;
+	char **strv;
+	NMSettingIPConfig *s_ip2, *s_ip1;
+	gboolean compare;
+	GHashTable *out_settings = NULL;
+
+	c1 = nmtst_create_minimal_connection ("test_compare_default_strv", NULL,
+	                                      NM_SETTING_WIRED_SETTING_NAME, NULL);
+	nmtst_assert_connection_verifies_and_normalizable (c1);
+
+	c2 = nm_simple_connection_new_clone (c1);
+	nmtst_assert_connection_verifies_without_normalization (c2);
+
+	nmtst_assert_connection_equals (c1, FALSE, c2, FALSE);
+
+	s_ip1 = nm_connection_get_setting_ip4_config (c1);
+	s_ip2 = nm_connection_get_setting_ip4_config (c2);
+
+	nm_setting_ip_config_clear_dns_options (s_ip2, FALSE);
+	g_object_get (G_OBJECT (s_ip2), NM_SETTING_IP_CONFIG_DNS_OPTIONS, &strv, NULL);
+	g_assert (!strv);
+	nmtst_assert_connection_equals (c1, FALSE, c2, FALSE);
+
+	nm_setting_ip_config_clear_dns_options (s_ip2, TRUE);
+	g_object_get (G_OBJECT (s_ip2), NM_SETTING_IP_CONFIG_DNS_OPTIONS, &strv, NULL);
+	g_assert (strv && !strv[0]);
+	g_strfreev (strv);
+
+	compare = nm_setting_diff ((NMSetting *) s_ip1, (NMSetting *) s_ip2, NM_SETTING_COMPARE_FLAG_EXACT, FALSE, &out_settings);
+	g_assert (!compare);
+	g_assert (out_settings);
+	g_assert (g_hash_table_contains (out_settings, NM_SETTING_IP_CONFIG_DNS_OPTIONS));
+	g_hash_table_unref (out_settings);
+	out_settings = NULL;
+
+	compare = nm_connection_diff (c1, c2, NM_SETTING_COMPARE_FLAG_EXACT, &out_settings);
+	g_assert (!compare);
+	g_assert (out_settings);
+	g_hash_table_unref (out_settings);
+	out_settings = NULL;
+}
+
+static void
 test_hexstr2bin (void)
 {
 	static const HexItem items[] = {
@@ -4227,6 +4320,138 @@ test_nm_utils_ascii_str_to_int64 (void)
 
 /******************************************************************************/
 
+static void
+test_nm_utils_strstrdictkey (void)
+{
+#define _VALUES_STATIC(_v1, _v2) { .v1 = _v1, .v2 = _v2, .v_static = _nm_utils_strstrdictkey_static (_v1, _v2), }
+	const struct {
+		const char *v1;
+		const char *v2;
+		NMUtilsStrStrDictKey *v_static;
+	} *val1, *val2, values[] = {
+		{ NULL, NULL },
+		{ "", NULL },
+		{ NULL, "" },
+		{ "a", NULL },
+		{ NULL, "a" },
+		_VALUES_STATIC ("", ""),
+		_VALUES_STATIC ("a", ""),
+		_VALUES_STATIC ("", "a"),
+		_VALUES_STATIC ("a", "b"),
+	};
+	guint i, j;
+
+	for (i = 0; i < G_N_ELEMENTS (values); i++) {
+		gs_free NMUtilsStrStrDictKey *key1 = NULL;
+
+		val1 = &values[i];
+
+		key1 = _nm_utils_strstrdictkey_create (val1->v1, val1->v2);
+		if (val1->v_static) {
+			g_assert (_nm_utils_strstrdictkey_equal (key1, val1->v_static));
+			g_assert (_nm_utils_strstrdictkey_equal (val1->v_static, key1));
+			g_assert_cmpint (_nm_utils_strstrdictkey_hash (key1), ==, _nm_utils_strstrdictkey_hash (val1->v_static));
+		}
+
+		for (j = 0; j < G_N_ELEMENTS (values); j++) {
+			gs_free NMUtilsStrStrDictKey *key2 = NULL;
+
+			val2 = &values[j];
+			key2 = _nm_utils_strstrdictkey_create (val2->v1, val2->v2);
+			if (i != j) {
+				g_assert (!_nm_utils_strstrdictkey_equal (key1, key2));
+				g_assert (!_nm_utils_strstrdictkey_equal (key2, key1));
+			}
+		}
+	}
+}
+
+/******************************************************************************/
+
+static void
+test_nm_utils_dns_option_validate_do (char *option, gboolean ipv6, const NMUtilsDNSOptionDesc *descs,
+                                      gboolean exp_result, char *exp_name, gboolean exp_value)
+{
+	char *name;
+	long value = 0;
+	gboolean result;
+
+	result = _nm_utils_dns_option_validate (option, &name, &value, ipv6, descs);
+
+	g_assert (result == exp_result);
+	g_assert_cmpstr (name, ==, exp_name);
+	g_assert (value == exp_value);
+
+	g_free (name);
+}
+
+static const NMUtilsDNSOptionDesc opt_descs[] = {
+	/* name                   num      ipv6 */
+	{ "opt1",                 FALSE,   FALSE },
+	{ "opt2",                 TRUE,    FALSE },
+	{ "opt3",                 FALSE,   TRUE  },
+	{ "opt4",                 TRUE,    TRUE  },
+	{ NULL,                   FALSE,   FALSE }
+};
+
+static void
+test_nm_utils_dns_option_validate (void)
+{
+	/*                                    opt            ipv6    descs        result name       value */
+	test_nm_utils_dns_option_validate_do ("",            FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do (":",           FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do (":1",          FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do (":val",        FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt",         FALSE,  NULL,        TRUE,  "opt",     -1);
+	test_nm_utils_dns_option_validate_do ("opt:",        FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt:12",      FALSE,  NULL,        TRUE,  "opt",     12);
+	test_nm_utils_dns_option_validate_do ("opt:12 ",     FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt:val",     FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt:2val",    FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt:2:3",     FALSE,  NULL,        FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt-6",       FALSE,  NULL,        TRUE,  "opt-6",   -1);
+
+	test_nm_utils_dns_option_validate_do ("opt1",        FALSE,  opt_descs,   TRUE,  "opt1",    -1);
+	test_nm_utils_dns_option_validate_do ("opt1",        TRUE,   opt_descs,   TRUE,  "opt1",    -1);
+	test_nm_utils_dns_option_validate_do ("opt1:3",      FALSE,  opt_descs,   FALSE,  NULL,     -1);
+
+	test_nm_utils_dns_option_validate_do ("opt2",        FALSE,  opt_descs,   FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt2:5",      FALSE,  opt_descs,   TRUE,  "opt2",    5);
+
+	test_nm_utils_dns_option_validate_do ("opt3",        FALSE,  opt_descs,   FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt3",        TRUE,   opt_descs,   TRUE,  "opt3",    -1);
+
+	test_nm_utils_dns_option_validate_do ("opt4",        FALSE,  opt_descs,   FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt4",        TRUE,   opt_descs,   FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt4:40",     FALSE,  opt_descs,   FALSE, NULL,      -1);
+	test_nm_utils_dns_option_validate_do ("opt4:40",     TRUE,   opt_descs,   TRUE,  "opt4",    40);
+}
+
+static void
+test_nm_utils_dns_option_find_idx (void)
+{
+	GPtrArray *options;
+
+	options = g_ptr_array_new ();
+
+	g_ptr_array_add (options, "debug");
+	g_ptr_array_add (options, "timeout:5");
+	g_ptr_array_add (options, "edns0");
+
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "debug"),      ==, 0);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "debug:1"),    ==, 0);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "timeout"),    ==, 1);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "timeout:5"),  ==, 1);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "timeout:2"),  ==, 1);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "edns0"),      ==, 2);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, "rotate"),     ==, -1);
+	g_assert_cmpint (_nm_utils_dns_option_find_idx (options, ""),           ==, -1);
+
+	g_ptr_array_free (options, TRUE);
+}
+
+/******************************************************************************/
+
 enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED {
 	_DUMMY_1 = -1,
 };
@@ -4349,6 +4574,41 @@ test_g_ptr_array_insert (void)
 
 /******************************************************************************/
 
+static void
+test_g_hash_table_get_keys_as_array (void)
+{
+	GHashTable *table = g_hash_table_new (g_str_hash, g_str_equal);
+	guint length = 0;
+	char **keys;
+
+	g_hash_table_insert (table, "one",   "1");
+	g_hash_table_insert (table, "two",   "2");
+	g_hash_table_insert (table, "three", "3");
+
+	keys = (char **) _nm_g_hash_table_get_keys_as_array (table, &length);
+	g_assert (keys);
+	g_assert_cmpuint (length, ==, 3);
+
+	g_assert (   !strcmp (keys[0], "one")
+	          || !strcmp (keys[1], "one")
+	          || !strcmp (keys[2], "one"));
+
+	g_assert (   !strcmp (keys[0], "two")
+	          || !strcmp (keys[1], "two")
+	          || !strcmp (keys[2], "two"));
+
+	g_assert (   !strcmp (keys[0], "three")
+	          || !strcmp (keys[1], "three")
+	          || !strcmp (keys[2], "three"));
+
+	g_assert (!keys[3]);
+
+	g_free (keys);
+	g_hash_table_unref (table);
+}
+
+/******************************************************************************/
+
 static int
 _test_find_binary_search_cmp (gconstpointer a, gconstpointer b, gpointer dummy)
 {
@@ -4452,6 +4712,101 @@ test_nm_utils_ptrarray_find_binary_search (void)
 }
 
 /******************************************************************************/
+static void
+test_nm_utils_enum_from_str_do (GType type, const char *str,
+                                gboolean exp_result, int exp_flags,
+                                const char *exp_err_token)
+{
+	int flags = 1;
+	char *err_token = NULL;
+	gboolean result;
+
+	result = nm_utils_enum_from_str (type, str, &flags, &err_token);
+
+	g_assert (result == exp_result);
+	g_assert_cmpint (flags, ==, exp_flags);
+	g_assert_cmpstr (err_token, ==, exp_err_token);
+
+	g_free (err_token);
+}
+
+static void
+test_nm_utils_enum_to_str_do (GType type, int flags, const char *exp_str)
+{
+	char *str;
+
+	str = nm_utils_enum_to_str (type, flags);
+	g_assert_cmpstr (str, ==, exp_str);
+	g_free (str);
+}
+
+static void
+test_nm_utils_enum_get_values_do (GType type, int from, int to, const char *exp_str)
+{
+	const char **strv;
+	char *str;
+
+	strv = nm_utils_enum_get_values (type, from, to);
+	g_assert (strv);
+	str = g_strjoinv (",", (char **) strv);
+	g_assert_cmpstr (str, ==, exp_str);
+	g_free (str);
+	g_free (strv);
+}
+
+
+static void test_nm_utils_enum (void)
+{
+	GType bool_enum = nm_test_general_bool_enum_get_type();
+	GType meta_flags = nm_test_general_meta_flags_get_type();
+	GType color_flags = nm_test_general_color_flags_get_type();
+
+	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_YES, "yes");
+	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_UNKNOWN, "unknown");
+	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_INVALID, NULL);
+
+	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_NONE, "");
+	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_BAZ, "baz");
+	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_FOO |
+	                                          NM_TEST_GENERAL_META_FLAGS_BAR |
+	                                          NM_TEST_GENERAL_META_FLAGS_BAZ, "foo, bar, baz");
+
+	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED, "red");
+	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_WHITE, "");
+	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED |
+	                                           NM_TEST_GENERAL_COLOR_FLAGS_GREEN, "red, green");
+
+	test_nm_utils_enum_from_str_do (bool_enum, "", FALSE, 0, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, " ", FALSE, 0, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, "invalid", FALSE, 0, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, "yes", TRUE, NM_TEST_GENERAL_BOOL_ENUM_YES, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, "no", TRUE, NM_TEST_GENERAL_BOOL_ENUM_NO, NULL);
+	test_nm_utils_enum_from_str_do (bool_enum, "yes,no", FALSE, 0, NULL);
+
+	test_nm_utils_enum_from_str_do (meta_flags, "", TRUE, 0, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, " ", TRUE, 0, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "foo", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
+	                                                             NM_TEST_GENERAL_META_FLAGS_BAZ, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "foo, baz", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
+	                                                              NM_TEST_GENERAL_META_FLAGS_BAZ, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "foo,,bar", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
+	                                                              NM_TEST_GENERAL_META_FLAGS_BAR, NULL);
+	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz,quux,bar", FALSE, 0, "quux");
+
+	test_nm_utils_enum_from_str_do (color_flags, "green", TRUE, NM_TEST_GENERAL_COLOR_FLAGS_GREEN, NULL);
+	test_nm_utils_enum_from_str_do (color_flags, "blue,red", TRUE, NM_TEST_GENERAL_COLOR_FLAGS_BLUE |
+	                                                               NM_TEST_GENERAL_COLOR_FLAGS_RED, NULL);
+	test_nm_utils_enum_from_str_do (color_flags, "blue,white", FALSE, 0, "white");
+
+	test_nm_utils_enum_get_values_do (bool_enum, 0, G_MAXINT, "no,yes,maybe,unknown");
+	test_nm_utils_enum_get_values_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_YES,
+	                                  NM_TEST_GENERAL_BOOL_ENUM_MAYBE, "yes,maybe");
+	test_nm_utils_enum_get_values_do (meta_flags, 0, G_MAXINT, "none,foo,bar,baz");
+	test_nm_utils_enum_get_values_do (color_flags, 0, G_MAXINT, "blue,red,green");
+}
+
+/******************************************************************************/
 
 static int
 _test_nm_in_set_get (int *call_counter, gboolean allow_called, int value)
@@ -4540,81 +4895,6 @@ test_nm_in_set (void)
 
 /******************************************************************************/
 
-static void
-test_nm_utils_enum_from_str_do (GType type, const char *str,
-                                gboolean exp_result, int exp_flags,
-                                const char *exp_err_token)
-{
-	int flags = 1;
-	char *err_token = NULL;
-	gboolean result;
-
-	result = nm_utils_enum_from_str (type, str, &flags, &err_token);
-
-	g_assert (result == exp_result);
-	g_assert_cmpint (flags, ==, exp_flags);
-	g_assert_cmpstr (err_token, ==, exp_err_token);
-
-	g_free (err_token);
-}
-
-static void
-test_nm_utils_enum_to_str_do (GType type, int flags, const char *exp_str)
-{
-	char *str;
-
-	str = nm_utils_enum_to_str (type, flags);
-	g_assert_cmpstr (str, ==, exp_str);
-	g_free (str);
-}
-
-static void test_nm_utils_enum (void)
-{
-	GType bool_enum = nm_test_general_bool_enum_get_type();
-	GType meta_flags = nm_test_general_meta_flags_get_type();
-	GType color_flags = nm_test_general_color_flags_get_type();
-
-	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_YES, "yes");
-	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_UNKNOWN, "unknown");
-	test_nm_utils_enum_to_str_do (bool_enum, NM_TEST_GENERAL_BOOL_ENUM_INVALID, NULL);
-
-	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_NONE, "");
-	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_BAZ, "baz");
-	test_nm_utils_enum_to_str_do (meta_flags, NM_TEST_GENERAL_META_FLAGS_FOO |
-	                                          NM_TEST_GENERAL_META_FLAGS_BAR |
-	                                          NM_TEST_GENERAL_META_FLAGS_BAZ, "foo, bar, baz");
-
-	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED, "red");
-	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_WHITE, "");
-	test_nm_utils_enum_to_str_do (color_flags, NM_TEST_GENERAL_COLOR_FLAGS_RED |
-	                                           NM_TEST_GENERAL_COLOR_FLAGS_GREEN, "red, green");
-
-	test_nm_utils_enum_from_str_do (bool_enum, "", FALSE, 0, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, " ", FALSE, 0, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, "invalid", FALSE, 0, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, "yes", TRUE, NM_TEST_GENERAL_BOOL_ENUM_YES, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, "no", TRUE, NM_TEST_GENERAL_BOOL_ENUM_NO, NULL);
-	test_nm_utils_enum_from_str_do (bool_enum, "yes,no", FALSE, 0, NULL);
-
-	test_nm_utils_enum_from_str_do (meta_flags, "", TRUE, 0, NULL);
-	test_nm_utils_enum_from_str_do (meta_flags, " ", TRUE, 0, NULL);
-	test_nm_utils_enum_from_str_do (meta_flags, "foo", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO, NULL);
-	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
-	                                                             NM_TEST_GENERAL_META_FLAGS_BAZ, NULL);
-	test_nm_utils_enum_from_str_do (meta_flags, "foo, baz", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
-	                                                              NM_TEST_GENERAL_META_FLAGS_BAZ, NULL);
-	test_nm_utils_enum_from_str_do (meta_flags, "foo,,bar", TRUE, NM_TEST_GENERAL_META_FLAGS_FOO |
-	                                                              NM_TEST_GENERAL_META_FLAGS_BAR, NULL);
-	test_nm_utils_enum_from_str_do (meta_flags, "foo,baz,quux,bar", FALSE, 0, "quux");
-
-	test_nm_utils_enum_from_str_do (color_flags, "green", TRUE, NM_TEST_GENERAL_COLOR_FLAGS_GREEN, NULL);
-	test_nm_utils_enum_from_str_do (color_flags, "blue,red", TRUE, NM_TEST_GENERAL_COLOR_FLAGS_BLUE |
-	                                                               NM_TEST_GENERAL_COLOR_FLAGS_RED, NULL);
-	test_nm_utils_enum_from_str_do (color_flags, "blue,white", FALSE, 0, "white");
-}
-
-/******************************************************************************/
-
 NMTST_DEFINE ();
 
 int main (int argc, char **argv)
@@ -4632,6 +4912,7 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_gsm_apn_bad_chars", test_setting_gsm_apn_bad_chars);
 	g_test_add_func ("/core/general/test_setting_gsm_apn_underscore", test_setting_gsm_apn_underscore);
 	g_test_add_func ("/core/general/test_setting_gsm_without_number", test_setting_gsm_without_number);
+	g_test_add_func ("/core/general/test_setting_gsm_sim_operator_id", test_setting_gsm_sim_operator_id);
 	g_test_add_func ("/core/general/test_setting_to_dbus_all", test_setting_to_dbus_all);
 	g_test_add_func ("/core/general/test_setting_to_dbus_no_secrets", test_setting_to_dbus_no_secrets);
 	g_test_add_func ("/core/general/test_setting_to_dbus_only_secrets", test_setting_to_dbus_only_secrets);
@@ -4710,6 +4991,7 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_802_1x_changed_signal", test_setting_802_1x_changed_signal);
 	g_test_add_func ("/core/general/test_setting_ip4_gateway", test_setting_ip4_gateway);
 	g_test_add_func ("/core/general/test_setting_ip6_gateway", test_setting_ip6_gateway);
+	g_test_add_func ("/core/general/test_setting_compare_default_strv", test_setting_compare_default_strv);
 
 	g_test_add_func ("/core/general/hexstr2bin", test_hexstr2bin);
 	g_test_add_func ("/core/general/test_nm_utils_uuid_generate_from_string", test_nm_utils_uuid_generate_from_string);
@@ -4718,7 +5000,12 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/_nm_utils_ascii_str_to_int64", test_nm_utils_ascii_str_to_int64);
 	g_test_add_func ("/core/general/nm_utils_is_power_of_two", test_nm_utils_is_power_of_two);
 	g_test_add_func ("/core/general/_glib_compat_g_ptr_array_insert", test_g_ptr_array_insert);
+	g_test_add_func ("/core/general/_glib_compat_g_hash_table_get_keys_as_array", test_g_hash_table_get_keys_as_array);
 	g_test_add_func ("/core/general/_nm_utils_ptrarray_find_binary_search", test_nm_utils_ptrarray_find_binary_search);
+	g_test_add_func ("/core/general/_nm_utils_strstrdictkey", test_nm_utils_strstrdictkey);
+
+	g_test_add_func ("/core/general/_nm_utils_dns_option_validate", test_nm_utils_dns_option_validate);
+	g_test_add_func ("/core/general/_nm_utils_dns_option_find_idx", test_nm_utils_dns_option_find_idx);
 
 	g_test_add_func ("/core/general/test_nm_utils_enum", test_nm_utils_enum);
 

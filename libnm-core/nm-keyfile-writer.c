@@ -28,11 +28,8 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-core-internal.h"
-#include "gsystem-local-alloc.h"
-#include "nm-glib-compat.h"
 #include "nm-keyfile-internal.h"
 #include "nm-keyfile-utils.h"
 
@@ -103,6 +100,24 @@ dns_writer (KeyfileWriterInfo *info,
 		nm_keyfile_plugin_kf_set_string_list (info->keyfile, nm_setting_get_name (setting), key,
 		                                      (const char **) list, g_strv_length (list));
 	}
+}
+
+static void
+ip6_addr_gen_mode_writer (KeyfileWriterInfo *info,
+                          NMSetting *setting,
+                          const char *key,
+                          const GValue *value)
+{
+	NMSettingIP6ConfigAddrGenMode addr_gen_mode;
+	gs_free char *str = NULL;
+
+	addr_gen_mode = (NMSettingIP6ConfigAddrGenMode) g_value_get_int (value);
+	str = nm_utils_enum_to_str (nm_setting_ip6_config_addr_gen_mode_get_type (),
+	                            addr_gen_mode);
+	nm_keyfile_plugin_kf_set_string (info->keyfile,
+	                                 nm_setting_get_name (setting),
+	                                 key,
+	                                 str);
 }
 
 static void
@@ -560,6 +575,9 @@ static KeyWriter key_writers[] = {
 	{ NM_SETTING_IP6_CONFIG_SETTING_NAME,
 	  NM_SETTING_IP_CONFIG_DNS,
 	  dns_writer },
+	{ NM_SETTING_IP6_CONFIG_SETTING_NAME,
+	  NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE,
+	  ip6_addr_gen_mode_writer },
 	{ NM_SETTING_WIRELESS_SETTING_NAME,
 	  NM_SETTING_WIRELESS_SSID,
 	  ssid_writer },
@@ -590,8 +608,16 @@ static KeyWriter key_writers[] = {
 static gboolean
 can_omit_default_value (NMSetting *setting, const char *property)
 {
-	if (NM_IS_SETTING_VLAN (setting) && !strcmp (property, NM_SETTING_VLAN_FLAGS))
-		return FALSE;
+	if (NM_IS_SETTING_VLAN (setting)) {
+		if (!strcmp (property, NM_SETTING_VLAN_FLAGS))
+			return FALSE;
+	} else if (NM_IS_SETTING_IP6_CONFIG (setting)) {
+		if (!strcmp (property, NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE))
+			return FALSE;
+	} else if (NM_IS_SETTING_WIRELESS (setting)) {
+		if (!strcmp (property, NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION))
+			return FALSE;
+	}
 
 	return TRUE;
 }

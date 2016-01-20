@@ -4,17 +4,18 @@ SUBDIRS = . tests
 
 AM_CPPFLAGS = \
 	-I${top_srcdir} \
-	-I${top_srcdir}/include \
-	-I$(top_builddir)/include \
+	-I${top_srcdir}/shared \
+	-I$(top_builddir)/shared \
 	-DG_LOG_DOMAIN=\""libnm-util"\" \
 	-DLOCALEDIR=\"$(datadir)/locale\" \
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	$(UUID_CFLAGS)
 
 if WITH_GNUTLS
-AM_CPPFLAGS += $(LIBGCRYPT_CFLAGS) $(GNUTLS_CFLAGS)
+AM_CPPFLAGS += $(GNUTLS_CFLAGS)
 endif
 
 if WITH_NSS
@@ -24,7 +25,7 @@ endif
 lib_LTLIBRARIES=libnm-util.la
 
 libnm_util_include_HEADERS = 		\
-	$(top_builddir)/include/nm-version-macros.h \
+	$(top_builddir)/shared/nm-version-macros.h \
 	NetworkManager.h		\
 	NetworkManagerVPN.h		\
 	nm-connection.h			\
@@ -63,9 +64,11 @@ nodist_libnm_util_include_HEADERS = \
 
 libnm_util_la_private_headers = \
 	crypto.h			\
+	nm-dbus-glib-types.h		\
+	nm-gvaluearray-compat.h		\
 	nm-param-spec-specialized.h	\
-	nm-utils-private.h		\
-	nm-setting-private.h
+	nm-setting-private.h		\
+	nm-utils-private.h
 
 libnm_util_la_csources = \
 	crypto.c			\
@@ -121,7 +124,7 @@ libnm_util_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
 
 if WITH_GNUTLS
 libnm_util_la_SOURCES += crypto_gnutls.c
-libnm_util_la_LIBADD += $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
+libnm_util_la_LIBADD += $(GNUTLS_LIBS)
 endif
 
 if WITH_NSS
@@ -145,7 +148,7 @@ libtest_crypto_la_LIBADD = \
 
 if WITH_GNUTLS
 libtest_crypto_la_SOURCES += crypto_gnutls.c
-libtest_crypto_la_LIBADD += $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
+libtest_crypto_la_LIBADD += $(GNUTLS_LIBS)
 endif
 
 if WITH_NSS

@@ -32,7 +32,7 @@
 
 #include "nm-bluez5-dun.h"
 #include "nm-bt-error.h"
-#include "nm-logging.h"
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 
 struct _NMBluez5DunContext {
@@ -137,10 +137,7 @@ sdp_search_cleanup (NMBluez5DunContext *context)
 		context->sdp_session = NULL;
 	}
 
-	if (context->sdp_watch_id) {
-		g_source_remove (context->sdp_watch_id);
-		context->sdp_watch_id = 0;
-	}
+	nm_clear_g_source (&context->sdp_watch_id);
 }
 
 static void

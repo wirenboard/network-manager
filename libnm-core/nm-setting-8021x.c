@@ -23,8 +23,8 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
 
+#include "nm-default.h"
 #include "nm-setting-8021x.h"
 #include "nm-utils.h"
 #include "crypto.h"
@@ -32,7 +32,6 @@
 #include "nm-setting-private.h"
 #include "nm-core-enum-types.h"
 #include "nm-macros-internal.h"
-#include "gsystem-local-alloc.h"
 
 /**
  * SECTION:nm-setting-8021x
@@ -429,6 +428,8 @@ get_cert_scheme (GBytes *bytes, GError **error)
  *
  * Returns: the scheme of the blob or %NM_SETTING_802_1X_CK_SCHEME_UNKNOWN.
  * For NULL it also returns NM_SETTING_802_1X_CK_SCHEME_UNKNOWN.
+ *
+ * Since: 1.2
  **/
 NMSetting8021xCKScheme
 nm_setting_802_1x_check_cert_scheme (gconstpointer pdata, gsize length, GError **error)

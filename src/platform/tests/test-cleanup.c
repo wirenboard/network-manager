@@ -35,7 +35,7 @@ test_cleanup_internal (void)
 	inet_pton (AF_INET6, "2001:db8:e:f:1:2:3:4", &gateway6);
 
 	/* Create and set up device */
-	g_assert (nm_platform_dummy_add (NM_PLATFORM_GET, DEVICE_NAME, NULL) == NM_PLATFORM_ERROR_SUCCESS);
+	g_assert (nm_platform_link_dummy_add (NM_PLATFORM_GET, DEVICE_NAME, NULL) == NM_PLATFORM_ERROR_SUCCESS);
 	accept_signal (link_added);
 	free_signal (link_added);
 	g_assert (nm_platform_link_set_up (NM_PLATFORM_GET, nm_platform_link_get_ifindex (NM_PLATFORM_GET, DEVICE_NAME), NULL));
@@ -43,8 +43,8 @@ test_cleanup_internal (void)
 	g_assert (ifindex > 0);
 
 	/* Add routes and addresses */
-	g_assert (nm_platform_ip4_address_add (NM_PLATFORM_GET, ifindex, addr4, 0, plen4, lifetime, preferred, NULL));
-	g_assert (nm_platform_ip6_address_add (NM_PLATFORM_GET, ifindex, addr6, in6addr_any, plen6, lifetime, preferred, flags));
+	g_assert (nm_platform_ip4_address_add (NM_PLATFORM_GET, ifindex, addr4, plen4, addr4, lifetime, preferred, NULL));
+	g_assert (nm_platform_ip6_address_add (NM_PLATFORM_GET, ifindex, addr6, plen6, in6addr_any, lifetime, preferred, flags));
 	g_assert (nm_platform_ip4_route_add (NM_PLATFORM_GET, ifindex, NM_IP_CONFIG_SOURCE_USER, gateway4, 32, INADDR_ANY, 0, metric, mss));
 	g_assert (nm_platform_ip4_route_add (NM_PLATFORM_GET, ifindex, NM_IP_CONFIG_SOURCE_USER, network4, plen4, gateway4, 0, metric, mss));
 	g_assert (nm_platform_ip4_route_add (NM_PLATFORM_GET, ifindex, NM_IP_CONFIG_SOURCE_USER, 0, 0, gateway4, 0, metric, mss));

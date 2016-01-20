@@ -30,8 +30,8 @@
 #include <ctype.h>
 
 #include "nm-core-internal.h"
-#include "nm-system-config-interface.h"
-#include "nm-logging.h"
+#include "nm-settings-plugin.h"
+#include "nm-default.h"
 
 #include "parser.h"
 #include "plugin.h"

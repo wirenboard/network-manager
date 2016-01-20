@@ -27,8 +27,8 @@
 #include <nm-utils.h>
 #include <nm-setting-wireless-security.h>
 #include <nm-settings-connection.h>
-#include <nm-system-config-interface.h>
-#include <nm-logging.h>
+#include <nm-settings-plugin.h>
+#include "nm-default.h"
 #include "nm-ifnet-connection.h"
 #include "connection_parser.h"
 #include "net_parser.h"
@@ -50,7 +50,7 @@ static guint signals[IFNET_LAST_SIGNAL] = { 0 };
 
 typedef struct {
 	gchar *conn_name;
-	NMSystemConfigInterface *config;
+	NMSettingsPlugin *config;
 } NMIfnetConnectionPrivate;
 
 NMIfnetConnection *
@@ -102,8 +102,9 @@ nm_ifnet_connection_get_conn_name (NMIfnetConnection *connection)
 
 static void
 commit_changes (NMSettingsConnection *connection,
+                NMSettingsConnectionCommitReason commit_reason,
                 NMSettingsConnectionCommitFunc callback,
-	            gpointer user_data)
+                gpointer user_data)
 {
 	GError *error = NULL;
 	NMIfnetConnectionPrivate *priv = NM_IFNET_CONNECTION_GET_PRIVATE (connection);
@@ -139,7 +140,7 @@ commit_changes (NMSettingsConnection *connection,
 		g_free (priv->conn_name);
 		priv->conn_name = new_name;
 
-		NM_SETTINGS_CONNECTION_CLASS (nm_ifnet_connection_parent_class)->commit_changes (connection, callback, user_data);
+		NM_SETTINGS_CONNECTION_CLASS (nm_ifnet_connection_parent_class)->commit_changes (connection, commit_reason, callback, user_data);
 		nm_log_info (LOGD_SETTINGS, "Successfully updated %s", priv->conn_name);
 	} else {
 		nm_log_warn (LOGD_SETTINGS, "Failed to update %s",

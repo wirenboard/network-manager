@@ -35,6 +35,10 @@
       </tp:docstring>
     </property>
     <property name="Nameservers" type="aay" access="read">
+      <!-- gdbus-codegen assumes that "aay" means "array of non-UTF-8
+	   string" and so would make this a char **.
+      -->
+      <annotation name="org.gtk.GDBus.C.ForceGVariant" value="1"/>
       <tp:docstring>The nameservers in use.</tp:docstring>
     </property>
     <property name="Domains" type="as" access="read">
@@ -42,6 +46,13 @@
     </property>
     <property name="Searches" type="as" access="read">
       <tp:docstring>A list of dns searches.</tp:docstring>
+    </property>
+    <property name="DnsOptions" type="as" access="read">
+      <tp:docstring>
+	A list of DNS options that modify the behavior of the DNS
+	resolver. See resolv.conf(5) manual page for the list of
+	supported options.
+      </tp:docstring>
     </property>
 
     <signal name="PropertiesChanged">

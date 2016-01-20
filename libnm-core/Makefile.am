@@ -3,11 +3,13 @@ include $(GLIB_MAKEFILE)
 SUBDIRS = . tests
 
 AM_CPPFLAGS = \
-	-I${top_srcdir}/include \
-	-I${top_builddir}/include \
+	-I${top_srcdir}/shared \
+	-I${top_builddir}/shared \
 	-DG_LOG_DOMAIN=\""libnm"\" \
 	-DLOCALEDIR=\"$(datadir)/locale\" \
-	-DNETWORKMANAGER_COMPILATION \
+	-DNMCONFDIR=\"$(nmconfdir)\" \
+	-DNMLIBDIR=\"$(nmlibdir)\" \
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS)
 
@@ -34,9 +36,9 @@ libnm_core_la_LIBADD =			\
 	$(UUID_LIBS)
 
 if WITH_GNUTLS
-AM_CPPFLAGS += $(LIBGCRYPT_CFLAGS) $(GNUTLS_CFLAGS)
+AM_CPPFLAGS += $(GNUTLS_CFLAGS)
 libnm_core_la_SOURCES += crypto_gnutls.c
-libnm_core_la_LIBADD += $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
+libnm_core_la_LIBADD += $(GNUTLS_LIBS)
 endif
 
 if WITH_NSS

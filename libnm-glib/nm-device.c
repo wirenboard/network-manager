@@ -23,9 +23,9 @@
 
 #include <string.h>
 
-#include <glib/gi18n-lib.h>
 #include <gudev/gudev.h>
 
+#include "nm-default.h"
 #include "NetworkManager.h"
 #include "nm-device-ethernet.h"
 #include "nm-device-adsl.h"
@@ -47,21 +47,20 @@
 #include "nm-remote-connection.h"
 #include "nm-types.h"
 #include "nm-dbus-glib-types.h"
-#include "nm-glib-compat.h"
 #include "nm-utils.h"
 #include "nm-dbus-helpers-private.h"
 
-static GType _nm_device_type_for_path (DBusGConnection *connection,
-                                       const char *path);
-static void _nm_device_type_for_path_async (DBusGConnection *connection,
-                                            const char *path,
-                                            NMObjectTypeCallbackFunc callback,
-                                            gpointer user_data);
+static GType _nm_device_gtype_for_path (DBusGConnection *connection,
+                                        const char *path);
+static void _nm_device_gtype_for_path_async (DBusGConnection *connection,
+                                             const char *path,
+                                             NMObjectTypeCallbackFunc callback,
+                                             gpointer user_data);
 gboolean connection_compatible (NMDevice *device, NMConnection *connection, GError **error);
 
 G_DEFINE_TYPE_WITH_CODE (NMDevice, nm_device, NM_TYPE_OBJECT,
-                         _nm_object_register_type_func (g_define_type_id, _nm_device_type_for_path,
-                                                        _nm_device_type_for_path_async);
+                         _nm_object_register_type_func (g_define_type_id, _nm_device_gtype_for_path,
+                                                        _nm_device_gtype_for_path_async);
                          )
 
 #define DBUS_G_TYPE_UINT_STRUCT (dbus_g_type_get_struct ("GValueArray", G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID))
@@ -80,6 +79,7 @@ typedef struct {
 	char *firmware_version;
 	char *type_description;
 	NMDeviceCapabilities capabilities;
+	gboolean real;
 	gboolean managed;
 	gboolean firmware_missing;
 	gboolean autoconnect;
@@ -111,6 +111,7 @@ enum {
 	PROP_DRIVER_VERSION,
 	PROP_FIRMWARE_VERSION,
 	PROP_CAPABILITIES,
+	PROP_REAL,
 	PROP_MANAGED,
 	PROP_AUTOCONNECT,
 	PROP_FIRMWARE_MISSING,
@@ -197,6 +198,7 @@ register_properties (NMDevice *device)
 		{ NM_DEVICE_DRIVER_VERSION,    &priv->driver_version },
 		{ NM_DEVICE_FIRMWARE_VERSION,  &priv->firmware_version },
 		{ NM_DEVICE_CAPABILITIES,      &priv->capabilities },
+		{ NM_DEVICE_REAL,              &priv->real },
 		{ NM_DEVICE_MANAGED,           &priv->managed },
 		{ NM_DEVICE_AUTOCONNECT,       &priv->autoconnect },
 		{ NM_DEVICE_FIRMWARE_MISSING,  &priv->firmware_missing },
@@ -321,10 +323,12 @@ _nm_device_gtype_from_dtype (NMDeviceType dtype)
 	case NM_DEVICE_TYPE_VLAN:
 		return NM_TYPE_DEVICE_VLAN;
 	case NM_DEVICE_TYPE_GENERIC:
+	case NM_DEVICE_TYPE_TUN:
+	case NM_DEVICE_TYPE_IP_TUNNEL:
 		return NM_TYPE_DEVICE_GENERIC;
 	default:
-		g_warning ("Unknown device type %d", dtype);
-		return G_TYPE_INVALID;
+		/* Fall back to NMDeviceGeneric for unknown devices */
+		return NM_TYPE_DEVICE_GENERIC;
 	}
 }
 
@@ -445,6 +449,9 @@ get_property (GObject *object,
 	case PROP_CAPABILITIES:
 		g_value_set_uint (value, nm_device_get_capabilities (device));
 		break;
+	case PROP_REAL:
+		g_value_set_boolean (value, nm_device_is_real (device));
+		break;
 	case PROP_MANAGED:
 		g_value_set_boolean (value, nm_device_get_managed (device));
 		break;
@@ -515,6 +522,11 @@ set_property (GObject *object,
 	case PROP_DEVICE_TYPE:
 		/* Construct only */
 		priv->device_type = g_value_get_uint (value);
+		break;
+	case PROP_MANAGED:
+		b = g_value_get_boolean (value);
+		if (priv->managed != b)
+			nm_device_set_managed (NM_DEVICE (object), b);
 		break;
 	case PROP_AUTOCONNECT:
 		b = g_value_get_boolean (value);
@@ -645,6 +657,22 @@ nm_device_class_init (NMDeviceClass *device_class)
 		                    0, G_MAXUINT32, 0,
 		                    G_PARAM_READABLE |
 		                    G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMDevice:real:
+	 *
+	 * Whether the device is real or is a placeholder device that could
+	 * be created automatically by NetworkManager if one of its
+	 * #NMDevice:available-connections was activated.
+	 *
+	 * Since: 1.2
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_REAL,
+		 g_param_spec_boolean (NM_DEVICE_REAL, "", "",
+		                       FALSE,
+		                       G_PARAM_READABLE |
+		                       G_PARAM_STATIC_STRINGS));
 
 	/**
 	 * NMDevice:managed:
@@ -878,16 +906,14 @@ _nm_device_set_device_type (NMDevice *device, NMDeviceType dtype)
 		g_warn_if_fail (dtype == priv->device_type);
 }
 
-static GType
-_nm_device_type_for_path (DBusGConnection *connection,
-                          const char *path)
+NMDeviceType
+_nm_device_type_for_path (DBusGConnection *connection, const char *path)
 {
 	DBusGProxy *proxy;
 	GError *err = NULL;
 	GValue value = G_VALUE_INIT;
-	NMDeviceType nm_dtype;
 
-	proxy = _nm_dbus_new_proxy_for_connection (connection, path, "org.freedesktop.DBus.Properties");
+	proxy = _nm_dbus_new_proxy_for_connection (connection, path, DBUS_INTERFACE_PROPERTIES);
 	if (!proxy) {
 		g_warning ("%s: couldn't create D-Bus object proxy.", __func__);
 		return G_TYPE_INVALID;
@@ -906,8 +932,14 @@ _nm_device_type_for_path (DBusGConnection *connection,
 	}
 	g_object_unref (proxy);
 
-	nm_dtype = g_value_get_uint (&value);
-	return _nm_device_gtype_from_dtype (nm_dtype);
+	return g_value_get_uint (&value);
+}
+
+static GType
+_nm_device_gtype_for_path (DBusGConnection *connection,
+                           const char *path)
+{
+	return _nm_device_gtype_from_dtype (_nm_device_type_for_path (connection, path));
 }
 
 /**
@@ -928,7 +960,7 @@ nm_device_new (DBusGConnection *connection, const char *path)
 	g_return_val_if_fail (connection != NULL, NULL);
 	g_return_val_if_fail (path != NULL, NULL);
 
-	dtype = _nm_device_type_for_path (connection, path);
+	dtype = _nm_device_gtype_for_path (connection, path);
 	if (dtype == G_TYPE_INVALID)
 		return NULL;
 
@@ -974,7 +1006,7 @@ async_got_type (DBusGProxy *proxy, DBusGProxyCall *call, gpointer user_data)
 }
 
 static void
-_nm_device_type_for_path_async (DBusGConnection *connection,
+_nm_device_gtype_for_path_async (DBusGConnection *connection,
                                 const char *path,
                                 NMObjectTypeCallbackFunc callback,
                                 gpointer user_data)
@@ -987,7 +1019,7 @@ _nm_device_type_for_path_async (DBusGConnection *connection,
 	async_data->callback = callback;
 	async_data->user_data = user_data;
 
-	proxy = _nm_dbus_new_proxy_for_connection (connection, path, "org.freedesktop.DBus.Properties");
+	proxy = _nm_dbus_new_proxy_for_connection (connection, path, DBUS_INTERFACE_PROPERTIES);
 	dbus_g_proxy_begin_call (proxy, "Get",
 	                         async_got_type, async_data, NULL,
 	                         G_TYPE_STRING, NM_DBUS_INTERFACE_DEVICE,
@@ -1212,6 +1244,35 @@ nm_device_get_managed (NMDevice *device)
 
 	_nm_object_ensure_inited (NM_OBJECT (device));
 	return NM_DEVICE_GET_PRIVATE (device)->managed;
+}
+
+/**
+ * nm_device_set_managed:
+ * @device: a #NMDevice
+ * @managed: %TRUE to make the device managed by NetworkManager.
+ *
+ * Enables or disables management of  #NMDevice by NetworkManager.
+ *
+ * Since: 1.2
+ **/
+void
+nm_device_set_managed (NMDevice *device, gboolean managed)
+{
+	GValue value = G_VALUE_INIT;
+
+	g_return_if_fail (NM_IS_DEVICE (device));
+
+	managed = !!managed;
+
+	g_value_init (&value, G_TYPE_BOOLEAN);
+	g_value_set_boolean (&value, managed);
+
+	NM_DEVICE_GET_PRIVATE (device)->managed = managed;
+
+	_nm_object_set_property (NM_OBJECT (device),
+	                         NM_DBUS_INTERFACE_DEVICE,
+	                         "Managed",
+	                         &value);
 }
 
 /**
@@ -2064,6 +2125,25 @@ nm_device_get_mtu (NMDevice *device)
 
 	_nm_object_ensure_inited (NM_OBJECT (device));
 	return NM_DEVICE_GET_PRIVATE (device)->mtu;
+}
+
+/**
+ * nm_device_is_real:
+ * @device: a #NMDevice
+ *
+ * Returns: %TRUE if the device exists, or %FALSE if it is a placeholder device
+ * that could be automatically created by NetworkManager if one of its
+ * #NMDevice:available-connections was activated.
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_device_is_real (NMDevice *device)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+
+	_nm_object_ensure_inited (NM_OBJECT (device));
+	return NM_DEVICE_GET_PRIVATE (device)->real;
 }
 
 /**

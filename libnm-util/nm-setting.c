@@ -23,7 +23,6 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-setting.h"
 #include "nm-setting-private.h"
@@ -103,9 +102,7 @@ static void
 _ensure_registered (void)
 {
 	if (G_UNLIKELY (registered_settings == NULL)) {
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-		g_type_init ();
-#endif
+		nm_g_type_init ();
 		_nm_value_transforms_register ();
 		registered_settings = g_hash_table_new (g_str_hash, g_str_equal);
 		registered_settings_by_type = g_hash_table_new (_nm_gtype_hash, _nm_gtype_equal);

@@ -21,8 +21,6 @@
 
 #include "config.h"
 
-#include <glib.h>
-#include <glib/gi18n.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <stdlib.h>
@@ -31,7 +29,7 @@
 
 #include <gudev/gudev.h>
 
-#include "nm-glib-compat.h"
+#include "nm-default.h"
 #include "nm-device-ethernet.h"
 #include "nm-device-private.h"
 #include "nm-activation-request.h"
@@ -40,9 +38,7 @@
 #include "nm-supplicant-interface.h"
 #include "nm-supplicant-config.h"
 #include "ppp-manager/nm-ppp-manager.h"
-#include "nm-logging.h"
 #include "nm-enum-types.h"
-#include "nm-dbus-manager.h"
 #include "nm-platform.h"
 #include "nm-platform-utils.h"
 #include "nm-dcb.h"
@@ -53,9 +49,8 @@
 #include "nm-device-factory.h"
 #include "nm-core-internal.h"
 #include "NetworkManagerUtils.h"
-#include "gsystem-local-alloc.h"
 
-#include "nm-device-ethernet-glue.h"
+#include "nmdbus-device-ethernet.h"
 
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF(NMDeviceEthernet);
@@ -76,8 +71,8 @@ typedef struct Supplicant {
 	NMSupplicantInterface *iface;
 
 	/* signal handler ids */
-	guint iface_error_id;
-	guint iface_state_id;
+	gulong iface_error_id;
+	gulong iface_state_id;
 
 	/* Timeouts and idles */
 	guint iface_con_error_cb_id;
@@ -109,6 +104,7 @@ typedef struct {
 	char *              subchan2;
 	char *              subchan3;
 	char *              subchannels; /* Composite used for checking unmanaged specs */
+	char **             subchannels_dbus; /* Array exported on D-Bus */
 	char *              s390_nettype;
 	GHashTable *        s390_options;
 
@@ -121,13 +117,14 @@ typedef struct {
 	/* DCB */
 	DcbWait       dcb_wait;
 	guint         dcb_timeout_id;
-	guint         dcb_carrier_id;
+	gulong        dcb_carrier_id;
 } NMDeviceEthernetPrivate;
 
 enum {
 	PROP_0,
 	PROP_PERM_HW_ADDRESS,
 	PROP_SPEED,
+	PROP_S390_SUBCHANNELS,
 
 	LAST_PROP
 };
@@ -230,6 +227,12 @@ _update_s390_subchannels (NMDeviceEthernet *self)
 	} else
 		priv->subchannels = g_strdup (priv->subchan1);
 
+	priv->subchannels_dbus = g_new (char *, 3 + 1);
+	priv->subchannels_dbus[0] = g_strdup (priv->subchan1);
+	priv->subchannels_dbus[1] = g_strdup (priv->subchan2);
+	priv->subchannels_dbus[2] = g_strdup (priv->subchan3);
+	priv->subchannels_dbus[3] = NULL;
+
 	driver = nm_device_get_driver (NM_DEVICE (self));
 	_LOGI (LOGD_DEVICE | LOGD_HW, "found s390 '%s' subchannels [%s]",
 	       driver ? driver : "(unknown driver)", priv->subchannels);
@@ -276,7 +279,7 @@ clear_secrets_tries (NMDevice *device)
 
 	req = nm_device_get_act_request (device);
 	if (req) {
-		connection = nm_act_request_get_connection (req);
+		connection = nm_act_request_get_applied_connection (req);
 		/* Clear wired secrets tries on success, failure, or when deactivating */
 		g_object_set_data (G_OBJECT (connection), WIRED_SECRETS_TRIES, NULL);
 	}
@@ -301,6 +304,14 @@ nm_device_ethernet_init (NMDeviceEthernet *self)
 	priv->s390_options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
+static void
+realize_start_notify (NMDevice *device, const NMPlatformLink *plink)
+{
+	NM_DEVICE_CLASS (nm_device_ethernet_parent_class)->realize_start_notify (device, plink);
+
+	g_object_notify (G_OBJECT (device), NM_DEVICE_ETHERNET_PERMANENT_HW_ADDRESS);
+}
+
 static NMDeviceCapabilities
 get_generic_capabilities (NMDevice *device)
 {
@@ -315,21 +326,39 @@ get_generic_capabilities (NMDevice *device)
 	}
 }
 
+static guint32
+_subchannels_count_num (const char * const *array)
+{
+	int i;
+
+	if (!array)
+		return 0;
+	for (i = 0; array[i]; i++)
+		/* NOP */;
+	return i;
+}
+
 static gboolean
 match_subchans (NMDeviceEthernet *self, NMSettingWired *s_wired, gboolean *try_mac)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 	const char * const *subchans;
+	guint32 num1, num2;
 	int i;
 
 	*try_mac = TRUE;
 
 	subchans = nm_setting_wired_get_s390_subchannels (s_wired);
-	if (!subchans)
+	num1 = _subchannels_count_num (subchans);
+	num2 = _subchannels_count_num ((const char * const *) priv->subchannels_dbus);
+	/* connection has no subchannels */
+	if (num1 == 0)
 		return TRUE;
-
 	/* connection requires subchannels but the device has none */
-	if (!priv->subchannels)
+	if (num2 == 0)
+		return FALSE;
+	/* number of subchannels differ */
+	if (num1 != num2)
 		return FALSE;
 
 	/* Make sure each subchannel in the connection is a subchannel of this device */
@@ -412,7 +441,7 @@ device_get_setting (NMDevice *device, GType setting_type)
 	if (req) {
 		NMConnection *connection;
 
-		connection = nm_act_request_get_connection (req);
+		connection = nm_act_request_get_applied_connection (req);
 		if (connection)
 			setting = nm_connection_get_setting (connection, setting_type);
 	}
@@ -428,15 +457,8 @@ remove_supplicant_timeouts (NMDeviceEthernet *self)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 
-	if (priv->supplicant.con_timeout_id) {
-		g_source_remove (priv->supplicant.con_timeout_id);
-		priv->supplicant.con_timeout_id = 0;
-	}
-
-	if (priv->supplicant_timeout_id) {
-		g_source_remove (priv->supplicant_timeout_id);
-		priv->supplicant_timeout_id = 0;
-	}
+	nm_clear_g_source (&priv->supplicant.con_timeout_id);
+	nm_clear_g_source (&priv->supplicant_timeout_id);
 }
 
 static void
@@ -477,17 +499,19 @@ supplicant_interface_release (NMDeviceEthernet *self)
 
 static void
 wired_secrets_cb (NMActRequest *req,
-                  guint32 call_id,
-                  NMConnection *connection,
+                  NMActRequestGetSecretsCallId call_id,
+                  NMSettingsConnection *connection,
                   GError *error,
                   gpointer user_data)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (user_data);
 	NMDevice *dev = NM_DEVICE (self);
 
-	g_return_if_fail (req == nm_device_get_act_request (dev));
+	if (req != nm_device_get_act_request (dev))
+		return;
+
 	g_return_if_fail (nm_device_get_state (dev) == NM_DEVICE_STATE_NEED_AUTH);
-	g_return_if_fail (nm_act_request_get_connection (req) == connection);
+	g_return_if_fail (nm_act_request_get_settings_connection (req) == connection);
 
 	if (error) {
 		_LOGW (LOGD_ETHER, "%s", error->message);
@@ -505,7 +529,7 @@ link_timeout_cb (gpointer user_data)
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 	NMDevice *dev = NM_DEVICE (self);
 	NMActRequest *req;
-	NMConnection *connection;
+	NMConnection *applied_connection;
 	const char *setting_name;
 
 	priv->supplicant_timeout_id = 0;
@@ -526,9 +550,10 @@ link_timeout_cb (gpointer user_data)
 	if (nm_device_get_state (dev) != NM_DEVICE_STATE_CONFIG)
 		goto time_out;
 
-	connection = nm_act_request_get_connection (req);
-	nm_connection_clear_secrets (connection);
-	setting_name = nm_connection_need_secrets (connection, NULL);
+	nm_active_connection_clear_secrets (NM_ACTIVE_CONNECTION (req));
+
+	applied_connection = nm_act_request_get_applied_connection (req);
+	setting_name = nm_connection_need_secrets (applied_connection, NULL);
 	if (!setting_name)
 		goto time_out;
 
@@ -554,7 +579,8 @@ time_out:
 }
 
 static NMSupplicantConfig *
-build_supplicant_config (NMDeviceEthernet *self)
+build_supplicant_config (NMDeviceEthernet *self,
+                         GError **error)
 {
 	const char *con_uuid;
 	NMSupplicantConfig *config = NULL;
@@ -562,7 +588,7 @@ build_supplicant_config (NMDeviceEthernet *self)
 	NMConnection *connection;
 	guint32 mtu;
 
-	connection = nm_device_get_connection (NM_DEVICE (self));
+	connection = nm_device_get_applied_connection (NM_DEVICE (self));
 	g_assert (connection);
 	con_uuid = nm_connection_get_uuid (connection);
 	mtu = nm_platform_link_get_mtu (NM_PLATFORM_GET,
@@ -571,10 +597,9 @@ build_supplicant_config (NMDeviceEthernet *self)
 	config = nm_supplicant_config_new ();
 
 	security = nm_connection_get_setting_802_1x (connection);
-	if (!nm_supplicant_config_add_setting_8021x (config, security, con_uuid, mtu, TRUE)) {
-		_LOGW (LOGD_DEVICE, "Couldn't add 802.1X security setting to supplicant config.");
-		g_object_unref (config);
-		config = NULL;
+	if (!nm_supplicant_config_add_setting_8021x (config, security, con_uuid, mtu, TRUE, error)) {
+		g_prefix_error (error, "802-1x-setting: ");
+		g_clear_object (&config);
 	}
 
 	return config;
@@ -593,6 +618,7 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 	NMSupplicantConfig *config;
 	gboolean success = FALSE;
 	NMDeviceState devstate;
+	GError *error = NULL;
 
 	if (new_state == old_state)
 		return;
@@ -605,18 +631,22 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 
 	switch (new_state) {
 	case NM_SUPPLICANT_INTERFACE_STATE_READY:
-		config = build_supplicant_config (self);
+		config = build_supplicant_config (self, &error);
 		if (config) {
-			success = nm_supplicant_interface_set_config (priv->supplicant.iface, config);
+			success = nm_supplicant_interface_set_config (priv->supplicant.iface, config, &error);
 			g_object_unref (config);
 
 			if (!success) {
 				_LOGE (LOGD_DEVICE | LOGD_ETHER,
-				       "Activation: (ethernet) couldn't send security configuration to the supplicant.");
+				       "Activation: (ethernet) couldn't send security configuration to the supplicant: %s",
+				       error ? error->message : "<BUG>");
+				g_clear_error (&error);
 			}
 		} else {
-			_LOGW (LOGD_DEVICE | LOGD_ETHER,
-			       "Activation: (ethernet) couldn't build security configuration.");
+			_LOGE (LOGD_DEVICE | LOGD_ETHER,
+			       "Activation: (ethernet) couldn't build security configuration: %s",
+			       error ? error->message : "<BUG>");
+			g_clear_error (&error);
 		}
 
 		if (!success) {
@@ -701,19 +731,19 @@ handle_auth_or_fail (NMDeviceEthernet *self,
 {
 	const char *setting_name;
 	guint32 tries;
-	NMConnection *connection;
+	NMConnection *applied_connection;
 
-	connection = nm_act_request_get_connection (req);
-	g_assert (connection);
+	applied_connection = nm_act_request_get_applied_connection (req);
 
-	tries = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (connection), WIRED_SECRETS_TRIES));
+	tries = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (applied_connection), WIRED_SECRETS_TRIES));
 	if (tries > 3)
 		return NM_ACT_STAGE_RETURN_FAILURE;
 
 	nm_device_state_changed (NM_DEVICE (self), NM_DEVICE_STATE_NEED_AUTH, NM_DEVICE_STATE_REASON_NONE);
 
-	nm_connection_clear_secrets (connection);
-	setting_name = nm_connection_need_secrets (connection, NULL);
+	nm_active_connection_clear_secrets (NM_ACTIVE_CONNECTION (req));
+
+	setting_name = nm_connection_need_secrets (applied_connection, NULL);
 	if (setting_name) {
 		NMSecretAgentGetSecretsFlags flags = NM_SECRET_AGENT_GET_SECRETS_FLAG_ALLOW_INTERACTION;
 
@@ -721,7 +751,7 @@ handle_auth_or_fail (NMDeviceEthernet *self,
 			flags |= NM_SECRET_AGENT_GET_SECRETS_FLAG_REQUEST_NEW;
 		nm_act_request_get_secrets (req, setting_name, flags, NULL, wired_secrets_cb, self);
 
-		g_object_set_data (G_OBJECT (connection), WIRED_SECRETS_TRIES, GUINT_TO_POINTER (++tries));
+		g_object_set_data (G_OBJECT (applied_connection), WIRED_SECRETS_TRIES, GUINT_TO_POINTER (++tries));
 	} else
 		_LOGI (LOGD_DEVICE, "Cleared secrets, but setting didn't need any secrets.");
 
@@ -751,7 +781,7 @@ supplicant_connection_timeout_cb (gpointer user_data)
 	req = nm_device_get_act_request (device);
 	g_assert (req);
 
-	connection = nm_act_request_get_connection (req);
+	connection = nm_act_request_get_applied_connection (req);
 	g_assert (connection);
 
 	/* Ask for new secrets only if we've never activated this connection
@@ -873,7 +903,7 @@ nm_8021x_stage2_config (NMDeviceEthernet *self, NMDeviceStateReason *reason)
 	const char *setting_name;
 	NMActStageReturn ret = NM_ACT_STAGE_RETURN_FAILURE;
 
-	connection = nm_device_get_connection (NM_DEVICE (self));
+	connection = nm_device_get_applied_connection (NM_DEVICE (self));
 	g_assert (connection);
 	security = nm_connection_get_setting_802_1x (connection);
 	if (!security) {
@@ -959,7 +989,7 @@ pppoe_stage3_ip4_config_start (NMDeviceEthernet *self, NMDeviceStateReason *reas
 	req = nm_device_get_act_request (NM_DEVICE (self));
 	g_assert (req);
 
-	connection = nm_act_request_get_connection (req);
+	connection = nm_act_request_get_applied_connection (req);
 	g_assert (req);
 
 	s_pppoe = nm_connection_get_setting_pppoe (connection);
@@ -967,19 +997,18 @@ pppoe_stage3_ip4_config_start (NMDeviceEthernet *self, NMDeviceStateReason *reas
 
 	priv->ppp_manager = nm_ppp_manager_new (nm_device_get_iface (NM_DEVICE (self)));
 	if (nm_ppp_manager_start (priv->ppp_manager, req, nm_setting_pppoe_get_username (s_pppoe), 30, &err)) {
-		g_signal_connect (priv->ppp_manager, "state-changed",
-					   G_CALLBACK (ppp_state_changed),
-					   self);
+		g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_STATE_CHANGED,
+		                  G_CALLBACK (ppp_state_changed),
+		                  self);
 		g_signal_connect (priv->ppp_manager, "ip4-config",
-					   G_CALLBACK (ppp_ip4_config),
-					   self);
+		                  G_CALLBACK (ppp_ip4_config),
+		                  self);
 		ret = NM_ACT_STAGE_RETURN_POSTPONE;
 	} else {
 		_LOGW (LOGD_DEVICE, "PPPoE failed to start: %s", err->message);
 		g_error_free (err);
 
-		g_object_unref (priv->ppp_manager);
-		priv->ppp_manager = NULL;
+		nm_exported_object_clear_and_unexport (&priv->ppp_manager);
 
 		*reason = NM_DEVICE_STATE_REASON_PPP_START_FAILED;
 	}
@@ -994,10 +1023,7 @@ dcb_timeout_cleanup (NMDevice *device)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
 
-	if (priv->dcb_timeout_id) {
-		g_source_remove (priv->dcb_timeout_id);
-		priv->dcb_timeout_id = 0;
-	}
+	nm_clear_g_source (&priv->dcb_timeout_id);
 }
 
 static void
@@ -1005,10 +1031,7 @@ dcb_carrier_cleanup (NMDevice *device)
 {
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (device);
 
-	if (priv->dcb_carrier_id) {
-		g_signal_handler_disconnect (device, priv->dcb_carrier_id);
-		priv->dcb_carrier_id = 0;
-	}
+	nm_clear_g_signal_handler (device, &priv->dcb_carrier_id);
 }
 
 static void dcb_state (NMDevice *device, gboolean timeout);
@@ -1280,7 +1303,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	}
 
 	/* PPPoE setup */
-	if (nm_connection_is_type (nm_device_get_connection (device),
+	if (nm_connection_is_type (nm_device_get_applied_connection (device),
 	                           NM_SETTING_PPPOE_SETTING_NAME)) {
 		NMSettingPpp *s_ppp;
 
@@ -1335,7 +1358,7 @@ ip4_config_pre_commit (NMDevice *device, NMIP4Config *config)
 	if (NM_DEVICE_ETHERNET_GET_PRIVATE (device)->ppp_manager)
 		return;
 
-	connection = nm_device_get_connection (device);
+	connection = nm_device_get_applied_connection (device);
 	g_assert (connection);
 	s_wired = nm_connection_get_setting_wired (connection);
 	g_assert (s_wired);
@@ -1357,20 +1380,14 @@ deactivate (NMDevice *device)
 	/* Clear wired secrets tries when deactivating */
 	clear_secrets_tries (device);
 
-	if (priv->pppoe_wait_id) {
-		g_source_remove (priv->pppoe_wait_id);
-		priv->pppoe_wait_id = 0;
-	}
+	nm_clear_g_source (&priv->pppoe_wait_id);
 
 	if (priv->pending_ip4_config) {
 		g_object_unref (priv->pending_ip4_config);
 		priv->pending_ip4_config = NULL;
 	}
 
-	if (priv->ppp_manager) {
-		g_object_unref (priv->ppp_manager);
-		priv->ppp_manager = NULL;
-	}
+	nm_exported_object_clear_and_unexport (&priv->ppp_manager);
 
 	supplicant_interface_release (self);
 
@@ -1547,16 +1564,8 @@ update_connection (NMDevice *device, NMConnection *connection)
 	/* We don't set the MTU as we don't know whether it was set explicitly */
 
 	/* s390 */
-	if (priv->subchannels) {
-		char **subchannels = g_new (char *, 3 + 1);
-
-		subchannels[0] = g_strdup (priv->subchan1);
-		subchannels[1] = g_strdup (priv->subchan2);
-		subchannels[2] = g_strdup (priv->subchan3);
-		subchannels[3] = NULL;
-		g_object_set (s_wired, NM_SETTING_WIRED_S390_SUBCHANNELS, subchannels, NULL);
-		g_strfreev (subchannels);
-	}
+	if (priv->subchannels_dbus)
+		g_object_set (s_wired, NM_SETTING_WIRED_S390_SUBCHANNELS, priv->subchannels_dbus, NULL);
 	if (priv->s390_nettype)
 		g_object_set (s_wired, NM_SETTING_WIRED_S390_NETTYPE, priv->s390_nettype, NULL);
 	g_hash_table_iter_init (&iter, priv->s390_options);
@@ -1598,10 +1607,44 @@ link_changed (NMDevice *device, NMPlatformLink *info)
 {
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (device);
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
+	static const guint8 zero_hwaddr[ETH_ALEN];
+	const guint8 *hwaddr;
+	gsize hwaddrlen = 0;
 
 	NM_DEVICE_CLASS (nm_device_ethernet_parent_class)->link_changed (device, info);
 	if (!priv->subchan1 && info->initialized)
 		_update_s390_subchannels (self);
+
+	if (!nm_device_get_initial_hw_address (device)) {
+		hwaddr = nm_platform_link_get_address (NM_PLATFORM_GET,
+		                                       nm_device_get_ifindex (self),
+		                                       &hwaddrlen);
+		if (!nm_utils_hwaddr_matches (hwaddr, hwaddrlen, zero_hwaddr, ETH_ALEN)) {
+			_LOGD (LOGD_DEVICE, "device got a valid hw address");
+			nm_device_update_hw_address (self);
+			nm_device_update_initial_hw_address (self);
+			if (nm_device_get_state (device) == NM_DEVICE_STATE_UNAVAILABLE) {
+				/*
+				 * If the device is UNAVAILABLE, any previous try to
+				 * bring it up probably has failed because of the
+				 * invalid hardware address; try again.
+				 */
+				nm_device_bring_up (self, TRUE, NULL);
+				nm_device_queue_recheck_available (device,
+				                                   NM_DEVICE_STATE_REASON_NONE,
+				                                   NM_DEVICE_STATE_REASON_NONE);
+			}
+		}
+	}
+}
+
+static gboolean
+is_available (NMDevice *device, NMDeviceCheckDevAvailableFlags flags)
+{
+	if (!NM_DEVICE_CLASS (nm_device_ethernet_parent_class)->is_available (device, flags))
+		return FALSE;
+
+	return !!nm_device_get_initial_hw_address (device);
 }
 
 static void
@@ -1610,10 +1653,7 @@ dispose (GObject *object)
 	NMDeviceEthernet *self = NM_DEVICE_ETHERNET (object);
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 
-	if (priv->pppoe_wait_id) {
-		g_source_remove (priv->pppoe_wait_id);
-		priv->pppoe_wait_id = 0;
-	}
+	nm_clear_g_source (&priv->pppoe_wait_id);
 
 	dcb_timeout_cleanup (NM_DEVICE (self));
 	dcb_carrier_cleanup (NM_DEVICE (self));
@@ -1632,6 +1672,7 @@ finalize (GObject *object)
 	g_free (priv->subchan2);
 	g_free (priv->subchan3);
 	g_free (priv->subchannels);
+	g_strfreev (priv->subchannels_dbus);
 	g_free (priv->s390_nettype);
 	g_hash_table_destroy (priv->s390_options);
 
@@ -1651,6 +1692,9 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_SPEED:
 		g_value_set_uint (value, priv->speed);
+		break;
+	case PROP_S390_SUBCHANNELS:
+		g_value_set_boxed (value, priv->subchannels_dbus);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1677,7 +1721,7 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 
 	g_type_class_add_private (object_class, sizeof (NMDeviceEthernetPrivate));
 
-	parent_class->connection_type = NM_SETTING_WIRED_SETTING_NAME;
+	NM_DEVICE_CLASS_DECLARE_TYPES (klass, NM_SETTING_WIRED_SETTING_NAME, NM_LINK_TYPE_ETHERNET)
 
 	/* virtual methods */
 	object_class->constructor = constructor;
@@ -1687,6 +1731,7 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 	object_class->set_property = set_property;
 
 	parent_class->get_generic_capabilities = get_generic_capabilities;
+	parent_class->realize_start_notify = realize_start_notify;
 	parent_class->check_connection_compatible = check_connection_compatible;
 	parent_class->complete_connection = complete_connection;
 	parent_class->new_default_connection = new_default_connection;
@@ -1700,6 +1745,7 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 	parent_class->update_connection = update_connection;
 	parent_class->carrier_changed = carrier_changed;
 	parent_class->link_changed = link_changed;
+	parent_class->is_available = is_available;
 
 	parent_class->state_changed = device_state_changed;
 
@@ -1718,9 +1764,16 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 		                    G_PARAM_READABLE |
 		                    G_PARAM_STATIC_STRINGS));
 
-	nm_dbus_manager_register_exported_type (nm_dbus_manager_get (),
-	                                        G_TYPE_FROM_CLASS (klass),
-	                                        &dbus_glib_nm_device_ethernet_object_info);
+	g_object_class_install_property
+		(object_class, PROP_S390_SUBCHANNELS,
+		 g_param_spec_boxed (NM_DEVICE_ETHERNET_S390_SUBCHANNELS, "", "",
+		                     G_TYPE_STRV,
+		                     G_PARAM_READABLE |
+		                     G_PARAM_STATIC_STRINGS));
+
+	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
+	                                        NMDBUS_TYPE_DEVICE_ETHERNET_SKELETON,
+	                                        NULL);
 }
 
 /*************************************************************/
@@ -1729,18 +1782,23 @@ nm_device_ethernet_class_init (NMDeviceEthernetClass *klass)
 #define NM_ETHERNET_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_ETHERNET_FACTORY, NMEthernetFactory))
 
 static NMDevice *
-new_link (NMDeviceFactory *factory, NMPlatformLink *plink, gboolean *out_ignore, GError **error)
+create_device (NMDeviceFactory *factory,
+               const char *iface,
+               const NMPlatformLink *plink,
+               NMConnection *connection,
+               gboolean *out_ignore)
 {
 	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_ETHERNET,
-	                                  NM_DEVICE_PLATFORM_DEVICE, plink,
+	                                  NM_DEVICE_IFACE, iface,
 	                                  NM_DEVICE_TYPE_DESC, "Ethernet",
 	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_ETHERNET,
+	                                  NM_DEVICE_LINK_TYPE, NM_LINK_TYPE_ETHERNET,
 	                                  NULL);
 }
 
 NM_DEVICE_FACTORY_DEFINE_INTERNAL (ETHERNET, Ethernet, ethernet,
 	NM_DEVICE_FACTORY_DECLARE_LINK_TYPES    (NM_LINK_TYPE_ETHERNET)
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_WIRED_SETTING_NAME, NM_SETTING_PPPOE_SETTING_NAME),
-	factory_iface->new_link = new_link;
+	factory_iface->create_device = create_device;
 	)
 

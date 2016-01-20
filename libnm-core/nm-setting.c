@@ -23,15 +23,15 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
-#include <gio/gio.h>
 
+#include "nm-default.h"
 #include "nm-setting.h"
 #include "nm-setting-private.h"
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 #include "nm-utils-private.h"
 #include "nm-property-compare.h"
+#include "nm-macros-internal.h"
 
 #include "nm-setting-connection.h"
 #include "nm-setting-bond.h"
@@ -95,9 +95,7 @@ static void
 _ensure_registered (void)
 {
 	if (G_UNLIKELY (registered_settings == NULL)) {
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-		g_type_init ();
-#endif
+		nm_g_type_init ();
 		registered_settings = g_hash_table_new (g_str_hash, g_str_equal);
 		registered_settings_by_type = g_hash_table_new (_nm_gtype_hash, _nm_gtype_equal);
 	}
@@ -1012,6 +1010,53 @@ _nm_setting_verify (NMSetting *setting, NMConnection *connection, GError **error
 	return NM_SETTING_VERIFY_SUCCESS;
 }
 
+/**
+ * nm_setting_verify_secrets:
+ * @setting: the #NMSetting to verify secrets in
+ * @connection: (allow-none): the #NMConnection that @setting came from, or
+ *   %NULL if @setting is being verified in isolation.
+ * @error: location to store error, or %NULL
+ *
+ * Verifies the secrets in the setting.
+ * The returned #GError contains information about which secret of the setting
+ * failed validation, and in what way that secret failed validation.
+ * The secret validation is done separately from main setting validation, because
+ * in some cases connection failure is not desired just for the secrets.
+ *
+ * Returns: %TRUE if the setting secrets are valid, %FALSE if they are not
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_setting_verify_secrets (NMSetting *setting, NMConnection *connection, GError **error)
+{
+	g_return_val_if_fail (NM_IS_SETTING (setting), NM_SETTING_VERIFY_ERROR);
+	g_return_val_if_fail (!connection || NM_IS_CONNECTION (connection), NM_SETTING_VERIFY_ERROR);
+	g_return_val_if_fail (!error || *error == NULL, NM_SETTING_VERIFY_ERROR);
+
+	if (NM_SETTING_GET_CLASS (setting)->verify_secrets)
+		return NM_SETTING_GET_CLASS (setting)->verify_secrets (setting, connection, error);
+
+	return NM_SETTING_VERIFY_SUCCESS;
+}
+
+gboolean
+_nm_setting_verify_secret_string (const char *str,
+                                  const char *setting_name,
+                                  const char *property,
+                                  GError **error)
+{
+	if (str && !*str) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", setting_name, property);
+		return FALSE;
+	}
+	return TRUE;
+}
+
 static gboolean
 compare_property (NMSetting *setting,
                   NMSetting *other,
@@ -1101,15 +1146,20 @@ nm_setting_compare (NMSetting *a,
 		GParamSpec *prop_spec = property_specs[i];
 
 		/* Fuzzy compare ignores secrets and properties defined with the FUZZY_IGNORE flag */
-		if (   (flags & NM_SETTING_COMPARE_FLAG_FUZZY)
-		    && (prop_spec->flags & (NM_SETTING_PARAM_FUZZY_IGNORE | NM_SETTING_PARAM_SECRET)))
+		if (   NM_FLAGS_HAS (flags, NM_SETTING_COMPARE_FLAG_FUZZY)
+		    && !NM_FLAGS_ANY (prop_spec->flags, NM_SETTING_PARAM_FUZZY_IGNORE | NM_SETTING_PARAM_SECRET))
 			continue;
 
-		if ((flags & NM_SETTING_COMPARE_FLAG_INFERRABLE) && !(prop_spec->flags & NM_SETTING_PARAM_INFERRABLE))
+		if (   NM_FLAGS_HAS (flags, NM_SETTING_COMPARE_FLAG_INFERRABLE)
+		    && !NM_FLAGS_HAS (prop_spec->flags, NM_SETTING_PARAM_INFERRABLE))
 			continue;
 
-		if (   (flags & NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS)
-		    && (prop_spec->flags & NM_SETTING_PARAM_SECRET))
+		if (   NM_FLAGS_HAS (flags, NM_SETTING_COMPARE_FLAG_IGNORE_REAPPLY_IMMEDIATELY)
+		    && NM_FLAGS_HAS (prop_spec->flags, NM_SETTING_PARAM_REAPPLY_IMMEDIATELY))
+			continue;
+
+		if (   NM_FLAGS_HAS (flags, NM_SETTING_COMPARE_FLAG_IGNORE_SECRETS)
+		    && NM_FLAGS_HAS (prop_spec->flags, NM_SETTING_PARAM_SECRET))
 			continue;
 
 		same = NM_SETTING_GET_CLASS (a)->compare_property (a, b, prop_spec, flags);
@@ -1131,6 +1181,9 @@ should_compare_prop (NMSetting *setting,
 		return FALSE;
 
 	if ((comp_flags & NM_SETTING_COMPARE_FLAG_INFERRABLE) && !(prop_flags & NM_SETTING_PARAM_INFERRABLE))
+		return FALSE;
+
+	if ((comp_flags & NM_SETTING_COMPARE_FLAG_IGNORE_REAPPLY_IMMEDIATELY) && !(prop_flags & NM_SETTING_PARAM_REAPPLY_IMMEDIATELY))
 		return FALSE;
 
 	if (prop_flags & NM_SETTING_PARAM_SECRET) {

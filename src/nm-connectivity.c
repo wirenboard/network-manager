@@ -26,11 +26,9 @@
 #include <libsoup/soup.h>
 #endif
 
-#include "nm-glib-compat.h"
-
+#include "nm-default.h"
 #include "nm-connectivity.h"
 #include "nm-config.h"
-#include "nm-logging.h"
 
 G_DEFINE_TYPE (NMConnectivity, nm_connectivity, G_TYPE_OBJECT)
 
@@ -245,10 +243,7 @@ _reschedule_periodic_checks (NMConnectivity *self, gboolean force_reschedule)
 			priv->initial_check_obsoleted = FALSE;
 		}
 	} else {
-		if (priv->check_id) {
-			g_source_remove (priv->check_id);
-			priv->check_id = 0;
-		}
+		nm_clear_g_source (&priv->check_id);
 	}
 	if (priv->check_id)
 		return;

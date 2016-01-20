@@ -1,5 +1,3 @@
-if ENABLE_TESTS
-
 include $(GLIB_MAKEFILE)
 
 GLIB_GENERATED = nm-core-tests-enum-types.h nm-core-tests-enum-types.c
@@ -9,11 +7,13 @@ GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
 
 BUILT_SOURCES = $(GLIB_GENERATED)
 
+if ENABLE_TESTS
+
 certsdir = $(srcdir)/certs
 
 AM_CPPFLAGS = \
-	-I${top_srcdir}/include \
-	-I${top_builddir}/include \
+	-I${top_srcdir}/shared \
+	-I${top_builddir}/shared \
 	-I$(top_srcdir)/libnm-core \
 	-I$(top_builddir)/libnm-core \
 	-DNETWORKMANAGER_COMPILATION \

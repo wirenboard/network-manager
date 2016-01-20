@@ -21,9 +21,6 @@
 
 #include "config.h"
 
-#include <glib.h>
-#include <gio/gio.h>
-#include <glib/gi18n.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -32,14 +29,15 @@
 #include <resolv.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <linux/if.h>
 #include <linux/if_infiniband.h>
 
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-platform.h"
 #include "nm-utils.h"
 #include "nm-core-internal.h"
-#include "nm-logging.h"
 #include "nm-device.h"
 #include "nm-setting-connection.h"
 #include "nm-setting-ip4-config.h"
@@ -47,8 +45,6 @@
 #include "nm-setting-wireless.h"
 #include "nm-setting-wireless-security.h"
 #include "nm-auth-utils.h"
-#include "nm-dbus-glib-types.h"
-#include "gsystem-local-alloc.h"
 
 /*
  * Some toolchains (E.G. uClibc 0.9.33 and earlier) don't export
@@ -112,6 +108,120 @@ _nm_utils_set_testing (NMUtilsTestFlags flags)
 		g_return_if_reached ();
 	}
 }
+
+/*****************************************************************************/
+
+G_DEFINE_QUARK (nm-utils-error-quark, nm_utils_error)
+
+void
+nm_utils_error_set_cancelled (GError **error,
+                              gboolean is_disposing,
+                              const char *instance_name)
+{
+	if (is_disposing) {
+		g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_CANCELLED_DISPOSING,
+		             "Disposing %s instance",
+		             instance_name && *instance_name ? instance_name : "source");
+	} else {
+		g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_CANCELLED,
+		                     "Request cancelled");
+	}
+}
+
+gboolean
+nm_utils_error_is_cancelled (GError *error,
+                             gboolean consider_is_disposing)
+{
+	if (error) {
+		if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+			return TRUE;
+		if (   consider_is_disposing
+		    && g_error_matches (error, NM_UTILS_ERROR, NM_UTILS_ERROR_CANCELLED_DISPOSING))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/*****************************************************************************/
+
+static GSList *_singletons = NULL;
+static gboolean _singletons_shutdown = FALSE;
+
+static void
+_nm_singleton_instance_weak_cb (gpointer data,
+                                GObject *where_the_object_was)
+{
+	_singletons = g_slist_remove (_singletons, where_the_object_was);
+}
+
+static void __attribute__((destructor))
+_nm_singleton_instance_destroy (void)
+{
+	_singletons_shutdown = TRUE;
+
+	while (_singletons) {
+		GObject *instance = _singletons->data;
+
+		_singletons = g_slist_delete_link (_singletons, _singletons);
+
+		g_object_weak_unref (instance, _nm_singleton_instance_weak_cb, NULL);
+
+		if (instance->ref_count > 1)
+			nm_log_dbg (LOGD_CORE, "disown %s singleton (%p)", G_OBJECT_TYPE_NAME (instance), instance);
+
+		g_object_unref (instance);
+	}
+}
+
+void
+_nm_singleton_instance_register_destruction (GObject *instance)
+{
+	g_return_if_fail (G_IS_OBJECT (instance));
+
+	/* Don't allow registration after shutdown. We only destroy the singletons
+	 * once. */
+	g_return_if_fail (!_singletons_shutdown);
+
+	g_object_weak_ref (instance, _nm_singleton_instance_weak_cb, NULL);
+
+	_singletons = g_slist_prepend (_singletons, instance);
+}
+
+/*****************************************************************************/
+
+gint
+nm_utils_ascii_str_to_bool (const char *str,
+                            gint default_value)
+{
+	gsize len;
+	char *s = NULL;
+
+	if (!str)
+		return default_value;
+
+	while (str[0] && g_ascii_isspace (str[0]))
+		str++;
+
+	if (!str[0])
+		return default_value;
+
+	len = strlen (str);
+	if (g_ascii_isspace (str[len - 1])) {
+		s = g_strdup (str);
+		g_strchomp (s);
+		str = s;
+	}
+
+	if (!g_ascii_strcasecmp (str, "true") || !g_ascii_strcasecmp (str, "yes") || !g_ascii_strcasecmp (str, "on") || !g_ascii_strcasecmp (str, "1"))
+		default_value = TRUE;
+	else if (!g_ascii_strcasecmp (str, "false") || !g_ascii_strcasecmp (str, "no") || !g_ascii_strcasecmp (str, "off") || !g_ascii_strcasecmp (str, "0"))
+		default_value = FALSE;
+	if (s)
+		g_free (s);
+	return default_value;
+}
+
+/*****************************************************************************/
 
 /*
  * nm_ethernet_address_is_valid:
@@ -433,7 +543,7 @@ out:
 
 typedef struct {
 	pid_t pid;
-	guint64 log_domain;
+	NMLogDomain log_domain;
 	union {
 		struct {
 			gint64 wait_start_us;
@@ -455,7 +565,7 @@ typedef struct {
 #define LOG_NAME_ARGS log_name,(long)pid
 
 static KillChildAsyncData *
-_kc_async_data_alloc (pid_t pid, guint64 log_domain, const char *log_name, NMUtilsKillChildAsyncCb callback, void *user_data)
+_kc_async_data_alloc (pid_t pid, NMLogDomain log_domain, const char *log_name, NMUtilsKillChildAsyncCb callback, void *user_data)
 {
 	KillChildAsyncData *data;
 	size_t log_name_len;
@@ -570,7 +680,7 @@ _kc_invoke_callback_idle (gpointer user_data)
 }
 
 static void
-_kc_invoke_callback (pid_t pid, guint64 log_domain, const char *log_name, NMUtilsKillChildAsyncCb callback, void *user_data, gboolean success, int child_status)
+_kc_invoke_callback (pid_t pid, NMLogDomain log_domain, const char *log_name, NMUtilsKillChildAsyncCb callback, void *user_data, gboolean success, int child_status)
 {
 	KillChildAsyncData *data;
 
@@ -602,7 +712,7 @@ _kc_invoke_callback (pid_t pid, guint64 log_domain, const char *log_name, NMUtil
  * supports only one watcher per child.
  **/
 void
-nm_utils_kill_child_async (pid_t pid, int sig, guint64 log_domain,
+nm_utils_kill_child_async (pid_t pid, int sig, NMLogDomain log_domain,
                            const char *log_name, guint32 wait_before_kill_msec,
                            NMUtilsKillChildAsyncCb callback, void *user_data)
 {
@@ -707,7 +817,7 @@ _sleep_duration_convert_ms_to_us (guint32 sleep_duration_msec)
  * In case of error, errno is preserved to contain the last reason of failure.
  **/
 gboolean
-nm_utils_kill_child_sync (pid_t pid, int sig, guint64 log_domain, const char *log_name,
+nm_utils_kill_child_sync (pid_t pid, int sig, NMLogDomain log_domain, const char *log_name,
                           int *child_status, guint32 wait_before_kill_msec,
                           guint32 sleep_duration_msec)
 {
@@ -885,7 +995,7 @@ out:
  * process with PID @pid is gone, the process is a zombie, or @max_wait_msec expires.
  **/
 void
-nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, guint64 log_domain,
+nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain log_domain,
                             const char *log_name, guint32 wait_before_kill_msec,
                             guint32 sleep_duration_msec, guint32 max_wait_msec)
 {
@@ -1084,6 +1194,22 @@ nm_utils_find_helper(const char *progname, const char *try_first, GError **error
 #define DEVICE_TYPE_TAG "type:"
 #define SUBCHAN_TAG "s390-subchannels:"
 #define EXCEPT_TAG "except:"
+#define MATCH_TAG_CONFIG_NM_VERSION             "nm-version:"
+#define MATCH_TAG_CONFIG_NM_VERSION_MIN         "nm-version-min:"
+#define MATCH_TAG_CONFIG_NM_VERSION_MAX         "nm-version-max:"
+#define MATCH_TAG_CONFIG_ENV                    "env:"
+
+#define _spec_has_prefix(pspec, tag) \
+	({ \
+		const char **_spec = (pspec); \
+		gboolean _has = FALSE; \
+		\
+		if (!g_ascii_strncasecmp (*_spec, (""tag), STRLEN (tag))) { \
+			*_spec += STRLEN (tag); \
+			_has = TRUE; \
+		} \
+		_has; \
+	})
 
 static const char *
 _match_except (const char *spec_str, gboolean *out_except)
@@ -1284,6 +1410,9 @@ nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels)
 
 	g_return_val_if_fail (subchannels != NULL, NM_MATCH_SPEC_NO_MATCH);
 
+	if (!specs)
+		return NM_MATCH_SPEC_NO_MATCH;
+
 	if (!parse_subchannels (subchannels, &a, &b, &c))
 		return NM_MATCH_SPEC_NO_MATCH;
 
@@ -1305,6 +1434,108 @@ nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels)
 					match = NM_MATCH_SPEC_MATCH;
 				}
 			}
+		}
+	}
+	return match;
+}
+
+static gboolean
+_match_config_nm_version (const char *str, const char *tag, guint cur_nm_version)
+{
+	gs_free char *s_ver = NULL;
+	gs_strfreev char **s_ver_tokens = NULL;
+	gint v_maj = -1, v_min = -1, v_mic = -1;
+	guint c_maj = -1, c_min = -1, c_mic = -1;
+	guint n_tokens;
+
+	s_ver = g_strdup (str);
+	g_strstrip (s_ver);
+
+	/* Let's be strict with the accepted format here. No funny stuff!! */
+
+	if (s_ver[strspn (s_ver, ".0123456789")] != '\0')
+		return FALSE;
+
+	s_ver_tokens = g_strsplit (s_ver, ".", -1);
+	n_tokens = g_strv_length (s_ver_tokens);
+	if (n_tokens == 0 || n_tokens > 3)
+		return FALSE;
+
+	v_maj = _nm_utils_ascii_str_to_int64 (s_ver_tokens[0], 10, 0, 0xFFFF, -1);
+	if (v_maj < 0)
+		return FALSE;
+	if (n_tokens >= 2) {
+		v_min = _nm_utils_ascii_str_to_int64 (s_ver_tokens[1], 10, 0, 0xFF, -1);
+		if (v_min < 0)
+			return FALSE;
+	}
+	if (n_tokens >= 3) {
+		v_mic = _nm_utils_ascii_str_to_int64 (s_ver_tokens[2], 10, 0, 0xFF, -1);
+		if (v_mic < 0)
+			return FALSE;
+	}
+
+	nm_decode_version (cur_nm_version, &c_maj, &c_min, &c_mic);
+
+#define CHECK_AND_RETURN_FALSE(cur, val, tag, is_last_digit) \
+	G_STMT_START { \
+		if (!strcmp (tag, MATCH_TAG_CONFIG_NM_VERSION_MIN)) { \
+			if (cur < val) \
+				return FALSE; \
+		} else if (!strcmp (tag, MATCH_TAG_CONFIG_NM_VERSION_MAX)) { \
+			if (cur > val) \
+				return FALSE; \
+		} else { \
+			if (cur != val) \
+				return FALSE; \
+		} \
+		if (!(is_last_digit)) { \
+			if (cur != val) \
+				return FALSE; \
+		} \
+	} G_STMT_END
+	if (v_mic >= 0)
+		CHECK_AND_RETURN_FALSE (c_mic, v_mic, tag, TRUE);
+	if (v_min >= 0)
+		CHECK_AND_RETURN_FALSE (c_min, v_min, tag, v_mic < 0);
+	CHECK_AND_RETURN_FALSE (c_maj, v_maj, tag, v_min < 0);
+	return TRUE;
+}
+
+NMMatchSpecMatchType
+nm_match_spec_match_config (const GSList *specs, guint cur_nm_version, const char *env)
+{
+	const GSList *iter;
+	NMMatchSpecMatchType match = NM_MATCH_SPEC_NO_MATCH;
+
+	if (!specs)
+		return NM_MATCH_SPEC_NO_MATCH;
+
+	for (iter = specs; iter; iter = g_slist_next (iter)) {
+		const char *spec_str = iter->data;
+		gboolean except;
+		gboolean v_match;
+
+		if (!spec_str || !*spec_str)
+			continue;
+
+		spec_str = _match_except (spec_str, &except);
+
+		if (_spec_has_prefix (&spec_str, MATCH_TAG_CONFIG_NM_VERSION))
+			v_match = _match_config_nm_version (spec_str, MATCH_TAG_CONFIG_NM_VERSION, cur_nm_version);
+		else if (_spec_has_prefix (&spec_str, MATCH_TAG_CONFIG_NM_VERSION_MIN))
+			v_match = _match_config_nm_version (spec_str, MATCH_TAG_CONFIG_NM_VERSION_MIN, cur_nm_version);
+		else if (_spec_has_prefix (&spec_str, MATCH_TAG_CONFIG_NM_VERSION_MAX))
+			v_match = _match_config_nm_version (spec_str, MATCH_TAG_CONFIG_NM_VERSION_MAX, cur_nm_version);
+		else if (_spec_has_prefix (&spec_str, MATCH_TAG_CONFIG_ENV))
+			v_match = env && env[0] && !strcmp (spec_str, env);
+		else
+			continue;
+
+		if (v_match) {
+			if (except)
+				return NM_MATCH_SPEC_NEG_MATCH;
+			match = NM_MATCH_SPEC_MATCH;
 		}
 	}
 	return match;
@@ -1495,6 +1726,205 @@ nm_match_spec_join (GSList *specs)
 	return g_string_free (str, FALSE);
 }
 
+/*****************************************************************************/
+
+char _nm_utils_to_string_buffer[];
+
+void
+nm_utils_to_string_buffer_init (char **buf, gsize *len)
+{
+	if (!*buf) {
+		*buf = _nm_utils_to_string_buffer;
+		*len = sizeof (_nm_utils_to_string_buffer);
+	}
+}
+
+gboolean
+nm_utils_to_string_buffer_init_null (gconstpointer obj, char **buf, gsize *len)
+{
+	nm_utils_to_string_buffer_init (buf, len);
+	if (!obj) {
+		g_strlcpy (*buf, "(null)", *len);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+void
+nm_utils_strbuf_append_c (char **buf, gsize *len, char c)
+{
+	switch (*len) {
+	case 0:
+		return;
+	case 1:
+		(*buf)[0] = '\0';
+		*len = 0;
+		(*buf)++;
+		return;
+	default:
+		(*buf)[0] = c;
+		(*buf)[1] = '\0';
+		(*len)--;
+		(*buf)++;
+		return;
+	}
+}
+
+void
+nm_utils_strbuf_append_str (char **buf, gsize *len, const char *str)
+{
+	gsize src_len;
+
+	switch (*len) {
+	case 0:
+		return;
+	case 1:
+		if (!str || !*str) {
+			(*buf)[0] = '\0';
+			return;
+		}
+		(*buf)[0] = '\0';
+		*len = 0;
+		(*buf)++;
+		return;
+	default:
+		if (!str || !*str) {
+			(*buf)[0] = '\0';
+			return;
+		}
+		src_len = g_strlcpy (*buf, str, *len);
+		if (src_len >= *len) {
+			*buf = &(*buf)[*len];
+			*len = 0;
+		} else {
+			*buf = &(*buf)[src_len];
+			*len -= src_len;
+		}
+		return;
+	}
+}
+
+void
+nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...)
+{
+	char *p = *buf;
+	va_list args;
+	gint retval;
+
+	if (*len == 0)
+		return;
+
+	va_start (args, format);
+	retval = g_vsnprintf (p, *len, format, args);
+	va_end (args);
+
+	if (retval >= *len) {
+		*buf = &p[*len];
+		*len = 0;
+	} else {
+		*buf = &p[retval];
+		*len -= retval;
+	}
+}
+
+const char *
+nm_utils_flags2str (const NMUtilsFlags2StrDesc *descs,
+                    gsize n_descs,
+                    unsigned flags,
+                    char *buf,
+                    gsize len)
+{
+	gsize i;
+	char *p;
+
+#if NM_MORE_ASSERTS > 10
+	nm_assert (descs);
+	nm_assert (n_descs > 0);
+	for (i = 0; i < n_descs; i++) {
+		gsize j;
+
+		nm_assert (descs[i].flag && nm_utils_is_power_of_two (descs[i].flag));
+		nm_assert (descs[i].name && descs[i].name[0]);
+		for (j = 0; j < i; j++)
+			nm_assert (descs[j].flag != descs[i].flag);
+	}
+#endif
+
+	nm_utils_to_string_buffer_init (&buf, &len);
+
+	if (!len)
+		return buf;
+
+	buf[0] = '\0';
+	if (!flags) {
+		return buf;
+	}
+
+	p = buf;
+	for (i = 0; flags && i < n_descs; i++) {
+		if (NM_FLAGS_HAS (flags, descs[i].flag)) {
+			flags &= ~descs[i].flag;
+
+			if (buf[0] != '\0')
+				nm_utils_strbuf_append_c (&p, &len, ',');
+			nm_utils_strbuf_append_str (&p, &len, descs[i].name);
+		}
+	}
+	if (flags) {
+		if (buf[0] != '\0')
+			nm_utils_strbuf_append_c (&p, &len, ',');
+		nm_utils_strbuf_append (&p, &len, "0x%x", flags);
+	}
+	return buf;
+};
+
+/*****************************************************************************/
+
+const char *
+nm_utils_enum2str (const NMUtilsEnum2StrDesc *descs,
+                   gsize n_descs,
+                   int val,
+                   char *buf,
+                   gsize len)
+{
+	gsize i;
+
+#if NM_MORE_ASSERTS > 10
+	nm_assert (descs);
+	nm_assert (n_descs > 0);
+	for (i = 0; i < n_descs; i++) {
+		gsize j;
+
+		nm_assert (descs[i].name && descs[i].name[0]);
+		for (j = 0; j < i; j++)
+			nm_assert (descs[j].value != descs[i].value);
+	}
+#endif
+
+	nm_utils_to_string_buffer_init (&buf, &len);
+
+	if (!len)
+		return buf;
+
+	for (i = 0; i < n_descs; i++) {
+		if (val == descs[i].value) {
+			g_strlcpy (buf, descs[i].name, len);
+			return buf;
+		}
+	}
+
+	g_snprintf (buf, len, "(%d)", val);
+	return buf;
+};
+
+/*****************************************************************************/
+
+/**
+ * nm_utils_get_shared_wifi_permission:
+ * @connection: the NMConnection to lookup the permission.
+ *
+ * Returns: a static string of the wifi-permission (if any) or %NULL.
+ */
 const char *
 nm_utils_get_shared_wifi_permission (NMConnection *connection)
 {
@@ -1519,101 +1949,6 @@ nm_utils_get_shared_wifi_permission (NMConnection *connection)
 }
 
 /*********************************/
-
-static void
-nm_gvalue_destroy (gpointer data)
-{
-	GValue *value = (GValue *) data;
-
-	g_value_unset (value);
-	g_slice_free (GValue, value);
-}
-
-GHashTable *
-value_hash_create (void)
-{
-	return g_hash_table_new_full (g_str_hash, g_str_equal, g_free, nm_gvalue_destroy);
-}
-
-void
-value_hash_add (GHashTable *hash,
-				const char *key,
-				GValue *value)
-{
-	g_hash_table_insert (hash, g_strdup (key), value);
-}
-
-void
-value_hash_add_str (GHashTable *hash,
-					const char *key,
-					const char *str)
-{
-	GValue *value;
-
-	value = g_slice_new0 (GValue);
-	g_value_init (value, G_TYPE_STRING);
-	g_value_set_string (value, str);
-
-	value_hash_add (hash, key, value);
-}
-
-void
-value_hash_add_object_path (GHashTable *hash,
-							const char *key,
-							const char *op)
-{
-	GValue *value;
-
-	value = g_slice_new0 (GValue);
-	g_value_init (value, DBUS_TYPE_G_OBJECT_PATH);
-	g_value_set_boxed (value, op);
-
-	value_hash_add (hash, key, value);
-}
-
-void
-value_hash_add_uint (GHashTable *hash,
-					 const char *key,
-					 guint32 val)
-{
-	GValue *value;
-
-	value = g_slice_new0 (GValue);
-	g_value_init (value, G_TYPE_UINT);
-	g_value_set_uint (value, val);
-
-	value_hash_add (hash, key, value);
-}
-
-void
-value_hash_add_bool (GHashTable *hash,
-					 const char *key,
-					 gboolean val)
-{
-	GValue *value;
-
-	value = g_slice_new0 (GValue);
-	g_value_init (value, G_TYPE_BOOLEAN);
-	g_value_set_boolean (value, val);
-
-	value_hash_add (hash, key, value);
-}
-
-void
-value_hash_add_object_property (GHashTable *hash,
-                                const char *key,
-                                GObject *object,
-                                const char *prop,
-                                GType val_type)
-{
-	GValue *value;
-
-	value = g_slice_new0 (GValue);
-	g_value_init (value, val_type);
-	g_object_get_property (object, prop, value);
-	value_hash_add (hash, key, value);
-}
-
 
 static char *
 get_new_connection_name (const GSList *existing,
@@ -1855,6 +2190,56 @@ nm_utils_read_resolv_conf_nameservers (const char *rc_contents)
 	g_free (contents);
 
 	return nameservers;
+}
+
+/**
+ * nm_utils_read_resolv_conf_dns_options():
+ * @rc_contents: contents of a resolv.conf; or %NULL to read /etc/resolv.conf
+ *
+ * Reads all dns options out of @rc_contents or /etc/resolv.conf and returns
+ * them.
+ *
+ * Returns: a #GPtrArray of 'char *' elements of each option
+ */
+GPtrArray *
+nm_utils_read_resolv_conf_dns_options (const char *rc_contents)
+{
+	GPtrArray *options = NULL;
+	char *contents = NULL;
+	char **lines, **line_iter;
+	char **tokens, **token_iter;
+	char *p;
+
+	if (rc_contents)
+		contents = g_strdup (rc_contents);
+	else {
+		if (!g_file_get_contents (_PATH_RESCONF, &contents, NULL, NULL))
+			return NULL;
+	}
+
+	options = g_ptr_array_new_full (3, g_free);
+
+	lines = g_strsplit_set (contents, "\r\n", -1);
+	for (line_iter = lines; *line_iter; line_iter++) {
+		if (!g_str_has_prefix (*line_iter, "options"))
+			continue;
+		p = *line_iter + strlen ("options");
+		if (!g_ascii_isspace (*p++))
+			continue;
+
+		tokens = g_strsplit (p, " ", 0);
+		for (token_iter = tokens; token_iter && *token_iter; token_iter++) {
+			g_strstrip (*token_iter);
+			if (!*token_iter[0])
+				continue;
+			g_ptr_array_add (options, g_strdup (*token_iter));
+		}
+		g_strfreev (tokens);
+	}
+	g_strfreev (lines);
+	g_free (contents);
+
+	return options;
 }
 
 static GHashTable *
@@ -2933,7 +3318,6 @@ nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
 	}
 	return FALSE;
 }
-
 void
 nm_utils_ipv6_addr_set_interface_identfier (struct in6_addr *addr,
                                             const NMUtilsIPv6IfaceId iid)
@@ -2948,160 +3332,123 @@ nm_utils_ipv6_interface_identfier_get_from_addr (NMUtilsIPv6IfaceId *iid,
 	memcpy (iid, addr->s6_addr + 8, 8);
 }
 
-/**
- * nm_utils_connection_hash_to_dict:
- * @hash: a hashed #NMConnection
- *
- * Returns: a (floating) #GVariant equivalent to @hash.
- */
-GVariant *
-nm_utils_connection_hash_to_dict (GHashTable *hash)
-{
-	GValue val = { 0, };
-	GVariant *variant;
-
-	if (!hash)
-		return NULL;
-
-	g_value_init (&val, DBUS_TYPE_G_MAP_OF_MAP_OF_VARIANT);
-	g_value_set_boxed (&val, hash);
-	variant = dbus_g_value_build_g_variant (&val);
-	g_value_unset (&val);
-
-	return variant;
-}
-
-/**
- * nm_utils_connection_dict_to_hash:
- * @dict: a #GVariant-serialized #NMConnection
- *
- * Returns: a #GHashTable equivalent to @dict.
- */
-GHashTable *
-nm_utils_connection_dict_to_hash (GVariant *dict)
-{
-	GValue val = { 0, };
-
-	if (!dict)
-		return NULL;
-
-	dbus_g_value_parse_g_variant (dict, &val);
-	return g_value_get_boxed (&val);
-}
-
-GSList *
-nm_utils_ip4_routes_from_gvalue (const GValue *value)
-{
-	GPtrArray *routes;
-	int i;
-	GSList *list = NULL;
-
-	routes = (GPtrArray *) g_value_get_boxed (value);
-	for (i = 0; routes && (i < routes->len); i++) {
-		GArray *array = (GArray *) g_ptr_array_index (routes, i);
-		guint32 *array_val = (guint32 *) array->data;
-		NMIPRoute *route;
-		GError *error = NULL;
-
-		if (array->len < 4) {
-			g_warning ("Ignoring invalid IP4 route");
-			continue;
-		}
-
-		route = nm_ip_route_new_binary (AF_INET,
-		                                &array_val[0], array_val[1],
-		                                &array_val[2], array_val[3],
-		                                &error);
-		if (route)
-			list = g_slist_prepend (list, route);
-		else {
-			g_warning ("Ignoring invalid IP4 route: %s", error->message);
-			g_clear_error (&error);
-		}
-	}
-
-	return g_slist_reverse (list);
-}
-
 static gboolean
-_nm_utils_gvalue_array_validate (GValueArray *elements, guint n_expected, ...)
+_set_stable_privacy (struct in6_addr *addr,
+                     const char *ifname,
+                     const char *uuid,
+                     guint dad_counter,
+                     gchar *secret_key,
+                     gsize key_len,
+                     GError **error)
 {
-	va_list args;
-	GValue *tmp;
-	int i;
-	gboolean valid = FALSE;
+	GChecksum *sum;
+	guint8 digest[32];
+	guint32 tmp[2];
+	gsize len = sizeof (digest);
 
-	if (n_expected != elements->n_values)
+	g_return_val_if_fail (key_len, FALSE);
+
+	/* Documentation suggests that this can fail.
+	 * Maybe in case of a missing algorithm in crypto library? */
+	sum = g_checksum_new (G_CHECKSUM_SHA256);
+	if (!sum) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "Can't create a SHA256 hash");
 		return FALSE;
-
-	va_start (args, n_expected);
-	for (i = 0; i < n_expected; i++) {
-		tmp = g_value_array_get_nth (elements, i);
-		if (G_VALUE_TYPE (tmp) != va_arg (args, GType))
-			goto done;
 	}
-	valid = TRUE;
 
-done:
-	va_end (args);
-	return valid;
+	key_len = MIN (key_len, G_MAXUINT32);
+
+	g_checksum_update (sum, addr->s6_addr, 8);
+	g_checksum_update (sum, (const guchar *) ifname, strlen (ifname) + 1);
+	if (!uuid)
+		uuid = "";
+	g_checksum_update (sum, (const guchar *) uuid, strlen (uuid) + 1);
+	tmp[0] = htonl (dad_counter);
+	tmp[1] = htonl (key_len);
+	g_checksum_update (sum, (const guchar *) tmp, sizeof (tmp));
+	g_checksum_update (sum, (const guchar *) secret_key, key_len);
+
+	g_checksum_get_digest (sum, digest, &len);
+	g_checksum_free (sum);
+
+	g_return_val_if_fail (len == 32, FALSE);
+
+	memcpy (addr->s6_addr + 8, &digest[0], 8);
+
+	return TRUE;
 }
 
-GSList *
-nm_utils_ip6_routes_from_gvalue (const GValue *value)
+#define RFC7217_IDGEN_RETRIES 3
+/**
+ * nm_utils_ipv6_addr_set_stable_privacy:
+ *
+ * Extend the address prefix with an interface identifier using the
+ * RFC 7217 Stable Privacy mechanism.
+ *
+ * Returns: %TRUE on success, %FALSE if the address could not be generated.
+ */
+gboolean
+nm_utils_ipv6_addr_set_stable_privacy (struct in6_addr *addr,
+                                       const char *ifname,
+                                       const char *uuid,
+                                       guint dad_counter,
+                                       GError **error)
 {
-	GPtrArray *routes;
-	int i;
-	GSList *list = NULL;
+	gchar *secret_key = NULL;
+	gsize key_len = 0;
+	gboolean success = FALSE;
 
-	routes = (GPtrArray *) g_value_get_boxed (value);
-	for (i = 0; routes && (i < routes->len); i++) {
-		GValueArray *route_values = (GValueArray *) g_ptr_array_index (routes, i);
-		GByteArray *dest, *next_hop;
-		guint prefix, metric;
-		NMIPRoute *route;
-		GError *error = NULL;
-
-		if (!_nm_utils_gvalue_array_validate (route_values, 4,
-		                                      DBUS_TYPE_G_UCHAR_ARRAY,
-		                                      G_TYPE_UINT,
-		                                      DBUS_TYPE_G_UCHAR_ARRAY,
-		                                      G_TYPE_UINT)) {
-			g_warning ("Ignoring invalid IP6 route");
-			continue;
-		}
-
-		dest = g_value_get_boxed (g_value_array_get_nth (route_values, 0));
-		if (dest->len != 16) {
-			g_warning ("%s: ignoring invalid IP6 dest address of length %d",
-			           __func__, dest->len);
-			continue;
-		}
-
-		prefix = g_value_get_uint (g_value_array_get_nth (route_values, 1));
-
-		next_hop = g_value_get_boxed (g_value_array_get_nth (route_values, 2));
-		if (next_hop->len != 16) {
-			g_warning ("%s: ignoring invalid IP6 next_hop address of length %d",
-			           __func__, next_hop->len);
-			continue;
-		}
-
-		metric = g_value_get_uint (g_value_array_get_nth (route_values, 3));
-
-		route = nm_ip_route_new_binary (AF_INET6,
-		                                dest->data, prefix,
-		                                next_hop->data, metric,
-		                                &error);
-		if (route)
-			list = g_slist_prepend (list, route);
-		else {
-			g_warning ("Ignoring invalid IP6 route: %s", error->message);
-			g_clear_error (&error);
-		}
+	if (dad_counter >= RFC7217_IDGEN_RETRIES) {
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "Too many DAD collisions");
+		return FALSE;
 	}
 
-	return g_slist_reverse (list);
+	/* Let's try to load a saved secret key first. */
+	if (g_file_get_contents (NMSTATEDIR "/secret_key", &secret_key, &key_len, NULL)) {
+		if (key_len < 16) {
+			g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			                     "Key is too short to be usable");
+			key_len = 0;
+		}
+	} else {
+		int urandom = open ("/dev/urandom", O_RDONLY);
+		mode_t key_mask;
+
+		if (!urandom) {
+			g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			             "Can't open /dev/urandom: %s", strerror (errno));
+			return FALSE;
+		}
+
+		/* RFC7217 mandates the key SHOULD be at least 128 bits.
+		 * Let's use twice as much. */
+		key_len = 32;
+		secret_key = g_malloc (key_len);
+
+		key_mask = umask (0077);
+		if (read (urandom, secret_key, key_len) == key_len) {
+			if (!g_file_set_contents (NMSTATEDIR "/secret_key", secret_key, key_len, error)) {
+				g_prefix_error (error, "Can't write " NMSTATEDIR "/secret_key");
+				key_len = 0;
+			}
+		} else {
+			g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+			                     "Could not obtain a secret");
+			key_len = 0;
+		}
+		umask (key_mask);
+		close (urandom);
+	}
+
+	if (key_len) {
+		success = _set_stable_privacy (addr, ifname, uuid, dad_counter,
+		                               secret_key, key_len, error);
+	}
+
+	g_free (secret_key);
+	return success;
 }
 
 /**
@@ -3120,4 +3467,79 @@ nm_utils_setpgid (gpointer unused G_GNUC_UNUSED)
 
 	pid = getpid ();
 	setpgid (pid, pid);
+}
+
+/**
+ * nm_utils_g_value_set_object_path:
+ * @value: a #GValue, initialized to store an object path
+ * @object: (allow-none): an #NMExportedObject
+ *
+ * Sets @value to @object's object path. If @object is %NULL, or not
+ * exported, @value is set to "/".
+ */
+void
+nm_utils_g_value_set_object_path (GValue *value, gpointer object)
+{
+	g_return_if_fail (!object || NM_IS_EXPORTED_OBJECT (object));
+
+	if (object && nm_exported_object_is_exported (object))
+		g_value_set_string (value, nm_exported_object_get_path (object));
+	else
+		g_value_set_string (value, "/");
+}
+
+/**
+ * nm_utils_g_value_set_object_path_array:
+ * @value: a #GValue, initialized to store an object path
+ * @objects: a #GSList of #NMExportedObjects
+ * @filter_func: (allow-none): function to call on each object in @objects
+ * @user_data: data to pass to @filter_func
+ *
+ * Sets @value to an array of object paths of the objects in @objects.
+ */
+void
+nm_utils_g_value_set_object_path_array (GValue *value,
+                                        GSList *objects,
+                                        NMUtilsObjectFunc filter_func,
+                                        gpointer user_data)
+{
+	char **paths;
+	guint i;
+	GSList *iter;
+
+	paths = g_new (char *, g_slist_length (objects) + 1);
+	for (i = 0, iter = objects; iter; iter = iter->next) {
+		NMExportedObject *object = iter->data;
+		const char *path;
+
+		path = nm_exported_object_get_path (object);
+		if (!path)
+			continue;
+		if (filter_func && !filter_func ((GObject *) object, user_data))
+			continue;
+		paths[i++] = g_strdup (path);
+	}
+	paths[i] = NULL;
+	g_value_take_boxed (value, paths);
+}
+
+/**
+ * nm_utils_g_value_set_strv:
+ * @value: a #GValue, initialized to store a #G_TYPE_STRV
+ * @strings: a #GPtrArray of strings
+ *
+ * Converts @strings to a #GStrv and stores it in @value.
+ */
+void
+nm_utils_g_value_set_strv (GValue *value, GPtrArray *strings)
+{
+	char **strv;
+	int i;
+
+	strv = g_new (char *, strings->len + 1);
+	for (i = 0; i < strings->len; i++)
+		strv[i] = g_strdup (strings->pdata[i]);
+	strv[i] = NULL;
+
+	g_value_take_boxed (value, strv);
 }

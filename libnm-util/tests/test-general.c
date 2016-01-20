@@ -21,7 +21,6 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <dbus/dbus-glib.h>
 #include <string.h>
 #include <netinet/ether.h>
@@ -30,7 +29,8 @@
 #include <sys/resource.h>
 
 #include <nm-utils.h>
-#include "gsystem-local-alloc.h"
+#include "nm-default.h"
+#include "nm-gvaluearray-compat.h"
 
 #include "nm-setting-private.h"
 #include "nm-setting-connection.h"
@@ -1283,6 +1283,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_IP4_CONFIG_IGNORE_AUTO_ROUTES, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP4_CONFIG_IGNORE_AUTO_DNS,    NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID,     NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT,       NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP4_CONFIG_DHCP_SEND_HOSTNAME, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP4_CONFIG_DHCP_HOSTNAME,      NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_IP4_CONFIG_NEVER_DEFAULT,      NM_SETTING_DIFF_RESULT_IN_A },

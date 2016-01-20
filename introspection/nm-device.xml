@@ -96,9 +96,13 @@
         NM_DEVICE_STATE_ACTIVATED state.
       </tp:docstring>
     </property>
-    <property name="Managed" type="b" access="read">
+    <property name="Managed" type="b" access="readwrite">
       <tp:docstring>
-        Whether or not this device is managed by NetworkManager.
+        Whether or not this device is managed by NetworkManager. Setting this
+        property has a similar effect to configuring the device as unmanaged
+        via the keyfile.unmanaged-devices setting in NetworkManager.conf.
+        Changes to this value are not persistent and lost after NetworkManager
+        restart.
       </tp:docstring>
     </property>
     <property name="Autoconnect" type="b" access="readwrite">
@@ -114,6 +118,12 @@
       <tp:docstring>
         If TRUE, indicates the device is likely missing firmware necessary for
         its operation.
+      </tp:docstring>
+    </property>
+    <property name="NmPluginMissing" type="b" access="read">
+      <tp:docstring>
+        If TRUE, indicates the NetworkManager plugin for the device is likely
+        missing or misconfigured.
       </tp:docstring>
     </property>
     <property name="DeviceType" type="u" access="read" tp:type="NM_DEVICE_TYPE">
@@ -145,18 +155,48 @@
         subject to limitations, for example set by service providers.
       </tp:docstring>
     </property>
+    <property name="LldpNeighbors" type="aa{sv}" access="read">
+      <tp:docstring>
+        Array of LLDP neighbors; each element is a dictionary mapping
+        LLDP TLV names to variant boxed values.
+      </tp:docstring>
+    </property>
+    <property name="Real" type="b" access="read">
+      <tp:docstring>
+        True if the device exists, or False for placeholder devices that
+        do not yet exist but could be automatically created by NetworkManager
+        if one of their AvailableConnections was activated.
+      </tp:docstring>
+    </property>
+
+    <method name="Reapply">
+      <arg name="connection" type="a{sa{sv}}" direction="in">
+        <tp:docstring>
+          The effective connection settings and properties to use. If empty, the connection
+          settings from the connection that is active on the device will be used.
+        </tp:docstring>
+      </arg>
+      <arg name="flags" type="u" direction="in">
+        <tp:docstring>
+          Flags which would modify the behavior of the Reapply call.
+          There are no flags defined currently and the users should use the value of 0.
+        </tp:docstring>
+      </arg>
+      <tp:docstring>
+        Attempts to update the configuration of a device without deactivating it.
+        You can either modify the configuration by passing the desired setup via "connection"
+        argument or just omit the argument to bring it in sync with the connection that
+        has been activated but could have been modified  since.
+      </tp:docstring>
+    </method>
 
     <method name="Disconnect">
-      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="impl_device_disconnect"/>
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <tp:docstring>
         Disconnects a device and prevents the device from automatically activating further connections without user intervention.
       </tp:docstring>
     </method>
 
     <method name="Delete">
-      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="impl_device_delete"/>
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <tp:docstring>
         Deletes a software device from NetworkManager and removes the interface from the system.
         The method returns an error when called for a hardware device.

@@ -57,8 +57,12 @@ void nmc_secrets_requested (NMSecretAgentSimple *agent,
                             GPtrArray           *secrets,
                             gpointer             user_data);
 
+char *nmc_unique_connection_name (const GPtrArray *connections,
+                                  const char *try_name);
+
 void nmc_cleanup_readline (void);
 char *nmc_readline (const char *prompt_fmt, ...) G_GNUC_PRINTF (1, 2);
+char *nmc_readline_echo (gboolean echo_on, const char *prompt_fmt, ...) G_GNUC_PRINTF (2, 3);
 char *nmc_rl_gen_func_basic (const char *text, int state, const char **words);
 gboolean nmc_get_in_readline (void);
 void nmc_set_in_readline (gboolean in_readline);
@@ -66,5 +70,7 @@ void nmc_set_in_readline (gboolean in_readline);
 /* for pre-filling a string to readline prompt */
 extern char *nmc_rl_pre_input_deftext;
 int nmc_rl_set_deftext (void);
+
+char *nmc_parse_lldp_capabilities (guint value);
 
 #endif /* NMC_COMMON_H */

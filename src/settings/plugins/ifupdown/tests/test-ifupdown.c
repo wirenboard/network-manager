@@ -20,11 +20,10 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <string.h>
 
+#include "nm-default.h"
 #include "nm-core-internal.h"
-#include "nm-logging.h"
 #include "interface_parser.h"
 #include "parser.h"
 
@@ -844,16 +843,12 @@ test20_source_stanza (const char *path)
 	expected_free (e);
 }
 
+NMTST_DEFINE ();
+
 int
 main (int argc, char **argv)
 {
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-	g_type_init ();
-#endif
-
-	nm_logging_setup ("WARN", "DEFAULT", NULL, NULL);
-
-	g_test_init (&argc, &argv, NULL);
+	nmtst_init_assert_logging (&argc, &argv, "WARN", "DEFAULT");
 
 	if (0)
 		dump_blocks ();

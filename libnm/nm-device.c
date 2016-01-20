@@ -23,9 +23,9 @@
 
 #include <string.h>
 
-#include <glib/gi18n-lib.h>
 #include <gudev/gudev.h>
 
+#include "nm-default.h"
 #include "nm-dbus-interface.h"
 #include "nm-active-connection.h"
 #include "nm-device-ethernet.h"
@@ -40,7 +40,10 @@
 #include "nm-device-team.h"
 #include "nm-device-bridge.h"
 #include "nm-device-vlan.h"
+#include "nm-device-vxlan.h"
 #include "nm-device-generic.h"
+#include "nm-device-ip-tunnel.h"
+#include "nm-device-macvlan.h"
 #include "nm-device.h"
 #include "nm-device-private.h"
 #include "nm-dhcp4-config.h"
@@ -51,15 +54,17 @@
 #include "nm-object-cache.h"
 #include "nm-remote-connection.h"
 #include "nm-core-internal.h"
-#include "nm-glib-compat.h"
 #include "nm-utils.h"
 #include "nm-dbus-helpers.h"
+#include "nm-device-tun.h"
 #include "nm-setting-connection.h"
+#include "nm-macros-internal.h"
 
 #include "nmdbus-device.h"
 
 static GType _nm_device_decide_type (GVariant *value);
 gboolean connection_compatible (NMDevice *device, NMConnection *connection, GError **error);
+static NMLldpNeighbor *nm_lldp_neighbor_dup (NMLldpNeighbor *neighbor);
 
 G_DEFINE_TYPE_WITH_CODE (NMDevice, nm_device, NM_TYPE_OBJECT,
                          _nm_object_register_type_func (g_define_type_id,
@@ -83,8 +88,10 @@ typedef struct {
 	char *type_description;
 	NMMetered metered;
 	NMDeviceCapabilities capabilities;
+	gboolean real;
 	gboolean managed;
 	gboolean firmware_missing;
+	gboolean nm_plugin_missing;
 	gboolean autoconnect;
 	NMIPConfig *ip4_config;
 	NMDhcpConfig *dhcp4_config;
@@ -104,6 +111,7 @@ typedef struct {
 
 	char *physical_port_id;
 	guint32 mtu;
+	GPtrArray *lldp_neighbors;
 } NMDevicePrivate;
 
 enum {
@@ -114,9 +122,11 @@ enum {
 	PROP_DRIVER_VERSION,
 	PROP_FIRMWARE_VERSION,
 	PROP_CAPABILITIES,
+	PROP_REAL,
 	PROP_MANAGED,
 	PROP_AUTOCONNECT,
 	PROP_FIRMWARE_MISSING,
+	PROP_NM_PLUGIN_MISSING,
 	PROP_IP4_CONFIG,
 	PROP_DHCP4_CONFIG,
 	PROP_IP6_CONFIG,
@@ -132,6 +142,7 @@ enum {
 	PROP_PHYSICAL_PORT_ID,
 	PROP_MTU,
 	PROP_METERED,
+	PROP_LLDP_NEIGHBORS,
 
 	LAST_PROP
 };
@@ -144,6 +155,13 @@ enum {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
+struct _NMLldpNeighbor {
+	guint refcount;
+	GHashTable *attrs;
+};
+
+G_DEFINE_BOXED_TYPE (NMLldpNeighbor, nm_lldp_neighbor, nm_lldp_neighbor_dup, nm_lldp_neighbor_unref)
+
 static void
 nm_device_init (NMDevice *device)
 {
@@ -151,6 +169,7 @@ nm_device_init (NMDevice *device)
 
 	priv->state = NM_DEVICE_STATE_UNKNOWN;
 	priv->reason = NM_DEVICE_STATE_REASON_NONE;
+	priv->lldp_neighbors = g_ptr_array_new ();
 }
 
 static gboolean
@@ -160,6 +179,38 @@ demarshal_state_reason (NMObject *object, GParamSpec *pspec, GVariant *value, gp
 
 	g_variant_get (value, "(uu)", NULL, reason_field);
 	_nm_object_queue_notify (object, NM_DEVICE_STATE_REASON);
+	return TRUE;
+}
+
+static gboolean
+demarshal_lldp_neighbors (NMObject *object, GParamSpec *pspec, GVariant *value, gpointer field)
+{
+	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (object);
+	GVariantIter iter, attrs_iter;
+	GVariant *variant, *attr_variant;
+	const char *attr_name;
+
+	g_return_val_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE ("aa{sv}")), FALSE);
+
+	g_ptr_array_unref (priv->lldp_neighbors);
+	priv->lldp_neighbors = g_ptr_array_new_with_free_func ((GDestroyNotify) nm_lldp_neighbor_unref);
+	g_variant_iter_init (&iter, value);
+
+	while (g_variant_iter_next (&iter, "@a{sv}", &variant)) {
+		NMLldpNeighbor *neigh;
+
+		neigh = nm_lldp_neighbor_new ();
+		g_variant_iter_init (&attrs_iter, variant);
+
+		while (g_variant_iter_next (&attrs_iter, "{&sv}", &attr_name, &attr_variant))
+			g_hash_table_insert (neigh->attrs, g_strdup (attr_name), attr_variant);
+
+		g_variant_unref (variant);
+		g_ptr_array_add (priv->lldp_neighbors, neigh);
+	}
+
+	_nm_object_queue_notify (object, NM_DEVICE_LLDP_NEIGHBORS);
+
 	return TRUE;
 }
 
@@ -182,9 +233,11 @@ init_dbus (NMObject *object)
 		{ NM_DEVICE_DRIVER_VERSION,    &priv->driver_version },
 		{ NM_DEVICE_FIRMWARE_VERSION,  &priv->firmware_version },
 		{ NM_DEVICE_CAPABILITIES,      &priv->capabilities },
+		{ NM_DEVICE_REAL,              &priv->real },
 		{ NM_DEVICE_MANAGED,           &priv->managed },
 		{ NM_DEVICE_AUTOCONNECT,       &priv->autoconnect },
 		{ NM_DEVICE_FIRMWARE_MISSING,  &priv->firmware_missing },
+		{ NM_DEVICE_NM_PLUGIN_MISSING, &priv->nm_plugin_missing },
 		{ NM_DEVICE_IP4_CONFIG,        &priv->ip4_config, NULL, NM_TYPE_IP4_CONFIG },
 		{ NM_DEVICE_DHCP4_CONFIG,      &priv->dhcp4_config, NULL, NM_TYPE_DHCP4_CONFIG },
 		{ NM_DEVICE_IP6_CONFIG,        &priv->ip6_config, NULL, NM_TYPE_IP6_CONFIG },
@@ -196,6 +249,7 @@ init_dbus (NMObject *object)
 		{ NM_DEVICE_PHYSICAL_PORT_ID,  &priv->physical_port_id },
 		{ NM_DEVICE_MTU,               &priv->mtu },
 		{ NM_DEVICE_METERED,           &priv->metered },
+		{ NM_DEVICE_LLDP_NEIGHBORS,    &priv->lldp_neighbors, demarshal_lldp_neighbors },
 
 		/* Properties that exist in D-Bus but that we don't track */
 		{ "ip4-address", NULL },
@@ -315,6 +369,14 @@ _nm_device_gtype_from_dtype (NMDeviceType dtype)
 		return NM_TYPE_DEVICE_VLAN;
 	case NM_DEVICE_TYPE_GENERIC:
 		return NM_TYPE_DEVICE_GENERIC;
+	case NM_DEVICE_TYPE_TUN:
+		return NM_TYPE_DEVICE_TUN;
+	case NM_DEVICE_TYPE_IP_TUNNEL:
+		return NM_TYPE_DEVICE_IP_TUNNEL;
+	case NM_DEVICE_TYPE_MACVLAN:
+		return NM_TYPE_DEVICE_MACVLAN;
+	case NM_DEVICE_TYPE_VXLAN:
+		return NM_TYPE_DEVICE_VXLAN;
 	default:
 		g_warning ("Unknown device type %d", dtype);
 		return G_TYPE_INVALID;
@@ -347,6 +409,7 @@ dispose (GObject *object)
 	g_clear_object (&priv->active_connection);
 
 	g_clear_pointer (&priv->available_connections, g_ptr_array_unref);
+	g_clear_pointer (&priv->lldp_neighbors, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (nm_device_parent_class)->dispose (object);
 }
@@ -407,6 +470,9 @@ get_property (GObject *object,
 	case PROP_CAPABILITIES:
 		g_value_set_flags (value, nm_device_get_capabilities (device));
 		break;
+	case PROP_REAL:
+		g_value_set_boolean (value, nm_device_is_real (device));
+		break;
 	case PROP_MANAGED:
 		g_value_set_boolean (value, nm_device_get_managed (device));
 		break;
@@ -415,6 +481,9 @@ get_property (GObject *object,
 		break;
 	case PROP_FIRMWARE_MISSING:
 		g_value_set_boolean (value, nm_device_get_firmware_missing (device));
+		break;
+	case PROP_NM_PLUGIN_MISSING:
+		g_value_set_boolean (value, nm_device_get_nm_plugin_missing (device));
 		break;
 	case PROP_IP4_CONFIG:
 		g_value_set_object (value, nm_device_get_ip4_config (device));
@@ -455,6 +524,9 @@ get_property (GObject *object,
 	case PROP_METERED:
 		g_value_set_uint (value, nm_device_get_metered (device));
 		break;
+	case PROP_LLDP_NEIGHBORS:
+		g_value_set_boxed (value, nm_device_get_lldp_neighbors (device));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -475,6 +547,11 @@ set_property (GObject *object,
 	case PROP_DEVICE_TYPE:
 		/* Construct only */
 		priv->device_type = g_value_get_enum (value);
+		break;
+	case PROP_MANAGED:
+		b = g_value_get_boolean (value);
+		if (priv->managed != b)
+			nm_device_set_managed (NM_DEVICE (object), b);
 		break;
 	case PROP_AUTOCONNECT:
 		b = g_value_get_boolean (value);
@@ -615,6 +692,22 @@ nm_device_class_init (NMDeviceClass *device_class)
 		                     G_PARAM_STATIC_STRINGS));
 
 	/**
+	 * NMDevice:real:
+	 *
+	 * Whether the device is real or is a placeholder device that could
+	 * be created automatically by NetworkManager if one of its
+	 * #NMDevice:available-connections was activated.
+	 *
+	 * Since: 1.2
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_REAL,
+		 g_param_spec_boolean (NM_DEVICE_REAL, "", "",
+		                       FALSE,
+		                       G_PARAM_READABLE |
+		                       G_PARAM_STATIC_STRINGS));
+
+	/**
 	 * NMDevice:managed:
 	 *
 	 * Whether the device is managed by NetworkManager.
@@ -647,6 +740,21 @@ nm_device_class_init (NMDeviceClass *device_class)
 	g_object_class_install_property
 		(object_class, PROP_FIRMWARE_MISSING,
 		 g_param_spec_boolean (NM_DEVICE_FIRMWARE_MISSING, "", "",
+		                       FALSE,
+		                       G_PARAM_READABLE |
+		                       G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMDevice:nm-plugin-missing:
+	 *
+	 * When %TRUE indicates that the NetworkManager plugin for the device
+	 * is not installed.
+	 *
+	 * Since: 1.2
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_NM_PLUGIN_MISSING,
+		 g_param_spec_boolean (NM_DEVICE_NM_PLUGIN_MISSING, "", "",
 		                       FALSE,
 		                       G_PARAM_READABLE |
 		                       G_PARAM_STATIC_STRINGS));
@@ -804,7 +912,7 @@ nm_device_class_init (NMDeviceClass *device_class)
 	 *
 	 * Whether the device is metered.
 	 *
-	 * Since: 1.0.6
+	 * Since: 1.2
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_METERED,
@@ -812,6 +920,18 @@ nm_device_class_init (NMDeviceClass *device_class)
 		                    0, G_MAXUINT32, NM_METERED_UNKNOWN,
 		                    G_PARAM_READABLE |
 		                    G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMDevice:lldp-neighbors:
+	 *
+	 * The LLDP neighbors.
+	 **/
+	g_object_class_install_property
+	    (object_class, PROP_LLDP_NEIGHBORS,
+	     g_param_spec_boxed (NM_DEVICE_LLDP_NEIGHBORS, "", "",
+	                         G_TYPE_PTR_ARRAY,
+	                         G_PARAM_READABLE |
+	                         G_PARAM_STATIC_STRINGS));
 
 	/* signals */
 
@@ -1074,6 +1194,30 @@ nm_device_get_managed (NMDevice *device)
 }
 
 /**
+ * nm_device_set_managed:
+ * @device: a #NMDevice
+ * @managed: %TRUE to make the device managed by NetworkManager.
+ *
+ * Enables or disables management of  #NMDevice by NetworkManager.
+ *
+ * Since: 1.2
+ **/
+void
+nm_device_set_managed (NMDevice *device, gboolean managed)
+{
+	g_return_if_fail (NM_IS_DEVICE (device));
+
+	managed = !!managed;
+
+	NM_DEVICE_GET_PRIVATE (device)->managed = managed;
+
+	_nm_object_set_property (NM_OBJECT (device),
+	                         NM_DBUS_INTERFACE_DEVICE,
+	                         "Managed",
+	                         "b", managed);
+}
+
+/**
  * nm_device_get_autoconnect:
  * @device: a #NMDevice
  *
@@ -1125,6 +1269,24 @@ nm_device_get_firmware_missing (NMDevice *device)
 	g_return_val_if_fail (NM_IS_DEVICE (device), 0);
 
 	return NM_DEVICE_GET_PRIVATE (device)->firmware_missing;
+}
+
+/**
+ * nm_device_get_nm_plugin_missing:
+ * @device: a #NMDevice
+ *
+ * Indicates that the NetworkManager plugin for the device is not installed.
+ *
+ * Returns: %TRUE if the device plugin not installed.
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_device_get_nm_plugin_missing (NMDevice *device)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+
+	return NM_DEVICE_GET_PRIVATE (device)->nm_plugin_missing;
 }
 
 /**
@@ -1406,14 +1568,16 @@ nm_device_get_product (NMDevice *device)
 	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
 
 	priv = NM_DEVICE_GET_PRIVATE (device);
-	if (!priv->product) {
+	if (!priv->product)
 		priv->product = _get_udev_property (device, "ID_MODEL_ENC", "ID_MODEL_FROM_DATABASE");
-		if (!priv->product) {
-			/* Sometimes ID_PRODUCT_FROM_DATABASE is used? */
-			priv->product = _get_udev_property (device, "ID_MODEL_ENC", "ID_PRODUCT_FROM_DATABASE");
-		}
-		_nm_object_queue_notify (NM_OBJECT (device), NM_DEVICE_PRODUCT);
-	}
+
+	/* Sometimes ID_PRODUCT_FROM_DATABASE is used? */
+	if (!priv->product)
+		priv->product = _get_udev_property (device, "ID_MODEL_ENC", "ID_PRODUCT_FROM_DATABASE");
+
+	if (!priv->product)
+		priv->product = g_strdup ("");
+
 	return priv->product;
 }
 
@@ -1434,10 +1598,13 @@ nm_device_get_vendor (NMDevice *device)
 	g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
 
 	priv = NM_DEVICE_GET_PRIVATE (device);
-	if (!priv->vendor) {
+
+	if (!priv->vendor)
 		priv->vendor = _get_udev_property (device, "ID_VENDOR_ENC", "ID_VENDOR_FROM_DATABASE");
-		_nm_object_queue_notify (NM_OBJECT (device), NM_DEVICE_VENDOR);
-	}
+
+	if (!priv->vendor)
+		priv->vendor = g_strdup ("");
+
 	return priv->vendor;
 }
 
@@ -1836,6 +2003,25 @@ nm_device_disambiguate_names (NMDevice **devices,
 	if (!find_duplicates (names, duplicates, num_devices))
 		goto done;
 
+	/* If dealing with Bluetooth devices, try to distinguish them by
+	 * device name.
+	 */
+	for (i = 0; i < num_devices; i++) {
+		if (duplicates[i] && NM_IS_DEVICE_BT (devices[i])) {
+			const char *devname = nm_device_bt_get_name (NM_DEVICE_BT (devices[i]));
+
+			if (!devname)
+				continue;
+
+			g_free (names[i]);
+			names[i] = g_strdup_printf ("%s (%s)",
+			                            get_device_type_name_with_iface (devices[i]),
+			                            devname);
+		}
+	}
+	if (!find_duplicates (names, duplicates, num_devices))
+		goto done;
+
 	/* We have multiple identical network cards, so we have to differentiate
 	 * them by interface name.
 	 */
@@ -1911,7 +2097,7 @@ nm_device_get_mtu (NMDevice *device)
  *
  * Returns: the metered setting.
  *
- * Since: 1.0.6
+ * Since: 1.2
  **/
 NMMetered
 nm_device_get_metered (NMDevice *device)
@@ -1919,6 +2105,47 @@ nm_device_get_metered (NMDevice *device)
 	g_return_val_if_fail (NM_IS_DEVICE (device), NM_METERED_UNKNOWN);
 
 	return NM_DEVICE_GET_PRIVATE (device)->metered;
+}
+
+NM_BACKPORT_SYMBOL (libnm_1_0_6, NMMetered, nm_device_get_metered, (NMDevice *device), (device));
+
+/**
+ * nm_device_get_lldp_neighbors:
+ * @device: a #NMDevice
+ *
+ * Gets the list of neighbors discovered through LLDP.
+ *
+ * Returns: (element-type NMLldpNeighbor) (transfer none): the #GPtrArray
+ * containing #NMLldpNeighbor<!-- -->s. This is the internal copy used by the
+ * device and must not be modified. The library never modifies the returned
+ * array and thus it is safe for callers to reference and keep using it.
+ *
+ * Since: 1.2
+ **/
+GPtrArray *
+nm_device_get_lldp_neighbors (NMDevice *device)
+{
+       g_return_val_if_fail (NM_IS_DEVICE (device), NULL);
+
+       return NM_DEVICE_GET_PRIVATE (device)->lldp_neighbors;
+}
+
+/**
+ * nm_device_is_real:
+ * @device: a #NMDevice
+ *
+ * Returns: %TRUE if the device exists, or %FALSE if it is a placeholder device
+ * that could be automatically created by NetworkManager if one of its
+ * #NMDevice:available-connections was activated.
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_device_is_real (NMDevice *device)
+{
+	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+
+	return NM_DEVICE_GET_PRIVATE (device)->real;
 }
 
 /**
@@ -1935,6 +2162,134 @@ nm_device_is_software (NMDevice *device)
 	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
 
 	return !!(NM_DEVICE_GET_PRIVATE (device)->capabilities & NM_DEVICE_CAP_IS_SOFTWARE);
+}
+
+/**
+ * nm_device_reapply:
+ * @device: a #NMDevice
+ * @connection: the #NMConnection to replace the applied settings with or %NULL to reuse existing
+ * @flags: always set this to zero
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: location for a #GError, or %NULL
+ *
+ * Attempts to update device with changes to the currently active connection
+ * made since it was last applied.
+ *
+ * Returns: %TRUE on success, %FALSE on error, in which case @error will be set.
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_device_reapply (NMDevice *device,
+                   NMConnection *connection,
+                   guint flags,
+                   GCancellable *cancellable,
+                   GError **error)
+{
+	GVariant *dict = NULL;
+	gboolean ret;
+
+	g_return_val_if_fail (NM_IS_DEVICE (device), FALSE);
+
+	if (connection)
+		dict = nm_connection_to_dbus (connection, NM_CONNECTION_SERIALIZE_ALL);
+	if (!dict)
+		dict = g_variant_new_array (G_VARIANT_TYPE ("{sa{sv}}"), NULL, 0);
+
+
+	ret = nmdbus_device_call_reapply_sync (NM_DEVICE_GET_PRIVATE (device)->proxy,
+	                                       dict, flags, cancellable, error);
+	if (error && *error)
+		g_dbus_error_strip_remote_error (*error);
+	return ret;
+}
+
+static void
+device_reapply_cb (GObject *proxy,
+                   GAsyncResult *result,
+                   gpointer user_data)
+{
+	GSimpleAsyncResult *simple = user_data;
+	GError *error = NULL;
+
+	if (nmdbus_device_call_reapply_finish (NMDBUS_DEVICE (proxy), result, &error))
+		g_simple_async_result_set_op_res_gboolean (simple, TRUE);
+	else {
+		g_dbus_error_strip_remote_error (error);
+		g_simple_async_result_take_error (simple, error);
+	}
+
+	g_simple_async_result_complete (simple);
+	g_object_unref (simple);
+}
+
+/**
+ * nm_device_reapply_async:
+ * @device: a #NMDevice
+ * @connection: the #NMConnection to replace the applied settings with or %NULL to reuse existing
+ * @flags: always set this to zero
+ * @cancellable: a #GCancellable, or %NULL
+ * @callback: callback to be called when the reapply operation completes
+ * @user_data: caller-specific data passed to @callback
+ *
+ * Asynchronously begins an attempt to update device with changes to the
+ * currently active connection made since it was last applied.
+ *
+ * Since: 1.2
+ **/
+void
+nm_device_reapply_async (NMDevice *device,
+                         NMConnection *connection,
+                         guint flags,
+                         GCancellable *cancellable,
+                         GAsyncReadyCallback callback,
+                         gpointer user_data)
+{
+	GVariant *dict = NULL;
+	GSimpleAsyncResult *simple;
+
+	g_return_if_fail (NM_IS_DEVICE (device));
+
+	if (connection)
+		dict = nm_connection_to_dbus (connection, NM_CONNECTION_SERIALIZE_ALL);
+	if (!dict)
+		dict = g_variant_new_array (G_VARIANT_TYPE ("{sa{sv}}"), NULL, 0);
+
+	simple = g_simple_async_result_new (G_OBJECT (device), callback, user_data,
+	                                    nm_device_reapply_async);
+
+	nmdbus_device_call_reapply (NM_DEVICE_GET_PRIVATE (device)->proxy,
+	                            dict, flags, cancellable,
+	                            device_reapply_cb, simple);
+}
+
+/**
+ * nm_device_reapply_finish:
+ * @device: a #NMDevice
+ * @result: the result passed to the #GAsyncReadyCallback
+ * @error: location for a #GError, or %NULL
+ *
+ * Gets the result of a call to nm_device_reapply_async().
+ *
+ * Returns: %TRUE on success, %FALSE on error, in which case @error
+ * will be set.
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_device_reapply_finish (NMDevice *device,
+                          GAsyncResult *result,
+                          GError **error)
+{
+	GSimpleAsyncResult *simple;
+
+	g_return_val_if_fail (g_simple_async_result_is_valid (result, G_OBJECT (device), nm_device_reapply_async), FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (result);
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+	else
+		return g_simple_async_result_get_op_res_gboolean (simple);
 }
 
 /**
@@ -2270,4 +2625,194 @@ nm_device_get_setting_type (NMDevice *device)
 	g_return_val_if_fail (NM_DEVICE_GET_CLASS (device)->get_setting_type != NULL, G_TYPE_INVALID);
 
 	return NM_DEVICE_GET_CLASS (device)->get_setting_type (device);
+}
+
+/**
+ * nm_lldp_neighbor_new:
+ *
+ * Creates a new #NMLldpNeighbor object.
+ *
+ * Returns: (transfer full): the new #NMLldpNeighbor object.
+ *
+ * Since: 1.2
+ **/
+NMLldpNeighbor *
+nm_lldp_neighbor_new (void)
+{
+	NMLldpNeighbor *neigh;
+
+	neigh = g_new0 (NMLldpNeighbor, 1);
+	neigh->refcount = 1;
+	neigh->attrs = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+	                                      (GDestroyNotify) g_variant_unref);
+
+	return neigh;
+}
+
+static NMLldpNeighbor *
+nm_lldp_neighbor_dup (NMLldpNeighbor *neighbor)
+{
+	NMLldpNeighbor *copy;
+
+	copy = nm_lldp_neighbor_new ();
+	copy->attrs = g_hash_table_ref (neighbor->attrs);
+
+	return copy;
+}
+
+/**
+ * nm_lldp_neighbor_ref:
+ * @neighbor: the #NMLldpNeighbor
+ *
+ * Increases the reference count of the object.
+ *
+ * Since: 1.2
+ **/
+void
+nm_lldp_neighbor_ref (NMLldpNeighbor *neighbor)
+{
+	g_return_if_fail (neighbor);
+	g_return_if_fail (neighbor->refcount > 0);
+
+	neighbor->refcount++;
+}
+
+/**
+ * nm_lldp_neighbor_unref:
+ * @neighbor: the #NMLldpNeighbor
+ *
+ * Decreases the reference count of the object.  If the reference count
+ * reaches zero, the object will be destroyed.
+ *
+ * Since: 1.2
+ **/
+void
+nm_lldp_neighbor_unref (NMLldpNeighbor *neighbor)
+{
+	g_return_if_fail (neighbor);
+	g_return_if_fail (neighbor->refcount > 0);
+
+	if (--neighbor->refcount == 0) {
+		g_return_if_fail (neighbor->attrs);
+		g_hash_table_unref (neighbor->attrs);
+		g_free (neighbor);
+	}
+}
+
+/**
+ * nm_lldp_neighbor_get_attr_names:
+ * @neighbor: the #NMLldpNeighbor
+ *
+ * Gets an array of attribute names available for @neighbor.
+ *
+ * Returns: (transfer full): a %NULL-terminated array of attribute names.
+ *
+ * Since: 1.2
+ **/
+char **
+nm_lldp_neighbor_get_attr_names (NMLldpNeighbor *neighbor)
+{
+	GHashTableIter iter;
+	const char *key;
+	GPtrArray *names;
+
+	g_return_val_if_fail (neighbor, NULL);
+	g_return_val_if_fail (neighbor->attrs, NULL);
+
+	names = g_ptr_array_new ();
+
+	g_hash_table_iter_init (&iter, neighbor->attrs);
+	while (g_hash_table_iter_next (&iter, (gpointer *) &key, NULL))
+		g_ptr_array_add (names, g_strdup (key));
+
+	g_ptr_array_add (names, NULL);
+
+	return (char **) g_ptr_array_free (names, FALSE);
+}
+
+/**
+ * nm_lldp_neighbor_get_attr_string_value:
+ * @neighbor: the #NMLldpNeighbor
+ * @name: the attribute name
+ * @out_value: (out) (allow-none) (transfer none): on return, the attribute value
+ *
+ * Gets the string value of attribute with name @name on @neighbor
+ *
+ * Returns: %TRUE if a string attribute with name @name was found, %FALSE otherwise
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_lldp_neighbor_get_attr_string_value (NMLldpNeighbor *neighbor, char *name,
+                                        const char **out_value)
+{
+	GVariant *variant;
+
+	g_return_val_if_fail (neighbor, FALSE);
+	g_return_val_if_fail (name && name[0], FALSE);
+
+	variant = g_hash_table_lookup (neighbor->attrs, name);
+	if (variant && g_variant_is_of_type (variant, G_VARIANT_TYPE_STRING)) {
+		if (out_value)
+			*out_value = g_variant_get_string (variant, NULL);
+		return TRUE;
+	} else
+		return FALSE;
+}
+
+/**
+ * nm_lldp_neighbor_get_attr_uint_value:
+ * @neighbor: the #NMLldpNeighbor
+ * @name: the attribute name
+ * @out_value: (out) (allow-none): on return, the attribute value
+ *
+ * Gets the uint value of attribute with name @name on @neighbor
+ *
+ * Returns: %TRUE if a uint attribute with name @name was found, %FALSE otherwise
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_lldp_neighbor_get_attr_uint_value (NMLldpNeighbor *neighbor, char *name,
+                                      guint *out_value)
+{
+	GVariant *variant;
+
+	g_return_val_if_fail (neighbor, FALSE);
+	g_return_val_if_fail (name && name[0], FALSE);
+
+	variant = g_hash_table_lookup (neighbor->attrs, name);
+	if (variant && g_variant_is_of_type (variant, G_VARIANT_TYPE_UINT32)) {
+		if (out_value)
+			*out_value = g_variant_get_uint32 (variant);
+		return TRUE;
+	} else
+		return FALSE;
+}
+
+/**
+ * nm_lldp_neighbor_get_attr_type:
+ * @neighbor: the #NMLldpNeighbor
+ * @name: the attribute name
+ *
+ * Get the type of an attribute.
+ *
+ * Returns: the #GVariantType of the attribute with name @name
+ *
+ * Since: 1.2
+ **/
+const GVariantType *
+nm_lldp_neighbor_get_attr_type (NMLldpNeighbor *neighbor, char *name)
+{
+	GVariant *variant;
+
+	g_return_val_if_fail (neighbor, NULL);
+	g_return_val_if_fail (name && name[0], NULL);
+
+	variant = g_hash_table_lookup (neighbor->attrs, name);
+	if (variant)
+		return g_variant_get_type (variant);
+	else
+		return NULL;
+
 }

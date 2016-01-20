@@ -33,8 +33,9 @@
 #include <nm-setting-pppoe.h>
 #include <nm-setting-wireless-security.h>
 #include <nm-setting-8021x.h>
-#include <nm-platform.h>
-#include <nm-logging.h>
+#include "nm-platform.h"
+
+#include "nm-default.h"
 
 #include "common.h"
 #include "nm-config.h"
@@ -107,7 +108,7 @@ devtimeout_ready (gpointer user_data)
 
 static void
 link_changed (NMPlatform *platform, NMPObjectType *obj_type, int ifindex, const NMPlatformLink *link,
-              NMPlatformSignalChangeType change_type, NMPlatformReason reason,
+              NMPlatformSignalChangeType change_type,
               NMConnection *self)
 {
 	NMIfcfgConnectionPrivate *priv = NM_IFCFG_CONNECTION_GET_PRIVATE (self);
@@ -143,7 +144,7 @@ devtimeout_expired (gpointer user_data)
 	nm_log_info (LOGD_SETTINGS, "Device for connection '%s' did not appear before timeout",
 	             nm_connection_get_id (NM_CONNECTION (self)));
 
-	g_signal_handler_disconnect (nm_platform_get (), priv->devtimeout_link_changed_handler);
+	g_signal_handler_disconnect (NM_PLATFORM_GET, priv->devtimeout_link_changed_handler);
 	priv->devtimeout_link_changed_handler = 0;
 	priv->devtimeout_timeout_id = 0;
 
@@ -187,7 +188,7 @@ nm_ifcfg_connection_check_devtimeout (NMIfcfgConnection *self)
 	             devtimeout, ifname, nm_connection_get_id (NM_CONNECTION (self)));
 
 	priv->devtimeout_link_changed_handler =
-		g_signal_connect (nm_platform_get (), NM_PLATFORM_SIGNAL_LINK_CHANGED,
+		g_signal_connect (NM_PLATFORM_GET, NM_PLATFORM_SIGNAL_LINK_CHANGED,
 		                  G_CALLBACK (link_changed), self);
 	priv->devtimeout_timeout_id = g_timeout_add_seconds (devtimeout, devtimeout_expired, self);
 }
@@ -276,10 +277,7 @@ path_watch_stop (NMIfcfgConnection *self)
 
 	ih = _get_inotify_helper (priv);
 
-	if (priv->ih_event_id) {
-		g_signal_handler_disconnect (ih, priv->ih_event_id);
-		priv->ih_event_id = 0;
-	}
+	nm_clear_g_signal_handler (ih, &priv->ih_event_id);
 
 	if (priv->file_wd >= 0) {
 		nm_inotify_helper_remove_watch (ih, priv->file_wd);
@@ -380,6 +378,7 @@ replace_and_commit (NMSettingsConnection *connection,
 
 static void
 commit_changes (NMSettingsConnection *connection,
+                NMSettingsConnectionCommitReason commit_reason,
                 NMSettingsConnectionCommitFunc callback,
                 gpointer user_data)
 {
@@ -407,7 +406,7 @@ commit_changes (NMSettingsConnection *connection,
 			/* Don't bother writing anything out if in-memory and on-disk data are the same */
 			if (same) {
 				/* But chain up to parent to handle success - emits updated signal */
-				NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, callback, user_data);
+				NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, commit_reason, callback, user_data);
 				return;
 			}
 		}
@@ -430,7 +429,7 @@ commit_changes (NMSettingsConnection *connection,
 
 	if (success) {
 		/* Chain up to parent to handle success */
-		NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, callback, user_data);
+		NM_SETTINGS_CONNECTION_CLASS (nm_ifcfg_connection_parent_class)->commit_changes (connection, commit_reason, callback, user_data);
 	} else {
 		/* Otherwise immediate error */
 		callback (connection, error, user_data);
@@ -514,15 +513,8 @@ dispose (GObject *object)
 
 	path_watch_stop (NM_IFCFG_CONNECTION (object));
 
-	if (priv->devtimeout_link_changed_handler) {
-		g_signal_handler_disconnect (nm_platform_get (),
-		                             priv->devtimeout_link_changed_handler);
-		priv->devtimeout_link_changed_handler = 0;
-	}
-	if (priv->devtimeout_timeout_id) {
-		g_source_remove (priv->devtimeout_timeout_id);
-		priv->devtimeout_timeout_id = 0;
-	}
+	nm_clear_g_signal_handler (NM_PLATFORM_GET, &priv->devtimeout_link_changed_handler);
+	nm_clear_g_source (&priv->devtimeout_timeout_id);
 
 	g_clear_object (&priv->inotify_helper);
 

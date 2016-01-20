@@ -18,9 +18,6 @@
 
 #include "config.h"
 
-#include <glib.h>
-#include <glib/gi18n.h>
-#include <gio/gio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -31,15 +28,12 @@
 #include <ctype.h>
 #include <net/if_arp.h>
 
+#include "nm-default.h"
 #include "nm-dhcp-systemd.h"
 #include "nm-utils.h"
-#include "nm-logging.h"
 #include "nm-dhcp-utils.h"
 #include "NetworkManagerUtils.h"
-#include "gsystem-local-alloc.h"
 #include "nm-platform.h"
-
-#include "nm-sd-adapt.h"
 
 #include "sd-dhcp-client.h"
 #include "sd-dhcp6-client.h"
@@ -206,7 +200,9 @@ G_STMT_START { \
 } G_STMT_END
 
 static NMIP4Config *
-lease_to_ip4_config (sd_dhcp_lease *lease,
+lease_to_ip4_config (const char *iface,
+                     int ifindex,
+                     sd_dhcp_lease *lease,
                      GHashTable *options,
                      guint32 default_priority,
                      gboolean log_lease,
@@ -224,17 +220,19 @@ lease_to_ip4_config (sd_dhcp_lease *lease,
 	guint16 mtu;
 	int r, num;
 	guint64 end_time;
-	uint8_t *data;
+	const void *data;
+	gsize data_len;
 	gboolean metered = FALSE;
 
 	g_return_val_if_fail (lease != NULL, NULL);
 
-	ip4_config = nm_ip4_config_new ();
+	ip4_config = nm_ip4_config_new (ifindex);
 
 	/* Address */
 	sd_dhcp_lease_get_address (lease, &tmp_addr);
 	memset (&address, 0, sizeof (address));
 	address.address = tmp_addr.s_addr;
+	address.peer_address = tmp_addr.s_addr;
 	str = nm_utils_inet4_ntop (tmp_addr.s_addr, NULL);
 	LOG_LEASE (LOGD_DHCP4, "  address %s", str);
 	add_option (options, dhcp4_requests, DHCP_OPTION_IP_ADDRESS, str);
@@ -357,9 +355,9 @@ lease_to_ip4_config (sd_dhcp_lease *lease,
 		g_string_free (l, TRUE);
 	}
 
-	num = sd_dhcp_lease_get_vendor_specific (lease, &data);
-	if (num > 0)
-		metered = !!memmem (data, num, "ANDROID_METERED", STRLEN ("ANDROID_METERED"));
+	r = sd_dhcp_lease_get_vendor_specific (lease, &data, &data_len);
+	if (r >= 0)
+		metered = !!memmem (data, data_len, "ANDROID_METERED", STRLEN ("ANDROID_METERED"));
 	nm_ip4_config_set_metered (ip4_config, metered);
 
 	return ip4_config;
@@ -378,6 +376,7 @@ get_leasefile_path (const char *iface, const char *uuid, gboolean ipv6)
 
 static GSList *
 nm_dhcp_systemd_get_lease_ip_configs (const char *iface,
+                                      int ifindex,
                                       const char *uuid,
                                       gboolean ipv6,
                                       guint32 default_route_metric)
@@ -392,9 +391,9 @@ nm_dhcp_systemd_get_lease_ip_configs (const char *iface,
 		return NULL;
 
 	path = get_leasefile_path (iface, uuid, FALSE);
-	r = sd_dhcp_lease_load (&lease, path);
+	r = dhcp_lease_load (&lease, path);
 	if (r == 0 && lease) {
-		ip4_config = lease_to_ip4_config (lease, NULL, default_route_metric, FALSE, NULL);
+		ip4_config = lease_to_ip4_config (iface, ifindex, lease, NULL, default_route_metric, FALSE, NULL);
 		if (ip4_config)
 			leases = g_slist_append (leases, ip4_config);
 		sd_dhcp_lease_unref (lease);
@@ -448,7 +447,9 @@ bound4_handle (NMDhcpSystemd *self)
 	}
 
 	options = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_free);
-	ip4_config = lease_to_ip4_config (lease,
+	ip4_config = lease_to_ip4_config (iface,
+	                                  nm_dhcp_client_get_ifindex (NM_DHCP_CLIENT (self)),
+	                                  lease,
 	                                  options,
 	                                  nm_dhcp_client_get_priority (NM_DHCP_CLIENT (self)),
 	                                  TRUE,
@@ -459,7 +460,7 @@ bound4_handle (NMDhcpSystemd *self)
 		uint8_t type = 0;
 
 		add_requests_to_options (options, dhcp4_requests);
-		sd_dhcp_lease_save (lease, priv->lease_file);
+		dhcp_lease_save (lease, priv->lease_file);
 
 		sd_dhcp_client_get_client_id(priv->client4, &type, &client_id, &client_id_len);
 		if (client_id)
@@ -475,7 +476,6 @@ bound4_handle (NMDhcpSystemd *self)
 		g_clear_error (&error);
 	}
 
-	sd_dhcp_lease_unref (lease);
 	g_hash_table_destroy (options);
 	g_clear_object (&ip4_config);
 }
@@ -492,15 +492,15 @@ dhcp_event_cb (sd_dhcp_client *client, int event, gpointer user_data)
 	nm_log_dbg (LOGD_DHCP4, "(%s): DHCPv4 client event %d", iface, event);
 
 	switch (event) {
-	case DHCP_EVENT_EXPIRED:
+	case SD_DHCP_CLIENT_EVENT_EXPIRED:
 		nm_dhcp_client_set_state (NM_DHCP_CLIENT (user_data), NM_DHCP_STATE_EXPIRE, NULL, NULL);
 		break;
-	case DHCP_EVENT_STOP:
+	case SD_DHCP_CLIENT_EVENT_STOP:
 		nm_dhcp_client_set_state (NM_DHCP_CLIENT (user_data), NM_DHCP_STATE_FAIL, NULL, NULL);
 		break;
-	case DHCP_EVENT_RENEW:
-	case DHCP_EVENT_IP_CHANGE:
-	case DHCP_EVENT_IP_ACQUIRE:
+	case SD_DHCP_CLIENT_EVENT_RENEW:
+	case SD_DHCP_CLIENT_EVENT_IP_CHANGE:
+	case SD_DHCP_CLIENT_EVENT_IP_ACQUIRE:
 		bound4_handle (self);
 		break;
 	default:
@@ -531,7 +531,7 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 	const uint8_t *client_id = NULL;
 	size_t client_id_len = 0;
 	struct in_addr last_addr = { 0 };
-	const char *hostname;
+	const char *hostname, *fqdn;
 	int r, i;
 	gboolean success = FALSE;
 
@@ -583,7 +583,7 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 		goto error;
 	}
 
-	sd_dhcp_lease_load (&lease, priv->lease_file);
+	dhcp_lease_load (&lease, priv->lease_file);
 
 	if (last_ip4_address)
 		inet_pton (AF_INET, last_ip4_address, &last_addr);
@@ -607,7 +607,7 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 		                              client_id + 1,
 		                              client_id_len - 1);
 	} else if (lease) {
-		r = sd_dhcp_lease_get_client_id (lease, &client_id, &client_id_len);
+		r = sd_dhcp_lease_get_client_id (lease, (const void **) &client_id, &client_id_len);
 		if (r == 0 && client_id_len) {
 			sd_dhcp_client_set_client_id (priv->client4,
 			                              client_id[0],
@@ -629,9 +629,28 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 
 	hostname = nm_dhcp_client_get_hostname (client);
 	if (hostname) {
-		r = sd_dhcp_client_set_hostname (priv->client4, hostname);
+		char *prefix, *dot;
+
+		prefix = strdup (hostname);
+		dot = strchr (prefix, '.');
+		/* get rid of the domain */
+		if (dot)
+			*dot = '\0';
+
+		r = sd_dhcp_client_set_hostname (priv->client4, prefix);
+		free (prefix);
+
 		if (r < 0) {
 			nm_log_warn (LOGD_DHCP4, "(%s): failed to set DHCP hostname (%d)", iface, r);
+			goto error;
+		}
+	}
+
+	fqdn = nm_dhcp_client_get_fqdn (client);
+	if (fqdn) {
+		r = sd_dhcp_client_set_hostname (priv->client4, fqdn);
+		if (r < 0) {
+			nm_log_warn (LOGD_DHCP4, "(%s): failed to set DHCP FQDN (%d)", iface, r);
 			goto error;
 		}
 	}
@@ -672,14 +691,14 @@ dhcp6_event_cb (sd_dhcp6_client *client, int event, gpointer user_data)
 	nm_log_dbg (LOGD_DHCP6, "(%s): DHCPv6 client event %d", iface, event);
 
 	switch (event) {
-	case DHCP6_EVENT_RETRANS_MAX:
+	case SD_DHCP6_CLIENT_EVENT_RETRANS_MAX:
 		nm_dhcp_client_set_state (NM_DHCP_CLIENT (user_data), NM_DHCP_STATE_TIMEOUT, NULL, NULL);
 		break;
-	case DHCP6_EVENT_RESEND_EXPIRE:
-	case DHCP6_EVENT_STOP:
+	case SD_DHCP6_CLIENT_EVENT_RESEND_EXPIRE:
+	case SD_DHCP6_CLIENT_EVENT_STOP:
 		nm_dhcp_client_set_state (NM_DHCP_CLIENT (user_data), NM_DHCP_STATE_FAIL, NULL, NULL);
 		break;
-	case DHCP6_EVENT_IP_ACQUIRE:
+	case SD_DHCP6_CLIENT_EVENT_IP_ACQUIRE:
 		bound6_handle (self);
 		break;
 	default:
@@ -691,6 +710,7 @@ dhcp6_event_cb (sd_dhcp6_client *client, int event, gpointer user_data)
 static gboolean
 ip6_start (NMDhcpClient *client,
            const char *dhcp_anycast_addr,
+           const struct in6_addr *ll_addr,
            gboolean info_only,
            NMSettingIP6ConfigPrivacy privacy,
            const GByteArray *duid)
@@ -749,12 +769,6 @@ ip6_start (NMDhcpClient *client,
 		goto error;
 	}
 
-	r = sd_dhcp6_client_set_ifname (priv->client6, iface);
-	if (r < 0) {
-		nm_log_warn (LOGD_DHCP6, "(%s): failed to set DHCP ifname (%d)", iface, r);
-		goto error;
-	}
-
 	r = sd_dhcp6_client_set_callback (priv->client6, dhcp6_event_cb, client);
 	if (r < 0) {
 		nm_log_warn (LOGD_DHCP6, "(%s): failed to set DHCP callback (%d)", iface, r);
@@ -765,6 +779,12 @@ ip6_start (NMDhcpClient *client,
 	for (i = 0; dhcp6_requests[i].name; i++) {
 		if (dhcp6_requests[i].include)
 			sd_dhcp6_client_set_request_option (priv->client6, dhcp6_requests[i].num);
+	}
+
+	r = sd_dhcp6_client_set_local_address (priv->client6, ll_addr);
+	if (r < 0) {
+		nm_log_warn (LOGD_DHCP6, "(%s): failed to set local address (%d)", iface, r);
+		goto error;
 	}
 
 	r = sd_dhcp6_client_start (priv->client6);
@@ -848,7 +868,7 @@ nm_dhcp_systemd_class_init (NMDhcpSystemdClass *sdhcp_class)
 static void __attribute__((constructor))
 register_dhcp_dhclient (void)
 {
-	g_type_init ();
+	nm_g_type_init ();
 	_nm_dhcp_client_register (NM_TYPE_DHCP_SYSTEMD,
 	                          "internal",
 	                          NULL,

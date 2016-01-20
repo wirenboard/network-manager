@@ -29,12 +29,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dlfcn.h>
-#include <gio/gio.h>
 
 #define INET6
 #include <pppd/eui64.h>
 #include <pppd/ipv6cp.h>
 
+#include "nm-default.h"
 #include "nm-dbus-interface.h"
 #include "nm-pppd-plugin.h"
 #include "nm-ppp-status.h"
@@ -372,9 +372,7 @@ plugin_init (void)
 	GDBusConnection *bus;
 	GError *err = NULL;
 
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-	g_type_init ();
-#endif
+	nm_g_type_init ();
 
 	g_message ("nm-ppp-plugin: (%s): initializing", __func__);
 

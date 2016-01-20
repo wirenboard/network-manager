@@ -21,10 +21,6 @@
 
 #include "config.h"
 
-#include <glib.h>
-#include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
-#include <dbus/dbus-glib.h>
 #include <getopt.h>
 #include <locale.h>
 #include <errno.h>
@@ -35,27 +31,26 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <glib/gi18n.h>
 #include <gmodule.h>
 #include <string.h>
 #include <sys/resource.h>
 
-#include "gsystem-local-alloc.h"
+#include "nm-default.h"
 #include "nm-dbus-interface.h"
 #include "NetworkManagerUtils.h"
 #include "main-utils.h"
 #include "nm-manager.h"
 #include "nm-linux-platform.h"
-#include "nm-dbus-manager.h"
+#include "nm-bus-manager.h"
 #include "nm-device.h"
 #include "nm-dhcp-manager.h"
-#include "nm-logging.h"
 #include "nm-config.h"
 #include "nm-session-monitor.h"
 #include "nm-dispatcher.h"
 #include "nm-settings.h"
 #include "nm-auth-manager.h"
 #include "nm-core-internal.h"
+#include "nm-exported-object.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -71,7 +66,6 @@ static struct {
 	gboolean show_version;
 	gboolean print_config;
 	gboolean become_daemon;
-	gboolean debug;
 	gboolean g_fatal_warnings;
 	gboolean run_from_build_dir;
 	char *opt_log_level;
@@ -87,17 +81,15 @@ parse_state_file (const char *filename,
                   gboolean *net_enabled,
                   gboolean *wifi_enabled,
                   gboolean *wwan_enabled,
-                  gboolean *wimax_enabled,
                   GError **error)
 {
 	GKeyFile *state_file;
 	GError *tmp_error = NULL;
-	gboolean wifi, net, wwan, wimax;
+	gboolean wifi, net, wwan;
 
 	g_return_val_if_fail (net_enabled != NULL, FALSE);
 	g_return_val_if_fail (wifi_enabled != NULL, FALSE);
 	g_return_val_if_fail (wwan_enabled != NULL, FALSE);
-	g_return_val_if_fail (wimax_enabled != NULL, FALSE);
 
 	state_file = g_key_file_new ();
 	g_key_file_set_list_separator (state_file, ',');
@@ -119,7 +111,6 @@ parse_state_file (const char *filename,
 			g_key_file_set_boolean (state_file, "main", "NetworkingEnabled", *net_enabled);
 			g_key_file_set_boolean (state_file, "main", "WirelessEnabled", *wifi_enabled);
 			g_key_file_set_boolean (state_file, "main", "WWANEnabled", *wwan_enabled);
-			g_key_file_set_boolean (state_file, "main", "WimaxEnabled", *wimax_enabled);
 
 			data = g_key_file_to_data (state_file, &len, NULL);
 			if (data)
@@ -149,11 +140,6 @@ parse_state_file (const char *filename,
 	wwan = g_key_file_get_boolean (state_file, "main", "WWANEnabled", &tmp_error);
 	if (tmp_error == NULL)
 		*wwan_enabled = wwan;
-	g_clear_error (&tmp_error);
-
-	wimax = g_key_file_get_boolean (state_file, "main", "WimaxEnabled", &tmp_error);
-	if (tmp_error == NULL)
-		*wimax_enabled = wimax;
 	g_clear_error (&tmp_error);
 
 	g_key_file_free (state_file);
@@ -235,7 +221,7 @@ print_config (NMConfigCmdLineOptions *config_cli)
 
 	nm_logging_setup ("OFF", "ALL", NULL, NULL);
 
-	config = nm_config_new (config_cli, &error);
+	config = nm_config_new (config_cli, NULL, &error);
 	if (config == NULL) {
 		fprintf (stderr, _("Failed to read configuration: %s\n"),
 		         (error && error->message) ? error->message : _("unknown"));
@@ -254,7 +240,6 @@ do_early_setup (int *argc, char **argv[], NMConfigCmdLineOptions *config_cli)
 	GOptionEntry options[] = {
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &global_opt.show_version, N_("Print NetworkManager version and exit"), NULL },
 		{ "no-daemon", 'n', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &global_opt.become_daemon, N_("Don't become a daemon"), NULL },
-		{ "debug", 'd', 0, G_OPTION_ARG_NONE, &global_opt.debug, N_("Don't become a daemon, and log to stderr"), NULL },
 		{ "log-level", 0, 0, G_OPTION_ARG_STRING, &global_opt.opt_log_level, N_("Log level: one of [%s]"), "INFO" },
 		{ "log-domains", 0, 0, G_OPTION_ARG_STRING, &global_opt.opt_log_domains,
 		  N_("Log domains separated by ',': any combination of [%s]"),
@@ -287,20 +272,21 @@ do_early_setup (int *argc, char **argv[], NMConfigCmdLineOptions *config_cli)
 int
 main (int argc, char *argv[])
 {
-	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE, wimax_enabled = TRUE;
+	gboolean wifi_enabled = TRUE, net_enabled = TRUE, wwan_enabled = TRUE;
 	gboolean success = FALSE;
-	NMManager *manager = NULL;
-	gs_unref_object NMSettings *settings = NULL;
-	gs_unref_object NMConfig *config = NULL;
-	gs_unref_object NMSessionMonitor *session_monitor = NULL;
+	NMConfig *config;
 	GError *error = NULL;
 	gboolean wrote_pidfile = FALSE;
 	char *bad_domains = NULL;
 	NMConfigCmdLineOptions *config_cli;
 
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-	g_type_init ();
-#endif
+	nm_g_type_init ();
+
+	/* Known to cause a possible deadlock upon GDBus initialization:
+	 * https://bugzilla.gnome.org/show_bug.cgi?id=674885 */
+	g_type_ensure (G_TYPE_SOCKET);
+	g_type_ensure (G_TYPE_DBUS_CONNECTION);
+	g_type_ensure (NM_TYPE_BUS_MANAGER);
 
 	_nm_utils_is_manager_process = TRUE;
 
@@ -356,7 +342,6 @@ main (int argc, char *argv[])
 		/* don't free these strings, we need them for the entire
 		 * process lifetime */
 		nm_dhcp_helper_path = g_strdup_printf ("%s/src/dhcp-manager/nm-dhcp-helper", path);
-		nm_device_autoipd_helper_path = g_strdup_printf ("%s/callouts/nm-avahi-autoipd.action", path);
 
 		g_free (path);
 	}
@@ -377,7 +362,7 @@ main (int argc, char *argv[])
 	}
 
 	/* Read the config file and CLI overrides */
-	config = nm_config_setup (config_cli, &error);
+	config = nm_config_setup (config_cli, NULL, &error);
 	nm_config_cmd_line_options_free (config_cli);
 	config_cli = NULL;
 	if (config == NULL) {
@@ -408,7 +393,7 @@ main (int argc, char *argv[])
 		}
 	}
 
-	if (global_opt.become_daemon && !global_opt.debug) {
+	if (global_opt.become_daemon && !nm_config_get_is_debug (config)) {
 		if (daemon (0, 0) < 0) {
 			int saved_errno;
 
@@ -424,12 +409,17 @@ main (int argc, char *argv[])
 	/* Set up unix signal handling - before creating threads, but after daemonizing! */
 	nm_main_utils_setup_signals (main_loop);
 
-	nm_logging_syslog_openlog (global_opt.debug);
+	nm_logging_syslog_openlog (nm_config_get_is_debug (config)
+	                           ? "debug"
+	                           : nm_config_data_get_value_cached (NM_CONFIG_GET_DATA_ORIG,
+	                                                              NM_CONFIG_KEYFILE_GROUP_LOGGING,
+	                                                              NM_CONFIG_KEYFILE_KEY_LOGGING_BACKEND,
+	                                                              NM_CONFIG_GET_VALUE_STRIP | NM_CONFIG_GET_VALUE_NO_EMPTY));
 
 	nm_log_info (LOGD_CORE, "NetworkManager (version " NM_DIST_VERSION ") is starting...");
 
 	/* Parse the state file */
-	if (!parse_state_file (global_opt.state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &wimax_enabled, &error)) {
+	if (!parse_state_file (global_opt.state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &error)) {
 		nm_log_err (LOGD_CORE, "State file %s parsing failed: (%d) %s",
 		            global_opt.state_file,
 		            error ? error->code : -1,
@@ -437,13 +427,6 @@ main (int argc, char *argv[])
 		/* Not a hard failure */
 	}
 	g_clear_error (&error);
-
-	dbus_threads_init_default ();
-
-	/* Ensure that non-exported properties don't leak out, and that the
-	 * introspection 'access' permissions are respected.
-	 */
-	dbus_glib_global_set_disable_legacy_property_access ();
 
 	nm_log_info (LOGD_CORE, "Read config: %s", nm_config_data_get_config_description (nm_config_get_data (config)));
 	nm_config_data_log (nm_config_get_data (config), "CONFIG: ", "  ", NULL);
@@ -455,16 +438,18 @@ main (int argc, char *argv[])
 #endif
 	             );
 
-	if (!nm_dbus_manager_get_connection (nm_dbus_manager_get ())) {
-#if HAVE_DBUS_GLIB_100
+	nm_auth_manager_setup (nm_config_get_auth_polkit (config));
+
+	nm_manager_setup (global_opt.state_file,
+	                  net_enabled,
+	                  wifi_enabled,
+	                  wwan_enabled);
+
+	if (!nm_bus_manager_get_connection (nm_bus_manager_get ())) {
 		nm_log_warn (LOGD_CORE, "Failed to connect to D-Bus; only private bus is available");
-#else
-		nm_log_err (LOGD_CORE, "Failed to connect to D-Bus, exiting...");
-		goto done;
-#endif
 	} else {
 		/* Start our DBus service */
-		if (!nm_dbus_manager_start_service (nm_dbus_manager_get ())) {
+		if (!nm_bus_manager_start_service (nm_bus_manager_get ())) {
 			nm_log_err (LOGD_CORE, "failed to start the dbus service.");
 			goto done;
 		}
@@ -473,31 +458,16 @@ main (int argc, char *argv[])
 	/* Set up platform interaction layer */
 	nm_linux_platform_setup ();
 
-	nm_auth_manager_setup (nm_config_get_auth_polkit (config));
+	NM_UTILS_KEEP_ALIVE (config, NM_PLATFORM_GET, "NMConfig-depends-on-NMPlatform");
 
 	nm_dispatcher_init ();
 
-	settings = nm_settings_new (&error);
-	if (!settings) {
-		nm_log_err (LOGD_CORE, "failed to initialize settings storage: %s",
-		            error && error->message ? error->message : "(unknown)");
+	g_signal_connect (nm_manager_get (), NM_MANAGER_CONFIGURE_QUIT, G_CALLBACK (manager_configure_quit), config);
+
+	if (!nm_manager_start (nm_manager_get (), &error)) {
+		nm_log_err (LOGD_CORE, "failed to initialize: %s", error->message);
 		goto done;
 	}
-
-	manager = nm_manager_new (settings,
-	                          global_opt.state_file,
-	                          net_enabled,
-	                          wifi_enabled,
-	                          wwan_enabled,
-	                          wimax_enabled);
-
-	/* Initialize session monitor */
-	session_monitor = nm_session_monitor_get ();
-	g_assert (session_monitor != NULL);
-
-	g_signal_connect (manager, NM_MANAGER_CONFIGURE_QUIT, G_CALLBACK (manager_configure_quit), config);
-
-	nm_manager_start (manager);
 
 	/* Make sure the loopback interface is up. If interface is down, we bring
 	 * it up and kernel will assign it link-local IPv4 and IPv6 addresses. If
@@ -517,12 +487,10 @@ main (int argc, char *argv[])
 	if (configure_and_quit == FALSE)
 		g_main_loop_run (main_loop);
 
-	nm_manager_stop (manager);
-
 done:
-	g_clear_object (&manager);
+	nm_exported_object_class_set_quitting ();
 
-	nm_logging_syslog_closelog ();
+	nm_manager_stop (nm_manager_get ());
 
 	if (global_opt.pidfile && wrote_pidfile)
 		unlink (global_opt.pidfile);

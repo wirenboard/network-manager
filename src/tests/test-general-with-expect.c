@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
@@ -28,8 +27,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
-#include "nm-logging.h"
 #include "nm-multi-index.h"
 
 #include "nm-test-utils.h"
@@ -865,9 +864,9 @@ main (int argc, char **argv)
 
 	g_test_add_func ("/general/nm_utils_monotonic_timestamp_as_boottime", test_nm_utils_monotonic_timestamp_as_boottime);
 	g_test_add_func ("/general/nm_utils_kill_child", test_nm_utils_kill_child);
+	g_test_add_func ("/general/nm_utils_array_remove_at_indexes", test_nm_utils_array_remove_at_indexes);
 	g_test_add_func ("/general/nm_ethernet_address_is_valid", test_nm_ethernet_address_is_valid);
 	g_test_add_func ("/general/nm_multi_index", test_nm_multi_index);
-	g_test_add_func ("/general/nm_utils_array_remove_at_indexes", test_nm_utils_array_remove_at_indexes);
 
 	return g_test_run ();
 }

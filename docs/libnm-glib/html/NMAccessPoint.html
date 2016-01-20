@@ -121,7 +121,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<span class="returnvalue">gint32</span>
+<span class="returnvalue">gint</span>
 </td>
 <td class="function_name">
 <a class="link" href="NMAccessPoint.html#nm-access-point-get-last-seen" title="nm_access_point_get_last_seen ()">nm_access_point_get_last_seen</a> <span class="c_punctuation">()</span>
@@ -564,7 +564,7 @@ nm_access_point_get_strength (<em class="parameter"><code><a class="link" href="
 <hr>
 <div class="refsect2">
 <a name="nm-access-point-get-last-seen"></a><h3>nm_access_point_get_last_seen ()</h3>
-<pre class="programlisting"><span class="returnvalue">gint32</span>
+<pre class="programlisting"><span class="returnvalue">gint</span>
 nm_access_point_get_last_seen (<em class="parameter"><code><a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> *ap</code></em>);</pre>
 <p>Returns the timestamp (in CLOCK_BOOTTIME seconds) for the last time the
 access point was found in scan results.  A value of -1 means the access
@@ -588,7 +588,7 @@ point has not been found in a scan.</p>
 <a name="id-1.3.19.8.12.6"></a><h4>Returns</h4>
 <p> the last seen time in seconds</p>
 </div>
-<p class="since">Since: 1.0.6</p>
+<p class="since">Since: 1.2</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -825,7 +825,7 @@ access point has not been found in a scan.</p>
 <p>Flags: Read</p>
 <p>Allowed values: &gt;= -1</p>
 <p>Default value: -1</p>
-<p class="since">Since: 1.0.6</p>
+<p class="since">Since: 1.2</p>
 </div>
 <hr>
 <div class="refsect2">

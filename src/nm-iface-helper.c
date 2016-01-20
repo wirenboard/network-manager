@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <glib-unix.h>
 #include <getopt.h>
 #include <locale.h>
@@ -28,7 +27,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <glib/gi18n.h>
 #include <string.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
@@ -38,15 +36,15 @@
  * Forward declare if_nametoindex. */
 extern unsigned int if_nametoindex (const char *__ifname);
 
-#include "gsystem-local-alloc.h"
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-linux-platform.h"
 #include "nm-dhcp-manager.h"
-#include "nm-logging.h"
 #include "main-utils.h"
 #include "nm-rdisc.h"
 #include "nm-lndp-rdisc.h"
 #include "nm-utils.h"
+#include "nm-setting-ip6-config.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -71,7 +69,10 @@ static struct {
 	char *dhcp4_address;
 	char *dhcp4_clientid;
 	char *dhcp4_hostname;
+	char *dhcp4_fqdn;
 	char *iid_str;
+	NMSettingIP6ConfigAddrGenMode addr_gen_mode;
+	char *logging_backend;
 	char *opt_log_level;
 	char *opt_log_domains;
 	guint32 priority_v4;
@@ -110,7 +111,7 @@ dhcp4_state_changed (NMDhcpClient *client,
 
 		if (last_config)
 			g_object_unref (last_config);
-		last_config = nm_ip4_config_new ();
+		last_config = nm_ip4_config_new (nm_dhcp_client_get_ifindex (client));
 		nm_ip4_config_replace (last_config, ip4_config, NULL);
 		break;
 	case NM_DHCP_STATE_TIMEOUT:
@@ -139,14 +140,13 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 
 	if (system_support == -1) {
 		/*
-		 * Check, if both libnl and the kernel are recent enough,
-		 * to help user space handling RA. If it's not supported,
-		 * we have no ipv6-privacy and must add autoconf addresses
-		 * as /128. The reason for the /128 is to prevent the kernel
+		 * Check, whether kernel is recent enough, to help user space handling RA.
+		 * If it's not supported, we have no ipv6-privacy and must add autoconf
+		 * addresses as /128.
+		 * The reason for the /128 is to prevent the kernel
 		 * from adding a prefix route for this address.
 		 **/
-		system_support = nm_platform_check_support_libnl_extended_ifa_flags () &&
-		                 nm_platform_check_support_kernel_extended_ifa_flags (NM_PLATFORM_GET);
+		system_support = nm_platform_check_support_kernel_extended_ifa_flags (NM_PLATFORM_GET);
 	}
 
 	if (system_support)
@@ -158,7 +158,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		ifa_flags |= IFA_F_MANAGETEMPADDR;
 	}
 
-	ip6_config = nm_ip6_config_new ();
+	ip6_config = nm_ip6_config_new (ifindex);
 
 	if (changed & NM_RDISC_CONFIG_GATEWAYS) {
 		/* Use the first gateway as ordered in router discovery cache. */
@@ -247,7 +247,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 
 	if (last_config)
 		g_object_unref (last_config);
-	last_config = nm_ip6_config_new ();
+	last_config = nm_ip6_config_new (ifindex);
 	nm_ip6_config_replace (last_config, ip6_config, NULL);
 }
 
@@ -292,9 +292,12 @@ do_early_setup (int *argc, char **argv[])
 		{ "dhcp4-required", '4', 0, G_OPTION_ARG_NONE, &global_opt.dhcp4_required, N_("Whether DHCPv4 must be successful"), NULL },
 		{ "dhcp4-clientid", 'c', 0, G_OPTION_ARG_STRING, &global_opt.dhcp4_clientid, N_("Hex-encoded DHCPv4 client ID"), NULL },
 		{ "dhcp4-hostname", 'h', 0, G_OPTION_ARG_STRING, &global_opt.dhcp4_hostname, N_("Hostname to send to DHCP server"), N_("barbar") },
+		{ "dhcp4-fqdn",     'F', 0, G_OPTION_ARG_STRING, &global_opt.dhcp4_fqdn, N_("FQDN to send to DHCP server"), N_("host.domain.org") },
 		{ "priority4", '\0', 0, G_OPTION_ARG_INT64, &priority64_v4, N_("Route priority for IPv4"), N_("0") },
 		{ "priority6", '\0', 0, G_OPTION_ARG_INT64, &priority64_v6, N_("Route priority for IPv6"), N_("1024") },
 		{ "iid", 'e', 0, G_OPTION_ARG_STRING, &global_opt.iid_str, N_("Hex-encoded Interface Identifier"), "" },
+		{ "addr-gen-mode", 'e', 0, G_OPTION_ARG_INT, &global_opt.addr_gen_mode, N_("IPv6 SLAAC address generation mode"), "eui64" },
+		{ "logging-backend", '\0', 0, G_OPTION_ARG_STRING, &global_opt.logging_backend, N_("The logging backend configuration value. See logging.backend in NetworkManager.conf"), NULL },
 
 		/* Logging/debugging */
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &global_opt.show_version, N_("Print NetworkManager version and exit"), NULL },
@@ -323,6 +326,19 @@ do_early_setup (int *argc, char **argv[])
 		global_opt.priority_v6 = (guint32) priority64_v6;
 }
 
+static void
+ip6_address_changed (NMPlatform *platform,
+                     NMPObjectType obj_type,
+                     int iface,
+                     NMPlatformIP6Address *addr,
+                     NMPlatformSignalChangeType change_type,
+                     NMRDisc *rdisc)
+{
+	if (   (change_type == NM_PLATFORM_SIGNAL_CHANGED && addr->flags & IFA_F_DADFAILED)
+	    || (change_type == NM_PLATFORM_SIGNAL_REMOVED && addr->flags & IFA_F_TENTATIVE))
+		nm_rdisc_dad_failed (rdisc, &addr->address);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -337,9 +353,7 @@ main (int argc, char *argv[])
 	gconstpointer tmp;
 	gs_free NMUtilsIPv6IfaceId *iid = NULL;
 
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-	g_type_init ();
-#endif
+	nm_g_type_init ();
 
 	setpgid (getpid (), getpid ());
 
@@ -408,7 +422,9 @@ main (int argc, char *argv[])
 	main_loop = g_main_loop_new (NULL, FALSE);
 	setup_signals ();
 
-	nm_logging_syslog_openlog (global_opt.debug);
+	nm_logging_syslog_openlog (global_opt.logging_backend
+	                           ? global_opt.logging_backend
+	                           : (global_opt.debug ? "debug" : NULL));
 
 	nm_log_info (LOGD_CORE, "nm-iface-helper (version " NM_DIST_VERSION ") is starting...");
 
@@ -444,6 +460,7 @@ main (int argc, char *argv[])
 		                                          global_opt.priority_v4,
 		                                          !!global_opt.dhcp4_hostname,
 		                                          global_opt.dhcp4_hostname,
+		                                          global_opt.dhcp4_fqdn,
 		                                          global_opt.dhcp4_clientid,
 		                                          45,
 		                                          NULL,
@@ -458,7 +475,7 @@ main (int argc, char *argv[])
 	if (global_opt.slaac) {
 		nm_platform_link_set_user_ipv6ll_enabled (NM_PLATFORM_GET, ifindex, TRUE);
 
-		rdisc = nm_lndp_rdisc_new (ifindex, global_opt.ifname);
+		rdisc = nm_lndp_rdisc_new (ifindex, global_opt.ifname, global_opt.uuid, global_opt.addr_gen_mode, NULL);
 		g_assert (rdisc);
 
 		if (iid)
@@ -469,6 +486,10 @@ main (int argc, char *argv[])
 		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_pinfo"), "0");
 		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "accept_ra_rtr_pref"), "0");
 
+		g_signal_connect (NM_PLATFORM_GET,
+		                  NM_PLATFORM_SIGNAL_IP6_ADDRESS_CHANGED,
+		                  G_CALLBACK (ip6_address_changed),
+		                  rdisc);
 		g_signal_connect (rdisc,
 		                  NM_RDISC_CONFIG_CHANGED,
 		                  G_CALLBACK (rdisc_config_changed),
@@ -483,8 +504,6 @@ main (int argc, char *argv[])
 	g_main_loop_run (main_loop);
 
 	g_clear_pointer (&hwaddr, g_byte_array_unref);
-
-	nm_logging_syslog_closelog ();
 
 	if (pidfile && wrote_pidfile)
 		unlink (pidfile);
@@ -505,9 +524,9 @@ nm_main_config_reload (int signal)
 gconstpointer nm_config_get (void);
 const char *nm_config_get_dhcp_client (gpointer unused);
 gboolean nm_config_get_configure_and_quit (gpointer unused);
-gconstpointer nm_dbus_manager_get (void);
-void nm_dbus_manager_register_exported_type (gpointer unused, GType gtype, gconstpointer unused2);
-void nm_dbus_manager_register_object (gpointer unused, const char *path, gpointer object);
+gconstpointer nm_bus_manager_get (void);
+void nm_bus_manager_register_object (gpointer unused, gpointer object);
+void nm_bus_manager_unregister_object (gpointer unused, gpointer object);
 
 gconstpointer
 nm_config_get (void)
@@ -528,18 +547,18 @@ nm_config_get_configure_and_quit (gpointer unused)
 }
 
 gconstpointer
-nm_dbus_manager_get (void)
+nm_bus_manager_get (void)
 {
 	return GUINT_TO_POINTER (1);
 }
 
 void
-nm_dbus_manager_register_exported_type (gpointer unused, GType gtype, gconstpointer unused2)
+nm_bus_manager_register_object (gpointer unused, gpointer object)
 {
 }
 
 void
-nm_dbus_manager_register_object (gpointer unused, const char *path, gpointer object)
+nm_bus_manager_unregister_object (gpointer unused, gpointer object)
 {
 }
 

@@ -26,8 +26,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <nm-system-config-interface.h>
-#include <nm-logging.h>
+#include <nm-settings-plugin.h>
+#include "nm-default.h"
 
 #include "plugin.h"
 #include "nm-platform.h"

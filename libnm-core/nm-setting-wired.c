@@ -24,7 +24,6 @@
 
 #include <string.h>
 #include <net/ethernet.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-setting-wired.h"
 #include "nm-utils.h"
@@ -567,7 +566,7 @@ nm_setting_wired_get_valid_s390_options (NMSettingWired *setting)
  *
  * Returns: the Wake-on-LAN options
  *
- * Since: 1.0.6
+ * Since: 1.2
  */
 NMSettingWiredWakeOnLan
 nm_setting_wired_get_wake_on_lan (NMSettingWired *setting)
@@ -576,6 +575,8 @@ nm_setting_wired_get_wake_on_lan (NMSettingWired *setting)
 
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->wol;
 }
+NM_BACKPORT_SYMBOL (libnm_1_0_6, NMSettingWiredWakeOnLan, nm_setting_wired_get_wake_on_lan,
+                    (NMSettingWired *setting), (setting));
 
 /**
  * nm_setting_wired_get_wake_on_lan_password:
@@ -586,7 +587,7 @@ nm_setting_wired_get_wake_on_lan (NMSettingWired *setting)
  *
  * Returns: the Wake-on-LAN setting password, or %NULL if there is no password.
  *
- * Since: 1.0.6
+ * Since: 1.2
  */
 const char *
 nm_setting_wired_get_wake_on_lan_password (NMSettingWired *setting)
@@ -595,6 +596,10 @@ nm_setting_wired_get_wake_on_lan_password (NMSettingWired *setting)
 
 	return NM_SETTING_WIRED_GET_PRIVATE (setting)->wol_password;
 }
+NM_BACKPORT_SYMBOL (libnm_1_0_6, const char *, nm_setting_wired_get_wake_on_lan_password,
+                    (NMSettingWired *setting), (setting));
+
+NM_BACKPORT_SYMBOL (libnm_1_0_6, GType, nm_setting_wired_wake_on_lan_get_type, (void), ());
 
 static gboolean
 verify (NMSetting *setting, NMConnection *connection, GError **error)
@@ -1195,7 +1200,7 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 * %NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE (to disable management of Wake-on-LAN in
 	 * NetworkManager).
 	 *
-	 * Since: 1.0.6
+	 * Since: 1.2
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_WAKE_ON_LAN,
@@ -1212,7 +1217,7 @@ nm_setting_wired_class_init (NMSettingWiredClass *setting_class)
 	 * Wake-on-LAN, represented as an Ethernet MAC address.  If %NULL,
 	 * no password will be required.
 	 *
-	 * Since: 1.0.6
+	 * Since: 1.2
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_WAKE_ON_LAN_PASSWORD,
