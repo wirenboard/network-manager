@@ -61,8 +61,7 @@ Recommends: ppp,
             modemmanager,
             crda,
             iputils-arping
-Suggests: avahi-autoipd,
-          libteam-utils
+Suggests: libteam-utils
 Breaks: ${misc:Breaks}
 Description: network management framework (daemon and userspace tools)
  NetworkManager is a system network service that manages your network devices
@@ -78,7 +77,6 @@ Description: network management framework (daemon and userspace tools)
   * ppp: Required for establishing dial-up connections (e.g. via GSM).
   * dnsmasq-base/iptables: Required for creating Ad-hoc connections and
     connection sharing.
-  * avahi-autoipd: Used for IPv4LL, a protocol for automatic Link-Local IP
     address configuration.
   * libteam-utils: Network Team driver allows multiple network interfaces to be
     teamed together and act like a single one. This process is called "ethernet

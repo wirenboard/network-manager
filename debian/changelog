@@ -4,6 +4,8 @@ network-manager (1.1.90-1) UNRELEASED; urgency=medium
   * Explicitly enable nmcli.
   * Set the path to the dnssec-trigger-script via the configure switch.
   * Rebase patches.
+  * Drop dependency on avahi-autoipd. Native IPv4 link-local addressing
+    configuration based on systemd network library is now used instead.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 20 Jan 2016 16:28:12 +0100
 
