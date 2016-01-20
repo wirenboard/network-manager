@@ -1,3 +1,9 @@
+network-manager (1.1.90-1) UNRELEASED; urgency=medium
+
+  * New upstream release (1.2 beta1).
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 20 Jan 2016 16:28:12 +0100
+
 network-manager (1.0.10-2) unstable; urgency=medium
 
   * Fix failure to configure routes due to wrong device-route for IPv4
