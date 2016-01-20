@@ -2,6 +2,12 @@ network-manager (1.0.10-2) UNRELEASED; urgency=medium
 
   * Fix failure to configure routes due to wrong device-route for IPv4
     peer-addresses. Patch cherry-picked from upstream Git. (Closes: #809195)
+  * Switch from user-mode PPPoE client back to kernel-mode PPPoE.
+    We switched to rp-pppoe some time ago to workaround a bug in detecting
+    disconnects which has seen been fixed in the kernel and could be worked
+    around fairly simply with the right configuration.
+    In addition, the kernel mode PPPoE implementation is faster and provides
+    more features. (Closes: #783525)
 
  -- Michael Biebl <biebl@debian.org>  Wed, 20 Jan 2016 14:58:30 +0100
 

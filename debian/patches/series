@@ -11,3 +11,4 @@ Don-t-block-network.target-on-NetworkManager-wait-on.patch
 Fix-iscsiadm-path.patch
 crypto-only-use-gnutls-crypto-API-remove-libgcrypt-d.patch
 core-fix-failure-to-configure-routes-due-to-wrong-device-.patch
+Revert-ppp-manager-don-t-use-kernel-pppoe-rh-1034860-rh-1.patch
