@@ -24,8 +24,8 @@
 
 #include <string.h>
 
+#include "nm-default.h"
 #include "nm-setting-serial.h"
-#include "nm-glib-compat.h"
 #include "nm-setting-private.h"
 
 /**

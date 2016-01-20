@@ -20,12 +20,11 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <string.h>
 #include <errno.h>
 
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
-#include "nm-logging.h"
 #include "nm-core-internal.h"
 
 #include "nm-test-utils.h"
@@ -574,6 +573,62 @@ test_connection_no_match_ip4_addr (void)
 	g_object_unref (copy);
 }
 
+static void
+test_connection_no_match_vlan (void)
+{
+	NMConnection *orig, *copy, *matched;
+	GSList *connections = NULL;
+	NMSettingConnection *s_con;
+	NMSettingVlan *s_vlan_orig, *s_vlan_copy;
+	char *uuid;
+
+	orig = nm_simple_connection_new ();
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	nm_connection_add_setting (orig, (NMSetting *) s_con);
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (G_OBJECT (s_con),
+	              NM_SETTING_CONNECTION_ID, "vlan-test",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_VLAN_SETTING_NAME,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, FALSE,
+	              NULL);
+	g_free (uuid);
+	nm_connection_add_setting (orig, nm_setting_vlan_new ());
+
+	copy = nm_simple_connection_new_clone (orig);
+	connections = g_slist_append (connections, copy);
+
+	/* Check that the connections do not match if VLAN flags differ */
+	s_vlan_orig = nm_connection_get_setting_vlan (orig);
+	g_assert (s_vlan_orig);
+	g_object_set (G_OBJECT (s_vlan_orig),
+	              NM_SETTING_VLAN_FLAGS, NM_VLAN_FLAG_REORDER_HEADERS,
+	              NULL);
+
+	s_vlan_copy = nm_connection_get_setting_vlan (copy);
+	g_assert (s_vlan_copy);
+	g_object_set (G_OBJECT (s_vlan_copy),
+	              NM_SETTING_VLAN_FLAGS, 0,
+	              NULL);
+
+	matched = nm_utils_match_connection (connections, orig, TRUE, NULL, NULL);
+	g_assert (matched != copy);
+
+	/* Check that the connections do not match if VLAN priorities differ */
+	g_object_set (G_OBJECT (s_vlan_orig), NM_SETTING_VLAN_FLAGS, 0, NULL);
+	nm_setting_vlan_add_priority_str (s_vlan_orig, NM_VLAN_INGRESS_MAP, "1:3");
+
+	g_object_set (G_OBJECT (s_vlan_copy), NM_SETTING_VLAN_FLAGS, 0, NULL);
+	nm_setting_vlan_add_priority_str (s_vlan_copy, NM_VLAN_INGRESS_MAP, "4:2");
+
+	matched = nm_utils_match_connection (connections, orig, TRUE, NULL, NULL);
+	g_assert (matched != copy);
+
+	g_slist_free (connections);
+	g_object_unref (orig);
+	g_object_unref (copy);
+}
+
 static NMConnection *
 _create_connection_autoconnect (const char *id, gboolean autoconnect, int autoconnect_priority)
 {
@@ -806,12 +861,266 @@ test_nm_match_spec_interface_name (void)
 
 /*******************************************/
 
+static void
+_do_test_match_spec_match_config (const char *file, gint line, const char *spec_str, guint version, guint v_maj, guint v_min, guint v_mic, NMMatchSpecMatchType expected)
+{
+	GSList *specs;
+	NMMatchSpecMatchType match_result;
+	guint c_maj, c_min, c_mic;
+
+	g_assert_cmpint (version, ==, nm_encode_version (v_maj, v_min, v_mic));
+
+	nm_decode_version (version, &c_maj, &c_min, &c_mic);
+	g_assert_cmpint (c_maj, ==, c_maj);
+	g_assert_cmpint (c_min, ==, c_min);
+	g_assert_cmpint (c_mic, ==, c_mic);
+
+	specs = nm_match_spec_split (spec_str);
+
+	match_result = nm_match_spec_match_config (specs, version, NULL);
+
+	if (expected != match_result)
+		g_error ("%s:%d: faild comparing \"%s\" with %u.%u.%u. Expected %d, but got %d", file, line, spec_str, v_maj, v_min, v_mic, (int) expected, (int) match_result);
+
+	if (g_slist_length (specs) == 1 && match_result != NM_MATCH_SPEC_NEG_MATCH) {
+		/* there is only one spec in the list... test that we match except: */
+		char *sss = g_strdup_printf ("except:%s", (char *) specs->data);
+		GSList *specs2 = g_slist_append (NULL, sss);
+		NMMatchSpecMatchType match_result2;
+
+
+		match_result2 = nm_match_spec_match_config (specs2, version, NULL);
+		if (match_result == NM_MATCH_SPEC_NO_MATCH)
+			g_assert_cmpint (match_result2, ==, NM_MATCH_SPEC_NO_MATCH);
+		else
+			g_assert_cmpint (match_result2, ==, NM_MATCH_SPEC_NEG_MATCH);
+
+		g_slist_free_full (specs2, g_free);
+	}
+
+	g_slist_free_full (specs, g_free);
+}
+#define do_test_match_spec_match_config(spec, v_maj, v_min, v_mic, expected) \
+	_do_test_match_spec_match_config (__FILE__, __LINE__, (""spec), NM_ENCODE_VERSION ((v_maj), (v_min), (v_mic)), (v_maj), (v_min), (v_mic), (expected))
+
+static void
+test_nm_match_spec_match_config (void)
+{
+	do_test_match_spec_match_config ("", 1, 2, 3, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2.3", 1, 2, 2, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2.3", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2.3", 1, 2, 4, NM_MATCH_SPEC_NO_MATCH);
+
+	do_test_match_spec_match_config ("nm-version:1.2", 1, 1, 2, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2", 1, 2, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2", 1, 2, 2, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2", 1, 2, 4, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version:1.2", 1, 3, 0, NM_MATCH_SPEC_NO_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 0, 2, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 1, 1, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 2, 2, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 2, 5, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 3, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 3, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2.3", 1, 4, 30, NM_MATCH_SPEC_NO_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-min:1.2", 0, 2, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 1, 1, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 2, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 2, 5, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 3, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 3, 30, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.2", 1, 4, 30, NM_MATCH_SPEC_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-min:1", 0, 2, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 1, 1, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 2, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 2, 5, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 3, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 3, 30, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1", 1, 4, 30, NM_MATCH_SPEC_MATCH);
+
+
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 0, 2, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 1, 1, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 2, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 2, 1, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 2, 2, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 2, 5, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 3, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 3, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2.3", 1, 4, 30, NM_MATCH_SPEC_NO_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-max:1.2", 0, 2, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 1, 1, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 2, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 2, 5, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 3, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 3, 30, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1.2", 1, 4, 30, NM_MATCH_SPEC_NO_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-max:1", 0, 2, 30, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 1, 1, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 2, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 2, 3, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 2, 5, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 3, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 3, 30, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 1, 4, 30, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-max:1", 2, 4, 30, NM_MATCH_SPEC_NO_MATCH);
+
+	do_test_match_spec_match_config ("except:nm-version:1.4.8", 1, 6, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,except:nm-version:1.4.8", 1, 6, 0, NM_MATCH_SPEC_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 15, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 16, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 17, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 2, 20, NM_MATCH_SPEC_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 3, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 4, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 4, 5, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 4, 6, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 4, 7, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 4, 8, NM_MATCH_SPEC_NEG_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 4, 9, NM_MATCH_SPEC_MATCH);
+
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 5, 0, NM_MATCH_SPEC_NO_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 6, 0, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 6, 5, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 7, 7, NM_MATCH_SPEC_MATCH);
+	do_test_match_spec_match_config ("nm-version-min:1.6,nm-version-min:1.4.6,nm-version-min:1.2.16,except:nm-version:1.4.8", 1, 8, 8, NM_MATCH_SPEC_MATCH);
+}
+
+/*******************************************/
+
+static void
+test_nm_utils_strbuf_append (void)
+{
+#define BUF_ORIG "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define STR_ORIG "abcdefghijklmnopqrstuvwxyz"
+	int buf_len;
+	int rep;
+	char buf[STRLEN (BUF_ORIG) + 1];
+	char str[STRLEN (BUF_ORIG) + 1];
+
+	for (buf_len = 0; buf_len < 10; buf_len++) {
+		for (rep = 0; rep < 50; rep++) {
+			const int s_len = nmtst_get_rand_int () % (sizeof (str) - 5);
+			char *t_buf;
+			gsize t_len;
+			int test_mode;
+
+			strcpy (str, STR_ORIG);
+			str[s_len] = '\0';
+
+			g_assert_cmpint (str[sizeof (str) - 1], ==, '\0');
+			g_assert_cmpint (strlen (str), ==, s_len);
+
+			strcpy (buf, BUF_ORIG);
+
+			t_buf = buf;
+			t_len = buf_len;
+
+			test_mode = nmtst_get_rand_int () % 4;
+
+			switch (test_mode) {
+			case 0:
+				if (s_len == 1) {
+					nm_utils_strbuf_append_c (&t_buf, &t_len, str[0]);
+					break;
+				}
+				/* fall-through */
+			case 1:
+				nm_utils_strbuf_append_str (&t_buf, &t_len, str);
+				break;
+			case 2:
+				if (s_len == 1) {
+					nm_utils_strbuf_append (&t_buf, &t_len, "%c", str[0]);
+					break;
+				}
+				/* fall-through */
+			case 3:
+				nm_utils_strbuf_append (&t_buf, &t_len, "%s", str);
+				break;
+			}
+
+			/* Assert that the source-buffer is unmodified. */
+			g_assert_cmpint (str[s_len], ==, '\0');
+			str[s_len] = STR_ORIG[s_len];
+			g_assert (!memcmp (str, STR_ORIG, sizeof (str)));
+			str[s_len] = '\0';
+
+			g_assert_cmpint (t_len, >=, 0);
+			g_assert_cmpint (t_len, <=, buf_len);
+			g_assert (t_buf >= buf);
+
+			/* Assert what was written to the destination buffer. */
+			switch (buf_len) {
+			case 0:
+				g_assert_cmpint (t_len, ==, 0);
+				g_assert (t_buf == buf);
+				g_assert (!memcmp (buf, BUF_ORIG, sizeof (buf)));
+				break;
+			case 1:
+				if (s_len == 0) {
+					g_assert_cmpint (t_len, ==, 1);
+					g_assert (t_buf == buf);
+					g_assert (buf[0] == '\0');
+					g_assert (!memcmp (&buf[1], &BUF_ORIG[1], sizeof (buf) - 1));
+				} else {
+					g_assert_cmpint (t_len, ==, 0);
+					g_assert (t_buf == &buf[1]);
+					g_assert (buf[0] == '\0');
+					g_assert (!memcmp (&buf[1], &BUF_ORIG[1], sizeof (buf) - 1));
+				}
+				break;
+			default:
+				if (s_len == 0) {
+					g_assert_cmpint (t_len, ==, buf_len);
+					g_assert (t_buf == buf);
+					g_assert (buf[0] == '\0');
+					g_assert (!memcmp (&buf[1], &BUF_ORIG[1], sizeof (buf) - 1));
+				} else if (buf_len <= s_len) {
+					g_assert_cmpint (t_len, ==, 0);
+					g_assert (t_buf == &buf[buf_len]);
+					g_assert (!memcmp (buf, STR_ORIG, buf_len - 1));
+					g_assert (buf[buf_len - 1] == '\0');
+					g_assert (!memcmp (&buf[buf_len], &BUF_ORIG[buf_len], sizeof (buf) - buf_len));
+				} else {
+					g_assert_cmpint (t_len, >, 0);
+					g_assert_cmpint (buf_len - t_len, ==, s_len);
+					g_assert_cmpint (strlen (buf), ==, s_len);
+					g_assert (t_buf == &buf[s_len]);
+					g_assert (!memcmp (buf, STR_ORIG, s_len));
+					g_assert (buf[s_len] == '\0');
+					g_assert (!memcmp (&buf[s_len + 1], &BUF_ORIG[s_len + 1], sizeof (buf) - s_len - 1));
+				}
+				break;
+			}
+		}
+	}
+}
+
+/*******************************************/
+
 NMTST_DEFINE ();
 
 int
 main (int argc, char **argv)
 {
 	nmtst_init_with_logging (&argc, &argv, NULL, "ALL");
+
+	g_test_add_func ("/general/nm_utils_strbuf_append", test_nm_utils_strbuf_append);
 
 	g_test_add_func ("/general/nm_utils_ip6_address_clear_host_address", test_nm_utils_ip6_address_clear_host_address);
 	g_test_add_func ("/general/nm_utils_log_connection_diff", test_nm_utils_log_connection_diff);
@@ -826,10 +1135,12 @@ main (int argc, char **argv)
 	g_test_add_func ("/general/connection-match/wired2", test_connection_match_wired2);
 	g_test_add_func ("/general/connection-match/cloned_mac", test_connection_match_cloned_mac);
 	g_test_add_func ("/general/connection-match/no-match-ip4-addr", test_connection_no_match_ip4_addr);
+	g_test_add_func ("/general/connection-match/no-match-vlan", test_connection_no_match_vlan);
 
 	g_test_add_func ("/general/connection-sort/autoconnect-priority", test_connection_sort_autoconnect_priority);
 
 	g_test_add_func ("/general/nm_match_spec_interface_name", test_nm_match_spec_interface_name);
+	g_test_add_func ("/general/nm_match_spec_match_config", test_nm_match_spec_match_config);
 
 	return g_test_run ();
 }

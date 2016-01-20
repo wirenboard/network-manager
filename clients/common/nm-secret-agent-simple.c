@@ -32,13 +32,11 @@
 #include "config.h"
 
 #include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <glib/gi18n-lib.h>
 
 #include <NetworkManager.h>
-#include <nm-core-internal.h>
+#include <nm-vpn-service-plugin.h>
 
+#include "nm-default.h"
 #include "nm-vpn-helpers.h"
 #include "nm-secret-agent-simple.h"
 
@@ -357,23 +355,9 @@ get_vpn_secret_flags (NMSettingVpn *s_vpn, const char *secret_name)
 {
 	NMSettingSecretFlags flags = NM_SETTING_SECRET_FLAG_NONE;
 	GHashTable *vpn_data;
-	char *flag_name;
-	const char *val;
-	unsigned long tmp;
 
 	g_object_get (s_vpn, NM_SETTING_VPN_DATA, &vpn_data, NULL);
-
-	flag_name = g_strdup_printf ("%s-flags", secret_name);
-
-	/* Try new flags value first */
-	val = g_hash_table_lookup (vpn_data, flag_name);
-	if (val) {
-		errno = 0;
-		tmp = strtoul (val, NULL, 10);
-		if (errno == 0 && tmp <= NM_SETTING_SECRET_FLAGS_ALL)
-			flags = (NMSettingSecretFlags) tmp;
-	}
-	g_free (flag_name);
+	nm_vpn_service_plugin_get_secret_flags (vpn_data, secret_name, &flags);
 	g_hash_table_unref (vpn_data);
 
 	return flags;

@@ -29,24 +29,20 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <glib.h>
-#include <glib/gi18n.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "nm-default.h"
 #include "nm-device-adsl.h"
 #include "nm-device-private.h"
-#include "NetworkManagerUtils.h"
-#include "nm-logging.h"
 #include "nm-enum-types.h"
-#include "nm-dbus-manager.h"
 #include "nm-platform.h"
 
 #include "ppp-manager/nm-ppp-manager.h"
 #include "nm-setting-adsl.h"
 #include "nm-utils.h"
 
-#include "nm-device-adsl-glue.h"
+#include "nmdbus-device-adsl.h"
 
 #include "nm-device-logging.h"
 _LOG_DECLARE_SELF (NMDeviceAdsl);
@@ -238,7 +234,6 @@ link_changed_cb (NMPlatform *platform,
                  int ifindex,
                  NMPlatformLink *info,
                  NMPlatformSignalChangeType change_type,
-                 NMPlatformReason reason,
                  NMDeviceAdsl *self)
 {
 	if (change_type == NM_PLATFORM_SIGNAL_REMOVED) {
@@ -264,7 +259,7 @@ pppoe_vcc_config (NMDeviceAdsl *self)
 	NMDevice *device = NM_DEVICE (self);
 	NMSettingAdsl *s_adsl;
 
-	s_adsl = nm_connection_get_setting_adsl (nm_device_get_connection (device));
+	s_adsl = nm_connection_get_setting_adsl (nm_device_get_applied_connection (device));
 	g_assert (s_adsl);
 
 	/* Set up the VCC */
@@ -272,7 +267,7 @@ pppoe_vcc_config (NMDeviceAdsl *self)
 		return FALSE;
 
 	/* Watch for the 'nas' interface going away */
-	g_signal_connect (nm_platform_get (), NM_PLATFORM_SIGNAL_LINK_CHANGED,
+	g_signal_connect (NM_PLATFORM_GET, NM_PLATFORM_SIGNAL_LINK_CHANGED,
 	                  G_CALLBACK (link_changed_cb),
 	                  self);
 
@@ -397,7 +392,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *out_reason)
 
 	g_assert (out_reason);
 
-	s_adsl = nm_connection_get_setting_adsl (nm_device_get_connection (device));
+	s_adsl = nm_connection_get_setting_adsl (nm_device_get_applied_connection (device));
 	g_assert (s_adsl);
 
 	protocol = nm_setting_adsl_get_protocol (s_adsl);
@@ -464,7 +459,7 @@ act_stage3_ip4_config_start (NMDevice *device,
 	req = nm_device_get_act_request (device);
 	g_assert (req);
 
-	connection = nm_act_request_get_connection (req);
+	connection = nm_act_request_get_applied_connection (req);
 	g_assert (req);
 
 	s_adsl = nm_connection_get_setting_adsl (connection);
@@ -483,7 +478,7 @@ act_stage3_ip4_config_start (NMDevice *device,
 
 	priv->ppp_manager = nm_ppp_manager_new (ppp_iface);
 	if (nm_ppp_manager_start (priv->ppp_manager, req, nm_setting_adsl_get_username (s_adsl), 30, &err)) {
-		g_signal_connect (priv->ppp_manager, "state-changed",
+		g_signal_connect (priv->ppp_manager, NM_PPP_MANAGER_STATE_CHANGED,
 		                  G_CALLBACK (ppp_state_changed),
 		                  self);
 		g_signal_connect (priv->ppp_manager, "ip4-config",
@@ -494,8 +489,7 @@ act_stage3_ip4_config_start (NMDevice *device,
 		_LOGW (LOGD_ADSL, "PPP failed to start: %s", err->message);
 		g_error_free (err);
 
-		g_object_unref (priv->ppp_manager);
-		priv->ppp_manager = NULL;
+		nm_exported_object_clear_and_unexport (&priv->ppp_manager);
 
 		*reason = NM_DEVICE_STATE_REASON_PPP_START_FAILED;
 	}
@@ -511,10 +505,10 @@ adsl_cleanup (NMDeviceAdsl *self)
 	if (priv->ppp_manager) {
 		g_signal_handlers_disconnect_by_func (priv->ppp_manager, G_CALLBACK (ppp_state_changed), self);
 		g_signal_handlers_disconnect_by_func (priv->ppp_manager, G_CALLBACK (ppp_ip4_config), self);
-		g_clear_object (&priv->ppp_manager);
+		nm_exported_object_clear_and_unexport (&priv->ppp_manager);
 	}
 
-	g_signal_handlers_disconnect_by_func (nm_platform_get (), G_CALLBACK (link_changed_cb), self);
+	g_signal_handlers_disconnect_by_func (NM_PLATFORM_GET, G_CALLBACK (link_changed_cb), self);
 
 	if (priv->brfd >= 0) {
 		close (priv->brfd);
@@ -666,7 +660,7 @@ nm_device_adsl_class_init (NMDeviceAdslClass *klass)
 		                   G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
 		                   G_PARAM_STATIC_STRINGS));
 
-	nm_dbus_manager_register_exported_type (nm_dbus_manager_get (),
-	                                        G_TYPE_FROM_CLASS (klass),
-	                                        &dbus_glib_nm_device_adsl_object_info);
+	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
+	                                        NMDBUS_TYPE_DEVICE_ADSL_SKELETON,
+	                                        NULL);
 }

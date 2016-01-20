@@ -22,15 +22,13 @@
 
 #include "config.h"
 
-#include <glib-object.h>
-#include <glib/gi18n-lib.h>
 #include <string.h>
+#include "nm-default.h"
 #include "nm-connection.h"
 #include "nm-connection-private.h"
 #include "nm-utils.h"
 #include "nm-setting-private.h"
 #include "nm-core-internal.h"
-#include "gsystem-local-alloc.h"
 
 /**
  * SECTION:nm-connection
@@ -899,6 +897,34 @@ EXIT:
 }
 
 /**
+ * nm_connection_verify_secrets:
+ * @connection: the #NMConnection to verify in
+ * @error: location to store error, or %NULL
+ *
+ * Verifies the secrets in the connection.
+ *
+ * Returns: %TRUE if the secrets are valid, %FALSE if they are not
+ *
+ * Since: 1.2
+ **/
+gboolean
+nm_connection_verify_secrets (NMConnection *connection, GError **error)
+{
+	GHashTableIter iter;
+	NMSetting *setting;
+
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), FALSE);
+	g_return_val_if_fail (!error || !*error, FALSE);
+
+	g_hash_table_iter_init (&iter, NM_CONNECTION_GET_PRIVATE (connection)->settings);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &setting)) {
+		if (!nm_setting_verify_secrets (setting, connection, error))
+			return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * nm_connection_normalize:
  * @connection: the #NMConnection to normalize
  * @parameters: (allow-none) (element-type utf8 gpointer): a #GHashTable with
@@ -1520,7 +1546,8 @@ nm_connection_get_id (NMConnection *connection)
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
 
 	s_con = nm_connection_get_setting_connection (connection);
-	g_return_val_if_fail (s_con != NULL, NULL);
+	if (!s_con)
+		return NULL;
 
 	return nm_setting_connection_get_id (s_con);
 }
@@ -1541,7 +1568,8 @@ nm_connection_get_connection_type (NMConnection *connection)
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
 
 	s_con = nm_connection_get_setting_connection (connection);
-	g_return_val_if_fail (s_con != NULL, NULL);
+	if (!s_con)
+		return NULL;
 
 	return nm_setting_connection_get_connection_type (s_con);
 }
@@ -1566,7 +1594,11 @@ nm_connection_is_virtual (NMConnection *connection)
 	if (   !strcmp (type, NM_SETTING_BOND_SETTING_NAME)
 	    || !strcmp (type, NM_SETTING_TEAM_SETTING_NAME)
 	    || !strcmp (type, NM_SETTING_BRIDGE_SETTING_NAME)
-	    || !strcmp (type, NM_SETTING_VLAN_SETTING_NAME))
+	    || !strcmp (type, NM_SETTING_VLAN_SETTING_NAME)
+	    || !strcmp (type, NM_SETTING_TUN_SETTING_NAME)
+	    || !strcmp (type, NM_SETTING_IP_TUNNEL_SETTING_NAME)
+	    || !strcmp (type, NM_SETTING_MACVLAN_SETTING_NAME)
+	    || !strcmp (type, NM_SETTING_VXLAN_SETTING_NAME))
 		return TRUE;
 
 	if (!strcmp (type, NM_SETTING_INFINIBAND_SETTING_NAME)) {
@@ -1837,6 +1869,24 @@ nm_connection_get_setting_ip4_config (NMConnection *connection)
 }
 
 /**
+ * nm_connection_get_setting_ip_tunnel:
+ * @connection: the #NMConnection
+ *
+ * A shortcut to return any #NMSettingIPTunnel the connection might contain.
+ *
+ * Returns: (transfer none): an #NMSettingIPTunnel if the connection contains one, otherwise %NULL
+ *
+ * Since: 1.2
+ **/
+NMSettingIPTunnel *
+nm_connection_get_setting_ip_tunnel (NMConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
+
+	return (NMSettingIPTunnel *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP_TUNNEL);
+}
+
+/**
  * nm_connection_get_setting_ip6_config:
  * @connection: the #NMConnection
  *
@@ -1855,6 +1905,24 @@ nm_connection_get_setting_ip6_config (NMConnection *connection)
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
 
 	return (NMSettingIPConfig *) nm_connection_get_setting (connection, NM_TYPE_SETTING_IP6_CONFIG);
+}
+
+/**
+ * nm_connection_get_setting_macvlan:
+ * @connection: the #NMConnection
+ *
+ * A shortcut to return any #NMSettingMacvlan the connection might contain.
+ *
+ * Returns: (transfer none): an #NMSettingMacvlan if the connection contains one, otherwise %NULL
+ *
+ * Since: 1.2
+ **/
+NMSettingMacvlan *
+nm_connection_get_setting_macvlan (NMConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
+
+	return (NMSettingMacvlan *) nm_connection_get_setting (connection, NM_TYPE_SETTING_MACVLAN);
 }
 
 /**
@@ -1922,6 +1990,24 @@ nm_connection_get_setting_serial (NMConnection *connection)
 }
 
 /**
+ * nm_connection_get_setting_tun:
+ * @connection: the #NMConnection
+ *
+ * A shortcut to return any #NMSettingTun the connection might contain.
+ *
+ * Returns: (transfer none): an #NMSettingTun if the connection contains one, otherwise %NULL
+ *
+ * Since: 1.2
+ **/
+NMSettingTun *
+nm_connection_get_setting_tun (NMConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
+
+	return (NMSettingTun *) nm_connection_get_setting (connection, NM_TYPE_SETTING_TUN);
+}
+
+/**
  * nm_connection_get_setting_vpn:
  * @connection: the #NMConnection
  *
@@ -1935,6 +2021,24 @@ nm_connection_get_setting_vpn (NMConnection *connection)
 	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
 
 	return (NMSettingVpn *) nm_connection_get_setting (connection, NM_TYPE_SETTING_VPN);
+}
+
+/**
+ * nm_connection_get_setting_vxlan:
+ * @connection: the #NMConnection
+ *
+ * A shortcut to return any #NMSettingVxlan the connection might contain.
+ *
+ * Returns: (transfer none): an #NMSettingVxlan if the connection contains one, otherwise %NULL
+ *
+ * Since: 1.2
+ **/
+NMSettingVxlan *
+nm_connection_get_setting_vxlan (NMConnection *connection)
+{
+	g_return_val_if_fail (NM_IS_CONNECTION (connection), NULL);
+
+	return (NMSettingVxlan *) nm_connection_get_setting (connection, NM_TYPE_SETTING_VXLAN);
 }
 
 /**

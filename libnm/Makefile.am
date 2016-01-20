@@ -3,15 +3,15 @@ include $(GLIB_MAKEFILE)
 SUBDIRS = . tests
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/include \
-	-I$(top_builddir)/include \
+	-I$(top_srcdir)/shared \
+	-I$(top_builddir)/shared \
 	-I$(top_builddir)/introspection \
 	-I$(top_srcdir)/libnm-core \
 	-I$(top_builddir)/libnm-core \
 	-I$(top_srcdir)/libnm \
 	-I$(top_builddir)/libnm \
 	-DG_LOG_DOMAIN=\""libnm"\" \
-	-DNETWORKMANAGER_COMPILATION \
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(GUDEV_CFLAGS) \
@@ -26,7 +26,7 @@ lib_LTLIBRARIES = libnm.la
 libnmincludedir = $(includedir)/libnm
 
 libnminclude_hfiles =			\
-	$(top_builddir)/include/nm-version-macros.h \
+	$(top_builddir)/shared/nm-version-macros.h \
 	NetworkManager.h		\
 	nm-access-point.h		\
 	nm-active-connection.h		\
@@ -38,10 +38,14 @@ libnminclude_hfiles =			\
 	nm-device-ethernet.h		\
 	nm-device-generic.h		\
 	nm-device-infiniband.h		\
+	nm-device-ip-tunnel.h		\
+	nm-device-macvlan.h		\
 	nm-device-modem.h		\
 	nm-device-olpc-mesh.h		\
 	nm-device-team.h		\
+	nm-device-tun.h			\
 	nm-device-vlan.h		\
+	nm-device-vxlan.h		\
 	nm-device-wifi.h		\
 	nm-device-wimax.h		\
 	nm-device.h			\
@@ -52,12 +56,13 @@ libnminclude_hfiles =			\
 	nm-remote-connection.h		\
 	nm-types.h			\
 	nm-vpn-connection.h		\
-	nm-vpn-editor-plugin.h		\
+	nm-vpn-editor.h		\
 	nm-wimax-nsp.h
 
 libnminclude_nointrospect_hfiles =	\
 	nm-secret-agent-old.h		\
-	nm-vpn-plugin-old.h
+	nm-vpn-plugin-old.h         \
+	nm-vpn-service-plugin.h
 
 libnminclude_HEADERS =			\
 	$(libnminclude_hfiles)		\
@@ -88,10 +93,14 @@ libnm_la_csources =			\
 	nm-device-ethernet.c		\
 	nm-device-generic.c		\
 	nm-device-infiniband.c		\
+	nm-device-ip-tunnel.c		\
+	nm-device-macvlan.c		\
 	nm-device-modem.c		\
 	nm-device-olpc-mesh.c		\
 	nm-device-team.c		\
+	nm-device-tun.c			\
 	nm-device-vlan.c		\
+	nm-device-vxlan.c		\
 	nm-device-wifi.c		\
 	nm-device-wimax.c		\
 	nm-device.c			\
@@ -110,7 +119,8 @@ libnm_la_csources =			\
 	nm-secret-agent-old.c		\
 	nm-vpn-connection.c		\
 	nm-vpn-plugin-old.c		\
-	nm-vpn-editor-plugin.c		\
+	nm-vpn-editor.c		\
+	nm-vpn-service-plugin.c     \
 	nm-wimax-nsp.c
 
 libnm_la_SOURCES =			\
@@ -132,7 +142,7 @@ libnm_la_LIBADD = \
 SYMBOL_VIS_FILE=$(srcdir)/libnm.ver
 
 libnm_la_LDFLAGS = -Wl,--version-script=$(SYMBOL_VIS_FILE) \
-	-version-info "0:0:0"
+	-version-info "1:0:1"
 
 ###
 

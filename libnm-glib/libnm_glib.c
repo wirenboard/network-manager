@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include "nm-default.h"
 #include "NetworkManager.h"
 #include "libnm_glib.h"
 
@@ -495,9 +495,7 @@ libnm_glib_init (void)
 {
 	libnm_glib_ctx	*ctx = NULL;
 
-#if !GLIB_CHECK_VERSION (2, 35, 0)
-	g_type_init ();
-#endif
+	nm_g_type_init ();
 
 	if (!g_thread_supported ())
 		g_thread_init (NULL);

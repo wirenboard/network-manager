@@ -22,7 +22,6 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-private.h"
@@ -59,11 +58,15 @@ NM_SETTING_REGISTER_TYPE (NM_TYPE_SETTING_IP4_CONFIG)
 
 typedef struct {
 	char *dhcp_client_id;
+	int dhcp_timeout;
+	char *dhcp_fqdn;
 } NMSettingIP4ConfigPrivate;
 
 enum {
 	PROP_0,
 	PROP_DHCP_CLIENT_ID,
+	PROP_DHCP_TIMEOUT,
+	PROP_DHCP_FQDN,
 
 	LAST_PROP
 };
@@ -97,6 +100,45 @@ nm_setting_ip4_config_get_dhcp_client_id (NMSettingIP4Config *setting)
 	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), NULL);
 
 	return NM_SETTING_IP4_CONFIG_GET_PRIVATE (setting)->dhcp_client_id;
+}
+
+/**
+ * nm_setting_ip4_config_get_dhcp_timeout:
+ * @setting: the #NMSettingIP4Config
+ *
+ * Returns the value contained in the #NMSettingIP4Config:dhcp-timeout
+ * property.
+ *
+ * Returns: the configured DHCP timeout in seconds. 0 = default for
+ * the particular kind of device.
+ *
+ * Since: 1.2
+ **/
+int
+nm_setting_ip4_config_get_dhcp_timeout (NMSettingIP4Config *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), 0);
+
+	return NM_SETTING_IP4_CONFIG_GET_PRIVATE (setting)->dhcp_timeout;
+}
+
+/**
+ * nm_setting_ip4_config_get_dhcp_fqdn:
+ * @setting: the #NMSettingIP4Config
+ *
+ * Returns the value contained in the #NMSettingIP4Config:dhcp-fqdn
+ * property.
+ *
+ * Returns: the configured FQDN to send to the DHCP server
+ *
+ * Since: 1.2
+ **/
+const char *
+nm_setting_ip4_config_get_dhcp_fqdn (NMSettingIP4Config *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_IP4_CONFIG (setting), NULL);
+
+	return NM_SETTING_IP4_CONFIG_GET_PRIVATE (setting)->dhcp_fqdn;
 }
 
 static gboolean
@@ -180,6 +222,31 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		return FALSE;
 	}
 
+	if (priv->dhcp_fqdn && !*priv->dhcp_fqdn) {
+		g_set_error_literal (error, NM_CONNECTION_ERROR, NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("property is empty"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_IP4_CONFIG_SETTING_NAME, NM_SETTING_IP4_CONFIG_DHCP_FQDN);
+		return FALSE;
+	}
+
+	if (priv->dhcp_fqdn && !strchr (priv->dhcp_fqdn, '.')) {
+		g_set_error (error,
+		             NM_CONNECTION_ERROR,
+		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		             _("'%s' is not a valid FQDN"), priv->dhcp_fqdn);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_IP4_CONFIG_SETTING_NAME, NM_SETTING_IP4_CONFIG_DHCP_FQDN);
+		return FALSE;
+	}
+
+	if (priv->dhcp_fqdn && nm_setting_ip_config_get_dhcp_hostname (s_ip)) {
+		g_set_error_literal (error,
+		                     NM_CONNECTION_ERROR,
+		                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		                     _("property cannot be set when dhcp-hostname is also set"));
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_IP4_CONFIG_SETTING_NAME, NM_SETTING_IP4_CONFIG_DHCP_FQDN);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -194,6 +261,7 @@ finalize (GObject *object)
 	NMSettingIP4ConfigPrivate *priv = NM_SETTING_IP4_CONFIG_GET_PRIVATE (object);
 
 	g_free (priv->dhcp_client_id);
+	g_free (priv->dhcp_fqdn);
 
 	G_OBJECT_CLASS (nm_setting_ip4_config_parent_class)->finalize (object);
 }
@@ -208,6 +276,13 @@ set_property (GObject *object, guint prop_id,
 	case PROP_DHCP_CLIENT_ID:
 		g_free (priv->dhcp_client_id);
 		priv->dhcp_client_id = g_value_dup_string (value);
+		break;
+	case PROP_DHCP_TIMEOUT:
+		priv->dhcp_timeout = g_value_get_uint (value);
+		break;
+	case PROP_DHCP_FQDN:
+		g_free (priv->dhcp_fqdn);
+		priv->dhcp_fqdn = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -224,6 +299,12 @@ get_property (GObject *object, guint prop_id,
 	switch (prop_id) {
 	case PROP_DHCP_CLIENT_ID:
 		g_value_set_string (value, nm_setting_ip4_config_get_dhcp_client_id (s_ip4));
+		break;
+	case PROP_DHCP_TIMEOUT:
+		g_value_set_uint (value, nm_setting_ip4_config_get_dhcp_timeout (s_ip4));
+		break;
+	case PROP_DHCP_FQDN:
+		g_value_set_string (value, nm_setting_ip4_config_get_dhcp_fqdn (s_ip4));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -549,7 +630,8 @@ nm_setting_ip4_config_class_init (NMSettingIP4ConfigClass *ip4_class)
 	/* ---ifcfg-rh---
 	 * property: dhcp-hostname
 	 * variable: DHCP_HOSTNAME
-	 * description: Hostname to send to the DHCP server.
+	 * description: Hostname to send to the DHCP server. When both DHCP_HOSTNAME and
+	 *    DHCP_FQDN are specified only the latter is used.
 	 * ---end---
 	 */
 
@@ -596,6 +678,51 @@ nm_setting_ip4_config_class_init (NMSettingIP4ConfigClass *ip4_class)
 	g_object_class_install_property
 		(object_class, PROP_DHCP_CLIENT_ID,
 		 g_param_spec_string (NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID, "", "",
+		                      NULL,
+		                      G_PARAM_READWRITE |
+		                      G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSettingIP4Config:dhcp-timeout:
+	 *
+	 * A timeout for a DHCP transaction in seconds.
+	 **/
+	/* ---ifcfg-rh---
+	 * property: dhcp-timeout
+	 * variable: DHCP_TIMEOUT(+)
+	 * description: A timeout after which the DHCP transaction fails in case of no response.
+	 * example: DHCP_TIMEOUT=10
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_DHCP_TIMEOUT,
+                 g_param_spec_uint (NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT, "", "",
+                                    0, G_MAXUINT32, 0,
+                                    G_PARAM_READWRITE |
+                                    NM_SETTING_PARAM_FUZZY_IGNORE |
+                                    G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSettingIP4Config:dhcp-fqdn:
+	 *
+	 * If the #NMSettingIPConfig:dhcp-send-hostname property is %TRUE, then the
+	 * specified FQDN will be sent to the DHCP server when acquiring a lease. This
+	 * property and #NMSettingIPConfig:dhcp-hostname are mutually exclusive and
+	 * cannot be set at the same time.
+	 *
+	 * Since: 1.2
+	 */
+	/* ---ifcfg-rh---
+	 * property: dhcp-fqdn
+	 * variable: DHCP_FQDN
+	 * description: FQDN to send to the DHCP server. When both DHCP_HOSTNAME and
+	 *    DHCP_FQDN are specified only the latter is used.
+	 * example: DHCP_FQDN=foo.bar.com
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_DHCP_FQDN,
+		 g_param_spec_string (NM_SETTING_IP4_CONFIG_DHCP_FQDN, "", "",
 		                      NULL,
 		                      G_PARAM_READWRITE |
 		                      G_PARAM_STATIC_STRINGS));

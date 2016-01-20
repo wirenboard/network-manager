@@ -24,8 +24,9 @@
 
 #include <net/ethernet.h>
 
+#include "nm-exported-object.h"
 #include <nm-connection.h>
-#include "nm-types.h"
+#include "nm-default.h"
 
 G_BEGIN_DECLS
 
@@ -78,6 +79,14 @@ typedef enum
 	NM_SETTINGS_CONNECTION_FLAGS_ALL = ((__NM_SETTINGS_CONNECTION_FLAGS_LAST - 1) << 1) - 1,
 } NMSettingsConnectionFlags;
 
+typedef enum { /*< skip >*/
+	NM_SETTINGS_CONNECTION_COMMIT_REASON_NONE                       = 0,
+	NM_SETTINGS_CONNECTION_COMMIT_REASON_USER_ACTION                = (1LL << 0),
+	NM_SETTINGS_CONNECTION_COMMIT_REASON_ID_CHANGED                 = (1LL << 1),
+} NMSettingsConnectionCommitReason;
+
+struct _NMSettingsConnectionCallId;
+typedef struct _NMSettingsConnectionCallId *NMSettingsConnectionCallId;
 
 typedef struct _NMSettingsConnectionClass NMSettingsConnectionClass;
 
@@ -90,11 +99,11 @@ typedef void (*NMSettingsConnectionDeleteFunc) (NMSettingsConnection *self,
                                                 gpointer user_data);
 
 struct _NMSettingsConnection {
-	GObject parent;
+	NMExportedObject parent;
 };
 
 struct _NMSettingsConnectionClass {
-	GObjectClass parent;
+	NMExportedObjectClass parent;
 
 	/* virtual methods */
 	void (*replace_and_commit) (NMSettingsConnection *self,
@@ -103,6 +112,7 @@ struct _NMSettingsConnectionClass {
 	                            gpointer user_data);
 
 	void (*commit_changes) (NMSettingsConnection *self,
+	                        NMSettingsConnectionCommitReason commit_reason,
 	                        NMSettingsConnectionCommitFunc callback,
 	                        gpointer user_data);
 
@@ -116,7 +126,12 @@ struct _NMSettingsConnectionClass {
 
 GType nm_settings_connection_get_type (void);
 
+gboolean nm_settings_connection_has_unmodified_applied_connection (NMSettingsConnection *self,
+                                                                   NMConnection *applied_connection,
+                                                                   NMSettingCompareFlags compare_flage);
+
 void nm_settings_connection_commit_changes (NMSettingsConnection *self,
+                                            NMSettingsConnectionCommitReason commit_reason,
                                             NMSettingsConnectionCommitFunc callback,
                                             gpointer user_data);
 
@@ -136,23 +151,23 @@ void nm_settings_connection_delete (NMSettingsConnection *self,
                                     gpointer user_data);
 
 typedef void (*NMSettingsConnectionSecretsFunc) (NMSettingsConnection *self,
-                                                 guint32 call_id,
+                                                 NMSettingsConnectionCallId call_id,
                                                  const char *agent_username,
                                                  const char *setting_name,
                                                  GError *error,
                                                  gpointer user_data);
 
-guint32 nm_settings_connection_get_secrets (NMSettingsConnection *self,
-                                            NMAuthSubject *subject,
-                                            const char *setting_name,
-                                            NMSecretAgentGetSecretsFlags flags,
-                                            const char **hints,
-                                            NMSettingsConnectionSecretsFunc callback,
-                                            gpointer callback_data,
-                                            GError **error);
+NMSettingsConnectionCallId nm_settings_connection_get_secrets (NMSettingsConnection *self,
+                                                               NMConnection *applied_connection,
+                                                               NMAuthSubject *subject,
+                                                               const char *setting_name,
+                                                               NMSecretAgentGetSecretsFlags flags,
+                                                               const char **hints,
+                                                               NMSettingsConnectionSecretsFunc callback,
+                                                               gpointer callback_data);
 
 void nm_settings_connection_cancel_secrets (NMSettingsConnection *self,
-                                            guint32 call_id);
+                                            NMSettingsConnectionCallId call_id);
 
 gboolean nm_settings_connection_is_visible (NMSettingsConnection *self);
 
@@ -211,6 +226,9 @@ void     nm_settings_connection_set_ready (NMSettingsConnection *self,
 void        nm_settings_connection_set_filename (NMSettingsConnection *self,
                                                  const char *filename);
 const char *nm_settings_connection_get_filename (NMSettingsConnection *self);
+
+const char *nm_settings_connection_get_id   (NMSettingsConnection *connection);
+const char *nm_settings_connection_get_uuid (NMSettingsConnection *connection);
 
 G_END_DECLS
 

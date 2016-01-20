@@ -20,14 +20,13 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "nm-default.h"
 #include "nm-core-internal.h"
 #include "nm-macros-internal.h"
 #include "NetworkManagerUtils.h"
-#include "gsystem-local-alloc.h"
 
 #include "utils.h"
 #include "shvar.h"

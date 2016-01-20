@@ -114,18 +114,21 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libnmdbus_la_LIBADD =
 nodist_libnmdbus_la_OBJECTS = nmdbus-access-point.lo \
 	nmdbus-active-connection.lo nmdbus-agent-manager.lo \
-	nmdbus-device-bond.lo nmdbus-device-bridge.lo \
-	nmdbus-device-bt.lo nmdbus-device-ethernet.lo nmdbus-device.lo \
-	nmdbus-device-generic.lo nmdbus-device-gre.lo \
-	nmdbus-device-infiniband.lo nmdbus-device-macvlan.lo \
-	nmdbus-device-tun.lo nmdbus-device-veth.lo \
-	nmdbus-device-vlan.lo nmdbus-device-vxlan.lo \
-	nmdbus-device-wifi.lo nmdbus-device-wimax.lo \
-	nmdbus-dhcp4-config.lo nmdbus-dhcp6-config.lo \
-	nmdbus-ip4-config.lo nmdbus-ip6-config.lo nmdbus-manager.lo \
-	nmdbus-ppp-manager.lo nmdbus-secret-agent.lo \
-	nmdbus-settings-connection.lo nmdbus-settings.lo \
-	nmdbus-vpn-connection.lo nmdbus-vpn-plugin.lo
+	nmdbus-device-adsl.lo nmdbus-device-bond.lo \
+	nmdbus-device-bridge.lo nmdbus-device-bt.lo \
+	nmdbus-device-ethernet.lo nmdbus-device.lo \
+	nmdbus-device-generic.lo nmdbus-device-infiniband.lo \
+	nmdbus-device-ip-tunnel.lo nmdbus-device-macvlan.lo \
+	nmdbus-device-modem.lo nmdbus-device-olpc-mesh.lo \
+	nmdbus-device-team.lo nmdbus-device-tun.lo \
+	nmdbus-device-veth.lo nmdbus-device-vlan.lo \
+	nmdbus-device-vxlan.lo nmdbus-device-wifi.lo \
+	nmdbus-device-wimax.lo nmdbus-dhcp4-config.lo \
+	nmdbus-dhcp6-config.lo nmdbus-ip4-config.lo \
+	nmdbus-ip6-config.lo nmdbus-manager.lo nmdbus-ppp-manager.lo \
+	nmdbus-secret-agent.lo nmdbus-settings-connection.lo \
+	nmdbus-settings.lo nmdbus-vpn-connection.lo \
+	nmdbus-vpn-plugin.lo
 libnmdbus_la_OBJECTS = $(nodist_libnmdbus_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -209,7 +212,6 @@ BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
-CKDB_PATH = @CKDB_PATH@
 CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
 CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
 CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
@@ -221,8 +223,6 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBUS_CFLAGS = @DBUS_CFLAGS@
-DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
-DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
@@ -232,6 +232,7 @@ DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
+DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -286,16 +287,13 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
-IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
-IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
+LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
 LIBDL = @LIBDL@
-LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
-LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
-LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -332,6 +330,8 @@ NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
+NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT = @NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT@
+NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT = @NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -360,7 +360,6 @@ POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
-PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
@@ -375,6 +374,8 @@ SYSTEMD_200_CFLAGS = @SYSTEMD_200_CFLAGS@
 SYSTEMD_200_LIBS = @SYSTEMD_200_LIBS@
 SYSTEMD_INHIBIT_CFLAGS = @SYSTEMD_INHIBIT_CFLAGS@
 SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
+SYSTEMD_JOURNAL_CFLAGS = @SYSTEMD_JOURNAL_CFLAGS@
+SYSTEMD_JOURNAL_LIBS = @SYSTEMD_JOURNAL_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
@@ -435,6 +436,7 @@ mkdir_p = @mkdir_p@
 nmbinary = @nmbinary@
 nmconfdir = @nmconfdir@
 nmdatadir = @nmdatadir@
+nmlibdir = @nmlibdir@
 nmrundir = @nmrundir@
 nmstatedir = @nmstatedir@
 oldincludedir = @oldincludedir@
@@ -442,6 +444,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -476,6 +479,8 @@ nodist_libnmdbus_la_SOURCES = \
 	nmdbus-active-connection.h \
 	nmdbus-agent-manager.c \
 	nmdbus-agent-manager.h \
+	nmdbus-device-adsl.c \
+	nmdbus-device-adsl.h \
 	nmdbus-device-bond.c \
 	nmdbus-device-bond.h \
 	nmdbus-device-bridge.c \
@@ -488,12 +493,18 @@ nodist_libnmdbus_la_SOURCES = \
 	nmdbus-device.h \
 	nmdbus-device-generic.c \
 	nmdbus-device-generic.h \
-	nmdbus-device-gre.c \
-	nmdbus-device-gre.h \
 	nmdbus-device-infiniband.c \
 	nmdbus-device-infiniband.h \
+	nmdbus-device-ip-tunnel.c \
+	nmdbus-device-ip-tunnel.h \
 	nmdbus-device-macvlan.c \
 	nmdbus-device-macvlan.h \
+	nmdbus-device-modem.c \
+	nmdbus-device-modem.h \
+	nmdbus-device-olpc-mesh.c \
+	nmdbus-device-olpc-mesh.h \
+	nmdbus-device-team.c \
+	nmdbus-device-team.h \
 	nmdbus-device-tun.c \
 	nmdbus-device-tun.h \
 	nmdbus-device-veth.c \
@@ -544,8 +555,8 @@ EXTRA_DIST = \
 	nm-device-bt.xml \
 	nm-device-ethernet.xml \
 	nm-device-generic.xml \
-	nm-device-gre.xml \
 	nm-device-infiniband.xml \
+	nm-device-ip-tunnel.xml \
 	nm-device-macvlan.xml \
 	nm-device-modem.xml \
 	nm-device-olpc-mesh.xml \
@@ -629,14 +640,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-access-point.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-active-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-agent-manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-adsl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-bridge.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-bt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-ethernet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-generic.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-gre.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-infiniband.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-ip-tunnel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-macvlan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-modem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-olpc-mesh.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-team.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-tun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-veth.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-vlan.Plo@am__quote@

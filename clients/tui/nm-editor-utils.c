@@ -27,9 +27,9 @@
 
 #include "config.h"
 
-#include <glib/gi18n.h>
 #include <NetworkManager.h>
 
+#include "nm-default.h"
 #include "nm-editor-utils.h"
 #if 0
 #include "nm-vpn-helpers.h"
@@ -224,7 +224,7 @@ nm_editor_utils_get_connection_type_list (void)
 
 #if 0
 	/* Add "VPN" only if there are plugins */
-	vpn_plugins_hash = nm_vpn_get_plugins (NULL);
+	vpn_plugins_hash = nm_vpn_get_plugins ();
 	have_vpn_plugins  = vpn_plugins_hash && g_hash_table_size (vpn_plugins_hash);
 	if (have_vpn_plugins) {
 		GHashTableIter iter;

@@ -60,7 +60,7 @@ G_BEGIN_DECLS
  * Options for #NMSettingWired:wake-on-lan. Note that not all options
  * are supported by all devices.
  *
- * Since: 1.0.6
+ * Since: 1.2
  */
 typedef enum { /*< flags >*/
 	NM_SETTING_WIRED_WAKE_ON_LAN_NONE      = 0, /*< skip >*/
@@ -145,9 +145,7 @@ gboolean          nm_setting_wired_remove_s390_option   (NMSettingWired *setting
                                                          const char *key);
 const char **     nm_setting_wired_get_valid_s390_options (NMSettingWired *setting);
 
-NM_AVAILABLE_IN_1_0_6
 NMSettingWiredWakeOnLan  nm_setting_wired_get_wake_on_lan          (NMSettingWired *setting);
-NM_AVAILABLE_IN_1_0_6
 const char *             nm_setting_wired_get_wake_on_lan_password (NMSettingWired *setting);
 
 G_END_DECLS

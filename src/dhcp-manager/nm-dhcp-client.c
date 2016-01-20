@@ -19,7 +19,6 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -29,10 +28,9 @@
 #include <stdlib.h>
 #include <uuid/uuid.h>
 
+#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-utils.h"
-#include "nm-logging.h"
-#include "nm-dbus-glib-types.h"
 #include "nm-dhcp-client.h"
 #include "nm-dhcp-utils.h"
 #include "nm-platform.h"
@@ -49,6 +47,7 @@ typedef struct {
 	GByteArray * duid;
 	GBytes *     client_id;
 	char *       hostname;
+	char *       fqdn;
 
 	NMDhcpState  state;
 	pid_t        pid;
@@ -178,6 +177,14 @@ nm_dhcp_client_get_hostname (NMDhcpClient *self)
 	return NM_DHCP_CLIENT_GET_PRIVATE (self)->hostname;
 }
 
+const char *
+nm_dhcp_client_get_fqdn (NMDhcpClient *self)
+{
+	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), NULL);
+
+	return NM_DHCP_CLIENT_GET_PRIVATE (self)->fqdn;
+}
+
 /********************************************/
 
 static const char *state_table[NM_DHCP_STATE_MAX + 1] = {
@@ -231,10 +238,7 @@ timeout_cleanup (NMDhcpClient *self)
 {
 	NMDhcpClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 
-	if (priv->timeout_id) {
-		g_source_remove (priv->timeout_id);
-		priv->timeout_id = 0;
-	}
+	nm_clear_g_source (&priv->timeout_id);
 }
 
 static void
@@ -242,10 +246,7 @@ watch_cleanup (NMDhcpClient *self)
 {
 	NMDhcpClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
 
-	if (priv->watch_id) {
-		g_source_remove (priv->watch_id);
-		priv->watch_id = 0;
-	}
+	nm_clear_g_source (&priv->watch_id);
 }
 
 void
@@ -410,6 +411,7 @@ nm_dhcp_client_start_ip4 (NMDhcpClient *self,
                           const char *dhcp_client_id,
                           const char *dhcp_anycast_addr,
                           const char *hostname,
+                          const char *fqdn,
                           const char *last_ip4_address)
 {
 	NMDhcpClientPrivate *priv;
@@ -428,6 +430,8 @@ nm_dhcp_client_start_ip4 (NMDhcpClient *self,
 
 	g_clear_pointer (&priv->hostname, g_free);
 	priv->hostname = g_strdup (hostname);
+	g_free (priv->fqdn);
+	priv->fqdn = g_strdup (fqdn);
 
 	return NM_DHCP_CLIENT_GET_CLASS (self)->ip4_start (self, dhcp_anycast_addr, last_ip4_address);
 }
@@ -547,6 +551,7 @@ get_duid (NMDhcpClient *self)
 gboolean
 nm_dhcp_client_start_ip6 (NMDhcpClient *self,
                           const char *dhcp_anycast_addr,
+                          const struct in6_addr *ll_addr,
                           const char *hostname,
                           gboolean info_only,
                           NMSettingIP6ConfigPrivacy privacy)
@@ -583,6 +588,7 @@ nm_dhcp_client_start_ip6 (NMDhcpClient *self,
 
 	return NM_DHCP_CLIENT_GET_CLASS (self)->ip6_start (self,
 	                                                   dhcp_anycast_addr,
+	                                                   ll_addr,
 	                                                   info_only,
 	                                                   privacy,
 	                                                   priv->duid);
@@ -662,21 +668,25 @@ nm_dhcp_client_stop (NMDhcpClient *self, gboolean release)
 /********************************************/
 
 static char *
-garray_to_string (GArray *array, const char *key)
+bytearray_variant_to_string (GVariant *value, const char *key)
 {
+	const guint8 *array;
+	gsize length;
 	GString *str;
 	int i;
 	unsigned char c;
 	char *converted = NULL;
 
-	g_return_val_if_fail (array != NULL, NULL);
+	g_return_val_if_fail (value != NULL, NULL);
+
+	array = g_variant_get_fixed_array (value, &length, 1);
 
 	/* Since the DHCP options come through environment variables, they should
 	 * already be UTF-8 safe, but just make sure.
 	 */
-	str = g_string_sized_new (array->len);
-	for (i = 0; i < array->len; i++) {
-		c = array->data[i];
+	str = g_string_sized_new (length);
+	for (i = 0; i < length; i++) {
+		c = array[i];
 
 		/* Convert NULLs to spaces and non-ASCII characters to ? */
 		if (c == '\0')
@@ -698,11 +708,10 @@ garray_to_string (GArray *array, const char *key)
 #define NEW_TAG "new_"
 
 static void
-copy_option (const char * key,
-             GValue *value,
-             gpointer user_data)
+maybe_add_option (GHashTable *hash,
+                  const char *key,
+                  GVariant *value)
 {
-	GHashTable *hash = user_data;
 	char *str_value = NULL;
 	const char **p;
 	static const char *ignored_keys[] = {
@@ -713,10 +722,7 @@ copy_option (const char * key,
 		NULL
 	};
 
-	if (!G_VALUE_HOLDS (value, DBUS_TYPE_G_UCHAR_ARRAY)) {
-		nm_log_warn (LOGD_DHCP, "key %s value type was not DBUS_TYPE_G_UCHAR_ARRAY", key);
-		return;
-	}
+	g_return_if_fail (g_variant_is_of_type (value, G_VARIANT_TYPE_BYTESTRING));
 
 	if (g_str_has_prefix (key, OLD_TAG))
 		return;
@@ -732,7 +738,7 @@ copy_option (const char * key,
 	if (!key[0])
 		return;
 
-	str_value = garray_to_string ((GArray *) g_value_get_boxed (value), key);
+	str_value = bytearray_variant_to_string (value, key);
 	if (str_value)
 		g_hash_table_insert (hash, g_strdup (key), str_value);
 }
@@ -741,7 +747,7 @@ gboolean
 nm_dhcp_client_handle_event (gpointer unused,
                              const char *iface,
                              gint pid,
-                             GHashTable *options,
+                             GVariant *options,
                              const char *reason,
                              NMDhcpClient *self)
 {
@@ -754,7 +760,7 @@ nm_dhcp_client_handle_event (gpointer unused,
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 	g_return_val_if_fail (iface != NULL, FALSE);
 	g_return_val_if_fail (pid > 0, FALSE);
-	g_return_val_if_fail (options != NULL, FALSE);
+	g_return_val_if_fail (g_variant_is_of_type (options, G_VARIANT_TYPE_VARDICT), FALSE);
 	g_return_val_if_fail (reason != NULL, FALSE);
 
 	priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -770,20 +776,30 @@ nm_dhcp_client_handle_event (gpointer unused,
 	            iface, reason, state_to_string (new_state));
 
 	if (new_state == NM_DHCP_STATE_BOUND) {
+		GVariantIter iter;
+		const char *name;
+		GVariant *value;
+
 		/* Copy options */
 		str_options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-		g_hash_table_foreach (options, (GHFunc) copy_option, str_options);
+		g_variant_iter_init (&iter, options);
+		while (g_variant_iter_next (&iter, "{&sv}", &name, &value)) {
+			maybe_add_option (str_options, name, value);
+			g_variant_unref (value);
+		}
 
 		/* Create the IP config */
 		g_warn_if_fail (g_hash_table_size (str_options));
 		if (g_hash_table_size (str_options)) {
 			if (priv->ipv6) {
-				ip_config = (GObject *) nm_dhcp_utils_ip6_config_from_options (priv->iface,
+				ip_config = (GObject *) nm_dhcp_utils_ip6_config_from_options (priv->ifindex,
+				                                                               priv->iface,
 				                                                               str_options,
 				                                                               priv->priority,
 				                                                               priv->info_only);
 			} else {
-				ip_config = (GObject *) nm_dhcp_utils_ip4_config_from_options (priv->iface,
+				ip_config = (GObject *) nm_dhcp_utils_ip4_config_from_options (priv->ifindex,
+				                                                               priv->iface,
 				                                                               str_options,
 				                                                               priv->priority);
 			}

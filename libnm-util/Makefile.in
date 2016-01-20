@@ -90,14 +90,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@WITH_GNUTLS_TRUE@am__append_1 = $(LIBGCRYPT_CFLAGS) $(GNUTLS_CFLAGS)
+@WITH_GNUTLS_TRUE@am__append_1 = $(GNUTLS_CFLAGS)
 @WITH_NSS_TRUE@am__append_2 = $(NSS_CFLAGS)
 @WITH_GNUTLS_TRUE@am__append_3 = crypto_gnutls.c
-@WITH_GNUTLS_TRUE@am__append_4 = $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
+@WITH_GNUTLS_TRUE@am__append_4 = $(GNUTLS_LIBS)
 @WITH_NSS_TRUE@am__append_5 = crypto_nss.c
 @WITH_NSS_TRUE@am__append_6 = $(NSS_LIBS)
 @WITH_GNUTLS_TRUE@am__append_7 = crypto_gnutls.c
-@WITH_GNUTLS_TRUE@am__append_8 = $(LIBGCRYPT_LIBS) $(GNUTLS_LIBS)
+@WITH_GNUTLS_TRUE@am__append_8 = $(GNUTLS_LIBS)
 @WITH_NSS_TRUE@am__append_9 = crypto_nss.c
 @WITH_NSS_TRUE@am__append_10 = $(NSS_LIBS)
 @HAVE_INTROSPECTION_TRUE@am__append_11 = NetworkManager-1.0.gir
@@ -157,8 +157,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(girdir)" \
 	"$(DESTDIR)$(libnm_util_includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-@WITH_GNUTLS_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) \
-@WITH_GNUTLS_TRUE@	$(am__DEPENDENCIES_1)
+@WITH_GNUTLS_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 @WITH_NSS_TRUE@am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1)
 libnm_util_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -176,8 +175,9 @@ am__libnm_util_la_SOURCES_DIST = crypto.c nm-connection.c \
 	nm-setting-wired.c nm-setting-wireless.c \
 	nm-setting-wireless-security.c nm-setting-vpn.c \
 	nm-utils-enum-types.c nm-utils.c nm-value-transforms.c \
-	crypto.h nm-param-spec-specialized.h nm-utils-private.h \
-	nm-setting-private.h crypto_gnutls.c crypto_nss.c
+	crypto.h nm-dbus-glib-types.h nm-gvaluearray-compat.h \
+	nm-param-spec-specialized.h nm-setting-private.h \
+	nm-utils-private.h crypto_gnutls.c crypto_nss.c
 am__objects_1 = crypto.lo nm-connection.lo \
 	nm-param-spec-specialized.lo nm-setting.lo nm-setting-8021x.lo \
 	nm-setting-adsl.lo nm-setting-bluetooth.lo nm-setting-bond.lo \
@@ -335,7 +335,6 @@ BLUEZ5_LIBS = @BLUEZ5_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
-CKDB_PATH = @CKDB_PATH@
 CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
 CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
 CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
@@ -347,8 +346,6 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBUS_CFLAGS = @DBUS_CFLAGS@
-DBUS_GLIB_100_CFLAGS = @DBUS_GLIB_100_CFLAGS@
-DBUS_GLIB_100_LIBS = @DBUS_GLIB_100_LIBS@
 DBUS_LIBS = @DBUS_LIBS@
 DBUS_SYS_DIR = @DBUS_SYS_DIR@
 DEFS = @DEFS@
@@ -358,6 +355,7 @@ DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
 DNSMASQ_PATH = @DNSMASQ_PATH@
+DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -412,16 +410,13 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
-IWMX_SDK_CFLAGS = @IWMX_SDK_CFLAGS@
-IWMX_SDK_LIBS = @IWMX_SDK_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
+LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
 LIBDL = @LIBDL@
-LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
-LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
-LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -458,6 +453,8 @@ NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
+NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT = @NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT@
+NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT = @NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
 NM_MICRO_VERSION = @NM_MICRO_VERSION@
 NM_MINOR_VERSION = @NM_MINOR_VERSION@
@@ -486,7 +483,6 @@ POLKIT_LIBS = @POLKIT_LIBS@
 POSUB = @POSUB@
 PPPD_PATH = @PPPD_PATH@
 PPPD_PLUGIN_DIR = @PPPD_PLUGIN_DIR@
-PPPOE_PATH = @PPPOE_PATH@
 QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
@@ -501,6 +497,8 @@ SYSTEMD_200_CFLAGS = @SYSTEMD_200_CFLAGS@
 SYSTEMD_200_LIBS = @SYSTEMD_200_LIBS@
 SYSTEMD_INHIBIT_CFLAGS = @SYSTEMD_INHIBIT_CFLAGS@
 SYSTEMD_INHIBIT_LIBS = @SYSTEMD_INHIBIT_LIBS@
+SYSTEMD_JOURNAL_CFLAGS = @SYSTEMD_JOURNAL_CFLAGS@
+SYSTEMD_JOURNAL_LIBS = @SYSTEMD_JOURNAL_LIBS@
 SYSTEMD_LOGIN_CFLAGS = @SYSTEMD_LOGIN_CFLAGS@
 SYSTEMD_LOGIN_LIBS = @SYSTEMD_LOGIN_LIBS@
 SYSTEM_CA_PATH = @SYSTEM_CA_PATH@
@@ -561,6 +559,7 @@ mkdir_p = @mkdir_p@
 nmbinary = @nmbinary@
 nmconfdir = @nmconfdir@
 nmdatadir = @nmdatadir@
+nmlibdir = @nmlibdir@
 nmrundir = @nmrundir@
 nmstatedir = @nmstatedir@
 oldincludedir = @oldincludedir@
@@ -568,6 +567,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -584,14 +584,15 @@ with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
 SUBDIRS = . tests
-AM_CPPFLAGS = -I${top_srcdir} -I${top_srcdir}/include \
-	-I$(top_builddir)/include -DG_LOG_DOMAIN=\""libnm-util"\" \
+AM_CPPFLAGS = -I${top_srcdir} -I${top_srcdir}/shared \
+	-I$(top_builddir)/shared -DG_LOG_DOMAIN=\""libnm-util"\" \
 	-DLOCALEDIR=\"$(datadir)/locale\" \
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB_LEGACY \
 	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) $(UUID_CFLAGS) $(am__append_1) $(am__append_2)
 lib_LTLIBRARIES = libnm-util.la
 libnm_util_include_HEADERS = \
-	$(top_builddir)/include/nm-version-macros.h \
+	$(top_builddir)/shared/nm-version-macros.h \
 	NetworkManager.h		\
 	NetworkManagerVPN.h		\
 	nm-connection.h			\
@@ -630,9 +631,11 @@ nodist_libnm_util_include_HEADERS = \
 
 libnm_util_la_private_headers = \
 	crypto.h			\
+	nm-dbus-glib-types.h		\
+	nm-gvaluearray-compat.h		\
 	nm-param-spec-specialized.h	\
-	nm-utils-private.h		\
-	nm-setting-private.h
+	nm-setting-private.h		\
+	nm-utils-private.h
 
 libnm_util_la_csources = \
 	crypto.c			\

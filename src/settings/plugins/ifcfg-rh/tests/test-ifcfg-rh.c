@@ -54,9 +54,15 @@
 #include "reader.h"
 #include "writer.h"
 #include "utils.h"
-#include "nm-logging.h"
+#include "nm-default.h"
 
 #include "nm-test-utils.h"
+
+typedef struct {
+	const char *name;
+	const NMSettingMacRandomization value;
+	const char *write_expected;
+} WifiMacRandomData;
 
 #if 0
 static void
@@ -484,6 +490,9 @@ test_read_wired_static (const char *file,
 	g_assert_cmpstr (nm_setting_ip_config_get_method (s_ip4), ==, NM_SETTING_IP4_CONFIG_METHOD_MANUAL);
 	g_assert (nm_setting_ip_config_get_may_fail (s_ip4));
 
+	g_assert (nm_setting_ip_config_has_dns_options (s_ip4));
+	g_assert_cmpint (nm_setting_ip_config_get_num_dns_options (s_ip4), ==, 0);
+
 	/* DNS Addresses */
 	g_assert_cmpint (nm_setting_ip_config_get_num_dns (s_ip4), ==, 2);
 	g_assert_cmpstr (nm_setting_ip_config_get_dns (s_ip4, 0), ==, "4.2.2.1");
@@ -506,6 +515,9 @@ test_read_wired_static (const char *file,
 		g_assert_cmpstr (nm_setting_ip_config_get_method (s_ip6), ==, NM_SETTING_IP6_CONFIG_METHOD_MANUAL);
 		g_assert (nm_setting_ip_config_get_may_fail (s_ip6));
 
+		g_assert (nm_setting_ip_config_has_dns_options (s_ip6));
+		g_assert_cmpint (nm_setting_ip_config_get_num_dns_options (s_ip6), ==, 0);
+
 		/* DNS Addresses */
 		g_assert_cmpint (nm_setting_ip_config_get_num_dns (s_ip6), ==, 2);
 		g_assert_cmpstr (nm_setting_ip_config_get_dns (s_ip6, 0), ==, "1:2:3:4::a");
@@ -525,6 +537,7 @@ test_read_wired_static (const char *file,
 		g_assert_cmpstr (nm_ip_address_get_address (ip6_addr), ==, "dead:beaf::2");
 	} else {
 		g_assert_cmpstr (nm_setting_ip_config_get_method (s_ip6), ==, NM_SETTING_IP6_CONFIG_METHOD_IGNORE);
+		g_assert (!nm_setting_ip_config_has_dns_options (s_ip6));
 	}
 
 	g_object_unref (connection);
@@ -562,6 +575,9 @@ test_read_wired_static_no_prefix (gconstpointer user_data)
 	s_ip4 = nm_connection_get_setting_ip4_config (connection);
 	g_assert (s_ip4);
 	g_assert_cmpstr (nm_setting_ip_config_get_method (s_ip4), ==, NM_SETTING_IP4_CONFIG_METHOD_MANUAL);
+
+	g_assert (!nm_setting_ip_config_has_dns_options (s_ip4));
+	g_assert_cmpint (nm_setting_ip_config_get_num_dns_options (s_ip4), ==, 0);
 
 	g_assert_cmpint (nm_setting_ip_config_get_num_addresses (s_ip4), ==, 1);
 	ip4_addr = nm_setting_ip_config_get_address (s_ip4, 0);
@@ -2533,6 +2549,165 @@ test_read_wired_aliases_bad_2 (void)
 	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
 	                       "*aliasem2:1*has invalid DEVICE*");
 	test_read_wired_aliases_bad (TEST_IFCFG_ALIASES_BAD_2, "System aliasem2");
+}
+
+#define TEST_IFCFG_DNS_OPTIONS TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dns-options"
+
+static void
+test_read_dns_options (void)
+{
+	NMConnection *connection;
+	NMSettingIPConfig *s_ip4, *s_ip6;
+	char *unmanaged = NULL;
+	const char *option;
+	GError *error = NULL;
+	const char *options[] = { "ndots:3", "single-request-reopen", "inet6" };
+	guint32 i, options_len = sizeof (options) / sizeof (options[0]);
+
+	connection = connection_from_file_test (TEST_IFCFG_DNS_OPTIONS,
+	                                        NULL,
+	                                        TYPE_ETHERNET,
+	                                        &unmanaged,
+	                                        &error);
+	g_assert (connection);
+	g_assert (nm_connection_verify (connection, &error));
+	g_assert_cmpstr (unmanaged, ==, NULL);
+
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+	g_assert (s_ip4);
+
+	s_ip6 = nm_connection_get_setting_ip6_config (connection);
+	g_assert (s_ip6);
+
+	i = nm_setting_ip_config_get_num_dns_options (s_ip4);
+	g_assert_cmpint (i, ==, options_len);
+
+	i = nm_setting_ip_config_get_num_dns_options (s_ip6);
+	g_assert_cmpint (i, ==, options_len);
+
+	for (i = 0; i < options_len; i++) {
+		option = nm_setting_ip_config_get_dns_option (s_ip4, i);
+		g_assert_cmpstr (options[i], ==, option);
+
+		option = nm_setting_ip_config_get_dns_option (s_ip6, i);
+		g_assert_cmpstr (options[i], ==, option);
+	}
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_dns_options (void)
+{
+	NMConnection *connection;
+	NMConnection *reread;
+	NMSettingConnection *s_con;
+	NMSettingWired *s_wired;
+	NMSettingIPConfig *s_ip4;
+	NMSettingIPConfig *s_ip6;
+	static const char *mac = "31:33:33:37:be:cd";
+	guint32 mtu = 1492;
+	char *uuid;
+	NMIPAddress *addr;
+	NMIPAddress *addr6;
+	gboolean success;
+	GError *error = NULL;
+	char *testfile = NULL;
+
+	connection = nm_simple_connection_new ();
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, "Test DNS options",
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_AUTOCONNECT, TRUE,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRED_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+
+	/* Wired setting */
+	s_wired = (NMSettingWired *) nm_setting_wired_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_wired));
+
+	g_object_set (s_wired,
+	              NM_SETTING_WIRED_MAC_ADDRESS, mac,
+	              NM_SETTING_WIRED_MTU, mtu,
+	              NULL);
+
+	/* IP4 setting */
+	s_ip4 = (NMSettingIPConfig *) nm_setting_ip4_config_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_ip4));
+
+	g_object_set (s_ip4,
+	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_MANUAL,
+	              NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE,
+	              NM_SETTING_IP_CONFIG_GATEWAY, "1.1.1.1",
+	              NM_SETTING_IP_CONFIG_ROUTE_METRIC, (gint64) 204,
+	              NULL);
+
+	addr = nm_ip_address_new (AF_INET, "1.1.1.3", 24, &error);
+	nm_setting_ip_config_add_address (s_ip4, addr);
+	nm_ip_address_unref (addr);
+
+	/* IP6 setting */
+	s_ip6 = (NMSettingIPConfig *) nm_setting_ip6_config_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_ip6));
+
+	g_object_set (s_ip6,
+	              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_MANUAL,
+	              NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE,
+	              NM_SETTING_IP_CONFIG_ROUTE_METRIC, (gint64) 206,
+	              NULL);
+
+	/* Add addresses */
+	addr6 = nm_ip_address_new (AF_INET6, "1003:1234:abcd::1", 11, &error);
+	nm_setting_ip_config_add_address (s_ip6, addr6);
+	nm_ip_address_unref (addr6);
+
+	nm_setting_ip_config_add_dns_option (s_ip4, "debug");
+	nm_setting_ip_config_add_dns_option (s_ip6, "timeout:3");
+
+	g_assert (nm_connection_verify (connection, &error));
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &testfile,
+	                                 &error);
+	g_assert (success);
+	g_assert (testfile);
+
+	/* reread will be normalized, so we must normalize connection too. */
+	nm_connection_normalize (connection, NULL, NULL, NULL);
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file_test (testfile,
+	                                    NULL,
+	                                    TYPE_ETHERNET,
+	                                    NULL,
+	                                    &error);
+	unlink (testfile);
+
+	/* RES_OPTIONS is copied to both IPv4 and IPv6 settings */
+	nm_setting_ip_config_clear_dns_options (s_ip4, TRUE);
+	nm_setting_ip_config_add_dns_option (s_ip4, "debug");
+	nm_setting_ip_config_add_dns_option (s_ip4, "timeout:3");
+
+	nm_setting_ip_config_clear_dns_options (s_ip6, TRUE);
+	nm_setting_ip_config_add_dns_option (s_ip6, "debug");
+	nm_setting_ip_config_add_dns_option (s_ip6, "timeout:3");
+
+	g_assert (reread);
+	g_assert (nm_connection_verify (reread, &error));
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	g_free (testfile);
+	g_object_unref (connection);
+	g_object_unref (reread);
 }
 
 #define TEST_IFCFG_WIFI_OPEN TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wifi-open"
@@ -5297,6 +5472,117 @@ test_write_wifi_hidden (void)
 }
 
 static void
+test_read_wifi_mac_random (gconstpointer user_data)
+{
+	const WifiMacRandomData *test_data = user_data;
+	NMConnection *connection;
+	NMSettingWireless *s_wifi;
+	gboolean success;
+	GError *error = NULL;
+	char *path;
+
+	path = g_strdup_printf (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wifi-mac-random-%s", test_data->name);
+	connection = connection_from_file_test (path, NULL, TYPE_WIRELESS, NULL, &error);
+	g_free (path);
+	g_assert_no_error (error);
+	g_assert (connection);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	s_wifi = nm_connection_get_setting_wireless (connection);
+	g_assert (s_wifi);
+	g_assert_cmpint (nm_setting_wireless_get_mac_address_randomization (s_wifi), ==, test_data->value);
+
+	g_object_unref (connection);
+}
+
+static void
+test_write_wifi_mac_random (gconstpointer user_data)
+{
+	const WifiMacRandomData *test_data = user_data;
+	NMConnection *connection, *reread;
+	NMSettingConnection *s_con;
+	NMSettingWireless *s_wifi;
+	char *uuid, *testfile = NULL, *val;
+	gboolean success;
+	GError *error = NULL;
+	shvarFile *f;
+	GBytes *ssid;
+	const unsigned char ssid_data[] = { 0x54, 0x65, 0x73, 0x74, 0x20, 0x53, 0x53, 0x49, 0x44 };
+
+	connection = nm_simple_connection_new ();
+
+	/* Connection setting */
+	s_con = (NMSettingConnection *) nm_setting_connection_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_con));
+
+	uuid = nm_utils_uuid_generate ();
+	val = g_strdup_printf ("Test Write WiFi MAC %s", test_data->name);
+	g_object_set (s_con,
+	              NM_SETTING_CONNECTION_ID, val,
+	              NM_SETTING_CONNECTION_UUID, uuid,
+	              NM_SETTING_CONNECTION_TYPE, NM_SETTING_WIRELESS_SETTING_NAME,
+	              NULL);
+	g_free (uuid);
+	g_free (val);
+
+	/* Wifi setting */
+	s_wifi = (NMSettingWireless *) nm_setting_wireless_new ();
+	nm_connection_add_setting (connection, NM_SETTING (s_wifi));
+
+	ssid = g_bytes_new (ssid_data, sizeof (ssid_data));
+	g_object_set (s_wifi,
+	              NM_SETTING_WIRELESS_SSID, ssid,
+	              NM_SETTING_WIRELESS_MODE, "infrastructure",
+	              NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION, test_data->value,
+	              NULL);
+	g_bytes_unref (ssid);
+
+	success = nm_connection_verify (connection, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	/* Save the ifcfg */
+	success = writer_new_connection (connection,
+		                             TEST_SCRATCH_DIR "/network-scripts/",
+		                             &testfile,
+		                             &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	f = svOpenFile (testfile, &error);
+	g_assert_no_error (error);
+	g_assert (f);
+
+	/* re-read the file to check that what key was written. */
+	val = svGetValue (f, "MAC_ADDRESS_RANDOMIZATION", FALSE);
+	g_assert_cmpstr (val, ==, test_data->write_expected);
+	g_free (val);
+	svCloseFile (f);
+
+	/* reread will be normalized, so we must normalize connection too. */
+	nm_connection_normalize (connection, NULL, NULL, NULL);
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file_test (testfile, NULL, TYPE_WIRELESS, NULL, &error);
+	unlink (testfile);
+	g_assert_no_error (error);
+	g_assert (reread);
+
+	success = nm_connection_verify (reread, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
+
+	g_free (testfile);
+	g_object_unref (connection);
+	g_object_unref (reread);
+}
+
+static void
 test_write_wired_wake_on_lan (void)
 {
 	NMConnection *connection, *reread;
@@ -6356,7 +6642,6 @@ test_write_wired_static_ip6_only (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 
@@ -6441,7 +6726,6 @@ test_write_wired_static_ip6_only (void)
 	        "wired-static-ip6-only-write", "written and re-read connection weren't the same.");
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -6592,8 +6876,8 @@ test_read_write_static_routes_legacy (void)
 	NMSettingWired *s_wired;
 	NMSettingIPConfig *s_ip4;
 	char *testfile = NULL;
-	char *routefile2 = NULL;
-	char *route6file2 = NULL;
+	char *routefile = NULL;
+	char *route6file = NULL;
 	gboolean success;
 	GError *error = NULL;
 	const char *tmp;
@@ -6689,16 +6973,13 @@ test_read_write_static_routes_legacy (void)
 	                                    NULL,
 	                                    &error);
 	unlink (testfile);
-	routefile2 = utils_get_route_path (testfile);
-	unlink (routefile2);
-	route6file2 = utils_get_route6_path (testfile);
-	unlink (route6file2);
+	routefile = utils_get_route_path (testfile);
+	unlink (routefile);
+	route6file = utils_get_route6_path (testfile);
+	unlink (route6file);
 
 	ASSERT (reread != NULL,
 	        "read-write-static-routes-legacy-reread", "failed to read %s: %s", testfile, error->message);
-
-	ASSERT (routefile2 != NULL,
-	        "read-write-static-routes-legacy-reread", "expected routefile for '%s'", testfile);
 
 	ASSERT (nm_connection_verify (reread, &error),
 	        "read-write-static-routes-legacy-reread-verify", "failed to verify %s: %s", testfile, error->message);
@@ -6707,8 +6988,8 @@ test_read_write_static_routes_legacy (void)
 	        "read-write-static-routes-legacy-write", "written and re-read connection weren't the same.");
 
 	g_free (testfile);
-	g_free (routefile2);
-	g_free (route6file2);
+	g_free (routefile);
+	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -9859,7 +10140,6 @@ test_write_wired_qeth_dhcp (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 
@@ -9947,7 +10227,6 @@ test_write_wired_qeth_dhcp (void)
 	        "wired-qeth-dhcp-write", "written and re-read connection weren't the same.");
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -9966,7 +10245,6 @@ test_write_wired_ctc_dhcp (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 	shvarFile *ifcfg;
 	char *tmp;
 
@@ -10066,7 +10344,6 @@ test_write_wired_ctc_dhcp (void)
 	g_assert (success);
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -10084,7 +10361,6 @@ test_write_permissions (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 
@@ -10164,7 +10440,6 @@ test_write_permissions (void)
 	        "permissions-write", "written and re-read connection weren't the same.");
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -10185,7 +10460,6 @@ test_write_wifi_wep_agent_keys (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 	g_assert (connection != NULL);
@@ -10290,7 +10564,6 @@ test_write_wifi_wep_agent_keys (void)
 	g_assert (success);
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -10544,6 +10817,7 @@ test_read_bridge_main (void)
 	g_assert_cmpuint (nm_setting_bridge_get_hello_time (s_bridge), ==, 7);
 	g_assert_cmpuint (nm_setting_bridge_get_max_age (s_bridge), ==, 39);
 	g_assert_cmpuint (nm_setting_bridge_get_ageing_time (s_bridge), ==, 235352);
+	g_assert (!nm_setting_bridge_get_multicast_snooping (s_bridge));
 
 	/* MAC address */
 	mac = nm_setting_bridge_get_mac_address (s_bridge);
@@ -10702,7 +10976,6 @@ test_write_bridge_component (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 	g_assert (connection);
@@ -10773,7 +11046,6 @@ test_write_bridge_component (void)
 	g_assert (nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT));
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -10849,16 +11121,16 @@ test_read_vlan_interface (void)
 	g_assert_cmpint (nm_setting_vlan_get_num_priorities (s_vlan, NM_VLAN_EGRESS_MAP), ==, 3);
 
 	g_assert (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, 0, &from, &to));
+	g_assert_cmpint (from, ==, 3);
+	g_assert_cmpint (to, ==, 1);
+
+	g_assert (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, 1, &from, &to));
 	g_assert_cmpint (from, ==, 12);
 	g_assert_cmpint (to, ==, 3);
 
-	g_assert (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, 1, &from, &to));
+	g_assert (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, 2, &from, &to));
 	g_assert_cmpint (from, ==, 14);
 	g_assert_cmpint (to, ==, 7);
-
-	g_assert (nm_setting_vlan_get_priority (s_vlan, NM_VLAN_EGRESS_MAP, 2, &from, &to));
-	g_assert_cmpint (from, ==, 3);
-	g_assert_cmpint (to, ==, 1);
 
 	g_object_unref (connection);
 }
@@ -10976,6 +11248,62 @@ test_read_vlan_reorder_hdr_1 (void)
 }
 
 static void
+test_read_vlan_flags_1 (void)
+{
+	NMConnection *connection;
+	GError *error = NULL;
+	NMSettingVlan *s_vlan;
+
+	connection = connection_from_file_test (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-vlan-flags-1",
+	                                        NULL,
+	                                        TYPE_ETHERNET,
+	                                        NULL,
+	                                        &error);
+	g_assert_no_error (error);
+	g_assert (connection != NULL);
+
+	g_assert_cmpstr (nm_connection_get_interface_name (connection), ==, "super-vlan");
+
+	s_vlan = nm_connection_get_setting_vlan (connection);
+	g_assert (s_vlan);
+
+	g_assert_cmpstr (nm_setting_vlan_get_parent (s_vlan), ==, "eth9");
+	g_assert_cmpint (nm_setting_vlan_get_id (s_vlan), ==, 44);
+	/* reorder_hdr and loose_binding */
+	g_assert_cmpint (nm_setting_vlan_get_flags (s_vlan), ==, 5);
+
+	g_object_unref (connection);
+}
+
+static void
+test_read_vlan_flags_2 (void)
+{
+	NMConnection *connection;
+	GError *error = NULL;
+	NMSettingVlan *s_vlan;
+
+	connection = connection_from_file_test (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-vlan-flags-2",
+	                                        NULL,
+	                                        TYPE_ETHERNET,
+	                                        NULL,
+	                                        &error);
+	g_assert_no_error (error);
+	g_assert (connection != NULL);
+
+	g_assert_cmpstr (nm_connection_get_interface_name (connection), ==, "super-vlan");
+
+	s_vlan = nm_connection_get_setting_vlan (connection);
+	g_assert (s_vlan);
+
+	g_assert_cmpstr (nm_setting_vlan_get_parent (s_vlan), ==, "eth9");
+	g_assert_cmpint (nm_setting_vlan_get_id (s_vlan), ==, 44);
+	/* gvrp and loose_binding */
+	g_assert_cmpint (nm_setting_vlan_get_flags (s_vlan), ==, 6);
+
+	g_object_unref (connection);
+}
+
+static void
 test_write_vlan (void)
 {
 	NMConnection *connection;
@@ -11000,6 +11328,54 @@ test_write_vlan (void)
 	g_free (written);
 
 	g_object_unref (connection);
+}
+
+static void
+test_write_vlan_flags (void)
+{
+	NMConnection *connection, *reread;
+	char *written = NULL;
+	GError *error = NULL;
+	gboolean success = FALSE;
+
+	connection = connection_from_file_test (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-vlan-flags-2",
+	                                        NULL,
+	                                        TYPE_VLAN,
+	                                        NULL,
+	                                        &error);
+	g_assert (connection != NULL);
+
+	success = writer_new_connection (connection,
+	                                 TEST_SCRATCH_DIR "/network-scripts/",
+	                                 &written,
+	                                 &error);
+	g_assert (success);
+
+	/* reread will be normalized, so we must normalize connection too. */
+	nm_connection_normalize (connection, NULL, NULL, NULL);
+
+	/* re-read the connection for comparison */
+	reread = connection_from_file_test (written,
+	                                    NULL,
+	                                    TYPE_ETHERNET,
+	                                    NULL,
+	                                    &error);
+
+	unlink (written);
+	g_free (written);
+
+	g_assert_no_error (error);
+	g_assert (reread != NULL);
+
+	success = nm_connection_verify (reread, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+
+	success = nm_connection_compare (connection, reread, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (success);
+
+	g_object_unref (connection);
+	g_object_unref (reread);
 }
 
 static void
@@ -11434,7 +11810,6 @@ test_write_bond_slave (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 
@@ -11499,7 +11874,6 @@ test_write_bond_slave (void)
 	        "bond-slave-write", "written and re-read connection weren't the same.");
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -11724,7 +12098,6 @@ test_write_bond_slave_ib (void)
 	gboolean success;
 	GError *error = NULL;
 	char *testfile = NULL;
-	char *route6file = NULL;
 
 	connection = nm_simple_connection_new ();
 
@@ -11790,7 +12163,6 @@ test_write_bond_slave_ib (void)
 	        "bond-slave-write-ib", "written and re-read connection weren't the same.");
 
 	g_free (testfile);
-	g_free (route6file);
 	g_object_unref (connection);
 	g_object_unref (reread);
 }
@@ -12741,6 +13113,7 @@ int main (int argc, char **argv)
 	g_test_add_data_func (TPATH "static-ip6-only-gw/::", "::", test_write_wired_static_ip6_only_gw);
 	g_test_add_data_func (TPATH "static-ip6-only-gw/2001:db8:8:4::2", "2001:db8:8:4::2", test_write_wired_static_ip6_only_gw);
 	g_test_add_data_func (TPATH "static-ip6-only-gw/::ffff:255.255.255.255", "::ffff:255.255.255.255", test_write_wired_static_ip6_only_gw);
+	g_test_add_func (TPATH "read-dns-options", test_read_dns_options);
 
 	test_read_wired_static (TEST_IFCFG_WIRED_STATIC, "System test-wired-static", TRUE);
 	test_read_wired_static (TEST_IFCFG_WIRED_STATIC_BOOTPROTO, "System test-wired-static-bootproto", FALSE);
@@ -12805,6 +13178,35 @@ int main (int argc, char **argv)
 	g_test_add_func (TPATH "wifi/read-band-a-channel-mismatch", test_read_wifi_band_a_channel_mismatch);
 	g_test_add_func (TPATH "wifi/read-band-bg-channel-mismatch", test_read_wifi_band_bg_channel_mismatch);
 	g_test_add_func (TPATH "wifi/read-hidden", test_read_wifi_hidden);
+
+	{
+		static const WifiMacRandomData test_wifi_mac_random[] = {
+			{ "always",  NM_SETTING_MAC_RANDOMIZATION_ALWAYS,  "always" },
+			{ "never",   NM_SETTING_MAC_RANDOMIZATION_NEVER,   "never" },
+			{ "default", NM_SETTING_MAC_RANDOMIZATION_DEFAULT, "default" },
+			{ "missing", NM_SETTING_MAC_RANDOMIZATION_NEVER,   "never" },
+		};
+		int i;
+
+		for (i = 0; i < G_N_ELEMENTS (test_wifi_mac_random); i++) {
+			char *tpath;
+
+			tpath = g_strdup_printf (TPATH "wifi/read-mac-random-%s", test_wifi_mac_random[i].name);
+			g_test_add_data_func_full (tpath,
+			                           g_memdup (&test_wifi_mac_random[i], sizeof (test_wifi_mac_random[i])),
+			                           test_read_wifi_mac_random,
+			                           g_free);
+			g_free (tpath);
+
+			tpath = g_strdup_printf (TPATH "wifi/write-mac-random-%s", test_wifi_mac_random[i].name);
+			g_test_add_data_func_full (tpath,
+			                           g_memdup (&test_wifi_mac_random[i], sizeof (test_wifi_mac_random[i])),
+			                           test_write_wifi_mac_random,
+			                           g_free);
+			g_free (tpath);
+		}
+	}
+
 	test_read_wired_qeth_static ();
 	test_read_wired_ctc_static ();
 	test_read_wifi_wep_no_keys ();
@@ -12812,6 +13214,8 @@ int main (int argc, char **argv)
 	test_read_wifi_wep_agent_keys ();
 	test_read_infiniband ();
 	test_read_vlan_interface ();
+	g_test_add_func (TPATH "vlan/read-flags-1", test_read_vlan_flags_1);
+	g_test_add_func (TPATH "vlan/read-flags-2", test_read_vlan_flags_2);
 	test_read_vlan_only_vlan_id ();
 	test_read_vlan_only_device ();
 	g_test_add_func (TPATH "vlan/physdev", test_read_vlan_physdev);
@@ -12894,9 +13298,11 @@ int main (int argc, char **argv)
 	test_write_wifi_wep_agent_keys ();
 	test_write_infiniband ();
 	test_write_vlan ();
+	g_test_add_func (TPATH "vlan/write-flags", test_write_vlan_flags);
 	test_write_vlan_only_vlanid ();
 	g_test_add_func (TPATH "vlan/write-vlan-reorder-hdr", test_write_vlan_reorder_hdr);
 	test_write_ethernet_missing_ipv6 ();
+	g_test_add_func (TPATH "write-dns-options", test_write_dns_options);
 
 	/* iSCSI / ibft */
 	g_test_add_func (TPATH "ibft/ignored", test_read_ibft_ignored);

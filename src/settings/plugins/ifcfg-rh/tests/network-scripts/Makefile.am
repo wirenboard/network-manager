@@ -67,6 +67,10 @@ EXTRA_DIST = \
 	ifcfg-test-wifi-band-a \
 	ifcfg-test-wifi-band-a-channel-mismatch \
 	ifcfg-test-wifi-band-bg-channel-mismatch \
+	ifcfg-test-wifi-mac-random-always \
+	ifcfg-test-wifi-mac-random-never \
+	ifcfg-test-wifi-mac-random-default \
+	ifcfg-test-wifi-mac-random-missing \
 	test_ca_cert.pem \
 	test1_key_and_cert.pem \
 	ifcfg-test-ibft \
@@ -102,6 +106,8 @@ EXTRA_DIST = \
 	ifcfg-test-vlan-only-device \
 	ifcfg-test-vlan-physdev \
 	ifcfg-test-vlan-reorder-hdr-1 \
+	ifcfg-test-vlan-flags-1 \
+	ifcfg-test-vlan-flags-2 \
 	ifcfg-test-wifi-wep-no-keys \
 	ifcfg-test-permissions \
 	ifcfg-test-wifi-wep-agent-keys \
@@ -127,6 +133,7 @@ EXTRA_DIST = \
 	ifcfg-test-team-port \
 	ifcfg-test-team-port-empty-config \
 	ifcfg-test-vlan-trailing-spaces \
+	ifcfg-test-dns-options \
 	ifcfg-test-wired-wake-on-lan \
 	ifcfg-test-wired-ipv6-only-1
 

@@ -77,7 +77,7 @@ const GPtrArray *        nm_device_wifi_get_access_points        (NMDeviceWifi *
 gboolean                 nm_device_wifi_request_scan             (NMDeviceWifi *device,
                                                                   GCancellable *cancellable,
                                                                   GError **error);
-NM_AVAILABLE_IN_1_0_6
+NM_AVAILABLE_IN_1_2
 gboolean                 nm_device_wifi_request_scan_options     (NMDeviceWifi *device,
                                                                   GVariant *options,
                                                                   GCancellable *cancellable,
@@ -86,7 +86,7 @@ void                     nm_device_wifi_request_scan_async       (NMDeviceWifi *
                                                                   GCancellable *cancellable,
                                                                   GAsyncReadyCallback callback,
                                                                   gpointer user_data);
-NM_AVAILABLE_IN_1_0_6
+NM_AVAILABLE_IN_1_2
 void                     nm_device_wifi_request_scan_options_async (NMDeviceWifi *device,
                                                                     GVariant *options,
                                                                     GCancellable *cancellable,

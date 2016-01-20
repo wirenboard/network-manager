@@ -27,11 +27,13 @@
 #include <gmodule.h>
 
 #include "nm-device-factory.h"
-#include "nm-logging.h"
+#include "nm-default.h"
 #include "nm-platform.h"
 
 const NMLinkType _nm_device_factory_no_default_links[] = { NM_LINK_TYPE_NONE };
 const char *_nm_device_factory_no_default_settings[] = { NULL };
+
+G_DEFINE_INTERFACE (NMDeviceFactory, nm_device_factory, G_TYPE_OBJECT)
 
 enum {
 	DEVICE_ADDED,
@@ -79,86 +81,64 @@ nm_device_factory_start (NMDeviceFactory *factory)
 }
 
 NMDevice *
-nm_device_factory_new_link (NMDeviceFactory *factory,
-                            NMPlatformLink *plink,
-                            gboolean *out_ignore,
-                            GError **error)
+nm_device_factory_create_device (NMDeviceFactory *factory,
+                                 const char *iface,
+                                 const NMPlatformLink *plink,
+                                 NMConnection *connection,
+                                 gboolean *out_ignore,
+                                 GError **error)
 {
-	NMDeviceFactory *interface;
+	NMDeviceFactoryInterface *interface;
 	const NMLinkType *link_types = NULL;
 	const char **setting_types = NULL;
 	int i;
 
-	g_return_val_if_fail (factory != NULL, NULL);
-	g_return_val_if_fail (plink != NULL, NULL);
+	g_return_val_if_fail (factory, NULL);
+	g_return_val_if_fail (iface && *iface, NULL);
+	g_return_val_if_fail (plink || connection, NULL);
+	g_return_val_if_fail (!plink || !connection, NULL);
 
-	/* Ensure the factory can create interfaces for this connection */
 	nm_device_factory_get_supported_types (factory, &link_types, &setting_types);
-	for (i = 0; link_types[i] > NM_LINK_TYPE_UNKNOWN; i++) {
-		if (plink->type == link_types[i])
-			break;
-	}
 
-	if (link_types[i] == NM_LINK_TYPE_UNKNOWN) {
-		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
-		             "Device factory %s does not support link type %s (%d)",
-		             G_OBJECT_TYPE_NAME (factory),
-		             plink->kind, plink->type);
-		return NULL;
+	if (plink) {
+		g_return_val_if_fail (strcmp (iface, plink->name) == 0, NULL);
+
+		for (i = 0; link_types[i] > NM_LINK_TYPE_UNKNOWN; i++) {
+			if (plink->type == link_types[i])
+				break;
+		}
+
+		if (link_types[i] == NM_LINK_TYPE_UNKNOWN) {
+			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
+			             "Device factory %s does not support link type %s (%d)",
+			             G_OBJECT_TYPE_NAME (factory),
+			             plink->kind, plink->type);
+			return NULL;
+		}
+	} else if (connection) {
+		for (i = 0; setting_types && setting_types[i]; i++) {
+			if (nm_connection_is_type (connection, setting_types[i]))
+				break;
+		}
+
+		if (!setting_types[i]) {
+			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_INCOMPATIBLE_CONNECTION,
+			             "Device factory %s does not support connection type %s",
+			             G_OBJECT_TYPE_NAME (factory),
+			             nm_connection_get_connection_type (connection));
+			return NULL;
+		}
 	}
 
 	interface = NM_DEVICE_FACTORY_GET_INTERFACE (factory);
-	if (!interface->new_link) {
+	if (!interface->create_device) {
 		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 		             "Device factory %s cannot manage new devices",
 		             G_OBJECT_TYPE_NAME (factory));
 		return NULL;
 	}
 
-	return interface->new_link (factory, plink, out_ignore, error);
-}
-
-NMDevice *
-nm_device_factory_create_virtual_device_for_connection (NMDeviceFactory *factory,
-                                                        NMConnection *connection,
-                                                        NMDevice *parent,
-                                                        GError **error)
-{
-	NMDeviceFactory *interface;
-	const char **setting_types = NULL;
-	gboolean found = FALSE;
-	int i;
-
-	g_return_val_if_fail (factory, NULL);
-	g_return_val_if_fail (connection, NULL);
-	g_return_val_if_fail (!error || !*error, NULL);
-
-	/* Ensure the factory can create interfaces for this connection */
-	nm_device_factory_get_supported_types (factory, NULL, &setting_types);
-	for (i = 0; setting_types && setting_types[i]; i++) {
-		if (nm_connection_is_type (connection, setting_types[i])) {
-			found = TRUE;
-			break;
-		}
-	}
-
-	if (!found) {
-		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_INCOMPATIBLE_CONNECTION,
-		             "Device factory %s does not support connection type %s",
-		             G_OBJECT_TYPE_NAME (factory),
-		             nm_connection_get_connection_type (connection));
-		return NULL;
-	}
-
-	interface = NM_DEVICE_FACTORY_GET_INTERFACE (factory);
-	if (!interface->create_virtual_device_for_connection) {
-		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
-		             "Device factory %s cannot create virtual devices",
-		             G_OBJECT_TYPE_NAME (factory));
-		return NULL;
-	}
-
-	return interface->create_virtual_device_for_connection (factory, connection, parent, error);
+	return interface->create_device (factory, iface, plink, connection, out_ignore);
 }
 
 const char *
@@ -210,7 +190,7 @@ nm_device_factory_get_virtual_iface_name (NMDeviceFactory *factory,
 /*******************************************************************/
 
 static void
-default_init (NMDeviceFactory *factory_iface)
+nm_device_factory_default_init (NMDeviceFactoryInterface *factory_iface)
 {
 	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
 
@@ -218,35 +198,16 @@ default_init (NMDeviceFactory *factory_iface)
 	signals[DEVICE_ADDED] = g_signal_new (NM_DEVICE_FACTORY_DEVICE_ADDED,
 	                                      NM_TYPE_DEVICE_FACTORY,
 	                                      G_SIGNAL_RUN_FIRST,
-	                                      G_STRUCT_OFFSET (NMDeviceFactory, device_added),
+	                                      G_STRUCT_OFFSET (NMDeviceFactoryInterface, device_added),
 	                                      NULL, NULL, NULL,
 	                                      G_TYPE_NONE, 1, NM_TYPE_DEVICE);
 
 	signals[COMPONENT_ADDED] = g_signal_new (NM_DEVICE_FACTORY_COMPONENT_ADDED,
 	                                         NM_TYPE_DEVICE_FACTORY,
 	                                         G_SIGNAL_RUN_LAST,
-	                                         G_STRUCT_OFFSET (NMDeviceFactory, component_added),
+	                                         G_STRUCT_OFFSET (NMDeviceFactoryInterface, component_added),
 	                                         g_signal_accumulator_true_handled, NULL, NULL,
 	                                         G_TYPE_BOOLEAN, 1, G_TYPE_OBJECT);
-}
-
-GType
-nm_device_factory_get_type (void)
-{
-	static volatile gsize g_define_type_id__volatile = 0;
-	if (g_once_init_enter (&g_define_type_id__volatile)) {
-		GType g_define_type_id =
-			g_type_register_static_simple (G_TYPE_INTERFACE,
-			                               g_intern_static_string ("NMDeviceFactory"),
-			                               sizeof (NMDeviceFactory),
-			                               (GClassInitFunc) default_init,
-			                               0,
-			                               (GInstanceInitFunc) NULL,
-			                               (GTypeFlags) 0);
-		g_type_interface_add_prerequisite (g_define_type_id, G_TYPE_OBJECT);
-		g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-	}
-	return g_define_type_id__volatile;
 }
 
 /*******************************************************************/
@@ -325,19 +286,20 @@ nm_device_factory_manager_for_each_factory (NMDeviceFactoryManagerFactoryFunc ca
 	NMDeviceFactory *factory;
 	GSList *list_iter, *list = NULL;
 
-	g_return_if_fail (factories_by_link);
-	g_return_if_fail (factories_by_setting);
-
-	g_hash_table_iter_init (&iter, factories_by_link);
-	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &factory)) {
-		if (!g_slist_find (list, factory))
-			list = g_slist_prepend (list, factory);
+	if (factories_by_link) {
+		g_hash_table_iter_init (&iter, factories_by_link);
+		while (g_hash_table_iter_next (&iter, NULL, (gpointer) &factory)) {
+			if (!g_slist_find (list, factory))
+				list = g_slist_prepend (list, factory);
+		}
 	}
 
-	g_hash_table_iter_init (&iter, factories_by_setting);
-	while (g_hash_table_iter_next (&iter, NULL, (gpointer) &factory)) {
-		if (!g_slist_find (list, factory))
-			list = g_slist_prepend (list, factory);
+	if (factories_by_setting) {
+		g_hash_table_iter_init (&iter, factories_by_setting);
+		while (g_hash_table_iter_next (&iter, NULL, (gpointer) &factory)) {
+			if (!g_slist_find (list, factory))
+				list = g_slist_prepend (list, factory);
+		}
 	}
 
 	for (list_iter = list; list_iter; list_iter = list_iter->next)

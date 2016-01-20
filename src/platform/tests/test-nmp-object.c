@@ -20,7 +20,7 @@
 
 #include "nmp-object.h"
 
-#include "nm-logging.h"
+#include "nm-default.h"
 
 #include "nm-test-utils.h"
 
@@ -148,8 +148,8 @@ _nmp_cache_update_netlink (NMPCache *cache, NMPObject *obj, NMPObject **out_obj,
 	NMPCacheOpsType ops_type;
 	NMPObject *obj2;
 	gboolean was_visible;
-	auto_nmp_obj NMPObject *obj_clone = nmp_object_clone (obj, FALSE);
-	auto_nmp_obj NMPObject *new_clone = NULL;
+	nm_auto_nmpobj NMPObject *obj_clone = nmp_object_clone (obj, FALSE);
+	nm_auto_nmpobj NMPObject *new_clone = NULL;
 	const NMPObject *obj_old;
 	_NMPCacheUpdateData data = {
 		.cache = cache,

@@ -23,17 +23,17 @@
 
 #include <string.h>
 
-#include "nm-glib-compat.h"
-
 #include <nm-connection.h>
 #include <nm-setting-connection.h>
 #include <nm-setting-wireless.h>
 #include <nm-setting-wireless-security.h>
 #include <nm-utils.h>
 
+#include "nm-default.h"
 #include "nm-access-point.h"
 #include "nm-dbus-interface.h"
 #include "nm-object-private.h"
+#include "nm-macros-internal.h"
 
 G_DEFINE_TYPE (NMAccessPoint, nm_access_point, NM_TYPE_OBJECT)
 
@@ -49,7 +49,7 @@ typedef struct {
 	NM80211Mode mode;
 	guint32 max_bitrate;
 	guint8 strength;
-	gint32 last_seen;
+	gint last_seen;
 } NMAccessPointPrivate;
 
 enum {
@@ -232,15 +232,16 @@ nm_access_point_get_strength (NMAccessPoint *ap)
  *
  * Returns: the last seen time in seconds
  *
- * Since: 1.0.6
+ * Since: 1.2
  **/
-gint32
+gint
 nm_access_point_get_last_seen (NMAccessPoint *ap)
 {
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), -1);
 
 	return NM_ACCESS_POINT_GET_PRIVATE (ap)->last_seen;
 }
+NM_BACKPORT_SYMBOL (libnm_1_0_6, gint, nm_access_point_get_last_seen, (NMAccessPoint *ap), (ap));
 
 /**
  * nm_access_point_connection_valid:
@@ -630,7 +631,7 @@ nm_access_point_class_init (NMAccessPointClass *ap_class)
 	 * access point was found in scan results.  A value of -1 means the
 	 * access point has not been found in a scan.
 	 *
-	 * Since: 1.0.6
+	 * Since: 1.2
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_LAST_SEEN,

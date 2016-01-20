@@ -15,7 +15,7 @@
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA.
  *
- * Copyright 2005 - 2013 Red Hat, Inc.
+ * Copyright 2005 - 2014 Red Hat, Inc.
  */
 
 #ifndef __NM_UTILS_H__
@@ -127,6 +127,10 @@ gboolean nm_utils_file_is_pkcs12 (const char *filename);
 
 typedef gboolean (*NMUtilsFileSearchInPathsPredicate) (const char *filename, gpointer user_data);
 
+struct stat;
+
+typedef gboolean (*NMUtilsCheckFilePredicate) (const char *filename, const struct stat *stat, gpointer user_data, GError **error);
+
 const char *nm_utils_file_search_in_paths (const char *progname,
                                            const char *try_first,
                                            const char *const *paths,
@@ -139,9 +143,9 @@ guint32 nm_utils_wifi_freq_to_channel (guint32 freq);
 guint32 nm_utils_wifi_channel_to_freq (guint32 channel, const char *band);
 guint32 nm_utils_wifi_find_next_channel (guint32 channel, int direction, char *band);
 gboolean nm_utils_wifi_is_channel_valid (guint32 channel, const char *band);
-NM_AVAILABLE_IN_1_0_6
+NM_AVAILABLE_IN_1_2
 const guint *nm_utils_wifi_2ghz_freqs (void);
-NM_AVAILABLE_IN_1_0_6
+NM_AVAILABLE_IN_1_2
 const guint *nm_utils_wifi_5ghz_freqs (void);
 
 const char *nm_utils_wifi_strength_bars (guint8 strength);
@@ -188,11 +192,19 @@ gboolean nm_utils_ipaddr_valid (int family, const char *ip);
 
 gboolean nm_utils_check_virtual_device_compatibility (GType virtual_type, GType other_type);
 
-NM_AVAILABLE_IN_1_0_6
+NM_AVAILABLE_IN_1_2
+int nm_utils_bond_mode_string_to_int (const char *mode);
+NM_AVAILABLE_IN_1_2
+const char *nm_utils_bond_mode_int_to_string (int mode);
+
+NM_AVAILABLE_IN_1_2
 char *nm_utils_enum_to_str (GType type, int value);
 
-NM_AVAILABLE_IN_1_0_6
+NM_AVAILABLE_IN_1_2
 gboolean nm_utils_enum_from_str (GType type, const char *str, int *out_value, char **err_token);
+
+NM_AVAILABLE_IN_1_2
+const char **nm_utils_enum_get_values (GType type, gint from, gint to);
 
 G_END_DECLS
 

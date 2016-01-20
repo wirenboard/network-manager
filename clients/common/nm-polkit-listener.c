@@ -36,10 +36,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib.h>
-#include <glib/gi18n-lib.h>
 
-#include "nm-glib-compat.h"
+#include "nm-default.h"
 #include "nm-polkit-listener.h"
 
 G_DEFINE_TYPE (NMPolkitListener, nm_polkit_listener, POLKIT_AGENT_TYPE_LISTENER)

@@ -22,15 +22,13 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
-
-#include "nm-glib-compat.h"
 
 #include <nm-setting-connection.h>
 #include <nm-setting-wireless.h>
 #include <nm-setting-wireless-security.h>
 #include <nm-utils.h>
 
+#include "nm-default.h"
 #include "nm-device-wifi.h"
 #include "nm-access-point.h"
 #include "nm-device-private.h"
@@ -38,6 +36,7 @@
 #include "nm-object-cache.h"
 #include "nm-core-internal.h"
 #include "nm-dbus-helpers.h"
+#include "nm-macros-internal.h"
 
 #include "nmdbus-device-wifi.h"
 
@@ -356,7 +355,7 @@ nm_device_wifi_request_scan (NMDeviceWifi *device,
  * Returns: %TRUE on success, %FALSE on error, in which case @error will be
  * set.
  *
- * Since: 1.0.6
+ * Since: 1.2
  **/
 gboolean
 nm_device_wifi_request_scan_options (NMDeviceWifi *device,
@@ -366,6 +365,10 @@ nm_device_wifi_request_scan_options (NMDeviceWifi *device,
 {
 	return _device_wifi_request_scan (device, options, cancellable, error);
 }
+
+NM_BACKPORT_SYMBOL (libnm_1_0_6, gboolean, nm_device_wifi_request_scan_options,
+  (NMDeviceWifi *device, GVariant *options, GCancellable *cancellable, GError **error),
+  (device, options, cancellable, error));
 
 static void
 request_scan_cb (GObject *source,
@@ -464,7 +467,7 @@ nm_device_wifi_request_scan_async (NMDeviceWifi *device,
  * D-Bus call. Valid otions inside the dictionary are:
  * 'ssids' => array of SSIDs (saay)
  *
- * Since: 1.0.6
+ * Since: 1.2
  **/
 void
 nm_device_wifi_request_scan_options_async (NMDeviceWifi *device,
@@ -475,6 +478,10 @@ nm_device_wifi_request_scan_options_async (NMDeviceWifi *device,
 {
 	_device_wifi_request_scan_async (device, options, cancellable, callback, user_data);
 }
+
+NM_BACKPORT_SYMBOL (libnm_1_0_6, void, nm_device_wifi_request_scan_options_async,
+  (NMDeviceWifi *device, GVariant *options, GCancellable *cancellable, GAsyncReadyCallback callback, gpointer user_data),
+  (device, options, cancellable, callback, user_data));
 
 /**
  * nm_device_wifi_request_scan_finish:

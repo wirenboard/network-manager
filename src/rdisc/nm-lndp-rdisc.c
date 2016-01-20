@@ -30,12 +30,10 @@
 #include "nm-rdisc-private.h"
 
 #include "NetworkManagerUtils.h"
-#include "nm-logging.h"
+#include "nm-default.h"
 #include "nm-platform.h"
 
-#define debug(...) nm_log_dbg (LOGD_IP6, __VA_ARGS__)
-#define warning(...) nm_log_warn (LOGD_IP6, __VA_ARGS__)
-#define error(...) nm_log_err (LOGD_IP6, __VA_ARGS__)
+#define _NMLOG_PREFIX_NAME                "rdisc-lndp"
 
 typedef struct {
 	struct ndp *ndp;
@@ -52,20 +50,28 @@ G_DEFINE_TYPE (NMLNDPRDisc, nm_lndp_rdisc, NM_TYPE_RDISC)
 /******************************************************************/
 
 static gboolean
-send_rs (NMRDisc *rdisc)
+send_rs (NMRDisc *rdisc, GError **error)
 {
 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 	struct ndp_msg *msg;
-	int error;
+	int errsv;
 
-	error = ndp_msg_new (&msg, NDP_MSG_RS);
-	g_assert (!error);
+	errsv = ndp_msg_new (&msg, NDP_MSG_RS);
+	if (errsv) {
+		errsv = errsv > 0 ? errsv : -errsv;
+		g_set_error_literal (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		                     "cannot create router solicitation");
+		return FALSE;
+	}
 	ndp_msg_ifindex_set (msg, rdisc->ifindex);
 
-	error = ndp_msg_send (priv->ndp, msg);
+	errsv = ndp_msg_send (priv->ndp, msg);
 	ndp_msg_destroy (msg);
-	if (error) {
-		error ("(%s): cannot send router solicitation: %d.", rdisc->ifname, error);
+	if (errsv) {
+		errsv = errsv > 0 ? errsv : -errsv;
+		g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		             "%s (%d)",
+		             g_strerror (errsv), errsv);
 		return FALSE;
 	}
 
@@ -109,7 +115,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 	 * single time when the configuration is finished and updates can
 	 * come at any time.
 	 */
-	debug ("(%s): received router advertisement at %u", rdisc->ifname, now);
+	_LOGD ("received router advertisement at %u", now);
 
 	/* DHCP level:
 	 *
@@ -165,7 +171,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 
 		/* Address */
 		if (ndp_msg_opt_prefix_flag_auto_addr_conf (msg, offset)) {
-			if (route.plen == 64 && rdisc->iid.id) {
+			if (route.plen == 64) {
 				memset (&address, 0, sizeof (address));
 				address.address = route.network;
 				address.timestamp = now;
@@ -174,10 +180,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 				if (address.preferred > address.lifetime)
 					address.preferred = address.lifetime;
 
-				/* Add the Interface Identifier to the lower 64 bits */
-				nm_utils_ipv6_addr_set_interface_identfier (&address.address, rdisc->iid);
-
-				if (nm_rdisc_add_address (rdisc, &address))
+				if (nm_rdisc_complete_and_add_address (rdisc, &address))
 					changed |= NM_RDISC_CONFIG_ADDRESSES;
 			}
 		}
@@ -260,7 +263,7 @@ receive_ra (struct ndp *ndp, struct ndp_msg *msg, gpointer user_data)
 			 * Kernel would set it, but would flush out all IPv6 addresses away
 			 * from the link, even the link-local, and we wouldn't be able to
 			 * listen for further RAs that could fix the MTU. */
-			warning ("(%s): MTU too small for IPv6 ignored: %d", rdisc->ifname, mtu);
+			_LOGW ("MTU too small for IPv6 ignored: %d", mtu);
 		}
 	}
 
@@ -273,7 +276,7 @@ event_ready (GIOChannel *source, GIOCondition condition, NMRDisc *rdisc)
 {
 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 
-	debug ("(%s): processing libndp events.", rdisc->ifname);
+	_LOGD ("processing libndp events");
 	ndp_callall_eventfd_handler (priv->ndp);
 	return G_SOURCE_CONTINUE;
 }
@@ -302,16 +305,24 @@ ipv6_sysctl_get (const char *ifname, const char *property, gint32 defval)
 }
 
 NMRDisc *
-nm_lndp_rdisc_new (int ifindex, const char *ifname)
+nm_lndp_rdisc_new (int ifindex,
+                   const char *ifname,
+                   const char *uuid,
+                   NMSettingIP6ConfigAddrGenMode addr_gen_mode,
+                   GError **error)
 {
 	NMRDisc *rdisc;
 	NMLNDPRDiscPrivate *priv;
-	int error;
+	int errsv;
+
+	g_return_val_if_fail (!error || !*error, NULL);
 
 	rdisc = g_object_new (NM_TYPE_LNDP_RDISC, NULL);
 
 	rdisc->ifindex = ifindex;
 	rdisc->ifname = g_strdup (ifname);
+	rdisc->uuid = g_strdup (uuid);
+	rdisc->addr_gen_mode = addr_gen_mode;
 
 	rdisc->max_addresses = ipv6_sysctl_get (ifname, "max_addresses",
 	                                        NM_RDISC_MAX_ADDRESSES_DEFAULT);
@@ -321,10 +332,13 @@ nm_lndp_rdisc_new (int ifindex, const char *ifname)
 	                                                    NM_RDISC_RTR_SOLICITATION_INTERVAL_DEFAULT);
 
 	priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
-	error = ndp_open (&priv->ndp);
-	if (error != 0) {
+	errsv = ndp_open (&priv->ndp);
+	if (errsv != 0) {
+		errsv = errsv > 0 ? errsv : -errsv;
+		g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_UNKNOWN,
+		             "failure creating libndp socket: %s (%d)",
+		             g_strerror (errsv), errsv);
 		g_object_unref (rdisc);
-		debug ("(%s): error creating socket for NDP; errno=%d", ifname, -error);
 		return NULL;
 	}
 	return rdisc;
@@ -341,10 +355,7 @@ dispose (GObject *object)
 	NMLNDPRDisc *rdisc = NM_LNDP_RDISC (object);
 	NMLNDPRDiscPrivate *priv = NM_LNDP_RDISC_GET_PRIVATE (rdisc);
 
-	if (priv->event_id) {
-		g_source_remove (priv->event_id);
-		priv->event_id = 0;
-	}
+	nm_clear_g_source (&priv->event_id);
 	g_clear_pointer (&priv->event_channel, g_io_channel_unref);
 
 	if (priv->ndp) {

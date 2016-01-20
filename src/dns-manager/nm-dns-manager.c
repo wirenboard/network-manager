@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <resolv.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -34,14 +35,12 @@
 
 #include <linux/fs.h>
 
-#include <glib.h>
-#include <glib/gi18n.h>
-
+#include "nm-default.h"
 #include "nm-utils.h"
+#include "nm-core-internal.h"
 #include "nm-dns-manager.h"
 #include "nm-ip4-config.h"
 #include "nm-ip6-config.h"
-#include "nm-logging.h"
 #include "NetworkManagerUtils.h"
 #include "nm-config.h"
 
@@ -71,6 +70,47 @@ G_DEFINE_TYPE (NMDnsManager, nm_dns_manager, G_TYPE_OBJECT)
 
 #define HASH_LEN 20
 
+#ifdef RESOLVCONF_PATH
+#define RESOLVCONF_SELECTED
+#else
+#define RESOLVCONF_PATH "/sbin/resolvconf"
+#endif
+
+#ifdef NETCONFIG_PATH
+#define NETCONFIG_SELECTED
+#else
+#define NETCONFIG_PATH "/sbin/netconfig"
+#endif
+
+NM_DEFINE_SINGLETON_INSTANCE (NMDnsManager);
+
+/*********************************************************************************************/
+
+#define _NMLOG_PREFIX_NAME                "dns-mgr"
+#define _NMLOG_DOMAIN                     LOGD_DNS
+#define _NMLOG(level, ...) \
+    G_STMT_START { \
+        const NMLogLevel __level = (level); \
+        \
+        if (nm_logging_enabled (__level, _NMLOG_DOMAIN)) { \
+            char __prefix[20]; \
+            const NMDnsManager *const __self = (self); \
+            \
+            _nm_log (__level, _NMLOG_DOMAIN, 0, \
+                     "%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
+                     ((__self == singleton_instance) \
+                        ? _NMLOG_PREFIX_NAME \
+                        : ({ \
+                                g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _NMLOG_PREFIX_NAME, __self); \
+                                __prefix; \
+                           }) \
+                     ) \
+                     _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
+        } \
+    } G_STMT_END
+
+/*********************************************************************************************/
+
 typedef struct {
 	NMIP4Config *ip4_vpn_config;
 	NMIP4Config *ip4_device_config;
@@ -84,6 +124,7 @@ typedef struct {
 	guint8 prev_hash[HASH_LEN];  /* Hash when begin_updates() was called */
 
 	NMDnsManagerResolvConfMode resolv_conf_mode;
+	NMDnsManagerResolvConfManager rc_manager;
 	NMDnsPlugin *plugin;
 
 	NMConfig *config;
@@ -97,12 +138,19 @@ enum {
 	LAST_SIGNAL
 };
 
+typedef enum {
+	SR_SUCCESS,
+	SR_NOTFOUND,
+	SR_ERROR
+} SpawnResult;
+
 static guint signals[LAST_SIGNAL] = { 0 };
 
 
 typedef struct {
 	GPtrArray *nameservers;
 	GPtrArray *searches;
+	GPtrArray *options;
 	const char *nis_domain;
 	GPtrArray *nis_servers;
 } NMResolvConfData;
@@ -125,6 +173,13 @@ add_string_item (GPtrArray *array, const char *str)
 
 	/* No dupes, add the new item */
 	g_ptr_array_add (array, g_strdup (str));
+}
+
+static void
+add_dns_option_item (GPtrArray *array, const char *str, gboolean ipv6)
+{
+	if (_nm_utils_dns_option_find_idx (array, str) < 0)
+		g_ptr_array_add (array, g_strdup (str));
 }
 
 static void
@@ -159,6 +214,14 @@ merge_one_ip4_config (NMResolvConfData *rc, NMIP4Config *src)
 				continue;
 			add_string_item (rc->searches, domain);
 		}
+	}
+
+	num = nm_ip4_config_get_num_dns_options (src);
+	for (i = 0; i < num; i++) {
+		const char *option;
+
+		option = nm_ip4_config_get_dns_option (src, i);
+		add_dns_option_item (rc->options, option, FALSE);
 	}
 
 	/* NIS stuff */
@@ -225,18 +288,21 @@ merge_one_ip6_config (NMResolvConfData *rc, NMIP6Config *src)
 			add_string_item (rc->searches, domain);
 		}
 	}
+
+	num = nm_ip6_config_get_num_dns_options (src);
+	for (i = 0; i < num; i++) {
+		const char *option;
+
+		option = nm_ip6_config_get_dns_option (src, i);
+		add_dns_option_item (rc->options, option, TRUE);
+	}
 }
 
-
-#if defined(NETCONFIG_PATH)
-/**********************************/
-/* SUSE */
-
 static GPid
-run_netconfig (GError **error, gint *stdin_fd)
+run_netconfig (NMDnsManager *self, GError **error, gint *stdin_fd)
 {
 	char *argv[5];
-	char *tmp;
+	gs_free char *tmp = NULL;
 	GPid pid = -1;
 
 	argv[0] = NETCONFIG_PATH;
@@ -245,9 +311,8 @@ run_netconfig (GError **error, gint *stdin_fd)
 	argv[3] = "NetworkManager";
 	argv[4] = NULL;
 
-	tmp = g_strjoinv (" ", argv);
-	nm_log_dbg (LOGD_DNS, "spawning '%s'", tmp);
-	g_free (tmp);
+	_LOGD ("spawning '%s'",
+	       (tmp = g_strjoinv (" ", argv)));
 
 	if (!g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD, NULL,
 	                               NULL, &pid, stdin_fd, NULL, NULL, error))
@@ -257,19 +322,20 @@ run_netconfig (GError **error, gint *stdin_fd)
 }
 
 static void
-write_to_netconfig (gint fd, const char *key, const char *value)
+write_to_netconfig (NMDnsManager *self, gint fd, const char *key, const char *value)
 {
 	char *str;
 	int x;
 
 	str = g_strdup_printf ("%s='%s'\n", key, value);
-	nm_log_dbg (LOGD_DNS, "writing to netconfig: %s", str);
+	_LOGD ("writing to netconfig: %s", str);
 	x = write (fd, str, strlen (str));
 	g_free (str);
 }
 
-static gboolean
-dispatch_netconfig (char **searches,
+static SpawnResult
+dispatch_netconfig (NMDnsManager *self,
+                    char **searches,
                     char **nameservers,
                     const char *nis_domain,
                     char **nis_servers,
@@ -280,34 +346,34 @@ dispatch_netconfig (char **searches,
 	gint fd;
 	int status;
 
-	pid = run_netconfig (error, &fd);
+	pid = run_netconfig (self, error, &fd);
 	if (pid <= 0)
-		return FALSE;
+		return SR_NOTFOUND;
 
 	/* NM is writing already-merged DNS information to netconfig, so it
 	 * does not apply to a specific network interface.
 	 */
-	write_to_netconfig (fd, "INTERFACE", "NetworkManager");
+	write_to_netconfig (self, fd, "INTERFACE", "NetworkManager");
 
 	if (searches) {
 		str = g_strjoinv (" ", searches);
 
-		write_to_netconfig (fd, "DNSSEARCH", str);
+		write_to_netconfig (self, fd, "DNSSEARCH", str);
 		g_free (str);
 	}
 
 	if (nameservers) {
 		str = g_strjoinv (" ", nameservers);
-		write_to_netconfig (fd, "DNSSERVERS", str);
+		write_to_netconfig (self, fd, "DNSSERVERS", str);
 		g_free (str);
 	}
 
 	if (nis_domain)
-		write_to_netconfig (fd, "NISDOMAIN", nis_domain);
+		write_to_netconfig (self, fd, "NISDOMAIN", nis_domain);
 
 	if (nis_servers) {
 		str = g_strjoinv (" ", nis_servers);
-		write_to_netconfig (fd, "NISSERVERS", str);
+		write_to_netconfig (self, fd, "NISSERVERS", str);
 		g_free (str);
 	}
 
@@ -320,28 +386,28 @@ dispatch_netconfig (char **searches,
 		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 		             "Error waiting for netconfig to exit: %s",
 		             strerror (errsv));
-		return FALSE;
+		return SR_ERROR;
 	}
 	if (!WIFEXITED (status) || WEXITSTATUS (status) != EXIT_SUCCESS) {
 		g_set_error (error, NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
 		             "Error calling netconfig: %s %d",
 		             WIFEXITED (status) ? "exited with status" : (WIFSIGNALED (status) ? "exited with signal" : "exited with unknown reason"),
 		             WIFEXITED (status) ? WEXITSTATUS (status) : (WIFSIGNALED (status) ? WTERMSIG (status) : status));
-		return FALSE;
+		return SR_ERROR;
 	}
-	return TRUE;
+	return SR_SUCCESS;
 }
-#endif
-
 
 static gboolean
 write_resolv_conf (FILE *f,
                    char **searches,
                    char **nameservers,
+                   char **options,
                    GError **error)
 {
 	char *searches_str = NULL;
 	char *nameservers_str = NULL;
+	char *options_str = NULL;
 	gboolean retval = FALSE;
 	char *tmp_str;
 	GString *str;
@@ -350,6 +416,12 @@ write_resolv_conf (FILE *f,
 	if (searches) {
 		tmp_str = g_strjoinv (" ", searches);
 		searches_str = g_strconcat ("search ", tmp_str, "\n", NULL);
+		g_free (tmp_str);
+	}
+
+	if (options) {
+		tmp_str = g_strjoinv (" ", options);
+		options_str = g_strconcat ("options ", tmp_str, "\n", NULL);
 		g_free (tmp_str);
 	}
 
@@ -375,9 +447,10 @@ write_resolv_conf (FILE *f,
 
 	nameservers_str = g_string_free (str, FALSE);
 
-	if (fprintf (f, "# Generated by NetworkManager\n%s%s",
+	if (fprintf (f, "# Generated by NetworkManager\n%s%s%s",
 	             searches_str ? searches_str : "",
-	             nameservers_str) > 0)
+	             nameservers_str,
+	             options_str ? options_str : "") > 0)
 		retval = TRUE;
 	else {
 		g_set_error (error,
@@ -389,14 +462,16 @@ write_resolv_conf (FILE *f,
 
 	g_free (searches_str);
 	g_free (nameservers_str);
+	g_free (options_str);
 
 	return retval;
 }
 
-#ifdef RESOLVCONF_PATH
-static gboolean
-dispatch_resolvconf (char **searches,
+static SpawnResult
+dispatch_resolvconf (NMDnsManager *self,
+                     char **searches,
                      char **nameservers,
+                     char **options,
                      GError **error)
 {
 	char *cmd;
@@ -409,12 +484,12 @@ dispatch_resolvconf (char **searches,
 		                     NM_MANAGER_ERROR,
 		                     NM_MANAGER_ERROR_FAILED,
 		                     RESOLVCONF_PATH " is not executable");
-		return FALSE;
+		return SR_NOTFOUND;
 	}
 
 	if (searches || nameservers) {
 		cmd = g_strconcat (RESOLVCONF_PATH, " -a ", "NetworkManager", NULL);
-		nm_log_info (LOGD_DNS, "Writing DNS information to %s", RESOLVCONF_PATH);
+		_LOGI ("Writing DNS information to %s", RESOLVCONF_PATH);
 		if ((f = popen (cmd, "w")) == NULL)
 			g_set_error (error,
 			             NM_MANAGER_ERROR,
@@ -423,7 +498,7 @@ dispatch_resolvconf (char **searches,
 			             RESOLVCONF_PATH,
 			             g_strerror (errno));
 		else {
-			retval = write_resolv_conf (f, searches, nameservers, error);
+			retval = write_resolv_conf (f, searches, nameservers, options, error);
 			err = pclose (f);
 			if (err < 0) {
 				errnosv = errno;
@@ -431,76 +506,70 @@ dispatch_resolvconf (char **searches,
 				             "Failed to close pipe to resolvconf: %d", errnosv);
 				retval = FALSE;
 			} else if (err > 0) {
-				nm_log_warn (LOGD_DNS, "resolvconf failed with status %d", err);
+				_LOGW ("resolvconf failed with status %d", err);
 				retval = FALSE;
 			}
 		}
 	} else {
 		cmd = g_strconcat (RESOLVCONF_PATH, " -d ", "NetworkManager", NULL);
-		nm_log_info (LOGD_DNS, "Removing DNS information from %s", RESOLVCONF_PATH);
+		_LOGI ("Removing DNS information from %s", RESOLVCONF_PATH);
 		if (nm_spawn_process (cmd, error) == 0)
 			retval = TRUE;
 	}
 
 	g_free (cmd);
 
-	return retval;
+	return retval ? SR_SUCCESS : SR_ERROR;
 }
-#endif
 
-static gboolean
-update_resolv_conf (char **searches,
+#define MY_RESOLV_CONF NMRUNDIR "/resolv.conf"
+#define MY_RESOLV_CONF_TMP MY_RESOLV_CONF ".tmp"
+#define RESOLV_CONF_TMP "/etc/.resolv.conf.NetworkManager"
+
+static SpawnResult
+update_resolv_conf (NMDnsManager *self,
+                    char **searches,
                     char **nameservers,
-                    GError **error)
+                    char **options,
+                    GError **error,
+                    gboolean install_etc)
 {
-	char *tmp_resolv_conf;
-	char *tmp_resolv_conf_realpath;
-	char *resolv_conf_realpath;
 	FILE *f;
-	int do_rename = 1;
-	int old_errno = 0;
+	struct stat st;
+	gboolean ret;
 
-	g_return_val_if_fail (error != NULL, FALSE);
-
-	/* Find the real path of resolv.conf; it could be a symlink to something */
-	resolv_conf_realpath = realpath (_PATH_RESCONF, NULL);
-	if (!resolv_conf_realpath)
-		resolv_conf_realpath = strdup (_PATH_RESCONF);
-
-	/* Build up the real path for the temp resolv.conf that we're about to
-	 * write out.
+	/* If we are not managing /etc/resolv.conf and it points to
+	 * MY_RESOLV_CONF, don't write the private DNS configuration to
+	 * MY_RESOLV_CONF otherwise we would overwrite the changes done by
+	 * some external application.
 	 */
-	tmp_resolv_conf = g_strdup_printf ("%s.tmp", resolv_conf_realpath);
-	tmp_resolv_conf_realpath = realpath (tmp_resolv_conf, NULL);
-	if (!tmp_resolv_conf_realpath)
-		tmp_resolv_conf_realpath = strdup (tmp_resolv_conf);
-	g_free (tmp_resolv_conf);
-	tmp_resolv_conf = NULL;
+	if (!install_etc) {
+		char *path = g_file_read_link (_PATH_RESCONF, NULL);
+		gboolean ours = !g_strcmp0 (path, MY_RESOLV_CONF);
 
-	if ((f = fopen (tmp_resolv_conf_realpath, "w")) == NULL) {
-		do_rename = 0;
-		old_errno = errno;
-		if ((f = fopen (_PATH_RESCONF, "w")) == NULL) {
-			g_set_error (error,
-			             NM_MANAGER_ERROR,
-			             NM_MANAGER_ERROR_FAILED,
-			             "Could not open %s: %s\nCould not open %s: %s\n",
-			             tmp_resolv_conf_realpath,
-			             g_strerror (old_errno),
-			             _PATH_RESCONF,
-			             g_strerror (errno));
-			goto out;
+		g_free (path);
+
+		if (ours) {
+			_LOGD ("not updating " MY_RESOLV_CONF
+			       " since it points to " _PATH_RESCONF);
+			return SR_ERROR;
 		}
-		/* Update tmp_resolv_conf_realpath so the error message on fclose()
-		 * failure will be correct.
-		 */
-		strcpy (tmp_resolv_conf_realpath, _PATH_RESCONF);
 	}
 
-	write_resolv_conf (f, searches, nameservers, error);
+	if ((f = fopen (MY_RESOLV_CONF_TMP, "w")) == NULL) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "Could not open %s: %s\n",
+		             MY_RESOLV_CONF_TMP,
+		             g_strerror (errno));
+		return SR_ERROR;
+	}
+
+	ret = write_resolv_conf (f, searches, nameservers, options, error);
 
 	if (fclose (f) < 0) {
-		if (*error == NULL) {
+		if (ret) {
 			/* only set an error here if write_resolv_conf() was successful,
 			 * since its error is more important.
 			 */
@@ -508,32 +577,97 @@ update_resolv_conf (char **searches,
 			             NM_MANAGER_ERROR,
 			             NM_MANAGER_ERROR_FAILED,
 			             "Could not close %s: %s\n",
-			             tmp_resolv_conf_realpath,
+			             MY_RESOLV_CONF_TMP,
 			             g_strerror (errno));
 		}
 	}
 
-	/* Don't rename the tempfile over top of the existing resolv.conf if there
-	 * was an error writing it out.
-	 */
-	if (*error == NULL && do_rename) {
-		if (rename (tmp_resolv_conf_realpath, resolv_conf_realpath) < 0) {
-			g_set_error (error,
-			             NM_MANAGER_ERROR,
-			             NM_MANAGER_ERROR_FAILED,
-			             "Could not replace " _PATH_RESCONF ": %s\n",
-			             g_strerror (errno));
-		}
+	if (!ret)
+		return SR_ERROR;
+
+	if (rename (MY_RESOLV_CONF_TMP, MY_RESOLV_CONF) < 0) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "Could not replace %s: %s\n",
+		             MY_RESOLV_CONF,
+		             g_strerror (errno));
+		return SR_ERROR;
 	}
 
-out:
-	free (tmp_resolv_conf_realpath);
-	free (resolv_conf_realpath);
-	return *error ? FALSE : TRUE;
+	if (!install_etc)
+		return SR_SUCCESS;
+
+	/* Don't overwrite a symbolic link unless it points to MY_RESOLV_CONF. */
+	if (lstat (_PATH_RESCONF, &st) != -1) {
+		/* Don't overwrite a symbolic link. */
+		if (S_ISLNK (st.st_mode)) {
+			if (stat (_PATH_RESCONF, &st) != -1) {
+				char *path = g_file_read_link (_PATH_RESCONF, NULL);
+				gboolean not_ours = g_strcmp0 (path, MY_RESOLV_CONF) != 0;
+
+				g_free (path);
+				if (not_ours)
+					return SR_SUCCESS;
+			} else {
+				if (errno != ENOENT)
+					return SR_SUCCESS;
+				g_set_error (error,
+				             NM_MANAGER_ERROR,
+				             NM_MANAGER_ERROR_FAILED,
+				             "Could not stat %s: %s\n",
+				             _PATH_RESCONF,
+				             g_strerror (errno));
+				return SR_ERROR;
+			}
+		}
+	} else if (errno != ENOENT) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "Could not lstat %s: %s\n",
+		             _PATH_RESCONF,
+		             g_strerror (errno));
+		return SR_ERROR;
+	}
+
+	if (unlink (RESOLV_CONF_TMP) == -1 && errno != ENOENT) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "Could not unlink %s: %s\n",
+		             RESOLV_CONF_TMP,
+		             g_strerror (errno));
+		return SR_ERROR;
+	}
+
+	if (symlink (MY_RESOLV_CONF, RESOLV_CONF_TMP) == -1) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "Could not create symlink %s pointing to %s: %s\n",
+		             RESOLV_CONF_TMP,
+		             MY_RESOLV_CONF,
+		             g_strerror (errno));
+		return SR_ERROR;
+	}
+
+	if (rename (RESOLV_CONF_TMP, _PATH_RESCONF) == -1) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "Could not rename %s to %s: %s\n",
+		             RESOLV_CONF_TMP,
+		             _PATH_RESCONF,
+		             g_strerror (errno));
+		return SR_ERROR;
+	}
+
+	return SR_SUCCESS;
 }
 
 static void
-compute_hash (NMDnsManager *self, guint8 buffer[HASH_LEN])
+compute_hash (NMDnsManager *self, const NMGlobalDnsConfig *global, guint8 buffer[HASH_LEN])
 {
 	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	GChecksum *sum;
@@ -542,6 +676,9 @@ compute_hash (NMDnsManager *self, guint8 buffer[HASH_LEN])
 
 	sum = g_checksum_new (G_CHECKSUM_SHA1);
 	g_assert (len == g_checksum_type_get_length (G_CHECKSUM_SHA1));
+
+	if (global)
+		nm_global_dns_config_update_checksum (global, sum);
 
 	if (priv->ip4_vpn_config)
 		nm_ip4_config_hash (priv->ip4_vpn_config, sum, TRUE);
@@ -608,6 +745,38 @@ build_plugin_config_lists (NMDnsManager *self,
 }
 
 static gboolean
+merge_global_dns_config (NMResolvConfData *rc, NMGlobalDnsConfig *global_conf)
+{
+	NMGlobalDnsDomain *default_domain;
+	const char *const *searches;
+	const char *const *options;
+	const char *const *servers;
+	gint i;
+
+	if (!global_conf)
+		return FALSE;
+
+	searches = nm_global_dns_config_get_searches (global_conf);
+	options = nm_global_dns_config_get_options (global_conf);
+
+	for (i = 0; searches && searches[i]; i++) {
+		if (DOMAIN_IS_VALID (searches[i]))
+			add_string_item (rc->searches, searches[i]);
+	}
+
+	for (i = 0; options && options[i]; i++)
+		add_string_item (rc->options, options[i]);
+
+	default_domain = nm_global_dns_config_lookup_domain (global_conf, "*");
+	g_assert (default_domain);
+	servers = nm_global_dns_domain_get_servers (default_domain);
+	for (i = 0; servers && servers[i]; i++)
+		add_string_item (rc->nameservers, servers[i]);
+
+	return TRUE;
+}
+
+static gboolean
 update_dns (NMDnsManager *self,
             gboolean no_caching,
             GError **error)
@@ -617,57 +786,71 @@ update_dns (NMDnsManager *self,
 	GSList *iter;
 	const char *nis_domain = NULL;
 	char **searches = NULL;
+	char **options = NULL;
 	char **nameservers = NULL;
 	char **nis_servers = NULL;
 	int num, i, len;
-	gboolean success = FALSE, caching = FALSE;
+	gboolean caching = FALSE, update = TRUE;
+	gboolean resolv_conf_updated = FALSE;
+	SpawnResult result = SR_ERROR;
+	NMConfigData *data;
+	NMGlobalDnsConfig *global_config;
 
 	g_return_val_if_fail (!error || !*error, FALSE);
 
 	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
-	if (priv->resolv_conf_mode == NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED)
-		return TRUE;
+	if (priv->resolv_conf_mode == NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED) {
+		update = FALSE;
+		_LOGD ("update-dns: not updating resolv.conf");
+	} else {
+		priv->dns_touched = TRUE;
+		_LOGD ("update-dns: updating resolv.conf");
+	}
 
-	priv->dns_touched = TRUE;
-
-	nm_log_dbg (LOGD_DNS, "updating resolv.conf");
+	data = nm_config_get_data (priv->config);
+	global_config = nm_config_data_get_global_dns_config (data);
 
 	/* Update hash with config we're applying */
-	compute_hash (self, priv->hash);
+	compute_hash (self, global_config, priv->hash);
 
 	rc.nameservers = g_ptr_array_new ();
 	rc.searches = g_ptr_array_new ();
+	rc.options = g_ptr_array_new ();
 	rc.nis_domain = NULL;
 	rc.nis_servers = g_ptr_array_new ();
 
-	if (priv->ip4_vpn_config)
-		merge_one_ip4_config (&rc, priv->ip4_vpn_config);
-	if (priv->ip4_device_config)
-		merge_one_ip4_config (&rc, priv->ip4_device_config);
+	if (global_config)
+		merge_global_dns_config (&rc, global_config);
+	else {
+		if (priv->ip4_vpn_config)
+			merge_one_ip4_config (&rc, priv->ip4_vpn_config);
+		if (priv->ip4_device_config)
+			merge_one_ip4_config (&rc, priv->ip4_device_config);
 
-	if (priv->ip6_vpn_config)
-		merge_one_ip6_config (&rc, priv->ip6_vpn_config);
-	if (priv->ip6_device_config)
-		merge_one_ip6_config (&rc, priv->ip6_device_config);
+		if (priv->ip6_vpn_config)
+			merge_one_ip6_config (&rc, priv->ip6_vpn_config);
+		if (priv->ip6_device_config)
+			merge_one_ip6_config (&rc, priv->ip6_device_config);
 
-	for (iter = priv->configs; iter; iter = g_slist_next (iter)) {
-		if (   (iter->data == priv->ip4_vpn_config)
-		    || (iter->data == priv->ip4_device_config)
-		    || (iter->data == priv->ip6_vpn_config)
-		    || (iter->data == priv->ip6_device_config))
-			continue;
+		for (iter = priv->configs; iter; iter = g_slist_next (iter)) {
+			if (   (iter->data == priv->ip4_vpn_config)
+			    || (iter->data == priv->ip4_device_config)
+			    || (iter->data == priv->ip6_vpn_config)
+			    || (iter->data == priv->ip6_device_config))
+				continue;
 
-		if (NM_IS_IP4_CONFIG (iter->data)) {
-			NMIP4Config *config = NM_IP4_CONFIG (iter->data);
+			if (NM_IS_IP4_CONFIG (iter->data)) {
+				NMIP4Config *config = NM_IP4_CONFIG (iter->data);
 
-			merge_one_ip4_config (&rc, config);
-		} else if (NM_IS_IP6_CONFIG (iter->data)) {
-			NMIP6Config *config = NM_IP6_CONFIG (iter->data);
+				merge_one_ip4_config (&rc, config);
+			} else if (NM_IS_IP6_CONFIG (iter->data)) {
+				NMIP6Config *config = NM_IP6_CONFIG (iter->data);
 
-			merge_one_ip6_config (&rc, config);
-		} else
-			g_assert_not_reached ();
+				merge_one_ip6_config (&rc, config);
+			} else
+				g_assert_not_reached ();
+		}
 	}
 
 	/* If the hostname is a FQDN ("dcbw.example.com"), then add the domain part of it
@@ -705,6 +888,12 @@ update_dns (NMDnsManager *self,
 	} else
 		g_ptr_array_free (rc.searches, TRUE);
 
+	if (rc.options->len) {
+		g_ptr_array_add (rc.options, NULL);
+		options = (char **) g_ptr_array_free (rc.options, FALSE);
+	} else
+		g_ptr_array_free (rc.options, TRUE);
+
 	if (rc.nameservers->len) {
 		g_ptr_array_add (rc.nameservers, NULL);
 		nameservers = (char **) g_ptr_array_free (rc.nameservers, FALSE);
@@ -720,29 +909,31 @@ update_dns (NMDnsManager *self,
 	nis_domain = rc.nis_domain;
 
 	/* Let any plugins do their thing first */
-	if (priv->plugin) {
+	if (update && priv->plugin) {
 		NMDnsPlugin *plugin = priv->plugin;
 		const char *plugin_name = nm_dns_plugin_get_name (plugin);
 		GSList *vpn_configs = NULL, *dev_configs = NULL, *other_configs = NULL;
 
 		if (nm_dns_plugin_is_caching (plugin)) {
 			if (no_caching) {
-				nm_log_dbg (LOGD_DNS, "DNS: plugin %s ignored (caching disabled)",
-				            plugin_name);
+				_LOGD ("update-dns: plugin %s ignored (caching disabled)",
+				       plugin_name);
 				goto skip;
 			}
 			caching = TRUE;
 		}
 
-		build_plugin_config_lists (self, &vpn_configs, &dev_configs, &other_configs);
+		if (!global_config)
+			build_plugin_config_lists (self, &vpn_configs, &dev_configs, &other_configs);
 
-		nm_log_dbg (LOGD_DNS, "DNS: updating plugin %s", plugin_name);
+		_LOGD ("update-dns: updating plugin %s", plugin_name);
 		if (!nm_dns_plugin_update (plugin,
 		                           vpn_configs,
 		                           dev_configs,
 		                           other_configs,
+		                           global_config,
 		                           priv->hostname)) {
-			nm_log_warn (LOGD_DNS, "DNS: plugin %s update failed", plugin_name);
+			_LOGW ("update-dns: plugin %s update failed", plugin_name);
 
 			/* If the plugin failed to update, we shouldn't write out a local
 			 * caching DNS configuration to resolv.conf.
@@ -768,35 +959,50 @@ update_dns (NMDnsManager *self,
 		nameservers[0] = g_strdup ("127.0.0.1");
 	}
 
-#ifdef RESOLVCONF_PATH
-	success = dispatch_resolvconf (searches, nameservers, error);
-#endif
+	if (update) {
+		switch (priv->rc_manager) {
+		case NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE:
+			result = update_resolv_conf (self, searches, nameservers, options, error, TRUE);
+			resolv_conf_updated = TRUE;
+			break;
+		case NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF:
+			result = dispatch_resolvconf (self, searches, nameservers, options, error);
+			break;
+		case NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG:
+			result = dispatch_netconfig (self, searches, nameservers, nis_domain,
+			                             nis_servers, error);
+			break;
+		default:
+			g_assert_not_reached ();
+		}
 
-#ifdef NETCONFIG_PATH
-	if (success == FALSE) {
-		g_clear_error (error);
-		success = dispatch_netconfig (searches, nameservers,
-		                              nis_domain, nis_servers, error);
+		if (result == SR_NOTFOUND) {
+			_LOGD ("update-dns: program not available, writing to resolv.conf");
+			g_clear_error (error);
+			result = update_resolv_conf (self, searches, nameservers, options, error, TRUE);
+			resolv_conf_updated = TRUE;
+		}
 	}
-#endif
 
-	if (success == FALSE) {
-		g_clear_error (error);
-		success = update_resolv_conf (searches, nameservers, error);
-	}
+	/* Unless we've already done it, update private resolv.conf in NMRUNDIR
+	   ignoring any errors */
+	if (!resolv_conf_updated)
+		update_resolv_conf (self, searches, nameservers, options, NULL, FALSE);
 
 	/* signal that resolv.conf was changed */
-	if (success)
+	if (update && result == SR_SUCCESS)
 		g_signal_emit (self, signals[CONFIG_CHANGED], 0);
 
 	if (searches)
 		g_strfreev (searches);
+	if (options)
+		g_strfreev (options);
 	if (nameservers)
 		g_strfreev (nameservers);
 	if (nis_servers)
 		g_strfreev (nis_servers);
 
-	return success;
+	return !update || result == SR_SUCCESS;
 }
 
 static void
@@ -811,7 +1017,7 @@ plugin_failed (NMDnsPlugin *plugin, gpointer user_data)
 
 	/* Disable caching until the next DNS update */
 	if (!update_dns (self, TRUE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 }
@@ -822,18 +1028,18 @@ plugin_child_quit (NMDnsPlugin *plugin, int exit_status, gpointer user_data)
 	NMDnsManager *self = NM_DNS_MANAGER (user_data);
 	GError *error = NULL;
 
-	nm_log_warn (LOGD_DNS, "DNS: plugin %s child quit unexpectedly; refreshing DNS",
+	_LOGW ("plugin %s child quit unexpectedly; refreshing DNS",
 	             nm_dns_plugin_get_name (plugin));
 
 	/* Let the plugin try to spawn the child again */
 	if (!update_dns (self, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 }
 
 gboolean
-nm_dns_manager_add_ip4_config (NMDnsManager *mgr,
+nm_dns_manager_add_ip4_config (NMDnsManager *self,
                                const char *iface,
                                NMIP4Config *config,
                                NMDnsIPConfigType cfg_type)
@@ -841,10 +1047,10 @@ nm_dns_manager_add_ip4_config (NMDnsManager *mgr,
 	NMDnsManagerPrivate *priv;
 	GError *error = NULL;
 
-	g_return_val_if_fail (mgr != NULL, FALSE);
+	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (config != NULL, FALSE);
 
-	priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
 	g_object_set_data_full (G_OBJECT (config), IP_CONFIG_IFACE_TAG, g_strdup (iface), g_free);
 
@@ -863,8 +1069,8 @@ nm_dns_manager_add_ip4_config (NMDnsManager *mgr,
 	if (!g_slist_find (priv->configs, config))
 		priv->configs = g_slist_append (priv->configs, g_object_ref (config));
 
-	if (!priv->updates_queue && !update_dns (mgr, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+	if (!priv->updates_queue && !update_dns (self, FALSE, &error)) {
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 
@@ -872,15 +1078,15 @@ nm_dns_manager_add_ip4_config (NMDnsManager *mgr,
 }
 
 gboolean
-nm_dns_manager_remove_ip4_config (NMDnsManager *mgr, NMIP4Config *config)
+nm_dns_manager_remove_ip4_config (NMDnsManager *self, NMIP4Config *config)
 {
 	NMDnsManagerPrivate *priv;
 	GError *error = NULL;
 
-	g_return_val_if_fail (mgr != NULL, FALSE);
+	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (config != NULL, FALSE);
 
-	priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
 	/* Can't remove it if it wasn't in the list to begin with */
 	if (!g_slist_find (priv->configs, config))
@@ -895,8 +1101,8 @@ nm_dns_manager_remove_ip4_config (NMDnsManager *mgr, NMIP4Config *config)
 
 	g_object_unref (config);
 
-	if (!priv->updates_queue && !update_dns (mgr, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+	if (!priv->updates_queue && !update_dns (self, FALSE, &error)) {
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 
@@ -906,7 +1112,7 @@ nm_dns_manager_remove_ip4_config (NMDnsManager *mgr, NMIP4Config *config)
 }
 
 gboolean
-nm_dns_manager_add_ip6_config (NMDnsManager *mgr,
+nm_dns_manager_add_ip6_config (NMDnsManager *self,
                                const char *iface,
                                NMIP6Config *config,
                                NMDnsIPConfigType cfg_type)
@@ -914,10 +1120,10 @@ nm_dns_manager_add_ip6_config (NMDnsManager *mgr,
 	NMDnsManagerPrivate *priv;
 	GError *error = NULL;
 
-	g_return_val_if_fail (mgr != NULL, FALSE);
+	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (config != NULL, FALSE);
 
-	priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
 	g_object_set_data_full (G_OBJECT (config), IP_CONFIG_IFACE_TAG, g_strdup (iface), g_free);
 
@@ -936,8 +1142,8 @@ nm_dns_manager_add_ip6_config (NMDnsManager *mgr,
 	if (!g_slist_find (priv->configs, config))
 		priv->configs = g_slist_append (priv->configs, g_object_ref (config));
 
-	if (!priv->updates_queue && !update_dns (mgr, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+	if (!priv->updates_queue && !update_dns (self, FALSE, &error)) {
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 
@@ -945,15 +1151,15 @@ nm_dns_manager_add_ip6_config (NMDnsManager *mgr,
 }
 
 gboolean
-nm_dns_manager_remove_ip6_config (NMDnsManager *mgr, NMIP6Config *config)
+nm_dns_manager_remove_ip6_config (NMDnsManager *self, NMIP6Config *config)
 {
 	NMDnsManagerPrivate *priv;
 	GError *error = NULL;
 
-	g_return_val_if_fail (mgr != NULL, FALSE);
+	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (config != NULL, FALSE);
 
-	priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
 	/* Can't remove it if it wasn't in the list to begin with */
 	if (!g_slist_find (priv->configs, config))
@@ -966,10 +1172,10 @@ nm_dns_manager_remove_ip6_config (NMDnsManager *mgr, NMIP6Config *config)
 	if (config == priv->ip6_device_config)
 		priv->ip6_device_config = NULL;
 
-	g_object_unref (config);	
+	g_object_unref (config);
 
-	if (!priv->updates_queue && !update_dns (mgr, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+	if (!priv->updates_queue && !update_dns (self, FALSE, &error)) {
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 
@@ -979,19 +1185,19 @@ nm_dns_manager_remove_ip6_config (NMDnsManager *mgr, NMIP6Config *config)
 }
 
 void
-nm_dns_manager_set_initial_hostname (NMDnsManager *mgr,
+nm_dns_manager_set_initial_hostname (NMDnsManager *self,
                                      const char *hostname)
 {
-	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
 	priv->hostname = g_strdup (hostname);
 }
 
 void
-nm_dns_manager_set_hostname (NMDnsManager *mgr,
+nm_dns_manager_set_hostname (NMDnsManager *self,
                              const char *hostname)
 {
-	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	GError *error = NULL;
 	const char *filtered = NULL;
 
@@ -1010,25 +1216,25 @@ nm_dns_manager_set_hostname (NMDnsManager *mgr,
 	g_free (priv->hostname);
 	priv->hostname = g_strdup (filtered);
 
-	if (!priv->updates_queue && !update_dns (mgr, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+	if (!priv->updates_queue && !update_dns (self, FALSE, &error)) {
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 }
 
 NMDnsManagerResolvConfMode
-nm_dns_manager_get_resolv_conf_mode (NMDnsManager *mgr)
+nm_dns_manager_get_resolv_conf_mode (NMDnsManager *self)
 {
-	return NM_DNS_MANAGER_GET_PRIVATE (mgr)->resolv_conf_mode;
+	return NM_DNS_MANAGER_GET_PRIVATE (self)->resolv_conf_mode;
 }
 
 void
-nm_dns_manager_begin_updates (NMDnsManager *mgr, const char *func)
+nm_dns_manager_begin_updates (NMDnsManager *self, const char *func)
 {
 	NMDnsManagerPrivate *priv;
 
-	g_return_if_fail (mgr != NULL);
-	priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	g_return_if_fail (self != NULL);
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
 	/* Save current hash when starting a new batch */
 	if (priv->updates_queue == 0)
@@ -1036,36 +1242,36 @@ nm_dns_manager_begin_updates (NMDnsManager *mgr, const char *func)
 
 	priv->updates_queue++;
 
-	nm_log_dbg (LOGD_DNS, "(%s): queueing DNS updates (%d)", func, priv->updates_queue);
+	_LOGD ("(%s): queueing DNS updates (%d)", func, priv->updates_queue);
 }
 
 void
-nm_dns_manager_end_updates (NMDnsManager *mgr, const char *func)
+nm_dns_manager_end_updates (NMDnsManager *self, const char *func)
 {
 	NMDnsManagerPrivate *priv;
 	GError *error = NULL;
 	gboolean changed;
 	guint8 new[HASH_LEN];
 
-	g_return_if_fail (mgr != NULL);
+	g_return_if_fail (self != NULL);
 
-	priv = NM_DNS_MANAGER_GET_PRIVATE (mgr);
+	priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	g_return_if_fail (priv->updates_queue > 0);
 
-	compute_hash (mgr, new);
+	compute_hash (self, nm_config_data_get_global_dns_config (nm_config_get_data (priv->config)), new);
 	changed = (memcmp (new, priv->prev_hash, sizeof (new)) != 0) ? TRUE : FALSE;
-	nm_log_dbg (LOGD_DNS, "(%s): DNS configuration %s", __func__, changed ? "changed" : "did not change");
+	_LOGD ("(%s): DNS configuration %s", func, changed ? "changed" : "did not change");
 
 	priv->updates_queue--;
 	if ((priv->updates_queue > 0) || (changed == FALSE)) {
-		nm_log_dbg (LOGD_DNS, "(%s): no DNS changes to commit (%d)", func, priv->updates_queue);
+		_LOGD ("(%s): no DNS changes to commit (%d)", func, priv->updates_queue);
 		return;
 	}
 
 	/* Commit all the outstanding changes */
-	nm_log_dbg (LOGD_DNS, "(%s): committing DNS changes (%d)", func, priv->updates_queue);
-	if (!update_dns (mgr, FALSE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+	_LOGD ("(%s): committing DNS changes (%d)", func, priv->updates_queue);
+	if (!update_dns (self, FALSE, &error)) {
+		_LOGW ("could not commit DNS changes: %s", error->message);
 		g_clear_error (&error);
 	}
 
@@ -1085,6 +1291,12 @@ init_resolv_conf_mode (NMDnsManager *self)
 
 	g_clear_object (&priv->plugin);
 
+	mode = nm_config_data_get_dns_mode (nm_config_get_data (priv->config));
+	if (!g_strcmp0 (mode, "none")) {
+		priv->resolv_conf_mode = NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED;
+		goto out;
+	}
+
 	fd = open (_PATH_RESCONF, O_RDONLY);
 	if (fd != -1) {
 		if (ioctl (fd, FS_IOC_GETFLAGS, &flags) == -1)
@@ -1092,17 +1304,13 @@ init_resolv_conf_mode (NMDnsManager *self)
 		close (fd);
 
 		if (flags & FS_IMMUTABLE_FL) {
-			nm_log_info (LOGD_DNS, "DNS: " _PATH_RESCONF " is immutable; not managing");
+			_LOGI ("set resolv-conf-mode: none -- " _PATH_RESCONF " is immutable");
 			priv->resolv_conf_mode = NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED;
 			return;
 		}
 	}
 
-	mode = nm_config_data_get_dns_mode (nm_config_get_data (priv->config));
-	if (!g_strcmp0 (mode, "none")) {
-		priv->resolv_conf_mode = NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED;
-		nm_log_info (LOGD_DNS, "DNS: not managing " _PATH_RESCONF);
-	} else if (!g_strcmp0 (mode, "dnsmasq")) {
+	if (!g_strcmp0 (mode, "dnsmasq")) {
 		priv->resolv_conf_mode = NM_DNS_MANAGER_RESOLV_CONF_PROXY;
 		priv->plugin = nm_dns_dnsmasq_new ();
 	} else if (!g_strcmp0 (mode, "unbound")) {
@@ -1110,15 +1318,61 @@ init_resolv_conf_mode (NMDnsManager *self)
 		priv->plugin = nm_dns_unbound_new ();
 	} else {
 		priv->resolv_conf_mode = NM_DNS_MANAGER_RESOLV_CONF_EXPLICIT;
-		if (mode && g_strcmp0 (mode, "default") != 0)
-			nm_log_warn (LOGD_DNS, "Unknown DNS mode '%s'", mode);
+		if (mode && g_strcmp0 (mode, "default") != 0) {
+			_LOGW ("set resolve-conf-mode: default -- unknown configuration '%s'", mode);
+			return;
+		}
+		mode = "default";
 	}
 
 	if (priv->plugin) {
-		nm_log_info (LOGD_DNS, "DNS: loaded plugin %s", nm_dns_plugin_get_name (priv->plugin));
 		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_FAILED, G_CALLBACK (plugin_failed), self);
 		g_signal_connect (priv->plugin, NM_DNS_PLUGIN_CHILD_QUIT, G_CALLBACK (plugin_child_quit), self);
 	}
+
+out:
+	_LOGI ("set resolv-conf-mode: %s%s%s%s", mode,
+	       NM_PRINT_FMT_QUOTED (priv->plugin, ", plugin=\"", nm_dns_plugin_get_name (priv->plugin), "\"", ""));
+}
+
+static void
+init_resolv_conf_manager (NMDnsManager *self)
+{
+	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
+	const char *man, *desc = "";
+
+	man = nm_config_data_get_rc_manager (nm_config_get_data (priv->config));
+	if (!g_strcmp0 (man, "none"))
+		priv->rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE;
+	else if (!g_strcmp0 (man, "resolvconf"))
+		priv->rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF;
+	else if (!g_strcmp0 (man, "netconfig"))
+		priv->rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG;
+	else {
+#if defined(RESOLVCONF_SELECTED)
+		priv->rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF;
+#elif defined(NETCONFIG_SELECTED)
+		priv->rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG;
+#else
+		priv->rc_manager = NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE;
+#endif
+		if (man)
+			_LOGW ("unknown resolv.conf manager '%s'", man);
+	}
+
+	switch (priv->rc_manager) {
+	case NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF:
+		desc = "resolvconf";
+		break;
+	case NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG:
+		desc = "netconfig";
+		break;
+	case NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE:
+		desc = "none";
+		break;
+	}
+
+	_LOGI ("using resolv.conf manager '%s'", desc);
 }
 
 static void
@@ -1132,12 +1386,16 @@ config_changed_cb (NMConfig *config,
 
 	if (NM_FLAGS_HAS (changes, NM_CONFIG_CHANGE_DNS_MODE))
 		init_resolv_conf_mode (self);
+	if (NM_FLAGS_HAS (changes, NM_CONFIG_CHANGE_RC_MANAGER))
+		init_resolv_conf_manager (self);
 
 	if (NM_FLAGS_ANY (changes, NM_CONFIG_CHANGE_SIGHUP |
 	                           NM_CONFIG_CHANGE_SIGUSR1 |
-	                           NM_CONFIG_CHANGE_DNS_MODE)) {
+	                           NM_CONFIG_CHANGE_DNS_MODE |
+	                           NM_CONFIG_CHANGE_RC_MANAGER |
+	                           NM_CONFIG_CHANGE_GLOBAL_DNS_CONFIG)) {
 		if (!update_dns (self, TRUE, &error)) {
-			nm_log_warn (LOGD_DNS, "could not commit DNS changes: %s", error->message);
+			_LOGW ("could not commit DNS changes: %s", error->message);
 			g_clear_error (&error);
 		}
 	}
@@ -1148,15 +1406,19 @@ nm_dns_manager_init (NMDnsManager *self)
 {
 	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 
-	/* Set the initial hash */
-	compute_hash (self, NM_DNS_MANAGER_GET_PRIVATE (self)->hash);
+	_LOGT ("creating...");
 
 	priv->config = g_object_ref (nm_config_get ());
+	/* Set the initial hash */
+	compute_hash (self, nm_config_data_get_global_dns_config (nm_config_get_data (priv->config)),
+	              NM_DNS_MANAGER_GET_PRIVATE (self)->hash);
+
 	g_signal_connect (G_OBJECT (priv->config),
 	                  NM_CONFIG_SIGNAL_CONFIG_CHANGED,
 	                  G_CALLBACK (config_changed_cb),
 	                  self);
 	init_resolv_conf_mode (self);
+	init_resolv_conf_manager (self);
 }
 
 static void
@@ -1165,6 +1427,8 @@ dispose (GObject *object)
 	NMDnsManager *self = NM_DNS_MANAGER (object);
 	NMDnsManagerPrivate *priv = NM_DNS_MANAGER_GET_PRIVATE (self);
 	GError *error = NULL;
+
+	_LOGT ("disposing");
 
 	if (priv->plugin) {
 		g_signal_handlers_disconnect_by_func (priv->plugin, plugin_failed, self);
@@ -1178,7 +1442,7 @@ dispose (GObject *object)
 	 * DNS updates yet, there's no reason to touch resolv.conf on shutdown.
 	 */
 	if (priv->dns_touched && !update_dns (self, TRUE, &error)) {
-		nm_log_warn (LOGD_DNS, "could not commit DNS changes on shutdown: %s", error->message);
+		_LOGW ("could not commit DNS changes on shutdown: %s", error->message);
 		g_clear_error (&error);
 		priv->dns_touched = FALSE;
 	}

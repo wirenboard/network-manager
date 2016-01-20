@@ -23,8 +23,6 @@
 
 #include "config.h"
 
-#include <glib.h>
-#include <glib/gi18n.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -33,10 +31,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "nm-default.h"
 #include "nm-dhcp-dhcpcd.h"
 #include "nm-dhcp-manager.h"
 #include "nm-utils.h"
-#include "nm-logging.h"
 #include "NetworkManagerUtils.h"
 #include "nm-dhcp-listener.h"
 
@@ -65,8 +63,9 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 	GPtrArray *argv = NULL;
 	pid_t pid = -1;
 	GError *error = NULL;
-	char *pid_contents = NULL, *binary_name, *cmd_str;
-	const char *iface, *dhcpcd_path, *hostname;
+	char *pid_contents = NULL, *binary_name, *cmd_str, *dot;
+	const char *iface, *dhcpcd_path, *hostname, *fqdn;
+	gs_free char *prefix = NULL;
 
 	g_return_val_if_fail (priv->pid_file == NULL, FALSE);
 
@@ -95,7 +94,7 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 
 	g_ptr_array_add (argv, (gpointer) "-K");	/* Disable built-in carrier detection */
 
-	g_ptr_array_add (argv, (gpointer) "-L");	/* Disable built-in IPv4LL since we use avahi-autoipd */
+	g_ptr_array_add (argv, (gpointer) "-L");	/* Disable built-in IPv4LL */
 
 	/* --noarp. Don't request or claim the address by ARP; this also disables IPv4LL. */
 	g_ptr_array_add (argv, (gpointer) "-A");
@@ -114,9 +113,22 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 #endif
 
 	hostname = nm_dhcp_client_get_hostname (client);
-	if (hostname) {
+	fqdn = nm_dhcp_client_get_fqdn (client);
+
+	if (fqdn) {
+		g_ptr_array_add (argv, (gpointer) "-h");
+		g_ptr_array_add (argv, (gpointer) fqdn);
+		g_ptr_array_add (argv, (gpointer) "-F");
+		g_ptr_array_add (argv, (gpointer) "both");
+	} else if (hostname) {
+		prefix = strdup (hostname);
+		dot = strchr (prefix, '.');
+		/* get rid of the domain */
+		if (dot)
+			*dot = '\0';
+
 		g_ptr_array_add (argv, (gpointer) "-h");	/* Send hostname to DHCP server */
-		g_ptr_array_add (argv, (gpointer) hostname );
+		g_ptr_array_add (argv, (gpointer) prefix);
 	}
 
 	g_ptr_array_add (argv, (gpointer) iface);
@@ -145,6 +157,7 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 static gboolean
 ip6_start (NMDhcpClient *client,
            const char *dhcp_anycast_addr,
+           const struct in6_addr *ll_addr,
            gboolean info_only,
            NMSettingIP6ConfigPrivacy privacy,
            const GByteArray *duid)
@@ -213,7 +226,7 @@ nm_dhcp_dhcpcd_class_init (NMDhcpDhcpcdClass *dhcpcd_class)
 static void __attribute__((constructor))
 register_dhcp_dhclient (void)
 {
-	g_type_init ();
+	nm_g_type_init ();
 	_nm_dhcp_client_register (NM_TYPE_DHCP_DHCPCD,
 	                          "dhcpcd",
 	                          nm_dhcp_dhcpcd_get_path,

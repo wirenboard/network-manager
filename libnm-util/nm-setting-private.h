@@ -21,7 +21,7 @@
 #ifndef NM_SETTING_PRIVATE_H
 #define NM_SETTING_PRIVATE_H
 
-#include "nm-glib-compat.h"
+#include "nm-default.h"
 
 #define NM_SETTING_SECRET_FLAGS_ALL \
 	(NM_SETTING_SECRET_FLAG_NONE | \
@@ -101,7 +101,7 @@ gboolean _nm_setting_clear_secrets_with_flags (NMSetting *setting,
 /* Ensure the setting's GType is registered at library load time */
 #define NM_SETTING_REGISTER_TYPE(x) \
 static void __attribute__((constructor)) register_setting (void) \
-{ g_type_init (); g_type_ensure (x); }
+{ nm_g_type_init (); g_type_ensure (x); }
 
 NMSetting *nm_setting_find_in_list (GSList *settings_list, const char *setting_name);
 

@@ -27,10 +27,12 @@
 #include "nm-rdisc.h"
 #include "nm-rdisc-private.h"
 
-#include "nm-logging.h"
+#include "nm-default.h"
 #include "nm-utils.h"
 
-#define debug(...) nm_log_dbg (LOGD_IP6, __VA_ARGS__)
+#include <nm-setting-ip6-config.h>
+
+#define _NMLOG_PREFIX_NAME                "rdisc"
 
 typedef struct {
 	int solicitations_left;
@@ -38,6 +40,7 @@ typedef struct {
 	gint64 last_rs;
 	guint ra_timeout_id;  /* first RA timeout */
 	guint timeout_id;   /* prefix/dns/etc lifetime timeout */
+	char *last_send_rs_error;
 } NMRDiscPrivate;
 
 #define NM_RDISC_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_RDISC, NMRDiscPrivate))
@@ -87,10 +90,62 @@ nm_rdisc_add_gateway (NMRDisc *rdisc, const NMRDiscGateway *new)
 	return !!new->lifetime;
 }
 
+/**
+ * complete_address:
+ * @rdisc: the #NMRDisc
+ * @addr: the #NMRDiscAddress
+ *
+ * Adds the host part to the address that has network part set.
+ * If the address already has a host part, add a different host part
+ * if possible (this is useful in case DAD failed).
+ *
+ * Can fail if a different address can not be generated (DAD failure
+ * for an EUI-64 address or DAD counter overflow).
+ *
+ * Returns: %TRUE if the address could be completed, %FALSE otherwise.
+ **/
+static gboolean
+complete_address (NMRDisc *rdisc, NMRDiscAddress *addr)
+{
+	GError *error = NULL;
+
+	if (rdisc->addr_gen_mode == NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_STABLE_PRIVACY) {
+		if (!nm_utils_ipv6_addr_set_stable_privacy (&addr->address,
+		                                            rdisc->ifname,
+		                                            rdisc->uuid,
+		                                            addr->dad_counter++,
+		                                            &error)) {
+			_LOGW ("complete-address: failed to generate an stable-privacy address: %s",
+			       error->message);
+			g_clear_error (&error);
+			return FALSE;
+		}
+		_LOGD ("complete-address: using an stable-privacy address");
+		return TRUE;
+	}
+
+	if (!rdisc->iid.id) {
+		_LOGW ("complete-address: can't generate an EUI-64 address: no interface identifier");
+		return FALSE;
+	}
+
+	if (addr->address.s6_addr32[2] == 0x0 && addr->address.s6_addr32[3] == 0x0) {
+		_LOGD ("complete-address: adding an EUI-64 address");
+		nm_utils_ipv6_addr_set_interface_identfier (&addr->address, rdisc->iid);
+		return TRUE;
+	}
+
+	_LOGW ("complete-address: can't generate a new EUI-64 address");
+	return FALSE;
+}
+
 gboolean
-nm_rdisc_add_address (NMRDisc *rdisc, const NMRDiscAddress *new)
+nm_rdisc_complete_and_add_address (NMRDisc *rdisc, NMRDiscAddress *new)
 {
 	int i;
+
+	if (!complete_address (rdisc, new))
+		return FALSE;
 
 	for (i = 0; i < rdisc->addresses->len; i++) {
 		NMRDiscAddress *item = &g_array_index (rdisc->addresses, NMRDiscAddress, i);
@@ -219,28 +274,6 @@ nm_rdisc_add_dns_domain (NMRDisc *rdisc, const NMRDiscDNSDomain *new)
 
 /******************************************************************/
 
-static void
-clear_ra_timeout (NMRDisc *rdisc)
-{
-	NMRDiscPrivate *priv = NM_RDISC_GET_PRIVATE (rdisc);
-
-	if (priv->ra_timeout_id) {
-		g_source_remove (priv->ra_timeout_id);
-		priv->ra_timeout_id = 0;
-	}
-}
-
-static void
-clear_rs_timeout (NMRDisc *rdisc)
-{
-	NMRDiscPrivate *priv = NM_RDISC_GET_PRIVATE (rdisc);
-
-	if (priv->send_rs_id) {
-		g_source_remove (priv->send_rs_id);
-		priv->send_rs_id = 0;
-	}
-}
-
 /**
  * nm_rdisc_set_iid:
  * @rdisc: the #NMRDisc
@@ -255,7 +288,10 @@ clear_rs_timeout (NMRDisc *rdisc)
  * the old identifier are removed. The caller should ensure the addresses
  * will be reset by soliciting router advertisements.
  *
- * Returns: %TRUE if the token was changed, %FALSE otherwise.
+ * In case the stable privacy addressing is used %FALSE is returned and
+ * addresses are left untouched.
+ *
+ * Returns: %TRUE if addresses need to be regenerated, %FALSE otherwise.
  **/
 gboolean
 nm_rdisc_set_iid (NMRDisc *rdisc, const NMUtilsIPv6IfaceId iid)
@@ -264,8 +300,12 @@ nm_rdisc_set_iid (NMRDisc *rdisc, const NMUtilsIPv6IfaceId iid)
 
 	if (rdisc->iid.id != iid.id) {
 		rdisc->iid = iid;
+
+		if (rdisc->addr_gen_mode == NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_STABLE_PRIVACY)
+			return FALSE;
+
 		if (rdisc->addresses->len) {
-			debug ("(%s) IPv6 interface identifier changed, flushing addresses", rdisc->ifname);
+			_LOGD ("IPv6 interface identifier changed, flushing addresses");
 			g_array_remove_range (rdisc->addresses, 0, rdisc->addresses->len);
 			g_signal_emit_by_name (rdisc, NM_RDISC_CONFIG_CHANGED, NM_RDISC_CONFIG_ADDRESSES);
 		}
@@ -280,21 +320,34 @@ send_rs (NMRDisc *rdisc)
 {
 	NMRDiscClass *klass = NM_RDISC_GET_CLASS (rdisc);
 	NMRDiscPrivate *priv = NM_RDISC_GET_PRIVATE (rdisc);
+	GError *error = NULL;
 
-	debug ("(%s): sending router solicitation", rdisc->ifname);
-
-	if (klass->send_rs (rdisc))
+	if (klass->send_rs (rdisc, &error)) {
+		_LOGD ("router solicitation sent");
 		priv->solicitations_left--;
+		g_clear_pointer (&priv->last_send_rs_error, g_free);
+	} else {
+		gboolean different_message;
+
+		different_message = g_strcmp0 (priv->last_send_rs_error, error->message) != 0;
+		_NMLOG (different_message ? LOGL_WARN : LOGL_DEBUG,
+		        "failure sending router solicitation: %s", error->message);
+		if (different_message) {
+			g_clear_pointer (&priv->last_send_rs_error, g_free);
+			priv->last_send_rs_error = g_strdup (error->message);
+		}
+		g_clear_error (&error);
+	}
 
 	priv->last_rs = nm_utils_get_monotonic_timestamp_s ();
 	if (priv->solicitations_left > 0) {
-		debug ("(%s): scheduling router solicitation retry in %d seconds.",
-		       rdisc->ifname, rdisc->rtr_solicitation_interval);
+		_LOGD ("scheduling router solicitation retry in %d seconds.",
+		       rdisc->rtr_solicitation_interval);
 		priv->send_rs_id = g_timeout_add_seconds (rdisc->rtr_solicitation_interval,
 		                                          (GSourceFunc) send_rs, rdisc);
 	} else {
-		debug ("(%s): did not receive a router advertisement after %d solicitations.",
-		       rdisc->ifname, rdisc->rtr_solicitations);
+		_LOGD ("did not receive a router advertisement after %d solicitations.",
+		       rdisc->rtr_solicitations);
 		priv->send_rs_id = 0;
 	}
 
@@ -312,8 +365,8 @@ solicit (NMRDisc *rdisc)
 		priv->solicitations_left = rdisc->rtr_solicitations;
 
 		next = CLAMP (priv->last_rs + rdisc->rtr_solicitation_interval - now, 0, G_MAXINT32);
-		debug ("(%s): scheduling explicit router solicitation request in %" G_GINT64_FORMAT " seconds.",
-		       rdisc->ifname, next);
+		_LOGD ("scheduling explicit router solicitation request in %" G_GINT64_FORMAT " seconds.",
+		       next);
 		priv->send_rs_id = g_timeout_add_seconds ((guint32) next, (GSourceFunc) send_rs, rdisc);
 	}
 }
@@ -337,17 +390,39 @@ nm_rdisc_start (NMRDisc *rdisc)
 
 	g_assert (klass->start);
 
-	debug ("(%s): starting router discovery: %d", rdisc->ifname, rdisc->ifindex);
+	_LOGD ("starting router discovery: %d", rdisc->ifindex);
 
-	clear_ra_timeout (rdisc);
+	nm_clear_g_source (&priv->ra_timeout_id);
 	ra_wait_secs = CLAMP (rdisc->rtr_solicitations * rdisc->rtr_solicitation_interval, 30, 120);
 	priv->ra_timeout_id = g_timeout_add_seconds (ra_wait_secs, rdisc_ra_timeout_cb, rdisc);
-	debug ("(%s): scheduling RA timeout in %d seconds", rdisc->ifname, ra_wait_secs);
+	_LOGD ("scheduling RA timeout in %d seconds", ra_wait_secs);
 
 	if (klass->start)
 		klass->start (rdisc);
 
 	solicit (rdisc);
+}
+
+void
+nm_rdisc_dad_failed (NMRDisc *rdisc, struct in6_addr *address)
+{
+	int i;
+	gboolean changed = FALSE;
+
+	for (i = 0; i < rdisc->addresses->len; i++) {
+		NMRDiscAddress *item = &g_array_index (rdisc->addresses, NMRDiscAddress, i);
+
+		if (!IN6_ARE_ADDR_EQUAL (&item->address, address))
+			continue;
+
+		_LOGD ("DAD failed for discovered address %s", nm_utils_inet6_ntop (address, NULL));
+		if (!complete_address (rdisc, item))
+			g_array_remove_index (rdisc->addresses, i--);
+		changed = TRUE;
+	}
+
+	if (changed)
+		g_signal_emit_by_name (rdisc, NM_RDISC_CONFIG_CHANGED, NM_RDISC_CONFIG_ADDRESSES);
 }
 
 #define CONFIG_MAP_MAX_STR 7
@@ -394,27 +469,27 @@ config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed)
 	char changedstr[CONFIG_MAP_MAX_STR];
 	char addrstr[INET6_ADDRSTRLEN];
 
-	if (nm_logging_enabled (LOGL_DEBUG, LOGD_IP6)) {
+	if (_LOGD_ENABLED ()) {
 		config_map_to_string (changed, changedstr);
-		debug ("(%s): router discovery configuration changed [%s]:", rdisc->ifname, changedstr);
-		debug ("  dhcp-level %s", dhcp_level_to_string (rdisc->dhcp_level));
+		_LOGD ("router discovery configuration changed [%s]:", changedstr);
+		_LOGD ("  dhcp-level %s", dhcp_level_to_string (rdisc->dhcp_level));
 		for (i = 0; i < rdisc->gateways->len; i++) {
 			NMRDiscGateway *gateway = &g_array_index (rdisc->gateways, NMRDiscGateway, i);
 
 			inet_ntop (AF_INET6, &gateway->address, addrstr, sizeof (addrstr));
-			debug ("  gateway %s pref %d exp %u", addrstr, gateway->preference, expiry (gateway));
+			_LOGD ("  gateway %s pref %d exp %u", addrstr, gateway->preference, expiry (gateway));
 		}
 		for (i = 0; i < rdisc->addresses->len; i++) {
 			NMRDiscAddress *address = &g_array_index (rdisc->addresses, NMRDiscAddress, i);
 
 			inet_ntop (AF_INET6, &address->address, addrstr, sizeof (addrstr));
-			debug ("  address %s exp %u", addrstr, expiry (address));
+			_LOGD ("  address %s exp %u", addrstr, expiry (address));
 		}
 		for (i = 0; i < rdisc->routes->len; i++) {
 			NMRDiscRoute *route = &g_array_index (rdisc->routes, NMRDiscRoute, i);
 
 			inet_ntop (AF_INET6, &route->network, addrstr, sizeof (addrstr));
-			debug ("  route %s/%d via %s pref %d exp %u", addrstr, route->plen,
+			_LOGD ("  route %s/%d via %s pref %d exp %u", addrstr, route->plen,
 				   nm_utils_inet6_ntop (&route->gateway, NULL), route->preference,
 				   expiry (route));
 		}
@@ -422,12 +497,12 @@ config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed)
 			NMRDiscDNSServer *dns_server = &g_array_index (rdisc->dns_servers, NMRDiscDNSServer, i);
 
 			inet_ntop (AF_INET6, &dns_server->address, addrstr, sizeof (addrstr));
-			debug ("  dns_server %s exp %u", addrstr, expiry (dns_server));
+			_LOGD ("  dns_server %s exp %u", addrstr, expiry (dns_server));
 		}
 		for (i = 0; i < rdisc->dns_domains->len; i++) {
 			NMRDiscDNSDomain *dns_domain = &g_array_index (rdisc->dns_domains, NMRDiscDNSDomain, i);
 
-			debug ("  dns_domain %s exp %u", dns_domain->domain, expiry (dns_domain));
+			_LOGD ("  dns_domain %s exp %u", dns_domain->domain, expiry (dns_domain));
 		}
 	}
 }
@@ -548,10 +623,7 @@ check_timestamps (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap changed)
 	guint32 never = G_MAXINT32;
 	guint32 nextevent = never;
 
-	if (priv->timeout_id) {
-		g_source_remove (priv->timeout_id);
-		priv->timeout_id = 0;
-	}
+	nm_clear_g_source (&priv->timeout_id);
 
 	clean_gateways (rdisc, now, &changed, &nextevent);
 	clean_addresses (rdisc, now, &changed, &nextevent);
@@ -564,8 +636,8 @@ check_timestamps (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap changed)
 
 	if (nextevent != never) {
 		g_return_if_fail (nextevent > now);
-		debug ("(%s): scheduling next now/lifetime check: %u seconds",
-		       rdisc->ifname, nextevent - now);
+		_LOGD ("scheduling next now/lifetime check: %u seconds",
+		       nextevent - now);
 		priv->timeout_id = g_timeout_add_seconds (nextevent - now, timeout_cb, rdisc);
 	}
 }
@@ -581,8 +653,11 @@ timeout_cb (gpointer user_data)
 void
 nm_rdisc_ra_received (NMRDisc *rdisc, guint32 now, NMRDiscConfigMap changed)
 {
-	clear_ra_timeout (rdisc);
-	clear_rs_timeout (rdisc);
+	NMRDiscPrivate *priv = NM_RDISC_GET_PRIVATE (rdisc);
+
+	nm_clear_g_source (&priv->ra_timeout_id);
+	nm_clear_g_source (&priv->send_rs_id);
+	g_clear_pointer (&priv->last_send_rs_error, g_free);
 	check_timestamps (rdisc, now, changed);
 }
 
@@ -619,13 +694,11 @@ dispose (GObject *object)
 	NMRDisc *rdisc = NM_RDISC (object);
 	NMRDiscPrivate *priv = NM_RDISC_GET_PRIVATE (rdisc);
 
-	clear_ra_timeout (rdisc);
-	clear_rs_timeout (rdisc);
+	nm_clear_g_source (&priv->ra_timeout_id);
+	nm_clear_g_source (&priv->send_rs_id);
+	g_clear_pointer (&priv->last_send_rs_error, g_free);
 
-	if (priv->timeout_id) {
-		g_source_remove (priv->timeout_id);
-		priv->timeout_id = 0;
-	}
+	nm_clear_g_source (&priv->timeout_id);
 
 	G_OBJECT_CLASS (nm_rdisc_parent_class)->dispose (object);
 }
@@ -636,6 +709,7 @@ finalize (GObject *object)
 	NMRDisc *rdisc = NM_RDISC (object);
 
 	g_free (rdisc->ifname);
+	g_free (rdisc->uuid);
 	g_array_unref (rdisc->gateways);
 	g_array_unref (rdisc->addresses);
 	g_array_unref (rdisc->routes);

@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright 2009 - 2014 Red Hat, Inc.
+ * Copyright 2009 - 2015 Red Hat, Inc.
  */
 
 #include "config.h"
@@ -45,8 +45,7 @@
 #include "nm-core-internal.h"
 #include "nm-macros-internal.h"
 
-#include "nm-logging.h"
-#include "gsystem-local-alloc.h"
+#include "nm-default.h"
 #include "common.h"
 #include "shvar.h"
 #include "reader.h"
@@ -968,7 +967,7 @@ write_wireless_setting (NMConnection *connection,
 			tmp = g_strdup_printf ("KEY_PASSPHRASE%d", i + 1);
 			set_secret (ifcfg, tmp, NULL, "WEP_KEY_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
 			g_free (tmp);
-	
+
 			tmp = g_strdup_printf ("KEY%d", i + 1);
 			set_secret (ifcfg, tmp, NULL, "WEP_KEY_FLAGS", NM_SETTING_SECRET_FLAG_NONE, FALSE);
 			g_free (tmp);
@@ -988,6 +987,21 @@ write_wireless_setting (NMConnection *connection,
 	}
 
 	svSetValue (ifcfg, "SSID_HIDDEN", nm_setting_wireless_get_hidden (s_wireless) ? "yes" : NULL, TRUE);
+	svSetValue (ifcfg, "POWERSAVE", nm_setting_wireless_get_powersave (s_wireless) ? "yes" : NULL, TRUE);
+
+	svSetValue (ifcfg, "MAC_ADDRESS_RANDOMIZATION", NULL, TRUE);
+	switch (nm_setting_wireless_get_mac_address_randomization (s_wireless)) {
+	case NM_SETTING_MAC_RANDOMIZATION_DEFAULT:
+		svSetValue (ifcfg, "MAC_ADDRESS_RANDOMIZATION", "default", TRUE);
+		break;
+	case NM_SETTING_MAC_RANDOMIZATION_ALWAYS:
+		svSetValue (ifcfg, "MAC_ADDRESS_RANDOMIZATION", "always", TRUE);
+		break;
+	default:
+	case NM_SETTING_MAC_RANDOMIZATION_NEVER:
+		svSetValue (ifcfg, "MAC_ADDRESS_RANDOMIZATION", "never", TRUE);
+		break;
+	}
 
 	svSetValue (ifcfg, "TYPE", TYPE_WIRELESS, FALSE);
 
@@ -1268,14 +1282,13 @@ write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 	else
 		svSetValue (ifcfg, "REORDER_HDR", "no", FALSE);
 
+	svSetValue (ifcfg, "GVRP", vlan_flags & NM_VLAN_FLAG_GVRP ? "yes" : "no", FALSE);
+
 	svSetValue (ifcfg, "VLAN_FLAGS", NULL, FALSE);
-	if (vlan_flags & NM_VLAN_FLAG_GVRP) {
-		if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
-			svSetValue (ifcfg, "VLAN_FLAGS", "GVRP,LOOSE_BINDING", FALSE);
-		else
-			svSetValue (ifcfg, "VLAN_FLAGS", "GVRP", FALSE);
-	} else if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
+	if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
 		svSetValue (ifcfg, "VLAN_FLAGS", "LOOSE_BINDING", FALSE);
+
+	svSetValue (ifcfg, "MVRP", vlan_flags & NM_VLAN_FLAG_MVRP ? "yes" : "no", FALSE);
 
 	tmp = vlan_priority_maplist_to_stringlist (s_vlan, NM_VLAN_INGRESS_MAP);
 	svSetValue (ifcfg, "VLAN_INGRESS_PRIORITY_MAP", tmp, FALSE);
@@ -1380,7 +1393,7 @@ write_team_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 }
 
 static guint32
-get_setting_default (NMSetting *setting, const char *prop)
+get_setting_default_uint (NMSetting *setting, const char *prop)
 {
 	GParamSpec *pspec;
 	GValue val = G_VALUE_INIT;
@@ -1397,11 +1410,29 @@ get_setting_default (NMSetting *setting, const char *prop)
 }
 
 static gboolean
+get_setting_default_boolean (NMSetting *setting, const char *prop)
+{
+	GParamSpec *pspec;
+	GValue val = G_VALUE_INIT;
+	gboolean ret = 0;
+
+	pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (setting), prop);
+	g_assert (pspec);
+	g_value_init (&val, pspec->value_type);
+	g_param_value_set_default (pspec, &val);
+	g_assert (G_VALUE_HOLDS_BOOLEAN (&val));
+	ret = g_value_get_boolean (&val);
+	g_value_unset (&val);
+	return ret;
+}
+
+static gboolean
 write_bridge_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 {
 	NMSettingBridge *s_bridge;
 	const char *iface;
 	guint32 i;
+	gboolean b;
 	GString *opts;
 	const char *mac;
 	char *s;
@@ -1435,7 +1466,7 @@ write_bridge_setting (NMConnection *connection, shvarFile *ifcfg, GError **error
 		svSetValue (ifcfg, "STP", "yes", FALSE);
 
 		i = nm_setting_bridge_get_forward_delay (s_bridge);
-		if (i != get_setting_default (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_FORWARD_DELAY)) {
+		if (i != get_setting_default_uint (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_FORWARD_DELAY)) {
 			s = g_strdup_printf ("%u", i);
 			svSetValue (ifcfg, "DELAY", s, FALSE);
 			g_free (s);
@@ -1444,14 +1475,14 @@ write_bridge_setting (NMConnection *connection, shvarFile *ifcfg, GError **error
 		g_string_append_printf (opts, "priority=%u", nm_setting_bridge_get_priority (s_bridge));
 
 		i = nm_setting_bridge_get_hello_time (s_bridge);
-		if (i != get_setting_default (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_HELLO_TIME)) {
+		if (i != get_setting_default_uint (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_HELLO_TIME)) {
 			if (opts->len)
 				g_string_append_c (opts, ' ');
 			g_string_append_printf (opts, "hello_time=%u", i);
 		}
 
 		i = nm_setting_bridge_get_max_age (s_bridge);
-		if (i != get_setting_default (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_MAX_AGE)) {
+		if (i != get_setting_default_uint (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_MAX_AGE)) {
 			if (opts->len)
 				g_string_append_c (opts, ' ');
 			g_string_append_printf (opts, "max_age=%u", i);
@@ -1459,10 +1490,17 @@ write_bridge_setting (NMConnection *connection, shvarFile *ifcfg, GError **error
 	}
 
 	i = nm_setting_bridge_get_ageing_time (s_bridge);
-	if (i != get_setting_default (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_AGEING_TIME)) {
+	if (i != get_setting_default_uint (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_AGEING_TIME)) {
 		if (opts->len)
 			g_string_append_c (opts, ' ');
 		g_string_append_printf (opts, "ageing_time=%u", i);
+	}
+
+	b = nm_setting_bridge_get_multicast_snooping (s_bridge);
+	if (b != get_setting_default_boolean (NM_SETTING (s_bridge), NM_SETTING_BRIDGE_MULTICAST_SNOOPING)) {
+		if (opts->len)
+			g_string_append_c (opts, ' ');
+		g_string_append_printf (opts, "multicast_snooping=%u", (guint32) b);
 	}
 
 	if (opts->len)
@@ -1491,11 +1529,11 @@ write_bridge_port_setting (NMConnection *connection, shvarFile *ifcfg, GError **
 	opts = g_string_sized_new (32);
 
 	i = nm_setting_bridge_port_get_priority (s_port);
-	if (i != get_setting_default (NM_SETTING (s_port), NM_SETTING_BRIDGE_PORT_PRIORITY))
+	if (i != get_setting_default_uint (NM_SETTING (s_port), NM_SETTING_BRIDGE_PORT_PRIORITY))
 		g_string_append_printf (opts, "priority=%u", i);
 
 	i = nm_setting_bridge_port_get_path_cost (s_port);
-	if (i != get_setting_default (NM_SETTING (s_port), NM_SETTING_BRIDGE_PORT_PATH_COST)) {
+	if (i != get_setting_default_uint (NM_SETTING (s_port), NM_SETTING_BRIDGE_PORT_PATH_COST)) {
 		if (opts->len)
 			g_string_append_c (opts, ' ');
 		g_string_append_printf (opts, "path_cost=%u", i);
@@ -1753,6 +1791,18 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 		            FALSE);
 	}
 
+	switch (nm_setting_connection_get_lldp (s_con)) {
+	case NM_SETTING_CONNECTION_LLDP_ENABLE_RX:
+		tmp = "rx";
+		break;
+	case NM_SETTING_CONNECTION_LLDP_DISABLE:
+		tmp = "no";
+		break;
+	default:
+		tmp = NULL;
+	}
+	svSetValue (ifcfg, "LLDP", tmp, FALSE);
+
 	/* Permissions */
 	svSetValue (ifcfg, "USERS", NULL, FALSE);
 	n = nm_setting_connection_get_num_permissions (s_con);
@@ -1897,6 +1947,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	gint32 j;
 	guint32 i, n, num;
 	gint64 route_metric;
+	int dhcp_timeout;
 	GString *searches;
 	gboolean success = FALSE;
 	gboolean fake_ip4 = FALSE;
@@ -2090,6 +2141,10 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		if (value)
 			svSetValue (ifcfg, "DHCP_HOSTNAME", value, FALSE);
 
+		value = nm_setting_ip4_config_get_dhcp_fqdn (NM_SETTING_IP4_CONFIG (s_ip4));
+		if (value)
+			svSetValue (ifcfg, "DHCP_FQDN", value, FALSE);
+
 		/* Missing DHCP_SEND_HOSTNAME means TRUE, and we prefer not write it explicitly
 		 * in that case, because it is NM-specific variable
 		 */
@@ -2100,6 +2155,11 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		value = nm_setting_ip4_config_get_dhcp_client_id (NM_SETTING_IP4_CONFIG (s_ip4));
 		if (value)
 			svSetValue (ifcfg, "DHCP_CLIENT_ID", value, FALSE);
+
+		dhcp_timeout = nm_setting_ip4_config_get_dhcp_timeout (NM_SETTING_IP4_CONFIG (s_ip4));
+		tmp = dhcp_timeout ? g_strdup_printf ("%d", dhcp_timeout) : NULL;
+		svSetValue (ifcfg, "IPV4_DHCP_TIMEOUT", tmp, FALSE);
+		g_free (tmp);
 	}
 
 	svSetValue (ifcfg, "IPV4_FAILURE_FATAL",
@@ -2353,6 +2413,7 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	gint64 route_metric;
 	GString *ip_str1, *ip_str2, *ip_ptr;
 	char *route6_path;
+	NMSettingIP6ConfigAddrGenMode addr_gen_mode;
 
 	s_ip6 = nm_connection_get_setting_ip6_config (connection);
 	if (!s_ip6) {
@@ -2365,6 +2426,7 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		svSetValue (ifcfg, "IPV6_PEERROUTES", "yes", FALSE);
 		svSetValue (ifcfg, "IPV6_FAILURE_FATAL", "no", FALSE);
 		svSetValue (ifcfg, "IPV6_ROUTE_METRIC", NULL, FALSE);
+		svSetValue (ifcfg, "IPV6_ADDR_GEN_MODE", "stable-privacy", FALSE);
 		return TRUE;
 	}
 
@@ -2502,6 +2564,15 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	break;
 	}
 
+	/* IPv6 Address generation mode */
+	addr_gen_mode = nm_setting_ip6_config_get_addr_gen_mode (NM_SETTING_IP6_CONFIG (s_ip6));
+	if (addr_gen_mode != NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64) {
+		tmp = nm_utils_enum_to_str (nm_setting_ip6_config_addr_gen_mode_get_type (),
+		                            addr_gen_mode);
+		svSetValue (ifcfg, "IPV6_ADDR_GEN_MODE", tmp, FALSE);
+		g_free (tmp);
+	}
+
 	/* Static routes go to route6-<dev> file */
 	route6_path = utils_get_route6_path (ifcfg->fileName);
 	if (!route6_path) {
@@ -2518,6 +2589,63 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 
 error:
 	return FALSE;
+}
+
+static void
+add_dns_option (GPtrArray *array, const char *option)
+{
+	if (_nm_utils_dns_option_find_idx (array, option) < 0)
+		g_ptr_array_add (array, (gpointer) option);
+}
+
+static gboolean
+write_res_options (NMConnection *connection, shvarFile *ifcfg, GError **error)
+{
+	NMSettingIPConfig *s_ip6;
+	NMSettingIPConfig *s_ip4;
+	const char *method;
+	int i, num_options;
+	GPtrArray *array;
+	GString *value;
+
+	s_ip4 = nm_connection_get_setting_ip4_config (connection);
+	s_ip6 = nm_connection_get_setting_ip6_config (connection);
+	array = g_ptr_array_new ();
+
+	if (s_ip4) {
+		method = nm_setting_ip_config_get_method (s_ip4);
+		if (g_strcmp0 (method, NM_SETTING_IP4_CONFIG_METHOD_DISABLED)) {
+			num_options = nm_setting_ip_config_get_num_dns_options (s_ip4);
+			for (i = 0; i < num_options; i++)
+				add_dns_option (array, nm_setting_ip_config_get_dns_option (s_ip4, i));
+		}
+	}
+
+	if (s_ip6) {
+		method = nm_setting_ip_config_get_method (s_ip6);
+		if (g_strcmp0 (method, NM_SETTING_IP6_CONFIG_METHOD_IGNORE)) {
+			num_options = nm_setting_ip_config_get_num_dns_options (s_ip6);
+			for (i = 0; i < num_options; i++)
+				add_dns_option (array, nm_setting_ip_config_get_dns_option (s_ip6, i));
+		}
+	}
+
+	if (array->len > 0
+	    || (s_ip4 && nm_setting_ip_config_has_dns_options (s_ip4))
+	    || (s_ip6 && nm_setting_ip_config_has_dns_options (s_ip6))) {
+		value = g_string_new (NULL);
+		for (i = 0; i < array->len; i++) {
+			if (i > 0)
+				g_string_append_c (value, ' ');
+			g_string_append (value, array->pdata[i]);
+		}
+		svSetValueFull (ifcfg, "RES_OPTIONS", value->str, FALSE);
+		g_string_free (value, TRUE);
+	} else
+		svSetValue (ifcfg, "RES_OPTIONS", NULL, FALSE);
+
+	g_ptr_array_unref (array);
+	return TRUE;
 }
 
 static char *
@@ -2660,12 +2788,16 @@ write_connection (NMConnection *connection,
 
 	if (!utils_ignore_ip_config (connection)) {
 		svSetValue (ifcfg, "DHCP_HOSTNAME", NULL, FALSE);
+		svSetValue (ifcfg, "DHCP_FQDN", NULL, FALSE);
 
 		if (!write_ip4_setting (connection, ifcfg, error))
 			goto out;
 		write_ip4_aliases (connection, ifcfg_name);
 
 		if (!write_ip6_setting (connection, ifcfg, error))
+			goto out;
+
+		if (!write_res_options (connection, ifcfg, error))
 			goto out;
 	}
 

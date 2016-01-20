@@ -24,14 +24,13 @@
 #include <string.h>
 #include <netinet/ether.h>
 
-#include "nm-glib-compat.h"
-
 #include <nm-connection.h>
 #include <nm-setting-connection.h>
 #include <nm-setting-wireless.h>
 #include <nm-setting-wireless-security.h>
 #include <nm-utils.h>
 
+#include "nm-default.h"
 #include "nm-access-point.h"
 #include "NetworkManager.h"
 #include "nm-types-private.h"
@@ -53,7 +52,7 @@ typedef struct {
 	NM80211Mode mode;
 	guint32 max_bitrate;
 	guint8 strength;
-	gint32 last_seen;
+	gint last_seen;
 } NMAccessPointPrivate;
 
 enum {
@@ -277,9 +276,9 @@ nm_access_point_get_strength (NMAccessPoint *ap)
  *
  * Returns: the last seen time in seconds
  *
- * Since: 1.0.6
+ * Since: 1.2
  **/
-gint32
+gint
 nm_access_point_get_last_seen (NMAccessPoint *ap)
 {
 	g_return_val_if_fail (NM_IS_ACCESS_POINT (ap), -1);
@@ -707,7 +706,7 @@ nm_access_point_class_init (NMAccessPointClass *ap_class)
 	 * access point was found in scan results.  A value of -1 means the
 	 * access point has not been found in a scan.
 	 *
-	 * Since: 1.0.6
+	 * Since: 1.2
 	 **/
 	g_object_class_install_property
 		(object_class, PROP_LAST_SEEN,

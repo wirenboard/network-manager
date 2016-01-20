@@ -20,7 +20,7 @@
 
 #include "config.h"
 
-#include <glib.h>
+#include "nm-default.h"
 #include "nm-bt-error.h"
 
 GQuark

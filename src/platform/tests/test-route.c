@@ -9,7 +9,7 @@
 #define DEVICE_NAME "nm-test-device"
 
 static void
-ip4_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, const NMPlatformIP4Route *received, NMPlatformSignalChangeType change_type, NMPlatformReason reason, SignalData *data)
+ip4_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, const NMPlatformIP4Route *received, NMPlatformSignalChangeType change_type, SignalData *data)
 {
 	g_assert (received);
 	g_assert_cmpint (received->ifindex, ==, ifindex);
@@ -25,11 +25,11 @@ ip4_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, c
 		g_main_loop_quit (data->loop);
 
 	data->received_count++;
-	debug ("Received signal '%s' %dth time.", data->name, data->received_count);
+	_LOGD ("Received signal '%s' %dth time.", data->name, data->received_count);
 }
 
 static void
-ip6_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, const NMPlatformIP6Route *received, NMPlatformSignalChangeType change_type, NMPlatformReason reason, SignalData *data)
+ip6_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, const NMPlatformIP6Route *received, NMPlatformSignalChangeType change_type, SignalData *data)
 {
 	g_assert (received);
 	g_assert_cmpint (received->ifindex, ==, ifindex);
@@ -45,7 +45,7 @@ ip6_route_callback (NMPlatform *platform, NMPObjectType obj_type, int ifindex, c
 		g_main_loop_quit (data->loop);
 
 	data->received_count++;
-	debug ("Received signal '%s' %dth time.", data->name, data->received_count);
+	_LOGD ("Received signal '%s' %dth time.", data->name, data->received_count);
 }
 
 static void
@@ -282,6 +282,31 @@ test_ip6_route (void)
 	free_signal (route_removed);
 }
 
+/*****************************************************************************/
+
+static void
+test_ip4_zero_gateway (void)
+{
+	int ifindex = nm_platform_link_get_ifindex (NM_PLATFORM_GET, DEVICE_NAME);
+
+	nmtstp_run_command_check ("ip route add 1.2.3.1/32 via 0.0.0.0 dev %s", DEVICE_NAME);
+	nmtstp_run_command_check ("ip route add 1.2.3.2/32 dev %s", DEVICE_NAME);
+
+	NMTST_WAIT_ASSERT (100, {
+		nmtstp_wait_for_signal (10);
+		if (   nm_platform_ip4_route_get (NM_PLATFORM_GET, ifindex, nmtst_inet4_from_string ("1.2.3.1"), 32, 0)
+		    && nm_platform_ip4_route_get (NM_PLATFORM_GET, ifindex, nmtst_inet4_from_string ("1.2.3.2"), 32, 0))
+			break;
+	});
+
+	nmtstp_run_command_check ("ip route flush dev %s", DEVICE_NAME);
+
+	nmtstp_wait_for_signal (50);
+	nm_platform_process_events (NM_PLATFORM_GET);
+}
+
+/*****************************************************************************/
+
 void
 init_tests (int *argc, char ***argv)
 {
@@ -295,7 +320,7 @@ setup_tests (void)
 
 	nm_platform_link_delete (NM_PLATFORM_GET, nm_platform_link_get_ifindex (NM_PLATFORM_GET, DEVICE_NAME));
 	g_assert (!nm_platform_link_get_by_ifname (NM_PLATFORM_GET, DEVICE_NAME));
-	g_assert (nm_platform_dummy_add (NM_PLATFORM_GET, DEVICE_NAME, NULL) == NM_PLATFORM_ERROR_SUCCESS);
+	g_assert (nm_platform_link_dummy_add (NM_PLATFORM_GET, DEVICE_NAME, NULL) == NM_PLATFORM_ERROR_SUCCESS);
 	accept_signal (link_added);
 	free_signal (link_added);
 
@@ -304,4 +329,7 @@ setup_tests (void)
 	g_test_add_func ("/route/ip4", test_ip4_route);
 	g_test_add_func ("/route/ip6", test_ip6_route);
 	g_test_add_func ("/route/ip4_metric0", test_ip4_route_metric0);
+
+	if (nmtstp_is_root_test ())
+		g_test_add_func ("/route/ip4_zero_gateway", test_ip4_zero_gateway);
 }

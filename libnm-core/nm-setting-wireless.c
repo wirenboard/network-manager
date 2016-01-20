@@ -24,7 +24,6 @@
 
 #include <string.h>
 #include <net/ethernet.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-setting-wireless.h"
 #include "nm-utils.h"
@@ -59,6 +58,8 @@ typedef struct {
 	guint32 mtu;
 	GSList *seen_bssids;
 	gboolean hidden;
+	guint32 powersave;
+	NMSettingMacRandomization mac_address_randomization;
 } NMSettingWirelessPrivate;
 
 enum {
@@ -76,6 +77,8 @@ enum {
 	PROP_MTU,
 	PROP_SEEN_BSSIDS,
 	PROP_HIDDEN,
+	PROP_POWERSAVE,
+	PROP_MAC_ADDRESS_RANDOMIZATION,
 
 	LAST_PROP
 };
@@ -601,6 +604,39 @@ nm_setting_wireless_get_hidden (NMSettingWireless *setting)
 }
 
 /**
+ * nm_setting_wireless_get_powersave:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:powersave property of the setting
+ *
+ * Since: 1.2
+ **/
+guint32
+nm_setting_wireless_get_powersave (NMSettingWireless *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_WIRELESS (setting), 0);
+
+	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->powersave;
+}
+
+/**
+ * nm_setting_wireless_get_mac_address_randomization:
+ * @setting: the #NMSettingWireless
+ *
+ * Returns: the #NMSettingWireless:mac-address-randomization property of the
+ * setting
+ *
+ * Since: 1.2
+ **/
+NMSettingMacRandomization
+nm_setting_wireless_get_mac_address_randomization (NMSettingWireless *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_WIRELESS (setting), 0);
+
+	return NM_SETTING_WIRELESS_GET_PRIVATE (setting)->mac_address_randomization;
+}
+
+/**
  * nm_setting_wireless_add_seen_bssid:
  * @setting: the #NMSettingWireless
  * @bssid: the new BSSID to add to the list
@@ -915,6 +951,12 @@ set_property (GObject *object, guint prop_id,
 	case PROP_HIDDEN:
 		priv->hidden = g_value_get_boolean (value);
 		break;
+	case PROP_POWERSAVE:
+		priv->powersave = g_value_get_uint (value);
+		break;
+	case PROP_MAC_ADDRESS_RANDOMIZATION:
+		priv->mac_address_randomization = g_value_get_uint (value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -967,6 +1009,12 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_HIDDEN:
 		g_value_set_boolean (value, nm_setting_wireless_get_hidden (setting));
+		break;
+	case PROP_POWERSAVE:
+		g_value_set_uint (value, nm_setting_wireless_get_powersave (setting));
+		break;
+	case PROP_MAC_ADDRESS_RANDOMIZATION:
+		g_value_set_uint (value, nm_setting_wireless_get_mac_address_randomization (setting));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1313,6 +1361,58 @@ nm_setting_wireless_class_init (NMSettingWirelessClass *setting_class)
 		                       FALSE,
 		                       G_PARAM_READWRITE |
 		                       G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSettingWireless:powersave:
+	 *
+	 * If set to %FALSE, Wi-Fi power saving behavior is disabled.  If set to
+	 * %TRUE, Wi-Fi power saving behavior is enabled.  All other values are
+	 * reserved.  Note that even though only boolean values are allowed, the
+	 * property type is an unsigned integer to allow for future expansion.
+	 *
+	 * Since: 1.2
+	 **/
+	/* ---ifcfg-rh---
+	 * property: powersave
+	 * variable: POWERSAVE(+)
+	 * default: no
+	 * description: Enables or disables Wi-Fi power saving.
+	 * example: POWERSAVE=yes
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_POWERSAVE,
+		 g_param_spec_uint (NM_SETTING_WIRELESS_POWERSAVE, "", "",
+		                    0, G_MAXUINT32, 0,
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSettingWireless:mac-address-randomization:
+	 *
+	 * One of %NM_SETTING_MAC_RANDOMIZATION_DEFAULT (never randomize unless
+	 * the user has set a global default to randomize and the supplicant
+	 * supports randomization),  %NM_SETTING_MAC_RANDOMIZATION_NEVER (never
+	 * randomize the MAC address), or %NM_SETTING_MAC_RANDOMIZATION_ALWAYS
+	 * (always randomize the MAC address).
+	 *
+	 * Since: 1.2
+	 **/
+	/* ---ifcfg-rh---
+	 * property: mac-address-randomization
+	 * variable: MAC_ADDRESS_RANDOMIZATION(+)
+	 * values: 0 (default), (1) never, (2) always
+	 * default: 1
+	 * description: Enables or disables Wi-Fi MAC address randomization.
+	 * example: MAC_ADDRESS_RANDOMIZATION=2
+	 * ---end---
+	 */
+	g_object_class_install_property
+		(object_class, PROP_MAC_ADDRESS_RANDOMIZATION,
+		 g_param_spec_uint (NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION, "", "",
+		                    0, G_MAXUINT32, NM_SETTING_MAC_RANDOMIZATION_DEFAULT,
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_STATIC_STRINGS));
 
 	/* Compatibility for deprecated property */
 	/* ---ifcfg-rh---

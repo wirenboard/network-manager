@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-keyfile
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 23 December 2015
+.\"      Date: 19 January 2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.0.9
+.\"    Source: NetworkManager 1.1.90
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-KEYFIL" "5" "" "NetworkManager 1\&.0\&.9" "Configuration"
+.TH "NM\-SETTINGS\-KEYFIL" "5" "" "NetworkManager 1\&.1\&.90" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,7 +39,7 @@ for details)\&. The profiles can be stored in various formats\&. NetworkManager 
 The
 \fIkeyfile\fR
 plugin is the generic plugin that supports all the connection types and capabilities that NetworkManager has\&. It writes files out in a \&.ini\-style format in
-/etc/NetworkManager/system\-connections/\&. This plugin is always enabled and will automatically be used to store any connections that are not supported by any other active plugin\&. For security, it will ignore files that are readable or writeable by any user or group other than \*(Aqroot\*(Aq since private keys and passphrases may be stored in plaintext inside the file\&.
+/etc/NetworkManager/system\-connections/\&. This plugin is always enabled and will automatically be used to store any connections that are not supported by any other active plugin\&. For security, it will ignore files that are readable or writable by any user or group other than \*(Aqroot\*(Aq since private keys and passphrases may be stored in plaintext inside the file\&.
 .SH "FILE FORMAT"
 .PP
 The

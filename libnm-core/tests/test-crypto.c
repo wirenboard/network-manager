@@ -23,13 +23,12 @@
 
 #include "config.h"
 
-#include <glib.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <glib/gi18n.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "nm-default.h"
 #include "crypto.h"
 #include "nm-utils.h"
 #include "nm-errors.h"

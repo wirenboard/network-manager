@@ -24,10 +24,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <glib.h>
 
+#include "nm-default.h"
 #include "nm-dns-plugin.h"
-#include "nm-logging.h"
 #include "NetworkManagerUtils.h"
 
 typedef struct {
@@ -57,6 +56,7 @@ nm_dns_plugin_update (NMDnsPlugin *self,
                       const GSList *vpn_configs,
                       const GSList *dev_configs,
                       const GSList *other_configs,
+                      const NMGlobalDnsConfig *global_config,
                       const char *hostname)
 {
 	g_return_val_if_fail (NM_DNS_PLUGIN_GET_CLASS (self)->update != NULL, FALSE);
@@ -65,6 +65,7 @@ nm_dns_plugin_update (NMDnsPlugin *self,
 	                                               vpn_configs,
 	                                               dev_configs,
 	                                               other_configs,
+	                                               global_config,
 	                                               hostname);
 }
 
@@ -188,10 +189,7 @@ nm_dns_plugin_child_kill (NMDnsPlugin *self)
 {
 	NMDnsPluginPrivate *priv = NM_DNS_PLUGIN_GET_PRIVATE (self);
 
-	if (priv->watch_id) {
-		g_source_remove (priv->watch_id);
-		priv->watch_id = 0;
-	}
+	nm_clear_g_source (&priv->watch_id);
 
 	if (priv->pid) {
 		nm_utils_kill_child_sync (priv->pid, SIGTERM, LOGD_DNS, priv->progname, NULL, 1000, 0);

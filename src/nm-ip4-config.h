@@ -21,9 +21,7 @@
 #ifndef __NETWORKMANAGER_IP4_CONFIG_H__
 #define __NETWORKMANAGER_IP4_CONFIG_H__
 
-#include <glib-object.h>
-
-#include "nm-types.h"
+#include "nm-exported-object.h"
 #include "nm-setting-ip4-config.h"
 
 #define NM_TYPE_IP4_CONFIG (nm_ip4_config_get_type ())
@@ -33,20 +31,30 @@
 #define NM_IS_IP4_CONFIG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_IP4_CONFIG))
 #define NM_IP4_CONFIG_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_IP4_CONFIG, NMIP4ConfigClass))
 
+struct _NMIP4ConfigPrivate;
+
 struct _NMIP4Config {
-	GObject parent;
+	NMExportedObject parent;
+
+	/* private */
+	struct _NMIP4ConfigPrivate *priv;
 };
 
 typedef struct {
-	GObjectClass parent;
+	NMExportedObjectClass parent;
 } NMIP4ConfigClass;
 
+/* internal */
+#define NM_IP4_CONFIG_IFINDEX "ifindex"
+
+/* public*/
 #define NM_IP4_CONFIG_ADDRESS_DATA "address-data"
 #define NM_IP4_CONFIG_ROUTE_DATA "route-data"
 #define NM_IP4_CONFIG_GATEWAY "gateway"
 #define NM_IP4_CONFIG_NAMESERVERS "nameservers"
 #define NM_IP4_CONFIG_DOMAINS "domains"
 #define NM_IP4_CONFIG_SEARCHES "searches"
+#define NM_IP4_CONFIG_DNS_OPTIONS "dns-options"
 #define NM_IP4_CONFIG_WINS_SERVERS "wins-servers"
 
 /* deprecated */
@@ -56,11 +64,9 @@ typedef struct {
 GType nm_ip4_config_get_type (void);
 
 
-NMIP4Config * nm_ip4_config_new (void);
+NMIP4Config * nm_ip4_config_new (int ifindex);
 
-/* D-Bus integration */
-void nm_ip4_config_export (NMIP4Config *config);
-const char * nm_ip4_config_get_dbus_path (const NMIP4Config *config);
+int nm_ip4_config_get_ifindex (const NMIP4Config *config);
 
 /* Integration with nm-platform and nm-setting */
 NMIP4Config *nm_ip4_config_capture (int ifindex, gboolean capture_resolv_conf);
@@ -101,7 +107,6 @@ guint32 nm_ip4_config_get_num_routes (const NMIP4Config *config);
 const NMPlatformIP4Route *nm_ip4_config_get_route (const NMIP4Config *config, guint32 i);
 
 const NMPlatformIP4Route *nm_ip4_config_get_direct_route_for_host (const NMIP4Config *config, guint32 host);
-const NMPlatformIP4Address *nm_ip4_config_get_subnet_for_host (const NMIP4Config *config, guint32 host);
 
 /* Nameservers */
 void nm_ip4_config_reset_nameservers (NMIP4Config *config);
@@ -123,6 +128,13 @@ void nm_ip4_config_add_search (NMIP4Config *config, const char *search);
 void nm_ip4_config_del_search (NMIP4Config *config, guint i);
 guint32 nm_ip4_config_get_num_searches (const NMIP4Config *config);
 const char * nm_ip4_config_get_search (const NMIP4Config *config, guint i);
+
+/* DNS options */
+void nm_ip4_config_reset_dns_options (NMIP4Config *config);
+void nm_ip4_config_add_dns_option (NMIP4Config *config, const char *option);
+void nm_ip4_config_del_dns_option (NMIP4Config *config, guint i);
+guint32 nm_ip4_config_get_num_dns_options (const NMIP4Config *config);
+const char * nm_ip4_config_get_dns_option (const NMIP4Config *config, guint i);
 
 /* MSS */
 void nm_ip4_config_set_mss (NMIP4Config *config, guint32 mss);
@@ -159,7 +171,7 @@ gboolean nm_ip4_config_equal (const NMIP4Config *a, const NMIP4Config *b);
 /******************************************************/
 /* Testing-only functions */
 
-gboolean nm_ip4_config_capture_resolv_conf (GArray *nameservers,
+gboolean nm_ip4_config_capture_resolv_conf (GArray *nameservers, GPtrArray *dns_options,
                                             const char *rc_contents);
 
 #endif /* __NETWORKMANAGER_IP4_CONFIG_H__ */

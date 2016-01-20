@@ -23,12 +23,19 @@
 #include "config.h"
 
 #include <string.h>
-#include <glib/gi18n-lib.h>
 
 #include "nm-setting-olpc-mesh.h"
 #include "nm-utils.h"
 #include "nm-utils-private.h"
 #include "nm-setting-private.h"
+
+/**
+ * SECTION:nm-setting-olpc-mesh
+ * @short_description: Describes connection properties for OLPC-Mesh devices
+ *
+ * The #NMSettingOlpcMesh object is a #NMSetting subclass that describes properties
+ * necessary for connection to OLPC-Mesh devices.
+ **/
 
 static void nm_setting_olpc_mesh_init (NMSettingOlpcMesh *setting);
 

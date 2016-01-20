@@ -22,12 +22,102 @@
 #ifndef __NETWORKMANAGER_UTILS_H__
 #define __NETWORKMANAGER_UTILS_H__
 
-#include <glib.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 
+#include "nm-default.h"
 #include "nm-connection.h"
-#include "nm-types.h"
+
+/*****************************************************************************/
+
+#define NM_DEFINE_SINGLETON_INSTANCE(TYPE) \
+static TYPE *singleton_instance
+
+#define NM_DEFINE_SINGLETON_REGISTER(TYPE) \
+NM_DEFINE_SINGLETON_INSTANCE (TYPE); \
+static void \
+_singleton_instance_weak_ref_cb (gpointer data, \
+                                 GObject *where_the_object_was) \
+{ \
+	nm_log_dbg (LOGD_CORE, "disposing %s singleton (%p)", G_STRINGIFY (TYPE), singleton_instance); \
+	singleton_instance = NULL; \
+} \
+static inline void \
+nm_singleton_instance_register (void) \
+{ \
+	g_object_weak_ref (G_OBJECT (singleton_instance), _singleton_instance_weak_ref_cb, NULL); \
+	_nm_singleton_instance_register_destruction (G_OBJECT (singleton_instance)); \
+}
+
+void _nm_singleton_instance_register_destruction (GObject *instance);
+
+/* By default, the getter will assert that the singleton will be created only once. You can
+ * change this by redefining NM_DEFINE_SINGLETON_ALLOW_MULTIPLE. */
+#ifndef NM_DEFINE_SINGLETON_ALLOW_MULTIPLE
+#define NM_DEFINE_SINGLETON_ALLOW_MULTIPLE     FALSE
+#endif
+
+#define NM_DEFINE_SINGLETON_GETTER(TYPE, GETTER, GTYPE, ...) \
+NM_DEFINE_SINGLETON_INSTANCE (TYPE); \
+NM_DEFINE_SINGLETON_REGISTER (TYPE); \
+TYPE * \
+GETTER (void) \
+{ \
+	if (G_UNLIKELY (!singleton_instance)) { \
+		static char _already_created = FALSE; \
+\
+		g_assert (!_already_created || (NM_DEFINE_SINGLETON_ALLOW_MULTIPLE)); \
+		_already_created = TRUE;\
+		singleton_instance = (g_object_new (GTYPE, ##__VA_ARGS__, NULL)); \
+		g_assert (singleton_instance); \
+		nm_singleton_instance_register (); \
+		nm_log_dbg (LOGD_CORE, "create %s singleton (%p)", G_STRINGIFY (TYPE), singleton_instance); \
+	} \
+	return singleton_instance; \
+}
+
+/* attach @instance to the data or @owner. @owner owns a reference
+ * to @instance thus the lifetime of @instance is at least as long
+ * as that of @owner. Use this when @owner depends on @instance. */
+#define NM_UTILS_KEEP_ALIVE(owner, instance, unique_token) \
+    G_STMT_START { \
+         g_object_set_data_full (G_OBJECT (owner), \
+                                 ".nm-utils-keep-alive-" unique_token "", \
+                                 g_object_ref (instance), \
+                                 g_object_unref); \
+    } G_STMT_END
+
+/*****************************************************************************/
+
+/**
+ * NMUtilsError:
+ * @NM_UTILS_ERROR_UNKNOWN: unknown or unclassified error
+ * @NM_UTILS_ERROR_CANCELLED_DISPOSING: when disposing an object that has
+ *   pending aynchronous operations, the operation is cancelled with this
+ *   error reason. Depending on the usage, this might indicate a bug because
+ *   usually the target object should stay alive as long as there are pending
+ *   operations.
+ */
+typedef enum {
+	NM_UTILS_ERROR_UNKNOWN = 0,                 /*< nick=Unknown >*/
+	NM_UTILS_ERROR_CANCELLED_DISPOSING,         /*< nick=CancelledDisposing >*/
+} NMUtilsError;
+
+#define NM_UTILS_ERROR (nm_utils_error_quark ())
+GQuark nm_utils_error_quark (void);
+
+void nm_utils_error_set_cancelled (GError **error,
+                                   gboolean is_disposing,
+                                   const char *instance_name);
+gboolean nm_utils_error_is_cancelled (GError *error,
+                                      gboolean consider_is_disposing);
+
+/*****************************************************************************/
+
+gint nm_utils_ascii_str_to_bool (const char *str,
+                                 gint default_value);
+
+/*****************************************************************************/
 
 gboolean nm_ethernet_address_is_valid (gconstpointer addr, gssize len);
 
@@ -97,37 +187,120 @@ NMMatchSpecMatchType nm_match_spec_device_type (const GSList *specs, const char 
 NMMatchSpecMatchType nm_match_spec_hwaddr (const GSList *specs, const char *hwaddr);
 NMMatchSpecMatchType nm_match_spec_s390_subchannels (const GSList *specs, const char *subchannels);
 NMMatchSpecMatchType nm_match_spec_interface_name (const GSList *specs, const char *interface_name);
+NMMatchSpecMatchType nm_match_spec_match_config (const GSList *specs, guint nm_version, const char *env);
 GSList *nm_match_spec_split (const char *value);
 char *nm_match_spec_join (GSList *specs);
 
+extern char _nm_utils_to_string_buffer[2096];
+
+void     nm_utils_to_string_buffer_init (char **buf, gsize *len);
+gboolean nm_utils_to_string_buffer_init_null (gconstpointer obj, char **buf, gsize *len);
+
+/*****************************************************************************/
+
+typedef struct {
+	unsigned flag;
+	const char *name;
+} NMUtilsFlags2StrDesc;
+
+#define NM_UTILS_FLAGS2STR(f, n) { .flag = f, .name = ""n, }
+
+#define _NM_UTILS_FLAGS2STR_DEFINE(scope, fcn_name, flags_type, ...) \
+scope const char * \
+fcn_name (flags_type flags, char *buf, gsize len) \
+{ \
+	static const NMUtilsFlags2StrDesc descs[] = { \
+		__VA_ARGS__ \
+	}; \
+	G_STATIC_ASSERT (sizeof (flags_type) <= sizeof (unsigned)); \
+	return nm_utils_flags2str (descs, G_N_ELEMENTS (descs), flags, buf, len); \
+};
+
+#define NM_UTILS_FLAGS2STR_DEFINE(fcn_name, flags_type, ...) \
+	_NM_UTILS_FLAGS2STR_DEFINE (, fcn_name, flags_type, __VA_ARGS__)
+#define NM_UTILS_FLAGS2STR_DEFINE_STATIC(fcn_name, flags_type, ...) \
+	_NM_UTILS_FLAGS2STR_DEFINE (static, fcn_name, flags_type, __VA_ARGS__)
+
+const char *nm_utils_flags2str (const NMUtilsFlags2StrDesc *descs,
+                                gsize n_descs,
+                                unsigned flags,
+                                char *buf,
+                                gsize len);
+
+/*****************************************************************************/
+
+typedef struct {
+	int value;
+	const char *name;
+} NMUtilsEnum2StrDesc;
+
+#define NM_UTILS_ENUM2STR(v, n) { .value = v, .name = ""n, }
+
+#define _NM_UTILS_ENUM2STR_DEFINE(scope, fcn_name, enum_type, ...) \
+scope const char * \
+fcn_name (enum_type val, char *buf, gsize len) \
+{ \
+	static const NMUtilsEnum2StrDesc descs[] = { \
+		__VA_ARGS__ \
+	}; \
+	G_STATIC_ASSERT (sizeof (enum_type) <= sizeof (int)); \
+	return nm_utils_enum2str (descs, G_N_ELEMENTS (descs), val, buf, len); \
+}
+
+#define NM_UTILS_ENUM2STR_DEFINE(fcn_name, enum_type, ...) \
+	_NM_UTILS_ENUM2STR_DEFINE (, fcn_name, enum_type, __VA_ARGS__)
+#define NM_UTILS_ENUM2STR_DEFINE_STATIC(fcn_name, enum_type, ...) \
+	_NM_UTILS_ENUM2STR_DEFINE (static, fcn_name, enum_type, __VA_ARGS__)
+
+const char *nm_utils_enum2str (const NMUtilsEnum2StrDesc *descs,
+                               gsize n_descs,
+                               int val,
+                               char *buf,
+                               gsize len);
+
+/*****************************************************************************/
+
+#define _NM_UTILS_STRING_LOOKUP_TABLE_DEFINE(scope, fcn_name, lookup_type, unknown_val, ...) \
+scope const char * \
+fcn_name (lookup_type idx) \
+{ \
+	static const char *const descs[] = { \
+		__VA_ARGS__ \
+	}; \
+	if ((gssize) idx >= 0 && idx < G_N_ELEMENTS (descs)) \
+		return descs[idx]; \
+	return unknown_val; \
+}
+
+#define NM_UTILS_STRING_LOOKUP_TABLE_DEFINE(fcn_name, lookup_type, unknown_val, ...) \
+	_NM_UTILS_STRING_LOOKUP_TABLE_DEFINE (, fcn_name, lookup_type, unknown_val, __VA_ARGS__)
+#define NM_UTILS_STRING_LOOKUP_TABLE_DEFINE_STATIC(fcn_name, lookup_type, unknown_val, ...) \
+	_NM_UTILS_STRING_LOOKUP_TABLE_DEFINE (static, fcn_name, lookup_type, unknown_val, __VA_ARGS__)
+
+/* Call the string-lookup-table function @fcn_name. If the function returns
+ * %NULL, the numeric index is converted to string using a alloca() buffer.
+ * Beware: this macro uses alloca(). */
+#define NM_UTILS_STRING_LOOKUP_TABLE(fcn_name, idx) \
+	({ \
+		typeof (idx) _idx = (idx); \
+		const char *_s; \
+		\
+		_s = fcn_name (_idx); \
+		if (!_s) { \
+			_s = g_alloca (30); \
+			\
+			g_snprintf ((char *) _s, 30, "(%lld)", (long long) _idx); \
+		} \
+		_s; \
+	})
+
+/*****************************************************************************/
+
+void nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...) __attribute__((__format__ (__printf__, 3, 4)));
+void nm_utils_strbuf_append_c (char **buf, gsize *len, char c);
+void nm_utils_strbuf_append_str (char **buf, gsize *len, const char *str);
+
 const char *nm_utils_get_shared_wifi_permission (NMConnection *connection);
-
-GHashTable *value_hash_create          (void);
-void        value_hash_add             (GHashTable *hash,
-										const char *key,
-										GValue *value);
-
-void        value_hash_add_str         (GHashTable *hash,
-										const char *key,
-										const char *str);
-
-void        value_hash_add_object_path (GHashTable *hash,
-										const char *key,
-										const char *op);
-
-void        value_hash_add_uint        (GHashTable *hash,
-										const char *key,
-										guint32 val);
-
-void        value_hash_add_bool        (GHashTable *hash,
-					                    const char *key,
-					                    gboolean val);
-
-void        value_hash_add_object_property (GHashTable *hash,
-                                            const char *key,
-                                            GObject *object,
-                                            const char *prop,
-                                            GType val_type);
 
 const char *nm_utils_get_ip_config_method (NMConnection *connection,
                                            GType         ip_setting_type);
@@ -143,6 +316,7 @@ void nm_utils_complete_generic (NMConnection *connection,
 char *nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id);
 
 GPtrArray *nm_utils_read_resolv_conf_nameservers (const char *rc_contents);
+GPtrArray *nm_utils_read_resolv_conf_dns_options (const char *rc_contents);
 
 typedef gboolean (NMUtilsMatchFilterFunc) (NMConnection *connection, gpointer user_data);
 
@@ -199,14 +373,14 @@ gboolean nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
 void nm_utils_ipv6_addr_set_interface_identfier (struct in6_addr *addr,
                                                  const NMUtilsIPv6IfaceId iid);
 
+gboolean nm_utils_ipv6_addr_set_stable_privacy (struct in6_addr *addr,
+                                                const char *ifname,
+                                                const char *uuid,
+                                                guint dad_counter,
+                                                GError **error);
+
 void nm_utils_ipv6_interface_identfier_get_from_addr (NMUtilsIPv6IfaceId *iid,
                                                       const struct in6_addr *addr);
-
-GVariant   *nm_utils_connection_hash_to_dict (GHashTable *hash);
-GHashTable *nm_utils_connection_dict_to_hash (GVariant *dict);
-
-GSList *nm_utils_ip4_routes_from_gvalue (const GValue *value);
-GSList *nm_utils_ip6_routes_from_gvalue (const GValue *value);
 
 void nm_utils_array_remove_at_indexes (GArray *array, const guint *indexes_to_delete, gsize len);
 
@@ -231,5 +405,22 @@ typedef enum {
 gboolean nm_utils_get_testing_initialized (void);
 NMUtilsTestFlags nm_utils_get_testing (void);
 void _nm_utils_set_testing (NMUtilsTestFlags flags);
+
+void nm_utils_g_value_set_object_path (GValue *value, gpointer object);
+void nm_utils_g_value_set_strv (GValue *value, GPtrArray *strings);
+
+/**
+ * NMUtilsObjectFunc:
+ * @object: the object to filter on
+ * @user_data: data passed to the function from the caller
+ *
+ * Returns: %TRUE if the object should be used, %FALSE if not
+ */
+typedef gboolean (*NMUtilsObjectFunc) (GObject *object, gpointer user_data);
+
+void nm_utils_g_value_set_object_path_array (GValue *value,
+                                             GSList *objects,
+                                             NMUtilsObjectFunc filter_func,
+                                             gpointer user_data);
 
 #endif /* __NETWORKMANAGER_UTILS_H__ */

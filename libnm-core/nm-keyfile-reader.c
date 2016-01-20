@@ -28,16 +28,12 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include <glib/gi18n-lib.h>
 
+#include "nm-default.h"
 #include "nm-core-internal.h"
 #include "nm-macros-internal.h"
-#include "gsystem-local-alloc.h"
-#include "nm-glib-compat.h"
 #include "nm-keyfile-internal.h"
 #include "nm-keyfile-utils.h"
-#include "nm-setting-private.h"
-
 
 typedef struct {
 	NMConnection *connection;
@@ -561,6 +557,28 @@ ip6_dns_parser (KeyfileReaderInfo *info, NMSetting *setting, const char *key)
 	g_object_set (setting, key, array->pdata, NULL);
 	g_ptr_array_unref (array);
 	g_strfreev (list);
+}
+
+static void
+ip6_addr_gen_mode_parser (KeyfileReaderInfo *info, NMSetting *setting, const char *key)
+{
+	NMSettingIP6ConfigAddrGenMode addr_gen_mode;
+	const char *setting_name = nm_setting_get_name (setting);
+	gs_free char *s = NULL;
+
+	s = nm_keyfile_plugin_kf_get_string (info->keyfile, setting_name, key, NULL);
+	if (s) {
+		if (!nm_utils_enum_from_str (nm_setting_ip6_config_addr_gen_mode_get_type (), s,
+		                             (int *) &addr_gen_mode, NULL)) {
+			handle_warn (info, key, NM_KEYFILE_WARN_SEVERITY_WARN,
+			             _("invalid option '%s', use one of [%s]"),
+			             s, "eui64,stable-privacy");
+			return;
+		}
+	} else
+		addr_gen_mode = NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64;
+
+	g_object_set (G_OBJECT (setting), key, (gint) addr_gen_mode, NULL);
 }
 
 static void
@@ -1181,6 +1199,10 @@ static KeyParser key_parsers[] = {
 	  NM_SETTING_IP_CONFIG_DNS,
 	  FALSE,
 	  ip6_dns_parser },
+	{ NM_SETTING_IP6_CONFIG_SETTING_NAME,
+	  NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE,
+	  FALSE,
+	  ip6_addr_gen_mode_parser },
 	{ NM_SETTING_WIRED_SETTING_NAME,
 	  NM_SETTING_WIRED_MAC_ADDRESS,
 	  TRUE,
@@ -1257,8 +1279,13 @@ set_default_for_missing_key (NMSetting *setting, const char *property)
 {
 	/* Set a value different from the default value of the property's spec */
 
-	if (NM_IS_SETTING_VLAN (setting) && !strcmp (property, NM_SETTING_VLAN_FLAGS))
-		g_object_set (setting, property, 0, NULL);
+	if (NM_IS_SETTING_VLAN (setting)) {
+		if (!strcmp (property, NM_SETTING_VLAN_FLAGS))
+			g_object_set (setting, property, (NMVlanFlags) 0, NULL);
+	} else if (NM_IS_SETTING_WIRELESS (setting)) {
+		if (!strcmp (property, NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION))
+			g_object_set (setting, property, (NMSettingMacRandomization) NM_SETTING_MAC_RANDOMIZATION_NEVER, NULL);
+	}
 }
 
 static void
