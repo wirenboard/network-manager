@@ -36,7 +36,10 @@ Build-Depends: debhelper (>= 9),
                libreadline-dev,
                libnewt-dev (>= 0.52.15),
                libteam-dev (>= 1.9),
-               libbluetooth-dev (>= 5)
+               libbluetooth-dev (>= 5),
+               dbus,
+               python-gi,
+               python-dbus
 Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: https://anonscm.debian.org/cgit/pkg-utopia/network-manager.git

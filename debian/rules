@@ -75,5 +75,3 @@ override_dh_systemd_start:
 
 override_dh_ppp:
 	dh_ppp --breaks
-
-override_dh_auto_test:
