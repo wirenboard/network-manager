@@ -2,6 +2,8 @@ network-manager (1.1.90-3) UNRELEASED; urgency=medium
 
   * Add chroot capability to systemd service file. Needed for running openvpn.
     Patch cherry-picked from upstream Git.
+  * Use bash when running the tests for nm_utils_kill_child. The trap handling
+    in dash seems to have issues, see #390433.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 27 Jan 2016 22:12:19 +0100
 

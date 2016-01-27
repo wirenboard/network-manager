@@ -1,0 +1,56 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Wed, 27 Jan 2016 22:14:09 +0100
+Subject: Use bash explicitly when running the tests
+
+The trap handling in dash seems to have issues [Bug-Debian].
+So explicitly use bash when running the tests.
+
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=390433
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=761146
+---
+ src/tests/test-general-with-expect.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/tests/test-general-with-expect.c b/src/tests/test-general-with-expect.c
+index c6abdcc..a5ef9e3 100644
+--- a/src/tests/test-general-with-expect.c
++++ b/src/tests/test-general-with-expect.c
+@@ -225,33 +225,33 @@ test_nm_utils_kill_child (void)
+ 	int err;
+ 	GLogLevelFlags fatal_mask;
+ 	char *argv_watchdog[] = {
+-			"sh",
++			"bash",
+ 			"-c",
+ 			"sleep 4; "
+ 			"kill -KILL 0; #watchdog for #" TEST_TOKEN,
+ 			NULL,
+ 		};
+ 	char *argv1[] = {
+-			"sh",
++			"bash",
+ 			"-c",
+ 			"trap \"sleep 0.3; exit 10\" EXIT; "
+ 			"sleep 100000; exit $? #" TEST_TOKEN,
+ 			NULL,
+ 		};
+ 	char *argv2[] = {
+-			"sh",
++			"bash",
+ 			"-c",
+ 			"exit 47; #" TEST_TOKEN,
+ 			NULL,
+ 		};
+ 	char *argv3[] = {
+-			"sh",
++			"bash",
+ 			"-c",
+ 			"trap \"exit 47\" TERM; while true; do :; done; #" TEST_TOKEN,
+ 			NULL,
+ 		};
+ 	char *argv4[] = {
+-			"sh",
++			"bash",
+ 			"-c",
+ 			"trap \"while true; do :; done\" TERM; while true; do :; done; #" TEST_TOKEN,
+ 			NULL,
