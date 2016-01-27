@@ -1,0 +1,22 @@
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Fri, 22 Jan 2016 22:11:07 +0100
+Subject: systemd: add chroot capability
+
+CAP_SYS_CHROOT is needed for openvpn hardening.
+---
+ data/NetworkManager.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
+index 90c0664..ff0e301 100644
+--- a/data/NetworkManager.service.in
++++ b/data/NetworkManager.service.in
+@@ -9,7 +9,7 @@ ExecStart=@sbindir@/NetworkManager --no-daemon
+ Restart=on-failure
+ # NM doesn't want systemd to kill its children for it
+ KillMode=process
+-CapabilityBoundingSet=CAP_NET_ADMIN CAP_DAC_OVERRIDE CAP_NET_RAW CAP_NET_BIND_SERVICE CAP_SETGID CAP_SETUID CAP_SYS_MODULE CAP_AUDIT_WRITE CAP_KILL
++CapabilityBoundingSet=CAP_NET_ADMIN CAP_DAC_OVERRIDE CAP_NET_RAW CAP_NET_BIND_SERVICE CAP_SETGID CAP_SETUID CAP_SYS_MODULE CAP_AUDIT_WRITE CAP_KILL CAP_SYS_CHROOT
+ ProtectSystem=true
+ ProtectHome=read-only
+ 
