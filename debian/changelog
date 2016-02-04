@@ -1,6 +1,7 @@
 network-manager (1.1.90-4) UNRELEASED; urgency=medium
 
   * Upload to unstable.
+  * Drop dbg package now that we have automatic dbgsym packages.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 04 Feb 2016 05:50:02 +0100
 

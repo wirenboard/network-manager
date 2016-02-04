@@ -237,24 +237,6 @@ Description: GObject-based client library for NetworkManager (development files)
  .
  This package contains header and development files.
 
-Package: network-manager-dbg
-Architecture: linux-any
-Section: debug
-Priority: extra
-Depends: ${misc:Depends},
-         network-manager (= ${binary:Version}),
-         libnm-util2 (= ${binary:Version}),
-         libnm-glib4 (= ${binary:Version}),
-         libnm-glib-vpn1 (= ${binary:Version})
-Description: network management framework (debugging symbols)
- NetworkManager is a system network service that manages your network devices
- and connections, attempting to keep active network connectivity when
- available. It manages ethernet, WiFi, mobile broadband (WWAN), and PPPoE
- devices, and provides VPN integration with a variety of different VPN
- services.
- .
- This package contains detached debugging symbols.
-
 Package: gir1.2-networkmanager-1.0
 Section: introspection
 Architecture: linux-any
