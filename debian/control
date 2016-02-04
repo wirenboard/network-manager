@@ -40,7 +40,7 @@ Build-Depends: debhelper (>= 9),
                dbus,
                python-gi,
                python-dbus
-Standards-Version: 3.9.6
+Standards-Version: 3.9.7
 Vcs-Git: git://anonscm.debian.org/pkg-utopia/network-manager.git
 Vcs-Browser: https://anonscm.debian.org/cgit/pkg-utopia/network-manager.git
 Homepage: https://wiki.gnome.org/Projects/NetworkManager
