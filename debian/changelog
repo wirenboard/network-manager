@@ -1,4 +1,4 @@
-network-manager (1.1.90-5) UNRELEASED; urgency=medium
+network-manager (1.1.90-5) unstable; urgency=medium
 
   * Clean up error paths in dns-manager.
     Specifically for resolvconf, if the write succeeded, but the pclose()
@@ -6,7 +6,7 @@ network-manager (1.1.90-5) UNRELEASED; urgency=medium
     caused a crash in nm_dns_manager_end_updates().
     Patch cherry-picked from upstream Git. (Closes: #813803)
 
- -- Michael Biebl <biebl@debian.org>  Fri, 05 Feb 2016 20:09:10 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 05 Feb 2016 20:12:47 +0100
 
 network-manager (1.1.90-4) unstable; urgency=medium
 
