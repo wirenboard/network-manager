@@ -11,3 +11,4 @@ libnm-vpn-restore-export-of-deprecated-NMVpnPluginOld-sym.patch
 tests-use-dbus-run-session-instead-of-dbus-launch.patch
 systemd-add-chroot-capability.patch
 Use-bash-explicitly-when-running-the-tests.patch
+dns-clean-up-error-paths-in-dns-manager.patch

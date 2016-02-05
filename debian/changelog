@@ -1,3 +1,13 @@
+network-manager (1.1.90-5) UNRELEASED; urgency=medium
+
+  * Clean up error paths in dns-manager.
+    Specifically for resolvconf, if the write succeeded, but the pclose()
+    failed, error would be left NULL and SR_ERROR would be returned, which
+    caused a crash in nm_dns_manager_end_updates().
+    Patch cherry-picked from upstream Git. (Closes: #813803)
+
+ -- Michael Biebl <biebl@debian.org>  Fri, 05 Feb 2016 20:09:10 +0100
+
 network-manager (1.1.90-4) unstable; urgency=medium
 
   * Upload to unstable.
