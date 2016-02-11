@@ -1,9 +1,9 @@
-network-manager (1.1.90-6) UNRELEASED; urgency=medium
+network-manager (1.1.90-6) unstable; urgency=medium
 
   * Fix NMSettingVxlan ageing and limit max values to be G_MAXUINT32.
     Patch cherry-picked from upstream Git. (Closes: #813739)
 
- -- Michael Biebl <biebl@debian.org>  Thu, 11 Feb 2016 02:48:01 +0100
+ -- Michael Biebl <biebl@debian.org>  Thu, 11 Feb 2016 02:51:20 +0100
 
 network-manager (1.1.90-5) unstable; urgency=medium
 
