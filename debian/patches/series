@@ -12,3 +12,5 @@ tests-use-dbus-run-session-instead-of-dbus-launch.patch
 systemd-add-chroot-capability.patch
 Use-bash-explicitly-when-running-the-tests.patch
 dns-clean-up-error-paths-in-dns-manager.patch
+libnm-fix-copy-paste-error-in-NMSettingVxlan-properties.patch
+libnm-fix-NMSettingVxlan-ageing-and-limit-max-values.patch

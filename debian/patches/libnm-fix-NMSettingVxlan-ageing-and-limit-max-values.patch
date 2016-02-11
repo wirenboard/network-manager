@@ -1,0 +1,35 @@
+From: Dan Williams <dcbw@redhat.com>
+Date: Fri, 5 Feb 2016 16:24:40 -0600
+Subject: libnm: fix NMSettingVxlan ageing and limit max values
+
+They are actually u32 in the kernel.  Plus if we use G_MAXINT32 it
+causes gtkdoc to write out "Allowed values: <= G_MAXLONG" on i386
+and "Allowed values: <= G_MAXINT" on x86_64, breaking multilib.
+
+Fixes: 95dfd99afc3fe815b013a8613fbd2cf178355952
+---
+ libnm-core/nm-setting-vxlan.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libnm-core/nm-setting-vxlan.c b/libnm-core/nm-setting-vxlan.c
+index f1567d8..d071532 100644
+--- a/libnm-core/nm-setting-vxlan.c
++++ b/libnm-core/nm-setting-vxlan.c
+@@ -707,7 +707,7 @@ nm_setting_vxlan_class_init (NMSettingVxlanClass *setting_class)
+ 	g_object_class_install_property
+ 		(object_class, PROP_AGEING,
+ 		 g_param_spec_uint (NM_SETTING_VXLAN_AGEING, "", "",
+-		                    0, G_MAXINT32, 300,
++		                    0, G_MAXUINT32, 300,
+ 		                    G_PARAM_READWRITE |
+ 		                    G_PARAM_CONSTRUCT |
+ 		                    NM_SETTING_PARAM_INFERRABLE |
+@@ -724,7 +724,7 @@ nm_setting_vxlan_class_init (NMSettingVxlanClass *setting_class)
+ 	g_object_class_install_property
+ 		(object_class, PROP_LIMIT,
+ 		 g_param_spec_uint (NM_SETTING_VXLAN_LIMIT, "", "",
+-		                    0, G_MAXINT32, 0,
++		                    0, G_MAXUINT32, 0,
+ 		                    G_PARAM_READWRITE |
+ 		                    G_PARAM_CONSTRUCT |
+ 		                    NM_SETTING_PARAM_INFERRABLE |
