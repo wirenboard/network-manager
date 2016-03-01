@@ -1,0 +1,21 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Tue, 1 Mar 2016 19:43:44 +0100
+Subject: tests: fix bashism in run-test-dbus-session.sh
+
+https://bugzilla.gnome.org/show_bug.cgi?id=762940
+---
+ tools/run-test-dbus-session.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/run-test-dbus-session.sh b/tools/run-test-dbus-session.sh
+index 0235d65..c6a94fa 100755
+--- a/tools/run-test-dbus-session.sh
++++ b/tools/run-test-dbus-session.sh
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ 
+-if ! which dbus-run-session &>/dev/null; then
++if ! which dbus-run-session >/dev/null 2>&1; then
+     eval `dbus-launch --sh-syntax`
+     trap "kill $DBUS_SESSION_BUS_PID" EXIT
+     "$@"
