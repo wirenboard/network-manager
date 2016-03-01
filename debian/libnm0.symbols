@@ -199,6 +199,9 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_generic_get_hw_address@libnm_1_0_0 1.0.0
  nm_device_generic_get_type@libnm_1_0_0 1.0.0
  nm_device_get_active_connection@libnm_1_0_0 1.0.0
+ nm_device_get_applied_connection@libnm_1_2_0 1.1.91
+ nm_device_get_applied_connection_async@libnm_1_2_0 1.1.91
+ nm_device_get_applied_connection_finish@libnm_1_2_0 1.1.91
  nm_device_get_autoconnect@libnm_1_0_0 1.0.0
  nm_device_get_available_connections@libnm_1_0_0 1.0.0
  nm_device_get_capabilities@libnm_1_0_0 1.0.0
@@ -392,7 +395,6 @@ libnm.so.0 libnm0 #MINVER#
  nm_lldp_neighbor_unref@libnm_1_2_0 1.1.90
  nm_manager_error_get_type@libnm_1_0_0 1.0.0
  nm_manager_error_quark@libnm_1_0_0 1.0.0
- nm_manager_get_all_devices@libnm_1_2_0 1.1.90
  nm_metered_get_type@libnm_1_0_6 1.0.6
  nm_metered_get_type@libnm_1_2_0 1.1.90
  nm_object_get_path@libnm_1_0_0 1.0.0
@@ -637,7 +639,6 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_infiniband_new@libnm_1_0_0 1.0.0
  nm_setting_ip4_config_get_dhcp_client_id@libnm_1_0_0 1.0.0
  nm_setting_ip4_config_get_dhcp_fqdn@libnm_1_2_0 1.1.90
- nm_setting_ip4_config_get_dhcp_timeout@libnm_1_2_0 1.1.90
  nm_setting_ip4_config_get_type@libnm_1_0_0 1.0.0
  nm_setting_ip4_config_new@libnm_1_0_0 1.0.0
  nm_setting_ip6_config_addr_gen_mode_get_type@libnm_1_2_0 1.1.90
@@ -657,8 +658,10 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_ip_config_clear_dns_searches@libnm_1_0_0 1.0.0
  nm_setting_ip_config_clear_routes@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_address@libnm_1_0_0 1.0.0
+ nm_setting_ip_config_get_dad_timeout@libnm_1_2_0 1.1.91
  nm_setting_ip_config_get_dhcp_hostname@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_dhcp_send_hostname@libnm_1_0_0 1.0.0
+ nm_setting_ip_config_get_dhcp_timeout@libnm_1_2_0 1.1.91
  nm_setting_ip_config_get_dns@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_dns_option@libnm_1_2_0 1.1.90
  nm_setting_ip_config_get_dns_search@libnm_1_0_0 1.0.0
@@ -871,6 +874,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wireless_get_tx_power@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_type@libnm_1_0_0 1.0.0
  nm_setting_wireless_new@libnm_1_0_0 1.0.0
+ nm_setting_wireless_powersave_get_type@libnm_1_2_0 1.1.91
  nm_setting_wireless_remove_mac_blacklist_item@libnm_1_0_0 1.0.0
  nm_setting_wireless_remove_mac_blacklist_item_by_value@libnm_1_0_0 1.0.0
  nm_setting_wireless_security_add_group@libnm_1_0_0 1.0.0
