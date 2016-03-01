@@ -5,6 +5,8 @@ network-manager (1.1.91-1) UNRELEASED; urgency=medium
   * Update symbols file for libnm0.
   * Ship /etc/NetworkManager/dnsmasq.d/ directory which can be used to extend
     the dnsmasq local caching nameserver config.
+  * Ship /etc/NetworkManager/dnsmasq-shared.d/ directory which can be used to
+    extend the dnsmasq configuration for shared connections.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Mar 2016 16:56:21 +0100
 
