@@ -19,7 +19,7 @@
  * Copyright 2011 - 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -590,6 +590,16 @@ verify (NMSetting *setting, GSList *all_settings, GError **error)
 		                     NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
 		                     _("flags are invalid"));
 		g_prefix_error (error, "%s.%s: ", NM_SETTING_VLAN_SETTING_NAME, NM_SETTING_VLAN_FLAGS);
+		return FALSE;
+	}
+
+	if (priv->id >= 4095) {
+		g_set_error (error,
+		             NM_SETTING_VLAN_ERROR,
+		             NM_SETTING_VLAN_ERROR_INVALID_PROPERTY,
+		             _("the vlan id must be in range 0-4094 but is %u"),
+		             priv->id);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_VLAN_SETTING_NAME, NM_SETTING_VLAN_ID);
 		return FALSE;
 	}
 

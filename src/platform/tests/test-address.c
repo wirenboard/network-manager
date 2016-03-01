@@ -1,4 +1,24 @@
-#include "config.h"
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* NetworkManager audit support
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Copyright 2015 Red Hat, Inc.
+ */
+
+#include "nm-default.h"
 
 #include "test-common.h"
 
@@ -255,7 +275,8 @@ test_ip4_address_peer (void)
 	/* Add/delete notification */
 	nmtstp_ip4_address_add (EX, ifindex, addr, IP4_PLEN, addr_peer, lifetime, preferred, NULL);
 	accept_signal (address_added);
-	g_assert ((a = nm_platform_ip4_address_get (NM_PLATFORM_GET, ifindex, addr, IP4_PLEN, addr_peer)));
+	a = nm_platform_ip4_address_get (NM_PLATFORM_GET, ifindex, addr, IP4_PLEN, addr_peer);
+	g_assert (a);
 	g_assert (!nm_platform_ip4_address_get (NM_PLATFORM_GET, ifindex, addr, IP4_PLEN, addr_peer2));
 
 	nmtstp_ip_address_assert_lifetime ((NMPlatformIPAddress *) a, -1, lifetime, preferred);
@@ -263,7 +284,8 @@ test_ip4_address_peer (void)
 	nmtstp_ip4_address_add (EX, ifindex, addr, IP4_PLEN, addr_peer2, lifetime, preferred, NULL);
 	accept_signal (address_added);
 	g_assert (nm_platform_ip4_address_get (NM_PLATFORM_GET, ifindex, addr, IP4_PLEN, addr_peer));
-	g_assert ((a = nm_platform_ip4_address_get (NM_PLATFORM_GET, ifindex, addr, IP4_PLEN, addr_peer2)));
+	a = nm_platform_ip4_address_get (NM_PLATFORM_GET, ifindex, addr, IP4_PLEN, addr_peer2);
+	g_assert (a);
 
 	nmtstp_ip_address_assert_lifetime ((NMPlatformIPAddress *) a, -1, lifetime, preferred);
 

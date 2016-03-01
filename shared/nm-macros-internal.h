@@ -22,7 +22,17 @@
 #ifndef __NM_MACROS_INTERNAL_H__
 #define __NM_MACROS_INTERNAL_H__
 
-#include "nm-default.h"
+/********************************************************/
+
+#define nm_auto(fcn) __attribute ((cleanup(fcn)))
+
+/**
+ * nm_auto_free:
+ *
+ * Call free() on a variable location when it goes out of scope.
+ */
+#define nm_auto_free nm_auto(_nm_auto_free_impl)
+GS_DEFINE_CLEANUP_FUNCTION(void*, _nm_auto_free_impl, free)
 
 /********************************************************/
 
@@ -107,7 +117,7 @@
 /********************************************************/
 
 /* macro to return strlen() of a compile time string. */
-#define STRLEN(str)     ( sizeof ("" str) - 1 )
+#define NM_STRLEN(str)     ( sizeof ("" str) - 1 )
 
 #define NM_SET_OUT(out_val, value) \
 	G_STMT_START { \
@@ -120,53 +130,50 @@
 
 /********************************************************/
 
-#define _NM_IN_SET_EVAL_1(op, x, y1)                              \
-    ({                                                            \
-        typeof(x) _x = (x);                                       \
-        (   (_x == (y1))                                          \
-        );                                                        \
-    })
+#define _NM_IN_SET_EVAL_1(op, _x, y1)                               \
+    (_x == (y1))
 
-#define _NM_IN_SET_EVAL_2(op, x, y1, y2)                          \
-    ({                                                            \
-        typeof(x) _x = (x);                                       \
-        (   (_x == (y1))                                          \
-         op (_x == (y2))                                          \
-        );                                                        \
-    })
+#define _NM_IN_SET_EVAL_2(op, _x, y1, y2)                           \
+    (   (_x == (y1))                                                \
+     op (_x == (y2))                                                \
+    )
 
-#define _NM_IN_SET_EVAL_3(op, x, y1, y2, y3)                      \
-    ({                                                            \
-        typeof(x) _x = (x);                                       \
-        (   (_x == (y1))                                          \
-         op (_x == (y2))                                          \
-         op (_x == (y3))                                          \
-        );                                                        \
-    })
+#define _NM_IN_SET_EVAL_3(op, _x, y1, y2, y3)                       \
+    (   (_x == (y1))                                                \
+     op (_x == (y2))                                                \
+     op (_x == (y3))                                                \
+    )
 
-#define _NM_IN_SET_EVAL_4(op, x, y1, y2, y3, y4)                  \
-    ({                                                            \
-        typeof(x) _x = (x);                                       \
-        (   (_x == (y1))                                          \
-         op (_x == (y2))                                          \
-         op (_x == (y3))                                          \
-         op (_x == (y4))                                          \
-        );                                                        \
-    })
+#define _NM_IN_SET_EVAL_4(op, _x, y1, y2, y3, y4)                   \
+    (   (_x == (y1))                                                \
+     op (_x == (y2))                                                \
+     op (_x == (y3))                                                \
+     op (_x == (y4))                                                \
+    )
 
-#define _NM_IN_SET_EVAL_5(op, x, y1, y2, y3, y4, y5)              \
-    ({                                                            \
-        typeof(x) _x = (x);                                       \
-        (   (_x == (y1))                                          \
-         op (_x == (y2))                                          \
-         op (_x == (y3))                                          \
-         op (_x == (y4))                                          \
-         op (_x == (y5))                                          \
-        );                                                        \
-    })
+#define _NM_IN_SET_EVAL_5(op, _x, y1, y2, y3, y4, y5)               \
+    (   (_x == (y1))                                                \
+     op (_x == (y2))                                                \
+     op (_x == (y3))                                                \
+     op (_x == (y4))                                                \
+     op (_x == (y5))                                                \
+    )
 
-#define _NM_IN_SET_EVAL_N2(op, x, n, ...)        _NM_IN_SET_EVAL_##n(op, x, __VA_ARGS__)
-#define _NM_IN_SET_EVAL_N(op, x, n, ...)         _NM_IN_SET_EVAL_N2(op, x, n, __VA_ARGS__)
+#define _NM_IN_SET_EVAL_6(op, _x, y1, y2, y3, y4, y5, y6)           \
+    (   (_x == (y1))                                                \
+     op (_x == (y2))                                                \
+     op (_x == (y3))                                                \
+     op (_x == (y4))                                                \
+     op (_x == (y5))                                                \
+     op (_x == (y6))                                                \
+    )
+
+#define _NM_IN_SET_EVAL_N2(op, _x, n, ...)        _NM_IN_SET_EVAL_##n(op, _x, __VA_ARGS__)
+#define _NM_IN_SET_EVAL_N(op, x, n, ...)                            \
+    ({                                                              \
+        typeof(x) _x = (x);                                         \
+        !!_NM_IN_SET_EVAL_N2(op, _x, n, __VA_ARGS__);               \
+    })
 
 /* Beware that this does short-circuit evaluation (use "||" instead of "|")
  * which has a possibly unexpected non-function-like behavior.
@@ -177,6 +184,76 @@
  * short-circuit evaluation, which can make a difference if the arguments have
  * side-effects. */
 #define NM_IN_SET_SE(x, ...)            _NM_IN_SET_EVAL_N(|, x, NM_NARG (__VA_ARGS__), __VA_ARGS__)
+
+/********************************************************/
+
+static inline gboolean
+_NM_IN_STRSET_streq (const char *x, const char *s)
+{
+	return s && strcmp (x, s) == 0;
+}
+
+#define _NM_IN_STRSET_EVAL_1(op, _x, y1)                            \
+    _NM_IN_STRSET_streq (_x, y1)
+
+#define _NM_IN_STRSET_EVAL_2(op, _x, y1, y2)                        \
+    (   _NM_IN_STRSET_streq (_x, y1)                                \
+     op _NM_IN_STRSET_streq (_x, y2)                                \
+    )
+
+#define _NM_IN_STRSET_EVAL_3(op, _x, y1, y2, y3)                    \
+    (   _NM_IN_STRSET_streq (_x, y1)                                \
+     op _NM_IN_STRSET_streq (_x, y2)                                \
+     op _NM_IN_STRSET_streq (_x, y3)                                \
+    )
+
+#define _NM_IN_STRSET_EVAL_4(op, _x, y1, y2, y3, y4)                \
+    (   _NM_IN_STRSET_streq (_x, y1)                                \
+     op _NM_IN_STRSET_streq (_x, y2)                                \
+     op _NM_IN_STRSET_streq (_x, y3)                                \
+     op _NM_IN_STRSET_streq (_x, y4)                                \
+    )
+
+#define _NM_IN_STRSET_EVAL_5(op, _x, y1, y2, y3, y4, y5)            \
+    (   _NM_IN_STRSET_streq (_x, y1)                                \
+     op _NM_IN_STRSET_streq (_x, y2)                                \
+     op _NM_IN_STRSET_streq (_x, y3)                                \
+     op _NM_IN_STRSET_streq (_x, y4)                                \
+     op _NM_IN_STRSET_streq (_x, y5)                                \
+    )
+
+#define _NM_IN_STRSET_EVAL_6(op, _x, y1, y2, y3, y4, y5, y6)        \
+    (   _NM_IN_STRSET_streq (_x, y1)                                \
+     op _NM_IN_STRSET_streq (_x, y2)                                \
+     op _NM_IN_STRSET_streq (_x, y3)                                \
+     op _NM_IN_STRSET_streq (_x, y4)                                \
+     op _NM_IN_STRSET_streq (_x, y5)                                \
+     op _NM_IN_STRSET_streq (_x, y6)                                \
+    )
+
+#define _NM_IN_STRSET_EVAL_N2(op, _x, n, ...) _NM_IN_STRSET_EVAL_##n(op, _x, __VA_ARGS__)
+#define _NM_IN_STRSET_EVAL_N(op, x, n, ...)                       \
+    ({                                                            \
+        const char *_x = (x);                                     \
+        (   ((_x == NULL) && _NM_IN_SET_EVAL_N2    (op, (const char *) NULL, n, __VA_ARGS__)) \
+         || ((_x != NULL) && _NM_IN_STRSET_EVAL_N2 (op, _x,                  n, __VA_ARGS__)) \
+        ); \
+    })
+
+/* Beware that this does short-circuit evaluation (use "||" instead of "|")
+ * which has a possibly unexpected non-function-like behavior.
+ * Use NM_IN_STRSET_SE if you need all arguments to be evaluted. */
+#define NM_IN_STRSET(x, ...)               _NM_IN_STRSET_EVAL_N(||, x, NM_NARG (__VA_ARGS__), __VA_ARGS__)
+
+/* "SE" stands for "side-effect". Contrary to NM_IN_STRSET(), this does not do
+ * short-circuit evaluation, which can make a difference if the arguments have
+ * side-effects. */
+#define NM_IN_STRSET_SE(x, ...)            _NM_IN_STRSET_EVAL_N(|, x, NM_NARG (__VA_ARGS__), __VA_ARGS__)
+
+/*****************************************************************************/
+
+#define nm_streq(s1, s2)  (strcmp (s1, s2) == 0)
+#define nm_streq0(s1, s2) (g_strcmp0 (s1, s2) == 0)
 
 /*****************************************************************************/
 
@@ -193,6 +270,26 @@
 #else
 #define nm_assert(cond) G_STMT_START { if (FALSE) { if (cond) { } } } G_STMT_END
 #endif
+
+/*****************************************************************************/
+
+#define NM_GOBJECT_PROPERTIES_DEFINE_BASE(...) \
+typedef enum { \
+	_PROPERTY_ENUMS_0, \
+	__VA_ARGS__ \
+	_PROPERTY_ENUMS_LAST, \
+} _PropertyEnums; \
+static GParamSpec *obj_properties[_PROPERTY_ENUMS_LAST] = { NULL, }
+
+#define NM_GOBJECT_PROPERTIES_DEFINE(obj_type, ...) \
+NM_GOBJECT_PROPERTIES_DEFINE_BASE (__VA_ARGS__); \
+static inline void \
+_notify (obj_type *obj, _PropertyEnums prop) \
+{ \
+	nm_assert (G_IS_OBJECT (obj)); \
+	nm_assert ((gsize) prop < G_N_ELEMENTS (obj_properties)); \
+	g_object_notify_by_pspec ((GObject *) obj, obj_properties[prop]); \
+}
 
 /*****************************************************************************/
 
@@ -337,7 +434,7 @@ nm_decode_version (guint version, guint *major, guint *minor, guint *micro) {
 		 * It disallows a buffer size of sizeof(gpointer) to catch that. */ \
 		G_STATIC_ASSERT (G_N_ELEMENTS (buf) == sizeof (buf) && sizeof (buf) != sizeof (char *)); \
 		g_snprintf (_buf, sizeof (buf), \
-		            ""format"", __VA_ARGS__); \
+		            ""format"", ##__VA_ARGS__); \
 		_buf; \
 	})
 
@@ -348,9 +445,56 @@ nm_decode_version (guint version, guint *major, guint *minor, guint *micro) {
 		G_STATIC_ASSERT (sizeof (char[MAX ((n_elements), 1)]) == (n_elements)); \
 		_buf = g_alloca (n_elements); \
 		g_snprintf (_buf, n_elements, \
-		            ""format"", __VA_ARGS__); \
+		            ""format"", ##__VA_ARGS__); \
 		_buf; \
 	})
+
+/*****************************************************************************/
+
+/**
+ * The boolean type _Bool is C99 while we mostly stick to C89. However, _Bool is too
+ * convinient to miss and is effectively available in gcc and clang. So, just use it.
+ *
+ * Usually, one would include "stdbool.h" to get the "bool" define which aliases
+ * _Bool. We provide this define here, because we want to make use of it anywhere.
+ * (also, stdbool.h is again C99).
+ *
+ * Using _Bool has advantages over gboolean:
+ *
+ * - commonly _Bool is one byte large, instead of gboolean's 4 bytes (because gboolean
+ *   is a typedef for gint). Especially when having boolean fields in a struct, we can
+ *   thereby easily save some space.
+ *
+ * - _Bool type guarantees that two "true" expressions compare equal. E.g. the follwing
+ *   will not work:
+ *        gboolean v1 = 1;
+ *        gboolean v2 = 2;
+ *        g_assert_cmpint (v1, ==, v2); // will fail
+ *   For that, we often to use !! to coerce gboolean values to 0 or 1:
+ *        g_assert_cmpint (!!v2, ==, TRUE);
+ *   With _Bool type, this will be handled properly by the compiler.
+ *
+ * - For structs, we might want to safe even more space and use bitfields:
+ *       struct s1 {
+ *           gboolean v1:1;
+ *       };
+ *   But the problem here is that gboolean is signed, so that
+ *   v1 will be either 0 or -1 (not 1, TRUE). Thus, the following
+ *   fails:
+ *      struct s1 s = { .v1 = TRUE, };
+ *      g_assert_cmpint (s1.v1, ==, TRUE);
+ *   It will however work just fine with bool/_Bool while retaining the
+ *   notion of having a boolean value.
+ *
+ * Also, add the defines for "true" and "false". Those are nicely highlighted by the editor
+ * as special types, contrary to glib's "TRUE"/"FALSE".
+ */
+
+#ifndef bool
+#define bool _Bool
+#define true    1
+#define false   0
+#endif
 
 /*****************************************************************************/
 

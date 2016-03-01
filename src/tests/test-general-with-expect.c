@@ -18,7 +18,7 @@
  *
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <errno.h>
@@ -27,7 +27,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-multi-index.h"
 
@@ -225,33 +224,33 @@ test_nm_utils_kill_child (void)
 	int err;
 	GLogLevelFlags fatal_mask;
 	char *argv_watchdog[] = {
-			"sh",
+			"bash",
 			"-c",
 			"sleep 4; "
 			"kill -KILL 0; #watchdog for #" TEST_TOKEN,
 			NULL,
 		};
 	char *argv1[] = {
-			"sh",
+			"bash",
 			"-c",
 			"trap \"sleep 0.3; exit 10\" EXIT; "
 			"sleep 100000; exit $? #" TEST_TOKEN,
 			NULL,
 		};
 	char *argv2[] = {
-			"sh",
+			"bash",
 			"-c",
 			"exit 47; #" TEST_TOKEN,
 			NULL,
 		};
 	char *argv3[] = {
-			"sh",
+			"bash",
 			"-c",
 			"trap \"exit 47\" TERM; while true; do :; done; #" TEST_TOKEN,
 			NULL,
 		};
 	char *argv4[] = {
-			"sh",
+			"bash",
 			"-c",
 			"trap \"while true; do :; done\" TERM; while true; do :; done; #" TEST_TOKEN,
 			NULL,
@@ -855,6 +854,49 @@ test_nm_multi_index (void)
 
 /*******************************************/
 
+static void
+test_nm_utils_new_vlan_name (void)
+{
+	guint i, j;
+	const char *parent_names[] = {
+		"a",
+		"a2",
+		"a23",
+		"a23456789",
+		"a2345678901",
+		"a23456789012",
+		"a234567890123",
+		"a2345678901234",
+		"a23456789012345",
+		"a234567890123456",
+		"a2345678901234567",
+	};
+
+	for (i = 0; i < G_N_ELEMENTS (parent_names); i++) {
+		for (j = 0; j < 10; j++) {
+			gs_free char *ifname = NULL;
+			gs_free char *vlan_id_s = NULL;
+			guint vlan_id;
+
+			/* Create a random VLAN id between 0 and 4094 */
+			vlan_id = nmtst_get_rand_int () % 4095;
+
+			vlan_id_s = g_strdup_printf (".%d", vlan_id);
+
+			ifname = nm_utils_new_vlan_name (parent_names[i], vlan_id);
+			g_assert (ifname && ifname[0]);
+			g_assert_cmpint (strlen (ifname), ==, MIN (15, strlen (parent_names[i]) + strlen (vlan_id_s)));
+			g_assert (g_str_has_suffix (ifname, vlan_id_s));
+			g_assert (ifname[strlen (ifname) - strlen (vlan_id_s)] == '.');
+			g_assert (strncmp (ifname, parent_names[i], strlen (ifname) - strlen (vlan_id_s)) == 0);
+			if (!g_str_has_prefix (ifname, parent_names[i]))
+				g_assert_cmpint (strlen (ifname), ==, 15);
+		}
+	}
+}
+
+/*******************************************/
+
 NMTST_DEFINE ();
 
 int
@@ -867,6 +909,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/general/nm_utils_array_remove_at_indexes", test_nm_utils_array_remove_at_indexes);
 	g_test_add_func ("/general/nm_ethernet_address_is_valid", test_nm_ethernet_address_is_valid);
 	g_test_add_func ("/general/nm_multi_index", test_nm_multi_index);
+	g_test_add_func ("/general/nm_utils_new_vlan_name", test_nm_utils_new_vlan_name);
 
 	return g_test_run ();
 }

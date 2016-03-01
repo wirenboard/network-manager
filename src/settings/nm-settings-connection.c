@@ -19,11 +19,10 @@
  * Copyright 2008 - 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 
-#include "nm-default.h"
 #include "nm-dbus-interface.h"
 #include "nm-settings-connection.h"
 #include "nm-session-monitor.h"
@@ -1716,10 +1715,10 @@ get_update_modify_permission (NMConnection *old, NMConnection *new)
 }
 
 static void
-impl_settings_connection_update_helper (NMSettingsConnection *self,
-                                        GDBusMethodInvocation *context,
-                                        GVariant *new_settings,
-                                        gboolean save_to_disk)
+settings_connection_update_helper (NMSettingsConnection *self,
+                                   GDBusMethodInvocation *context,
+                                   GVariant *new_settings,
+                                   gboolean save_to_disk)
 {
 	NMSettingsConnectionPrivate *priv = NM_SETTINGS_CONNECTION_GET_PRIVATE (self);
 	NMAuthSubject *subject = NULL;
@@ -1790,7 +1789,7 @@ impl_settings_connection_update (NMSettingsConnection *self,
                                  GDBusMethodInvocation *context,
                                  GVariant *new_settings)
 {
-	impl_settings_connection_update_helper (self, context, new_settings, TRUE);
+	settings_connection_update_helper (self, context, new_settings, TRUE);
 }
 
 static void
@@ -1798,7 +1797,7 @@ impl_settings_connection_update_unsaved (NMSettingsConnection *self,
                                          GDBusMethodInvocation *context,
                                          GVariant *new_settings)
 {
-	impl_settings_connection_update_helper (self, context, new_settings, FALSE);
+	settings_connection_update_helper (self, context, new_settings, FALSE);
 }
 
 static void
@@ -1807,7 +1806,7 @@ impl_settings_connection_save (NMSettingsConnection *self,
 {
 	/* Do nothing if the connection is already synced with disk */
 	if (nm_settings_connection_get_unsaved (self))
-		impl_settings_connection_update_helper (self, context, NULL, TRUE);
+		settings_connection_update_helper (self, context, NULL, TRUE);
 	else
 		g_dbus_method_invocation_return_value (context, NULL);
 }

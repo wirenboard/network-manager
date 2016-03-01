@@ -18,14 +18,13 @@
  * Copyright 2013 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-dbus-helpers.h"
 
 #include <string.h>
 
-#include "nm-default.h"
-#include "nm-dbus-helpers.h"
 #include "nm-dbus-interface.h"
-#include "nm-macros-internal.h"
 
 static GBusType nm_bus = G_BUS_TYPE_SYSTEM;
 

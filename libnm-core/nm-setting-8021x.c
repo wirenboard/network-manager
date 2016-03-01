@@ -20,18 +20,17 @@
  * Copyright 2007 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-setting-8021x.h"
 
 #include <string.h>
 
-#include "nm-default.h"
-#include "nm-setting-8021x.h"
 #include "nm-utils.h"
 #include "crypto.h"
 #include "nm-utils-private.h"
 #include "nm-setting-private.h"
 #include "nm-core-enum-types.h"
-#include "nm-macros-internal.h"
 
 /**
  * SECTION:nm-setting-8021x
@@ -447,8 +446,8 @@ nm_setting_802_1x_check_cert_scheme (gconstpointer pdata, gsize length, GError *
 	}
 
 	/* interpret the blob as PATH if it starts with "file://". */
-	if (   length >= STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)
-	    && !memcmp (data, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH))) {
+	if (   length >= NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)
+	    && !memcmp (data, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH))) {
 		/* But it must also be NUL terminated, contain at least
 		 * one non-NUL character, and contain only one trailing NUL
 		 * chracter.
@@ -464,7 +463,7 @@ nm_setting_802_1x_check_cert_scheme (gconstpointer pdata, gsize length, GError *
 		}
 		length--;
 
-		if (length <= STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) {
+		if (length <= NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) {
 			g_set_error_literal (error,
 			                     NM_CONNECTION_ERROR,
 			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,
@@ -472,7 +471,7 @@ nm_setting_802_1x_check_cert_scheme (gconstpointer pdata, gsize length, GError *
 			return NM_SETTING_802_1X_CK_SCHEME_UNKNOWN;
 		}
 
-		if (!g_utf8_validate (data + STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH), length - STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH), NULL)) {
+		if (!g_utf8_validate (data + NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH), length - NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH), NULL)) {
 			g_set_error_literal (error,
 			                     NM_CONNECTION_ERROR,
 			                     NM_CONNECTION_ERROR_INVALID_PROPERTY,

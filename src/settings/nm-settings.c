@@ -23,7 +23,7 @@
  * (C) Copyright 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -36,33 +36,32 @@
 #include <selinux/selinux.h>
 #endif
 
-#include <nm-dbus-interface.h>
-#include <nm-connection.h>
-#include <nm-setting-8021x.h>
-#include <nm-setting-bluetooth.h>
-#include <nm-setting-cdma.h>
-#include <nm-setting-connection.h>
-#include <nm-setting-gsm.h>
-#include <nm-setting-ip4-config.h>
-#include <nm-setting-ip6-config.h>
-#include <nm-setting-olpc-mesh.h>
-#include <nm-setting-ppp.h>
-#include <nm-setting-pppoe.h>
-#include <nm-setting-serial.h>
-#include <nm-setting-vpn.h>
-#include <nm-setting-wired.h>
-#include <nm-setting-adsl.h>
-#include <nm-setting-wireless.h>
-#include <nm-setting-wireless-security.h>
-#include <nm-setting-bond.h>
-#include <nm-utils.h>
+#include "nm-dbus-interface.h"
+#include "nm-connection.h"
+#include "nm-setting-8021x.h"
+#include "nm-setting-bluetooth.h"
+#include "nm-setting-cdma.h"
+#include "nm-setting-connection.h"
+#include "nm-setting-gsm.h"
+#include "nm-setting-ip4-config.h"
+#include "nm-setting-ip6-config.h"
+#include "nm-setting-olpc-mesh.h"
+#include "nm-setting-ppp.h"
+#include "nm-setting-pppoe.h"
+#include "nm-setting-serial.h"
+#include "nm-setting-vpn.h"
+#include "nm-setting-wired.h"
+#include "nm-setting-adsl.h"
+#include "nm-setting-wireless.h"
+#include "nm-setting-wireless-security.h"
+#include "nm-setting-bond.h"
+#include "nm-utils.h"
 #include "nm-core-internal.h"
 
 #include "nm-device-ethernet.h"
 #include "nm-settings.h"
 #include "nm-settings-connection.h"
 #include "nm-settings-plugin.h"
-#include "nm-default.h"
 #include "nm-bus-manager.h"
 #include "nm-auth-utils.h"
 #include "nm-auth-subject.h"
@@ -489,7 +488,7 @@ read_hostname_gentoo (const char *path)
 		if (all_lines[i][0] == '#' || all_lines[i][0] == '\0')
 			continue;
 		if (g_str_has_prefix (all_lines[i], "hostname=")) {
-			tmp = &all_lines[i][STRLEN ("hostname=")];
+			tmp = &all_lines[i][NM_STRLEN ("hostname=")];
 			result = g_shell_unquote (tmp, NULL);
 			break;
 		}
@@ -516,7 +515,7 @@ hostname_is_dynamic (void)
 		if (str) {
 			g_strstrip (str);
 			if (g_str_has_prefix (str, "DHCLIENT_SET_HOSTNAME="))
-				dynamic = strcmp (&str[STRLEN ("DHCLIENT_SET_HOSTNAME=")], "\"yes\"") == 0;
+				dynamic = strcmp (&str[NM_STRLEN ("DHCLIENT_SET_HOSTNAME=")], "\"yes\"") == 0;
 			g_free (str);
 		}
 	}
@@ -1533,10 +1532,11 @@ write_hostname (NMSettingsPrivate *priv, const char *hostname)
 	gboolean ret;
 	gs_free_error GError *error = NULL;
 	const char *file = priv->hostname.file;
+	gs_free char *link_path = NULL;
 	gs_unref_variant GVariant *var = NULL;
+	struct stat file_stat;
 #if HAVE_SELINUX
 	security_context_t se_ctx_prev = NULL, se_ctx = NULL;
-	struct stat file_stat = { .st_mode = 0 };
 	mode_t st_mode = 0;
 #endif
 
@@ -1553,6 +1553,15 @@ write_hostname (NMSettingsPrivate *priv, const char *hostname)
 
 		return !error;
 	}
+
+	/* If the hostname file is a symbolic link, follow it to find where the
+	 * real file is located, otherwise g_file_set_contents will attempt to
+	 * replace the link with a plain file.
+	 */
+	if (   lstat (file, &file_stat) == 0
+	    && S_ISLNK (file_stat.st_mode)
+	    && (link_path = g_file_read_link (file, NULL)))
+		file = link_path;
 
 #if HAVE_SELINUX
 	/* Get default context for hostname file and set it for fscreate */
@@ -1871,7 +1880,7 @@ device_realized (NMDevice *device, GParamSpec *pspec, NMSettings *self)
 	/* If the device isn't managed or it already has a default wired connection,
 	 * ignore it.
 	 */
-	if (   !nm_device_get_managed (device)
+	if (   !nm_device_get_managed (device, FALSE)
 	    || g_object_get_data (G_OBJECT (device), DEFAULT_WIRED_CONNECTION_TAG)
 	    || have_connection_for_device (self, device))
 		return;

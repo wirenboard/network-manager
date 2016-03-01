@@ -1,4 +1,24 @@
-#include "config.h"
+/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
+/* NetworkManager audit support
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Copyright 2016 Red Hat, Inc.
+ */
+
+#include "nm-default.h"
 
 #include <sched.h>
 
@@ -290,9 +310,17 @@ test_slave (int master, int type, SignalData *master_changed)
 	ensure_no_signal (link_removed);
 	g_assert (nm_platform_link_release (NM_PLATFORM_GET, master, ifindex));
 	g_assert_cmpint (nm_platform_link_get_master (NM_PLATFORM_GET, ifindex), ==, 0);
-	accept_signals (link_added, 0, 1);
-	accept_signals (link_changed, 1, 3);
-	accept_signals (link_removed, 0, 1);
+	if (link_changed->received_count > 0) {
+		accept_signals (link_added, 0, 1);
+		accept_signals (link_changed, 1, 3);
+		accept_signals (link_removed, 0, 1);
+	} else {
+		/* Due to https://bugzilla.redhat.com/show_bug.cgi?id=1285719 , kernel might send a
+		 * wrong RTM_DELLINK message so that we instead see an removed+added signal. */
+		accept_signal (link_added);
+		ensure_no_signal (link_changed);
+		accept_signal (link_removed);
+	}
 	accept_signals (master_changed, 1, 2);
 
 	ensure_no_signal (master_changed);

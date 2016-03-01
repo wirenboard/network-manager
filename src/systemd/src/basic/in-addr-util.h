@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #pragma once
 
 /***
@@ -21,8 +19,6 @@
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
-#include "nm-sd-adapt.h"
-
 #include <netinet/in.h>
 #include <stddef.h>
 #include <sys/socket.h>
@@ -33,6 +29,11 @@
 union in_addr_union {
         struct in_addr in;
         struct in6_addr in6;
+};
+
+struct in_addr_data {
+        int family;
+        union in_addr_union address;
 };
 
 int in_addr_is_null(int family, const union in_addr_union *u);

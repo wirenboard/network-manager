@@ -17,7 +17,7 @@
  * Copyright 2010 - 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <readline/readline.h>
 
-#include "nm-default.h"
 #include "nm-secret-agent-simple.h"
 #include "polkit-agent.h"
 #include "utils.h"
@@ -587,8 +586,10 @@ sort_access_points (const GPtrArray *aps)
 	GPtrArray *sorted;
 	int i;
 
+	g_return_val_if_fail (aps, NULL);
+
 	sorted = g_ptr_array_sized_new (aps->len);
-	for (i = 0; aps && i < aps->len; i++)
+	for (i = 0; i < aps->len; i++)
 		g_ptr_array_add (sorted, aps->pdata[i]);
 	g_ptr_array_sort_with_data (sorted, compare_aps, NULL);
 	return sorted;
@@ -1926,7 +1927,7 @@ do_device_reapply (NmCli *nmc, int argc, char **argv)
 		info->queue = g_slist_prepend (info->queue, g_object_ref (device));
 
 		/* Now reapply the connection to the device */
-		nm_device_reapply_async (device, NULL, 0, NULL, reapply_device_cb, info);
+		nm_device_reapply_async (device, NULL, 0, 0, NULL, reapply_device_cb, info);
 	}
 
 error:
@@ -3505,19 +3506,13 @@ do_device_lldp_list (NmCli *nmc, int argc, char **argv)
 			}
 			ifname = *argv;
 		} else {
-			g_string_printf (nmc->return_text, _("Error: unknown parameter: %s"), *argv);
+			g_string_printf (nmc->return_text, _("Error: invalid extra argument '%s'."), *argv);
 			nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
 			goto error;
 		}
 
 		argc--;
 		argv++;
-	}
-
-	if (argc > 0) {
-		g_string_printf (nmc->return_text, _("Error: invalid extra argument '%s'."), *argv);
-		nmc->return_value = NMC_RESULT_ERROR_USER_INPUT;
-		goto error;
 	}
 
 	if (!nmc->required_fields || strcasecmp (nmc->required_fields, "common") == 0)

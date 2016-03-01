@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #ifndef foosdipv4acdfoo
 #define foosdipv4acdfoo
 
@@ -22,8 +20,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
-
-#include "nm-sd-adapt.h"
 
 #include <net/ethernet.h>
 #include <netinet/in.h>

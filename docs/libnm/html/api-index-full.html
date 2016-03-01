@@ -25,8 +25,6 @@
                      <span class="dim">|</span> 
                   <a class="shortcut" href="#idxI">I</a>
                      <span class="dim">|</span> 
-                  <a class="shortcut" href="#idxK">K</a>
-                     <span class="dim">|</span> 
                   <a class="shortcut" href="#idxL">L</a>
                      <span class="dim">|</span> 
                   <a class="shortcut" href="#idxM">M</a>
@@ -36,8 +34,6 @@
                   <a class="shortcut" href="#idxR">R</a>
                      <span class="dim">|</span> 
                   <a class="shortcut" href="#idxS">S</a>
-                     <span class="dim">|</span> 
-                  <a class="shortcut" href="#idxT">T</a>
                      <span class="dim">|</span> 
                   <a class="shortcut" href="#idxU">U</a>
                      <span class="dim">|</span> 
@@ -1418,14 +1414,6 @@
 </dt>
 <dd></dd>
 <dt>
-DEFINE_KF_LIST_WRAPPER_PROTO, macro in nm-keyfile-utils
-</dt>
-<dd></dd>
-<dt>
-DEFINE_KF_WRAPPER_PROTO, macro in nm-keyfile-utils
-</dt>
-<dd></dd>
-<dt>
 <a class="link" href="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS" title="NM_DEPRECATED_IN_0_9_10">NM_DEPRECATED_IN_0_9_10</a>, macro in <a class="link" href="libnm-nm-version.html" title="nm-version">nm-version</a>
 </dt>
 <dd></dd>
@@ -2179,6 +2167,18 @@ DEFINE_KF_WRAPPER_PROTO, macro in nm-keyfile-utils
 <dd></dd>
 <dt>
 <a class="link" href="NMDevice.html#nm-device-get-active-connection" title="nm_device_get_active_connection ()">nm_device_get_active_connection</a>, function in <a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMDevice.html#nm-device-get-applied-connection" title="nm_device_get_applied_connection ()">nm_device_get_applied_connection</a>, function in <a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMDevice.html#nm-device-get-applied-connection-async" title="nm_device_get_applied_connection_async ()">nm_device_get_applied_connection_async</a>, function in <a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMDevice.html#nm-device-get-applied-connection-finish" title="nm_device_get_applied_connection_finish ()">nm_device_get_applied_connection_finish</a>, function in <a class="link" href="NMDevice.html" title="NMDevice">NMDevice</a>
 </dt>
 <dd></dd>
 <dt>
@@ -3258,79 +3258,6 @@ DEFINE_KF_WRAPPER_PROTO, macro in nm-keyfile-utils
 <a class="link" href="NMSettingIPConfig.html#nm-ip-route-unref" title="nm_ip_route_unref ()">nm_ip_route_unref</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
-<a name="idxK"></a><h3 class="title">K</h3>
-<dt>
-NMKeyfileReadHandler, user_function in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NMKeyfileReadType, enum in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NMKeyfileReadTypeDataWarn, struct in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NMKeyfileWarnSeverity, enum in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NMKeyfileWriteHandler, user_function in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NMKeyfileWriteType, enum in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NMKeyfileWriteTypeDataCert, struct in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NM_KEYFILE_CERT_SCHEME_PREFIX_BLOB, macro in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-NM_KEYFILE_CERT_SCHEME_PREFIX_PATH, macro in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_detect_unqualified_path_scheme, function in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_plugin_get_alias_for_setting_name, function in nm-keyfile-utils
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_plugin_get_setting_name_for_alias, function in nm-keyfile-utils
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_plugin_kf_get_keys, function in nm-keyfile-utils
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_plugin_kf_get_string, function in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_plugin_kf_has_key, function in nm-keyfile-utils
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_plugin_kf_set_string, function in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_read, function in nm-keyfile-internal
-</dt>
-<dd></dd>
-<dt>
-nm_keyfile_write, function in nm-keyfile-internal
-</dt>
-<dd></dd>
 <a name="idxL"></a><h3 class="title">L</h3>
 <dt>
 <a class="link" href="libnm-nm-dbus-interface.html#NM-LLDP-ATTR-CHASSIS-ID:CAPS" title="NM_LLDP_ATTR_CHASSIS_ID">NM_LLDP_ATTR_CHASSIS_ID</a>, macro in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
@@ -4133,10 +4060,6 @@ nm_keyfile_write, function in nm-keyfile-internal
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="NMSettingIP4Config.html#NMSettingIP4Config--dhcp-timeout" title="The “dhcp-timeout” property">NMSettingIP4Config:dhcp-timeout</a>, object property in <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config">NMSettingIP4Config</a>
-</dt>
-<dd></dd>
-<dt>
 <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--addr-gen-mode" title="The “addr-gen-mode” property">NMSettingIP6Config:addr-gen-mode</a>, object property in <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config">NMSettingIP6Config</a>
 </dt>
 <dd></dd>
@@ -4157,11 +4080,19 @@ nm_keyfile_write, function in nm-keyfile-internal
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dad-timeout" title="The “dad-timeout” property">NMSettingIPConfig:dad-timeout</a>, object property in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-hostname" title="The “dhcp-hostname” property">NMSettingIPConfig:dhcp-hostname</a>, object property in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname" title="The “dhcp-send-hostname” property">NMSettingIPConfig:dhcp-send-hostname</a>, object property in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-timeout" title="The “dhcp-timeout” property">NMSettingIPConfig:dhcp-timeout</a>, object property in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
@@ -4690,6 +4621,10 @@ nm_keyfile_write, function in nm-keyfile-internal
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingWireless.html#NMSettingWireless--tx-power" title="The “tx-power” property">NMSettingWireless:tx-power</a>, object property in <a class="link" href="NMSettingWireless.html" title="NMSettingWireless">NMSettingWireless</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingWireless.html#NMSettingWirelessPowersave" title="enum NMSettingWirelessPowersave">NMSettingWirelessPowersave</a>, enum in <a class="link" href="NMSettingWireless.html" title="NMSettingWireless">NMSettingWireless</a>
 </dt>
 <dd></dd>
 <dt>
@@ -6149,19 +6084,11 @@ nm_keyfile_write, function in nm-keyfile-internal
 </dt>
 <dd></dd>
 <dt>
-<a class="link" href="NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DHCP-TIMEOUT:CAPS" title="NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT">NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT</a>, macro in <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config">NMSettingIP4Config</a>
-</dt>
-<dd></dd>
-<dt>
 <a class="link" href="NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-client-id" title="nm_setting_ip4_config_get_dhcp_client_id ()">nm_setting_ip4_config_get_dhcp_client_id</a>, function in <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config">NMSettingIP4Config</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-fqdn" title="nm_setting_ip4_config_get_dhcp_fqdn ()">nm_setting_ip4_config_get_dhcp_fqdn</a>, function in <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config">NMSettingIP4Config</a>
-</dt>
-<dd></dd>
-<dt>
-<a class="link" href="NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-timeout" title="nm_setting_ip4_config_get_dhcp_timeout ()">nm_setting_ip4_config_get_dhcp_timeout</a>, function in <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config">NMSettingIP4Config</a>
 </dt>
 <dd></dd>
 <dt>
@@ -6285,11 +6212,23 @@ nm_keyfile_write, function in nm-keyfile-internal
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DAD-TIMEOUT:CAPS" title="NM_SETTING_IP_CONFIG_DAD_TIMEOUT">NM_SETTING_IP_CONFIG_DAD_TIMEOUT</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DAD-TIMEOUT-MAX:CAPS" title="NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX">NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DHCP-HOSTNAME:CAPS" title="NM_SETTING_IP_CONFIG_DHCP_HOSTNAME">NM_SETTING_IP_CONFIG_DHCP_HOSTNAME</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DHCP-SEND-HOSTNAME:CAPS" title="NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME">NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DHCP-TIMEOUT:CAPS" title="NM_SETTING_IP_CONFIG_DHCP_TIMEOUT">NM_SETTING_IP_CONFIG_DHCP_TIMEOUT</a>, macro in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
@@ -6313,11 +6252,19 @@ nm_keyfile_write, function in nm-keyfile-internal
 </dt>
 <dd></dd>
 <dt>
+<a class="link" href="NMSettingIPConfig.html#nm-setting-ip-config-get-dad-timeout" title="nm_setting_ip_config_get_dad_timeout ()">nm_setting_ip_config_get_dad_timeout</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
 <a class="link" href="NMSettingIPConfig.html#nm-setting-ip-config-get-dhcp-hostname" title="nm_setting_ip_config_get_dhcp_hostname ()">nm_setting_ip_config_get_dhcp_hostname</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
 <a class="link" href="NMSettingIPConfig.html#nm-setting-ip-config-get-dhcp-send-hostname" title="nm_setting_ip_config_get_dhcp_send_hostname ()">nm_setting_ip_config_get_dhcp_send_hostname</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
+</dt>
+<dd></dd>
+<dt>
+<a class="link" href="NMSettingIPConfig.html#nm-setting-ip-config-get-dhcp-timeout" title="nm_setting_ip_config_get_dhcp_timeout ()">nm_setting_ip_config_get_dhcp_timeout</a>, function in <a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig">NMSettingIPConfig</a>
 </dt>
 <dd></dd>
 <dt>
@@ -7868,19 +7815,6 @@ nm_keyfile_write, function in nm-keyfile-internal
 <a class="link" href="libnm-nm-dbus-interface.html#NMState" title="enum NMState">NMState</a>, enum in <a class="link" href="libnm-nm-dbus-interface.html" title="nm-dbus-interface">nm-dbus-interface</a>
 </dt>
 <dd></dd>
-<a name="idxT"></a><h3 class="title">T</h3>
-<dt>
-NMTestGeneralBoolEnum, enum in test-general-enums
-</dt>
-<dd></dd>
-<dt>
-NMTestGeneralColorFlags, enum in test-general-enums
-</dt>
-<dd></dd>
-<dt>
-NMTestGeneralMetaFlags, enum in test-general-enums
-</dt>
-<dd></dd>
 <a name="idxU"></a><h3 class="title">U</h3>
 <dt>
 <a class="link" href="libnm-nm-utils.html#NMUtilsCheckFilePredicate" title="NMUtilsCheckFilePredicate ()">NMUtilsCheckFilePredicate</a>, user_function in <a class="link" href="libnm-nm-utils.html" title="nm-utils">nm-utils</a>
@@ -8192,7 +8126,7 @@ NMTestGeneralMetaFlags, enum in test-general-enums
 </dt>
 <dd></dd>
 <dt>
-<a href="https://developer.gnome.org/libnm-glib/0.9/libnm-glib-NMVpnPluginUiWidget.html#NMVpnEditorInterface">NMVpnEditorInterface</a>, struct in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+NMVpnEditorInterface, struct in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -8260,7 +8194,7 @@ NMTestGeneralMetaFlags, enum in test-general-enums
 </dt>
 <dd></dd>
 <dt>
-<a href="https://developer.gnome.org/libnm-glib/0.9/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-get-widget">nm_vpn_editor_get_widget</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+nm_vpn_editor_get_widget, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -8304,7 +8238,7 @@ NMTestGeneralMetaFlags, enum in test-general-enums
 </dt>
 <dd></dd>
 <dt>
-<a href="https://developer.gnome.org/libnm-glib/0.9/libnm-glib-NMVpnPluginUiWidget.html#nm-vpn-editor-update-connection">nm_vpn_editor_update_connection</a>, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
+nm_vpn_editor_update_connection, function in <a class="link" href="NMVpnEditorPlugin.html#NMVpnEditor">NMVpnEditor</a>
 </dt>
 <dd></dd>
 <dt>
@@ -8472,7 +8406,23 @@ NM_VPN_PLUGIN_INFO_NAME, macro in nm-vpn-plugin-info
 </dt>
 <dd></dd>
 <dt>
-VPN_SECRETS_GROUP, macro in nm-keyfile-utils
+NM_VPN_PLUGIN_OLD_DBUS_SERVICE_NAME, macro in nm-vpn-plugin-old
+</dt>
+<dd></dd>
+<dt>
+NM_VPN_PLUGIN_OLD_STATE, macro in nm-vpn-plugin-old
+</dt>
+<dd></dd>
+<dt>
+NM_VPN_SERVICE_PLUGIN_DBUS_SERVICE_NAME, macro in nm-vpn-service-plugin
+</dt>
+<dd></dd>
+<dt>
+NM_VPN_SERVICE_PLUGIN_DBUS_WATCH_PEER, macro in nm-vpn-service-plugin
+</dt>
+<dd></dd>
+<dt>
+NM_VPN_SERVICE_PLUGIN_STATE, macro in nm-vpn-service-plugin
 </dt>
 <dd></dd>
 <a name="idxW"></a><h3 class="title">W</h3>

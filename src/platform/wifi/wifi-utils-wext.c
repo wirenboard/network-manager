@@ -19,7 +19,7 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <errno.h>
 #include <string.h>
@@ -28,8 +28,6 @@
 #include <unistd.h>
 #include <math.h>
 
-
-#include "nm-default.h"
 #include "wifi-utils-private.h"
 #include "wifi-utils-wext.h"
 #include "nm-utils.h"
@@ -315,7 +313,7 @@ wext_qual_to_percent (const struct iw_quality *qual,
 			noise = qual->noise - 0x100;
 		else if ((max_qual->noise > 0) && !(max_qual->updated & IW_QUAL_NOISE_INVALID))
 			noise = max_qual->noise - 0x100;
-		noise = CLAMP (noise, FALLBACK_NOISE_FLOOR_DBM, FALLBACK_SIGNAL_MAX_DBM);
+		noise = CLAMP (noise, FALLBACK_NOISE_FLOOR_DBM, FALLBACK_SIGNAL_MAX_DBM - 1);
 
 		/* A sort of signal-to-noise ratio calculation */
 		level_percent = (int) (100 - 70 * (((double)max_level - (double)level) /

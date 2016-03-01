@@ -709,7 +709,7 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm/libnm.la \
 @ENABLE_TESTS_TRUE@	$(GLIB_LIBS)
 
-@ENABLE_TESTS_TRUE@@WITH_VALGRIND_FALSE@LOG_COMPILER = $(srcdir)/libnm-test-launch.sh
+@ENABLE_TESTS_TRUE@@WITH_VALGRIND_FALSE@LOG_COMPILER = $(top_srcdir)/tools/run-test-dbus-session.sh
 @ENABLE_TESTS_TRUE@test_nm_client_SOURCES = \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/shared/nm-test-utils-impl.c \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/shared/nm-test-libnm-utils.h \
@@ -725,7 +725,6 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(top_builddir)/shared/nm-test-libnm-utils.h \
 @ENABLE_TESTS_TRUE@	test-secret-agent.c
 
-EXTRA_DIST = libnm-test-launch.sh
 all: all-am
 
 .SUFFIXES:

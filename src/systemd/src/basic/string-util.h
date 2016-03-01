@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #pragma once
 
 /***
@@ -20,8 +18,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
-
-#include "nm-sd-adapt.h"
 
 #include <alloca.h>
 #include <stdbool.h>
@@ -132,7 +128,12 @@ char *strstrip(char *s);
 char *delete_chars(char *s, const char *bad);
 char *truncate_nl(char *s);
 
-char *ascii_strlower(char *path);
+char ascii_tolower(char x);
+char *ascii_strlower(char *s);
+char *ascii_strlower_n(char *s, size_t n);
+
+int ascii_strcasecmp_n(const char *a, const char *b, size_t n);
+int ascii_strcasecmp_nn(const char *a, size_t n, const char *b, size_t m);
 
 bool chars_intersect(const char *a, const char *b) _pure_;
 

@@ -146,6 +146,7 @@ nm_device_type_get_type (void)
         { NM_DEVICE_TYPE_IP_TUNNEL, "NM_DEVICE_TYPE_IP_TUNNEL", "ip-tunnel" },
         { NM_DEVICE_TYPE_MACVLAN, "NM_DEVICE_TYPE_MACVLAN", "macvlan" },
         { NM_DEVICE_TYPE_VXLAN, "NM_DEVICE_TYPE_VXLAN", "vxlan" },
+        { NM_DEVICE_TYPE_VETH, "NM_DEVICE_TYPE_VETH", "veth" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -520,7 +521,7 @@ nm_ip_tunnel_mode_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_IP_TUNNEL_MODE_UKNOWN, "NM_IP_TUNNEL_MODE_UKNOWN", "uknown" },
+        { NM_IP_TUNNEL_MODE_UNKNOWN, "NM_IP_TUNNEL_MODE_UNKNOWN", "unknown" },
         { NM_IP_TUNNEL_MODE_IPIP, "NM_IP_TUNNEL_MODE_IPIP", "ipip" },
         { NM_IP_TUNNEL_MODE_GRE, "NM_IP_TUNNEL_MODE_GRE", "gre" },
         { NM_IP_TUNNEL_MODE_SIT, "NM_IP_TUNNEL_MODE_SIT", "sit" },
@@ -626,6 +627,7 @@ nm_device_error_get_type (void)
         { NM_DEVICE_ERROR_NOT_SOFTWARE, "NM_DEVICE_ERROR_NOT_SOFTWARE", "NotSoftware" },
         { NM_DEVICE_ERROR_NOT_ALLOWED, "NM_DEVICE_ERROR_NOT_ALLOWED", "NotAllowed" },
         { NM_DEVICE_ERROR_SPECIFIC_OBJECT_NOT_FOUND, "NM_DEVICE_ERROR_SPECIFIC_OBJECT_NOT_FOUND", "SpecificObjectNotFound" },
+        { NM_DEVICE_ERROR_VERSION_ID_MISMATCH, "NM_DEVICE_ERROR_VERSION_ID_MISMATCH", "VersionIdMismatch" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -1024,6 +1026,27 @@ nm_wep_key_type_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMWepKeyType"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_setting_wireless_powersave_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_SETTING_WIRELESS_POWERSAVE_DEFAULT, "NM_SETTING_WIRELESS_POWERSAVE_DEFAULT", "default" },
+        { NM_SETTING_WIRELESS_POWERSAVE_IGNORE, "NM_SETTING_WIRELESS_POWERSAVE_IGNORE", "ignore" },
+        { NM_SETTING_WIRELESS_POWERSAVE_DISABLE, "NM_SETTING_WIRELESS_POWERSAVE_DISABLE", "disable" },
+        { NM_SETTING_WIRELESS_POWERSAVE_ENABLE, "NM_SETTING_WIRELESS_POWERSAVE_ENABLE", "enable" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMSettingWirelessPowersave"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

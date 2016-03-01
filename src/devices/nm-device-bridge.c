@@ -18,11 +18,10 @@
  * Copyright 2011 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdlib.h>
 
-#include "nm-default.h"
 #include "nm-device-bridge.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
@@ -73,7 +72,6 @@ check_connection_available (NMDevice *device,
 static gboolean
 check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
-	const char *iface;
 	NMSettingBridge *s_bridge;
 	const char *mac_address;
 
@@ -82,11 +80,6 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 
 	s_bridge = nm_connection_get_setting_bridge (connection);
 	if (!s_bridge || !nm_connection_is_type (connection, NM_SETTING_BRIDGE_SETTING_NAME))
-		return FALSE;
-
-	/* Bridge connections must specify the virtual interface name */
-	iface = nm_connection_get_interface_name (connection);
-	if (!iface || strcmp (nm_device_get_iface (device), iface))
 		return FALSE;
 
 	mac_address = nm_setting_bridge_get_mac_address (s_bridge);
@@ -405,7 +398,7 @@ create_and_realize (NMDevice *device,
 	                                     hwaddr ? mac_address : NULL,
 	                                     hwaddr ? ETH_ALEN : 0,
 	                                     out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create bridge interface '%s' for '%s': %s",
 		             iface,

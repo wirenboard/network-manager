@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 19 January 2016
+.\"      Date: 01 March 2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.1.90
+.\"    Source: NetworkManager 1.1.91
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.1\&.90" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.1\&.91" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1400,6 +1400,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 method
@@ -1538,15 +1539,26 @@ A string sent to the DHCP server to identify the local machine\&.\fB
 Example: \fRDHCP_CLIENT_ID=ax\-srv\-1
 T}
 T{
+dad\-timeout
+T}:T{
+ARPING_WAIT
+T}:T{
+missing variable means global default (config override or 3)
+T}:T{
+Timeout (in seconds) for performing DAD before configuring IPv4 addresses\&. 0 turns off the DAD completely, \-1 means default value\&.\fB
+
+Example: \fRARPING_WAIT=2
+T}
+T{
 dhcp\-timeout
 T}:T{
-DHCP_TIMEOUT\fI(+)\fR
+IPV4_DHCP_TIMEOUT\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
 A timeout after which the DHCP transaction fails in case of no response\&.\fB
 
-Example: \fRDHCP_TIMEOUT=10
+Example: \fRIPV4_DHCP_TIMEOUT=10
 T}
 T{
 dhcp\-fqdn
@@ -1886,13 +1898,13 @@ T}
 T{
 flags
 T}:T{
-REORDER_HDR, GVRP, MVRP, VLAN_FLAGS
+GVRP, MVRP, VLAN_FLAGS
 T}:T{
 \ \&
 T}:T{
 VLAN flags\&.\fB
 
-Allowed values: \fR"yes or "no" for REORDER_HDR, GVRP and MVRP; "LOOSE_BINDING" for VLAN_FLAGS
+Allowed values: \fR"yes or "no" for GVRP and MVRP; "LOOSE_BINDING" and "NO_REORDER_HDR" for VLAN_FLAGS
 T}
 T{
 ingress\-priority\-map
@@ -2466,24 +2478,26 @@ powersave
 T}:T{
 POWERSAVE\fI(+)\fR
 T}:T{
-no
+\ \&
 T}:T{
 Enables or disables Wi\-Fi power saving\&.\fB
 
-Example: \fRPOWERSAVE=yes
+Example: \fRPOWERSAVE=enable\fB
+
+Allowed values: \fRdefault, ignore, enable, disable
 T}
 T{
 mac\-address\-randomization
 T}:T{
 MAC_ADDRESS_RANDOMIZATION\fI(+)\fR
 T}:T{
-1
+\ \&
 T}:T{
 Enables or disables Wi\-Fi MAC address randomization\&.\fB
 
-Example: \fRMAC_ADDRESS_RANDOMIZATION=2\fB
+Example: \fRMAC_ADDRESS_RANDOMIZATION=always\fB
 
-Allowed values: \fR0 (default), (1) never, (2) always
+Allowed values: \fRdefault, never, always
 T}
 T{
 security

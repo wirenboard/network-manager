@@ -19,14 +19,15 @@
  * Copyright 2009 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-remote-settings.h"
 
 #include <string.h>
-#include <nm-dbus-interface.h>
-#include <nm-connection.h>
 
-#include "nm-default.h"
-#include "nm-remote-settings.h"
+#include "nm-dbus-interface.h"
+#include "nm-connection.h"
+
 #include "nm-client.h"
 #include "nm-remote-connection.h"
 #include "nm-remote-connection-private.h"
@@ -34,7 +35,6 @@
 #include "nm-dbus-helpers.h"
 #include "nm-object-private.h"
 #include "nm-core-internal.h"
-#include "nm-macros-internal.h"
 
 #include "nmdbus-settings.h"
 

@@ -18,11 +18,10 @@
  * Copyright 2011 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <sys/socket.h>
 
-#include "nm-default.h"
 #include "nm-device-vlan.h"
 #include "nm-manager.h"
 #include "nm-utils.h"
@@ -77,7 +76,7 @@ parent_state_changed (NMDevice *parent,
 	if (reason == NM_DEVICE_STATE_REASON_CARRIER)
 		return;
 
-	nm_device_set_unmanaged_flags (NM_DEVICE (self), NM_UNMANAGED_PARENT, !nm_device_get_managed (parent), reason);
+	nm_device_set_unmanaged_by_flags (NM_DEVICE (self), NM_UNMANAGED_PARENT, !nm_device_get_managed (parent, FALSE), reason);
 }
 
 static void
@@ -115,7 +114,8 @@ parent_hwaddr_changed (NMDevice *parent,
 			 * removing the IPv6 configuration; reapply it.
 			 */
 			s_ip6 = nm_connection_get_setting_ip6_config (connection);
-			nm_device_reactivate_ip6_config (NM_DEVICE (self), s_ip6, s_ip6);
+			if (s_ip6)
+				nm_device_reactivate_ip6_config (NM_DEVICE (self), s_ip6, s_ip6);
 		}
 	}
 }
@@ -144,10 +144,10 @@ nm_device_vlan_set_parent (NMDeviceVlan *self, NMDevice *parent)
 		                                           G_CALLBACK (parent_hwaddr_changed), device);
 
 		/* Set parent-dependent unmanaged flag */
-		nm_device_set_unmanaged_flags (device,
-		                               NM_UNMANAGED_PARENT,
-		                               !nm_device_get_managed (parent),
-		                               NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED);
+		nm_device_set_unmanaged_by_flags (device,
+		                                  NM_UNMANAGED_PARENT,
+		                                  !nm_device_get_managed (parent, FALSE),
+		                                  NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED);
 	}
 
 	/* Recheck availability now that the parent has changed */
@@ -237,7 +237,7 @@ create_and_realize (NMDevice *device,
 	                                   vlan_id,
 	                                   nm_setting_vlan_get_flags (s_vlan),
 	                                   out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create VLAN interface '%s' for '%s': %s",
 		             iface,
@@ -389,7 +389,7 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
 	NMDeviceVlanPrivate *priv = NM_DEVICE_VLAN_GET_PRIVATE (device);
 	NMSettingVlan *s_vlan;
-	const char *parent, *iface = NULL;
+	const char *parent = NULL;
 
 	if (!NM_DEVICE_CLASS (nm_device_vlan_parent_class)->check_connection_compatible (device, connection))
 		return FALSE;
@@ -413,16 +413,6 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 			if (!match_hwaddr (device, connection, TRUE))
 				return FALSE;
 		}
-	}
-
-	/* Ensure the interface name matches.  If not specified we assume a match
-	 * since both the parent interface and the VLAN ID matched by the time we
-	 * get here.
-	 */
-	iface = nm_connection_get_interface_name (connection);
-	if (iface) {
-		if (g_strcmp0 (nm_device_get_ip_iface (device), iface) != 0)
-			return FALSE;
 	}
 
 	return TRUE;
@@ -546,8 +536,6 @@ update_connection (NMDevice *device, NMConnection *connection)
 static NMActStageReturn
 act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 {
-	NMActRequest *req;
-	NMConnection *connection;
 	NMSettingVlan *s_vlan;
 	NMSettingWired *s_wired;
 	const char *cloned_mac;
@@ -559,21 +547,14 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	req = nm_device_get_act_request (dev);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	connection = nm_act_request_get_applied_connection (req);
-	g_return_val_if_fail (connection != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	s_wired = nm_connection_get_setting_wired (connection);
+	s_wired = (NMSettingWired *) nm_device_get_applied_setting (dev, NM_TYPE_SETTING_WIRED);
 	if (s_wired) {
 		/* Set device MAC address if the connection wants to change it */
 		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac)
-			nm_device_set_hw_addr (dev, cloned_mac, "set", LOGD_VLAN);
+		nm_device_set_hw_addr (dev, cloned_mac, "set", LOGD_VLAN);
 	}
 
-	s_vlan = nm_connection_get_setting_vlan (connection);
+	s_vlan = (NMSettingVlan *) nm_device_get_applied_setting (dev, NM_TYPE_SETTING_VLAN);
 	if (s_vlan) {
 		gs_free NMVlanQosMapping *ingress_map = NULL;
 		gs_free NMVlanQosMapping *egress_map = NULL;
@@ -765,9 +746,9 @@ get_connection_parent (NMDeviceFactory *factory, NMConnection *connection)
 }
 
 static char *
-get_virtual_iface_name (NMDeviceFactory *factory,
-                        NMConnection *connection,
-                        const char *parent_iface)
+get_connection_iface (NMDeviceFactory *factory,
+                      NMConnection *connection,
+                      const char *parent_iface)
 {
 	const char *ifname;
 	NMSettingVlan *s_vlan;
@@ -796,6 +777,6 @@ NM_DEVICE_FACTORY_DEFINE_INTERNAL (VLAN, Vlan, vlan,
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_VLAN_SETTING_NAME),
 	factory_iface->create_device = create_device;
 	factory_iface->get_connection_parent = get_connection_parent;
-	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
+	factory_iface->get_connection_iface = get_connection_iface;
 	)
 

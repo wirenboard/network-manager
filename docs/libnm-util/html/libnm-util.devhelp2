@@ -1552,6 +1552,9 @@
     <keyword type="constant" name="NM_DEVICE_TYPE_TEAM" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-TEAM:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_TYPE_TUN" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-TUN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_TYPE_IP_TUNNEL" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-IP-TUNNEL:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_MACVLAN" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-MACVLAN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_VXLAN" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-VXLAN:CAPS"/>
+    <keyword type="constant" name="NM_DEVICE_TYPE_VETH" link="libnm-util-NetworkManager.html#NM-DEVICE-TYPE-VETH:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_CAP_NONE" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-NONE:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_CAP_NM_SUPPORTED" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-NM-SUPPORTED:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_CAP_CARRIER_DETECT" link="libnm-util-NetworkManager.html#NM-DEVICE-CAP-CARRIER-DETECT:CAPS"/>

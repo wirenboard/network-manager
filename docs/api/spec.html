@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 1.1.90</title><style type="text/css">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ascii" /><title>NetworkManager D-Bus Interface Specification version 1.1.91</title><style type="text/css">
 
           body {
             font-family: sans-serif;
@@ -97,7 +97,7 @@
             margin-right: 4em;
           }
 
-        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 1.1.90</h2><div>Copyright (C) 2008 - 2011 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
+        </style></head><body><h1 class="topbox">NetworkManager D-Bus Interface Specification</h1><h2>Version 1.1.91</h2><div>Copyright (C) 2008 - 2016 Red Hat, Inc.</div><div>Copyright (C) 2008 - 2009 Novell, Inc.</div><div class="license">
 <p>This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -111,7 +111,7 @@ General Public License for more details.</p>
 <p>You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
-</div><h2>Interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bridge">org.freedesktop.NetworkManager.Device.Bridge</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Team">org.freedesktop.NetworkManager.Device.Team</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Generic">org.freedesktop.NetworkManager.Device.Generic</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul>
+</div><h2>Interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bridge">org.freedesktop.NetworkManager.Device.Bridge</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Generic">org.freedesktop.NetworkManager.Device.Generic</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.IPTunnel">org.freedesktop.NetworkManager.Device.IPTunnel</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Macvlan">org.freedesktop.NetworkManager.Device.Macvlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Team">org.freedesktop.NetworkManager.Device.Team</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Tun">org.freedesktop.NetworkManager.Device.Tun</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Veth">org.freedesktop.NetworkManager.Device.Veth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vxlan">org.freedesktop.NetworkManager.Device.Vxlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul>
   <h1><a name="org.freedesktop.NetworkManager" id="org.freedesktop.NetworkManager"></a>org.freedesktop.NetworkManager</h1><h2>Methods:</h2><div class="method"><h3><a name="org.freedesktop.NetworkManager.GetDevices" id="org.freedesktop.NetworkManager.GetDevices">GetDevices</a> (
         
         ) &#8594;
@@ -538,21 +538,66 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <dl><dt><code>NM_802_11_AP_SEC_NONE = 0x0</code></dt><dd>Null flag.</dd><dt><code>NM_802_11_AP_SEC_PAIR_WEP40 = 0x1</code></dt><dd>Access point supports pairwise 40-bit WEP encryption.</dd><dt><code>NM_802_11_AP_SEC_PAIR_WEP104 = 0x2</code></dt><dd>Access point supports pairwise 104-bit WEP encryption.</dd><dt><code>NM_802_11_AP_SEC_PAIR_TKIP = 0x4</code></dt><dd>Access point supports pairwise TKIP encryption.</dd><dt><code>NM_802_11_AP_SEC_PAIR_CCMP = 0x8</code></dt><dd>Access point supports pairwise CCMP encryption.</dd><dt><code>NM_802_11_AP_SEC_GROUP_WEP40 = 0x10</code></dt><dd>Access point supports a group 40-bit WEP cipher.</dd><dt><code>NM_802_11_AP_SEC_GROUP_WEP104 = 0x20</code></dt><dd>Access point supports a group 104-bit WEP cipher.</dd><dt><code>NM_802_11_AP_SEC_GROUP_TKIP = 0x40</code></dt><dd>Access point supports a group TKIP cipher.</dd><dt><code>NM_802_11_AP_SEC_GROUP_CCMP = 0x80</code></dt><dd>Access point supports a group CCMP cipher.</dd><dt><code>NM_802_11_AP_SEC_KEY_MGMT_PSK = 0x100</code></dt><dd>Access point supports PSK key management.</dd><dt><code>NM_802_11_AP_SEC_KEY_MGMT_802_1X = 0x200</code></dt><dd>Access point supports 802.1x key management.</dd></dl>
 
   <h1><a name="org.freedesktop.NetworkManager.Device" id="org.freedesktop.NetworkManager.Device"></a>org.freedesktop.NetworkManager.Device</h1><h2>Methods:</h2><div class="method"><h3><a name="org.freedesktop.NetworkManager.Device.Reapply" id="org.freedesktop.NetworkManager.Device.Reapply">Reapply</a> (
-        a{sa{sv}}: connection, u: flags
+        a{sa{sv}}: connection, t: version_id, u: flags
         ) &#8594;
         nothing</h3><div class="docstring">
-        Attempts to update the configuration of a device without deactivating it.
-        You can either modify the configuration by passing the desired setup via "connection"
-        argument or just omit the argument to bring it in sync with the connection that
-        has been activated but could have been modified  since.
+        Attempts to update the configuration of a device without deactivating it. NetworkManager
+        has the concept of connections, which are profiles that contain the configuration for
+        a networking device. Those connections are exposed via D-Bus as individual objects
+        that can be created, modified and deleted. When activating such a settings-connection
+        on a device, the settings-connection is cloned to become an applied-connection and used to
+        configure the device (see GetAppliedConnection). Subsequent modification of the
+        settings-connection don't propagate automatically to the device's applied-connection
+        (with exception of the firewall-zone and the metered property). For the changes to take
+        effect, you can either re-activate the settings-connection, or call Reapply.
+        The Reapply call allows you to directly update the applied-connection and reconfigure
+        the device.
+        Reapply can also be useful if the currently applied-connection is equal to the connection
+        that is about to be reapplied. This allows to reconfigure the device and revert external
+        changes like removing or adding an IP address (which NetworkManager doesn't revert
+        automatically because it is assumed that the user made these changes intentionally outside
+        of NetworkManager).
+        Reapply can make the applied-connection different from the settings-connection,
+        just like updating the settings-connection can make them different.
       </div><div><h4>Parameters</h4><dl><dt><code>connection</code> -
       <code>a{sa{sv}}</code></dt><dd>
-          The effective connection settings and properties to use. If empty, the connection
-          settings from the connection that is active on the device will be used.
+          The optional connection settings that will be reapplied on the device. If empty, the
+          currently active settings-connection will be used. The connection cannot arbitrarly
+          differ from the current applied-connection otherwise the call will fail.
+          Only certain changes are supported, like adding or removing IP addresses.
+        </dd><dt><code>version_id</code> -
+      <code>t</code></dt><dd>
+          If non-zero, the current version id of the applied-connection must match.
+          The current version id can be retrieved via GetAppliedConnection.
+          This optional argument allows to catch concurrent modifications between
+          the GetAppliedConnection call and Reapply.
         </dd><dt><code>flags</code> -
       <code>u</code></dt><dd>
           Flags which would modify the behavior of the Reapply call.
           There are no flags defined currently and the users should use the value of 0.
+        </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.Device.GetAppliedConnection" id="org.freedesktop.NetworkManager.Device.GetAppliedConnection">GetAppliedConnection</a> (
+        u: flags
+        ) &#8594;
+        a{sa{sv}}, t</h3><div class="docstring">
+        Get the currently applied connection on the device. This is a snapshot of the last activated
+        connection on the device, that is the configuration that is currently applied on the device.
+        Usually this is the same as GetSettings of the referenced settings connection. However, it
+        can differ if the settings connection was subsequently modified or the applied connection was
+        modified by Reapply. The applied connection is set when activating a device or when calling
+        Reapply.
+      </div><div><h4>Parameters</h4><dl><dt><code>flags</code> -
+      <code>u</code></dt><dd>
+          Flags which would modify the behavior of the GetAppliedConnection call.
+          There are no flags defined currently and the users should use the value of 0.
+        </dd></dl></div><div><h4>Returns</h4><dl><dt><code>connection</code> -
+      <code>a{sa{sv}}</code></dt><dd>
+            The effective connection settings that the connection has currently applied.
+        </dd><dt><code>version_id</code> -
+      <code>t</code></dt><dd>
+            The version-id of the currently applied connection. This can be specified during
+            Reapply to avoid races where you first fetch the applied connection, modify it
+            and try to reapply it. If the applied connection is modified in the meantime, the
+            version_id gets incremented and Reapply will fail.
         </dd></dl></div></div><div class="method"><h3><a name="org.freedesktop.NetworkManager.Device.Disconnect" id="org.freedesktop.NetworkManager.Device.Disconnect">Disconnect</a> (
         
         ) &#8594;
@@ -939,6 +984,88 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The reason for originally changing to the device state.
         </dd></dl></div></div>
 
+  <h1><a name="org.freedesktop.NetworkManager.Device.Adsl" id="org.freedesktop.NetworkManager.Device.Adsl"></a>org.freedesktop.NetworkManager.Device.Adsl</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Adsl.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Adsl.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Bond" id="org.freedesktop.NetworkManager.Device.Bond"></a>org.freedesktop.NetworkManager.Device.Bond</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bond.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bond.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd><dt><code>Slaves</code> -
+      <code>ao</code> -
+      <code>(read)</code></dt><dd>
+        Array of object paths representing devices which are currently
+	slaved to this device.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Bridge" id="org.freedesktop.NetworkManager.Device.Bridge"></a>org.freedesktop.NetworkManager.Device.Bridge</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bridge.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bridge.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd><dt><code>Slaves</code> -
+      <code>ao</code> -
+      <code>(read)</code></dt><dd>
+        Array of object paths representing devices which are currently
+	slaved to this device.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Bluetooth" id="org.freedesktop.NetworkManager.Device.Bluetooth"></a>org.freedesktop.NetworkManager.Device.Bluetooth</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bluetooth.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bluetooth.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Bluetooth hardware address of the device.
+      </dd><dt><code>Name</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Bluetooth name of the device.
+      </dd><dt><code>BtCapabilities</code> -
+      <code>u</code> -
+      <code>(read)</code>
+      (<a xmlns="" href="#type-NM_BT_CAPABILITIES">NM_BT_CAPABILITIES</a>)
+    </dt><dd>
+        Bluetooth capabilities of the device (either DUN or NAP).
+      </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_BT_CAPABILITIES" id="type-NM_BT_CAPABILITIES">NM_BT_CAPABILITIES</a></h3>
+        Flags describing the capabilities of a Bluetooth device.
+      <dl><dt><code>NM_BT_CAPABILITY_NONE = 0x0</code></dt><dd>The device has no recognized capabilities.</dd><dt><code>NM_BT_CAPABILITY_DUN = 0x1</code></dt><dd>The device supports Bluetooth Dial-Up Networking.</dd><dt><code>NM_BT_CAPABILITY_PAN = 0x2</code></dt><dd>The device supports Bluetooth Personal Area Networking.</dd></dl>
+
   <h1><a name="org.freedesktop.NetworkManager.Device.Wired" id="org.freedesktop.NetworkManager.Device.Wired"></a>org.freedesktop.NetworkManager.Device.Wired</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Wired.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Wired.PropertiesChanged">PropertiesChanged</a> (
         a{sv}: properties
         )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
@@ -966,6 +1093,374 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>b</code> -
       <code>(read)</code></dt><dd>
         Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Generic" id="org.freedesktop.NetworkManager.Device.Generic"></a>org.freedesktop.NetworkManager.Device.Generic</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Generic.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Generic.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>TypeDescription</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        A (non-localized) description of the interface type, if known.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Infiniband" id="org.freedesktop.NetworkManager.Device.Infiniband"></a>org.freedesktop.NetworkManager.Device.Infiniband</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Infiniband.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Infiniband.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.IPTunnel" id="org.freedesktop.NetworkManager.Device.IPTunnel"></a>org.freedesktop.NetworkManager.Device.IPTunnel</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.IPTunnel.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.IPTunnel.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Mode</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The tunneling mode.
+      </dd><dt><code>Parent</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of the parent device.
+      </dd><dt><code>Local</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The local endpoint of the tunnel.
+      </dd><dt><code>Remote</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The remote endpoint of the tunnel.
+      </dd><dt><code>Ttl</code> -
+      <code>y</code> -
+      <code>(read)</code></dt><dd>
+        The TTL assigned to tunneled packets. 0 is a special value
+        meaning that packets inherit the TTL value
+      </dd><dt><code>Tos</code> -
+      <code>y</code> -
+      <code>(read)</code></dt><dd>
+        The type of service (IPv4) or traffic class (IPv6) assigned to
+        tunneled packets.
+      </dd><dt><code>PathMtuDiscovery</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Whether path MTU discovery is enabled on this tunnel.
+      </dd><dt><code>InputKey</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The key used for incoming packets.
+      </dd><dt><code>OutputKey</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The key used for outgoing packets.
+      </dd><dt><code>EncapsulationLimit</code> -
+      <code>y</code> -
+      <code>(read)</code></dt><dd>
+        How many additional levels of encapsulation are permitted to
+        be prepended to packets. This property applies only to IPv6
+        tunnels.
+      </dd><dt><code>FlowLabel</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The flow label to assign to tunnel packets. This property
+        applies only to IPv6 tunnels.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Macvlan" id="org.freedesktop.NetworkManager.Device.Macvlan"></a>org.freedesktop.NetworkManager.Device.Macvlan</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Macvlan.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Macvlan.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Parent</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of the parent device.
+      </dd><dt><code>Mode</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The macvlan mode, one of "private", "vepa", "bridge", or "passthru".
+      </dd><dt><code>NoPromisc</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Whether the device is blocked from going into promiscuous mode.
+      </dd><dt><code>Tap</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Whether the device is a macvtap.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Modem" id="org.freedesktop.NetworkManager.Device.Modem"></a>org.freedesktop.NetworkManager.Device.Modem</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Modem.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Modem.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>ModemCapabilities</code> -
+      <code>u</code> -
+      <code>(read)</code>
+      (<a xmlns="" href="#type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a>)
+    </dt><dd>
+        The generic family of access technologies the modem supports.  Not all
+        capabilities are available at the same time however; some modems require
+        a firmware reload or other reinitialization to switch between eg CDMA/EVDO
+        and GSM/UMTS.
+      </dd><dt><code>CurrentCapabilities</code> -
+      <code>u</code> -
+      <code>(read)</code>
+      (<a xmlns="" href="#type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a>)
+    </dt><dd>
+        The generic family of access technologies the modem currently supports
+        without a firmware reload or reinitialization.
+      </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_DEVICE_MODEM_CAPABILITIES" id="type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a></h3>
+        Flags describing one or more of the general access technology families
+        that a modem device supports.
+      <dl><dt><code>NM_DEVICE_MODEM_CAPABILITY_NONE = 0x0</code></dt><dd>Modem has no capabilties.</dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_POTS = 0x1</code></dt><dd>
+          Modem supports the analog wired telephone network (ie 56k dialup) and
+          does not have wireless/cellular capabilities.
+        </dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO = 0x2</code></dt><dd>
+          Modem supports at least one of CDMA 1xRTT, EVDO revision 0, EVDO
+          revision A, or EVDO revision B.
+        </dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS = 0x4</code></dt><dd>
+          Modem supports at least one of GSM, GPRS, EDGE, UMTS, HSDPA, HSUPA, or
+          HSPA+ packet switched data capability.
+        </dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_LTE = 0x8</code></dt><dd>
+          Modem has at LTE data capability.
+        </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.OlpcMesh" id="org.freedesktop.NetworkManager.Device.OlpcMesh"></a>org.freedesktop.NetworkManager.Device.OlpcMesh</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.OlpcMesh.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.OlpcMesh.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring">
+            Emitted when the wireless device's properties changed.
+        </div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary containing the FIXME: check changed parameters.
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The hardware address of the device.
+      </dd><dt><code>Companion</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of the companion device.
+      </dd><dt><code>ActiveChannel</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The currently active channel.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Team" id="org.freedesktop.NetworkManager.Device.Team"></a>org.freedesktop.NetworkManager.Device.Team</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Team.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Team.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd><dt><code>Slaves</code> -
+      <code>ao</code> -
+      <code>(read)</code></dt><dd>
+        Array of object paths representing devices which are currently
+	slaved to this device.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Tun" id="org.freedesktop.NetworkManager.Device.Tun"></a>org.freedesktop.NetworkManager.Device.Tun</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Tun.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Tun.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Owner</code> -
+      <code>x</code> -
+      <code>(read)</code></dt><dd>
+        The uid of the tunnel owner, or -1 if it has no owner.
+      </dd><dt><code>Group</code> -
+      <code>x</code> -
+      <code>(read)</code></dt><dd>
+        The gid of the tunnel group, or -1 if it has no owner.
+      </dd><dt><code>Mode</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The tunnel mode, either "tun" or "tap".
+      </dd><dt><code>NoPi</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        The tunnel's "TUN_NO_PI" flag; true if no protocol info is
+	prepended to the tunnel packets.
+      </dd><dt><code>VnetHdr</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        The tunnel's "TUN_VNET_HDR" flag; true if the tunnel packets
+	include a virtio network header.
+      </dd><dt><code>MultiQueue</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        The tunnel's "TUN_TAP_MQ" flag; true if callers can connect to
+        the tap device multiple times, for multiple send/receive
+        queues.
+      </dd><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Veth" id="org.freedesktop.NetworkManager.Device.Veth"></a>org.freedesktop.NetworkManager.Device.Veth</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Veth.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Veth.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Peer</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of the device's peer.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Vlan" id="org.freedesktop.NetworkManager.Device.Vlan"></a>org.freedesktop.NetworkManager.Device.Vlan</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Vlan.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Vlan.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Carrier</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
+      </dd><dt><code>Parent</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        Object path of the parent device of this VLAN device.
+      </dd><dt><code>VlanId</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The VLAN ID of this VLAN interface.
+      </dd></dl>
+
+  <h1><a name="org.freedesktop.NetworkManager.Device.Vxlan" id="org.freedesktop.NetworkManager.Device.Vxlan"></a>org.freedesktop.NetworkManager.Device.Vxlan</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Vxlan.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Vxlan.PropertiesChanged">PropertiesChanged</a> (
+        a{sv}: properties
+        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
+      <code>a{sv}</code>
+      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
+    </dt><dd>
+                A dictionary mapping property names to variant boxed values
+            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Parent</code> -
+      <code>o</code> -
+      <code>(read)</code></dt><dd>
+        The object path of the parent device (if the VXLAN is not
+	purely internal to this host).
+      </dd><dt><code>HwAddress</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        Hardware address of the device.
+      </dd><dt><code>Id</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The VXLAN Network Identifier (VNI).
+      </dd><dt><code>Group</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The IP (v4 or v6) multicast group used to communicate with other physical
+	hosts on this VXLAN.
+      </dd><dt><code>Local</code> -
+      <code>s</code> -
+      <code>(read)</code></dt><dd>
+        The local IPv4 or IPv6 address to use when sending VXLAN packets to other
+	physical hosts.
+      </dd><dt><code>Tos</code> -
+      <code>y</code> -
+      <code>(read)</code></dt><dd>
+        The value to use in the IP ToS field for VXLAN packets sent to
+	other physical hosts.
+      </dd><dt><code>Ttl</code> -
+      <code>y</code> -
+      <code>(read)</code></dt><dd>
+        The value to use in the IP TTL field for VXLAN packets sent to
+	other physical hosts.
+      </dd><dt><code>Learning</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        True if the VXLAN dynamically learns remote IP addresses.
+      </dd><dt><code>Ageing</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The interval in seconds at which the kernel purges stale
+        cached addresses.
+      </dd><dt><code>Limit</code> -
+      <code>u</code> -
+      <code>(read)</code></dt><dd>
+        The maximum number of entries that can be added to the VXLAN's
+	forwarding table.
+      </dd><dt><code>DstPort</code> -
+      <code>q</code> -
+      <code>(read)</code></dt><dd>
+        Destination port for outgoing VXLAN packets.
+      </dd><dt><code>SrcPortMin</code> -
+      <code>q</code> -
+      <code>(read)</code></dt><dd>
+        The lowest source port number to use for outgoing VXLAN packets.
+      </dd><dt><code>SrcPortMax</code> -
+      <code>q</code> -
+      <code>(read)</code></dt><dd>
+        The highest source port number to use for outgoing VXLAN packets.
+      </dd><dt><code>Proxy</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        True if the VXLAN is implementing DOVE ARP proxying for remote
+        clients.
+      </dd><dt><code>Rsc</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        True if the VXLAN is implementing DOVE route short-circuiting
+	of known remote IP addresses.
+      </dd><dt><code>L2miss</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        True if the VXLAN will emit netlink notifications of L2 switch
+        misses.
+      </dd><dt><code>L3miss</code> -
+      <code>b</code> -
+      <code>(read)</code></dt><dd>
+        True if the VXLAN will emit netlink notifications of L3 switch
+        misses.
       </dd></dl>
 
   <h1><a name="org.freedesktop.NetworkManager.Device.Wireless" id="org.freedesktop.NetworkManager.Device.Wireless"></a>org.freedesktop.NetworkManager.Device.Wireless</h1><h2>Methods:</h2><div class="method"><h3><a name="org.freedesktop.NetworkManager.Device.Wireless.GetAccessPoints" id="org.freedesktop.NetworkManager.Device.Wireless.GetAccessPoints">GetAccessPoints</a> (
@@ -1064,93 +1559,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
           The device supports 5GHz frequencies.
         </dd></dl>
 
-  <h1><a name="org.freedesktop.NetworkManager.Device.Modem" id="org.freedesktop.NetworkManager.Device.Modem"></a>org.freedesktop.NetworkManager.Device.Modem</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Modem.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Modem.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>ModemCapabilities</code> -
-      <code>u</code> -
-      <code>(read)</code>
-      (<a xmlns="" href="#type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a>)
-    </dt><dd>
-        The generic family of access technologies the modem supports.  Not all
-        capabilities are available at the same time however; some modems require
-        a firmware reload or other reinitialization to switch between eg CDMA/EVDO
-        and GSM/UMTS.
-      </dd><dt><code>CurrentCapabilities</code> -
-      <code>u</code> -
-      <code>(read)</code>
-      (<a xmlns="" href="#type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a>)
-    </dt><dd>
-        The generic family of access technologies the modem currently supports
-        without a firmware reload or reinitialization.
-      </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_DEVICE_MODEM_CAPABILITIES" id="type-NM_DEVICE_MODEM_CAPABILITIES">NM_DEVICE_MODEM_CAPABILITIES</a></h3>
-        Flags describing one or more of the general access technology families
-        that a modem device supports.
-      <dl><dt><code>NM_DEVICE_MODEM_CAPABILITY_NONE = 0x0</code></dt><dd>Modem has no capabilties.</dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_POTS = 0x1</code></dt><dd>
-          Modem supports the analog wired telephone network (ie 56k dialup) and
-          does not have wireless/cellular capabilities.
-        </dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO = 0x2</code></dt><dd>
-          Modem supports at least one of CDMA 1xRTT, EVDO revision 0, EVDO
-          revision A, or EVDO revision B.
-        </dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS = 0x4</code></dt><dd>
-          Modem supports at least one of GSM, GPRS, EDGE, UMTS, HSDPA, HSUPA, or
-          HSPA+ packet switched data capability.
-        </dd><dt><code>NM_DEVICE_MODEM_CAPABILITY_LTE = 0x8</code></dt><dd>
-          Modem has at LTE data capability.
-        </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Bluetooth" id="org.freedesktop.NetworkManager.Device.Bluetooth"></a>org.freedesktop.NetworkManager.Device.Bluetooth</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bluetooth.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bluetooth.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Bluetooth hardware address of the device.
-      </dd><dt><code>Name</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Bluetooth name of the device.
-      </dd><dt><code>BtCapabilities</code> -
-      <code>u</code> -
-      <code>(read)</code>
-      (<a xmlns="" href="#type-NM_BT_CAPABILITIES">NM_BT_CAPABILITIES</a>)
-    </dt><dd>
-        Bluetooth capabilities of the device (either DUN or NAP).
-      </dd></dl><h2>Sets of flags:</h2><h3 xmlns=""><a name="type-NM_BT_CAPABILITIES" id="type-NM_BT_CAPABILITIES">NM_BT_CAPABILITIES</a></h3>
-        Flags describing the capabilities of a Bluetooth device.
-      <dl><dt><code>NM_BT_CAPABILITY_NONE = 0x0</code></dt><dd>The device has no recognized capabilities.</dd><dt><code>NM_BT_CAPABILITY_DUN = 0x1</code></dt><dd>The device supports Bluetooth Dial-Up Networking.</dd><dt><code>NM_BT_CAPABILITY_PAN = 0x2</code></dt><dd>The device supports Bluetooth Personal Area Networking.</dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.OlpcMesh" id="org.freedesktop.NetworkManager.Device.OlpcMesh"></a>org.freedesktop.NetworkManager.Device.OlpcMesh</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.OlpcMesh.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.OlpcMesh.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring">
-            Emitted when the wireless device's properties changed.
-        </div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary containing the FIXME: check changed parameters.
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        The hardware address of the device.
-      </dd><dt><code>Companion</code> -
-      <code>o</code> -
-      <code>(read)</code></dt><dd>
-        The object path of the companion device.
-      </dd><dt><code>ActiveChannel</code> -
-      <code>u</code> -
-      <code>(read)</code></dt><dd>
-        The currently active channel.
-      </dd></dl>
-
   <h1><a name="org.freedesktop.NetworkManager.Device.WiMax" id="org.freedesktop.NetworkManager.Device.WiMax"></a>org.freedesktop.NetworkManager.Device.WiMax</h1><h2>Methods:</h2><div class="method"><h3><a name="org.freedesktop.NetworkManager.Device.WiMax.GetNspList" id="org.freedesktop.NetworkManager.Device.WiMax.GetNspList">GetNspList</a> (
         
         ) &#8594;
@@ -1225,144 +1633,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       <code>o</code> -
       <code>(read)</code></dt><dd>
         Object path of the NSP currently used by the WiMax device.
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Infiniband" id="org.freedesktop.NetworkManager.Device.Infiniband"></a>org.freedesktop.NetworkManager.Device.Infiniband</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Infiniband.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Infiniband.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Hardware address of the device.
-      </dd><dt><code>Carrier</code> -
-      <code>b</code> -
-      <code>(read)</code></dt><dd>
-        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Bond" id="org.freedesktop.NetworkManager.Device.Bond"></a>org.freedesktop.NetworkManager.Device.Bond</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bond.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bond.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Hardware address of the device.
-      </dd><dt><code>Carrier</code> -
-      <code>b</code> -
-      <code>(read)</code></dt><dd>
-        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
-      </dd><dt><code>Slaves</code> -
-      <code>ao</code> -
-      <code>(read)</code></dt><dd>
-        Array of object paths representing devices which are currently
-	slaved to this device.
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Bridge" id="org.freedesktop.NetworkManager.Device.Bridge"></a>org.freedesktop.NetworkManager.Device.Bridge</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Bridge.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Bridge.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Hardware address of the device.
-      </dd><dt><code>Carrier</code> -
-      <code>b</code> -
-      <code>(read)</code></dt><dd>
-        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
-      </dd><dt><code>Slaves</code> -
-      <code>ao</code> -
-      <code>(read)</code></dt><dd>
-        Array of object paths representing devices which are currently
-	slaved to this device.
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Team" id="org.freedesktop.NetworkManager.Device.Team"></a>org.freedesktop.NetworkManager.Device.Team</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Team.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Team.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Hardware address of the device.
-      </dd><dt><code>Carrier</code> -
-      <code>b</code> -
-      <code>(read)</code></dt><dd>
-        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
-      </dd><dt><code>Slaves</code> -
-      <code>ao</code> -
-      <code>(read)</code></dt><dd>
-        Array of object paths representing devices which are currently
-	slaved to this device.
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Generic" id="org.freedesktop.NetworkManager.Device.Generic"></a>org.freedesktop.NetworkManager.Device.Generic</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Generic.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Generic.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Hardware address of the device.
-      </dd><dt><code>TypeDescription</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        A (non-localized) description of the interface type, if known.
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Vlan" id="org.freedesktop.NetworkManager.Device.Vlan"></a>org.freedesktop.NetworkManager.Device.Vlan</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Vlan.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Vlan.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>HwAddress</code> -
-      <code>s</code> -
-      <code>(read)</code></dt><dd>
-        Hardware address of the device.
-      </dd><dt><code>Carrier</code> -
-      <code>b</code> -
-      <code>(read)</code></dt><dd>
-        Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).
-      </dd><dt><code>Parent</code> -
-      <code>o</code> -
-      <code>(read)</code></dt><dd>
-        Object path of the parent device of this VLAN device.
-      </dd><dt><code>VlanId</code> -
-      <code>u</code> -
-      <code>(read)</code></dt><dd>
-        The VLAN ID of this VLAN interface.
-      </dd></dl>
-
-  <h1><a name="org.freedesktop.NetworkManager.Device.Adsl" id="org.freedesktop.NetworkManager.Device.Adsl"></a>org.freedesktop.NetworkManager.Device.Adsl</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Device.Adsl.PropertiesChanged" id="org.freedesktop.NetworkManager.Device.Adsl.PropertiesChanged">PropertiesChanged</a> (
-        a{sv}: properties
-        )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
-      <code>a{sv}</code>
-      (<a xmlns="" href="#type-String_Variant_Map">String_Variant_Map</a>)
-    </dt><dd>
-                A dictionary mapping property names to variant boxed values
-            </dd></dl></div></div><h2>Properties:</h2><dl><dt><code>Carrier</code> -
-      <code>b</code> -
-      <code>(read)</code></dt><dd>
-        Indicates whether the physical carrier is found.
       </dd></dl>
 
   <h1><a name="org.freedesktop.NetworkManager.WiMax.Nsp" id="org.freedesktop.NetworkManager.WiMax.Nsp"></a>org.freedesktop.NetworkManager.WiMax.Nsp</h1><p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.WiMax.Nsp.PropertiesChanged" id="org.freedesktop.NetworkManager.WiMax.Nsp.PropertiesChanged">PropertiesChanged</a> (
@@ -1776,6 +2046,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       The Connection.Active object tracks the life-cycle of the connection
       attempt and if successful indicates whether the connected network is the
       "default" or preferred network for access.
+      NetworkManager has the concept of connections, which can be thought of as
+      settings, a profile or a configuration that can be applied on a networking
+      device.
+      Such settings-connections are exposed as D-Bus object and the active-connection
+      expresses this relationship between device and settings-connection.
+      At any time a settings-connection can only be activated on one device and vice
+      versa. However, during activation and deactivation multiple active-connections
+      can reference the same device or settings-connection as they are waiting to
+      be activated or to be deactivated.
     <p>Interface has no methods.</p><h2>Signals:</h2><div class="signal"><h3><a name="org.freedesktop.NetworkManager.Connection.Active.PropertiesChanged" id="org.freedesktop.NetworkManager.Connection.Active.PropertiesChanged">PropertiesChanged</a> (
         a{sv}: properties
         )</h3><div class="docstring"></div><div><h4>Parameters</h4><dl><dt><code>properties</code> -
@@ -2481,7 +2760,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</
       The request could not be processed because the plugin does not support
       interactive operations, such as ConnectInteractive() or NewSecrets().
     
-<h1>Index</h1><h2>Index of interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bridge">org.freedesktop.NetworkManager.Device.Bridge</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Team">org.freedesktop.NetworkManager.Device.Team</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Generic">org.freedesktop.NetworkManager.Device.Generic</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul><h2>Index of types</h2><ul><li><code><a href="#type-NM_802_11_AP_FLAGS">NM_802_11_AP_FLAGS</a></code>
+<h1>Index</h1><h2>Index of interfaces</h2><ul><li><code><a href="#org.freedesktop.NetworkManager">org.freedesktop.NetworkManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AccessPoint">org.freedesktop.NetworkManager.AccessPoint</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device">org.freedesktop.NetworkManager.Device</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Adsl">org.freedesktop.NetworkManager.Device.Adsl</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bond">org.freedesktop.NetworkManager.Device.Bond</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bridge">org.freedesktop.NetworkManager.Device.Bridge</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Bluetooth">org.freedesktop.NetworkManager.Device.Bluetooth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wired">org.freedesktop.NetworkManager.Device.Wired</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Generic">org.freedesktop.NetworkManager.Device.Generic</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Infiniband">org.freedesktop.NetworkManager.Device.Infiniband</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.IPTunnel">org.freedesktop.NetworkManager.Device.IPTunnel</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Macvlan">org.freedesktop.NetworkManager.Device.Macvlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Modem">org.freedesktop.NetworkManager.Device.Modem</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.OlpcMesh">org.freedesktop.NetworkManager.Device.OlpcMesh</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Team">org.freedesktop.NetworkManager.Device.Team</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Tun">org.freedesktop.NetworkManager.Device.Tun</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Veth">org.freedesktop.NetworkManager.Device.Veth</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vlan">org.freedesktop.NetworkManager.Device.Vlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Vxlan">org.freedesktop.NetworkManager.Device.Vxlan</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.Wireless">org.freedesktop.NetworkManager.Device.Wireless</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Device.WiMax">org.freedesktop.NetworkManager.Device.WiMax</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.WiMax.Nsp">org.freedesktop.NetworkManager.WiMax.Nsp</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP4Config">org.freedesktop.NetworkManager.IP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.IP6Config">org.freedesktop.NetworkManager.IP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP4Config">org.freedesktop.NetworkManager.DHCP4Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.DHCP6Config">org.freedesktop.NetworkManager.DHCP6Config</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings">org.freedesktop.NetworkManager.Settings</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Settings.Connection">org.freedesktop.NetworkManager.Settings.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.Connection.Active">org.freedesktop.NetworkManager.Connection.Active</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.AgentManager">org.freedesktop.NetworkManager.AgentManager</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.SecretAgent">org.freedesktop.NetworkManager.SecretAgent</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Connection">org.freedesktop.NetworkManager.VPN.Connection</a></code></li><li><code><a href="#org.freedesktop.NetworkManager.VPN.Plugin">org.freedesktop.NetworkManager.VPN.Plugin</a></code></li></ul><h2>Index of types</h2><ul><li><code><a href="#type-NM_802_11_AP_FLAGS">NM_802_11_AP_FLAGS</a></code>
     - u</li><li><code><a href="#type-NM_802_11_AP_SEC">NM_802_11_AP_SEC</a></code>
     - u</li><li><code><a href="#type-NM_802_11_DEVICE_CAP">NM_802_11_DEVICE_CAP</a></code>
     - u</li><li><code><a href="#type-NM_802_11_MODE">NM_802_11_MODE</a></code>

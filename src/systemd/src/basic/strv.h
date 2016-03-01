@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #pragma once
 
 /***
@@ -20,8 +18,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
-
-#include "nm-sd-adapt.h"
 
 #include <fnmatch.h>
 #include <stdarg.h>
@@ -175,3 +171,5 @@ char ***strv_free_free(char ***l);
 char **strv_skip(char **l, size_t n);
 
 int strv_extend_n(char ***l, const char *value, size_t n);
+
+int fputstrv(FILE *f, char **l, const char *separator, bool *space);

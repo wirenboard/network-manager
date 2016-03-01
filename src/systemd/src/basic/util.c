@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 /***
   This file is part of systemd.
 
@@ -530,7 +528,7 @@ int on_ac_power(void) {
 
                 errno = 0;
                 de = readdir(d);
-                if (!de && errno != 0)
+                if (!de && errno > 0)
                         return -errno;
 
                 if (!de)

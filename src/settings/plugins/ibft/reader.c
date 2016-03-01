@@ -18,7 +18,7 @@
  * Copyright 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +31,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include "nm-default.h"
 #include "nm-core-internal.h"
 #include "nm-platform.h"
 #include "NetworkManagerUtils.h"
@@ -138,14 +137,14 @@ read_ibft_blocks (const char *iscsiadm_path,
 		if (!*iter[0])
 			continue;
 
-		if (!g_ascii_strncasecmp (*iter, TAG_BEGIN, STRLEN (TAG_BEGIN))) {
+		if (!g_ascii_strncasecmp (*iter, TAG_BEGIN, NM_STRLEN (TAG_BEGIN))) {
 			if (block_lines) {
 				PARSE_WARNING ("malformed iscsiadm record: missing END RECORD.");
 				g_ptr_array_unref (block_lines);
 			}
 			/* Start new record */
 			block_lines = g_ptr_array_new_full (15, g_free);
-		} else if (!g_ascii_strncasecmp (*iter, TAG_END, STRLEN (TAG_END))) {
+		} else if (!g_ascii_strncasecmp (*iter, TAG_END, NM_STRLEN (TAG_END))) {
 			if (block_lines) {
 				if (block_lines->len)
 					blocks = g_slist_prepend (blocks, block_lines);

@@ -19,14 +19,12 @@
 #ifndef NM_SD_ADAPT_H
 #define NM_SD_ADAPT_H
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdbool.h>
 #include <syslog.h>
 #include <sys/resource.h>
 #include <time.h>
-
-#include "nm-default.h"
 
 #define noreturn G_GNUC_NORETURN
 
@@ -111,6 +109,12 @@ G_STMT_START { \
 #ifndef BPF_XOR
 #define BPF_XOR 0xa0
 #endif
+
+/*****************************************************************************/
+
+/* work around missing uchar.h */
+typedef guint16 char16_t;
+typedef guint32 char32_t;
 
 /*****************************************************************************/
 

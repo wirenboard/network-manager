@@ -19,16 +19,16 @@
  * Copyright (C) 2011 Dan Williams <dcbw@redhat.com>
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #if WITH_CONCHECK
 #include <libsoup/soup.h>
 #endif
 
-#include "nm-default.h"
 #include "nm-connectivity.h"
 #include "nm-config.h"
+#include "NetworkManagerUtils.h"
 
 G_DEFINE_TYPE (NMConnectivity, nm_connectivity, G_TYPE_OBJECT)
 
@@ -76,24 +76,14 @@ nm_connectivity_get_state (NMConnectivity *connectivity)
 	return NM_CONNECTIVITY_GET_PRIVATE (connectivity)->state;
 }
 
-const char *
-nm_connectivity_state_to_string (NMConnectivityState state)
-{
-	switch (state) {
-	case NM_CONNECTIVITY_UNKNOWN:
-		return "UNKNOWN";
-	case NM_CONNECTIVITY_NONE:
-		return "NONE";
-	case NM_CONNECTIVITY_LIMITED:
-		return "LIMITED";
-	case NM_CONNECTIVITY_PORTAL:
-		return "PORTAL";
-	case NM_CONNECTIVITY_FULL:
-		return "FULL";
-	default:
-		g_return_val_if_reached ("???");
-	}
-}
+NM_UTILS_LOOKUP_STR_DEFINE (nm_connectivity_state_to_string, NMConnectivityState,
+	NM_UTILS_LOOKUP_DEFAULT_WARN ("???"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONNECTIVITY_UNKNOWN,  "UNKNOWN"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONNECTIVITY_NONE,     "NONE"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONNECTIVITY_LIMITED,  "LIMITED"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONNECTIVITY_PORTAL,   "PORTAL"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_CONNECTIVITY_FULL,     "FULL"),
+);
 
 static void
 update_state (NMConnectivity *self, NMConnectivityState state)
@@ -142,7 +132,7 @@ nm_connectivity_check_cb (SoupSession *session, SoupMessage *msg, gpointer user_
 
 	if (msg->status_code == 511) {
 		_LOGD ("check for uri '%s' returned status '%d %s'; captive portal present.",
-			   uri, msg->status_code, msg->reason_phrase);
+		       uri, msg->status_code, msg->reason_phrase);
 		new_state = NM_CONNECTIVITY_PORTAL;
 	} else {
 		/* Check headers; if we find the NM-specific one we're done */
@@ -162,7 +152,7 @@ nm_connectivity_check_cb (SoupSession *session, SoupMessage *msg, gpointer user_
 			}
 		} else {
 			_LOGI ("check for uri '%s' returned status '%d %s'; assuming captive portal.",
-				   uri, msg->status_code, msg->reason_phrase);
+			       uri, msg->status_code, msg->reason_phrase);
 			new_state = NM_CONNECTIVITY_PORTAL;
 		}
 	}
@@ -466,11 +456,10 @@ dispose (GObject *object)
 		g_clear_object (&priv->soup_session);
 	}
 
-	if (priv->check_id > 0) {
-		g_source_remove (priv->check_id);
-		priv->check_id = 0;
-	}
+	nm_clear_g_source (&priv->check_id);
 #endif
+
+	G_OBJECT_CLASS (nm_connectivity_parent_class)->dispose (object);
 }
 
 

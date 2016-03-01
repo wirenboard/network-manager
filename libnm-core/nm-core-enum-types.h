@@ -89,6 +89,8 @@ GType nm_setting_wired_wake_on_lan_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_WIRED_WAKE_ON_LAN (nm_setting_wired_wake_on_lan_get_type ())
 GType nm_wep_key_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_WEP_KEY_TYPE (nm_wep_key_type_get_type ())
+GType nm_setting_wireless_powersave_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_SETTING_WIRELESS_POWERSAVE (nm_setting_wireless_powersave_get_type ())
 GType nm_setting_secret_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SETTING_SECRET_FLAGS (nm_setting_secret_flags_get_type ())
 GType nm_setting_compare_flags_get_type (void) G_GNUC_CONST;

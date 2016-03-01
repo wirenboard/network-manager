@@ -19,7 +19,9 @@
  * Copyright (C) 2008 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-keyfile-internal.h"
 
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -30,7 +32,6 @@
 #include <string.h>
 
 #include "nm-core-internal.h"
-#include "nm-keyfile-internal.h"
 #include "nm-keyfile-utils.h"
 
 typedef struct {
@@ -245,7 +246,7 @@ write_hash_of_string (GKeyFile *file,
 
 	/* Write VPN secrets out to a different group to keep them separate */
 	if (NM_IS_SETTING_VPN (setting) && !strcmp (key, NM_SETTING_VPN_SECRETS)) {
-		group_name = VPN_SECRETS_GROUP;
+		group_name = NM_KEYFILE_GROUP_VPN_SECRETS;
 		vpn_secrets = TRUE;
 	}
 

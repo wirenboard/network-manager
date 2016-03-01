@@ -18,12 +18,11 @@
  * Copyright 2011 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <errno.h>
 #include <stdlib.h>
 
-#include "nm-default.h"
 #include "nm-device-bond.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
@@ -75,7 +74,6 @@ check_connection_available (NMDevice *device,
 static gboolean
 check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
-	const char *iface;
 	NMSettingBond *s_bond;
 
 	if (!NM_DEVICE_CLASS (nm_device_bond_parent_class)->check_connection_compatible (device, connection))
@@ -83,11 +81,6 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 
 	s_bond = nm_connection_get_setting_bond (connection);
 	if (!s_bond || !nm_connection_is_type (connection, NM_SETTING_BOND_SETTING_NAME))
-		return FALSE;
-
-	/* Bond connections must specify the virtual interface name */
-	iface = nm_connection_get_interface_name (connection);
-	if (!iface || strcmp (nm_device_get_iface (device), iface))
 		return FALSE;
 
 	/* FIXME: match bond properties like mode, etc? */
@@ -457,7 +450,7 @@ create_and_realize (NMDevice *device,
 	g_assert (iface);
 
 	plerr = nm_platform_link_bond_add (NM_PLATFORM_GET, iface, out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create bond interface '%s' for '%s': %s",
 		             iface,

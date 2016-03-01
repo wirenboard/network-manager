@@ -12,6 +12,8 @@
 G_BEGIN_DECLS
 GType nm_vlan_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_VLAN_ERROR (nm_vlan_error_get_type ())
+GType nm_unman_flag_op_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_UNMAN_FLAG_OP (nm_unman_flag_op_get_type ())
 GType nm_dhcp_state_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DHCP_STATE (nm_dhcp_state_get_type ())
 GType nm_dns_ip_config_type_get_type (void) G_GNUC_CONST;

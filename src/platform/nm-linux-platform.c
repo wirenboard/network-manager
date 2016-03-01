@@ -17,7 +17,9 @@
  *
  * Copyright (C) 2012-2015 Red Hat, Inc.
  */
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-linux-platform.h"
 
 #include <errno.h>
 #include <unistd.h>
@@ -42,21 +44,20 @@
 #include <netlink/route/route.h>
 #include <gudev/gudev.h>
 
-#include "nm-core-internal.h"
-#include "NetworkManagerUtils.h"
-#include "nm-linux-platform.h"
-#include "nm-platform-utils.h"
-#include "NetworkManagerUtils.h"
 #include "nm-utils.h"
-#include "nm-default.h"
-#include "wifi/wifi-utils.h"
-#include "wifi/wifi-utils-wext.h"
-#include "nmp-object.h"
-
-/* This is only included for the translation of VLAN flags */
+#include "nm-core-internal.h"
 #include "nm-setting-vlan.h"
 
+#include "nm-core-utils.h"
+#include "nmp-object.h"
+#include "nm-platform-utils.h"
+#include "wifi/wifi-utils.h"
+#include "wifi/wifi-utils-wext.h"
+
 #define VLAN_FLAG_MVRP 0x8
+
+/* nm-internal error codes for libnl. Make sure they don't overlap. */
+#define _NLE_NM_NOBUFS 500
 
 /*********************************************************************************************/
 
@@ -115,8 +116,26 @@
 #define _NMLOG_PREFIX_NAME                "platform-linux"
 #define _NMLOG_DOMAIN                     LOGD_PLATFORM
 #define _NMLOG2_DOMAIN                    LOGD_PLATFORM
-#define _NMLOG(level, ...)                _LOG(level, _NMLOG_DOMAIN,  platform, __VA_ARGS__)
-#define _NMLOG2(level, ...)               _LOG(level, _NMLOG2_DOMAIN, NULL,     __VA_ARGS__)
+#define _NMLOG(level, ...)                _LOG     (       level, _NMLOG_DOMAIN,  platform, __VA_ARGS__)
+#define _NMLOG_err(errsv, level, ...)     _LOG_err (errsv, level, _NMLOG_DOMAIN,  platform, __VA_ARGS__)
+#define _NMLOG2(level, ...)               _LOG     (       level, _NMLOG2_DOMAIN, NULL,     __VA_ARGS__)
+#define _NMLOG2_err(errsv, level, ...)    _LOG_err (errsv, level, _NMLOG2_DOMAIN, NULL,     __VA_ARGS__)
+
+
+#define _LOG_print(__level, __domain, __errsv, self, ...) \
+    G_STMT_START { \
+        char __prefix[32]; \
+        const char *__p_prefix = _NMLOG_PREFIX_NAME; \
+        const void *const __self = (self); \
+        \
+        if (__self && __self != nm_platform_try_get ()) { \
+            g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _NMLOG_PREFIX_NAME, __self); \
+            __p_prefix = __prefix; \
+        } \
+        _nm_log (__level, __domain, __errsv, \
+                 "%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
+                 __p_prefix _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
+    } G_STMT_END
 
 #define _LOG(level, domain, self, ...) \
     G_STMT_START { \
@@ -124,19 +143,29 @@
         const NMLogDomain __domain = (domain); \
         \
         if (nm_logging_enabled (__level, __domain)) { \
-            char __prefix[32]; \
-            const char *__p_prefix = _NMLOG_PREFIX_NAME; \
-            const void *const __self = (self); \
-            \
-            if (__self && __self != nm_platform_try_get ()) { \
-                g_snprintf (__prefix, sizeof (__prefix), "%s[%p]", _NMLOG_PREFIX_NAME, __self); \
-                __p_prefix = __prefix; \
-            } \
-            _nm_log (__level, __domain, 0, \
-                     "%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
-                     __p_prefix _NM_UTILS_MACRO_REST (__VA_ARGS__)); \
+            _LOG_print (__level, __domain, 0, self, __VA_ARGS__); \
         } \
     } G_STMT_END
+
+#define _LOG_err(errsv, level, domain, self, ...) \
+    G_STMT_START { \
+        const NMLogLevel __level = (level); \
+        const NMLogDomain __domain = (domain); \
+        \
+        if (nm_logging_enabled (__level, __domain)) { \
+            int __errsv = (errsv); \
+            \
+            /* The %m format specifier (GNU extension) would alread allow you to specify the error
+             * message conveniently (and nm_log would get that right too). But we don't want to depend
+             * on that, so instead append the message at the end.
+             * Currently users are expected not to use %m in the format string. */ \
+            _LOG_print (__level, __domain, __errsv, self, \
+                        _NM_UTILS_MACRO_FIRST (__VA_ARGS__) ": %s (%d)" \
+                        _NM_UTILS_MACRO_REST (__VA_ARGS__), \
+                        g_strerror (__errsv), __errsv); \
+        } \
+    } G_STMT_END
+
 
 #define LOG_FMT_IP_TUNNEL "adding %s '%s' parent %u local %s remote %s"
 
@@ -256,17 +285,6 @@ _support_user_ipv6ll_detect (struct nlattr **tb)
 /******************************************************************
  * Various utilities
  ******************************************************************/
-
-const NMIPAddr nm_ip_addr_zero = NMIPAddrInit;
-
-#define IPV4LL_NETWORK (htonl (0xA9FE0000L))
-#define IPV4LL_NETMASK (htonl (0xFFFF0000L))
-
-static gboolean
-ip4_address_is_link_local (in_addr_t addr)
-{
-	return (addr & IPV4LL_NETMASK) == IPV4LL_NETWORK;
-}
 
 static guint
 _nm_ip_config_source_to_rtprot (NMIPConfigSource source)
@@ -579,7 +597,7 @@ _lookup_cached_link (const NMPCache *cache, int ifindex, gboolean *completed_fro
 	if (!*completed_from_cache) {
 		obj = ifindex > 0 && cache ? nmp_cache_lookup_link (cache, ifindex) : NULL;
 
-		if (obj && !obj->_link.netlink.is_in_netlink)
+		if (obj && obj->_link.netlink.is_in_netlink)
 			*link_cached = obj;
 		else
 			*link_cached = NULL;
@@ -605,8 +623,8 @@ _linktype_read_devtype (const char *sysfs_path)
 		end = strpbrk (cont, "\r\n");
 		if (end)
 			*end++ = '\0';
-		if (strncmp (cont, DEVTYPE_PREFIX, STRLEN (DEVTYPE_PREFIX)) == 0) {
-			cont += STRLEN (DEVTYPE_PREFIX);
+		if (strncmp (cont, DEVTYPE_PREFIX, NM_STRLEN (DEVTYPE_PREFIX)) == 0) {
+			cont += NM_STRLEN (DEVTYPE_PREFIX);
 			memmove (contents, cont, strlen (cont) + 1);
 			return contents;
 		}
@@ -732,13 +750,19 @@ _linktype_get_type (NMPlatform *platform,
 		if (wifi_utils_is_wifi (ifname, sysfs_path))
 			return NM_LINK_TYPE_WIFI;
 
-		/* Standard wired ethernet interfaces don't report an rtnl_link_type, so
-		 * only allow fallback to Ethernet if no type is given.  This should
-		 * prevent future virtual network drivers from being treated as Ethernet
-		 * when they should be Generic instead.
-		 */
-		if (arptype == ARPHRD_ETHER && !kind && !devtype)
-			return NM_LINK_TYPE_ETHERNET;
+		if (arptype == ARPHRD_ETHER) {
+			/* Standard wired ethernet interfaces don't report an rtnl_link_type, so
+			 * only allow fallback to Ethernet if no type is given.  This should
+			 * prevent future virtual network drivers from being treated as Ethernet
+			 * when they should be Generic instead.
+			 */
+			if (!kind && !devtype)
+				return NM_LINK_TYPE_ETHERNET;
+			/* The USB gadget interfaces behave and look like ordinary ethernet devices
+			 * aside from the DEVTYPE. */
+			if (!g_strcmp0 (devtype, "gadget"))
+				return NM_LINK_TYPE_ETHERNET;
+		}
 	}
 
 	return NM_LINK_TYPE_UNKNOWN;
@@ -1464,8 +1488,8 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 		nl_info_data = li[IFLA_INFO_DATA];
 	}
 
-	obj->link.flags = ifi->ifi_flags;
-	obj->link.connected = NM_FLAGS_HAS (obj->link.flags, IFF_LOWER_UP);
+	obj->link.n_ifi_flags = ifi->ifi_flags;
+	obj->link.connected = NM_FLAGS_HAS (obj->link.n_ifi_flags, IFF_LOWER_UP);
 	obj->link.arptype = ifi->ifi_type;
 
 	obj->link.type = _linktype_get_type (platform,
@@ -1473,7 +1497,7 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 	                                     nl_info_kind,
 	                                     obj->link.ifindex,
 	                                     obj->link.name,
-	                                     obj->link.flags,
+	                                     obj->link.n_ifi_flags,
 	                                     obj->link.arptype,
 	                                     completed_from_cache,
 	                                     &link_cached,
@@ -1650,9 +1674,9 @@ _new_from_nl_addr (struct nlmsghdr *nlh, gboolean id_only)
 	obj->ip_address.source = NM_IP_CONFIG_SOURCE_KERNEL;
 
 	if (!is_v4) {
-		obj->ip6_address.flags = tb[IFA_FLAGS]
-		                         ? nla_get_u32 (tb[IFA_FLAGS])
-		                         : ifa->ifa_flags;
+		obj->ip6_address.n_ifa_flags = tb[IFA_FLAGS]
+		                               ? nla_get_u32 (tb[IFA_FLAGS])
+		                               : ifa->ifa_flags;
 	}
 
 	if (is_v4) {
@@ -2329,8 +2353,8 @@ static gboolean
 _support_kernel_extended_ifa_flags_get (void)
 {
 	if (_support_kernel_extended_ifa_flags_still_undecided ()) {
-		_LOG2W ("support: kernel-extended-ifa-flags: unable to detect kernel support for handling IPv6 temporary addresses. Assume none");
-		_support_kernel_extended_ifa_flags = 0;
+		_LOG2W ("support: kernel-extended-ifa-flags: unable to detect kernel support for handling IPv6 temporary addresses. Assume support");
+		_support_kernel_extended_ifa_flags = 1;
 	}
 	return _support_kernel_extended_ifa_flags;
 }
@@ -2427,8 +2451,11 @@ _log_dbg_sysctl_set_impl (NMPlatform *platform, const char *path, const char *va
 static gboolean
 sysctl_set (NMPlatform *platform, const char *path, const char *value)
 {
-	int fd, len, nwrote, tries;
+	int fd, tries;
+	gssize nwrote;
+	gsize len;
 	char *actual;
+	gs_free char *actual_free = NULL;
 
 	g_return_val_if_fail (path != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
@@ -2458,10 +2485,16 @@ sysctl_set (NMPlatform *platform, const char *path, const char *value)
 	 * sysctl support partial writes so the LF must be added to the string we're
 	 * about to write.
 	 */
-	actual = g_strdup_printf ("%s\n", value);
+	len = strlen (value) + 1;
+	if (len > 512)
+		actual = actual_free = g_malloc (len + 1);
+	else
+		actual = g_alloca (len + 1);
+	memcpy (actual, value, len - 1);
+	actual[len - 1] = '\n';
+	actual[len] = '\0';
 
 	/* Try to write the entire value three times if a partial write occurs */
-	len = strlen (actual);
 	for (tries = 0, nwrote = 0; tries < 3 && nwrote != len; tries++) {
 		nwrote = write (fd, actual, len);
 		if (nwrote == -1) {
@@ -2480,15 +2513,14 @@ sysctl_set (NMPlatform *platform, const char *path, const char *value)
 		       path, value);
 	}
 
-	g_free (actual);
 	close (fd);
 	return (nwrote == len);
 }
 
 static GSList *sysctl_clear_cache_list;
 
-void
-_nm_linux_platform_sysctl_clear_cache (void)
+static void
+_nm_logging_clear_platform_logging_cache_impl (void)
 {
 	while (sysctl_clear_cache_list) {
 		NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (sysctl_clear_cache_list->data);
@@ -2508,6 +2540,7 @@ _log_dbg_sysctl_get_impl (NMPlatform *platform, const char *path, const char *co
 	const char *prev_value = NULL;
 
 	if (!priv->sysctl_get_prev_values) {
+		_nm_logging_clear_platform_logging_cache = _nm_logging_clear_platform_logging_cache_impl;
 		sysctl_clear_cache_list = g_slist_prepend (sysctl_clear_cache_list, platform);
 		priv->sysctl_get_prev_values = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	} else
@@ -2798,13 +2831,23 @@ delayed_action_wait_for_nl_response_complete (NMPlatform *platform,
 
 static void
 delayed_action_wait_for_nl_response_complete_all (NMPlatform *platform,
-                                                  WaitForNlResponseResult result)
+                                                  WaitForNlResponseResult fallback_result)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 
 	if (NM_FLAGS_HAS (priv->delayed_action.flags, DELAYED_ACTION_TYPE_WAIT_FOR_NL_RESPONSE)) {
-		while (priv->delayed_action.list_wait_for_nl_response->len > 0)
-			delayed_action_wait_for_nl_response_complete (platform, priv->delayed_action.list_wait_for_nl_response->len - 1, result);
+		while (priv->delayed_action.list_wait_for_nl_response->len > 0) {
+			const DelayedActionWaitForNlResponseData *data;
+			guint idx = priv->delayed_action.list_wait_for_nl_response->len - 1;
+			WaitForNlResponseResult r;
+
+			data = &g_array_index (priv->delayed_action.list_wait_for_nl_response, DelayedActionWaitForNlResponseData, idx);
+
+			/* prefer the result that we already have. */
+			r = data->seq_result ? : fallback_result;
+
+			delayed_action_wait_for_nl_response_complete (platform, idx, r);
+		}
 	}
 	nm_assert (!NM_FLAGS_HAS (priv->delayed_action.flags, DELAYED_ACTION_TYPE_WAIT_FOR_NL_RESPONSE));
 	nm_assert (priv->delayed_action.list_wait_for_nl_response->len == 0);
@@ -3190,9 +3233,9 @@ cache_pre_hook (NMPCache *cache, const NMPObject *old, const NMPObject *new, NMP
 			if (   ops_type == NMP_CACHE_OPS_UPDATED
 			    && old && new /* <-- nonsensical, make coverity happy */
 			    && old->_link.netlink.is_in_netlink
-			    && NM_FLAGS_HAS (old->link.flags, IFF_LOWER_UP)
+			    && NM_FLAGS_HAS (old->link.n_ifi_flags, IFF_LOWER_UP)
 			    && new->_link.netlink.is_in_netlink
-			    && !NM_FLAGS_HAS (new->link.flags, IFF_LOWER_UP)) {
+			    && !NM_FLAGS_HAS (new->link.n_ifi_flags, IFF_LOWER_UP)) {
 				delayed_action_schedule (platform,
 				                         DELAYED_ACTION_TYPE_REFRESH_ALL_IP4_ROUTES |
 				                         DELAYED_ACTION_TYPE_REFRESH_ALL_IP6_ROUTES,
@@ -3235,6 +3278,19 @@ cache_pre_hook (NMPCache *cache, const NMPObject *old, const NMPObject *new, NMP
 				                         DELAYED_ACTION_TYPE_REFRESH_LINK,
 				                         GINT_TO_POINTER (new->link.ifindex));
 			}
+			if (   new->link.type == NM_LINK_TYPE_ETHERNET
+			    && new->link.addr.len == 0) {
+				/* Due to a kernel bug, we sometimes receive spurious NEWLINK
+				 * messages after a wifi interface has disappeared. Since the
+				 * link is not present anymore we can't determine its type and
+				 * thus it will show up as a Ethernet one, with no address
+				 * specified.  Request the link again to check if it really
+				 * exists.  https://bugzilla.redhat.com/show_bug.cgi?id=1302037
+				 */
+				delayed_action_schedule (platform,
+				                         DELAYED_ACTION_TYPE_REFRESH_LINK,
+				                         GINT_TO_POINTER (new->link.ifindex));
+			}
 		}
 		{
 			/* on enslave/release, we also refresh the master. */
@@ -3243,8 +3299,8 @@ cache_pre_hook (NMPCache *cache, const NMPObject *old, const NMPObject *new, NMP
 
 			changed_master =    (new && new->_link.netlink.is_in_netlink && new->link.master > 0 ? new->link.master : 0)
 			                 != (old && old->_link.netlink.is_in_netlink && old->link.master > 0 ? old->link.master : 0);
-			changed_connected =    (new && new->_link.netlink.is_in_netlink ? NM_FLAGS_HAS (new->link.flags, IFF_LOWER_UP) : 2)
-			                    != (old && old->_link.netlink.is_in_netlink ? NM_FLAGS_HAS (old->link.flags, IFF_LOWER_UP) : 2);
+			changed_connected =    (new && new->_link.netlink.is_in_netlink ? NM_FLAGS_HAS (new->link.n_ifi_flags, IFF_LOWER_UP) : 2)
+			                    != (old && old->_link.netlink.is_in_netlink ? NM_FLAGS_HAS (old->link.n_ifi_flags, IFF_LOWER_UP) : 2);
 
 			if (changed_master || changed_connected) {
 				ifindex1 = (old && old->_link.netlink.is_in_netlink && old->link.master > 0) ? old->link.master : 0;
@@ -3455,7 +3511,7 @@ event_seq_check (NMPlatform *platform, struct nl_msg *msg, WaitForNlResponseResu
 }
 
 static void
-event_valid_msg (NMPlatform *platform, struct nl_msg *msg)
+event_valid_msg (NMPlatform *platform, struct nl_msg *msg, gboolean handle_events)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	nm_auto_nmpobj NMPObject *obj = NULL;
@@ -3470,6 +3526,9 @@ event_valid_msg (NMPlatform *platform, struct nl_msg *msg)
 
 	if (_support_kernel_extended_ifa_flags_still_undecided () && msghdr->nlmsg_type == RTM_NEWADDR)
 		_support_kernel_extended_ifa_flags_detect (msg);
+
+	if (!handle_events)
+		return;
 
 	if (NM_IN_SET (msghdr->nlmsg_type, RTM_DELLINK, RTM_DELADDR, RTM_DELROUTE)) {
 		/* The event notifies about a deleted object. We don't need to initialize all
@@ -4684,7 +4743,6 @@ link_vlan_change (NMPlatform *platform,
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	const NMPObject *obj_cache;
 	nm_auto_nlmsg struct nl_msg *nlmsg = NULL;
-	unsigned flags;
 	const NMPObjectLnkVlan *lnk;
 	guint new_n_ingress_map = 0;
 	guint new_n_egress_map = 0;
@@ -4702,7 +4760,6 @@ link_vlan_change (NMPlatform *platform,
 	}
 
 	lnk = obj_cache->_link.netlink.lnk ? &obj_cache->_link.netlink.lnk->_lnk_vlan : NULL;
-	flags = obj_cache->link.flags;
 
 	flags_set &= flags_mask;
 
@@ -4821,6 +4878,7 @@ tun_add (NMPlatform *platform, const char *name, gboolean tap,
 	if (out_link)
 		*out_link = obj ? &obj->link : NULL;
 
+	close (fd);
 	return !!obj;
 }
 
@@ -5139,7 +5197,7 @@ ip4_address_add (NMPlatform *platform,
 	                             plen,
 	                             &peer_addr,
 	                             0,
-	                             ip4_address_is_link_local (addr) ? RT_SCOPE_LINK : RT_SCOPE_UNIVERSE,
+	                             nmp_utils_ip4_address_is_link_local (addr) ? RT_SCOPE_LINK : RT_SCOPE_UNIVERSE,
 	                             lifetime,
 	                             preferred,
 	                             label);
@@ -5156,7 +5214,7 @@ ip6_address_add (NMPlatform *platform,
                  struct in6_addr peer_addr,
                  guint32 lifetime,
                  guint32 preferred,
-                 guint flags)
+                 guint32 flags)
 {
 	NMPObject obj_id;
 	nm_auto_nlmsg struct nl_msg *nlmsg = NULL;
@@ -5492,8 +5550,7 @@ event_handler_recvmsgs (NMPlatform *platform, gboolean handle_events)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
 	struct nl_sock *sk = priv->nlh;
-	int n, err = 0, multipart = 0, interrupted = 0, nrecv = 0;
-	unsigned char *buf = NULL;
+	int n, err = 0, multipart = 0, interrupted = 0;
 	struct nlmsghdr *hdr;
 	WaitForNlResponseResult seq_result;
 
@@ -5503,34 +5560,44 @@ event_handler_recvmsgs (NMPlatform *platform, gboolean handle_events)
 	initialize the variable. Thomas Graf.
 	*/
 	struct sockaddr_nl nla = {0};
-	struct nl_msg *msg = NULL;
-	struct ucred *creds = NULL;
+	nm_auto_free struct ucred *creds = NULL;
+	nm_auto_free unsigned char *buf = NULL;
 
 continue_reading:
+	g_clear_pointer (&buf, free);
+	g_clear_pointer (&creds, free);
 	errno = 0;
 	n = nl_recv (sk, &nla, &buf, &creds);
 
-	/* Work around a libnl bug fixed in 3.2.22 (375a6294) */
-	if (n == 0 && errno == EAGAIN) {
-		/* EAGAIN is equal to EWOULDBLOCK. If it would not be, we'd have to
-		 * workaround libnl3 mapping EWOULDBLOCK to -NLE_FAILURE. */
-		G_STATIC_ASSERT (EAGAIN == EWOULDBLOCK);
-		n = -NLE_AGAIN;
+	switch (n) {
+	case 0:
+		/* Work around a libnl bug fixed in 3.2.22 (375a6294) */
+		if (errno == EAGAIN) {
+			/* EAGAIN is equal to EWOULDBLOCK. If it would not be, we'd have to
+			 * workaround libnl3 mapping EWOULDBLOCK to -NLE_FAILURE. */
+			G_STATIC_ASSERT (EAGAIN == EWOULDBLOCK);
+			n = -NLE_AGAIN;
+		}
+		break;
+	case -NLE_NOMEM:
+		if (errno == ENOBUFS) {
+			/* we are very much interested in a overrun of the receive buffer.
+			 * nl_recv() maps all kinds of errors to NLE_NOMEM, so check also
+			 * for errno explicitly. And if so, hack our own return code to signal
+			 * the overrun. */
+			n = -_NLE_NM_NOBUFS;
+		}
+		break;
 	}
 
 	if (n <= 0)
 		return n;
 
-	if (!handle_events) {
-		/* we read until failure or there is nothing to read (EAGAIN). */
-		goto continue_reading;
-	}
-
 	hdr = (struct nlmsghdr *) buf;
 	while (nlmsg_ok (hdr, n)) {
+		nm_auto_nlmsg struct nl_msg *msg = NULL;
 		gboolean abort_parsing = FALSE;
 
-		nlmsg_free (msg);
 		msg = nlmsg_convert (hdr);
 		if (!msg) {
 			err = -NLE_NOMEM;
@@ -5539,13 +5606,13 @@ continue_reading:
 
 		nlmsg_set_proto (msg, NETLINK_ROUTE);
 		nlmsg_set_src (msg, &nla);
-		nrecv++;
 
 		if (!creds || creds->pid) {
 			if (creds)
-				_LOGD ("netlink: recvmsg: received non-kernel message (pid %d)", creds->pid);
+				_LOGT ("netlink: recvmsg: received non-kernel message (pid %d)", creds->pid);
 			else
-				_LOGD ("netlink: recvmsg: received message without credentials");
+				_LOGT ("netlink: recvmsg: received message without credentials");
+			err = 0;
 			goto stop;
 		}
 
@@ -5618,42 +5685,35 @@ continue_reading:
 			/* Valid message (not checking for MULTIPART bit to
 			 * get along with broken kernels. NL_SKIP has no
 			 * effect on this.  */
-			event_valid_msg (platform, msg);
+
+			event_valid_msg (platform, msg, handle_events);
+
 			seq_result = WAIT_FOR_NL_RESPONSE_RESULT_RESPONSE_OK;
 		}
 
 		event_seq_check (platform, msg, seq_result);
-		err = 0;
-		hdr = nlmsg_next (hdr, &n);
 
 		if (abort_parsing)
-			goto out;
-	}
+			goto stop;
 
-	nlmsg_free (msg);
-	free (buf);
-	free (creds);
-	buf = NULL;
-	msg = NULL;
-	creds = NULL;
+		err = 0;
+		hdr = nlmsg_next (hdr, &n);
+	}
 
 	if (multipart) {
 		/* Multipart message not yet complete, continue reading */
 		goto continue_reading;
 	}
 stop:
-	err = 0;
+	if (!handle_events) {
+		/* when we don't handle events, we want to drain all messages from the socket
+		 * without handling the messages (but still check for sequence numbers).
+		 * Repeat reading. */
+		goto continue_reading;
+	}
 out:
-	nlmsg_free (msg);
-	free (buf);
-	free (creds);
-
 	if (interrupted)
 		err = -NLE_DUMP_INTR;
-
-	if (!err)
-		err = nrecv;
-
 	return err;
 }
 
@@ -5687,12 +5747,10 @@ event_handler_read_netlink (NMPlatform *platform, gboolean wait_for_acks)
 				case -NLE_DUMP_INTR:
 					_LOGD ("netlink: read: uncritical failure to retrieve incoming events: %s (%d)", nl_geterror (nle), nle);
 					break;
-				case -NLE_NOMEM:
+				case -_NLE_NM_NOBUFS:
 					_LOGI ("netlink: read: too many netlink events. Need to resynchronize platform cache");
-					/* Drain the event queue, we've lost events and are out of sync anyway and we'd
-					 * like to free up some space. We'll read in the status synchronously. */
-					delayed_action_wait_for_nl_response_complete_all (platform, WAIT_FOR_NL_RESPONSE_RESULT_FAILED_RESYNC);
 					event_handler_recvmsgs (platform, FALSE);
+					delayed_action_wait_for_nl_response_complete_all (platform, WAIT_FOR_NL_RESPONSE_RESULT_FAILED_RESYNC);
 					delayed_action_schedule (platform,
 					                         DELAYED_ACTION_TYPE_REFRESH_ALL_LINKS |
 					                         DELAYED_ACTION_TYPE_REFRESH_ALL_IP4_ADDRESSES |
@@ -5728,9 +5786,10 @@ after_read:
 				i++;
 
 				if (   data_next.seq_number == 0
-				    || data_next.timeout_abs_ns > data->timeout_abs_ns)
+				    || data_next.timeout_abs_ns > data->timeout_abs_ns) {
 					data_next.seq_number = data->seq_number;
 					data_next.timeout_abs_ns = data->timeout_abs_ns;
+				}
 			}
 		}
 
@@ -5916,14 +5975,8 @@ constructed (GObject *_object)
 	nle = nl_socket_set_nonblocking (priv->nlh);
 	g_assert (!nle);
 
-	/* The default buffer size wasn't enough for the testsuites. It might just
-	 * as well happen with NetworkManager itself. For now let's hope 128KB is
-	 * good enough.
-	 *
-	 * FIXME: it's unclear that this is still actually needed. The testsuite
-	 * certainly doesn't fail for me. Maybe it can be removed.
-	 */
-	nle = nl_socket_set_buffer_size (priv->nlh, 131072, 0);
+	/* use 8 MB for receive socket kernel queue. */
+	nle = nl_socket_set_buffer_size (priv->nlh, 8*1024*1024, 0);
 	g_assert (!nle);
 
 	nle = nl_socket_add_memberships (priv->nlh,

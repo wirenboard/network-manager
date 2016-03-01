@@ -18,12 +18,11 @@
  * Copyright 2015 Red Hat, Inc.
  */
 
+#include "nm-default.h"
+
 #include "nm-setting-ip-tunnel.h"
 
-#include "config.h"
-
 #include "nm-setting-private.h"
-#include "nm-macros-internal.h"
 #include "nm-utils.h"
 
 /**

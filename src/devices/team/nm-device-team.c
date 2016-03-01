@@ -18,7 +18,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -27,7 +27,6 @@
 #include <teamdctl.h>
 #include <stdlib.h>
 
-#include "nm-default.h"
 #include "nm-device-team.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
@@ -85,7 +84,6 @@ check_connection_available (NMDevice *device,
 static gboolean
 check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
-	const char *iface;
 	NMSettingTeam *s_team;
 
 	if (!NM_DEVICE_CLASS (nm_device_team_parent_class)->check_connection_compatible (device, connection))
@@ -93,11 +91,6 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 
 	s_team = nm_connection_get_setting_team (connection);
 	if (!s_team || !nm_connection_is_type (connection, NM_SETTING_TEAM_SETTING_NAME))
-		return FALSE;
-
-	/* Team connections must specify the virtual interface name */
-	iface = nm_connection_get_interface_name (connection);
-	if (!iface || strcmp (nm_device_get_iface (device), iface))
 		return FALSE;
 
 	/* FIXME: match team properties like mode, etc? */
@@ -218,6 +211,7 @@ master_update_slave_connection (NMDevice *self,
 
 	err = teamdctl_port_config_get_raw_direct (tdc, iface_slave, (char **)&team_port_config);
 	port_config = g_strdup (team_port_config);
+	teamdctl_disconnect (tdc);
 	teamdctl_free (tdc);
 	if (err) {
 		g_set_error (error,
@@ -501,7 +495,6 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (self);
 	NMActStageReturn ret = NM_ACT_STAGE_RETURN_SUCCESS;
 	gs_free_error GError *error = NULL;
-	NMConnection *connection;
 	NMSettingTeam *s_team;
 	const char *cfg;
 
@@ -511,9 +504,7 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	connection = nm_device_get_applied_connection (device);
-	g_assert (connection);
-	s_team = nm_connection_get_setting_team (connection);
+	s_team = (NMSettingTeam *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_TEAM);
 	g_assert (s_team);
 
 	if (priv->tdc) {
@@ -673,7 +664,7 @@ create_and_realize (NMDevice *device,
 	NMPlatformError plerr;
 
 	plerr = nm_platform_link_team_add (NM_PLATFORM_GET, iface, out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create team master interface '%s' for '%s': %s",
 		             iface,

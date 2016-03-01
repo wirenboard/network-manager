@@ -18,7 +18,7 @@
  * Copyright (C) 2008 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <syslog.h>
 #include <stdio.h>
@@ -31,14 +31,10 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <arpa/inet.h>
-
 #include <glib-unix.h>
 
-#include "nm-default.h"
 #include "nm-dispatcher-api.h"
 #include "nm-dispatcher-utils.h"
-#include "nm-macros-internal.h"
-#include "gsystem-local-alloc.h"
 
 #include "nmdbus-dispatcher.h"
 
@@ -141,7 +137,7 @@ struct Request {
 #define __LOG_print(print_cmd, _request, _script, ...) \
 	G_STMT_START { \
 		nm_assert ((_request) && (!(_script) || (_script)->request == (_request))); \
-		print_cmd ("#%u '%s'%s%s%s%s%s%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
+		print_cmd ("req:%u '%s'%s%s%s%s%s%s: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
 		           (_request)->request_id, \
 		           (_request)->action, \
 		           (_request)->iface ? " [" : "", \
@@ -161,7 +157,7 @@ struct Request {
 		if (!__request) \
 			__request = __script->request; \
 		nm_assert (__request && (!__script || __script->request == __request)); \
-		if ((log_always) || __request->debug) { \
+		if ((log_always) || _LOG_R_D_enabled (__request)) { \
 			if (FALSE) { \
 				/* g_message() alone does not warn about invalid format. Add a dummy printf() statement to
 				 * get a compiler warning about wrong format. */ \
@@ -177,12 +173,12 @@ _LOG_R_D_enabled (const Request *request)
 	return request->debug;
 }
 
-#define _LOG_R_D(_request, ...) _LOG(_request, NULL, FALSE, g_message, __VA_ARGS__)
-#define _LOG_R_I(_request, ...) _LOG(_request, NULL, TRUE,  g_message, __VA_ARGS__)
+#define _LOG_R_D(_request, ...) _LOG(_request, NULL, FALSE, g_debug,   __VA_ARGS__)
+#define _LOG_R_I(_request, ...) _LOG(_request, NULL, TRUE,  g_info,    __VA_ARGS__)
 #define _LOG_R_W(_request, ...) _LOG(_request, NULL, TRUE,  g_warning, __VA_ARGS__)
 
-#define _LOG_S_D(_script, ...)  _LOG(NULL, _script,  FALSE, g_message, __VA_ARGS__)
-#define _LOG_S_I(_script, ...)  _LOG(NULL, _script,  TRUE,  g_message, __VA_ARGS__)
+#define _LOG_S_D(_script, ...)  _LOG(NULL, _script,  FALSE, g_debug,   __VA_ARGS__)
+#define _LOG_S_I(_script, ...)  _LOG(NULL, _script,  TRUE,  g_info,    __VA_ARGS__)
 #define _LOG_S_W(_script, ...)  _LOG(NULL, _script,  TRUE,  g_warning, __VA_ARGS__)
 
 /*****************************************************************************/
@@ -206,8 +202,7 @@ request_free (Request *request)
 	g_free (request->action);
 	g_free (request->iface);
 	g_strfreev (request->envp);
-	if (request->scripts)
-		g_ptr_array_free (request->scripts, TRUE);
+	g_ptr_array_free (request->scripts, TRUE);
 
 	g_slice_free (Request, request);
 }
@@ -500,7 +495,13 @@ check_permissions (struct stat *s, const char **out_error_msg)
 static gboolean
 check_filename (const char *file_name)
 {
-	char *bad_suffixes[] = { "~", ".rpmsave", ".rpmorig", ".rpmnew", NULL };
+	static const char *bad_suffixes[] = {
+		"~",
+		".rpmsave",
+		".rpmorig",
+		".rpmnew",
+		".swp",
+	};
 	char *tmp;
 	guint i;
 
@@ -508,12 +509,12 @@ check_filename (const char *file_name)
 
 	if (file_name[0] == '.')
 		return FALSE;
-	for (i = 0; bad_suffixes[i]; i++) {
+	for (i = 0; i < G_N_ELEMENTS (bad_suffixes); i++) {
 		if (g_str_has_suffix (file_name, bad_suffixes[i]))
 			return FALSE;
 	}
 	tmp = g_strrstr (file_name, ".dpkg-");
-	if (tmp && (tmp == strrchr (file_name, '.')))
+	if (tmp && !strchr (&tmp[1], '.'))
 		return FALSE;
 	return TRUE;
 }
@@ -912,7 +913,16 @@ main (int argc, char **argv)
 	g_unix_signal_add (SIGTERM, signal_handler, GINT_TO_POINTER (SIGTERM));
 	g_unix_signal_add (SIGINT, signal_handler, GINT_TO_POINTER (SIGINT));
 
-	if (!debug)
+
+	if (debug) {
+		if (!g_getenv ("G_MESSAGES_DEBUG")) {
+			/* we log our regular messages using g_debug() and g_info().
+			 * When we redirect glib logging to syslog, there is no problem.
+			 * But in "debug" mode, glib will no print these messages unless
+			 * we set G_MESSAGES_DEBUG. */
+			g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+		}
+	} else
 		logging_setup ();
 
 	loop = g_main_loop_new (NULL, FALSE);

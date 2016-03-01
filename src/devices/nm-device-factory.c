@@ -18,17 +18,16 @@
  * Copyright (C) 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
-
 #include <gmodule.h>
 
 #include "nm-device-factory.h"
-#include "nm-default.h"
 #include "nm-platform.h"
+#include "nm-utils.h"
 
 const NMLinkType _nm_device_factory_no_default_links[] = { NM_LINK_TYPE_NONE };
 const char *_nm_device_factory_no_default_settings[] = { NULL };
@@ -156,35 +155,46 @@ nm_device_factory_get_connection_parent (NMDeviceFactory *factory,
 	return NULL;
 }
 
-static char *
-get_virtual_iface_name (NMDeviceFactory *factory,
-                        NMConnection *connection,
-                        const char *parent_iface)
-{
-	const char *iface;
-
-	/* For any other virtual connection, NMSettingConnection:interface-name is
-	 * the virtual device name.
-	 */
-	iface = nm_connection_get_interface_name (connection);
-	g_return_val_if_fail (iface != NULL, NULL);
-	return g_strdup (iface);
-}
-
 char *
-nm_device_factory_get_virtual_iface_name (NMDeviceFactory *factory,
-                                          NMConnection *connection,
-                                          const char *parent_iface)
+nm_device_factory_get_connection_iface (NMDeviceFactory *factory,
+                                        NMConnection *connection,
+                                        const char *parent_iface,
+                                        GError **error)
 {
+	NMDeviceFactoryInterface *klass;
+	char *ifname;
+
 	g_return_val_if_fail (factory != NULL, NULL);
 	g_return_val_if_fail (connection != NULL, NULL);
+	g_return_val_if_fail (!error || !*error, NULL);
 
-	if (!nm_connection_is_virtual (connection))
+	klass = NM_DEVICE_FACTORY_GET_INTERFACE (factory);
+
+	if (klass->get_connection_iface)
+		ifname = klass->get_connection_iface (factory, connection, parent_iface);
+	else
+		ifname = g_strdup (nm_connection_get_interface_name (connection));
+
+	if (!ifname) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "failed to determine interface name: error determine name for %s",
+		             nm_connection_get_connection_type (connection));
 		return NULL;
+	}
 
-	if (NM_DEVICE_FACTORY_GET_INTERFACE (factory)->get_virtual_iface_name)
-		return NM_DEVICE_FACTORY_GET_INTERFACE (factory)->get_virtual_iface_name (factory, connection, parent_iface);
-	return NULL;
+	if (!nm_utils_iface_valid_name (ifname)) {
+		g_set_error (error,
+		             NM_MANAGER_ERROR,
+		             NM_MANAGER_ERROR_FAILED,
+		             "failed to determine interface name: name \"%s\" is invalid",
+		             ifname);
+		g_free (ifname);
+		return NULL;
+	}
+
+	return ifname;
 }
 
 /*******************************************************************/
@@ -192,8 +202,6 @@ nm_device_factory_get_virtual_iface_name (NMDeviceFactory *factory,
 static void
 nm_device_factory_default_init (NMDeviceFactoryInterface *factory_iface)
 {
-	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
-
 	/* Signals */
 	signals[DEVICE_ADDED] = g_signal_new (NM_DEVICE_FACTORY_DEVICE_ADDED,
 	                                      NM_TYPE_DEVICE_FACTORY,

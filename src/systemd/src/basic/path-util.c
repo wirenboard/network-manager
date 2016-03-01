@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 /***
   This file is part of systemd.
 
@@ -111,7 +109,7 @@ int path_make_absolute_cwd(const char *p, char **ret) {
 
                 cwd = get_current_dir_name();
                 if (!cwd)
-                        return -errno;
+                        return negative_errno();
 
                 c = strjoin(cwd, "/", p, NULL);
         }

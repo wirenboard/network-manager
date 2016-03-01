@@ -19,14 +19,13 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 
-#include "nm-default.h"
 #include "nm-device.h"
 #include "nm-device-wifi.h"
 #include "nm-device-private.h"
@@ -125,8 +124,6 @@ static gboolean check_scanning_allowed (NMDeviceWifi *self);
 
 static void schedule_scan (NMDeviceWifi *self, gboolean backoff);
 
-static void cancel_pending_scan (NMDeviceWifi *self);
-
 static void cleanup_association_attempt (NMDeviceWifi * self,
                                          gboolean disconnect);
 
@@ -194,13 +191,12 @@ supplicant_interface_acquire (NMDeviceWifi *self)
 	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 
 	g_return_val_if_fail (self != NULL, FALSE);
-	/* interface already acquired? */
-	g_return_val_if_fail (priv->sup_iface == NULL, TRUE);
+	g_return_val_if_fail (!priv->sup_iface, TRUE);
 
-	priv->sup_iface = nm_supplicant_manager_iface_get (priv->sup_mgr,
-	                                                   nm_device_get_iface (NM_DEVICE (self)),
-	                                                   TRUE);
-	if (priv->sup_iface == NULL) {
+	priv->sup_iface = nm_supplicant_manager_create_interface (priv->sup_mgr,
+	                                                          nm_device_get_iface (NM_DEVICE (self)),
+	                                                          TRUE);
+	if (!priv->sup_iface) {
 		_LOGE (LOGD_WIFI, "Couldn't initialize supplicant interface");
 		return FALSE;
 	}
@@ -249,7 +245,7 @@ supplicant_interface_release (NMDeviceWifi *self)
 
 	priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
 
-	cancel_pending_scan (self);
+	nm_clear_g_source (&priv->pending_scan_id);
 
 	/* Reset the scan interval to be pretty frequent when disconnected */
 	priv->scan_interval = SCAN_INTERVAL_MIN + SCAN_INTERVAL_STEP;
@@ -259,16 +255,13 @@ supplicant_interface_release (NMDeviceWifi *self)
 	nm_clear_g_source (&priv->ap_dump_id);
 
 	if (priv->sup_iface) {
-		remove_supplicant_interface_error_handler (self);
-
 		/* Clear supplicant interface signal handlers */
 		g_signal_handlers_disconnect_by_data (priv->sup_iface, self);
 
 		/* Tell the supplicant to disconnect from the current AP */
 		nm_supplicant_interface_disconnect (priv->sup_iface);
 
-		nm_supplicant_manager_iface_release (priv->sup_mgr, priv->sup_iface);
-		priv->sup_iface = NULL;
+		g_clear_object (&priv->sup_iface);
 	}
 }
 
@@ -495,8 +488,6 @@ deactivate (NMDevice *device)
 	if (nm_device_get_initial_hw_address (device))
 		nm_device_set_hw_addr (device, nm_device_get_initial_hw_address (device), "reset", LOGD_WIFI);
 
-	nm_platform_wifi_set_powersave (NM_PLATFORM_GET, ifindex, 0);
-
 	/* Ensure we're in infrastructure mode after deactivation; some devices
 	 * (usually older ones) don't scan well in adhoc mode.
 	 */
@@ -513,7 +504,7 @@ deactivate (NMDevice *device)
 
 	/* Ensure we trigger a scan after deactivating a Hotspot */
 	if (old_mode == NM_802_11_MODE_AP) {
-		cancel_pending_scan (self);
+		nm_clear_g_source (&priv->pending_scan_id);
 		request_wireless_scan (self, NULL);
 	}
 }
@@ -926,12 +917,25 @@ can_auto_connect (NMDevice *device,
                   char **specific_object)
 {
 	NMDeviceWifi *self = NM_DEVICE_WIFI (device);
+	NMSettingWireless *s_wifi;
 	NMAccessPoint *ap;
-	const char *method = NULL;
+	const char *method, *mode;
 	guint64 timestamp = 0;
 
 	if (!NM_DEVICE_CLASS (nm_device_wifi_parent_class)->can_auto_connect (device, connection, specific_object))
 		return FALSE;
+
+	s_wifi = nm_connection_get_setting_wireless (connection);
+	g_return_val_if_fail (s_wifi, FALSE);
+
+	/* Always allow autoconnect for AP and non-autoconf Ad-Hoc */
+	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
+	mode = nm_setting_wireless_get_mode (s_wifi);
+	if (g_strcmp0 (mode, NM_SETTING_WIRELESS_MODE_AP) == 0)
+		return TRUE;
+	else if (   g_strcmp0 (mode, NM_SETTING_WIRELESS_MODE_ADHOC) == 0
+	         && g_strcmp0 (method, NM_SETTING_IP4_CONFIG_METHOD_AUTO) != 0)
+		return TRUE;
 
 	/* Don't autoconnect to networks that have been tried at least once
 	 * but haven't been successful, since these are often accidental choices
@@ -941,11 +945,6 @@ can_auto_connect (NMDevice *device,
 		if (timestamp == 0)
 			return FALSE;
 	}
-
-	/* Use the connection if it's a shared connection */
-	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
-	if (!strcmp (method, NM_SETTING_IP4_CONFIG_METHOD_SHARED))
-		return TRUE;
 
 	ap = find_first_compatible_ap (self, connection, FALSE);
 	if (ap) {
@@ -1027,6 +1026,7 @@ request_scan_cb (NMDevice *device,
                  gpointer user_data)
 {
 	NMDeviceWifi *self = NM_DEVICE_WIFI (device);
+	NMDeviceWifiPrivate *priv;
 	gs_unref_variant GVariant *new_scan_options = user_data;
 
 	if (error) {
@@ -1042,7 +1042,9 @@ request_scan_cb (NMDevice *device,
 		return;
 	}
 
-	cancel_pending_scan (self);
+	priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+
+	nm_clear_g_source (&priv->pending_scan_id);
 	request_wireless_scan (self, new_scan_options);
 	g_dbus_method_invocation_return_value (context, NULL);
 }
@@ -1366,7 +1368,7 @@ schedule_scan (NMDeviceWifi *self, gboolean backoff)
 	/* Cancel the pending scan if it would happen later than (now + the scan_interval) */
 	if (priv->pending_scan_id) {
 		if (now + priv->scan_interval < priv->scheduled_scan_time)
-			cancel_pending_scan (self);
+			nm_clear_g_source (&priv->pending_scan_id);
 	}
 
 	if (!priv->pending_scan_id) {
@@ -1397,15 +1399,6 @@ schedule_scan (NMDeviceWifi *self, gboolean backoff)
 		_LOGD (LOGD_WIFI_SCAN, "scheduled scan in %d seconds (interval now %d seconds)",
 		       next_scan, priv->scan_interval);
 	}
-}
-
-
-static void
-cancel_pending_scan (NMDeviceWifi *self)
-{
-	NMDeviceWifiPrivate *priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
-
-	nm_clear_g_source (&priv->pending_scan_id);
 }
 
 static void
@@ -2205,7 +2198,7 @@ build_supplicant_config (NMDeviceWifi *self,
 	NMSettingMacRandomization mac_randomization_fallback;
 	gs_free char *svalue = NULL;
 
-	g_return_val_if_fail (self != NULL, NULL);
+	g_return_val_if_fail (priv->sup_iface, NULL);
 
 	s_wireless = nm_connection_get_setting_wireless (connection);
 	g_return_val_if_fail (s_wireless != NULL, NULL);
@@ -2323,8 +2316,7 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 
 	/* Set spoof MAC to the interface */
 	cloned_mac = nm_setting_wireless_get_cloned_mac_address (s_wireless);
-	if (cloned_mac)
-		nm_device_set_hw_addr (device, cloned_mac, "set", LOGD_WIFI);
+	nm_device_set_hw_addr (device, cloned_mac, "set", LOGD_WIFI);
 
 	/* AP mode never uses a specific object or existing scanned AP */
 	if (priv->mode != NM_802_11_MODE_AP) {
@@ -2393,6 +2385,38 @@ ensure_hotspot_frequency (NMDeviceWifi *self,
 	nm_ap_set_freq (ap, freq);
 }
 
+static void
+set_powersave (NMDevice *device)
+{
+	NMDeviceWifi *self = NM_DEVICE_WIFI (device);
+	NMSettingWireless *s_wireless;
+	NMSettingWirelessPowersave powersave;
+	gs_free char *value = NULL;
+
+	s_wireless = (NMSettingWireless *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_WIRELESS);
+	g_return_if_fail (s_wireless);
+
+	powersave = nm_setting_wireless_get_powersave (s_wireless);
+	if (powersave == NM_SETTING_WIRELESS_POWERSAVE_DEFAULT) {
+		value = nm_config_data_get_connection_default (NM_CONFIG_GET_DATA,
+		                                               "wifi.powersave",
+		                                               device);
+		powersave = _nm_utils_ascii_str_to_int64 (value, 10,
+		                                          NM_SETTING_WIRELESS_POWERSAVE_IGNORE,
+		                                          NM_SETTING_WIRELESS_POWERSAVE_ENABLE,
+		                                          NM_SETTING_WIRELESS_POWERSAVE_IGNORE);
+	}
+
+	_LOGT (LOGD_WIFI, "powersave is set to %u", (unsigned int) powersave);
+
+	if (powersave == NM_SETTING_WIRELESS_POWERSAVE_IGNORE)
+		return;
+
+	nm_platform_wifi_set_powersave (NM_PLATFORM_GET,
+	                                nm_device_get_ifindex (device),
+	                                powersave == NM_SETTING_WIRELESS_POWERSAVE_ENABLE);
+}
+
 static NMActStageReturn
 act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 {
@@ -2459,11 +2483,8 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	if ((nm_ap_get_mode (ap) == NM_802_11_MODE_ADHOC) || nm_ap_is_hotspot (ap))
 		ensure_hotspot_frequency (self, s_wireless, ap);
 
-	if (nm_ap_get_mode (ap) == NM_802_11_MODE_INFRA) {
-		nm_platform_wifi_set_powersave (NM_PLATFORM_GET,
-		                                nm_device_get_ifindex (device),
-		                                nm_setting_wireless_get_powersave (s_wireless));
-	}
+	if (nm_ap_get_mode (ap) == NM_802_11_MODE_INFRA)
+		set_powersave (device);
 
 	/* Build up the supplicant configuration */
 	config = build_supplicant_config (self, connection, nm_ap_get_freq (ap), &error);
@@ -2817,7 +2838,7 @@ device_state_changed (NMDevice *device,
 	case NM_DEVICE_STATE_DISCONNECTED:
 		/* Kick off a scan to get latest results */
 		priv->scan_interval = SCAN_INTERVAL_MIN;
-		cancel_pending_scan (self);
+		nm_clear_g_source (&priv->pending_scan_id);
 		request_wireless_scan (self, NULL);
 		break;
 	default:

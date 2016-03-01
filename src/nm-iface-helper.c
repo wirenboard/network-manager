@@ -18,7 +18,7 @@
  * Copyright (C) 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <glib-unix.h>
 #include <getopt.h>
@@ -36,7 +36,6 @@
  * Forward declare if_nametoindex. */
 extern unsigned int if_nametoindex (const char *__ifname);
 
-#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-linux-platform.h"
 #include "nm-dhcp-manager.h"
@@ -135,7 +134,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 	NMIP6Config *existing;
 	NMIP6Config *ip6_config;
 	static int system_support = -1;
-	guint ifa_flags = 0x00;
+	guint32 ifa_flags = 0x00;
 	int i;
 
 	if (system_support == -1) {
@@ -192,7 +191,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 			if (address.preferred > address.lifetime)
 				address.preferred = address.lifetime;
 			address.source = NM_IP_CONFIG_SOURCE_RDISC;
-			address.flags = ifa_flags;
+			address.n_ifa_flags = ifa_flags;
 
 			nm_ip6_config_add_address (ip6_config, &address);
 		}
@@ -334,8 +333,8 @@ ip6_address_changed (NMPlatform *platform,
                      NMPlatformSignalChangeType change_type,
                      NMRDisc *rdisc)
 {
-	if (   (change_type == NM_PLATFORM_SIGNAL_CHANGED && addr->flags & IFA_F_DADFAILED)
-	    || (change_type == NM_PLATFORM_SIGNAL_REMOVED && addr->flags & IFA_F_TENTATIVE))
+	if (   (change_type == NM_PLATFORM_SIGNAL_CHANGED && addr->n_ifa_flags & IFA_F_DADFAILED)
+	    || (change_type == NM_PLATFORM_SIGNAL_REMOVED && addr->n_ifa_flags & IFA_F_TENTATIVE))
 		nm_rdisc_dad_failed (rdisc, &addr->address);
 }
 

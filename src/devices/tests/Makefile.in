@@ -88,8 +88,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = test-lldp$(EXEEXT)
-TESTS = test-lldp$(EXEEXT)
+noinst_PROGRAMS = test-lldp$(EXEEXT) test-arping$(EXEEXT)
+TESTS = test-lldp$(EXEEXT) test-arping$(EXEEXT)
 subdir = src/devices/tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
@@ -113,15 +113,20 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
+am_test_arping_OBJECTS = test_arping-test-arping.$(OBJEXT) \
+	test_arping-nm-arping-manager.$(OBJEXT) \
+	test_arping-test-common.$(OBJEXT)
+test_arping_OBJECTS = $(am_test_arping_OBJECTS)
+test_arping_DEPENDENCIES = $(DEVICES_LDADD)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 am_test_lldp_OBJECTS = test_lldp-test-lldp.$(OBJEXT) \
 	test_lldp-nm-lldp-listener.$(OBJEXT) \
 	test_lldp-test-common.$(OBJEXT)
 test_lldp_OBJECTS = $(am_test_lldp_OBJECTS)
 test_lldp_DEPENDENCIES = $(DEVICES_LDADD)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -156,8 +161,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_lldp_SOURCES)
-DIST_SOURCES = $(test_lldp_SOURCES)
+SOURCES = $(test_arping_SOURCES) $(test_lldp_SOURCES)
+DIST_SOURCES = $(test_arping_SOURCES) $(test_lldp_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -685,6 +690,17 @@ test_lldp_CPPFLAGS = \
 	-DSETUP=nm_linux_platform_setup
 
 test_lldp_LDADD = $(DEVICES_LDADD)
+test_arping_SOURCES = \
+	test-arping.c \
+	../nm-arping-manager.c \
+	$(top_srcdir)/src/platform/tests/test-common.c
+
+test_arping_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
+	-I$(top_srcdir)/src/platform/tests \
+	-DSETUP=nm_linux_platform_setup
+
+test_arping_LDADD = $(DEVICES_LDADD)
 all: all-am
 
 .SUFFIXES:
@@ -728,6 +744,10 @@ clean-noinstPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
+test-arping$(EXEEXT): $(test_arping_OBJECTS) $(test_arping_DEPENDENCIES) $(EXTRA_test_arping_DEPENDENCIES) 
+	@rm -f test-arping$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_arping_OBJECTS) $(test_arping_LDADD) $(LIBS)
+
 test-lldp$(EXEEXT): $(test_lldp_OBJECTS) $(test_lldp_DEPENDENCIES) $(EXTRA_test_lldp_DEPENDENCIES) 
 	@rm -f test-lldp$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_lldp_OBJECTS) $(test_lldp_LDADD) $(LIBS)
@@ -738,6 +758,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arping-nm-arping-manager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arping-test-arping.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arping-test-common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_lldp-nm-lldp-listener.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_lldp-test-common.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_lldp-test-lldp.Po@am__quote@
@@ -762,6 +785,48 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+test_arping-test-arping.o: test-arping.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_arping-test-arping.o -MD -MP -MF $(DEPDIR)/test_arping-test-arping.Tpo -c -o test_arping-test-arping.o `test -f 'test-arping.c' || echo '$(srcdir)/'`test-arping.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_arping-test-arping.Tpo $(DEPDIR)/test_arping-test-arping.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-arping.c' object='test_arping-test-arping.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_arping-test-arping.o `test -f 'test-arping.c' || echo '$(srcdir)/'`test-arping.c
+
+test_arping-test-arping.obj: test-arping.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_arping-test-arping.obj -MD -MP -MF $(DEPDIR)/test_arping-test-arping.Tpo -c -o test_arping-test-arping.obj `if test -f 'test-arping.c'; then $(CYGPATH_W) 'test-arping.c'; else $(CYGPATH_W) '$(srcdir)/test-arping.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_arping-test-arping.Tpo $(DEPDIR)/test_arping-test-arping.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-arping.c' object='test_arping-test-arping.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_arping-test-arping.obj `if test -f 'test-arping.c'; then $(CYGPATH_W) 'test-arping.c'; else $(CYGPATH_W) '$(srcdir)/test-arping.c'; fi`
+
+test_arping-nm-arping-manager.o: ../nm-arping-manager.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_arping-nm-arping-manager.o -MD -MP -MF $(DEPDIR)/test_arping-nm-arping-manager.Tpo -c -o test_arping-nm-arping-manager.o `test -f '../nm-arping-manager.c' || echo '$(srcdir)/'`../nm-arping-manager.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_arping-nm-arping-manager.Tpo $(DEPDIR)/test_arping-nm-arping-manager.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../nm-arping-manager.c' object='test_arping-nm-arping-manager.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_arping-nm-arping-manager.o `test -f '../nm-arping-manager.c' || echo '$(srcdir)/'`../nm-arping-manager.c
+
+test_arping-nm-arping-manager.obj: ../nm-arping-manager.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_arping-nm-arping-manager.obj -MD -MP -MF $(DEPDIR)/test_arping-nm-arping-manager.Tpo -c -o test_arping-nm-arping-manager.obj `if test -f '../nm-arping-manager.c'; then $(CYGPATH_W) '../nm-arping-manager.c'; else $(CYGPATH_W) '$(srcdir)/../nm-arping-manager.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_arping-nm-arping-manager.Tpo $(DEPDIR)/test_arping-nm-arping-manager.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../nm-arping-manager.c' object='test_arping-nm-arping-manager.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_arping-nm-arping-manager.obj `if test -f '../nm-arping-manager.c'; then $(CYGPATH_W) '../nm-arping-manager.c'; else $(CYGPATH_W) '$(srcdir)/../nm-arping-manager.c'; fi`
+
+test_arping-test-common.o: $(top_srcdir)/src/platform/tests/test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_arping-test-common.o -MD -MP -MF $(DEPDIR)/test_arping-test-common.Tpo -c -o test_arping-test-common.o `test -f '$(top_srcdir)/src/platform/tests/test-common.c' || echo '$(srcdir)/'`$(top_srcdir)/src/platform/tests/test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_arping-test-common.Tpo $(DEPDIR)/test_arping-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/platform/tests/test-common.c' object='test_arping-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_arping-test-common.o `test -f '$(top_srcdir)/src/platform/tests/test-common.c' || echo '$(srcdir)/'`$(top_srcdir)/src/platform/tests/test-common.c
+
+test_arping-test-common.obj: $(top_srcdir)/src/platform/tests/test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_arping-test-common.obj -MD -MP -MF $(DEPDIR)/test_arping-test-common.Tpo -c -o test_arping-test-common.obj `if test -f '$(top_srcdir)/src/platform/tests/test-common.c'; then $(CYGPATH_W) '$(top_srcdir)/src/platform/tests/test-common.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/platform/tests/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_arping-test-common.Tpo $(DEPDIR)/test_arping-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/platform/tests/test-common.c' object='test_arping-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_arping_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_arping-test-common.obj `if test -f '$(top_srcdir)/src/platform/tests/test-common.c'; then $(CYGPATH_W) '$(top_srcdir)/src/platform/tests/test-common.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/platform/tests/test-common.c'; fi`
 
 test_lldp-test-lldp.o: test-lldp.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_lldp_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_lldp-test-lldp.o -MD -MP -MF $(DEPDIR)/test_lldp-test-lldp.Tpo -c -o test_lldp-test-lldp.o `test -f 'test-lldp.c' || echo '$(srcdir)/'`test-lldp.c
@@ -1007,6 +1072,13 @@ recheck: all
 test-lldp.log: test-lldp$(EXEEXT)
 	@p='test-lldp$(EXEEXT)'; \
 	b='test-lldp'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test-arping.log: test-arping$(EXEEXT)
+	@p='test-arping$(EXEEXT)'; \
+	b='test-arping'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

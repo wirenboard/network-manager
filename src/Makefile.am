@@ -77,6 +77,8 @@ libsystemd_nm_la_SOURCES = \
 	systemd/src/basic/fileio.h \
 	systemd/src/basic/fs-util.c \
 	systemd/src/basic/fs-util.h \
+	systemd/src/basic/hash-funcs.c \
+	systemd/src/basic/hash-funcs.h \
 	systemd/src/basic/hashmap.c \
 	systemd/src/basic/hashmap.h \
 	systemd/src/basic/hexdecoct.c \
@@ -101,11 +103,12 @@ libsystemd_nm_la_SOURCES = \
 	systemd/src/basic/random-util.c \
 	systemd/src/basic/random-util.h \
 	systemd/src/basic/refcnt.h \
+	systemd/src/basic/set.h \
 	systemd/src/basic/siphash24.c \
 	systemd/src/basic/siphash24.h \
-	systemd/src/basic/set.h \
 	systemd/src/basic/socket-util.h \
 	systemd/src/basic/sparse-endian.h \
+	systemd/src/basic/stdio-util.h \
 	systemd/src/basic/string-table.c \
 	systemd/src/basic/string-table.h \
 	systemd/src/basic/string-util.c \
@@ -135,15 +138,15 @@ libsystemd_nm_la_SOURCES = \
 	systemd/src/libsystemd-network/dhcp6-network.c \
 	systemd/src/libsystemd-network/dhcp6-option.c \
 	systemd/src/libsystemd-network/dhcp6-protocol.h \
-	systemd/src/libsystemd-network/lldp.h \
-	systemd/src/libsystemd-network/lldp-network.h \
+	systemd/src/libsystemd-network/lldp-internal.c \
+	systemd/src/libsystemd-network/lldp-internal.h \
 	systemd/src/libsystemd-network/lldp-network.c \
-	systemd/src/libsystemd-network/lldp-tlv.c \
-	systemd/src/libsystemd-network/lldp-tlv.h \
+	systemd/src/libsystemd-network/lldp-network.h \
 	systemd/src/libsystemd-network/lldp-port.c \
 	systemd/src/libsystemd-network/lldp-port.h \
-	systemd/src/libsystemd-network/lldp-internal.h \
-	systemd/src/libsystemd-network/lldp-internal.c \
+	systemd/src/libsystemd-network/lldp-tlv.c \
+	systemd/src/libsystemd-network/lldp-tlv.h \
+	systemd/src/libsystemd-network/lldp.h \
 	systemd/src/libsystemd-network/network-internal.c \
 	systemd/src/libsystemd-network/network-internal.h \
 	systemd/src/libsystemd-network/sd-dhcp-client.c \
@@ -161,11 +164,11 @@ libsystemd_nm_la_SOURCES = \
 	systemd/src/systemd/sd-dhcp-lease.h \
 	systemd/src/systemd/sd-dhcp6-client.h \
 	systemd/src/systemd/sd-dhcp6-lease.h \
-	systemd/src/systemd/sd-lldp.h \
 	systemd/src/systemd/sd-event.h \
 	systemd/src/systemd/sd-id128.h \
 	systemd/src/systemd/sd-ipv4acd.h \
 	systemd/src/systemd/sd-ipv4ll.h \
+	systemd/src/systemd/sd-lldp.h \
 	systemd/src/systemd/sd-ndisc.h
 
 libsystemd_nm_la_CPPFLAGS = \
@@ -180,6 +183,37 @@ libsystemd_nm_la_CPPFLAGS = \
 
 libsystemd_nm_la_LIBADD = \
 	$(GLIB_LIBS)
+
+######################
+# libsystemd-nm-base
+######################
+
+if ENABLE_TESTS
+noinst_LTLIBRARIES += \
+	libNetworkManager-base.la
+
+libNetworkManager_base_la_SOURCES = \
+	nm-core-utils.c \
+	nm-core-utils.h \
+	nm-logging.c \
+	nm-logging.h
+
+libNetworkManager_base_la_CPPFLAGS = \
+	-I$(top_srcdir)/shared \
+	-I$(top_builddir)/shared \
+	-I$(top_srcdir)/libnm-core \
+	-I$(top_builddir)/libnm-core \
+	-I$(top_srcdir)/src/platform \
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
+	-DNO_SYSTEMD_JOURNAL \
+	-DPREFIX=\"$(prefix)\" \
+	-DNMSTATEDIR=\"$(nmstatedir)\" \
+	$(GLIB_CFLAGS)
+
+libNetworkManager_base_la_LIBADD = \
+	$(top_builddir)/libnm-core/libnm-core.la \
+	$(GLIB_LIBS)
+endif
 
 ###########################################
 # NetworkManager
@@ -240,6 +274,8 @@ libNetworkManager_la_SOURCES = \
 	devices/nm-device.h \
 	devices/nm-lldp-listener.c \
 	devices/nm-lldp-listener.h \
+	devices/nm-arping-manager.c \
+	devices/nm-arping-manager.h \
 	devices/nm-device-ethernet-utils.c \
 	devices/nm-device-ethernet-utils.h \
 	devices/nm-device-factory.c \
@@ -399,6 +435,8 @@ libNetworkManager_la_SOURCES = \
 	nm-session-monitor.c \
 	nm-sleep-monitor.h \
 	nm-types.h \
+	nm-core-utils.c \
+	nm-core-utils.h \
 	NetworkManagerUtils.c \
 	NetworkManagerUtils.h
 
@@ -530,6 +568,8 @@ libnm_iface_helper_la_SOURCES = \
 	nm-logging.h \
 	nm-multi-index.c \
 	nm-multi-index.h \
+	nm-core-utils.c \
+	nm-core-utils.h \
 	NetworkManagerUtils.c \
 	NetworkManagerUtils.h
 

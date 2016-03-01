@@ -18,11 +18,10 @@
  * Copyright 2013 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 
-#include "nm-default.h"
 #include "nm-device-vxlan.h"
 #include "nm-device-private.h"
 #include "nm-manager.h"
@@ -224,7 +223,7 @@ create_and_realize (NMDevice *device,
 	props.l3miss = nm_setting_vxlan_get_l3_miss (s_vxlan);
 
 	plerr = nm_platform_link_vxlan_add (NM_PLATFORM_GET, iface, &props, out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create VXLAN interface '%s' for '%s': %s",
 		             iface,
@@ -296,7 +295,7 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
 	NMDeviceVxlanPrivate *priv = NM_DEVICE_VXLAN_GET_PRIVATE (device);
 	NMSettingVxlan *s_vxlan;
-	const char *iface, *parent;
+	const char *parent;
 
 	if (!NM_DEVICE_CLASS (nm_device_vxlan_parent_class)->check_connection_compatible (device, connection))
 		return FALSE;
@@ -304,12 +303,6 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 	s_vxlan = nm_connection_get_setting_vxlan (connection);
 	if (!s_vxlan)
 		return FALSE;
-
-	iface = nm_connection_get_interface_name (connection);
-	if (iface) {
-		if (g_strcmp0 (nm_device_get_ip_iface (device), iface) != 0)
-			return FALSE;
-	}
 
 	if (nm_device_is_real (device)) {
 		parent = nm_setting_vxlan_get_parent (s_vxlan);
@@ -510,8 +503,6 @@ update_connection (NMDevice *device, NMConnection *connection)
 static NMActStageReturn
 act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 {
-	NMActRequest *req;
-	NMConnection *connection;
 	NMSettingWired *s_wired;
 	const char *cloned_mac;
 	NMActStageReturn ret;
@@ -522,18 +513,11 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	req = nm_device_get_act_request (device);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	connection = nm_act_request_get_applied_connection (req);
-	g_return_val_if_fail (connection != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	s_wired = nm_connection_get_setting_wired (connection);
+	s_wired = (NMSettingWired *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_WIRED);
 	if (s_wired) {
 		/* Set device MAC address if the connection wants to change it */
 		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac)
-			nm_device_set_hw_addr (device, cloned_mac, "set", LOGD_DEVICE);
+		nm_device_set_hw_addr (device, cloned_mac, "set", LOGD_DEVICE);
 	}
 
 	return NM_ACT_STAGE_RETURN_SUCCESS;
@@ -818,9 +802,9 @@ get_connection_parent (NMDeviceFactory *factory, NMConnection *connection)
 }
 
 static char *
-get_virtual_iface_name (NMDeviceFactory *factory,
-                        NMConnection *connection,
-                        const char *parent_iface)
+get_connection_iface (NMDeviceFactory *factory,
+                      NMConnection *connection,
+                      const char *parent_iface)
 {
 	const char *ifname;
 	NMSettingVxlan *s_vxlan;
@@ -842,6 +826,6 @@ NM_DEVICE_FACTORY_DEFINE_INTERNAL (VXLAN, Vxlan, vxlan,
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_VXLAN_SETTING_NAME),
 	factory_iface->create_device = create_device;
 	factory_iface->get_connection_parent = get_connection_parent;
-	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
+	factory_iface->get_connection_iface = get_connection_iface;
 	)
 

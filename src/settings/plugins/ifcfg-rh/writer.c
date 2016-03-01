@@ -18,7 +18,9 @@
  * Copyright 2009 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "writer.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -30,26 +32,24 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include <nm-setting-connection.h>
-#include <nm-setting-wired.h>
-#include <nm-setting-wireless.h>
-#include <nm-setting-8021x.h>
-#include <nm-setting-ip4-config.h>
-#include <nm-setting-ip6-config.h>
-#include <nm-setting-pppoe.h>
-#include <nm-setting-vlan.h>
-#include <nm-setting-team.h>
-#include <nm-setting-team-port.h>
+#include "nm-setting-connection.h"
+#include "nm-setting-wired.h"
+#include "nm-setting-wireless.h"
+#include "nm-setting-8021x.h"
+#include "nm-setting-ip4-config.h"
+#include "nm-setting-ip6-config.h"
+#include "nm-setting-pppoe.h"
+#include "nm-setting-vlan.h"
+#include "nm-setting-team.h"
+#include "nm-setting-team-port.h"
 #include "nm-core-internal.h"
-#include <nm-utils.h>
+#include "nm-utils.h"
 #include "nm-core-internal.h"
-#include "nm-macros-internal.h"
+#include "NetworkManagerUtils.h"
 
-#include "nm-default.h"
 #include "common.h"
 #include "shvar.h"
 #include "reader.h"
-#include "writer.h"
 #include "utils.h"
 #include "crypto.h"
 
@@ -144,27 +144,20 @@ write_secret_file (const char *path,
 	char *tmppath;
 	int fd = -1, written;
 	gboolean success = FALSE;
+	mode_t saved_umask;
 
 	tmppath = g_malloc0 (strlen (path) + 10);
 	memcpy (tmppath, path, strlen (path));
 	strcat (tmppath, ".XXXXXX");
+
+	/* Only readable by root */
+	saved_umask = umask (S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 	errno = 0;
 	fd = mkstemp (tmppath);
 	if (fd < 0) {
 		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
 		             "Could not create temporary file for '%s': %d",
-		             path, errno);
-		goto out;
-	}
-
-	/* Only readable by root */
-	errno = 0;
-	if (fchmod (fd, S_IRUSR | S_IWUSR)) {
-		close (fd);
-		unlink (tmppath);
-		g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_FAILED,
-		             "Could not set permissions for temporary file '%s': %d",
 		             path, errno);
 		goto out;
 	}
@@ -193,6 +186,7 @@ write_secret_file (const char *path,
 	success = TRUE;
 
 out:
+	umask (saved_umask);
 	g_free (tmppath);
 	return success;
 }
@@ -987,7 +981,22 @@ write_wireless_setting (NMConnection *connection,
 	}
 
 	svSetValue (ifcfg, "SSID_HIDDEN", nm_setting_wireless_get_hidden (s_wireless) ? "yes" : NULL, TRUE);
-	svSetValue (ifcfg, "POWERSAVE", nm_setting_wireless_get_powersave (s_wireless) ? "yes" : NULL, TRUE);
+
+	switch (nm_setting_wireless_get_powersave (s_wireless)) {
+	case NM_SETTING_WIRELESS_POWERSAVE_IGNORE:
+		svSetValue (ifcfg, "POWERSAVE", "ignore", TRUE);
+		break;
+	case NM_SETTING_WIRELESS_POWERSAVE_DISABLE:
+		svSetValue (ifcfg, "POWERSAVE", "disable", TRUE);
+		break;
+	case NM_SETTING_WIRELESS_POWERSAVE_ENABLE:
+		svSetValue (ifcfg, "POWERSAVE", "enable", TRUE);
+		break;
+	default:
+	case NM_SETTING_WIRELESS_POWERSAVE_DEFAULT:
+		svSetValue (ifcfg, "POWERSAVE", NULL, TRUE);
+		break;
+	}
 
 	svSetValue (ifcfg, "MAC_ADDRESS_RANDOMIZATION", NULL, TRUE);
 	switch (nm_setting_wireless_get_mac_address_randomization (s_wireless)) {
@@ -1252,6 +1261,8 @@ write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 	NMSettingConnection *s_con;
 	char *tmp;
 	guint32 vlan_flags = 0;
+	gsize s_buf_len;
+	char s_buf[50], *s_buf_ptr;
 
 	s_con = nm_connection_get_setting_connection (connection);
 	if (!s_con) {
@@ -1284,9 +1295,14 @@ write_vlan_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 
 	svSetValue (ifcfg, "GVRP", vlan_flags & NM_VLAN_FLAG_GVRP ? "yes" : "no", FALSE);
 
-	svSetValue (ifcfg, "VLAN_FLAGS", NULL, FALSE);
-	if (vlan_flags & NM_VLAN_FLAG_LOOSE_BINDING)
-		svSetValue (ifcfg, "VLAN_FLAGS", "LOOSE_BINDING", FALSE);
+	nm_utils_strbuf_init (s_buf, &s_buf_ptr, &s_buf_len);
+
+	if (NM_FLAGS_HAS (vlan_flags, NM_VLAN_FLAG_LOOSE_BINDING))
+		nm_utils_strbuf_append_str (&s_buf_ptr, &s_buf_len, "LOOSE_BINDING");
+	if (!NM_FLAGS_HAS (vlan_flags, NM_VLAN_FLAG_REORDER_HEADERS))
+		nm_utils_strbuf_append (&s_buf_ptr, &s_buf_len, "%sNO_REORDER_HDR", s_buf[0] ? "," : "");
+
+	svSetValue (ifcfg, "VLAN_FLAGS", s_buf, FALSE);
 
 	svSetValue (ifcfg, "MVRP", vlan_flags & NM_VLAN_FLAG_MVRP ? "yes" : "no", FALSE);
 
@@ -1947,7 +1963,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	gint32 j;
 	guint32 i, n, num;
 	gint64 route_metric;
-	int dhcp_timeout;
+	int timeout;
 	GString *searches;
 	gboolean success = FALSE;
 	gboolean fake_ip4 = FALSE;
@@ -2156,8 +2172,8 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		if (value)
 			svSetValue (ifcfg, "DHCP_CLIENT_ID", value, FALSE);
 
-		dhcp_timeout = nm_setting_ip4_config_get_dhcp_timeout (NM_SETTING_IP4_CONFIG (s_ip4));
-		tmp = dhcp_timeout ? g_strdup_printf ("%d", dhcp_timeout) : NULL;
+		timeout = nm_setting_ip_config_get_dhcp_timeout (s_ip4);
+		tmp = timeout ? g_strdup_printf ("%d", timeout) : NULL;
 		svSetValue (ifcfg, "IPV4_DHCP_TIMEOUT", tmp, FALSE);
 		g_free (tmp);
 	}
@@ -2246,6 +2262,16 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		g_free (route_path);
 		if (error && *error)
 			goto out;
+	}
+
+	timeout = nm_setting_ip_config_get_dad_timeout (s_ip4);
+	if (timeout < 0)
+		svSetValue (ifcfg, "ARPING_WAIT", NULL, FALSE);
+	else if (timeout == 0)
+		svSetValue (ifcfg, "ARPING_WAIT", "0", FALSE);
+	else {
+		/* Round the value up to next integer */
+		svSetValueInt64 (ifcfg, "ARPING_WAIT", (timeout - 1) / 1000 + 1);
 	}
 
 	success = TRUE;

@@ -19,16 +19,16 @@
  * Copyright 2007 - 2008 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-vpn-plugin.h"
 
 #include <signal.h>
-#include "nm-default.h"
-#include "nm-vpn-plugin.h"
+
 #include "nm-vpn-enum-types.h"
 #include "nm-utils.h"
 #include "nm-connection.h"
 #include "nm-dbus-glib-types.h"
-#include "nm-macros-internal.h"
 
 static gboolean impl_vpn_plugin_connect    (NMVPNPlugin *plugin,
                                             GHashTable *connection,
@@ -341,8 +341,6 @@ nm_vpn_plugin_set_config (NMVPNPlugin *plugin,
 	val = g_hash_table_lookup (config, NM_VPN_PLUGIN_CONFIG_HAS_IP6);
 	if (val && g_value_get_boolean (val))
 		priv->has_ip6 = TRUE;
-
-	g_warn_if_fail (priv->has_ip4 || priv->has_ip6);
 
 	/* Record the items that need to also be inserted into the
 	 * ip4config, for compatibility with older daemons.

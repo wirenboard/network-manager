@@ -18,7 +18,9 @@
  * Copyright (C) 2012–2013 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-fake-platform.h"
 
 #include <errno.h>
 #include <unistd.h>
@@ -27,10 +29,9 @@
 #include <linux/rtnetlink.h>
 
 #include "nm-utils.h"
+
+#include "nm-core-utils.h"
 #include "nmp-object.h"
-#include "NetworkManagerUtils.h"
-#include "nm-fake-platform.h"
-#include "nm-default.h"
 
 #include "nm-test-utils.h"
 
@@ -173,10 +174,10 @@ link_init (NMFakePlatformLink *device, int ifindex, int type, const char *name)
 		strcpy (device->link.name, name);
 	switch (device->link.type) {
 	case NM_LINK_TYPE_DUMMY:
-		device->link.flags = NM_FLAGS_SET (device->link.flags, IFF_NOARP);
+		device->link.n_ifi_flags = NM_FLAGS_SET (device->link.n_ifi_flags, IFF_NOARP);
 		break;
 	default:
-		device->link.flags = NM_FLAGS_UNSET (device->link.flags, IFF_NOARP);
+		device->link.n_ifi_flags = NM_FLAGS_UNSET (device->link.n_ifi_flags, IFF_NOARP);
 		break;
 	}
 }
@@ -440,9 +441,9 @@ link_set_up (NMPlatform *platform, int ifindex, gboolean *out_no_firmware)
 		g_error ("Unexpected device type: %d", device->link.type);
 	}
 
-	if (   NM_FLAGS_HAS (device->link.flags, IFF_UP) != !!up
+	if (   NM_FLAGS_HAS (device->link.n_ifi_flags, IFF_UP) != !!up
 	    || device->link.connected != connected) {
-		device->link.flags = NM_FLAGS_ASSIGN (device->link.flags, IFF_UP, up);
+		device->link.n_ifi_flags = NM_FLAGS_ASSIGN (device->link.n_ifi_flags, IFF_UP, up);
 		device->link.connected = connected;
 		link_changed (platform, device, TRUE);
 	}
@@ -460,8 +461,8 @@ link_set_down (NMPlatform *platform, int ifindex)
 		return FALSE;
 	}
 
-	if (NM_FLAGS_HAS (device->link.flags, IFF_UP) || device->link.connected) {
-		device->link.flags = NM_FLAGS_UNSET (device->link.flags, IFF_UP);
+	if (NM_FLAGS_HAS (device->link.n_ifi_flags, IFF_UP) || device->link.connected) {
+		device->link.n_ifi_flags = NM_FLAGS_UNSET (device->link.n_ifi_flags, IFF_UP);
 		device->link.connected = FALSE;
 
 		link_changed (platform, device, TRUE);
@@ -480,7 +481,7 @@ link_set_arp (NMPlatform *platform, int ifindex)
 		return FALSE;
 	}
 
-	device->link.flags = NM_FLAGS_UNSET (device->link.flags, IFF_NOARP);
+	device->link.n_ifi_flags = NM_FLAGS_UNSET (device->link.n_ifi_flags, IFF_NOARP);
 
 	link_changed (platform, device, TRUE);
 
@@ -497,7 +498,7 @@ link_set_noarp (NMPlatform *platform, int ifindex)
 		return FALSE;
 	}
 
-	device->link.flags = NM_FLAGS_SET (device->link.flags, IFF_NOARP);
+	device->link.n_ifi_flags = NM_FLAGS_SET (device->link.n_ifi_flags, IFF_NOARP);
 
 	link_changed (platform, device, TRUE);
 
@@ -509,7 +510,8 @@ link_set_address (NMPlatform *platform, int ifindex, gconstpointer addr, size_t 
 {
 	NMFakePlatformLink *device = link_get (platform, ifindex);
 
-	if (   len == 0
+	if (   !device
+	    || len == 0
 	    || len > NM_UTILS_HWADDR_LEN_MAX
 	    || !addr)
 		g_return_val_if_reached (FALSE);
@@ -611,7 +613,7 @@ link_enslave (NMPlatform *platform, int master, int slave)
 		device->link.master = master;
 
 		if (NM_IN_SET (master_device->link.type, NM_LINK_TYPE_BOND, NM_LINK_TYPE_TEAM)) {
-			device->link.flags = NM_FLAGS_SET (device->link.flags, IFF_UP);
+			device->link.n_ifi_flags = NM_FLAGS_SET (device->link.n_ifi_flags, IFF_UP);
 			device->link.connected = TRUE;
 		}
 
@@ -937,7 +939,8 @@ ip6_address_add (NMPlatform *platform,
                  int plen,
                  struct in6_addr peer_addr,
                  guint32 lifetime,
-                 guint32 preferred, guint flags)
+                 guint32 preferred,
+                 guint32 flags)
 {
 	NMFakePlatformPrivate *priv = NM_FAKE_PLATFORM_GET_PRIVATE (platform);
 	NMPlatformIP6Address address;
@@ -952,7 +955,7 @@ ip6_address_add (NMPlatform *platform,
 	address.timestamp = nm_utils_get_monotonic_timestamp_s ();
 	address.lifetime = lifetime;
 	address.preferred = preferred;
-	address.flags = flags;
+	address.n_ifa_flags = flags;
 
 	for (i = 0; i < priv->ip6_addresses->len; i++) {
 		NMPlatformIP6Address *item = &g_array_index (priv->ip6_addresses, NMPlatformIP6Address, i);

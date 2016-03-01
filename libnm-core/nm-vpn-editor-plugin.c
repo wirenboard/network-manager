@@ -20,14 +20,10 @@
  * Copyright 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include "nm-vpn-editor-plugin.h"
 
-#include <gio/gio.h>
-
-#include "nm-macros-internal.h"
-#include "gsystem-local-alloc.h"
 #include "nm-core-internal.h"
 
 static void nm_vpn_editor_plugin_default_init (NMVpnEditorPluginInterface *iface);
@@ -209,8 +205,11 @@ nm_vpn_editor_plugin_load_from_file  (const char *plugin_filename,
 
 /**
  * nm_vpn_editor_plugin_get_editor:
+ * @plugin: the #NMVpnEditorPlugin
+ * @connection: the #NMConnection to be edited
+ * @error: on return, an error or %NULL
  *
- * Returns: (transfer full):
+ * Returns: (transfer full): a new #NMVpnEditor or %NULL on error
  */
 NMVpnEditor *
 nm_vpn_editor_plugin_get_editor (NMVpnEditorPlugin *plugin,
@@ -232,8 +231,12 @@ nm_vpn_editor_plugin_get_capabilities (NMVpnEditorPlugin *plugin)
 
 /**
  * nm_vpn_editor_plugin_import:
+ * @plugin: the #NMVpnEditorPlugin
+ * @path: full path to the file to attempt to read into a new #NMConnection
+ * @error: on return, an error or %NULL
  *
- * Returns: (transfer full):
+ * Returns: (transfer full): a new #NMConnection imported from @path, or %NULL
+ * on error or if the file at @path was not recognized by this plugin
  */
 NMConnection *
 nm_vpn_editor_plugin_import (NMVpnEditorPlugin *plugin,

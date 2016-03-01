@@ -20,7 +20,7 @@
  * Copyright 2009 One Laptop per Child
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 
@@ -79,6 +79,7 @@ nm_setting_olpc_mesh_init (NMSettingOlpcMesh *setting)
 
 /**
  * nm_setting_olpc_mesh_get_ssid:
+ * @setting: the #NMSettingOlpcMesh
  *
  * Returns: (transfer none):
  */

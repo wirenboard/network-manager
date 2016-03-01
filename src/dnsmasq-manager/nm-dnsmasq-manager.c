@@ -18,7 +18,7 @@
  * Copyright (C) 2008 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -28,20 +28,22 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-#include "nm-default.h"
 #include "nm-dnsmasq-manager.h"
 #include "nm-dnsmasq-utils.h"
 #include "nm-utils.h"
 #include "NetworkManagerUtils.h"
+#include "nm-core-internal.h"
 
 typedef struct {
 	char *iface;
 	char *pidfile;
 	GPid pid;
-	guint32 dm_watch_id;
+	guint dm_watch_id;
 } NMDnsMasqManagerPrivate;
 
 #define NM_DNSMASQ_MANAGER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DNSMASQ_MANAGER, NMDnsMasqManagerPrivate))
+
+#define CONFDIR NMCONFDIR "/dnsmasq-shared.d"
 
 G_DEFINE_TYPE (NMDnsMasqManager, nm_dnsmasq_manager, G_TYPE_OBJECT)
 
@@ -170,7 +172,7 @@ dm_exit_code (guint dm_exit_status)
 	case 4:
 		msg = "Memory allocation failure";
 		break;
-	case 5: 
+	case 5:
 		msg = "Other problem";
 		break;
 	default:
@@ -200,7 +202,7 @@ dm_watch_cb (GPid pid, gint status, gpointer user_data)
 	} else {
 		nm_log_warn (LOGD_SHARING, "dnsmasq died from an unknown cause");
 	}
-  
+
 	priv->pid = 0;
 	priv->dm_watch_id = 0;
 
@@ -209,18 +211,19 @@ dm_watch_cb (GPid pid, gint status, gpointer user_data)
 
 static NMCmdLine *
 create_dm_cmd_line (const char *iface,
-                    NMIP4Config *ip4_config,
+                    const NMPlatformIP4Address *listen_address,
                     const char *pidfile,
                     GError **error)
 {
 	NMCmdLine *cmd;
 	GString *s;
-	const NMPlatformIP4Address *tmp;
 	char first[INET_ADDRSTRLEN];
 	char last[INET_ADDRSTRLEN];
 	char localaddr[INET_ADDRSTRLEN];
 	char *error_desc = NULL;
 	const char *dm_binary;
+
+	g_return_val_if_fail (listen_address, NULL);
 
 	dm_binary = nm_utils_find_helper ("dnsmasq", DNSMASQ_PATH, error);
 	if (!dm_binary)
@@ -255,16 +258,13 @@ create_dm_cmd_line (const char *iface,
 	 */
 	nm_cmd_line_add_string (cmd, "--strict-order");
 
-	/* Find the IP4 address to use */
-	tmp = nm_ip4_config_get_address (ip4_config, 0);
-
 	s = g_string_new ("--listen-address=");
-	nm_utils_inet4_ntop (tmp->address, localaddr);
+	nm_utils_inet4_ntop (listen_address->address, localaddr);
 	g_string_append (s, localaddr);
 	nm_cmd_line_add_string (cmd, s->str);
 	g_string_free (s, TRUE);
 
-	if (!nm_dnsmasq_utils_get_range (tmp, first, last, &error_desc)) {
+	if (!nm_dnsmasq_utils_get_range (listen_address, first, last, &error_desc)) {
 		g_set_error_literal (error,
 		                     NM_MANAGER_ERROR,
 		                     NM_MANAGER_ERROR_FAILED,
@@ -292,39 +292,49 @@ create_dm_cmd_line (const char *iface,
 	nm_cmd_line_add_string (cmd, s->str);
 	g_string_free (s, TRUE);
 
+	/* dnsmasq exits if the conf dir is not present */
+	if (g_file_test (CONFDIR, G_FILE_TEST_IS_DIR))
+		nm_cmd_line_add_string (cmd, "--conf-dir=" CONFDIR);
+
 	return cmd;
 }
 
 static void
-kill_existing_for_iface (const char *iface, const char *pidfile)
+kill_existing_by_pidfile (const char *pidfile)
 {
 	char *contents = NULL;
-	glong pid;
-	char *proc_path = NULL;
+	pid_t pid;
+	char proc_path[250];
 	char *cmdline_contents = NULL;
+	guint64 start_time;
+	const char *exe;
 
-	if (!g_file_get_contents (pidfile, &contents, NULL, NULL))
+	if (   !pidfile
+	    || !g_file_get_contents (pidfile, &contents, NULL, NULL))
+		return;
+
+	pid = _nm_utils_ascii_str_to_int64 (contents, 10, 1, G_MAXUINT64, 0);
+	if (pid == 0)
 		goto out;
 
-	pid = strtol (contents, NULL, 10);
-	if (pid < 1 || pid > INT_MAX)
+	start_time = nm_utils_get_start_time_for_pid (pid, NULL, NULL);
+	if (start_time == 0)
 		goto out;
 
-	proc_path = g_strdup_printf ("/proc/%ld/cmdline", pid);
+	nm_sprintf_buf (proc_path, "/proc/%lld/cmdline", (long long) pid);
 	if (!g_file_get_contents (proc_path, &cmdline_contents, NULL, NULL))
 		goto out;
 
-	if (strstr (cmdline_contents, "bin/dnsmasq")) {
-		if (kill (pid, 0) == 0) {
-			nm_log_dbg (LOGD_SHARING, "Killing stale dnsmasq process %ld", pid);
-			kill (pid, SIGKILL);
-		}
-		unlink (pidfile);
+	exe = strrchr (cmdline_contents, '/');
+	if (   (exe && strcmp (&exe[1], "dnsmasq") == 0)
+	    || (strcmp (cmdline_contents, DNSMASQ_PATH) == 0)) {
+		nm_utils_kill_process_sync (pid, start_time, SIGKILL, LOGD_SHARING,
+		                            "dnsmasq", 0, 0, 500);
 	}
 
 out:
+	unlink (pidfile);
 	g_free (cmdline_contents);
-	g_free (proc_path);
 	g_free (contents);
 }
 
@@ -335,17 +345,17 @@ nm_dnsmasq_manager_start (NMDnsMasqManager *manager,
 {
 	NMDnsMasqManagerPrivate *priv;
 	NMCmdLine *dm_cmd;
-	char *cmd_str;
+	gs_free char *cmd_str = NULL;
 
 	g_return_val_if_fail (NM_IS_DNSMASQ_MANAGER (manager), FALSE);
-	if (error)
-		g_return_val_if_fail (*error == NULL, FALSE);
+	g_return_val_if_fail (!error || !*error, FALSE);
+	g_return_val_if_fail (nm_ip4_config_get_num_addresses (ip4_config) > 0, FALSE);
 
 	priv = NM_DNSMASQ_MANAGER_GET_PRIVATE (manager);
 
-	kill_existing_for_iface (priv->iface, priv->pidfile);
+	kill_existing_by_pidfile (priv->pidfile);
 
-	dm_cmd = create_dm_cmd_line (priv->iface, ip4_config, priv->pidfile, error);
+	dm_cmd = create_dm_cmd_line (priv->iface, nm_ip4_config_get_address (ip4_config, 0), priv->pidfile, error);
 	if (!dm_cmd)
 		return FALSE;
 
@@ -353,9 +363,8 @@ nm_dnsmasq_manager_start (NMDnsMasqManager *manager,
 
 	nm_log_info (LOGD_SHARING, "Starting dnsmasq...");
 
-	cmd_str = nm_cmd_line_to_str (dm_cmd);
-	nm_log_dbg (LOGD_SHARING, "Command line: %s", cmd_str);
-	g_free (cmd_str);
+	nm_log_dbg (LOGD_SHARING, "Command line: %s",
+	            (cmd_str = nm_cmd_line_to_str (dm_cmd)));
 
 	priv->pid = 0;
 	if (!g_spawn_async (NULL, (char **) dm_cmd->array->pdata, NULL,

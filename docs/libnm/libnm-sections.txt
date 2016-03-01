@@ -302,6 +302,7 @@ NM_TYPE_SETTING_SECRET_FLAGS
 NM_TYPE_SETTING_SERIAL_PARITY
 NM_TYPE_SETTING_TUN_MODE
 NM_TYPE_SETTING_WIRED_WAKE_ON_LAN
+NM_TYPE_SETTING_WIRELESS_POWERSAVE
 NM_TYPE_STATE
 NM_TYPE_UTILS_SECURITY_TYPE
 NM_TYPE_VLAN_FLAGS
@@ -351,6 +352,7 @@ nm_setting_secret_flags_get_type
 nm_setting_serial_parity_get_type
 nm_setting_tun_mode_get_type
 nm_setting_wired_wake_on_lan_get_type
+nm_setting_wireless_powersave_get_type
 nm_settings_error_get_type
 nm_state_get_type
 nm_utils_security_type_get_type
@@ -512,6 +514,9 @@ nm_device_disambiguate_names
 nm_device_reapply
 nm_device_reapply_async
 nm_device_reapply_finish
+nm_device_get_applied_connection
+nm_device_get_applied_connection_async
+nm_device_get_applied_connection_finish
 nm_device_disconnect
 nm_device_disconnect_async
 nm_device_disconnect_finish
@@ -1067,35 +1072,6 @@ NM_IS_IP_CONFIG
 NM_IS_IP_CONFIG_CLASS
 NM_TYPE_IP_CONFIG
 nm_ip_config_get_type
-</SECTION>
-
-<SECTION>
-<FILE>nm-keyfile-internal</FILE>
-NM_KEYFILE_CERT_SCHEME_PREFIX_BLOB
-NM_KEYFILE_CERT_SCHEME_PREFIX_PATH
-nm_keyfile_detect_unqualified_path_scheme
-NMKeyfileReadType
-NMKeyfileReadHandler
-NMKeyfileWarnSeverity
-NMKeyfileReadTypeDataWarn
-nm_keyfile_read
-NMKeyfileWriteType
-NMKeyfileWriteHandler
-NMKeyfileWriteTypeDataCert
-nm_keyfile_write
-nm_keyfile_plugin_kf_get_string
-nm_keyfile_plugin_kf_set_string
-</SECTION>
-
-<SECTION>
-<FILE>nm-keyfile-utils</FILE>
-VPN_SECRETS_GROUP
-nm_keyfile_plugin_get_alias_for_setting_name
-nm_keyfile_plugin_get_setting_name_for_alias
-DEFINE_KF_LIST_WRAPPER_PROTO
-DEFINE_KF_WRAPPER_PROTO
-nm_keyfile_plugin_kf_get_keys
-nm_keyfile_plugin_kf_has_key
 </SECTION>
 
 <SECTION>
@@ -1768,6 +1744,7 @@ nm_ip_route_set_metric
 nm_ip_route_get_attribute_names
 nm_ip_route_get_attribute
 nm_ip_route_set_attribute
+NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX
 NM_SETTING_IP_CONFIG_METHOD
 NM_SETTING_IP_CONFIG_DNS
 NM_SETTING_IP_CONFIG_DNS_SEARCH
@@ -1782,6 +1759,8 @@ NM_SETTING_IP_CONFIG_DHCP_HOSTNAME
 NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME
 NM_SETTING_IP_CONFIG_NEVER_DEFAULT
 NM_SETTING_IP_CONFIG_MAY_FAIL
+NM_SETTING_IP_CONFIG_DAD_TIMEOUT
+NM_SETTING_IP_CONFIG_DHCP_TIMEOUT
 NM_SETTING_DNS_OPTION_DEBUG
 NM_SETTING_DNS_OPTION_NDOTS
 NM_SETTING_DNS_OPTION_TIMEOUT
@@ -1837,6 +1816,8 @@ nm_setting_ip_config_get_dhcp_hostname
 nm_setting_ip_config_get_dhcp_send_hostname
 nm_setting_ip_config_get_never_default
 nm_setting_ip_config_get_may_fail
+nm_setting_ip_config_get_dad_timeout
+nm_setting_ip_config_get_dhcp_timeout
 <SUBSECTION Standard>
 NMIPAddress
 NMIPRoute
@@ -1899,7 +1880,6 @@ nm_setting_ip_tunnel_get_type
 <TITLE>NMSettingIP4Config</TITLE>
 NM_SETTING_IP4_CONFIG_SETTING_NAME
 NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID
-NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT
 NM_SETTING_IP4_CONFIG_DHCP_FQDN
 NM_SETTING_IP4_CONFIG_METHOD_AUTO
 NM_SETTING_IP4_CONFIG_METHOD_LINK_LOCAL
@@ -1908,7 +1888,6 @@ NM_SETTING_IP4_CONFIG_METHOD_SHARED
 NM_SETTING_IP4_CONFIG_METHOD_DISABLED
 nm_setting_ip4_config_new
 nm_setting_ip4_config_get_dhcp_client_id
-nm_setting_ip4_config_get_dhcp_timeout
 nm_setting_ip4_config_get_dhcp_fqdn
 <SUBSECTION Standard>
 NMSettingIP4Config
@@ -2395,6 +2374,7 @@ NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION
 NM_SETTING_WIRELESS_MODE_ADHOC
 NM_SETTING_WIRELESS_MODE_AP
 NM_SETTING_WIRELESS_MODE_INFRA
+NMSettingWirelessPowersave
 nm_setting_wireless_new
 nm_setting_wireless_get_ssid
 nm_setting_wireless_get_mode
@@ -2743,6 +2723,33 @@ NM_VPN_PLUGIN_INFO_GET_CLASS
 </SECTION>
 
 <SECTION>
+<FILE>nm-vpn-plugin-old</FILE>
+NM_VPN_PLUGIN_OLD_DBUS_SERVICE_NAME
+NM_VPN_PLUGIN_OLD_STATE
+<SUBSECTION Standard>
+NM_IS_VPN_PLUGIN_OLD
+NM_IS_VPN_PLUGIN_OLD_CLASS
+NM_TYPE_VPN_PLUGIN_OLD
+NM_VPN_PLUGIN_OLD
+NM_VPN_PLUGIN_OLD_CLASS
+NM_VPN_PLUGIN_OLD_GET_CLASS
+</SECTION>
+
+<SECTION>
+<FILE>nm-vpn-service-plugin</FILE>
+NM_VPN_SERVICE_PLUGIN_DBUS_SERVICE_NAME
+NM_VPN_SERVICE_PLUGIN_DBUS_WATCH_PEER
+NM_VPN_SERVICE_PLUGIN_STATE
+<SUBSECTION Standard>
+NM_IS_VPN_SERVICE_PLUGIN
+NM_IS_VPN_SERVICE_PLUGIN_CLASS
+NM_TYPE_VPN_SERVICE_PLUGIN
+NM_VPN_SERVICE_PLUGIN
+NM_VPN_SERVICE_PLUGIN_CLASS
+NM_VPN_SERVICE_PLUGIN_GET_CLASS
+</SECTION>
+
+<SECTION>
 <FILE>nm-wimax-nsp</FILE>
 <TITLE>NMWimaxNsp</TITLE>
 NM_WIMAX_NSP_NAME
@@ -2764,12 +2771,5 @@ NM_WIMAX_NSP
 NM_WIMAX_NSP_CLASS
 NM_WIMAX_NSP_GET_CLASS
 nm_wimax_nsp_get_type
-</SECTION>
-
-<SECTION>
-<FILE>test-general-enums</FILE>
-NMTestGeneralBoolEnum
-NMTestGeneralMetaFlags
-NMTestGeneralColorFlags
 </SECTION>
 

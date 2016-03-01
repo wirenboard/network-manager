@@ -20,18 +20,17 @@
  * Copyright 2007 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-setting.h"
 
 #include <string.h>
 
-#include "nm-default.h"
-#include "nm-setting.h"
 #include "nm-setting-private.h"
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 #include "nm-utils-private.h"
 #include "nm-property-compare.h"
-#include "nm-macros-internal.h"
 
 #include "nm-setting-connection.h"
 #include "nm-setting-bond.h"

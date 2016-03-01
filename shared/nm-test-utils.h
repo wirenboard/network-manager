@@ -88,6 +88,8 @@
  *
  *******************************************************************************/
 
+#include "nm-default.h"
+
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -95,9 +97,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "nm-default.h"
 #include "nm-utils.h"
-#include "nm-macros-internal.h"
 
 #ifdef __NETWORKMANAGER_LOGGING_H__
 /* We are running tests under src/. Let's include some files by default.
@@ -157,6 +157,12 @@ _nmtst_assert_success (gboolean success, GError *error, const char *file, int li
 		g_error ("(%s:%d) FAILURE success=%d, error=%s", file, line, success, error && error->message ? error->message : "(no error)");
 }
 #define nmtst_assert_success(success, error) _nmtst_assert_success ((success), (error), __FILE__, __LINE__)
+
+#define nmtst_assert_no_success(success, error) \
+	G_STMT_START { \
+		g_assert (error); \
+		g_assert (!(success)); \
+	} G_STMT_END
 
 /*******************************************************************************/
 
@@ -648,6 +654,82 @@ nmtst_test_quick (void)
 	} G_STMT_END
 #endif
 
+/*****************************************************************************/
+
+typedef struct _NmtstTestData NmtstTestData;
+
+typedef void (*NmtstTestDataRelease) (const NmtstTestData *test_data);
+
+struct _NmtstTestData {
+	const char *testpath;
+	NmtstTestDataRelease fcn_release;
+	gsize n_args;
+	gpointer args[1];
+};
+
+inline static void
+_nmtst_test_data_unpack (const NmtstTestData *test_data, gsize n_args, ...)
+{
+	gsize i;
+	va_list ap;
+	gpointer *p;
+
+	g_assert (test_data);
+	g_assert_cmpint (n_args, ==, test_data->n_args);
+
+	va_start (ap, n_args);
+	for (i = 0; i < n_args; i++) {
+		p = va_arg (ap, gpointer *);
+
+		g_assert (p);
+		*p = test_data->args[i];
+	}
+	va_end (ap);
+}
+#define nmtst_test_data_unpack(test_data, ...) _nmtst_test_data_unpack(test_data, NM_NARG (__VA_ARGS__), ##__VA_ARGS__)
+
+inline static void
+_nmtst_test_data_free (gpointer data)
+{
+	NmtstTestData *test_data = data;
+
+	g_assert (test_data);
+
+	if (test_data->fcn_release)
+		test_data->fcn_release (test_data);
+
+	g_free ((gpointer) test_data->testpath);
+	g_free (test_data);
+}
+
+inline static void
+_nmtst_add_test_func_full (const char *testpath, GTestDataFunc test_func, NmtstTestDataRelease fcn_release, gsize n_args, ...)
+{
+	gsize i;
+	NmtstTestData *data;
+	va_list ap;
+
+	data = g_malloc (G_STRUCT_OFFSET (NmtstTestData, args) + sizeof (gpointer) * (n_args + 1));
+
+	data->testpath = g_strdup (testpath);
+	data->fcn_release = fcn_release;
+	data->n_args = n_args;
+	va_start (ap, n_args);
+	for (i = 0; i < n_args; i++)
+		data->args[i] = va_arg (ap, gpointer);
+	data->args[i] = NULL;
+	va_end (ap);
+
+	g_test_add_data_func_full (testpath,
+	                           data,
+	                           test_func,
+	                           _nmtst_test_data_free);
+}
+#define nmtst_add_test_func_full(testpath, test_func, fcn_release, ...) _nmtst_add_test_func_full(testpath, test_func, fcn_release, NM_NARG (__VA_ARGS__), ##__VA_ARGS__)
+#define nmtst_add_test_func(testpath, test_func, ...) nmtst_add_test_func_full(testpath, test_func, NULL, ##__VA_ARGS__)
+
+/*****************************************************************************/
+
 inline static GRand *
 nmtst_get_rand0 (void)
 {
@@ -962,26 +1044,6 @@ _nmtst_assert_ip6_address (const char *file, int line, const struct in6_addr *ad
 }
 #define nmtst_assert_ip6_address(addr, str_expected) _nmtst_assert_ip6_address (__FILE__, __LINE__, addr, str_expected)
 
-inline static void
-FAIL(const char *test_name, const char *fmt, ...)
-{
-	va_list args;
-	char buf[500];
-
-	g_snprintf (buf, 500, "FAIL: (%s) %s\n", test_name, fmt);
-
-	va_start (args, fmt);
-	vfprintf (stderr, buf, args);
-	va_end (args);
-	_exit (1);
-}
-
-#define ASSERT(x, test_name, fmt, ...) \
-	if (!(x)) { \
-		FAIL (test_name, fmt, ## __VA_ARGS__); \
-	}
-
-
 #define nmtst_spawn_sync(working_directory, standard_out, standard_err, assert_exit_status, ...) \
 	__nmtst_spawn_sync (working_directory, standard_out, standard_err, assert_exit_status, ##__VA_ARGS__, NULL)
 inline static gint
@@ -1085,7 +1147,7 @@ nmtst_platform_ip6_address (const char *address, const char *peer_address, guint
 inline static NMPlatformIP6Address *
 nmtst_platform_ip6_address_full (const char *address, const char *peer_address, guint plen,
                                  int ifindex, NMIPConfigSource source, guint32 timestamp,
-                                 guint32 lifetime, guint32 preferred, guint flags)
+                                 guint32 lifetime, guint32 preferred, guint32 flags)
 {
 	NMPlatformIP6Address *addr = nmtst_platform_ip6_address (address, peer_address, plen);
 
@@ -1094,7 +1156,7 @@ nmtst_platform_ip6_address_full (const char *address, const char *peer_address, 
 	addr->timestamp = timestamp;
 	addr->lifetime = lifetime;
 	addr->preferred = preferred;
-	addr->flags = flags;
+	addr->n_ifa_flags = flags;
 
 	return addr;
 }
@@ -1261,7 +1323,69 @@ nmtst_ip6_config_clone (NMIP6Config *config)
 
 #endif
 
+#ifdef NM_SETTING_IP_CONFIG_H
+inline static void
+nmtst_setting_ip_config_add_address (NMSettingIPConfig *s_ip,
+                                     const char *address,
+                                     guint prefix)
+{
+	NMIPAddress *addr;
+	int family;
+
+	g_assert (s_ip);
+
+	if (nm_utils_ipaddr_valid (AF_INET, address))
+		family = AF_INET;
+	else if (nm_utils_ipaddr_valid (AF_INET6, address))
+		family = AF_INET6;
+	else
+		g_assert_not_reached ();
+
+	addr = nm_ip_address_new (family, address, prefix, NULL);
+	g_assert (addr);
+	g_assert (nm_setting_ip_config_add_address (s_ip, addr));
+	nm_ip_address_unref (addr);
+}
+
+inline static void
+nmtst_setting_ip_config_add_route (NMSettingIPConfig *s_ip,
+                                   const char *dest,
+                                   guint prefix,
+                                   const char *next_hop,
+                                   gint64 metric)
+{
+	NMIPRoute *route;
+	int family;
+
+	g_assert (s_ip);
+
+	if (nm_utils_ipaddr_valid (AF_INET, dest))
+		family = AF_INET;
+	else if (nm_utils_ipaddr_valid (AF_INET6, dest))
+		family = AF_INET6;
+	else
+		g_assert_not_reached ();
+
+	route = nm_ip_route_new (family, dest, prefix, next_hop, metric, NULL);
+	g_assert (route);
+	g_assert (nm_setting_ip_config_add_route (s_ip, route));
+	nm_ip_route_unref (route);
+}
+#endif /* NM_SETTING_IP_CONFIG_H */
+
 #if (defined(__NM_SIMPLE_CONNECTION_H__) && defined(__NM_SETTING_CONNECTION_H__)) || (defined(NM_CONNECTION_H))
+
+inline static NMConnection *
+nmtst_clone_connection (NMConnection *connection)
+{
+	g_assert (NM_IS_CONNECTION (connection));
+
+#if defined(__NM_SIMPLE_CONNECTION_H__)
+	return nm_simple_connection_new_clone (connection);
+#else
+	return nm_connection_duplicate (connection);
+#endif
+}
 
 inline static NMConnection *
 nmtst_create_minimal_connection (const char *id, const char *uuid, const char *type, NMSettingConnection **out_s_con)
@@ -1367,13 +1491,7 @@ _nmtst_connection_duplicate_and_normalize (NMConnection *connection, ...)
 	gboolean was_modified;
 	va_list args;
 
-	g_assert (NM_IS_CONNECTION (connection));
-
-#if defined(__NM_SIMPLE_CONNECTION_H__)
-	connection = nm_simple_connection_new_clone (connection);
-#else
-	connection = nm_connection_duplicate (connection);
-#endif
+	connection = nmtst_clone_connection (connection);
 
 	va_start (args, connection);
 	was_modified = _nmtst_connection_normalize_v (connection, args);
@@ -1444,28 +1562,33 @@ nmtst_assert_connection_equals (NMConnection *a, gboolean normalize_a, NMConnect
 }
 
 inline static void
+nmtst_assert_connection_verifies (NMConnection *con)
+{
+	/* assert that the connection does verify, it might be normaliziable or not */
+	GError *error = NULL;
+	gboolean success;
+
+	g_assert (NM_IS_CONNECTION (con));
+
+	success = nm_connection_verify (con, &error);
+	g_assert_no_error (error);
+	g_assert (success);
+}
+
+inline static void
 nmtst_assert_connection_verifies_without_normalization (NMConnection *con)
 {
 	/* assert that the connection verifies and does not need any normalization */
-
 	GError *error = NULL;
 	gboolean success;
 	gboolean was_modified = FALSE;
 	gs_unref_object NMConnection *clone = NULL;
 
-	g_assert (NM_IS_CONNECTION (con));
+	clone = nmtst_clone_connection (con);
 
-#if defined(__NM_SIMPLE_CONNECTION_H__)
-	clone = nm_simple_connection_new_clone (con);
-#else
-	clone = nm_connection_duplicate (con);
-#endif
+	nmtst_assert_connection_verifies (con);
 
-	success = nm_connection_verify (con, &error);
-	g_assert_no_error (error);
-	g_assert (success);
-
-	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	success = nm_connection_normalize (clone, NULL, &was_modified, &error);
 	g_assert_no_error (error);
 	g_assert (success);
 	nmtst_assert_connection_equals (con, FALSE, clone, FALSE);
@@ -1479,21 +1602,19 @@ nmtst_assert_connection_verifies_and_normalizable (NMConnection *con)
 	GError *error = NULL;
 	gboolean success;
 	gboolean was_modified = FALSE;
+	gs_unref_object NMConnection *clone = NULL;
 
-	g_assert (NM_IS_CONNECTION (con));
+	clone = nmtst_clone_connection (con);
 
-	success = nm_connection_verify (con, &error);
-	g_assert_no_error (error);
-	g_assert (success);
-	g_clear_error (&error);
+	nmtst_assert_connection_verifies (con);
 
-	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	success = nm_connection_normalize (clone, NULL, &was_modified, &error);
 	g_assert_no_error (error);
 	g_assert (success);
 	g_assert (was_modified);
 
 	/* again! */
-	nmtst_assert_connection_verifies_without_normalization (con);
+	nmtst_assert_connection_verifies_without_normalization (clone);
 }
 
 inline static void
@@ -1505,21 +1626,22 @@ nmtst_assert_connection_verifies_after_normalization (NMConnection *con,
 	GError *error = NULL;
 	gboolean success;
 	gboolean was_modified = FALSE;
+	gs_unref_object NMConnection *clone = NULL;
 
-	g_assert (NM_IS_CONNECTION (con));
+	clone = nmtst_clone_connection (con);
 
 	success = nm_connection_verify (con, &error);
 	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
 	g_assert (!success);
 	g_clear_error (&error);
 
-	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	success = nm_connection_normalize (clone, NULL, &was_modified, &error);
 	g_assert_no_error (error);
 	g_assert (success);
 	g_assert (was_modified);
 
 	/* again! */
-	nmtst_assert_connection_verifies_without_normalization (con);
+	nmtst_assert_connection_verifies_without_normalization (clone);
 }
 
 inline static void
@@ -1532,18 +1654,20 @@ nmtst_assert_connection_unnormalizable (NMConnection *con,
 	GError *error = NULL;
 	gboolean success;
 	gboolean was_modified = FALSE;
+	gs_unref_object NMConnection *clone = NULL;
 
-	g_assert (NM_IS_CONNECTION (con));
+	clone = nmtst_clone_connection (con);
 
 	success = nm_connection_verify (con, &error);
 	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
 	g_assert (!success);
 	g_clear_error (&error);
 
-	success = nm_connection_normalize (con, NULL, &was_modified, &error);
+	success = nm_connection_normalize (clone, NULL, &was_modified, &error);
 	nmtst_assert_error (error, expect_error_domain, expect_error_code, NULL);
 	g_assert (!success);
 	g_assert (!was_modified);
+	nmtst_assert_connection_equals (con, FALSE, clone, FALSE);
 	g_clear_error (&error);
 }
 
@@ -1584,7 +1708,7 @@ nmtst_assert_setting_verify_fails (NMSetting *setting,
 
 #ifdef __NM_UTILS_H__
 static inline void
-nmtst_assert_hwaddr_equals (gconstpointer hwaddr1, gssize hwaddr1_len, const char *expected, const char *loc)
+nmtst_assert_hwaddr_equals (gconstpointer hwaddr1, gssize hwaddr1_len, const char *expected, const char *file, int line)
 {
 	guint8 buf2[NM_UTILS_HWADDR_LEN_MAX];
 	gsize hwaddr2_len = 1;
@@ -1609,12 +1733,12 @@ nmtst_assert_hwaddr_equals (gconstpointer hwaddr1, gssize hwaddr1_len, const cha
 	if (success)
 		success = !memcmp (hwaddr1, buf2, hwaddr1_len);
 	if (!success) {
-		g_error ("assert: %s: hwaddr '%s' (%zd) expected, but got %s (%zd)",
-		         loc, expected, hwaddr2_len, nm_utils_hwaddr_ntoa (hwaddr1, hwaddr1_len), hwaddr1_len);
+		g_error ("assert: %s:%d: hwaddr '%s' (%zd) expected, but got %s (%zd)",
+		         file, line, expected, hwaddr2_len, nm_utils_hwaddr_ntoa (hwaddr1, hwaddr1_len), hwaddr1_len);
 	}
 }
 #define nmtst_assert_hwaddr_equals(hwaddr1, hwaddr1_len, expected) \
-    nmtst_assert_hwaddr_equals (hwaddr1, hwaddr1_len, expected, G_STRLOC)
+    nmtst_assert_hwaddr_equals (hwaddr1, hwaddr1_len, expected, __FILE__, __LINE__)
 #endif
 
 #if defined(__NM_SIMPLE_CONNECTION_H__) && defined(__NM_SETTING_CONNECTION_H__) && defined(__NM_KEYFILE_INTERNAL_H__)

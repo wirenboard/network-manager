@@ -689,7 +689,7 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS)
 
-@ENABLE_TESTS_TRUE@@WITH_VALGRIND_FALSE@LOG_COMPILER = $(srcdir)/libnm-glib-test-launch.sh
+@ENABLE_TESTS_TRUE@@WITH_VALGRIND_FALSE@LOG_COMPILER = $(top_srcdir)/tools/run-test-dbus-session.sh
 
 ####### NMClient and non-settings tests #######
 @ENABLE_TESTS_TRUE@test_nm_client_SOURCES = \
@@ -716,9 +716,6 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(GLIB_LIBS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_LIBS)
 
-
-###########################################
-EXTRA_DIST = libnm-glib-test-launch.sh
 all: all-am
 
 .SUFFIXES:
@@ -1202,6 +1199,8 @@ uninstall-am:
 
 
 @ENABLE_TESTS_TRUE@@WITH_VALGRIND_TRUE@@VALGRIND_RULES@ --launch-dbus
+
+###########################################
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
