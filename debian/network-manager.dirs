@@ -1,4 +1,5 @@
 var/lib/NetworkManager/
 etc/NetworkManager/conf.d/
+etc/NetworkManager/dnsmasq.d/
 etc/NetworkManager/system-connections/
 etc/NetworkManager/VPN/
