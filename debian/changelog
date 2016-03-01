@@ -8,6 +8,7 @@ network-manager (1.1.91-1) UNRELEASED; urgency=medium
   * Ship /etc/NetworkManager/dnsmasq-shared.d/ directory which can be used to
     extend the dnsmasq configuration for shared connections.
   * Fix bashism in tools/run-test-dbus-session.sh.
+  * Dump the contents of test-suite.log to stdout when the test suite fails.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Mar 2016 16:56:21 +0100
 
