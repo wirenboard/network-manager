@@ -20,13 +20,14 @@ for network.target.
  1 file changed, 2 deletions(-)
 
 diff --git a/data/NetworkManager.service.in b/data/NetworkManager.service.in
-index 6690f5a..10b3de9 100644
+index 7946ac1..a974432 100644
 --- a/data/NetworkManager.service.in
 +++ b/data/NetworkManager.service.in
-@@ -1,7 +1,5 @@
+@@ -1,8 +1,6 @@
  [Unit]
  Description=Network Manager
 -Wants=network.target
+ After=network-pre.target dbus.service
 -Before=network.target @DISTRO_NETWORK_SERVICE@
  
  [Service]

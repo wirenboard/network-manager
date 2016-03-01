@@ -18,7 +18,7 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 6da6415..b550ab1 100644
+index 0f270ce..46da9b8 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -467,8 +467,9 @@ fi
@@ -33,10 +33,10 @@ index 6da6415..b550ab1 100644
          ;;
      consolekit)
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 7e85831..ca35e1d 100644
+index eea646a..603811b 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -437,6 +437,7 @@ AM_CPPFLAGS += \
+@@ -475,6 +475,7 @@ AM_CPPFLAGS += \
  	$(SELINUX_CFLAGS) \
  	$(LIBAUDIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
@@ -44,7 +44,7 @@ index 7e85831..ca35e1d 100644
  	$(SYSTEMD_JOURNAL_CFLAGS) \
  	$(SYSTEMD_NM_CFLAGS_PATHS) \
  	\
-@@ -470,6 +471,7 @@ libNetworkManager_la_LIBADD = \
+@@ -508,6 +509,7 @@ libNetworkManager_la_LIBADD = \
  	$(GUDEV_LIBS) \
  	$(LIBNL_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \
@@ -53,7 +53,7 @@ index 7e85831..ca35e1d 100644
  	$(LIBNDP_LIBS) \
  	$(LIBDL) \
 diff --git a/src/nm-sleep-monitor-systemd.c b/src/nm-sleep-monitor-systemd.c
-index 12db56b..f1baa4e 100644
+index 064a703..d42c0fe 100644
 --- a/src/nm-sleep-monitor-systemd.c
 +++ b/src/nm-sleep-monitor-systemd.c
 @@ -23,6 +23,7 @@
@@ -62,9 +62,9 @@ index 12db56b..f1baa4e 100644
  #include <gio/gunixfdlist.h>
 +#include <systemd/sd-daemon.h>
  
- #include "nm-default.h"
  #include "nm-core-internal.h"
-@@ -204,6 +205,10 @@ on_proxy_acquired (GObject *object,
+ #include "NetworkManagerUtils.h"
+@@ -203,6 +204,10 @@ on_proxy_acquired (GObject *object,
  static void
  nm_sleep_monitor_init (NMSleepMonitor *self)
  {

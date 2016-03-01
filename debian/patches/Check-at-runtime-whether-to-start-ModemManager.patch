@@ -13,7 +13,7 @@ Closes: #770871
  1 file changed, 5 insertions(+), 10 deletions(-)
 
 diff --git a/src/devices/wwan/nm-modem-manager.c b/src/devices/wwan/nm-modem-manager.c
-index c28d86a..35d8980 100644
+index 79082c4..937f731 100644
 --- a/src/devices/wwan/nm-modem-manager.c
 +++ b/src/devices/wwan/nm-modem-manager.c
 @@ -25,6 +25,7 @@
@@ -23,8 +23,8 @@ index c28d86a..35d8980 100644
 +#include <systemd/sd-daemon.h>
  
  #include "nm-modem-manager.h"
- #include "nm-default.h"
-@@ -200,10 +201,9 @@ modem_manager_name_owner_changed (MMManager *modem_manager,
+ #include "nm-dbus-compat.h"
+@@ -199,10 +200,9 @@ modem_manager_name_owner_changed (MMManager *modem_manager,
  	if (!name_owner) {
  		nm_log_info (LOGD_MB, "ModemManager disappeared from bus");
  
@@ -37,7 +37,7 @@ index c28d86a..35d8980 100644
  
  		return;
  	}
-@@ -224,8 +224,6 @@ modem_manager_name_owner_changed (MMManager *modem_manager,
+@@ -223,8 +223,6 @@ modem_manager_name_owner_changed (MMManager *modem_manager,
  	 */
  }
  
@@ -46,7 +46,7 @@ index c28d86a..35d8980 100644
  static void
  modem_manager_poke_cb (GDBusConnection *connection,
                         GAsyncResult *res,
-@@ -274,8 +272,6 @@ modem_manager_poke (NMModemManager *self)
+@@ -273,8 +271,6 @@ modem_manager_poke (NMModemManager *self)
  	                        g_object_ref (self)); /* user_data */
  }
  
@@ -55,7 +55,7 @@ index c28d86a..35d8980 100644
  static void
  modem_manager_check_name_owner (NMModemManager *self)
  {
-@@ -289,10 +285,9 @@ modem_manager_check_name_owner (NMModemManager *self)
+@@ -288,10 +284,9 @@ modem_manager_check_name_owner (NMModemManager *self)
  		return;
  	}
  

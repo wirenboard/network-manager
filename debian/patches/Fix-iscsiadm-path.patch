@@ -9,10 +9,10 @@ The open-scsi package in Debian installs the iscisadm binary as
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/settings/plugins/ibft/plugin.c b/src/settings/plugins/ibft/plugin.c
-index 555725d..cc1d32e 100644
+index 6f9b8c8..ce89599 100644
 --- a/src/settings/plugins/ibft/plugin.c
 +++ b/src/settings/plugins/ibft/plugin.c
-@@ -61,7 +61,7 @@ read_connections (SettingsPluginIbft *self)
+@@ -60,7 +60,7 @@ read_connections (SettingsPluginIbft *self)
  	GError *error = NULL;
  	NMIbftConnection *connection;
  
