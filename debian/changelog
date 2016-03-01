@@ -1,3 +1,9 @@
+network-manager (1.1.91-1) UNRELEASED; urgency=medium
+
+  * New upstream release (1.2 beta2).
+
+ -- Michael Biebl <biebl@debian.org>  Tue, 01 Mar 2016 16:56:21 +0100
+
 network-manager (1.1.90-6) unstable; urgency=medium
 
   * Fix NMSettingVxlan ageing and limit max values to be G_MAXUINT32.
