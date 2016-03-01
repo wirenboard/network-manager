@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #pragma once
 
 /***
@@ -20,8 +18,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
-
-#include "nm-sd-adapt.h"
 
 #include <netinet/ip.h>
 #include <netinet/udp.h>
@@ -105,48 +101,6 @@ enum {
 enum {
         DHCP_OVERLOAD_FILE                      = 1,
         DHCP_OVERLOAD_SNAME                     = 2,
-};
-
-enum {
-        DHCP_OPTION_PAD                         = 0,
-        DHCP_OPTION_SUBNET_MASK                 = 1,
-        DHCP_OPTION_TIME_OFFSET                 = 2,
-        DHCP_OPTION_ROUTER                      = 3,
-        DHCP_OPTION_DOMAIN_NAME_SERVER          = 6,
-        DHCP_OPTION_HOST_NAME                   = 12,
-        DHCP_OPTION_BOOT_FILE_SIZE              = 13,
-        DHCP_OPTION_DOMAIN_NAME                 = 15,
-        DHCP_OPTION_ROOT_PATH                   = 17,
-        DHCP_OPTION_ENABLE_IP_FORWARDING        = 19,
-        DHCP_OPTION_ENABLE_IP_FORWARDING_NL     = 20,
-        DHCP_OPTION_POLICY_FILTER               = 21,
-        DHCP_OPTION_INTERFACE_MDR               = 22,
-        DHCP_OPTION_INTERFACE_TTL               = 23,
-        DHCP_OPTION_INTERFACE_MTU_AGING_TIMEOUT = 24,
-        DHCP_OPTION_INTERFACE_MTU               = 26,
-        DHCP_OPTION_BROADCAST                   = 28,
-        DHCP_OPTION_STATIC_ROUTE                = 33,
-        DHCP_OPTION_NTP_SERVER                  = 42,
-        DHCP_OPTION_VENDOR_SPECIFIC             = 43,
-        DHCP_OPTION_REQUESTED_IP_ADDRESS        = 50,
-        DHCP_OPTION_IP_ADDRESS_LEASE_TIME       = 51,
-        DHCP_OPTION_OVERLOAD                    = 52,
-        DHCP_OPTION_MESSAGE_TYPE                = 53,
-        DHCP_OPTION_SERVER_IDENTIFIER           = 54,
-        DHCP_OPTION_PARAMETER_REQUEST_LIST      = 55,
-        DHCP_OPTION_ERROR_MESSAGE               = 56,
-        DHCP_OPTION_MAXIMUM_MESSAGE_SIZE        = 57,
-        DHCP_OPTION_RENEWAL_T1_TIME             = 58,
-        DHCP_OPTION_REBINDING_T2_TIME           = 59,
-        DHCP_OPTION_VENDOR_CLASS_IDENTIFIER     = 60,
-        DHCP_OPTION_CLIENT_IDENTIFIER           = 61,
-        DHCP_OPTION_FQDN                        = 81,
-        DHCP_OPTION_NEW_POSIX_TIMEZONE          = 100,
-        DHCP_OPTION_NEW_TZDB_TIMEZONE           = 101,
-        DHCP_OPTION_CLASSLESS_STATIC_ROUTE      = 121,
-        DHCP_OPTION_PRIVATE_BASE                = 224,
-        DHCP_OPTION_PRIVATE_LAST                = 254,
-        DHCP_OPTION_END                         = 255,
 };
 
 #define DHCP_MAX_FQDN_LENGTH 255

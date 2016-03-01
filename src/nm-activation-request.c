@@ -19,16 +19,14 @@
  * Copyright (C) 2007 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-
 #include "nm-activation-request.h"
-#include "nm-default.h"
 #include "nm-setting-wireless-security.h"
 #include "nm-setting-8021x.h"
 #include "nm-device.h"
@@ -346,7 +344,7 @@ nm_act_request_add_share_rule (NMActRequest *req,
 	rule = g_malloc0 (sizeof (ShareRule));
 	rule->table = g_strdup (table);
 	rule->rule = g_strdup (table_rule);
-	priv->share_rules = g_slist_append (priv->share_rules, rule);
+	priv->share_rules = g_slist_prepend (priv->share_rules, rule);
 }
 
 /********************************************************************/

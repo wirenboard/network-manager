@@ -17,17 +17,15 @@
  * Copyright 2010 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "settings.h"
 
 #include <stdlib.h>
 #include <arpa/inet.h>
 
-#include "nm-default.h"
 #include "utils.h"
 #include "common.h"
-#include "settings.h"
-#include "nm-macros-internal.h"
-#include "gsystem-local-alloc.h"
 
 /* Forward declarations */
 static char *wep_key_type_to_string (NMWepKeyType type);
@@ -80,7 +78,6 @@ NmcOutputField nmc_fields_setting_connection[] = {
                                               NM_SETTING_CONNECTION_GATEWAY_PING_TIMEOUT","\
                                               NM_SETTING_CONNECTION_METERED","\
                                               NM_SETTING_CONNECTION_LLDP
-#define NMC_FIELDS_SETTING_CONNECTION_COMMON  NMC_FIELDS_SETTING_CONNECTION_ALL
 
 /* Available fields for NM_SETTING_WIRED_SETTING_NAME */
 NmcOutputField nmc_fields_setting_wired[] = {
@@ -114,7 +111,6 @@ NmcOutputField nmc_fields_setting_wired[] = {
                                          NM_SETTING_WIRED_S390_OPTIONS","\
                                          NM_SETTING_WIRED_WAKE_ON_LAN","\
                                          NM_SETTING_WIRED_WAKE_ON_LAN_PASSWORD
-#define NMC_FIELDS_SETTING_WIRED_COMMON  NMC_FIELDS_SETTING_WIRED_ALL
 
 /* Available fields for NM_SETTING_802_1X_SETTING_NAME */
 NmcOutputField nmc_fields_setting_8021X[] = {
@@ -186,7 +182,6 @@ NmcOutputField nmc_fields_setting_8021X[] = {
                                           NM_SETTING_802_1X_PIN","\
                                           NM_SETTING_802_1X_PIN_FLAGS","\
                                           NM_SETTING_802_1X_SYSTEM_CA_CERTS
-#define NMC_FIELDS_SETTING_802_1X_COMMON  NMC_FIELDS_SETTING_802_1X_ALL
 
 /* Available fields for NM_SETTING_WIRELESS_SETTING_NAME */
 NmcOutputField nmc_fields_setting_wireless[] = {
@@ -224,7 +219,6 @@ NmcOutputField nmc_fields_setting_wireless[] = {
                                             NM_SETTING_WIRELESS_SEEN_BSSIDS","\
                                             NM_SETTING_WIRELESS_HIDDEN"," \
                                             NM_SETTING_WIRELESS_POWERSAVE
-#define NMC_FIELDS_SETTING_WIRELESS_COMMON  NMC_FIELDS_SETTING_WIRELESS_ALL
 
 /* Available fields for NM_SETTING_WIRELESS_SECURITY_SETTING_NAME */
 NmcOutputField nmc_fields_setting_wireless_security[] = {
@@ -266,7 +260,6 @@ NmcOutputField nmc_fields_setting_wireless_security[] = {
                                                      NM_SETTING_WIRELESS_SECURITY_PSK_FLAGS","\
                                                      NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD","\
                                                      NM_SETTING_WIRELESS_SECURITY_LEAP_PASSWORD_FLAGS
-#define NMC_FIELDS_SETTING_WIRELESS_SECURITY_COMMON  NMC_FIELDS_SETTING_WIRELESS_SECURITY_ALL
 
 /* Available fields for NM_SETTING_IP4_CONFIG_SETTING_NAME */
 NmcOutputField nmc_fields_setting_ip4_config[] = {
@@ -282,12 +275,13 @@ NmcOutputField nmc_fields_setting_ip4_config[] = {
 	SETTING_FIELD (NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES),  /* 9 */
 	SETTING_FIELD (NM_SETTING_IP_CONFIG_IGNORE_AUTO_DNS),     /* 10 */
 	SETTING_FIELD (NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID),     /* 11 */
-	SETTING_FIELD (NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT),       /* 12 */
+	SETTING_FIELD (NM_SETTING_IP_CONFIG_DHCP_TIMEOUT),        /* 12 */
 	SETTING_FIELD (NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME),  /* 13 */
 	SETTING_FIELD (NM_SETTING_IP_CONFIG_DHCP_HOSTNAME),       /* 14 */
 	SETTING_FIELD (NM_SETTING_IP4_CONFIG_DHCP_FQDN),          /* 15 */
 	SETTING_FIELD (NM_SETTING_IP_CONFIG_NEVER_DEFAULT),       /* 16 */
 	SETTING_FIELD (NM_SETTING_IP_CONFIG_MAY_FAIL),            /* 17 */
+	SETTING_FIELD (NM_SETTING_IP_CONFIG_DAD_TIMEOUT),         /* 18 */
 	{NULL, NULL, 0, NULL, FALSE, FALSE, 0}
 };
 #define NMC_FIELDS_SETTING_IP4_CONFIG_ALL     "name"","\
@@ -302,13 +296,13 @@ NmcOutputField nmc_fields_setting_ip4_config[] = {
                                               NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES","\
                                               NM_SETTING_IP_CONFIG_IGNORE_AUTO_DNS","\
                                               NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID","\
-                                              NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT","\
+                                              NM_SETTING_IP_CONFIG_DHCP_TIMEOUT","\
                                               NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME","\
                                               NM_SETTING_IP_CONFIG_DHCP_HOSTNAME","\
                                               NM_SETTING_IP4_CONFIG_DHCP_FQDN","\
                                               NM_SETTING_IP_CONFIG_NEVER_DEFAULT","\
-                                              NM_SETTING_IP_CONFIG_MAY_FAIL
-#define NMC_FIELDS_SETTING_IP4_CONFIG_COMMON  NMC_FIELDS_SETTING_IP4_CONFIG_ALL
+                                              NM_SETTING_IP_CONFIG_MAY_FAIL","\
+                                              NM_SETTING_IP_CONFIG_DAD_TIMEOUT
 
 /* Available fields for NM_SETTING_IP6_CONFIG_SETTING_NAME */
 NmcOutputField nmc_fields_setting_ip6_config[] = {
@@ -348,7 +342,6 @@ NmcOutputField nmc_fields_setting_ip6_config[] = {
                                               NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE","\
                                               NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME","\
                                               NM_SETTING_IP_CONFIG_DHCP_HOSTNAME
-#define NMC_FIELDS_SETTING_IP6_CONFIG_COMMON  NMC_FIELDS_SETTING_IP4_CONFIG_ALL
 
 /* Available fields for NM_SETTING_SERIAL_SETTING_NAME */
 NmcOutputField nmc_fields_setting_serial[] = {
@@ -366,7 +359,6 @@ NmcOutputField nmc_fields_setting_serial[] = {
                                           NM_SETTING_SERIAL_PARITY","\
                                           NM_SETTING_SERIAL_STOPBITS","\
                                           NM_SETTING_SERIAL_SEND_DELAY
-#define NMC_FIELDS_SETTING_SERIAL_COMMON  NMC_FIELDS_SETTING_SERIAL_ALL
 
 /* Available fields for NM_SETTING_PPP_SETTING_NAME */
 NmcOutputField nmc_fields_setting_ppp[] = {
@@ -410,7 +402,6 @@ NmcOutputField nmc_fields_setting_ppp[] = {
                                        NM_SETTING_PPP_MTU","\
                                        NM_SETTING_PPP_LCP_ECHO_FAILURE","\
                                        NM_SETTING_PPP_LCP_ECHO_INTERVAL
-#define NMC_FIELDS_SETTING_PPP_COMMON  NMC_FIELDS_SETTING_PPP_ALL
 
 /* Available fields for NM_SETTING_PPPOE_SETTING_NAME */
 NmcOutputField nmc_fields_setting_pppoe[] = {
@@ -426,7 +417,6 @@ NmcOutputField nmc_fields_setting_pppoe[] = {
                                          NM_SETTING_PPPOE_USERNAME","\
                                          NM_SETTING_PPPOE_PASSWORD","\
                                          NM_SETTING_PPPOE_PASSWORD_FLAGS
-#define NMC_FIELDS_SETTING_PPPOE_COMMON  NMC_FIELDS_SETTING_PPPOE_ALL
 
 /* Available fields for NM_SETTING_ADSL_SETTING_NAME */
 NmcOutputField nmc_fields_setting_adsl[] = {
@@ -448,7 +438,6 @@ NmcOutputField nmc_fields_setting_adsl[] = {
                                         NM_SETTING_ADSL_ENCAPSULATION","\
                                         NM_SETTING_ADSL_VPI","\
                                         NM_SETTING_ADSL_VCI
-#define NMC_FIELDS_SETTING_ADSL_COMMON  NMC_FIELDS_SETTING_ADSL_ALL
 
 /* Available fields for NM_SETTING_GSM_SETTING_NAME */
 NmcOutputField nmc_fields_setting_gsm[] = {
@@ -480,7 +469,6 @@ NmcOutputField nmc_fields_setting_gsm[] = {
                                        NM_SETTING_GSM_DEVICE_ID","\
                                        NM_SETTING_GSM_SIM_ID","\
                                        NM_SETTING_GSM_SIM_OPERATOR_ID
-#define NMC_FIELDS_SETTING_GSM_COMMON  NMC_FIELDS_SETTING_GSM_ALL
 
 /* Available fields for NM_SETTING_CDMA_SETTING_NAME */
 NmcOutputField nmc_fields_setting_cdma[] = {
@@ -496,7 +484,6 @@ NmcOutputField nmc_fields_setting_cdma[] = {
                                         NM_SETTING_CDMA_USERNAME","\
                                         NM_SETTING_CDMA_PASSWORD","\
                                         NM_SETTING_CDMA_PASSWORD_FLAGS
-#define NMC_FIELDS_SETTING_CDMA_COMMON  NMC_FIELDS_SETTING_CDMA_ALL
 
 /* Available fields for NM_SETTING_BLUETOOTH_SETTING_NAME */
 NmcOutputField nmc_fields_setting_bluetooth[] = {
@@ -508,7 +495,6 @@ NmcOutputField nmc_fields_setting_bluetooth[] = {
 #define NMC_FIELDS_SETTING_BLUETOOTH_ALL     "name"","\
                                              NM_SETTING_BLUETOOTH_BDADDR","\
                                              NM_SETTING_BLUETOOTH_TYPE
-#define NMC_FIELDS_SETTING_BLUETOOTH_COMMON  NMC_FIELDS_SETTING_BLUETOOTH_ALL
 
 /* Available fields for NM_SETTING_OLPC_MESH_SETTING_NAME */
 NmcOutputField nmc_fields_setting_olpc_mesh[] = {
@@ -522,7 +508,6 @@ NmcOutputField nmc_fields_setting_olpc_mesh[] = {
                                              NM_SETTING_OLPC_MESH_SSID","\
                                              NM_SETTING_OLPC_MESH_CHANNEL","\
                                              NM_SETTING_OLPC_MESH_DHCP_ANYCAST_ADDRESS
-#define NMC_FIELDS_SETTING_OLPC_MESH_COMMON  NMC_FIELDS_SETTING_OLPC_MESH_ALL
 
 /* Available fields for NM_SETTING_VPN_SETTING_NAME */
 NmcOutputField nmc_fields_setting_vpn[] = {
@@ -542,7 +527,6 @@ NmcOutputField nmc_fields_setting_vpn[] = {
                                        NM_SETTING_VPN_SECRETS","\
                                        NM_SETTING_VPN_PERSISTENT","\
                                        NM_SETTING_VPN_TIMEOUT
-#define NMC_FIELDS_SETTING_VPN_COMMON  NMC_FIELDS_SETTING_VPN_ALL
 
 /* Available fields for NM_SETTING_WIMAX_SETTING_NAME */
 NmcOutputField nmc_fields_setting_wimax[] = {
@@ -554,7 +538,6 @@ NmcOutputField nmc_fields_setting_wimax[] = {
 #define NMC_FIELDS_SETTING_WIMAX_ALL     "name"","\
                                          NM_SETTING_WIMAX_MAC_ADDRESS","\
                                          NM_SETTING_WIMAX_NETWORK_NAME
-#define NMC_FIELDS_SETTING_WIMAX_COMMON  NMC_FIELDS_SETTING_WIMAX_ALL
 
 /* Available fields for NM_SETTING_INFINIBAND_SETTING_NAME */
 NmcOutputField nmc_fields_setting_infiniband[] = {
@@ -572,7 +555,6 @@ NmcOutputField nmc_fields_setting_infiniband[] = {
                                               NM_SETTING_INFINIBAND_TRANSPORT_MODE"," \
                                               NM_SETTING_INFINIBAND_P_KEY"," \
                                               NM_SETTING_INFINIBAND_PARENT
-#define NMC_FIELDS_SETTING_INFINIBAND_COMMON  NMC_FIELDS_SETTING_INFINIBAND_ALL \
 
 /* Available fields for NM_SETTING_BOND_SETTING_NAME */
 NmcOutputField nmc_fields_setting_bond[] = {
@@ -582,7 +564,6 @@ NmcOutputField nmc_fields_setting_bond[] = {
 };
 #define NMC_FIELDS_SETTING_BOND_ALL     "name"","\
                                         NM_SETTING_BOND_OPTIONS
-#define NMC_FIELDS_SETTING_BOND_COMMON  NMC_FIELDS_SETTING_BOND_ALL
 
 /* Available fields for NM_SETTING_VLAN_SETTING_NAME */
 NmcOutputField nmc_fields_setting_vlan[] = {
@@ -600,7 +581,6 @@ NmcOutputField nmc_fields_setting_vlan[] = {
                                         NM_SETTING_VLAN_FLAGS","\
                                         NM_SETTING_VLAN_INGRESS_PRIORITY_MAP","\
                                         NM_SETTING_VLAN_EGRESS_PRIORITY_MAP
-#define NMC_FIELDS_SETTING_VLAN_COMMON  NMC_FIELDS_SETTING_VLAN_ALL
 
 /* Available fields for NM_SETTING_BRIDGE_SETTING_NAME */
 NmcOutputField nmc_fields_setting_bridge[] = {
@@ -624,7 +604,6 @@ NmcOutputField nmc_fields_setting_bridge[] = {
                                          NM_SETTING_BRIDGE_MAX_AGE","\
                                          NM_SETTING_BRIDGE_AGEING_TIME","\
                                          NM_SETTING_BRIDGE_MULTICAST_SNOOPING
-#define NMC_FIELDS_SETTING_BRIDGE_COMMON NMC_FIELDS_SETTING_BRIDGE_ALL
 
 /* Available fields for NM_SETTING_BRIDGE_PORT_SETTING_NAME */
 NmcOutputField nmc_fields_setting_bridge_port[] = {
@@ -638,7 +617,6 @@ NmcOutputField nmc_fields_setting_bridge_port[] = {
                                               NM_SETTING_BRIDGE_PORT_PRIORITY","\
                                               NM_SETTING_BRIDGE_PORT_PATH_COST","\
                                               NM_SETTING_BRIDGE_PORT_HAIRPIN_MODE
-#define NMC_FIELDS_SETTING_BRIDGE_PORT_COMMON NMC_FIELDS_SETTING_BRIDGE_PORT_ALL
 
 /* Available fields for NM_SETTING_TEAM_SETTING_NAME */
 NmcOutputField nmc_fields_setting_team[] = {
@@ -648,7 +626,6 @@ NmcOutputField nmc_fields_setting_team[] = {
 };
 #define NMC_FIELDS_SETTING_TEAM_ALL     "name"","\
                                         NM_SETTING_TEAM_CONFIG
-#define NMC_FIELDS_SETTING_TEAM_COMMON  NMC_FIELDS_SETTING_TEAM_ALL
 
 /* Available fields for NM_SETTING_TEAM_PORT_SETTING_NAME */
 NmcOutputField nmc_fields_setting_team_port[] = {
@@ -658,7 +635,6 @@ NmcOutputField nmc_fields_setting_team_port[] = {
 };
 #define NMC_FIELDS_SETTING_TEAM_PORT_ALL     "name"","\
                                              NM_SETTING_TEAM_PORT_CONFIG
-#define NMC_FIELDS_SETTING_TEAM_PORT_COMMON  NMC_FIELDS_SETTING_TEAM_PORT_ALL
 
 /* Available fields for NM_SETTING_DCB_SETTING_NAME */
 NmcOutputField nmc_fields_setting_dcb[] = {
@@ -696,7 +672,6 @@ NmcOutputField nmc_fields_setting_dcb[] = {
                                        NM_SETTING_DCB_PRIORITY_BANDWIDTH","\
                                        NM_SETTING_DCB_PRIORITY_STRICT_BANDWIDTH","\
                                        NM_SETTING_DCB_PRIORITY_TRAFFIC_CLASS
-#define NMC_FIELDS_SETTING_DCB_COMMON  NMC_FIELDS_SETTING_DCB_ALL
 
 /* Available fields for NM_SETTING_TUN_SETTING_NAME */
 NmcOutputField nmc_fields_setting_tun[] = {
@@ -716,7 +691,6 @@ NmcOutputField nmc_fields_setting_tun[] = {
                                        NM_SETTING_TUN_PI","\
                                        NM_SETTING_TUN_VNET_HDR","\
                                        NM_SETTING_TUN_MULTI_QUEUE
-#define NMC_FIELDS_SETTING_TUN_COMMON  NMC_FIELDS_SETTING_TUN_ALL
 
 /* Available fields for NM_SETTING_IP_TUNNEL_SETTING_NAME */
 NmcOutputField nmc_fields_setting_ip_tunnel[] = {
@@ -748,7 +722,6 @@ NmcOutputField nmc_fields_setting_ip_tunnel[] = {
                                               NM_SETTING_IP_TUNNEL_ENCAPSULATION_LIMIT","\
                                               NM_SETTING_IP_TUNNEL_FLOW_LABEL","\
                                               NM_SETTING_IP_TUNNEL_MTU
-#define NMC_FIELDS_SETTING_IP_TUNNEL_COMMON   NMC_FIELDS_SETTING_IP_TUNNEL_ALL
 
 /* Available fields for NM_SETTING_MACVLAN_SETTING_NAME */
 NmcOutputField nmc_fields_setting_macvlan[] = {
@@ -764,7 +737,6 @@ NmcOutputField nmc_fields_setting_macvlan[] = {
                                            NM_SETTING_MACVLAN_MODE","\
                                            NM_SETTING_MACVLAN_PROMISCUOUS","\
                                            NM_SETTING_MACVLAN_TAP
-#define NMC_FIELDS_SETTING_MACVLAN_COMMON  NMC_FIELDS_SETTING_MACVLAN_ALL
 
 /* Available fields for NM_SETTING_VXLAN_SETTING_NAME */
 NmcOutputField nmc_fields_setting_vxlan[] = {
@@ -804,7 +776,6 @@ NmcOutputField nmc_fields_setting_vxlan[] = {
                                              NM_SETTING_VXLAN_RSC","\
                                              NM_SETTING_VXLAN_L2_MISS","\
                                              NM_SETTING_VXLAN_L3_MISS
-#define NMC_FIELDS_SETTING_VXLAN_COMMON      NMC_FIELDS_SETTING_VXLAN_ALL
 
 /*----------------------------------------------------------------------------*/
 static char *
@@ -1418,7 +1389,7 @@ nmc_property_ip_tunnel_allowed_mode (NMSetting *setting, const char *prop)
 
 	if (!words)
 		words = nm_utils_enum_get_values (nm_ip_tunnel_mode_get_type (),
-		                                  NM_IP_TUNNEL_MODE_UKNOWN + 1,
+		                                  NM_IP_TUNNEL_MODE_UNKNOWN + 1,
 		                                  G_MAXINT);
 	return words;
 }
@@ -1544,12 +1515,32 @@ DEFINE_GETTER (nmc_property_ipv4_get_route_metric, NM_SETTING_IP_CONFIG_ROUTE_ME
 DEFINE_GETTER (nmc_property_ipv4_get_ignore_auto_routes, NM_SETTING_IP_CONFIG_IGNORE_AUTO_ROUTES)
 DEFINE_GETTER (nmc_property_ipv4_get_ignore_auto_dns, NM_SETTING_IP_CONFIG_IGNORE_AUTO_DNS)
 DEFINE_GETTER (nmc_property_ipv4_get_dhcp_client_id, NM_SETTING_IP4_CONFIG_DHCP_CLIENT_ID)
-DEFINE_GETTER (nmc_property_ipv4_get_dhcp_timeout, NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT)
+DEFINE_GETTER (nmc_property_ipv4_get_dhcp_timeout, NM_SETTING_IP_CONFIG_DHCP_TIMEOUT)
 DEFINE_GETTER (nmc_property_ipv4_get_dhcp_send_hostname, NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME)
 DEFINE_GETTER (nmc_property_ipv4_get_dhcp_hostname, NM_SETTING_IP_CONFIG_DHCP_HOSTNAME)
 DEFINE_GETTER (nmc_property_ipv4_get_dhcp_fqdn, NM_SETTING_IP4_CONFIG_DHCP_FQDN)
 DEFINE_GETTER (nmc_property_ipv4_get_never_default, NM_SETTING_IP_CONFIG_NEVER_DEFAULT)
 DEFINE_GETTER (nmc_property_ipv4_get_may_fail, NM_SETTING_IP_CONFIG_MAY_FAIL)
+
+static char *
+nmc_property_ipv4_get_dad_timeout (NMSetting *setting, NmcPropertyGetType get_type)
+{
+	NMSettingIPConfig *s_ip = NM_SETTING_IP_CONFIG (setting);
+	gint dad_timeout;
+
+	dad_timeout = nm_setting_ip_config_get_dad_timeout (s_ip);
+	if (get_type == NMC_PROPERTY_GET_PARSABLE)
+		return g_strdup_printf ("%d", dad_timeout);
+
+	switch (dad_timeout) {
+	case -1:
+		return g_strdup_printf (_("%d (default)"), dad_timeout);
+	case 0:
+		return g_strdup_printf (_("%d (off)"), dad_timeout);
+	default:
+		return g_strdup_printf ("%d", dad_timeout);
+	}
+}
 
 /* --- NM_SETTING_IP6_CONFIG_SETTING_NAME property get functions --- */
 DEFINE_GETTER (nmc_property_ipv6_get_method, NM_SETTING_IP_CONFIG_METHOD)
@@ -1803,7 +1794,7 @@ nmc_property_ip_tunnel_set_mode (NMSetting *setting, const char *prop,
 		gs_free char *values_str = NULL;
 
 		values = nm_utils_enum_get_values (nm_ip_tunnel_mode_get_type (),
-		                                   NM_IP_TUNNEL_MODE_UKNOWN + 1,
+		                                   NM_IP_TUNNEL_MODE_UNKNOWN + 1,
 		                                   G_MAXINT);
 		values_str = g_strjoinv (",", (char **) values);
 		g_set_error (error, 1, 0, _("invalid mode '%s', use one of %s"),
@@ -1862,14 +1853,19 @@ static char *
 nmc_property_wireless_get_powersave (NMSetting *setting, NmcPropertyGetType get_type)
 {
 	NMSettingWireless *s_wireless = NM_SETTING_WIRELESS (setting);
-	guint powersave = nm_setting_wireless_get_powersave (s_wireless);
+	NMSettingWirelessPowersave powersave;
+	gs_free char *str = NULL;
+	char *ret;
 
-	if (powersave == 0)
-		return g_strdup (_("no"));
-	else if (powersave == 1)
-		return g_strdup (_("yes"));
-	else
-		return g_strdup_printf (_("yes (%u)"), powersave);
+	powersave = nm_setting_wireless_get_powersave (s_wireless);
+	str = nm_utils_enum_to_str (nm_setting_wireless_powersave_get_type (), powersave);
+
+	if (get_type == NMC_PROPERTY_GET_PARSABLE) {
+		ret = str;
+		str = NULL;
+		return ret;
+	} else
+		return g_strdup_printf ("%s (%u)", str, powersave);
 }
 
 static char *
@@ -3306,8 +3302,8 @@ nmc_property_connection_set_lldp (NMSetting *setting, const char *prop,
 		char *p = val_strip; \
 		gboolean success; \
 		\
-		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
-			p += STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH); \
+		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
+			p += NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH); \
 		\
 		success = set_func (NM_SETTING_802_1X (setting), \
 		                    p, \
@@ -3328,8 +3324,8 @@ nmc_property_connection_set_lldp (NMSetting *setting, const char *prop,
 		const char *path, *password; \
 		gboolean success; \
 		\
-		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
-			p += STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH); \
+		if (strncmp (val_strip, NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH, NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH)) == 0) \
+			p += NM_STRLEN (NM_SETTING_802_1X_CERT_SCHEME_PREFIX_PATH); \
 		\
 		strv = nmc_strsplit_set (p, " \t,", 2); \
 		path = strv[0]; \
@@ -4926,20 +4922,33 @@ DEFINE_REMOVER_INDEX_OR_VALUE (nmc_property_wireless_remove_mac_address_blacklis
 static gboolean
 nmc_property_wireless_set_powersave (NMSetting *setting, const char *prop, const char *val, GError **error)
 {
-	unsigned long powersave_int;
-	gboolean val_bool = FALSE;
+	NMSettingWirelessPowersave powersave;
+	gs_free const char **options = NULL;
+	gs_free char *options_str = NULL;
+	long int t;
+	gboolean ret;
 
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	if (!nmc_string_to_uint (val, TRUE, 0, G_MAXUINT32, &powersave_int)) {
-		if (!nmc_string_to_bool (val, &val_bool, NULL)) {
-			g_set_error (error, 1, 0, _("'%s' is not a valid powersave value"), val);
+	if (nmc_string_to_int_base (val, 0, TRUE,
+	                            NM_SETTING_WIRELESS_POWERSAVE_DEFAULT,
+	                            NM_SETTING_WIRELESS_POWERSAVE_LAST,
+	                            &t))
+		powersave = (NMSettingWirelessPowersave) t;
+	else {
+		ret = nm_utils_enum_from_str (nm_setting_wireless_powersave_get_type (),
+		                              val,
+		                              (int *) &powersave,
+		                              NULL);
+		if (!ret) {
+			options = nm_utils_enum_get_values (nm_setting_wireless_powersave_get_type (),
+			                                    NM_SETTING_WIRELESS_POWERSAVE_DEFAULT,
+			                                    NM_SETTING_WIRELESS_POWERSAVE_LAST);
+			options_str = g_strjoinv (",", (char **) options);
+			g_set_error (error, 1, 0, _("invalid option '%s', use one of [%s]"), val, options_str);
 			return FALSE;
 		}
-		powersave_int = val_bool ? 1 : 0;
 	}
 
-	g_object_set (setting, prop, (guint32) powersave_int, NULL);
+	g_object_set (setting, prop, (guint) powersave, NULL);
 	return TRUE;
 }
 
@@ -6450,9 +6459,9 @@ nmc_properties_init (void)
 	                    NULL,
 	                    NULL,
 	                    NULL);
-	nmc_add_prop_funcs (GLUE (IP4_CONFIG, DHCP_TIMEOUT),
+	nmc_add_prop_funcs (GLUE_IP (4, DHCP_TIMEOUT),
 	                    nmc_property_ipv4_get_dhcp_timeout,
-	                    nmc_property_set_uint,
+	                    nmc_property_set_int,
 	                    NULL,
 	                    NULL,
 	                    NULL,
@@ -6488,6 +6497,13 @@ nmc_properties_init (void)
 	nmc_add_prop_funcs (GLUE_IP (4, MAY_FAIL),
 	                    nmc_property_ipv4_get_may_fail,
 	                    nmc_property_set_bool,
+	                    NULL,
+	                    NULL,
+	                    NULL,
+	                    NULL);
+	nmc_add_prop_funcs (GLUE_IP (4, DAD_TIMEOUT),
+	                    nmc_property_ipv4_get_dad_timeout,
+	                    nmc_property_set_int,
 	                    NULL,
 	                    NULL,
 	                    NULL,
@@ -8088,6 +8104,7 @@ setting_ip4_config_details (NMSetting *setting, NmCli *nmc,  const char *one_pro
 	set_val_str (arr, 15, nmc_property_ipv4_get_dhcp_fqdn (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 16, nmc_property_ipv4_get_never_default (setting, NMC_PROPERTY_GET_PRETTY));
 	set_val_str (arr, 17, nmc_property_ipv4_get_may_fail (setting, NMC_PROPERTY_GET_PRETTY));
+	set_val_str (arr, 18, nmc_property_ipv4_get_dad_timeout (setting, NMC_PROPERTY_GET_PRETTY));
 	g_ptr_array_add (nmc->output_data, arr);
 
 	print_data (nmc);  /* Print all data */

@@ -19,13 +19,13 @@
  * Copyright 2007 - 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-manager.h"
 
 #include <string.h>
-#include <nm-utils.h>
 
-#include "nm-default.h"
-#include "nm-manager.h"
+#include "nm-utils.h"
 #include "nm-device-ethernet.h"
 #include "nm-device-wifi.h"
 #include "nm-device-private.h"
@@ -35,7 +35,6 @@
 #include "nm-vpn-connection.h"
 #include "nm-object-cache.h"
 #include "nm-dbus-helpers.h"
-#include "nm-macros-internal.h"
 
 #include "nmdbus-manager.h"
 

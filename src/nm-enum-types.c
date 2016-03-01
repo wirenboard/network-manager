@@ -23,6 +23,7 @@
 #include "nm-dhcp-systemd.h" 
 #include "nm-device.h" 
 #include "nm-lldp-listener.h" 
+#include "nm-arping-manager.h" 
 #include "nm-device-ethernet-utils.h" 
 #include "nm-device-factory.h" 
 #include "nm-device-generic.h" 
@@ -97,6 +98,7 @@
 #include "nm-session-monitor.h" 
 #include "nm-sleep-monitor.h" 
 #include "nm-types.h" 
+#include "nm-core-utils.h" 
 #include "NetworkManagerUtils.h" 
 #include "wifi-utils-wext.h"
 
@@ -115,6 +117,26 @@ nm_vlan_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMVlanError"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
+nm_unman_flag_op_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_UNMAN_FLAG_OP_SET_MANAGED, "NM_UNMAN_FLAG_OP_SET_MANAGED", "set-managed" },
+        { NM_UNMAN_FLAG_OP_SET_UNMANAGED, "NM_UNMAN_FLAG_OP_SET_UNMANAGED", "set-unmanaged" },
+        { NM_UNMAN_FLAG_OP_FORGET, "NM_UNMAN_FLAG_OP_FORGET", "forget" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMUnmanFlagOp"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

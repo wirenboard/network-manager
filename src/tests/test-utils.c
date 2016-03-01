@@ -18,13 +18,13 @@
  *
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
 
-#include "NetworkManagerUtils.c"
+#include "nm-core-utils.c"
 
 #include "nm-test-utils.h"
 

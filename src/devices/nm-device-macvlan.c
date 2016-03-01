@@ -18,11 +18,10 @@
  * Copyright 2013 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 
-#include "nm-default.h"
 #include "nm-device-macvlan.h"
 #include "nm-device-private.h"
 #include "nm-connection-provider.h"
@@ -127,7 +126,7 @@ parent_state_changed (NMDevice *parent,
 	if (reason == NM_DEVICE_STATE_REASON_CARRIER)
 		return;
 
-	nm_device_set_unmanaged_flags (NM_DEVICE (self), NM_UNMANAGED_PARENT, !nm_device_get_managed (parent), reason);
+	nm_device_set_unmanaged_by_flags (NM_DEVICE (self), NM_UNMANAGED_PARENT, !nm_device_get_managed (parent, FALSE), reason);
 }
 
 static void
@@ -139,8 +138,7 @@ nm_device_macvlan_set_parent (NMDeviceMacvlan *self, NMDevice *parent)
 	if (parent == priv->parent)
 		return;
 
-	if (priv->parent_state_id)
-		nm_clear_g_signal_handler (priv->parent, &priv->parent_state_id);
+	nm_clear_g_signal_handler (priv->parent, &priv->parent_state_id);
 
 	g_clear_object (&priv->parent);
 
@@ -152,10 +150,10 @@ nm_device_macvlan_set_parent (NMDeviceMacvlan *self, NMDevice *parent)
 		                                          device);
 
 		/* Set parent-dependent unmanaged flag */
-		nm_device_set_unmanaged_flags (device,
-		                               NM_UNMANAGED_PARENT,
-		                               !nm_device_get_managed (parent),
-		                               NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED);
+		nm_device_set_unmanaged_by_flags (device,
+		                                  NM_UNMANAGED_PARENT,
+		                                  !nm_device_get_managed (parent, FALSE),
+		                                  NM_DEVICE_STATE_REASON_PARENT_MANAGED_CHANGED);
 	}
 
 	/* Recheck availability now that the parent has changed */
@@ -239,7 +237,7 @@ create_and_realize (NMDevice *device,
 	lnk.tap = nm_setting_macvlan_get_tap (s_macvlan);
 
 	plerr = nm_platform_link_macvlan_add (NM_PLATFORM_GET, iface, parent_ifindex, &lnk, out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create %s interface '%s' for '%s': %s",
 		             lnk.tap ? "macvtap" : "macvlan",
@@ -377,7 +375,7 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 {
 	NMDeviceMacvlanPrivate *priv = NM_DEVICE_MACVLAN_GET_PRIVATE (device);
 	NMSettingMacvlan *s_macvlan;
-	const char *parent, *iface = NULL;
+	const char *parent = NULL;
 
 	if (!NM_DEVICE_CLASS (nm_device_macvlan_parent_class)->check_connection_compatible (device, connection))
 		return FALSE;
@@ -408,13 +406,6 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 			if (!match_hwaddr (device, connection, TRUE))
 				return FALSE;
 		}
-	}
-
-	/* Ensure the interface name matches */
-	iface = nm_connection_get_interface_name (connection);
-	if (iface) {
-		if (g_strcmp0 (nm_device_get_ip_iface (device), iface) != 0)
-			return FALSE;
 	}
 
 	return TRUE;
@@ -503,8 +494,6 @@ update_connection (NMDevice *device, NMConnection *connection)
 static NMActStageReturn
 act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 {
-	NMActRequest *req;
-	NMConnection *connection;
 	NMSettingWired *s_wired;
 	const char *cloned_mac;
 	NMActStageReturn ret;
@@ -515,18 +504,11 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	req = nm_device_get_act_request (dev);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	connection = nm_act_request_get_applied_connection (req);
-	g_return_val_if_fail (connection != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	s_wired = nm_connection_get_setting_wired (connection);
+	s_wired = (NMSettingWired *) nm_device_get_applied_setting (dev, NM_TYPE_SETTING_WIRED);
 	if (s_wired) {
 		/* Set device MAC address if the connection wants to change it */
 		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac)
-			nm_device_set_hw_addr (dev, cloned_mac, "set", LOGD_HW);
+		nm_device_set_hw_addr (dev, cloned_mac, "set", LOGD_HW);
 	}
 
 	return TRUE;
@@ -621,6 +603,14 @@ set_property (GObject *object, guint prop_id,
 }
 
 static void
+dispose (GObject *object)
+{
+	nm_device_macvlan_set_parent (NM_DEVICE_MACVLAN (object), NULL);
+
+	G_OBJECT_CLASS (nm_device_macvlan_parent_class)->dispose (object);
+}
+
+static void
 nm_device_macvlan_class_init (NMDeviceMacvlanClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -630,6 +620,7 @@ nm_device_macvlan_class_init (NMDeviceMacvlanClass *klass)
 
 	NM_DEVICE_CLASS_DECLARE_TYPES (klass, NULL, NM_LINK_TYPE_MACVLAN, NM_LINK_TYPE_MACVTAP)
 
+	object_class->dispose = dispose;
 	object_class->get_property = get_property;
 	object_class->set_property = set_property;
 
@@ -744,9 +735,9 @@ get_connection_parent (NMDeviceFactory *factory, NMConnection *connection)
 }
 
 static char *
-get_virtual_iface_name (NMDeviceFactory *factory,
-                        NMConnection *connection,
-                        const char *parent_iface)
+get_connection_iface (NMDeviceFactory *factory,
+                      NMConnection *connection,
+                      const char *parent_iface)
 {
 	NMSettingMacvlan *s_macvlan;
 	const char *ifname;
@@ -768,6 +759,6 @@ NM_DEVICE_FACTORY_DEFINE_INTERNAL (MACVLAN, Macvlan, macvlan,
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_MACVLAN_SETTING_NAME),
 	factory_iface->create_device = create_device;
 	factory_iface->get_connection_parent = get_connection_parent;
-	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
+	factory_iface->get_connection_iface = get_connection_iface;
 	)
 

@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #pragma once
 
 /***
@@ -20,8 +18,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
-
-#include "nm-sd-adapt.h"
 
 #include <dirent.h>
 #include <stdbool.h>
@@ -75,3 +71,7 @@ int same_fd(int a, int b);
 void cmsg_close_all(struct msghdr *mh);
 
 bool fdname_is_valid(const char *s);
+
+/* Hint: ENETUNREACH happens if we try to connect to "non-existing" special IP addresses, such as ::5 */
+#define ERRNO_IS_DISCONNECT(r) \
+        IN_SET(r, ENOTCONN, ECONNRESET, ECONNREFUSED, ECONNABORTED, EPIPE, ENETUNREACH)

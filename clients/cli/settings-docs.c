@@ -24,7 +24,7 @@ NmcPropertyDesc setting_802_11_wireless[] = {
 	{ "mode", "Wi-Fi network mode; one of \"infrastructure\", \"adhoc\" or \"ap\".  If blank, infrastructure is assumed." },
 	{ "mtu", "If non-zero, only transmit packets of the specified size or smaller, breaking larger packets up into multiple Ethernet frames." },
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
-	{ "powersave", "If set to FALSE, Wi-Fi power saving behavior is disabled.  If set to TRUE, Wi-Fi power saving behavior is enabled.  All other values are reserved.  Note that even though only boolean values are allowed, the property type is an unsigned integer to allow for future expansion." },
+	{ "powersave", "One of NM_SETTING_WIRELESS_POWERSAVE_DISABLE (2) (disable Wi-Fi power saving), NM_SETTING_WIRELESS_POWERSAVE_ENABLE (3) (enable Wi-Fi power saving), NM_SETTING_WIRELESS_POWERSAVE_IGNORE (1) (don't touch currently configure setting) or NM_SETTING_WIRELESS_POWERSAVE_DEFAULT (0) (use the globally configured value). All other values are reserved." },
 	{ "rate", "If non-zero, directs the device to only use the specified bitrate for communication with the access point.  Units are in Kb/s, ie 5500 = 5.5 Mbit/s.  This property is highly driver dependent and not all devices support setting a static bitrate." },
 	{ "seen-bssids", "A list of BSSIDs (each BSSID formatted as a MAC address like \"00:11:22:33:44:55\") that have been detected as part of the Wi-Fi network.  NetworkManager internally tracks previously seen BSSIDs. The property is only meant for reading and reflects the BSSID list of NetworkManager. The changes you make to this property will not be preserved." },
 	{ "ssid", "SSID of the Wi-Fi network. Must be specified." },
@@ -241,6 +241,7 @@ NmcPropertyDesc setting_ip_tunnel[] = {
   
 NmcPropertyDesc setting_ipv4[] = {
 	{ "addresses", "Array of IP addresses." },
+	{ "dad-timeout", "Timeout in milliseconds used to check for the presence of duplicate IP addresses on the network.  If an address conflict is detected, the activation will fail.  A zero value means that no duplicate address detection is performed, -1 means the default value (either configuration ipvx.dad-timeout override or 3 seconds).  A value greater than zero is a timeout in milliseconds." },
 	{ "dhcp-client-id", "A string sent to the DHCP server to identify the local machine which the DHCP server may use to customize the DHCP lease and options." },
 	{ "dhcp-fqdn", "If the \"dhcp-send-hostname\" property is TRUE, then the specified FQDN will be sent to the DHCP server when acquiring a lease. This property and \"dhcp-hostname\" are mutually exclusive and cannot be set at the same time." },
 	{ "dhcp-hostname", "If the \"dhcp-send-hostname\" property is TRUE, then the specified name will be sent to the DHCP server when acquiring a lease. This property and \"dhcp-fqdn\" are mutually exclusive and cannot be set at the same time." },
@@ -263,8 +264,10 @@ NmcPropertyDesc setting_ipv4[] = {
 NmcPropertyDesc setting_ipv6[] = {
 	{ "addr-gen-mode", "Configure method for creating the address for use with RFC4862 IPv6 Stateless Address Autoconfiguration. The permitted values are: \"eui64\", \"stable-privacy\" or unset. If the property is set to \"eui64\", the addresses will be generated using the interface tokens derived from  hardware address. This makes the host part of the address to stay constant, making it possible to track host's presence when it changes networks. The address changes when the interface hardware is replaced. The value of \"stable-privacy\" enables use of cryptographically secure hash of a secret host-specific key along with the connection identification and the network address as specified by RFC7217. This makes it impossible to use the address track host's presence, and makes the address stable when the network interface hardware is replaced. Leaving this unset causes a default that could be subject to change in future versions to be used. Note that this setting is distinct from the Privacy Extensions as configured by \"ip6-privacy\" property and it does not affect the temporary addresses configured with this option." },
 	{ "addresses", "Array of IP addresses." },
+	{ "dad-timeout", "Timeout in milliseconds used to check for the presence of duplicate IP addresses on the network.  If an address conflict is detected, the activation will fail.  A zero value means that no duplicate address detection is performed, -1 means the default value (either configuration ipvx.dad-timeout override or 3 seconds).  A value greater than zero is a timeout in milliseconds." },
 	{ "dhcp-hostname", "If the \"dhcp-send-hostname\" property is TRUE, then the specified name will be sent to the DHCP server when acquiring a lease. This property and \"dhcp-fqdn\" are mutually exclusive and cannot be set at the same time." },
 	{ "dhcp-send-hostname", "If TRUE, a hostname is sent to the DHCP server when acquiring a lease. Some DHCP servers use this hostname to update DNS databases, essentially providing a static hostname for the computer.  If the \"dhcp-hostname\" property is NULL and this property is TRUE, the current persistent hostname of the computer is sent." },
+	{ "dhcp-timeout", "A timeout for a DHCP transaction in seconds." },
 	{ "dns", "Array of IP addresses of DNS servers." },
 	{ "dns-options", "Array of DNS options. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties." },
 	{ "dns-search", "Array of DNS search domains." },
@@ -350,7 +353,7 @@ NmcPropertyDesc setting_tun[] = {
 NmcPropertyDesc setting_vlan[] = {
 	{ "egress-priority-map", "For outgoing packets, a list of mappings from Linux SKB priorities to 802.1p priorities.  The mapping is given in the format \"from:to\" where both \"from\" and \"to\" are unsigned integers, ie \"7:3\"." },
 	{ "flags", "One or more flags which control the behavior and features of the VLAN interface.  Flags include NM_VLAN_FLAG_REORDER_HEADERS (0x1) (reordering of output packet headers), NM_VLAN_FLAG_GVRP (0x2) (use of the GVRP protocol), and NM_VLAN_FLAG_LOOSE_BINDING (0x4) (loose binding of the interface to its master device's operating state). NM_VLAN_FLAG_MVRP (0x8) (use of the MVRP protocol). The default value of this property is NM_VLAN_FLAG_REORDER_HEADERS, but it used to be 0. To preserve backward compatibility, the default-value in the D-Bus API continues to be 0 and a missing property on D-Bus is still considered as 0." },
-	{ "id", "The VLAN identifier that the interface created by this connection should be assigned." },
+	{ "id", "The VLAN identifier that the interface created by this connection should be assigned. The valid range is from 0 to 4094, without the reserved id 4095." },
 	{ "ingress-priority-map", "For incoming packets, a list of mappings from 802.1p priorities to Linux SKB priorities.  The mapping is given in the format \"from:to\" where both \"from\" and \"to\" are unsigned integers, ie \"7:3\"." },
 	{ "name", "The setting's name, which uniquely identifies the setting within the connection.  Each setting type has a name unique to that type, for example \"ppp\" or \"wireless\" or \"wired\"." },
 	{ "parent", "If given, specifies the parent interface name or parent connection UUID from which this VLAN interface should be created.  If this property is not specified, the connection must contain an \"802-3-ethernet\" setting with a \"mac-address\" property." },
@@ -418,8 +421,8 @@ NmcSettingDesc all_settings[] = {
 	{ "gsm", setting_gsm, 13 },
 	{ "infiniband", setting_infiniband, 6 },
 	{ "ip-tunnel", setting_ip_tunnel, 13 },
-	{ "ipv4", setting_ipv4, 18 },
-	{ "ipv6", setting_ipv6, 17 },
+	{ "ipv4", setting_ipv4, 19 },
+	{ "ipv6", setting_ipv6, 19 },
 	{ "macvlan", setting_macvlan, 5 },
 	{ "ppp", setting_ppp, 19 },
 	{ "pppoe", setting_pppoe, 5 },

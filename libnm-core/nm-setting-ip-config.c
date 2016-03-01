@@ -20,12 +20,11 @@
  * Copyright 2007 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <arpa/inet.h>
 
-#include "nm-default.h"
 #include "nm-setting-ip-config.h"
 #include "nm-setting-ip4-config.h"
 #include "nm-setting-ip6-config.h"
@@ -63,6 +62,19 @@ const NMUtilsDNSOptionDesc _nm_utils_dns_option_descs[] = {
 	{ NULL,                                        FALSE,   FALSE }
 };
 
+static int
+_addr_size (int family)
+{
+	switch (family) {
+	case AF_INET:
+		return sizeof (in_addr_t);
+	case AF_INET6:
+		return sizeof (struct in6_addr);
+	default:
+		g_return_val_if_reached (0);
+	}
+}
+
 static char *
 canonicalize_ip (int family, const char *ip, gboolean null_any)
 {
@@ -70,20 +82,46 @@ canonicalize_ip (int family, const char *ip, gboolean null_any)
 	char addr_str[NM_UTILS_INET_ADDRSTRLEN];
 	int ret;
 
-	if (!ip)
-		return NULL;
+	if (!ip) {
+		if (null_any)
+			return NULL;
+		if (family == AF_INET)
+			return g_strdup ("0.0.0.0");
+		if (family == AF_INET6)
+			return g_strdup ("::");
+		g_return_val_if_reached (NULL);
+	}
 
 	ret = inet_pton (family, ip, addr_bytes);
 	g_return_val_if_fail (ret == 1, NULL);
 
 	if (null_any) {
-		int addrlen = (family == AF_INET ? sizeof (struct in_addr) : sizeof (struct in6_addr));
-
-		if (!memcmp (addr_bytes, &in6addr_any, addrlen))
+		if (!memcmp (addr_bytes, &in6addr_any, _addr_size (family)))
 			return NULL;
 	}
 
 	return g_strdup (inet_ntop (family, addr_bytes, addr_str, sizeof (addr_str)));
+}
+
+static char *
+canonicalize_ip_binary (int family, gconstpointer ip, gboolean null_any)
+{
+	char string[NM_UTILS_INET_ADDRSTRLEN];
+
+	if (!ip) {
+		if (null_any)
+			return NULL;
+		if (family == AF_INET)
+			return g_strdup ("0.0.0.0");
+		if (family == AF_INET6)
+			return g_strdup ("::");
+		g_return_val_if_reached (NULL);
+	}
+	if (null_any) {
+		if (!memcmp (ip, &in6addr_any, _addr_size (family)))
+			return NULL;
+	}
+	return g_strdup (inet_ntop (family, ip, string, sizeof (string)));
 }
 
 static gboolean
@@ -567,6 +605,7 @@ nm_ip_route_new (int family,
 	NMIPRoute *route;
 
 	g_return_val_if_fail (family == AF_INET || family == AF_INET6, NULL);
+	g_return_val_if_fail (dest, NULL);
 
 	if (!valid_ip (family, dest, error))
 		return NULL;
@@ -613,9 +652,9 @@ nm_ip_route_new_binary (int family,
                         GError **error)
 {
 	NMIPRoute *route;
-	char string[NM_UTILS_INET_ADDRSTRLEN];
 
 	g_return_val_if_fail (family == AF_INET || family == AF_INET6, NULL);
+	g_return_val_if_fail (dest, NULL);
 
 	if (!valid_prefix (family, prefix, error, TRUE))
 		return NULL;
@@ -626,10 +665,9 @@ nm_ip_route_new_binary (int family,
 	route->refcount = 1;
 
 	route->family = family;
-	route->dest = g_strdup (inet_ntop (family, dest, string, sizeof (string)));
+	route->dest = canonicalize_ip_binary (family, dest, FALSE);
 	route->prefix = prefix;
-	if (next_hop)
-		route->next_hop = g_strdup (inet_ntop (family, next_hop, string, sizeof (string)));
+	route->next_hop = canonicalize_ip_binary (family, next_hop, TRUE);
 	route->metric = metric;
 
 	return route;
@@ -783,7 +821,6 @@ nm_ip_route_set_dest (NMIPRoute *route,
                       const char *dest)
 {
 	g_return_if_fail (route != NULL);
-	g_return_if_fail (dest != NULL);
 	g_return_if_fail (nm_utils_ipaddr_valid (route->family, dest));
 
 	g_free (route->dest);
@@ -928,8 +965,7 @@ nm_ip_route_get_next_hop_binary (NMIPRoute *route,
 		inet_pton (route->family, route->next_hop, next_hop);
 		return TRUE;
 	} else {
-		memset (next_hop, 0,
-		        route->family == AF_INET ? sizeof (struct in_addr) : sizeof (struct in6_addr));
+		memset (next_hop, 0, _addr_size (route->family));
 		return FALSE;
 	}
 }
@@ -948,15 +984,10 @@ void
 nm_ip_route_set_next_hop_binary (NMIPRoute *route,
                                  gconstpointer next_hop)
 {
-	char string[NM_UTILS_INET_ADDRSTRLEN];
-
 	g_return_if_fail (route != NULL);
 
 	g_free (route->next_hop);
-	if (next_hop)
-		route->next_hop = g_strdup (inet_ntop (route->family, next_hop, string, sizeof (string)));
-	else
-		route->next_hop = NULL;
+	route->next_hop = canonicalize_ip_binary (route->family, next_hop, TRUE);
 }
 
 /**
@@ -1093,6 +1124,8 @@ typedef struct {
 	gboolean dhcp_send_hostname;
 	gboolean never_default;
 	gboolean may_fail;
+	gint dad_timeout;
+	gint dhcp_timeout;
 } NMSettingIPConfigPrivate;
 
 enum {
@@ -1111,6 +1144,8 @@ enum {
 	PROP_DHCP_SEND_HOSTNAME,
 	PROP_NEVER_DEFAULT,
 	PROP_MAY_FAIL,
+	PROP_DAD_TIMEOUT,
+	PROP_DHCP_TIMEOUT,
 
 	LAST_PROP
 };
@@ -2055,6 +2090,42 @@ nm_setting_ip_config_get_may_fail (NMSettingIPConfig *setting)
 	return NM_SETTING_IP_CONFIG_GET_PRIVATE (setting)->may_fail;
 }
 
+/**
+ * nm_setting_ip_config_get_dad_timeout:
+ * @setting: the #NMSettingIPConfig
+ *
+ * Returns: the #NMSettingIPConfig:dad-timeout property.
+ *
+ * Since: 1.2
+ **/
+gint
+nm_setting_ip_config_get_dad_timeout (NMSettingIPConfig *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_IP_CONFIG (setting), 0);
+
+	return NM_SETTING_IP_CONFIG_GET_PRIVATE (setting)->dad_timeout;
+}
+
+/**
+ * nm_setting_ip_config_get_dhcp_timeout:
+ * @setting: the #NMSettingIPConfig
+ *
+ * Returns the value contained in the #NMSettingIPConfig:dhcp-timeout
+ * property.
+ *
+ * Returns: the configured DHCP timeout in seconds. 0 = default for
+ * the particular kind of device.
+ *
+ * Since: 1.2
+ **/
+gint
+nm_setting_ip_config_get_dhcp_timeout (NMSettingIPConfig *setting)
+{
+	g_return_val_if_fail (NM_IS_SETTING_IP_CONFIG (setting), 0);
+
+	return NM_SETTING_IP_CONFIG_GET_PRIVATE (setting)->dhcp_timeout;
+}
+
 static gboolean
 verify_label (const char *label)
 {
@@ -2285,7 +2356,7 @@ set_property (GObject *object, guint prop_id,
 		gateway = g_value_get_string (value);
 		g_return_if_fail (!gateway || nm_utils_ipaddr_valid (NM_SETTING_IP_CONFIG_GET_FAMILY (setting), gateway));
 		g_free (priv->gateway);
-		priv->gateway = canonicalize_ip (NM_SETTING_IP_CONFIG_GET_FAMILY (setting), gateway, FALSE);
+		priv->gateway = canonicalize_ip (NM_SETTING_IP_CONFIG_GET_FAMILY (setting), gateway, TRUE);
 		break;
 	case PROP_ROUTES:
 		g_ptr_array_unref (priv->routes);
@@ -2314,6 +2385,12 @@ set_property (GObject *object, guint prop_id,
 		break;
 	case PROP_MAY_FAIL:
 		priv->may_fail = g_value_get_boolean (value);
+		break;
+	case PROP_DAD_TIMEOUT:
+		priv->dad_timeout = g_value_get_int (value);
+		break;
+	case PROP_DHCP_TIMEOUT:
+		priv->dhcp_timeout = g_value_get_int (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2374,6 +2451,12 @@ get_property (GObject *object, guint prop_id,
 		break;
 	case PROP_MAY_FAIL:
 		g_value_set_boolean (value, priv->may_fail);
+		break;
+	case PROP_DAD_TIMEOUT:
+		g_value_set_int (value, nm_setting_ip_config_get_dad_timeout (setting));
+		break;
+	case PROP_DHCP_TIMEOUT:
+		g_value_set_int (value, nm_setting_ip_config_get_dhcp_timeout (setting));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2656,4 +2739,37 @@ nm_setting_ip_config_class_init (NMSettingIPConfigClass *setting_class)
 		                       G_PARAM_READWRITE |
 		                       G_PARAM_CONSTRUCT |
 		                       G_PARAM_STATIC_STRINGS));
+
+	/**
+	 * NMSettingIPConfig:dad-timeout:
+	 *
+	 * Timeout in milliseconds used to check for the presence of duplicate IP
+	 * addresses on the network.  If an address conflict is detected, the
+	 * activation will fail.  A zero value means that no duplicate address
+	 * detection is performed, -1 means the default value (either configuration
+	 * ipvx.dad-timeout override or 3 seconds).  A value greater than zero is a
+	 * timeout in milliseconds.
+	 *
+	 * Since: 1.2
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_DAD_TIMEOUT,
+		 g_param_spec_int (NM_SETTING_IP_CONFIG_DAD_TIMEOUT, "", "",
+		                    -1, NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX, -1,
+		                    G_PARAM_READWRITE |
+		                    G_PARAM_CONSTRUCT |
+		                    NM_SETTING_PARAM_FUZZY_IGNORE |
+		                    G_PARAM_STATIC_STRINGS));
+	/**
+	 * NMSettingIPConfig:dhcp-timeout:
+	 *
+	 * A timeout for a DHCP transaction in seconds.
+	 **/
+	g_object_class_install_property
+		(object_class, PROP_DHCP_TIMEOUT,
+		 g_param_spec_int (NM_SETTING_IP_CONFIG_DHCP_TIMEOUT, "", "",
+		                   0, G_MAXINT32, 0,
+		                   G_PARAM_READWRITE |
+		                   NM_SETTING_PARAM_FUZZY_IGNORE |
+		                   G_PARAM_STATIC_STRINGS));
 }

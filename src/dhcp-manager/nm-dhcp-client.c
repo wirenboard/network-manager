@@ -17,7 +17,9 @@
  *
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-dhcp-client.h"
 
 #include <string.h>
 #include <sys/types.h>
@@ -28,13 +30,10 @@
 #include <stdlib.h>
 #include <uuid/uuid.h>
 
-#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-utils.h"
-#include "nm-dhcp-client.h"
 #include "nm-dhcp-utils.h"
 #include "nm-platform.h"
-#include "gsystem-local-alloc.h"
 
 typedef struct {
 	char *       iface;
@@ -338,7 +337,7 @@ nm_dhcp_client_set_state (NMDhcpClient *self,
 }
 
 static gboolean
-daemon_timeout (gpointer user_data)
+transaction_timeout (gpointer user_data)
 {
 	NMDhcpClient *self = NM_DHCP_CLIENT (user_data);
 	NMDhcpClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -360,6 +359,9 @@ daemon_watch_cb (GPid pid, gint status, gpointer user_data)
 	NMDhcpState new_state;
 	guint64 log_domain;
 	guint ip_ver;
+
+	g_return_if_fail (priv->watch_id);
+	priv->watch_id = 0;
 
 	log_domain = priv->ipv6 ? LOGD_DHCP6 : LOGD_DHCP4;
 	ip_ver = priv->ipv6 ? 6 : 4;
@@ -390,6 +392,18 @@ daemon_watch_cb (GPid pid, gint status, gpointer user_data)
 }
 
 void
+nm_dhcp_client_start_timeout (NMDhcpClient *self)
+{
+	NMDhcpClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
+
+	/* Set up a timeout on the transaction to kill it after the timeout */
+	g_assert (priv->timeout_id == 0);
+	priv->timeout_id = g_timeout_add_seconds (priv->timeout,
+	                                          transaction_timeout,
+	                                          self);
+}
+
+void
 nm_dhcp_client_watch_child (NMDhcpClient *self, pid_t pid)
 {
 	NMDhcpClientPrivate *priv = NM_DHCP_CLIENT_GET_PRIVATE (self);
@@ -397,12 +411,9 @@ nm_dhcp_client_watch_child (NMDhcpClient *self, pid_t pid)
 	g_return_if_fail (priv->pid == -1);
 	priv->pid = pid;
 
-	/* Set up a timeout on the transaction to kill it after the timeout */
-	g_assert (priv->timeout_id == 0);
-	priv->timeout_id = g_timeout_add_seconds (priv->timeout,
-	                                          daemon_timeout,
-	                                          self);
-	g_assert (priv->watch_id == 0);
+	nm_dhcp_client_start_timeout (self);
+
+	g_return_if_fail (priv->watch_id == 0);
 	priv->watch_id = g_child_watch_add (pid, daemon_watch_cb, self);
 }
 
@@ -734,7 +745,7 @@ maybe_add_option (GHashTable *hash,
 	}
 
 	if (g_str_has_prefix (key, NEW_TAG))
-		key += STRLEN (NEW_TAG);
+		key += NM_STRLEN (NEW_TAG);
 	if (!key[0])
 		return;
 

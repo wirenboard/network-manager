@@ -18,7 +18,9 @@
  * Copyright (C) 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-platform.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -32,15 +34,19 @@
 #include <linux/if_tun.h>
 #include <linux/if_tunnel.h>
 
-#include "NetworkManagerUtils.h"
 #include "nm-utils.h"
-#include "nm-platform.h"
+#include "nm-core-internal.h"
+
+#include "nm-core-utils.h"
+#include "nm-enum-types.h"
 #include "nm-platform-utils.h"
 #include "nmp-object.h"
-#include "NetworkManagerUtils.h"
-#include "nm-default.h"
-#include "nm-enum-types.h"
-#include "nm-core-internal.h"
+
+/*****************************************************************************/
+
+const NMIPAddr nm_ip_addr_zero = NMIPAddrInit;
+
+/*****************************************************************************/
 
 #define ADDRESS_LIFETIME_PADDING 5
 
@@ -181,39 +187,26 @@ nm_platform_try_get (void)
 /******************************************************************/
 
 /**
- * nm_platform_error_to_string:
+ * _nm_platform_error_to_string:
  * @error_code: the error code to stringify.
  *
  * Returns: A string representation of the error.
  * For negative numbers, this function interprets
  * the code as -errno.
+ * For invalid (positive) numbers it returns NULL.
  */
-const char *
-nm_platform_error_to_string (NMPlatformError error)
-{
-	switch (error) {
-	case NM_PLATFORM_ERROR_SUCCESS:
-		return "success";
-	case NM_PLATFORM_ERROR_BUG:
-		return "bug";
-	case NM_PLATFORM_ERROR_UNSPECIFIED:
-		return "unspecified";
-	case NM_PLATFORM_ERROR_NOT_FOUND:
-		return "not-found";
-	case NM_PLATFORM_ERROR_EXISTS:
-		return "exists";
-	case NM_PLATFORM_ERROR_WRONG_TYPE:
-		return "wrong-type";
-	case NM_PLATFORM_ERROR_NOT_SLAVE:
-		return "not-slave";
-	case NM_PLATFORM_ERROR_NO_FIRMWARE:
-		return "no-firmware";
-	default:
-		if (error < 0)
-			return g_strerror (- ((int) error));
-		return "unknown";
-	}
-}
+NM_UTILS_LOOKUP_STR_DEFINE (_nm_platform_error_to_string, NMPlatformError,
+	NM_UTILS_LOOKUP_DEFAULT ( val < 0 ? g_strerror (- ((int) val)) : NULL ),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_SUCCESS,     "success"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_BUG,         "bug"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_UNSPECIFIED, "unspecified"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_NOT_FOUND,   "not-found"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_EXISTS,      "exists"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_WRONG_TYPE,  "wrong-type"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_NOT_SLAVE,   "not-slave"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_PLATFORM_ERROR_NO_FIRMWARE, "no-firmware"),
+	NM_UTILS_LOOKUP_ITEM_IGNORE (_NM_PLATFORM_ERROR_MININT),
+);
 
 /******************************************************************/
 
@@ -811,13 +804,13 @@ nm_platform_link_refresh (NMPlatform *self, int ifindex)
 	return TRUE;
 }
 
-static guint32
+static guint
 _link_get_flags (NMPlatform *self, int ifindex)
 {
 	const NMPlatformLink *pllink;
 
 	pllink = nm_platform_link_get (self, ifindex);
-	return pllink ? pllink->flags : IFF_NOARP;
+	return pllink ? pllink->n_ifi_flags : IFF_NOARP;
 }
 
 /**
@@ -2147,7 +2140,8 @@ nm_platform_link_veth_get_properties (NMPlatform *self, int ifindex, int *out_pe
 gboolean
 nm_platform_link_tun_get_properties_ifname (NMPlatform *self, const char *ifname, NMPlatformTunProperties *props)
 {
-	char *path, *val;
+	char path[256];
+	char *val;
 	gboolean success = TRUE;
 
 	_CHECK_SELF (self, klass, FALSE);
@@ -2160,11 +2154,9 @@ nm_platform_link_tun_get_properties_ifname (NMPlatform *self, const char *ifname
 
 	if (!ifname || !nm_utils_iface_valid_name (ifname))
 		return FALSE;
-	ifname = ASSERT_VALID_PATH_COMPONENT (ifname);
 
-	path = g_strdup_printf ("/sys/class/net/%s/owner", ifname);
+	nm_sprintf_buf (path, "/sys/class/net/%s/owner", ifname);
 	val = nm_platform_sysctl_get (self, path);
-	g_free (path);
 	if (val) {
 		props->owner = _nm_utils_ascii_str_to_int64 (val, 10, -1, G_MAXINT64, -1);
 		if (errno)
@@ -2173,9 +2165,8 @@ nm_platform_link_tun_get_properties_ifname (NMPlatform *self, const char *ifname
 	} else
 		success = FALSE;
 
-	path = g_strdup_printf ("/sys/class/net/%s/group", ifname);
+	nm_sprintf_buf (path, "/sys/class/net/%s/group", ifname);
 	val = nm_platform_sysctl_get (self, path);
-	g_free (path);
 	if (val) {
 		props->group = _nm_utils_ascii_str_to_int64 (val, 10, -1, G_MAXINT64, -1);
 		if (errno)
@@ -2184,9 +2175,8 @@ nm_platform_link_tun_get_properties_ifname (NMPlatform *self, const char *ifname
 	} else
 		success = FALSE;
 
-	path = g_strdup_printf ("/sys/class/net/%s/tun_flags", ifname);
+	nm_sprintf_buf (path, "/sys/class/net/%s/tun_flags", ifname);
 	val = nm_platform_sysctl_get (self, path);
-	g_free (path);
 	if (val) {
 		gint64 flags;
 
@@ -2461,7 +2451,7 @@ nm_platform_ip6_address_add (NMPlatform *self,
                              struct in6_addr peer_address,
                              guint32 lifetime,
                              guint32 preferred,
-                             guint flags)
+                             guint32 flags)
 {
 	_CHECK_SELF (self, klass, FALSE);
 
@@ -2480,7 +2470,7 @@ nm_platform_ip6_address_add (NMPlatform *self,
 		addr.timestamp = 0; /* set it to zero, which to_string will treat as *now* */
 		addr.lifetime = lifetime;
 		addr.preferred = preferred;
-		addr.flags = flags;
+		addr.n_ifa_flags = flags;
 
 		_LOGD ("address: adding or updating IPv6 address: %s", nm_platform_ip6_address_to_string (&addr, NULL, 0));
 	}
@@ -2701,7 +2691,7 @@ nm_platform_ip6_address_sync (NMPlatform *self, int ifindex, const GArray *known
 
 		if (!nm_platform_ip6_address_add (self, ifindex, known_address->address,
 		                                  known_address->plen, known_address->peer_address,
-		                                  lifetime, preferred, known_address->flags))
+		                                  lifetime, preferred, known_address->n_ifa_flags))
 			return FALSE;
 	}
 
@@ -2978,19 +2968,19 @@ nm_platform_link_to_string (const NMPlatformLink *link, char *buf, gsize len)
 		return buf;
 
 	str_flags = g_string_new (NULL);
-	if (NM_FLAGS_HAS (link->flags, IFF_NOARP))
+	if (NM_FLAGS_HAS (link->n_ifi_flags, IFF_NOARP))
 		g_string_append (str_flags, "NOARP,");
-	if (NM_FLAGS_HAS (link->flags, IFF_UP))
+	if (NM_FLAGS_HAS (link->n_ifi_flags, IFF_UP))
 		g_string_append (str_flags, "UP");
 	else
 		g_string_append (str_flags, "DOWN");
 	if (link->connected)
 		g_string_append (str_flags, ",LOWER_UP");
 
-	if (link->flags) {
+	if (link->n_ifi_flags) {
 		char str_flags_buf[64];
 
-		nm_platform_link_flags2str (link->flags, str_flags_buf, sizeof (str_flags_buf));
+		nm_platform_link_flags2str (link->n_ifi_flags, str_flags_buf, sizeof (str_flags_buf));
 		g_string_append_printf (str_flags, ";%s", str_flags_buf);
 	}
 
@@ -3005,21 +2995,6 @@ nm_platform_link_to_string (const NMPlatformLink *link, char *buf, gsize len)
 		g_strlcpy (parent, "@other-netns", sizeof (parent));
 	else
 		parent[0] = 0;
-
-	if (link->inet6_addr_gen_mode_inv) {
-		switch (_nm_platform_uint8_inv (link->inet6_addr_gen_mode_inv)) {
-			case 0:
-				g_snprintf (str_addrmode, sizeof (str_addrmode), " addrgenmode eui64");
-				break;
-			case 1:
-				g_snprintf (str_addrmode, sizeof (str_addrmode), " addrgenmode none");
-				break;
-			default:
-				g_snprintf (str_addrmode, sizeof (str_addrmode), " addrgenmode %d", _nm_platform_uint8_inv (link->inet6_addr_gen_mode_inv));
-				break;
-		}
-	} else
-		str_addrmode[0] = '\0';
 
 	if (link->addr.len)
 		str_addr = nm_utils_hwaddr_ntoa (link->addr.data, MIN (link->addr.len, sizeof (link->addr.data)));
@@ -3036,10 +3011,10 @@ nm_platform_link_to_string (const NMPlatformLink *link, char *buf, gsize len)
 	            " mtu %d"
 	            "%s" /* master */
 	            " arp %u" /* arptype */
-	            "%s%s" /* link->type */
+	            " %s" /* link->type */
 	            "%s%s" /* kind */
 	            "%s" /* is-in-udev */
-	            "%s" /* addr-gen-mode */
+	            "%s%s" /* addr-gen-mode */
 	            "%s%s" /* addr */
 	            "%s%s" /* inet6_token */
 	            "%s%s" /* driver */
@@ -3050,12 +3025,12 @@ nm_platform_link_to_string (const NMPlatformLink *link, char *buf, gsize len)
 	            str_flags->str,
 	            link->mtu, master,
 	            link->arptype,
-	            str_link_type ? " " : "",
 	            str_if_set (str_link_type, "???"),
-	            link->kind ? (g_strcmp0 (str_link_type, link->kind) ? "/" : "*") : "",
+	            link->kind ? (g_strcmp0 (str_link_type, link->kind) ? "/" : "*") : "?",
 	            link->kind && g_strcmp0 (str_link_type, link->kind) ? link->kind : "",
 	            link->initialized ? " init" : " not-init",
-	            str_addrmode,
+	            link->inet6_addr_gen_mode_inv ? " addrgenmode " : "",
+	            link->inet6_addr_gen_mode_inv ? nm_platform_link_inet6_addrgenmode2str (_nm_platform_uint8_inv (link->inet6_addr_gen_mode_inv), str_addrmode, sizeof (str_addrmode)) : "",
 	            str_addr ? " addr " : "",
 	            str_addr ? str_addr : "",
 	            str_inet6_token ? " inet6token " : "",
@@ -3444,6 +3419,7 @@ NM_UTILS_ENUM2STR_DEFINE (nm_platform_link_inet6_addrgenmode2str, guint8,
 	NM_UTILS_ENUM2STR (NM_IN6_ADDR_GEN_MODE_NONE, "none"),
 	NM_UTILS_ENUM2STR (NM_IN6_ADDR_GEN_MODE_EUI64, "eui64"),
 	NM_UTILS_ENUM2STR (NM_IN6_ADDR_GEN_MODE_STABLE_PRIVACY, "stable-privacy"),
+	NM_UTILS_ENUM2STR (NM_IN6_ADDR_GEN_MODE_RANDOM, "random"),
 );
 
 NM_UTILS_FLAGS2STR_DEFINE (nm_platform_addr_flags2str, unsigned,
@@ -3503,11 +3479,11 @@ nm_platform_ip6_address_to_string (const NMPlatformIP6Address *address, char *bu
 
 	_to_string_dev (NULL, address->ifindex, str_dev, sizeof (str_dev));
 
-	nm_platform_addr_flags2str (address->flags, &s_flags[STRLEN (S_FLAGS_PREFIX)], sizeof (s_flags) - STRLEN (S_FLAGS_PREFIX));
-	if (s_flags[STRLEN (S_FLAGS_PREFIX)] == '\0')
+	nm_platform_addr_flags2str (address->n_ifa_flags, &s_flags[NM_STRLEN (S_FLAGS_PREFIX)], sizeof (s_flags) - NM_STRLEN (S_FLAGS_PREFIX));
+	if (s_flags[NM_STRLEN (S_FLAGS_PREFIX)] == '\0')
 		s_flags[0] = '\0';
 	else
-		memcpy (s_flags, S_FLAGS_PREFIX, STRLEN (S_FLAGS_PREFIX));
+		memcpy (s_flags, S_FLAGS_PREFIX, NM_STRLEN (S_FLAGS_PREFIX));
 
 	str_lft_p = _lifetime_to_string (address->timestamp,
 	                                 address->lifetime ? address->lifetime : NM_PLATFORM_LIFETIME_PERMANENT,
@@ -3708,7 +3684,7 @@ nm_platform_link_cmp (const NMPlatformLink *a, const NMPlatformLink *b)
 	_CMP_FIELD_STR (a, b, name);
 	_CMP_FIELD (a, b, master);
 	_CMP_FIELD (a, b, parent);
-	_CMP_FIELD (a, b, flags);
+	_CMP_FIELD (a, b, n_ifi_flags);
 	_CMP_FIELD (a, b, connected);
 	_CMP_FIELD (a, b, mtu);
 	_CMP_FIELD_BOOL (a, b, initialized);
@@ -3871,7 +3847,7 @@ nm_platform_ip6_address_cmp (const NMPlatformIP6Address *a, const NMPlatformIP6A
 	_CMP_FIELD (a, b, timestamp);
 	_CMP_FIELD (a, b, lifetime);
 	_CMP_FIELD (a, b, preferred);
-	_CMP_FIELD (a, b, flags);
+	_CMP_FIELD (a, b, n_ifa_flags);
 	return 0;
 }
 

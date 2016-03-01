@@ -18,7 +18,7 @@
  * Copyright 2008 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,25 +31,24 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <nm-connection.h>
-#include <nm-dbus-interface.h>
-#include <nm-setting-connection.h>
-#include <nm-setting-ip4-config.h>
-#include <nm-setting-vlan.h>
-#include <nm-setting-ip6-config.h>
-#include <nm-setting-wired.h>
-#include <nm-setting-wireless.h>
-#include <nm-setting-8021x.h>
-#include <nm-setting-bond.h>
-#include <nm-setting-team.h>
-#include <nm-setting-team-port.h>
-#include <nm-setting-bridge.h>
-#include <nm-setting-bridge-port.h>
-#include <nm-setting-dcb.h>
-#include <nm-setting-generic.h>
-#include "nm-default.h"
+#include "nm-connection.h"
+#include "nm-dbus-interface.h"
+#include "nm-setting-connection.h"
+#include "nm-setting-ip4-config.h"
+#include "nm-setting-vlan.h"
+#include "nm-setting-ip6-config.h"
+#include "nm-setting-wired.h"
+#include "nm-setting-wireless.h"
+#include "nm-setting-8021x.h"
+#include "nm-setting-bond.h"
+#include "nm-setting-team.h"
+#include "nm-setting-team-port.h"
+#include "nm-setting-bridge.h"
+#include "nm-setting-bridge-port.h"
+#include "nm-setting-dcb.h"
+#include "nm-setting-generic.h"
 #include "nm-core-internal.h"
-#include <nm-utils.h>
+#include "nm-utils.h"
 
 #include "nm-platform.h"
 #include "NetworkManagerUtils.h"
@@ -600,8 +599,11 @@ read_route_file_legacy (const char *filename, NMSettingIPConfig *s_ip4, GError *
 			}
 		}
 		dest = g_match_info_fetch (match_info, 1);
-		if (!strcmp (dest, "default"))
-			strcpy (dest,  "0.0.0.0");
+		if (!strcmp (dest, "default")) {
+			g_match_info_free (match_info);
+			PARSE_WARNING ("ignoring manual default route: '%s' (%s)", *iter, filename);
+			continue;
+		}
 		if (!nm_utils_ipaddr_valid (AF_INET, dest)) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Invalid IP4 route destination address '%s'", dest);
@@ -924,6 +926,7 @@ make_ip4_setting (shvarFile *ifcfg,
 	shvarFile *network_ifcfg;
 	shvarFile *route_ifcfg;
 	gboolean never_default = FALSE;
+	gint64 timeout;
 
 	s_ip4 = (NMSettingIPConfig *) nm_setting_ip4_config_new ();
 
@@ -970,12 +973,7 @@ make_ip4_setting (shvarFile *ifcfg,
 		else
 			method = NM_SETTING_IP4_CONFIG_METHOD_DISABLED;
 	} else if (!g_ascii_strcasecmp (value, "autoip")) {
-		g_free (value);
-		g_object_set (s_ip4,
-		              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_LINK_LOCAL,
-		              NM_SETTING_IP_CONFIG_NEVER_DEFAULT, never_default,
-		              NULL);
-		return NM_SETTING (s_ip4);
+		method = NM_SETTING_IP4_CONFIG_METHOD_LINK_LOCAL;
 	} else if (!g_ascii_strcasecmp (value, "shared")) {
 		int idx;
 
@@ -1036,7 +1034,7 @@ make_ip4_setting (shvarFile *ifcfg,
 
 		g_object_set (s_ip4,
 		              NM_SETTING_IP_CONFIG_DHCP_SEND_HOSTNAME, svGetValueBoolean (ifcfg, "DHCP_SEND_HOSTNAME", TRUE),
-		              NM_SETTING_IP4_CONFIG_DHCP_TIMEOUT, svGetValueInt64 (ifcfg, "IPV4_DHCP_TIMEOUT", 10, 0, G_MAXUINT32, 0),
+		              NM_SETTING_IP_CONFIG_DHCP_TIMEOUT, svGetValueInt64 (ifcfg, "IPV4_DHCP_TIMEOUT", 10, 0, G_MAXINT32, 0),
 		              NULL);
 
 		value = svGetValue (ifcfg, "DHCP_CLIENT_ID", FALSE);
@@ -1198,6 +1196,11 @@ make_ip4_setting (shvarFile *ifcfg,
 			g_free (value);
 		}
 	}
+
+	timeout = svGetValueInt64 (ifcfg, "ARPING_WAIT", 10, -1,
+	                           NM_SETTING_IP_CONFIG_DAD_TIMEOUT_MAX / 1000, -1);
+	g_object_set (s_ip4, NM_SETTING_IP_CONFIG_DAD_TIMEOUT,
+	              (gint) (timeout <= 0 ? timeout : timeout * 1000), NULL);
 
 	return NM_SETTING (s_ip4);
 
@@ -2810,7 +2813,7 @@ eap_ttls_reader (const char *eap_method,
 		           || !strcmp (*iter, "eap-gtc")) {
 			if (!eap_simple_reader (*iter, ifcfg, keys, s_8021x, TRUE, error))
 				goto done;
-			g_object_set (s_8021x, NM_SETTING_802_1X_PHASE2_AUTHEAP, (*iter + STRLEN ("eap-")), NULL);
+			g_object_set (s_8021x, NM_SETTING_802_1X_PHASE2_AUTHEAP, (*iter + NM_STRLEN ("eap-")), NULL);
 		} else {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Unknown IEEE_8021X_INNER_AUTH_METHOD '%s'.",
@@ -3142,8 +3145,7 @@ make_wpa_setting (shvarFile *ifcfg,
 		g_free (allow_rsn);
 	}
 
-	/* coverity[dereference] */
-	if (!strcmp (value, "WPA-PSK")) {
+	if (wpa_psk) {
 		NMSettingSecretFlags psk_flags;
 
 		psk_flags = read_secret_flags (ifcfg, "WPA_PSK_FLAGS");
@@ -3163,7 +3165,7 @@ make_wpa_setting (shvarFile *ifcfg,
 			g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-none", NULL);
 		else
 			g_object_set (wsec, NM_SETTING_WIRELESS_SECURITY_KEY_MGMT, "wpa-psk", NULL);
-	} else if (!strcmp (value, "WPA-EAP") || !strcmp (value, "IEEE8021X")) {
+	} else if (wpa_eap || ieee8021x) {
 		/* Adhoc mode is mutually exclusive with any 802.1x-based authentication */
 		if (adhoc) {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
@@ -3324,6 +3326,7 @@ make_wireless_setting (shvarFile *ifcfg,
 	char *value = NULL;
 	gint64 chan = 0;
 	NMSettingMacRandomization mac_randomization = NM_SETTING_MAC_RANDOMIZATION_NEVER;
+	NMSettingWirelessPowersave powersave = NM_SETTING_WIRELESS_POWERSAVE_DEFAULT;
 
 	s_wireless = NM_SETTING_WIRELESS (nm_setting_wireless_new ());
 
@@ -3501,9 +3504,28 @@ make_wireless_setting (shvarFile *ifcfg,
 	              svGetValueBoolean (ifcfg, "SSID_HIDDEN", FALSE),
 	              NULL);
 
+	value = svGetValueFull (ifcfg, "POWERSAVE", FALSE);
+	if (value) {
+		if (!strcmp (value, "default"))
+			powersave = NM_SETTING_WIRELESS_POWERSAVE_DEFAULT;
+		else if (!strcmp (value, "ignore"))
+			powersave = NM_SETTING_WIRELESS_POWERSAVE_IGNORE;
+		else if (!strcmp (value, "disable") || !strcmp (value, "no"))
+			powersave = NM_SETTING_WIRELESS_POWERSAVE_DISABLE;
+		else if (!strcmp (value, "enable") || !strcmp (value, "yes"))
+			powersave = NM_SETTING_WIRELESS_POWERSAVE_ENABLE;
+		else {
+			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
+			             "Invalid POWERSAVE value '%s'", value);
+			g_free (value);
+			goto error;
+		}
+		g_free (value);
+	}
+
 	g_object_set (s_wireless,
 	              NM_SETTING_WIRELESS_POWERSAVE,
-	              svGetValueBoolean (ifcfg, "POWERSAVE", FALSE) ? 1 : 0,
+	              powersave,
 	              NULL);
 
 	value = svGetValueFull (ifcfg, "MAC_ADDRESS_RANDOMIZATION", FALSE);
@@ -3517,6 +3539,7 @@ make_wireless_setting (shvarFile *ifcfg,
 		else {
 			g_set_error (error, NM_SETTINGS_ERROR, NM_SETTINGS_ERROR_INVALID_CONNECTION,
 			             "Invalid MAC_ADDRESS_RANDOMIZATION value '%s'", value);
+			g_free (value);
 			goto error;
 		}
 		g_free (value);
@@ -4624,7 +4647,7 @@ make_vlan_setting (shvarFile *ifcfg,
 	char *end = NULL;
 	gint vlan_id = -1;
 	guint32 vlan_flags = 0;
-	gint gvrp;
+	gint gvrp, reorder_hdr;
 
 	value = svGetValue (ifcfg, "VLAN_ID", FALSE);
 	if (value) {
@@ -4699,8 +4722,7 @@ make_vlan_setting (shvarFile *ifcfg,
 	g_object_set (s_vlan, NM_SETTING_VLAN_PARENT, parent, NULL);
 	g_clear_pointer (&parent, g_free);
 
-	if (svGetValueBoolean (ifcfg, "REORDER_HDR", FALSE))
-		vlan_flags |= NM_VLAN_FLAG_REORDER_HEADERS;
+	vlan_flags |= NM_VLAN_FLAG_REORDER_HEADERS;
 
 	gvrp = svGetValueBoolean (ifcfg, "GVRP", -1);
 	if (gvrp > 0)
@@ -4708,12 +4730,25 @@ make_vlan_setting (shvarFile *ifcfg,
 
 	value = svGetValue (ifcfg, "VLAN_FLAGS", FALSE);
 	if (value) {
-		/* Prefer GVRP variable; only take VLAN_FLAG=GVRP when GVRP is not specified */
-		if (g_strstr_len (value, -1, "GVRP") && gvrp == -1)
-			vlan_flags |= NM_VLAN_FLAG_GVRP;
-		if (g_strstr_len (value, -1, "LOOSE_BINDING"))
-			vlan_flags |= NM_VLAN_FLAG_LOOSE_BINDING;
+		gs_strfreev char **strv = NULL;
+		char **ptr;
+
+		strv = g_strsplit_set (value, ", ", 0);
+
+		for (ptr = strv; ptr && *ptr; ptr++) {
+			if (nm_streq (*ptr, "GVRP") && gvrp == -1)
+				vlan_flags |= NM_VLAN_FLAG_GVRP;
+			if (nm_streq (*ptr, "LOOSE_BINDING"))
+				vlan_flags |=  NM_VLAN_FLAG_LOOSE_BINDING;
+			if (nm_streq (*ptr, "NO_REORDER_HDR"))
+				vlan_flags &= ~NM_VLAN_FLAG_REORDER_HEADERS;
+		}
 	}
+
+	reorder_hdr = svGetValueBoolean (ifcfg, "REORDER_HDR", -1);
+	if (   reorder_hdr != -1
+	    && reorder_hdr != NM_FLAGS_HAS (vlan_flags, NM_VLAN_FLAG_REORDER_HEADERS))
+		PARSE_WARNING ("REORDER_HDR key is deprecated, use VLAN_FLAGS");
 
 	if (svGetValueBoolean (ifcfg, "MVRP", FALSE))
 		vlan_flags |= NM_VLAN_FLAG_MVRP;

@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 #pragma once
 
 /***
@@ -21,13 +19,12 @@
   along with systemd; If not, see <http://www.gnu.org/licenses/>.
 ***/
 
-#include "nm-sd-adapt.h"
-
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <sys/signalfd.h>
+#include <sys/socket.h>
 #include <syslog.h>
 
 #include "sd-id128.h"
@@ -129,6 +126,15 @@ int log_oom_internal(
                 const char *file,
                 int line,
                 const char *func);
+
+int log_format_iovec(
+                struct iovec *iovec,
+                unsigned iovec_len,
+                unsigned *n,
+                bool newline_separator,
+                int error,
+                const char *format,
+                va_list ap);
 
 /* This modifies the buffer passed! */
 int log_dump_internal(

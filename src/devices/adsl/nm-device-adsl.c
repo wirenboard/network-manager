@@ -18,7 +18,7 @@
  * Pantelis Koukousoulas <pktoss@gmail.com>
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <sys/socket.h>
 #include <linux/atmdev.h>
@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nm-default.h"
 #include "nm-device-adsl.h"
 #include "nm-device-private.h"
 #include "nm-enum-types.h"
@@ -449,7 +448,6 @@ act_stage3_ip4_config_start (NMDevice *device,
 {
 	NMDeviceAdsl *self = NM_DEVICE_ADSL (device);
 	NMDeviceAdslPrivate *priv = NM_DEVICE_ADSL_GET_PRIVATE (self);
-	NMConnection *connection;
 	NMSettingAdsl *s_adsl;
 	NMActRequest *req;
 	GError *err = NULL;
@@ -458,11 +456,7 @@ act_stage3_ip4_config_start (NMDevice *device,
 
 	req = nm_device_get_act_request (device);
 	g_assert (req);
-
-	connection = nm_act_request_get_applied_connection (req);
-	g_assert (req);
-
-	s_adsl = nm_connection_get_setting_adsl (connection);
+	s_adsl = (NMSettingAdsl *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_ADSL);
 	g_assert (s_adsl);
 
 	/* PPPoE uses the NAS interface, not the ATM interface */

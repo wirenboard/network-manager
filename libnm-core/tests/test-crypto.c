@@ -21,14 +21,13 @@
  * Copyright 2007 - 2011 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "nm-default.h"
 #include "crypto.h"
 #include "nm-utils.h"
 #include "nm-errors.h"
@@ -439,12 +438,14 @@ int
 main (int argc, char **argv)
 {
 	GError *error = NULL;
+	gboolean success;
 	int ret;
 
 	nmtst_init (&argc, &argv, TRUE);
 
-	if (!crypto_init (&error))
-		FAIL ("crypto-init", "failed to initialize crypto: %s", error->message);
+	success = crypto_init (&error);
+	g_assert_no_error (error);
+	g_assert (success);
 
 	g_test_add_data_func ("/libnm/crypto/cert/pem",
 	                      "test_ca_cert.pem",

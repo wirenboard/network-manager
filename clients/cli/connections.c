@@ -17,7 +17,7 @@
  * Copyright 2010 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +29,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "nm-default.h"
 #include "utils.h"
 #include "common.h"
 #include "settings.h"
@@ -1532,11 +1531,14 @@ sort_connections (const GPtrArray *cons, NmCli *nmc, const GArray *order)
 	int i;
 	NmcSortInfo compare_info;
 
+	if (!cons)
+		return NULL;
+
 	compare_info.nmc = nmc;
 	compare_info.order = order;
 
 	sorted = g_ptr_array_sized_new (cons->len);
-	for (i = 0; cons && i < cons->len; i++)
+	for (i = 0; i < cons->len; i++)
 		g_ptr_array_add (sorted, cons->pdata[i]);
 	g_ptr_array_sort_with_data (sorted, compare_connections, &compare_info);
 	return sorted;
@@ -5350,16 +5352,16 @@ cleanup_bt:
 			return FALSE;
 		}
 		if (!vlan_id && ask)
-			vlan_id = vlan_id_ask = nmc_readline (_("VLAN ID <0-4095>: "));
+			vlan_id = vlan_id_ask = nmc_readline (_("VLAN ID <0-4094>: "));
 		if (!vlan_id) {
 			g_set_error_literal (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
 			                     _("Error: 'id' is required."));
 			goto cleanup_vlan;
 		}
 		if (vlan_id) {
-			if (!nmc_string_to_uint (vlan_id, TRUE, 0, 4095, &id)) {
+			if (!nmc_string_to_uint (vlan_id, TRUE, 0, 4094, &id)) {
 				g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
-				             _("Error: 'id': '%s' is not valid; use <0-4095>."),
+				             _("Error: 'id': '%s' is not valid; use <0-4094>."),
 				             vlan_id);
 				goto cleanup_vlan;
 			}
@@ -5887,14 +5889,14 @@ cleanup_olpc:
 		gboolean success = FALSE;
 		char *username_ask = NULL;
 		const char *username = NULL;
-		char *protocol_ask = NULL;
-		const char *protocol = NULL;
+		char *protocol_ask = NULL, *protocol = NULL;
+		const char *protocol_c = NULL;
 		const char *password_c = NULL;
 		char *password = NULL;
 		const char *encapsulation_c = NULL;
 		char *encapsulation = NULL;
 		nmc_arg_t exp_args[] = { {"username",      TRUE, &username,        !ask},
-		                         {"protocol",      TRUE, &protocol,        !ask},
+		                         {"protocol",      TRUE, &protocol_c,      !ask},
 		                         {"password",      TRUE, &password_c,      FALSE},
 		                         {"encapsulation", TRUE, &encapsulation_c, FALSE},
 		                         {NULL} };
@@ -5911,14 +5913,15 @@ cleanup_olpc:
 		}
 
 #define PROMPT_ADSL_PROTO "(" NM_SETTING_ADSL_PROTOCOL_PPPOA "/" NM_SETTING_ADSL_PROTOCOL_PPPOE "/" NM_SETTING_ADSL_PROTOCOL_IPOATM "): "
-		if (!protocol && ask)
-			protocol = protocol_ask = nmc_readline (_("Protocol %s"), PROMPT_ADSL_PROTO);
-		if (!protocol) {
+		if (!protocol_c && ask)
+			protocol_c = protocol_ask = nmc_readline (_("Protocol %s"), PROMPT_ADSL_PROTO);
+		if (!protocol_c) {
 			g_set_error_literal (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
 			                     _("Error: 'protocol' is required."));
 			goto cleanup_adsl;
 		}
-		if (!check_adsl_protocol (&protocol_ask, error))
+		protocol = g_strdup (protocol_c);
+		if (!check_adsl_protocol (&protocol, error))
 			goto cleanup_adsl;
 
 		/* Also ask for all optional arguments if '--ask' is specified. */
@@ -5945,6 +5948,7 @@ cleanup_olpc:
 cleanup_adsl:
 		g_free (username_ask);
 		g_free (password);
+		g_free (protocol);
 		g_free (protocol_ask);
 		g_free (encapsulation);
 
@@ -6184,7 +6188,7 @@ cleanup_tun:
 			gs_free char *values_str = NULL;
 
 			values = nm_utils_enum_get_values (nm_ip_tunnel_mode_get_type (),
-			                                   NM_IP_TUNNEL_MODE_UKNOWN + 1,
+			                                   NM_IP_TUNNEL_MODE_UNKNOWN + 1,
 			                                   G_MAXINT);
 			values_str = g_strjoinv (",", (char **) values);
 			g_set_error (error, NMCLI_ERROR, NMC_RESULT_ERROR_USER_INPUT,
@@ -6787,7 +6791,7 @@ gen_func_ip_tunnel_mode (const char *text, int state)
 	gs_free const char **words = NULL;
 
 	words = nm_utils_enum_get_values (nm_ip_tunnel_mode_get_type (),
-	                                  NM_IP_TUNNEL_MODE_UKNOWN + 1,
+	                                  NM_IP_TUNNEL_MODE_UNKNOWN + 1,
 	                                  G_MAXINT);
 	return nmc_rl_gen_func_basic (text, state, words);
 }

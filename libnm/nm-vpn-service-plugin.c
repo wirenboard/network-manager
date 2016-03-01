@@ -19,7 +19,7 @@
  * Copyright 2007 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include "nm-vpn-service-plugin.h"
 
@@ -27,14 +27,12 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include "nm-glib.h"
 #include "nm-enum-types.h"
 #include "nm-utils.h"
 #include "nm-connection.h"
 #include "nm-dbus-helpers.h"
 #include "nm-core-internal.h"
 #include "nm-simple-connection.h"
-#include "nm-macros-internal.h"
 
 #include "nmdbus-vpn-plugin.h"
 
@@ -314,8 +312,6 @@ nm_vpn_service_plugin_set_config (NMVpnServicePlugin *plugin,
 
 	(void) g_variant_lookup (config, NM_VPN_PLUGIN_CONFIG_HAS_IP4, "b", &priv->has_ip4);
 	(void) g_variant_lookup (config, NM_VPN_PLUGIN_CONFIG_HAS_IP6, "b", &priv->has_ip6);
-
-	g_warn_if_fail (priv->has_ip4 || priv->has_ip6);
 
 	/* Record the items that need to also be inserted into the
 	 * ip4config, for compatibility with older daemons.

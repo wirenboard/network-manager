@@ -18,18 +18,15 @@
  * Copyright 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include "nm-vpn-plugin-info.h"
 
-#include <gio/gio.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
 
-#include "gsystem-local-alloc.h"
 #include "nm-errors.h"
-#include "nm-macros-internal.h"
 #include "nm-core-internal.h"
 
 #define DEFAULT_DIR_ETC     NMCONFDIR"/VPN"
@@ -140,7 +137,7 @@ nm_vpn_plugin_info_check_file_full (const char *filename,
 
 /**
  * _nm_vpn_plugin_info_check_file:
- * @filename:
+ * @filename: the file to check
  * @check_absolute: if %TRUE, only allow absolute path names.
  * @do_validate_filename: if %TRUE, only accept the filename if
  *   nm_vpn_plugin_info_validate_filename() succeeds.

@@ -17,7 +17,7 @@
  *
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -25,7 +25,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "nm-default.h"
 #include "nm-dns-plugin.h"
 #include "NetworkManagerUtils.h"
 
@@ -33,7 +32,7 @@ typedef struct {
 	gboolean disposed;
 
 	GPid pid;
-	guint32 watch_id;
+	guint watch_id;
 	char *progname;
 	char *pidfile;
 } NMDnsPluginPrivate;
@@ -130,6 +129,7 @@ watch_cb (GPid pid, gint status, gpointer user_data)
 	NMDnsPluginPrivate *priv = NM_DNS_PLUGIN_GET_PRIVATE (self);
 
 	priv->pid = 0;
+	priv->watch_id = 0;
 	g_free (priv->progname);
 	priv->progname = NULL;
 

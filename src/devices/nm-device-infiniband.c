@@ -18,11 +18,10 @@
  * Copyright 2011 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <linux/if_infiniband.h>
 
-#include "nm-default.h"
 #include "nm-device-infiniband.h"
 #include "NetworkManagerUtils.h"
 #include "nm-device-private.h"
@@ -69,8 +68,6 @@ static NMActStageReturn
 act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 {
 	NMActStageReturn ret;
-	NMActRequest *req;
-	NMConnection *connection;
 	NMSettingInfiniband *s_infiniband;
 	const char *transport_mode;
 	char *mode_path;
@@ -82,12 +79,7 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	req = nm_device_get_act_request (dev);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	connection = nm_act_request_get_applied_connection (req);
-	g_assert (connection);
-	s_infiniband = nm_connection_get_setting_infiniband (connection);
+	s_infiniband = (NMSettingInfiniband *) nm_device_get_applied_setting (dev, NM_TYPE_SETTING_INFINIBAND);
 	g_assert (s_infiniband);
 
 	transport_mode = nm_setting_infiniband_get_transport_mode (s_infiniband);
@@ -272,7 +264,7 @@ create_and_realize (NMDevice *device,
 	}
 
 	plerr = nm_platform_link_infiniband_add (NM_PLATFORM_GET, parent_ifindex, p_key, out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create InfiniBand P_Key interface '%s' for '%s': %s",
 		             nm_device_get_iface (device),
@@ -406,9 +398,9 @@ get_connection_parent (NMDeviceFactory *factory, NMConnection *connection)
 }
 
 static char *
-get_virtual_iface_name (NMDeviceFactory *factory,
-                        NMConnection *connection,
-                        const char *parent_iface)
+get_connection_iface (NMDeviceFactory *factory,
+                      NMConnection *connection,
+                      const char *parent_iface)
 {
 	NMSettingInfiniband *s_infiniband;
 
@@ -430,6 +422,6 @@ NM_DEVICE_FACTORY_DEFINE_INTERNAL (INFINIBAND, Infiniband, infiniband,
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_INFINIBAND_SETTING_NAME),
 	factory_iface->create_device = create_device;
 	factory_iface->get_connection_parent = get_connection_parent;
-	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
+	factory_iface->get_connection_iface = get_connection_iface;
 	)
 

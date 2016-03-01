@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 /***
   This file is part of systemd.
 
@@ -321,16 +319,65 @@ char *truncate_nl(char *s) {
         return s;
 }
 
+char ascii_tolower(char x) {
+
+        if (x >= 'A' && x <= 'Z')
+                return x - 'A' + 'a';
+
+        return x;
+}
+
 char *ascii_strlower(char *t) {
         char *p;
 
         assert(t);
 
         for (p = t; *p; p++)
-                if (*p >= 'A' && *p <= 'Z')
-                        *p = *p - 'A' + 'a';
+                *p = ascii_tolower(*p);
 
         return t;
+}
+
+char *ascii_strlower_n(char *t, size_t n) {
+        size_t i;
+
+        if (n <= 0)
+                return t;
+
+        for (i = 0; i < n; i++)
+                t[i] = ascii_tolower(t[i]);
+
+        return t;
+}
+
+int ascii_strcasecmp_n(const char *a, const char *b, size_t n) {
+
+        for (; n > 0; a++, b++, n--) {
+                int x, y;
+
+                x = (int) (uint8_t) ascii_tolower(*a);
+                y = (int) (uint8_t) ascii_tolower(*b);
+
+                if (x != y)
+                        return x - y;
+        }
+
+        return 0;
+}
+
+int ascii_strcasecmp_nn(const char *a, size_t n, const char *b, size_t m) {
+        int r;
+
+        r = ascii_strcasecmp_n(a, b, MIN(n, m));
+        if (r != 0)
+                return r;
+
+        if (n < m)
+                return -1;
+        else if (n > m)
+                return 1;
+        else
+                return 0;
 }
 
 bool chars_intersect(const char *a, const char *b) {
@@ -406,6 +453,7 @@ char *ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigne
         char *e;
         const char *i, *j;
         unsigned k, len, len2;
+        int r;
 
         assert(s);
         assert(percent <= 100);
@@ -425,10 +473,10 @@ char *ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigne
 
         k = 0;
         for (i = s; k < x && i < s + old_length; i = utf8_next_char(i)) {
-                int c;
+                char32_t c;
 
-                c = utf8_encoded_to_unichar(i);
-                if (c < 0)
+                r = utf8_encoded_to_unichar(i, &c);
+                if (r < 0)
                         return NULL;
                 k += unichar_iswide(c) ? 2 : 1;
         }
@@ -437,11 +485,11 @@ char *ellipsize_mem(const char *s, size_t old_length, size_t new_length, unsigne
                 x ++;
 
         for (j = s + old_length; k < new_length && j > i; ) {
-                int c;
+                char32_t c;
 
                 j = utf8_prev_char(j);
-                c = utf8_encoded_to_unichar(j);
-                if (c < 0)
+                r = utf8_encoded_to_unichar(j, &c);
+                if (r < 0)
                         return NULL;
                 k += unichar_iswide(c) ? 2 : 1;
         }

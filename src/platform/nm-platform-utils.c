@@ -18,6 +18,8 @@
  * Copyright (C) 2015 Red Hat, Inc.
  */
 
+#include "nm-default.h"
+
 #include "nm-platform-utils.h"
 
 #include <string.h>
@@ -30,10 +32,9 @@
 #include <linux/version.h>
 
 #include "nm-utils.h"
-#include "NetworkManagerUtils.h"
-#include "nm-default.h"
 #include "nm-setting-wired.h"
 
+#include "nm-core-utils.h"
 
 /******************************************************************
  * ethtool
@@ -142,7 +143,8 @@ nmp_utils_ethtool_get_permanent_address (const char *ifname,
 		struct ethtool_perm_addr e;
 		guint8 _extra_data[NM_UTILS_HWADDR_LEN_MAX + 1];
 	} edata;
-	guint zeros[NM_UTILS_HWADDR_LEN_MAX] = { 0 };
+	static const guint8 zeros[NM_UTILS_HWADDR_LEN_MAX] = { 0 };
+	static guint8 ones[NM_UTILS_HWADDR_LEN_MAX] = { 0 };
 
 	if (!ifname)
 		return FALSE;
@@ -159,6 +161,12 @@ nmp_utils_ethtool_get_permanent_address (const char *ifname,
 	/* Some drivers might return a permanent address of all zeros.
 	 * Reject that (rh#1264024) */
 	if (memcmp (edata.e.data, zeros, edata.e.size) == 0)
+		return FALSE;
+
+	/* Some drivers return a permanent address of all ones. Reject that too */
+	if (G_UNLIKELY (ones[0] != 0xFF))
+		memset (ones, 0xFF, sizeof (ones));
+	if (memcmp (edata.e.data, ones, edata.e.size) == 0)
 		return FALSE;
 
 	memcpy (buf, edata.e.data, edata.e.size);
@@ -408,6 +416,15 @@ out:
  * utils
  ******************************************************************/
 
+#define IPV4LL_NETWORK (htonl (0xA9FE0000L))
+#define IPV4LL_NETMASK (htonl (0xFFFF0000L))
+
+gboolean
+nmp_utils_ip4_address_is_link_local (in_addr_t addr)
+{
+	return (addr & IPV4LL_NETMASK) == IPV4LL_NETWORK;
+}
+
 /**
  * Takes a pair @timestamp and @duration, and returns the remaining duration based
  * on the new timestamp @now.
@@ -496,13 +513,13 @@ gboolean
 nmp_utils_device_exists (const char *name)
 {
 #define SYS_CLASS_NET "/sys/class/net/"
-	char sysdir[STRLEN (SYS_CLASS_NET) + IFNAMSIZ] = SYS_CLASS_NET;
+	char sysdir[NM_STRLEN (SYS_CLASS_NET) + IFNAMSIZ] = SYS_CLASS_NET;
 
 	if (   !name
 	    || strlen (name) >= IFNAMSIZ
 	    || !nm_utils_is_valid_path_component (name))
 		g_return_val_if_reached (FALSE);
 
-	strcpy (&sysdir[STRLEN (SYS_CLASS_NET)], name);
+	strcpy (&sysdir[NM_STRLEN (SYS_CLASS_NET)], name);
 	return g_file_test (sysdir, G_FILE_TEST_EXISTS);
 }

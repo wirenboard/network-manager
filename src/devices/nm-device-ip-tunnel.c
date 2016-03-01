@@ -18,7 +18,7 @@
  * Copyright 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <netinet/in.h>
@@ -28,7 +28,6 @@
 
 #include "nm-device-ip-tunnel.h"
 #include "nm-device-private.h"
-#include "nm-default.h"
 #include "nm-manager.h"
 #include "nm-platform.h"
 #include "nm-device-factory.h"
@@ -554,13 +553,13 @@ platform_link_to_tunnel_mode (const NMPlatformLink *link)
 		else if (lnk->proto == IPPROTO_IPV6)
 			return NM_IP_TUNNEL_MODE_IP6IP6;
 		else
-			return NM_IP_TUNNEL_MODE_UKNOWN;
+			return NM_IP_TUNNEL_MODE_UNKNOWN;
 	case NM_LINK_TYPE_IPIP:
 		return NM_IP_TUNNEL_MODE_IPIP;
 	case NM_LINK_TYPE_SIT:
 		return NM_IP_TUNNEL_MODE_SIT;
 	default:
-		g_return_val_if_reached (NM_IP_TUNNEL_MODE_UKNOWN);
+		g_return_val_if_reached (NM_IP_TUNNEL_MODE_UNKNOWN);
 	}
 }
 
@@ -661,7 +660,7 @@ create_and_realize (NMDevice *device,
 		}
 
 		plerr = nm_platform_link_gre_add (NM_PLATFORM_GET, iface, &lnk_gre, out_plink);
-		if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 			             "Failed to create GRE interface '%s' for '%s': %s",
 			             iface,
@@ -687,7 +686,7 @@ create_and_realize (NMDevice *device,
 		lnk_sit.path_mtu_discovery = nm_setting_ip_tunnel_get_path_mtu_discovery (s_ip_tunnel);
 
 		plerr = nm_platform_link_sit_add (NM_PLATFORM_GET, iface, &lnk_sit, out_plink);
-		if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 					"Failed to create SIT interface '%s' for '%s': %s",
 					iface,
@@ -713,7 +712,7 @@ create_and_realize (NMDevice *device,
 		lnk_ipip.path_mtu_discovery = nm_setting_ip_tunnel_get_path_mtu_discovery (s_ip_tunnel);
 
 		plerr = nm_platform_link_ipip_add (NM_PLATFORM_GET, iface, &lnk_ipip, out_plink);
-		if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 					"Failed to create IPIP interface '%s' for '%s': %s",
 					iface,
@@ -742,7 +741,7 @@ create_and_realize (NMDevice *device,
 		lnk_ip6tnl.proto = nm_setting_ip_tunnel_get_mode (s_ip_tunnel) == NM_IP_TUNNEL_MODE_IPIP6 ? IPPROTO_IPIP : IPPROTO_IPV6;
 
 		plerr = nm_platform_link_ip6tnl_add (NM_PLATFORM_GET, iface, &lnk_ip6tnl, out_plink);
-		if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+		if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 			g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 			             "Failed to create IPIP interface '%s' for '%s': %s",
 			             iface,
@@ -997,7 +996,7 @@ create_device (NMDeviceFactory *factory,
 		mode = platform_link_to_tunnel_mode (plink);
 	}
 
-	if (mode == NM_IP_TUNNEL_MODE_UKNOWN)
+	if (mode == NM_IP_TUNNEL_MODE_UNKNOWN)
 		return NULL;
 
 	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_IP_TUNNEL,
@@ -1023,9 +1022,9 @@ get_connection_parent (NMDeviceFactory *factory, NMConnection *connection)
 }
 
 static char *
-get_virtual_iface_name (NMDeviceFactory *factory,
-                        NMConnection *connection,
-                        const char *parent_iface)
+get_connection_iface (NMDeviceFactory *factory,
+                      NMConnection *connection,
+                      const char *parent_iface)
 {
 	const char *ifname;
 	NMSettingIPTunnel *s_ip_tunnel;
@@ -1048,5 +1047,5 @@ NM_DEVICE_FACTORY_DEFINE_INTERNAL (IP_TUNNEL, IPTunnel, ip_tunnel,
 	NM_DEVICE_FACTORY_DECLARE_SETTING_TYPES (NM_SETTING_IP_TUNNEL_SETTING_NAME),
 	factory_iface->create_device = create_device;
 	factory_iface->get_connection_parent = get_connection_parent;
-	factory_iface->get_virtual_iface_name = get_virtual_iface_name;
+	factory_iface->get_connection_iface = get_connection_iface;
 )

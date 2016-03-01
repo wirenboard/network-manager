@@ -19,7 +19,9 @@
  * Copyright 2005 - 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-utils.h"
 
 #include <string.h>
 #include <errno.h>
@@ -31,13 +33,9 @@
 #include <gmodule.h>
 #include <sys/stat.h>
 
-#include "nm-default.h"
-#include "nm-utils.h"
 #include "nm-utils-private.h"
 #include "nm-setting-private.h"
 #include "crypto.h"
-#include "nm-macros-internal.h"
-
 #include "nm-setting-bond.h"
 #include "nm-setting-bridge.h"
 #include "nm-setting-infiniband.h"
@@ -48,7 +46,7 @@
 #include "nm-setting-wireless.h"
 
 /* Embed the commit id in the build binary */
-static const char *const __nm_git_sha = STRLEN (NM_GIT_SHA) > 0 ? "NM_GIT_SHA:"NM_GIT_SHA : "";
+static const char *const __nm_git_sha = NM_STRLEN (NM_GIT_SHA) > 0 ? "NM_GIT_SHA:"NM_GIT_SHA : "";
 
 /**
  * SECTION:nm-utils

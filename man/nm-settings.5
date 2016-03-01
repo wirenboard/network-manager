@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 19 January 2016
+.\"      Date: 01 March 2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.1.90
+.\"    Source: NetworkManager 1.1.91
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.1\&.90" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.1\&.91" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1548,6 +1548,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 address\-data
@@ -1566,6 +1567,15 @@ T}:T{
 []
 T}:T{
 Deprecated in favor of the \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq properties, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq\&.  Array of IPv4 address structures\&.  Each IPv4 address structure is composed of 3 32\-bit values; the first being the IPv4 address (network byte order), the second the prefix (1 \- 32), and last the IPv4 gateway (network byte order)\&. The gateway may be left as 0 if no gateway exists for that subnet\&.
+T}
+T{
+dad\-timeout
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+Timeout in milliseconds used to check for the presence of duplicate IP addresses on the network\&.  If an address conflict is detected, the activation will fail\&.  A zero value means that no duplicate address detection is performed, \-1 means the default value (either configuration ipvx\&.dad\-timeout override or 3 seconds)\&.  A value greater than zero is a timeout in milliseconds\&.
 T}
 T{
 dhcp\-client\-id
@@ -1606,7 +1616,7 @@ T}
 T{
 dhcp\-timeout
 T}:T{
-uint32
+int32
 T}:T{
 0
 T}:T{
@@ -1768,6 +1778,8 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
 T{
 addr\-gen\-mode
@@ -1797,6 +1809,15 @@ T}:T{
 Deprecated in favor of the \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq properties, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqaddress\-data\*(Aq and \*(Aqgateway\*(Aq\&.  Array of IPv6 address structures\&.  Each IPv6 address structure is composed of an IPv6 address, a prefix length (1 \- 128), and an IPv6 gateway address\&. The gateway may be zeroed out if no gateway exists for that subnet\&.
 T}
 T{
+dad\-timeout
+T}:T{
+int32
+T}:T{
+\-1
+T}:T{
+Timeout in milliseconds used to check for the presence of duplicate IP addresses on the network\&.  If an address conflict is detected, the activation will fail\&.  A zero value means that no duplicate address detection is performed, \-1 means the default value (either configuration ipvx\&.dad\-timeout override or 3 seconds)\&.  A value greater than zero is a timeout in milliseconds\&.
+T}
+T{
 dhcp\-hostname
 T}:T{
 string
@@ -1813,6 +1834,15 @@ T}:T{
 TRUE
 T}:T{
 If TRUE, a hostname is sent to the DHCP server when acquiring a lease\&. Some DHCP servers use this hostname to update DNS databases, essentially providing a static hostname for the computer\&.  If the "dhcp\-hostname" property is NULL and this property is TRUE, the current persistent hostname of the computer is sent\&.
+T}
+T{
+dhcp\-timeout
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+A timeout for a DHCP transaction in seconds\&.
 T}
 T{
 dns
@@ -2822,7 +2852,7 @@ uint32
 T}:T{
 0
 T}:T{
-The VLAN identifier that the interface created by this connection should be assigned\&.
+The VLAN identifier that the interface created by this connection should be assigned\&. The valid range is from 0 to 4094, without the reserved id 4095\&.
 T}
 T{
 ingress\-priority\-map
@@ -2994,7 +3024,7 @@ ageing
 T}:T{
 uint32
 T}:T{
-0
+300
 T}:T{
 Specifies the lifetime in seconds of FDB entries learnt by the kernel\&.
 T}
@@ -3498,7 +3528,7 @@ uint32
 T}:T{
 0
 T}:T{
-If set to FALSE, Wi\-Fi power saving behavior is disabled\&.  If set to TRUE, Wi\-Fi power saving behavior is enabled\&.  All other values are reserved\&.  Note that even though only boolean values are allowed, the property type is an unsigned integer to allow for future expansion\&.
+One of NM_SETTING_WIRELESS_POWERSAVE_DISABLE (2) (disable Wi\-Fi power saving), NM_SETTING_WIRELESS_POWERSAVE_ENABLE (3) (enable Wi\-Fi power saving), NM_SETTING_WIRELESS_POWERSAVE_IGNORE (1) (don\*(Aqt touch currently configure setting) or NM_SETTING_WIRELESS_POWERSAVE_DEFAULT (0) (use the globally configured value)\&. All other values are reserved\&.
 T}
 T{
 rate

@@ -19,14 +19,13 @@
  * Copyright 2011 - 2014 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-setting-vlan.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "nm-setting-vlan.h"
-#include "nm-default.h"
-#include "nm-macros-internal.h"
 #include "nm-utils.h"
 #include "nm-core-types-internal.h"
 #include "nm-setting-connection.h"
@@ -666,6 +665,15 @@ verify (NMSetting *setting, NMConnection *connection, GError **error)
 		}
 	}
 
+	if (priv->id >= 4095) {
+		g_set_error (error,
+		             NM_CONNECTION_ERROR,
+		             NM_CONNECTION_ERROR_INVALID_PROPERTY,
+		             _("the vlan id must be in range 0-4094 but is %u"),
+		             priv->id);
+		g_prefix_error (error, "%s.%s: ", NM_SETTING_VLAN_SETTING_NAME, NM_SETTING_VLAN_ID);
+	}
+
 	if (priv->flags & ~NM_VLAN_FLAGS_ALL) {
 		g_set_error_literal (error,
 		                     NM_CONNECTION_ERROR,
@@ -851,7 +859,7 @@ nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 	 * NMSettingVlan:id:
 	 *
 	 * The VLAN identifier that the interface created by this connection should
-	 * be assigned.
+	 * be assigned. The valid range is from 0 to 4094, without the reserved id 4095.
 	 **/
 	/* ---ifcfg-rh---
 	 * property: id
@@ -885,8 +893,8 @@ nm_setting_vlan_class_init (NMSettingVlanClass *setting_class)
 	 **/
 	/* ---ifcfg-rh---
 	 * property: flags
-	 * variable: REORDER_HDR, GVRP, MVRP, VLAN_FLAGS
-	 * values: "yes or "no" for REORDER_HDR, GVRP and MVRP; "LOOSE_BINDING" for VLAN_FLAGS
+	 * variable: GVRP, MVRP, VLAN_FLAGS
+	 * values: "yes or "no" for GVRP and MVRP; "LOOSE_BINDING" and "NO_REORDER_HDR" for VLAN_FLAGS
 	 * description: VLAN flags.
 	 * ---end---
 	 */

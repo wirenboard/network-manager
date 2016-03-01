@@ -19,7 +19,9 @@
  * Copyright 2005 - 2013 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-utils.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -29,17 +31,14 @@
 #include <libintl.h>
 #include <gmodule.h>
 
-#include "nm-default.h"
 #include "nm-gvaluearray-compat.h"
-#include "nm-utils.h"
 #include "nm-utils-private.h"
 #include "nm-dbus-glib-types.h"
 #include "nm-setting-private.h"
 #include "crypto.h"
-#include "nm-macros-internal.h"
 
 /* Embed the commit id in the build binary */
-static const char *const __nm_git_sha = STRLEN (NM_GIT_SHA) > 0 ? "NM_GIT_SHA:"NM_GIT_SHA : "";
+static const char *const __nm_git_sha = NM_STRLEN (NM_GIT_SHA) > 0 ? "NM_GIT_SHA:"NM_GIT_SHA : "";
 
 /**
  * SECTION:nm-utils

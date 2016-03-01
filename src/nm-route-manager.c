@@ -18,7 +18,7 @@
  * Copyright (C) 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 
@@ -26,7 +26,6 @@
 #include "nm-platform.h"
 #include "nmp-object.h"
 #include "nm-core-internal.h"
-#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 
 /* if within half a second after adding an IP address a matching device-route shows
@@ -134,7 +133,7 @@ static const VTableIP vtable_v4, vtable_v6;
             if ((self) != singleton_instance) \
                 g_snprintf (__prefix, sizeof (__prefix), "%s%c[%p]", _NMLOG_PREFIX_NAME, __ch, (self)); \
             else \
-                __prefix[STRLEN (_NMLOG_PREFIX_NAME)] = __ch; \
+                __prefix[NM_STRLEN (_NMLOG_PREFIX_NAME)] = __ch; \
             _nm_log ((level), (__domain), 0, \
                      "%s: " _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
                      __prefix _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
@@ -633,7 +632,7 @@ _vx_route_sync (const VTableIP *vtable, NMRouteManager *self, int ifindex, const
 		 * causes the route on the unmanaged device to be replaced).
 		 * Still, that is not much different then from messing with unmanaged routes when
 		 * the effective and the intended metrics equal. The rules is: NM will leave routes
-		 * on unmanged devices alone, unless they conflict with what NM wants to configure.
+		 * on unmanaged devices alone, unless they conflict with what NM wants to configure.
 		 ***************************************************************************/
 
 		g_array_set_size (ipx_routes->effective_metrics, ipx_routes->entries->len);

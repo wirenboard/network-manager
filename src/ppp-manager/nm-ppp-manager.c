@@ -19,7 +19,7 @@
  * Copyright (C) 2008 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -42,7 +42,6 @@
 #include <linux/if.h>
 #include <linux/if_ppp.h>
 
-#include "nm-default.h"
 #include "NetworkManagerUtils.h"
 #include "nm-ppp-manager.h"
 #include "nm-platform.h"
@@ -66,8 +65,8 @@ typedef struct {
 	NMActRequestGetSecretsCallId secrets_id;
 	const char *secrets_setting_name;
 
-	guint32 ppp_watch_id;
-	guint32 ppp_timeout_handler;
+	guint ppp_watch_id;
+	guint ppp_timeout_handler;
 
 	/* Monitoring */
 	char *ip_iface;

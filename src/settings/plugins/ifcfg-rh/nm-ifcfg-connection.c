@@ -18,24 +18,22 @@
  * Copyright (C) 2008 - 2011 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 
 #include <glib/gstdio.h>
 
-#include <nm-dbus-interface.h>
-#include <nm-setting-connection.h>
-#include <nm-setting-wired.h>
-#include <nm-setting-wireless.h>
-#include <nm-setting-gsm.h>
-#include <nm-setting-cdma.h>
-#include <nm-setting-pppoe.h>
-#include <nm-setting-wireless-security.h>
-#include <nm-setting-8021x.h>
+#include "nm-dbus-interface.h"
+#include "nm-setting-connection.h"
+#include "nm-setting-wired.h"
+#include "nm-setting-wireless.h"
+#include "nm-setting-gsm.h"
+#include "nm-setting-cdma.h"
+#include "nm-setting-pppoe.h"
+#include "nm-setting-wireless-security.h"
+#include "nm-setting-8021x.h"
 #include "nm-platform.h"
-
-#include "nm-default.h"
 
 #include "common.h"
 #include "nm-config.h"
@@ -517,6 +515,9 @@ dispose (GObject *object)
 	nm_clear_g_source (&priv->devtimeout_timeout_id);
 
 	g_clear_object (&priv->inotify_helper);
+
+	g_clear_pointer (&priv->unmanaged_spec, g_free);
+	g_clear_pointer (&priv->unrecognized_spec, g_free);
 
 	G_OBJECT_CLASS (nm_ifcfg_connection_parent_class)->dispose (object);
 }

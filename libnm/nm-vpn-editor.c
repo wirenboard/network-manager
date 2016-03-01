@@ -19,7 +19,7 @@
  * Copyright 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include "nm-vpn-editor.h"
 
@@ -44,6 +44,7 @@ nm_vpn_editor_default_init (NMVpnEditorInterface *iface)
 
 /**
  * nm_vpn_editor_get_widget:
+ * @editor: the #NMVpnEditor
  *
  * Returns: (transfer none):
  */

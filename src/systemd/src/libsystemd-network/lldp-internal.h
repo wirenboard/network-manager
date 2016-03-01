@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 /***
   This file is part of systemd.
 
@@ -21,8 +19,6 @@
 ***/
 
 #pragma once
-
-#include "nm-sd-adapt.h"
 
 #include "sd-event.h"
 

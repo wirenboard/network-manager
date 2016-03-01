@@ -18,7 +18,7 @@
  * Copyright 2013 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -29,7 +29,6 @@
 
 #include "nm-device-veth.h"
 #include "nm-device-private.h"
-#include "nm-default.h"
 #include "nm-manager.h"
 #include "nm-platform.h"
 #include "nm-device-factory.h"
@@ -188,7 +187,7 @@ create_device (NMDeviceFactory *factory,
 	return (NMDevice *) g_object_new (NM_TYPE_DEVICE_VETH,
 	                                  NM_DEVICE_IFACE, iface,
 	                                  NM_DEVICE_TYPE_DESC, "Veth",
-	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_ETHERNET,
+	                                  NM_DEVICE_DEVICE_TYPE, NM_DEVICE_TYPE_VETH,
 	                                  NM_DEVICE_LINK_TYPE, NM_LINK_TYPE_VETH,
 	                                  NULL);
 }

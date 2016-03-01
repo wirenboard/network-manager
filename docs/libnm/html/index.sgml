@@ -244,6 +244,7 @@
 <ANCHOR id="NM-DEVICE-ERROR-NOT-SOFTWARE:CAPS" href="libnm/libnm-nm-errors.html#NM-DEVICE-ERROR-NOT-SOFTWARE:CAPS">
 <ANCHOR id="NM-DEVICE-ERROR-NOT-ALLOWED:CAPS" href="libnm/libnm-nm-errors.html#NM-DEVICE-ERROR-NOT-ALLOWED:CAPS">
 <ANCHOR id="NM-DEVICE-ERROR-SPECIFIC-OBJECT-NOT-FOUND:CAPS" href="libnm/libnm-nm-errors.html#NM-DEVICE-ERROR-SPECIFIC-OBJECT-NOT-FOUND:CAPS">
+<ANCHOR id="NM-DEVICE-ERROR-VERSION-ID-MISMATCH:CAPS" href="libnm/libnm-nm-errors.html#NM-DEVICE-ERROR-VERSION-ID-MISMATCH:CAPS">
 <ANCHOR id="NM-DEVICE-ERROR:CAPS" href="libnm/libnm-nm-errors.html#NM-DEVICE-ERROR:CAPS">
 <ANCHOR id="NMManagerError" href="libnm/libnm-nm-errors.html#NMManagerError">
 <ANCHOR id="NM-MANAGER-ERROR-FAILED:CAPS" href="libnm/libnm-nm-errors.html#NM-MANAGER-ERROR-FAILED:CAPS">
@@ -368,6 +369,7 @@
 <ANCHOR id="NM-DEVICE-TYPE-IP-TUNNEL:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-IP-TUNNEL:CAPS">
 <ANCHOR id="NM-DEVICE-TYPE-MACVLAN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-MACVLAN:CAPS">
 <ANCHOR id="NM-DEVICE-TYPE-VXLAN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-VXLAN:CAPS">
+<ANCHOR id="NM-DEVICE-TYPE-VETH:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-TYPE-VETH:CAPS">
 <ANCHOR id="NMDeviceCapabilities" href="libnm/libnm-nm-dbus-interface.html#NMDeviceCapabilities">
 <ANCHOR id="NM-DEVICE-CAP-NONE:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-CAP-NONE:CAPS">
 <ANCHOR id="NM-DEVICE-CAP-NM-SUPPORTED:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-CAP-NM-SUPPORTED:CAPS">
@@ -535,7 +537,7 @@
 <ANCHOR id="NM-LLDP-DEST-NEAREST-NON-TPMR-BRIDGE:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-LLDP-DEST-NEAREST-NON-TPMR-BRIDGE:CAPS">
 <ANCHOR id="NM-LLDP-DEST-NEAREST-CUSTOMER-BRIDGE:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-LLDP-DEST-NEAREST-CUSTOMER-BRIDGE:CAPS">
 <ANCHOR id="NMIPTunnelMode" href="libnm/libnm-nm-dbus-interface.html#NMIPTunnelMode">
-<ANCHOR id="NM-IP-TUNNEL-MODE-UKNOWN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-IP-TUNNEL-MODE-UKNOWN:CAPS">
+<ANCHOR id="NM-IP-TUNNEL-MODE-UNKNOWN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-IP-TUNNEL-MODE-UNKNOWN:CAPS">
 <ANCHOR id="NM-IP-TUNNEL-MODE-IPIP:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-IP-TUNNEL-MODE-IPIP:CAPS">
 <ANCHOR id="NM-IP-TUNNEL-MODE-GRE:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-IP-TUNNEL-MODE-GRE:CAPS">
 <ANCHOR id="NM-IP-TUNNEL-MODE-SIT:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-IP-TUNNEL-MODE-SIT:CAPS">
@@ -1251,12 +1253,10 @@
 <ANCHOR id="NMSettingIP4Config.functions_details" href="libnm/NMSettingIP4Config.html#NMSettingIP4Config.functions_details">
 <ANCHOR id="nm-setting-ip4-config-new" href="libnm/NMSettingIP4Config.html#nm-setting-ip4-config-new">
 <ANCHOR id="nm-setting-ip4-config-get-dhcp-client-id" href="libnm/NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-client-id">
-<ANCHOR id="nm-setting-ip4-config-get-dhcp-timeout" href="libnm/NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-timeout">
 <ANCHOR id="nm-setting-ip4-config-get-dhcp-fqdn" href="libnm/NMSettingIP4Config.html#nm-setting-ip4-config-get-dhcp-fqdn">
 <ANCHOR id="NMSettingIP4Config.other_details" href="libnm/NMSettingIP4Config.html#NMSettingIP4Config.other_details">
 <ANCHOR id="NM-SETTING-IP4-CONFIG-SETTING-NAME:CAPS" href="libnm/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-SETTING-NAME:CAPS">
 <ANCHOR id="NM-SETTING-IP4-CONFIG-DHCP-CLIENT-ID:CAPS" href="libnm/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DHCP-CLIENT-ID:CAPS">
-<ANCHOR id="NM-SETTING-IP4-CONFIG-DHCP-TIMEOUT:CAPS" href="libnm/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DHCP-TIMEOUT:CAPS">
 <ANCHOR id="NM-SETTING-IP4-CONFIG-DHCP-FQDN:CAPS" href="libnm/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-DHCP-FQDN:CAPS">
 <ANCHOR id="NM-SETTING-IP4-CONFIG-METHOD-AUTO:CAPS" href="libnm/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD-AUTO:CAPS">
 <ANCHOR id="NM-SETTING-IP4-CONFIG-METHOD-LINK-LOCAL:CAPS" href="libnm/NMSettingIP4Config.html#NM-SETTING-IP4-CONFIG-METHOD-LINK-LOCAL:CAPS">
@@ -1266,7 +1266,6 @@
 <ANCHOR id="NMSettingIP4Config.property-details" href="libnm/NMSettingIP4Config.html#NMSettingIP4Config.property-details">
 <ANCHOR id="NMSettingIP4Config--dhcp-client-id" href="libnm/NMSettingIP4Config.html#NMSettingIP4Config--dhcp-client-id">
 <ANCHOR id="NMSettingIP4Config--dhcp-fqdn" href="libnm/NMSettingIP4Config.html#NMSettingIP4Config--dhcp-fqdn">
-<ANCHOR id="NMSettingIP4Config--dhcp-timeout" href="libnm/NMSettingIP4Config.html#NMSettingIP4Config--dhcp-timeout">
 <ANCHOR id="NMSettingIP6Config" href="libnm/NMSettingIP6Config.html">
 <ANCHOR id="NMSettingIP6Config.functions" href="libnm/NMSettingIP6Config.html#NMSettingIP6Config.functions">
 <ANCHOR id="NMSettingIP6Config.properties" href="libnm/NMSettingIP6Config.html#NMSettingIP6Config.properties">
@@ -1387,7 +1386,10 @@
 <ANCHOR id="nm-setting-ip-config-get-dhcp-send-hostname" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-dhcp-send-hostname">
 <ANCHOR id="nm-setting-ip-config-get-never-default" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-never-default">
 <ANCHOR id="nm-setting-ip-config-get-may-fail" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-may-fail">
+<ANCHOR id="nm-setting-ip-config-get-dad-timeout" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-dad-timeout">
+<ANCHOR id="nm-setting-ip-config-get-dhcp-timeout" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-dhcp-timeout">
 <ANCHOR id="NMSettingIPConfig.other_details" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig.other_details">
+<ANCHOR id="NM-SETTING-IP-CONFIG-DAD-TIMEOUT-MAX:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DAD-TIMEOUT-MAX:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-METHOD:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-METHOD:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-DNS:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-DNS-SEARCH:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-SEARCH:CAPS">
@@ -1402,6 +1404,8 @@
 <ANCHOR id="NM-SETTING-IP-CONFIG-DHCP-SEND-HOSTNAME:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DHCP-SEND-HOSTNAME:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-NEVER-DEFAULT:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-NEVER-DEFAULT:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-MAY-FAIL:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-MAY-FAIL:CAPS">
+<ANCHOR id="NM-SETTING-IP-CONFIG-DAD-TIMEOUT:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DAD-TIMEOUT:CAPS">
+<ANCHOR id="NM-SETTING-IP-CONFIG-DHCP-TIMEOUT:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DHCP-TIMEOUT:CAPS">
 <ANCHOR id="NM-SETTING-DNS-OPTION-DEBUG:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-DEBUG:CAPS">
 <ANCHOR id="NM-SETTING-DNS-OPTION-NDOTS:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-NDOTS:CAPS">
 <ANCHOR id="NM-SETTING-DNS-OPTION-TIMEOUT:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-TIMEOUT:CAPS">
@@ -1418,8 +1422,10 @@
 <ANCHOR id="NM-SETTING-DNS-OPTION-NO-TLD-QUERY:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-NO-TLD-QUERY:CAPS">
 <ANCHOR id="NMSettingIPConfig.property-details" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig.property-details">
 <ANCHOR id="NMSettingIPConfig--addresses" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--addresses">
+<ANCHOR id="NMSettingIPConfig--dad-timeout" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dad-timeout">
 <ANCHOR id="NMSettingIPConfig--dhcp-hostname" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dhcp-hostname">
 <ANCHOR id="NMSettingIPConfig--dhcp-send-hostname" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname">
+<ANCHOR id="NMSettingIPConfig--dhcp-timeout" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dhcp-timeout">
 <ANCHOR id="NMSettingIPConfig--dns" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns">
 <ANCHOR id="NMSettingIPConfig--dns-options" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns-options">
 <ANCHOR id="NMSettingIPConfig--dns-search" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns-search">
@@ -1991,6 +1997,13 @@
 <ANCHOR id="NM-SETTING-WIRELESS-MODE-ADHOC:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-ADHOC:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-MODE-AP:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-AP:CAPS">
 <ANCHOR id="NM-SETTING-WIRELESS-MODE-INFRA:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-MODE-INFRA:CAPS">
+<ANCHOR id="NMSettingWirelessPowersave" href="libnm/NMSettingWireless.html#NMSettingWirelessPowersave">
+<ANCHOR id="NM-SETTING-WIRELESS-POWERSAVE-DEFAULT:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-DEFAULT:CAPS">
+<ANCHOR id="NM-SETTING-WIRELESS-POWERSAVE-IGNORE:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-IGNORE:CAPS">
+<ANCHOR id="NM-SETTING-WIRELESS-POWERSAVE-DISABLE:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-DISABLE:CAPS">
+<ANCHOR id="NM-SETTING-WIRELESS-POWERSAVE-ENABLE:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-ENABLE:CAPS">
+<ANCHOR id="NM-SETTING-WIRELESS-POWERSAVE-NUM:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-NUM:CAPS">
+<ANCHOR id="NM-SETTING-WIRELESS-POWERSAVE-LAST:CAPS" href="libnm/NMSettingWireless.html#NM-SETTING-WIRELESS-POWERSAVE-LAST:CAPS">
 <ANCHOR id="NMSettingWireless.property-details" href="libnm/NMSettingWireless.html#NMSettingWireless.property-details">
 <ANCHOR id="NMSettingWireless--band" href="libnm/NMSettingWireless.html#NMSettingWireless--band">
 <ANCHOR id="NMSettingWireless--bssid" href="libnm/NMSettingWireless.html#NMSettingWireless--bssid">
@@ -2133,6 +2146,9 @@
 <ANCHOR id="nm-device-reapply" href="libnm/NMDevice.html#nm-device-reapply">
 <ANCHOR id="nm-device-reapply-async" href="libnm/NMDevice.html#nm-device-reapply-async">
 <ANCHOR id="nm-device-reapply-finish" href="libnm/NMDevice.html#nm-device-reapply-finish">
+<ANCHOR id="nm-device-get-applied-connection" href="libnm/NMDevice.html#nm-device-get-applied-connection">
+<ANCHOR id="nm-device-get-applied-connection-async" href="libnm/NMDevice.html#nm-device-get-applied-connection-async">
+<ANCHOR id="nm-device-get-applied-connection-finish" href="libnm/NMDevice.html#nm-device-get-applied-connection-finish">
 <ANCHOR id="nm-device-disconnect" href="libnm/NMDevice.html#nm-device-disconnect">
 <ANCHOR id="nm-device-disconnect-async" href="libnm/NMDevice.html#nm-device-disconnect-async">
 <ANCHOR id="nm-device-disconnect-finish" href="libnm/NMDevice.html#nm-device-disconnect-finish">

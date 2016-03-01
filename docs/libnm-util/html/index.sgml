@@ -1736,6 +1736,9 @@
 <ANCHOR id="NM-DEVICE-TYPE-TEAM:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-TYPE-TEAM:CAPS">
 <ANCHOR id="NM-DEVICE-TYPE-TUN:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-TYPE-TUN:CAPS">
 <ANCHOR id="NM-DEVICE-TYPE-IP-TUNNEL:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-TYPE-IP-TUNNEL:CAPS">
+<ANCHOR id="NM-DEVICE-TYPE-MACVLAN:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-TYPE-MACVLAN:CAPS">
+<ANCHOR id="NM-DEVICE-TYPE-VXLAN:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-TYPE-VXLAN:CAPS">
+<ANCHOR id="NM-DEVICE-TYPE-VETH:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-TYPE-VETH:CAPS">
 <ANCHOR id="NMDeviceCapabilities" href="libnm-util/libnm-util-NetworkManager.html#NMDeviceCapabilities">
 <ANCHOR id="NM-DEVICE-CAP-NONE:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-CAP-NONE:CAPS">
 <ANCHOR id="NM-DEVICE-CAP-NM-SUPPORTED:CAPS" href="libnm-util/libnm-util-NetworkManager.html#NM-DEVICE-CAP-NM-SUPPORTED:CAPS">

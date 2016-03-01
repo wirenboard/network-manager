@@ -20,19 +20,19 @@
  * Copyright 2007 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
+
+#include "nm-setting-8021x.h"
 
 #include <string.h>
 #include <dbus/dbus-glib.h>
 
-#include "nm-setting-8021x.h"
 #include "nm-param-spec-specialized.h"
 #include "nm-utils.h"
 #include "nm-dbus-glib-types.h"
 #include "crypto.h"
 #include "nm-utils-private.h"
 #include "nm-setting-private.h"
-#include "nm-macros-internal.h"
 
 /**
  * SECTION:nm-setting-8021x
@@ -431,16 +431,16 @@ get_cert_scheme (GByteArray *array)
 		return NM_SETTING_802_1X_CK_SCHEME_UNKNOWN;
 
 	/* interpret the blob as PATH if it starts with "file://". */
-	if (   array->len >= STRLEN (SCHEME_PATH)
-	    && !memcmp (array->data, SCHEME_PATH, STRLEN (SCHEME_PATH))) {
+	if (   array->len >= NM_STRLEN (SCHEME_PATH)
+	    && !memcmp (array->data, SCHEME_PATH, NM_STRLEN (SCHEME_PATH))) {
 		/* But it must also be NUL terminated, contain at least
 		 * one non-NUL character, and contain only one trailing NUL
 		 * chracter.
 		 * And ensure it's UTF-8 valid too so we can pass it through
 		 * D-Bus and stuff like that. */
-		if (   array->len > STRLEN (SCHEME_PATH) + 1
+		if (   array->len > NM_STRLEN (SCHEME_PATH) + 1
 		    && array->data[array->len - 1] == '\0'
-		    && g_utf8_validate ((const char *) &array->data[STRLEN (SCHEME_PATH)], array->len - (STRLEN (SCHEME_PATH) + 1), NULL))
+		    && g_utf8_validate ((const char *) &array->data[NM_STRLEN (SCHEME_PATH)], array->len - (NM_STRLEN (SCHEME_PATH) + 1), NULL))
 			return NM_SETTING_802_1X_CK_SCHEME_PATH;
 		return NM_SETTING_802_1X_CK_SCHEME_UNKNOWN;
 	}

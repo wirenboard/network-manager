@@ -18,13 +18,12 @@
  * Copyright 2013 - 2015 Red Hat, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
-#include "nm-default.h"
 #include "nm-activation-request.h"
 #include "nm-device-tun.h"
 #include "nm-device-private.h"
@@ -222,7 +221,7 @@ create_and_realize (NMDevice *device,
 	                                  nm_setting_tun_get_vnet_hdr (s_tun),
 	                                  nm_setting_tun_get_multi_queue (s_tun),
 	                                  out_plink);
-	if (plerr != NM_PLATFORM_ERROR_SUCCESS && plerr != NM_PLATFORM_ERROR_EXISTS) {
+	if (plerr != NM_PLATFORM_ERROR_SUCCESS) {
 		g_set_error (error, NM_DEVICE_ERROR, NM_DEVICE_ERROR_CREATION_FAILED,
 		             "Failed to create TUN/TAP interface '%s' for '%s': %s",
 		             iface,
@@ -285,8 +284,6 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 {
 	NMDeviceTun *self = NM_DEVICE_TUN (device);
 	NMDeviceTunPrivate *priv = NM_DEVICE_TUN_GET_PRIVATE (self);
-	NMActRequest *req;
-	NMConnection *connection;
 	NMSettingWired *s_wired;
 	const char *cloned_mac;
 	NMActStageReturn ret;
@@ -301,18 +298,11 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 	if (g_strcmp0 (priv->mode, "tap"))
 		return NM_ACT_STAGE_RETURN_SUCCESS;
 
-	req = nm_device_get_act_request (device);
-	g_return_val_if_fail (req != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	connection = nm_act_request_get_applied_connection (req);
-	g_return_val_if_fail (connection != NULL, NM_ACT_STAGE_RETURN_FAILURE);
-
-	s_wired = nm_connection_get_setting_wired (connection);
+	s_wired = (NMSettingWired *) nm_device_get_applied_setting (device, NM_TYPE_SETTING_WIRED);
 	if (s_wired) {
 		/* Set device MAC address if the connection wants to change it */
 		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac)
-			nm_device_set_hw_addr (device, cloned_mac, "set", LOGD_DEVICE);
+		nm_device_set_hw_addr (device, cloned_mac, "set", LOGD_DEVICE);
 	}
 
 	return NM_ACT_STAGE_RETURN_SUCCESS;

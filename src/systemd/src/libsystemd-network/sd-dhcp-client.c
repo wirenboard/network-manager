@@ -45,6 +45,9 @@
 #define MAX_CLIENT_ID_LEN (sizeof(uint32_t) + MAX_DUID_LEN)  /* Arbitrary limit */
 #define MAX_MAC_ADDR_LEN CONST_MAX(INFINIBAND_ALEN, ETH_ALEN)
 
+#define RESTART_AFTER_NAK_MIN_USEC (1 * USEC_PER_SEC)
+#define RESTART_AFTER_NAK_MAX_USEC (30 * USEC_PER_MINUTE)
+
 struct sd_dhcp_client {
         unsigned n_ref;
 
@@ -103,14 +106,15 @@ struct sd_dhcp_client {
         sd_dhcp_client_cb_t cb;
         void *userdata;
         sd_dhcp_lease *lease;
+        usec_t start_delay;
 };
 
 static const uint8_t default_req_opts[] = {
-        DHCP_OPTION_SUBNET_MASK,
-        DHCP_OPTION_ROUTER,
-        DHCP_OPTION_HOST_NAME,
-        DHCP_OPTION_DOMAIN_NAME,
-        DHCP_OPTION_DOMAIN_NAME_SERVER,
+        SD_DHCP_OPTION_SUBNET_MASK,
+        SD_DHCP_OPTION_ROUTER,
+        SD_DHCP_OPTION_HOST_NAME,
+        SD_DHCP_OPTION_DOMAIN_NAME,
+        SD_DHCP_OPTION_DOMAIN_NAME_SERVER,
 };
 
 static int client_receive_message_raw(sd_event_source *s, int fd,
@@ -145,11 +149,11 @@ int sd_dhcp_client_set_request_option(sd_dhcp_client *client, uint8_t option) {
                               DHCP_STATE_STOPPED), -EBUSY);
 
         switch(option) {
-        case DHCP_OPTION_PAD:
-        case DHCP_OPTION_OVERLOAD:
-        case DHCP_OPTION_MESSAGE_TYPE:
-        case DHCP_OPTION_PARAMETER_REQUEST_LIST:
-        case DHCP_OPTION_END:
+        case SD_DHCP_OPTION_PAD:
+        case SD_DHCP_OPTION_OVERLOAD:
+        case SD_DHCP_OPTION_MESSAGE_TYPE:
+        case SD_DHCP_OPTION_PARAMETER_REQUEST_LIST:
+        case SD_DHCP_OPTION_END:
                 return -EINVAL;
 
         default:
@@ -488,7 +492,7 @@ static int client_message_init(sd_dhcp_client *client, DHCPPacket **ret,
            Identifier option is not set */
         if (client->client_id_len) {
                 r = dhcp_option_append(&packet->dhcp, optlen, &optoffset, 0,
-                                       DHCP_OPTION_CLIENT_IDENTIFIER,
+                                       SD_DHCP_OPTION_CLIENT_IDENTIFIER,
                                        client->client_id_len,
                                        &client->client_id);
                 if (r < 0)
@@ -504,7 +508,7 @@ static int client_message_init(sd_dhcp_client *client, DHCPPacket **ret,
            messages.
          */
         r = dhcp_option_append(&packet->dhcp, optlen, &optoffset, 0,
-                               DHCP_OPTION_PARAMETER_REQUEST_LIST,
+                               SD_DHCP_OPTION_PARAMETER_REQUEST_LIST,
                                client->req_opts_size, client->req_opts);
         if (r < 0)
                 return r;
@@ -533,7 +537,7 @@ static int client_message_init(sd_dhcp_client *client, DHCPPacket **ret,
          */
         max_size = htobe16(size);
         r = dhcp_option_append(&packet->dhcp, client->mtu, &optoffset, 0,
-                               DHCP_OPTION_MAXIMUM_MESSAGE_SIZE,
+                               SD_DHCP_OPTION_MAXIMUM_MESSAGE_SIZE,
                                2, &max_size);
         if (r < 0)
                 return r;
@@ -559,7 +563,7 @@ static int client_append_fqdn_option(DHCPMessage *message, size_t optlen, size_t
         r = dns_name_to_wire_format(fqdn, buffer + 3, sizeof(buffer) - 3, false);
         if (r > 0)
                 r = dhcp_option_append(message, optlen, optoffset, 0,
-                                       DHCP_OPTION_FQDN, 3 + r, buffer);
+                                       SD_DHCP_OPTION_FQDN, 3 + r, buffer);
 
         return r;
 }
@@ -595,7 +599,7 @@ static int client_send_discover(sd_dhcp_client *client) {
          */
         if (client->last_addr != INADDR_ANY) {
                 r = dhcp_option_append(&discover->dhcp, optlen, &optoffset, 0,
-                                       DHCP_OPTION_REQUESTED_IP_ADDRESS,
+                                       SD_DHCP_OPTION_REQUESTED_IP_ADDRESS,
                                        4, &client->last_addr);
                 if (r < 0)
                         return r;
@@ -611,7 +615,7 @@ static int client_send_discover(sd_dhcp_client *client) {
                            DHCPDISCOVER but dhclient does and so we do as well
                         */
                         r = dhcp_option_append(&discover->dhcp, optlen, &optoffset, 0,
-                                               DHCP_OPTION_HOST_NAME,
+                                               SD_DHCP_OPTION_HOST_NAME,
                                                strlen(client->hostname), client->hostname);
                 } else
                         r = client_append_fqdn_option(&discover->dhcp, optlen, &optoffset,
@@ -622,7 +626,7 @@ static int client_send_discover(sd_dhcp_client *client) {
 
         if (client->vendor_class_identifier) {
                 r = dhcp_option_append(&discover->dhcp, optlen, &optoffset, 0,
-                                       DHCP_OPTION_VENDOR_CLASS_IDENTIFIER,
+                                       SD_DHCP_OPTION_VENDOR_CLASS_IDENTIFIER,
                                        strlen(client->vendor_class_identifier),
                                        client->vendor_class_identifier);
                 if (r < 0)
@@ -630,7 +634,7 @@ static int client_send_discover(sd_dhcp_client *client) {
         }
 
         r = dhcp_option_append(&discover->dhcp, optlen, &optoffset, 0,
-                               DHCP_OPTION_END, 0, NULL);
+                               SD_DHCP_OPTION_END, 0, NULL);
         if (r < 0)
                 return r;
 
@@ -669,13 +673,13 @@ static int client_send_request(sd_dhcp_client *client) {
                  */
 
                 r = dhcp_option_append(&request->dhcp, optlen, &optoffset, 0,
-                                       DHCP_OPTION_SERVER_IDENTIFIER,
+                                       SD_DHCP_OPTION_SERVER_IDENTIFIER,
                                        4, &client->lease->server_address);
                 if (r < 0)
                         return r;
 
                 r = dhcp_option_append(&request->dhcp, optlen, &optoffset, 0,
-                                       DHCP_OPTION_REQUESTED_IP_ADDRESS,
+                                       SD_DHCP_OPTION_REQUESTED_IP_ADDRESS,
                                        4, &client->lease->address);
                 if (r < 0)
                         return r;
@@ -688,7 +692,7 @@ static int client_send_request(sd_dhcp_client *client) {
                    assigned address. ’ciaddr’ MUST be zero.
                  */
                 r = dhcp_option_append(&request->dhcp, optlen, &optoffset, 0,
-                                       DHCP_OPTION_REQUESTED_IP_ADDRESS,
+                                       SD_DHCP_OPTION_REQUESTED_IP_ADDRESS,
                                        4, &client->last_addr);
                 if (r < 0)
                         return r;
@@ -723,7 +727,7 @@ static int client_send_request(sd_dhcp_client *client) {
         if (client->hostname) {
                 if (dns_name_is_single_label(client->hostname))
                         r = dhcp_option_append(&request->dhcp, optlen, &optoffset, 0,
-                                               DHCP_OPTION_HOST_NAME,
+                                               SD_DHCP_OPTION_HOST_NAME,
                                                strlen(client->hostname), client->hostname);
                 else
                         r = client_append_fqdn_option(&request->dhcp, optlen, &optoffset,
@@ -733,7 +737,7 @@ static int client_send_request(sd_dhcp_client *client) {
         }
 
         r = dhcp_option_append(&request->dhcp, optlen, &optoffset, 0,
-                               DHCP_OPTION_END, 0, NULL);
+                               SD_DHCP_OPTION_END, 0, NULL);
         if (r < 0)
                 return r;
 
@@ -947,6 +951,7 @@ error:
 }
 
 static int client_initialize_time_events(sd_dhcp_client *client) {
+        uint64_t usec = 0;
         int r;
 
         assert(client);
@@ -954,10 +959,15 @@ static int client_initialize_time_events(sd_dhcp_client *client) {
 
         client->timeout_resend = sd_event_source_unref(client->timeout_resend);
 
+        if (client->start_delay) {
+                sd_event_now(client->event, clock_boottime_or_monotonic(), &usec);
+                usec += client->start_delay;
+        }
+
         r = sd_event_add_time(client->event,
                               &client->timeout_resend,
                               clock_boottime_or_monotonic(),
-                              0, 0,
+                              usec, 0,
                               client_timeout_resend, client);
         if (r < 0)
                 goto error;
@@ -987,7 +997,7 @@ static int client_initialize_events(sd_dhcp_client *client,
         return 0;
 }
 
-static int client_start(sd_dhcp_client *client) {
+static int client_start_delayed(sd_dhcp_client *client) {
         int r;
 
         assert_return(client, -EINVAL);
@@ -1013,6 +1023,11 @@ static int client_start(sd_dhcp_client *client) {
                 client->start_time = now(clock_boottime_or_monotonic());
 
         return client_initialize_events(client, client_receive_message_raw);
+}
+
+static int client_start(sd_dhcp_client *client) {
+        client->start_delay = 0;
+        return client_start_delayed(client);
 }
 
 static int client_timeout_expire(sd_event_source *s, uint64_t usec,
@@ -1364,6 +1379,7 @@ static int client_set_lease_timeouts(sd_dhcp_client *client) {
 static int client_handle_message(sd_dhcp_client *client, DHCPMessage *message,
                                  int len) {
         DHCP_CLIENT_DONT_DESTROY(client);
+        char time_string[FORMAT_TIMESPAN_MAX];
         int r = 0, notify_event = 0;
 
         assert(client);
@@ -1411,6 +1427,7 @@ static int client_handle_message(sd_dhcp_client *client, DHCPMessage *message,
 
                 r = client_handle_ack(client, message, len);
                 if (r >= 0) {
+                        client->start_delay = 0;
                         client->timeout_resend =
                                 sd_event_source_unref(client->timeout_resend);
                         client->receive_message =
@@ -1460,11 +1477,15 @@ static int client_handle_message(sd_dhcp_client *client, DHCPMessage *message,
                         if (r < 0)
                                 goto error;
 
-                        r = client_start(client);
+                        r = client_start_delayed(client);
                         if (r < 0)
                                 goto error;
 
-                        log_dhcp_client(client, "REBOOTED");
+                        log_dhcp_client(client, "REBOOT in %s", format_timespan(time_string, FORMAT_TIMESPAN_MAX,
+                                                                                client->start_delay, USEC_PER_SEC));
+
+                        client->start_delay = CLAMP(client->start_delay * 2,
+                                                    RESTART_AFTER_NAK_MIN_USEC, RESTART_AFTER_NAK_MAX_USEC);
 
                         return 0;
                 } else if (r == -ENOMSG)

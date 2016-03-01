@@ -1,5 +1,3 @@
-/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
-
 /***
   This file is part of systemd.
 
@@ -24,6 +22,8 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
+
+#include "sd-dhcp6-client.h"
 
 #include "alloc-util.h"
 #include "dhcp6-internal.h"
@@ -92,11 +92,11 @@ int dhcp6_option_append_ia(uint8_t **buf, size_t *buflen, DHCP6IA *ia) {
         assert_return(buf && *buf && buflen && ia, -EINVAL);
 
         switch (ia->type) {
-        case DHCP6_OPTION_IA_NA:
+        case SD_DHCP6_OPTION_IA_NA:
                 len = DHCP6_OPTION_IA_NA_LEN;
                 break;
 
-        case DHCP6_OPTION_IA_TA:
+        case SD_DHCP6_OPTION_IA_TA:
                 len = DHCP6_OPTION_IA_TA_LEN;
                 break;
 
@@ -119,7 +119,7 @@ int dhcp6_option_append_ia(uint8_t **buf, size_t *buflen, DHCP6IA *ia) {
         *buflen -= len;
 
         LIST_FOREACH(addresses, addr, ia->addresses) {
-                r = option_append_hdr(buf, buflen, DHCP6_OPTION_IAADDR,
+                r = option_append_hdr(buf, buflen, SD_DHCP6_OPTION_IAADDR,
                                       sizeof(addr->iaaddr));
                 if (r < 0)
                         return r;
@@ -198,7 +198,7 @@ int dhcp6_option_parse_ia(uint8_t **buf, size_t *buflen, uint16_t iatype,
         assert_return(!ia->addresses, -EINVAL);
 
         switch (iatype) {
-        case DHCP6_OPTION_IA_NA:
+        case SD_DHCP6_OPTION_IA_NA:
 
                 if (*buflen < DHCP6_OPTION_IA_NA_LEN + sizeof(DHCP6Option) +
                     sizeof(addr->iaaddr)) {
@@ -221,7 +221,7 @@ int dhcp6_option_parse_ia(uint8_t **buf, size_t *buflen, uint16_t iatype,
 
                 break;
 
-        case DHCP6_OPTION_IA_TA:
+        case SD_DHCP6_OPTION_IA_TA:
                 if (*buflen < DHCP6_OPTION_IA_TA_LEN + sizeof(DHCP6Option) +
                     sizeof(addr->iaaddr)) {
                         r = -ENOBUFS;
@@ -249,7 +249,7 @@ int dhcp6_option_parse_ia(uint8_t **buf, size_t *buflen, uint16_t iatype,
         while ((r = option_parse_hdr(buf, buflen, &opt, &optlen)) >= 0) {
 
                 switch (opt) {
-                case DHCP6_OPTION_IAADDR:
+                case SD_DHCP6_OPTION_IAADDR:
 
                         addr = new0(DHCP6Address, 1);
                         if (!addr) {
@@ -276,7 +276,7 @@ int dhcp6_option_parse_ia(uint8_t **buf, size_t *buflen, uint16_t iatype,
 
                         break;
 
-                case DHCP6_OPTION_STATUS_CODE:
+                case SD_DHCP6_OPTION_STATUS_CODE:
                         if (optlen < sizeof(status))
                                 break;
 

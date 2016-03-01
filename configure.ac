@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [1])
-m4_define([nm_micro_version], [90])
+m4_define([nm_micro_version], [91])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -272,7 +272,7 @@ AC_CHECK_LIB([dl], [dladdr], LIBDL="-ldl", LIBDL="")
 AC_SUBST(LIBDL)
 
 PKG_CHECK_MODULES(GLIB, [gio-unix-2.0 >= 2.37.6 gmodule-2.0],
-	[AC_SUBST(LOG_DRIVER, '$(top_srcdir)/build-aux/tap-driver.sh'),
+	[AC_SUBST(LOG_DRIVER, '$(top_srcdir)/build-aux/tap-driver.sh')
 	 AC_SUBST(AM_TESTS_FD_REDIRECT, '--tap')],
 	[PKG_CHECK_MODULES(GLIB, gio-unix-2.0 >= 2.32 gmodule-2.0)
 	 AC_SUBST(LOG_DRIVER, '$(top_srcdir)/build-aux/test-driver')])
@@ -595,7 +595,7 @@ AC_ARG_WITH(crypto, AS_HELP_STRING([--with-crypto=nss|gnutls], [Cryptography lib
 with_nss=no
 with_gnutls=no
 if test x"$ac_crypto" = xnss; then
-  PKG_CHECK_MODULES(NSS, [nss >= 3.11])
+  PKG_CHECK_MODULES(NSS, [nss])
 
   # Work around a pkg-config bug (fdo #29801) where exists != usable
   FOO=`$PKG_CONFIG --cflags --libs nss`

@@ -19,7 +19,7 @@
  * Copyright (C) 2006 - 2008 Novell, Inc.
  */
 
-#include "config.h"
+#include "nm-default.h"
 
 #include <string.h>
 #include <sys/socket.h>
@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "nm-default.h"
 #include "nm-vpn-connection.h"
 #include "nm-ip4-config.h"
 #include "nm-ip6-config.h"
@@ -767,21 +766,13 @@ nm_vpn_connection_get_service (NMVpnConnection *self)
 	return nm_setting_vpn_get_service_type (s_vpn);
 }
 
-static const char *
-vpn_plugin_failure_to_string (NMVpnPluginFailure failure)
-{
-	switch (failure) {
-	case NM_VPN_PLUGIN_FAILURE_LOGIN_FAILED:
-		return "login-failed";
-	case NM_VPN_PLUGIN_FAILURE_CONNECT_FAILED:
-		return "connect-failed";
-	case NM_VPN_PLUGIN_FAILURE_BAD_IP_CONFIG:
-		return "bad-ip-config";
-	default:
-		break;
-	}
-	return "unknown";
-}
+NM_UTILS_LOOKUP_STR_DEFINE_STATIC (_vpn_plugin_failure_to_string, NMVpnPluginFailure,
+	NM_UTILS_LOOKUP_DEFAULT (NULL),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_PLUGIN_FAILURE_LOGIN_FAILED,   "login-failed"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_PLUGIN_FAILURE_CONNECT_FAILED, "connect-failed"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_PLUGIN_FAILURE_BAD_IP_CONFIG,  "bad-ip-config"),
+);
+#define vpn_plugin_failure_to_string(failure) NM_UTILS_LOOKUP_STR (_vpn_plugin_failure_to_string, failure)
 
 static void
 plugin_failed (NMVpnConnection *self, guint reason)
@@ -803,81 +794,50 @@ plugin_failed (NMVpnConnection *self, guint reason)
 	}
 }
 
-static const char *
-vpn_service_state_to_string (NMVpnServiceState state)
-{
-	switch (state) {
-	case NM_VPN_SERVICE_STATE_INIT:
-		return "init";
-	case NM_VPN_SERVICE_STATE_SHUTDOWN:
-		return "shutdown";
-	case NM_VPN_SERVICE_STATE_STARTING:
-		return "starting";
-	case NM_VPN_SERVICE_STATE_STARTED:
-		return "started";
-	case NM_VPN_SERVICE_STATE_STOPPING:
-		return "stopping";
-	case NM_VPN_SERVICE_STATE_STOPPED:
-		return "stopped";
-	default:
-		break;
-	}
-	return "unknown";
-}
+NM_UTILS_LOOKUP_STR_DEFINE_STATIC (_vpn_service_state_to_string, NMVpnServiceState,
+	NM_UTILS_LOOKUP_DEFAULT (NULL),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_UNKNOWN,  "unknown"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_INIT,     "init"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_SHUTDOWN, "shutdown"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_STARTING, "starting"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_STARTED,  "started"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_STOPPING, "stopping"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_SERVICE_STATE_STOPPED,  "stopped"),
+);
+#define vpn_service_state_to_string(state) NM_UTILS_LOOKUP_STR (_vpn_service_state_to_string, state)
 
-static const char *state_table[] = {
-	[STATE_UNKNOWN]       = "unknown",
-	[STATE_WAITING]       = "waiting",
-	[STATE_PREPARE]       = "prepare",
-	[STATE_NEED_AUTH]     = "need-auth",
-	[STATE_CONNECT]       = "connect",
-	[STATE_IP_CONFIG_GET] = "ip-config-get",
-	[STATE_PRE_UP]        = "pre-up",
-	[STATE_ACTIVATED]     = "activated",
-	[STATE_DEACTIVATING]  = "deactivating",
-	[STATE_DISCONNECTED]  = "disconnected",
-	[STATE_FAILED]        = "failed",
-};
+NM_UTILS_LOOKUP_STR_DEFINE_STATIC (_vpn_state_to_string, VpnState,
+	NM_UTILS_LOOKUP_DEFAULT (NULL),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_UNKNOWN,       "unknown"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_WAITING,       "waiting"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_PREPARE,       "prepare"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_NEED_AUTH,     "need-auth"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_CONNECT,       "connect"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_IP_CONFIG_GET, "ip-config-get"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_PRE_UP,        "pre-up"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_ACTIVATED,     "activated"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_DEACTIVATING,  "deactivating"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_DISCONNECTED,  "disconnected"),
+	NM_UTILS_LOOKUP_STR_ITEM (STATE_FAILED,        "failed"),
+);
+#define vpn_state_to_string(state) NM_UTILS_LOOKUP_STR (_vpn_state_to_string, state)
 
-static const char *
-vpn_state_to_string (VpnState state)
-{
-	if ((gsize) state < G_N_ELEMENTS (state_table))
-		return state_table[state];
-	return "unknown";
-}
-
-static const char *
-vpn_reason_to_string (NMVpnConnectionStateReason reason)
-{
-	switch (reason) {
-	case NM_VPN_CONNECTION_STATE_REASON_NONE:
-		return "none";
-	case NM_VPN_CONNECTION_STATE_REASON_USER_DISCONNECTED:
-		return "user-disconnected";
-	case NM_VPN_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED:
-		return "device-disconnected";
-	case NM_VPN_CONNECTION_STATE_REASON_SERVICE_STOPPED:
-		return "service-stopped";
-	case NM_VPN_CONNECTION_STATE_REASON_IP_CONFIG_INVALID:
-		return "ip-config-invalid";
-	case NM_VPN_CONNECTION_STATE_REASON_CONNECT_TIMEOUT:
-		return "connect-timeout";
-	case NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT:
-		return "service-start-timeout";
-	case NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_FAILED:
-		return "service-start-failed";
-	case NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS:
-		return "no-secrets";
-	case NM_VPN_CONNECTION_STATE_REASON_LOGIN_FAILED:
-		return "login-failed";
-	case NM_VPN_CONNECTION_STATE_REASON_CONNECTION_REMOVED:
-		return "connection-removed";
-	default:
-		break;
-	}
-	return "unknown";
-}
+NM_UTILS_LOOKUP_STR_DEFINE_STATIC (_vpn_reason_to_string, NMVpnConnectionStateReason,
+	NM_UTILS_LOOKUP_DEFAULT (NULL),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_UNKNOWN,               "unknown"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_NONE,                  "none"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_USER_DISCONNECTED,     "user-disconnected"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_DEVICE_DISCONNECTED,   "device-disconnected"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_SERVICE_STOPPED,       "service-stopped"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_IP_CONFIG_INVALID,     "ip-config-invalid"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_CONNECT_TIMEOUT,       "connect-timeout"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT, "service-start-timeout"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_FAILED,  "service-start-failed"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS,            "no-secrets"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_LOGIN_FAILED,          "login-failed"),
+	NM_UTILS_LOOKUP_STR_ITEM (NM_VPN_CONNECTION_STATE_REASON_CONNECTION_REMOVED,    "connection-removed"),
+);
+#define vpn_reason_to_string(reason) NM_UTILS_LOOKUP_STR (_vpn_reason_to_string, reason)
 
 static void
 plugin_state_changed (NMVpnConnection *self, NMVpnServiceState new_service_state)
@@ -1321,6 +1281,8 @@ nm_vpn_connection_config_get (NMVpnConnection *self, GVariant *dict)
 	if (g_variant_lookup (dict, NM_VPN_PLUGIN_CONFIG_HAS_IP6, "b", &b))
 		priv->has_ip6 = b;
 	nm_exported_object_clear_and_unexport (&priv->ip6_config);
+
+	nm_vpn_connection_config_maybe_complete (self, TRUE);
 }
 
 guint32
