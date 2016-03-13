@@ -1,4 +1,4 @@
-network-manager (1.1.91-2) UNRELEASED; urgency=medium
+network-manager (1.1.91-2) unstable; urgency=medium
 
   * Skip the test suite if "nocheck" is set via DEB_BUILD_OPTIONS.
   * Mark the Build-Depends which are required to run the test suite with
@@ -10,7 +10,7 @@ network-manager (1.1.91-2) UNRELEASED; urgency=medium
   * Add a hack for wext devices reporting IW_MODE_AUTO configuration mode.
     Patch cherry-picked from upstream Git. (Closes: #817115)
 
- -- Michael Biebl <biebl@debian.org>  Tue, 01 Mar 2016 21:34:04 +0100
+ -- Michael Biebl <biebl@debian.org>  Sun, 13 Mar 2016 21:03:20 +0100
 
 network-manager (1.1.91-1) unstable; urgency=medium
 
