@@ -1,3 +1,10 @@
+network-manager (1.1.91-3) UNRELEASED; urgency=medium
+
+  * Bump Build-Depends on debhelper to (>= 9.20160114) for
+    "--dbgsym-migration" support.
+
+ -- Michael Biebl <biebl@debian.org>  Sun, 13 Mar 2016 21:12:58 +0100
+
 network-manager (1.1.91-2) unstable; urgency=medium
 
   * Skip the test suite if "nocheck" is set via DEB_BUILD_OPTIONS.
