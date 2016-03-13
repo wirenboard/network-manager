@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+include /usr/share/dpkg/architecture.mk
 
 PPPD_PLUGIN_DIR := $(shell dh_ppp --plugin-dir)
 
