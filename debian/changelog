@@ -5,6 +5,8 @@ network-manager (1.1.91-2) UNRELEASED; urgency=medium
     <!nocheck>.
   * Use the architecture.mk Makefile snippet provided by dpkg-dev to retrieve
     DEB_HOST_MULTIARCH.
+  * Ensure proper upgrade from network-manager-dbg to new dbgsym packages by
+    using dh_strip --dbgsym-migration.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Mar 2016 21:34:04 +0100
 
