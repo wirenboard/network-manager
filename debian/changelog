@@ -7,6 +7,8 @@ network-manager (1.1.91-2) UNRELEASED; urgency=medium
     DEB_HOST_MULTIARCH.
   * Ensure proper upgrade from network-manager-dbg to new dbgsym packages by
     using dh_strip --dbgsym-migration.
+  * Add a hack for wext devices reporting IW_MODE_AUTO configuration mode.
+    Patch cherry-picked from upstream Git. (Closes: #817115)
 
  -- Michael Biebl <biebl@debian.org>  Tue, 01 Mar 2016 21:34:04 +0100
 
