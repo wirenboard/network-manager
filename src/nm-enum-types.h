@@ -64,8 +64,6 @@ GType nm_pobject_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_POBJECT_TYPE (nm_pobject_type_get_type ())
 GType nm_ip_config_merge_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_IP_CONFIG_MERGE_FLAGS (nm_ip_config_merge_flags_get_type ())
-GType nm_utils_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_UTILS_ERROR (nm_utils_error_get_type ())
 GType nm_match_spec_match_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_MATCH_SPEC_MATCH_TYPE (nm_match_spec_match_type_get_type ())
 GType nm_utils_test_flags_get_type (void) G_GNUC_CONST;

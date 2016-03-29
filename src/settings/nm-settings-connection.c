@@ -883,10 +883,8 @@ new_secrets_commit_cb (NMSettingsConnection *self,
                        GError *error,
                        gpointer user_data)
 {
-	if (error) {
-		_LOGW ("Error saving new secrets to backing storage: (%d) %s",
-		       error->code, error->message ? error->message : "(unknown)");
-	}
+	if (error)
+		_LOGW ("Error saving new secrets to backing storage: %s", error->message);
 }
 
 static void
@@ -1086,19 +1084,17 @@ get_secrets_done_cb (NMAgentManager *manager,
 			}
 
 		} else {
-			_LOGD ("(%s:%p) failed to update with agent secrets: (%d) %s",
+			_LOGD ("(%s:%p) failed to update with agent secrets: %s",
 			       setting_name,
 			       info,
-			       local ? local->code : -1,
-			       (local && local->message) ? local->message : "(unknown)");
+			       local->message);
 		}
 		g_variant_unref (filtered_secrets);
 	} else {
-		_LOGD ("(%s:%p) failed to update with existing secrets: (%d) %s",
+		_LOGD ("(%s:%p) failed to update with existing secrets: %s",
 		       setting_name,
 		       info,
-		       local ? local->code : -1,
-		       (local && local->message) ? local->message : "(unknown)");
+		       local->message);
 	}
 
 	applied_connection = info->applied_connection;
@@ -1739,7 +1735,10 @@ settings_connection_update_helper (NMSettingsConnection *self,
 
 	/* Check if the settings are valid first */
 	if (new_settings) {
-		tmp = nm_simple_connection_new_from_dbus (new_settings, &error);
+		tmp = _nm_simple_connection_new_from_dbus (new_settings,
+		                                             NM_SETTING_PARSE_FLAGS_STRICT
+		                                           | NM_SETTING_PARSE_FLAGS_NORMALIZE,
+		                                           &error);
 		if (!tmp)
 			goto error;
 	}
@@ -2163,7 +2162,7 @@ nm_settings_connection_update_timestamp (NMSettingsConnection *self,
 	/* Save timestamp to timestamps database file */
 	timestamps_file = g_key_file_new ();
 	if (!g_key_file_load_from_file (timestamps_file, SETTINGS_TIMESTAMPS_FILE, G_KEY_FILE_KEEP_COMMENTS, &error)) {
-		if (!(error->domain == G_FILE_ERROR && error->code == G_FILE_ERROR_NOENT))
+		if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
 			_LOGW ("error parsing timestamps file '%s': %s", SETTINGS_TIMESTAMPS_FILE, error->message);
 		g_clear_error (&error);
 	}
@@ -2172,7 +2171,7 @@ nm_settings_connection_update_timestamp (NMSettingsConnection *self,
 	tmp = g_strdup_printf ("%" G_GUINT64_FORMAT, timestamp);
 	g_key_file_set_value (timestamps_file, "timestamps", connection_uuid, tmp);
 	g_free (tmp);
- 
+
 	data = g_key_file_to_data (timestamps_file, &len, &error);
 	if (data) {
 		g_file_set_contents (SETTINGS_TIMESTAMPS_FILE, data, len, &error);
@@ -2219,8 +2218,7 @@ nm_settings_connection_read_and_fill_timestamp (NMSettingsConnection *self)
 		priv->timestamp = timestamp;
 		priv->timestamp_set = TRUE;
 	} else {
-		_LOGD ("failed to read connection timestamp: (%d) %s",
-		       err->code, err->message);
+		_LOGD ("failed to read connection timestamp: %s", err->message);
 		g_clear_error (&err);
 	}
 	g_key_file_free (timestamps_file);

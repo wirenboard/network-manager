@@ -2084,8 +2084,7 @@ nm_utils_ip_routes_from_variant (GVariant *value,
 		if (   !g_variant_lookup (route_var, "dest", "&s", &dest)
 		    || !g_variant_lookup (route_var, "prefix", "u", &prefix)) {
 			g_warning ("Ignoring invalid address");
-			g_variant_unref (route_var);
-			continue;
+			goto next;
 		}
 		if (!g_variant_lookup (route_var, "next-hop", "&s", &next_hop))
 			next_hop = NULL;
@@ -2098,8 +2097,7 @@ nm_utils_ip_routes_from_variant (GVariant *value,
 		if (!route) {
 			g_warning ("Ignoring invalid route: %s", error->message);
 			g_clear_error (&error);
-			g_variant_unref (route_var);
-			continue;
+			goto next;
 		}
 
 		g_variant_iter_init (&attrs_iter, route_var);
@@ -2113,6 +2111,8 @@ nm_utils_ip_routes_from_variant (GVariant *value,
 		}
 
 		g_ptr_array_add (routes, route);
+next:
+		g_variant_unref (route_var);
 	}
 
 	return routes;
@@ -3787,81 +3787,6 @@ _nm_utils_strstrdictkey_create (const char *v1, const char *v2)
 		memcpy (&k->data[l1], v2, l2);
 
 	return k;
-}
-
-/**********************************************************************************************/
-
-/* _nm_utils_ascii_str_to_int64:
- *
- * A wrapper for g_ascii_strtoll, that checks whether the whole string
- * can be successfully converted to a number and is within a given
- * range. On any error, @fallback will be returned and %errno will be set
- * to a non-zero value. On success, %errno will be set to zero, check %errno
- * for errors. Any trailing or leading (ascii) white space is ignored and the
- * functions is locale independent.
- *
- * The function is guaranteed to return a value between @min and @max
- * (inclusive) or @fallback. Also, the parsing is rather strict, it does
- * not allow for any unrecognized characters, except leading and trailing
- * white space.
- **/
-gint64
-_nm_utils_ascii_str_to_int64 (const char *str, guint base, gint64 min, gint64 max, gint64 fallback)
-{
-	gint64 v;
-	size_t len;
-	char buf[64], *s, *str_free = NULL;
-
-	if (str) {
-		while (g_ascii_isspace (str[0]))
-			str++;
-	}
-	if (!str || !str[0]) {
-		errno = EINVAL;
-		return fallback;
-	}
-
-	len = strlen (str);
-	if (g_ascii_isspace (str[--len])) {
-		/* backward search the first non-ws character.
-		 * We already know that str[0] is non-ws. */
-		while (g_ascii_isspace (str[--len]))
-			;
-
-		/* str[len] is now the last non-ws character... */
-		len++;
-
-		if (len >= sizeof (buf))
-			s = str_free = g_malloc (len + 1);
-		else
-			s = buf;
-
-		memcpy (s, str, len);
-		s[len] = 0;
-
-		nm_assert (len > 0 && len < strlen (str) && len == strlen (s));
-		nm_assert (!g_ascii_isspace (str[len-1]) && g_ascii_isspace (str[len]));
-		nm_assert (strncmp (str, s, len) == 0);
-
-		str = s;
-	}
-
-	errno = 0;
-	v = g_ascii_strtoll (str, &s, base);
-
-	if (errno != 0)
-		v = fallback;
-	else if (s[0] != 0) {
-		errno = EINVAL;
-		v = fallback;
-	} else if (v > max || v < min) {
-		errno = ERANGE;
-		v = fallback;
-	}
-
-	if (G_UNLIKELY (str_free))
-		g_free (str_free);
-	return v;
 }
 
 static gboolean

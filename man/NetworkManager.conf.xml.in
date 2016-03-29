@@ -17,7 +17,7 @@ Copyright 2010 - 2014 Red Hat, Inc.
     <manvolnum>5</manvolnum>
     <refmiscinfo class="source">NetworkManager</refmiscinfo>
     <refmiscinfo class="manual">Configuration</refmiscinfo>
-    <refmiscinfo class="version">1.0</refmiscinfo>
+    <refmiscinfo class="version">1.2</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -157,8 +157,7 @@ plugins-=remove-me
         and <literal>dhcpcd</literal> options require the indicated
         clients to be installed. The <literal>internal</literal>
         option uses a built-in DHCP client which is not currently as
-        featureful as the external clients (and in particular, does
-        not yet support DHCPv6).</para>
+        featureful as the external clients.</para>
         <para>If this key is missing, available DHCP clients are
         looked for in this order: <literal>dhclient</literal>,
         <literal>dhcpcd</literal>,
@@ -289,9 +288,13 @@ no-auto-default=*
         <term><varname>rc-manager</varname></term>
         <listitem><para>Set the <filename>resolv.conf</filename>
         management mode. The default value depends on how NetworkManager
-        was built.</para>
-        <para><literal>none</literal>: NetworkManager will directly
-        write changes to <filename>resolv.conf</filename>.</para>
+        was built. Regardless of this setting, NetworkManager will
+        always write resolv.conf to its runtime state directory.</para>
+        <para><literal>none</literal>: NetworkManager will symlink
+        <filename>/etc/resolv.conf</filename> to its private
+        resolv.conf file in the runtime state directory.</para>
+        <para><literal>file</literal>: NetworkManager will write
+        <filename>/etc/resolv.conf</filename> as file.</para>
         <para><literal>resolvconf</literal>: NetworkManager will run
         resolvconf to update the DNS configuration.</para>
         <para><literal>netconfig</literal>: NetworkManager will run
@@ -483,11 +486,8 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           <term><varname>backend</varname></term>
           <listitem><para>The logging backend. Supported values
           are "<literal>debug</literal>", "<literal>syslog</literal>",
-          "<literal>journal</literal>" and "<literal>journal-syslog-style</literal>.
+          "<literal>journal</literal>".
           "<literal>debug</literal>" uses syslog and logs to standard error.
-          "<literal>journal-syslog-style</literal>" prints the same message to journal
-          as it would print for "<literal>syslog</literal>", containing redundant
-          fields in the text.
           If NetworkManager is started in debug mode (<literal>--debug</literal>)
           this option is ignored and "<literal>debug</literal>" is always used.
           Otherwise, the default is "<literal>@NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT@</literal>".

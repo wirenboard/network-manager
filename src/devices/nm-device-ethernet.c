@@ -158,7 +158,7 @@ _update_s390_subchannels (NMDeviceEthernet *self)
 	dev = (GUdevDevice *) nm_platform_link_get_udev_device (NM_PLATFORM_GET, ifindex);
 	if (!dev) {
 		_LOGW (LOGD_DEVICE | LOGD_HW, "failed to find device %d '%s' with udev",
-		       ifindex, str_if_set (nm_device_get_iface (NM_DEVICE (self)), "(null)"));
+		       ifindex, nm_device_get_iface (NM_DEVICE (self)) ?: "(null)");
 		goto out;
 	}
 	g_object_ref (dev);
@@ -177,7 +177,7 @@ _update_s390_subchannels (NMDeviceEthernet *self)
 	dir = g_dir_open (parent_path, 0, &error);
 	if (!dir) {
 		_LOGW (LOGD_DEVICE | LOGD_HW, "failed to open directory '%s': %s",
-		       parent_path, error && error->message ? error->message : "(unknown)");
+		       parent_path, error->message);
 		g_clear_error (&error);
 		goto out;
 	}
@@ -597,13 +597,13 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
 			if (!success) {
 				_LOGE (LOGD_DEVICE | LOGD_ETHER,
 				       "Activation: (ethernet) couldn't send security configuration to the supplicant: %s",
-				       error ? error->message : "<BUG>");
+				       error->message);
 				g_clear_error (&error);
 			}
 		} else {
 			_LOGE (LOGD_DEVICE | LOGD_ETHER,
 			       "Activation: (ethernet) couldn't build security configuration: %s",
-			       error ? error->message : "<BUG>");
+			       error->message);
 			g_clear_error (&error);
 		}
 
@@ -721,7 +721,7 @@ supplicant_connection_timeout_cb (gpointer user_data)
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 	NMDevice *device = NM_DEVICE (self);
 	NMActRequest *req;
-	NMConnection *connection;
+	NMSettingsConnection *connection;
 	guint64 timestamp = 0;
 	gboolean new_secrets = TRUE;
 
@@ -737,14 +737,14 @@ supplicant_connection_timeout_cb (gpointer user_data)
 	req = nm_device_get_act_request (device);
 	g_assert (req);
 
-	connection = nm_act_request_get_applied_connection (req);
+	connection = nm_act_request_get_settings_connection (req);
 	g_assert (connection);
 
 	/* Ask for new secrets only if we've never activated this connection
 	 * before.  If we've connected before, don't bother the user with dialogs,
 	 * just retry or fail, and if we never connect the user can fix the
 	 * password somewhere else. */
-	if (nm_settings_connection_get_timestamp (NM_SETTINGS_CONNECTION (connection), &timestamp))
+	if (nm_settings_connection_get_timestamp (connection, &timestamp))
 		new_secrets = !timestamp;
 
 	if (handle_auth_or_fail (self, req, new_secrets) == NM_ACT_STAGE_RETURN_POSTPONE)
@@ -1187,7 +1187,7 @@ wake_on_lan_enable (NMDevice *device)
 	}
 	wol = NM_SETTING_WIRED_WAKE_ON_LAN_IGNORE;
 found:
-	return nmp_utils_ethtool_set_wake_on_lan (nm_device_get_iface (device), wol, password);
+	return nm_platform_ethtool_set_wake_on_lan (NM_PLATFORM_GET, nm_device_get_iface (device), wol, password);
 }
 
 /****************************************************************/
@@ -1388,7 +1388,8 @@ complete_connection (NMDevice *device,
 	/* Default to an ethernet-only connection, but if a PPPoE setting was given
 	 * then PPPoE should be our connection type.
 	 */
-	nm_utils_complete_generic (connection,
+	nm_utils_complete_generic (NM_PLATFORM_GET,
+	                           connection,
 	                           s_pppoe ? NM_SETTING_PPPOE_SETTING_NAME : NM_SETTING_WIRED_SETTING_NAME,
 	                           existing_connections,
 	                           NULL,
@@ -1498,6 +1499,11 @@ update_connection (NMDevice *device, NMConnection *connection)
 		nm_connection_add_setting (connection, (NMSetting *) s_wired);
 	}
 
+	g_object_set (nm_connection_get_setting_connection (connection),
+	              NM_SETTING_CONNECTION_TYPE, nm_connection_get_setting_pppoe (connection)
+	                                          ? NM_SETTING_PPPOE_SETTING_NAME
+	                                          : NM_SETTING_WIRED_SETTING_NAME, NULL);
+
 	/* If the device reports a permanent address, use that for the MAC address
 	 * and the current MAC, if different, is the cloned MAC.
 	 */
@@ -1533,7 +1539,7 @@ get_link_speed (NMDevice *device)
 	NMDeviceEthernetPrivate *priv = NM_DEVICE_ETHERNET_GET_PRIVATE (self);
 	guint32 speed;
 
-	if (!nmp_utils_ethtool_get_link_speed (nm_device_get_iface (device), &speed))
+	if (!nm_platform_ethtool_get_link_speed (NM_PLATFORM_GET, nm_device_get_iface (device), &speed))
 		return;
 	if (priv->speed == speed)
 		return;

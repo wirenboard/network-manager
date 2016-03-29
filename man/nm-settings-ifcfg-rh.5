@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 01 March 2016
+.\"      Date: 29 March 2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.1.91
+.\"    Source: NetworkManager 1.1.92
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.1\&.91" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.1\&.92" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -367,6 +367,8 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
 T{
 eap
@@ -453,6 +455,15 @@ T}:T{
 List of strings to be matched against the altSubjectName\&.\fB
 
 Example: \fRIEEE_8021X_ALTSUBJECT_MATCHES="s1\&.domain\&.cc"
+T}
+T{
+domain\-suffix\-match
+T}:T{
+IEEE_8021X_DOMAIN_SUFFIX_MATCH\fI(+)\fR
+T}:T{
+\ \&
+T}:T{
+Suffix to match domain of server certificate against\&.
 T}
 T{
 client\-cert
@@ -545,6 +556,15 @@ T}:T{
 \ \&
 T}:T{
 \ \&
+T}
+T{
+phase2\-domain\-suffix\-match
+T}:T{
+IEEE_8021X_PHASE2_DOMAIN_SUFFIX_MATCH\fI(+)\fR
+T}:T{
+\ \&
+T}:T{
+Suffix to match domain of server certificate for phase 2 against\&.
 T}
 T{
 phase2\-client\-cert

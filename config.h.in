@@ -83,6 +83,9 @@
 /* Define to 1 if you have the <readline/readline.h> header file. */
 #undef HAVE_READLINE_READLINE_H
 
+/* Define to 1 if you have the `secure_getenv' function. */
+#undef HAVE_SECURE_GETENV
+
 /* Define if you have SELinux support */
 #undef HAVE_SELINUX
 
@@ -118,6 +121,9 @@
 
 /* Define if you have Linux Wireless Extensions support */
 #undef HAVE_WEXT
+
+/* Define to 1 if you have the `__secure_getenv' function. */
+#undef HAVE___SECURE_GETENV
 
 /* Enable Gentoo hostname persist method */
 #undef HOSTNAME_PERSIST_GENTOO

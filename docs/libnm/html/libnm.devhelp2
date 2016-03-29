@@ -513,6 +513,7 @@
     <keyword type="function" name="nm_setting_802_1x_remove_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-altsubject-match"/>
     <keyword type="function" name="nm_setting_802_1x_remove_altsubject_match_by_value ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-altsubject-match-by-value"/>
     <keyword type="function" name="nm_setting_802_1x_clear_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-clear-altsubject-matches"/>
+    <keyword type="function" name="nm_setting_802_1x_get_domain_suffix_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-domain-suffix-match" since="1.2"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path"/>
@@ -533,6 +534,7 @@
     <keyword type="function" name="nm_setting_802_1x_remove_phase2_altsubject_match ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-phase2-altsubject-match"/>
     <keyword type="function" name="nm_setting_802_1x_remove_phase2_altsubject_match_by_value ()" link="NMSetting8021x.html#nm-setting-802-1x-remove-phase2-altsubject-match-by-value"/>
     <keyword type="function" name="nm_setting_802_1x_clear_phase2_altsubject_matches ()" link="NMSetting8021x.html#nm-setting-802-1x-clear-phase2-altsubject-matches"/>
+    <keyword type="function" name="nm_setting_802_1x_get_phase2_domain_suffix_match ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-domain-suffix-match" since="1.2"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_scheme ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-scheme"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_blob ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-blob"/>
     <keyword type="function" name="nm_setting_802_1x_get_phase2_client_cert_path ()" link="NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-path"/>
@@ -569,6 +571,7 @@
     <keyword type="macro" name="NM_SETTING_802_1X_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-CA-PATH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_SUBJECT_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-SUBJECT-MATCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_ALTSUBJECT_MATCHES" link="NMSetting8021x.html#NM-SETTING-802-1X-ALTSUBJECT-MATCHES:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_DOMAIN_SUFFIX_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-DOMAIN-SUFFIX-MATCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-CLIENT-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE1_PEAPVER" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPVER:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE1_PEAPLABEL" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPLABEL:CAPS"/>
@@ -579,6 +582,7 @@
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CA_PATH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_SUBJECT_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-SUBJECT-MATCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_ALTSUBJECT_MATCHES" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-ALTSUBJECT-MATCHES:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_DOMAIN_SUFFIX_MATCH" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-DOMAIN-SUFFIX-MATCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PHASE2_CLIENT_CERT" link="NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PASSWORD" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD:CAPS"/>
     <keyword type="macro" name="NM_SETTING_802_1X_PASSWORD_FLAGS" link="NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD-FLAGS:CAPS"/>
@@ -598,6 +602,7 @@
     <keyword type="property" name="The “ca-cert” property" link="NMSetting8021x.html#NMSetting8021x--ca-cert"/>
     <keyword type="property" name="The “ca-path” property" link="NMSetting8021x.html#NMSetting8021x--ca-path"/>
     <keyword type="property" name="The “client-cert” property" link="NMSetting8021x.html#NMSetting8021x--client-cert"/>
+    <keyword type="property" name="The “domain-suffix-match” property" link="NMSetting8021x.html#NMSetting8021x--domain-suffix-match"/>
     <keyword type="property" name="The “eap” property" link="NMSetting8021x.html#NMSetting8021x--eap"/>
     <keyword type="property" name="The “identity” property" link="NMSetting8021x.html#NMSetting8021x--identity"/>
     <keyword type="property" name="The “pac-file” property" link="NMSetting8021x.html#NMSetting8021x--pac-file"/>
@@ -614,6 +619,7 @@
     <keyword type="property" name="The “phase2-ca-cert” property" link="NMSetting8021x.html#NMSetting8021x--phase2-ca-cert"/>
     <keyword type="property" name="The “phase2-ca-path” property" link="NMSetting8021x.html#NMSetting8021x--phase2-ca-path"/>
     <keyword type="property" name="The “phase2-client-cert” property" link="NMSetting8021x.html#NMSetting8021x--phase2-client-cert"/>
+    <keyword type="property" name="The “phase2-domain-suffix-match” property" link="NMSetting8021x.html#NMSetting8021x--phase2-domain-suffix-match"/>
     <keyword type="property" name="The “phase2-private-key” property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key"/>
     <keyword type="property" name="The “phase2-private-key-password” property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password"/>
     <keyword type="property" name="The “phase2-private-key-password-flags” property" link="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password-flags"/>

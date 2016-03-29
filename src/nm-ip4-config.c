@@ -188,7 +188,7 @@ routes_are_duplicate (const NMPlatformIP4Route *a, const NMPlatformIP4Route *b, 
 static gint
 _addresses_sort_cmp_get_prio (in_addr_t addr)
 {
-	if (nmp_utils_ip4_address_is_link_local (addr))
+	if (nm_utils_ip4_address_is_link_local (addr))
 		return 0;
 	return 1;
 }
@@ -1315,7 +1315,7 @@ nm_ip4_config_dump (const NMIP4Config *config, const char *detail)
 		g_message ("    nis: %s", nm_utils_inet4_ntop (tmp, NULL));
 	}
 
-	g_message (" nisdmn: %s", str_if_set (nm_ip4_config_get_nis_domain (config), "(none)"));
+	g_message (" nisdmn: %s", nm_ip4_config_get_nis_domain (config) ?: "(none)");
 
 	/* WINS */
 	for (i = 0; i < nm_ip4_config_get_num_wins (config); i++) {

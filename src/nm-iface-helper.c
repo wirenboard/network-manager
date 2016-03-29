@@ -36,14 +36,15 @@
  * Forward declare if_nametoindex. */
 extern unsigned int if_nametoindex (const char *__ifname);
 
+#include "main-utils.h"
 #include "NetworkManagerUtils.h"
 #include "nm-linux-platform.h"
 #include "nm-dhcp-manager.h"
-#include "main-utils.h"
 #include "nm-rdisc.h"
 #include "nm-lndp-rdisc.h"
 #include "nm-utils.h"
 #include "nm-setting-ip6-config.h"
+#include "nm-sd.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -130,9 +131,8 @@ dhcp4_state_changed (NMDhcpClient *client,
 static void
 rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_data)
 {
-	static NMIP6Config *last_config = NULL;
+	static NMIP6Config *rdisc_config = NULL;
 	NMIP6Config *existing;
-	NMIP6Config *ip6_config;
 	static int system_support = -1;
 	guint32 ifa_flags = 0x00;
 	int i;
@@ -157,21 +157,25 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		ifa_flags |= IFA_F_MANAGETEMPADDR;
 	}
 
-	ip6_config = nm_ip6_config_new (ifindex);
+	existing = nm_ip6_config_capture (ifindex, FALSE, global_opt.tempaddr);
+	if (rdisc_config)
+		nm_ip6_config_subtract (existing, rdisc_config);
+	else
+		rdisc_config = nm_ip6_config_new (ifindex);
 
 	if (changed & NM_RDISC_CONFIG_GATEWAYS) {
 		/* Use the first gateway as ordered in router discovery cache. */
 		if (rdisc->gateways->len) {
 			NMRDiscGateway *gateway = &g_array_index (rdisc->gateways, NMRDiscGateway, 0);
 
-			nm_ip6_config_set_gateway (ip6_config, &gateway->address);
+			nm_ip6_config_set_gateway (rdisc_config, &gateway->address);
 		} else
-			nm_ip6_config_set_gateway (ip6_config, NULL);
+			nm_ip6_config_set_gateway (rdisc_config, NULL);
 	}
 
 	if (changed & NM_RDISC_CONFIG_ADDRESSES) {
 		/* Rebuild address list from router discovery cache. */
-		nm_ip6_config_reset_addresses (ip6_config);
+		nm_ip6_config_reset_addresses (rdisc_config);
 
 		/* rdisc->addresses contains at most max_addresses entries.
 		 * This is different from what the kernel does, which
@@ -193,13 +197,13 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 			address.source = NM_IP_CONFIG_SOURCE_RDISC;
 			address.n_ifa_flags = ifa_flags;
 
-			nm_ip6_config_add_address (ip6_config, &address);
+			nm_ip6_config_add_address (rdisc_config, &address);
 		}
 	}
 
 	if (changed & NM_RDISC_CONFIG_ROUTES) {
 		/* Rebuild route list from router discovery cache. */
-		nm_ip6_config_reset_routes (ip6_config);
+		nm_ip6_config_reset_routes (rdisc_config);
 
 		for (i = 0; i < rdisc->routes->len; i++) {
 			NMRDiscRoute *discovered_route = &g_array_index (rdisc->routes, NMRDiscRoute, i);
@@ -217,7 +221,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 				route.source = NM_IP_CONFIG_SOURCE_RDISC;
 				route.metric = global_opt.priority_v6;
 
-				nm_ip6_config_add_route (ip6_config, &route);
+				nm_ip6_config_add_route (rdisc_config, &route);
 			}
 		}
 	}
@@ -236,18 +240,9 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "mtu"), val);
 	}
 
-	existing = nm_ip6_config_capture (ifindex, FALSE, global_opt.tempaddr);
-	if (last_config)
-		nm_ip6_config_subtract (existing, last_config);
-
-	nm_ip6_config_merge (existing, ip6_config, NM_IP_CONFIG_MERGE_DEFAULT);
+	nm_ip6_config_merge (existing, rdisc_config, NM_IP_CONFIG_MERGE_DEFAULT);
 	if (!nm_ip6_config_commit (existing, ifindex, TRUE))
 		nm_log_warn (LOGD_IP6, "(%s): failed to apply IPv6 config", global_opt.ifname);
-
-	if (last_config)
-		g_object_unref (last_config);
-	last_config = nm_ip6_config_new (ifindex);
-	nm_ip6_config_replace (last_config, ip6_config, NULL);
 }
 
 static void
@@ -351,6 +346,7 @@ main (int argc, char *argv[])
 	size_t hwaddr_len = 0;
 	gconstpointer tmp;
 	gs_free NMUtilsIPv6IfaceId *iid = NULL;
+	guint sd_id;
 
 	nm_g_type_init ();
 
@@ -474,7 +470,7 @@ main (int argc, char *argv[])
 	if (global_opt.slaac) {
 		nm_platform_link_set_user_ipv6ll_enabled (NM_PLATFORM_GET, ifindex, TRUE);
 
-		rdisc = nm_lndp_rdisc_new (ifindex, global_opt.ifname, global_opt.uuid, global_opt.addr_gen_mode, NULL);
+		rdisc = nm_lndp_rdisc_new (NM_PLATFORM_GET, ifindex, global_opt.ifname, global_opt.uuid, global_opt.addr_gen_mode, NULL);
 		g_assert (rdisc);
 
 		if (iid)
@@ -500,6 +496,8 @@ main (int argc, char *argv[])
 		nm_rdisc_start (rdisc);
 	}
 
+	sd_id = nm_sd_event_attach_default ();
+
 	g_main_loop_run (main_loop);
 
 	g_clear_pointer (&hwaddr, g_byte_array_unref);
@@ -508,6 +506,8 @@ main (int argc, char *argv[])
 		unlink (pidfile);
 
 	nm_log_info (LOGD_CORE, "exiting");
+
+	nm_clear_g_source (&sd_id);
 	exit (0);
 }
 

@@ -845,7 +845,8 @@ complete_connection (NMDevice *device,
 
 	str_ssid = nm_utils_ssid_to_utf8 (ssid->data, ssid->len);
 
-	nm_utils_complete_generic (connection,
+	nm_utils_complete_generic (NM_PLATFORM_GET,
+	                           connection,
 	                           NM_SETTING_WIRELESS_SETTING_NAME,
 	                           existing_connections,
 	                           str_ssid,
@@ -2491,7 +2492,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	if (config == NULL) {
 		_LOGE (LOGD_DEVICE | LOGD_WIFI,
 		       "Activation: (wifi) couldn't build wireless configuration: %s",
-		       error ? error->message : "<BUG>");
+		       error->message);
 		g_clear_error (&error);
 		*reason = NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED;
 		goto out;
@@ -2506,7 +2507,7 @@ act_stage2_config (NMDevice *device, NMDeviceStateReason *reason)
 	if (!nm_supplicant_interface_set_config (priv->sup_iface, config, &error)) {
 		_LOGE (LOGD_DEVICE | LOGD_WIFI,
 		       "Activation: (wifi) couldn't send wireless configuration to the supplicant: %s",
-		       error ? error->message : "<BUG>");
+		       error->message);
 		g_clear_error (&error);
 		*reason = NM_DEVICE_STATE_REASON_SUPPLICANT_CONFIG_FAILED;
 		goto out;

@@ -27,7 +27,6 @@
 #include "nm-device-ethernet-utils.h" 
 #include "nm-device-factory.h" 
 #include "nm-device-generic.h" 
-#include "nm-device-logging.h" 
 #include "nm-dhcp-client.h" 
 #include "nm-dhcp-utils.h" 
 #include "nm-dhcp-listener.h" 
@@ -39,6 +38,7 @@
 #include "nm-dns-utils.h" 
 #include "nm-dnsmasq-manager.h" 
 #include "nm-dnsmasq-utils.h" 
+#include "nmp-netns.h" 
 #include "nm-fake-platform.h" 
 #include "nm-linux-platform.h" 
 #include "nm-platform.h" 
@@ -215,9 +215,11 @@ nm_dns_manager_resolv_conf_manager_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE", "none" },
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF, "NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF", "resolvconf" },
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG", "netconfig" },
+        { _NM_DNS_MANAGER_RESOLV_CONF_MAN_INTERNAL_ONLY, "_NM_DNS_MANAGER_RESOLV_CONF_MAN_INTERNAL_ONLY", "-nm-dns-manager-resolv-conf-man-internal-only" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE", "nm-dns-manager-resolv-conf-man-none" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE", "nm-dns-manager-resolv-conf-man-file" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF, "NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF", "nm-dns-manager-resolv-conf-man-resolvconf" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG", "nm-dns-manager-resolv-conf-man-netconfig" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -738,25 +740,6 @@ nm_ip_config_merge_flags_get_type (void)
       };
       GType g_define_type_id =
         g_flags_register_static (g_intern_static_string ("NMIPConfigMergeFlags"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_utils_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_UTILS_ERROR_UNKNOWN, "NM_UTILS_ERROR_UNKNOWN", "Unknown" },
-        { NM_UTILS_ERROR_CANCELLED_DISPOSING, "NM_UTILS_ERROR_CANCELLED_DISPOSING", "CancelledDisposing" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMUtilsError"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

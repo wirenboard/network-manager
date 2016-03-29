@@ -310,7 +310,7 @@ test_read_miscellaneous_variables (void)
 	int mac_blacklist_num, i;
 	guint64 expected_timestamp = 0;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*invalid MAC in HWADDR_BLACKLIST 'XX:aa:invalid'*");
 	connection = _connection_from_file (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-misc-variables",
 	                                    NULL, TYPE_ETHERNET, NULL);
@@ -563,7 +563,7 @@ test_read_wired_static_no_prefix (gconstpointer user_data)
 	file = g_strdup_printf (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-wired-static-no-prefix-%u", expected_prefix);
 	expected_id = g_strdup_printf ("System test-wired-static-no-prefix-%u", expected_prefix);
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*missing PREFIX, assuming*");
 	connection = _connection_from_file (file, NULL, TYPE_ETHERNET, NULL);
 	g_test_assert_expected_messages ();
@@ -785,7 +785,7 @@ test_read_wired_global_gateway_ignore (void)
 	NMSettingIPConfig *s_ip4;
 	char *unmanaged = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*ignoring GATEWAY (/etc/sysconfig/network) for * because the connection has no static addresses");
 	connection = _connection_from_file (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-global-gateway-ignore",
 	                                    TEST_IFCFG_DIR"/network-scripts/network-test-wired-global-gateway-ignore",
@@ -1120,7 +1120,7 @@ test_read_wired_ipv6_manual (void)
 	NMIPAddress *ip6_addr;
 	NMIPRoute *ip6_route;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*ignoring manual default route*");
 	connection = _connection_from_file (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-ipv6-manual",
 	                                    NULL, TYPE_ETHERNET, &unmanaged);
@@ -1492,7 +1492,7 @@ test_read_write_802_1X_subj_matches (void)
 	NMSetting8021x *s_8021x;
 	char *written = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*missing IEEE_8021X_CA_CERT*peap*");
 	connection = _connection_from_file (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-wired-802-1X-subj-matches",
 	                                    NULL, TYPE_ETHERNET, NULL);
@@ -1518,7 +1518,7 @@ test_read_write_802_1X_subj_matches (void)
 	                        TEST_SCRATCH_DIR "/network-scripts/",
 	                        &written);
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*missing IEEE_8021X_CA_CERT*peap*");
 	reread = _connection_from_file (written, NULL, TYPE_ETHERNET, NULL);
 	g_test_assert_expected_messages ();
@@ -1683,7 +1683,7 @@ test_read_wired_aliases_bad (const char *base, const char *expected_id)
 static void
 test_read_wired_aliases_bad_1 (void)
 {
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*aliasem1:1*has no DEVICE*");
 	test_read_wired_aliases_bad (TEST_IFCFG_DIR "/network-scripts/ifcfg-aliasem1", "System aliasem1");
 }
@@ -1691,7 +1691,7 @@ test_read_wired_aliases_bad_1 (void)
 static void
 test_read_wired_aliases_bad_2 (void)
 {
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*aliasem2:1*has invalid DEVICE*");
 	test_read_wired_aliases_bad (TEST_IFCFG_DIR "/network-scripts/ifcfg-aliasem2", "System aliasem2");
 }
@@ -3559,9 +3559,6 @@ test_write_wired_static (void)
 	_writer_new_connection (connection,
 	                        TEST_SCRATCH_DIR "/network-scripts/",
 	                        &testfile);
-
-	/* reread will be normalized, so we must normalize connection too. */
-	nm_connection_normalize (connection, NULL, NULL, NULL);
 
 	reread = _connection_from_file (testfile, NULL, TYPE_ETHERNET, NULL);
 	unlink (testfile);
@@ -7329,7 +7326,7 @@ test_read_vlan_reorder_hdr_1 (void)
 	NMConnection *connection;
 	NMSettingVlan *s_vlan;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*REORDER_HDR key is deprecated, use VLAN_FLAGS*");
 	connection = _connection_from_file (TEST_IFCFG_DIR"/network-scripts/ifcfg-test-vlan-reorder-hdr-1",
 	                                        NULL, TYPE_ETHERNET, NULL);
@@ -8167,7 +8164,7 @@ test_read_dcb_bad_booleans (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*invalid DCB_PG_STRICT value*not all 0s and 1s*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-bad-booleans",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8182,7 +8179,7 @@ test_read_dcb_short_booleans (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*DCB_PG_STRICT value*8 characters*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-short-booleans",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8197,7 +8194,7 @@ test_read_dcb_bad_uints (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*invalid DCB_PG_UP2TC value*not 0 - 7*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-bad-uints",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8212,7 +8209,7 @@ test_read_dcb_short_uints (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*DCB_PG_UP2TC value*8 characters*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-short-uints",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8227,7 +8224,7 @@ test_read_dcb_bad_percent (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*invalid DCB_PG_PCT percentage value*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-bad-percent",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8242,7 +8239,7 @@ test_read_dcb_short_percent (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*invalid DCB_PG_PCT percentage list value*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-short-percent",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8257,7 +8254,7 @@ test_read_dcb_pgpct_not_100 (void)
 {
 	gs_free_error GError *error = NULL;
 
-	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_WARNING,
+	g_test_expect_message ("NetworkManager", G_LOG_LEVEL_MESSAGE,
 	                       "*DCB_PG_PCT percentages do not equal 100*");
 	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-dcb-pgpct-not-100",
 	                            NULL, TYPE_ETHERNET, &error);
@@ -8738,6 +8735,20 @@ test_read_vlan_trailing_spaces (void)
 	g_object_unref (connection);
 }
 
+/*****************************************************************************/
+
+static void
+test_sit_read_ignore (void)
+{
+	gs_free_error GError *error = NULL;
+
+	_connection_from_file_fail (TEST_IFCFG_DIR "/network-scripts/ifcfg-test-sit-ignore",
+	                            NULL, TYPE_ETHERNET, &error);
+	nmtst_assert_error (error, 0, 0, "*Ignoring unsupported connection due to IPV6TUNNELIPV4*");
+}
+
+/*****************************************************************************/
+
 
 #define TPATH "/settings/plugins/ifcfg-rh/"
 
@@ -8937,10 +8948,8 @@ int main (int argc, char **argv)
 	g_test_add_func (TPATH "wired/write-missing-ipv6", test_write_ethernet_missing_ipv6);
 	g_test_add_func (TPATH "write-dns-options", test_write_dns_options);
 
-	/* iSCSI / ibft */
 	g_test_add_func (TPATH "ibft/ignored", test_read_ibft_ignored);
 
-	/* Data Center Bridging (DCB) */
 	g_test_add_func (TPATH "dcb/read-basic", test_read_dcb_basic);
 	g_test_add_func (TPATH "dcb/write-basic", test_write_dcb_basic);
 	g_test_add_func (TPATH "dcb/default-app-priorities", test_read_dcb_default_app_priorities);
@@ -8956,7 +8965,6 @@ int main (int argc, char **argv)
 	g_test_add_data_func (TPATH "fcoe/write-fabric", (gpointer) NM_SETTING_DCB_FCOE_MODE_FABRIC, test_write_fcoe_mode);
 	g_test_add_data_func (TPATH "fcoe/write-vn2vn", (gpointer) NM_SETTING_DCB_FCOE_MODE_VN2VN, test_write_fcoe_mode);
 
-	/* bonding */
 	g_test_add_func (TPATH "bond/read-master", test_read_bond_main);
 	g_test_add_func (TPATH "bond/read-slave", test_read_bond_slave);
 	g_test_add_func (TPATH "bond/read-slave-ib", test_read_bond_slave_ib);
@@ -8965,19 +8973,19 @@ int main (int argc, char **argv)
 	g_test_add_func (TPATH "bond/write-slave-ib", test_write_bond_slave_ib);
 	g_test_add_func (TPATH "bond/bonding-opts-numeric-mode", test_read_bond_opts_mode_numeric);
 
-	/* bridging */
 	g_test_add_func (TPATH "bridge/read-master", test_read_bridge_main);
 	g_test_add_func (TPATH "bridge/write-master", test_write_bridge_main);
 	g_test_add_func (TPATH "bridge/read-component", test_read_bridge_component);
 	g_test_add_func (TPATH "bridge/write-component", test_write_bridge_component);
 	g_test_add_func (TPATH "bridge/read-missing-stp", test_read_bridge_missing_stp);
 
-	/* Team */
 	g_test_add_func (TPATH "team/read-master", test_read_team_master);
 	g_test_add_func (TPATH "team/write-master", test_write_team_master);
 	g_test_add_func (TPATH "team/read-port", test_read_team_port);
 	g_test_add_func (TPATH "team/write-port", test_write_team_port);
 	g_test_add_func (TPATH "team/read-port-empty-config", test_read_team_port_empty_config);
+
+	g_test_add_func (TPATH "sit/read/ignore", test_sit_read_ignore);
 
 	/* Stuff we expect to fail for now */
 	g_test_add_func (TPATH "pppoe/write-wired", test_write_wired_pppoe);

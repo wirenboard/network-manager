@@ -129,19 +129,20 @@ am__DEPENDENCIES_1 =
 libnm_core_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_3)
-am__libnm_core_la_SOURCES_DIST = $(core_build)/nm-core-enum-types.c \
-	$(core)/crypto.c $(core)/nm-connection.c \
-	$(core)/nm-dbus-utils.c $(core)/nm-errors.c \
-	$(core)/nm-keyfile-reader.c $(core)/nm-keyfile-utils.c \
-	$(core)/nm-keyfile-writer.c $(core)/nm-property-compare.c \
-	$(core)/nm-setting-8021x.c $(core)/nm-setting-adsl.c \
-	$(core)/nm-setting-bluetooth.c $(core)/nm-setting-bond.c \
-	$(core)/nm-setting-bridge-port.c $(core)/nm-setting-bridge.c \
-	$(core)/nm-setting-cdma.c $(core)/nm-setting-connection.c \
-	$(core)/nm-setting-dcb.c $(core)/nm-setting-generic.c \
-	$(core)/nm-setting-gsm.c $(core)/nm-setting-infiniband.c \
-	$(core)/nm-setting-ip-config.c $(core)/nm-setting-ip-tunnel.c \
-	$(core)/nm-setting-ip4-config.c \
+am__libnm_core_la_SOURCES_DIST =  \
+	$(top_builddir)/shared/nm-shared-utils.c \
+	$(core_build)/nm-core-enum-types.c $(core)/crypto.c \
+	$(core)/nm-connection.c $(core)/nm-dbus-utils.c \
+	$(core)/nm-errors.c $(core)/nm-keyfile-reader.c \
+	$(core)/nm-keyfile-utils.c $(core)/nm-keyfile-writer.c \
+	$(core)/nm-property-compare.c $(core)/nm-setting-8021x.c \
+	$(core)/nm-setting-adsl.c $(core)/nm-setting-bluetooth.c \
+	$(core)/nm-setting-bond.c $(core)/nm-setting-bridge-port.c \
+	$(core)/nm-setting-bridge.c $(core)/nm-setting-cdma.c \
+	$(core)/nm-setting-connection.c $(core)/nm-setting-dcb.c \
+	$(core)/nm-setting-generic.c $(core)/nm-setting-gsm.c \
+	$(core)/nm-setting-infiniband.c $(core)/nm-setting-ip-config.c \
+	$(core)/nm-setting-ip-tunnel.c $(core)/nm-setting-ip4-config.c \
 	$(core)/nm-setting-ip6-config.c $(core)/nm-setting-macvlan.c \
 	$(core)/nm-setting-olpc-mesh.c $(core)/nm-setting-ppp.c \
 	$(core)/nm-setting-pppoe.c $(core)/nm-setting-serial.c \
@@ -153,14 +154,15 @@ am__libnm_core_la_SOURCES_DIST = $(core_build)/nm-core-enum-types.c \
 	$(core)/nm-setting-wireless.c $(core)/nm-setting.c \
 	$(core)/nm-simple-connection.c $(core)/nm-utils.c \
 	$(core)/nm-vpn-editor-plugin.c $(core)/nm-vpn-plugin-info.c \
-	$(core)/crypto.h $(core)/nm-connection-private.h \
-	$(core)/nm-core-internal.h $(core)/nm-core-types-internal.h \
-	$(core)/nm-keyfile-internal.h $(core)/nm-keyfile-utils.h \
-	$(core)/nm-property-compare.h $(core)/nm-setting-private.h \
-	$(core)/nm-utils-private.h crypto_gnutls.c crypto_nss.c
-am__objects_1 = nm-core-enum-types.lo crypto.lo nm-connection.lo \
-	nm-dbus-utils.lo nm-errors.lo nm-keyfile-reader.lo \
-	nm-keyfile-utils.lo nm-keyfile-writer.lo \
+	$(top_builddir)/shared/nm-shared-utils.h $(core)/crypto.h \
+	$(core)/nm-connection-private.h $(core)/nm-core-internal.h \
+	$(core)/nm-core-types-internal.h $(core)/nm-keyfile-internal.h \
+	$(core)/nm-keyfile-utils.h $(core)/nm-property-compare.h \
+	$(core)/nm-setting-private.h $(core)/nm-utils-private.h \
+	crypto_gnutls.c crypto_nss.c
+am__objects_1 = nm-shared-utils.lo nm-core-enum-types.lo crypto.lo \
+	nm-connection.lo nm-dbus-utils.lo nm-errors.lo \
+	nm-keyfile-reader.lo nm-keyfile-utils.lo nm-keyfile-writer.lo \
 	nm-property-compare.lo nm-setting-8021x.lo nm-setting-adsl.lo \
 	nm-setting-bluetooth.lo nm-setting-bond.lo \
 	nm-setting-bridge-port.lo nm-setting-bridge.lo \
@@ -640,6 +642,7 @@ libnm_core_headers = \
 	$(core)/nm-vpn-plugin-info.h
 
 libnm_core_private_headers = \
+	$(top_builddir)/shared/nm-shared-utils.h \
 	$(core)/crypto.h			\
 	$(core)/nm-connection-private.h		\
 	$(core)/nm-core-internal.h		\
@@ -651,6 +654,7 @@ libnm_core_private_headers = \
 	$(core)/nm-utils-private.h
 
 libnm_core_sources = \
+	$(top_builddir)/shared/nm-shared-utils.c \
 	$(core_build)/nm-core-enum-types.c	\
 	$(core)/crypto.c			\
 	$(core)/nm-connection.c			\
@@ -811,6 +815,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-setting-wireless-security.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-setting-wireless.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-setting.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-shared-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-simple-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-vpn-editor-plugin.Plo@am__quote@
@@ -836,6 +841,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+nm-shared-utils.lo: $(top_builddir)/shared/nm-shared-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-shared-utils.lo -MD -MP -MF $(DEPDIR)/nm-shared-utils.Tpo -c -o nm-shared-utils.lo `test -f '$(top_builddir)/shared/nm-shared-utils.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-shared-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-shared-utils.Tpo $(DEPDIR)/nm-shared-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/shared/nm-shared-utils.c' object='nm-shared-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-shared-utils.lo `test -f '$(top_builddir)/shared/nm-shared-utils.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-shared-utils.c
 
 nm-core-enum-types.lo: $(core_build)/nm-core-enum-types.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-core-enum-types.lo -MD -MP -MF $(DEPDIR)/nm-core-enum-types.Tpo -c -o nm-core-enum-types.lo `test -f '$(core_build)/nm-core-enum-types.c' || echo '$(srcdir)/'`$(core_build)/nm-core-enum-types.c
