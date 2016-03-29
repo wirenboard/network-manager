@@ -31,6 +31,7 @@
 
 #include "nm-core-utils.h"
 #include "nm-setting-vlan.h"
+#include "nm-setting-wired.h"
 
 #define NM_TYPE_PLATFORM            (nm_platform_get_type ())
 #define NM_PLATFORM(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_PLATFORM, NMPlatform))
@@ -41,6 +42,7 @@
 
 /******************************************************************/
 
+#define NM_PLATFORM_NETNS_SUPPORT      "netns-support"
 #define NM_PLATFORM_REGISTER_SINGLETON "register-singleton"
 
 /******************************************************************/
@@ -177,8 +179,6 @@ typedef enum {
 	NM_PLATFORM_SIGNAL_REMOVED,
 } NMPlatformSignalChangeType;
 
-#define NM_PLATFORM_LIFETIME_PERMANENT G_MAXUINT32
-
 typedef enum { /*< skip >*/
 	NM_PLATFORM_GET_ROUTE_FLAGS_NONE                            = 0,
 
@@ -221,6 +221,11 @@ typedef struct {
 	guint32 timestamp; \
 	guint32 lifetime;   /* seconds since timestamp */ \
 	guint32 preferred;  /* seconds since timestamp */ \
+	\
+	/* ifa_flags in 'struct ifaddrmsg' from <linux/if_addr.h>, extended to 32 bit by
+	 * IFA_FLAGS attribute. */ \
+	guint32 n_ifa_flags; \
+	\
 	int plen; \
 	;
 
@@ -269,7 +274,6 @@ struct _NMPlatformIP6Address {
 	__NMPlatformIPAddress_COMMON;
 	struct in6_addr address;
 	struct in6_addr peer_address;
-	guint32 n_ifa_flags; /* ifa_flags from <linux/if_addr.h>, field type "unsigned int" is as used in rtnl_addr_get_flags. */
 };
 
 typedef union {
@@ -459,6 +463,8 @@ typedef struct {
 
 struct _NMPlatform {
 	GObject parent;
+
+	NMPNetns *_netns;
 };
 
 typedef struct {
@@ -485,6 +491,9 @@ typedef struct {
 	gboolean (*link_get_unmanaged) (NMPlatform *, int ifindex, gboolean *unmanaged);
 
 	gboolean (*link_refresh) (NMPlatform *, int ifindex);
+
+	gboolean (*link_set_netns) (NMPlatform *, int ifindex, int netns_fd);
+
 	void (*process_events) (NMPlatform *self);
 
 	gboolean (*link_set_up) (NMPlatform *, int ifindex, gboolean *out_no_firmware);
@@ -586,6 +595,7 @@ typedef struct {
 	                             in_addr_t peer_address,
 	                             guint32 lifetime,
 	                             guint32 preferred_lft,
+	                             guint32 flags,
 	                             const char *label);
 	gboolean (*ip6_address_add) (NMPlatform *,
 	                             int ifindex,
@@ -665,6 +675,9 @@ _nm_platform_uint8_inv (guint8 scope)
 	return (guint8) ~scope;
 }
 
+NMPNetns *nm_platform_netns_get (NMPlatform *self);
+gboolean nm_platform_netns_push (NMPlatform *platform, NMPNetns **netns);
+
 const char *nm_link_type_to_string (NMLinkType link_type);
 
 const char *_nm_platform_error_to_string (NMPlatformError error);
@@ -687,6 +700,8 @@ NMPlatformError nm_platform_link_bridge_add (NMPlatform *self, const char *name,
 NMPlatformError nm_platform_link_bond_add (NMPlatform *self, const char *name, const NMPlatformLink **out_link);
 NMPlatformError nm_platform_link_team_add (NMPlatform *self, const char *name, const NMPlatformLink **out_link);
 gboolean nm_platform_link_delete (NMPlatform *self, int ifindex);
+
+gboolean nm_platform_link_set_netns (NMPlatform *self, int ifindex, int netns_fd);
 
 /* convienience methods to lookup the link and access fields of NMPlatformLink. */
 int nm_platform_link_get_ifindex (NMPlatform *self, const char *name);
@@ -853,6 +868,7 @@ gboolean nm_platform_ip4_address_add (NMPlatform *self,
                                       in_addr_t peer_address,
                                       guint32 lifetime,
                                       guint32 preferred_lft,
+                                      guint32 flags,
                                       const char *label);
 gboolean nm_platform_ip6_address_add (NMPlatform *self,
                                       int ifindex,
@@ -924,5 +940,8 @@ const char *nm_platform_addr_flags2str (unsigned flags, char *buf, gsize len);
 const char *nm_platform_route_scope2str (int scope, char *buf, gsize len);
 
 int nm_platform_ip_address_cmp_expiry (const NMPlatformIPAddress *a, const NMPlatformIPAddress *b);
+
+gboolean nm_platform_ethtool_set_wake_on_lan (NMPlatform *self, const char *ifname, NMSettingWiredWakeOnLan wol, const char *wol_password);
+gboolean nm_platform_ethtool_get_link_speed (NMPlatform *self, const char *ifname, guint32 *out_speed);
 
 #endif /* __NETWORKMANAGER_PLATFORM_H__ */

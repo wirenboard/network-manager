@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <locale.h>
 
+#include <glib/gstdio.h>
 #include <glib-unix.h>
 #include <gmodule.h>
 
@@ -112,6 +113,31 @@ nm_main_utils_write_pidfile (const char *pidfile)
 }
 
 void
+nm_main_utils_ensure_statedir ()
+{
+	gs_free char *parent = NULL;
+	int errsv;
+
+	parent = g_path_get_dirname (NMSTATEDIR);
+
+	/* Ensure parent state directories exists */
+	if (   parent
+	    && parent[0] == '/'
+	    && parent[1] != '\0'
+	    && g_mkdir_with_parents (parent, 0755) != 0) {
+		errsv = errno;
+		fprintf (stderr, "Cannot create parents for '%s': %s", NMSTATEDIR, g_strerror (errsv));
+		exit (1);
+	}
+	/* Ensure state directory exists */
+	if (g_mkdir_with_parents (NMSTATEDIR, 0700) != 0) {
+		errsv = errno;
+		fprintf (stderr, "Cannot create '%s': %s", NMSTATEDIR, g_strerror (errsv));
+		exit (1);
+	}
+}
+
+void
 nm_main_utils_ensure_rundir ()
 {
 	/* Setup runtime directory */
@@ -178,7 +204,7 @@ void
 nm_main_utils_ensure_root ()
 {
 	if (getuid () != 0) {
-		fprintf (stderr, _("You must be root to run %s!\n"), str_if_set (g_get_prgname (), ""));
+		fprintf (stderr, _("You must be root to run %s!\n"), g_get_prgname () ?: "");
 		exit (1);
 	}
 }

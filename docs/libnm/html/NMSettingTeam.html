@@ -69,7 +69,7 @@
 </colgroup>
 <tbody><tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMSettingTeam.html#NMSettingTeam--config" title="The “config” property">config</a></td>
 <td class="property_flags">Read / Write</td>
 </tr></tbody>
@@ -96,7 +96,7 @@
 </div>
 <div class="refsect1">
 <a name="NMSettingTeam.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+<pre class="screen">    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMSetting.html" title="NMSetting">NMSetting</a>
         <span class="lineart">╰──</span> NMSettingTeam
 </pre>
@@ -163,7 +163,7 @@ nm_setting_team_get_config (<em class="parameter"><code><a class="link" href="NM
 <a name="NMSettingTeam.property-details"></a><h2>Property Details</h2>
 <div class="refsect2">
 <a name="NMSettingTeam--config"></a><h3>The <code class="literal">“config”</code> property</h3>
-<pre class="programlisting">  “config”                   <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “config”                   <span class="type">gchar</span> *</pre>
 <p>The JSON configuration for the team network interface.  The property
 should contain raw JSON configuration data suitable for teamd, because
 the value is passed directly to teamd. If not specified, the default

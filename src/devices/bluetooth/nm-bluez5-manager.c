@@ -213,6 +213,7 @@ get_managed_objects_cb (GDBusProxy *proxy,
 		                            G_VARIANT_TYPE_DICTIONARY)) {
 			device_added (proxy, path, self);
 		}
+		g_variant_unref (ifaces);
 	}
 
 	g_variant_unref (variant);
@@ -231,8 +232,7 @@ on_proxy_acquired (GObject *object,
 	priv->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 
 	if (!priv->proxy) {
-		nm_log_warn (LOGD_BT, "Couldn't acquire object manager proxy: %s",
-		             error && error->message ? error->message : "(unknown)");
+		nm_log_warn (LOGD_BT, "Couldn't acquire object manager proxy: %s", error->message);
 		g_clear_error (&error);
 		return;
 	}

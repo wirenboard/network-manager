@@ -30,6 +30,8 @@
 
 /*****************************************************************************/
 
+#define NM_PLATFORM_LIFETIME_PERMANENT G_MAXUINT32
+
 #define NM_DEFINE_SINGLETON_INSTANCE(TYPE) \
 static TYPE *singleton_instance
 
@@ -89,31 +91,6 @@ GETTER (void) \
 
 /*****************************************************************************/
 
-/**
- * NMUtilsError:
- * @NM_UTILS_ERROR_UNKNOWN: unknown or unclassified error
- * @NM_UTILS_ERROR_CANCELLED_DISPOSING: when disposing an object that has
- *   pending aynchronous operations, the operation is cancelled with this
- *   error reason. Depending on the usage, this might indicate a bug because
- *   usually the target object should stay alive as long as there are pending
- *   operations.
- */
-typedef enum {
-	NM_UTILS_ERROR_UNKNOWN = 0,                 /*< nick=Unknown >*/
-	NM_UTILS_ERROR_CANCELLED_DISPOSING,         /*< nick=CancelledDisposing >*/
-} NMUtilsError;
-
-#define NM_UTILS_ERROR (nm_utils_error_quark ())
-GQuark nm_utils_error_quark (void);
-
-void nm_utils_error_set_cancelled (GError **error,
-                                   gboolean is_disposing,
-                                   const char *instance_name);
-gboolean nm_utils_error_is_cancelled (GError *error,
-                                      gboolean consider_is_disposing);
-
-/*****************************************************************************/
-
 gint nm_utils_ascii_str_to_bool (const char *str,
                                  gint default_value);
 
@@ -142,22 +119,6 @@ nm_utils_ip6_route_metric_normalize (guint32 metric)
 int nm_spawn_process (const char *args, GError **error);
 
 int nm_utils_modprobe (GError **error, gboolean suppress_error_loggin, const char *arg1, ...) G_GNUC_NULL_TERMINATED;
-
-/**
- * str_if_set:
- * @str: input string that will be returned if @str is not %NULL
- * @fallback: if @str is %NULL, return @fallback instead
- *
- * This utility function is useful when printing a string to avoid passing
- * %NULL. E.g. printf ("%s", str_if_set (get_string(), "(none)"));
- *
- * Returns: either @str or @fallback, depending on whether @str is %NULL.
- */
-static inline const char *
-str_if_set (const char *str, const char *fallback)
-{
-	return str ? str : fallback;
-}
 
 guint64 nm_utils_get_start_time_for_pid (pid_t pid, char *out_state, pid_t *out_ppid);
 
@@ -331,6 +292,9 @@ int nm_utils_cmp_connection_by_autoconnect_priority (NMConnection **a, NMConnect
 void nm_utils_log_connection_diff (NMConnection *connection, NMConnection *diff_base, guint32 level, guint64 domain, const char *name, const char *prefix);
 
 #define NM_UTILS_NS_PER_SECOND  ((gint64) 1000000000)
+#define NM_UTILS_NS_PER_MSEC    ((gint64) 1000000)
+#define NM_UTILS_NS_TO_MSEC_CEIL(nsec)      (((nsec) + (NM_UTILS_NS_PER_MSEC - 1)) / NM_UTILS_NS_PER_MSEC)
+
 gint64 nm_utils_get_monotonic_timestamp_ns (void);
 gint64 nm_utils_get_monotonic_timestamp_us (void);
 gint64 nm_utils_get_monotonic_timestamp_ms (void);
@@ -338,7 +302,7 @@ gint32 nm_utils_get_monotonic_timestamp_s (void);
 gint64 nm_utils_monotonic_timestamp_as_boottime (gint64 timestamp, gint64 timestamp_ticks_per_ns);
 
 gboolean    nm_utils_is_valid_path_component (const char *name);
-const char *ASSERT_VALID_PATH_COMPONENT (const char *name);
+const char *NM_ASSERT_VALID_PATH_COMPONENT (const char *name);
 const char *nm_utils_ip6_property_path (const char *ifname, const char *property);
 const char *nm_utils_ip4_property_path (const char *ifname, const char *property);
 
@@ -411,5 +375,20 @@ void nm_utils_g_value_set_strv (GValue *value, GPtrArray *strings);
 guint nm_utils_parse_debug_string (const char *string,
                                    const GDebugKey *keys,
                                    guint nkeys);
+
+void nm_utils_ifname_cpy (char *dst, const char *name);
+
+guint32 nm_utils_lifetime_rebase_relative_time_on_now (guint32 timestamp,
+                                                       guint32 duration,
+                                                       gint32 now);
+
+gboolean nm_utils_lifetime_get (guint32 timestamp,
+                                guint32 lifetime,
+                                guint32 preferred,
+                                gint32 now,
+                                guint32 *out_lifetime,
+                                guint32 *out_preferred);
+
+gboolean nm_utils_ip4_address_is_link_local (in_addr_t addr);
 
 #endif /* __NM_CORE_UTILS_H__ */

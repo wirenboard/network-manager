@@ -48,7 +48,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>
+<span class="returnvalue">GQuark</span>
 </td>
 <td class="function_name">
 <a class="link" href="NMRemoteConnection.html#nm-remote-connection-error-quark" title="nm_remote_connection_error_quark ()">nm_remote_connection_error_quark</a> <span class="c_punctuation">()</span>
@@ -120,7 +120,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+<span class="returnvalue">gboolean</span>
 </td>
 <td class="function_name">
 <a class="link" href="NMRemoteConnection.html#nm-remote-connection-get-unsaved" title="nm_remote_connection_get_unsaved ()">nm_remote_connection_get_unsaved</a> <span class="c_punctuation">()</span>
@@ -152,12 +152,12 @@
 </tr>
 <tr>
 <td class="property_type">
-<a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</td>
+<span class="type">gchar</span> *</td>
 <td class="property_name"><a class="link" href="NMRemoteConnection.html#NMRemoteConnection--dbus-path" title="The “dbus-path” property">dbus-path</a></td>
 <td class="property_flags">Write / Construct Only</td>
 </tr>
 <tr>
-<td class="property_type"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></td>
+<td class="property_type"><span class="type">gboolean</span></td>
 <td class="property_name"><a class="link" href="NMRemoteConnection.html#NMRemoteConnection--unsaved" title="The “unsaved” property">unsaved</a></td>
 <td class="property_flags">Read</td>
 </tr>
@@ -176,17 +176,17 @@
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="NMRemoteConnection.html#NMRemoteConnection-removed" title="The “removed” signal">removed</a></td>
-<td class="signal_flags"><a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="NMRemoteConnection.html#NMRemoteConnection-updated" title="The “updated” signal">updated</a></td>
-<td class="signal_flags"><a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 <tr>
 <td class="signal_type"><span class="returnvalue">void</span></td>
 <td class="signal_name"><a class="link" href="NMRemoteConnection.html#NMRemoteConnection-visible" title="The “visible” signal">visible</a></td>
-<td class="signal_flags"><a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></td>
+<td class="signal_flags">Run First</td>
 </tr>
 </tbody>
 </table></div>
@@ -228,8 +228,8 @@
 </div>
 <div class="refsect1">
 <a name="NMRemoteConnection.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="https://developer.gnome.org/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
-    <span class="lineart">╰──</span> NMConnection
+<pre class="screen">    GObject
+    <span class="lineart">╰──</span> <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html">NMConnection</a>
         <span class="lineart">╰──</span> NMRemoteConnection
 </pre>
 </div>
@@ -246,7 +246,7 @@
 <hr>
 <div class="refsect2">
 <a name="nm-remote-connection-error-quark"></a><h3>nm_remote_connection_error_quark ()</h3>
-<pre class="programlisting"><a href="https://developer.gnome.org/glib/unstable/glib-Quarks.html#GQuark"><span class="returnvalue">GQuark</span></a>
+<pre class="programlisting"><span class="returnvalue">GQuark</span>
 nm_remote_connection_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> if necessary.</p>
 <div class="refsect3">
@@ -259,8 +259,8 @@ nm_remote_connection_error_quark (<em class="parameter"><code><span class="type"
 <a name="NMRemoteConnectionResultFunc"></a><h3>NMRemoteConnectionResultFunc ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 <span class="c_punctuation">(</span>*NMRemoteConnectionResultFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
-                                 <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
-                                 <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                                 <em class="parameter"><code><span class="type">GError</span> *error</code></em>,
+                                 <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Called when NetworkManager has finished an asynchronous operation on a
 connection, like commit changes, deleting, saving, etc.</p>
 <div class="refsect3">
@@ -296,9 +296,9 @@ connection, like commit changes, deleting, saving, etc.</p>
 <a name="NMRemoteConnectionGetSecretsFunc"></a><h3>NMRemoteConnectionGetSecretsFunc ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 <span class="c_punctuation">(</span>*NMRemoteConnectionGetSecretsFunc<span class="c_punctuation">)</span> (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
-                                     <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Hash-Tables.html#GHashTable"><span class="type">GHashTable</span></a> *secrets</code></em>,
-                                     <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Error-Reporting.html#GError"><span class="type">GError</span></a> *error</code></em>,
-                                     <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                                     <em class="parameter"><code><span class="type">GHashTable</span> *secrets</code></em>,
+                                     <em class="parameter"><code><span class="type">GError</span> *error</code></em>,
+                                     <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Called when NetworkManager returns secrets in response to a request for
 secrets via <a class="link" href="NMRemoteConnection.html#nm-remote-connection-get-secrets" title="nm_remote_connection_get_secrets ()"><code class="function">nm_remote_connection_get_secrets()</code></a>.</p>
 <div class="refsect3">
@@ -318,7 +318,7 @@ secrets via <a class="link" href="NMRemoteConnection.html#nm-remote-connection-g
 <tr>
 <td class="parameter_name"><p>secrets</p></td>
 <td class="parameter_description"><p> on success, a hash table of
-hash tables, with each inner hash mapping a setting property to a <a href="https://developer.gnome.org/gobject/unstable/gobject-Generic-values.html#GValue"><span class="type">GValue</span></a>
+hash tables, with each inner hash mapping a setting property to a <span class="type">GValue</span>
 containing that property's value. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GLib.HashTable]</span></td>
 </tr>
@@ -367,7 +367,7 @@ nm_remote_connection_new (<em class="parameter"><code><a href="/usr/share/gtk-do
 </div>
 <div class="refsect3">
 <a name="id-1.3.25.9.6.6"></a><h4>Returns</h4>
-<p> the new remote connection object on success, or <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> on failure</p>
+<p> the new remote connection object on success, or <code class="literal">NULL</code> on failure</p>
 </div>
 </div>
 <hr>
@@ -376,7 +376,7 @@ nm_remote_connection_new (<em class="parameter"><code><a href="/usr/share/gtk-do
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_remote_connection_commit_changes (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                                      <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionResultFunc" title="NMRemoteConnectionResultFunc ()"><span class="type">NMRemoteConnectionResultFunc</span></a> callback</code></em>,
-                                     <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                                     <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Send any local changes to the settings and properties of this connection to
 NetworkManager, which will immediately save them to disk.</p>
 <div class="refsect3">
@@ -416,7 +416,7 @@ commit completes. </p></td>
 nm_remote_connection_commit_changes_unsaved
                                (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                                 <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionResultFunc" title="NMRemoteConnectionResultFunc ()"><span class="type">NMRemoteConnectionResultFunc</span></a> callback</code></em>,
-                                <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                                <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Send any local changes to the settings and properties of this connection to
 NetworkManager.  The changes are not saved to disk until either
 <a class="link" href="NMRemoteConnection.html#nm-remote-connection-save" title="nm_remote_connection_save ()"><code class="function">nm_remote_connection_save()</code></a> or <a class="link" href="NMRemoteConnection.html#nm-remote-connection-commit-changes" title="nm_remote_connection_commit_changes ()"><code class="function">nm_remote_connection_commit_changes()</code></a> is
@@ -458,7 +458,7 @@ commit completes. </p></td>
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_remote_connection_save (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                            <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionResultFunc" title="NMRemoteConnectionResultFunc ()"><span class="type">NMRemoteConnectionResultFunc</span></a> callback</code></em>,
-                           <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                           <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Saves the connection to disk if the connection has changes that have not yet
 been written to disk, or if the connection has never been saved.</p>
 <div class="refsect3">
@@ -498,7 +498,7 @@ save completes. </p></td>
 <pre class="programlisting"><span class="returnvalue">void</span>
 nm_remote_connection_delete (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                              <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionResultFunc" title="NMRemoteConnectionResultFunc ()"><span class="type">NMRemoteConnectionResultFunc</span></a> callback</code></em>,
-                             <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                             <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Delete the connection.</p>
 <div class="refsect3">
 <a name="id-1.3.25.9.10.5"></a><h4>Parameters</h4>
@@ -536,7 +536,7 @@ nm_remote_connection_delete (<em class="parameter"><code><a class="link" href="N
 nm_remote_connection_get_secrets (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>,
                                   <em class="parameter"><code>const <span class="type">char</span> *setting_name</code></em>,
                                   <em class="parameter"><code><a class="link" href="NMRemoteConnection.html#NMRemoteConnectionGetSecretsFunc" title="NMRemoteConnectionGetSecretsFunc ()"><span class="type">NMRemoteConnectionGetSecretsFunc</span></a> callback</code></em>,
-                                  <em class="parameter"><code><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+                                  <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Request the connection's secrets.</p>
 <div class="refsect3">
 <a name="id-1.3.25.9.11.5"></a><h4>Parameters</h4>
@@ -554,13 +554,13 @@ nm_remote_connection_get_secrets (<em class="parameter"><code><a class="link" hr
 </tr>
 <tr>
 <td class="parameter_name"><p>setting_name</p></td>
-<td class="parameter_description"><p>the <span class="type">NMSetting</span> object name to get secrets for</p></td>
+<td class="parameter_description"><p>the <a href="https://developer.gnome.org/libnm-util/0.9/NMSetting.html"><span class="type">NMSetting</span></a> object name to get secrets for</p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
 <td class="parameter_name"><p>callback</p></td>
 <td class="parameter_description"><p> a function to be called when the update completes;
-must not be <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. </p></td>
+must not be <code class="literal">NULL</code>. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="The callback is valid until first called."><span class="acronym">scope async</span></acronym>]</span></td>
 </tr>
 <tr>
@@ -576,7 +576,7 @@ must not be <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Mac
 <hr>
 <div class="refsect2">
 <a name="nm-remote-connection-get-unsaved"></a><h3>nm_remote_connection_get_unsaved ()</h3>
-<pre class="programlisting"><a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>
+<pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_remote_connection_get_unsaved (<em class="parameter"><code><a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection</code></em>);</pre>
 <div class="refsect3">
 <a name="id-1.3.25.9.12.4"></a><h4>Parameters</h4>
@@ -595,8 +595,8 @@ nm_remote_connection_get_unsaved (<em class="parameter"><code><a class="link" hr
 </div>
 <div class="refsect3">
 <a name="id-1.3.25.9.12.5"></a><h4>Returns</h4>
-<p> <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the remote connection contains changes that have not
-been saved to disk, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the connection is the same as its on-disk
+<p> <code class="literal">TRUE</code> if the remote connection contains changes that have not
+been saved to disk, <code class="literal">FALSE</code> if the connection is the same as its on-disk
 representation.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -681,16 +681,16 @@ representation.</p>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteConnection--dbus-path"></a><h3>The <code class="literal">“dbus-path”</code> property</h3>
-<pre class="programlisting">  “dbus-path”                <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *</pre>
+<pre class="programlisting">  “dbus-path”                <span class="type">gchar</span> *</pre>
 <p>Flags: Write / Construct Only</p>
 <p>Default value: NULL</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteConnection--unsaved"></a><h3>The <code class="literal">“unsaved”</code> property</h3>
-<pre class="programlisting">  “unsaved”                  <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a></pre>
-<p><a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#TRUE:CAPS"><code class="literal">TRUE</code></a> if the remote connection contains changes that have not been saved
-to disk, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros.html#FALSE:CAPS"><code class="literal">FALSE</code></a> if the connection is the same as its on-disk representation.</p>
+<pre class="programlisting">  “unsaved”                  <span class="type">gboolean</span></pre>
+<p><code class="literal">TRUE</code> if the remote connection contains changes that have not been saved
+to disk, <code class="literal">FALSE</code> if the connection is the same as its on-disk representation.</p>
 <p>Flags: Read</p>
 <p>Default value: FALSE</p>
 <p class="since">Since: 0.9.10</p>
@@ -702,7 +702,7 @@ to disk, <a href="https://developer.gnome.org/glib/unstable/glib-Standard-Macros
 <a name="NMRemoteConnection-removed"></a><h3>The <code class="literal">“removed”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection,
-               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+               <span class="type">gpointer</span>            user_data)</pre>
 <p>This signal is emitted when a connection is either deleted or becomes
 invisible to the current user.</p>
 <div class="refsect3">
@@ -716,7 +716,7 @@ invisible to the current user.</p>
 <tbody>
 <tr>
 <td class="parameter_name"><p>connection</p></td>
-<td class="parameter_description"><p>a <span class="type">NMConnection</span></p></td>
+<td class="parameter_description"><p>a <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -727,14 +727,14 @@ invisible to the current user.</p>
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteConnection-updated"></a><h3>The <code class="literal">“updated”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *connection,
-               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
+               <span class="type">gpointer</span>            user_data)</pre>
 <p>This signal is emitted when a connection changes, and it is
 still visible to the user.</p>
 <div class="refsect3">
@@ -748,7 +748,7 @@ still visible to the user.</p>
 <tbody>
 <tr>
 <td class="parameter_name"><p>connection</p></td>
-<td class="parameter_description"><p>a <span class="type">NMConnection</span></p></td>
+<td class="parameter_description"><p>a <a href="https://developer.gnome.org/libnm-util/0.9/NMConnection.html"><span class="type">NMConnection</span></a></p></td>
 <td class="parameter_annotations"> </td>
 </tr>
 <tr>
@@ -759,16 +759,16 @@ still visible to the user.</p>
 </tbody>
 </table></div>
 </div>
-<p>Flags: <a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+<p>Flags: Run First</p>
 </div>
 <hr>
 <div class="refsect2">
 <a name="NMRemoteConnection-visible"></a><h3>The <code class="literal">“visible”</code> signal</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>
 user_function (<a class="link" href="NMRemoteConnection.html" title="NMRemoteConnection"><span class="type">NMRemoteConnection</span></a> *nmremoteconnection,
-               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a>            arg1,
-               <a href="https://developer.gnome.org/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>            user_data)</pre>
-<p>Flags: <a href="https://developer.gnome.org/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-FIRST:CAPS">Run First</a></p>
+               <span class="type">gboolean</span>            arg1,
+               <span class="type">gpointer</span>            user_data)</pre>
+<p>Flags: Run First</p>
 </div>
 </div>
 </div>

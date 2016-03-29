@@ -196,7 +196,7 @@ __LOG_create_prefix (char *buf, NMVpnConnection *self)
 	            "]",
 	            _NMLOG_PREFIX_NAME,
 	            self,
-	            con ? "," : "--", con ? str_if_set (nm_connection_get_uuid (con), "??") : "",
+	            con ? "," : "--", con ? (nm_connection_get_uuid (con) ?: "??") : "",
 	            con ? "," : "", NM_PRINT_FMT_QUOTED (id, "\"", id, "\"", con ? "??" : ""),
 	            priv->ip_ifindex,
 	            priv->ip_iface ? ":" : "", NM_PRINT_FMT_QUOTED (priv->ip_iface, "(", priv->ip_iface, ")", "")
@@ -319,14 +319,25 @@ _get_applied_connection (NMVpnConnection *connection)
 }
 
 static void
+disconnect_cb (GDBusProxy *proxy, GAsyncResult *result, gpointer user_data)
+{
+	g_dbus_proxy_call_finish (proxy, result, NULL);
+	g_object_unref (user_data);
+}
+
+static void
 call_plugin_disconnect (NMVpnConnection *self)
 {
 	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
 
-	if (priv->proxy) {
-		g_dbus_proxy_call (priv->proxy, "Disconnect", NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
-		g_clear_object (&priv->proxy);
-	}
+	g_dbus_proxy_call (priv->proxy,
+	                   "Disconnect",
+	                   NULL,
+	                   G_DBUS_CALL_FLAGS_NONE,
+	                   -1,
+	                   priv->cancellable,
+	                   (GAsyncReadyCallback) disconnect_cb,
+	                   g_object_ref (self));
 }
 
 static void
@@ -1934,7 +1945,7 @@ nm_vpn_service_daemon_exec (NMVpnConnection *self, GError **error)
 
 	if (success) {
 		_LOGI ("Started the VPN service, PID %ld", (long int) pid);
-		priv->start_timeout = g_timeout_add_seconds (5, _daemon_exec_timeout, g_object_ref (self));
+		priv->start_timeout = g_timeout_add_seconds (5, _daemon_exec_timeout, self);
 	} else {
 		g_set_error (error,
 		             NM_MANAGER_ERROR, NM_MANAGER_ERROR_FAILED,
@@ -2224,8 +2235,8 @@ get_secrets_cb (NMSettingsConnection *connection,
 		return;
 
 	if (error && priv->secrets_idx >= SECRETS_REQ_NEW) {
-		_LOGE ("Failed to request VPN secrets #%d: (%d) %s",
-		       priv->secrets_idx + 1, error->code, error->message);
+		_LOGE ("Failed to request VPN secrets #%d: %s",
+		       priv->secrets_idx + 1, error->message);
 		_set_vpn_state (self, STATE_FAILED, NM_VPN_CONNECTION_STATE_REASON_NO_SECRETS, FALSE);
 		return;
 	}
@@ -2389,6 +2400,8 @@ dispose (GObject *object)
 {
 	NMVpnConnection *self = NM_VPN_CONNECTION (object);
 	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
+
+	nm_clear_g_source (&priv->start_timeout);
 
 	g_clear_pointer (&priv->connect_hash, g_variant_unref);
 

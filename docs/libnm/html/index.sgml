@@ -801,6 +801,7 @@
 <ANCHOR id="nm-setting-802-1x-remove-altsubject-match" href="libnm/NMSetting8021x.html#nm-setting-802-1x-remove-altsubject-match">
 <ANCHOR id="nm-setting-802-1x-remove-altsubject-match-by-value" href="libnm/NMSetting8021x.html#nm-setting-802-1x-remove-altsubject-match-by-value">
 <ANCHOR id="nm-setting-802-1x-clear-altsubject-matches" href="libnm/NMSetting8021x.html#nm-setting-802-1x-clear-altsubject-matches">
+<ANCHOR id="nm-setting-802-1x-get-domain-suffix-match" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-domain-suffix-match">
 <ANCHOR id="nm-setting-802-1x-get-client-cert-scheme" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-client-cert-scheme">
 <ANCHOR id="nm-setting-802-1x-get-client-cert-blob" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob">
 <ANCHOR id="nm-setting-802-1x-get-client-cert-path" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path">
@@ -821,6 +822,7 @@
 <ANCHOR id="nm-setting-802-1x-remove-phase2-altsubject-match" href="libnm/NMSetting8021x.html#nm-setting-802-1x-remove-phase2-altsubject-match">
 <ANCHOR id="nm-setting-802-1x-remove-phase2-altsubject-match-by-value" href="libnm/NMSetting8021x.html#nm-setting-802-1x-remove-phase2-altsubject-match-by-value">
 <ANCHOR id="nm-setting-802-1x-clear-phase2-altsubject-matches" href="libnm/NMSetting8021x.html#nm-setting-802-1x-clear-phase2-altsubject-matches">
+<ANCHOR id="nm-setting-802-1x-get-phase2-domain-suffix-match" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-phase2-domain-suffix-match">
 <ANCHOR id="nm-setting-802-1x-get-phase2-client-cert-scheme" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-scheme">
 <ANCHOR id="nm-setting-802-1x-get-phase2-client-cert-blob" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-blob">
 <ANCHOR id="nm-setting-802-1x-get-phase2-client-cert-path" href="libnm/NMSetting8021x.html#nm-setting-802-1x-get-phase2-client-cert-path">
@@ -865,6 +867,7 @@
 <ANCHOR id="NM-SETTING-802-1X-CA-PATH:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-CA-PATH:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-SUBJECT-MATCH:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-SUBJECT-MATCH:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-ALTSUBJECT-MATCHES:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-ALTSUBJECT-MATCHES:CAPS">
+<ANCHOR id="NM-SETTING-802-1X-DOMAIN-SUFFIX-MATCH:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-DOMAIN-SUFFIX-MATCH:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-CLIENT-CERT:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-CLIENT-CERT:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PHASE1-PEAPVER:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPVER:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PHASE1-PEAPLABEL:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE1-PEAPLABEL:CAPS">
@@ -875,6 +878,7 @@
 <ANCHOR id="NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CA-PATH:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PHASE2-SUBJECT-MATCH:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-SUBJECT-MATCH:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PHASE2-ALTSUBJECT-MATCHES:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-ALTSUBJECT-MATCHES:CAPS">
+<ANCHOR id="NM-SETTING-802-1X-PHASE2-DOMAIN-SUFFIX-MATCH:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-DOMAIN-SUFFIX-MATCH:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PHASE2-CLIENT-CERT:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PASSWORD:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD:CAPS">
 <ANCHOR id="NM-SETTING-802-1X-PASSWORD-FLAGS:CAPS" href="libnm/NMSetting8021x.html#NM-SETTING-802-1X-PASSWORD-FLAGS:CAPS">
@@ -895,6 +899,7 @@
 <ANCHOR id="NMSetting8021x--ca-cert" href="libnm/NMSetting8021x.html#NMSetting8021x--ca-cert">
 <ANCHOR id="NMSetting8021x--ca-path" href="libnm/NMSetting8021x.html#NMSetting8021x--ca-path">
 <ANCHOR id="NMSetting8021x--client-cert" href="libnm/NMSetting8021x.html#NMSetting8021x--client-cert">
+<ANCHOR id="NMSetting8021x--domain-suffix-match" href="libnm/NMSetting8021x.html#NMSetting8021x--domain-suffix-match">
 <ANCHOR id="NMSetting8021x--eap" href="libnm/NMSetting8021x.html#NMSetting8021x--eap">
 <ANCHOR id="NMSetting8021x--identity" href="libnm/NMSetting8021x.html#NMSetting8021x--identity">
 <ANCHOR id="NMSetting8021x--pac-file" href="libnm/NMSetting8021x.html#NMSetting8021x--pac-file">
@@ -911,6 +916,7 @@
 <ANCHOR id="NMSetting8021x--phase2-ca-cert" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-ca-cert">
 <ANCHOR id="NMSetting8021x--phase2-ca-path" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-ca-path">
 <ANCHOR id="NMSetting8021x--phase2-client-cert" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-client-cert">
+<ANCHOR id="NMSetting8021x--phase2-domain-suffix-match" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-domain-suffix-match">
 <ANCHOR id="NMSetting8021x--phase2-private-key" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-private-key">
 <ANCHOR id="NMSetting8021x--phase2-private-key-password" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-private-key-password">
 <ANCHOR id="NMSetting8021x--phase2-private-key-password-flags" href="libnm/NMSetting8021x.html#NMSetting8021x--phase2-private-key-password-flags">

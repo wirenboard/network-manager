@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [1])
-m4_define([nm_micro_version], [91])
+m4_define([nm_micro_version], [92])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -85,6 +85,9 @@ AC_SUBST(nmlibdir, '${prefix}'/lib/$PACKAGE, [NetworkManager library directory])
 AC_SUBST(nmdatadir, '${datadir}'/$PACKAGE, [NetworkManager shared data directory])
 AC_SUBST(nmstatedir, '${localstatedir}'/lib/$PACKAGE, [NetworkManager persistent state directory])
 AC_SUBST(nmrundir, '${runstatedir}'/$PACKAGE, [NetworkManager runtime state directory])
+
+AC_GNU_SOURCE
+AC_CHECK_FUNCS([__secure_getenv secure_getenv])
 
 # Alternative configuration plugins
 AC_ARG_ENABLE(config-plugin-ibft, AS_HELP_STRING([--enable-config-plugin-ibft], [enable ibft configuration plugin]))
@@ -320,7 +323,7 @@ if (test "$with_udev_dir" != 'no'); then
 		AC_MSG_ERROR([--with-udev-dir must be an absolute path or 'yes' or 'no'. Instead it is '$with_udev_dir'])
 	fi
 	if (test "$with_udev_dir" = 'yes'); then
-		with_udev_dir="/lib/udev"
+		with_udev_dir="\$(prefix)/lib/udev"
 	fi
 	UDEV_DIR="$with_udev_dir"
 	AC_SUBST(UDEV_DIR)
@@ -397,7 +400,7 @@ if test "$nm_config_logging_backend_default" != 'debug' \
 fi
 if test "$nm_config_logging_backend_default" = ""; then
 	if test "$have_systemd_journal" = "yes"; then
-		nm_config_logging_backend_default='journal-syslog-style'
+		nm_config_logging_backend_default='journal'
 	else
 		nm_config_logging_backend_default='syslog'
 	fi

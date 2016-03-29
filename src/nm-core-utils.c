@@ -109,39 +109,6 @@ _nm_utils_set_testing (NMUtilsTestFlags flags)
 
 /*****************************************************************************/
 
-G_DEFINE_QUARK (nm-utils-error-quark, nm_utils_error)
-
-void
-nm_utils_error_set_cancelled (GError **error,
-                              gboolean is_disposing,
-                              const char *instance_name)
-{
-	if (is_disposing) {
-		g_set_error (error, NM_UTILS_ERROR, NM_UTILS_ERROR_CANCELLED_DISPOSING,
-		             "Disposing %s instance",
-		             instance_name && *instance_name ? instance_name : "source");
-	} else {
-		g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_CANCELLED,
-		                     "Request cancelled");
-	}
-}
-
-gboolean
-nm_utils_error_is_cancelled (GError *error,
-                             gboolean consider_is_disposing)
-{
-	if (error) {
-		if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-			return TRUE;
-		if (   consider_is_disposing
-		    && g_error_matches (error, NM_UTILS_ERROR, NM_UTILS_ERROR_CANCELLED_DISPOSING))
-			return TRUE;
-	}
-	return FALSE;
-}
-
-/*****************************************************************************/
-
 static GSList *_singletons = NULL;
 static gboolean _singletons_shutdown = FALSE;
 
@@ -454,10 +421,11 @@ nm_utils_modprobe (GError **error, gboolean suppress_error_logging, const char *
 		nm_log (llevel, LOGD_CORE, "modprobe: '%s' failed: %s", ARGV_TO_STR (argv), local->message);
 		g_propagate_error (error, local);
 		return -1;
-	} else if (exit_status != 0)
+	} else if (exit_status != 0) {
 		nm_log (llevel, LOGD_CORE, "modprobe: '%s' exited with error %d%s%s%s%s%s%s", ARGV_TO_STR (argv), exit_status,
 		        std_out&&*std_out ? " (" : "", std_out&&*std_out ? _trunk_first_line (std_out) : "", std_out&&*std_out ? ")" : "",
 		        std_err&&*std_err ? " (" : "", std_err&&*std_err ? _trunk_first_line (std_err) : "", std_err&&*std_err ? ")" : "");
+	}
 
 	return exit_status;
 }
@@ -1008,7 +976,6 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 
 	g_return_if_fail (pid > 0);
 	g_return_if_fail (log_name != NULL);
-	g_return_if_fail (wait_before_kill_msec > 0);
 
 	start_time0 = nm_utils_get_start_time_for_pid (pid, &p_state, NULL);
 	if (start_time0 == 0) {
@@ -1046,12 +1013,12 @@ nm_utils_kill_process_sync (pid_t pid, guint64 start_time, int sig, NMLogDomain 
 		return;
 	}
 
-	/* wait for the process to terminated... */
+	/* wait for the process to terminate... */
 
 	wait_start_us = nm_utils_get_monotonic_timestamp_us ();
 
 	sleep_duration_usec = _sleep_duration_convert_ms_to_us (sleep_duration_msec);
-	if (sig != SIGKILL)
+	if (sig != SIGKILL && wait_before_kill_msec)
 		wait_until_sigkill = wait_start_us + (((gint64) wait_before_kill_msec) * 1000L);
 	else
 		wait_until_sigkill = 0;
@@ -2507,8 +2474,8 @@ _get_property_path (const char *ifname,
 	static char path[sizeof (IPV6_PROPERTY_DIR) + IFNAMSIZ + 32];
 	int len;
 
-	ifname = ASSERT_VALID_PATH_COMPONENT (ifname);
-	property = ASSERT_VALID_PATH_COMPONENT (property);
+	ifname = NM_ASSERT_VALID_PATH_COMPONENT (ifname);
+	property = NM_ASSERT_VALID_PATH_COMPONENT (property);
 
 	len = g_snprintf (path,
 	                  sizeof (path),
@@ -2573,7 +2540,7 @@ nm_utils_is_valid_path_component (const char *name)
 }
 
 const char *
-ASSERT_VALID_PATH_COMPONENT (const char *name)
+NM_ASSERT_VALID_PATH_COMPONENT (const char *name)
 {
 	if (G_LIKELY (nm_utils_is_valid_path_component (name)))
 		return name;
@@ -2941,4 +2908,113 @@ nm_utils_parse_debug_string (const char *string,
 	return result;
 }
 
+/*****************************************************************************/
+
+void
+nm_utils_ifname_cpy (char *dst, const char *name)
+{
+	g_return_if_fail (dst);
+	g_return_if_fail (name && name[0]);
+
+	nm_assert (nm_utils_iface_valid_name (name));
+
+	if (g_strlcpy (dst, name, IFNAMSIZ) >= IFNAMSIZ)
+		g_return_if_reached ();
+}
+
+/*****************************************************************************/
+
+#define IPV4LL_NETWORK (htonl (0xA9FE0000L))
+#define IPV4LL_NETMASK (htonl (0xFFFF0000L))
+
+gboolean
+nm_utils_ip4_address_is_link_local (in_addr_t addr)
+{
+	return (addr & IPV4LL_NETMASK) == IPV4LL_NETWORK;
+}
+
+/*****************************************************************************/
+
+/**
+ * Takes a pair @timestamp and @duration, and returns the remaining duration based
+ * on the new timestamp @now.
+ */
+guint32
+nm_utils_lifetime_rebase_relative_time_on_now (guint32 timestamp,
+                                               guint32 duration,
+                                               gint32 now)
+{
+	gint64 t;
+
+	nm_assert (now >= 0);
+
+	if (duration == NM_PLATFORM_LIFETIME_PERMANENT)
+		return NM_PLATFORM_LIFETIME_PERMANENT;
+
+	if (timestamp == 0) {
+		/* if the @timestamp is zero, assume it was just left unset and that the relative
+		 * @duration starts counting from @now. This is convenient to construct an address
+		 * and print it in nm_platform_ip4_address_to_string().
+		 *
+		 * In general it does not make sense to set the @duration without anchoring at
+		 * @timestamp because you don't know the absolute expiration time when looking
+		 * at the address at a later moment. */
+		timestamp = now;
+	}
+
+	/* For timestamp > now, just accept it and calculate the expected(?) result. */
+	t = (gint64) timestamp + (gint64) duration - (gint64) now;
+
+	if (t <= 0)
+		return 0;
+	if (t >= NM_PLATFORM_LIFETIME_PERMANENT)
+		return NM_PLATFORM_LIFETIME_PERMANENT - 1;
+	return t;
+}
+
+gboolean
+nm_utils_lifetime_get (guint32 timestamp,
+                       guint32 lifetime,
+                       guint32 preferred,
+                       gint32 now,
+                       guint32 *out_lifetime,
+                       guint32 *out_preferred)
+{
+	guint32 t_lifetime, t_preferred;
+
+	nm_assert (now >= 0);
+
+	if (lifetime == 0) {
+		*out_lifetime = NM_PLATFORM_LIFETIME_PERMANENT;
+		*out_preferred = NM_PLATFORM_LIFETIME_PERMANENT;
+
+		/* We treat lifetime==0 as permanent addresses to allow easy creation of such addresses
+		 * (without requiring to set the lifetime fields to NM_PLATFORM_LIFETIME_PERMANENT).
+		 * In that case we also expect that the other fields (timestamp and preferred) are left unset. */
+		g_return_val_if_fail (timestamp == 0 && preferred == 0, TRUE);
+	} else {
+		if (now <= 0)
+			now = nm_utils_get_monotonic_timestamp_s ();
+		t_lifetime = nm_utils_lifetime_rebase_relative_time_on_now (timestamp, lifetime, now);
+		if (!t_lifetime) {
+			*out_lifetime = 0;
+			*out_preferred = 0;
+			return FALSE;
+		}
+		t_preferred = nm_utils_lifetime_rebase_relative_time_on_now (timestamp, preferred, now);
+
+		*out_lifetime = t_lifetime;
+		*out_preferred = MIN (t_preferred, t_lifetime);
+
+		/* Assert that non-permanent addresses have a (positive) @timestamp. nm_utils_lifetime_rebase_relative_time_on_now()
+		 * treats addresses with timestamp 0 as *now*. Addresses passed to _address_get_lifetime() always
+		 * should have a valid @timestamp, otherwise on every re-sync, their lifetime will be extended anew.
+		 */
+		g_return_val_if_fail (   timestamp != 0
+		                      || (   lifetime  == NM_PLATFORM_LIFETIME_PERMANENT
+		                          && preferred == NM_PLATFORM_LIFETIME_PERMANENT), TRUE);
+		g_return_val_if_fail (t_preferred <= t_lifetime, TRUE);
+	}
+	return TRUE;
+}
 

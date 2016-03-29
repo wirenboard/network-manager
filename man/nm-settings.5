@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 01 March 2016
+.\"      Date: 29 March 2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.1.91
+.\"    Source: NetworkManager 1.1.92
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.1\&.91" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.1\&.92" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -109,6 +109,8 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
 T{
 altsubject\-matches
@@ -154,6 +156,15 @@ T}:T{
 \ \&
 T}:T{
 Contains the client certificate if used by the EAP method specified in the "eap" property\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&.
+T}
+T{
+domain\-suffix\-match
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Constraint for server domain name\&. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server\&.  If a matching dNSName is found, this constraint is met\&.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison\&.
 T}
 T{
 eap
@@ -309,6 +320,15 @@ T}:T{
 Contains the "phase 2" client certificate if used by the EAP method specified in the "phase2\-auth" or "phase2\-autheap" properties\&. Certificate data is specified using a "scheme"; two are currently supported: blob and path\&. When using the blob scheme (which is backwards compatible with NM 0\&.7\&.x) this property should be set to the certificate\*(Aqs DER encoded data\&. When using the path scheme, this property should be set to the full UTF\-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte\&. This property can be unset even if the EAP method supports CA certificates, but this allows man\-in\-the\-middle attacks and is NOT recommended\&.
 T}
 T{
+phase2\-domain\-suffix\-match
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Constraint for server domain name\&. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner "phase 2" authentication\&.  If a matching dNSName is found, this constraint is met\&.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison\&.
+T}
+T{
 phase2\-private\-key
 T}:T{
 byte array
@@ -342,7 +362,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.
+Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2\-domain\-suffix\-match\&.
 T}
 T{
 pin
@@ -396,7 +416,7 @@ string
 T}:T{
 \ \&
 T}:T{
-Substring to be matched against the subject of the certificate presented by the authentication server\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.
+Substring to be matched against the subject of the certificate presented by the authentication server\&. When unset, no verification of the authentication server certificate\*(Aqs subject is performed\&.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain\-suffix\-match\&.
 T}
 T{
 system\-ca\-certs
@@ -1692,7 +1712,7 @@ string
 T}:T{
 \ \&
 T}:T{
-IP configuration method\&. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link\-local"\&. See the subclass\-specific documentation for other values\&. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration\&.  The "ignore\-auto\-routes" and "ignore\-auto\-dns" properties modify this behavior\&. For methods that imply no upstream network, such as "shared" or "link\-local", these properties must be empty\&.
+IP configuration method\&. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link\-local"\&. See the subclass\-specific documentation for other values\&. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration\&.  The "ignore\-auto\-routes" and "ignore\-auto\-dns" properties modify this behavior\&. For methods that imply no upstream network, such as "shared" or "link\-local", these properties must be empty\&. For IPv4 method "shared", the IP subnet can be configured by adding one manual IPv4 address or otherwise 10\&.42\&.x\&.0/24 is chosen\&.
 T}
 T{
 name
@@ -1923,7 +1943,7 @@ string
 T}:T{
 \ \&
 T}:T{
-IP configuration method\&. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link\-local"\&. See the subclass\-specific documentation for other values\&. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration\&.  The "ignore\-auto\-routes" and "ignore\-auto\-dns" properties modify this behavior\&. For methods that imply no upstream network, such as "shared" or "link\-local", these properties must be empty\&.
+IP configuration method\&. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link\-local"\&. See the subclass\-specific documentation for other values\&. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration\&.  The "ignore\-auto\-routes" and "ignore\-auto\-dns" properties modify this behavior\&. For methods that imply no upstream network, such as "shared" or "link\-local", these properties must be empty\&. For IPv4 method "shared", the IP subnet can be configured by adding one manual IPv4 address or otherwise 10\&.42\&.x\&.0/24 is chosen\&.
 T}
 T{
 name

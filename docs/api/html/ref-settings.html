@@ -2,11 +2,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Network Configuration Setting Specification: NetworkManager D-Bus Reference Manual</title>
+<title>Network Configuration Setting Specification: NetworkManager D-Bus API Reference Manual</title>
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
-<link rel="home" href="index.html" title="NetworkManager D-Bus Reference Manual">
-<link rel="up" href="index.html" title="NetworkManager D-Bus Reference Manual">
-<link rel="prev" href="ref-dbus.html" title="D-Bus API Reference">
+<link rel="home" href="index.html" title="NetworkManager D-Bus API Reference Manual">
+<link rel="up" href="index.html" title="NetworkManager D-Bus API Reference Manual">
+<link rel="prev" href="gdbus-org.freedesktop.NetworkManager.SecretAgent.html" title="org.freedesktop.NetworkManager.SecretAgent">
 <link rel="next" href="secrets-flags.html" title="Secret flag types">
 <meta name="generator" content="GTK-Doc V1.24 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
@@ -16,7 +16,7 @@
 <td width="100%" align="left" class="shortcuts"></td>
 <td><a accesskey="h" href="index.html"><img src="home.png" width="16" height="16" border="0" alt="Home"></a></td>
 <td><img src="up-insensitive.png" width="16" height="16" border="0"></td>
-<td><a accesskey="p" href="ref-dbus.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
+<td><a accesskey="p" href="gdbus-org.freedesktop.NetworkManager.SecretAgent.html"><img src="left.png" width="16" height="16" border="0" alt="Prev"></a></td>
 <td><a accesskey="n" href="secrets-flags.html"><img src="right.png" width="16" height="16" border="0" alt="Next"></a></td>
 </tr></table>
 <div class="chapter">
@@ -81,6 +81,12 @@
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen"></pre></td>
 <td>Contains the client certificate if used by the EAP method specified in the "eap" property. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte.</td>
+</tr>
+<tr>
+<td><pre class="screen">domain-suffix-match</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison.</td>
 </tr>
 <tr>
 <td><pre class="screen">eap</pre></td>
@@ -185,6 +191,12 @@
 <td>Contains the "phase 2" client certificate if used by the EAP method specified in the "phase2-auth" or "phase2-autheap" properties. Certificate data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme (which is backwards compatible with NM 0.7.x) this property should be set to the certificate's DER encoded data. When using the path scheme, this property should be set to the full UTF-8 encoded path of the certificate, prefixed with the string "file://" and ending with a terminating NUL byte. This property can be unset even if the EAP method supports CA certificates, but this allows man-in-the-middle attacks and is NOT recommended.</td>
 </tr>
 <tr>
+<td><pre class="screen">phase2-domain-suffix-match</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Constraint for server domain name. If set, this FQDN is used as a suffix match requirement for dNSName element(s) of the certificate presented by the authentication server during the inner "phase 2" authentication.  If a matching dNSName is found, this constraint is met.  If no dNSName values are present, this constraint is matched against SubjectName CN using same suffix match comparison.</td>
+</tr>
+<tr>
 <td><pre class="screen">phase2-private-key</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen"></pre></td>
@@ -206,7 +218,7 @@
 <td><pre class="screen">phase2-subject-match</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication. When unset, no verification of the authentication server certificate's subject is performed.</td>
+<td>Substring to be matched against the subject of the certificate presented by the authentication server during the inner "phase 2" authentication. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:phase2-domain-suffix-match.</td>
 </tr>
 <tr>
 <td><pre class="screen">pin</pre></td>
@@ -242,7 +254,7 @@
 <td><pre class="screen">subject-match</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>Substring to be matched against the subject of the certificate presented by the authentication server. When unset, no verification of the authentication server certificate's subject is performed.</td>
+<td>Substring to be matched against the subject of the certificate presented by the authentication server. When unset, no verification of the authentication server certificate's subject is performed.  This property provides little security, if any, and its use is deprecated in favor of NMSetting8021x:domain-suffix-match.</td>
 </tr>
 <tr>
 <td><pre class="screen">system-ca-certs</pre></td>
@@ -1104,7 +1116,7 @@
 <td><pre class="screen">method</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>IP configuration method. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link-local". See the subclass-specific documentation for other values. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration.  The "ignore-auto-routes" and "ignore-auto-dns" properties modify this behavior. For methods that imply no upstream network, such as "shared" or "link-local", these properties must be empty.</td>
+<td>IP configuration method. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link-local". See the subclass-specific documentation for other values. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration.  The "ignore-auto-routes" and "ignore-auto-dns" properties modify this behavior. For methods that imply no upstream network, such as "shared" or "link-local", these properties must be empty. For IPv4 method "shared", the IP subnet can be configured by adding one manual IPv4 address or otherwise 10.42.x.0/24 is chosen.</td>
 </tr>
 <tr>
 <td><pre class="screen">name</pre></td>
@@ -1250,7 +1262,7 @@
 <td><pre class="screen">method</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
-<td>IP configuration method. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link-local". See the subclass-specific documentation for other values. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration.  The "ignore-auto-routes" and "ignore-auto-dns" properties modify this behavior. For methods that imply no upstream network, such as "shared" or "link-local", these properties must be empty.</td>
+<td>IP configuration method. NMSettingIP4Config and NMSettingIP6Config both support "auto", "manual", and "link-local". See the subclass-specific documentation for other values. In general, for the "auto" method, properties such as "dns" and "routes" specify information that is added on to the information returned from automatic configuration.  The "ignore-auto-routes" and "ignore-auto-dns" properties modify this behavior. For methods that imply no upstream network, such as "shared" or "link-local", these properties must be empty. For IPv4 method "shared", the IP subnet can be configured by adding one manual IPv4 address or otherwise 10.42.x.0/24 is chosen.</td>
 </tr>
 <tr>
 <td><pre class="screen">name</pre></td>

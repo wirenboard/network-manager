@@ -12,6 +12,7 @@
 <property name="ca-path" variable="(none)" format="" values="" default="" example="" description="The property is not handled by ifcfg-rh plugin."/>
 <property name="subject-match" variable="IEEE_8021X_SUBJECT_MATCH(+)" format="" values="" default="" example="IEEE_8021X_SUBJECT_MATCH=&quot;Red Hat&quot;" description="Substring to match subject of server certificate against."/>
 <property name="altsubject-matches" variable="IEEE_8021X_ALTSUBJECT_MATCHES(+)" format="" values="" default="" example="IEEE_8021X_ALTSUBJECT_MATCHES=&quot;s1.domain.cc&quot;" description="List of strings to be matched against the altSubjectName."/>
+<property name="domain-suffix-match" variable="IEEE_8021X_DOMAIN_SUFFIX_MATCH(+)" format="" values="" default="" example="" description="Suffix to match domain of server certificate against."/>
 <property name="client-cert" variable="IEEE_8021X_CLIENT_CERT(+)" format="" values="" default="" example="IEEE_8021X_CLIENT_CERT=/home/joe/mycert.crt" description="Client certificate for EAP."/>
 <property name="phase1-peapver" variable="IEEE_8021X_PEAP_VERSION(+)" format="" values="0, 1" default="" example="" description="Use to force a specific PEAP version."/>
 <property name="phase1-peaplabel" variable="IEEE_8021X_PEAP_FORCE_NEW_LABEL(+)" format="" values="yes, no" default="no" example="" description="Use to force the new PEAP label during key derivation."/>
@@ -22,6 +23,7 @@ can contain values both for &apos;phase2-auth&apos; and &apos;phase2-autheap&apo
 IEEE_8021X_INNER_AUTH_METHODS is also used for &apos;phase2-auth&apos; values."/>
 <property name="phase2-subject-match" variable="IEEE_8021X_PHASE2_SUBJECT_MATCH(+)" format="" values="" default="" example="IEEE_8021X_PHASE2_SUBJECT_MATCH=&quot;Red Hat&quot;" description="Substring to match subject of server certificate against."/>
 <property name="phase2-altsubject-matches" variable="IEEE_8021X_PHASE2_ALTSUBJECT_MATCHES(+)" format="" values="" default="" example="" description=""/>
+<property name="phase2-domain-suffix-match" variable="IEEE_8021X_PHASE2_DOMAIN_SUFFIX_MATCH(+)" format="" values="" default="" example="" description="Suffix to match domain of server certificate for phase 2 against."/>
 <property name="phase2-client-cert" variable="IEEE_8021X_INNER_CLIENT_CERT(+)" format="" values="" default="" example="IEEE_8021X_INNER_CLIENT_CERT=/home/joe/mycert.crt" description="Client certificate for inner EAP method."/>
 <property name="password" variable="IEEE_8021X_PASSWORD(+)" format="" values="" default="" example="" description="UTF-8 encoded password used for EAP. It can also go to &quot;key-&quot;
 lookaside file, or it can be owned by a secret agent."/>

@@ -73,6 +73,8 @@ typedef enum {
 	                                                      LOG_FORMAT_FLAG_LOCATION_DEBUG |
 	                                                      LOG_FORMAT_FLAG_LOCATION_ERROR |
 	                                                      LOG_FORMAT_FLAG_ALIGN_LOCATION,
+
+	_LOG_FORMAT_FLAG_DEFAULT                            = _LOG_FORMAT_FLAG_TIMESTAMP,
 } LogFormatFlags;
 
 void (*_nm_logging_clear_platform_logging_cache) (void);
@@ -109,19 +111,20 @@ static struct {
 	char *logging_domains_to_string;
 	const LogLevelDesc level_desc[_LOGL_N];
 
-#define _DOMAIN_DESC_LEN 36
+#define _DOMAIN_DESC_LEN 37
 	/* Would be nice to use C99 flexible array member here,
 	 * but that feature doesn't seem well supported. */
 	const LogDesc domain_desc[_DOMAIN_DESC_LEN];
 } global = {
 	.log_level = LOGL_INFO,
 	.log_backend = LOG_BACKEND_GLIB,
+	.log_format_flags = _LOG_FORMAT_FLAG_DEFAULT,
 	.level_desc = {
 		[LOGL_TRACE] = { "TRACE", "<trace>", LOG_DEBUG,   G_LOG_LEVEL_DEBUG,   _LOG_FORMAT_FLAG_LEVEL_DEBUG },
 		[LOGL_DEBUG] = { "DEBUG", "<debug>", LOG_INFO,    G_LOG_LEVEL_DEBUG,   _LOG_FORMAT_FLAG_LEVEL_DEBUG },
-		[LOGL_INFO]  = { "INFO",  "<info>",  LOG_INFO,    G_LOG_LEVEL_MESSAGE, _LOG_FORMAT_FLAG_LEVEL_INFO },
-		[LOGL_WARN]  = { "WARN",  "<warn>",  LOG_WARNING, G_LOG_LEVEL_WARNING, _LOG_FORMAT_FLAG_LEVEL_INFO },
-		[LOGL_ERR]   = { "ERR",   "<error>", LOG_ERR,     G_LOG_LEVEL_WARNING, _LOG_FORMAT_FLAG_LEVEL_ERROR },
+		[LOGL_INFO]  = { "INFO",  "<info>",  LOG_INFO,    G_LOG_LEVEL_INFO,    _LOG_FORMAT_FLAG_LEVEL_INFO },
+		[LOGL_WARN]  = { "WARN",  "<warn>",  LOG_WARNING, G_LOG_LEVEL_MESSAGE, _LOG_FORMAT_FLAG_LEVEL_INFO },
+		[LOGL_ERR]   = { "ERR",   "<error>", LOG_ERR,     G_LOG_LEVEL_MESSAGE, _LOG_FORMAT_FLAG_LEVEL_ERROR },
 		[_LOGL_OFF]  = { "OFF",   NULL,      0,           0,                   0 },
 		[_LOGL_KEEP] = { "KEEP",  NULL,      0,           0,                   0 },
 	},
@@ -161,6 +164,7 @@ static struct {
 		{ LOGD_DCB,       "DCB" },
 		{ LOGD_DISPATCH,  "DISPATCH" },
 		{ LOGD_AUDIT,     "AUDIT" },
+		{ LOGD_SYSTEMD,   "SYSTEMD" },
 		{ 0, NULL }
 		/* keep _DOMAIN_DESC_LEN in sync */
 	},
@@ -532,7 +536,7 @@ _nm_log_impl (const char *file,
 
 	if (NM_FLAGS_ANY (global.log_format_flags, global.level_desc[level].log_format_level & _LOG_FORMAT_FLAG_TIMESTAMP)) {
 		g_get_current_time (&tv);
-		nm_sprintf_buf (s_buf_timestamp, " [%ld.%06ld]", tv.tv_sec, tv.tv_usec);
+		nm_sprintf_buf (s_buf_timestamp, " [%ld.%04ld]", tv.tv_sec, (tv.tv_usec + 50) / 100);
 	} else
 		s_buf_timestamp[0] = '\0';
 
@@ -722,11 +726,11 @@ nm_log_handler (const gchar *log_domain,
 			boottime = nm_utils_monotonic_timestamp_as_boottime (now, 1);
 
 			sd_journal_send ("PRIORITY=%d", syslog_priority,
-			                 "MESSAGE=%s", str_if_set (message, ""),
+			                 "MESSAGE=%s", message ?: "",
 			                 "SYSLOG_IDENTIFIER=%s", G_LOG_DOMAIN,
 			                 "SYSLOG_PID=%ld", (long) getpid (),
 			                 "SYSLOG_FACILITY=GLIB",
-			                 "GLIB_DOMAIN=%s", str_if_set (log_domain, ""),
+			                 "GLIB_DOMAIN=%s", log_domain ?: "",
 			                 "GLIB_LEVEL=%d", (int) (level & G_LOG_LEVEL_MASK),
 			                 "TIMESTAMP_MONOTONIC=%lld.%06lld", (long long) (now / NM_UTILS_NS_PER_SECOND), (long long) ((now % NM_UTILS_NS_PER_SECOND) / 1000),
 			                 "TIMESTAMP_BOOTTIME=%lld.%06lld", (long long) (boottime / NM_UTILS_NS_PER_SECOND), (long long) ((boottime % NM_UTILS_NS_PER_SECOND) / 1000),
@@ -735,7 +739,7 @@ nm_log_handler (const gchar *log_domain,
 		break;
 #endif
 	default:
-		syslog (syslog_priority, "%s", str_if_set (message, ""));
+		syslog (syslog_priority, "%s", message ?: "");
 		break;
 	}
 }
@@ -751,16 +755,13 @@ nm_logging_syslog_openlog (const char *logging_backend)
 	if (!logging_backend)
 		logging_backend = ""NM_CONFIG_LOGGING_BACKEND_DEFAULT;
 
+	log_format_flags = _LOG_FORMAT_FLAG_DEFAULT;
+
 	if (strcmp (logging_backend, "debug") == 0) {
 		global.log_backend = LOG_BACKEND_SYSLOG;
 		openlog (G_LOG_DOMAIN, LOG_CONS | LOG_PERROR | LOG_PID, LOG_USER);
-		log_format_flags = _LOG_FORMAT_FLAG_SYSLOG;
 #if SYSTEMD_JOURNAL
 	} else if (strcmp (logging_backend, "syslog") != 0) {
-		if (strcmp (logging_backend, "journal-syslog-style") == 0)
-			log_format_flags = _LOG_FORMAT_FLAG_SYSLOG;
-		else
-			log_format_flags = _LOG_FORMAT_FLAG_TIMESTAMP;
 		global.log_backend = LOG_BACKEND_JOURNAL;
 
 		/* ensure we read a monotonic timestamp. Reading the timestamp the first
@@ -769,7 +770,6 @@ nm_logging_syslog_openlog (const char *logging_backend)
 #endif
 	} else {
 		global.log_backend = LOG_BACKEND_SYSLOG;
-		log_format_flags = _LOG_FORMAT_FLAG_SYSLOG;
 		openlog (G_LOG_DOMAIN, LOG_PID, LOG_DAEMON);
 	}
 

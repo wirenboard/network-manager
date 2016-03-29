@@ -35,9 +35,9 @@
 #include <string.h>
 #include <sys/resource.h>
 
+#include "main-utils.h"
 #include "nm-dbus-interface.h"
 #include "NetworkManagerUtils.h"
-#include "main-utils.h"
 #include "nm-manager.h"
 #include "nm-linux-platform.h"
 #include "nm-bus-manager.h"
@@ -50,6 +50,7 @@
 #include "nm-auth-manager.h"
 #include "nm-core-internal.h"
 #include "nm-exported-object.h"
+#include "nm-sd.h"
 
 #if !defined(NM_DIST_VERSION)
 # define NM_DIST_VERSION VERSION
@@ -216,8 +217,7 @@ print_config (NMConfigCmdLineOptions *config_cli)
 
 	config = nm_config_new (config_cli, NULL, &error);
 	if (config == NULL) {
-		fprintf (stderr, _("Failed to read configuration: %s\n"),
-		         (error && error->message) ? error->message : _("unknown"));
+		fprintf (stderr, _("Failed to read configuration: %s\n"), error->message);
 		return 7;
 	}
 
@@ -272,6 +272,7 @@ main (int argc, char *argv[])
 	gboolean wrote_pidfile = FALSE;
 	char *bad_domains = NULL;
 	NMConfigCmdLineOptions *config_cli;
+	guint sd_id = 0;
 
 	nm_g_type_init ();
 
@@ -308,12 +309,7 @@ main (int argc, char *argv[])
 
 	nm_main_utils_ensure_not_running_pidfile (global_opt.pidfile);
 
-	/* Ensure state directory exists */
-	if (g_mkdir_with_parents (NMSTATEDIR, 0755) != 0) {
-		fprintf (stderr, "Cannot create '%s': %s", NMSTATEDIR, strerror (errno));
-		exit (1);
-	}
-
+	nm_main_utils_ensure_statedir ();
 	nm_main_utils_ensure_rundir ();
 
 	/* When running from the build directory, determine our build directory
@@ -359,9 +355,8 @@ main (int argc, char *argv[])
 	nm_config_cmd_line_options_free (config_cli);
 	config_cli = NULL;
 	if (config == NULL) {
-		fprintf (stderr, _("Failed to read configuration: (%d) %s\n"),
-		         error ? error->code : -1,
-		         (error && error->message) ? error->message : _("unknown"));
+		fprintf (stderr, _("Failed to read configuration: %s\n"),
+		         error->message);
 		exit (1);
 	}
 
@@ -413,10 +408,9 @@ main (int argc, char *argv[])
 
 	/* Parse the state file */
 	if (!parse_state_file (global_opt.state_file, &net_enabled, &wifi_enabled, &wwan_enabled, &error)) {
-		nm_log_err (LOGD_CORE, "State file %s parsing failed: (%d) %s",
+		nm_log_err (LOGD_CORE, "State file %s parsing failed: %s",
 		            global_opt.state_file,
-		            error ? error->code : -1,
-		            (error && error->message) ? error->message : _("unknown"));
+		            error->message);
 		/* Not a hard failure */
 	}
 	g_clear_error (&error);
@@ -477,8 +471,11 @@ main (int argc, char *argv[])
 
 	success = TRUE;
 
-	if (configure_and_quit == FALSE)
+	if (configure_and_quit == FALSE) {
+		sd_id = nm_sd_event_attach_default ();
+
 		g_main_loop_run (main_loop);
+	}
 
 done:
 	nm_exported_object_class_set_quitting ();
@@ -489,5 +486,8 @@ done:
 		unlink (global_opt.pidfile);
 
 	nm_log_info (LOGD_CORE, "exiting (%s)", success ? "success" : "error");
+
+	nm_clear_g_source (&sd_id);
+
 	exit (success ? 0 : 1);
 }

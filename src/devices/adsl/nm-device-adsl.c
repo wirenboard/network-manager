@@ -125,7 +125,8 @@ complete_connection (NMDevice *device,
 	if (s_adsl && !nm_setting_verify (NM_SETTING (s_adsl), NULL, error))
 		return FALSE;
 
-	nm_utils_complete_generic (connection,
+	nm_utils_complete_generic (NM_PLATFORM_GET,
+	                           connection,
 	                           NM_SETTING_ADSL_SETTING_NAME,
 	                           existing_connections,
 	                           NULL,
@@ -535,7 +536,7 @@ carrier_update_cb (gpointer user_data)
 	char *path;
 
 	path  = g_strdup_printf ("/sys/class/atm/%s/carrier",
-	                         ASSERT_VALID_PATH_COMPONENT (nm_device_get_iface (NM_DEVICE (self))));
+	                         NM_ASSERT_VALID_PATH_COMPONENT (nm_device_get_iface (NM_DEVICE (self))));
 	carrier = (int) nm_platform_sysctl_get_int_checked (NM_PLATFORM_GET, path, 10, 0, 1, -1);
 	g_free (path);
 
