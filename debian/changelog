@@ -1,3 +1,9 @@
+network-manager (1.1.92-1) UNRELEASED; urgency=medium
+
+  * New upstream release (1.2 beta3).
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 30 Mar 2016 13:15:48 +0200
+
 network-manager (1.1.91-3) unstable; urgency=medium
 
   * Bump Build-Depends on debhelper to (>= 9.20160114) for
