@@ -447,6 +447,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_802_1x_get_client_cert_blob@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_client_cert_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_client_cert_scheme@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_domain_suffix_match@libnm_1_2_0 1.1.92
  nm_setting_802_1x_get_eap_method@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_identity@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_num_altsubject_matches@libnm_1_0_0 1.0.0
@@ -470,6 +471,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_802_1x_get_phase2_client_cert_blob@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_client_cert_path@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_client_cert_scheme@libnm_1_0_0 1.0.0
+ nm_setting_802_1x_get_phase2_domain_suffix_match@libnm_1_2_0 1.1.92
  nm_setting_802_1x_get_phase2_private_key_blob@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_private_key_format@libnm_1_0_0 1.0.0
  nm_setting_802_1x_get_phase2_private_key_password@libnm_1_0_0 1.0.0
