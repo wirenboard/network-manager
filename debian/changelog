@@ -5,6 +5,8 @@ network-manager (1.1.92-1) UNRELEASED; urgency=medium
   * Set the udev directory to /lib/udev via the new --with-udev-dir= configure
     switch.
   * Update symbols file for libnm-util2 and libnm0.
+  * Add versioned Build-Depends on dpkg-dev (>= 1.17.14) for <!nocheck>
+    support.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 30 Mar 2016 13:15:48 +0200
 
