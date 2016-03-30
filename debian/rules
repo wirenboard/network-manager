@@ -26,6 +26,7 @@ override_dh_auto_configure:
 		--with-dnsmasq=/usr/sbin/dnsmasq \
 		--with-dnssec-trigger=/usr/lib/dnssec-trigger/dnssec-trigger-script \
 		--with-systemdsystemunitdir=/lib/systemd/system \
+		--with-udev-dir=/lib/udev \
 		--with-crypto=gnutls \
 		--with-session-tracking=systemd \
 		--with-suspend-resume=systemd \
