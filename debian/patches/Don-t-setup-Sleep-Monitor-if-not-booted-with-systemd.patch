@@ -18,10 +18,10 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 0f270ce..46da9b8 100644
+index 578b077..e2301d8 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -467,8 +467,9 @@ fi
+@@ -470,8 +470,9 @@ fi
  case $with_suspend_resume in
      upower) ;;
      systemd)
@@ -33,10 +33,10 @@ index 0f270ce..46da9b8 100644
          ;;
      consolekit)
 diff --git a/src/Makefile.am b/src/Makefile.am
-index eea646a..603811b 100644
+index aee7eae..cc23c8b 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -475,6 +475,7 @@ AM_CPPFLAGS += \
+@@ -483,6 +483,7 @@ AM_CPPFLAGS += \
  	$(SELINUX_CFLAGS) \
  	$(LIBAUDIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
@@ -44,7 +44,7 @@ index eea646a..603811b 100644
  	$(SYSTEMD_JOURNAL_CFLAGS) \
  	$(SYSTEMD_NM_CFLAGS_PATHS) \
  	\
-@@ -508,6 +509,7 @@ libNetworkManager_la_LIBADD = \
+@@ -516,6 +517,7 @@ libNetworkManager_la_LIBADD = \
  	$(GUDEV_LIBS) \
  	$(LIBNL_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \

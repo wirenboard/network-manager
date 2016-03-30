@@ -12,7 +12,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 120 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index 7f414e8..8ce6c0b 100644
+index dc394a4..fea7c0d 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
 @@ -57,6 +57,8 @@
@@ -35,7 +35,7 @@ index 7f414e8..8ce6c0b 100644
  	guint timestamp_update_id;
  
  	gboolean startup;
-@@ -683,6 +689,29 @@ find_best_device_state (NMManager *manager)
+@@ -691,6 +697,29 @@ find_best_device_state (NMManager *manager)
  	return best_state;
  }
  
@@ -63,9 +63,9 @@ index 7f414e8..8ce6c0b 100644
 +}
 +
  static void
- nm_manager_update_metered (NMManager *manager)
+ nm_manager_update_metered (NMManager *self)
  {
-@@ -724,6 +753,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -731,6 +760,9 @@ nm_manager_update_state (NMManager *manager)
  
  	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
  
@@ -75,7 +75,7 @@ index 7f414e8..8ce6c0b 100644
  	if (new_state == NM_STATE_CONNECTED_SITE) {
  		nm_connectivity_check_async (priv->connectivity,
  		                             checked_connectivity,
-@@ -4336,6 +4368,65 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -4403,6 +4435,65 @@ impl_manager_check_connectivity (NMManager *self,
  }
  
  static void
@@ -141,7 +141,7 @@ index 7f414e8..8ce6c0b 100644
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
  	nm_device_factory_start (factory);
-@@ -4406,6 +4497,9 @@ nm_manager_start (NMManager *self, GError **error)
+@@ -4473,6 +4564,9 @@ nm_manager_start (NMManager *self, GError **error)
  
  	check_if_startup_complete (self);
  
@@ -151,8 +151,8 @@ index 7f414e8..8ce6c0b 100644
  	return TRUE;
  }
  
-@@ -5207,6 +5301,22 @@ nm_manager_init (NMManager *manager)
- 		             KERNEL_FIRMWARE_DIR);
+@@ -5273,6 +5367,22 @@ nm_manager_init (NMManager *self)
+ 		       KERNEL_FIRMWARE_DIR);
  	}
  
 +	/* Monitor the ifupdown state file */
@@ -163,7 +163,7 @@ index 7f414e8..8ce6c0b 100644
 +	if (priv->ifstate_monitor) {
 +		g_signal_connect (priv->ifstate_monitor, "changed",
 +		                  G_CALLBACK (ifstate_file_changed),
-+		                  manager);
++		                  self);
 +		nm_log_info (LOGD_CORE, "monitoring ifupdown state file '%s'.",
 +		             IFUPDOWN_STATE_FILE);
 +	} else {
@@ -172,9 +172,9 @@ index 7f414e8..8ce6c0b 100644
 +	}
 +
  	/* Update timestamps in active connections */
- 	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, manager);
+ 	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
  
-@@ -5449,6 +5559,16 @@ dispose (GObject *object)
+@@ -5515,6 +5625,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  

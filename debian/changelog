@@ -1,6 +1,7 @@
 network-manager (1.1.92-1) UNRELEASED; urgency=medium
 
   * New upstream release (1.2 beta3).
+  * Rebase patches.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 30 Mar 2016 13:15:48 +0200
 

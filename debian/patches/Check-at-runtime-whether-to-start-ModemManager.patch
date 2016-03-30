@@ -13,7 +13,7 @@ Closes: #770871
  1 file changed, 5 insertions(+), 10 deletions(-)
 
 diff --git a/src/devices/wwan/nm-modem-manager.c b/src/devices/wwan/nm-modem-manager.c
-index 79082c4..937f731 100644
+index e26321b..9e9bc13 100644
 --- a/src/devices/wwan/nm-modem-manager.c
 +++ b/src/devices/wwan/nm-modem-manager.c
 @@ -25,6 +25,7 @@

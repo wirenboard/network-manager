@@ -6,5 +6,3 @@ Check-at-runtime-whether-to-start-ModemManager.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 Don-t-block-network.target-on-NetworkManager-wait-on.patch
 Fix-iscsiadm-path.patch
-tests-fix-bashism-in-run-test-dbus-session.sh.patch
-wifi-hack-for-wext-devices-reporting-IW_MODE_AUTO-configu.patch
