@@ -48,7 +48,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Hardware address of the device.</para>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Carrier">
   <title>The "Carrier" property</title>
@@ -56,7 +57,9 @@ HwAddress  readable   s
 <programlisting>
 Carrier  readable   b
 </programlisting>
-<para>Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).</para>
+<para>        Indicates whether the physical carrier is found (e.g. whether a cable is
+        plugged in or not).
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Slaves">
   <title>The "Slaves" property</title>
@@ -64,7 +67,9 @@ Carrier  readable   b
 <programlisting>
 Slaves  readable   ao
 </programlisting>
-<para>Array of object paths representing devices which are currently  slaved to this device.</para>
+<para>        Array of object paths representing devices which are currently slaved to
+        this device.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

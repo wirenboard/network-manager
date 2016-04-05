@@ -55,7 +55,10 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Addresses  readable   aau
 </programlisting>
-<para>Array of arrays of IPv4 address/prefix/gateway.  All 3  elements of each array are in network byte order.  Essentially:  [(addr, prefix, gateway), (addr, prefix, gateway), ...]   Deprecated: use AddressData and Gateway</para>
+<para>        Array of arrays of IPv4 address/prefix/gateway. All 3 elements of each
+        array are in network byte order. Essentially: [(addr, prefix, gateway),
+        (addr, prefix, gateway), ...] Deprecated: use AddressData and Gateway
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.AddressData">
   <title>The "AddressData" property</title>
@@ -63,7 +66,10 @@ Addresses  readable   aau
 <programlisting>
 AddressData  readable   aa{sv}
 </programlisting>
-<para>Array of IP address data objects. All addresses will include  "address" (an IP address string), and "prefix" (a uint). Some  addresses may include additional attributes.</para>
+<para>        Array of IP address data objects. All addresses will include "address" (an
+        IP address string), and "prefix" (a uint). Some addresses may include
+        additional attributes.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Gateway">
   <title>The "Gateway" property</title>
@@ -71,7 +77,8 @@ AddressData  readable   aa{sv}
 <programlisting>
 Gateway  readable   s
 </programlisting>
-<para>The gateway in use.</para>
+<para>        The gateway in use.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Routes">
   <title>The "Routes" property</title>
@@ -79,7 +86,12 @@ Gateway  readable   s
 <programlisting>
 Routes  readable   aau
 </programlisting>
-<para>Arrays of IPv4 route/prefix/next-hop/metric. All 4 elements of  each tuple are in network byte order. 'route' and 'next hop'  are IPv4 addresses, while prefix and metric are simple  unsigned integers. Essentially: [(route, prefix, next-hop,  metric), (route, prefix, next-hop, metric), ...]   Deprecated: use RouteData</para>
+<para>        Arrays of IPv4 route/prefix/next-hop/metric. All 4 elements of each tuple
+        are in network byte order. 'route' and 'next hop' are IPv4 addresses,
+        while prefix and metric are simple unsigned integers. Essentially:
+        [(route, prefix, next-hop, metric), (route, prefix, next-hop, metric),
+        ...] Deprecated: use RouteData
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.RouteData">
   <title>The "RouteData" property</title>
@@ -87,7 +99,10 @@ Routes  readable   aau
 <programlisting>
 RouteData  readable   aa{sv}
 </programlisting>
-<para>Array of IP route data objects. All routes will include "dest"  (an IP address string) and "prefix" (a uint). Some routes may  include "next-hop" (an IP address string), "metric" (a uint),  and additional attributes.</para>
+<para>        Array of IP route data objects. All routes will include "dest" (an IP
+        address string) and "prefix" (a uint). Some routes may include "next-hop"
+        (an IP address string), "metric" (a uint), and additional attributes.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Nameservers">
   <title>The "Nameservers" property</title>
@@ -95,7 +110,8 @@ RouteData  readable   aa{sv}
 <programlisting>
 Nameservers  readable   au
 </programlisting>
-<para>The nameservers in use.</para>
+<para>        The nameservers in use.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Domains">
   <title>The "Domains" property</title>
@@ -103,7 +119,8 @@ Nameservers  readable   au
 <programlisting>
 Domains  readable   as
 </programlisting>
-<para>A list of domains this address belongs to.</para>
+<para>        A list of domains this address belongs to.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Searches">
   <title>The "Searches" property</title>
@@ -111,7 +128,8 @@ Domains  readable   as
 <programlisting>
 Searches  readable   as
 </programlisting>
-<para>A list of dns searches.</para>
+<para>        A list of dns searches.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsOptions">
   <title>The "DnsOptions" property</title>
@@ -119,7 +137,9 @@ Searches  readable   as
 <programlisting>
 DnsOptions  readable   as
 </programlisting>
-<para>A list of DNS options that modify the behavior of the DNS  resolver. See resolv.conf(5) manual page for the list of  supported options.</para>
+<para>        A list of DNS options that modify the behavior of the DNS resolver. See
+        resolv.conf(5) manual page for the list of supported options.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.WinsServers">
   <title>The "WinsServers" property</title>
@@ -127,7 +147,9 @@ DnsOptions  readable   as
 <programlisting>
 WinsServers  readable   au
 </programlisting>
-<para>The Windows Internet Name Service servers associated with the connection.  Each address is in network byte order.</para>
+<para>        The Windows Internet Name Service servers associated with the connection.
+        Each address is in network byte order.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

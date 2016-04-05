@@ -68,16 +68,19 @@
 </div>
 <div class="refsect1">
 <a name="gdbus-interface-org-freedesktop-NetworkManager-Settings"></a><h2>Description</h2>
-<p>The Settings interface allows clients to view and administrate the connections stored and used by NetworkManager.</p>
+<p>      The Settings interface allows clients to view and administrate the
+      connections stored and used by NetworkManager.
+</p>
 </div>
 <div class="refsect1">
 <a name="gdbus-methods-org.freedesktop.NetworkManager.Settings"></a><h2>Method Details</h2>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.ListConnections"></a><h3>The <code class="function">ListConnections()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.ListConnections"></a><h3>The ListConnections() method</h3>
 <pre class="programlisting">
 ListConnections (OUT ao connections);
 </pre>
-<p>List the saved network connections known to NetworkManager.</p>
+<p>        List the saved network connections known to NetworkManager.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -91,12 +94,13 @@ ListConnections (OUT ao connections);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.GetConnectionByUuid"></a><h3>The <code class="function">GetConnectionByUuid()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.GetConnectionByUuid"></a><h3>The GetConnectionByUuid() method</h3>
 <pre class="programlisting">
 GetConnectionByUuid (IN  s uuid,
                      OUT o connection);
 </pre>
-<p>Retrieve the object path of a connection, given that connection's UUID.</p>
+<p>        Retrieve the object path of a connection, given that connection's UUID.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -116,12 +120,16 @@ GetConnectionByUuid (IN  s uuid,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.AddConnection"></a><h3>The <code class="function">AddConnection()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.AddConnection"></a><h3>The AddConnection() method</h3>
 <pre class="programlisting">
 AddConnection (IN  a{sa{sv}} connection,
                OUT o         path);
 </pre>
-<p>Add new connection and save it to disk.  This operation does not start         the network connection unless (1) device is idle and able to connect to         the network described by the new connection, and (2) the connection         is allowed to be started automatically.</p>
+<p>        Add new connection and save it to disk. This operation does not start the
+        network connection unless (1) device is idle and able to connect to the
+        network described by the new connection, and (2) the connection is allowed
+        to be started automatically.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -141,12 +149,19 @@ AddConnection (IN  a{sa{sv}} connection,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.AddConnectionUnsaved"></a><h3>The <code class="function">AddConnectionUnsaved()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.AddConnectionUnsaved"></a><h3>The AddConnectionUnsaved() method</h3>
 <pre class="programlisting">
 AddConnectionUnsaved (IN  a{sa{sv}} connection,
                       OUT o         path);
 </pre>
-<p>Add new connection but do not save it to disk immediately.  This         operation does not start the network connection unless (1) device is         idle and able to connect to the network described by the new connection,         and (2) the connection is allowed to be started automatically.          Use the 'Save' method on the connection to save these changes         to disk. Note that unsaved changes will be lost if the         connection is reloaded from disk (either automatically on file         change or due to an explicit ReloadConnections call).</p>
+<p>        Add new connection but do not save it to disk immediately. This operation
+        does not start the network connection unless (1) device is idle and able
+        to connect to the network described by the new connection, and (2) the
+        connection is allowed to be started automatically. Use the 'Save' method
+        on the connection to save these changes to disk. Note that unsaved changes
+        will be lost if the connection is reloaded from disk (either automatically
+        on file change or due to an explicit ReloadConnections call).
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -166,13 +181,19 @@ AddConnectionUnsaved (IN  a{sa{sv}} connection,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.LoadConnections"></a><h3>The <code class="function">LoadConnections()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.LoadConnections"></a><h3>The LoadConnections() method</h3>
 <pre class="programlisting">
 LoadConnections (IN  as filenames,
                  OUT b  status,
                  OUT as failures);
 </pre>
-<p>Loads or reloads the indicated connections from disk. You         should call this after making changes directly to an on-disk         connection file to make sure that NetworkManager sees the         changes. (If "monitor-connection-files" in NetworkManager.conf         is "true", then this will have no real effect, but is         harmless.) As with <code class="function">AddConnection()</code>, this operation does not         necessarily start the network connection.</p>
+<p>        Loads or reloads the indicated connections from disk. You should call this
+        after making changes directly to an on-disk connection file to make sure
+        that NetworkManager sees the changes. (If "monitor-connection-files" in
+        NetworkManager.conf is "true", then this will have no real effect, but is
+        harmless.) As with AddConnection(), this operation does not necessarily
+        start the network connection.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -181,11 +202,11 @@ LoadConnections (IN  as filenames,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">IN as <em class="parameter"><code>filenames</code></em></code>:</span></p></td>
-<td><p>Array of paths to on-disk connection profiles in directories           monitored by NetworkManager.</p></td>
+<td><p>Array of paths to on-disk connection profiles in directories monitored by NetworkManager.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">OUT b <em class="parameter"><code>status</code></em></code>:</span></p></td>
-<td><p>Success or failure of the operation as a whole. True if           NetworkManager at least tried to load the indicated           connections, even if it did not succeed. False if an error           occurred before trying to load the connections (eg,           permission denied).</p></td>
+<td><p>Success or failure of the operation as a whole. True if NetworkManager at least tried to load the indicated connections, even if it did not succeed. False if an error occurred before trying to load the connections (eg, permission denied).</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">OUT as <em class="parameter"><code>failures</code></em></code>:</span></p></td>
@@ -196,11 +217,16 @@ LoadConnections (IN  as filenames,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.ReloadConnections"></a><h3>The <code class="function">ReloadConnections()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.ReloadConnections"></a><h3>The ReloadConnections() method</h3>
 <pre class="programlisting">
 ReloadConnections (OUT b status);
 </pre>
-<p>Tells NetworkManager to reload all connection files from disk,         including noticing any added or deleted connection files. By         default, connections are re-read automatically any time they         change, so you only need to use this command if you have set         "monitor-connection-files=false" in NetworkManager.conf.</p>
+<p>        Tells NetworkManager to reload all connection files from disk, including
+        noticing any added or deleted connection files. By default, connections
+        are re-read automatically any time they change, so you only need to use
+        this command if you have set "monitor-connection-files=false" in
+        NetworkManager.conf.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -214,11 +240,12 @@ ReloadConnections (OUT b status);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.SaveHostname"></a><h3>The <code class="function">SaveHostname()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings.SaveHostname"></a><h3>The SaveHostname() method</h3>
 <pre class="programlisting">
 SaveHostname (IN  s hostname);
 </pre>
-<p>Save the hostname to persistent configuration.</p>
+<p>        Save the hostname to persistent configuration.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -226,7 +253,7 @@ SaveHostname (IN  s hostname);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">IN s <em class="parameter"><code>hostname</code></em></code>:</span></p></td>
-<td><p>The hostname to save to persistent configuration.  If blank, the persistent hostname is cleared.</p></td>
+<td><p>The hostname to save to persistent configuration. If blank, the persistent hostname is cleared.</p></td>
 </tr></tbody>
 </table></div>
 </div>
@@ -256,7 +283,15 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 NewConnection (o connection);
 </pre>
-<p>Emitted when a new connection has been added after NetworkManager has         started up and initialized.  This signal is not emitted for connections         read while starting up, because NetworkManager's D-Bus service is only         available after all connections have been read, and to prevent spamming         listeners with too many signals at one time.  To retrieve the initial         connection list, call the <code class="function">ListConnections()</code> method once, and then listen         for individual Settings.NewConnection and Settings.Connection.Deleted         signals for further updates.</p>
+<p>        Emitted when a new connection has been added after NetworkManager has
+        started up and initialized. This signal is not emitted for connections
+        read while starting up, because NetworkManager's D-Bus service is only
+        available after all connections have been read, and to prevent spamming
+        listeners with too many signals at one time. To retrieve the initial
+        connection list, call the ListConnections() method once, and then listen
+        for individual Settings.NewConnection and Settings.Connection.Deleted
+        signals for further updates.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -274,7 +309,12 @@ NewConnection (o connection);
 <pre class="programlisting">
 ConnectionRemoved (o connection);
 </pre>
-<p>Emitted when a connection is no longer available.  This happens when         the connection is deleted or if it is no longer accessible by any of         the system's logged-in users.  After receipt of this signal, the         connection no longer exists and cannot be used.  Also see the         Settings.Connection.Removed signal.</p>
+<p>        Emitted when a connection is no longer available. This happens when the
+        connection is deleted or if it is no longer accessible by any of the
+        system's logged-in users. After receipt of this signal, the connection no
+        longer exists and cannot be used. Also see the Settings.Connection.Removed
+        signal.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -294,7 +334,8 @@ ConnectionRemoved (o connection);
 <pre class="programlisting">
 Connections  readable   ao
 </pre>
-<p>List of object paths of available network connection profiles.</p>
+<p>        List of object paths of available network connection profiles.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -302,7 +343,8 @@ Connections  readable   ao
 <pre class="programlisting">
 Hostname  readable   s
 </pre>
-<p>The machine hostname stored in persistent configuration.</p>
+<p>        The machine hostname stored in persistent configuration.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -310,7 +352,8 @@ Hostname  readable   s
 <pre class="programlisting">
 CanModify  readable   b
 </pre>
-<p>If true, adding and modifying connections is supported.</p>
+<p>        If true, adding and modifying connections is supported.
+</p>
 </div>
 </div>
 </div>

@@ -2,7 +2,7 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 03/29/2016
+.\"      Date: 04/05/2016
 .\"    Manual: Configuration
 .\"    Source: NetworkManager 1.2
 .\"  Language: English
@@ -109,7 +109,7 @@ keyfile\&.
 .PP
 \fImonitor\-connection\-files\fR
 .RS 4
-Whether the configured settings plugin(s) should set up file monitors and immediately pick up changes made to connection files while NetworkManager is running\&. This is disabled by default; NetworkManager will only read the connection files at startup, and when explicitly requested via the ReloadConnections D\-Bus call\&. If this key is set to \*(Aqtrue\*(Aq, then NetworkManager will reload connection files any time they changed\&.
+Whether the configured settings plugin(s) should set up file monitors and immediately pick up changes made to connection files while NetworkManager is running\&. This is disabled by default; NetworkManager will only read the connection files at startup, and when explicitly requested via the ReloadConnections D\-Bus call\&. If this key is set to \*(Aqtrue\*(Aq, then NetworkManager will reload connection files any time they changed\&. Automatic reloading is not advised because there are race conditions involved and it depends on the way how the editor updates the file\&. In some situations, NetworkManager might first delete and add the connection anew, instead of updating the existing one\&. Also, NetworkManager might pick up incomplete settings while the user is still editing the files\&.
 .RE
 .PP
 \fIauth\-polkit\fR
@@ -898,7 +898,7 @@ interface\-name:vboxnet*,except:interface\-name:vboxnet2
 .PP
 \fBNetworkManager\fR(8),
 \fBnmcli\fR(1),
-\fBnmcli-examples\fR(5),
+\fBnmcli-examples\fR(7),
 \fBnm-online\fR(1),
 \fBnm-settings\fR(5),
 \fBnm-applet\fR(1),

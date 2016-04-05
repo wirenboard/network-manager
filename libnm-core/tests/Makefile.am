@@ -17,7 +17,6 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/libnm-core \
 	-I$(top_builddir)/libnm-core \
 	-DNETWORKMANAGER_COMPILATION \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	-DTEST_CERT_DIR=\"$(certsdir)\"
 
@@ -28,6 +27,7 @@ noinst_PROGRAMS =		\
 	test-keyfile		\
 	test-secrets		\
 	test-setting-8021x	\
+	test-setting-bond	\
 	test-setting-dcb	\
 	test-settings-defaults
 

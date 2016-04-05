@@ -41,8 +41,7 @@ AM_CPPFLAGS =				\
 	-I$(top_srcdir)/callouts	\
 	-DPREFIX=\"$(prefix)\"          \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
-	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE
+	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON
 
 # add each subdirectory that contains a libNM source file. $(sort) is being used
 # primarily for its side effect of removing duplicates.
@@ -148,7 +147,6 @@ libsystemd_nm_la_SOURCES = \
 	systemd/src/libsystemd-network/lldp-neighbor.h \
 	systemd/src/libsystemd-network/lldp-network.c \
 	systemd/src/libsystemd-network/lldp-network.h \
-	systemd/src/libsystemd-network/lldp.h \
 	systemd/src/libsystemd-network/network-internal.c \
 	systemd/src/libsystemd-network/network-internal.h \
 	systemd/src/libsystemd-network/sd-dhcp-client.c \
@@ -316,16 +314,16 @@ libNetworkManager_la_SOURCES = \
 	\
 	platform/nmp-netns.c \
 	platform/nmp-netns.h \
-	platform/nm-fake-platform.c \
-	platform/nm-fake-platform.h \
-	platform/nm-linux-platform.c \
-	platform/nm-linux-platform.h \
-	platform/nm-platform.c \
-	platform/nm-platform.h \
-	platform/nm-platform-utils.c \
-	platform/nm-platform-utils.h \
 	platform/nmp-object.c \
 	platform/nmp-object.h \
+	platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h \
+	platform/nm-platform.c \
+	platform/nm-platform.h \
+	platform/nm-linux-platform.c \
+	platform/nm-linux-platform.h \
+	platform/nm-fake-platform.c \
+	platform/nm-fake-platform.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h \
@@ -542,16 +540,16 @@ libnm_iface_helper_la_SOURCES = \
 	dhcp-manager/nm-dhcp-manager.c \
 	dhcp-manager/nm-dhcp-manager.h \
 	\
-	platform/nm-linux-platform.c \
-	platform/nm-linux-platform.h \
-	platform/nm-platform.c \
-	platform/nm-platform.h \
-	platform/nm-platform-utils.c \
-	platform/nm-platform-utils.h \
 	platform/nmp-netns.c \
 	platform/nmp-netns.h \
 	platform/nmp-object.c \
 	platform/nmp-object.h \
+	platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h \
+	platform/nm-platform.c \
+	platform/nm-platform.h \
+	platform/nm-linux-platform.c \
+	platform/nm-linux-platform.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h \

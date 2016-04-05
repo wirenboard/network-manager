@@ -50,7 +50,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Active hardware address of the device.</para>
+<para>        Active hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wired.PermHwAddress">
   <title>The "PermHwAddress" property</title>
@@ -58,7 +59,8 @@ HwAddress  readable   s
 <programlisting>
 PermHwAddress  readable   s
 </programlisting>
-<para>Permanent hardware address of the device.</para>
+<para>        Permanent hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wired.Speed">
   <title>The "Speed" property</title>
@@ -66,7 +68,8 @@ PermHwAddress  readable   s
 <programlisting>
 Speed  readable   u
 </programlisting>
-<para>Design speed of the device, in megabits/second (Mb/s).</para>
+<para>        Design speed of the device, in megabits/second (Mb/s).
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wired.S390Subchannels">
   <title>The "S390Subchannels" property</title>
@@ -74,7 +77,8 @@ Speed  readable   u
 <programlisting>
 S390Subchannels  readable   as
 </programlisting>
-<para>Array of S/390 subchannels for S/390 or z/Architecture devices.</para>
+<para>        Array of S/390 subchannels for S/390 or z/Architecture devices.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wired.Carrier">
   <title>The "Carrier" property</title>
@@ -82,7 +86,9 @@ S390Subchannels  readable   as
 <programlisting>
 Carrier  readable   b
 </programlisting>
-<para>Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).</para>
+<para>        Indicates whether the physical carrier is found (e.g. whether a cable is
+        plugged in or not).
+</para>
 </refsect2>
 </refsect1>
 </refentry>

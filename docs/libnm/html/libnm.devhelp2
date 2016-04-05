@@ -303,6 +303,7 @@
     <keyword type="enum" name="enum NM80211Mode" link="libnm-nm-dbus-interface.html#NM80211Mode"/>
     <keyword type="enum" name="enum NMBluetoothCapabilities" link="libnm-nm-dbus-interface.html#NMBluetoothCapabilities"/>
     <keyword type="enum" name="enum NMDeviceModemCapabilities" link="libnm-nm-dbus-interface.html#NMDeviceModemCapabilities"/>
+    <keyword type="enum" name="enum NMWimaxNspNetworkType" link="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType"/>
     <keyword type="enum" name="enum NMDeviceState" link="libnm-nm-dbus-interface.html#NMDeviceState"/>
     <keyword type="enum" name="enum NMDeviceStateReason" link="libnm-nm-dbus-interface.html#NMDeviceStateReason"/>
     <keyword type="enum" name="enum NMMetered" link="libnm-nm-dbus-interface.html#NMMetered" since="1.2"/>
@@ -695,6 +696,18 @@
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_XMIT_HASH_POLICY" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-XMIT-HASH-POLICY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_RESEND_IGMP" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-RESEND-IGMP:CAPS"/>
     <keyword type="macro" name="NM_SETTING_BOND_OPTION_LACP_RATE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-LACP-RATE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_ACTIVE_SLAVE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-ACTIVE-SLAVE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_AD_ACTOR_SYS_PRIO" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-ACTOR-SYS-PRIO:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_AD_ACTOR_SYSTEM" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-ACTOR-SYSTEM:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_AD_USER_PORT_KEY" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-USER-PORT-KEY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_ALL_SLAVES_ACTIVE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-ALL-SLAVES-ACTIVE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_ARP_ALL_TARGETS" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-ARP-ALL-TARGETS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_MIN_LINKS" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-MIN-LINKS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_NUM_GRAT_ARP" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-NUM-GRAT-ARP:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_NUM_UNSOL_NA" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-NUM-UNSOL-NA:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_PACKETS_PER_SLAVE" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-PACKETS-PER-SLAVE:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_TLB_DYNAMIC_LB" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-TLB-DYNAMIC-LB:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_BOND_OPTION_LP_INTERVAL" link="NMSettingBond.html#NM-SETTING-BOND-OPTION-LP-INTERVAL:CAPS"/>
     <keyword type="property" name="The “options” property" link="NMSettingBond.html#NMSettingBond--options"/>
     <keyword type="function" name="nm_setting_bridge_new ()" link="NMSettingBridge.html#nm-setting-bridge-new"/>
     <keyword type="function" name="nm_setting_bridge_get_mac_address ()" link="NMSettingBridge.html#nm-setting-bridge-get-mac-address"/>
@@ -1002,6 +1015,7 @@
     <keyword type="macro" name="NM_SETTING_DNS_OPTION_SINGLE_REQUEST" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-SINGLE-REQUEST:CAPS"/>
     <keyword type="macro" name="NM_SETTING_DNS_OPTION_SINGLE_REQUEST_REOPEN" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-SINGLE-REQUEST-REOPEN:CAPS"/>
     <keyword type="macro" name="NM_SETTING_DNS_OPTION_NO_TLD_QUERY" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-NO-TLD-QUERY:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_DNS_OPTION_USE_VC" link="NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-USE-VC:CAPS"/>
     <keyword type="property" name="The “addresses” property" link="NMSettingIPConfig.html#NMSettingIPConfig--addresses"/>
     <keyword type="property" name="The “dad-timeout” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dad-timeout"/>
     <keyword type="property" name="The “dhcp-hostname” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-hostname"/>
@@ -1991,7 +2005,6 @@
     <keyword type="macro" name="NM_WIMAX_NSP_NAME" link="NMWimaxNsp.html#NM-WIMAX-NSP-NAME:CAPS"/>
     <keyword type="macro" name="NM_WIMAX_NSP_SIGNAL_QUALITY" link="NMWimaxNsp.html#NM-WIMAX-NSP-SIGNAL-QUALITY:CAPS"/>
     <keyword type="macro" name="NM_WIMAX_NSP_NETWORK_TYPE" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE:CAPS"/>
-    <keyword type="enum" name="enum NMWimaxNspNetworkType" link="NMWimaxNsp.html#NMWimaxNspNetworkType"/>
     <keyword type="property" name="The “name” property" link="NMWimaxNsp.html#NMWimaxNsp--name"/>
     <keyword type="property" name="The “network-type” property" link="NMWimaxNsp.html#NMWimaxNsp--network-type"/>
     <keyword type="property" name="The “signal-quality” property" link="NMWimaxNsp.html#NMWimaxNsp--signal-quality"/>
@@ -2096,12 +2109,15 @@
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_2_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-2-FOR:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_4_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-4-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_0_9_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_2" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-2:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_2" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-2:CAPS"/>
+    <keyword type="macro" name="NM_DEPRECATED_IN_1_4" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-4:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-4:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
@@ -2341,6 +2357,10 @@
     <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_CDMA_EVDO" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-CDMA-EVDO:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_GSM_UMTS" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-GSM-UMTS:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_MODEM_CAPABILITY_LTE" link="libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-LTE:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_HOME" link="libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_PARTNER" link="libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS"/>
+    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER" link="libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_UNKNOWN" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_UNMANAGED" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNMANAGED:CAPS"/>
     <keyword type="constant" name="NM_DEVICE_STATE_UNAVAILABLE" link="libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNAVAILABLE:CAPS"/>
@@ -2535,10 +2555,6 @@
     <keyword type="constant" name="NM_WEP_KEY_TYPE_KEY" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-KEY:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_PASSPHRASE" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-PASSPHRASE:CAPS"/>
     <keyword type="constant" name="NM_WEP_KEY_TYPE_LAST" link="NMSettingWirelessSecurity.html#NM-WEP-KEY-TYPE-LAST:CAPS"/>
-    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS"/>
-    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_HOME" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS"/>
-    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_PARTNER" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS"/>
-    <keyword type="constant" name="NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER" link="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS"/>
     <keyword type="constant" name="NMU_SEC_INVALID" link="libnm-nm-utils.html#NMU-SEC-INVALID:CAPS"/>
     <keyword type="constant" name="NMU_SEC_NONE" link="libnm-nm-utils.html#NMU-SEC-NONE:CAPS"/>
     <keyword type="constant" name="NMU_SEC_STATIC_WEP" link="libnm-nm-utils.html#NMU-SEC-STATIC-WEP:CAPS"/>

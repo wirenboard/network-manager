@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nm-settings
-.\"    Author: [see the "AUTHOR" section]
+.\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 29 March 2016
+.\"      Date: 04/05/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.1.92
+.\"    Source: NetworkManager 1.1.93
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.1\&.92" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.1\&.93" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -3849,16 +3849,13 @@ property is a bitfield that contains zero or more of the following values logica
 .\}
 0x4 (not\-required) \- in some situations it cannot be automatically determined that a secret is required or not\&. This flag hints that the secret is not required and should not be requested from the user\&.
 .RE
-.SH "AUTHOR"
-.PP
-NetworkManager developers
 .SH "FILES"
 .PP
 /etc/NetworkManager/system\-connections
-.PP
 or distro plugin\-specific location
 .SH "SEE ALSO"
 .PP
-https://wiki\&.gnome\&.org/Projects/NetworkManager/ConfigurationSpecification
-.PP
-NetworkManager(8), nmcli(1), nmcli\-examples(5), NetworkManager\&.conf(5)
+\fBNetworkManager\fR(8),
+\fBnmcli\fR(1),
+\fBnmcli-examples\fR(7),
+\fBNetworkManager.conf\fR(5)

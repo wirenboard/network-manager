@@ -37,7 +37,7 @@
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.5"></a><h2>Description</h2>
+<a name="id-1.4.6.5"></a><h2>Description</h2>
 <p><code class="literal">NetworkManager.conf</code> is the configuration file for NetworkManager. It is used
     to set up various aspects of NetworkManager's behavior. The
     location of the main file and configuration directories may be changed
@@ -66,7 +66,7 @@
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.6"></a><h2>File Format</h2>
+<a name="id-1.4.6.6"></a><h2>File Format</h2>
 <p>
       The configuration file format is so-called key file (sort of
       ini-style format).  It consists of sections (groups) of
@@ -103,7 +103,7 @@ plugins-=remove-me
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.7"></a><h2>
+<a name="id-1.4.6.7"></a><h2>
 <code class="literal">main</code> section</h2>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
@@ -148,7 +148,13 @@ plugins-=remove-me
         the connection files at startup, and when explicitly requested
         via the ReloadConnections D-Bus call. If this key is set to
         '<code class="literal">true</code>', then NetworkManager will reload
-        connection files any time they changed.</p></td>
+        connection files any time they changed.
+        Automatic reloading is not advised because there are race conditions
+        involved and it depends on the way how the editor updates the file.
+        In some situations, NetworkManager might first delete and add the
+        connection anew, instead of updating the existing one. Also, NetworkManager
+        might pick up incomplete settings while the user is still editing the files.
+        </p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">auth-polkit</code></span></p></td>
@@ -324,7 +330,7 @@ no-auto-default=*
           sensitive information such as passwords or configuration settings.
         </p>
 <p>
-          <code class="literal">fatal-warnings</code>: set <code class="function">g_log_set_always_fatal()</code>
+          <code class="literal">fatal-warnings</code>: set g_log_set_always_fatal()
           to core dump on warning messages from glib. This is equivalent
           to the --g-fatal-warnings command line option.
         </p>
@@ -334,7 +340,7 @@ no-auto-default=*
 </table></div>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.8"></a><h2>
+<a name="id-1.4.6.8"></a><h2>
 <code class="literal">keyfile</code> section</h2>
 <p>This section contains keyfile-plugin-specific options, and
     is normally only used when you are not using any other
@@ -386,7 +392,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.9"></a><h2>
+<a name="id-1.4.6.9"></a><h2>
 <code class="literal">ifupdown</code> section</h2>
 <p>This section contains ifupdown-specific options and thus only
     has effect when using the <code class="literal">ifupdown</code> plugin.</p>
@@ -420,7 +426,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.10"></a><h2>
+<a name="id-1.4.6.10"></a><h2>
 <code class="literal">logging</code> section</h2>
 <p>This section controls NetworkManager's logging.  Any
     settings here are overridden by the <code class="option">--log-level</code>
@@ -493,7 +499,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.11"></a><h2>
+<a name="id-1.4.6.11"></a><h2>
 <code class="literal">connection</code> section</h2>
 <p>Specify default values for connections.
     </p>
@@ -507,7 +513,7 @@ ipv6.ip6-privacy=0
 <p>
     </p>
 <div class="refsect2">
-<a name="id-1.4.3.11.4"></a><h3>Supported Properties</h3>
+<a name="id-1.4.6.11.4"></a><h3>Supported Properties</h3>
 <p>
       Not all properties can be overwritten, only the following
       properties are supported to have their default values configured
@@ -576,7 +582,7 @@ ipv6.ip6-privacy=0
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.4.3.11.5"></a><h3>Sections</h3>
+<a name="id-1.4.6.11.5"></a><h3>Sections</h3>
 <p>
         You can configure multiple <code class="literal">connection</code>
         sections, by having different sections with a name that all start
@@ -654,7 +660,7 @@ ipv6.ip6-privacy=1
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.12"></a><h2>
+<a name="id-1.4.6.12"></a><h2>
 <code class="literal">connectivity</code> section</h2>
 <p>This section controls NetworkManager's optional connectivity
     checking functionality.  This allows NetworkManager to detect
@@ -700,7 +706,7 @@ ipv6.ip6-privacy=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.13"></a><h2>
+<a name="id-1.4.6.13"></a><h2>
 <code class="literal">global-dns</code> section</h2>
 <p>This section specifies global DNS settings that override
     connection-specific configuration.</p>
@@ -730,7 +736,7 @@ ipv6.ip6-privacy=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.14"></a><h2>
+<a name="id-1.4.6.14"></a><h2>
 <code class="literal">global-dns-domain</code> sections</h2>
 <p>Sections with a name starting with the "global-dns-domain-"
     prefix allow to define global DNS configuration for specific
@@ -766,7 +772,7 @@ ipv6.ip6-privacy=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.15"></a><h2>
+<a name="id-1.4.6.15"></a><h2>
 <code class="literal">.config</code> sections</h2>
 <p>This is a special section that contains options which apply
       to the configuration file that contains the option.
@@ -869,7 +875,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.16"></a><h2>Plugins</h2>
+<a name="id-1.4.6.16"></a><h2>Plugins</h2>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -953,7 +959,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
 </table></div>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.17"></a><h2>Appendix</h2>
+<a name="id-1.4.6.17"></a><h2>Appendix</h2>
 <div class="refsect2">
 <a name="device-spec"></a><h3>Device List Format</h3>
 <p>
@@ -1042,11 +1048,11 @@ interface-name:vboxnet*,except:interface-name:vboxnet2
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.4.3.18"></a><h2>See Also</h2>
+<a name="id-1.4.6.18"></a><h2>See Also</h2>
 <p>
       <span class="citerefentry"><span class="refentrytitle">NetworkManager</span>(8)</span>,
       <span class="citerefentry"><span class="refentrytitle">nmcli</span>(1)</span>,
-      <span class="citerefentry"><span class="refentrytitle">nmcli-examples</span>(5)</span>,
+      <span class="citerefentry"><span class="refentrytitle">nmcli-examples</span>(7)</span>,
       <span class="citerefentry"><span class="refentrytitle">nm-online</span>(1)</span>,
       <span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span>,
       <span class="citerefentry"><span class="refentrytitle">nm-applet</span>(1)</span>,

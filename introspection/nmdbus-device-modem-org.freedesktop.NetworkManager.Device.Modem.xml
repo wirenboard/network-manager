@@ -47,7 +47,12 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 ModemCapabilities  readable   u
 </programlisting>
-<para>The generic family of access technologies the modem supports.  Not all         capabilities are available at the same time however; some modems require         a firmware reload or other reinitialization to switch between eg CDMA/EVDO         and GSM/UMTS.</para>
+<para>        The generic family of access technologies the modem supports. Not all
+        capabilities are available at the same time however; some modems require a
+        firmware reload or other reinitialization to switch between eg CDMA/EVDO
+        and GSM/UMTS.
+</para><para>        Returns: <link linkend="NMDeviceModemCapabilities">NMDeviceModemCapabilities</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Modem.CurrentCapabilities">
   <title>The "CurrentCapabilities" property</title>
@@ -55,7 +60,10 @@ ModemCapabilities  readable   u
 <programlisting>
 CurrentCapabilities  readable   u
 </programlisting>
-<para>The generic family of access technologies the modem currently supports         without a firmware reload or reinitialization.</para>
+<para>        The generic family of access technologies the modem currently supports
+        without a firmware reload or reinitialization.
+</para><para>        Returns: <link linkend="NMDeviceModemCapabilities">NMDeviceModemCapabilities</link>
+</para>
 </refsect2>
 </refsect1>
 </refentry>

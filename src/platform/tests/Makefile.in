@@ -135,8 +135,8 @@ am__v_lt_1 =
 am__objects_2 = test_address_fake-nm-platform.$(OBJEXT) \
 	test_address_fake-nm-fake-platform.$(OBJEXT) \
 	test_address_fake-nm-linux-platform.$(OBJEXT)
-am__objects_3 = $(am__objects_2) \
-	test_address_fake-test-common.$(OBJEXT)
+am__objects_3 = test_address_fake-test-common.$(OBJEXT) \
+	$(am__objects_2)
 am_test_address_fake_OBJECTS =  \
 	test_address_fake-test-address.$(OBJEXT) $(am__objects_3)
 test_address_fake_OBJECTS = $(am_test_address_fake_OBJECTS)
@@ -144,8 +144,8 @@ test_address_fake_DEPENDENCIES = $(PLATFORM_LDADD)
 am__objects_4 = test_address_linux-nm-platform.$(OBJEXT) \
 	test_address_linux-nm-fake-platform.$(OBJEXT) \
 	test_address_linux-nm-linux-platform.$(OBJEXT)
-am__objects_5 = $(am__objects_4) \
-	test_address_linux-test-common.$(OBJEXT)
+am__objects_5 = test_address_linux-test-common.$(OBJEXT) \
+	$(am__objects_4)
 am_test_address_linux_OBJECTS =  \
 	test_address_linux-test-address.$(OBJEXT) $(am__objects_5)
 test_address_linux_OBJECTS = $(am_test_address_linux_OBJECTS)
@@ -153,8 +153,8 @@ test_address_linux_DEPENDENCIES = $(PLATFORM_LDADD)
 am__objects_6 = test_cleanup_fake-nm-platform.$(OBJEXT) \
 	test_cleanup_fake-nm-fake-platform.$(OBJEXT) \
 	test_cleanup_fake-nm-linux-platform.$(OBJEXT)
-am__objects_7 = $(am__objects_6) \
-	test_cleanup_fake-test-common.$(OBJEXT)
+am__objects_7 = test_cleanup_fake-test-common.$(OBJEXT) \
+	$(am__objects_6)
 am_test_cleanup_fake_OBJECTS =  \
 	test_cleanup_fake-test-cleanup.$(OBJEXT) $(am__objects_7)
 test_cleanup_fake_OBJECTS = $(am_test_cleanup_fake_OBJECTS)
@@ -162,8 +162,8 @@ test_cleanup_fake_DEPENDENCIES = $(PLATFORM_LDADD)
 am__objects_8 = test_cleanup_linux-nm-platform.$(OBJEXT) \
 	test_cleanup_linux-nm-fake-platform.$(OBJEXT) \
 	test_cleanup_linux-nm-linux-platform.$(OBJEXT)
-am__objects_9 = $(am__objects_8) \
-	test_cleanup_linux-test-common.$(OBJEXT)
+am__objects_9 = test_cleanup_linux-test-common.$(OBJEXT) \
+	$(am__objects_8)
 am_test_cleanup_linux_OBJECTS =  \
 	test_cleanup_linux-test-cleanup.$(OBJEXT) $(am__objects_9)
 test_cleanup_linux_OBJECTS = $(am_test_cleanup_linux_OBJECTS)
@@ -174,8 +174,8 @@ test_general_DEPENDENCIES = $(top_builddir)/src/libNetworkManager.la
 am__objects_10 = test_link_fake-nm-platform.$(OBJEXT) \
 	test_link_fake-nm-fake-platform.$(OBJEXT) \
 	test_link_fake-nm-linux-platform.$(OBJEXT)
-am__objects_11 = $(am__objects_10) \
-	test_link_fake-test-common.$(OBJEXT)
+am__objects_11 = test_link_fake-test-common.$(OBJEXT) \
+	$(am__objects_10)
 am_test_link_fake_OBJECTS = test_link_fake-test-link.$(OBJEXT) \
 	$(am__objects_11)
 test_link_fake_OBJECTS = $(am_test_link_fake_OBJECTS)
@@ -183,8 +183,8 @@ test_link_fake_DEPENDENCIES = $(PLATFORM_LDADD)
 am__objects_12 = test_link_linux-nm-platform.$(OBJEXT) \
 	test_link_linux-nm-fake-platform.$(OBJEXT) \
 	test_link_linux-nm-linux-platform.$(OBJEXT)
-am__objects_13 = $(am__objects_12) \
-	test_link_linux-test-common.$(OBJEXT)
+am__objects_13 = test_link_linux-test-common.$(OBJEXT) \
+	$(am__objects_12)
 am_test_link_linux_OBJECTS = test_link_linux-test-link.$(OBJEXT) \
 	$(am__objects_13)
 test_link_linux_OBJECTS = $(am_test_link_linux_OBJECTS)
@@ -196,8 +196,8 @@ test_nmp_object_DEPENDENCIES =  \
 am__objects_14 = test_route_fake-nm-platform.$(OBJEXT) \
 	test_route_fake-nm-fake-platform.$(OBJEXT) \
 	test_route_fake-nm-linux-platform.$(OBJEXT)
-am__objects_15 = $(am__objects_14) \
-	test_route_fake-test-common.$(OBJEXT)
+am__objects_15 = test_route_fake-test-common.$(OBJEXT) \
+	$(am__objects_14)
 am_test_route_fake_OBJECTS = test_route_fake-test-route.$(OBJEXT) \
 	$(am__objects_15)
 test_route_fake_OBJECTS = $(am_test_route_fake_OBJECTS)
@@ -205,8 +205,8 @@ test_route_fake_DEPENDENCIES = $(PLATFORM_LDADD)
 am__objects_16 = test_route_linux-nm-platform.$(OBJEXT) \
 	test_route_linux-nm-fake-platform.$(OBJEXT) \
 	test_route_linux-nm-linux-platform.$(OBJEXT)
-am__objects_17 = $(am__objects_16) \
-	test_route_linux-test-common.$(OBJEXT)
+am__objects_17 = test_route_linux-test-common.$(OBJEXT) \
+	$(am__objects_16)
 am_test_route_linux_OBJECTS = test_route_linux-test-route.$(OBJEXT) \
 	$(am__objects_17)
 test_route_linux_OBJECTS = $(am_test_route_linux_OBJECTS)
@@ -757,14 +757,17 @@ AM_CPPFLAGS = -I${top_srcdir} -I${top_srcdir}/shared \
 	-I${top_builddir}/libnm-core -I${srcdir}/.. \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(GLIB_CFLAGS) \
-	$(GUDEV_CFLAGS) $(LIBNL_CFLAGS) $(am__append_1)
+	$(GLIB_CFLAGS) $(GUDEV_CFLAGS) $(LIBNL_CFLAGS) $(am__append_1)
 PLATFORM_SOURCES = \
 	../nm-platform.c \
 	../nm-fake-platform.c \
 	../nm-linux-platform.c
 
-TEST_SOURCES = $(PLATFORM_SOURCES) test-common.c test-common.h
+TEST_SOURCES = \
+	test-common.c \
+	test-common.h \
+	$(PLATFORM_SOURCES)
+
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS = $(GLIB_LIBS) $(GUDEV_LIBS) $(LIBNL_LIBS) $(CODE_COVERAGE_LDFLAGS)
 PLATFORM_LDADD = \
@@ -1058,6 +1061,20 @@ test_address_fake-test-address.obj: test-address.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_fake-test-address.obj `if test -f 'test-address.c'; then $(CYGPATH_W) 'test-address.c'; else $(CYGPATH_W) '$(srcdir)/test-address.c'; fi`
 
+test_address_fake-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_address_fake-test-common.Tpo -c -o test_address_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_fake-test-common.Tpo $(DEPDIR)/test_address_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_address_fake-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_address_fake-test-common.Tpo -c -o test_address_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_fake-test-common.Tpo $(DEPDIR)/test_address_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+
 test_address_fake-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_fake-nm-platform.o -MD -MP -MF $(DEPDIR)/test_address_fake-nm-platform.Tpo -c -o test_address_fake-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_fake-nm-platform.Tpo $(DEPDIR)/test_address_fake-nm-platform.Po
@@ -1100,20 +1117,6 @@ test_address_fake-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_fake-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_address_fake-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_address_fake-test-common.Tpo -c -o test_address_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_fake-test-common.Tpo $(DEPDIR)/test_address_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_address_fake-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_address_fake-test-common.Tpo -c -o test_address_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_fake-test-common.Tpo $(DEPDIR)/test_address_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_address_linux-test-address.o: test-address.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_linux-test-address.o -MD -MP -MF $(DEPDIR)/test_address_linux-test-address.Tpo -c -o test_address_linux-test-address.o `test -f 'test-address.c' || echo '$(srcdir)/'`test-address.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_linux-test-address.Tpo $(DEPDIR)/test_address_linux-test-address.Po
@@ -1127,6 +1130,20 @@ test_address_linux-test-address.obj: test-address.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-address.c' object='test_address_linux-test-address.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_linux-test-address.obj `if test -f 'test-address.c'; then $(CYGPATH_W) 'test-address.c'; else $(CYGPATH_W) '$(srcdir)/test-address.c'; fi`
+
+test_address_linux-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_address_linux-test-common.Tpo -c -o test_address_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_linux-test-common.Tpo $(DEPDIR)/test_address_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_address_linux-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_address_linux-test-common.Tpo -c -o test_address_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_linux-test-common.Tpo $(DEPDIR)/test_address_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_address_linux-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_linux-nm-platform.o -MD -MP -MF $(DEPDIR)/test_address_linux-nm-platform.Tpo -c -o test_address_linux-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1170,20 +1187,6 @@ test_address_linux-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_linux-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_address_linux-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_address_linux-test-common.Tpo -c -o test_address_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_linux-test-common.Tpo $(DEPDIR)/test_address_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_address_linux-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_address_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_address_linux-test-common.Tpo -c -o test_address_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_address_linux-test-common.Tpo $(DEPDIR)/test_address_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_address_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_address_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_address_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_cleanup_fake-test-cleanup.o: test-cleanup.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_fake-test-cleanup.o -MD -MP -MF $(DEPDIR)/test_cleanup_fake-test-cleanup.Tpo -c -o test_cleanup_fake-test-cleanup.o `test -f 'test-cleanup.c' || echo '$(srcdir)/'`test-cleanup.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_fake-test-cleanup.Tpo $(DEPDIR)/test_cleanup_fake-test-cleanup.Po
@@ -1197,6 +1200,20 @@ test_cleanup_fake-test-cleanup.obj: test-cleanup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-cleanup.c' object='test_cleanup_fake-test-cleanup.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_fake-test-cleanup.obj `if test -f 'test-cleanup.c'; then $(CYGPATH_W) 'test-cleanup.c'; else $(CYGPATH_W) '$(srcdir)/test-cleanup.c'; fi`
+
+test_cleanup_fake-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_cleanup_fake-test-common.Tpo -c -o test_cleanup_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_fake-test-common.Tpo $(DEPDIR)/test_cleanup_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_cleanup_fake-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_cleanup_fake-test-common.Tpo -c -o test_cleanup_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_fake-test-common.Tpo $(DEPDIR)/test_cleanup_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_cleanup_fake-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_fake-nm-platform.o -MD -MP -MF $(DEPDIR)/test_cleanup_fake-nm-platform.Tpo -c -o test_cleanup_fake-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1240,20 +1257,6 @@ test_cleanup_fake-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_fake-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_cleanup_fake-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_cleanup_fake-test-common.Tpo -c -o test_cleanup_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_fake-test-common.Tpo $(DEPDIR)/test_cleanup_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_cleanup_fake-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_cleanup_fake-test-common.Tpo -c -o test_cleanup_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_fake-test-common.Tpo $(DEPDIR)/test_cleanup_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_cleanup_linux-test-cleanup.o: test-cleanup.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_linux-test-cleanup.o -MD -MP -MF $(DEPDIR)/test_cleanup_linux-test-cleanup.Tpo -c -o test_cleanup_linux-test-cleanup.o `test -f 'test-cleanup.c' || echo '$(srcdir)/'`test-cleanup.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_linux-test-cleanup.Tpo $(DEPDIR)/test_cleanup_linux-test-cleanup.Po
@@ -1267,6 +1270,20 @@ test_cleanup_linux-test-cleanup.obj: test-cleanup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-cleanup.c' object='test_cleanup_linux-test-cleanup.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_linux-test-cleanup.obj `if test -f 'test-cleanup.c'; then $(CYGPATH_W) 'test-cleanup.c'; else $(CYGPATH_W) '$(srcdir)/test-cleanup.c'; fi`
+
+test_cleanup_linux-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_cleanup_linux-test-common.Tpo -c -o test_cleanup_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_linux-test-common.Tpo $(DEPDIR)/test_cleanup_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_cleanup_linux-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_cleanup_linux-test-common.Tpo -c -o test_cleanup_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_linux-test-common.Tpo $(DEPDIR)/test_cleanup_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_cleanup_linux-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_linux-nm-platform.o -MD -MP -MF $(DEPDIR)/test_cleanup_linux-nm-platform.Tpo -c -o test_cleanup_linux-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1310,20 +1327,6 @@ test_cleanup_linux-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_linux-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_cleanup_linux-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_cleanup_linux-test-common.Tpo -c -o test_cleanup_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_linux-test-common.Tpo $(DEPDIR)/test_cleanup_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_cleanup_linux-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_cleanup_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_cleanup_linux-test-common.Tpo -c -o test_cleanup_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_cleanup_linux-test-common.Tpo $(DEPDIR)/test_cleanup_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_cleanup_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_cleanup_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_cleanup_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_link_fake-test-link.o: test-link.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_fake-test-link.o -MD -MP -MF $(DEPDIR)/test_link_fake-test-link.Tpo -c -o test_link_fake-test-link.o `test -f 'test-link.c' || echo '$(srcdir)/'`test-link.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_fake-test-link.Tpo $(DEPDIR)/test_link_fake-test-link.Po
@@ -1337,6 +1340,20 @@ test_link_fake-test-link.obj: test-link.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-link.c' object='test_link_fake-test-link.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_fake-test-link.obj `if test -f 'test-link.c'; then $(CYGPATH_W) 'test-link.c'; else $(CYGPATH_W) '$(srcdir)/test-link.c'; fi`
+
+test_link_fake-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_link_fake-test-common.Tpo -c -o test_link_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_fake-test-common.Tpo $(DEPDIR)/test_link_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_link_fake-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_link_fake-test-common.Tpo -c -o test_link_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_fake-test-common.Tpo $(DEPDIR)/test_link_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_link_fake-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_fake-nm-platform.o -MD -MP -MF $(DEPDIR)/test_link_fake-nm-platform.Tpo -c -o test_link_fake-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1380,20 +1397,6 @@ test_link_fake-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_fake-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_link_fake-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_link_fake-test-common.Tpo -c -o test_link_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_fake-test-common.Tpo $(DEPDIR)/test_link_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_link_fake-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_link_fake-test-common.Tpo -c -o test_link_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_fake-test-common.Tpo $(DEPDIR)/test_link_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_link_linux-test-link.o: test-link.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_linux-test-link.o -MD -MP -MF $(DEPDIR)/test_link_linux-test-link.Tpo -c -o test_link_linux-test-link.o `test -f 'test-link.c' || echo '$(srcdir)/'`test-link.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_linux-test-link.Tpo $(DEPDIR)/test_link_linux-test-link.Po
@@ -1407,6 +1410,20 @@ test_link_linux-test-link.obj: test-link.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-link.c' object='test_link_linux-test-link.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_linux-test-link.obj `if test -f 'test-link.c'; then $(CYGPATH_W) 'test-link.c'; else $(CYGPATH_W) '$(srcdir)/test-link.c'; fi`
+
+test_link_linux-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_link_linux-test-common.Tpo -c -o test_link_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_linux-test-common.Tpo $(DEPDIR)/test_link_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_link_linux-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_link_linux-test-common.Tpo -c -o test_link_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_linux-test-common.Tpo $(DEPDIR)/test_link_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_link_linux-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_linux-nm-platform.o -MD -MP -MF $(DEPDIR)/test_link_linux-nm-platform.Tpo -c -o test_link_linux-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1450,20 +1467,6 @@ test_link_linux-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_linux-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_link_linux-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_link_linux-test-common.Tpo -c -o test_link_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_linux-test-common.Tpo $(DEPDIR)/test_link_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_link_linux-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_link_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_link_linux-test-common.Tpo -c -o test_link_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_link_linux-test-common.Tpo $(DEPDIR)/test_link_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_link_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_link_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_link_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_route_fake-test-route.o: test-route.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_fake-test-route.o -MD -MP -MF $(DEPDIR)/test_route_fake-test-route.Tpo -c -o test_route_fake-test-route.o `test -f 'test-route.c' || echo '$(srcdir)/'`test-route.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_fake-test-route.Tpo $(DEPDIR)/test_route_fake-test-route.Po
@@ -1477,6 +1480,20 @@ test_route_fake-test-route.obj: test-route.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-route.c' object='test_route_fake-test-route.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_fake-test-route.obj `if test -f 'test-route.c'; then $(CYGPATH_W) 'test-route.c'; else $(CYGPATH_W) '$(srcdir)/test-route.c'; fi`
+
+test_route_fake-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_route_fake-test-common.Tpo -c -o test_route_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_fake-test-common.Tpo $(DEPDIR)/test_route_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_route_fake-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_route_fake-test-common.Tpo -c -o test_route_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_fake-test-common.Tpo $(DEPDIR)/test_route_fake-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_route_fake-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_fake-nm-platform.o -MD -MP -MF $(DEPDIR)/test_route_fake-nm-platform.Tpo -c -o test_route_fake-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1520,20 +1537,6 @@ test_route_fake-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_fake-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
 
-test_route_fake-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_fake-test-common.o -MD -MP -MF $(DEPDIR)/test_route_fake-test-common.Tpo -c -o test_route_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_fake-test-common.Tpo $(DEPDIR)/test_route_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_fake-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_fake-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_route_fake-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_fake-test-common.obj -MD -MP -MF $(DEPDIR)/test_route_fake-test-common.Tpo -c -o test_route_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_fake-test-common.Tpo $(DEPDIR)/test_route_fake-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_fake-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_fake_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_fake-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-
 test_route_linux-test-route.o: test-route.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_linux-test-route.o -MD -MP -MF $(DEPDIR)/test_route_linux-test-route.Tpo -c -o test_route_linux-test-route.o `test -f 'test-route.c' || echo '$(srcdir)/'`test-route.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_linux-test-route.Tpo $(DEPDIR)/test_route_linux-test-route.Po
@@ -1547,6 +1550,20 @@ test_route_linux-test-route.obj: test-route.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-route.c' object='test_route_linux-test-route.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_linux-test-route.obj `if test -f 'test-route.c'; then $(CYGPATH_W) 'test-route.c'; else $(CYGPATH_W) '$(srcdir)/test-route.c'; fi`
+
+test_route_linux-test-common.o: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_route_linux-test-common.Tpo -c -o test_route_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_linux-test-common.Tpo $(DEPDIR)/test_route_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
+
+test_route_linux-test-common.obj: test-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_route_linux-test-common.Tpo -c -o test_route_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_linux-test-common.Tpo $(DEPDIR)/test_route_linux-test-common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 test_route_linux-nm-platform.o: ../nm-platform.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_linux-nm-platform.o -MD -MP -MF $(DEPDIR)/test_route_linux-nm-platform.Tpo -c -o test_route_linux-nm-platform.o `test -f '../nm-platform.c' || echo '$(srcdir)/'`../nm-platform.c
@@ -1589,20 +1606,6 @@ test_route_linux-nm-linux-platform.obj: ../nm-linux-platform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../nm-linux-platform.c' object='test_route_linux-nm-linux-platform.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_linux-nm-linux-platform.obj `if test -f '../nm-linux-platform.c'; then $(CYGPATH_W) '../nm-linux-platform.c'; else $(CYGPATH_W) '$(srcdir)/../nm-linux-platform.c'; fi`
-
-test_route_linux-test-common.o: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_linux-test-common.o -MD -MP -MF $(DEPDIR)/test_route_linux-test-common.Tpo -c -o test_route_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_linux-test-common.Tpo $(DEPDIR)/test_route_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_linux-test-common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_linux-test-common.o `test -f 'test-common.c' || echo '$(srcdir)/'`test-common.c
-
-test_route_linux-test-common.obj: test-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_route_linux-test-common.obj -MD -MP -MF $(DEPDIR)/test_route_linux-test-common.Tpo -c -o test_route_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_route_linux-test-common.Tpo $(DEPDIR)/test_route_linux-test-common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-common.c' object='test_route_linux-test-common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_route_linux_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_route_linux-test-common.obj `if test -f 'test-common.c'; then $(CYGPATH_W) 'test-common.c'; else $(CYGPATH_W) '$(srcdir)/test-common.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

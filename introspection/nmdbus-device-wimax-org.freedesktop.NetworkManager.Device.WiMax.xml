@@ -44,7 +44,8 @@
 <programlisting>
 GetNspList (OUT ao nsps);
 </programlisting>
-<para>Get the list of NSPs visible to this device.</para>
+<para>        Get the list of NSPs visible to this device.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT ao <parameter>nsps</parameter></literal>:</term>
@@ -61,7 +62,8 @@ GetNspList (OUT ao nsps);
 <programlisting>
 PropertiesChanged (a{sv} properties);
 </programlisting>
-<para>Emitted when the WiMax device's properties changed.</para>
+<para>        Emitted when the WiMax device's properties changed.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>properties</parameter></literal>:</term>
@@ -75,7 +77,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 NspAdded (o nsp);
 </programlisting>
-<para>Emitted when a new NSP is found by the device.</para>
+<para>        Emitted when a new NSP is found by the device.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>nsp</parameter></literal>:</term>
@@ -89,7 +92,8 @@ NspAdded (o nsp);
 <programlisting>
 NspRemoved (o nsp);
 </programlisting>
-<para>Emitted when an NSP disappears from view of the device.</para>
+<para>        Emitted when an NSP disappears from view of the device.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>nsp</parameter></literal>:</term>
@@ -106,7 +110,9 @@ NspRemoved (o nsp);
 <programlisting>
 Nsps  readable   ao
 </programlisting>
-<para>List of object paths of Network Service Providers (NSPs) visible to this         WiMAX device.</para>
+<para>        List of object paths of Network Service Providers (NSPs) visible to this
+        WiMAX device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.HwAddress">
   <title>The "HwAddress" property</title>
@@ -114,7 +120,8 @@ Nsps  readable   ao
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Hardware address of the device.</para>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.CenterFrequency">
   <title>The "CenterFrequency" property</title>
@@ -122,7 +129,10 @@ HwAddress  readable   s
 <programlisting>
 CenterFrequency  readable   u
 </programlisting>
-<para>Center frequency (in KHz) of the radio channel the device is using to         communicate with the network when connected.  Has no meaning when the         device is not connected.</para>
+<para>        Center frequency (in KHz) of the radio channel the device is using to
+        communicate with the network when connected. Has no meaning when the
+        device is not connected.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.Rssi">
   <title>The "Rssi" property</title>
@@ -130,7 +140,11 @@ CenterFrequency  readable   u
 <programlisting>
 Rssi  readable   i
 </programlisting>
-<para>RSSI of the current radio link in dBm.  This value indicates how strong         the raw received RF signal from the base station is, but does not         indicate the overall quality of the radio link.  Has no meaning when the         device is not connected.</para>
+<para>        RSSI of the current radio link in dBm. This value indicates how strong the
+        raw received RF signal from the base station is, but does not indicate the
+        overall quality of the radio link. Has no meaning when the device is not
+        connected.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.Cinr">
   <title>The "Cinr" property</title>
@@ -138,7 +152,10 @@ Rssi  readable   i
 <programlisting>
 Cinr  readable   i
 </programlisting>
-<para>CINR (Carrier to Interference + Noise Ratio) of the current radio link         in dB.  CINR is a more accurate measure of radio link quality.  Has no         meaning when the device is not connected.</para>
+<para>        CINR (Carrier to Interference + Noise Ratio) of the current radio link in
+        dB. CINR is a more accurate measure of radio link quality. Has no meaning
+        when the device is not connected.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.TxPower">
   <title>The "TxPower" property</title>
@@ -146,7 +163,10 @@ Cinr  readable   i
 <programlisting>
 TxPower  readable   i
 </programlisting>
-<para>Average power of the last burst transmitted by the device, in units of         0.5 dBm.  i.e. a TxPower of -11 represents an actual device TX power of         -5.5 dBm.  Has no meaning when the device is not connected.</para>
+<para>        Average power of the last burst transmitted by the device, in units of 0.5
+        dBm. i.e. a TxPower of -11 represents an actual device TX power of -5.5
+        dBm. Has no meaning when the device is not connected.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.Bsid">
   <title>The "Bsid" property</title>
@@ -154,7 +174,9 @@ TxPower  readable   i
 <programlisting>
 Bsid  readable   s
 </programlisting>
-<para>The ID of the serving base station as received from the network.  Has         no meaning when the device is not connected.</para>
+<para>        The ID of the serving base station as received from the network. Has no
+        meaning when the device is not connected.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-WiMax.ActiveNsp">
   <title>The "ActiveNsp" property</title>
@@ -162,7 +184,8 @@ Bsid  readable   s
 <programlisting>
 ActiveNsp  readable   o
 </programlisting>
-<para>Object path of the NSP currently used by the WiMax device.</para>
+<para>        Object path of the NSP currently used by the WiMax device.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

@@ -748,10 +748,10 @@ compute_hash (NMDnsManager *self, const NMGlobalDnsConfig *global, guint8 buffer
 
 	/* add any other configs we know about */
 	for (iter = priv->configs; iter; iter = g_slist_next (iter)) {
-		if (   (iter->data == priv->ip4_vpn_config)
-		    && (iter->data == priv->ip4_device_config)
-		    && (iter->data == priv->ip6_vpn_config)
-		    && (iter->data == priv->ip6_device_config))
+		if (NM_IN_SET (iter->data, priv->ip4_vpn_config,
+		                           priv->ip4_device_config,
+		                           priv->ip6_vpn_config,
+		                           priv->ip6_device_config))
 			continue;
 
 		if (NM_IS_IP4_CONFIG (iter->data))
@@ -792,10 +792,10 @@ build_plugin_config_lists (NMDnsManager *self,
 		*out_dev_configs = g_slist_append (*out_dev_configs, priv->ip6_device_config);
 
 	for (iter = priv->configs; iter; iter = g_slist_next (iter)) {
-		if (   (iter->data != priv->ip4_vpn_config)
-		    && (iter->data != priv->ip4_device_config)
-		    && (iter->data != priv->ip6_vpn_config)
-		    && (iter->data != priv->ip6_device_config))
+		if (!NM_IN_SET (iter->data, priv->ip4_vpn_config,
+		                            priv->ip4_device_config,
+		                            priv->ip6_vpn_config,
+		                            priv->ip6_device_config))
 			*out_other_configs = g_slist_append (*out_other_configs, iter->data);
 	}
 }
@@ -891,10 +891,10 @@ update_dns (NMDnsManager *self,
 			merge_one_ip6_config (&rc, priv->ip6_device_config);
 
 		for (iter = priv->configs; iter; iter = g_slist_next (iter)) {
-			if (   (iter->data == priv->ip4_vpn_config)
-			    || (iter->data == priv->ip4_device_config)
-			    || (iter->data == priv->ip6_vpn_config)
-			    || (iter->data == priv->ip6_device_config))
+			if (NM_IN_SET (iter->data, priv->ip4_vpn_config,
+			                           priv->ip4_device_config,
+			                           priv->ip6_vpn_config,
+			                           priv->ip6_device_config))
 				continue;
 
 			if (NM_IS_IP4_CONFIG (iter->data)) {
@@ -1599,12 +1599,12 @@ nm_dns_manager_class_init (NMDnsManagerClass *klass)
 
 	/* signals */
 	signals[CONFIG_CHANGED] =
-		g_signal_new ("config-changed",
-		              G_OBJECT_CLASS_TYPE (object_class),
-		              G_SIGNAL_RUN_FIRST,
-		              G_STRUCT_OFFSET (NMDnsManagerClass, config_changed),
-		              NULL, NULL,
-		              g_cclosure_marshal_VOID__VOID,
-		              G_TYPE_NONE, 0);
+	    g_signal_new (NM_DNS_MANAGER_CONFIG_CHANGED,
+	                  G_OBJECT_CLASS_TYPE (object_class),
+	                  G_SIGNAL_RUN_FIRST,
+	                  G_STRUCT_OFFSET (NMDnsManagerClass, config_changed),
+	                  NULL, NULL,
+	                  g_cclosure_marshal_VOID__VOID,
+	                  G_TYPE_NONE, 0);
 }
 

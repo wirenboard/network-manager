@@ -188,6 +188,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libnm_core_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libnm_core_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -590,8 +593,8 @@ AM_CPPFLAGS = -I${top_srcdir}/shared -I${top_builddir}/shared \
 	-DG_LOG_DOMAIN=\""libnm"\" -DLOCALEDIR=\"$(datadir)/locale\" \
 	-DNMCONFDIR=\"$(nmconfdir)\" -DNMLIBDIR=\"$(nmlibdir)\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(GLIB_CFLAGS) \
-	$(am__append_1) $(am__append_4)
+	$(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) $(am__append_1) \
+	$(am__append_4)
 noinst_LTLIBRARIES = libnm-core.la
 core = $(top_srcdir)/libnm-core
 core_build = $(top_builddir)/libnm-core
@@ -714,6 +717,9 @@ GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
 libnm_core_la_LIBADD = $(GLIB_LIBS) $(UUID_LIBS) $(am__append_3) \
 	$(am__append_6)
+libnm_core_la_LDFLAGS = \
+	$(CODE_COVERAGE_LDFLAGS)
+
 BUILT_SOURCES = $(GLIB_GENERATED)
 CLEANFILES = $(BUILT_SOURCES)
 all: $(BUILT_SOURCES)
@@ -764,7 +770,7 @@ clean-noinstLTLIBRARIES:
 	}
 
 libnm-core.la: $(libnm_core_la_OBJECTS) $(libnm_core_la_DEPENDENCIES) $(EXTRA_libnm_core_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libnm_core_la_OBJECTS) $(libnm_core_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnm_core_la_LINK)  $(libnm_core_la_OBJECTS) $(libnm_core_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1480,6 +1486,8 @@ uninstall-am: uninstall-libnmincludeHEADERS
 .PRECIOUS: Makefile
 
 include $(GLIB_MAKEFILE)
+
+@GNOME_CODE_COVERAGE_RULES@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

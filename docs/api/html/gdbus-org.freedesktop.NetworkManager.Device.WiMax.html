@@ -67,11 +67,12 @@
 <div class="refsect1">
 <a name="gdbus-methods-org.freedesktop.NetworkManager.Device.WiMax"></a><h2>Method Details</h2>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Device-WiMax.GetNspList"></a><h3>The <code class="function">GetNspList()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Device-WiMax.GetNspList"></a><h3>The GetNspList() method</h3>
 <pre class="programlisting">
 GetNspList (OUT ao nsps);
 </pre>
-<p>Get the list of NSPs visible to this device.</p>
+<p>        Get the list of NSPs visible to this device.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -91,7 +92,8 @@ GetNspList (OUT ao nsps);
 <pre class="programlisting">
 PropertiesChanged (a{sv} properties);
 </pre>
-<p>Emitted when the WiMax device's properties changed.</p>
+<p>        Emitted when the WiMax device's properties changed.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -109,7 +111,8 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 NspAdded (o nsp);
 </pre>
-<p>Emitted when a new NSP is found by the device.</p>
+<p>        Emitted when a new NSP is found by the device.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -127,7 +130,8 @@ NspAdded (o nsp);
 <pre class="programlisting">
 NspRemoved (o nsp);
 </pre>
-<p>Emitted when an NSP disappears from view of the device.</p>
+<p>        Emitted when an NSP disappears from view of the device.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -147,7 +151,9 @@ NspRemoved (o nsp);
 <pre class="programlisting">
 Nsps  readable   ao
 </pre>
-<p>List of object paths of Network Service Providers (NSPs) visible to this         WiMAX device.</p>
+<p>        List of object paths of Network Service Providers (NSPs) visible to this
+        WiMAX device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -155,7 +161,8 @@ Nsps  readable   ao
 <pre class="programlisting">
 HwAddress  readable   s
 </pre>
-<p>Hardware address of the device.</p>
+<p>        Hardware address of the device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -163,7 +170,10 @@ HwAddress  readable   s
 <pre class="programlisting">
 CenterFrequency  readable   u
 </pre>
-<p>Center frequency (in KHz) of the radio channel the device is using to         communicate with the network when connected.  Has no meaning when the         device is not connected.</p>
+<p>        Center frequency (in KHz) of the radio channel the device is using to
+        communicate with the network when connected. Has no meaning when the
+        device is not connected.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -171,7 +181,11 @@ CenterFrequency  readable   u
 <pre class="programlisting">
 Rssi  readable   i
 </pre>
-<p>RSSI of the current radio link in dBm.  This value indicates how strong         the raw received RF signal from the base station is, but does not         indicate the overall quality of the radio link.  Has no meaning when the         device is not connected.</p>
+<p>        RSSI of the current radio link in dBm. This value indicates how strong the
+        raw received RF signal from the base station is, but does not indicate the
+        overall quality of the radio link. Has no meaning when the device is not
+        connected.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -179,7 +193,10 @@ Rssi  readable   i
 <pre class="programlisting">
 Cinr  readable   i
 </pre>
-<p>CINR (Carrier to Interference + Noise Ratio) of the current radio link         in dB.  CINR is a more accurate measure of radio link quality.  Has no         meaning when the device is not connected.</p>
+<p>        CINR (Carrier to Interference + Noise Ratio) of the current radio link in
+        dB. CINR is a more accurate measure of radio link quality. Has no meaning
+        when the device is not connected.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -187,7 +204,10 @@ Cinr  readable   i
 <pre class="programlisting">
 TxPower  readable   i
 </pre>
-<p>Average power of the last burst transmitted by the device, in units of         0.5 dBm.  i.e. a TxPower of -11 represents an actual device TX power of         -5.5 dBm.  Has no meaning when the device is not connected.</p>
+<p>        Average power of the last burst transmitted by the device, in units of 0.5
+        dBm. i.e. a TxPower of -11 represents an actual device TX power of -5.5
+        dBm. Has no meaning when the device is not connected.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -195,7 +215,9 @@ TxPower  readable   i
 <pre class="programlisting">
 Bsid  readable   s
 </pre>
-<p>The ID of the serving base station as received from the network.  Has         no meaning when the device is not connected.</p>
+<p>        The ID of the serving base station as received from the network. Has no
+        meaning when the device is not connected.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -203,7 +225,8 @@ Bsid  readable   s
 <pre class="programlisting">
 ActiveNsp  readable   o
 </pre>
-<p>Object path of the NSP currently used by the WiMax device.</p>
+<p>        Object path of the NSP currently used by the WiMax device.
+</p>
 </div>
 </div>
 </div>

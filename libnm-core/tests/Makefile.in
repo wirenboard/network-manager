@@ -92,6 +92,7 @@ host_triplet = @host@
 @ENABLE_TESTS_TRUE@	test-crypto$(EXEEXT) test-general$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-keyfile$(EXEEXT) test-secrets$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-setting-8021x$(EXEEXT) \
+@ENABLE_TESTS_TRUE@	test-setting-bond$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-setting-dcb$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-settings-defaults$(EXEEXT)
 subdir = libnm-core/tests
@@ -161,6 +162,12 @@ test_setting_8021x_LDADD = $(LDADD)
 @ENABLE_TESTS_TRUE@test_setting_8021x_DEPENDENCIES =  \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-core/libnm-core.la \
 @ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1)
+test_setting_bond_SOURCES = test-setting-bond.c
+test_setting_bond_OBJECTS = test-setting-bond.$(OBJEXT)
+test_setting_bond_LDADD = $(LDADD)
+@ENABLE_TESTS_TRUE@test_setting_bond_DEPENDENCIES =  \
+@ENABLE_TESTS_TRUE@	$(top_builddir)/libnm-core/libnm-core.la \
+@ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1)
 test_setting_dcb_SOURCES = test-setting-dcb.c
 test_setting_dcb_OBJECTS = test-setting-dcb.$(OBJEXT)
 test_setting_dcb_LDADD = $(LDADD)
@@ -209,10 +216,11 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = test-compare.c test-crypto.c $(test_general_SOURCES) \
 	test-keyfile.c test-secrets.c test-setting-8021x.c \
-	test-setting-dcb.c test-settings-defaults.c
+	test-setting-bond.c test-setting-dcb.c \
+	test-settings-defaults.c
 DIST_SOURCES = test-compare.c test-crypto.c \
 	$(am__test_general_SOURCES_DIST) test-keyfile.c test-secrets.c \
-	test-setting-8021x.c test-setting-dcb.c \
+	test-setting-8021x.c test-setting-bond.c test-setting-dcb.c \
 	test-settings-defaults.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -720,7 +728,6 @@ BUILT_SOURCES = $(GLIB_GENERATED)
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-DNETWORKMANAGER_COMPILATION \
-@ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-DTEST_CERT_DIR=\"$(certsdir)\"
 
@@ -831,6 +838,10 @@ test-setting-8021x$(EXEEXT): $(test_setting_8021x_OBJECTS) $(test_setting_8021x_
 	@rm -f test-setting-8021x$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_setting_8021x_OBJECTS) $(test_setting_8021x_LDADD) $(LIBS)
 
+test-setting-bond$(EXEEXT): $(test_setting_bond_OBJECTS) $(test_setting_bond_DEPENDENCIES) $(EXTRA_test_setting_bond_DEPENDENCIES) 
+	@rm -f test-setting-bond$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_setting_bond_OBJECTS) $(test_setting_bond_LDADD) $(LIBS)
+
 test-setting-dcb$(EXEEXT): $(test_setting_dcb_OBJECTS) $(test_setting_dcb_DEPENDENCIES) $(EXTRA_test_setting_dcb_DEPENDENCIES) 
 	@rm -f test-setting-dcb$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_setting_dcb_OBJECTS) $(test_setting_dcb_LDADD) $(LIBS)
@@ -852,6 +863,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-keyfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-secrets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setting-8021x.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setting-bond.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setting-dcb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-settings-defaults.Po@am__quote@
 
@@ -1113,6 +1125,13 @@ test-secrets.log: test-secrets$(EXEEXT)
 test-setting-8021x.log: test-setting-8021x$(EXEEXT)
 	@p='test-setting-8021x$(EXEEXT)'; \
 	b='test-setting-8021x'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test-setting-bond.log: test-setting-bond$(EXEEXT)
+	@p='test-setting-bond$(EXEEXT)'; \
+	b='test-setting-bond'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

@@ -16,8 +16,6 @@ GType nm_client_permission_result_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_CLIENT_PERMISSION_RESULT (nm_client_permission_result_get_type ())
 GType nm_client_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_CLIENT_ERROR (nm_client_error_get_type ())
-GType nm_wimax_nsp_network_type_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_WIMAX_NSP_NETWORK_TYPE (nm_wimax_nsp_network_type_get_type ())
 G_END_DECLS
 
 #endif /* __NM_ENUM_TYPES_H__ */

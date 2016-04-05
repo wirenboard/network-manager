@@ -128,6 +128,9 @@
 /* Enable Gentoo hostname persist method */
 #undef HOSTNAME_PERSIST_GENTOO
 
+/* Enable Slackware hostname persist method */
+#undef HOSTNAME_PERSIST_SLACKWARE
+
 /* Enable SuSE hostname persist method */
 #undef HOSTNAME_PERSIST_SUSE
 

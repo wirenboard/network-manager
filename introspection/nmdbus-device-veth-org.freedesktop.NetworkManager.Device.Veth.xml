@@ -46,7 +46,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Peer  readable   o
 </programlisting>
-<para>The object path of the device's peer.</para>
+<para>        The object path of the device's peer.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

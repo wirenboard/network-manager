@@ -46,7 +46,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Carrier  readable   b
 </programlisting>
-<para>Indicates whether the physical carrier is found.</para>
+<para>        Indicates whether the physical carrier is found.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

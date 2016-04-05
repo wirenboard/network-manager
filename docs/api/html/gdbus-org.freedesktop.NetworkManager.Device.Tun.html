@@ -82,7 +82,8 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 Owner  readable   x
 </pre>
-<p>The uid of the tunnel owner, or -1 if it has no owner.</p>
+<p>        The uid of the tunnel owner, or -1 if it has no owner.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -90,7 +91,8 @@ Owner  readable   x
 <pre class="programlisting">
 Group  readable   x
 </pre>
-<p>The gid of the tunnel group, or -1 if it has no owner.</p>
+<p>        The gid of the tunnel group, or -1 if it has no owner.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -98,7 +100,8 @@ Group  readable   x
 <pre class="programlisting">
 Mode  readable   s
 </pre>
-<p>The tunnel mode, either "tun" or "tap".</p>
+<p>        The tunnel mode, either "tun" or "tap".
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -106,7 +109,9 @@ Mode  readable   s
 <pre class="programlisting">
 NoPi  readable   b
 </pre>
-<p>The tunnel's "TUN_NO_PI" flag; true if no protocol info is  prepended to the tunnel packets.</p>
+<p>        The tunnel's "TUN_NO_PI" flag; true if no protocol info is prepended to
+        the tunnel packets.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -114,7 +119,9 @@ NoPi  readable   b
 <pre class="programlisting">
 VnetHdr  readable   b
 </pre>
-<p>The tunnel's "TUN_VNET_HDR" flag; true if the tunnel packets  include a virtio network header.</p>
+<p>        The tunnel's "TUN_VNET_HDR" flag; true if the tunnel packets include a
+        virtio network header.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -122,7 +129,9 @@ VnetHdr  readable   b
 <pre class="programlisting">
 MultiQueue  readable   b
 </pre>
-<p>The tunnel's "TUN_TAP_MQ" flag; true if callers can connect to         the tap device multiple times, for multiple send/receive         queues.</p>
+<p>        The tunnel's "TUN_TAP_MQ" flag; true if callers can connect to the tap
+        device multiple times, for multiple send/receive queues.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -130,7 +139,8 @@ MultiQueue  readable   b
 <pre class="programlisting">
 HwAddress  readable   s
 </pre>
-<p>Hardware address of the device.</p>
+<p>        Hardware address of the device.
+</p>
 </div>
 </div>
 </div>

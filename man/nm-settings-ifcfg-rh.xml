@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
-<refentry id="nm-settings-ifcfg-rh"><refentryinfo><date>29 March 2016</date></refentryinfo><refmeta><refentrytitle>nm-settings-ifcfg-rh</refentrytitle><manvolnum>5</manvolnum><refmiscinfo class="source">NetworkManager</refmiscinfo><refmiscinfo class="manual">Configuration</refmiscinfo><refmiscinfo class="version">1.1.92</refmiscinfo></refmeta><refnamediv><refname>nm-settings-ifcfg-rh</refname><refpurpose>Description of <emphasis>ifcfg-rh</emphasis> settings plugin</refpurpose></refnamediv><refsect1><title>DESCRIPTION</title><para>
+<refentry id="nm-settings-ifcfg-rh"><refentryinfo><title>nm-settings-ifcfg-rh</title><author>NetworkManager developers</author></refentryinfo><refmeta><refentrytitle>nm-settings-ifcfg-rh</refentrytitle><manvolnum>5</manvolnum><refmiscinfo class="source">NetworkManager</refmiscinfo><refmiscinfo class="manual">Configuration</refmiscinfo><refmiscinfo class="version">1.1.93</refmiscinfo></refmeta><refnamediv><refname>nm-settings-ifcfg-rh</refname><refpurpose>Description of <emphasis>ifcfg-rh</emphasis> settings plugin</refpurpose></refnamediv><refsect1 id="description"><title>Description</title><para>
           NetworkManager is based on the concept of connection profiles that contain
           network configuration (see <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry> for details). The profiles can be
           stored in various formats. NetworkManager uses plugins for reading and writing
@@ -19,7 +19,7 @@
           The main reason for using <emphasis>ifcfg-rh</emphasis> plugin is the compatibility
           with legacy configurations for <emphasis>ifup</emphasis> and <emphasis>ifdown</emphasis>
           (initscripts).
-        </para></refsect1><refsect1><title>File Format</title><para>
+        </para></refsect1><refsect1 id="file_format"><title>File Format</title><para>
           The <emphasis>ifcfg-rh</emphasis> config format is a simple text file containing
           VARIABLE="value" lines. The format is described in <filename>sysconfig.txt</filename>
           of <emphasis>initscripts</emphasis> package. Note that the configuration files
@@ -131,7 +131,7 @@ DEVICETYPE=TeamPort
             The UUID values in the config files must be unique. You can use <emphasis>uuidgen</emphasis>
             command line tool to generate such values. Alternatively, you can leave out UUID
             entirely. In that case NetworkManager will generate a UUID based on the file name.
-          </para></formalpara></refsect1><refsect1><title>Differences against initscripts</title><para>
+          </para></formalpara></refsect1><refsect1 id="differences_against_initscripts"><title>Differences against initscripts</title><para>
           The main differences of NetworkManager ifcfg-rh plugin and traditional
           initscripts are:
           <variablelist class="NM-initscripts-differences"><varlistentry><term><emphasis role="bold">NM_CONTROLLED=yes|no</emphasis></term><listitem><para>
@@ -164,8 +164,8 @@ DEVICETYPE=TeamPort
                     if configured.</para></listitem></itemizedlist></para></listitem></varlistentry></variablelist></para><para>
           See the next section for detailed mapping of NetworkManager properties and
           <emphasis>ifcfg-rh</emphasis> variables. Variable names, format and usage
-          differences in NetworkManager and initscripts are documented in the tables bellow.
-        </para></refsect1><refsect1><title>DETAILS</title><para><emphasis>ifcfg-rh</emphasis> plugin variables marked with <emphasis>(+)</emphasis>
+          differences in NetworkManager and initscripts are documented in the tables below.
+        </para></refsect1><refsect1 id="details"><title>Details</title><para><emphasis>ifcfg-rh</emphasis> plugin variables marked with <emphasis>(+)</emphasis>
           are NetworkManager specific extensions not understood by traditional initscripts.
         </para><table><title>802-1x setting</title><tgroup cols="4"><thead><row><entry>Property</entry><entry>Ifcfg-rh Variable</entry><entry>Default</entry><entry>Description</entry></row></thead><tbody><row><entry align="left">eap</entry><entry align="left">IEEE_8021X_EAP_METHODS<emphasis>(+)</emphasis></entry><entry align="left"/><entry align="left">EAP method for 802.1X authentication.<emphasis role="bold">
 
@@ -367,4 +367,9 @@ Allowed values: </emphasis>default, never, always</entry></row><row><entry align
               and storing this secret; when it is required, agents will be asked to provide it.</para></listitem><listitem><para><literal>ask</literal> - the associated password is not saved but it will be
               requested from the user each time it is required.</para></listitem><listitem><para><literal>unused</literal> - in some situations it cannot be automatically determined
               that a secret is required or not. This flag hints that the secret is not required and should
-              not be requested from the user.</para></listitem></itemizedlist></refsect2></refsect1><refsect1><title>AUTHOR</title><para><author><firstname>NetworkManager developers</firstname></author></para></refsect1><refsect1><title>FILES</title><para><filename>/etc/sysconfig/network-scripts/ifcfg-*</filename></para><para><filename>/etc/sysconfig/network-scripts/keys-*</filename></para><para><filename>/etc/sysconfig/network-scripts/route-*</filename></para><para><filename>/etc/sysconfig/network-scripts/route6-*</filename></para><para><filename>/usr/share/doc/initscripts/sysconfig.txt</filename></para></refsect1><refsect1><title>SEE ALSO</title><para>https://developer.gnome.org/NetworkManager/unstable/ref-settings.html</para><para>nm-settings(5), nm-settings-keyfile(5), NetworkManager(8), NetworkManager.conf(5), nmcli(1), nmcli-examples(5)</para></refsect1></refentry>
+              not be requested from the user.</para></listitem></itemizedlist></refsect2></refsect1><refsect1 id="files"><title>Files</title><para><filename>/etc/sysconfig/network-scripts/ifcfg-*</filename></para><para><filename>/etc/sysconfig/network-scripts/keys-*</filename></para><para><filename>/etc/sysconfig/network-scripts/route-*</filename></para><para><filename>/etc/sysconfig/network-scripts/route6-*</filename></para><para><filename>/usr/share/doc/initscripts/sysconfig.txt</filename></para></refsect1><refsect1 id="see_also"><title>See Also</title><para><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+        <citerefentry><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+        <citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
+        <citerefentry><refentrytitle>NetworkManager.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+        <citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
+        <citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry></para></refsect1></refentry>

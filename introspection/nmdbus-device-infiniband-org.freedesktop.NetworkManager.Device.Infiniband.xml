@@ -47,7 +47,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Hardware address of the device.</para>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Infiniband.Carrier">
   <title>The "Carrier" property</title>
@@ -55,7 +56,9 @@ HwAddress  readable   s
 <programlisting>
 Carrier  readable   b
 </programlisting>
-<para>Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).</para>
+<para>        Indicates whether the physical carrier is found (e.g. whether a cable is
+        plugged in or not).
+</para>
 </refsect2>
 </refsect1>
 </refentry>

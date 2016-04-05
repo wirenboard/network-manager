@@ -62,16 +62,22 @@
 </div>
 <div class="refsect1">
 <a name="gdbus-interface-org-freedesktop-NetworkManager-Settings-Connection"></a><h2>Description</h2>
-<p>Represents a single network connection configuration.</p>
+<p>      Represents a single network connection configuration.
+</p>
 </div>
 <div class="refsect1">
 <a name="gdbus-methods-org.freedesktop.NetworkManager.Settings.Connection"></a><h2>Method Details</h2>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Update"></a><h3>The <code class="function">Update()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Update"></a><h3>The Update() method</h3>
 <pre class="programlisting">
 Update (IN  a{sa{sv}} properties);
 </pre>
-<p>Update the connection with new settings and properties (replacing             all previous settings and properties) and save the connection to             disk.  Secrets may be part of the update request, and will be either             stored in persistent storage or sent to a Secret Agent for storage,             depending on the flags associated with each secret.</p>
+<p>        Update the connection with new settings and properties (replacing all
+        previous settings and properties) and save the connection to disk. Secrets
+        may be part of the update request, and will be either stored in persistent
+        storage or sent to a Secret Agent for storage, depending on the flags
+        associated with each secret.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -85,11 +91,19 @@ Update (IN  a{sa{sv}} properties);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.UpdateUnsaved"></a><h3>The <code class="function">UpdateUnsaved()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.UpdateUnsaved"></a><h3>The UpdateUnsaved() method</h3>
 <pre class="programlisting">
 UpdateUnsaved (IN  a{sa{sv}} properties);
 </pre>
-<p>Update the connection with new settings and properties (replacing             all previous settings and properties) but do not immediately save             the connection to disk.  Secrets may be part of the update request             and may sent to a Secret Agent for storage, depending on the             flags associated with each secret.              Use the 'Save' method to save these changes to disk. Note             that unsaved changes will be lost if the connection is             reloaded from disk (either automatically on file change or             due to an explicit ReloadConnections call).</p>
+<p>        Update the connection with new settings and properties (replacing all
+        previous settings and properties) but do not immediately save the
+        connection to disk. Secrets may be part of the update request and may sent
+        to a Secret Agent for storage, depending on the flags associated with each
+        secret. Use the 'Save' method to save these changes to disk. Note that
+        unsaved changes will be lost if the connection is reloaded from disk
+        (either automatically on file change or due to an explicit
+        ReloadConnections call).
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -103,19 +117,24 @@ UpdateUnsaved (IN  a{sa{sv}} properties);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Delete"></a><h3>The <code class="function">Delete()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Delete"></a><h3>The Delete() method</h3>
 <pre class="programlisting">
 Delete ();
 </pre>
-<p>Delete the connection.</p>
+<p>        Delete the connection.
+</p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.GetSettings"></a><h3>The <code class="function">GetSettings()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.GetSettings"></a><h3>The GetSettings() method</h3>
 <pre class="programlisting">
 GetSettings (OUT a{sa{sv}} settings);
 </pre>
-<p>Get the settings maps describing this network configuration.                 This will never include any secrets required for connection                 to the network, as those are often protected.  Secrets must                 be requested separately using the <code class="function">GetSecrets()</code> call.</p>
+<p>        Get the settings maps describing this network configuration. This will
+        never include any secrets required for connection to the network, as those
+        are often protected. Secrets must be requested separately using the
+        GetSecrets() call.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -129,12 +148,16 @@ GetSettings (OUT a{sa{sv}} settings);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.GetSecrets"></a><h3>The <code class="function">GetSecrets()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.GetSecrets"></a><h3>The GetSecrets() method</h3>
 <pre class="programlisting">
 GetSecrets (IN  s         setting_name,
             OUT a{sa{sv}} secrets);
 </pre>
-<p>Get the secrets belonging to this network configuration.  Only                 secrets from persistent storage or a Secret Agent running in                 the requestor's session will be returned.  The user will never                 be prompted for secrets as a result of this request.</p>
+<p>        Get the secrets belonging to this network configuration. Only secrets from
+        persistent storage or a Secret Agent running in the requestor's session
+        will be returned. The user will never be prompted for secrets as a result
+        of this request.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -143,7 +166,7 @@ GetSecrets (IN  s         setting_name,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">IN s <em class="parameter"><code>setting_name</code></em></code>:</span></p></td>
-<td><p>Name of the setting to return secrets for.  If empty, all                     all secrets will be returned.</p></td>
+<td><p>Name of the setting to return secrets for. If empty, all all secrets will be returned.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">OUT a{sa{sv}} <em class="parameter"><code>secrets</code></em></code>:</span></p></td>
@@ -154,19 +177,22 @@ GetSecrets (IN  s         setting_name,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.ClearSecrets"></a><h3>The <code class="function">ClearSecrets()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.ClearSecrets"></a><h3>The ClearSecrets() method</h3>
 <pre class="programlisting">
 ClearSecrets ();
 </pre>
-<p>Clear the secrets belonging to this network connection profile.</p>
+<p>        Clear the secrets belonging to this network connection profile.
+</p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Save"></a><h3>The <code class="function">Save()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Settings-Connection.Save"></a><h3>The Save() method</h3>
 <pre class="programlisting">
 Save ();
 </pre>
-<p>Saves a "dirty" connection (that had previously been                 updated with UpdateUnsaved) to persistent storage.</p>
+<p>        Saves a "dirty" connection (that had previously been updated with
+        UpdateUnsaved) to persistent storage.
+</p>
 </div>
 </div>
 <div class="refsect1">
@@ -176,7 +202,11 @@ Save ();
 <pre class="programlisting">
 Updated ();
 </pre>
-<p>Emitted when any settings or permissions change.  When handling                 this signal, clients should re-read the connection using the                 GetSettings method to get the changes and to ensure the client                 still has permission to access the connection.</p>
+<p>        Emitted when any settings or permissions change. When handling this
+        signal, clients should re-read the connection using the GetSettings method
+        to get the changes and to ensure the client still has permission to access
+        the connection.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -184,7 +214,11 @@ Updated ();
 <pre class="programlisting">
 Removed ();
 </pre>
-<p>Emitted when this connection is no longer available.  This                 happens when the connection is deleted or if it is no longer                 accessible by any of the system's logged-in users.  After                 receipt of this signal, the object no longer exists.  Also                 see the Settings.ConnectionRemoved signal.</p>
+<p>        Emitted when this connection is no longer available. This happens when the
+        connection is deleted or if it is no longer accessible by any of the
+        system's logged-in users. After receipt of this signal, the object no
+        longer exists. Also see the Settings.ConnectionRemoved signal.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -212,7 +246,11 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 Unsaved  readable   b
 </pre>
-<p>If set, indicates that the in-memory state of the                 connection does not match the on-disk state. This flag                 will be set when <code class="function">UpdateUnsaved()</code> is called or when any                 connection details change, and cleared when the connection                 is saved to disk via <code class="function">Save()</code> or from internal operations.</p>
+<p>        If set, indicates that the in-memory state of the connection does not
+        match the on-disk state. This flag will be set when UpdateUnsaved() is
+        called or when any connection details change, and cleared when the
+        connection is saved to disk via Save() or from internal operations.
+</p>
 </div>
 </div>
 </div>

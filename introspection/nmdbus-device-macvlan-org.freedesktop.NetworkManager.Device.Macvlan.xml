@@ -49,7 +49,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Parent  readable   o
 </programlisting>
-<para>The object path of the parent device.</para>
+<para>        The object path of the parent device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Macvlan.Mode">
   <title>The "Mode" property</title>
@@ -57,7 +58,8 @@ Parent  readable   o
 <programlisting>
 Mode  readable   s
 </programlisting>
-<para>The macvlan mode, one of "private", "vepa", "bridge", or "passthru".</para>
+<para>        The macvlan mode, one of "private", "vepa", "bridge", or "passthru".
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Macvlan.NoPromisc">
   <title>The "NoPromisc" property</title>
@@ -65,7 +67,8 @@ Mode  readable   s
 <programlisting>
 NoPromisc  readable   b
 </programlisting>
-<para>Whether the device is blocked from going into promiscuous mode.</para>
+<para>        Whether the device is blocked from going into promiscuous mode.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Macvlan.Tap">
   <title>The "Tap" property</title>
@@ -73,7 +76,8 @@ NoPromisc  readable   b
 <programlisting>
 Tap  readable   b
 </programlisting>
-<para>Whether the device is a macvtap.</para>
+<para>        Whether the device is a macvtap.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

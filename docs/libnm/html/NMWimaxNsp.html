@@ -58,7 +58,7 @@
 </tr>
 <tr>
 <td class="function_type">
-<a class="link" href="NMWimaxNsp.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="returnvalue">NMWimaxNspNetworkType</span></a>
+<a class="link" href="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="returnvalue">NMWimaxNspNetworkType</span></a>
 </td>
 <td class="function_name">
 <a class="link" href="NMWimaxNsp.html#nm-wimax-nsp-get-network-type" title="nm_wimax_nsp_get_network_type ()">nm_wimax_nsp_get_network_type</a> <span class="c_punctuation">()</span>
@@ -99,7 +99,7 @@
 <td class="property_flags">Read</td>
 </tr>
 <tr>
-<td class="property_type"><a class="link" href="NMWimaxNsp.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="type">NMWimaxNspNetworkType</span></a></td>
+<td class="property_type"><a class="link" href="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="type">NMWimaxNspNetworkType</span></a></td>
 <td class="property_name"><a class="link" href="NMWimaxNsp.html#NMWimaxNsp--network-type" title="The “network-type” property">network-type</a></td>
 <td class="property_flags">Read</td>
 </tr>
@@ -131,18 +131,12 @@
 <td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE:CAPS" title="NM_WIMAX_NSP_NETWORK_TYPE">NM_WIMAX_NSP_NETWORK_TYPE</a></td>
 </tr>
-<tr>
-<td class="datatype_keyword">enum</td>
-<td class="function_name"><a class="link" href="NMWimaxNsp.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType">NMWimaxNspNetworkType</a></td>
-</tr>
 </tbody>
 </table></div>
 </div>
 <div class="refsect1">
 <a name="NMWimaxNsp.object-hierarchy"></a><h2>Object Hierarchy</h2>
-<pre class="screen">    <a href="/usr/share/gtk-doc/html/gobject/gobject-Enumeration-and-Flag-Types.html">GEnum</a>
-    <span class="lineart">╰──</span> NMWimaxNspNetworkType
-    GObject
+<pre class="screen">    GObject
     <span class="lineart">╰──</span> <a class="link" href="NMObject.html" title="NMObject">NMObject</a>
         <span class="lineart">╰──</span> NMWimaxNsp
 </pre>
@@ -206,7 +200,7 @@ nm_wimax_nsp_get_signal_quality (<em class="parameter"><code><a class="link" hre
 <hr>
 <div class="refsect2">
 <a name="nm-wimax-nsp-get-network-type"></a><h3>nm_wimax_nsp_get_network_type ()</h3>
-<pre class="programlisting"><a class="link" href="NMWimaxNsp.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="returnvalue">NMWimaxNspNetworkType</span></a>
+<pre class="programlisting"><a class="link" href="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="returnvalue">NMWimaxNspNetworkType</span></a>
 nm_wimax_nsp_get_network_type (<em class="parameter"><code><a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a> *nsp</code></em>);</pre>
 <p>Gets the network type of the wimax NSP.</p>
 <div class="refsect3">
@@ -331,51 +325,6 @@ against</p></td>
 <pre class="programlisting">#define NM_WIMAX_NSP_NETWORK_TYPE   "network-type"
 </pre>
 </div>
-<hr>
-<div class="refsect2">
-<a name="NMWimaxNspNetworkType"></a><h3>enum NMWimaxNspNetworkType</h3>
-<p>WiMAX network type.</p>
-<div class="refsect3">
-<a name="id-1.5.24.9.5.4"></a><h4>Members</h4>
-<div class="informaltable"><table width="100%" border="0">
-<colgroup>
-<col width="300px" class="enum_members_name">
-<col class="enum_members_description">
-<col width="200px" class="enum_members_annotations">
-</colgroup>
-<tbody>
-<tr>
-<td class="enum_member_name"><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS"></a>NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN</p></td>
-<td class="enum_member_description">
-<p>unknown network type</p>
-</td>
-<td class="enum_member_annotations"> </td>
-</tr>
-<tr>
-<td class="enum_member_name"><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS"></a>NM_WIMAX_NSP_NETWORK_TYPE_HOME</p></td>
-<td class="enum_member_description">
-<p>home network</p>
-</td>
-<td class="enum_member_annotations"> </td>
-</tr>
-<tr>
-<td class="enum_member_name"><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS"></a>NM_WIMAX_NSP_NETWORK_TYPE_PARTNER</p></td>
-<td class="enum_member_description">
-<p>partner network</p>
-</td>
-<td class="enum_member_annotations"> </td>
-</tr>
-<tr>
-<td class="enum_member_name"><p><a name="NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS"></a>NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER</p></td>
-<td class="enum_member_description">
-<p>roaming partner network</p>
-</td>
-<td class="enum_member_annotations"> </td>
-</tr>
-</tbody>
-</table></div>
-</div>
-</div>
 </div>
 <div class="refsect1">
 <a name="NMWimaxNsp.property-details"></a><h2>Property Details</h2>
@@ -389,7 +338,7 @@ against</p></td>
 <hr>
 <div class="refsect2">
 <a name="NMWimaxNsp--network-type"></a><h3>The <code class="literal">“network-type”</code> property</h3>
-<pre class="programlisting">  “network-type”             <a class="link" href="NMWimaxNsp.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="type">NMWimaxNspNetworkType</span></a></pre>
+<pre class="programlisting">  “network-type”             <a class="link" href="libnm-nm-dbus-interface.html#NMWimaxNspNetworkType" title="enum NMWimaxNspNetworkType"><span class="type">NMWimaxNspNetworkType</span></a></pre>
 <p>The network type of the WiMAX NSP.</p>
 <p>Flags: Read</p>
 <p>Default value: NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN</p>

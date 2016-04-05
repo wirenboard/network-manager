@@ -79,11 +79,12 @@
 <programlisting>
 GetDevices (OUT ao devices);
 </programlisting>
-<para>Get the list of realized network devices.</para>
+<para>        Get the list of realized network devices.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT ao <parameter>devices</parameter></literal>:</term>
-  <listitem><para>List of object paths of network devices known to the system.  This           list does not include device placeholders (see GetAllDevices()).</para></listitem>
+  <listitem><para>List of object paths of network devices known to the system. This list does not include device placeholders (see GetAllDevices()).</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -93,11 +94,12 @@ GetDevices (OUT ao devices);
 <programlisting>
 GetAllDevices (OUT ao devices);
 </programlisting>
-<para>Get the list of all network devices.</para>
+<para>        Get the list of all network devices.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT ao <parameter>devices</parameter></literal>:</term>
-  <listitem><para>List of object paths of network devices and device placeholders           (eg, devices that do not yet exist but which can be automatically           created by NetworkManager if one of their AvailableConnections           was activated).</para></listitem>
+  <listitem><para>List of object paths of network devices and device placeholders (eg, devices that do not yet exist but which can be automatically created by NetworkManager if one of their AvailableConnections was activated).</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -108,7 +110,10 @@ GetAllDevices (OUT ao devices);
 GetDeviceByIpIface (IN  s iface,
                     OUT o device);
 </programlisting>
-<para>Return the object path of the network device referenced by its IP         interface name.  Note that some devices (usually modems) only have an         IP interface name when they are connected.</para>
+<para>        Return the object path of the network device referenced by its IP
+        interface name. Note that some devices (usually modems) only have an IP
+        interface name when they are connected.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN s <parameter>iface</parameter></literal>:</term>
@@ -129,19 +134,20 @@ ActivateConnection (IN  o connection,
                     IN  o specific_object,
                     OUT o active_connection);
 </programlisting>
-<para>Activate a connection using the supplied device.</para>
+<para>        Activate a connection using the supplied device.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN o <parameter>connection</parameter></literal>:</term>
-  <listitem><para>The connection to activate.  If "/" is given, a valid device path must           be given, and NetworkManager picks the best connection to activate for           the given device.  VPN connections must always pass a valid connection           path.</para></listitem>
+  <listitem><para>The connection to activate. If "/" is given, a valid device path must be given, and NetworkManager picks the best connection to activate for the given device. VPN connections must always pass a valid connection path.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>IN o <parameter>device</parameter></literal>:</term>
-  <listitem><para>The object path of device to be activated for physical connections.           This parameter is ignored for VPN connections, because the           specific_object (if provided) specifies the device to use.</para></listitem>
+  <listitem><para>The object path of device to be activated for physical connections. This parameter is ignored for VPN connections, because the specific_object (if provided) specifies the device to use.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>IN o <parameter>specific_object</parameter></literal>:</term>
-  <listitem><para>The path of a connection-type-specific object this activation should use.            This parameter is currently ignored for wired and mobile broadband connections,           and the value of "/" should be used (ie, no specific object).  For WiFi           connections, pass the object path of a specific AP from the card's scan           list, or "/" to pick an AP automatically.  For VPN connections, pass           the object path of an ActiveConnection object that should serve as the           "base" connection (to which the VPN connections lifetime will be tied),           or pass "/" and NM will automatically use the current default device.</para></listitem>
+  <listitem><para>The path of a connection-type-specific object this activation should use. This parameter is currently ignored for wired and mobile broadband connections, and the value of "/" should be used (ie, no specific object). For WiFi connections, pass the object path of a specific AP from the card's scan list, or "/" to pick an AP automatically. For VPN connections, pass the object path of an ActiveConnection object that should serve as the "base" connection (to which the VPN connections lifetime will be tied), or pass "/" and NM will automatically use the current default device.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>OUT o <parameter>active_connection</parameter></literal>:</term>
@@ -159,11 +165,15 @@ AddAndActivateConnection (IN  a{sa{sv}} connection,
                           OUT o         path,
                           OUT o         active_connection);
 </programlisting>
-<para>Adds a new connection using the given details (if any) as a template         (automatically filling in missing settings with the capabilities of the         given device and specific object), then activate the new connection.         Cannot be used for VPN connections at this time.</para>
+<para>        Adds a new connection using the given details (if any) as a template
+        (automatically filling in missing settings with the capabilities of the
+        given device and specific object), then activate the new connection.
+        Cannot be used for VPN connections at this time.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>connection</parameter></literal>:</term>
-  <listitem><para>Connection settings and properties; if incomplete missing settings will           be automatically completed using the given device and specific object.</para></listitem>
+  <listitem><para>Connection settings and properties; if incomplete missing settings will be automatically completed using the given device and specific object.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>IN o <parameter>device</parameter></literal>:</term>
@@ -171,7 +181,7 @@ AddAndActivateConnection (IN  a{sa{sv}} connection,
 </varlistentry>
 <varlistentry>
   <term><literal>IN o <parameter>specific_object</parameter></literal>:</term>
-  <listitem><para>The path of a connection-type-specific object this activation should use.            This parameter is currently ignored for wired and mobile broadband connections,           and the value of "/" should be used (ie, no specific object).  For WiFi           connections, pass the object path of a specific AP from the card's scan           list, which will be used to complete the details of the newly added           connection.</para></listitem>
+  <listitem><para>The path of a connection-type-specific object this activation should use. This parameter is currently ignored for wired and mobile broadband connections, and the value of "/" should be used (ie, no specific object). For WiFi connections, pass the object path of a specific AP from the card's scan list, which will be used to complete the details of the newly added connection.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>OUT o <parameter>path</parameter></literal>:</term>
@@ -189,7 +199,8 @@ AddAndActivateConnection (IN  a{sa{sv}} connection,
 <programlisting>
 DeactivateConnection (IN  o active_connection);
 </programlisting>
-<para>Deactivate an active connection.</para>
+<para>        Deactivate an active connection.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN o <parameter>active_connection</parameter></literal>:</term>
@@ -203,7 +214,11 @@ DeactivateConnection (IN  o active_connection);
 <programlisting>
 Sleep (IN  b sleep);
 </programlisting>
-<para>Control the NetworkManager daemon's sleep state.  When asleep, all         interfaces that it manages are deactivated.  When awake, devices are         available to be activated.  This command should not be called directly         by users or clients; it is intended for system suspend/resume tracking.</para>
+<para>        Control the NetworkManager daemon's sleep state. When asleep, all
+        interfaces that it manages are deactivated. When awake, devices are
+        available to be activated. This command should not be called directly by
+        users or clients; it is intended for system suspend/resume tracking.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN b <parameter>sleep</parameter></literal>:</term>
@@ -217,11 +232,16 @@ Sleep (IN  b sleep);
 <programlisting>
 Enable (IN  b enable);
 </programlisting>
-<para>Control whether overall networking is enabled or disabled.  When         disabled, all interfaces that NM manages are deactivated.  When enabled,         all managed interfaces are re-enabled and available to be activated.         This command should be used by clients that provide to users the ability         to enable/disable all networking.</para>
+<para>        Control whether overall networking is enabled or disabled. When disabled,
+        all interfaces that NM manages are deactivated. When enabled, all managed
+        interfaces are re-enabled and available to be activated. This command
+        should be used by clients that provide to users the ability to
+        enable/disable all networking.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN b <parameter>enable</parameter></literal>:</term>
-  <listitem><para>If FALSE, indicates that all networking should be disabled.  If TRUE,           indicates that NetworkManager should begin managing network devices.</para></listitem>
+  <listitem><para>If FALSE, indicates that all networking should be disabled. If TRUE, indicates that NetworkManager should begin managing network devices.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -231,11 +251,14 @@ Enable (IN  b enable);
 <programlisting>
 GetPermissions (OUT a{ss} permissions);
 </programlisting>
-<para>Returns the permissions a caller has for various authenticated operations         that NetworkManager provides, like Enable/Disable networking, changing         WiFi, WWAN, and WiMAX state, etc.</para>
+<para>        Returns the permissions a caller has for various authenticated operations
+        that NetworkManager provides, like Enable/Disable networking, changing
+        WiFi, WWAN, and WiMAX state, etc.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT a{ss} <parameter>permissions</parameter></literal>:</term>
-  <listitem><para>Dictionary of available permissions and results.  Each permission           is represented by a name (ie "org.freedesktop.NetworkManager.Foobar")           and each result is one of the following values: "yes" (the permission           is available), "auth" (the permission is available after a successful           authentication), or "no" (the permission is denied).  Clients may use           these values in the UI to indicate the ability to perform certain           operations.</para></listitem>
+  <listitem><para>Dictionary of available permissions and results. Each permission is represented by a name (ie "org.freedesktop.NetworkManager.Foobar") and each result is one of the following values: "yes" (the permission is available), "auth" (the permission is available after a successful authentication), or "no" (the permission is denied). Clients may use these values in the UI to indicate the ability to perform certain operations.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -246,15 +269,16 @@ GetPermissions (OUT a{ss} permissions);
 SetLogging (IN  s level,
             IN  s domains);
 </programlisting>
-<para>Set logging verbosity and which operations are logged.</para>
+<para>        Set logging verbosity and which operations are logged.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN s <parameter>level</parameter></literal>:</term>
-  <listitem><para>One of [ERR, WARN, INFO, DEBUG, TRACE, OFF, KEEP].           This level is applied to the domains as specified in the domains           argument. Except for the special level "KEEP", all unmentioned           domains are disabled entirely. "KEEP" is special and allows           not to change the current setting except for the specified           domains. E.g. level=KEEP and domains=PLATFORM:DEBUG will only           touch the platform domain.</para></listitem>
+  <listitem><para>One of [ERR, WARN, INFO, DEBUG, TRACE, OFF, KEEP]. This level is applied to the domains as specified in the domains argument. Except for the special level "KEEP", all unmentioned domains are disabled entirely. "KEEP" is special and allows not to change the current setting except for the specified domains. E.g. level=KEEP and domains=PLATFORM:DEBUG will only touch the platform domain.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>IN s <parameter>domains</parameter></literal>:</term>
-  <listitem><para>A combination of logging domains separated by commas (','), or "NONE"           to disable logging.  Each domain enables logging for operations           related to that domain.  Available domains are: [PLATFORM, RFKILL, ETHER,           WIFI, BT, MB, DHCP4, DHCP6, PPP, WIFI_SCAN, IP4, IP6, AUTOIP4, DNS,           VPN, SHARING, SUPPLICANT, AGENTS, SETTINGS, SUSPEND, CORE, DEVICE,           OLPC, WIMAX, INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS,           TEAM, CONCHECK, DCB, DISPATCH, AUDIT].           In addition to these domains, the following special domains can be used:           [NONE, ALL, DEFAULT, DHCP, IP].  You can also specify that some domains           should log at a different level from the default by appending a colon (':')           and a log level (eg, 'WIFI:DEBUG').  If an empty string is given, the           log level is changed but the current set of log domains remains           unchanged.</para></listitem>
+  <listitem><para>A combination of logging domains separated by commas (','), or "NONE" to disable logging. Each domain enables logging for operations related to that domain. Available domains are: [PLATFORM, RFKILL, ETHER, WIFI, BT, MB, DHCP4, DHCP6, PPP, WIFI_SCAN, IP4, IP6, AUTOIP4, DNS, VPN, SHARING, SUPPLICANT, AGENTS, SETTINGS, SUSPEND, CORE, DEVICE, OLPC, WIMAX, INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS, TEAM, CONCHECK, DCB, DISPATCH, AUDIT]. In addition to these domains, the following special domains can be used: [NONE, ALL, DEFAULT, DHCP, IP]. You can also specify that some domains should log at a different level from the default by appending a colon (':') and a log level (eg, 'WIFI:DEBUG'). If an empty string is given, the log level is changed but the current set of log domains remains unchanged.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -265,7 +289,8 @@ SetLogging (IN  s level,
 GetLogging (OUT s level,
             OUT s domains);
 </programlisting>
-<para>Get current logging verbosity level and operations domains.</para>
+<para>        Get current logging verbosity level and operations domains.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT s <parameter>level</parameter></literal>:</term>
@@ -283,11 +308,12 @@ GetLogging (OUT s level,
 <programlisting>
 CheckConnectivity (OUT u connectivity);
 </programlisting>
-<para>Re-check the network connectivity state.</para>
+<para>        Re-check the network connectivity state.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT u <parameter>connectivity</parameter></literal>:</term>
-  <listitem><para>The current connectivity state.</para></listitem>
+  <listitem><para>(<link linkend="NMConnectivityState">NMConnectivityState</link>) The current connectivity state.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -297,11 +323,13 @@ CheckConnectivity (OUT u connectivity);
 <programlisting>
 state (OUT u state);
 </programlisting>
-<para>The overall networking state as determined by the NetworkManager daemon,         based on the state of network devices under it's management.</para>
+<para>        The overall networking state as determined by the NetworkManager daemon,
+        based on the state of network devices under it's management.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT u <parameter>state</parameter></literal>:</term>
-  <listitem><para></para></listitem>
+  <listitem><para><link linkend="NMState">NMState</link></para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -314,7 +342,9 @@ state (OUT u state);
 <programlisting>
 CheckPermissions ();
 </programlisting>
-<para>Emitted when system authorization details change, indicating that         clients may wish to recheck permissions with GetPermissions.</para>
+<para>        Emitted when system authorization details change, indicating that clients
+        may wish to recheck permissions with GetPermissions.
+</para>
 </refsect2>
 <refsect2 role="signal" id="gdbus-signal-org-freedesktop-NetworkManager.StateChanged">
   <title>The "StateChanged" signal</title>
@@ -322,11 +352,12 @@ CheckPermissions ();
 <programlisting>
 StateChanged (u state);
 </programlisting>
-<para>NetworkManager's state changed.</para>
+<para>        NetworkManager's state changed.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>u <parameter>state</parameter></literal>:</term>
-  <listitem><para>The new state of NetworkManager.</para></listitem>
+  <listitem><para>(<link linkend="NMState">NMState</link>) The new state of NetworkManager.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -336,7 +367,8 @@ StateChanged (u state);
 <programlisting>
 PropertiesChanged (a{sv} properties);
 </programlisting>
-<para>NetworkManager's properties changed.</para>
+<para>        NetworkManager's properties changed.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>properties</parameter></literal>:</term>
@@ -350,7 +382,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 DeviceAdded (o device_path);
 </programlisting>
-<para>A device was added to the system</para>
+<para>        A device was added to the system
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>device_path</parameter></literal>:</term>
@@ -364,7 +397,8 @@ DeviceAdded (o device_path);
 <programlisting>
 DeviceRemoved (o device_path);
 </programlisting>
-<para>A device was removed from the system, and is no longer available.</para>
+<para>        A device was removed from the system, and is no longer available.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>device_path</parameter></literal>:</term>
@@ -381,7 +415,10 @@ DeviceRemoved (o device_path);
 <programlisting>
 Devices  readable   ao
 </programlisting>
-<para>The list of realized network devices. Realized devices are those which         have backing resources (eg from the kernel or a management daemon like         ModemManager, teamd, etc).</para>
+<para>        The list of realized network devices. Realized devices are those which
+        have backing resources (eg from the kernel or a management daemon like
+        ModemManager, teamd, etc).
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.AllDevices">
   <title>The "AllDevices" property</title>
@@ -389,7 +426,10 @@ Devices  readable   ao
 <programlisting>
 AllDevices  readable   ao
 </programlisting>
-<para>The list of both realized and un-realized network devices. Un-realized         devices are software devices which do not yet have backing resources,         but for which backing resources can be created if the device is         activated.</para>
+<para>        The list of both realized and un-realized network devices. Un-realized
+        devices are software devices which do not yet have backing resources, but
+        for which backing resources can be created if the device is activated.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.NetworkingEnabled">
   <title>The "NetworkingEnabled" property</title>
@@ -397,7 +437,9 @@ AllDevices  readable   ao
 <programlisting>
 NetworkingEnabled  readable   b
 </programlisting>
-<para>Indicates if overall networking is currently enabled or not.  See the         Enable() method.</para>
+<para>        Indicates if overall networking is currently enabled or not. See the
+        Enable() method.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.WirelessEnabled">
   <title>The "WirelessEnabled" property</title>
@@ -405,7 +447,8 @@ NetworkingEnabled  readable   b
 <programlisting>
 WirelessEnabled  readwrite  b
 </programlisting>
-<para>Indicates if wireless is currently enabled or not.</para>
+<para>        Indicates if wireless is currently enabled or not.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.WirelessHardwareEnabled">
   <title>The "WirelessHardwareEnabled" property</title>
@@ -413,7 +456,9 @@ WirelessEnabled  readwrite  b
 <programlisting>
 WirelessHardwareEnabled  readable   b
 </programlisting>
-<para>Indicates if the wireless hardware is currently enabled, i.e. the state of the RF kill switch.</para>
+<para>        Indicates if the wireless hardware is currently enabled, i.e. the state of
+        the RF kill switch.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.WwanEnabled">
   <title>The "WwanEnabled" property</title>
@@ -421,7 +466,8 @@ WirelessHardwareEnabled  readable   b
 <programlisting>
 WwanEnabled  readwrite  b
 </programlisting>
-<para>Indicates if mobile broadband devices are currently enabled or not.</para>
+<para>        Indicates if mobile broadband devices are currently enabled or not.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.WwanHardwareEnabled">
   <title>The "WwanHardwareEnabled" property</title>
@@ -429,7 +475,9 @@ WwanEnabled  readwrite  b
 <programlisting>
 WwanHardwareEnabled  readable   b
 </programlisting>
-<para>Indicates if the mobile broadband hardware is currently enabled, i.e. the state of the RF kill switch.</para>
+<para>        Indicates if the mobile broadband hardware is currently enabled, i.e. the
+        state of the RF kill switch.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.WimaxEnabled">
   <title>The "WimaxEnabled" property</title>
@@ -437,7 +485,8 @@ WwanHardwareEnabled  readable   b
 <programlisting>
 WimaxEnabled  readwrite  b
 </programlisting>
-<para>Indicates if WiMAX devices are currently enabled or not.</para>
+<para>        Indicates if WiMAX devices are currently enabled or not.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.WimaxHardwareEnabled">
   <title>The "WimaxHardwareEnabled" property</title>
@@ -445,7 +494,9 @@ WimaxEnabled  readwrite  b
 <programlisting>
 WimaxHardwareEnabled  readable   b
 </programlisting>
-<para>Indicates if the WiMAX hardware is currently enabled, i.e. the state of the RF kill switch.</para>
+<para>        Indicates if the WiMAX hardware is currently enabled, i.e. the state of
+        the RF kill switch.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.ActiveConnections">
   <title>The "ActiveConnections" property</title>
@@ -453,7 +504,8 @@ WimaxHardwareEnabled  readable   b
 <programlisting>
 ActiveConnections  readable   ao
 </programlisting>
-<para>List of active connection object paths.</para>
+<para>        List of active connection object paths.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.PrimaryConnection">
   <title>The "PrimaryConnection" property</title>
@@ -461,7 +513,12 @@ ActiveConnections  readable   ao
 <programlisting>
 PrimaryConnection  readable   o
 </programlisting>
-<para>The object path of the "primary" active connection being used         to access the network. In particular, if there is no VPN         active, or the VPN does not have the default route, then this         indicates the connection that has the default route. If there         is a VPN active with the default route, then this indicates         the connection that contains the route to the VPN endpoint.</para>
+<para>        The object path of the "primary" active connection being used to access
+        the network. In particular, if there is no VPN active, or the VPN does not
+        have the default route, then this indicates the connection that has the
+        default route. If there is a VPN active with the default route, then this
+        indicates the connection that contains the route to the VPN endpoint.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.PrimaryConnectionType">
   <title>The "PrimaryConnectionType" property</title>
@@ -469,7 +526,10 @@ PrimaryConnection  readable   o
 <programlisting>
 PrimaryConnectionType  readable   s
 </programlisting>
-<para>The connection type of the "primary" active connection being         used to access the network. This is the same as the Type         property on the object indicated by PrimaryConnection.</para>
+<para>        The connection type of the "primary" active connection being used to
+        access the network. This is the same as the Type property on the object
+        indicated by PrimaryConnection.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.Metered">
   <title>The "Metered" property</title>
@@ -477,7 +537,10 @@ PrimaryConnectionType  readable   s
 <programlisting>
 Metered  readable   u
 </programlisting>
-<para>Indicates whether the connectivity is metered. This is equivalent         to the metered property of the device associated with the primary         connection.</para>
+<para>        Indicates whether the connectivity is metered. This is equivalent to the
+        metered property of the device associated with the primary connection.
+</para><para>        Returns: <link linkend="NMMetered">NMMetered</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.ActivatingConnection">
   <title>The "ActivatingConnection" property</title>
@@ -485,7 +548,10 @@ Metered  readable   u
 <programlisting>
 ActivatingConnection  readable   o
 </programlisting>
-<para>The object path of an active connection that is currently         being activated and which is expected to become the new         PrimaryConnection when it finishes activating.</para>
+<para>        The object path of an active connection that is currently being activated
+        and which is expected to become the new PrimaryConnection when it finishes
+        activating.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.Startup">
   <title>The "Startup" property</title>
@@ -493,7 +559,10 @@ ActivatingConnection  readable   o
 <programlisting>
 Startup  readable   b
 </programlisting>
-<para>Indicates whether NM is still starting up; this becomes FALSE         when NM has finished attempting to activate every connection         that it might be able to activate at startup.</para>
+<para>        Indicates whether NM is still starting up; this becomes FALSE when NM has
+        finished attempting to activate every connection that it might be able to
+        activate at startup.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.Version">
   <title>The "Version" property</title>
@@ -501,7 +570,8 @@ Startup  readable   b
 <programlisting>
 Version  readable   s
 </programlisting>
-<para>NetworkManager version.</para>
+<para>        NetworkManager version.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.State">
   <title>The "State" property</title>
@@ -509,7 +579,9 @@ Version  readable   s
 <programlisting>
 State  readable   u
 </programlisting>
-<para>The overall state of the NetworkManager daemon.</para>
+<para>        The overall state of the NetworkManager daemon.
+</para><para>        Returns: <link linkend="NMState">NMState</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.Connectivity">
   <title>The "Connectivity" property</title>
@@ -517,7 +589,9 @@ State  readable   u
 <programlisting>
 Connectivity  readable   u
 </programlisting>
-<para>The network connectivity state.</para>
+<para>        The network connectivity state.
+</para><para>        Returns: <link linkend="NMConnectivityState">NMConnectivityState</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager.GlobalDnsConfiguration">
   <title>The "GlobalDnsConfiguration" property</title>
@@ -525,7 +599,15 @@ Connectivity  readable   u
 <programlisting>
 GlobalDnsConfiguration  readwrite  a{sv}
 </programlisting>
-<para>Dictionary of global DNS settings where the key is one of         "searches", "options" and "domains".  The values for the         "searches" and "options" keys are string arrays describing the         list of search domains and resolver options, respectively.         The value of the "domains" key is a second-level dictionary,         where each key is a domain name, and each key's value is a         third-level dictionary with the keys "servers" and         "options". "servers" is a string array of DNS servers,         "options" is a string array of domain-specific options.</para>
+<para>        Dictionary of global DNS settings where the key is one of "searches",
+        "options" and "domains". The values for the "searches" and "options" keys
+        are string arrays describing the list of search domains and resolver
+        options, respectively. The value of the "domains" key is a second-level
+        dictionary, where each key is a domain name, and each key's value is a
+        third-level dictionary with the keys "servers" and "options". "servers" is
+        a string array of DNS servers, "options" is a string array of
+        domain-specific options.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

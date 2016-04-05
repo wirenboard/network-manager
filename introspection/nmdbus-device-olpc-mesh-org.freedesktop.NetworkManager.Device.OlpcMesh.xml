@@ -31,7 +31,8 @@
 <programlisting>
 PropertiesChanged (a{sv} properties);
 </programlisting>
-<para>Emitted when the wireless device's properties changed.</para>
+<para>        Emitted when the wireless device's properties changed.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>properties</parameter></literal>:</term>
@@ -48,7 +49,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>The hardware address of the device.</para>
+<para>        The hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-OlpcMesh.Companion">
   <title>The "Companion" property</title>
@@ -56,7 +58,8 @@ HwAddress  readable   s
 <programlisting>
 Companion  readable   o
 </programlisting>
-<para>The object path of the companion device.</para>
+<para>        The object path of the companion device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-OlpcMesh.ActiveChannel">
   <title>The "ActiveChannel" property</title>
@@ -64,7 +67,8 @@ Companion  readable   o
 <programlisting>
 ActiveChannel  readable   u
 </programlisting>
-<para>The currently active channel.</para>
+<para>        The currently active channel.
+</para>
 </refsect2>
 </refsect1>
 </refentry>
