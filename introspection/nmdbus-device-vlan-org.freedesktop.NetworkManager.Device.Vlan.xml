@@ -49,7 +49,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Hardware address of the device.</para>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Vlan.Carrier">
   <title>The "Carrier" property</title>
@@ -57,7 +58,9 @@ HwAddress  readable   s
 <programlisting>
 Carrier  readable   b
 </programlisting>
-<para>Indicates whether the physical carrier is found (e.g. whether a cable is plugged in or not).</para>
+<para>        Indicates whether the physical carrier is found (e.g. whether a cable is
+        plugged in or not).
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Vlan.Parent">
   <title>The "Parent" property</title>
@@ -65,7 +68,8 @@ Carrier  readable   b
 <programlisting>
 Parent  readable   o
 </programlisting>
-<para>Object path of the parent device of this VLAN device.</para>
+<para>        Object path of the parent device of this VLAN device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Vlan.VlanId">
   <title>The "VlanId" property</title>
@@ -73,7 +77,8 @@ Parent  readable   o
 <programlisting>
 VlanId  readable   u
 </programlisting>
-<para>The VLAN ID of this VLAN interface.</para>
+<para>        The VLAN ID of this VLAN interface.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

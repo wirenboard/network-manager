@@ -68,11 +68,15 @@
 <div class="refsect1">
 <a name="gdbus-methods-org.freedesktop.NetworkManager.Device.Wireless"></a><h2>Method Details</h2>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Device-Wireless.GetAccessPoints"></a><h3>The <code class="function">GetAccessPoints()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Device-Wireless.GetAccessPoints"></a><h3>The GetAccessPoints() method</h3>
 <pre class="programlisting">
 GetAccessPoints (OUT ao access_points);
 </pre>
-<p>DEPRECATED.  Get the list of access points visible to this device.  Note         that this list does not include access points which hide their SSID.  To         retrieve a list of all access points (including hidden ones) use the         <code class="function">GetAllAccessPoints()</code> method.</p>
+<p>        DEPRECATED. Get the list of access points visible to this device. Note
+        that this list does not include access points which hide their SSID. To
+        retrieve a list of all access points (including hidden ones) use the
+        GetAllAccessPoints() method.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -86,11 +90,13 @@ GetAccessPoints (OUT ao access_points);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Device-Wireless.GetAllAccessPoints"></a><h3>The <code class="function">GetAllAccessPoints()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Device-Wireless.GetAllAccessPoints"></a><h3>The GetAllAccessPoints() method</h3>
 <pre class="programlisting">
 GetAllAccessPoints (OUT ao access_points);
 </pre>
-<p>Get the list of all access points visible to this device, including         hidden ones for which the SSID is not yet known.</p>
+<p>        Get the list of all access points visible to this device, including hidden
+        ones for which the SSID is not yet known.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -104,11 +110,12 @@ GetAllAccessPoints (OUT ao access_points);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-Device-Wireless.RequestScan"></a><h3>The <code class="function">RequestScan()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-Device-Wireless.RequestScan"></a><h3>The RequestScan() method</h3>
 <pre class="programlisting">
 RequestScan (IN  a{sv} options);
 </pre>
-<p>Request the device to scan</p>
+<p>        Request the device to scan
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -116,7 +123,7 @@ RequestScan (IN  a{sv} options);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">IN a{sv} <em class="parameter"><code>options</code></em></code>:</span></p></td>
-<td><p>Options of scan.           Currently 'ssids' option with value of "aay" type is supported.</p></td>
+<td><p>Options of scan. Currently 'ssids' option with value of "aay" type is supported.</p></td>
 </tr></tbody>
 </table></div>
 </div>
@@ -128,7 +135,8 @@ RequestScan (IN  a{sv} options);
 <pre class="programlisting">
 PropertiesChanged (a{sv} properties);
 </pre>
-<p>Emitted when the wireless device's properties changed.</p>
+<p>        Emitted when the wireless device's properties changed.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -146,7 +154,8 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 AccessPointAdded (o access_point);
 </pre>
-<p>Emitted when a new access point is found by the device.</p>
+<p>        Emitted when a new access point is found by the device.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -164,7 +173,8 @@ AccessPointAdded (o access_point);
 <pre class="programlisting">
 AccessPointRemoved (o access_point);
 </pre>
-<p>Emitted when an access point disappears from view of the device.</p>
+<p>        Emitted when an access point disappears from view of the device.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -184,7 +194,8 @@ AccessPointRemoved (o access_point);
 <pre class="programlisting">
 HwAddress  readable   s
 </pre>
-<p>The active hardware address of the device.</p>
+<p>        The active hardware address of the device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -192,7 +203,8 @@ HwAddress  readable   s
 <pre class="programlisting">
 PermHwAddress  readable   s
 </pre>
-<p>The permanent hardware address of the device.</p>
+<p>        The permanent hardware address of the device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -200,7 +212,10 @@ PermHwAddress  readable   s
 <pre class="programlisting">
 Mode  readable   u
 </pre>
-<p>The operating mode of the wireless device.</p>
+<p>        The operating mode of the wireless device.
+</p>
+<p>        Returns: <a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManager.html#NM80211Mode">NM80211Mode</a>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -208,7 +223,9 @@ Mode  readable   u
 <pre class="programlisting">
 Bitrate  readable   u
 </pre>
-<p>The bit rate currently used by the wireless device, in kilobits/second (Kb/s).</p>
+<p>        The bit rate currently used by the wireless device, in kilobits/second
+        (Kb/s).
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -216,7 +233,8 @@ Bitrate  readable   u
 <pre class="programlisting">
 AccessPoints  readable   ao
 </pre>
-<p>List of object paths of access point visible to this wireless device.</p>
+<p>        List of object paths of access point visible to this wireless device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -224,7 +242,8 @@ AccessPoints  readable   ao
 <pre class="programlisting">
 ActiveAccessPoint  readable   o
 </pre>
-<p>Object path of the access point currently used by the wireless device.</p>
+<p>        Object path of the access point currently used by the wireless device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -232,7 +251,10 @@ ActiveAccessPoint  readable   o
 <pre class="programlisting">
 WirelessCapabilities  readable   u
 </pre>
-<p>The capabilities of the wireless device.</p>
+<p>        The capabilities of the wireless device.
+</p>
+<p>        Returns: <a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManager.html#NMDeviceWifiCapabilities">NMDeviceWifiCapabilities</a>
+</p>
 </div>
 </div>
 </div>

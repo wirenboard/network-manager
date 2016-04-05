@@ -92,7 +92,9 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 Parent  readable   o
 </pre>
-<p>The object path of the parent device (if the VXLAN is not  purely internal to this host).</p>
+<p>        The object path of the parent device (if the VXLAN is not purely internal
+        to this host).
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -100,7 +102,8 @@ Parent  readable   o
 <pre class="programlisting">
 HwAddress  readable   s
 </pre>
-<p>Hardware address of the device.</p>
+<p>        Hardware address of the device.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -108,7 +111,8 @@ HwAddress  readable   s
 <pre class="programlisting">
 Id  readable   u
 </pre>
-<p>The VXLAN Network Identifier (VNI).</p>
+<p>        The VXLAN Network Identifier (VNI).
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -116,7 +120,9 @@ Id  readable   u
 <pre class="programlisting">
 Group  readable   s
 </pre>
-<p>The IP (v4 or v6) multicast group used to communicate with other physical  hosts on this VXLAN.</p>
+<p>        The IP (v4 or v6) multicast group used to communicate with other physical
+        hosts on this VXLAN.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -124,7 +130,9 @@ Group  readable   s
 <pre class="programlisting">
 Local  readable   s
 </pre>
-<p>The local IPv4 or IPv6 address to use when sending VXLAN packets to other  physical hosts.</p>
+<p>        The local IPv4 or IPv6 address to use when sending VXLAN packets to other
+        physical hosts.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -132,7 +140,9 @@ Local  readable   s
 <pre class="programlisting">
 Tos  readable   y
 </pre>
-<p>The value to use in the IP ToS field for VXLAN packets sent to  other physical hosts.</p>
+<p>        The value to use in the IP ToS field for VXLAN packets sent to other
+        physical hosts.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -140,7 +150,9 @@ Tos  readable   y
 <pre class="programlisting">
 Ttl  readable   y
 </pre>
-<p>The value to use in the IP TTL field for VXLAN packets sent to  other physical hosts.</p>
+<p>        The value to use in the IP TTL field for VXLAN packets sent to other
+        physical hosts.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -148,7 +160,8 @@ Ttl  readable   y
 <pre class="programlisting">
 Learning  readable   b
 </pre>
-<p>True if the VXLAN dynamically learns remote IP addresses.</p>
+<p>        True if the VXLAN dynamically learns remote IP addresses.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -156,7 +169,8 @@ Learning  readable   b
 <pre class="programlisting">
 Ageing  readable   u
 </pre>
-<p>The interval in seconds at which the kernel purges stale         cached addresses.</p>
+<p>        The interval in seconds at which the kernel purges stale cached addresses.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -164,7 +178,9 @@ Ageing  readable   u
 <pre class="programlisting">
 Limit  readable   u
 </pre>
-<p>The maximum number of entries that can be added to the VXLAN's  forwarding table.</p>
+<p>        The maximum number of entries that can be added to the VXLAN's forwarding
+        table.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -172,7 +188,8 @@ Limit  readable   u
 <pre class="programlisting">
 DstPort  readable   q
 </pre>
-<p>Destination port for outgoing VXLAN packets.</p>
+<p>        Destination port for outgoing VXLAN packets.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -180,7 +197,8 @@ DstPort  readable   q
 <pre class="programlisting">
 SrcPortMin  readable   q
 </pre>
-<p>The lowest source port number to use for outgoing VXLAN packets.</p>
+<p>        The lowest source port number to use for outgoing VXLAN packets.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -188,7 +206,8 @@ SrcPortMin  readable   q
 <pre class="programlisting">
 SrcPortMax  readable   q
 </pre>
-<p>The highest source port number to use for outgoing VXLAN packets.</p>
+<p>        The highest source port number to use for outgoing VXLAN packets.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -196,7 +215,8 @@ SrcPortMax  readable   q
 <pre class="programlisting">
 Proxy  readable   b
 </pre>
-<p>True if the VXLAN is implementing DOVE ARP proxying for remote         clients.</p>
+<p>        True if the VXLAN is implementing DOVE ARP proxying for remote clients.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -204,7 +224,9 @@ Proxy  readable   b
 <pre class="programlisting">
 Rsc  readable   b
 </pre>
-<p>True if the VXLAN is implementing DOVE route short-circuiting  of known remote IP addresses.</p>
+<p>        True if the VXLAN is implementing DOVE route short-circuiting of known
+        remote IP addresses.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -212,7 +234,8 @@ Rsc  readable   b
 <pre class="programlisting">
 L2miss  readable   b
 </pre>
-<p>True if the VXLAN will emit netlink notifications of L2 switch         misses.</p>
+<p>        True if the VXLAN will emit netlink notifications of L2 switch misses.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -220,7 +243,8 @@ L2miss  readable   b
 <pre class="programlisting">
 L3miss  readable   b
 </pre>
-<p>True if the VXLAN will emit netlink notifications of L3 switch         misses.</p>
+<p>        True if the VXLAN will emit netlink notifications of L3 switch misses.
+</p>
 </div>
 </div>
 </div>

@@ -14,7 +14,7 @@
 <setting name="bridge-port">
 </setting>
 <setting name="bridge">
-<property name="mac-address" variable="mac-address" format="ususal hex-digits-and-colons notation" values="" default="" example="mac-address=00:22:68:12:79:A2
+<property name="mac-address" variable="mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="mac-address=00:22:68:12:79:A2
 mac-address=0;34;104;18;121;162;" description="MAC address in traditional hex-digits-and-colons notation,
 or semicolon separated list of 6 decimal bytes (obsolete)"/>
 </setting>
@@ -29,7 +29,7 @@ or semicolon separated list of 6 decimal bytes (obsolete)"/>
 <setting name="gsm">
 </setting>
 <setting name="infiniband">
-<property name="mac-address" variable="mac-address" format="ususal hex-digits-and-colons notation" values="" default="" example="mac-address= 80:00:00:6d:fe:80:00:00:00:00:00:00:00:02:55:00:70:33:cf:01" description="MAC address in traditional hex-digits-and-colons notation, or
+<property name="mac-address" variable="mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="mac-address= 80:00:00:6d:fe:80:00:00:00:00:00:00:00:02:55:00:70:33:cf:01" description="MAC address in traditional hex-digits-and-colons notation, or
 or semicolon separated list of 20 decimal bytes (obsolete)"/>
 </setting>
 <setting name="">
@@ -81,10 +81,10 @@ under [vpn-secrets] section."/>
 <setting name="wimax">
 </setting>
 <setting name="802-3-ethernet">
-<property name="mac-address" variable="mac-address" format="ususal hex-digits-and-colons notation" values="" default="" example="" description="MAC address in traditional hex-digits-and-colons notation
+<property name="mac-address" variable="mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="" description="MAC address in traditional hex-digits-and-colons notation
 (e.g. 00:22:68:12:79:A2), or semicolon separated list of 6 bytes (obsolete)
 (e.g. 0;34;104;18;121;162)"/>
-<property name="cloned-mac-address" variable="cloned-mac-address" format="ususal hex-digits-and-colons notation" values="" default="" example="" description="Cloned MAC address in traditional hex-digits-and-colons notation
+<property name="cloned-mac-address" variable="cloned-mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="" description="Cloned MAC address in traditional hex-digits-and-colons notation
 (e.g. 00:22:68:12:79:B2), or semicolon separated list of 6 bytes (obsolete)
 (e.g. 0;34;104;18;121;178)."/>
 <property name="mac-address-blacklist" variable="mac-address-blacklist" format="list of MACs (separated with semicolons)" values="" default="" example="mac-address-blacklist= 00:22:68:12:79:A6;00:22:68:12:79:78" description="MAC address blacklist."/>
@@ -93,10 +93,10 @@ under [vpn-secrets] section."/>
 </setting>
 <setting name="802-11-wireless">
 <property name="ssid" variable="ssid" format="string (or decimal-byte list - obsolete)" values="" default="" example="ssid=Quick Net" description="SSID of Wi-Fi network."/>
-<property name="mac-address" variable="mac-address" format="ususal hex-digits-and-colons notation" values="" default="" example="" description="MAC address in traditional hex-digits-and-colons notation
+<property name="mac-address" variable="mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="" description="MAC address in traditional hex-digits-and-colons notation
 (e.g. 00:22:68:12:79:A2), or semicolon separated list of 6 bytes (obsolete)
 (e.g. 0;34;104;18;121;162)."/>
-<property name="cloned-mac-address" variable="cloned-mac-address" format="ususal hex-digits-and-colons notation" values="" default="" example="" description="Cloned MAC address in traditional hex-digits-and-colons notation
+<property name="cloned-mac-address" variable="cloned-mac-address" format="usual hex-digits-and-colons notation" values="" default="" example="" description="Cloned MAC address in traditional hex-digits-and-colons notation
 (e.g. 00:22:68:12:79:B2), or semicolon separated list of 6 bytes (obsolete)
 (e.g. 0;34;104;18;121;178)."/>
 <property name="mac-address-blacklist" variable="mac-address-blacklist" format="list of MACs (separated with semicolons)" values="" default="" example="mac-address-blacklist= 00:22:68:12:79:A6;00:22:68:12:79:78" description="MAC address blacklist."/>

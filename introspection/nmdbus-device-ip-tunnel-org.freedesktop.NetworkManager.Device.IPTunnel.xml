@@ -56,7 +56,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Mode  readable   u
 </programlisting>
-<para>The tunneling mode.</para>
+<para>        The tunneling mode.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.Parent">
   <title>The "Parent" property</title>
@@ -64,7 +65,8 @@ Mode  readable   u
 <programlisting>
 Parent  readable   o
 </programlisting>
-<para>The object path of the parent device.</para>
+<para>        The object path of the parent device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.Local">
   <title>The "Local" property</title>
@@ -72,7 +74,8 @@ Parent  readable   o
 <programlisting>
 Local  readable   s
 </programlisting>
-<para>The local endpoint of the tunnel.</para>
+<para>        The local endpoint of the tunnel.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.Remote">
   <title>The "Remote" property</title>
@@ -80,7 +83,8 @@ Local  readable   s
 <programlisting>
 Remote  readable   s
 </programlisting>
-<para>The remote endpoint of the tunnel.</para>
+<para>        The remote endpoint of the tunnel.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.Ttl">
   <title>The "Ttl" property</title>
@@ -88,7 +92,9 @@ Remote  readable   s
 <programlisting>
 Ttl  readable   y
 </programlisting>
-<para>The TTL assigned to tunneled packets. 0 is a special value         meaning that packets inherit the TTL value</para>
+<para>        The TTL assigned to tunneled packets. 0 is a special value meaning that
+        packets inherit the TTL value
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.Tos">
   <title>The "Tos" property</title>
@@ -96,7 +102,9 @@ Ttl  readable   y
 <programlisting>
 Tos  readable   y
 </programlisting>
-<para>The type of service (IPv4) or traffic class (IPv6) assigned to         tunneled packets.</para>
+<para>        The type of service (IPv4) or traffic class (IPv6) assigned to tunneled
+        packets.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.PathMtuDiscovery">
   <title>The "PathMtuDiscovery" property</title>
@@ -104,7 +112,8 @@ Tos  readable   y
 <programlisting>
 PathMtuDiscovery  readable   b
 </programlisting>
-<para>Whether path MTU discovery is enabled on this tunnel.</para>
+<para>        Whether path MTU discovery is enabled on this tunnel.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.InputKey">
   <title>The "InputKey" property</title>
@@ -112,7 +121,8 @@ PathMtuDiscovery  readable   b
 <programlisting>
 InputKey  readable   s
 </programlisting>
-<para>The key used for incoming packets.</para>
+<para>        The key used for incoming packets.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.OutputKey">
   <title>The "OutputKey" property</title>
@@ -120,7 +130,8 @@ InputKey  readable   s
 <programlisting>
 OutputKey  readable   s
 </programlisting>
-<para>The key used for outgoing packets.</para>
+<para>        The key used for outgoing packets.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.EncapsulationLimit">
   <title>The "EncapsulationLimit" property</title>
@@ -128,7 +139,9 @@ OutputKey  readable   s
 <programlisting>
 EncapsulationLimit  readable   y
 </programlisting>
-<para>How many additional levels of encapsulation are permitted to         be prepended to packets. This property applies only to IPv6         tunnels.</para>
+<para>        How many additional levels of encapsulation are permitted to be prepended
+        to packets. This property applies only to IPv6 tunnels.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-IPTunnel.FlowLabel">
   <title>The "FlowLabel" property</title>
@@ -136,7 +149,9 @@ EncapsulationLimit  readable   y
 <programlisting>
 FlowLabel  readable   u
 </programlisting>
-<para>The flow label to assign to tunnel packets. This property         applies only to IPv6 tunnels.</para>
+<para>        The flow label to assign to tunnel packets. This property applies only to
+        IPv6 tunnels.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

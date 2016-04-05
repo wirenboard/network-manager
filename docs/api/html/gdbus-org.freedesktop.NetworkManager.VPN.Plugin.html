@@ -70,16 +70,20 @@
 </div>
 <div class="refsect1">
 <a name="gdbus-interface-org-freedesktop-NetworkManager-VPN-Plugin"></a><h2>Description</h2>
-<p>This interface is provided by plugins providing VPN services to the NetworkManager daemon.</p>
+<p>      This interface is provided by plugins providing VPN services to the
+      NetworkManager daemon.
+</p>
 </div>
 <div class="refsect1">
 <a name="gdbus-methods-org.freedesktop.NetworkManager.VPN.Plugin"></a><h2>Method Details</h2>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.Connect"></a><h3>The <code class="function">Connect()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.Connect"></a><h3>The Connect() method</h3>
 <pre class="programlisting">
 Connect (IN  a{sa{sv}} connection);
 </pre>
-<p>Tells the plugin to connect.  Interactive secrets requests (eg, emitting         the SecretsRequired signal) are not allowed.</p>
+<p>        Tells the plugin to connect. Interactive secrets requests (eg, emitting
+        the SecretsRequired signal) are not allowed.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -93,12 +97,15 @@ Connect (IN  a{sa{sv}} connection);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.ConnectInteractive"></a><h3>The <code class="function">ConnectInteractive()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.ConnectInteractive"></a><h3>The ConnectInteractive() method</h3>
 <pre class="programlisting">
 ConnectInteractive (IN  a{sa{sv}} connection,
                     IN  a{sv}     details);
 </pre>
-<p>Tells the plugin to connect, allowing interactive secrets requests (eg         the plugin is allowed to emit the SecretsRequired signal if the VPN         service indicates that it needs additional secrets during the connect         process).</p>
+<p>        Tells the plugin to connect, allowing interactive secrets requests (eg the
+        plugin is allowed to emit the SecretsRequired signal if the VPN service
+        indicates that it needs additional secrets during the connect process).
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -118,12 +125,14 @@ ConnectInteractive (IN  a{sa{sv}} connection,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.NeedSecrets"></a><h3>The <code class="function">NeedSecrets()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.NeedSecrets"></a><h3>The NeedSecrets() method</h3>
 <pre class="programlisting">
 NeedSecrets (IN  a{sa{sv}} settings,
              OUT s         setting_name);
 </pre>
-<p>Asks the plugin whether the provided connection will require secrets to connect successfully.</p>
+<p>        Asks the plugin whether the provided connection will require secrets to
+        connect successfully.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -143,19 +152,21 @@ NeedSecrets (IN  a{sa{sv}} settings,
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.Disconnect"></a><h3>The <code class="function">Disconnect()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.Disconnect"></a><h3>The Disconnect() method</h3>
 <pre class="programlisting">
 Disconnect ();
 </pre>
-<p>Disconnect the plugin.</p>
+<p>        Disconnect the plugin.
+</p>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetConfig"></a><h3>The <code class="function">SetConfig()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetConfig"></a><h3>The SetConfig() method</h3>
 <pre class="programlisting">
 SetConfig (IN  a{sv} config);
 </pre>
-<p>Set generic connection details on the connection.</p>
+<p>        Set generic connection details on the connection.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -169,11 +180,12 @@ SetConfig (IN  a{sv} config);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetIp4Config"></a><h3>The <code class="function">SetIp4Config()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetIp4Config"></a><h3>The SetIp4Config() method</h3>
 <pre class="programlisting">
 SetIp4Config (IN  a{sv} config);
 </pre>
-<p>Set IPv4 details on the connection.</p>
+<p>        Set IPv4 details on the connection.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -181,17 +193,18 @@ SetIp4Config (IN  a{sv} config);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">IN a{sv} <em class="parameter"><code>config</code></em></code>:</span></p></td>
-<td><p>Ip4Config details for the connection. You must call    <code class="function">SetConfig()</code> before calling this.</p></td>
+<td><p>Ip4Config details for the connection. You must call SetConfig() before calling this.</p></td>
 </tr></tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetIp6Config"></a><h3>The <code class="function">SetIp6Config()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetIp6Config"></a><h3>The SetIp6Config() method</h3>
 <pre class="programlisting">
 SetIp6Config (IN  a{sv} config);
 </pre>
-<p>Set IPv6 details on the connection.</p>
+<p>        Set IPv6 details on the connection.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -199,17 +212,18 @@ SetIp6Config (IN  a{sv} config);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">IN a{sv} <em class="parameter"><code>config</code></em></code>:</span></p></td>
-<td><p>Ip6Config details for the connection. You must call    <code class="function">SetConfig()</code> before calling this.</p></td>
+<td><p>Ip6Config details for the connection. You must call SetConfig() before calling this.</p></td>
 </tr></tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetFailure"></a><h3>The <code class="function">SetFailure()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetFailure"></a><h3>The SetFailure() method</h3>
 <pre class="programlisting">
 SetFailure (IN  s reason);
 </pre>
-<p>Indicate a failure to the plugin.</p>
+<p>        Indicate a failure to the plugin.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -223,11 +237,13 @@ SetFailure (IN  s reason);
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.NewSecrets"></a><h3>The <code class="function">NewSecrets()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.NewSecrets"></a><h3>The NewSecrets() method</h3>
 <pre class="programlisting">
 NewSecrets (IN  a{sa{sv}} connection);
 </pre>
-<p>Called in response to a SecretsRequired signal to deliver updated secrets         or other information to the plugin.</p>
+<p>        Called in response to a SecretsRequired signal to deliver updated secrets
+        or other information to the plugin.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -247,7 +263,8 @@ NewSecrets (IN  a{sa{sv}} connection);
 <pre class="programlisting">
 StateChanged (u state);
 </pre>
-<p>Emitted when the plugin state changes.</p>
+<p>        Emitted when the plugin state changes.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -255,7 +272,7 @@ StateChanged (u state);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">u <em class="parameter"><code>state</code></em></code>:</span></p></td>
-<td><p>The new state of the plugin.</p></td>
+<td><p>(NMVpnServiceState) The new state of the plugin.</p></td>
 </tr></tbody>
 </table></div>
 </div>
@@ -266,7 +283,10 @@ StateChanged (u state);
 SecretsRequired (s  message,
                  as secrets);
 </pre>
-<p>Emitted during an ongoing <code class="function">ConnectInteractive()</code> request when the plugin         has determined that new secrets are required.  NetworkManager will then         call the <code class="function">NewSecrets()</code> method with a connection hash including the new         secrets.</p>
+<p>        Emitted during an ongoing ConnectInteractive() request when the plugin has
+        determined that new secrets are required. NetworkManager will then call
+        the NewSecrets() method with a connection hash including the new secrets.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -275,11 +295,11 @@ SecretsRequired (s  message,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">s <em class="parameter"><code>message</code></em></code>:</span></p></td>
-<td><p>Informational message, if any, about the request.  For example, if               a second PIN is required, could indicate to the user to wait for               the token code to change until entering the next PIN.</p></td>
+<td><p>Informational message, if any, about the request. For example, if a second PIN is required, could indicate to the user to wait for the token code to change until entering the next PIN.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">as <em class="parameter"><code>secrets</code></em></code>:</span></p></td>
-<td><p>Array of strings of VPN secret names which the plugin thinks               secrets may be required for, or other VPN-specific data to be               processed by the VPN's front-end.</p></td>
+<td><p>Array of strings of VPN secret names which the plugin thinks secrets may be required for, or other VPN-specific data to be processed by the VPN's front-end.</p></td>
 </tr>
 </tbody>
 </table></div>
@@ -290,7 +310,8 @@ SecretsRequired (s  message,
 <pre class="programlisting">
 Config (a{sv} config);
 </pre>
-<p>The plugin obtained generic configuration information.</p>
+<p>        The plugin obtained generic configuration information.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -308,7 +329,8 @@ Config (a{sv} config);
 <pre class="programlisting">
 Ip4Config (a{sv} ip4config);
 </pre>
-<p>The plugin obtained an IPv4 configuration.</p>
+<p>        The plugin obtained an IPv4 configuration.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -326,7 +348,8 @@ Ip4Config (a{sv} ip4config);
 <pre class="programlisting">
 Ip6Config (a{sv} ip6config);
 </pre>
-<p>The plugin obtained an IPv6 configuration.</p>
+<p>        The plugin obtained an IPv6 configuration.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -344,7 +367,8 @@ Ip6Config (a{sv} ip6config);
 <pre class="programlisting">
 LoginBanner (s banner);
 </pre>
-<p>Emitted when the plugin receives a login banner from the VPN service.</p>
+<p>        Emitted when the plugin receives a login banner from the VPN service.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -362,7 +386,8 @@ LoginBanner (s banner);
 <pre class="programlisting">
 Failure (u reason);
 </pre>
-<p>Emitted when a failure in the VPN plugin occurs.</p>
+<p>        Emitted when a failure in the VPN plugin occurs.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -370,7 +395,7 @@ Failure (u reason);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">u <em class="parameter"><code>reason</code></em></code>:</span></p></td>
-<td><p>Reason code for the failure.</p></td>
+<td><p>(NMVpnPluginFailure) Reason code for the failure.</p></td>
 </tr></tbody>
 </table></div>
 </div>
@@ -382,7 +407,10 @@ Failure (u reason);
 <pre class="programlisting">
 State  readable   u
 </pre>
-<p>The state of the plugin.</p>
+<p>        The state of the plugin.
+</p>
+<p>        Returns: NMVpnServiceState
+</p>
 </div>
 </div>
 </div>

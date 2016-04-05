@@ -701,7 +701,6 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-core \
 @ENABLE_TESTS_TRUE@	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
-@ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @ENABLE_TESTS_TRUE@	-DTEST_NM_SERVICE=\"$(abs_top_srcdir)/tools/test-networkmanager-service.py\" \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS)
 

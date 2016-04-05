@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include "nm-enum-types.h"
+#include "nm-default.h"
 
 #include "nm-version-macros.h" 
 #include "NetworkManager.h" 
@@ -108,27 +109,6 @@ nm_client_error_get_type (void)
       };
       GType g_define_type_id =
         g_enum_register_static (g_intern_static_string ("NMClientError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_wimax_nsp_network_type_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN, "NM_WIMAX_NSP_NETWORK_TYPE_UNKNOWN", "unknown" },
-        { NM_WIMAX_NSP_NETWORK_TYPE_HOME, "NM_WIMAX_NSP_NETWORK_TYPE_HOME", "home" },
-        { NM_WIMAX_NSP_NETWORK_TYPE_PARTNER, "NM_WIMAX_NSP_NETWORK_TYPE_PARTNER", "partner" },
-        { NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER, "NM_WIMAX_NSP_NETWORK_TYPE_ROAMING_PARTNER", "roaming-partner" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMWimaxNspNetworkType"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 

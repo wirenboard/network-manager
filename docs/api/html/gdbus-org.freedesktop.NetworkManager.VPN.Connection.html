@@ -50,7 +50,8 @@
 </div>
 <div class="refsect1">
 <a name="gdbus-interface-org-freedesktop-NetworkManager-VPN-Connection"></a><h2>Description</h2>
-<p>Represents an active connection to a Virtual Private Network.</p>
+<p>      Represents an active connection to a Virtual Private Network.
+</p>
 </div>
 <div class="refsect1">
 <a name="gdbus-signals-org.freedesktop.NetworkManager.VPN.Connection"></a><h2>Signal Details</h2>
@@ -78,7 +79,8 @@ PropertiesChanged (a{sv} properties);
 VpnStateChanged (u state,
                  u reason);
 </pre>
-<p>Emitted when the state of the VPN connection has changed.</p>
+<p>        Emitted when the state of the VPN connection has changed.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -87,11 +89,11 @@ VpnStateChanged (u state,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">u <em class="parameter"><code>state</code></em></code>:</span></p></td>
-<td><p>The new state of the VPN connection.</p></td>
+<td><p>(NMVpnConnectionState) The new state of the VPN connection.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">u <em class="parameter"><code>reason</code></em></code>:</span></p></td>
-<td><p>Reason code describing the change to the new state.</p></td>
+<td><p>(NMVpnConnectionStateReason) Reason code describing the change to the new state.</p></td>
 </tr>
 </tbody>
 </table></div>
@@ -104,7 +106,10 @@ VpnStateChanged (u state,
 <pre class="programlisting">
 VpnState  readable   u
 </pre>
-<p>The VPN-specific state of the connection.</p>
+<p>        The VPN-specific state of the connection.
+</p>
+<p>        Returns: NMVpnConnectionState
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -112,7 +117,8 @@ VpnState  readable   u
 <pre class="programlisting">
 Banner  readable   s
 </pre>
-<p>The banner string of the VPN connection.</p>
+<p>        The banner string of the VPN connection.
+</p>
 </div>
 </div>
 </div>

@@ -47,7 +47,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Hardware address of the device.</para>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Generic.TypeDescription">
   <title>The "TypeDescription" property</title>
@@ -55,7 +56,8 @@ HwAddress  readable   s
 <programlisting>
 TypeDescription  readable   s
 </programlisting>
-<para>A (non-localized) description of the interface type, if known.</para>
+<para>        A (non-localized) description of the interface type, if known.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

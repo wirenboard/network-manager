@@ -418,6 +418,11 @@
 <ANCHOR id="NM-DEVICE-MODEM-CAPABILITY-CDMA-EVDO:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-CDMA-EVDO:CAPS">
 <ANCHOR id="NM-DEVICE-MODEM-CAPABILITY-GSM-UMTS:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-GSM-UMTS:CAPS">
 <ANCHOR id="NM-DEVICE-MODEM-CAPABILITY-LTE:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-MODEM-CAPABILITY-LTE:CAPS">
+<ANCHOR id="NMWimaxNspNetworkType" href="libnm/libnm-nm-dbus-interface.html#NMWimaxNspNetworkType">
+<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS">
+<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS">
+<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS">
+<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS">
 <ANCHOR id="NMDeviceState" href="libnm/libnm-nm-dbus-interface.html#NMDeviceState">
 <ANCHOR id="NM-DEVICE-STATE-UNKNOWN:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNKNOWN:CAPS">
 <ANCHOR id="NM-DEVICE-STATE-UNMANAGED:CAPS" href="libnm/libnm-nm-dbus-interface.html#NM-DEVICE-STATE-UNMANAGED:CAPS">
@@ -1018,6 +1023,18 @@
 <ANCHOR id="NM-SETTING-BOND-OPTION-XMIT-HASH-POLICY:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-XMIT-HASH-POLICY:CAPS">
 <ANCHOR id="NM-SETTING-BOND-OPTION-RESEND-IGMP:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-RESEND-IGMP:CAPS">
 <ANCHOR id="NM-SETTING-BOND-OPTION-LACP-RATE:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-LACP-RATE:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-ACTIVE-SLAVE:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-ACTIVE-SLAVE:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-AD-ACTOR-SYS-PRIO:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-ACTOR-SYS-PRIO:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-AD-ACTOR-SYSTEM:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-ACTOR-SYSTEM:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-AD-USER-PORT-KEY:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-AD-USER-PORT-KEY:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-ALL-SLAVES-ACTIVE:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-ALL-SLAVES-ACTIVE:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-ARP-ALL-TARGETS:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-ARP-ALL-TARGETS:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-MIN-LINKS:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-MIN-LINKS:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-NUM-GRAT-ARP:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-NUM-GRAT-ARP:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-NUM-UNSOL-NA:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-NUM-UNSOL-NA:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-PACKETS-PER-SLAVE:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-PACKETS-PER-SLAVE:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-TLB-DYNAMIC-LB:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-TLB-DYNAMIC-LB:CAPS">
+<ANCHOR id="NM-SETTING-BOND-OPTION-LP-INTERVAL:CAPS" href="libnm/NMSettingBond.html#NM-SETTING-BOND-OPTION-LP-INTERVAL:CAPS">
 <ANCHOR id="NMSettingBond.property-details" href="libnm/NMSettingBond.html#NMSettingBond.property-details">
 <ANCHOR id="NMSettingBond--options" href="libnm/NMSettingBond.html#NMSettingBond--options">
 <ANCHOR id="NMSettingBridge" href="libnm/NMSettingBridge.html">
@@ -1426,6 +1443,7 @@
 <ANCHOR id="NM-SETTING-DNS-OPTION-SINGLE-REQUEST:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-SINGLE-REQUEST:CAPS">
 <ANCHOR id="NM-SETTING-DNS-OPTION-SINGLE-REQUEST-REOPEN:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-SINGLE-REQUEST-REOPEN:CAPS">
 <ANCHOR id="NM-SETTING-DNS-OPTION-NO-TLD-QUERY:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-NO-TLD-QUERY:CAPS">
+<ANCHOR id="NM-SETTING-DNS-OPTION-USE-VC:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-DNS-OPTION-USE-VC:CAPS">
 <ANCHOR id="NMSettingIPConfig.property-details" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig.property-details">
 <ANCHOR id="NMSettingIPConfig--addresses" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--addresses">
 <ANCHOR id="NMSettingIPConfig--dad-timeout" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dad-timeout">
@@ -2818,11 +2836,6 @@
 <ANCHOR id="NM-WIMAX-NSP-NAME:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-NAME:CAPS">
 <ANCHOR id="NM-WIMAX-NSP-SIGNAL-QUALITY:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-SIGNAL-QUALITY:CAPS">
 <ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE:CAPS">
-<ANCHOR id="NMWimaxNspNetworkType" href="libnm/NMWimaxNsp.html#NMWimaxNspNetworkType">
-<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-UNKNOWN:CAPS">
-<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-HOME:CAPS">
-<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-PARTNER:CAPS">
-<ANCHOR id="NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS" href="libnm/NMWimaxNsp.html#NM-WIMAX-NSP-NETWORK-TYPE-ROAMING-PARTNER:CAPS">
 <ANCHOR id="NMWimaxNsp.property-details" href="libnm/NMWimaxNsp.html#NMWimaxNsp.property-details">
 <ANCHOR id="NMWimaxNsp--name" href="libnm/NMWimaxNsp.html#NMWimaxNsp--name">
 <ANCHOR id="NMWimaxNsp--network-type" href="libnm/NMWimaxNsp.html#NMWimaxNsp--network-type">
@@ -2967,6 +2980,7 @@
 <ANCHOR id="NM-DEPRECATED-IN-0-9-10-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-1-0-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-0-FOR:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-1-2-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-2-FOR:CAPS">
+<ANCHOR id="NM-DEPRECATED-IN-1-4-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-4-FOR:CAPS">
 <ANCHOR id="libnm-nm-version.other_details" href="libnm/libnm-nm-version.html#libnm-nm-version.other_details">
 <ANCHOR id="NM-DEPRECATED-IN-0-9-10:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-0-9-10:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS">
@@ -2974,6 +2988,8 @@
 <ANCHOR id="NM-AVAILABLE-IN-1-0:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-1-2:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-2:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-1-2:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-2:CAPS">
+<ANCHOR id="NM-DEPRECATED-IN-1-4:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-4:CAPS">
+<ANCHOR id="NM-AVAILABLE-IN-1-4:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-4:CAPS">
 <ANCHOR id="libnm-nm-vpn-dbus-interface" href="libnm/libnm-nm-vpn-dbus-interface.html">
 <ANCHOR id="libnm-nm-vpn-dbus-interface.other" href="libnm/libnm-nm-vpn-dbus-interface.html#libnm-nm-vpn-dbus-interface.other">
 <ANCHOR id="libnm-nm-vpn-dbus-interface.object-hierarchy" href="libnm/libnm-nm-vpn-dbus-interface.html#libnm-nm-vpn-dbus-interface.object-hierarchy">

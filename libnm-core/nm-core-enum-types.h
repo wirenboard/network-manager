@@ -31,6 +31,8 @@ GType nm_bluetooth_capabilities_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_BLUETOOTH_CAPABILITIES (nm_bluetooth_capabilities_get_type ())
 GType nm_device_modem_capabilities_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_MODEM_CAPABILITIES (nm_device_modem_capabilities_get_type ())
+GType nm_wimax_nsp_network_type_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_WIMAX_NSP_NETWORK_TYPE (nm_wimax_nsp_network_type_get_type ())
 GType nm_device_state_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DEVICE_STATE (nm_device_state_get_type ())
 GType nm_device_state_reason_get_type (void) G_GNUC_CONST;

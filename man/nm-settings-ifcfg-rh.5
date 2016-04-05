@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nm-settings-ifcfg-rh
-.\"    Author: [see the "AUTHOR" section]
+.\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 29 March 2016
+.\"      Date: 04/05/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.1.92
+.\"    Source: NetworkManager 1.1.93
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.1\&.92" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.1\&.93" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -312,7 +312,7 @@ is used, NetworkManager assigns the interface 10\&.42\&.0\&.1, or it uses the fi
 .PP
 See the next section for detailed mapping of NetworkManager properties and
 \fIifcfg\-rh\fR
-variables\&. Variable names, format and usage differences in NetworkManager and initscripts are documented in the tables bellow\&.
+variables\&. Variable names, format and usage differences in NetworkManager and initscripts are documented in the tables below\&.
 .SH "DETAILS"
 .PP
 \fIifcfg\-rh\fR
@@ -2581,9 +2581,6 @@ ask
 unused
 \- in some situations it cannot be automatically determined that a secret is required or not\&. This flag hints that the secret is not required and should not be requested from the user\&.
 .RE
-.SH "AUTHOR"
-.PP
-NetworkManager developers
 .SH "FILES"
 .PP
 /etc/sysconfig/network\-scripts/ifcfg\-*
@@ -2597,6 +2594,9 @@ NetworkManager developers
 /usr/share/doc/initscripts/sysconfig\&.txt
 .SH "SEE ALSO"
 .PP
-https://developer\&.gnome\&.org/NetworkManager/unstable/ref\-settings\&.html
-.PP
-nm\-settings(5), nm\-settings\-keyfile(5), NetworkManager(8), NetworkManager\&.conf(5), nmcli(1), nmcli\-examples(5)
+\fBnm-settings\fR(5),
+\fBnm-settings-keyfile\fR(5),
+\fBNetworkManager\fR(8),
+\fBNetworkManager.conf\fR(5),
+\fBnmcli\fR(1),
+\fBnmcli-examples\fR(7)

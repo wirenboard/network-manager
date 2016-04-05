@@ -45,7 +45,11 @@
 <programlisting>
 GetAccessPoints (OUT ao access_points);
 </programlisting>
-<para>DEPRECATED.  Get the list of access points visible to this device.  Note         that this list does not include access points which hide their SSID.  To         retrieve a list of all access points (including hidden ones) use the         GetAllAccessPoints() method.</para>
+<para>        DEPRECATED. Get the list of access points visible to this device. Note
+        that this list does not include access points which hide their SSID. To
+        retrieve a list of all access points (including hidden ones) use the
+        GetAllAccessPoints() method.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT ao <parameter>access_points</parameter></literal>:</term>
@@ -59,7 +63,9 @@ GetAccessPoints (OUT ao access_points);
 <programlisting>
 GetAllAccessPoints (OUT ao access_points);
 </programlisting>
-<para>Get the list of all access points visible to this device, including         hidden ones for which the SSID is not yet known.</para>
+<para>        Get the list of all access points visible to this device, including hidden
+        ones for which the SSID is not yet known.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT ao <parameter>access_points</parameter></literal>:</term>
@@ -73,11 +79,12 @@ GetAllAccessPoints (OUT ao access_points);
 <programlisting>
 RequestScan (IN  a{sv} options);
 </programlisting>
-<para>Request the device to scan</para>
+<para>        Request the device to scan
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sv} <parameter>options</parameter></literal>:</term>
-  <listitem><para>Options of scan.           Currently 'ssids' option with value of "aay" type is supported.</para></listitem>
+  <listitem><para>Options of scan. Currently 'ssids' option with value of "aay" type is supported.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -90,7 +97,8 @@ RequestScan (IN  a{sv} options);
 <programlisting>
 PropertiesChanged (a{sv} properties);
 </programlisting>
-<para>Emitted when the wireless device's properties changed.</para>
+<para>        Emitted when the wireless device's properties changed.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>properties</parameter></literal>:</term>
@@ -104,7 +112,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 AccessPointAdded (o access_point);
 </programlisting>
-<para>Emitted when a new access point is found by the device.</para>
+<para>        Emitted when a new access point is found by the device.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>access_point</parameter></literal>:</term>
@@ -118,7 +127,8 @@ AccessPointAdded (o access_point);
 <programlisting>
 AccessPointRemoved (o access_point);
 </programlisting>
-<para>Emitted when an access point disappears from view of the device.</para>
+<para>        Emitted when an access point disappears from view of the device.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>access_point</parameter></literal>:</term>
@@ -135,7 +145,8 @@ AccessPointRemoved (o access_point);
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>The active hardware address of the device.</para>
+<para>        The active hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.PermHwAddress">
   <title>The "PermHwAddress" property</title>
@@ -143,7 +154,8 @@ HwAddress  readable   s
 <programlisting>
 PermHwAddress  readable   s
 </programlisting>
-<para>The permanent hardware address of the device.</para>
+<para>        The permanent hardware address of the device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.Mode">
   <title>The "Mode" property</title>
@@ -151,7 +163,9 @@ PermHwAddress  readable   s
 <programlisting>
 Mode  readable   u
 </programlisting>
-<para>The operating mode of the wireless device.</para>
+<para>        The operating mode of the wireless device.
+</para><para>        Returns: <link linkend="NM80211Mode">NM80211Mode</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.Bitrate">
   <title>The "Bitrate" property</title>
@@ -159,7 +173,9 @@ Mode  readable   u
 <programlisting>
 Bitrate  readable   u
 </programlisting>
-<para>The bit rate currently used by the wireless device, in kilobits/second (Kb/s).</para>
+<para>        The bit rate currently used by the wireless device, in kilobits/second
+        (Kb/s).
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.AccessPoints">
   <title>The "AccessPoints" property</title>
@@ -167,7 +183,8 @@ Bitrate  readable   u
 <programlisting>
 AccessPoints  readable   ao
 </programlisting>
-<para>List of object paths of access point visible to this wireless device.</para>
+<para>        List of object paths of access point visible to this wireless device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.ActiveAccessPoint">
   <title>The "ActiveAccessPoint" property</title>
@@ -175,7 +192,8 @@ AccessPoints  readable   ao
 <programlisting>
 ActiveAccessPoint  readable   o
 </programlisting>
-<para>Object path of the access point currently used by the wireless device.</para>
+<para>        Object path of the access point currently used by the wireless device.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Wireless.WirelessCapabilities">
   <title>The "WirelessCapabilities" property</title>
@@ -183,7 +201,9 @@ ActiveAccessPoint  readable   o
 <programlisting>
 WirelessCapabilities  readable   u
 </programlisting>
-<para>The capabilities of the wireless device.</para>
+<para>        The capabilities of the wireless device.
+</para><para>        Returns: <link linkend="NMDeviceWifiCapabilities">NMDeviceWifiCapabilities</link>
+</para>
 </refsect2>
 </refsect1>
 </refentry>

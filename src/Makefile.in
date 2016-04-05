@@ -203,12 +203,12 @@ am__libNetworkManager_la_SOURCES_DIST = devices/nm-device-bond.h \
 	dnsmasq-manager/nm-dnsmasq-manager.h \
 	dnsmasq-manager/nm-dnsmasq-utils.c \
 	dnsmasq-manager/nm-dnsmasq-utils.h platform/nmp-netns.c \
-	platform/nmp-netns.h platform/nm-fake-platform.c \
-	platform/nm-fake-platform.h platform/nm-linux-platform.c \
-	platform/nm-linux-platform.h platform/nm-platform.c \
-	platform/nm-platform.h platform/nm-platform-utils.c \
-	platform/nm-platform-utils.h platform/nmp-object.c \
-	platform/nmp-object.h platform/wifi/wifi-utils-nl80211.c \
+	platform/nmp-netns.h platform/nmp-object.c \
+	platform/nmp-object.h platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h platform/nm-platform.c \
+	platform/nm-platform.h platform/nm-linux-platform.c \
+	platform/nm-linux-platform.h platform/nm-fake-platform.c \
+	platform/nm-fake-platform.h platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
 	platform/wifi/wifi-utils.h rdisc/nm-fake-rdisc.c \
@@ -281,28 +281,27 @@ am_libNetworkManager_la_OBJECTS = $(am__objects_1) $(am__objects_1) \
 	nm-dhcp-listener.lo nm-dhcp-manager.lo nm-dns-dnsmasq.lo \
 	nm-dns-unbound.lo nm-dns-manager.lo nm-dns-plugin.lo \
 	nm-dns-utils.lo nm-dnsmasq-manager.lo nm-dnsmasq-utils.lo \
-	nmp-netns.lo nm-fake-platform.lo nm-linux-platform.lo \
-	nm-platform.lo nm-platform-utils.lo nmp-object.lo \
-	wifi-utils-nl80211.lo wifi-utils.lo nm-fake-rdisc.lo \
-	nm-lndp-rdisc.lo nm-rdisc.lo nm-ppp-manager.lo \
-	nm-agent-manager.lo nm-inotify-helper.lo nm-secret-agent.lo \
-	nm-settings-connection.lo nm-settings-plugin.lo nm-settings.lo \
-	nm-keyfile-connection.lo plugin.lo reader.lo utils.lo \
-	writer.lo nm-supplicant-config.lo nm-supplicant-interface.lo \
-	nm-supplicant-manager.lo nm-supplicant-settings-verify.lo \
-	nm-vpn-connection.lo nm-vpn-manager.lo \
-	nm-activation-request.lo nm-active-connection.lo \
-	nm-audit-manager.lo nm-bus-manager.lo nm-config.lo \
-	nm-config-data.lo nm-connection-provider.lo nm-connectivity.lo \
-	nm-dcb.lo nm-route-manager.lo nm-default-route-manager.lo \
-	nm-dhcp4-config.lo nm-dhcp6-config.lo nm-dispatcher.lo \
-	nm-enum-types.lo nm-exported-object.lo nm-firewall-manager.lo \
-	nm-ip4-config.lo nm-ip6-config.lo nm-logging.lo \
-	nm-auth-manager.lo nm-auth-subject.lo nm-auth-utils.lo \
-	nm-manager.lo nm-multi-index.lo nm-policy.lo \
-	nm-rfkill-manager.lo nm-session-monitor.lo nm-core-utils.lo \
-	NetworkManagerUtils.lo $(am__objects_2) $(am__objects_3) \
-	$(am__objects_4)
+	nmp-netns.lo nmp-object.lo nm-platform-utils.lo nm-platform.lo \
+	nm-linux-platform.lo nm-fake-platform.lo wifi-utils-nl80211.lo \
+	wifi-utils.lo nm-fake-rdisc.lo nm-lndp-rdisc.lo nm-rdisc.lo \
+	nm-ppp-manager.lo nm-agent-manager.lo nm-inotify-helper.lo \
+	nm-secret-agent.lo nm-settings-connection.lo \
+	nm-settings-plugin.lo nm-settings.lo nm-keyfile-connection.lo \
+	plugin.lo reader.lo utils.lo writer.lo nm-supplicant-config.lo \
+	nm-supplicant-interface.lo nm-supplicant-manager.lo \
+	nm-supplicant-settings-verify.lo nm-vpn-connection.lo \
+	nm-vpn-manager.lo nm-activation-request.lo \
+	nm-active-connection.lo nm-audit-manager.lo nm-bus-manager.lo \
+	nm-config.lo nm-config-data.lo nm-connection-provider.lo \
+	nm-connectivity.lo nm-dcb.lo nm-route-manager.lo \
+	nm-default-route-manager.lo nm-dhcp4-config.lo \
+	nm-dhcp6-config.lo nm-dispatcher.lo nm-enum-types.lo \
+	nm-exported-object.lo nm-firewall-manager.lo nm-ip4-config.lo \
+	nm-ip6-config.lo nm-logging.lo nm-auth-manager.lo \
+	nm-auth-subject.lo nm-auth-utils.lo nm-manager.lo \
+	nm-multi-index.lo nm-policy.lo nm-rfkill-manager.lo \
+	nm-session-monitor.lo nm-core-utils.lo NetworkManagerUtils.lo \
+	$(am__objects_2) $(am__objects_3) $(am__objects_4)
 libNetworkManager_la_OBJECTS = $(am_libNetworkManager_la_OBJECTS)
 libnm_iface_helper_la_DEPENDENCIES =  \
 	$(top_builddir)/libnm-core/libnm-core.la \
@@ -315,11 +314,11 @@ am__libnm_iface_helper_la_SOURCES_DIST =  \
 	dhcp-manager/nm-dhcp-client-logging.h \
 	dhcp-manager/nm-dhcp-utils.c dhcp-manager/nm-dhcp-utils.h \
 	dhcp-manager/nm-dhcp-manager.c dhcp-manager/nm-dhcp-manager.h \
-	platform/nm-linux-platform.c platform/nm-linux-platform.h \
-	platform/nm-platform.c platform/nm-platform.h \
-	platform/nm-platform-utils.c platform/nm-platform-utils.h \
 	platform/nmp-netns.c platform/nmp-netns.h \
 	platform/nmp-object.c platform/nmp-object.h \
+	platform/nm-platform-utils.c platform/nm-platform-utils.h \
+	platform/nm-platform.c platform/nm-platform.h \
+	platform/nm-linux-platform.c platform/nm-linux-platform.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
@@ -335,8 +334,8 @@ am__libnm_iface_helper_la_SOURCES_DIST =  \
 	platform/wifi/wifi-utils-wext.c \
 	platform/wifi/wifi-utils-wext.h
 am_libnm_iface_helper_la_OBJECTS = nm-dhcp-client.lo nm-dhcp-utils.lo \
-	nm-dhcp-manager.lo nm-linux-platform.lo nm-platform.lo \
-	nm-platform-utils.lo nmp-netns.lo nmp-object.lo \
+	nm-dhcp-manager.lo nmp-netns.lo nmp-object.lo \
+	nm-platform-utils.lo nm-platform.lo nm-linux-platform.lo \
 	wifi-utils-nl80211.lo wifi-utils.lo nm-fake-rdisc.lo \
 	nm-lndp-rdisc.lo nm-rdisc.lo nm-route-manager.lo \
 	nm-exported-object.lo nm-ip4-config.lo nm-ip6-config.lo \
@@ -827,8 +826,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/shared -I$(top_builddir)/shared \
 	-I$(top_builddir)/libnm-core -I$(top_srcdir)/callouts \
 	-DPREFIX=\"$(prefix)\" -DG_LOG_DOMAIN=\""NetworkManager"\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE $(foreach \
-	d,$(sort $(dir \
+	$(foreach d,$(sort $(dir \
 	$(libNetworkManager_la_SOURCES))),-I$(top_srcdir)/src/$d) \
 	$(GLIB_CFLAGS) $(GUDEV_CFLAGS) $(LIBNL_CFLAGS) \
 	$(LIBNDP_CFLAGS) $(LIBSOUP_CFLAGS) $(SELINUX_CFLAGS) \
@@ -943,7 +941,6 @@ libsystemd_nm_la_SOURCES = \
 	systemd/src/libsystemd-network/lldp-neighbor.h \
 	systemd/src/libsystemd-network/lldp-network.c \
 	systemd/src/libsystemd-network/lldp-network.h \
-	systemd/src/libsystemd-network/lldp.h \
 	systemd/src/libsystemd-network/network-internal.c \
 	systemd/src/libsystemd-network/network-internal.h \
 	systemd/src/libsystemd-network/sd-dhcp-client.c \
@@ -1073,12 +1070,12 @@ libNetworkManager_la_SOURCES = $(nm_device_headers) \
 	dnsmasq-manager/nm-dnsmasq-manager.h \
 	dnsmasq-manager/nm-dnsmasq-utils.c \
 	dnsmasq-manager/nm-dnsmasq-utils.h platform/nmp-netns.c \
-	platform/nmp-netns.h platform/nm-fake-platform.c \
-	platform/nm-fake-platform.h platform/nm-linux-platform.c \
-	platform/nm-linux-platform.h platform/nm-platform.c \
-	platform/nm-platform.h platform/nm-platform-utils.c \
-	platform/nm-platform-utils.h platform/nmp-object.c \
-	platform/nmp-object.h platform/wifi/wifi-utils-nl80211.c \
+	platform/nmp-netns.h platform/nmp-object.c \
+	platform/nmp-object.h platform/nm-platform-utils.c \
+	platform/nm-platform-utils.h platform/nm-platform.c \
+	platform/nm-platform.h platform/nm-linux-platform.c \
+	platform/nm-linux-platform.h platform/nm-fake-platform.c \
+	platform/nm-fake-platform.h platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
 	platform/wifi/wifi-utils.h rdisc/nm-fake-rdisc.c \
@@ -1165,11 +1162,11 @@ libnm_iface_helper_la_SOURCES = dhcp-manager/nm-dhcp-client.c \
 	dhcp-manager/nm-dhcp-client-logging.h \
 	dhcp-manager/nm-dhcp-utils.c dhcp-manager/nm-dhcp-utils.h \
 	dhcp-manager/nm-dhcp-manager.c dhcp-manager/nm-dhcp-manager.h \
-	platform/nm-linux-platform.c platform/nm-linux-platform.h \
-	platform/nm-platform.c platform/nm-platform.h \
-	platform/nm-platform-utils.c platform/nm-platform-utils.h \
 	platform/nmp-netns.c platform/nmp-netns.h \
 	platform/nmp-object.c platform/nmp-object.h \
+	platform/nm-platform-utils.c platform/nm-platform-utils.h \
+	platform/nm-platform.c platform/nm-platform.h \
+	platform/nm-linux-platform.c platform/nm-linux-platform.h \
 	platform/wifi/wifi-utils-nl80211.c \
 	platform/wifi/wifi-utils-nl80211.h \
 	platform/wifi/wifi-utils-private.h platform/wifi/wifi-utils.c \
@@ -1703,26 +1700,12 @@ nmp-netns.lo: platform/nmp-netns.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nmp-netns.lo `test -f 'platform/nmp-netns.c' || echo '$(srcdir)/'`platform/nmp-netns.c
 
-nm-fake-platform.lo: platform/nm-fake-platform.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-fake-platform.lo -MD -MP -MF $(DEPDIR)/nm-fake-platform.Tpo -c -o nm-fake-platform.lo `test -f 'platform/nm-fake-platform.c' || echo '$(srcdir)/'`platform/nm-fake-platform.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-fake-platform.Tpo $(DEPDIR)/nm-fake-platform.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-fake-platform.c' object='nm-fake-platform.lo' libtool=yes @AMDEPBACKSLASH@
+nmp-object.lo: platform/nmp-object.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nmp-object.lo -MD -MP -MF $(DEPDIR)/nmp-object.Tpo -c -o nmp-object.lo `test -f 'platform/nmp-object.c' || echo '$(srcdir)/'`platform/nmp-object.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nmp-object.Tpo $(DEPDIR)/nmp-object.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nmp-object.c' object='nmp-object.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-fake-platform.lo `test -f 'platform/nm-fake-platform.c' || echo '$(srcdir)/'`platform/nm-fake-platform.c
-
-nm-linux-platform.lo: platform/nm-linux-platform.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-linux-platform.lo -MD -MP -MF $(DEPDIR)/nm-linux-platform.Tpo -c -o nm-linux-platform.lo `test -f 'platform/nm-linux-platform.c' || echo '$(srcdir)/'`platform/nm-linux-platform.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-linux-platform.Tpo $(DEPDIR)/nm-linux-platform.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-linux-platform.c' object='nm-linux-platform.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-linux-platform.lo `test -f 'platform/nm-linux-platform.c' || echo '$(srcdir)/'`platform/nm-linux-platform.c
-
-nm-platform.lo: platform/nm-platform.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-platform.lo -MD -MP -MF $(DEPDIR)/nm-platform.Tpo -c -o nm-platform.lo `test -f 'platform/nm-platform.c' || echo '$(srcdir)/'`platform/nm-platform.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-platform.Tpo $(DEPDIR)/nm-platform.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-platform.c' object='nm-platform.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-platform.lo `test -f 'platform/nm-platform.c' || echo '$(srcdir)/'`platform/nm-platform.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nmp-object.lo `test -f 'platform/nmp-object.c' || echo '$(srcdir)/'`platform/nmp-object.c
 
 nm-platform-utils.lo: platform/nm-platform-utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-platform-utils.lo -MD -MP -MF $(DEPDIR)/nm-platform-utils.Tpo -c -o nm-platform-utils.lo `test -f 'platform/nm-platform-utils.c' || echo '$(srcdir)/'`platform/nm-platform-utils.c
@@ -1731,12 +1714,26 @@ nm-platform-utils.lo: platform/nm-platform-utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-platform-utils.lo `test -f 'platform/nm-platform-utils.c' || echo '$(srcdir)/'`platform/nm-platform-utils.c
 
-nmp-object.lo: platform/nmp-object.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nmp-object.lo -MD -MP -MF $(DEPDIR)/nmp-object.Tpo -c -o nmp-object.lo `test -f 'platform/nmp-object.c' || echo '$(srcdir)/'`platform/nmp-object.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nmp-object.Tpo $(DEPDIR)/nmp-object.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nmp-object.c' object='nmp-object.lo' libtool=yes @AMDEPBACKSLASH@
+nm-platform.lo: platform/nm-platform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-platform.lo -MD -MP -MF $(DEPDIR)/nm-platform.Tpo -c -o nm-platform.lo `test -f 'platform/nm-platform.c' || echo '$(srcdir)/'`platform/nm-platform.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-platform.Tpo $(DEPDIR)/nm-platform.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-platform.c' object='nm-platform.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nmp-object.lo `test -f 'platform/nmp-object.c' || echo '$(srcdir)/'`platform/nmp-object.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-platform.lo `test -f 'platform/nm-platform.c' || echo '$(srcdir)/'`platform/nm-platform.c
+
+nm-linux-platform.lo: platform/nm-linux-platform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-linux-platform.lo -MD -MP -MF $(DEPDIR)/nm-linux-platform.Tpo -c -o nm-linux-platform.lo `test -f 'platform/nm-linux-platform.c' || echo '$(srcdir)/'`platform/nm-linux-platform.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-linux-platform.Tpo $(DEPDIR)/nm-linux-platform.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-linux-platform.c' object='nm-linux-platform.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-linux-platform.lo `test -f 'platform/nm-linux-platform.c' || echo '$(srcdir)/'`platform/nm-linux-platform.c
+
+nm-fake-platform.lo: platform/nm-fake-platform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-fake-platform.lo -MD -MP -MF $(DEPDIR)/nm-fake-platform.Tpo -c -o nm-fake-platform.lo `test -f 'platform/nm-fake-platform.c' || echo '$(srcdir)/'`platform/nm-fake-platform.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-fake-platform.Tpo $(DEPDIR)/nm-fake-platform.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/nm-fake-platform.c' object='nm-fake-platform.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-fake-platform.lo `test -f 'platform/nm-fake-platform.c' || echo '$(srcdir)/'`platform/nm-fake-platform.c
 
 wifi-utils-nl80211.lo: platform/wifi/wifi-utils-nl80211.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT wifi-utils-nl80211.lo -MD -MP -MF $(DEPDIR)/wifi-utils-nl80211.Tpo -c -o wifi-utils-nl80211.lo `test -f 'platform/wifi/wifi-utils-nl80211.c' || echo '$(srcdir)/'`platform/wifi/wifi-utils-nl80211.c

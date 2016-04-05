@@ -43,6 +43,9 @@
       <sub name="Secret flag types" link="secrets-flags.html"/>
     </sub>
     <sub name="UNIX Manual Pages" link="manpages.html">
+      <sub name="nmcli" link="nmcli.html"/>
+      <sub name="nmtui" link="nmtui.html"/>
+      <sub name="nm-online" link="nm-online.html"/>
       <sub name="NetworkManager" link="NetworkManager.html"/>
       <sub name="NetworkManager.conf" link="NetworkManager.conf.html"/>
       <sub name="nmcli-examples" link="nmcli-examples.html"/>

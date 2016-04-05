@@ -47,11 +47,13 @@
 <div class="refsect1">
 <a name="gdbus-methods-org.freedesktop.NetworkManager.AgentManager"></a><h2>Method Details</h2>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-AgentManager.Register"></a><h3>The <code class="function">Register()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-AgentManager.Register"></a><h3>The Register() method</h3>
 <pre class="programlisting">
 Register (IN  s identifier);
 </pre>
-<p>Called by secret Agents to register their ability to provide and save         network secrets.</p>
+<p>        Called by secret Agents to register their ability to provide and save
+        network secrets.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -59,18 +61,19 @@ Register (IN  s identifier);
 </colgroup>
 <tbody><tr>
 <td><p><span class="term"><code class="literal">IN s <em class="parameter"><code>identifier</code></em></code>:</span></p></td>
-<td><p>Identifies this agent; only one agent in each user session may use the           same identifier.  Identifier formatting follows the same rules as           D-Bus bus names with the exception that the ':' character is not           allowed.  The valid set of characters is "[A-Z][a-z][0-9]_-." and the           identifier is limited in length to 255 characters with a minimum           of 3 characters.  An example valid identifier is 'org.gnome.nm-applet'           (without quotes).</p></td>
+<td><p>Identifies this agent; only one agent in each user session may use the same identifier. Identifier formatting follows the same rules as D-Bus bus names with the exception that the ':' character is not allowed. The valid set of characters is "[A-Z][a-z][0-9]_-." and the identifier is limited in length to 255 characters with a minimum of 3 characters. An example valid identifier is 'org.gnome.nm-applet' (without quotes).</p></td>
 </tr></tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-AgentManager.RegisterWithCapabilities"></a><h3>The <code class="function">RegisterWithCapabilities()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-AgentManager.RegisterWithCapabilities"></a><h3>The RegisterWithCapabilities() method</h3>
 <pre class="programlisting">
 RegisterWithCapabilities (IN  s identifier,
                           IN  u capabilities);
 </pre>
-<p>Like <code class="function">Register()</code> but indicates agent capabilities to NetworkManager.</p>
+<p>        Like Register() but indicates agent capabilities to NetworkManager.
+</p>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -79,22 +82,25 @@ RegisterWithCapabilities (IN  s identifier,
 <tbody>
 <tr>
 <td><p><span class="term"><code class="literal">IN s <em class="parameter"><code>identifier</code></em></code>:</span></p></td>
-<td><p>See the <code class="function">Register()</code> method's identifier argument.</p></td>
+<td><p>See the Register() method's identifier argument.</p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="literal">IN u <em class="parameter"><code>capabilities</code></em></code>:</span></p></td>
-<td><p>Indicates various agent capabilities to NetworkManager.</p></td>
+<td><p>(<a href="https://developer.gnome.org/libnm-glib/0.9/NMSecretAgent.html#NMSecretAgentCapabilities">NMSecretAgentCapabilities</a>) Indicates various agent capabilities to NetworkManager.</p></td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <hr>
 <div class="refsect2">
-<a name="gdbus-method-org-freedesktop-NetworkManager-AgentManager.Unregister"></a><h3>The <code class="function">Unregister()</code> method</h3>
+<a name="gdbus-method-org-freedesktop-NetworkManager-AgentManager.Unregister"></a><h3>The Unregister() method</h3>
 <pre class="programlisting">
 Unregister ();
 </pre>
-<p>Called by secret Agents to notify NetworkManager that they will no         longer handle requests for network secrets.  Agents are automatically         unregistered when they disconnect from D-Bus.</p>
+<p>        Called by secret Agents to notify NetworkManager that they will no longer
+        handle requests for network secrets. Agents are automatically unregistered
+        when they disconnect from D-Bus.
+</p>
 </div>
 </div>
 </div>

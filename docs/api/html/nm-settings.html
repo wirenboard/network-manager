@@ -29,7 +29,7 @@
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
 <div class="refsect1">
-<a name="id-1.4.5.4"></a><h2>DESCRIPTION</h2>
+<a name="description"></a><h2>Description</h2>
 <p>
           NetworkManager is based on a concept of connection profiles, sometimes referred to as
           connections only. These connection profiles contain a network configuration. When
@@ -94,7 +94,7 @@
 </table>
 </div>
 <div class="table">
-<a name="id-1.4.5.4.3"></a><p class="title"><b>Table 31. 802-1x setting</b></p>
+<a name="id-1.4.8.4.3"></a><p class="title"><b>Table 31. 802-1x setting</b></p>
 <div class="table-contents"><table summary="802-1x setting" border="1">
 <colgroup>
 <col>
@@ -257,13 +257,13 @@
 <td align="left">phase2-private-key</td>
 <td align="left">byte array</td>
 <td align="left"> </td>
-<td>Contains the "phase 2" inner private key when the "phase2-auth" or "phase2-autheap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS<span class="type">12</span> format private keys and the blob scheme, this property should be set to the PKCS<span class="type">12</span> data and the "phase2-private-key-password" property must be set to password used to decrypt the PKCS<span class="type">12</span> certificate and key. When using PKCS<span class="type">12</span> files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "phase2-private-key-password" property must be set to the password used to decode the PKCS<span class="type">12</span> private key and certificate.</td>
+<td>Contains the "phase 2" inner private key when the "phase2-auth" or "phase2-autheap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "phase2-private-key-password" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "phase2-private-key-password" property must be set to the password used to decode the PKCS#12 private key and certificate.</td>
 </tr>
 <tr>
 <td align="left">phase2-private-key-password</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The password used to decrypt the "phase 2" private key specified in the "phase2-private-key" property when the private key either uses the path scheme, or is a PKCS<span class="type">12</span> format key.</td>
+<td>The password used to decrypt the "phase 2" private key specified in the "phase2-private-key" property when the private key either uses the path scheme, or is a PKCS#12 format key.</td>
 </tr>
 <tr>
 <td align="left">phase2-private-key-password-flags</td>
@@ -293,13 +293,13 @@
 <td align="left">private-key</td>
 <td align="left">byte array</td>
 <td align="left"> </td>
-<td>Contains the private key when the "eap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS<span class="type">12</span> format private keys and the blob scheme, this property should be set to the PKCS<span class="type">12</span> data and the "private-key-password" property must be set to password used to decrypt the PKCS<span class="type">12</span> certificate and key. When using PKCS<span class="type">12</span> files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "private-key-password" property must be set to the password used to decode the PKCS<span class="type">12</span> private key and certificate. WARNING: "private-key" is not a "secret" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data.</td>
+<td>Contains the private key when the "eap" property is set to "tls". Key data is specified using a "scheme"; two are currently supported: blob and path. When using the blob scheme and private keys, this property should be set to the key's encrypted PEM encoded data. When using private keys with the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and ending with a terminating NUL byte. When using PKCS#12 format private keys and the blob scheme, this property should be set to the PKCS#12 data and the "private-key-password" property must be set to password used to decrypt the PKCS#12 certificate and key. When using PKCS#12 files and the path scheme, this property should be set to the full UTF-8 encoded path of the key, prefixed with the string "file://" and and ending with a terminating NUL byte, and as with the blob scheme the "private-key-password" property must be set to the password used to decode the PKCS#12 private key and certificate. WARNING: "private-key" is not a "secret" property, and thus unencrypted private key data using the BLOB scheme may be readable by unprivileged users.  Private keys should always be encrypted with a private key password to prevent unauthorized access to unencrypted private key data.</td>
 </tr>
 <tr>
 <td align="left">private-key-password</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The password used to decrypt the private key specified in the "private-key" property when the private key either uses the path scheme, or if the private key is a PKCS<span class="type">12</span> format key.</td>
+<td>The password used to decrypt the private key specified in the "private-key" property when the private key either uses the path scheme, or if the private key is a PKCS#12 format key.</td>
 </tr>
 <tr>
 <td align="left">private-key-password-flags</td>
@@ -323,7 +323,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.4"></a><p class="title"><b>Table 32. adsl setting</b></p>
+<a name="id-1.4.8.4.4"></a><p class="title"><b>Table 32. adsl setting</b></p>
 <div class="table-contents"><table summary="adsl setting" border="1">
 <colgroup>
 <col>
@@ -390,7 +390,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.5"></a><p class="title"><b>Table 33. bluetooth setting</b></p>
+<a name="id-1.4.8.4.5"></a><p class="title"><b>Table 33. bluetooth setting</b></p>
 <div class="table-contents"><table summary="bluetooth setting" border="1">
 <colgroup>
 <col>
@@ -427,7 +427,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.6"></a><p class="title"><b>Table 34. bond setting</b></p>
+<a name="id-1.4.8.4.6"></a><p class="title"><b>Table 34. bond setting</b></p>
 <div class="table-contents"><table summary="bond setting" border="1">
 <colgroup>
 <col>
@@ -464,7 +464,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.7"></a><p class="title"><b>Table 35. bridge setting</b></p>
+<a name="id-1.4.8.4.7"></a><p class="title"><b>Table 35. bridge setting</b></p>
 <div class="table-contents"><table summary="bridge setting" border="1">
 <colgroup>
 <col>
@@ -543,7 +543,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.8"></a><p class="title"><b>Table 36. bridge-port setting</b></p>
+<a name="id-1.4.8.4.8"></a><p class="title"><b>Table 36. bridge-port setting</b></p>
 <div class="table-contents"><table summary="bridge-port setting" border="1">
 <colgroup>
 <col>
@@ -586,7 +586,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.9"></a><p class="title"><b>Table 37. cdma setting</b></p>
+<a name="id-1.4.8.4.9"></a><p class="title"><b>Table 37. cdma setting</b></p>
 <div class="table-contents"><table summary="cdma setting" border="1">
 <colgroup>
 <col>
@@ -611,7 +611,7 @@
 <td align="left">number</td>
 <td align="left">string</td>
 <td align="left"> </td>
-<td>The number to dial to establish the connection to the CDMA-based mobile broadband network, if any.  If not specified, the default number (<span class="type">777</span>) is used when required.</td>
+<td>The number to dial to establish the connection to the CDMA-based mobile broadband network, if any.  If not specified, the default number (#777) is used when required.</td>
 </tr>
 <tr>
 <td align="left">password</td>
@@ -635,7 +635,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.10"></a><p class="title"><b>Table 38. connection setting</b></p>
+<a name="id-1.4.8.4.10"></a><p class="title"><b>Table 38. connection setting</b></p>
 <div class="table-contents"><table summary="connection setting" border="1">
 <colgroup>
 <col>
@@ -762,7 +762,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.11"></a><p class="title"><b>Table 39. dcb setting</b></p>
+<a name="id-1.4.8.4.11"></a><p class="title"><b>Table 39. dcb setting</b></p>
 <div class="table-contents"><table summary="dcb setting" border="1">
 <colgroup>
 <col>
@@ -877,7 +877,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.12"></a><p class="title"><b>Table 40. generic setting</b></p>
+<a name="id-1.4.8.4.12"></a><p class="title"><b>Table 40. generic setting</b></p>
 <div class="table-contents"><table summary="generic setting" border="1">
 <colgroup>
 <col>
@@ -900,7 +900,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.13"></a><p class="title"><b>Table 41. gsm setting</b></p>
+<a name="id-1.4.8.4.13"></a><p class="title"><b>Table 41. gsm setting</b></p>
 <div class="table-contents"><table summary="gsm setting" border="1">
 <colgroup>
 <col>
@@ -997,7 +997,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.14"></a><p class="title"><b>Table 42. infiniband setting</b></p>
+<a name="id-1.4.8.4.14"></a><p class="title"><b>Table 42. infiniband setting</b></p>
 <div class="table-contents"><table summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -1052,7 +1052,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.15"></a><p class="title"><b>Table 43. ipv4 setting</b></p>
+<a name="id-1.4.8.4.15"></a><p class="title"><b>Table 43. ipv4 setting</b></p>
 <div class="table-contents"><table summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -1197,7 +1197,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.16"></a><p class="title"><b>Table 44. ipv6 setting</b></p>
+<a name="id-1.4.8.4.16"></a><p class="title"><b>Table 44. ipv6 setting</b></p>
 <div class="table-contents"><table summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -1342,7 +1342,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.17"></a><p class="title"><b>Table 45. ip-tunnel setting</b></p>
+<a name="id-1.4.8.4.17"></a><p class="title"><b>Table 45. ip-tunnel setting</b></p>
 <div class="table-contents"><table summary="ip-tunnel setting" border="1">
 <colgroup>
 <col>
@@ -1439,7 +1439,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.18"></a><p class="title"><b>Table 46. macvlan setting</b></p>
+<a name="id-1.4.8.4.18"></a><p class="title"><b>Table 46. macvlan setting</b></p>
 <div class="table-contents"><table summary="macvlan setting" border="1">
 <colgroup>
 <col>
@@ -1488,7 +1488,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.19"></a><p class="title"><b>Table 47. 802-11-olpc-mesh setting</b></p>
+<a name="id-1.4.8.4.19"></a><p class="title"><b>Table 47. 802-11-olpc-mesh setting</b></p>
 <div class="table-contents"><table summary="802-11-olpc-mesh setting" border="1">
 <colgroup>
 <col>
@@ -1531,7 +1531,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.20"></a><p class="title"><b>Table 48. ppp setting</b></p>
+<a name="id-1.4.8.4.20"></a><p class="title"><b>Table 48. ppp setting</b></p>
 <div class="table-contents"><table summary="ppp setting" border="1">
 <colgroup>
 <col>
@@ -1664,7 +1664,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.21"></a><p class="title"><b>Table 49. pppoe setting</b></p>
+<a name="id-1.4.8.4.21"></a><p class="title"><b>Table 49. pppoe setting</b></p>
 <div class="table-contents"><table summary="pppoe setting" border="1">
 <colgroup>
 <col>
@@ -1713,7 +1713,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.22"></a><p class="title"><b>Table 50. serial setting</b></p>
+<a name="id-1.4.8.4.22"></a><p class="title"><b>Table 50. serial setting</b></p>
 <div class="table-contents"><table summary="serial setting" border="1">
 <colgroup>
 <col>
@@ -1768,7 +1768,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.23"></a><p class="title"><b>Table 51. team setting</b></p>
+<a name="id-1.4.8.4.23"></a><p class="title"><b>Table 51. team setting</b></p>
 <div class="table-contents"><table summary="team setting" border="1">
 <colgroup>
 <col>
@@ -1805,7 +1805,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.24"></a><p class="title"><b>Table 52. team-port setting</b></p>
+<a name="id-1.4.8.4.24"></a><p class="title"><b>Table 52. team-port setting</b></p>
 <div class="table-contents"><table summary="team-port setting" border="1">
 <colgroup>
 <col>
@@ -1836,7 +1836,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.25"></a><p class="title"><b>Table 53. tun setting</b></p>
+<a name="id-1.4.8.4.25"></a><p class="title"><b>Table 53. tun setting</b></p>
 <div class="table-contents"><table summary="tun setting" border="1">
 <colgroup>
 <col>
@@ -1897,7 +1897,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.26"></a><p class="title"><b>Table 54. vlan setting</b></p>
+<a name="id-1.4.8.4.26"></a><p class="title"><b>Table 54. vlan setting</b></p>
 <div class="table-contents"><table summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -1958,7 +1958,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.27"></a><p class="title"><b>Table 55. vpn setting</b></p>
+<a name="id-1.4.8.4.27"></a><p class="title"><b>Table 55. vpn setting</b></p>
 <div class="table-contents"><table summary="vpn setting" border="1">
 <colgroup>
 <col>
@@ -2019,7 +2019,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.28"></a><p class="title"><b>Table 56. vxlan setting</b></p>
+<a name="id-1.4.8.4.28"></a><p class="title"><b>Table 56. vxlan setting</b></p>
 <div class="table-contents"><table summary="vxlan setting" border="1">
 <colgroup>
 <col>
@@ -2140,7 +2140,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.29"></a><p class="title"><b>Table 57. wimax setting</b></p>
+<a name="id-1.4.8.4.29"></a><p class="title"><b>Table 57. wimax setting</b></p>
 <div class="table-contents"><table summary="wimax setting" border="1">
 <colgroup>
 <col>
@@ -2177,7 +2177,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.30"></a><p class="title"><b>Table 58. 802-3-ethernet setting</b></p>
+<a name="id-1.4.8.4.30"></a><p class="title"><b>Table 58. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -2280,7 +2280,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.31"></a><p class="title"><b>Table 59. 802-11-wireless setting</b></p>
+<a name="id-1.4.8.4.31"></a><p class="title"><b>Table 59. 802-11-wireless setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -2401,7 +2401,7 @@
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.5.4.32"></a><p class="title"><b>Table 60. 802-11-wireless-security setting</b></p>
+<a name="id-1.4.8.4.32"></a><p class="title"><b>Table 60. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>
@@ -2547,18 +2547,15 @@
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.4.5.5"></a><h2>AUTHOR</h2>
-<p><span class="author"><span class="firstname">NetworkManager developers</span></span></p>
+<a name="files"></a><h2>Files</h2>
+<p><code class="filename">/etc/NetworkManager/system-connections</code> or distro plugin-specific location</p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.5.6"></a><h2>FILES</h2>
-<p>/etc/NetworkManager/system-connections</p>
-<p>or distro plugin-specific location</p>
-</div>
-<div class="refsect1">
-<a name="id-1.4.5.7"></a><h2>SEE ALSO</h2>
-<p>https://wiki.gnome.org/Projects/NetworkManager/ConfigurationSpecification</p>
-<p>NetworkManager(8), nmcli(1), nmcli-examples(5), NetworkManager.conf(5)</p>
+<a name="see_also"></a><h2>See Also</h2>
+<p><span class="citerefentry"><span class="refentrytitle">NetworkManager</span>(8)</span>,
+        <span class="citerefentry"><span class="refentrytitle">nmcli</span>(1)</span>,
+        <span class="citerefentry"><span class="refentrytitle">nmcli-examples</span>(7)</span>,
+        <span class="citerefentry"><span class="refentrytitle">NetworkManager.conf</span>(5)</span></p>
 </div>
 </div>
 <div class="footer">

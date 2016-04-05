@@ -480,7 +480,6 @@ with_valgrind = @with_valgrind@
 @BUILD_NMCLI_TRUE@	-I${top_builddir}/libnm \
 @BUILD_NMCLI_TRUE@	-I${top_srcdir}/clients/common \
 @BUILD_NMCLI_TRUE@	$(GLIB_CFLAGS) -DG_LOG_DOMAIN=\""nmcli"\" \
-@BUILD_NMCLI_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @BUILD_NMCLI_TRUE@	-DNMCLI_LOCALEDIR=\"$(datadir)/locale\" \
 @BUILD_NMCLI_TRUE@	$(am__append_1)
 @BUILD_NMCLI_TRUE@nmcli_SOURCES = agent.c agent.h common.c common.h \

@@ -716,7 +716,6 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/shared \
 @ENABLE_TESTS_TRUE@	-I$(top_srcdir)/libnm-util \
 @ENABLE_TESTS_TRUE@	-I$(top_builddir)/libnm-util \
-@ENABLE_TESTS_TRUE@	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 @ENABLE_TESTS_TRUE@	$(GLIB_CFLAGS) \
 @ENABLE_TESTS_TRUE@	$(DBUS_CFLAGS) \
 @ENABLE_TESTS_TRUE@	-DBUILD_DIR=\"$(abs_builddir)\" \

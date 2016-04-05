@@ -85,7 +85,10 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 Addresses  readable   aau
 </pre>
-<p>Array of arrays of IPv4 address/prefix/gateway.  All 3  elements of each array are in network byte order.  Essentially:  [(addr, prefix, gateway), (addr, prefix, gateway), ...]   Deprecated: use AddressData and Gateway</p>
+<p>        Array of arrays of IPv4 address/prefix/gateway. All 3 elements of each
+        array are in network byte order. Essentially: [(addr, prefix, gateway),
+        (addr, prefix, gateway), ...] Deprecated: use AddressData and Gateway
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -93,7 +96,10 @@ Addresses  readable   aau
 <pre class="programlisting">
 AddressData  readable   aa{sv}
 </pre>
-<p>Array of IP address data objects. All addresses will include  "address" (an IP address string), and "prefix" (a uint). Some  addresses may include additional attributes.</p>
+<p>        Array of IP address data objects. All addresses will include "address" (an
+        IP address string), and "prefix" (a uint). Some addresses may include
+        additional attributes.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -101,7 +107,8 @@ AddressData  readable   aa{sv}
 <pre class="programlisting">
 Gateway  readable   s
 </pre>
-<p>The gateway in use.</p>
+<p>        The gateway in use.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -109,7 +116,12 @@ Gateway  readable   s
 <pre class="programlisting">
 Routes  readable   aau
 </pre>
-<p>Arrays of IPv4 route/prefix/next-hop/metric. All 4 elements of  each tuple are in network byte order. 'route' and 'next hop'  are IPv4 addresses, while prefix and metric are simple  unsigned integers. Essentially: [(route, prefix, next-hop,  metric), (route, prefix, next-hop, metric), ...]   Deprecated: use RouteData</p>
+<p>        Arrays of IPv4 route/prefix/next-hop/metric. All 4 elements of each tuple
+        are in network byte order. 'route' and 'next hop' are IPv4 addresses,
+        while prefix and metric are simple unsigned integers. Essentially:
+        [(route, prefix, next-hop, metric), (route, prefix, next-hop, metric),
+        ...] Deprecated: use RouteData
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -117,7 +129,10 @@ Routes  readable   aau
 <pre class="programlisting">
 RouteData  readable   aa{sv}
 </pre>
-<p>Array of IP route data objects. All routes will include "dest"  (an IP address string) and "prefix" (a uint). Some routes may  include "next-hop" (an IP address string), "metric" (a uint),  and additional attributes.</p>
+<p>        Array of IP route data objects. All routes will include "dest" (an IP
+        address string) and "prefix" (a uint). Some routes may include "next-hop"
+        (an IP address string), "metric" (a uint), and additional attributes.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -125,7 +140,8 @@ RouteData  readable   aa{sv}
 <pre class="programlisting">
 Nameservers  readable   au
 </pre>
-<p>The nameservers in use.</p>
+<p>        The nameservers in use.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -133,7 +149,8 @@ Nameservers  readable   au
 <pre class="programlisting">
 Domains  readable   as
 </pre>
-<p>A list of domains this address belongs to.</p>
+<p>        A list of domains this address belongs to.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -141,7 +158,8 @@ Domains  readable   as
 <pre class="programlisting">
 Searches  readable   as
 </pre>
-<p>A list of dns searches.</p>
+<p>        A list of dns searches.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -149,7 +167,9 @@ Searches  readable   as
 <pre class="programlisting">
 DnsOptions  readable   as
 </pre>
-<p>A list of DNS options that modify the behavior of the DNS  resolver. See resolv.conf(5) manual page for the list of  supported options.</p>
+<p>        A list of DNS options that modify the behavior of the DNS resolver. See
+        resolv.conf(5) manual page for the list of supported options.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -157,7 +177,9 @@ DnsOptions  readable   as
 <pre class="programlisting">
 WinsServers  readable   au
 </pre>
-<p>The Windows Internet Name Service servers associated with the connection.  Each address is in network byte order.</p>
+<p>        The Windows Internet Name Service servers associated with the connection.
+        Each address is in network byte order.
+</p>
 </div>
 </div>
 </div>

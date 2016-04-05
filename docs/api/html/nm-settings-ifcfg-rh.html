@@ -29,7 +29,7 @@
 <td class="gallery_image" valign="top" align="right"></td>
 </tr></table></div>
 <div class="refsect1">
-<a name="id-1.4.7.4"></a><h2>DESCRIPTION</h2>
+<a name="description"></a><h2>Description</h2>
 <p>
           NetworkManager is based on the concept of connection profiles that contain
           network configuration (see <span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span> for details). The profiles can be
@@ -53,7 +53,7 @@
         </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.7.5"></a><h2>File Format</h2>
+<a name="file_format"></a><h2>File Format</h2>
 <p>
           The <span class="emphasis"><em>ifcfg-rh</em></span> config format is a simple text file containing
           VARIABLE="value" lines. The format is described in <code class="filename">sysconfig.txt</code>
@@ -178,7 +178,7 @@ DEVICETYPE=TeamPort
           </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.7.6"></a><h2>Differences against initscripts</h2>
+<a name="differences_against_initscripts"></a><h2>Differences against initscripts</h2>
 <p>
           The main differences of NetworkManager ifcfg-rh plugin and traditional
           initscripts are:
@@ -240,16 +240,16 @@ DEVICETYPE=TeamPort
 <p>
           See the next section for detailed mapping of NetworkManager properties and
           <span class="emphasis"><em>ifcfg-rh</em></span> variables. Variable names, format and usage
-          differences in NetworkManager and initscripts are documented in the tables bellow.
+          differences in NetworkManager and initscripts are documented in the tables below.
         </p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.7.7"></a><h2>DETAILS</h2>
+<a name="details"></a><h2>Details</h2>
 <p><span class="emphasis"><em>ifcfg-rh</em></span> plugin variables marked with <span class="emphasis"><em>(+)</em></span>
           are NetworkManager specific extensions not understood by traditional initscripts.
         </p>
 <div class="table">
-<a name="id-1.4.7.7.3"></a><p class="title"><b>Table 69. 802-1x setting</b></p>
+<a name="id-1.4.10.7.3"></a><p class="title"><b>Table 69. 802-1x setting</b></p>
 <div class="table-contents"><table summary="802-1x setting" border="1">
 <colgroup>
 <col>
@@ -524,7 +524,7 @@ Example: </strong></span>IEEE_8021X_PRIVATE_KEY=/home/joe/mykey.p12</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.4"></a><p class="title"><b>Table 70. bond setting</b></p>
+<a name="id-1.4.10.7.4"></a><p class="title"><b>Table 70. bond setting</b></p>
 <div class="table-contents"><table summary="bond setting" border="1">
 <colgroup>
 <col>
@@ -549,7 +549,7 @@ Example: </strong></span>BONDING_OPTS="miimon=100 mode=broadcast"</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.5"></a><p class="title"><b>Table 71. bridge-port setting</b></p>
+<a name="id-1.4.10.7.5"></a><p class="title"><b>Table 71. bridge-port setting</b></p>
 <div class="table-contents"><table summary="bridge-port setting" border="1">
 <colgroup>
 <col>
@@ -590,7 +590,7 @@ Allowed values: </strong></span>1 - 65535</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.6"></a><p class="title"><b>Table 72. bridge setting</b></p>
+<a name="id-1.4.10.7.6"></a><p class="title"><b>Table 72. bridge setting</b></p>
 <div class="table-contents"><table summary="bridge setting" border="1">
 <colgroup>
 <col>
@@ -670,7 +670,7 @@ Allowed values: </strong></span>0 or 1</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.7"></a><p class="title"><b>Table 73. connection setting</b></p>
+<a name="id-1.4.10.7.7"></a><p class="title"><b>Table 73. connection setting</b></p>
 <div class="table-contents"><table summary="connection setting" border="1">
 <colgroup>
 <col>
@@ -809,7 +809,7 @@ Allowed values: </strong></span>boolean value or 'rx'</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.8"></a><p class="title"><b>Table 74. dcb setting</b></p>
+<a name="id-1.4.10.7.8"></a><p class="title"><b>Table 74. dcb setting</b></p>
 <div class="table-contents"><table summary="dcb setting" border="1">
 <colgroup>
 <col>
@@ -944,7 +944,7 @@ Example: </strong></span>DCB_PG_UP2TC=01623701</td>
           used explicitly to enable DCB so that the rest of the DCB_* variables can apply.
         </p>
 <div class="table">
-<a name="id-1.4.7.7.10"></a><p class="title"><b>Table 75. infiniband setting</b></p>
+<a name="id-1.4.10.7.10"></a><p class="title"><b>Table 75. infiniband setting</b></p>
 <div class="table-contents"><table summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -999,7 +999,7 @@ Example: </strong></span>PHYSDEV=ib0</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.11"></a><p class="title"><b>Table 76. ip-tunnel setting</b></p>
+<a name="id-1.4.10.7.11"></a><p class="title"><b>Table 76. ip-tunnel setting</b></p>
 <div class="table-contents"><table summary="ip-tunnel setting" border="1">
 <colgroup>
 <col>
@@ -1017,7 +1017,7 @@ Example: </strong></span>PHYSDEV=ib0</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.12"></a><p class="title"><b>Table 77. ipv4 setting</b></p>
+<a name="id-1.4.10.7.12"></a><p class="title"><b>Table 77. ipv4 setting</b></p>
 <div class="table-contents"><table summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -1160,7 +1160,7 @@ Example: </strong></span>DHCP_FQDN=foo.bar.com</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.13"></a><p class="title"><b>Table 78. ipv6 setting</b></p>
+<a name="id-1.4.10.7.13"></a><p class="title"><b>Table 78. ipv6 setting</b></p>
 <div class="table-contents"><table summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -1280,7 +1280,7 @@ Allowed values: </strong></span>IPV6_ADDR_GEN_MODE: eui64, stable-privacy</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.14"></a><p class="title"><b>Table 79. macvlan setting</b></p>
+<a name="id-1.4.10.7.14"></a><p class="title"><b>Table 79. macvlan setting</b></p>
 <div class="table-contents"><table summary="macvlan setting" border="1">
 <colgroup>
 <col>
@@ -1298,7 +1298,7 @@ Allowed values: </strong></span>IPV6_ADDR_GEN_MODE: eui64, stable-privacy</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.15"></a><p class="title"><b>Table 80. team-port setting</b></p>
+<a name="id-1.4.10.7.15"></a><p class="title"><b>Table 80. team-port setting</b></p>
 <div class="table-contents"><table summary="team-port setting" border="1">
 <colgroup>
 <col>
@@ -1321,7 +1321,7 @@ Allowed values: </strong></span>IPV6_ADDR_GEN_MODE: eui64, stable-privacy</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.16"></a><p class="title"><b>Table 81. team setting</b></p>
+<a name="id-1.4.10.7.16"></a><p class="title"><b>Table 81. team setting</b></p>
 <div class="table-contents"><table summary="team setting" border="1">
 <colgroup>
 <col>
@@ -1344,7 +1344,7 @@ Allowed values: </strong></span>IPV6_ADDR_GEN_MODE: eui64, stable-privacy</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.17"></a><p class="title"><b>Table 82. tun setting</b></p>
+<a name="id-1.4.10.7.17"></a><p class="title"><b>Table 82. tun setting</b></p>
 <div class="table-contents"><table summary="tun setting" border="1">
 <colgroup>
 <col>
@@ -1362,7 +1362,7 @@ Allowed values: </strong></span>IPV6_ADDR_GEN_MODE: eui64, stable-privacy</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.18"></a><p class="title"><b>Table 83. vlan setting</b></p>
+<a name="id-1.4.10.7.18"></a><p class="title"><b>Table 83. vlan setting</b></p>
 <div class="table-contents"><table summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -1425,7 +1425,7 @@ Example: </strong></span>PHYSDEV=eth0, VLAN_ID=12; or DEVICE=eth0.12</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.19"></a><p class="title"><b>Table 84. vxlan setting</b></p>
+<a name="id-1.4.10.7.19"></a><p class="title"><b>Table 84. vxlan setting</b></p>
 <div class="table-contents"><table summary="vxlan setting" border="1">
 <colgroup>
 <col>
@@ -1443,7 +1443,7 @@ Example: </strong></span>PHYSDEV=eth0, VLAN_ID=12; or DEVICE=eth0.12</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.20"></a><p class="title"><b>Table 85. 802-3-ethernet setting</b></p>
+<a name="id-1.4.10.7.20"></a><p class="title"><b>Table 85. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -1537,7 +1537,7 @@ Allowed values: </strong></span>"qeth", "lcs" or "ctc"</td>
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.21"></a><p class="title"><b>Table 86. 802-11-wireless-security setting</b></p>
+<a name="id-1.4.10.7.21"></a><p class="title"><b>Table 86. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>
@@ -1689,7 +1689,7 @@ Example: </strong></span>KEY1=s:ahoj, KEY1=0a1c45bc02, KEY_PASSPHRASE1=mysuperse
 </table></div>
 </div>
 <br class="table-break"><div class="table">
-<a name="id-1.4.7.7.22"></a><p class="title"><b>Table 87. 802-11-wireless setting</b></p>
+<a name="id-1.4.10.7.22"></a><p class="title"><b>Table 87. 802-11-wireless setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -1853,11 +1853,7 @@ Allowed values: </strong></span>default, never, always</td>
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.4.7.8"></a><h2>AUTHOR</h2>
-<p><span class="author"><span class="firstname">NetworkManager developers</span></span></p>
-</div>
-<div class="refsect1">
-<a name="id-1.4.7.9"></a><h2>FILES</h2>
+<a name="files"></a><h2>Files</h2>
 <p><code class="filename">/etc/sysconfig/network-scripts/ifcfg-*</code></p>
 <p><code class="filename">/etc/sysconfig/network-scripts/keys-*</code></p>
 <p><code class="filename">/etc/sysconfig/network-scripts/route-*</code></p>
@@ -1865,9 +1861,13 @@ Allowed values: </strong></span>default, never, always</td>
 <p><code class="filename">/usr/share/doc/initscripts/sysconfig.txt</code></p>
 </div>
 <div class="refsect1">
-<a name="id-1.4.7.10"></a><h2>SEE ALSO</h2>
-<p>https://developer.gnome.org/NetworkManager/unstable/ref-settings.html</p>
-<p>nm-settings(5), nm-settings-keyfile(5), NetworkManager(8), NetworkManager.conf(5), nmcli(1), nmcli-examples(5)</p>
+<a name="see_also"></a><h2>See Also</h2>
+<p><span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span>,
+        <span class="citerefentry"><span class="refentrytitle">nm-settings-keyfile</span>(5)</span>,
+        <span class="citerefentry"><span class="refentrytitle">NetworkManager</span>(8)</span>,
+        <span class="citerefentry"><span class="refentrytitle">NetworkManager.conf</span>(5)</span>,
+        <span class="citerefentry"><span class="refentrytitle">nmcli</span>(1)</span>,
+        <span class="citerefentry"><span class="refentrytitle">nmcli-examples</span>(7)</span></p>
 </div>
 </div>
 <div class="footer">

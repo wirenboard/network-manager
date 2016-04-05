@@ -52,7 +52,8 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Owner  readable   x
 </programlisting>
-<para>The uid of the tunnel owner, or -1 if it has no owner.</para>
+<para>        The uid of the tunnel owner, or -1 if it has no owner.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Tun.Group">
   <title>The "Group" property</title>
@@ -60,7 +61,8 @@ Owner  readable   x
 <programlisting>
 Group  readable   x
 </programlisting>
-<para>The gid of the tunnel group, or -1 if it has no owner.</para>
+<para>        The gid of the tunnel group, or -1 if it has no owner.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Tun.Mode">
   <title>The "Mode" property</title>
@@ -68,7 +70,8 @@ Group  readable   x
 <programlisting>
 Mode  readable   s
 </programlisting>
-<para>The tunnel mode, either "tun" or "tap".</para>
+<para>        The tunnel mode, either "tun" or "tap".
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Tun.NoPi">
   <title>The "NoPi" property</title>
@@ -76,7 +79,9 @@ Mode  readable   s
 <programlisting>
 NoPi  readable   b
 </programlisting>
-<para>The tunnel's "TUN_NO_PI" flag; true if no protocol info is  prepended to the tunnel packets.</para>
+<para>        The tunnel's "TUN_NO_PI" flag; true if no protocol info is prepended to
+        the tunnel packets.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Tun.VnetHdr">
   <title>The "VnetHdr" property</title>
@@ -84,7 +89,9 @@ NoPi  readable   b
 <programlisting>
 VnetHdr  readable   b
 </programlisting>
-<para>The tunnel's "TUN_VNET_HDR" flag; true if the tunnel packets  include a virtio network header.</para>
+<para>        The tunnel's "TUN_VNET_HDR" flag; true if the tunnel packets include a
+        virtio network header.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Tun.MultiQueue">
   <title>The "MultiQueue" property</title>
@@ -92,7 +99,9 @@ VnetHdr  readable   b
 <programlisting>
 MultiQueue  readable   b
 </programlisting>
-<para>The tunnel's "TUN_TAP_MQ" flag; true if callers can connect to         the tap device multiple times, for multiple send/receive         queues.</para>
+<para>        The tunnel's "TUN_TAP_MQ" flag; true if callers can connect to the tap
+        device multiple times, for multiple send/receive queues.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Tun.HwAddress">
   <title>The "HwAddress" property</title>
@@ -100,7 +109,8 @@ MultiQueue  readable   b
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>Hardware address of the device.</para>
+<para>        Hardware address of the device.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

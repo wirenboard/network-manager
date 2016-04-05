@@ -55,7 +55,9 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 Flags  readable   u
 </programlisting>
-<para>Flags describing the capabilities of the access point.</para>
+<para>        Flags describing the capabilities of the access point.
+</para><para>        Returns: <link linkend="NM80211ApFlags">NM80211ApFlags</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.WpaFlags">
   <title>The "WpaFlags" property</title>
@@ -63,7 +65,10 @@ Flags  readable   u
 <programlisting>
 WpaFlags  readable   u
 </programlisting>
-<para>Flags describing the access point's capabilities according to WPA (Wifi Protected Access).</para>
+<para>        Flags describing the access point's capabilities according to WPA (Wifi
+        Protected Access).
+</para><para>        Returns: <link linkend="NM80211ApSecurityFlags">NM80211ApSecurityFlags</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.RsnFlags">
   <title>The "RsnFlags" property</title>
@@ -71,7 +76,10 @@ WpaFlags  readable   u
 <programlisting>
 RsnFlags  readable   u
 </programlisting>
-<para>Flags describing the access point's capabilities according to the RSN (Robust Secure Network) protocol.</para>
+<para>        Flags describing the access point's capabilities according to the RSN
+        (Robust Secure Network) protocol.
+</para><para>        Returns: <link linkend="NM80211ApSecurityFlags">NM80211ApSecurityFlags</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.Ssid">
   <title>The "Ssid" property</title>
@@ -79,7 +87,8 @@ RsnFlags  readable   u
 <programlisting>
 Ssid  readable   ay
 </programlisting>
-<para>The Service Set Identifier identifying the access point.</para>
+<para>        The Service Set Identifier identifying the access point.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.Frequency">
   <title>The "Frequency" property</title>
@@ -87,7 +96,8 @@ Ssid  readable   ay
 <programlisting>
 Frequency  readable   u
 </programlisting>
-<para>The radio channel frequency in use by the access point, in MHz.</para>
+<para>        The radio channel frequency in use by the access point, in MHz.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.HwAddress">
   <title>The "HwAddress" property</title>
@@ -95,7 +105,8 @@ Frequency  readable   u
 <programlisting>
 HwAddress  readable   s
 </programlisting>
-<para>The hardware address (BSSID) of the access point.</para>
+<para>        The hardware address (BSSID) of the access point.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.Mode">
   <title>The "Mode" property</title>
@@ -103,7 +114,9 @@ HwAddress  readable   s
 <programlisting>
 Mode  readable   u
 </programlisting>
-<para>Describes the operating mode of the access point.</para>
+<para>        Describes the operating mode of the access point.
+</para><para>        Returns: <link linkend="NM80211Mode">NM80211Mode</link>
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.MaxBitrate">
   <title>The "MaxBitrate" property</title>
@@ -111,7 +124,9 @@ Mode  readable   u
 <programlisting>
 MaxBitrate  readable   u
 </programlisting>
-<para>The maximum bitrate this access point is capable of, in kilobits/second (Kb/s).</para>
+<para>        The maximum bitrate this access point is capable of, in kilobits/second
+        (Kb/s).
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.Strength">
   <title>The "Strength" property</title>
@@ -119,7 +134,8 @@ MaxBitrate  readable   u
 <programlisting>
 Strength  readable   y
 </programlisting>
-<para>The current signal quality of the access point, in percent.</para>
+<para>        The current signal quality of the access point, in percent.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-AccessPoint.LastSeen">
   <title>The "LastSeen" property</title>
@@ -127,7 +143,10 @@ Strength  readable   y
 <programlisting>
 LastSeen  readable   i
 </programlisting>
-<para>The timestamp (in CLOCK_BOOTTIME seconds) for the last time the access         point was found in scan results.  A value of -1 means the access point         has never been found in scan results.</para>
+<para>        The timestamp (in CLOCK_BOOTTIME seconds) for the last time the access
+        point was found in scan results. A value of -1 means the access point has
+        never been found in scan results.
+</para>
 </refsect2>
 </refsect1>
 </refentry>

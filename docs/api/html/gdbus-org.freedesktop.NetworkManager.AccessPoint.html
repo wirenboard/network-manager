@@ -85,7 +85,10 @@ PropertiesChanged (a{sv} properties);
 <pre class="programlisting">
 Flags  readable   u
 </pre>
-<p>Flags describing the capabilities of the access point.</p>
+<p>        Flags describing the capabilities of the access point.
+</p>
+<p>        Returns: <a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManager.html#NM80211ApFlags">NM80211ApFlags</a>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -93,7 +96,11 @@ Flags  readable   u
 <pre class="programlisting">
 WpaFlags  readable   u
 </pre>
-<p>Flags describing the access point's capabilities according to WPA (Wifi Protected Access).</p>
+<p>        Flags describing the access point's capabilities according to WPA (Wifi
+        Protected Access).
+</p>
+<p>        Returns: <a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManager.html#NM80211ApSecurityFlags">NM80211ApSecurityFlags</a>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -101,7 +108,11 @@ WpaFlags  readable   u
 <pre class="programlisting">
 RsnFlags  readable   u
 </pre>
-<p>Flags describing the access point's capabilities according to the RSN (Robust Secure Network) protocol.</p>
+<p>        Flags describing the access point's capabilities according to the RSN
+        (Robust Secure Network) protocol.
+</p>
+<p>        Returns: <a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManager.html#NM80211ApSecurityFlags">NM80211ApSecurityFlags</a>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -109,7 +120,8 @@ RsnFlags  readable   u
 <pre class="programlisting">
 Ssid  readable   ay
 </pre>
-<p>The Service Set Identifier identifying the access point.</p>
+<p>        The Service Set Identifier identifying the access point.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -117,7 +129,8 @@ Ssid  readable   ay
 <pre class="programlisting">
 Frequency  readable   u
 </pre>
-<p>The radio channel frequency in use by the access point, in MHz.</p>
+<p>        The radio channel frequency in use by the access point, in MHz.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -125,7 +138,8 @@ Frequency  readable   u
 <pre class="programlisting">
 HwAddress  readable   s
 </pre>
-<p>The hardware address (BSSID) of the access point.</p>
+<p>        The hardware address (BSSID) of the access point.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -133,7 +147,10 @@ HwAddress  readable   s
 <pre class="programlisting">
 Mode  readable   u
 </pre>
-<p>Describes the operating mode of the access point.</p>
+<p>        Describes the operating mode of the access point.
+</p>
+<p>        Returns: <a href="https://developer.gnome.org/libnm-util/0.9/libnm-util-NetworkManager.html#NM80211Mode">NM80211Mode</a>
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -141,7 +158,9 @@ Mode  readable   u
 <pre class="programlisting">
 MaxBitrate  readable   u
 </pre>
-<p>The maximum bitrate this access point is capable of, in kilobits/second (Kb/s).</p>
+<p>        The maximum bitrate this access point is capable of, in kilobits/second
+        (Kb/s).
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -149,7 +168,8 @@ MaxBitrate  readable   u
 <pre class="programlisting">
 Strength  readable   y
 </pre>
-<p>The current signal quality of the access point, in percent.</p>
+<p>        The current signal quality of the access point, in percent.
+</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -157,7 +177,10 @@ Strength  readable   y
 <pre class="programlisting">
 LastSeen  readable   i
 </pre>
-<p>The timestamp (in CLOCK_BOOTTIME seconds) for the last time the access         point was found in scan results.  A value of -1 means the access point         has never been found in scan results.</p>
+<p>        The timestamp (in CLOCK_BOOTTIME seconds) for the last time the access
+        point was found in scan results. A value of -1 means the access point has
+        never been found in scan results.
+</p>
 </div>
 </div>
 </div>

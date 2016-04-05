@@ -42,7 +42,9 @@
   </refsect1>
 <refsect1 role="desc" id="gdbus-interface-org-freedesktop-NetworkManager-VPN-Plugin">
   <title role="desc.title">Description</title>
-  <para>This interface is provided by plugins providing VPN services to the NetworkManager daemon.</para>
+  <para>      This interface is provided by plugins providing VPN services to the
+      NetworkManager daemon.
+</para>
 </refsect1>
 <refsect1 role="details" id="gdbus-methods-org.freedesktop.NetworkManager.VPN.Plugin">
   <title role="details.title">Method Details</title>
@@ -52,7 +54,9 @@
 <programlisting>
 Connect (IN  a{sa{sv}} connection);
 </programlisting>
-<para>Tells the plugin to connect.  Interactive secrets requests (eg, emitting         the SecretsRequired signal) are not allowed.</para>
+<para>        Tells the plugin to connect. Interactive secrets requests (eg, emitting
+        the SecretsRequired signal) are not allowed.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>connection</parameter></literal>:</term>
@@ -67,7 +71,10 @@ Connect (IN  a{sa{sv}} connection);
 ConnectInteractive (IN  a{sa{sv}} connection,
                     IN  a{sv}     details);
 </programlisting>
-<para>Tells the plugin to connect, allowing interactive secrets requests (eg         the plugin is allowed to emit the SecretsRequired signal if the VPN         service indicates that it needs additional secrets during the connect         process).</para>
+<para>        Tells the plugin to connect, allowing interactive secrets requests (eg the
+        plugin is allowed to emit the SecretsRequired signal if the VPN service
+        indicates that it needs additional secrets during the connect process).
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>connection</parameter></literal>:</term>
@@ -86,7 +93,9 @@ ConnectInteractive (IN  a{sa{sv}} connection,
 NeedSecrets (IN  a{sa{sv}} settings,
              OUT s         setting_name);
 </programlisting>
-<para>Asks the plugin whether the provided connection will require secrets to connect successfully.</para>
+<para>        Asks the plugin whether the provided connection will require secrets to
+        connect successfully.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>settings</parameter></literal>:</term>
@@ -104,7 +113,8 @@ NeedSecrets (IN  a{sa{sv}} settings,
 <programlisting>
 Disconnect ();
 </programlisting>
-<para>Disconnect the plugin.</para>
+<para>        Disconnect the plugin.
+</para>
 </refsect2>
 <refsect2 role="method" id="gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.SetConfig">
   <title>The SetConfig() method</title>
@@ -112,7 +122,8 @@ Disconnect ();
 <programlisting>
 SetConfig (IN  a{sv} config);
 </programlisting>
-<para>Set generic connection details on the connection.</para>
+<para>        Set generic connection details on the connection.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sv} <parameter>config</parameter></literal>:</term>
@@ -126,11 +137,12 @@ SetConfig (IN  a{sv} config);
 <programlisting>
 SetIp4Config (IN  a{sv} config);
 </programlisting>
-<para>Set IPv4 details on the connection.</para>
+<para>        Set IPv4 details on the connection.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sv} <parameter>config</parameter></literal>:</term>
-  <listitem><para>Ip4Config details for the connection. You must call    SetConfig() before calling this.</para></listitem>
+  <listitem><para>Ip4Config details for the connection. You must call SetConfig() before calling this.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -140,11 +152,12 @@ SetIp4Config (IN  a{sv} config);
 <programlisting>
 SetIp6Config (IN  a{sv} config);
 </programlisting>
-<para>Set IPv6 details on the connection.</para>
+<para>        Set IPv6 details on the connection.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sv} <parameter>config</parameter></literal>:</term>
-  <listitem><para>Ip6Config details for the connection. You must call    SetConfig() before calling this.</para></listitem>
+  <listitem><para>Ip6Config details for the connection. You must call SetConfig() before calling this.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -154,7 +167,8 @@ SetIp6Config (IN  a{sv} config);
 <programlisting>
 SetFailure (IN  s reason);
 </programlisting>
-<para>Indicate a failure to the plugin.</para>
+<para>        Indicate a failure to the plugin.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN s <parameter>reason</parameter></literal>:</term>
@@ -168,7 +182,9 @@ SetFailure (IN  s reason);
 <programlisting>
 NewSecrets (IN  a{sa{sv}} connection);
 </programlisting>
-<para>Called in response to a SecretsRequired signal to deliver updated secrets         or other information to the plugin.</para>
+<para>        Called in response to a SecretsRequired signal to deliver updated secrets
+        or other information to the plugin.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>connection</parameter></literal>:</term>
@@ -185,11 +201,12 @@ NewSecrets (IN  a{sa{sv}} connection);
 <programlisting>
 StateChanged (u state);
 </programlisting>
-<para>Emitted when the plugin state changes.</para>
+<para>        Emitted when the plugin state changes.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>u <parameter>state</parameter></literal>:</term>
-  <listitem><para>The new state of the plugin.</para></listitem>
+  <listitem><para>(<link linkend="NMVpnServiceState">NMVpnServiceState</link>) The new state of the plugin.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -200,15 +217,18 @@ StateChanged (u state);
 SecretsRequired (s  message,
                  as secrets);
 </programlisting>
-<para>Emitted during an ongoing ConnectInteractive() request when the plugin         has determined that new secrets are required.  NetworkManager will then         call the NewSecrets() method with a connection hash including the new         secrets.</para>
+<para>        Emitted during an ongoing ConnectInteractive() request when the plugin has
+        determined that new secrets are required. NetworkManager will then call
+        the NewSecrets() method with a connection hash including the new secrets.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>s <parameter>message</parameter></literal>:</term>
-  <listitem><para>Informational message, if any, about the request.  For example, if               a second PIN is required, could indicate to the user to wait for               the token code to change until entering the next PIN.</para></listitem>
+  <listitem><para>Informational message, if any, about the request. For example, if a second PIN is required, could indicate to the user to wait for the token code to change until entering the next PIN.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>as <parameter>secrets</parameter></literal>:</term>
-  <listitem><para>Array of strings of VPN secret names which the plugin thinks               secrets may be required for, or other VPN-specific data to be               processed by the VPN's front-end.</para></listitem>
+  <listitem><para>Array of strings of VPN secret names which the plugin thinks secrets may be required for, or other VPN-specific data to be processed by the VPN's front-end.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -218,7 +238,8 @@ SecretsRequired (s  message,
 <programlisting>
 Config (a{sv} config);
 </programlisting>
-<para>The plugin obtained generic configuration information.</para>
+<para>        The plugin obtained generic configuration information.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>config</parameter></literal>:</term>
@@ -232,7 +253,8 @@ Config (a{sv} config);
 <programlisting>
 Ip4Config (a{sv} ip4config);
 </programlisting>
-<para>The plugin obtained an IPv4 configuration.</para>
+<para>        The plugin obtained an IPv4 configuration.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>ip4config</parameter></literal>:</term>
@@ -246,7 +268,8 @@ Ip4Config (a{sv} ip4config);
 <programlisting>
 Ip6Config (a{sv} ip6config);
 </programlisting>
-<para>The plugin obtained an IPv6 configuration.</para>
+<para>        The plugin obtained an IPv6 configuration.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>ip6config</parameter></literal>:</term>
@@ -260,7 +283,8 @@ Ip6Config (a{sv} ip6config);
 <programlisting>
 LoginBanner (s banner);
 </programlisting>
-<para>Emitted when the plugin receives a login banner from the VPN service.</para>
+<para>        Emitted when the plugin receives a login banner from the VPN service.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>s <parameter>banner</parameter></literal>:</term>
@@ -274,11 +298,12 @@ LoginBanner (s banner);
 <programlisting>
 Failure (u reason);
 </programlisting>
-<para>Emitted when a failure in the VPN plugin occurs.</para>
+<para>        Emitted when a failure in the VPN plugin occurs.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>u <parameter>reason</parameter></literal>:</term>
-  <listitem><para>Reason code for the failure.</para></listitem>
+  <listitem><para>(<link linkend="NMVpnPluginFailure">NMVpnPluginFailure</link>) Reason code for the failure.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -291,7 +316,9 @@ Failure (u reason);
 <programlisting>
 State  readable   u
 </programlisting>
-<para>The state of the plugin.</para>
+<para>        The state of the plugin.
+</para><para>        Returns: <link linkend="NMVpnServiceState">NMVpnServiceState</link>
+</para>
 </refsect2>
 </refsect1>
 </refentry>

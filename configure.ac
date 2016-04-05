@@ -3,7 +3,7 @@ AC_PREREQ([2.63])
 dnl The NM version number
 m4_define([nm_major_version], [1])
 m4_define([nm_minor_version], [1])
-m4_define([nm_micro_version], [92])
+m4_define([nm_micro_version], [93])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -350,21 +350,25 @@ PKG_CHECK_MODULES(SYSTEMD_200, [systemd >= 200], [have_systemd_200=yes],[have_sy
 AM_CONDITIONAL(HAVE_SYSTEMD_200, test "${have_systemd_200}" = "yes")
 
 # Hostname persist mode
-AC_ARG_WITH(hostname-persist, AS_HELP_STRING([--with-hostname-persist=default|suse|gentoo],
+AC_ARG_WITH(hostname-persist, AS_HELP_STRING([--with-hostname-persist=default|suse|gentoo|slackware],
 	[Hostname persist method]))
 
 AS_IF([test "$with_hostname_persist" = "suse"], hostname_persist=suse)
 AS_IF([test "$with_hostname_persist" = "gentoo"], hostname_persist=gentoo)
+AS_IF([test "$with_hostname_persist" = "slackware"], hostname_persist=slackware)
 AS_IF([test "$with_hostname_persist" = "default"], hostname_persist=default)
 # if the method was not explicitly set, try to guess it from the enabled plugins
 AS_IF([test -z "$hostname_persist" -a "$distro_plugins" = "ifcfg-suse"], hostname_persist=suse)
 AS_IF([test -z "$hostname_persist" -a "$distro_plugins" = "ifnet"], hostname_persist=gentoo)
+AS_IF([test -z "$hostname_persist" -a -f /etc/slackware-version], hostname_persist=slackware)
 AS_IF([test -z "$hostname_persist"], hostname_persist=default)
 
 if test "$hostname_persist" = suse; then
 	AC_DEFINE(HOSTNAME_PERSIST_SUSE, 1, [Enable SuSE hostname persist method])
 elif test "$hostname_persist" = gentoo; then
 	AC_DEFINE(HOSTNAME_PERSIST_GENTOO, 1, [Enable Gentoo hostname persist method])
+elif test "$hostname_persist" = slackware; then
+	AC_DEFINE(HOSTNAME_PERSIST_SLACKWARE, 1, [Enable Slackware hostname persist method])
 fi
 
 AC_ARG_WITH(systemd-journal, AS_HELP_STRING([--with-systemd-journal=yes|no], [Use systemd journal for logging]))
@@ -957,11 +961,14 @@ GTK_DOC_CHECK(1.0)
 # check for pregenerated manpages to be installed
 install_pregen_manpages=no
 if test "$enable_gtk_doc" != "yes" \
+	-a -f man/nmcli.1 \
+	-a -f man/nmtui.1 \
+	-a -f man/nm-online.1 \
 	-a -f man/NetworkManager.conf.5 \
 	-a -f man/nm-settings.5 \
 	-a -f man/nm-settings-keyfile.5 \
 	-a -f man/nm-settings-ifcfg-rh.5 \
-	-a -f man/nmcli-examples.5 \
+	-a -f man/nmcli-examples.7 \
 	-a -f man/NetworkManager.8; then
 	install_pregen_manpages=yes
 fi
@@ -1068,12 +1075,8 @@ clients/cli/Makefile
 clients/tui/Makefile
 clients/tui/newt/Makefile
 introspection/Makefile
-introspection/all.xml
 man/Makefile
-man/nm-system-settings.conf.5
-man/nm-online.1
-man/nmcli.1
-man/nmtui.1
+man/common.ent
 po/Makefile.in
 policy/Makefile
 policy/org.freedesktop.NetworkManager.policy.in

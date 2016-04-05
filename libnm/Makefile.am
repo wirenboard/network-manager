@@ -1,5 +1,7 @@
 include $(GLIB_MAKEFILE)
 
+@GNOME_CODE_COVERAGE_RULES@
+
 SUBDIRS = . tests
 
 AM_CPPFLAGS = \
@@ -12,10 +14,10 @@ AM_CPPFLAGS = \
 	-I$(top_builddir)/libnm \
 	-DG_LOG_DOMAIN=\""libnm"\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
-	-DNM_VERSION_MAX_ALLOWED=NM_VERSION_NEXT_STABLE \
 	$(GLIB_CFLAGS) \
 	$(GUDEV_CFLAGS) \
-	-DNMRUNDIR=\"$(nmrundir)\"
+	-DNMRUNDIR=\"$(nmrundir)\" \
+	$(CODE_COVERAGE_CFLAGS)
 
 include $(top_srcdir)/libnm-core/Makefile.libnm-core
 
@@ -130,7 +132,7 @@ libnm_la_SOURCES =			\
 GLIB_GENERATED = nm-enum-types.h nm-enum-types.c
 nm_enum_types_sources = $(libnminclude_HEADERS)
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM --fhead '\#include <nm-core-enum-types.h>\n'
-GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
+GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM --fhead '\#include "nm-default.h"\n'
 
 libnm_la_LIBADD = \
 	$(top_builddir)/libnm-core/libnm-core.la \
@@ -138,6 +140,9 @@ libnm_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(UUID_LIBS) \
 	$(GUDEV_LIBS)
+
+libnm_la_LDFLAGS = \
+	$(CODE_COVERAGE_LDFLAGS)
 
 SYMBOL_VIS_FILE=$(srcdir)/libnm.ver
 

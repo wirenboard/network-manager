@@ -40,7 +40,9 @@
   </refsect1>
 <refsect1 role="desc" id="gdbus-interface-org-freedesktop-NetworkManager-Settings">
   <title role="desc.title">Description</title>
-  <para>The Settings interface allows clients to view and administrate the connections stored and used by NetworkManager.</para>
+  <para>      The Settings interface allows clients to view and administrate the
+      connections stored and used by NetworkManager.
+</para>
 </refsect1>
 <refsect1 role="details" id="gdbus-methods-org.freedesktop.NetworkManager.Settings">
   <title role="details.title">Method Details</title>
@@ -50,7 +52,8 @@
 <programlisting>
 ListConnections (OUT ao connections);
 </programlisting>
-<para>List the saved network connections known to NetworkManager.</para>
+<para>        List the saved network connections known to NetworkManager.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT ao <parameter>connections</parameter></literal>:</term>
@@ -65,7 +68,8 @@ ListConnections (OUT ao connections);
 GetConnectionByUuid (IN  s uuid,
                      OUT o connection);
 </programlisting>
-<para>Retrieve the object path of a connection, given that connection's UUID.</para>
+<para>        Retrieve the object path of a connection, given that connection's UUID.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN s <parameter>uuid</parameter></literal>:</term>
@@ -84,7 +88,11 @@ GetConnectionByUuid (IN  s uuid,
 AddConnection (IN  a{sa{sv}} connection,
                OUT o         path);
 </programlisting>
-<para>Add new connection and save it to disk.  This operation does not start         the network connection unless (1) device is idle and able to connect to         the network described by the new connection, and (2) the connection         is allowed to be started automatically.</para>
+<para>        Add new connection and save it to disk. This operation does not start the
+        network connection unless (1) device is idle and able to connect to the
+        network described by the new connection, and (2) the connection is allowed
+        to be started automatically.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>connection</parameter></literal>:</term>
@@ -103,7 +111,14 @@ AddConnection (IN  a{sa{sv}} connection,
 AddConnectionUnsaved (IN  a{sa{sv}} connection,
                       OUT o         path);
 </programlisting>
-<para>Add new connection but do not save it to disk immediately.  This         operation does not start the network connection unless (1) device is         idle and able to connect to the network described by the new connection,         and (2) the connection is allowed to be started automatically.          Use the 'Save' method on the connection to save these changes         to disk. Note that unsaved changes will be lost if the         connection is reloaded from disk (either automatically on file         change or due to an explicit ReloadConnections call).</para>
+<para>        Add new connection but do not save it to disk immediately. This operation
+        does not start the network connection unless (1) device is idle and able
+        to connect to the network described by the new connection, and (2) the
+        connection is allowed to be started automatically. Use the 'Save' method
+        on the connection to save these changes to disk. Note that unsaved changes
+        will be lost if the connection is reloaded from disk (either automatically
+        on file change or due to an explicit ReloadConnections call).
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN a{sa{sv}} <parameter>connection</parameter></literal>:</term>
@@ -123,15 +138,21 @@ LoadConnections (IN  as filenames,
                  OUT b  status,
                  OUT as failures);
 </programlisting>
-<para>Loads or reloads the indicated connections from disk. You         should call this after making changes directly to an on-disk         connection file to make sure that NetworkManager sees the         changes. (If "monitor-connection-files" in NetworkManager.conf         is "true", then this will have no real effect, but is         harmless.) As with AddConnection(), this operation does not         necessarily start the network connection.</para>
+<para>        Loads or reloads the indicated connections from disk. You should call this
+        after making changes directly to an on-disk connection file to make sure
+        that NetworkManager sees the changes. (If "monitor-connection-files" in
+        NetworkManager.conf is "true", then this will have no real effect, but is
+        harmless.) As with AddConnection(), this operation does not necessarily
+        start the network connection.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN as <parameter>filenames</parameter></literal>:</term>
-  <listitem><para>Array of paths to on-disk connection profiles in directories           monitored by NetworkManager.</para></listitem>
+  <listitem><para>Array of paths to on-disk connection profiles in directories monitored by NetworkManager.</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>OUT b <parameter>status</parameter></literal>:</term>
-  <listitem><para>Success or failure of the operation as a whole. True if           NetworkManager at least tried to load the indicated           connections, even if it did not succeed. False if an error           occurred before trying to load the connections (eg,           permission denied).</para></listitem>
+  <listitem><para>Success or failure of the operation as a whole. True if NetworkManager at least tried to load the indicated connections, even if it did not succeed. False if an error occurred before trying to load the connections (eg, permission denied).</para></listitem>
 </varlistentry>
 <varlistentry>
   <term><literal>OUT as <parameter>failures</parameter></literal>:</term>
@@ -145,7 +166,12 @@ LoadConnections (IN  as filenames,
 <programlisting>
 ReloadConnections (OUT b status);
 </programlisting>
-<para>Tells NetworkManager to reload all connection files from disk,         including noticing any added or deleted connection files. By         default, connections are re-read automatically any time they         change, so you only need to use this command if you have set         "monitor-connection-files=false" in NetworkManager.conf.</para>
+<para>        Tells NetworkManager to reload all connection files from disk, including
+        noticing any added or deleted connection files. By default, connections
+        are re-read automatically any time they change, so you only need to use
+        this command if you have set "monitor-connection-files=false" in
+        NetworkManager.conf.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>OUT b <parameter>status</parameter></literal>:</term>
@@ -159,11 +185,12 @@ ReloadConnections (OUT b status);
 <programlisting>
 SaveHostname (IN  s hostname);
 </programlisting>
-<para>Save the hostname to persistent configuration.</para>
+<para>        Save the hostname to persistent configuration.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>IN s <parameter>hostname</parameter></literal>:</term>
-  <listitem><para>The hostname to save to persistent configuration.  If blank, the persistent hostname is cleared.</para></listitem>
+  <listitem><para>The hostname to save to persistent configuration. If blank, the persistent hostname is cleared.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>
@@ -190,7 +217,15 @@ PropertiesChanged (a{sv} properties);
 <programlisting>
 NewConnection (o connection);
 </programlisting>
-<para>Emitted when a new connection has been added after NetworkManager has         started up and initialized.  This signal is not emitted for connections         read while starting up, because NetworkManager's D-Bus service is only         available after all connections have been read, and to prevent spamming         listeners with too many signals at one time.  To retrieve the initial         connection list, call the ListConnections() method once, and then listen         for individual Settings.NewConnection and Settings.Connection.Deleted         signals for further updates.</para>
+<para>        Emitted when a new connection has been added after NetworkManager has
+        started up and initialized. This signal is not emitted for connections
+        read while starting up, because NetworkManager's D-Bus service is only
+        available after all connections have been read, and to prevent spamming
+        listeners with too many signals at one time. To retrieve the initial
+        connection list, call the ListConnections() method once, and then listen
+        for individual Settings.NewConnection and Settings.Connection.Deleted
+        signals for further updates.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>connection</parameter></literal>:</term>
@@ -204,7 +239,12 @@ NewConnection (o connection);
 <programlisting>
 ConnectionRemoved (o connection);
 </programlisting>
-<para>Emitted when a connection is no longer available.  This happens when         the connection is deleted or if it is no longer accessible by any of         the system's logged-in users.  After receipt of this signal, the         connection no longer exists and cannot be used.  Also see the         Settings.Connection.Removed signal.</para>
+<para>        Emitted when a connection is no longer available. This happens when the
+        connection is deleted or if it is no longer accessible by any of the
+        system's logged-in users. After receipt of this signal, the connection no
+        longer exists and cannot be used. Also see the Settings.Connection.Removed
+        signal.
+</para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>o <parameter>connection</parameter></literal>:</term>
@@ -221,7 +261,8 @@ ConnectionRemoved (o connection);
 <programlisting>
 Connections  readable   ao
 </programlisting>
-<para>List of object paths of available network connection profiles.</para>
+<para>        List of object paths of available network connection profiles.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Settings.Hostname">
   <title>The "Hostname" property</title>
@@ -229,7 +270,8 @@ Connections  readable   ao
 <programlisting>
 Hostname  readable   s
 </programlisting>
-<para>The machine hostname stored in persistent configuration.</para>
+<para>        The machine hostname stored in persistent configuration.
+</para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Settings.CanModify">
   <title>The "CanModify" property</title>
@@ -237,7 +279,8 @@ Hostname  readable   s
 <programlisting>
 CanModify  readable   b
 </programlisting>
-<para>If true, adding and modifying connections is supported.</para>
+<para>        If true, adding and modifying connections is supported.
+</para>
 </refsect2>
 </refsect1>
 </refentry>
