@@ -2,6 +2,8 @@ network-manager (1.1.94-1) UNRELEASED; urgency=medium
 
   * New upstream release. (1.2 rc2).
   * Rebase patches.
+  * Update debian/copyright, add new section for documentation which is
+    licensed under the GFDL.
 
  -- Michael Biebl <biebl@debian.org>  Tue, 12 Apr 2016 17:34:05 +0200
 
