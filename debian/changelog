@@ -1,4 +1,4 @@
-network-manager (1.1.94-1) UNRELEASED; urgency=medium
+network-manager (1.1.94-1) unstable; urgency=medium
 
   * New upstream release. (1.2 rc2).
   * Rebase patches.
@@ -6,7 +6,7 @@ network-manager (1.1.94-1) UNRELEASED; urgency=medium
     licensed under the GFDL.
   * Bump Standards-Version to 3.9.8.
 
- -- Michael Biebl <biebl@debian.org>  Tue, 12 Apr 2016 17:34:05 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 12 Apr 2016 18:08:32 +0200
 
 network-manager (1.1.93-1) unstable; urgency=medium
 
