@@ -2,8 +2,9 @@ network-manager (1.1.94-2) UNRELEASED; urgency=medium
 
   * Enable SELinux support, this allows NM to properly set labels on the
     hostname files.
+  * Enable audit support
 
- -- Laurent Bigonville <bigon@debian.org>  Thu, 21 Apr 2016 01:11:44 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 21 Apr 2016 01:29:23 +0200
 
 network-manager (1.1.94-1) unstable; urgency=medium
 
