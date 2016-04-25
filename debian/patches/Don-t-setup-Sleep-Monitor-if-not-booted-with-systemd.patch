@@ -18,7 +18,7 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 3ef5026..8bf8140 100644
+index ab2993a..18d0beb 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -474,8 +474,9 @@ fi

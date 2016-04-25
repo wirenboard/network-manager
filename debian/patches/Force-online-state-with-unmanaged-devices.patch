@@ -12,7 +12,7 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 120 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index 289a91d..f85b7ab 100644
+index e64c68a..10aa3d7 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
 @@ -57,6 +57,8 @@
@@ -75,7 +75,7 @@ index 289a91d..f85b7ab 100644
  	if (new_state == NM_STATE_CONNECTED_SITE) {
  		nm_connectivity_check_async (priv->connectivity,
  		                             checked_connectivity,
-@@ -4400,6 +4432,65 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -4410,6 +4442,65 @@ impl_manager_check_connectivity (NMManager *self,
  }
  
  static void
@@ -141,7 +141,7 @@ index 289a91d..f85b7ab 100644
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
  	nm_device_factory_start (factory);
-@@ -4470,6 +4561,9 @@ nm_manager_start (NMManager *self, GError **error)
+@@ -4480,6 +4571,9 @@ nm_manager_start (NMManager *self, GError **error)
  
  	check_if_startup_complete (self);
  
@@ -151,7 +151,7 @@ index 289a91d..f85b7ab 100644
  	return TRUE;
  }
  
-@@ -5270,6 +5364,22 @@ nm_manager_init (NMManager *self)
+@@ -5280,6 +5374,22 @@ nm_manager_init (NMManager *self)
  		       KERNEL_FIRMWARE_DIR);
  	}
  
@@ -174,7 +174,7 @@ index 289a91d..f85b7ab 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
  
-@@ -5512,6 +5622,16 @@ dispose (GObject *object)
+@@ -5522,6 +5632,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
