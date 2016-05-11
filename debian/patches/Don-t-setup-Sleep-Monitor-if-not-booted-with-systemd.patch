@@ -18,7 +18,7 @@ Closes: #742933
  3 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index ab2993a..18d0beb 100644
+index 7bb3779..93adf26 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -474,8 +474,9 @@ fi
@@ -33,10 +33,10 @@ index ab2993a..18d0beb 100644
          ;;
      consolekit)
 diff --git a/src/Makefile.am b/src/Makefile.am
-index bf668d7..670c29e 100644
+index aa35eef..2495bbc 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -481,6 +481,7 @@ AM_CPPFLAGS += \
+@@ -482,6 +482,7 @@ AM_CPPFLAGS += \
  	$(SELINUX_CFLAGS) \
  	$(LIBAUDIT_CFLAGS) \
  	$(SYSTEMD_LOGIN_CFLAGS) \
@@ -44,7 +44,7 @@ index bf668d7..670c29e 100644
  	$(SYSTEMD_JOURNAL_CFLAGS) \
  	$(SYSTEMD_NM_CFLAGS_PATHS) \
  	\
-@@ -514,6 +515,7 @@ libNetworkManager_la_LIBADD = \
+@@ -515,6 +516,7 @@ libNetworkManager_la_LIBADD = \
  	$(GUDEV_LIBS) \
  	$(LIBNL_LIBS) \
  	$(SYSTEMD_LOGIN_LIBS) \
