@@ -1,4 +1,4 @@
-network-manager (1.2.2-2) UNRELEASED; urgency=medium
+network-manager (1.2.2-2) unstable; urgency=medium
 
   * Let NetworkManager.service pull in network.target. This will provide a
     proper ordering on shutdown.
@@ -10,7 +10,7 @@ network-manager (1.2.2-2) UNRELEASED; urgency=medium
     need to purge the old state, otherwise i-s-h won't enable the service on
     upgrades.
 
- -- Michael Biebl <biebl@debian.org>  Thu, 02 Jun 2016 18:17:28 +0200
+ -- Michael Biebl <biebl@debian.org>  Thu, 02 Jun 2016 19:00:45 +0200
 
 network-manager (1.2.2-1) unstable; urgency=medium
 
