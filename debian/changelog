@@ -1,3 +1,14 @@
+network-manager (1.2.2-2) UNRELEASED; urgency=medium
+
+  * Let NetworkManager.service pull in network.target. This will provide a
+    proper ordering on shutdown.
+  * Enable NetworkManager-wait-online.service. This ensures that mounting of
+    network file systems works properly and SysV init scripts depending on
+    $network will be delayed until network is available (or a timeout is
+    reached).
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 02 Jun 2016 18:17:28 +0200
+
 network-manager (1.2.2-1) unstable; urgency=medium
 
   * New upstream release.

@@ -64,11 +64,6 @@ override_dh_makeshlibs:
 override_dh_strip:
 	dh_strip --dbgsym-migration='network-manager-dbg (<< 1.1.91-2~)'
 
-override_dh_systemd_enable:
-	dh_systemd_enable -pnetwork-manager NetworkManager-dispatcher.service
-	dh_systemd_enable -pnetwork-manager --no-enable NetworkManager-wait-online.service
-	dh_systemd_enable -pnetwork-manager NetworkManager.service
-
 override_dh_systemd_start:
 	dh_link lib/systemd/system/NetworkManager.service \
 		lib/systemd/system/network-manager.service
