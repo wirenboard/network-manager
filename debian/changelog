@@ -6,6 +6,9 @@ network-manager (1.2.2-2) UNRELEASED; urgency=medium
     network file systems works properly and SysV init scripts depending on
     $network will be delayed until network is available (or a timeout is
     reached).
+  * Make sure NetworkManager-wait-online.service is enabled on upgrades. We
+    need to purge the old state, otherwise i-s-h won't enable the service on
+    upgrades.
 
  -- Michael Biebl <biebl@debian.org>  Thu, 02 Jun 2016 18:17:28 +0200
 

@@ -40,6 +40,11 @@ case "$1" in
 	        mv -n /var/run/NetworkManager.pid /var/run/NetworkManager/
 	    fi
 	fi
+
+	# Purge the state so the service gets properly enabled on upgrades
+	if dpkg --compare-versions "$2" lt "1.2.2-2"; then
+	    deb-systemd-helper purge NetworkManager-wait-online.service
+	fi
 	;;
 
     abort-upgrade)
