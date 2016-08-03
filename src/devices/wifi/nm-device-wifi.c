@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "nm-common-macros.h"
 #include "nm-device.h"
 #include "nm-device-wifi.h"
 #include "nm-device-private.h"
@@ -696,6 +697,7 @@ manf_defaults[] = {
 	"WLAN",
 	"ALICE-WLAN",
 	"Speedport W 501V",
+	"TURBONETT",
 };
 
 #define ARRAY_SIZE(a)  (sizeof (a) / sizeof (a[0]))

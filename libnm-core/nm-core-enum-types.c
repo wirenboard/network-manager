@@ -678,6 +678,7 @@ nm_manager_error_get_type (void)
         { NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED, "NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED", "AlreadyEnabledOrDisabled" },
         { NM_MANAGER_ERROR_UNKNOWN_LOG_LEVEL, "NM_MANAGER_ERROR_UNKNOWN_LOG_LEVEL", "UnknownLogLevel" },
         { NM_MANAGER_ERROR_UNKNOWN_LOG_DOMAIN, "NM_MANAGER_ERROR_UNKNOWN_LOG_DOMAIN", "UnknownLogDomain" },
+        { NM_MANAGER_ERROR_INVALID_ARGUMENTS, "NM_MANAGER_ERROR_INVALID_ARGUMENTS", "InvalidArguments" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

@@ -1,5 +1,6 @@
 [Unit]
 Description=Network Manager
+Documentation=man:NetworkManager(8)
 Wants=network.target
 After=network-pre.target dbus.service
 Before=network.target @DISTRO_NETWORK_SERVICE@
@@ -7,6 +8,7 @@ Before=network.target @DISTRO_NETWORK_SERVICE@
 [Service]
 Type=dbus
 BusName=org.freedesktop.NetworkManager
+#ExecReload=/usr/bin/dbus-send --print-reply --system --type=method_call --dest=org.freedesktop.NetworkManager /org/freedesktop/NetworkManager org.freedesktop.NetworkManager.Reload uint32:0
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStart=@sbindir@/NetworkManager --no-daemon
 Restart=on-failure

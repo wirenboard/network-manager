@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 05/11/2016
+.\"      Date: 08/03/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.2.2
+.\"    Source: NetworkManager 1.2.4
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.2\&.2" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.2\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1569,6 +1569,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 address\-data
@@ -1659,6 +1660,15 @@ T}:T{
 []
 T}:T{
 Array of DNS options\&. NULL means that the options are unset and left at the default\&. In this case NetworkManager will use default options\&. This is distinct from an empty list of properties\&.
+T}
+T{
+dns\-priority
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+DNS priority\&. The relative priority to be used when determining the order of DNS servers in resolv\&.conf\&.  A lower value means that servers will be on top of the file\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time\&. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used\&.
 T}
 T{
 dns\-search
@@ -1800,6 +1810,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 addr\-gen\-mode
@@ -1881,6 +1892,15 @@ T}:T{
 []
 T}:T{
 Array of DNS options\&. NULL means that the options are unset and left at the default\&. In this case NetworkManager will use default options\&. This is distinct from an empty list of properties\&.
+T}
+T{
+dns\-priority
+T}:T{
+int32
+T}:T{
+0
+T}:T{
+DNS priority\&. The relative priority to be used when determining the order of DNS servers in resolv\&.conf\&.  A lower value means that servers will be on top of the file\&.  Zero selects the default value, which is 50 for VPNs and 100 for other connections\&.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred\&.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time\&. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used\&.
 T}
 T{
 dns\-search

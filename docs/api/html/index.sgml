@@ -53,6 +53,7 @@
 <ANCHOR id="gdbus-org.freedesktop.NetworkManager" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html">
 <ANCHOR id="gdbus-interface-org-freedesktop-NetworkManager" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html#gdbus-interface-org-freedesktop-NetworkManager">
 <ANCHOR id="gdbus-methods-org.freedesktop.NetworkManager" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html#gdbus-methods-org.freedesktop.NetworkManager">
+<ANCHOR id="gdbus-method-org-freedesktop-NetworkManager.Reload" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.Reload">
 <ANCHOR id="gdbus-method-org-freedesktop-NetworkManager.GetDevices" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetDevices">
 <ANCHOR id="gdbus-method-org-freedesktop-NetworkManager.GetAllDevices" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetAllDevices">
 <ANCHOR id="gdbus-method-org-freedesktop-NetworkManager.GetDeviceByIpIface" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetDeviceByIpIface">
@@ -430,6 +431,7 @@
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Domains" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.Domains">
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Searches" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.Searches">
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsOptions" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsOptions">
+<ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsPriority" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsPriority">
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.WinsServers" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.WinsServers">
 <ANCHOR id="gdbus-org.freedesktop.NetworkManager.IP6Config" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP6Config.html">
 <ANCHOR id="gdbus-interface-org-freedesktop-NetworkManager-IP6Config" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-interface-org-freedesktop-NetworkManager-IP6Config">
@@ -445,6 +447,7 @@
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP6Config.Domains" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.Domains">
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP6Config.Searches" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.Searches">
 <ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP6Config.DnsOptions" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.DnsOptions">
+<ANCHOR id="gdbus-property-org-freedesktop-NetworkManager-IP6Config.DnsPriority" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.DnsPriority">
 <ANCHOR id="gdbus-org.freedesktop.NetworkManager.VPN.Plugin" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html">
 <ANCHOR id="gdbus-interface-org-freedesktop-NetworkManager-VPN-Plugin" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html#gdbus-interface-org-freedesktop-NetworkManager-VPN-Plugin">
 <ANCHOR id="gdbus-methods-org.freedesktop.NetworkManager.VPN.Plugin" href="NetworkManager/gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html#gdbus-methods-org.freedesktop.NetworkManager.VPN.Plugin">

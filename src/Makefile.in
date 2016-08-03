@@ -110,15 +110,12 @@ host_triplet = @host@
 @ENABLE_TESTS_TRUE@	libNetworkManager-base.la
 
 sbin_PROGRAMS = NetworkManager$(EXEEXT)
-@SUSPEND_RESUME_UPOWER_TRUE@am__append_6 = nm-sleep-monitor-upower.c
-# systemd/consolekit suspend/resume used whenever upower is not enabled
-@SUSPEND_RESUME_UPOWER_FALSE@am__append_7 = nm-sleep-monitor-systemd.c
-@WITH_WEXT_TRUE@am__append_8 = \
+@WITH_WEXT_TRUE@am__append_6 = \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.c \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.h
 
-@WITH_LIBSOUP_TRUE@am__append_9 = $(LIBSOUP_LIBS)
-@WITH_WEXT_TRUE@am__append_10 = \
+@WITH_LIBSOUP_TRUE@am__append_7 = $(LIBSOUP_LIBS)
+@WITH_WEXT_TRUE@am__append_8 = \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.c \
 @WITH_WEXT_TRUE@	platform/wifi/wifi-utils-wext.h
 
@@ -197,8 +194,7 @@ am__libNetworkManager_la_SOURCES_DIST = devices/nm-device-bond.h \
 	dns-manager/nm-dns-dnsmasq.h dns-manager/nm-dns-unbound.c \
 	dns-manager/nm-dns-unbound.h dns-manager/nm-dns-manager.c \
 	dns-manager/nm-dns-manager.h dns-manager/nm-dns-plugin.c \
-	dns-manager/nm-dns-plugin.h dns-manager/nm-dns-utils.c \
-	dns-manager/nm-dns-utils.h \
+	dns-manager/nm-dns-plugin.h \
 	dnsmasq-manager/nm-dnsmasq-manager.c \
 	dnsmasq-manager/nm-dnsmasq-manager.h \
 	dnsmasq-manager/nm-dnsmasq-utils.c \
@@ -262,26 +258,21 @@ am__libNetworkManager_la_SOURCES_DIST = devices/nm-device-bond.h \
 	nm-auth-subject.h nm-auth-utils.c nm-auth-utils.h nm-manager.c \
 	nm-manager.h nm-multi-index.c nm-multi-index.h nm-policy.c \
 	nm-policy.h nm-rfkill-manager.c nm-rfkill-manager.h \
-	nm-session-monitor.h nm-session-monitor.c nm-sleep-monitor.h \
-	nm-types.h nm-core-utils.c nm-core-utils.h \
+	nm-session-monitor.h nm-session-monitor.c nm-sleep-monitor.c \
+	nm-sleep-monitor.h nm-types.h nm-core-utils.c nm-core-utils.h \
 	NetworkManagerUtils.c NetworkManagerUtils.h \
-	nm-sleep-monitor-upower.c nm-sleep-monitor-systemd.c \
 	platform/wifi/wifi-utils-wext.c \
 	platform/wifi/wifi-utils-wext.h
 am__objects_1 =
-@SUSPEND_RESUME_UPOWER_TRUE@am__objects_2 =  \
-@SUSPEND_RESUME_UPOWER_TRUE@	nm-sleep-monitor-upower.lo
-@SUSPEND_RESUME_UPOWER_FALSE@am__objects_3 =  \
-@SUSPEND_RESUME_UPOWER_FALSE@	nm-sleep-monitor-systemd.lo
-@WITH_WEXT_TRUE@am__objects_4 = wifi-utils-wext.lo
+@WITH_WEXT_TRUE@am__objects_2 = wifi-utils-wext.lo
 am_libNetworkManager_la_OBJECTS = $(am__objects_1) $(am__objects_1) \
 	nm-device.lo nm-lldp-listener.lo nm-arping-manager.lo \
 	nm-device-ethernet-utils.lo nm-device-factory.lo \
 	nm-device-generic.lo nm-dhcp-client.lo nm-dhcp-utils.lo \
 	nm-dhcp-listener.lo nm-dhcp-manager.lo nm-dns-dnsmasq.lo \
 	nm-dns-unbound.lo nm-dns-manager.lo nm-dns-plugin.lo \
-	nm-dns-utils.lo nm-dnsmasq-manager.lo nm-dnsmasq-utils.lo \
-	nmp-netns.lo nmp-object.lo nm-platform-utils.lo nm-platform.lo \
+	nm-dnsmasq-manager.lo nm-dnsmasq-utils.lo nmp-netns.lo \
+	nmp-object.lo nm-platform-utils.lo nm-platform.lo \
 	nm-linux-platform.lo nm-fake-platform.lo wifi-utils-nl80211.lo \
 	wifi-utils.lo nm-fake-rdisc.lo nm-lndp-rdisc.lo nm-rdisc.lo \
 	nm-ppp-manager.lo nm-agent-manager.lo nm-inotify-helper.lo \
@@ -300,8 +291,8 @@ am_libNetworkManager_la_OBJECTS = $(am__objects_1) $(am__objects_1) \
 	nm-ip6-config.lo nm-logging.lo nm-auth-manager.lo \
 	nm-auth-subject.lo nm-auth-utils.lo nm-manager.lo \
 	nm-multi-index.lo nm-policy.lo nm-rfkill-manager.lo \
-	nm-session-monitor.lo nm-core-utils.lo NetworkManagerUtils.lo \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4)
+	nm-session-monitor.lo nm-sleep-monitor.lo nm-core-utils.lo \
+	NetworkManagerUtils.lo $(am__objects_2)
 libNetworkManager_la_OBJECTS = $(am_libNetworkManager_la_OBJECTS)
 libnm_iface_helper_la_DEPENDENCIES =  \
 	$(top_builddir)/libnm-core/libnm-core.la \
@@ -340,7 +331,7 @@ am_libnm_iface_helper_la_OBJECTS = nm-dhcp-client.lo nm-dhcp-utils.lo \
 	nm-lndp-rdisc.lo nm-rdisc.lo nm-route-manager.lo \
 	nm-exported-object.lo nm-ip4-config.lo nm-ip6-config.lo \
 	nm-enum-types.lo nm-logging.lo nm-multi-index.lo \
-	nm-core-utils.lo NetworkManagerUtils.lo $(am__objects_4)
+	nm-core-utils.lo NetworkManagerUtils.lo $(am__objects_2)
 libnm_iface_helper_la_OBJECTS = $(am_libnm_iface_helper_la_OBJECTS)
 libsystemd_nm_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libsystemd_nm_la_OBJECTS = libsystemd_nm_la-nm-sd.lo \
@@ -379,16 +370,16 @@ libsystemd_nm_la_OBJECTS = $(am_libsystemd_nm_la_OBJECTS)
 am__installdirs = "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(sbindir)" \
 	"$(DESTDIR)$(dbusservicedir)"
 PROGRAMS = $(libexec_PROGRAMS) $(sbin_PROGRAMS)
-am__objects_5 = nm-device-bond.$(OBJEXT) nm-device-bridge.$(OBJEXT) \
+am__objects_3 = nm-device-bond.$(OBJEXT) nm-device-bridge.$(OBJEXT) \
 	nm-device-ethernet.$(OBJEXT) nm-device-infiniband.$(OBJEXT) \
 	nm-device-ip-tunnel.$(OBJEXT) nm-device-macvlan.$(OBJEXT) \
 	nm-device-tun.$(OBJEXT) nm-device-veth.$(OBJEXT) \
 	nm-device-vlan.$(OBJEXT) nm-device-vxlan.$(OBJEXT)
-am__objects_6 = nm-dhcp-dhclient.$(OBJEXT) \
+am__objects_4 = nm-dhcp-dhclient.$(OBJEXT) \
 	nm-dhcp-dhclient-utils.$(OBJEXT) nm-dhcp-dhcpcd.$(OBJEXT) \
 	nm-dhcp-systemd.$(OBJEXT)
-am_NetworkManager_OBJECTS = $(am__objects_5) $(am__objects_1) \
-	$(am__objects_6) $(am__objects_1) main-utils.$(OBJEXT) \
+am_NetworkManager_OBJECTS = $(am__objects_3) $(am__objects_1) \
+	$(am__objects_4) $(am__objects_1) main-utils.$(OBJEXT) \
 	main.$(OBJEXT)
 NetworkManager_OBJECTS = $(am_NetworkManager_OBJECTS)
 NetworkManager_DEPENDENCIES = libNetworkManager.la
@@ -685,6 +676,7 @@ NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
+NM_CONFIG_DEFAULT_DNS_RC_MANAGER = @NM_CONFIG_DEFAULT_DNS_RC_MANAGER@
 NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT = @NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT@
 NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT = @NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -1065,8 +1057,7 @@ libNetworkManager_la_SOURCES = $(nm_device_headers) \
 	dns-manager/nm-dns-dnsmasq.h dns-manager/nm-dns-unbound.c \
 	dns-manager/nm-dns-unbound.h dns-manager/nm-dns-manager.c \
 	dns-manager/nm-dns-manager.h dns-manager/nm-dns-plugin.c \
-	dns-manager/nm-dns-plugin.h dns-manager/nm-dns-utils.c \
-	dns-manager/nm-dns-utils.h \
+	dns-manager/nm-dns-plugin.h \
 	dnsmasq-manager/nm-dnsmasq-manager.c \
 	dnsmasq-manager/nm-dnsmasq-manager.h \
 	dnsmasq-manager/nm-dnsmasq-utils.c \
@@ -1130,10 +1121,9 @@ libNetworkManager_la_SOURCES = $(nm_device_headers) \
 	nm-auth-subject.h nm-auth-utils.c nm-auth-utils.h nm-manager.c \
 	nm-manager.h nm-multi-index.c nm-multi-index.h nm-policy.c \
 	nm-policy.h nm-rfkill-manager.c nm-rfkill-manager.h \
-	nm-session-monitor.h nm-session-monitor.c nm-sleep-monitor.h \
-	nm-types.h nm-core-utils.c nm-core-utils.h \
-	NetworkManagerUtils.c NetworkManagerUtils.h $(am__append_6) \
-	$(am__append_7) $(am__append_8)
+	nm-session-monitor.h nm-session-monitor.c nm-sleep-monitor.c \
+	nm-sleep-monitor.h nm-types.h nm-core-utils.c nm-core-utils.h \
+	NetworkManagerUtils.c NetworkManagerUtils.h $(am__append_6)
 GLIB_GENERATED = nm-enum-types.h nm-enum-types.c
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM --fhead '\#include <nm-core-enum-types.h>\n'
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
@@ -1151,7 +1141,7 @@ libNetworkManager_la_LIBADD =  \
 	$(top_builddir)/introspection/libnmdbus.la libsystemd-nm.la \
 	$(GLIB_LIBS) $(GUDEV_LIBS) $(LIBNL_LIBS) $(SYSTEMD_LOGIN_LIBS) \
 	$(SYSTEMD_JOURNAL_LIBS) $(LIBNDP_LIBS) $(LIBDL) $(LIBM) \
-	$(SELINUX_LIBS) $(LIBAUDIT_LIBS) $(am__append_9)
+	$(SELINUX_LIBS) $(LIBAUDIT_LIBS) $(am__append_7)
 NetworkManager_LDFLAGS = \
 	-rdynamic \
 	-Wl,--version-script="$(srcdir)/NetworkManager.ver"
@@ -1179,7 +1169,7 @@ libnm_iface_helper_la_SOURCES = dhcp-manager/nm-dhcp-client.c \
 	nm-ip6-config.c nm-ip6-config.h nm-enum-types.c \
 	nm-enum-types.h nm-logging.c nm-logging.h nm-multi-index.c \
 	nm-multi-index.h nm-core-utils.c nm-core-utils.h \
-	NetworkManagerUtils.c NetworkManagerUtils.h $(am__append_10)
+	NetworkManagerUtils.c NetworkManagerUtils.h $(am__append_8)
 libnm_iface_helper_la_LIBADD = \
 	$(top_builddir)/libnm-core/libnm-core.la \
 	$(top_builddir)/introspection/libnmdbus.la \
@@ -1491,7 +1481,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dns-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dns-plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dns-unbound.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dns-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dnsmasq-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-dnsmasq-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-enum-types.Plo@am__quote@
@@ -1522,8 +1511,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-settings-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-settings-plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-settings.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-sleep-monitor-systemd.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-sleep-monitor-upower.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-sleep-monitor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-supplicant-config.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-supplicant-interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-supplicant-manager.Plo@am__quote@
@@ -1672,13 +1660,6 @@ nm-dns-plugin.lo: dns-manager/nm-dns-plugin.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dns-manager/nm-dns-plugin.c' object='nm-dns-plugin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-dns-plugin.lo `test -f 'dns-manager/nm-dns-plugin.c' || echo '$(srcdir)/'`dns-manager/nm-dns-plugin.c
-
-nm-dns-utils.lo: dns-manager/nm-dns-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-dns-utils.lo -MD -MP -MF $(DEPDIR)/nm-dns-utils.Tpo -c -o nm-dns-utils.lo `test -f 'dns-manager/nm-dns-utils.c' || echo '$(srcdir)/'`dns-manager/nm-dns-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-dns-utils.Tpo $(DEPDIR)/nm-dns-utils.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dns-manager/nm-dns-utils.c' object='nm-dns-utils.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-dns-utils.lo `test -f 'dns-manager/nm-dns-utils.c' || echo '$(srcdir)/'`dns-manager/nm-dns-utils.c
 
 nm-dnsmasq-manager.lo: dnsmasq-manager/nm-dnsmasq-manager.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-dnsmasq-manager.lo -MD -MP -MF $(DEPDIR)/nm-dnsmasq-manager.Tpo -c -o nm-dnsmasq-manager.lo `test -f 'dnsmasq-manager/nm-dnsmasq-manager.c' || echo '$(srcdir)/'`dnsmasq-manager/nm-dnsmasq-manager.c

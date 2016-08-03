@@ -156,7 +156,7 @@ am__DEPENDENCIES_1 =
 libnm_la_DEPENDENCIES = $(top_builddir)/libnm-core/libnm-core.la \
 	$(top_builddir)/introspection/libnmdbus.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__objects_1 = nm-access-point.lo nm-active-connection.lo \
 	nm-client.lo nm-dbus-helpers.lo nm-device-adsl.lo \
 	nm-device-bond.lo nm-device-bridge.lo nm-device-bt.lo \
@@ -423,6 +423,7 @@ NEWT_LIBS = @NEWT_LIBS@
 NM = @NM@
 NMEDIT = @NMEDIT@
 NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT = @NM_CONFIG_DEFAULT_AUTH_POLKIT_TEXT@
+NM_CONFIG_DEFAULT_DNS_RC_MANAGER = @NM_CONFIG_DEFAULT_DNS_RC_MANAGER@
 NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT = @NM_CONFIG_DEFAULT_LOGGING_AUDIT_TEXT@
 NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT = @NM_CONFIG_LOGGING_BACKEND_DEFAULT_TEXT@
 NM_MAJOR_VERSION = @NM_MAJOR_VERSION@
@@ -790,6 +791,7 @@ GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM --fhead '\#include "nm-default.h"\
 libnm_la_LIBADD = \
 	$(top_builddir)/libnm-core/libnm-core.la \
 	$(top_builddir)/introspection/libnmdbus.la \
+	$(LIBDL) \
 	$(GLIB_LIBS) \
 	$(UUID_LIBS) \
 	$(GUDEV_LIBS)

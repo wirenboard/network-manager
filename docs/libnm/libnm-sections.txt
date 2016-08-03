@@ -1804,6 +1804,7 @@ NM_SETTING_IP_CONFIG_METHOD
 NM_SETTING_IP_CONFIG_DNS
 NM_SETTING_IP_CONFIG_DNS_SEARCH
 NM_SETTING_IP_CONFIG_DNS_OPTIONS
+NM_SETTING_IP_CONFIG_DNS_PRIORITY
 NM_SETTING_IP_CONFIG_ADDRESSES
 NM_SETTING_IP_CONFIG_GATEWAY
 NM_SETTING_IP_CONFIG_ROUTES
@@ -1853,6 +1854,7 @@ nm_setting_ip_config_add_dns_option
 nm_setting_ip_config_remove_dns_option
 nm_setting_ip_config_remove_dns_option_by_value
 nm_setting_ip_config_clear_dns_options
+nm_setting_ip_config_get_dns_priority
 nm_setting_ip_config_get_num_addresses
 nm_setting_ip_config_get_address
 nm_setting_ip_config_add_address
@@ -2664,9 +2666,7 @@ NM_AVAILABLE_IN_1_0
 NM_DEPRECATED_IN_1_2
 NM_DEPRECATED_IN_1_2_FOR
 NM_AVAILABLE_IN_1_2
-NM_DEPRECATED_IN_1_4
-NM_DEPRECATED_IN_1_4_FOR
-NM_AVAILABLE_IN_1_4
+NM_AVAILABLE_IN_1_2_4
 </SECTION>
 
 <SECTION>

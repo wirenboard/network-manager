@@ -134,6 +134,8 @@ const char *nm_utils_find_helper (const char *progname,
                                   const char *try_first,
                                   GError **error);
 
+char *nm_utils_read_link_absolute (const char *link_file, GError **error);
+
 typedef enum {
 	NM_MATCH_SPEC_NO_MATCH  = 0,
 	NM_MATCH_SPEC_MATCH     = 1,
@@ -393,5 +395,10 @@ gboolean nm_utils_lifetime_get (guint32 timestamp,
                                 guint32 *out_preferred);
 
 gboolean nm_utils_ip4_address_is_link_local (in_addr_t addr);
+
+const char *nm_utils_dnsmasq_status_to_string (int status, char *dest, guint size);
+
+void nm_utils_get_reverse_dns_domains_ip4 (guint32 ip, guint8 plen, GPtrArray *domains);
+void nm_utils_get_reverse_dns_domains_ip6 (const struct in6_addr *ip, guint8 plen, GPtrArray *domains);
 
 #endif /* __NM_CORE_UTILS_H__ */

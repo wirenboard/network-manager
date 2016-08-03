@@ -23,6 +23,7 @@
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Domains">Domains</link>      readable   as
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-IP4Config.Searches">Searches</link>     readable   as
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsOptions">DnsOptions</link>   readable   as
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsPriority">DnsPriority</link>  readable   i
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-IP4Config.WinsServers">WinsServers</link>  readable   au
 </synopsis>
   </refsect1>
@@ -139,6 +140,15 @@ DnsOptions  readable   as
 </programlisting>
 <para>        A list of DNS options that modify the behavior of the DNS resolver. See
         resolv.conf(5) manual page for the list of supported options.
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsPriority">
+  <title>The "DnsPriority" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsPriority"><primary sortas=".IP4Config:DnsPriority">org.freedesktop.NetworkManager.IP4Config:DnsPriority</primary></indexterm>
+<programlisting>
+DnsPriority  readable   i
+</programlisting>
+<para>        The relative priority of DNS servers.
 </para>
 </refsect2>
 <refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-IP4Config.WinsServers">

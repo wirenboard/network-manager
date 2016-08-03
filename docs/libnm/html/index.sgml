@@ -104,6 +104,8 @@
 <ANCHOR id="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-SYSTEM:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-SYSTEM:CAPS">
 <ANCHOR id="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-OWN:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-OWN:CAPS">
 <ANCHOR id="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-HOSTNAME:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-HOSTNAME:CAPS">
+<ANCHOR id="NM-CLIENT-PERMISSION-SETTINGS-MODIFY-GLOBAL-DNS:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-GLOBAL-DNS:CAPS">
+<ANCHOR id="NM-CLIENT-PERMISSION-RELOAD:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-RELOAD:CAPS">
 <ANCHOR id="NM-CLIENT-PERMISSION-LAST:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-LAST:CAPS">
 <ANCHOR id="NMClientPermissionResult" href="libnm/NMClient.html#NMClientPermissionResult">
 <ANCHOR id="NM-CLIENT-PERMISSION-RESULT-UNKNOWN:CAPS" href="libnm/NMClient.html#NM-CLIENT-PERMISSION-RESULT-UNKNOWN:CAPS">
@@ -264,6 +266,7 @@
 <ANCHOR id="NM-MANAGER-ERROR-ALREADY-ENABLED-OR-DISABLED:CAPS" href="libnm/libnm-nm-errors.html#NM-MANAGER-ERROR-ALREADY-ENABLED-OR-DISABLED:CAPS">
 <ANCHOR id="NM-MANAGER-ERROR-UNKNOWN-LOG-LEVEL:CAPS" href="libnm/libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-LEVEL:CAPS">
 <ANCHOR id="NM-MANAGER-ERROR-UNKNOWN-LOG-DOMAIN:CAPS" href="libnm/libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-DOMAIN:CAPS">
+<ANCHOR id="NM-MANAGER-ERROR-INVALID-ARGUMENTS:CAPS" href="libnm/libnm-nm-errors.html#NM-MANAGER-ERROR-INVALID-ARGUMENTS:CAPS">
 <ANCHOR id="NMSecretAgentError" href="libnm/libnm-nm-errors.html#NMSecretAgentError">
 <ANCHOR id="NM-SECRET-AGENT-ERROR-FAILED:CAPS" href="libnm/libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-FAILED:CAPS">
 <ANCHOR id="NM-SECRET-AGENT-ERROR-PERMISSION-DENIED:CAPS" href="libnm/libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-PERMISSION-DENIED:CAPS">
@@ -1410,6 +1413,7 @@
 <ANCHOR id="nm-setting-ip-config-remove-dns-option" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-remove-dns-option">
 <ANCHOR id="nm-setting-ip-config-remove-dns-option-by-value" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-remove-dns-option-by-value">
 <ANCHOR id="nm-setting-ip-config-clear-dns-options" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-clear-dns-options">
+<ANCHOR id="nm-setting-ip-config-get-dns-priority" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-dns-priority">
 <ANCHOR id="nm-setting-ip-config-get-num-addresses" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-num-addresses">
 <ANCHOR id="nm-setting-ip-config-get-address" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-get-address">
 <ANCHOR id="nm-setting-ip-config-add-address" href="libnm/NMSettingIPConfig.html#nm-setting-ip-config-add-address">
@@ -1438,6 +1442,7 @@
 <ANCHOR id="NM-SETTING-IP-CONFIG-DNS:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-DNS-SEARCH:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-SEARCH:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-DNS-OPTIONS:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-OPTIONS:CAPS">
+<ANCHOR id="NM-SETTING-IP-CONFIG-DNS-PRIORITY:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-PRIORITY:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-ADDRESSES:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-ADDRESSES:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-GATEWAY:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-GATEWAY:CAPS">
 <ANCHOR id="NM-SETTING-IP-CONFIG-ROUTES:CAPS" href="libnm/NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-ROUTES:CAPS">
@@ -1474,6 +1479,7 @@
 <ANCHOR id="NMSettingIPConfig--dhcp-timeout" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dhcp-timeout">
 <ANCHOR id="NMSettingIPConfig--dns" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns">
 <ANCHOR id="NMSettingIPConfig--dns-options" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns-options">
+<ANCHOR id="NMSettingIPConfig--dns-priority" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns-priority">
 <ANCHOR id="NMSettingIPConfig--dns-search" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--dns-search">
 <ANCHOR id="NMSettingIPConfig--gateway" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--gateway">
 <ANCHOR id="NMSettingIPConfig--ignore-auto-dns" href="libnm/NMSettingIPConfig.html#NMSettingIPConfig--ignore-auto-dns">
@@ -3068,7 +3074,6 @@
 <ANCHOR id="NM-DEPRECATED-IN-0-9-10-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-1-0-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-0-FOR:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-1-2-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-2-FOR:CAPS">
-<ANCHOR id="NM-DEPRECATED-IN-1-4-FOR:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-4-FOR:CAPS">
 <ANCHOR id="libnm-nm-version.other_details" href="libnm/libnm-nm-version.html#libnm-nm-version.other_details">
 <ANCHOR id="NM-DEPRECATED-IN-0-9-10:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-0-9-10:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS">
@@ -3076,8 +3081,7 @@
 <ANCHOR id="NM-AVAILABLE-IN-1-0:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS">
 <ANCHOR id="NM-DEPRECATED-IN-1-2:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-2:CAPS">
 <ANCHOR id="NM-AVAILABLE-IN-1-2:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-2:CAPS">
-<ANCHOR id="NM-DEPRECATED-IN-1-4:CAPS" href="libnm/libnm-nm-version.html#NM-DEPRECATED-IN-1-4:CAPS">
-<ANCHOR id="NM-AVAILABLE-IN-1-4:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-4:CAPS">
+<ANCHOR id="NM-AVAILABLE-IN-1-2-4:CAPS" href="libnm/libnm-nm-version.html#NM-AVAILABLE-IN-1-2-4:CAPS">
 <ANCHOR id="libnm-nm-vpn-dbus-interface" href="libnm/libnm-nm-vpn-dbus-interface.html">
 <ANCHOR id="libnm-nm-vpn-dbus-interface.other" href="libnm/libnm-nm-vpn-dbus-interface.html#libnm-nm-vpn-dbus-interface.other">
 <ANCHOR id="libnm-nm-vpn-dbus-interface.object-hierarchy" href="libnm/libnm-nm-vpn-dbus-interface.html#libnm-nm-vpn-dbus-interface.object-hierarchy">
