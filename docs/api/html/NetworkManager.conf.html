@@ -64,6 +64,10 @@
     This file is not intended to be modified by the user, but it is read last and can shadow
     user configuration from <code class="literal">NetworkManager.conf</code>.
     </p>
+<p>
+    Certain settings from the configuration can be reloaded at runtime either by sending SIGHUP signal or via
+    D-Bus' Reload call.
+    </p>
 </div>
 <div class="refsect1">
 <a name="id-1.2.5.6"></a><h2>File Format</h2>
@@ -296,7 +300,8 @@ no-auto-default=*
         configuration with DNSSEC support. The /etc/resolv.conf
         will be managed by dnssec-trigger daemon.</p>
 <p><code class="literal">none</code>: NetworkManager will not
-        modify resolv.conf.</p>
+        modify resolv.conf. This implies <code class="varname">rc-manager</code>
+        <code class="literal">unmanaged</code></p>
 </td>
 </tr>
 <tr>
@@ -304,17 +309,25 @@ no-auto-default=*
 <td>
 <p>Set the <code class="filename">resolv.conf</code>
         management mode. The default value depends on how NetworkManager
-        was built. Regardless of this setting, NetworkManager will
+        was built, whereas this version of NetworkManager was build with
+        a default of "<code class="literal">symlink</code>".
+        Regardless of this setting, NetworkManager will
         always write resolv.conf to its runtime state directory.</p>
-<p><code class="literal">none</code>: NetworkManager will symlink
+<p><code class="literal">symlink</code>: NetworkManager will symlink
         <code class="filename">/etc/resolv.conf</code> to its private
         resolv.conf file in the runtime state directory.</p>
 <p><code class="literal">file</code>: NetworkManager will write
-        <code class="filename">/etc/resolv.conf</code> as file.</p>
+        <code class="filename">/etc/resolv.conf</code> as file. If it finds
+        a symlink, it will follow the symlink and update the target
+        instead.</p>
 <p><code class="literal">resolvconf</code>: NetworkManager will run
         resolvconf to update the DNS configuration.</p>
 <p><code class="literal">netconfig</code>: NetworkManager will run
         netconfig to update the DNS configuration.</p>
+<p><code class="literal">unmanaged</code>: don't touch
+        <code class="filename">resolv.conf</code>.</p>
+<p><code class="literal">none</code>: deprecated alias for
+        <code class="literal">symlink</code>.</p>
 </td>
 </tr>
 <tr>
@@ -363,7 +376,7 @@ no-auto-default=*
 <tr>
 <td><p><span class="term"><code class="varname">path</code></span></p></td>
 <td><p>The location where keyfiles are read and stored.
-            This defaults to "<code class="filename">/etc/NetworkManager/conf.d</code>".
+            This defaults to "<code class="filename">${prefix}/etc/NetworkManager/conf.d</code>".
             </p></td>
 </tr>
 <tr>
@@ -649,8 +662,10 @@ ipv6.ip6-privacy=1
           considered even if the property in question is not present. In
           the example above, if <code class="literal">[connection-wifi-wlan0]</code> would
           have <code class="literal">stop-match</code> set to <code class="literal">yes</code>,
-          its <code class="literal">ipv6.ip6-privacy</code> value would be
-          unspecified.
+          the device <code class="literal">wlan0</code> would have <code class="literal">ipv6.ip6-privacy</code>
+          property unspecified. That is, the search for the property would not continue
+          in the connection sections <code class="literal">[connection-wifi-other]</code>
+          or <code class="literal">[connection]</code>.
           </p></td>
 </tr>
 </tbody>

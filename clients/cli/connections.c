@@ -53,21 +53,6 @@
 #define PROMPT_IP_TUNNEL_MODE _("Tunnel mode: ")
 #define PROMPT_MACVLAN_MODE _("MACVLAN mode: ")
 
-static const char *nmc_known_vpns[] = {
-	"openvpn",
-	"vpnc",
-	"pptp",
-	"openconnect",
-	"openswan",
-	"libreswan",
-	"strongswan",
-	"ssh",
-	"l2tp",
-	"iodine",
-	"fortisslvpn",
-	NULL
-};
-
 /* Available fields for 'connection show' */
 static NmcOutputField nmc_fields_con_show[] = {
 	{"NAME",                 N_("NAME")},                  /* 0 */
@@ -1978,7 +1963,7 @@ device_state_cb (NMDevice *device, GParamSpec *pspec, gpointer user_data)
 	           && state == NM_DEVICE_STATE_FAILED) {
 		if (nmc->print_output == NMC_PRINT_PRETTY)
 			nmc_terminal_erase_line ();
-		g_print (_("Error: Connection activation failed."));
+		g_print (_("Error: Connection activation failed.\n"));
 		quit ();
 	} else if (active && ac_state != NM_ACTIVE_CONNECTION_STATE_ACTIVATING) {
 		g_string_printf (nmc->return_text, _("Error: Connection activation failed."));
@@ -2931,7 +2916,6 @@ check_valid_name (const char *val, const NameItem *array, const NameItem *array_
 	GError *tmp_err = NULL;
 	int i;
 
-	g_return_val_if_fail (val, NULL);
 	g_return_val_if_fail (array, NULL);
 
 	/* Create a temporary array that can be used in nmc_string_is_valid() */
@@ -5904,10 +5888,12 @@ cleanup_bridge_slave:
 		const char *user_c = NULL;
 		char *user = NULL;
 		const char *st;
-		char *service_type = NULL;
+		gs_free char *service_type_free = NULL;
+		const char *service_type = NULL;
 		nmc_arg_t exp_args[] = { {"vpn-type", TRUE, &vpn_type, !ask},
 		                         {"user",     TRUE, &user_c,   FALSE},
 		                         {NULL} };
+		gs_free const char **plugin_names = NULL;
 
 		if (!nmc_parse_args (exp_args, FALSE, &argc, &argv, error))
 			return FALSE;
@@ -5922,11 +5908,15 @@ cleanup_bridge_slave:
 		if (vpn_type_ask)
 			vpn_type = g_strstrip (vpn_type_ask);
 
-		if (!(st = nmc_string_is_valid (vpn_type, nmc_known_vpns, NULL))) {
+		plugin_names = nm_vpn_get_plugin_names (FALSE);
+		if (!(st = nmc_string_is_valid (vpn_type, plugin_names, NULL))) {
 			g_print (_("Warning: 'vpn-type': %s not known.\n"), vpn_type);
 			st = vpn_type;
 		}
-		service_type = g_strdup_printf ("%s.%s", NM_DBUS_INTERFACE, st);
+
+		service_type = nm_vpn_get_service_for_name (st);
+		if (!service_type)
+			service_type = service_type_free = nm_vpn_get_service_for_name_default (st);
 
 		/* Also ask for all optional arguments if '--ask' is specified. */
 		user = g_strdup (user_c);
@@ -5943,7 +5933,6 @@ cleanup_bridge_slave:
 		success = TRUE;
 cleanup_vpn:
 		g_free (vpn_type_ask);
-		g_free (service_type);
 		g_free (user);
 		if (!success)
 			return FALSE;
@@ -6711,7 +6700,10 @@ update_connection (gboolean persistent,
 static char *
 gen_func_vpn_types (const char *text, int state)
 {
-	return nmc_rl_gen_func_basic (text, state, nmc_known_vpns);
+	gs_free const char **plugin_names = NULL;
+
+	plugin_names = nm_vpn_get_plugin_names (FALSE);
+	return nmc_rl_gen_func_basic (text, state, plugin_names);
 }
 
 static char *
@@ -10690,7 +10682,7 @@ do_connection_import (NmCli *nmc, gboolean temporary, int argc, char **argv)
 	}
 
 	/* Import VPN configuration */
-	plugin = nm_vpn_get_plugin_by_service (type, &error);
+	plugin = nm_vpn_lookup_plugin (type, NULL, &error);
 	if (!plugin) {
 		g_string_printf (nmc->return_text, _("Error: failed to load VPN plugin: %s."),
 		                 error->message);
@@ -10797,7 +10789,7 @@ do_connection_export (NmCli *nmc, int argc, char **argv)
 	type = nm_setting_vpn_get_service_type (nm_connection_get_setting_vpn (connection));
 
 	/* Export VPN configuration */
-	plugin = nm_vpn_get_plugin_by_service (type, &error);
+	plugin = nm_vpn_lookup_plugin (type, NULL, &error);
 	if (!plugin) {
 		g_string_printf (nmc->return_text, _("Error: failed to load VPN plugin: %s."),
 		                 error->message);

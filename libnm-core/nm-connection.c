@@ -724,6 +724,7 @@ _normalize_ip_config (NMConnection *self, GHashTable *parameters)
 	const char *default_ip6_method = NULL;
 	NMSettingIPConfig *s_ip4, *s_ip6;
 	NMSetting *setting;
+	gboolean changed = FALSE;
 
 	if (parameters)
 		default_ip6_method = g_hash_table_lookup (parameters, NM_CONNECTION_NORMALIZE_PARAM_IP6_CONFIG_METHOD);
@@ -756,6 +757,19 @@ _normalize_ip_config (NMConnection *self, GHashTable *parameters)
 			              NM_SETTING_IP_CONFIG_METHOD, default_ip4_method,
 			              NULL);
 			nm_connection_add_setting (self, setting);
+		} else {
+			if (   nm_setting_ip_config_get_gateway (s_ip4)
+			    && nm_setting_ip_config_get_never_default (s_ip4)) {
+				g_object_set (s_ip4, NM_SETTING_IP_CONFIG_GATEWAY, NULL, NULL);
+				changed = TRUE;
+			}
+
+			if (   nm_streq0 (nm_setting_ip_config_get_method (s_ip4),
+			                  NM_SETTING_IP4_CONFIG_METHOD_DISABLED)
+			    && !nm_setting_ip_config_get_may_fail (s_ip4)) {
+				g_object_set (s_ip4, NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE, NULL);
+				changed = TRUE;
+			}
 		}
 		if (!s_ip6) {
 			setting = nm_setting_ip6_config_new ();
@@ -765,8 +779,21 @@ _normalize_ip_config (NMConnection *self, GHashTable *parameters)
 			              NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE,
 			              NULL);
 			nm_connection_add_setting (self, setting);
+		} else {
+			if (   nm_setting_ip_config_get_gateway (s_ip6)
+			    && nm_setting_ip_config_get_never_default (s_ip6)) {
+				g_object_set (s_ip6, NM_SETTING_IP_CONFIG_GATEWAY, NULL, NULL);
+				changed = TRUE;
+			}
+
+			if (   nm_streq0 (nm_setting_ip_config_get_method (s_ip6),
+			                  NM_SETTING_IP6_CONFIG_METHOD_IGNORE)
+			    && !nm_setting_ip_config_get_may_fail (s_ip6)) {
+				g_object_set (s_ip6, NM_SETTING_IP_CONFIG_MAY_FAIL, TRUE, NULL);
+				changed = TRUE;
+			}
 		}
-		return !s_ip4 || !s_ip6;
+		return !s_ip4 || !s_ip6 || changed;
 	}
 }
 

@@ -18,8 +18,6 @@ GType nm_dhcp_state_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DHCP_STATE (nm_dhcp_state_get_type ())
 GType nm_dns_ip_config_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DNS_IP_CONFIG_TYPE (nm_dns_ip_config_type_get_type ())
-GType nm_dns_manager_resolv_conf_mode_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_DNS_MANAGER_RESOLV_CONF_MODE (nm_dns_manager_resolv_conf_mode_get_type ())
 GType nm_dns_manager_resolv_conf_manager_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_DNS_MANAGER_RESOLV_CONF_MANAGER (nm_dns_manager_resolv_conf_manager_get_type ())
 GType nm_dns_masq_status_get_type (void) G_GNUC_CONST;

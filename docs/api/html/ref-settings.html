@@ -1083,6 +1083,12 @@
 <td>Array of DNS options. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
 </tr>
 <tr>
+<td><pre class="screen">dns-priority</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>DNS priority. The relative priority to be used when determining the order of DNS servers in resolv.conf.  A lower value means that servers will be on top of the file.  Zero selects the default value, which is 50 for VPNs and 100 for other connections.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used.</td>
+</tr>
+<tr>
 <td><pre class="screen">dns-search</pre></td>
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
@@ -1221,6 +1227,12 @@
 <td><pre class="screen">array of string</pre></td>
 <td><pre class="screen">[]</pre></td>
 <td>Array of DNS options. NULL means that the options are unset and left at the default. In this case NetworkManager will use default options. This is distinct from an empty list of properties.</td>
+</tr>
+<tr>
+<td><pre class="screen">dns-priority</pre></td>
+<td><pre class="screen">int32</pre></td>
+<td><pre class="screen">0</pre></td>
+<td>DNS priority. The relative priority to be used when determining the order of DNS servers in resolv.conf.  A lower value means that servers will be on top of the file.  Zero selects the default value, which is 50 for VPNs and 100 for other connections.  When multiple devices have configurations with the same priority, the one with an active default route will be preferred.  Note that when using dns=dnsmasq the order is meaningless since dnsmasq forwards queries to all known servers at the same time. Negative values have the special effect of excluding other configurations with a greater priority value; so in presence of at least a negative priority, only DNS servers from configurations with the lowest priority value will be used.</td>
 </tr>
 <tr>
 <td><pre class="screen">dns-search</pre></td>

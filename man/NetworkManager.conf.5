@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 05/11/2016
+.\"      Date: 08/03/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.2.2
+.\"    Source: NetworkManager 1.2.4
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.2\&.2" "Configuration"
+.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.2\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,6 +61,8 @@ can be prevented by adding a file
 NetworkManager can overwrite certain user configuration options via D\-Bus or other internal operations\&. In this case it writes those changes to
 /var/lib/NetworkManager/NetworkManager\-intern\&.conf\&. This file is not intended to be modified by the user, but it is read last and can shadow user configuration from
 NetworkManager\&.conf\&.
+.PP
+Certain settings from the configuration can be reloaded at runtime either by sending SIGHUP signal or via D\-Bus\*(Aq Reload call\&.
 .SH "FILE FORMAT"
 .PP
 The configuration file format is so\-called key file (sort of ini\-style format)\&. It consists of sections (groups) of key\-value pairs\&. Lines beginning with a \*(Aq#\*(Aq and blank lines are considered comments\&. Sections are started by a header line containing the section enclosed in \*(Aq[\*(Aq and \*(Aq]\*(Aq, and ended implicitly by the start of the next section or the end of the file\&. Each key\-value pair must be contained in a section\&.
@@ -211,26 +213,33 @@ to point to the local nameserver\&.
 .sp
 unbound: NetworkManager will talk to unbound and dnssec\-triggerd, providing a "split DNS" configuration with DNSSEC support\&. The /etc/resolv\&.conf will be managed by dnssec\-trigger daemon\&.
 .sp
-none: NetworkManager will not modify resolv\&.conf\&.
+none: NetworkManager will not modify resolv\&.conf\&. This implies
+\fIrc\-manager\fRunmanaged
 .RE
 .PP
 \fIrc\-manager\fR
 .RS 4
 Set the
 resolv\&.conf
-management mode\&. The default value depends on how NetworkManager was built\&. Regardless of this setting, NetworkManager will always write resolv\&.conf to its runtime state directory\&.
+management mode\&. The default value depends on how NetworkManager was built, whereas this version of NetworkManager was build with a default of "symlink"\&. Regardless of this setting, NetworkManager will always write resolv\&.conf to its runtime state directory\&.
 .sp
-none: NetworkManager will symlink
+symlink: NetworkManager will symlink
 /etc/resolv\&.conf
 to its private resolv\&.conf file in the runtime state directory\&.
 .sp
 file: NetworkManager will write
 /etc/resolv\&.conf
-as file\&.
+as file\&. If it finds a symlink, it will follow the symlink and update the target instead\&.
 .sp
 resolvconf: NetworkManager will run resolvconf to update the DNS configuration\&.
 .sp
 netconfig: NetworkManager will run netconfig to update the DNS configuration\&.
+.sp
+unmanaged: don\*(Aqt touch
+resolv\&.conf\&.
+.sp
+none: deprecated alias for
+symlink\&.
 .RE
 .PP
 \fIdebug\fR
@@ -254,7 +263,7 @@ This key is deprecated and has no effect since the hostname is now stored in /et
 .PP
 \fIpath\fR
 .RS 4
-The location where keyfiles are read and stored\&. This defaults to "/etc/NetworkManager/conf\&.d"\&.
+The location where keyfiles are read and stored\&. This defaults to "${prefix}/etc/NetworkManager/conf\&.d"\&.
 .RE
 .PP
 \fIunmanaged\-devices\fR
@@ -605,9 +614,14 @@ match\-device), further sections will not be considered even if the property in 
 would have
 stop\-match
 set to
-yes, its
+yes, the device
+wlan0
+would have
 ipv6\&.ip6\-privacy
-value would be unspecified\&.
+property unspecified\&. That is, the search for the property would not continue in the connection sections
+[connection\-wifi\-other]
+or
+[connection]\&.
 .RE
 .SH "CONNECTIVITY SECTION"
 .PP

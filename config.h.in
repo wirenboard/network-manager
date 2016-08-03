@@ -149,6 +149,10 @@
 /* The default value of the auth-polkit configuration option */
 #undef NM_CONFIG_DEFAULT_AUTH_POLKIT
 
+/* Default value for main.rc-manager setting
+   (--with-config-dns-rc-manager-default) */
+#undef NM_CONFIG_DEFAULT_DNS_RC_MANAGER
+
 /* The default value of the logging.audit configuration option */
 #undef NM_CONFIG_DEFAULT_LOGGING_AUDIT
 

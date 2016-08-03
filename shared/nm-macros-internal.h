@@ -27,6 +27,7 @@
 /********************************************************/
 
 #define _nm_packed __attribute__ ((packed))
+#define _nm_unused __attribute__ ((unused))
 
 #define nm_auto(fcn) __attribute__ ((cleanup(fcn)))
 
@@ -44,6 +45,14 @@ _nm_auto_unset_gvalue_impl (GValue *v)
 	g_value_unset (v);
 }
 #define nm_auto_unset_gvalue nm_auto(_nm_auto_unset_gvalue_impl)
+
+static inline void
+_nm_auto_free_gstring_impl (GString **str)
+{
+	if (*str)
+		g_string_free (*str, TRUE);
+}
+#define nm_auto_free_gstring nm_auto(_nm_auto_free_gstring_impl)
 
 /********************************************************/
 
@@ -323,18 +332,6 @@ _notify (obj_type *obj, _PropertyEnums prop) \
 	nm_assert ((gsize) prop < G_N_ELEMENTS (obj_properties)); \
 	g_object_notify_by_pspec ((GObject *) obj, obj_properties[prop]); \
 }
-
-/*****************************************************************************/
-
-#define nm_unauto(pp)                                               \
-    ({                                                              \
-        G_STATIC_ASSERT (sizeof *(pp) == sizeof (gpointer));        \
-        gpointer *_pp = (gpointer *) (pp);                          \
-        gpointer _p = *_pp;                                         \
-                                                                    \
-        *_pp = NULL;                                                \
-        _p;                                                         \
-    })
 
 /*****************************************************************************/
 

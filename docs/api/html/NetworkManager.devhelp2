@@ -61,6 +61,7 @@
     <sub name="License" link="license.html"/>
   </chapters>
   <functions>
+    <keyword type="method" name="The Reload() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.Reload"/>
     <keyword type="method" name="The GetDevices() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetDevices"/>
     <keyword type="method" name="The GetAllDevices() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetAllDevices"/>
     <keyword type="method" name="The GetDeviceByIpIface() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetDeviceByIpIface"/>
@@ -317,6 +318,7 @@
     <keyword type="property" name="The &quot;Domains&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.Domains"/>
     <keyword type="property" name="The &quot;Searches&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.Searches"/>
     <keyword type="property" name="The &quot;DnsOptions&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsOptions"/>
+    <keyword type="property" name="The &quot;DnsPriority&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.DnsPriority"/>
     <keyword type="property" name="The &quot;WinsServers&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP4Config.html#gdbus-property-org-freedesktop-NetworkManager-IP4Config.WinsServers"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-signal-org-freedesktop-NetworkManager-IP6Config.PropertiesChanged"/>
     <keyword type="property" name="The &quot;Addresses&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.Addresses"/>
@@ -328,6 +330,7 @@
     <keyword type="property" name="The &quot;Domains&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.Domains"/>
     <keyword type="property" name="The &quot;Searches&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.Searches"/>
     <keyword type="property" name="The &quot;DnsOptions&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.DnsOptions"/>
+    <keyword type="property" name="The &quot;DnsPriority&quot; property" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html#gdbus-property-org-freedesktop-NetworkManager-IP6Config.DnsPriority"/>
     <keyword type="method" name="The Connect() method" link="gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html#gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.Connect"/>
     <keyword type="method" name="The ConnectInteractive() method" link="gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html#gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.ConnectInteractive"/>
     <keyword type="method" name="The NeedSecrets() method" link="gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html#gdbus-method-org-freedesktop-NetworkManager-VPN-Plugin.NeedSecrets"/>

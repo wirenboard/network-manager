@@ -35,7 +35,6 @@
 #include "nm-dns-unbound.h" 
 #include "nm-dns-manager.h" 
 #include "nm-dns-plugin.h" 
-#include "nm-dns-utils.h" 
 #include "nm-dnsmasq-manager.h" 
 #include "nm-dnsmasq-utils.h" 
 #include "nmp-netns.h" 
@@ -188,26 +187,6 @@ nm_dns_ip_config_type_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
-nm_dns_manager_resolv_conf_mode_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED, "NM_DNS_MANAGER_RESOLV_CONF_UNMANAGED", "unmanaged" },
-        { NM_DNS_MANAGER_RESOLV_CONF_EXPLICIT, "NM_DNS_MANAGER_RESOLV_CONF_EXPLICIT", "explicit" },
-        { NM_DNS_MANAGER_RESOLV_CONF_PROXY, "NM_DNS_MANAGER_RESOLV_CONF_PROXY", "proxy" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMDnsManagerResolvConfMode"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
 nm_dns_manager_resolv_conf_manager_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -215,11 +194,13 @@ nm_dns_manager_resolv_conf_manager_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GEnumValue values[] = {
-        { _NM_DNS_MANAGER_RESOLV_CONF_MAN_INTERNAL_ONLY, "_NM_DNS_MANAGER_RESOLV_CONF_MAN_INTERNAL_ONLY", "-nm-dns-manager-resolv-conf-man-internal-only" },
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NONE", "nm-dns-manager-resolv-conf-man-none" },
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE", "nm-dns-manager-resolv-conf-man-file" },
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF, "NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF", "nm-dns-manager-resolv-conf-man-resolvconf" },
-        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG", "nm-dns-manager-resolv-conf-man-netconfig" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_UNKNOWN, "NM_DNS_MANAGER_RESOLV_CONF_MAN_UNKNOWN", "unknown" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_UNMANAGED, "NM_DNS_MANAGER_RESOLV_CONF_MAN_UNMANAGED", "unmanaged" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_IMMUTABLE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_IMMUTABLE", "immutable" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_SYMLINK, "NM_DNS_MANAGER_RESOLV_CONF_MAN_SYMLINK", "symlink" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE, "NM_DNS_MANAGER_RESOLV_CONF_MAN_FILE", "file" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF, "NM_DNS_MANAGER_RESOLV_CONF_MAN_RESOLVCONF", "resolvconf" },
+        { NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG, "NM_DNS_MANAGER_RESOLV_CONF_MAN_NETCONFIG", "netconfig" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -523,21 +504,25 @@ nm_config_change_flags_get_type (void)
   if (g_once_init_enter (&g_define_type_id__volatile))
     {
       static const GFlagsValue values[] = {
-        { NM_CONFIG_CHANGE_NONE, "NM_CONFIG_CHANGE_NONE", "nm-config-change-none" },
-        { NM_CONFIG_CHANGE_SIGHUP, "NM_CONFIG_CHANGE_SIGHUP", "nm-config-change-sighup" },
-        { NM_CONFIG_CHANGE_SIGUSR1, "NM_CONFIG_CHANGE_SIGUSR1", "nm-config-change-sigusr1" },
-        { NM_CONFIG_CHANGE_SIGUSR2, "NM_CONFIG_CHANGE_SIGUSR2", "nm-config-change-sigusr2" },
-        { NM_CONFIG_CHANGE_CONFIG_FILES, "NM_CONFIG_CHANGE_CONFIG_FILES", "nm-config-change-config-files" },
-        { NM_CONFIG_CHANGE_VALUES, "NM_CONFIG_CHANGE_VALUES", "nm-config-change-values" },
-        { NM_CONFIG_CHANGE_VALUES_USER, "NM_CONFIG_CHANGE_VALUES_USER", "nm-config-change-values-user" },
-        { NM_CONFIG_CHANGE_VALUES_INTERN, "NM_CONFIG_CHANGE_VALUES_INTERN", "nm-config-change-values-intern" },
-        { NM_CONFIG_CHANGE_CONNECTIVITY, "NM_CONFIG_CHANGE_CONNECTIVITY", "nm-config-change-connectivity" },
-        { NM_CONFIG_CHANGE_NO_AUTO_DEFAULT, "NM_CONFIG_CHANGE_NO_AUTO_DEFAULT", "nm-config-change-no-auto-default" },
-        { NM_CONFIG_CHANGE_DNS_MODE, "NM_CONFIG_CHANGE_DNS_MODE", "nm-config-change-dns-mode" },
-        { NM_CONFIG_CHANGE_RC_MANAGER, "NM_CONFIG_CHANGE_RC_MANAGER", "nm-config-change-rc-manager" },
-        { NM_CONFIG_CHANGE_GLOBAL_DNS_CONFIG, "NM_CONFIG_CHANGE_GLOBAL_DNS_CONFIG", "nm-config-change-global-dns-config" },
-        { _NM_CONFIG_CHANGE_LAST, "_NM_CONFIG_CHANGE_LAST", "-nm-config-change-last" },
-        { NM_CONFIG_CHANGE_ALL, "NM_CONFIG_CHANGE_ALL", "nm-config-change-all" },
+        { NM_CONFIG_CHANGE_NONE, "NM_CONFIG_CHANGE_NONE", "none" },
+        { NM_CONFIG_CHANGE_CAUSE_SIGHUP, "NM_CONFIG_CHANGE_CAUSE_SIGHUP", "cause-sighup" },
+        { NM_CONFIG_CHANGE_CAUSE_SIGUSR1, "NM_CONFIG_CHANGE_CAUSE_SIGUSR1", "cause-sigusr1" },
+        { NM_CONFIG_CHANGE_CAUSE_SIGUSR2, "NM_CONFIG_CHANGE_CAUSE_SIGUSR2", "cause-sigusr2" },
+        { NM_CONFIG_CHANGE_CAUSE_NO_AUTO_DEFAULT, "NM_CONFIG_CHANGE_CAUSE_NO_AUTO_DEFAULT", "cause-no-auto-default" },
+        { NM_CONFIG_CHANGE_CAUSE_SET_VALUES, "NM_CONFIG_CHANGE_CAUSE_SET_VALUES", "cause-set-values" },
+        { NM_CONFIG_CHANGE_CAUSE_CONF, "NM_CONFIG_CHANGE_CAUSE_CONF", "cause-conf" },
+        { NM_CONFIG_CHANGE_CAUSE_DNS_RC, "NM_CONFIG_CHANGE_CAUSE_DNS_RC", "cause-dns-rc" },
+        { NM_CONFIG_CHANGE_CAUSE_DNS_FULL, "NM_CONFIG_CHANGE_CAUSE_DNS_FULL", "cause-dns-full" },
+        { NM_CONFIG_CHANGE_CAUSES, "NM_CONFIG_CHANGE_CAUSES", "causes" },
+        { NM_CONFIG_CHANGE_CONFIG_FILES, "NM_CONFIG_CHANGE_CONFIG_FILES", "config-files" },
+        { NM_CONFIG_CHANGE_VALUES, "NM_CONFIG_CHANGE_VALUES", "values" },
+        { NM_CONFIG_CHANGE_VALUES_USER, "NM_CONFIG_CHANGE_VALUES_USER", "values-user" },
+        { NM_CONFIG_CHANGE_VALUES_INTERN, "NM_CONFIG_CHANGE_VALUES_INTERN", "values-intern" },
+        { NM_CONFIG_CHANGE_CONNECTIVITY, "NM_CONFIG_CHANGE_CONNECTIVITY", "connectivity" },
+        { NM_CONFIG_CHANGE_NO_AUTO_DEFAULT, "NM_CONFIG_CHANGE_NO_AUTO_DEFAULT", "no-auto-default" },
+        { NM_CONFIG_CHANGE_DNS_MODE, "NM_CONFIG_CHANGE_DNS_MODE", "dns-mode" },
+        { NM_CONFIG_CHANGE_RC_MANAGER, "NM_CONFIG_CHANGE_RC_MANAGER", "rc-manager" },
+        { NM_CONFIG_CHANGE_GLOBAL_DNS_CONFIG, "NM_CONFIG_CHANGE_GLOBAL_DNS_CONFIG", "global-dns-config" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =

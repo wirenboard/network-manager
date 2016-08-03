@@ -1145,6 +1145,40 @@ nm_utils_find_helper(const char *progname, const char *try_first, GError **error
 
 /******************************************************************************************/
 
+/**
+ * nm_utils_read_link_absolute:
+ * @link_file: file name of the symbolic link
+ * @error: error reason in case of failure
+ *
+ * Uses to g_file_read_link()/readlink() to read the symlink
+ * and returns the result as absolute path.
+ **/
+char *
+nm_utils_read_link_absolute (const char *link_file, GError **error)
+{
+	char *ln, *dirname, *ln_abs;
+
+	ln = g_file_read_link (link_file, error);
+	if (!ln)
+		return NULL;
+	if (g_path_is_absolute (ln))
+		return ln;
+
+	dirname = g_path_get_dirname (link_file);
+	if (!g_path_is_absolute (link_file)) {
+		gs_free char *dirname_rel = dirname;
+		gs_free char *current_dir = g_get_current_dir ();
+
+		dirname = g_build_filename (current_dir, dirname_rel, NULL);
+	}
+	ln_abs = g_build_filename (dirname, ln, NULL);
+	g_free (dirname);
+	g_free (ln);
+	return ln_abs;
+}
+
+/******************************************************************************************/
+
 #define MAC_TAG "mac:"
 #define INTERFACE_NAME_TAG "interface-name:"
 #define DEVICE_TYPE_TAG "type:"
@@ -2612,7 +2646,7 @@ nm_utils_machine_id_read (void)
 	if (contents[i] != '\0')
 		return FALSE;
 
-	return nm_unauto (&contents);
+	return g_steal_pointer (&contents);
 }
 
 /*****************************************************************************/
@@ -3085,3 +3119,145 @@ nm_utils_lifetime_get (guint32 timestamp,
 	return TRUE;
 }
 
+const char *
+nm_utils_dnsmasq_status_to_string (int status, char *dest, guint size)
+{
+	static char buffer[128];
+	char *msg, *ret;
+	gs_free char *msg_free = NULL;
+	int len;
+
+	if (status == 0)
+		msg = "Success";
+	else if (status == 1)
+		msg = "Configuration problem";
+	else if (status == 2)
+		msg = "Network access problem (address in use, permissions)";
+	else if (status == 3)
+		msg = "Filesystem problem (missing file/directory, permissions)";
+	else if (status == 4)
+		msg = "Memory allocation failure";
+	else if (status == 5)
+		msg = "Other problem";
+	else if (status >= 11)
+		msg = msg_free = g_strdup_printf ("Lease script failed with error %d", status - 10);
+	else
+		msg = "Unknown problem";
+
+	if (dest) {
+		ret = dest;
+		len = size;
+	} else {
+		ret = buffer;
+		len = sizeof (buffer);
+	}
+
+	g_snprintf (ret, len, "%s (%d)", msg, status);
+
+	return ret;
+}
+
+/**
+ * nm_utils_get_reverse_dns_domains_ip4:
+ * @addr: IP address in network order
+ * @plen: prefix length
+ * @domains: array for results
+ *
+ * Creates reverse DNS domains for the given address and prefix length, and
+ * append them to @domains.
+ */
+void
+nm_utils_get_reverse_dns_domains_ip4 (guint32 addr, guint8 plen, GPtrArray *domains)
+{
+	guint32 ip, ip2, mask;
+	guchar *p;
+	guint octets;
+	guint i;
+	gsize len0, len;
+	char *str, *s;
+
+	g_return_if_fail (domains);
+	g_return_if_fail (plen <= 32);
+
+	if (!plen)
+		return;
+
+	octets = (plen - 1) / 8 + 1;
+	ip = ntohl (addr);
+	mask = 0xFFFFFFFF << (32 - plen);
+	ip &= mask;
+	ip2 = ip;
+
+	len0 = NM_STRLEN ("in-addr.arpa") + (4 * octets) + 1;
+	while ((ip2 & mask) == ip) {
+		addr = htonl (ip2);
+		p = (guchar *) &addr;
+
+		len = len0;
+		str = s = g_malloc (len);
+		for (i = octets; i > 0; i--)
+			nm_utils_strbuf_append (&s, &len, "%u.", p[i - 1] & 0xff);
+		nm_utils_strbuf_append_str (&s, &len, "in-addr.arpa");
+
+		g_ptr_array_add (domains, str);
+
+		ip2 += 1 << ((32 - plen) & ~7);
+	}
+}
+
+/**
+ * nm_utils_get_reverse_dns_domains_ip6:
+ * @addr: IPv6 address
+ * @plen: prefix length
+ * @domains: array for results
+ *
+ * Creates reverse DNS domains for the given address and prefix length, and
+ * append them to @domains.
+ */
+void
+nm_utils_get_reverse_dns_domains_ip6 (const struct in6_addr *ip, guint8 plen, GPtrArray *domains)
+{
+	struct in6_addr addr;
+	guint nibbles, bits, entries;
+	int i, j;
+	gsize len0, len;
+	char *str, *s;
+
+	g_return_if_fail (domains);
+	g_return_if_fail (plen <= 128);
+
+	if (!plen)
+		return;
+
+	memcpy (&addr, ip, sizeof (struct in6_addr));
+	nm_utils_ip6_address_clear_host_address (&addr, &addr, plen);
+
+	/* Number of nibbles to include in domains */
+	nibbles = (plen - 1) / 4 + 1;
+	/* Prefix length in nibble */
+	bits = plen - ((plen - 1) / 4 * 4);
+	/* Number of domains */
+	entries = 1 << (4 - bits);
+
+	len0 = NM_STRLEN ("ip6.arpa") + (2 * nibbles) + 1;
+
+#define N_SHIFT(x) ((x) % 2 ? 0 : 4)
+
+	for (i = 0; i < entries; i++) {
+		len = len0;
+		str = s = g_malloc (len);
+
+		for (j = nibbles - 1; j >= 0; j--)
+			nm_utils_strbuf_append (&s,
+			                        &len,
+			                        "%x.",
+			                        (addr.s6_addr[j / 2] >> N_SHIFT (j)) & 0xf);
+		nm_utils_strbuf_append_str (&s, &len, "ip6.arpa");
+
+		g_ptr_array_add (domains, str);
+
+		addr.s6_addr[(nibbles - 1) / 2] += 1 << N_SHIFT (nibbles - 1);
+	}
+
+#undef N_SHIFT
+}

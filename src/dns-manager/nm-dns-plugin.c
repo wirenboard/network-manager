@@ -74,18 +74,14 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 gboolean
 nm_dns_plugin_update (NMDnsPlugin *self,
-                      const GSList *vpn_configs,
-                      const GSList *dev_configs,
-                      const GSList *other_configs,
+                      const NMDnsIPConfigData **configs,
                       const NMGlobalDnsConfig *global_config,
                       const char *hostname)
 {
 	g_return_val_if_fail (NM_DNS_PLUGIN_GET_CLASS (self)->update != NULL, FALSE);
 
 	return NM_DNS_PLUGIN_GET_CLASS (self)->update (self,
-	                                               vpn_configs,
-	                                               dev_configs,
-	                                               other_configs,
+	                                               configs,
 	                                               global_config,
 	                                               hostname);
 }
@@ -182,6 +178,17 @@ watch_cb (GPid pid, gint status, gpointer user_data)
 }
 
 GPid
+nm_dns_plugin_child_pid (NMDnsPlugin *self)
+{
+	NMDnsPluginPrivate *priv;
+
+	g_return_val_if_fail (NM_IS_DNS_PLUGIN (self), 0);
+
+	priv = NM_DNS_PLUGIN_GET_PRIVATE (self);
+	return priv->pid;
+}
+
+GPid
 nm_dns_plugin_child_spawn (NMDnsPlugin *self,
                            const char **argv,
                            const char *pidfile,
@@ -224,7 +231,7 @@ nm_dns_plugin_child_spawn (NMDnsPlugin *self,
 	_LOGD ("%s started with pid %d", progname, pid);
 	priv->watch_id = g_child_watch_add (pid, (GChildWatchFunc) watch_cb, self);
 	priv->pid = pid;
-	priv->progname = nm_unauto (&progname);
+	priv->progname = g_steal_pointer (&progname);
 	priv->pidfile = g_strdup (pidfile);
 
 	return pid;
@@ -247,6 +254,12 @@ nm_dns_plugin_child_kill (NMDnsPlugin *self)
 	return TRUE;
 }
 
+void
+nm_dns_plugin_stop (NMDnsPlugin *self)
+{
+	nm_dns_plugin_child_kill (self);
+}
+
 /********************************************/
 
 static void
@@ -259,7 +272,7 @@ dispose (GObject *object)
 {
 	NMDnsPlugin *self = NM_DNS_PLUGIN (object);
 
-	nm_dns_plugin_child_kill (self);
+	nm_dns_plugin_stop (self);
 
 	G_OBJECT_CLASS (nm_dns_plugin_parent_class)->dispose (object);
 }

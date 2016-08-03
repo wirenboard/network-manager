@@ -44,6 +44,7 @@
 #include "nm-config.h"
 #include "nm-vpn-plugin-info.h"
 #include "nm-vpn-manager.h"
+#include "nm-dns-manager.h"
 
 #include "nmdbus-vpn-connection.h"
 
@@ -192,14 +193,14 @@ __LOG_create_prefix (char *buf, NMVpnConnection *self)
 	            "%s%s"     /*con-uuid*/
 	            "%s%s%s%s" /*con-id*/
 	            ",%d"      /*ifindex*/
-	            "%s%s%s%s" /*iface*/
+	            "%s%s%s" /*iface*/
 	            "]",
 	            _NMLOG_PREFIX_NAME,
 	            self,
 	            con ? "," : "--", con ? (nm_connection_get_uuid (con) ?: "??") : "",
 	            con ? "," : "", NM_PRINT_FMT_QUOTED (id, "\"", id, "\"", con ? "??" : ""),
 	            priv->ip_ifindex,
-	            priv->ip_iface ? ":" : "", NM_PRINT_FMT_QUOTED (priv->ip_iface, "(", priv->ip_iface, ")", "")
+	            NM_PRINT_FMT_QUOTED (priv->ip_iface, ":(", priv->ip_iface, ")", "")
 	            );
 
 	return buf;
@@ -909,7 +910,7 @@ print_vpn_config (NMVpnConnection *self)
 		       nm_utils_inet6_ntop (priv->ip6_external_gw, NULL));
 	}
 
-	_LOGI ("Data: Tunnel Device: %s", priv->ip_iface ? priv->ip_iface : "(none)");
+	_LOGI ("Data: Tunnel Device: %s%s%s", NM_PRINT_FMT_QUOTE_STRING (priv->ip_iface));
 
 	if (priv->ip4_config) {
 		_LOGI ("Data: IPv4 configuration:");
@@ -1022,12 +1023,11 @@ apply_parent_device_config (NMVpnConnection *self)
 		ifindex = nm_device_get_ip_ifindex (parent_dev);
 		if (priv->ip4_config) {
 			vpn4_parent_config = nm_ip4_config_new (ifindex);
-			nm_ip4_config_merge (vpn4_parent_config, priv->ip4_config, NM_IP_CONFIG_MERGE_DEFAULT);
-			nm_ip4_config_unset_gateway (vpn4_parent_config);
+			nm_ip4_config_merge (vpn4_parent_config, priv->ip4_config, NM_IP_CONFIG_MERGE_NO_DNS);
 		}
 		if (priv->ip6_config) {
 			vpn6_parent_config = nm_ip6_config_new (ifindex);
-			nm_ip6_config_merge (vpn6_parent_config, priv->ip6_config, NM_IP_CONFIG_MERGE_DEFAULT);
+			nm_ip6_config_merge (vpn6_parent_config, priv->ip6_config, NM_IP_CONFIG_MERGE_NO_DNS);
 			nm_ip6_config_set_gateway (vpn6_parent_config, NULL);
 		}
 	}
@@ -1079,7 +1079,8 @@ nm_vpn_connection_apply_config (NMVpnConnection *self)
 	nm_default_route_manager_ip6_update_default_route (priv->default_route_manager, self);
 
 	_LOGI ("VPN connection: (IP Config Get) complete");
-	_set_vpn_state (self, STATE_PRE_UP, NM_VPN_CONNECTION_STATE_REASON_NONE, FALSE);
+	if (priv->vpn_state < STATE_PRE_UP)
+		_set_vpn_state (self, STATE_PRE_UP, NM_VPN_CONNECTION_STATE_REASON_NONE, FALSE);
 	return TRUE;
 }
 
@@ -1218,6 +1219,8 @@ process_generic_config (NMVpnConnection *self, GVariant *dict)
 	}
 
 	g_clear_pointer (&priv->ip_iface, g_free);
+	priv->ip_ifindex = 0;
+
 	if (g_variant_lookup (dict, NM_VPN_PLUGIN_CONFIG_TUNDEV, "&s", &str)) {
 		/* Backwards compat with NM-openswan */
 		if (g_strcmp0 (str, "_none_") != 0)
@@ -1228,7 +1231,13 @@ process_generic_config (NMVpnConnection *self, GVariant *dict)
 		/* Grab the interface index for address/routing operations */
 		priv->ip_ifindex = nm_platform_link_get_ifindex (NM_PLATFORM_GET, priv->ip_iface);
 		if (priv->ip_ifindex <= 0) {
+			nm_platform_process_events (NM_PLATFORM_GET);
+			priv->ip_ifindex = nm_platform_link_get_ifindex (NM_PLATFORM_GET, priv->ip_iface);
+		}
+		if (priv->ip_ifindex <= 0) {
 			_LOGE ("failed to look up VPN interface index for \"%s\"", priv->ip_iface);
+			g_clear_pointer (&priv->ip_iface, g_free);
+			priv->ip_ifindex = 0;
 			nm_vpn_connection_config_maybe_complete (self, FALSE);
 			return FALSE;
 		}
@@ -1329,7 +1338,6 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 	const char *str;
 	GVariant *v;
 	gboolean b;
-	int ifindex;
 
 	g_return_if_fail (dict && g_variant_is_of_type (dict, G_VARIANT_TYPE_VARDICT));
 
@@ -1357,13 +1365,8 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 		priv->has_ip6 = FALSE;
 	}
 
-	if (priv->ip_ifindex > 0) {
-		ifindex = priv->ip_ifindex;
-	} else {
-		NMDevice *parent_dev = nm_active_connection_get_device (NM_ACTIVE_CONNECTION (self));
-		ifindex = nm_device_get_ip_ifindex (parent_dev);
-	}
-	config = nm_ip4_config_new (ifindex);
+	config = nm_ip4_config_new (nm_vpn_connection_get_ip_ifindex (self, TRUE));
+	nm_ip4_config_set_dns_priority (config, NM_DNS_PRIORITY_DEFAULT_VPN);
 
 	memset (&address, 0, sizeof (address));
 	address.plen = 24;
@@ -1464,10 +1467,15 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 	                             nm_connection_get_setting_ip4_config (_get_applied_connection (self)),
 	                             route_metric);
 
-	nm_exported_object_clear_and_unexport (&priv->ip4_config);
-	priv->ip4_config = config;
-	nm_exported_object_export (NM_EXPORTED_OBJECT (config));
-	g_object_notify (G_OBJECT (self), NM_ACTIVE_CONNECTION_IP4_CONFIG);
+	if (priv->ip4_config) {
+		nm_ip4_config_replace (priv->ip4_config, config, NULL);
+		g_object_unref (config);
+	} else {
+		priv->ip4_config = config;
+		nm_exported_object_export (NM_EXPORTED_OBJECT (config));
+		g_object_notify (G_OBJECT (self), NM_ACTIVE_CONNECTION_IP4_CONFIG);
+	}
+
 	nm_vpn_connection_config_maybe_complete (self, TRUE);
 }
 
@@ -1497,6 +1505,7 @@ nm_vpn_connection_ip6_config_get (NMVpnConnection *self, GVariant *dict)
 	}
 
 	config = nm_ip6_config_new (priv->ip_ifindex);
+	nm_ip6_config_set_dns_priority (config, NM_DNS_PRIORITY_DEFAULT_VPN);
 
 	memset (&address, 0, sizeof (address));
 	address.plen = 128;
@@ -1600,10 +1609,15 @@ next:
 	                             nm_connection_get_setting_ip6_config (_get_applied_connection (self)),
 	                             route_metric);
 
-	nm_exported_object_clear_and_unexport (&priv->ip6_config);
-	priv->ip6_config = config;
-	nm_exported_object_export (NM_EXPORTED_OBJECT (config));
-	g_object_notify (G_OBJECT (self), NM_ACTIVE_CONNECTION_IP6_CONFIG);
+	if (priv->ip6_config) {
+		nm_ip6_config_replace (priv->ip6_config, config, NULL);
+		g_object_unref (config);
+	} else {
+		priv->ip6_config = config;
+		nm_exported_object_export (NM_EXPORTED_OBJECT (config));
+		g_object_notify (G_OBJECT (self), NM_ACTIVE_CONNECTION_IP6_CONFIG);
+	}
+
 	nm_vpn_connection_config_maybe_complete (self, TRUE);
 }
 
@@ -1916,9 +1930,6 @@ _daemon_exec_timeout (gpointer data)
 	_LOGW ("Timed out waiting for the service to start");
 	priv->start_timeout = 0;
 	nm_vpn_connection_disconnect (self, NM_VPN_CONNECTION_STATE_REASON_SERVICE_START_TIMEOUT, FALSE);
-
-	g_object_unref (self);
-
 	return G_SOURCE_REMOVE;
 }
 
@@ -2085,20 +2096,67 @@ nm_vpn_connection_get_ip6_config (NMVpnConnection *self)
 	return NM_VPN_CONNECTION_GET_PRIVATE (self)->ip6_config;
 }
 
-const char *
-nm_vpn_connection_get_ip_iface (NMVpnConnection *self)
+static int
+_get_ip_iface_for_device (NMVpnConnection *self, const char **out_iface)
 {
+	NMDevice *parent_dev;
+	int ifindex;
+	const char *iface;
+
+	nm_assert (NM_IS_VPN_CONNECTION (self));
+
+	/* the ifindex and the ifname in this case should come together.
+	 * They either must be both set, or none. */
+
+	parent_dev = nm_active_connection_get_device (NM_ACTIVE_CONNECTION (self));
+	if (!parent_dev)
+		goto none;
+	ifindex = nm_device_get_ip_ifindex (parent_dev);
+	if (ifindex <= 0)
+		goto none;
+	iface = nm_device_get_ip_iface (parent_dev);
+	if (!iface)
+		goto none;
+
+	NM_SET_OUT (out_iface, iface);
+	return ifindex;
+none:
+	NM_SET_OUT (out_iface, NULL);
+	return 0;
+}
+
+const char *
+nm_vpn_connection_get_ip_iface (NMVpnConnection *self, gboolean fallback_device)
+{
+	NMVpnConnectionPrivate *priv;
+	const char *iface;
+
 	g_return_val_if_fail (NM_IS_VPN_CONNECTION (self), NULL);
 
-	return NM_VPN_CONNECTION_GET_PRIVATE (self)->ip_iface;
+	priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
+
+	if (priv->ip_iface || !fallback_device)
+		return priv->ip_iface;
+
+	_get_ip_iface_for_device (self, &iface);
+	return iface;
 }
 
 int
-nm_vpn_connection_get_ip_ifindex (NMVpnConnection *self)
+nm_vpn_connection_get_ip_ifindex (NMVpnConnection *self, gboolean fallback_device)
 {
-	g_return_val_if_fail (NM_IS_VPN_CONNECTION (self), -1);
+	NMVpnConnectionPrivate *priv;
 
-	return NM_VPN_CONNECTION_GET_PRIVATE (self)->ip_ifindex;
+	g_return_val_if_fail (NM_IS_VPN_CONNECTION (self), 0);
+
+	priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
+
+	if (priv->ip_ifindex > 0)
+		return priv->ip_ifindex;
+	if (!fallback_device)
+		return 0;
+
+	return _get_ip_iface_for_device (self, NULL);
 }
 
 guint32

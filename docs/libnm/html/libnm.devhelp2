@@ -979,6 +979,7 @@
     <keyword type="function" name="nm_setting_ip_config_remove_dns_option ()" link="NMSettingIPConfig.html#nm-setting-ip-config-remove-dns-option" since="1.2"/>
     <keyword type="function" name="nm_setting_ip_config_remove_dns_option_by_value ()" link="NMSettingIPConfig.html#nm-setting-ip-config-remove-dns-option-by-value" since="1.2"/>
     <keyword type="function" name="nm_setting_ip_config_clear_dns_options ()" link="NMSettingIPConfig.html#nm-setting-ip-config-clear-dns-options" since="1.2"/>
+    <keyword type="function" name="nm_setting_ip_config_get_dns_priority ()" link="NMSettingIPConfig.html#nm-setting-ip-config-get-dns-priority" since="1.2.4"/>
     <keyword type="function" name="nm_setting_ip_config_get_num_addresses ()" link="NMSettingIPConfig.html#nm-setting-ip-config-get-num-addresses"/>
     <keyword type="function" name="nm_setting_ip_config_get_address ()" link="NMSettingIPConfig.html#nm-setting-ip-config-get-address"/>
     <keyword type="function" name="nm_setting_ip_config_add_address ()" link="NMSettingIPConfig.html#nm-setting-ip-config-add-address"/>
@@ -1006,6 +1007,7 @@
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_DNS" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_DNS_SEARCH" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-SEARCH:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_DNS_OPTIONS" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-OPTIONS:CAPS"/>
+    <keyword type="macro" name="NM_SETTING_IP_CONFIG_DNS_PRIORITY" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-DNS-PRIORITY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_ADDRESSES" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-ADDRESSES:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_GATEWAY" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-GATEWAY:CAPS"/>
     <keyword type="macro" name="NM_SETTING_IP_CONFIG_ROUTES" link="NMSettingIPConfig.html#NM-SETTING-IP-CONFIG-ROUTES:CAPS"/>
@@ -1041,6 +1043,7 @@
     <keyword type="property" name="The “dhcp-timeout” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-timeout"/>
     <keyword type="property" name="The “dns” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dns"/>
     <keyword type="property" name="The “dns-options” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dns-options"/>
+    <keyword type="property" name="The “dns-priority” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dns-priority"/>
     <keyword type="property" name="The “dns-search” property" link="NMSettingIPConfig.html#NMSettingIPConfig--dns-search"/>
     <keyword type="property" name="The “gateway” property" link="NMSettingIPConfig.html#NMSettingIPConfig--gateway"/>
     <keyword type="property" name="The “ignore-auto-dns” property" link="NMSettingIPConfig.html#NMSettingIPConfig--ignore-auto-dns"/>
@@ -2168,15 +2171,13 @@
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_2_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-2-FOR:CAPS"/>
-    <keyword type="macro" name="NM_DEPRECATED_IN_1_4_FOR()" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-4-FOR:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_0_9_10" link="libnm-nm-version.html#NM-DEPRECATED-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_0_9_10" link="libnm-nm-version.html#NM-AVAILABLE-IN-0-9-10:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_0" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_0" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-0:CAPS"/>
     <keyword type="macro" name="NM_DEPRECATED_IN_1_2" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-2:CAPS"/>
     <keyword type="macro" name="NM_AVAILABLE_IN_1_2" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-2:CAPS"/>
-    <keyword type="macro" name="NM_DEPRECATED_IN_1_4" link="libnm-nm-version.html#NM-DEPRECATED-IN-1-4:CAPS"/>
-    <keyword type="macro" name="NM_AVAILABLE_IN_1_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-4:CAPS"/>
+    <keyword type="macro" name="NM_AVAILABLE_IN_1_2_4" link="libnm-nm-version.html#NM-AVAILABLE-IN-1-2-4:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_INTERFACE_VPN" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-INTERFACE-VPN:CAPS"/>
     <keyword type="macro" name="NM_DBUS_PATH_VPN_CONNECTION" link="libnm-nm-vpn-dbus-interface.html#NM-DBUS-PATH-VPN-CONNECTION:CAPS"/>
@@ -2269,6 +2270,8 @@
     <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_SYSTEM" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-SYSTEM:CAPS"/>
     <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_OWN" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-OWN:CAPS"/>
     <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-HOSTNAME:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_SETTINGS_MODIFY_GLOBAL_DNS" link="NMClient.html#NM-CLIENT-PERMISSION-SETTINGS-MODIFY-GLOBAL-DNS:CAPS"/>
+    <keyword type="constant" name="NM_CLIENT_PERMISSION_RELOAD" link="NMClient.html#NM-CLIENT-PERMISSION-RELOAD:CAPS"/>
     <keyword type="constant" name="NM_CLIENT_PERMISSION_LAST" link="NMClient.html#NM-CLIENT-PERMISSION-LAST:CAPS"/>
     <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_UNKNOWN" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-UNKNOWN:CAPS"/>
     <keyword type="constant" name="NM_CLIENT_PERMISSION_RESULT_YES" link="NMClient.html#NM-CLIENT-PERMISSION-RESULT-YES:CAPS"/>
@@ -2318,6 +2321,7 @@
     <keyword type="constant" name="NM_MANAGER_ERROR_ALREADY_ENABLED_OR_DISABLED" link="libnm-nm-errors.html#NM-MANAGER-ERROR-ALREADY-ENABLED-OR-DISABLED:CAPS"/>
     <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_LOG_LEVEL" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-LEVEL:CAPS"/>
     <keyword type="constant" name="NM_MANAGER_ERROR_UNKNOWN_LOG_DOMAIN" link="libnm-nm-errors.html#NM-MANAGER-ERROR-UNKNOWN-LOG-DOMAIN:CAPS"/>
+    <keyword type="constant" name="NM_MANAGER_ERROR_INVALID_ARGUMENTS" link="libnm-nm-errors.html#NM-MANAGER-ERROR-INVALID-ARGUMENTS:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_ERROR_FAILED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-FAILED:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_ERROR_PERMISSION_DENIED" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-PERMISSION-DENIED:CAPS"/>
     <keyword type="constant" name="NM_SECRET_AGENT_ERROR_INVALID_CONNECTION" link="libnm-nm-errors.html#NM-SECRET-AGENT-ERROR-INVALID-CONNECTION:CAPS"/>

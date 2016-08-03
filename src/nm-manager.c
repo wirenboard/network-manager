@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include "nm-manager.h"
+#include "nm-common-macros.h"
 #include "nm-bus-manager.h"
 #include "nm-vpn-manager.h"
 #include "nm-device.h"
@@ -68,8 +69,6 @@ static NMActiveConnection *_new_active_connection (NMManager *self,
 
 static void policy_activating_device_changed (GObject *object, GParamSpec *pspec, gpointer user_data);
 
-static void rfkill_change (const char *desc, RfKillType rtype, gboolean enabled);
-
 static gboolean find_master (NMManager *self,
                              NMConnection *connection,
                              NMDevice *device,
@@ -80,8 +79,10 @@ static gboolean find_master (NMManager *self,
 
 static void nm_manager_update_state (NMManager *manager);
 
-static void connection_changed (NMSettings *settings, NMConnection *connection,
-                                NMManager *manager);
+static void connection_changed (NMManager *self, NMConnection *connection);
+static void device_sleep_cb (NMDevice *device,
+                             GParamSpec *pspec,
+                             NMManager *self);
 
 #define TAG_ACTIVE_CONNETION_ADD_AND_ACTIVATE "act-con-add-and-activate"
 
@@ -132,6 +133,7 @@ typedef struct {
 	NMSleepMonitor *sleep_monitor;
 
 	GSList *auth_chains;
+	GHashTable *sleep_devices;
 
 	/* Firmware dir monitor */
 	GFileMonitor *fw_monitor;
@@ -455,6 +457,104 @@ _config_changed_cb (NMConfig *config, NMConfigData *config_data, NMConfigChangeF
 
 	if (NM_FLAGS_HAS (changes, NM_CONFIG_CHANGE_GLOBAL_DNS_CONFIG))
 		_notify (self, PROP_GLOBAL_DNS_CONFIGURATION);
+}
+
+static void
+_reload_auth_cb (NMAuthChain *chain,
+                 GError *error,
+                 GDBusMethodInvocation *context,
+                 gpointer user_data)
+{
+	NMManager *self = NM_MANAGER (user_data);
+	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+	GError *ret_error = NULL;
+	NMAuthCallResult result;
+	guint32 flags;
+	NMAuthSubject *subject;
+	char s_buf[60];
+	NMConfigChangeFlags reload_type = NM_CONFIG_CHANGE_NONE;
+
+	g_assert (context);
+
+	priv->auth_chains = g_slist_remove (priv->auth_chains, chain);
+	flags = GPOINTER_TO_UINT (nm_auth_chain_get_data (chain, "flags"));
+
+	subject = nm_auth_chain_get_subject (chain);
+
+	result = nm_auth_chain_get_result (chain, NM_AUTH_PERMISSION_RELOAD);
+	if (error) {
+		_LOGD (LOGD_CORE, "Reload request failed: %s", error->message);
+		ret_error = g_error_new (NM_MANAGER_ERROR,
+		                         NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                         "Reload request failed: %s",
+		                         error->message);
+	} else if (result != NM_AUTH_CALL_RESULT_YES) {
+		ret_error = g_error_new_literal (NM_MANAGER_ERROR,
+		                                 NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                                 "Not authorized to reload configuration");
+	} else {
+		if (NM_FLAGS_ANY (flags, ~NM_MANAGER_RELOAD_FLAGS_ALL)) {
+			/* invalid flags */
+		} else if (flags == 0)
+			reload_type = NM_CONFIG_CHANGE_CAUSE_SIGHUP;
+		else {
+			if (NM_FLAGS_HAS (flags, NM_MANAGER_RELOAD_FLAGS_CONF))
+				reload_type |= NM_CONFIG_CHANGE_CAUSE_CONF;
+			if (NM_FLAGS_HAS (flags, NM_MANAGER_RELOAD_FLAGS_DNS_RC))
+				reload_type |= NM_CONFIG_CHANGE_CAUSE_DNS_RC;
+			if (NM_FLAGS_HAS (flags, NM_MANAGER_RELOAD_FLAGS_DNS_FULL))
+				reload_type |= NM_CONFIG_CHANGE_CAUSE_DNS_FULL;
+		}
+
+		if (reload_type == NM_CONFIG_CHANGE_NONE) {
+			ret_error = g_error_new_literal (NM_MANAGER_ERROR,
+			                                 NM_MANAGER_ERROR_INVALID_ARGUMENTS,
+			                                 "Invalid flags for reload");
+		}
+	}
+
+	nm_audit_log_control_op (NM_AUDIT_OP_RELOAD,
+	                         nm_sprintf_buf (s_buf, "%u", flags),
+	                         ret_error == NULL, subject,
+	                         ret_error ? ret_error->message : NULL);
+
+	if (ret_error) {
+		g_dbus_method_invocation_take_error (context, ret_error);
+		goto out;
+	}
+
+	nm_config_reload (priv->config, reload_type);
+	g_dbus_method_invocation_return_value (context, NULL);
+
+out:
+	nm_auth_chain_unref (chain);
+}
+
+static void
+impl_manager_reload (NMManager *self,
+                     GDBusMethodInvocation *context,
+                     guint32 flags)
+{
+	NMManagerPrivate *priv;
+	NMAuthChain *chain;
+	GError *error = NULL;
+
+	g_return_if_fail (NM_IS_MANAGER (self));
+
+	priv = NM_MANAGER_GET_PRIVATE (self);
+
+	chain = nm_auth_chain_new_context (context, _reload_auth_cb, self);
+	if (!chain) {
+		error = g_error_new_literal (NM_MANAGER_ERROR,
+		                             NM_MANAGER_ERROR_PERMISSION_DENIED,
+		                             "Unable to authenticate request");
+		g_dbus_method_invocation_take_error (context, error);
+		return;
+	}
+
+	priv->auth_chains = g_slist_append (priv->auth_chains, chain);
+	nm_auth_chain_set_data (chain, "flags", GUINT_TO_POINTER (flags), NULL);
+	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_RELOAD, TRUE);
 }
 
 /************************************************************************/
@@ -839,19 +939,29 @@ remove_device (NMManager *self,
 	       nm_device_get_iface (device), allow_unmanage, nm_device_get_managed (device, FALSE));
 
 	if (allow_unmanage && nm_device_get_managed (device, FALSE)) {
-		NMActRequest *req = nm_device_get_act_request (device);
+		unmanage = TRUE;
 
-		/* Leave activated interfaces up when quitting so their configuration
-		 * can be taken over when NM restarts.  This ensures connectivity while
-		 * NM is stopped. Devices which do not support connection assumption
-		 * cannot be left up.
-		 */
-		if (!quitting)  /* Forced removal; device already gone */
-			unmanage = TRUE;
-		else if (!nm_device_can_assume_active_connection (device))
-			unmanage = TRUE;
-		else if (!req)
-			unmanage = TRUE;
+		if (!quitting) {
+			/* the device is already gone. Unmanage it. */
+		} else {
+			/* Leave certain devices alone when quitting so their configuration
+			 * can be taken over when NM restarts.  This ensures connectivity while
+			 * NM is stopped.
+			 */
+			if (nm_device_uses_assumed_connection (device)) {
+				/* An assume connection must be left alone */
+				unmanage = FALSE;
+			} else if (!nm_device_get_act_request (device)) {
+				/* a device without any active connection is either UNAVAILABLE or DISCONNECTED
+				 * state. Since we don't know whether the device was upped by NetworkManager,
+				 * we must leave it up on exit. */
+				unmanage = FALSE;
+			} else if (!nm_platform_link_can_assume (NM_PLATFORM_GET, nm_device_get_ifindex (device))) {
+				/* The device has no layer 3 configuration. Leave it up. */
+				unmanage = FALSE;
+			} else if (nm_device_can_assume_active_connection (device))
+				unmanage = FALSE;
+		}
 
 		if (unmanage) {
 			if (quitting)
@@ -1162,7 +1272,7 @@ retry_connections_for_parent_device (NMManager *self, NMDevice *device)
 			ifname = nm_manager_get_connection_iface (self, candidate, &parent, &error);
 			if (ifname) {
 				if (!nm_platform_link_get_by_ifname (NM_PLATFORM_GET, ifname))
-					connection_changed (priv->settings, candidate, self);
+					connection_changed (self, candidate);
 			}
 		}
 	}
@@ -1171,34 +1281,40 @@ retry_connections_for_parent_device (NMManager *self, NMDevice *device)
 }
 
 static void
-connection_changed (NMSettings *settings,
-                    NMConnection *connection,
-                    NMManager *manager)
+connection_changed (NMManager *self,
+                    NMConnection *connection)
 {
 	NMDevice *device;
 
 	if (!nm_connection_is_virtual (connection))
 		return;
 
-	device = system_create_virtual_device (manager, connection);
+	device = system_create_virtual_device (self, connection);
 	if (!device)
 		return;
 
 	/* Maybe the device that was created was needed by some other
 	 * connection's device (parent of a VLAN). Let the connections
 	 * can use the newly created device as a parent know. */
-	retry_connections_for_parent_device (manager, device);
+	retry_connections_for_parent_device (self, device);
 }
 
 static void
-connection_removed (NMSettings *settings,
-                    NMSettingsConnection *connection,
-                    NMManager *manager)
+connection_added_cb (NMSettings *settings,
+                     NMConnection *connection,
+                     NMManager *self)
 {
-	/*
-	 * Do not delete existing virtual devices to keep connectivity up.
-	 * Virtual devices are reused when NetworkManager is restarted.
-	 */
+	connection_changed (self, connection);
+}
+
+static void
+connection_updated_cb (NMSettings *settings,
+                       NMConnection *connection,
+                       gboolean by_user,
+                       NMManager *self)
+{
+	if (by_user)
+		connection_changed (self, connection);
 }
 
 static void
@@ -2777,13 +2893,13 @@ active_connection_parent_active (NMActiveConnection *active,
 			/* We can now proceed to disconnected state so that activation proceeds. */
 			unmanaged_to_disconnected (device);
 		} else {
-			nm_log_warn (LOGD_CORE, "Could not realize device '%s': %s",
-			             nm_device_get_iface (device), error->message);
+			_LOGW (LOGD_CORE, "Could not realize device '%s': %s",
+			       nm_device_get_iface (device), error->message);
 			nm_active_connection_set_state (active, NM_ACTIVE_CONNECTION_STATE_DEACTIVATED);
 		}
 	} else {
-		nm_log_warn (LOGD_CORE, "The parent connection device '%s' depended on disappeared.",
-		             nm_device_get_iface (device));
+		_LOGW (LOGD_CORE, "The parent connection device '%s' depended on disappeared.",
+		       nm_device_get_iface (device));
 		nm_active_connection_set_state (active, NM_ACTIVE_CONNECTION_STATE_DEACTIVATED);
 	}
 }
@@ -3268,7 +3384,7 @@ validate_activation_request (NMManager *self,
 		                     NM_MANAGER_ERROR,
 		                     NM_MANAGER_ERROR_CONNECTION_NOT_AVAILABLE,
 		                     "Sharing IPv6 connections is not supported yet.");
-		return NULL;
+		goto error;
 	}
 
 	/* Check whether it's a VPN or not */
@@ -3849,6 +3965,98 @@ device_is_wake_on_lan (NMDevice *device)
 	return nm_platform_link_get_wake_on_lan (NM_PLATFORM_GET, nm_device_get_ip_ifindex (device));
 }
 
+static gboolean
+sleep_devices_add (NMManager *self, NMDevice *device, gboolean suspending)
+{
+	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+	NMSleepMonitorInhibitorHandle *handle = NULL;
+
+	if (g_hash_table_lookup_extended (priv->sleep_devices, device, NULL, (gpointer *) &handle)) {
+		if (suspending) {
+			/* if we are suspending, always insert a new handle in sleep_devices.
+			 * Even if we had an old handle, it might be stale by now. */
+			g_hash_table_insert (priv->sleep_devices, device,
+			                     nm_sleep_monitor_inhibit_take (priv->sleep_monitor));
+			if (handle)
+				nm_sleep_monitor_inhibit_release (priv->sleep_monitor, handle);
+		}
+		return FALSE;
+	}
+
+	g_hash_table_insert (priv->sleep_devices,
+	                     g_object_ref (device),
+	                     suspending
+	                         ? nm_sleep_monitor_inhibit_take (priv->sleep_monitor)
+	                         : NULL);
+	g_signal_connect (device, "notify::" NM_DEVICE_STATE, (GCallback) device_sleep_cb, self);
+	return TRUE;
+}
+
+static gboolean
+sleep_devices_remove (NMManager *self, NMDevice *device)
+{
+	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+	NMSleepMonitorInhibitorHandle *handle;
+
+	if (!g_hash_table_lookup_extended (priv->sleep_devices, device, NULL, (gpointer *) &handle))
+		return FALSE;
+
+	if (handle)
+		nm_sleep_monitor_inhibit_release (priv->sleep_monitor, handle);
+
+	/* Remove device from hash */
+	g_signal_handlers_disconnect_by_func (device, device_sleep_cb, self);
+	g_hash_table_remove (priv->sleep_devices, device);
+	g_object_unref (device);
+	return TRUE;
+}
+
+static void
+sleep_devices_clear (NMManager *self)
+{
+	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+	NMDevice *device;
+	NMSleepMonitorInhibitorHandle *handle;
+	GHashTableIter iter;
+
+	if (!priv->sleep_devices)
+		return;
+
+	g_hash_table_iter_init (&iter, priv->sleep_devices);
+	while (g_hash_table_iter_next (&iter, (gpointer *) &device, (gpointer *) &handle)) {
+		g_signal_handlers_disconnect_by_func (device, device_sleep_cb, self);
+		if (handle)
+			nm_sleep_monitor_inhibit_release (priv->sleep_monitor, handle);
+		g_object_unref (device);
+		g_hash_table_iter_remove (&iter);
+	}
+}
+
+static void
+device_sleep_cb (NMDevice *device,
+                 GParamSpec *pspec,
+                 NMManager *self)
+{
+	switch (nm_device_get_state (device)) {
+	case NM_DEVICE_STATE_DISCONNECTED:
+		_LOGD (LOGD_SUSPEND, "sleep: unmanaging device %s", nm_device_get_ip_iface (device));
+		nm_device_set_unmanaged_by_flags_queue (device,
+		                                        NM_UNMANAGED_SLEEPING,
+		                                        TRUE,
+		                                        NM_DEVICE_STATE_REASON_SLEEPING);
+		break;
+	case NM_DEVICE_STATE_UNMANAGED:
+		_LOGD (LOGD_SUSPEND, "sleep: device %s is ready", nm_device_get_ip_iface (device));
+
+		if (!sleep_devices_remove (self, device))
+			g_return_if_reached ();
+
+		break;
+	default:
+		return;
+	}
+}
+
 static void
 do_sleep_wake (NMManager *self, gboolean sleeping_changed)
 {
@@ -3872,15 +4080,28 @@ do_sleep_wake (NMManager *self, gboolean sleeping_changed)
 			if (nm_device_is_software (device))
 				continue;
 			/* Wake-on-LAN devices will be taken down post-suspend rather than pre- */
-			if (suspending && device_is_wake_on_lan (device))
+			if (suspending && device_is_wake_on_lan (device)) {
+				_LOGD (LOGD_SUSPEND, "sleep: device %s has wake-on-lan, skipping",
+				       nm_device_get_ip_iface (device));
 				continue;
+			}
 
-			nm_device_set_unmanaged_by_flags (device, NM_UNMANAGED_SLEEPING, TRUE, NM_DEVICE_STATE_REASON_SLEEPING);
+			if (nm_device_is_activating (device) ||
+			    nm_device_get_state (device) == NM_DEVICE_STATE_ACTIVATED) {
+				_LOGD (LOGD_SUSPEND, "sleep: wait disconnection of device %s",
+				       nm_device_get_ip_iface (device));
+
+				if (sleep_devices_add (self, device, suspending))
+					nm_device_queue_state (device, NM_DEVICE_STATE_DEACTIVATING, NM_DEVICE_STATE_REASON_SLEEPING);
+			} else {
+				nm_device_set_unmanaged_by_flags (device, NM_UNMANAGED_SLEEPING, TRUE, NM_DEVICE_STATE_REASON_SLEEPING);
+			}
 		}
 	} else {
 		_LOGI (LOGD_SUSPEND, "%s...", waking_from_suspend ? "waking up" : "re-enabling");
 
 		if (waking_from_suspend) {
+			sleep_devices_clear (self);
 			/* Belatedly take down Wake-on-LAN devices; ideally we wouldn't have to do this
 			 * but for now it's the only way to make sure we re-check their connectivity.
 			 */
@@ -3941,7 +4162,11 @@ do_sleep_wake (NMManager *self, gboolean sleeping_changed)
 static void
 _internal_sleep (NMManager *self, gboolean do_sleep)
 {
-	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
+	NMManagerPrivate *priv;
+
+	g_return_if_fail (NM_IS_MANAGER (self));
+
+	priv = NM_MANAGER_GET_PRIVATE (self);
 
 	if (priv->sleeping == do_sleep)
 		return;
@@ -4054,17 +4279,12 @@ impl_manager_sleep (NMManager *self,
 }
 
 static void
-sleeping_cb (NMSleepMonitor *monitor, gpointer user_data)
+sleeping_cb (NMSleepMonitor *monitor, gboolean is_about_to_suspend, gpointer user_data)
 {
-	nm_log_dbg (LOGD_SUSPEND, "Received sleeping signal");
-	_internal_sleep (NM_MANAGER (user_data), TRUE);
-}
+	NMManager *self = user_data;
 
-static void
-resuming_cb (NMSleepMonitor *monitor, gpointer user_data)
-{
-	nm_log_dbg (LOGD_SUSPEND, "Received resuming signal");
-	_internal_sleep (NM_MANAGER (user_data), FALSE);
+	_LOGD (LOGD_SUSPEND, "Received %s signal", is_about_to_suspend ? "sleeping" : "resuming");
+	_internal_sleep (self, is_about_to_suspend);
 }
 
 static void
@@ -4186,7 +4406,7 @@ done:
 /* Permissions */
 
 static void
-get_perm_add_result (NMAuthChain *chain, GVariantBuilder *results, const char *permission)
+get_perm_add_result (NMManager *self, NMAuthChain *chain, GVariantBuilder *results, const char *permission)
 {
 	NMAuthCallResult result;
 
@@ -4198,7 +4418,7 @@ get_perm_add_result (NMAuthChain *chain, GVariantBuilder *results, const char *p
 	else if (result == NM_AUTH_CALL_RESULT_AUTH)
 		g_variant_builder_add (results, "{ss}", permission, "auth");
 	else {
-		nm_log_dbg (LOGD_CORE, "unknown auth chain result %d", result);
+		_LOGD (LOGD_CORE, "unknown auth chain result %d", result);
 	}
 }
 
@@ -4226,17 +4446,18 @@ get_permissions_done_cb (NMAuthChain *chain,
 	} else {
 		g_variant_builder_init (&results, G_VARIANT_TYPE ("a{ss}"));
 
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_NETWORK);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_SLEEP_WAKE);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_WIFI);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_WWAN);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_WIMAX);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_NETWORK_CONTROL);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_SETTINGS_MODIFY_SYSTEM);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_SETTINGS_MODIFY_OWN);
-		get_perm_add_result (chain, &results, NM_AUTH_PERMISSION_SETTINGS_MODIFY_HOSTNAME);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_NETWORK);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_SLEEP_WAKE);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_WIFI);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_WWAN);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_ENABLE_DISABLE_WIMAX);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_NETWORK_CONTROL);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_WIFI_SHARE_PROTECTED);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_WIFI_SHARE_OPEN);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_SETTINGS_MODIFY_SYSTEM);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_SETTINGS_MODIFY_OWN);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_SETTINGS_MODIFY_HOSTNAME);
+		get_perm_add_result (self, chain, &results, NM_AUTH_PERMISSION_RELOAD);
 
 		g_dbus_method_invocation_return_value (context,
 		                                       g_variant_new ("(a{ss})", &results));
@@ -4274,6 +4495,7 @@ impl_manager_get_permissions (NMManager *self,
 	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_SETTINGS_MODIFY_SYSTEM, FALSE);
 	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_SETTINGS_MODIFY_OWN, FALSE);
 	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_SETTINGS_MODIFY_HOSTNAME, FALSE);
+	nm_auth_chain_add_call (chain, NM_AUTH_PERMISSION_RELOAD, FALSE);
 }
 
 static void
@@ -4473,7 +4695,7 @@ nm_manager_start (NMManager *self, GError **error)
 	_LOGD (LOGD_CORE, "creating virtual devices...");
 	connections = nm_settings_get_connections (priv->settings);
 	for (iter = connections; iter; iter = iter->next)
-		connection_changed (priv->settings, NM_CONNECTION (iter->data), self);
+		connection_changed (self, NM_CONNECTION (iter->data));
 	g_slist_free (connections);
 
 	priv->devices_inited = TRUE;
@@ -4965,7 +5187,7 @@ struct rfkill_event {
 } __attribute__((packed));
 
 static void
-rfkill_change (const char *desc, RfKillType rtype, gboolean enabled)
+rfkill_change (NMManager *self, const char *desc, RfKillType rtype, gboolean enabled)
 {
 	int fd;
 	struct rfkill_event event;
@@ -4977,13 +5199,13 @@ rfkill_change (const char *desc, RfKillType rtype, gboolean enabled)
 	fd = open ("/dev/rfkill", O_RDWR);
 	if (fd < 0) {
 		if (errno == EACCES)
-			nm_log_warn (LOGD_RFKILL, "(%s): failed to open killswitch device", desc);
+			_LOGW (LOGD_RFKILL, "(%s): failed to open killswitch device", desc);
 		return;
 	}
 
 	if (fcntl (fd, F_SETFL, O_NONBLOCK) < 0) {
-		nm_log_warn (LOGD_RFKILL, "(%s): failed to set killswitch device for "
-		             "non-blocking operation", desc);
+		_LOGW (LOGD_RFKILL, "(%s): failed to set killswitch device for "
+		       "non-blocking operation", desc);
 		close (fd);
 		return;
 	}
@@ -5004,14 +5226,14 @@ rfkill_change (const char *desc, RfKillType rtype, gboolean enabled)
 
 	len = write (fd, &event, sizeof (event));
 	if (len < 0) {
-		nm_log_warn (LOGD_RFKILL, "(%s): failed to change WiFi killswitch state: (%d) %s",
-		             desc, errno, g_strerror (errno));
+		_LOGW (LOGD_RFKILL, "(%s): failed to change WiFi killswitch state: (%d) %s",
+		       desc, errno, g_strerror (errno));
 	} else if (len == sizeof (event)) {
-		nm_log_info (LOGD_RFKILL, "%s hardware radio set %s",
-		             desc, enabled ? "enabled" : "disabled");
+		_LOGI (LOGD_RFKILL, "%s hardware radio set %s",
+		       desc, enabled ? "enabled" : "disabled");
 	} else {
 		/* Failed to write full structure */
-		nm_log_warn (LOGD_RFKILL, "(%s): failed to change WiFi killswitch state", desc);
+		_LOGW (LOGD_RFKILL, "(%s): failed to change WiFi killswitch state", desc);
 	}
 
 	close (fd);
@@ -5064,7 +5286,7 @@ manager_radio_user_toggled (NMManager *self,
 	if (new_enabled != old_enabled) {
 		/* Try to change the kernel rfkill state */
 		if (rstate->rtype == RFKILL_TYPE_WLAN || rstate->rtype == RFKILL_TYPE_WWAN)
-			rfkill_change (rstate->desc, rstate->rtype, new_enabled);
+			rfkill_change (self, rstate->desc, rstate->rtype, new_enabled);
 
 		manager_update_radio_enabled (self, rstate, new_enabled);
 	}
@@ -5167,11 +5389,14 @@ constructed (GObject *object)
 	g_signal_connect (priv->settings, "notify::" NM_SETTINGS_HOSTNAME,
 	                  G_CALLBACK (system_hostname_changed_cb), self);
 	g_signal_connect (priv->settings, NM_SETTINGS_SIGNAL_CONNECTION_ADDED,
-	                  G_CALLBACK (connection_changed), self);
-	g_signal_connect (priv->settings, NM_SETTINGS_SIGNAL_CONNECTION_UPDATED_BY_USER,
-	                  G_CALLBACK (connection_changed), self);
-	g_signal_connect (priv->settings, NM_SETTINGS_SIGNAL_CONNECTION_REMOVED,
-	                  G_CALLBACK (connection_removed), self);
+	                  G_CALLBACK (connection_added_cb), self);
+	g_signal_connect (priv->settings, NM_SETTINGS_SIGNAL_CONNECTION_UPDATED,
+	                  G_CALLBACK (connection_updated_cb), self);
+	/*
+	 * Do not delete existing virtual devices to keep connectivity up.
+	 * Virtual devices are reused when NetworkManager is restarted.
+	 * Hence, don't react on NM_SETTINGS_SIGNAL_CONNECTION_REMOVED.
+	 */
 
 	priv->policy = nm_policy_new (self, priv->settings);
 	g_signal_connect (priv->policy, "notify::" NM_POLICY_DEFAULT_IP4_DEVICE,
@@ -5207,8 +5432,8 @@ constructed (GObject *object)
 	 * changes to the WirelessEnabled/WWANEnabled properties which toggle kernel
 	 * rfkill.
 	 */
-	rfkill_change (priv->radio_states[RFKILL_TYPE_WLAN].desc, RFKILL_TYPE_WLAN, priv->radio_states[RFKILL_TYPE_WLAN].user_enabled);
-	rfkill_change (priv->radio_states[RFKILL_TYPE_WWAN].desc, RFKILL_TYPE_WWAN, priv->radio_states[RFKILL_TYPE_WWAN].user_enabled);
+	rfkill_change (self, priv->radio_states[RFKILL_TYPE_WLAN].desc, RFKILL_TYPE_WLAN, priv->radio_states[RFKILL_TYPE_WLAN].user_enabled);
+	rfkill_change (self, priv->radio_states[RFKILL_TYPE_WWAN].desc, RFKILL_TYPE_WWAN, priv->radio_states[RFKILL_TYPE_WWAN].user_enabled);
 }
 
 static void
@@ -5249,11 +5474,9 @@ nm_manager_init (NMManager *self)
 	                  self);
 
 	/* sleep/wake handling */
-	priv->sleep_monitor = g_object_ref (nm_sleep_monitor_get ());
+	priv->sleep_monitor = nm_sleep_monitor_new ();
 	g_signal_connect (priv->sleep_monitor, NM_SLEEP_MONITOR_SLEEPING,
 	                  G_CALLBACK (sleeping_cb), self);
-	g_signal_connect (priv->sleep_monitor, NM_SLEEP_MONITOR_RESUMING,
-	                  G_CALLBACK (resuming_cb), self);
 
 	/* Listen for authorization changes */
 	g_signal_connect (nm_auth_manager_get (),
@@ -5284,6 +5507,7 @@ nm_manager_init (NMManager *self)
 	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
 
 	priv->metered = NM_METERED_UNKNOWN;
+	priv->sleep_devices = g_hash_table_new (g_direct_hash, g_direct_equal);
 }
 
 static gboolean
@@ -5492,8 +5716,8 @@ dispose (GObject *object)
 		g_signal_handlers_disconnect_by_func (priv->settings, settings_startup_complete_changed, manager);
 		g_signal_handlers_disconnect_by_func (priv->settings, system_unmanaged_devices_changed_cb, manager);
 		g_signal_handlers_disconnect_by_func (priv->settings, system_hostname_changed_cb, manager);
-		g_signal_handlers_disconnect_by_func (priv->settings, connection_changed, manager);
-		g_signal_handlers_disconnect_by_func (priv->settings, connection_removed, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, connection_added_cb, manager);
+		g_signal_handlers_disconnect_by_func (priv->settings, connection_updated_cb, manager);
 		g_clear_object (&priv->settings);
 	}
 
@@ -5507,9 +5731,11 @@ dispose (GObject *object)
 	}
 	_set_prop_filter (manager, NULL);
 
+	sleep_devices_clear (manager);
+	g_clear_pointer (&priv->sleep_devices, g_hash_table_unref);
+
 	if (priv->sleep_monitor) {
 		g_signal_handlers_disconnect_by_func (priv->sleep_monitor, sleeping_cb, manager);
-		g_signal_handlers_disconnect_by_func (priv->sleep_monitor, resuming_cb, manager);
 		g_clear_object (&priv->sleep_monitor);
 	}
 
@@ -5786,6 +6012,7 @@ nm_manager_class_init (NMManagerClass *manager_class)
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (manager_class),
 	                                        NMDBUS_TYPE_MANAGER_SKELETON,
+	                                        "Reload", impl_manager_reload,
 	                                        "GetDevices", impl_manager_get_devices,
 	                                        "GetAllDevices", impl_manager_get_all_devices,
 	                                        "GetDeviceByIpIface", impl_manager_get_device_by_ip_iface,

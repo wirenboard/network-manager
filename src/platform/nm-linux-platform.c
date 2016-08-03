@@ -1439,6 +1439,8 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 	gboolean *completed_from_cache = cache ? &completed_from_cache_val : NULL;
 	const NMPObject *link_cached = NULL;
 	NMPObject *lnk_data = NULL;
+	gboolean address_complete_from_cache = TRUE;
+	gboolean lnk_data_complete_from_cache = TRUE;
 
 	if (!nlmsg_valid_hdr (nlh, sizeof (*ifi)))
 		return NULL;
@@ -1503,6 +1505,7 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 			memcpy (obj->link.addr.data, nla_data (tb[IFLA_ADDRESS]), l);
 			obj->link.addr.len = l;
 		}
+		address_complete_from_cache = FALSE;
 	}
 
 	if (tb[IFLA_AF_SPEC]) {
@@ -1552,28 +1555,34 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 		lnk_data = _parse_lnk_vxlan (nl_info_kind, nl_info_data);
 		break;
 	default:
-		goto lnk_data_handled;
+		lnk_data_complete_from_cache = FALSE;
+		break;
 	}
 
-	/* We always try to look into the cache and reuse the object there.
-	 * We do that, because we consider the lnk object as immutable and don't
-	 * modify it after creating. Hence we can share it and reuse.
-	 *
-	 * Also, sometimes the info-data is missing for updates. In this case
-	 * we want to keep the previously received lnk_data. */
-	if (completed_from_cache) {
+	if (   completed_from_cache
+	    && (   lnk_data_complete_from_cache
+	        || address_complete_from_cache)) {
 		_lookup_cached_link (cache, obj->link.ifindex, completed_from_cache, &link_cached);
-		if (   link_cached
-		    && link_cached->link.type == obj->link.type
-		    && link_cached->_link.netlink.lnk
-		    && (   !lnk_data
-		        || nmp_object_equal (lnk_data, link_cached->_link.netlink.lnk))) {
-			nmp_object_unref (lnk_data);
-			lnk_data = nmp_object_ref (link_cached->_link.netlink.lnk);
+		if (link_cached) {
+			if (   lnk_data_complete_from_cache
+			    && link_cached->link.type == obj->link.type
+			    && link_cached->_link.netlink.lnk
+			    && (   !lnk_data
+			        || nmp_object_equal (lnk_data, link_cached->_link.netlink.lnk))) {
+				/* We always try to look into the cache and reuse the object there.
+				 * We do that, because we consider the lnk object as immutable and don't
+				 * modify it after creating. Hence we can share it and reuse.
+				 *
+				 * Also, sometimes the info-data is missing for updates. In this case
+				 * we want to keep the previously received lnk_data. */
+				nmp_object_unref (lnk_data);
+				lnk_data = nmp_object_ref (link_cached->_link.netlink.lnk);
+			}
+			if (address_complete_from_cache)
+				obj->link.addr = link_cached->link.addr;
 		}
 	}
 
-lnk_data_handled:
 	obj->_link.netlink.lnk = lnk_data;
 
 	obj->_link.netlink.is_in_netlink = TRUE;
@@ -3283,9 +3292,14 @@ cache_pre_hook (NMPCache *cache, const NMPObject *old, const NMPObject *new, NMP
 			if (   ops_type == NMP_CACHE_OPS_UPDATED
 			    && old && new /* <-- nonsensical, make coverity happy */
 			    && old->_link.netlink.is_in_netlink
-			    && NM_FLAGS_HAS (old->link.n_ifi_flags, IFF_LOWER_UP)
 			    && new->_link.netlink.is_in_netlink
-			    && !NM_FLAGS_HAS (new->link.n_ifi_flags, IFF_LOWER_UP)) {
+			    && (   (   NM_FLAGS_HAS (old->link.n_ifi_flags, IFF_UP)
+			            && !NM_FLAGS_HAS (new->link.n_ifi_flags, IFF_UP))
+			        || (   NM_FLAGS_HAS (old->link.n_ifi_flags, IFF_LOWER_UP)
+			            && !NM_FLAGS_HAS (new->link.n_ifi_flags, IFF_LOWER_UP)))) {
+				/* FIXME: I suspect that IFF_LOWER_UP must not be considered, and I
+				 * think kernel does send RTM_DELROUTE events for IPv6 routes, so
+				 * we might not need to refresh IPv6 routes. */
 				delayed_action_schedule (platform,
 				                         DELAYED_ACTION_TYPE_REFRESH_ALL_IP4_ROUTES |
 				                         DELAYED_ACTION_TYPE_REFRESH_ALL_IP6_ROUTES,
@@ -5140,13 +5154,30 @@ static WifiData *
 wifi_get_wifi_data (NMPlatform *platform, int ifindex)
 {
 	NMLinuxPlatformPrivate *priv = NM_LINUX_PLATFORM_GET_PRIVATE (platform);
+	const NMPlatformLink *pllink;
 	WifiData *wifi_data;
 
 	wifi_data = g_hash_table_lookup (priv->wifi_data, GINT_TO_POINTER (ifindex));
-	if (!wifi_data) {
-		const NMPlatformLink *pllink;
+	pllink = nm_platform_link_get (platform, ifindex);
 
-		pllink = nm_platform_link_get (platform, ifindex);
+	/* @wifi_data contains an interface name which is used for WEXT queries. If
+	 * the interface name changes we should at least replace the name in the
+	 * existing structure; but probably a complete reinitialization is better
+	 * because during the initial creation there can be race conditions while
+	 * the interface is renamed by udev.
+	 */
+	if (wifi_data && pllink) {
+		if (!nm_streq (wifi_utils_get_iface (wifi_data), pllink->name)) {
+			_LOGD ("wifi: interface %s renamed to %s, dropping old data for ifindex %d",
+			       wifi_utils_get_iface (wifi_data),
+			       pllink->name,
+			       ifindex);
+			g_hash_table_remove (priv->wifi_data, GINT_TO_POINTER (ifindex));
+			wifi_data = NULL;
+		}
+	}
+
+	if (!wifi_data) {
 		if (pllink) {
 			if (pllink->type == NM_LINK_TYPE_WIFI)
 				wifi_data = wifi_utils_init (pllink->name, ifindex, TRUE);
@@ -5777,6 +5808,13 @@ continue_reading:
 	g_clear_pointer (&creds, free);
 	errno = 0;
 	n = nl_recv (sk, &nla, &buf, &creds);
+
+	if (n <= 0) {
+		/* workaround libnl3 <= 3.2.15 returning danling pointers in case nl_recv()
+		 * fails. Fixed by libnl3 69468517d0de1675d80f24661ff57a5dbac7275c. */
+		buf = NULL;
+		creds = NULL;
+	}
 
 	switch (n) {
 	case 0:
