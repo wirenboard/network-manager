@@ -5,5 +5,3 @@ Check-at-runtime-whether-to-start-ModemManager.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 systemd-Don-t-enable-NetworkManager-wait-online.service-s.patch
 Fix-iscsiadm-path.patch
-systemd-Add-Documentation-to-service-files.patch
-systemd-Use-RemainAfterExit-yes-for-NetworkManager-wait-o.patch

@@ -12,10 +12,10 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=512286
  1 file changed, 120 insertions(+)
 
 diff --git a/src/nm-manager.c b/src/nm-manager.c
-index e64c68a..10aa3d7 100644
+index 8277f6b..9ab54b3 100644
 --- a/src/nm-manager.c
 +++ b/src/nm-manager.c
-@@ -57,6 +57,8 @@
+@@ -58,6 +58,8 @@
  #include "nmdbus-manager.h"
  #include "nmdbus-device.h"
  
@@ -24,7 +24,7 @@ index e64c68a..10aa3d7 100644
  static gboolean add_device (NMManager *self, NMDevice *device, GError **error);
  
  static NMActiveConnection *_new_active_connection (NMManager *self,
-@@ -137,6 +139,10 @@ typedef struct {
+@@ -139,6 +141,10 @@ typedef struct {
  	GFileMonitor *fw_monitor;
  	guint fw_changed_id;
  
@@ -35,7 +35,7 @@ index e64c68a..10aa3d7 100644
  	guint timestamp_update_id;
  
  	gboolean startup;
-@@ -687,6 +693,29 @@ find_best_device_state (NMManager *manager)
+@@ -787,6 +793,29 @@ find_best_device_state (NMManager *manager)
  	return best_state;
  }
  
@@ -65,7 +65,7 @@ index e64c68a..10aa3d7 100644
  static void
  nm_manager_update_metered (NMManager *self)
  {
-@@ -727,6 +756,9 @@ nm_manager_update_state (NMManager *manager)
+@@ -827,6 +856,9 @@ nm_manager_update_state (NMManager *manager)
  
  	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
  
@@ -75,7 +75,7 @@ index e64c68a..10aa3d7 100644
  	if (new_state == NM_STATE_CONNECTED_SITE) {
  		nm_connectivity_check_async (priv->connectivity,
  		                             checked_connectivity,
-@@ -4410,6 +4442,65 @@ impl_manager_check_connectivity (NMManager *self,
+@@ -4632,6 +4664,65 @@ impl_manager_check_connectivity (NMManager *self,
  }
  
  static void
@@ -141,7 +141,7 @@ index e64c68a..10aa3d7 100644
  start_factory (NMDeviceFactory *factory, gpointer user_data)
  {
  	nm_device_factory_start (factory);
-@@ -4480,6 +4571,9 @@ nm_manager_start (NMManager *self, GError **error)
+@@ -4702,6 +4793,9 @@ nm_manager_start (NMManager *self, GError **error)
  
  	check_if_startup_complete (self);
  
@@ -151,7 +151,7 @@ index e64c68a..10aa3d7 100644
  	return TRUE;
  }
  
-@@ -5280,6 +5374,22 @@ nm_manager_init (NMManager *self)
+@@ -5503,6 +5597,22 @@ nm_manager_init (NMManager *self)
  		       KERNEL_FIRMWARE_DIR);
  	}
  
@@ -174,7 +174,7 @@ index e64c68a..10aa3d7 100644
  	/* Update timestamps in active connections */
  	priv->timestamp_update_id = g_timeout_add_seconds (300, (GSourceFunc) periodic_update_active_connection_timestamps, self);
  
-@@ -5522,6 +5632,16 @@ dispose (GObject *object)
+@@ -5748,6 +5858,16 @@ dispose (GObject *object)
  		g_clear_object (&priv->fw_monitor);
  	}
  
