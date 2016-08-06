@@ -3,6 +3,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_0_4@libnm_1_0_4 1.0.4
  libnm_1_0_6@libnm_1_0_6 1.0.6
  libnm_1_2_0@libnm_1_2_0 1.1.90
+ libnm_1_2_4@libnm_1_2_4 1.2.4
  nm_802_11_ap_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_ap_security_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_mode_get_type@libnm_1_0_0 1.0.0
@@ -666,6 +667,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_ip_config_get_dhcp_timeout@libnm_1_2_0 1.1.91
  nm_setting_ip_config_get_dns@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_dns_option@libnm_1_2_0 1.1.90
+ nm_setting_ip_config_get_dns_priority@libnm_1_2_4 1.2.4
  nm_setting_ip_config_get_dns_search@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_gateway@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_ignore_auto_dns@libnm_1_0_0 1.0.0
