@@ -6,6 +6,8 @@ network-manager (1.2.4-1) UNRELEASED; urgency=medium
   * Replace /etc/resolv.conf symlink with an empty file on package removal
     to signal other packages that NetworkManager is no longer controlling the
     file. (Closes: #826366)
+  * Clear WiFi requested_scan if wpa_supplicant exits or goes inactive.
+    Patches cherry-picked from upstream Git.
 
  -- Michael Biebl <biebl@debian.org>  Wed, 03 Aug 2016 23:01:13 +0200
 

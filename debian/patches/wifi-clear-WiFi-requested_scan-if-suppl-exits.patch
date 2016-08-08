@@ -1,0 +1,29 @@
+From: Tony Espy <espy@canonical.com>
+Date: Thu, 16 Jun 2016 15:07:33 -0400
+Subject: wifi: clear WiFi requested_scan if suppl exits
+
+It's possible for wpa_supplicant to exit with an
+outstanding requested_scan pending.  This can lead
+to a stall condition where scanning no longer occurs.
+
+https://mail.gnome.org/archives/networkmanager-list/2016-June/msg00117.html
+---
+ src/devices/wifi/nm-device-wifi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index 82b12a1..cce2f26 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -246,6 +246,11 @@ supplicant_interface_release (NMDeviceWifi *self)
+ 
+ 	priv = NM_DEVICE_WIFI_GET_PRIVATE (self);
+ 
++	if (priv->requested_scan) {
++		priv->requested_scan = FALSE;
++		nm_device_remove_pending_action (NM_DEVICE (self), "scan", TRUE);
++	}
++
+ 	nm_clear_g_source (&priv->pending_scan_id);
+ 
+ 	/* Reset the scan interval to be pretty frequent when disconnected */

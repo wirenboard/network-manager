@@ -1,0 +1,31 @@
+From: Tony Espy <espy@canonical.com>
+Date: Thu, 16 Jun 2016 15:07:32 -0400
+Subject: wifi: clear WiFi requested_scan if suppl goes INACTIVE
+
+It's possible for wpa_supplicant to transition to INACTIVE
+state with an outstanding requested_scan pending.  This can
+lead to a stall condition where scanning no longer occurs.
+
+[thaller@redhat.com: added break statement to avoid fall-through]
+
+https://mail.gnome.org/archives/networkmanager-list/2016-June/msg00116.html
+---
+ src/devices/wifi/nm-device-wifi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/devices/wifi/nm-device-wifi.c b/src/devices/wifi/nm-device-wifi.c
+index cce2f26..17f5b14 100644
+--- a/src/devices/wifi/nm-device-wifi.c
++++ b/src/devices/wifi/nm-device-wifi.c
+@@ -1956,6 +1956,11 @@ supplicant_iface_state_cb (NMSupplicantInterface *iface,
+ 		else
+ 			_LOGI (LOGD_DEVICE | LOGD_WIFI, "supplicant interface keeps failing, giving up");
+ 		break;
++	case NM_SUPPLICANT_INTERFACE_STATE_INACTIVE:
++		priv->requested_scan = FALSE;
++		nm_clear_g_source (&priv->pending_scan_id);
++		request_wireless_scan (self, NULL);
++		break;
+ 	default:
+ 		break;
+ 	}
