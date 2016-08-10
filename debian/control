@@ -58,7 +58,6 @@ Depends: ${shlibs:Depends},
          dbus (>= 1.1.2),
          udev,
          adduser,
-         isc-dhcp-client (>= 4.1.1-P1-4),
          libpam-systemd,
          policykit-1
 Recommends: ppp,
@@ -66,6 +65,7 @@ Recommends: ppp,
             iptables,
             modemmanager,
             crda,
+            isc-dhcp-client (>= 4.1.1-P1-4),
             iputils-arping
 Suggests: libteam-utils
 Breaks: ${misc:Breaks}
