@@ -25,6 +25,8 @@
 
 #include "nm-default.h"
 
+#include "shvar.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -34,11 +36,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "shvar.h"
-
 #include "nm-core-internal.h"
-
-#define PARSE_WARNING(msg...) nm_log_warn (LOGD_SETTINGS, "    " msg)
 
 /* Open the file <name>, returning a shvarFile on success and NULL on failure.
  * Add a wrinkle to let the caller specify whether or not to create the file
@@ -273,26 +271,23 @@ svGetValueFull (shvarFile *s, const char *key, gboolean verbatim)
 {
 	char *value = NULL;
 	char *line;
-	char *keyString;
-	int len;
+	guint len;
 
 	g_return_val_if_fail (s != NULL, NULL);
 	g_return_val_if_fail (key != NULL, NULL);
 
-	keyString = g_strdup_printf ("%s=", key);
-	len = strlen (keyString);
+	len = strlen (key);
 
 	for (s->current = s->lineList; s->current; s->current = s->current->next) {
 		line = s->current->data;
-		if (!strncmp (keyString, line, len)) {
+		if (!strncmp (key, line, len) && line[len] == '=') {
 			/* Strip trailing spaces before unescaping to preserve spaces quoted whitespace */
-			value = g_strchomp (g_strdup (line + len));
+			value = g_strchomp (g_strdup (line + len + 1));
 			if (!verbatim)
 				svUnescape (value);
 			break;
 		}
 	}
-	g_free (keyString);
 
 	return value;
 }
@@ -373,11 +368,10 @@ svGetValueInt64 (shvarFile *s, const char *key, guint base, gint64 min, gint64 m
 
 	result = _nm_utils_ascii_str_to_int64 (tmp, base, min, max, fallback);
 	errsv = errno;
-	if (errsv != 0)
-		PARSE_WARNING ("Error reading '%s' value '%s' as integer (%d)", key, tmp, errsv);
 
 	g_free (tmp);
 
+	errno = errsv;
 	return result;
 }
 

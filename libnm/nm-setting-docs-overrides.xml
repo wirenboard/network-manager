@@ -137,10 +137,24 @@ vlan&apos;s interface name."/>
 <setting name="wimax">
 </setting>
 <setting name="802-3-ethernet">
+<property name="cloned-mac-address" variable="cloned-mac-address" format="byte array" values="" default="" example="" description="This D-Bus field is deprecated in favor of &quot;assigned-mac-address&quot;
+which is more flexible and allows specifying special variants like &quot;random&quot;."/>
+<property name="assigned-mac-address" variable="assigned-mac-address" format="string" values="" default="" example="" description="The new field for the cloned MAC address. It can be either
+a hardware address in ASCII representation, or one of the special values
+&quot;preserve&quot;, &quot;permanent&quot;, &quot;random&quot; or &quot;stable&quot;.
+This field replaces the deprecated &quot;cloned-mac-address&quot; on D-Bus, which
+can only contain explict hardware addresses."/>
 </setting>
 <setting name="802-11-wireless-security">
 </setting>
 <setting name="802-11-wireless">
+<property name="cloned-mac-address" variable="cloned-mac-address" format="byte array" values="" default="" example="" description="This D-Bus field is deprecated in favor of &quot;assigned-mac-address&quot;
+which is more flexible and allows specifying special variants like &quot;random&quot;."/>
+<property name="assigned-mac-address" variable="assigned-mac-address" format="string" values="" default="" example="" description="The new field for the cloned MAC address. It can be either
+a hardware address in ASCII representation, or one of the special values
+&quot;preserve&quot;, &quot;permanent&quot;, &quot;random&quot; or &quot;stable&quot;.
+This field replaces the deprecated &quot;cloned-mac-address&quot; on D-Bus, which
+can only contain explict hardware addresses."/>
 <property name="security" variable="security" format="" values="" default="" example="" description="This property is deprecated, but can be set to the value
 &apos;802-11-wireless-security&apos; when a wireless security setting is also
 present in the connection dictionary, for compatibility with very old

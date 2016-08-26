@@ -93,7 +93,7 @@ typedef struct {
 
 	NMAgentManager *agent_mgr;
 	NMSessionMonitor *session_monitor;
-	guint session_changed_id;
+	gulong session_changed_id;
 
 	NMSettingsConnectionFlags flags;
 	gboolean ready;
@@ -1529,6 +1529,7 @@ typedef struct {
 	NMAuthSubject *subject;
 	NMConnection *new_settings;
 	gboolean save_to_disk;
+	char *audit_args;
 } UpdateInfo;
 
 typedef struct {
@@ -1600,12 +1601,13 @@ update_complete (NMSettingsConnection *self,
 	else
 		g_dbus_method_invocation_return_value (info->context, NULL);
 
-	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_UPDATE, self, !error,
+	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_UPDATE, self, !error, info->audit_args,
 	                            info->subject, error ? error->message : NULL);
 
 	g_clear_object (&info->subject);
 	g_clear_object (&info->agent_mgr);
 	g_clear_object (&info->new_settings);
+	g_free (info->audit_args);
 	memset (info, 0, sizeof (*info));
 	g_free (info);
 }
@@ -1637,6 +1639,49 @@ con_update_cb (NMSettingsConnection *self,
 	update_complete (self, info, error);
 }
 
+static char *
+con_list_changed_props (NMConnection *old, NMConnection *new)
+{
+	gs_unref_hashtable GHashTable *diff = NULL;
+	GHashTable *setting_diff;
+	char *setting_name, *prop_name;
+	GHashTableIter iter, iter2;
+	gboolean same;
+	GString *str;
+
+	same = nm_connection_diff (old, new,
+	                           NM_SETTING_COMPARE_FLAG_EXACT |
+	                           NM_SETTING_COMPARE_FLAG_DIFF_RESULT_NO_DEFAULT,
+	                           &diff);
+
+	if (same || !diff)
+		return NULL;
+
+	str = g_string_sized_new (32);
+	g_hash_table_iter_init (&iter, diff);
+
+	while (g_hash_table_iter_next (&iter,
+	                               (gpointer *) &setting_name,
+	                               (gpointer *) &setting_diff)) {
+		if (!setting_diff)
+			continue;
+
+		g_hash_table_iter_init (&iter2, setting_diff);
+
+		while (g_hash_table_iter_next (&iter2, (gpointer *) &prop_name, NULL)) {
+			g_string_append (str, setting_name);
+			g_string_append_c (str, '.');
+			g_string_append (str, prop_name);
+			g_string_append_c (str, ',');
+		}
+	}
+
+	if (str->len)
+		str->str[str->len - 1] = '\0';
+
+	return g_string_free (str, FALSE);
+}
+
 static void
 update_auth_cb (NMSettingsConnection *self,
                 GDBusMethodInvocation *context,
@@ -1665,6 +1710,9 @@ update_auth_cb (NMSettingsConnection *self,
 		 */
 		update_agent_secrets_cache (self, info->new_settings);
 	}
+
+	if (nm_audit_manager_audit_enabled (nm_audit_manager_get ()))
+		info->audit_args = con_list_changed_props (NM_CONNECTION (self), info->new_settings);
 
 	if (info->save_to_disk) {
 		nm_settings_connection_replace_and_commit (self,
@@ -1769,7 +1817,7 @@ settings_connection_update_helper (NMSettingsConnection *self,
 	return;
 
 error:
-	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_UPDATE, self, FALSE, subject,
+	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_UPDATE, self, FALSE, NULL, subject,
 	                            error->message);
 
 	g_clear_object (&tmp);
@@ -1818,7 +1866,7 @@ con_delete_cb (NMSettingsConnection *self,
 		g_dbus_method_invocation_return_value (info->context, NULL);
 
 	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_DELETE, self,
-	                            !error, info->subject, error ? error->message : NULL);
+	                            !error, NULL, info->subject, error ? error->message : NULL);
 	g_free (info);
 }
 
@@ -1832,7 +1880,7 @@ delete_auth_cb (NMSettingsConnection *self,
 	CallbackInfo *info;
 
 	if (error) {
-		nm_audit_log_connection_op (NM_AUDIT_OP_CONN_DELETE, self, FALSE, subject,
+		nm_audit_log_connection_op (NM_AUDIT_OP_CONN_DELETE, self, FALSE, NULL, subject,
 		                            error->message);
 		g_dbus_method_invocation_return_gerror (context, error);
 		return;
@@ -1881,7 +1929,7 @@ impl_settings_connection_delete (NMSettingsConnection *self,
 
 	return;
 out_err:
-	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_DELETE, self, FALSE, subject, error->message);
+	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_DELETE, self, FALSE, NULL, subject, error->message);
 	g_dbus_method_invocation_take_error (context, error);
 }
 
@@ -1974,7 +2022,7 @@ clear_secrets_cb (NMSettingsConnection *self,
 		g_dbus_method_invocation_return_value (info->context, NULL);
 
 	nm_audit_log_connection_op (NM_AUDIT_OP_CONN_CLEAR_SECRETS, self,
-	                            !error, info->subject, error ? error->message : NULL);
+	                            !error, NULL, info->subject, error ? error->message : NULL);
 	g_free (info);
 }
 
@@ -1991,7 +2039,7 @@ dbus_clear_secrets_auth_cb (NMSettingsConnection *self,
 	if (error) {
 		g_dbus_method_invocation_return_gerror (context, error);
 		nm_audit_log_connection_op (NM_AUDIT_OP_CONN_CLEAR_SECRETS, self,
-		                            FALSE, subject, error->message);
+		                            FALSE, NULL, subject, error->message);
 	} else {
 		/* Clear secrets in connection and caches */
 		nm_connection_clear_secrets (NM_CONNECTION (self));
@@ -2031,7 +2079,7 @@ impl_settings_connection_clear_secrets (NMSettingsConnection *self,
 		g_object_unref (subject);
 	} else {
 		nm_audit_log_connection_op (NM_AUDIT_OP_CONN_CLEAR_SECRETS, self,
-		                            FALSE, NULL, error->message);
+		                            FALSE, NULL, NULL, error->message);
 		g_dbus_method_invocation_take_error (context, error);
 	}
 }
@@ -2567,7 +2615,9 @@ nm_settings_connection_init (NMSettingsConnection *self)
 	priv->ready = TRUE;
 
 	priv->session_monitor = g_object_ref (nm_session_monitor_get ());
-	priv->session_changed_id = nm_session_monitor_connect (priv->session_monitor, session_changed_cb, self);
+	priv->session_changed_id = g_signal_connect (priv->session_monitor,
+	                                             NM_SESSION_MONITOR_CHANGED,
+	                                             G_CALLBACK (session_changed_cb), self);
 
 	priv->agent_mgr = g_object_ref (nm_agent_manager_get ());
 
@@ -2627,11 +2677,9 @@ dispose (GObject *object)
 
 	set_visible (self, FALSE);
 
-	if (priv->session_monitor) {
-		nm_session_monitor_disconnect (priv->session_monitor, priv->session_changed_id);
-		priv->session_changed_id = 0;
-		g_clear_object (&priv->session_monitor);
-	}
+	nm_clear_g_signal_handler (priv->session_monitor, &priv->session_changed_id);
+	g_clear_object (&priv->session_monitor);
+
 	g_clear_object (&priv->agent_mgr);
 
 	g_clear_pointer (&priv->filename, g_free);

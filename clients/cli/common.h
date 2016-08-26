@@ -48,7 +48,8 @@ gboolean nmc_team_check_config (const char *config, char **out_config, GError **
 NMConnection *nmc_find_connection (const GPtrArray *connections,
                                    const char *filter_type,
                                    const char *filter_val,
-                                   int *start);
+                                   int *start,
+                                   gboolean complete);
 
 void nmc_secrets_requested (NMSecretAgentSimple *agent,
                             const char          *request_id,
@@ -72,5 +73,24 @@ extern char *nmc_rl_pre_input_deftext;
 int nmc_rl_set_deftext (void);
 
 char *nmc_parse_lldp_capabilities (guint value);
+
+typedef struct {
+	const char *cmd;
+	NMCResultCode (*func) (NmCli *nmc, int argc, char **argv);
+	void (*usage) (void);
+} NMCCommand;
+
+NMCResultCode nmc_do_cmd (NmCli *nmc, const NMCCommand cmds[], const char *argv0, int argc, char **argv);
+
+void nmc_complete_strings (const char *prefix, ...) G_GNUC_NULL_TERMINATED;
+
+void nmc_complete_bool (const char *prefix);
+
+const char *nmc_error_get_simple_message (GError *error);
+
+extern NmcOutputField nmc_fields_ip4_config[];
+extern NmcOutputField nmc_fields_dhcp4_config[];
+extern NmcOutputField nmc_fields_ip6_config[];
+extern NmcOutputField nmc_fields_dhcp6_config[];
 
 #endif /* NMC_COMMON_H */

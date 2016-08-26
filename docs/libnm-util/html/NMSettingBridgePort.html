@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingBridge.html" title="NMSettingBridge">
 <link rel="next" href="NMSettingTeam.html" title="NMSettingTeam">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -173,7 +173,7 @@ optional properties that apply to bridge ports.</p>
 nm_setting_bridge_port_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.15.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-bridge-port-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> errors.</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -185,7 +185,7 @@ nm_setting_bridge_port_error_quark (<em class="parameter"><code><span class="typ
 nm_setting_bridge_port_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.15.9.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-bridge-port-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -197,7 +197,7 @@ nm_setting_bridge_port_new (<em class="parameter"><code><span class="type">void<
 <pre class="programlisting"><span class="returnvalue">guint16</span>
 nm_setting_bridge_port_get_priority (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.15.9.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-bridge-port-get-priority.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -212,7 +212,7 @@ nm_setting_bridge_port_get_priority (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.15.9.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-bridge-port-get-priority.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--priority" title="The “priority” property"><span class="type">“priority”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -223,7 +223,7 @@ nm_setting_bridge_port_get_priority (<em class="parameter"><code><a class="link"
 <pre class="programlisting"><span class="returnvalue">guint16</span>
 nm_setting_bridge_port_get_path_cost (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.15.9.5.4"></a><h4>Parameters</h4>
+<a name="nm-setting-bridge-port-get-path-cost.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -238,7 +238,7 @@ nm_setting_bridge_port_get_path_cost (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.15.9.5.5"></a><h4>Returns</h4>
+<a name="nm-setting-bridge-port-get-path-cost.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--path-cost" title="The “path-cost” property"><span class="type">“path-cost”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -250,7 +250,7 @@ nm_setting_bridge_port_get_path_cost (<em class="parameter"><code><a class="link
 nm_setting_bridge_port_get_hairpin_mode
                                (<em class="parameter"><code><a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.15.9.6.4"></a><h4>Parameters</h4>
+<a name="nm-setting-bridge-port-get-hairpin-mode.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -265,7 +265,7 @@ nm_setting_bridge_port_get_hairpin_mode
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.15.9.6.5"></a><h4>Returns</h4>
+<a name="nm-setting-bridge-port-get-hairpin-mode.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBridgePort.html#NMSettingBridgePort--hairpin-mode" title="The “hairpin-mode” property"><span class="type">“hairpin-mode”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -282,7 +282,7 @@ nm_setting_bridge_port_get_hairpin_mode
 <div class="refsect2">
 <a name="NMSettingBridgePortError"></a><h3>enum NMSettingBridgePortError</h3>
 <div class="refsect3">
-<a name="id-1.2.15.10.3.3"></a><h4>Members</h4>
+<a name="NMSettingBridgePortError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -377,6 +377,6 @@ port.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

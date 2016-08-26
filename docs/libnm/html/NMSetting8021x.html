@@ -8,7 +8,7 @@
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingConnection.html" title="NMSettingConnection">
 <link rel="next" href="NMSettingAdsl.html" title="NMSettingAdsl">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -998,7 +998,7 @@ following books.</p>
 nm_setting_802_1x_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> object</p>
 </div>
 </div>
@@ -1013,7 +1013,7 @@ nm_setting_802_1x_check_cert_scheme (<em class="parameter"><code><span class="ty
 When setting certificate properties of NMSetting8021x
 the blob must be not UNKNOWN (or NULL).</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.3.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-check-cert-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1040,7 +1040,7 @@ the blob must be not UNKNOWN (or NULL).</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.3.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-check-cert-scheme.returns"></a><h4>Returns</h4>
 <p> the scheme of the blob or <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-UNKNOWN:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_UNKNOWN</code></a>.
 For NULL it also returns NM_SETTING_802_1X_CK_SCHEME_UNKNOWN.</p>
 </div>
@@ -1057,7 +1057,7 @@ network.  Generally only one EAP method is used.  Use the functions
 and <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-remove-eap-method" title="nm_setting_802_1x_remove_eap_method ()"><code class="function">nm_setting_802_1x_remove_eap_method()</code></a> for adding, removing, and retrieving
 allowed EAP methods.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.4.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-num-eap-methods.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1072,7 +1072,7 @@ allowed EAP methods.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.4.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-num-eap-methods.returns"></a><h4>Returns</h4>
 <p> the number of allowed EAP methods</p>
 </div>
 </div>
@@ -1085,7 +1085,7 @@ nm_setting_802_1x_get_eap_method (<em class="parameter"><code><a class="link" hr
 <p>Returns the name of the allowed EAP method at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.5.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-eap-method.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1107,7 +1107,7 @@ nm_setting_802_1x_get_eap_method (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.5.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-eap-method.returns"></a><h4>Returns</h4>
 <p> the name of the allowed EAP method at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -1122,7 +1122,7 @@ nm_setting_802_1x_add_eap_method (<em class="parameter"><code><a class="link" hr
 EAP method has been added.  See <a class="link" href="NMSetting8021x.html#NMSetting8021x--eap" title="The “eap” property"><span class="type">“eap”</span></a> property for a list of
 allowed EAP methods.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.6.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-add-eap-method.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1144,7 +1144,7 @@ allowed EAP methods.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.6.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-add-eap-method.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the EAP method was successfully added, <code class="literal">FALSE</code> if it was
 not a valid method or if it was already allowed.</p>
 </div>
@@ -1157,7 +1157,7 @@ nm_setting_802_1x_remove_eap_method (<em class="parameter"><code><a class="link"
                                      <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <p>Removes the allowed EAP method at the specified index.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.7.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-remove-eap-method.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1189,7 +1189,7 @@ nm_setting_802_1x_remove_eap_method_by_value
 <p>Removes the allowed EAP method <em class="parameter"><code>method</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.8.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-remove-eap-method-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1211,7 +1211,7 @@ nm_setting_802_1x_remove_eap_method_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.8.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-remove-eap-method-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the EAP method was founs and removed, <code class="literal">FALSE</code> if it was not.</p>
 </div>
 </div>
@@ -1222,7 +1222,7 @@ nm_setting_802_1x_remove_eap_method_by_value
 nm_setting_802_1x_clear_eap_methods (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <p>Clears all allowed EAP methods.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.9.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-clear-eap-methods.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1245,7 +1245,7 @@ nm_setting_802_1x_get_identity (<em class="parameter"><code><a class="link" href
 <p>Returns the identifier used by some EAP methods (like TLS) to
 authenticate the user.  Often this is a username or login name.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.10.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-identity.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1260,7 +1260,7 @@ authenticate the user.  Often this is a username or login name.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.10.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-identity.returns"></a><h4>Returns</h4>
 <p> the user identifier</p>
 </div>
 </div>
@@ -1275,7 +1275,7 @@ authenticate the user in the outer unencrypted "phase 1" authentication.  The
 inner "phase 2" authentication will use the <a class="link" href="NMSetting8021x.html#NMSetting8021x--identity" title="The “identity” property"><span class="type">“identity”</span></a> in
 a secure form, if applicable for that EAP method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.11.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-anonymous-identity.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1290,7 +1290,7 @@ a secure form, if applicable for that EAP method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.11.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-anonymous-identity.returns"></a><h4>Returns</h4>
 <p> the anonymous identifier</p>
 </div>
 </div>
@@ -1301,7 +1301,7 @@ a secure form, if applicable for that EAP method.</p>
 nm_setting_802_1x_get_pac_file (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <p>Returns the file containing PAC credentials used by EAP-FAST method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.12.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-pac-file.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1316,7 +1316,7 @@ nm_setting_802_1x_get_pac_file (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.12.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-pac-file.returns"></a><h4>Returns</h4>
 <p> the PAC file</p>
 </div>
 </div>
@@ -1332,7 +1332,7 @@ properties are ignored if the <a class="link" href="NMSetting8021x.html#NMSettin
 compile time (using the --system-ca-path configure option) is used in place
 of these properties.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.13.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-system-ca-certs.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1347,7 +1347,7 @@ of these properties.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.13.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-system-ca-certs.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if a system CA certificate path should be used, <code class="literal">FALSE</code> if not</p>
 </div>
 </div>
@@ -1362,7 +1362,7 @@ which the supplicant can then add to the verification chain.  This may be
 used in addition to the <a class="link" href="NMSetting8021x.html#NMSetting8021x--ca-cert" title="The “ca-cert” property"><span class="type">“ca-cert”</span></a> property to add more CA
 certificates for verifying the network to client.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.14.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-ca-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1377,7 +1377,7 @@ certificates for verifying the network to client.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.14.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-ca-path.returns"></a><h4>Returns</h4>
 <p> the CA certificate directory path</p>
 </div>
 </div>
@@ -1392,7 +1392,7 @@ certificates which the supplicant can then add to the verification chain.
 This may be used in addition to the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-ca-cert" title="The “phase2-ca-cert” property"><span class="type">“phase2-ca-cert”</span></a> property
 to add more CA certificates for verifying the network to client.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.15.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1407,7 +1407,7 @@ to add more CA certificates for verifying the network to client.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.15.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-path.returns"></a><h4>Returns</h4>
 <p> the "phase 2" CA certificate directory path</p>
 </div>
 </div>
@@ -1420,7 +1420,7 @@ nm_setting_802_1x_get_ca_cert_scheme (<em class="parameter"><code><a class="link
 is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_BLOB</code></a>, use <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-blob" title="nm_setting_802_1x_get_ca_cert_blob ()"><code class="function">nm_setting_802_1x_get_ca_cert_blob()</code></a>;
 if <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a>, use <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-path" title="nm_setting_802_1x_get_ca_cert_path ()"><code class="function">nm_setting_802_1x_get_ca_cert_path()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-ca-cert-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1435,7 +1435,7 @@ if <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CA
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.16.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-ca-cert-scheme.returns"></a><h4>Returns</h4>
 <p> scheme used to store the CA certificate (blob or path)</p>
 </div>
 </div>
@@ -1451,7 +1451,7 @@ CA certificate allow it to be unset.  Note that lack of a CA certificate
 reduces security by allowing man-in-the-middle attacks, because the identity
 of the network cannot be confirmed by the client.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.17.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-ca-cert-blob.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1466,7 +1466,7 @@ of the network cannot be confirmed by the client.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.17.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-ca-cert-blob.returns"></a><h4>Returns</h4>
 <p> the CA certificate data. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1483,7 +1483,7 @@ CA certificate allow it to be unset.  Note that lack of a CA certificate
 reduces security by allowing man-in-the-middle attacks, because the identity
 of the network cannot be confirmed by the client.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-ca-cert-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1498,7 +1498,7 @@ of the network cannot be confirmed by the client.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.18.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-ca-cert-path.returns"></a><h4>Returns</h4>
 <p> path to the CA certificate file</p>
 </div>
 </div>
@@ -1516,7 +1516,7 @@ with the raw certificate data if using the <a class="link" href="NMSetting8021x.
 scheme, or with the path to the certificate file if using the
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a> scheme.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.19.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-set-ca-cert.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1558,7 +1558,7 @@ clears the CA certificate.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.19.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-set-ca-cert.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the operation succeeded, <code class="literal">FALSE</code> if it was unsuccessful</p>
 </div>
 </div>
@@ -1568,7 +1568,7 @@ clears the CA certificate.</p></td>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_802_1x_get_subject_match (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.20.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-subject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1583,7 +1583,7 @@ nm_setting_802_1x_get_subject_match (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.20.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-subject-match.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting8021x.html#NMSetting8021x--subject-match" title="The “subject-match” property"><span class="type">“subject-match”</span></a> property. This is the
 substring to be matched against the subject of the authentication
 server certificate, or <code class="literal">NULL</code> no subject verification is to be
@@ -1599,7 +1599,7 @@ nm_setting_802_1x_get_num_altsubject_matches
 <p>Returns the number of entries in the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--altsubject-matches" title="The “altsubject-matches” property"><span class="type">“altsubject-matches”</span></a> property of this setting.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.21.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-num-altsubject-matches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1614,7 +1614,7 @@ nm_setting_802_1x_get_num_altsubject_matches
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.21.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-num-altsubject-matches.returns"></a><h4>Returns</h4>
 <p> the number of altsubject-matches entries.</p>
 </div>
 </div>
@@ -1628,7 +1628,7 @@ nm_setting_802_1x_get_altsubject_match
 <p>Returns the altSubjectName match at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.22.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-altsubject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1650,7 +1650,7 @@ nm_setting_802_1x_get_altsubject_match
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.22.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-altsubject-match.returns"></a><h4>Returns</h4>
 <p> the altSubjectName match at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -1666,7 +1666,7 @@ nm_setting_802_1x_add_altsubject_match
 match is added, the altSubjectName of the remote authentication
 server is not verified.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.23.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-add-altsubject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1688,7 +1688,7 @@ server is not verified.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.23.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-add-altsubject-match.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the alternative subject name match was
 successfully added, <code class="literal">FALSE</code> if it was already allowed.</p>
 </div>
@@ -1702,7 +1702,7 @@ nm_setting_802_1x_remove_altsubject_match
                                 <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <p>Removes the allowed altSubjectName at the specified index.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.24.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-remove-altsubject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1734,7 +1734,7 @@ nm_setting_802_1x_remove_altsubject_match_by_value
 <p>Removes the allowed altSubjectName <em class="parameter"><code>altsubject_match</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.25.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-remove-altsubject-match-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1756,7 +1756,7 @@ nm_setting_802_1x_remove_altsubject_match_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.25.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-remove-altsubject-match-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the alternative subject name match was found and removed,
 <code class="literal">FALSE</code> if it was not.</p>
 </div>
@@ -1769,7 +1769,7 @@ nm_setting_802_1x_clear_altsubject_matches
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <p>Clears all altSubjectName matches.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.26.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-clear-altsubject-matches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1791,7 +1791,7 @@ nm_setting_802_1x_clear_altsubject_matches
 nm_setting_802_1x_get_domain_suffix_match
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.27.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-domain-suffix-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1806,7 +1806,7 @@ nm_setting_802_1x_get_domain_suffix_match
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.27.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-domain-suffix-match.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting8021x.html#NMSetting8021x--domain-suffix-match" title="The “domain-suffix-match” property"><span class="type">“domain-suffix-match”</span></a> property.</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -1821,7 +1821,7 @@ nm_setting_802_1x_get_client_cert_scheme
 is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_BLOB</code></a>, use <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-blob" title="nm_setting_802_1x_get_client_cert_blob ()"><code class="function">nm_setting_802_1x_get_client_cert_blob()</code></a>;
 if <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a>, use <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path" title="nm_setting_802_1x_get_client_cert_path ()"><code class="function">nm_setting_802_1x_get_client_cert_path()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.28.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-client-cert-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1836,7 +1836,7 @@ if <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CA
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.28.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-client-cert-scheme.returns"></a><h4>Returns</h4>
 <p> scheme used to store the client certificate (blob or path)</p>
 </div>
 </div>
@@ -1850,7 +1850,7 @@ nm_setting_802_1x_get_client_cert_blob
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.29.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-client-cert-blob.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1865,7 +1865,7 @@ authentication method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.29.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-client-cert-blob.returns"></a><h4>Returns</h4>
 <p> the client certificate data. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1880,7 +1880,7 @@ nm_setting_802_1x_get_client_cert_path
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.30.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-client-cert-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1895,7 +1895,7 @@ authentication method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.30.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-client-cert-path.returns"></a><h4>Returns</h4>
 <p> path to the client certificate file</p>
 </div>
 </div>
@@ -1916,7 +1916,7 @@ file if using the <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.31.6"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-set-client-cert.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1959,7 +1959,7 @@ clears the client certificate.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.31.7"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-set-client-cert.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the operation succeeded, <code class="literal">FALSE</code> if it was unsuccessful</p>
 </div>
 </div>
@@ -1969,7 +1969,7 @@ clears the client certificate.</p></td>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_802_1x_get_phase1_peapver (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.32.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase1-peapver.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1984,7 +1984,7 @@ nm_setting_802_1x_get_phase1_peapver (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.32.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase1-peapver.returns"></a><h4>Returns</h4>
 <p> the "phase 1" PEAP version to be used when authenticating with
 EAP-PEAP as contained in the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase1-peapver" title="The “phase1-peapver” property"><span class="type">“phase1-peapver”</span></a> property.  Valid
 values are <code class="literal">NULL</code> (unset), "0" (PEAP version 0), and "1" (PEAP version 1).</p>
@@ -1997,7 +1997,7 @@ values are <code class="literal">NULL</code> (unset), "0" (PEAP version 0), and 
 nm_setting_802_1x_get_phase1_peaplabel
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.33.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase1-peaplabel.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2012,7 +2012,7 @@ nm_setting_802_1x_get_phase1_peaplabel
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.33.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase1-peaplabel.returns"></a><h4>Returns</h4>
 <p> whether the "phase 1" PEAP label is new-style or old-style, to be
 used when authenticating with EAP-PEAP, as contained in the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase1-peaplabel" title="The “phase1-peaplabel” property"><span class="type">“phase1-peaplabel”</span></a> property.  Valid values are <code class="literal">NULL</code> (unset),
@@ -2027,7 +2027,7 @@ wpa_supplicant documentation for more details.</p>
 nm_setting_802_1x_get_phase1_fast_provisioning
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.34.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase1-fast-provisioning.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2042,7 +2042,7 @@ nm_setting_802_1x_get_phase1_fast_provisioning
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.34.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase1-fast-provisioning.returns"></a><h4>Returns</h4>
 <p> whether "phase 1" PEAP fast provisioning should be used, as specified
 by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase1-fast-provisioning" title="The “phase1-fast-provisioning” property"><span class="type">“phase1-fast-provisioning”</span></a> property.  See the
 wpa_supplicant documentation for more details.</p>
@@ -2054,7 +2054,7 @@ wpa_supplicant documentation for more details.</p>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_802_1x_get_phase2_auth (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.35.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-auth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2069,7 +2069,7 @@ nm_setting_802_1x_get_phase2_auth (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.35.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-auth.returns"></a><h4>Returns</h4>
 <p> the "phase 2" non-EAP (ex MD5) allowed authentication method as
 specified by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-auth" title="The “phase2-auth” property"><span class="type">“phase2-auth”</span></a> property.</p>
 </div>
@@ -2080,7 +2080,7 @@ specified by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_802_1x_get_phase2_autheap (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.36.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-autheap.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2095,7 +2095,7 @@ nm_setting_802_1x_get_phase2_autheap (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.36.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-autheap.returns"></a><h4>Returns</h4>
 <p> the "phase 2" EAP-based (ex TLS) allowed authentication method as
 specified by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-autheap" title="The “phase2-autheap” property"><span class="type">“phase2-autheap”</span></a> property.</p>
 </div>
@@ -2111,7 +2111,7 @@ returned scheme is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-C
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-blob" title="nm_setting_802_1x_get_ca_cert_blob ()"><code class="function">nm_setting_802_1x_get_ca_cert_blob()</code></a>; if <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a>,
 use <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-path" title="nm_setting_802_1x_get_ca_cert_path ()"><code class="function">nm_setting_802_1x_get_ca_cert_path()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.37.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-cert-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2126,7 +2126,7 @@ use <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-ca-cert-path
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.37.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-cert-scheme.returns"></a><h4>Returns</h4>
 <p> scheme used to store the "phase 2" CA certificate (blob or path)</p>
 </div>
 </div>
@@ -2143,7 +2143,7 @@ CA certificate allow it to be unset.  Note that lack of a CA certificate
 reduces security by allowing man-in-the-middle attacks, because the identity
 of the network cannot be confirmed by the client.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.38.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-cert-blob.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2158,7 +2158,7 @@ of the network cannot be confirmed by the client.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.38.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-cert-blob.returns"></a><h4>Returns</h4>
 <p> the "phase 2" CA certificate data. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2176,7 +2176,7 @@ CA certificate allow it to be unset.  Note that lack of a CA certificate
 reduces security by allowing man-in-the-middle attacks, because the identity
 of the network cannot be confirmed by the client.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.39.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-cert-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2191,7 +2191,7 @@ of the network cannot be confirmed by the client.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.39.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-ca-cert-path.returns"></a><h4>Returns</h4>
 <p> path to the "phase 2" CA certificate file</p>
 </div>
 </div>
@@ -2209,7 +2209,7 @@ property with the raw certificate data if using the
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-BLOB:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_BLOB</code></a> scheme, or with the path to the certificate
 file if using the <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a> scheme.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.40.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-set-phase2-ca-cert.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2251,7 +2251,7 @@ clears the "phase2" CA certificate.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.40.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-set-phase2-ca-cert.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the operation succeeded, <code class="literal">FALSE</code> if it was unsuccessful</p>
 </div>
 </div>
@@ -2262,7 +2262,7 @@ clears the "phase2" CA certificate.</p></td>
 nm_setting_802_1x_get_phase2_subject_match
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.41.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-subject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2277,7 +2277,7 @@ nm_setting_802_1x_get_phase2_subject_match
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.41.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-subject-match.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-subject-match" title="The “phase2-subject-match” property"><span class="type">“phase2-subject-match”</span></a> property. This is
 the substring to be matched against the subject of the "phase 2"
 authentication server certificate, or <code class="literal">NULL</code> no subject verification
@@ -2293,7 +2293,7 @@ nm_setting_802_1x_get_num_phase2_altsubject_matches
 <p>Returns the number of entries in the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-altsubject-matches" title="The “phase2-altsubject-matches” property"><span class="type">“phase2-altsubject-matches”</span></a> property of this setting.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.42.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-num-phase2-altsubject-matches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2308,7 +2308,7 @@ nm_setting_802_1x_get_num_phase2_altsubject_matches
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.42.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-num-phase2-altsubject-matches.returns"></a><h4>Returns</h4>
 <p> the number of phase2-altsubject-matches entries.</p>
 </div>
 </div>
@@ -2322,7 +2322,7 @@ nm_setting_802_1x_get_phase2_altsubject_match
 <p>Returns the "phase 2" altSubjectName match at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.43.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-altsubject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2344,7 +2344,7 @@ nm_setting_802_1x_get_phase2_altsubject_match
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.43.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-altsubject-match.returns"></a><h4>Returns</h4>
 <p> the "phase 2" altSubjectName match at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -2360,7 +2360,7 @@ nm_setting_802_1x_add_phase2_altsubject_match
 at least one match is added, the altSubjectName of the "phase 2"
 remote authentication server is not verified.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.44.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-add-phase2-altsubject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2383,7 +2383,7 @@ connection</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.44.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-add-phase2-altsubject-match.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the "phase 2" alternative subject name match was
 successfully added, <code class="literal">FALSE</code> if it was already allowed.</p>
 </div>
@@ -2397,7 +2397,7 @@ nm_setting_802_1x_remove_phase2_altsubject_match
                                 <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <p>Removes the allowed "phase 2" altSubjectName at the specified index.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.45.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-remove-phase2-altsubject-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2429,7 +2429,7 @@ nm_setting_802_1x_remove_phase2_altsubject_match_by_value
 <p>Removes the allowed "phase 2" altSubjectName <em class="parameter"><code>phase2_altsubject_match</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.46.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-remove-phase2-altsubject-match-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2451,7 +2451,7 @@ nm_setting_802_1x_remove_phase2_altsubject_match_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.46.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-remove-phase2-altsubject-match-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the alternative subject name match for "phase 2" was found and removed,
 <code class="literal">FALSE</code> if it was not.</p>
 </div>
@@ -2464,7 +2464,7 @@ nm_setting_802_1x_clear_phase2_altsubject_matches
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <p>Clears all "phase 2" altSubjectName matches.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.47.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-clear-phase2-altsubject-matches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2486,7 +2486,7 @@ nm_setting_802_1x_clear_phase2_altsubject_matches
 nm_setting_802_1x_get_phase2_domain_suffix_match
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.48.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-domain-suffix-match.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2501,7 +2501,7 @@ nm_setting_802_1x_get_phase2_domain_suffix_match
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.48.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-domain-suffix-match.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-domain-suffix-match" title="The “phase2-domain-suffix-match” property"><span class="type">“phase2-domain-suffix-match”</span></a> property.</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -2518,7 +2518,7 @@ returned scheme is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-C
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a>, use
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path" title="nm_setting_802_1x_get_client_cert_path ()"><code class="function">nm_setting_802_1x_get_client_cert_path()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.49.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-client-cert-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2533,7 +2533,7 @@ returned scheme is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-C
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.49.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-client-cert-scheme.returns"></a><h4>Returns</h4>
 <p> scheme used to store the "phase 2" client certificate (blob or path)</p>
 </div>
 </div>
@@ -2547,7 +2547,7 @@ nm_setting_802_1x_get_phase2_client_cert_blob
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.50.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-client-cert-blob.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2562,7 +2562,7 @@ authentication method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.50.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-client-cert-blob.returns"></a><h4>Returns</h4>
 <p> the "phase 2" client certificate data. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2577,7 +2577,7 @@ nm_setting_802_1x_get_phase2_client_cert_path
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.51.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-client-cert-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2592,7 +2592,7 @@ authentication method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.51.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-client-cert-path.returns"></a><h4>Returns</h4>
 <p> path to the "phase 2" client certificate file</p>
 </div>
 </div>
@@ -2614,7 +2614,7 @@ file if using the <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.52.6"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-set-phase2-client-cert.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2657,7 +2657,7 @@ clears the "phase2" client certificate.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.52.7"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-set-phase2-client-cert.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the operation succeeded, <code class="literal">FALSE</code> if it was unsuccessful</p>
 </div>
 </div>
@@ -2667,7 +2667,7 @@ clears the "phase2" client certificate.</p></td>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_802_1x_get_password (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.53.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-password.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2682,7 +2682,7 @@ nm_setting_802_1x_get_password (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.53.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-password.returns"></a><h4>Returns</h4>
 <p> the password used by the authentication method, if any, as specified
 by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--password" title="The “password” property"><span class="type">“password”</span></a> property</p>
 </div>
@@ -2693,7 +2693,7 @@ by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--password" title
 <pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a>
 nm_setting_802_1x_get_password_flags (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.54.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-password-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2708,7 +2708,7 @@ nm_setting_802_1x_get_password_flags (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.54.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-password-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the <a class="link" href="NMSetting8021x.html#NMSetting8021x--password" title="The “password” property"><span class="type">“password”</span></a></p>
 </div>
 </div>
@@ -2718,7 +2718,7 @@ nm_setting_802_1x_get_password_flags (<em class="parameter"><code><a class="link
 <pre class="programlisting"><span class="returnvalue">GBytes</span> *
 nm_setting_802_1x_get_password_raw (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.55.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-password-raw.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2733,7 +2733,7 @@ nm_setting_802_1x_get_password_raw (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.55.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-password-raw.returns"></a><h4>Returns</h4>
 <p> the password used by the authentication method as a
 UTF-8-encoded array of bytes, as specified by the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--password-raw" title="The “password-raw” property"><span class="type">“password-raw”</span></a> property. </p>
@@ -2747,7 +2747,7 @@ UTF-8-encoded array of bytes, as specified by the
 nm_setting_802_1x_get_password_raw_flags
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.56.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-password-raw-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2762,7 +2762,7 @@ nm_setting_802_1x_get_password_raw_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.56.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-password-raw-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--password-raw" title="The “password-raw” property"><span class="type">“password-raw”</span></a></p>
 </div>
@@ -2773,7 +2773,7 @@ nm_setting_802_1x_get_password_raw_flags
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_802_1x_get_pin (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.57.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-pin.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2788,7 +2788,7 @@ nm_setting_802_1x_get_pin (<em class="parameter"><code><a class="link" href="NMS
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.57.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-pin.returns"></a><h4>Returns</h4>
 <p> the PIN used by the authentication method, if any, as specified
 by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--pin" title="The “pin” property"><span class="type">“pin”</span></a> property</p>
 </div>
@@ -2799,7 +2799,7 @@ by the <a class="link" href="NMSetting8021x.html#NMSetting8021x--pin" title="The
 <pre class="programlisting"><a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="returnvalue">NMSettingSecretFlags</span></a>
 nm_setting_802_1x_get_pin_flags (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.58.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-pin-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2814,7 +2814,7 @@ nm_setting_802_1x_get_pin_flags (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.58.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-pin-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--pin" title="The “pin” property"><span class="type">“pin”</span></a></p>
 </div>
@@ -2831,7 +2831,7 @@ nm_setting_802_1x_get_private_key_scheme
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a>, use
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path" title="nm_setting_802_1x_get_client_cert_path ()"><code class="function">nm_setting_802_1x_get_client_cert_path()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.59.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-private-key-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2846,7 +2846,7 @@ nm_setting_802_1x_get_private_key_scheme
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.59.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-private-key-scheme.returns"></a><h4>Returns</h4>
 <p> scheme used to store the private key (blob or path)</p>
 </div>
 </div>
@@ -2863,7 +2863,7 @@ authentication method.</p>
 unencrypted private key data may be readable by unprivileged users.  Private
 keys should always be encrypted with a private key password.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.60.6"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-private-key-blob.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2878,7 +2878,7 @@ keys should always be encrypted with a private key password.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.60.7"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-private-key-blob.returns"></a><h4>Returns</h4>
 <p> the private key data. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2893,7 +2893,7 @@ nm_setting_802_1x_get_private_key_path
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.61.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-private-key-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2908,7 +2908,7 @@ authentication method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.61.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-private-key-path.returns"></a><h4>Returns</h4>
 <p> path to the private key file</p>
 </div>
 </div>
@@ -2946,7 +2946,7 @@ unencrypted private key data using the BLOB scheme may be readable by
 unprivileged users.  Private keys should always be encrypted with a private
 key password to prevent unauthorized access to unencrypted private key data.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.62.8"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-set-private-key.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2995,7 +2995,7 @@ an error is returned.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.62.9"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-set-private-key.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the operation succeeded, <code class="literal">FALSE</code> if it was unsuccessful</p>
 </div>
 </div>
@@ -3006,7 +3006,7 @@ an error is returned.</p></td>
 nm_setting_802_1x_get_private_key_password
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.63.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-private-key-password.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3021,7 +3021,7 @@ nm_setting_802_1x_get_private_key_password
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.63.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-private-key-password.returns"></a><h4>Returns</h4>
 <p> the private key password used to decrypt the private key if
 previously set with <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-set-private-key" title="nm_setting_802_1x_set_private_key ()"><code class="function">nm_setting_802_1x_set_private_key()</code></a>, or the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--private-key-password" title="The “private-key-password” property"><span class="type">“private-key-password”</span></a> property.</p>
@@ -3034,7 +3034,7 @@ previously set with <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-
 nm_setting_802_1x_get_private_key_password_flags
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.64.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-private-key-password-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3049,7 +3049,7 @@ nm_setting_802_1x_get_private_key_password_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.64.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-private-key-password-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--private-key-password" title="The “private-key-password” property"><span class="type">“private-key-password”</span></a></p>
 </div>
@@ -3061,7 +3061,7 @@ nm_setting_802_1x_get_private_key_password_flags
 nm_setting_802_1x_get_private_key_format
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.65.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-private-key-format.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3076,7 +3076,7 @@ nm_setting_802_1x_get_private_key_format
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.65.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-private-key-format.returns"></a><h4>Returns</h4>
 <p> the data format of the private key data stored in the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--private-key" title="The “private-key” property"><span class="type">“private-key”</span></a> property</p>
 </div>
@@ -3093,7 +3093,7 @@ scheme is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-
 <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-PATH:CAPS"><code class="literal">NM_SETTING_802_1X_CK_SCHEME_PATH</code></a>, use
 <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-get-client-cert-path" title="nm_setting_802_1x_get_client_cert_path ()"><code class="function">nm_setting_802_1x_get_client_cert_path()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.66.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-scheme.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3108,7 +3108,7 @@ scheme is <a class="link" href="NMSetting8021x.html#NM-SETTING-802-1X-CK-SCHEME-
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.66.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-scheme.returns"></a><h4>Returns</h4>
 <p> scheme used to store the "phase 2" private key (blob or path)</p>
 </div>
 </div>
@@ -3125,7 +3125,7 @@ authentication method.</p>
 unencrypted private key data may be readable by unprivileged users.  Private
 keys should always be encrypted with a private key password.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.67.6"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-blob.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3140,7 +3140,7 @@ keys should always be encrypted with a private key password.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.67.7"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-blob.returns"></a><h4>Returns</h4>
 <p> the "phase 2" private key data. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -3155,7 +3155,7 @@ nm_setting_802_1x_get_phase2_private_key_path
 when EAP-TLS is used as either the "phase 1" or "phase 2" 802.1x
 authentication method.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.68.5"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3170,7 +3170,7 @@ authentication method.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.68.6"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-path.returns"></a><h4>Returns</h4>
 <p> path to the "phase 2" private key file</p>
 </div>
 </div>
@@ -3209,7 +3209,7 @@ thus unencrypted private key data using the BLOB scheme may be readable by
 unprivileged users.  Private keys should always be encrypted with a private
 key password to prevent unauthorized access to unencrypted private key data.</p>
 <div class="refsect3">
-<a name="id-1.4.6.8.69.8"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-set-phase2-private-key.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3259,7 +3259,7 @@ an error is returned.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.69.9"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-set-phase2-private-key.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the operation succeeded, <code class="literal">FALSE</code> if it was unsuccessful</p>
 </div>
 </div>
@@ -3270,7 +3270,7 @@ an error is returned.</p></td>
 nm_setting_802_1x_get_phase2_private_key_password
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.70.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-password.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3285,7 +3285,7 @@ nm_setting_802_1x_get_phase2_private_key_password
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.70.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-password.returns"></a><h4>Returns</h4>
 <p> the private key password used to decrypt the private key if
 previously set with <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-set-phase2-private-key" title="nm_setting_802_1x_set_phase2_private_key ()"><code class="function">nm_setting_802_1x_set_phase2_private_key()</code></a> or the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password" title="The “phase2-private-key-password” property"><span class="type">“phase2-private-key-password”</span></a> property.</p>
@@ -3298,7 +3298,7 @@ previously set with <a class="link" href="NMSetting8021x.html#nm-setting-802-1x-
 nm_setting_802_1x_get_phase2_private_key_password_flags
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.71.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-password-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3313,7 +3313,7 @@ nm_setting_802_1x_get_phase2_private_key_password_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.71.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-password-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-private-key-password" title="The “phase2-private-key-password” property"><span class="type">“phase2-private-key-password”</span></a></p>
 </div>
@@ -3325,7 +3325,7 @@ nm_setting_802_1x_get_phase2_private_key_password_flags
 nm_setting_802_1x_get_phase2_private_key_format
                                (<em class="parameter"><code><a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.6.8.72.4"></a><h4>Parameters</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-format.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3340,7 +3340,7 @@ nm_setting_802_1x_get_phase2_private_key_format
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.6.8.72.5"></a><h4>Returns</h4>
+<a name="nm-setting-802-1x-get-phase2-private-key-format.returns"></a><h4>Returns</h4>
 <p> the data format of the "phase 2" private key data stored in the
 <a class="link" href="NMSetting8021x.html#NMSetting8021x--phase2-private-key" title="The “phase2-private-key” property"><span class="type">“phase2-private-key”</span></a> property</p>
 </div>
@@ -3359,7 +3359,7 @@ nm_setting_802_1x_get_phase2_private_key_format
 <p><a class="link" href="NMSetting8021x.html#NMSetting8021xCKFormat" title="enum NMSetting8021xCKFormat"><span class="type">NMSetting8021xCKFormat</span></a> values indicate the general type of a certificate
 or private key</p>
 <div class="refsect3">
-<a name="id-1.4.6.9.3.4"></a><h4>Members</h4>
+<a name="NMSetting8021xCKFormat.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -3408,7 +3408,7 @@ and private key</p>
 stored in the setting properties, either as a blob of the item's data, or as
 a path to a certificate or private key file on the filesystem</p>
 <div class="refsect3">
-<a name="id-1.4.6.9.4.4"></a><h4>Members</h4>
+<a name="NMSetting8021xCKScheme.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -4092,6 +4092,6 @@ properties instead (sets ca_cert/ca_cert2 options for wpa_supplicant).</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

@@ -239,10 +239,11 @@ write_hash_of_string (GKeyFile *file,
                       const char *key,
                       const GValue *value)
 {
-	GHashTableIter iter;
-	const char *property = NULL, *data = NULL;
+	GHashTable *hash;
 	const char *group_name = nm_setting_get_name (setting);
 	gboolean vpn_secrets = FALSE;
+	gs_free const char **keys = NULL;
+	guint i, l;
 
 	/* Write VPN secrets out to a different group to keep them separate */
 	if (NM_IS_SETTING_VPN (setting) && !strcmp (key, NM_SETTING_VPN_SECRETS)) {
@@ -250,9 +251,18 @@ write_hash_of_string (GKeyFile *file,
 		vpn_secrets = TRUE;
 	}
 
-	g_hash_table_iter_init (&iter, (GHashTable *) g_value_get_boxed (value));
-	while (g_hash_table_iter_next (&iter, (gpointer *) &property, (gpointer *) &data)) {
+	hash = g_value_get_boxed (value);
+	keys = (const char **) g_hash_table_get_keys_as_array (hash, &l);
+	if (!keys)
+		return;
+
+	g_qsort_with_data (keys, l, sizeof (const char *), nm_strcmp_p_with_data, NULL);
+
+	for (i = 0; keys[i]; i++) {
+		const char *property, *data;
 		gboolean write_item = TRUE;
+
+		property = keys[i];
 
 		/* Handle VPN secrets specially; they are nested in the property's hash;
 		 * we don't want to write them if the secret is not saved, not required,
@@ -266,8 +276,10 @@ write_hash_of_string (GKeyFile *file,
 				write_item = FALSE;
 		}
 
-		if (write_item)
+		if (write_item) {
+			data = g_hash_table_lookup (hash, property);
 			nm_keyfile_plugin_kf_set_string (file, group_name, property, data);
+		}
 	}
 }
 

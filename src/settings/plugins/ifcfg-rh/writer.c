@@ -42,7 +42,6 @@
 #include "nm-setting-vlan.h"
 #include "nm-setting-team.h"
 #include "nm-setting-team-port.h"
-#include "nm-core-internal.h"
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 #include "NetworkManagerUtils.h"
@@ -51,8 +50,20 @@
 #include "shvar.h"
 #include "reader.h"
 #include "utils.h"
-#include "crypto.h"
 
+/*****************************************************************************/
+
+#define _NMLOG_DOMAIN      LOGD_SETTINGS
+#define _NMLOG_PREFIX_NAME "ifcfg-rh"
+#define _NMLOG(level, ...) \
+    G_STMT_START { \
+        nm_log ((level), (_NMLOG_DOMAIN), \
+                "%s" _NM_UTILS_MACRO_FIRST(__VA_ARGS__), \
+                _NMLOG_PREFIX_NAME": " \
+                _NM_UTILS_MACRO_REST(__VA_ARGS__)); \
+    } G_STMT_END
+
+/*****************************************************************************/
 
 static void
 save_secret_flags (shvarFile *ifcfg,
@@ -100,7 +111,7 @@ set_secret (shvarFile *ifcfg,
 {
 	shvarFile *keyfile;
 	GError *error = NULL;
-	
+
 	/* Clear the secret from the ifcfg and the associated "keys" file */
 	svSetValue (ifcfg, key, NULL, FALSE);
 
@@ -109,7 +120,7 @@ set_secret (shvarFile *ifcfg,
 
 	keyfile = utils_get_keys_ifcfg (ifcfg->fileName, TRUE);
 	if (!keyfile) {
-		nm_log_warn (LOGD_SETTINGS, "    could not create ifcfg file for '%s'", ifcfg->fileName);
+		_LOGW ("could not create ifcfg file for '%s'", ifcfg->fileName);
 		goto error;
 	}
 
@@ -121,8 +132,8 @@ set_secret (shvarFile *ifcfg,
 		svSetValue (keyfile, key, value, verbatim);
 
 	if (!svWriteFile (keyfile, 0600, &error)) {
-		nm_log_warn (LOGD_SETTINGS, "    could not update ifcfg file '%s': %s",
-		             keyfile->fileName, error->message);
+		_LOGW ("could not update ifcfg file '%s': %s",
+		       keyfile->fileName, error->message);
 		g_clear_error (&error);
 		svCloseFile (keyfile);
 		goto error;
@@ -715,7 +726,7 @@ write_wireless_security_setting (NMConnection *connection,
 						key = ascii_key;
 					}
 				} else {
-					nm_log_warn (LOGD_SETTINGS, "    invalid WEP key '%s'", key);
+					_LOGW ("invalid WEP key '%s'", key);
 					tmp = NULL;
 				}
 
@@ -841,6 +852,10 @@ write_wireless_setting (NMConnection *connection,
 
 	cloned_mac = nm_setting_wireless_get_cloned_mac_address (s_wireless);
 	svSetValue (ifcfg, "MACADDR", cloned_mac, FALSE);
+
+	svSetValue (ifcfg, "GENERATE_MAC_ADDRESS_MASK",
+	            nm_setting_wireless_get_generate_mac_address_mask (s_wireless),
+	            FALSE);
 
 	svSetValue (ifcfg, "HWADDR_BLACKLIST", NULL, FALSE);
 	macaddr_blacklist = nm_setting_wireless_get_mac_address_blacklist (s_wireless);
@@ -1100,6 +1115,10 @@ write_wired_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
 	svSetValue (ifcfg, "MACADDR", cloned_mac, FALSE);
 
+	svSetValue (ifcfg, "GENERATE_MAC_ADDRESS_MASK",
+	            nm_setting_wired_get_generate_mac_address_mask (s_wired),
+	            FALSE);
+
 	svSetValue (ifcfg, "HWADDR_BLACKLIST", NULL, FALSE);
 	macaddr_blacklist = nm_setting_wired_get_mac_address_blacklist (s_wired);
 	if (macaddr_blacklist[0]) {
@@ -1244,19 +1263,22 @@ write_wired_for_virtual (NMConnection *connection, shvarFile *ifcfg)
 		has_wired = TRUE;
 
 		device_mac = nm_setting_wired_get_mac_address (s_wired);
-		if (device_mac)
-			svSetValue (ifcfg, "HWADDR", device_mac, FALSE);
+		svSetValue (ifcfg, "HWADDR", device_mac, FALSE);
 
 		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		if (cloned_mac)
-			svSetValue (ifcfg, "MACADDR", cloned_mac, FALSE);
+		svSetValue (ifcfg, "MACADDR", cloned_mac, FALSE);
+
+		svSetValue (ifcfg, "GENERATE_MAC_ADDRESS_MASK",
+		            nm_setting_wired_get_generate_mac_address_mask (s_wired),
+		            FALSE);
 
 		mtu = nm_setting_wired_get_mtu (s_wired);
 		if (mtu) {
 			tmp = g_strdup_printf ("%u", mtu);
 			svSetValue (ifcfg, "MTU", tmp, FALSE);
 			g_free (tmp);
-		}
+		} else
+			svSetValue (ifcfg, "MTU", NULL, FALSE);
 	}
 	return has_wired;
 }
@@ -1408,7 +1430,6 @@ write_team_setting (NMConnection *connection, shvarFile *ifcfg, gboolean *wired,
 	svSetValue (ifcfg, "DEVICE", iface, FALSE);
 	config = nm_setting_team_get_config (s_team);
 	svSetValue (ifcfg, "TEAM_CONFIG", config, FALSE);
-	svSetValue (ifcfg, "DEVICETYPE", TYPE_TEAM, FALSE);
 
 	*wired = write_wired_for_virtual (connection, ifcfg);
 
@@ -1786,9 +1807,14 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 	const char *master, *type;
 	char *tmp;
 	gint i_int;
+	const char *v_master = NULL;
+	const char *v_slave = NULL;
+	const char *v_bridge = NULL;
+	const char *v_team_master = NULL;
 
 	svSetValue (ifcfg, "NAME", nm_setting_connection_get_id (s_con), FALSE);
 	svSetValue (ifcfg, "UUID", nm_setting_connection_get_uuid (s_con), FALSE);
+	svSetValue (ifcfg, "STABLE_ID", nm_setting_connection_get_stable_id (s_con), FALSE);
 	svSetValue (ifcfg, "DEVICE", nm_setting_connection_get_interface_name (s_con), FALSE);
 	svSetValue (ifcfg, "ONBOOT",
 	            nm_setting_connection_get_autoconnect (s_con) ? "yes" : "no",
@@ -1853,16 +1879,27 @@ write_connection_setting (NMSettingConnection *s_con, shvarFile *ifcfg)
 	master = nm_setting_connection_get_master (s_con);
 	if (master) {
 		if (nm_setting_connection_is_slave_type (s_con, NM_SETTING_BOND_SETTING_NAME)) {
-			svSetValue (ifcfg, "MASTER", master, FALSE);
-			svSetValue (ifcfg, "SLAVE", "yes", FALSE);
+			v_master = master;
+			v_slave = "yes";
 		} else if (nm_setting_connection_is_slave_type (s_con, NM_SETTING_BRIDGE_SETTING_NAME))
-			svSetValue (ifcfg, "BRIDGE", master, FALSE);
+			v_bridge = master;
 		else if (nm_setting_connection_is_slave_type (s_con, NM_SETTING_TEAM_SETTING_NAME)) {
-			svSetValue (ifcfg, "TEAM_MASTER", master, FALSE);
-			svSetValue (ifcfg, "DEVICETYPE", TYPE_TEAM_PORT, FALSE);
+			v_team_master = master;
 			svSetValue (ifcfg, "TYPE", NULL, FALSE);
 		}
 	}
+
+	svSetValue (ifcfg, "MASTER", v_master, FALSE);
+	svSetValue (ifcfg, "SLAVE", v_slave, FALSE);
+	svSetValue (ifcfg, "BRIDGE", v_bridge, FALSE);
+	svSetValue (ifcfg, "TEAM_MASTER", v_team_master, FALSE);
+
+	if (nm_streq0 (type, NM_SETTING_TEAM_SETTING_NAME))
+		svSetValue (ifcfg, "DEVICETYPE", TYPE_TEAM, FALSE);
+	else if (master && nm_setting_connection_is_slave_type (s_con, NM_SETTING_TEAM_SETTING_NAME))
+		svSetValue (ifcfg, "DEVICETYPE", TYPE_TEAM_PORT, FALSE);
+	else
+		svSetValue (ifcfg, "DEVICETYPE", NULL, FALSE);
 
 	/* secondary connection UUIDs */
 	svSetValue (ifcfg, "SECONDARY_UUIDS", NULL, FALSE);
@@ -1970,6 +2007,7 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	gint32 j;
 	guint32 i, n, num;
 	gint64 route_metric;
+	gint priority;
 	int timeout;
 	GString *searches;
 	gboolean success = FALSE;
@@ -2281,6 +2319,12 @@ write_ip4_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		svSetValueInt64 (ifcfg, "ARPING_WAIT", (timeout - 1) / 1000 + 1);
 	}
 
+	priority = nm_setting_ip_config_get_dns_priority (s_ip4);
+	if (priority)
+		svSetValueInt64 (ifcfg, "IPV4_DNS_PRIORITY", priority);
+	else
+		svSetValue (ifcfg, "IPV4_DNS_PRIORITY", NULL, FALSE);
+
 	success = TRUE;
 
 out:
@@ -2440,6 +2484,7 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 	char *addr_key;
 	char *tmp;
 	guint32 i, num, num4;
+	gint priority;
 	GString *searches;
 	NMIPAddress *addr;
 	const char *dns;
@@ -2604,7 +2649,19 @@ write_ip6_setting (NMConnection *connection, shvarFile *ifcfg, GError **error)
 		                            addr_gen_mode);
 		svSetValue (ifcfg, "IPV6_ADDR_GEN_MODE", tmp, FALSE);
 		g_free (tmp);
+	} else {
+		svSetValue (ifcfg, "IPV6_ADDR_GEN_MODE", NULL, FALSE);
 	}
+
+	/* IPv6 tokenized interface identifier */
+	value = nm_setting_ip6_config_get_token (NM_SETTING_IP6_CONFIG (s_ip6));
+	svSetValue (ifcfg, "IPV6_TOKEN", value, FALSE);
+
+	priority = nm_setting_ip_config_get_dns_priority (s_ip6);
+	if (priority)
+		svSetValueInt64 (ifcfg, "IPV6_DNS_PRIORITY", priority);
+	else
+		svSetValue (ifcfg, "IPV6_DNS_PRIORITY", NULL, FALSE);
 
 	/* Static routes go to route6-<dev> file */
 	route6_path = utils_get_route6_path (ifcfg->fileName);

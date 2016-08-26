@@ -94,8 +94,9 @@ host_triplet = @host@
 @ENABLE_TESTS_TRUE@	test-ifcfg-rh$(EXEEXT)
 subdir = src/settings/plugins/ifcfg-rh/tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -478,6 +479,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -534,13 +536,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -552,6 +555,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -612,6 +617,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -647,6 +654,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -1220,8 +1228,9 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+@ENABLE_TESTS_FALSE@check-local:
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
 check: check-recursive
 all-am: Makefile $(PROGRAMS)
 installdirs: installdirs-recursive
@@ -1333,19 +1342,19 @@ uninstall-am:
 .MAKE: $(am__recursive_targets) check-am install-am install-strip
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am check \
-	check-TESTS check-am clean clean-generic clean-libtool \
-	clean-noinstPROGRAMS cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
-	uninstall uninstall-am
+	check-TESTS check-am check-local clean clean-generic \
+	clean-libtool clean-noinstPROGRAMS cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	recheck tags tags-am uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -1353,6 +1362,9 @@ uninstall-am:
 @ENABLE_TESTS_TRUE@@GNOME_CODE_COVERAGE_RULES@
 
 @ENABLE_TESTS_TRUE@@VALGRIND_RULES@
+
+@ENABLE_TESTS_TRUE@check-local:
+@ENABLE_TESTS_TRUE@	LD_BIND_NOW=1 LD_PRELOAD=$(builddir)/../.libs/libnm-settings-plugin-ifcfg-rh.so $(top_builddir)/src/NetworkManager --version >/dev/null
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

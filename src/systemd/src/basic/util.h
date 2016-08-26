@@ -41,13 +41,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#if 0 /* NM_IGNORED */
 #include "formats-util.h"
-#endif /* NM_IGNORED */
 #include "macro.h"
-#if 0 /* NM_IGNORED */
 #include "missing.h"
-#endif /* NM_IGNORED */
 #include "time-util.h"
 
 size_t page_size(void) _pure_;
@@ -63,6 +59,10 @@ static inline const char* true_false(bool b) {
 
 static inline const char* one_zero(bool b) {
         return b ? "1" : "0";
+}
+
+static inline const char* enable_disable(bool b) {
+        return b ? "enable" : "disable";
 }
 
 void execute_directories(const char* const* directories, usec_t timeout, char *argv[]);
@@ -90,6 +90,7 @@ int prot_from_flags(int flags) _const_;
 int fork_agent(pid_t *pid, const int except[], unsigned n_except, const char *path, ...);
 
 bool in_initrd(void);
+void in_initrd_force(bool value);
 
 void *xbsearch_r(const void *key, const void *base, size_t nmemb, size_t size,
                  int (*compar) (const void *, const void *, void *),
@@ -179,15 +180,17 @@ static inline unsigned log2u_round_up(unsigned x) {
         return log2u(x - 1) + 1;
 }
 
-bool id128_is_valid(const char *s) _pure_;
-
 int container_get_leader(const char *machine, pid_t *pid);
 
 int namespace_open(pid_t pid, int *pidns_fd, int *mntns_fd, int *netns_fd, int *userns_fd, int *root_fd);
 int namespace_enter(int pidns_fd, int mntns_fd, int netns_fd, int userns_fd, int root_fd);
 
 uint64_t physical_memory(void);
+uint64_t physical_memory_scale(uint64_t v, uint64_t max);
 
-int update_reboot_param_file(const char *param);
+uint64_t system_tasks_max(void);
+uint64_t system_tasks_max_scale(uint64_t v, uint64_t max);
+
+int update_reboot_parameter_and_warn(const char *param);
 
 int version(void);

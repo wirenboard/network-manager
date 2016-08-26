@@ -327,6 +327,7 @@ nm_dispatcher_utils_construct_envp (const char *action,
                                     GVariant *device_ip6_props,
                                     GVariant *device_dhcp4_props,
                                     GVariant *device_dhcp6_props,
+                                    const char *connectivity_state,
                                     const char *vpn_ip_iface,
                                     GVariant *vpn_ip4_props,
                                     GVariant *vpn_ip6_props,
@@ -352,9 +353,11 @@ nm_dispatcher_utils_construct_envp (const char *action,
 	g_return_val_if_fail (out_iface != NULL, NULL);
 	g_return_val_if_fail (*out_iface == NULL, NULL);
 
-	/* Hostname changes don't require a device nor contain a connection */
-	if (!strcmp (action, NMD_ACTION_HOSTNAME))
+	/* Hostname and connectivity changes don't require a device nor contain a connection */
+	if (   !strcmp (action, NMD_ACTION_HOSTNAME)
+	    || !strcmp (action, NMD_ACTION_CONNECTIVITY_CHANGE)) {
 		goto done;
+	}
 
 	/* Connection properties */
 	if (!g_variant_lookup (connection_props, NMD_CONNECTION_PROPS_PATH, "&o", &path)) {
@@ -465,6 +468,12 @@ nm_dispatcher_utils_construct_envp (const char *action,
 		*out_iface = g_strdup (iface);
 
  done:
+	/* The connectivity_state value will only be meaningful for 'connectivity-change' events
+	 * (otherwise it will be "UNKNOWN"), so we only set the environment variable in those cases.
+	 */
+	if (connectivity_state && strcmp(connectivity_state, "UNKNOWN"))
+		items = g_slist_prepend (items, g_strdup_printf ("CONNECTIVITY_STATE=%s", connectivity_state));
+
 	path = g_getenv ("PATH");
 	if (path) {
 		path_item = g_strdup_printf ("PATH=%s", path);

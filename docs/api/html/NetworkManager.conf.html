@@ -8,7 +8,7 @@
 <link rel="up" href="manpages.html" title="Manual Pages">
 <link rel="prev" href="nm-online.html" title="nm-online">
 <link rel="next" href="nm-settings.html" title="nm-settings">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -219,34 +219,14 @@ no-auto-default=*
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">ignore-carrier</code></span></p></td>
-<td>
-<p>
-            Specify devices for which NetworkManager will (partially)
-            ignore the carrier state. Normally, for
-            device types that support carrier-detect, such as Ethernet
-            and InfiniBand, NetworkManager will only allow a
-            connection to be activated on the device if carrier is
-            present (ie, a cable is plugged in), and it will
-            deactivate the device if carrier drops for more than a few
-            seconds.
-          </p>
-<p>
-            Listing a device here will allow activating connections on
-            that device even when it does not have carrier, provided
-            that the connection uses only statically-configured IP
-            addresses. Additionally, it will allow any active
-            connection (whether static or dynamic) to remain active on
-            the device when carrier is lost.
-          </p>
-<p>
-            Note that the "carrier" property of NMDevices and device D-Bus
-            interfaces will still reflect the actual device state; it's just
-            that NetworkManager will not make use of that information.
-          </p>
-<p>See <a class="xref" href="NetworkManager.conf.html#device-spec" title="Device List Format">the section called “Device List Format”</a> for the syntax how to
-           specify a device.
-          </p>
-</td>
+<td><p>
+            This setting is deprecated for the per-device setting
+            <code class="literal">ignore-carrier</code> which overwrites this setting
+            if specified (See ???).
+            Otherwise, it is a list of matches to specify for which device
+            carrier should be ignored. See <a class="xref" href="NetworkManager.conf.html#device-spec" title="Device List Format">the section called “Device List Format”</a> for the
+            syntax how to specify a device.
+          </p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">assume-ipv6ll-only</code></span></p></td>
@@ -300,8 +280,8 @@ no-auto-default=*
         configuration with DNSSEC support. The /etc/resolv.conf
         will be managed by dnssec-trigger daemon.</p>
 <p><code class="literal">none</code>: NetworkManager will not
-        modify resolv.conf. This implies <code class="varname">rc-manager</code>
-        <code class="literal">unmanaged</code></p>
+        modify resolv.conf. This implies
+        <code class="literal">rc-manager</code> <code class="literal">unmanaged</code></p>
 </td>
 </tr>
 <tr>
@@ -315,7 +295,12 @@ no-auto-default=*
         always write resolv.conf to its runtime state directory.</p>
 <p><code class="literal">symlink</code>: NetworkManager will symlink
         <code class="filename">/etc/resolv.conf</code> to its private
-        resolv.conf file in the runtime state directory.</p>
+        resolv.conf file in the runtime state directory. If
+        <code class="filename">/etc/resolv.conf</code>
+        already is a symlink pointing to a different location, the file
+        will not be modified. This allows the user to disable managing
+        by pointing the link <code class="filename">/etc/resolv.conf</code> to
+        somewhere else.</p>
 <p><code class="literal">file</code>: NetworkManager will write
         <code class="filename">/etc/resolv.conf</code> as file. If it finds
         a symlink, it will follow the symlink and update the target
@@ -325,7 +310,7 @@ no-auto-default=*
 <p><code class="literal">netconfig</code>: NetworkManager will run
         netconfig to update the DNS configuration.</p>
 <p><code class="literal">unmanaged</code>: don't touch
-        <code class="filename">resolv.conf</code>.</p>
+        <code class="filename">/etc/resolv.conf</code>.</p>
 <p><code class="literal">none</code>: deprecated alias for
         <code class="literal">symlink</code>.</p>
 </td>
@@ -376,7 +361,7 @@ no-auto-default=*
 <tr>
 <td><p><span class="term"><code class="varname">path</code></span></p></td>
 <td><p>The location where keyfiles are read and stored.
-            This defaults to "<code class="filename">${prefix}/etc/NetworkManager/conf.d</code>".
+            This defaults to "<code class="filename">/etc/NetworkManager/conf.d</code>".
             </p></td>
 </tr>
 <tr>
@@ -474,7 +459,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           WIFI_SCAN, IP4, IP6, AUTOIP4, DNS, VPN, SHARING, SUPPLICANT,
           AGENTS, SETTINGS, SUSPEND, CORE, DEVICE, OLPC, WIMAX,
           INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS,
-          TEAM, CONCHECK, DCB, DISPATCH, AUDIT.</p>
+          TEAM, CONCHECK, DCB, DISPATCH, AUDIT, SYSTEMD, VPN_PLUGIN.</p>
 <p>In addition, these special domains can be used: NONE,
           ALL, DEFAULT, DHCP, IP.</p>
 <p>You can specify per-domain log level overrides by
@@ -530,7 +515,7 @@ ipv6.ip6-privacy=0
 <p>
       Not all properties can be overwritten, only the following
       properties are supported to have their default values configured
-      (see <span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span> for details).
+      (see <a class="link" href="nm-settings.html" title="nm-settings"><span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span></a> for details).
       A default value is only consulted if the corresponding per-connection value
       explicitly allows for that.
       </p>
@@ -546,6 +531,14 @@ ipv6.ip6-privacy=0
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">connection.lldp</code></span></p></td>
+<td></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="varname">ethernet.cloned-mac-address</code></span></p></td>
+<td><p>If left unspecified, it defaults to "permanent".</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="varname">ethernet.generate-mac-address-mask</code></span></p></td>
 <td></td>
 </tr>
 <tr>
@@ -580,8 +573,18 @@ ipv6.ip6-privacy=0
 <td><p>If left unspecified, default value of 60 seconds is used.</p></td>
 </tr>
 <tr>
+<td><p><span class="term"><code class="varname">wifi.cloned-mac-address</code></span></p></td>
+<td><p>If left unspecified, it defaults to "permanent".</p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="varname">wifi.generate-mac-address-mask</code></span></p></td>
+<td></td>
+</tr>
+<tr>
 <td><p><span class="term"><code class="varname">wifi.mac-address-randomization</code></span></p></td>
-<td><p>If left unspecified, MAC address randomization is disabled.</p></td>
+<td><p>If left unspecified, MAC address randomization is disabled.
+            This setting is deprecated for <code class="literal">wifi.cloned-mac-address</code>.
+          </p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">wifi.powersave</code></span></p></td>
@@ -595,7 +598,7 @@ ipv6.ip6-privacy=0
 </div>
 <hr>
 <div class="refsect2">
-<a name="id-1.2.5.11.5"></a><h3>Sections</h3>
+<a name="connection-sections"></a><h3>Sections</h3>
 <p>
         You can configure multiple <code class="literal">connection</code>
         sections, by having different sections with a name that all start
@@ -676,6 +679,106 @@ ipv6.ip6-privacy=1
 </div>
 <div class="refsect1">
 <a name="id-1.2.5.12"></a><h2>
+<code class="literal">device</code> section</h2>
+<p>Contains per-device persistent configuration.
+    </p>
+<p>
+      Example:
+</p>
+<pre class="programlisting">
+[device]
+match-device=interface-name:eth3
+unmanaged=1
+</pre>
+<p>
+    </p>
+<div class="refsect2">
+<a name="id-1.2.5.12.4"></a><h3>Supported Properties</h3>
+<p>
+      The following properties can be configured per-device.
+      </p>
+<div class="variablelist"><table border="0" class="variablelist">
+<colgroup>
+<col align="left" valign="top">
+<col>
+</colgroup>
+<tbody>
+<tr>
+<td><p><a name="ignore-carrier"></a><span class="term"><code class="varname">ignore-carrier</code></span></p></td>
+<td>
+<p>
+              Specify devices for which NetworkManager will (partially)
+              ignore the carrier state. Normally, for
+              device types that support carrier-detect, such as Ethernet
+              and InfiniBand, NetworkManager will only allow a
+              connection to be activated on the device if carrier is
+              present (ie, a cable is plugged in), and it will
+              deactivate the device if carrier drops for more than a few
+              seconds.
+            </p>
+<p>
+              A device with carrier ignored will allow activating connections on
+              that device even when it does not have carrier, provided
+              that the connection uses only statically-configured IP
+              addresses. Additionally, it will allow any active
+              connection (whether static or dynamic) to remain active on
+              the device when carrier is lost.
+            </p>
+<p>
+              Note that the "carrier" property of NMDevices and device D-Bus
+              interfaces will still reflect the actual device state; it's just
+              that NetworkManager will not make use of that information.
+            </p>
+<p>
+              This setting overwrites the deprecated <code class="literal">main.ignore-carrier</code>
+              setting above.
+            </p>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="varname">wifi.scan-rand-mac-address</code></span></p></td>
+<td><p>
+              Configures MAC address randomization of a Wi-Fi device during
+              scanning. This defaults to <code class="literal">yes</code> in which case
+              a random, locally-administered MAC address will be used.
+              The setting <code class="literal">wifi.scan-generate-mac-address-mask</code>
+              allows to influence the generated MAC address to use certain vendor
+              OUIs.
+              If disabled, the MAC address during scanning is left unchanged to
+              whatever is configured.
+              For the configured MAC address while the device is associated, see instead
+              the per-connection setting <code class="literal">wifi.cloned-mac-address</code>.
+            </p></td>
+</tr>
+<tr>
+<td><p><span class="term"><code class="varname">wifi.scan-generate-mac-address-mask</code></span></p></td>
+<td><p>
+              Like the per-connection settings <code class="literal">ethernet.generate-mac-address-mask</code>
+              and <code class="literal">wifi.generate-mac-address-mask</code>, this allows to configure the
+              generated MAC addresses during scanning. See <span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span>
+              for details.
+            </p></td>
+</tr>
+</tbody>
+</table></div>
+<p>
+    </p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="id-1.2.5.12.5"></a><h3>Sections</h3>
+<p>
+        The <code class="literal">[device]</code> section works the same as the <code class="literal">[connection]</code> section.
+        That is, multiple sections that all start with the prefix "device" can be specified.
+        The settings "match-device" and "stop-match" are available to match a device section
+        on a device. The order of multiple sections is also top-down within the file and
+        later files overwrite previous settings. See <a class="xref" href="NetworkManager.conf.html#connection-sections" title="Sections">the section called “Sections”</a>
+        for details.
+    </p>
+</div>
+</div>
+<div class="refsect1">
+<a name="id-1.2.5.13"></a><h2>
 <code class="literal">connectivity</code> section</h2>
 <p>This section controls NetworkManager's optional connectivity
     checking functionality.  This allows NetworkManager to detect
@@ -721,7 +824,7 @@ ipv6.ip6-privacy=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.13"></a><h2>
+<a name="id-1.2.5.14"></a><h2>
 <code class="literal">global-dns</code> section</h2>
 <p>This section specifies global DNS settings that override
     connection-specific configuration.</p>
@@ -751,7 +854,7 @@ ipv6.ip6-privacy=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.14"></a><h2>
+<a name="id-1.2.5.15"></a><h2>
 <code class="literal">global-dns-domain</code> sections</h2>
 <p>Sections with a name starting with the "global-dns-domain-"
     prefix allow to define global DNS configuration for specific
@@ -787,7 +890,7 @@ ipv6.ip6-privacy=1
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.15"></a><h2>
+<a name="id-1.2.5.16"></a><h2>
 <code class="literal">.config</code> sections</h2>
 <p>This is a special section that contains options which apply
       to the configuration file that contains the option.
@@ -890,7 +993,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
     </p>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.16"></a><h2>Plugins</h2>
+<a name="id-1.2.5.17"></a><h2>Plugins</h2>
 <div class="variablelist"><table border="0" class="variablelist">
 <colgroup>
 <col align="left" valign="top">
@@ -974,12 +1077,13 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
 </table></div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.17"></a><h2>Appendix</h2>
+<a name="id-1.2.5.18"></a><h2>Appendix</h2>
 <div class="refsect2">
 <a name="device-spec"></a><h3>Device List Format</h3>
 <p>
           The configuration options <code class="literal">main.no-auto-default</code>, <code class="literal">main.ignore-carrier</code>,
-          and <code class="literal">keyfile.unmanaged-devices</code> select devices based on a list of matchings.
+          <code class="literal">keyfile.unmanaged-devices</code>, <code class="literal">connection*.match-device</code> and
+          <code class="literal">device*.match-device</code> select devices based on a list of matchings.
           Devices can be specified using the following format:
       </p>
 <p>
@@ -1000,7 +1104,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
 </tr>
 <tr>
 <td><p><span class="term">HWADDR</span></p></td>
-<td><p>Match the MAC address of the device. Globbing is not supported</p></td>
+<td><p>Match the permanent MAC address of the device. Globbing is not supported</p></td>
 </tr>
 <tr>
 <td><p><span class="term">interface-name:IFNAME, </span><span class="term">interface-name:~IFNAME</span></p></td>
@@ -1014,7 +1118,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
 </tr>
 <tr>
 <td><p><span class="term">mac:HWADDR</span></p></td>
-<td><p>Match the MAC address of the device. Globbing is not supported</p></td>
+<td><p>Match the permanent MAC address of the device. Globbing is not supported</p></td>
 </tr>
 <tr>
 <td><p><span class="term">s390-subchannels:HWADDR</span></p></td>
@@ -1063,19 +1167,19 @@ interface-name:vboxnet*,except:interface-name:vboxnet2
 </div>
 </div>
 <div class="refsect1">
-<a name="id-1.2.5.18"></a><h2>See Also</h2>
+<a name="id-1.2.5.19"></a><h2>See Also</h2>
 <p>
-      <span class="citerefentry"><span class="refentrytitle">NetworkManager</span>(8)</span>,
-      <span class="citerefentry"><span class="refentrytitle">nmcli</span>(1)</span>,
-      <span class="citerefentry"><span class="refentrytitle">nmcli-examples</span>(7)</span>,
-      <span class="citerefentry"><span class="refentrytitle">nm-online</span>(1)</span>,
-      <span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span>,
+      <a class="link" href="NetworkManager.html" title="NetworkManager"><span class="citerefentry"><span class="refentrytitle">NetworkManager</span>(8)</span></a>,
+      <a class="link" href="nmcli.html" title="nmcli"><span class="citerefentry"><span class="refentrytitle">nmcli</span>(1)</span></a>,
+      <a class="link" href="nmcli-examples.html" title="nmcli-examples"><span class="citerefentry"><span class="refentrytitle">nmcli-examples</span>(7)</span></a>,
+      <a class="link" href="nm-online.html" title="nm-online"><span class="citerefentry"><span class="refentrytitle">nm-online</span>(1)</span></a>,
+      <a class="link" href="nm-settings.html" title="nm-settings"><span class="citerefentry"><span class="refentrytitle">nm-settings</span>(5)</span></a>,
       <span class="citerefentry"><span class="refentrytitle">nm-applet</span>(1)</span>,
       <span class="citerefentry"><span class="refentrytitle">nm-connection-editor</span>(1)</span>
     </p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

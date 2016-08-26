@@ -49,15 +49,12 @@ static clockid_t map_clock_id(clockid_t c) {
         /* Some more exotic archs (s390, ppc, …) lack the "ALARM" flavour of the clocks. Thus, clock_gettime() will
          * fail for them. Since they are essentially the same as their non-ALARM pendants (their only difference is
          * when timers are set on them), let's just map them accordingly. This way, we can get the correct time even on
-         * those archs.
-         *
-         * Also, older kernels don't support CLOCK_BOOTTIME: fall back to CLOCK_MONOTONIC. */
+         * those archs. */
 
         switch (c) {
 
-        case CLOCK_BOOTTIME:
         case CLOCK_BOOTTIME_ALARM:
-                return clock_boottime_or_monotonic ();
+                return CLOCK_BOOTTIME;
 
         case CLOCK_REALTIME_ALARM:
                 return CLOCK_REALTIME;
@@ -92,6 +89,16 @@ dual_timestamp* dual_timestamp_get(dual_timestamp *ts) {
         return ts;
 }
 
+triple_timestamp* triple_timestamp_get(triple_timestamp *ts) {
+        assert(ts);
+
+        ts->realtime = now(CLOCK_REALTIME);
+        ts->monotonic = now(CLOCK_MONOTONIC);
+        ts->boottime = clock_boottime_supported() ? now(CLOCK_BOOTTIME) : USEC_INFINITY;
+
+        return ts;
+}
+
 dual_timestamp* dual_timestamp_from_realtime(dual_timestamp *ts, usec_t u) {
         int64_t delta;
         assert(ts);
@@ -105,6 +112,24 @@ dual_timestamp* dual_timestamp_from_realtime(dual_timestamp *ts, usec_t u) {
 
         delta = (int64_t) now(CLOCK_REALTIME) - (int64_t) u;
         ts->monotonic = usec_sub(now(CLOCK_MONOTONIC), delta);
+
+        return ts;
+}
+
+triple_timestamp* triple_timestamp_from_realtime(triple_timestamp *ts, usec_t u) {
+        int64_t delta;
+
+        assert(ts);
+
+        if (u == USEC_INFINITY || u <= 0) {
+                ts->realtime = ts->monotonic = ts->boottime = u;
+                return ts;
+        }
+
+        ts->realtime = u;
+        delta = (int64_t) now(CLOCK_REALTIME) - (int64_t) u;
+        ts->monotonic = usec_sub(now(CLOCK_MONOTONIC), delta);
+        ts->boottime = clock_boottime_supported() ? usec_sub(now(CLOCK_BOOTTIME), delta) : USEC_INFINITY;
 
         return ts;
 }
@@ -139,6 +164,26 @@ dual_timestamp* dual_timestamp_from_boottime_or_monotonic(dual_timestamp *ts, us
         ts->monotonic = usec_sub(ts->monotonic, delta);
 
         return ts;
+}
+
+usec_t triple_timestamp_by_clock(triple_timestamp *ts, clockid_t clock) {
+
+        switch (clock) {
+
+        case CLOCK_REALTIME:
+        case CLOCK_REALTIME_ALARM:
+                return ts->realtime;
+
+        case CLOCK_MONOTONIC:
+                return ts->monotonic;
+
+        case CLOCK_BOOTTIME:
+        case CLOCK_BOOTTIME_ALARM:
+                return ts->boottime;
+
+        default:
+                return USEC_INFINITY;
+        }
 }
 
 usec_t timespec_load(const struct timespec *ts) {
@@ -212,32 +257,95 @@ struct timeval *timeval_store(struct timeval *tv, usec_t u) {
         return tv;
 }
 
-static char *format_timestamp_internal(char *buf, size_t l, usec_t t,
-                                       bool utc, bool us) {
+static char *format_timestamp_internal(
+                char *buf,
+                size_t l,
+                usec_t t,
+                bool utc,
+                bool us) {
+
+        /* The weekdays in non-localized (English) form. We use this instead of the localized form, so that our
+         * generated timestamps may be parsed with parse_timestamp(), and always read the same. */
+        static const char * const weekdays[] = {
+                [0] = "Sun",
+                [1] = "Mon",
+                [2] = "Tue",
+                [3] = "Wed",
+                [4] = "Thu",
+                [5] = "Fri",
+                [6] = "Sat",
+        };
+
         struct tm tm;
         time_t sec;
-        int k;
+        size_t n;
 
         assert(buf);
-        assert(l > 0);
 
+        if (l <
+            3 +                  /* week day */
+            1 + 10 +             /* space and date */
+            1 + 8 +              /* space and time */
+            (us ? 1 + 6 : 0) +   /* "." and microsecond part */
+            1 + 1 +              /* space and shortest possible zone */
+            1)
+                return NULL; /* Not enough space even for the shortest form. */
         if (t <= 0 || t == USEC_INFINITY)
+                return NULL; /* Timestamp is unset */
+
+        sec = (time_t) (t / USEC_PER_SEC); /* Round down */
+        if ((usec_t) sec != (t / USEC_PER_SEC))
+                return NULL; /* overflow? */
+
+        if (!localtime_or_gmtime_r(&sec, &tm, utc))
                 return NULL;
 
-        sec = (time_t) (t / USEC_PER_SEC);
-        localtime_or_gmtime_r(&sec, &tm, utc);
+        /* Start with the week day */
+        assert((size_t) tm.tm_wday < ELEMENTSOF(weekdays));
+        memcpy(buf, weekdays[tm.tm_wday], 4);
 
-        if (us)
-                k = strftime(buf, l, "%a %Y-%m-%d %H:%M:%S", &tm);
-        else
-                k = strftime(buf, l, "%a %Y-%m-%d %H:%M:%S %Z", &tm);
+        /* Add the main components */
+        if (strftime(buf + 3, l - 3, " %Y-%m-%d %H:%M:%S", &tm) <= 0)
+                return NULL; /* Doesn't fit */
 
-        if (k <= 0)
-                return NULL;
+        /* Append the microseconds part, if that's requested */
         if (us) {
-                snprintf(buf + strlen(buf), l - strlen(buf), ".%06llu", (unsigned long long) (t % USEC_PER_SEC));
-                if (strftime(buf + strlen(buf), l - strlen(buf), " %Z", &tm) <= 0)
-                        return NULL;
+                n = strlen(buf);
+                if (n + 8 > l)
+                        return NULL; /* Microseconds part doesn't fit. */
+
+                sprintf(buf + n, ".%06llu", (unsigned long long) (t % USEC_PER_SEC));
+        }
+
+        /* Append the timezone */
+        n = strlen(buf);
+        if (utc) {
+                /* If this is UTC then let's explicitly use the "UTC" string here, because gmtime_r() normally uses the
+                 * obsolete "GMT" instead. */
+                if (n + 5 > l)
+                        return NULL; /* "UTC" doesn't fit. */
+
+                strcpy(buf + n, " UTC");
+
+        } else if (!isempty(tm.tm_zone)) {
+                size_t tn;
+
+                /* An explicit timezone is specified, let's use it, if it fits */
+                tn = strlen(tm.tm_zone);
+                if (n + 1 + tn + 1 > l) {
+                        /* The full time zone does not fit in. Yuck. */
+
+                        if (n + 1 + _POSIX_TZNAME_MAX + 1 > l)
+                                return NULL; /* Not even enough space for the POSIX minimum (of 6)? In that case, complain that it doesn't fit */
+
+                        /* So the time zone doesn't fit in fully, but the caller passed enough space for the POSIX
+                         * minimum time zone length. In this case suppress the timezone entirely, in order not to dump
+                         * an overly long, hard to read string on the user. This should be safe, because the user will
+                         * assume the local timezone anyway if none is shown. And so does parse_timestamp(). */
+                } else {
+                        buf[n++] = ' ';
+                        strcpy(buf + n, tm.tm_zone);
+                }
         }
 
         return buf;
@@ -499,12 +607,11 @@ int parse_timestamp(const char *t, usec_t *usec) {
                 { "Sat",       6 },
         };
 
-        const char *k;
-        const char *utc;
+        const char *k, *utc, *tzn = NULL;
         struct tm tm, copy;
         time_t x;
         usec_t x_usec, plus = 0, minus = 0, ret;
-        int r, weekday = -1;
+        int r, weekday = -1, dst = -1;
         unsigned i;
 
         /*
@@ -569,15 +676,55 @@ int parse_timestamp(const char *t, usec_t *usec) {
                 goto finish;
         }
 
+        /* See if the timestamp is suffixed with UTC */
         utc = endswith_no_case(t, " UTC");
         if (utc)
                 t = strndupa(t, utc - t);
+        else {
+                const char *e = NULL;
+                int j;
 
-        x = ret / USEC_PER_SEC;
+                tzset();
+
+                /* See if the timestamp is suffixed by either the DST or non-DST local timezone. Note that we only
+                 * support the local timezones here, nothing else. Not because we wouldn't want to, but simply because
+                 * there are no nice APIs available to cover this. By accepting the local time zone strings, we make
+                 * sure that all timestamps written by format_timestamp() can be parsed correctly, even though we don't
+                 * support arbitrary timezone specifications.  */
+
+                for (j = 0; j <= 1; j++) {
+
+                        if (isempty(tzname[j]))
+                                continue;
+
+                        e = endswith_no_case(t, tzname[j]);
+                        if (!e)
+                                continue;
+                        if (e == t)
+                                continue;
+                        if (e[-1] != ' ')
+                                continue;
+
+                        break;
+                }
+
+                if (IN_SET(j, 0, 1)) {
+                        /* Found one of the two timezones specified. */
+                        t = strndupa(t, e - t - 1);
+                        dst = j;
+                        tzn = tzname[j];
+                }
+        }
+
+        x = (time_t) (ret / USEC_PER_SEC);
         x_usec = 0;
 
-        assert_se(localtime_or_gmtime_r(&x, &tm, utc));
-        tm.tm_isdst = -1;
+        if (!localtime_or_gmtime_r(&x, &tm, utc))
+                return -EINVAL;
+
+        tm.tm_isdst = dst;
+        if (tzn)
+                tm.tm_zone = tzn;
 
         if (streq(t, "today")) {
                 tm.tm_sec = tm.tm_min = tm.tm_hour = 0;
@@ -593,7 +740,6 @@ int parse_timestamp(const char *t, usec_t *usec) {
                 tm.tm_sec = tm.tm_min = tm.tm_hour = 0;
                 goto from_tm;
         }
-
 
         for (i = 0; i < ELEMENTSOF(day_nr); i++) {
                 size_t skip;
@@ -687,7 +833,6 @@ parse_usec:
                         return -EINVAL;
 
                 x_usec = add;
-
         }
 
 from_tm:
@@ -1089,22 +1234,55 @@ bool timezone_is_valid(const char *name) {
         return true;
 }
 
-clockid_t clock_boottime_or_monotonic(void) {
-        static clockid_t clock = -1;
-        int fd;
+bool clock_boottime_supported(void) {
+        static int supported = -1;
 
-        if (clock != -1)
-                return clock;
+        /* Note that this checks whether CLOCK_BOOTTIME is available in general as well as available for timerfds()! */
 
-        fd = timerfd_create(CLOCK_BOOTTIME, TFD_NONBLOCK|TFD_CLOEXEC);
-        if (fd < 0)
-                clock = CLOCK_MONOTONIC;
-        else {
-                safe_close(fd);
-                clock = CLOCK_BOOTTIME;
+        if (supported < 0) {
+                int fd;
+
+                fd = timerfd_create(CLOCK_BOOTTIME, TFD_NONBLOCK|TFD_CLOEXEC);
+                if (fd < 0)
+                        supported = false;
+                else {
+                        safe_close(fd);
+                        supported = true;
+                }
         }
 
-        return clock;
+        return supported;
+}
+
+clockid_t clock_boottime_or_monotonic(void) {
+        if (clock_boottime_supported())
+                return CLOCK_BOOTTIME;
+        else
+                return CLOCK_MONOTONIC;
+}
+
+bool clock_supported(clockid_t clock) {
+        struct timespec ts;
+
+        switch (clock) {
+
+        case CLOCK_MONOTONIC:
+        case CLOCK_REALTIME:
+                return true;
+
+        case CLOCK_BOOTTIME:
+                return clock_boottime_supported();
+
+        case CLOCK_BOOTTIME_ALARM:
+                if (!clock_boottime_supported())
+                        return false;
+
+                /* fall through, after checking the cached value for CLOCK_BOOTTIME. */
+
+        default:
+                /* For everything else, check properly */
+                return clock_gettime(clock, &ts) >= 0;
+        }
 }
 
 #if 0 /* NM_IGNORED */

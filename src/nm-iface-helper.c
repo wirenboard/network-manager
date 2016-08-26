@@ -66,6 +66,7 @@ static struct {
 	int tempaddr;
 	char *ifname;
 	char *uuid;
+	char *stable_id;
 	char *dhcp4_address;
 	char *dhcp4_clientid;
 	char *dhcp4_hostname;
@@ -129,8 +130,9 @@ dhcp4_state_changed (NMDhcpClient *client,
 }
 
 static void
-rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_data)
+rdisc_config_changed (NMRDisc *rdisc, const NMRDiscData *rdata, guint changed_int, gpointer user_data)
 {
+	NMRDiscConfigMap changed = changed_int;
 	static NMIP6Config *rdisc_config = NULL;
 	NMIP6Config *existing;
 	static int system_support = -1;
@@ -165,11 +167,9 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 
 	if (changed & NM_RDISC_CONFIG_GATEWAYS) {
 		/* Use the first gateway as ordered in router discovery cache. */
-		if (rdisc->gateways->len) {
-			NMRDiscGateway *gateway = &g_array_index (rdisc->gateways, NMRDiscGateway, 0);
-
-			nm_ip6_config_set_gateway (rdisc_config, &gateway->address);
-		} else
+		if (rdata->gateways_n)
+			nm_ip6_config_set_gateway (rdisc_config, &rdata->gateways[0].address);
+		else
 			nm_ip6_config_set_gateway (rdisc_config, NULL);
 	}
 
@@ -182,8 +182,8 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		 * also counts static and temporary addresses when checking
 		 * max_addresses.
 		 **/
-		for (i = 0; i < rdisc->addresses->len; i++) {
-			NMRDiscAddress *discovered_address = &g_array_index (rdisc->addresses, NMRDiscAddress, i);
+		for (i = 0; i < rdata->addresses_n; i++) {
+			const NMRDiscAddress *discovered_address = &rdata->addresses[i];
 			NMPlatformIP6Address address;
 
 			memset (&address, 0, sizeof (address));
@@ -194,7 +194,7 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 			address.preferred = discovered_address->preferred;
 			if (address.preferred > address.lifetime)
 				address.preferred = address.lifetime;
-			address.source = NM_IP_CONFIG_SOURCE_RDISC;
+			address.addr_source = NM_IP_CONFIG_SOURCE_RDISC;
 			address.n_ifa_flags = ifa_flags;
 
 			nm_ip6_config_add_address (rdisc_config, &address);
@@ -205,25 +205,17 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 		/* Rebuild route list from router discovery cache. */
 		nm_ip6_config_reset_routes (rdisc_config);
 
-		for (i = 0; i < rdisc->routes->len; i++) {
-			NMRDiscRoute *discovered_route = &g_array_index (rdisc->routes, NMRDiscRoute, i);
-			NMPlatformIP6Route route;
+		for (i = 0; i < rdata->routes_n; i++) {
+			const NMRDiscRoute *discovered_route = &rdata->routes[i];
+			const NMPlatformIP6Route route = {
+				.network    = discovered_route->network,
+				.plen       = discovered_route->plen,
+				.gateway    = discovered_route->gateway,
+				.rt_source  = NM_IP_CONFIG_SOURCE_RDISC,
+				.metric     = global_opt.priority_v6,
+			};
 
-			/* Only accept non-default routes.  The router has no idea what the
-			 * local configuration or user preferences are, so sending routes
-			 * with a prefix length of 0 is quite rude and thus ignored.
-			 */
-			if (   discovered_route->plen > 0
-			    && discovered_route->plen <= 128) {
-				memset (&route, 0, sizeof (route));
-				route.network = discovered_route->network;
-				route.plen = discovered_route->plen;
-				route.gateway = discovered_route->gateway;
-				route.source = NM_IP_CONFIG_SOURCE_RDISC;
-				route.metric = global_opt.priority_v6;
-
-				nm_ip6_config_add_route (rdisc_config, &route);
-			}
+			nm_ip6_config_add_route (rdisc_config, &route);
 		}
 	}
 
@@ -232,12 +224,12 @@ rdisc_config_changed (NMRDisc *rdisc, NMRDiscConfigMap changed, gpointer user_da
 	}
 
 	if (changed & NM_RDISC_CONFIG_HOP_LIMIT)
-		nm_platform_sysctl_set_ip6_hop_limit_safe (NM_PLATFORM_GET, global_opt.ifname, rdisc->hop_limit);
+		nm_platform_sysctl_set_ip6_hop_limit_safe (NM_PLATFORM_GET, global_opt.ifname, rdata->hop_limit);
 
 	if (changed & NM_RDISC_CONFIG_MTU) {
 		char val[16];
 
-		g_snprintf (val, sizeof (val), "%d", rdisc->mtu);
+		g_snprintf (val, sizeof (val), "%d", rdata->mtu);
 		nm_platform_sysctl_set (NM_PLATFORM_GET, nm_utils_ip6_property_path (global_opt.ifname, "mtu"), val);
 	}
 
@@ -278,8 +270,9 @@ do_early_setup (int *argc, char **argv[])
 	gint64 priority64_v6 = -1;
 	GOptionEntry options[] = {
 		/* Interface/IP config */
-		{ "ifname", 'i', 0, G_OPTION_ARG_STRING, &global_opt.ifname, N_("The interface to manage"), N_("eth0") },
-		{ "uuid", 'u', 0, G_OPTION_ARG_STRING, &global_opt.uuid, N_("Connection UUID"), N_("661e8cd0-b618-46b8-9dc9-31a52baaa16b") },
+		{ "ifname", 'i', 0, G_OPTION_ARG_STRING, &global_opt.ifname, N_("The interface to manage"), "eth0" },
+		{ "uuid", 'u', 0, G_OPTION_ARG_STRING, &global_opt.uuid, N_("Connection UUID"),  "661e8cd0-b618-46b8-9dc9-31a52baaa16b" },
+		{ "stable-id", '\0', 0, G_OPTION_ARG_STRING, &global_opt.stable_id, N_("Connection Token for Stable IDs"),  "eth" },
 		{ "slaac", 's', 0, G_OPTION_ARG_NONE, &global_opt.slaac, N_("Whether to manage IPv6 SLAAC"), NULL },
 		{ "slaac-required", '6', 0, G_OPTION_ARG_NONE, &global_opt.slaac_required, N_("Whether SLAAC must be successful"), NULL },
 		{ "slaac-tempaddr", 't', 0, G_OPTION_ARG_INT, &global_opt.tempaddr, N_("Use an IPv6 temporary privacy address"), NULL },
@@ -469,9 +462,23 @@ main (int argc, char *argv[])
 	}
 
 	if (global_opt.slaac) {
+		NMUtilsStableType stable_type = NM_UTILS_STABLE_TYPE_UUID;
+		const char *stable_id = global_opt.uuid;
+
 		nm_platform_link_set_user_ipv6ll_enabled (NM_PLATFORM_GET, ifindex, TRUE);
 
-		rdisc = nm_lndp_rdisc_new (NM_PLATFORM_GET, ifindex, global_opt.ifname, global_opt.uuid, global_opt.addr_gen_mode, NULL);
+		if (   global_opt.stable_id
+		    && (global_opt.stable_id[0] >= '0' && global_opt.stable_id[0] <= '9')
+		    && global_opt.stable_id[1] == ' ') {
+			/* strict parsing of --stable-id, which is the numeric stable-type
+			 * and the ID, joined with one space. For now, only support stable-types
+			 * from 0 to 9. */
+			stable_type = (global_opt.stable_id[0] - '0');
+			stable_id = &global_opt.stable_id[2];
+		}
+		rdisc = nm_lndp_rdisc_new (NM_PLATFORM_GET, ifindex, global_opt.ifname,
+		                           stable_type, stable_id,
+		                           global_opt.addr_gen_mode, NULL);
 		g_assert (rdisc);
 
 		if (iid)

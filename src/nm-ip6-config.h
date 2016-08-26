@@ -33,18 +33,7 @@
 #define NM_IS_IP6_CONFIG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), NM_TYPE_IP6_CONFIG))
 #define NM_IP6_CONFIG_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), NM_TYPE_IP6_CONFIG, NMIP6ConfigClass))
 
-struct _NMIP6ConfigPrivate;
-
-struct _NMIP6Config {
-	NMExportedObject parent;
-
-	/* private */
-	struct _NMIP6ConfigPrivate *priv;
-};
-
-typedef struct {
-	NMExportedObjectClass parent;
-} NMIP6ConfigClass;
+typedef struct _NMIP6ConfigClass NMIP6ConfigClass;
 
 /* internal */
 #define NM_IP6_CONFIG_IFINDEX "ifindex"
@@ -101,6 +90,8 @@ const NMPlatformIP6Address *nm_ip6_config_get_address (const NMIP6Config *config
 const NMPlatformIP6Address *nm_ip6_config_get_address_first_nontentative (const NMIP6Config *config, gboolean linklocal);
 gboolean nm_ip6_config_address_exists (const NMIP6Config *config, const NMPlatformIP6Address *address);
 gboolean nm_ip6_config_addresses_sort (NMIP6Config *config, NMSettingIP6ConfigPrivacy use_temporary);
+gboolean nm_ip6_config_has_any_dad_pending (const NMIP6Config *self,
+                                            const NMIP6Config *candidates);
 
 /* Routes */
 void nm_ip6_config_reset_routes (NMIP6Config *config);

@@ -8,7 +8,7 @@
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="NMDeviceWifi.html" title="NMDeviceWifi">
 <link rel="next" href="NMActiveConnection.html" title="NMActiveConnection">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -269,7 +269,7 @@ nm_device_wimax_get_hw_address (<em class="parameter"><code><a class="link" href
 </div>
 <p>Gets the hardware (MAC) address of the <a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a></p>
 <div class="refsect3">
-<a name="id-1.5.19.10.2.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-hw-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -284,7 +284,7 @@ nm_device_wimax_get_hw_address (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.2.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-hw-address.returns"></a><h4>Returns</h4>
 <p> the hardware address. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -300,7 +300,7 @@ nm_device_wimax_get_active_nsp (<em class="parameter"><code><a class="link" href
 </div>
 <p>Gets the active <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.3.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-active-nsp.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -315,7 +315,7 @@ nm_device_wimax_get_active_nsp (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.3.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-active-nsp.returns"></a><h4>Returns</h4>
 <p> the access point or <code class="literal">NULL</code> if none is active. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -332,7 +332,7 @@ nm_device_wimax_get_nsp_by_path (<em class="parameter"><code><a class="link" hre
 </div>
 <p>Gets a <a class="link" href="NMWimaxNsp.html" title="NMWimaxNsp"><span class="type">NMWimaxNsp</span></a> by path.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.4.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-nsp-by-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -354,7 +354,7 @@ nm_device_wimax_get_nsp_by_path (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.4.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-nsp-by-path.returns"></a><h4>Returns</h4>
 <p> the access point or <code class="literal">NULL</code> if none is found. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -370,7 +370,7 @@ nm_device_wimax_get_nsps (<em class="parameter"><code><a class="link" href="NMDe
 </div>
 <p>Gets all the scanned NSPs of the <a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><span class="type">NMDeviceWimax</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.5.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-nsps.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -385,9 +385,9 @@ nm_device_wimax_get_nsps (<em class="parameter"><code><a class="link" href="NMDe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.5.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-nsps.returns"></a><h4>Returns</h4>
 <p> a <span class="type">GPtrArray</span> containing
-all the scanned <a href="NMWimaxNsp.html"><span class="type">NMWimaxNsps</span></a>.
+all the scanned <a href="NMWimaxNsp.html#NMWimaxNsp-struct"><span class="type">NMWimaxNsps</span></a>.
 The returned array is owned by the client and should not be modified. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMWimaxNsp]</span></p>
 </div>
@@ -405,7 +405,7 @@ nm_device_wimax_get_center_frequency (<em class="parameter"><code><a class="link
 to communicate with the network when connected.  Has no meaning when the
 device is not connected.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.6.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-center-frequency.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -420,7 +420,7 @@ device is not connected.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.6.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-center-frequency.returns"></a><h4>Returns</h4>
 <p> the center frequency in KHz, or 0</p>
 </div>
 </div>
@@ -438,7 +438,7 @@ strong the raw received RF signal from the base station is, but does not
 indicate the overall quality of the radio link.  Has no meaning when the
 device is not connected.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.7.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-rssi.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -453,7 +453,7 @@ device is not connected.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.7.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-rssi.returns"></a><h4>Returns</h4>
 <p> the RSSI in dBm, or 0</p>
 </div>
 </div>
@@ -470,7 +470,7 @@ nm_device_wimax_get_cinr (<em class="parameter"><code><a class="link" href="NMDe
 link in dB.  CINR is a more accurate measure of radio link quality.  Has no
 meaning when the device is not connected.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.8.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-cinr.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -485,7 +485,7 @@ meaning when the device is not connected.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.8.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-cinr.returns"></a><h4>Returns</h4>
 <p> the CINR in dB, or 0</p>
 </div>
 </div>
@@ -502,7 +502,7 @@ nm_device_wimax_get_tx_power (<em class="parameter"><code><a class="link" href="
 0.5 dBm.  i.e. a TxPower of -11 represents an actual device TX power of
 -5.5 dBm.  Has no meaning when the device is not connected.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.9.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-tx-power.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -517,7 +517,7 @@ nm_device_wimax_get_tx_power (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.9.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-tx-power.returns"></a><h4>Returns</h4>
 <p> the TX power in dBm, or 0</p>
 </div>
 </div>
@@ -532,7 +532,7 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 </div>
 <p>Gets the ID of the serving Base Station when the device is connected.</p>
 <div class="refsect3">
-<a name="id-1.5.19.10.10.6"></a><h4>Parameters</h4>
+<a name="nm-device-wimax-get-bsid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -547,7 +547,7 @@ nm_device_wimax_get_bsid (<em class="parameter"><code><a class="link" href="NMDe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.10.10.7"></a><h4>Returns</h4>
+<a name="nm-device-wimax-get-bsid.returns"></a><h4>Returns</h4>
 <p> the ID of the serving Base Station, or <code class="literal">NULL</code></p>
 </div>
 </div>
@@ -724,7 +724,7 @@ user_function (<a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><
 <p>WiMAX is no longer supported.</p>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.13.2.6"></a><h4>Parameters</h4>
+<a name="NMDeviceWimax-nsp-added.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -765,7 +765,7 @@ user_function (<a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><
 <p>WiMAX is no longer supported.</p>
 </div>
 <div class="refsect3">
-<a name="id-1.5.19.13.3.6"></a><h4>Parameters</h4>
+<a name="NMDeviceWimax-nsp-removed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -796,6 +796,6 @@ user_function (<a class="link" href="NMDeviceWimax.html" title="NMDeviceWimax"><
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

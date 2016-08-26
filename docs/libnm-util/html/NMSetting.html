@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMConnection.html" title="NMConnection">
 <link rel="next" href="NMSettingConnection.html" title="NMSettingConnection">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -48,22 +48,6 @@
 <td class="function_name">
 <a class="link" href="NMSetting.html#nm-setting-error-quark" title="nm_setting_error_quark ()">nm_setting_error_quark</a> <span class="c_punctuation">()</span>
 </td>
-</tr>
-<tr>
-<td class="define_keyword">#define</td>
-<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-SERIALIZE:CAPS" title="NM_SETTING_PARAM_SERIALIZE">NM_SETTING_PARAM_SERIALIZE</a></td>
-</tr>
-<tr>
-<td class="define_keyword">#define</td>
-<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-REQUIRED:CAPS" title="NM_SETTING_PARAM_REQUIRED">NM_SETTING_PARAM_REQUIRED</a></td>
-</tr>
-<tr>
-<td class="define_keyword">#define</td>
-<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-SECRET:CAPS" title="NM_SETTING_PARAM_SECRET">NM_SETTING_PARAM_SECRET</a></td>
-</tr>
-<tr>
-<td class="define_keyword">#define</td>
-<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-FUZZY-IGNORE:CAPS" title="NM_SETTING_PARAM_FUZZY_IGNORE">NM_SETTING_PARAM_FUZZY_IGNORE</a></td>
 </tr>
 <tr>
 <td class="function_type">
@@ -244,6 +228,22 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-SERIALIZE:CAPS" title="NM_SETTING_PARAM_SERIALIZE">NM_SETTING_PARAM_SERIALIZE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-REQUIRED:CAPS" title="NM_SETTING_PARAM_REQUIRED">NM_SETTING_PARAM_REQUIRED</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-SECRET:CAPS" title="NM_SETTING_PARAM_SECRET">NM_SETTING_PARAM_SECRET</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-PARAM-FUZZY-IGNORE:CAPS" title="NM_SETTING_PARAM_FUZZY_IGNORE">NM_SETTING_PARAM_FUZZY_IGNORE</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSetting.html#NM-SETTING-NAME:CAPS" title="NM_SETTING_NAME">NM_SETTING_NAME</a></td>
 </tr>
 <tr>
@@ -329,33 +329,9 @@ of properties and allowed values.</p>
 nm_setting_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for NMSetting errors.</p>
 </div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-SETTING-PARAM-SERIALIZE:CAPS"></a><h3>NM_SETTING_PARAM_SERIALIZE</h3>
-<pre class="programlisting">#define NM_SETTING_PARAM_SERIALIZE    (1 &lt;&lt; (0 + G_PARAM_USER_SHIFT))
-</pre>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-SETTING-PARAM-REQUIRED:CAPS"></a><h3>NM_SETTING_PARAM_REQUIRED</h3>
-<pre class="programlisting">#define NM_SETTING_PARAM_REQUIRED     (1 &lt;&lt; (1 + G_PARAM_USER_SHIFT))
-</pre>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-SETTING-PARAM-SECRET:CAPS"></a><h3>NM_SETTING_PARAM_SECRET</h3>
-<pre class="programlisting">#define NM_SETTING_PARAM_SECRET       (1 &lt;&lt; (2 + G_PARAM_USER_SHIFT))
-</pre>
-</div>
-<hr>
-<div class="refsect2">
-<a name="NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"></a><h3>NM_SETTING_PARAM_FUZZY_IGNORE</h3>
-<pre class="programlisting">#define NM_SETTING_PARAM_FUZZY_IGNORE (1 &lt;&lt; (3 + G_PARAM_USER_SHIFT))
-</pre>
 </div>
 <hr>
 <div class="refsect2">
@@ -366,7 +342,7 @@ nm_setting_error_quark (<em class="parameter"><code><span class="type">void</spa
                                      <em class="parameter"><code><a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> flags</code></em>,
                                      <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.3.9.7.4"></a><h4>Parameters</h4>
+<a name="NMSettingClearSecretsWithFlagsFn.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -398,7 +374,7 @@ nm_setting_error_quark (<em class="parameter"><code><span class="type">void</spa
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.7.5"></a><h4>Returns</h4>
+<a name="NMSettingClearSecretsWithFlagsFn.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> to clear the secret, <code class="literal">FALSE</code> to not clear the secret</p>
 </div>
 </div>
@@ -412,7 +388,7 @@ nm_setting_error_quark (<em class="parameter"><code><span class="type">void</spa
                          <em class="parameter"><code><span class="type">GParamFlags</span> flags</code></em>,
                          <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.3.9.8.4"></a><h4>Parameters</h4>
+<a name="NMSettingValueIterFn.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -460,7 +436,7 @@ nm_setting_to_hash (<em class="parameter"><code><a class="link" href="NMSetting.
 name to a GValue describing that property, suitable for marshalling over
 D-Bus or serializing.  The mapping is string to GValue.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.9.5"></a><h4>Parameters</h4>
+<a name="nm-setting-to-hash.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -482,7 +458,7 @@ D-Bus or serializing.  The mapping is string to GValue.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.9.6"></a><h4>Returns</h4>
+<a name="nm-setting-to-hash.returns"></a><h4>Returns</h4>
 <p> a new <span class="type">GHashTable</span>
 describing the setting's properties. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GObject.Value]</span></p>
@@ -501,7 +477,7 @@ are strongly typed, thus the GValue type of the hash value must be correct.
 See the documentation on each <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object subclass for the correct
 property names and value types.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.10.5"></a><h4>Parameters</h4>
+<a name="nm-setting-new-from-hash.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -524,7 +500,7 @@ string to GValue mapping of properties that apply to the setting. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.10.6"></a><h4>Returns</h4>
+<a name="nm-setting-new-from-hash.returns"></a><h4>Returns</h4>
 <p> a new <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object populated with the properties from the
 hash table, or <code class="literal">NULL</code> on failure</p>
 </div>
@@ -536,7 +512,7 @@ hash table, or <code class="literal">NULL</code> on failure</p>
 nm_setting_duplicate (<em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *setting</code></em>);</pre>
 <p>Duplicates a <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.11.5"></a><h4>Parameters</h4>
+<a name="nm-setting-duplicate.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -551,7 +527,7 @@ nm_setting_duplicate (<em class="parameter"><code><a class="link" href="NMSettin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.11.6"></a><h4>Returns</h4>
+<a name="nm-setting-duplicate.returns"></a><h4>Returns</h4>
 <p> a new <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> containing the same properties and values as the
 source <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a>. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -564,7 +540,7 @@ source <a class="link" href="NMSetting.html" title="NMSetting"><span class="type
 nm_setting_get_name (<em class="parameter"><code><a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> *setting</code></em>);</pre>
 <p>Returns the type name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.12.5"></a><h4>Parameters</h4>
+<a name="nm-setting-get-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -579,7 +555,7 @@ nm_setting_get_name (<em class="parameter"><code><a class="link" href="NMSetting
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.12.6"></a><h4>Returns</h4>
+<a name="nm-setting-get-name.returns"></a><h4>Returns</h4>
 <p> a string containing the type name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object,
 like 'ppp' or 'wireless' or 'wired'.</p>
 </div>
@@ -597,7 +573,7 @@ some are dependent on other values (hence the need for <em class="parameter"><co
 returned <span class="type">GError</span> contains information about which property of the setting
 failed validation, and in what way that property failed validation.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.13.5"></a><h4>Parameters</h4>
+<a name="nm-setting-verify.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -626,7 +602,7 @@ came. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.13.6"></a><h4>Returns</h4>
+<a name="nm-setting-verify.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the setting is valid, <code class="literal">FALSE</code> if it is not</p>
 </div>
 </div>
@@ -641,7 +617,7 @@ nm_setting_compare (<em class="parameter"><code><a class="link" href="NMSetting.
 modified by a set of flags.  See the documentation for <a class="link" href="NMSetting.html#NMSettingCompareFlags" title="enum NMSettingCompareFlags"><span class="type">NMSettingCompareFlags</span></a>
 for a description of each flag's behavior.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.14.5"></a><h4>Parameters</h4>
+<a name="nm-setting-compare.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -668,7 +644,7 @@ for a description of each flag's behavior.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.14.6"></a><h4>Returns</h4>
+<a name="nm-setting-compare.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the comparison succeeds, <code class="literal">FALSE</code> if it does not</p>
 </div>
 </div>
@@ -688,7 +664,7 @@ of each setting that differ from the other are added to <em class="parameter"><c
 , mapped to
 one or more <a class="link" href="NMSetting.html#NMSettingDiffResult" title="enum NMSettingDiffResult"><span class="type">NMSettingDiffResult</span></a> values.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.15.5"></a><h4>Parameters</h4>
+<a name="nm-setting-diff.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -730,7 +706,7 @@ in and the settings differ, a new one is created and returned. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.15.6"></a><h4>Returns</h4>
+<a name="nm-setting-diff.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the settings contain the same values, <code class="literal">FALSE</code> if they do not</p>
 </div>
 </div>
@@ -744,7 +720,7 @@ nm_setting_enumerate_values (<em class="parameter"><code><a class="link" href="N
 <p>Iterates over each property of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object, calling the supplied
 user function for each property.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-enumerate-values.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -781,7 +757,7 @@ nm_setting_to_string (<em class="parameter"><code><a class="link" href="NMSettin
 be used for serialization of the setting, or machine-parsed in any way. The
 output format is not guaranteed to be stable and may change at any time.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.17.5"></a><h4>Parameters</h4>
+<a name="nm-setting-to-string.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -796,7 +772,7 @@ output format is not guaranteed to be stable and may change at any time.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.17.6"></a><h4>Returns</h4>
+<a name="nm-setting-to-string.returns"></a><h4>Returns</h4>
 <p> an allocated string containing a textual representation of the
 setting's properties and values (including secrets!), which the caller should
 free with <code class="function">g_free()</code></p>
@@ -811,7 +787,7 @@ nm_setting_clear_secrets (<em class="parameter"><code><a class="link" href="NMSe
 setting only when needed, and cleared immediately after use to prevent
 leakage of information.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-clear-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -836,7 +812,7 @@ nm_setting_clear_secrets_with_flags (<em class="parameter"><code><a class="link"
 <p>Clears and frees secrets determined by <em class="parameter"><code>func</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.19.5"></a><h4>Parameters</h4>
+<a name="nm-setting-clear-secrets-with-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -875,7 +851,7 @@ to make a successful connection.  The returned hints are only intended as a
 guide to what secrets may be required, because in some circumstances, there
 is no way to conclusively determine exactly which secrets are needed.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.20.5"></a><h4>Parameters</h4>
+<a name="nm-setting-need-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -890,7 +866,7 @@ is no way to conclusively determine exactly which secrets are needed.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.20.6"></a><h4>Returns</h4>
+<a name="nm-setting-need-secrets.returns"></a><h4>Returns</h4>
 <p> a <span class="type">GPtrArray</span> containing
 the property names of secrets of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> which may be required; the
 caller owns the array and must free it with <code class="function">g_ptr_array_free()</code>, but must not
@@ -908,7 +884,7 @@ nm_setting_update_secrets (<em class="parameter"><code><a class="link" href="NMS
 <p>Update the setting's secrets, given a hash table of secrets intended for that
 setting (deserialized from D-Bus for example).</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.21.5"></a><h4>Parameters</h4>
+<a name="nm-setting-update-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -936,7 +912,7 @@ string to <span class="type">GValue</span> of setting property names and secrets
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.21.6"></a><h4>Returns</h4>
+<a name="nm-setting-update-secrets.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secrets were successfully updated, <code class="literal">FALSE</code> on failure to
 update one or more of the secrets.</p>
 </div>
@@ -952,7 +928,7 @@ nm_setting_get_secret_flags (<em class="parameter"><code><a class="link" href="N
 <p>For a given secret, retrieves the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> describing how to
 handle that secret.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.22.5"></a><h4>Parameters</h4>
+<a name="nm-setting-get-secret-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -984,7 +960,7 @@ handle that secret.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.22.6"></a><h4>Returns</h4>
+<a name="nm-setting-get-secret-flags.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success (if the given secret name was a valid property of
 this setting, and if that property is secret), <code class="literal">FALSE</code> if not</p>
 </div>
@@ -1000,7 +976,7 @@ nm_setting_set_secret_flags (<em class="parameter"><code><a class="link" href="N
 <p>For a given secret, stores the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> describing how to
 handle that secret.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.23.5"></a><h4>Parameters</h4>
+<a name="nm-setting-set-secret-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1032,7 +1008,7 @@ handle that secret.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.23.6"></a><h4>Returns</h4>
+<a name="nm-setting-set-secret-flags.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success (if the given secret name was a valid property of
 this setting, and if that property is secret), <code class="literal">FALSE</code> if not</p>
 </div>
@@ -1045,7 +1021,7 @@ nm_setting_get_virtual_iface_name (<em class="parameter"><code><a class="link" h
 <p>Returns the name of the virtual kernel interface which the connection
 needs to use if specified in the settings.</p>
 <div class="refsect3">
-<a name="id-1.2.3.9.24.5"></a><h4>Parameters</h4>
+<a name="nm-setting-get-virtual-iface-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1060,7 +1036,7 @@ needs to use if specified in the settings.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.3.9.24.6"></a><h4>Returns</h4>
+<a name="nm-setting-get-virtual-iface-name.returns"></a><h4>Returns</h4>
 <p> Name of the virtual interface or <code class="literal">NULL</code> if the setting does not
 support this feature</p>
 </div>
@@ -1072,7 +1048,7 @@ support this feature</p>
 <a name="NMSettingError"></a><h3>enum NMSettingError</h3>
 <p>Describes errors that may result from operations involving a <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.2.3.10.2.4"></a><h4>Members</h4>
+<a name="NMSettingError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1124,6 +1100,30 @@ support this feature</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-SETTING-PARAM-SERIALIZE:CAPS"></a><h3>NM_SETTING_PARAM_SERIALIZE</h3>
+<pre class="programlisting">#define NM_SETTING_PARAM_SERIALIZE    (1 &lt;&lt; (0 + G_PARAM_USER_SHIFT))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-PARAM-REQUIRED:CAPS"></a><h3>NM_SETTING_PARAM_REQUIRED</h3>
+<pre class="programlisting">#define NM_SETTING_PARAM_REQUIRED     (1 &lt;&lt; (1 + G_PARAM_USER_SHIFT))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-PARAM-SECRET:CAPS"></a><h3>NM_SETTING_PARAM_SECRET</h3>
+<pre class="programlisting">#define NM_SETTING_PARAM_SECRET       (1 &lt;&lt; (2 + G_PARAM_USER_SHIFT))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NM-SETTING-PARAM-FUZZY-IGNORE:CAPS"></a><h3>NM_SETTING_PARAM_FUZZY_IGNORE</h3>
+<pre class="programlisting">#define NM_SETTING_PARAM_FUZZY_IGNORE (1 &lt;&lt; (3 + G_PARAM_USER_SHIFT))
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-NAME:CAPS"></a><h3>NM_SETTING_NAME</h3>
 <pre class="programlisting">#define NM_SETTING_NAME "name"
 </pre>
@@ -1135,7 +1135,7 @@ support this feature</p>
 secret has a corresponding set of these flags which indicate how the secret
 is to be stored and/or requested when it is needed.</p>
 <div class="refsect3">
-<a name="id-1.2.3.10.5.4"></a><h4>Members</h4>
+<a name="NMSettingSecretFlags.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1188,7 +1188,7 @@ secret is not required</p>
 <p>These flags modify the comparison behavior when comparing two settings or
 two connections.</p>
 <div class="refsect3">
-<a name="id-1.2.3.10.6.4"></a><h4>Members</h4>
+<a name="NMSettingCompareFlags.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1295,7 +1295,7 @@ It should only be accessed through the functions described below.</p>
 <p>These flags determine which properties are added to the resulting hash
 when calling <a class="link" href="NMSetting.html#nm-setting-to-hash" title="nm_setting_to_hash ()"><code class="function">nm_setting_to_hash()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.2.3.10.8.4"></a><h4>Members</h4>
+<a name="NMSettingHashFlags.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1333,7 +1333,7 @@ when calling <a class="link" href="NMSetting.html#nm-setting-to-hash" title="nm_
 <a name="NMSettingDiffResult"></a><h3>enum NMSettingDiffResult</h3>
 <p>These values indicate the result of a setting difference operation.</p>
 <div class="refsect3">
-<a name="id-1.2.3.10.9.4"></a><h4>Members</h4>
+<a name="NMSettingDiffResult.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1399,6 +1399,6 @@ example "ppp" or "wireless" or "wired".</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

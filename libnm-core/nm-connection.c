@@ -23,10 +23,12 @@
 #include "nm-default.h"
 
 #include <string.h>
+#include <arpa/inet.h>
 
 #include "nm-connection.h"
 #include "nm-connection-private.h"
 #include "nm-utils.h"
+#include "nm-utils-private.h"
 #include "nm-setting-private.h"
 #include "nm-core-internal.h"
 
@@ -780,6 +782,24 @@ _normalize_ip_config (NMConnection *self, GHashTable *parameters)
 			              NULL);
 			nm_connection_add_setting (self, setting);
 		} else {
+			const char *token;
+
+			token = nm_setting_ip6_config_get_token ((NMSettingIP6Config *) s_ip6);
+			if (   token
+			    && nm_setting_ip6_config_get_addr_gen_mode ((NMSettingIP6Config *) s_ip6) == NM_SETTING_IP6_CONFIG_ADDR_GEN_MODE_EUI64) {
+				struct in6_addr i6_token;
+				char normalized[NM_UTILS_INET_ADDRSTRLEN];
+
+				if (   inet_pton (AF_INET6, token, &i6_token) == 1
+				    && _nm_utils_inet6_is_token (&i6_token)) {
+					nm_utils_inet6_ntop (&i6_token, normalized);
+					if (g_strcmp0 (token, normalized)) {
+						g_object_set (s_ip6, NM_SETTING_IP6_CONFIG_TOKEN, normalized, NULL);
+						changed = TRUE;
+					}
+				}
+			}
+
 			if (   nm_setting_ip_config_get_gateway (s_ip6)
 			    && nm_setting_ip_config_get_never_default (s_ip6)) {
 				g_object_set (s_ip6, NM_SETTING_IP_CONFIG_GATEWAY, NULL, NULL);
@@ -837,6 +857,84 @@ _normalize_bond_mode (NMConnection *self, GHashTable *parameters)
 				nm_setting_bond_add_option (s_bond, NM_SETTING_BOND_OPTION_MODE, mode_new);
 				return TRUE;
 			}
+		}
+	}
+	return FALSE;
+}
+
+static gboolean
+_normalize_wireless_mac_address_randomization (NMConnection *self, GHashTable *parameters)
+{
+	NMSettingWireless *s_wifi = nm_connection_get_setting_wireless (self);
+	const char *cloned_mac_address;
+	NMSettingMacRandomization mac_address_randomization;
+
+	if (!s_wifi)
+		return FALSE;
+
+	mac_address_randomization = nm_setting_wireless_get_mac_address_randomization (s_wifi);
+	if (!NM_IN_SET (mac_address_randomization,
+	                NM_SETTING_MAC_RANDOMIZATION_DEFAULT,
+	                NM_SETTING_MAC_RANDOMIZATION_NEVER,
+	                NM_SETTING_MAC_RANDOMIZATION_ALWAYS))
+		return FALSE;
+
+	cloned_mac_address = nm_setting_wireless_get_cloned_mac_address (s_wifi);
+	if (cloned_mac_address) {
+		if (nm_streq (cloned_mac_address, "random")) {
+			if (mac_address_randomization == NM_SETTING_MAC_RANDOMIZATION_ALWAYS)
+				return FALSE;
+			mac_address_randomization = NM_SETTING_MAC_RANDOMIZATION_ALWAYS;
+		} else if (nm_streq (cloned_mac_address, "permanent")) {
+			if (mac_address_randomization == NM_SETTING_MAC_RANDOMIZATION_NEVER)
+				return FALSE;
+			mac_address_randomization = NM_SETTING_MAC_RANDOMIZATION_NEVER;
+		} else {
+			if (mac_address_randomization == NM_SETTING_MAC_RANDOMIZATION_DEFAULT)
+				return FALSE;
+			mac_address_randomization = NM_SETTING_MAC_RANDOMIZATION_DEFAULT;
+		}
+		g_object_set (s_wifi, NM_SETTING_WIRELESS_MAC_ADDRESS_RANDOMIZATION, mac_address_randomization, NULL);
+		return TRUE;
+	}
+	if (mac_address_randomization != NM_SETTING_MAC_RANDOMIZATION_DEFAULT) {
+		g_object_set (s_wifi,
+		              NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS,
+		              mac_address_randomization == NM_SETTING_MAC_RANDOMIZATION_ALWAYS
+		                  ? "random" : "permanent",
+		              NULL);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static gboolean
+_normalize_team_config (NMConnection *self, GHashTable *parameters)
+{
+	NMSettingTeam *s_team = nm_connection_get_setting_team (self);
+
+	if (s_team) {
+		const char *config = nm_setting_team_get_config (s_team);
+
+		if (config && !_nm_utils_check_valid_json (config, NULL)) {
+			g_object_set (s_team, NM_SETTING_TEAM_CONFIG, NULL, NULL);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+static gboolean
+_normalize_team_port_config (NMConnection *self, GHashTable *parameters)
+{
+	NMSettingTeamPort *s_team_port = nm_connection_get_setting_team_port (self);
+
+	if (s_team_port) {
+		const char *config = nm_setting_team_port_get_config (s_team_port);
+
+		if (config && !_nm_utils_check_valid_json (config, NULL)) {
+			g_object_set (s_team_port, NM_SETTING_TEAM_PORT_CONFIG, NULL, NULL);
+			return TRUE;
 		}
 	}
 	return FALSE;
@@ -1084,6 +1182,9 @@ nm_connection_normalize (NMConnection *connection,
 	was_modified |= _normalize_ip_config (connection, parameters);
 	was_modified |= _normalize_infiniband_mtu (connection, parameters);
 	was_modified |= _normalize_bond_mode (connection, parameters);
+	was_modified |= _normalize_wireless_mac_address_randomization (connection, parameters);
+	was_modified |= _normalize_team_config (connection, parameters);
+	was_modified |= _normalize_team_port_config (connection, parameters);
 
 	/* Verify anew. */
 	success = _nm_connection_verify (connection, error);

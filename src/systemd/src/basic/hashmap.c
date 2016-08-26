@@ -29,9 +29,7 @@
 #include "hashmap.h"
 #include "macro.h"
 #include "mempool.h"
-#if 0 /* NM_IGNORED */
 #include "process-util.h"
-#endif /* NM_IGNORED */
 #include "random-util.h"
 #include "set.h"
 #include "siphash24.h"
@@ -1768,6 +1766,9 @@ void *ordered_hashmap_next(OrderedHashmap *h, const void *key) {
 int set_consume(Set *s, void *value) {
         int r;
 
+        assert(s);
+        assert(value);
+
         r = set_put(s, value);
         if (r <= 0)
                 free(value);
@@ -1777,25 +1778,25 @@ int set_consume(Set *s, void *value) {
 
 int set_put_strdup(Set *s, const char *p) {
         char *c;
-        int r;
 
         assert(s);
         assert(p);
+
+        if (set_contains(s, (char*) p))
+                return 0;
 
         c = strdup(p);
         if (!c)
                 return -ENOMEM;
 
-        r = set_consume(s, c);
-        if (r == -EEXIST)
-                return 0;
-
-        return r;
+        return set_consume(s, c);
 }
 
 int set_put_strdupv(Set *s, char **l) {
         int n = 0, r;
         char **i;
+
+        assert(s);
 
         STRV_FOREACH(i, l) {
                 r = set_put_strdup(s, *i);
@@ -1806,4 +1807,24 @@ int set_put_strdupv(Set *s, char **l) {
         }
 
         return n;
+}
+
+int set_put_strsplit(Set *s, const char *v, const char *separators, ExtractFlags flags) {
+        const char *p = v;
+        int r;
+
+        assert(s);
+        assert(v);
+
+        for (;;) {
+                char *word;
+
+                r = extract_first_word(&p, &word, separators, flags);
+                if (r <= 0)
+                        return r;
+
+                r = set_consume(s, word);
+                if (r < 0)
+                        return r;
+        }
 }

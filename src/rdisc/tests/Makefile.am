@@ -29,7 +29,7 @@ test_rdisc_linux_LDADD = \
 test_rdisc_fake_SOURCES = \
 	test-rdisc-fake.c
 test_rdisc_fake_LDADD = \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 
 @VALGRIND_RULES@
 TESTS = test-rdisc-fake

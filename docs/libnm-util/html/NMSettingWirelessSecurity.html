@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingWireless.html" title="NMSettingWireless">
 <link rel="next" href="NMSettingBluetooth.html" title="NMSettingBluetooth">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -535,7 +535,7 @@ nm_setting_wireless_security_error_quark
                                (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> errors.</p>
 </div>
 </div>
@@ -546,7 +546,7 @@ nm_setting_wireless_security_error_quark
 nm_setting_wireless_security_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -558,7 +558,7 @@ nm_setting_wireless_security_new (<em class="parameter"><code><span class="type"
 nm_setting_wireless_security_get_key_mgmt
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-key-mgmt.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -573,7 +573,7 @@ nm_setting_wireless_security_get_key_mgmt
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-key-mgmt.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--key-mgmt" title="The “key-mgmt” property"><span class="type">“key-mgmt”</span></a> property of the setting</p>
 </div>
 </div>
@@ -584,7 +584,7 @@ nm_setting_wireless_security_get_key_mgmt
 nm_setting_wireless_security_get_num_protos
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.5.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-num-protos.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -599,7 +599,7 @@ nm_setting_wireless_security_get_num_protos
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.5.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-num-protos.returns"></a><h4>Returns</h4>
 <p> the number of security protocols this connection allows when
 connecting to secure Wi-Fi networks</p>
 </div>
@@ -612,7 +612,7 @@ nm_setting_wireless_security_get_proto
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.6.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-proto.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -634,7 +634,7 @@ nm_setting_wireless_security_get_proto
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.6.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-proto.returns"></a><h4>Returns</h4>
 <p> the protocol at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -653,7 +653,7 @@ protocol list contains only "wpa" but the access point for the SSID specified
 by this connection only supports WPA2/RSN, the connection cannot be used
 with the access point.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.7.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-add-proto.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -675,7 +675,7 @@ with the access point.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.7.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-add-proto.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the protocol was new and and was added to the allowed
 protocol list, or <code class="literal">FALSE</code> if it was already in the list</p>
 </div>
@@ -689,7 +689,7 @@ nm_setting_wireless_security_remove_proto
                                 <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <p>Removes a protocol from the allowed protocol list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.8.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-remove-proto.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -720,7 +720,7 @@ nm_setting_wireless_security_remove_proto_by_value
                                 <em class="parameter"><code>const <span class="type">char</span> *proto</code></em>);</pre>
 <p>Removes a protocol from the allowed protocol list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.9.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-remove-proto-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -742,7 +742,7 @@ nm_setting_wireless_security_remove_proto_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.9.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-remove-proto-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the protocol was found and removed; <code class="literal">FALSE</code> it it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -756,7 +756,7 @@ nm_setting_wireless_security_clear_protos
 <p>Removes all protocols from the allowed list.  If there are no protocols
 specified then all protocols are allowed.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.10.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-clear-protos.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -778,7 +778,7 @@ specified then all protocols are allowed.</p>
 nm_setting_wireless_security_get_num_pairwise
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.11.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-num-pairwise.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -793,7 +793,7 @@ nm_setting_wireless_security_get_num_pairwise
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.11.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-num-pairwise.returns"></a><h4>Returns</h4>
 <p> the number of pairwise encryption algorithms in the allowed list</p>
 </div>
 </div>
@@ -807,7 +807,7 @@ nm_setting_wireless_security_get_pairwise
 <p>Returns the allowed pairwise encryption algorithm from allowed algorithm
 list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.12.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-pairwise.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -829,7 +829,7 @@ list.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.12.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-pairwise.returns"></a><h4>Returns</h4>
 <p> the pairwise encryption algorithm at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -846,7 +846,7 @@ algorithms.  If the list is not empty, then only access points that support
 one or more of the encryption algorithms in the list will be considered
 compatible with this connection.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.13.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-add-pairwise.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -868,7 +868,7 @@ compatible with this connection.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.13.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-add-pairwise.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the algorithm was added to the list, <code class="literal">FALSE</code> if it was
 already in the list</p>
 </div>
@@ -883,7 +883,7 @@ nm_setting_wireless_security_remove_pairwise
 <p>Removes an encryption algorithm from the allowed pairwise encryption
 algorithm list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.14.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-remove-pairwise.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -915,7 +915,7 @@ nm_setting_wireless_security_remove_pairwise_by_value
 <p>Removes an encryption algorithm from the allowed pairwise encryption
 algorithm list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.15.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-remove-pairwise-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -937,7 +937,7 @@ algorithm list.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.15.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-remove-pairwise-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the encryption algorith was found and removed; <code class="literal">FALSE</code> it it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -951,7 +951,7 @@ nm_setting_wireless_security_clear_pairwise
 <p>Removes all algorithms from the allowed list.  If there are no algorithms
 specified then all pairwise encryption algorithms are allowed.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-clear-pairwise.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -973,7 +973,7 @@ specified then all pairwise encryption algorithms are allowed.</p>
 nm_setting_wireless_security_get_num_groups
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.17.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-num-groups.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -988,7 +988,7 @@ nm_setting_wireless_security_get_num_groups
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.17.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-num-groups.returns"></a><h4>Returns</h4>
 <p> the number of groupwise encryption algorithms in the allowed list</p>
 </div>
 </div>
@@ -1002,7 +1002,7 @@ nm_setting_wireless_security_get_group
 <p>Returns the allowed groupwise encryption algorithm from allowed algorithm
 list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-group.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1024,7 +1024,7 @@ list.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.18.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-group.returns"></a><h4>Returns</h4>
 <p> the groupwise encryption algorithm at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -1041,7 +1041,7 @@ algorithms.  If the list is not empty, then only access points that support
 one or more of the encryption algorithms in the list will be considered
 compatible with this connection.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.19.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-add-group.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1064,7 +1064,7 @@ compatible with this connection.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.19.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-add-group.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the algorithm was added to the list, <code class="literal">FALSE</code> if it was
 already in the list</p>
 </div>
@@ -1079,7 +1079,7 @@ nm_setting_wireless_security_remove_group
 <p>Removes an encryption algorithm from the allowed groupwise encryption
 algorithm list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.20.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-remove-group.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1111,7 +1111,7 @@ nm_setting_wireless_security_remove_group_by_value
 <p>Removes an encryption algorithm from the allowed groupwise encryption
 algorithm list.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.21.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-remove-group-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1134,7 +1134,7 @@ algorithm list.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.21.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-remove-group-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the algorithm was found and removed; <code class="literal">FALSE</code> it it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -1148,7 +1148,7 @@ nm_setting_wireless_security_clear_groups
 <p>Removes all algorithms from the allowed list.  If there are no algorithms
 specified then all groupwise encryption algorithms are allowed.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.22.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-clear-groups.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1169,7 +1169,7 @@ specified then all groupwise encryption algorithms are allowed.</p>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wireless_security_get_psk (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.23.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-psk.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1184,7 +1184,7 @@ nm_setting_wireless_security_get_psk (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.23.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-psk.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--psk" title="The “psk” property"><span class="type">“psk”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1195,7 +1195,7 @@ nm_setting_wireless_security_get_psk (<em class="parameter"><code><a class="link
 nm_setting_wireless_security_get_psk_flags
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.24.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-psk-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1210,7 +1210,7 @@ nm_setting_wireless_security_get_psk_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.24.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-psk-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--psk" title="The “psk” property"><span class="type">“psk”</span></a></p>
 </div>
@@ -1222,7 +1222,7 @@ nm_setting_wireless_security_get_psk_flags
 nm_setting_wireless_security_get_leap_username
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.25.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-leap-username.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1237,7 +1237,7 @@ nm_setting_wireless_security_get_leap_username
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.25.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-leap-username.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-username" title="The “leap-username” property"><span class="type">“leap-username”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1248,7 +1248,7 @@ nm_setting_wireless_security_get_leap_username
 nm_setting_wireless_security_get_leap_password
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.26.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-leap-password.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1263,7 +1263,7 @@ nm_setting_wireless_security_get_leap_password
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.26.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-leap-password.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-password" title="The “leap-password” property"><span class="type">“leap-password”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1274,7 +1274,7 @@ nm_setting_wireless_security_get_leap_password
 nm_setting_wireless_security_get_leap_password_flags
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.27.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-leap-password-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1289,7 +1289,7 @@ nm_setting_wireless_security_get_leap_password_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.27.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-leap-password-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the
 <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--leap-password" title="The “leap-password” property"><span class="type">“leap-password”</span></a></p>
 </div>
@@ -1302,7 +1302,7 @@ nm_setting_wireless_security_get_wep_key
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint32</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.28.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-wep-key.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1324,7 +1324,7 @@ nm_setting_wireless_security_get_wep_key
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.28.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-wep-key.returns"></a><h4>Returns</h4>
 <p> the WEP key at the given index</p>
 </div>
 </div>
@@ -1338,7 +1338,7 @@ nm_setting_wireless_security_set_wep_key
                                 <em class="parameter"><code>const <span class="type">char</span> *key</code></em>);</pre>
 <p>Sets a WEP key in the given index.</p>
 <div class="refsect3">
-<a name="id-1.2.7.9.29.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-set-wep-key.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1374,7 +1374,7 @@ property.</p></td>
 nm_setting_wireless_security_get_wep_tx_keyidx
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.30.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-wep-tx-keyidx.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1389,7 +1389,7 @@ nm_setting_wireless_security_get_wep_tx_keyidx
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.30.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-wep-tx-keyidx.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wep-tx-keyidx" title="The “wep-tx-keyidx” property"><span class="type">“wep-tx-keyidx”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1400,7 +1400,7 @@ nm_setting_wireless_security_get_wep_tx_keyidx
 nm_setting_wireless_security_get_auth_alg
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.31.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-auth-alg.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1415,7 +1415,7 @@ nm_setting_wireless_security_get_auth_alg
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.31.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-auth-alg.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--auth-alg" title="The “auth-alg” property"><span class="type">“auth-alg”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1426,7 +1426,7 @@ nm_setting_wireless_security_get_auth_alg
 nm_setting_wireless_security_get_wep_key_flags
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.32.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-wep-key-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1441,7 +1441,7 @@ nm_setting_wireless_security_get_wep_key_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.32.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-wep-key-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html#NMSettingSecretFlags" title="enum NMSettingSecretFlags"><span class="type">NMSettingSecretFlags</span></a> pertaining to the all WEP keys</p>
 </div>
 </div>
@@ -1452,7 +1452,7 @@ nm_setting_wireless_security_get_wep_key_flags
 nm_setting_wireless_security_get_wep_key_type
                                (<em class="parameter"><code><a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.7.9.33.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-security-get-wep-key-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1467,7 +1467,7 @@ nm_setting_wireless_security_get_wep_key_type
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.7.9.33.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-security-get-wep-key-type.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWirelessSecurity.html#NMSettingWirelessSecurity--wep-key-type" title="The “wep-key-type” property"><span class="type">“wep-key-type”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1483,7 +1483,7 @@ nm_setting_wireless_security_get_wep_key_type
 <div class="refsect2">
 <a name="NMSettingWirelessSecurityError"></a><h3>enum NMSettingWirelessSecurityError</h3>
 <div class="refsect3">
-<a name="id-1.2.7.10.3.3"></a><h4>Members</h4>
+<a name="NMSettingWirelessSecurityError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1569,7 +1569,7 @@ ASCII keys are also valid WEP passphrases, but since passphrases and ASCII
 keys are hashed differently to determine the actual WEP key the type must be
 specified.</p>
 <div class="refsect3">
-<a name="id-1.2.7.10.5.4"></a><h4>Members</h4>
+<a name="NMWepKeyType.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1898,6 +1898,6 @@ Linksys WRT54G) number the keys 1 - 4.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

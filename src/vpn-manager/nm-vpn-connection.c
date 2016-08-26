@@ -27,6 +27,8 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <syslog.h>
 
 #include "nm-vpn-connection.h"
 #include "nm-ip4-config.h"
@@ -47,8 +49,6 @@
 #include "nm-dns-manager.h"
 
 #include "nmdbus-vpn-connection.h"
-
-G_DEFINE_TYPE (NMVpnConnection, nm_vpn_connection, NM_TYPE_ACTIVE_CONNECTION)
 
 typedef enum {
 	/* Only system secrets */
@@ -77,6 +77,24 @@ typedef enum {
 	STATE_DISCONNECTED,
 	STATE_FAILED,
 } VpnState;
+
+enum {
+	VPN_STATE_CHANGED,
+	INTERNAL_STATE_CHANGED,
+	INTERNAL_RETRY_AFTER_FAILURE,
+
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
+NM_GOBJECT_PROPERTIES_DEFINE (NMVpnConnection,
+	PROP_VPN_STATE,
+	PROP_BANNER,
+#define PROP_IP4_CONFIG 2000
+#define PROP_IP6_CONFIG 2001
+#define PROP_MASTER     2002
+);
 
 typedef struct {
 	gboolean service_can_persist;
@@ -126,28 +144,44 @@ typedef struct {
 	guint32 mtu;
 } NMVpnConnectionPrivate;
 
-#define NM_VPN_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_VPN_CONNECTION, NMVpnConnectionPrivate))
-
-enum {
-	VPN_STATE_CHANGED,
-	INTERNAL_STATE_CHANGED,
-	INTERNAL_RETRY_AFTER_FAILURE,
-
-	LAST_SIGNAL
+struct _NMVpnConnection {
+	NMActiveConnection parent;
+	NMVpnConnectionPrivate _priv;
 };
 
-static guint signals[LAST_SIGNAL] = { 0 };
+struct _NMVpnConnectionClass {
+	NMActiveConnectionClass parent;
 
-enum {
-	PROP_0,
-	PROP_VPN_STATE,
-	PROP_BANNER,
-	PROP_IP4_CONFIG,
-	PROP_IP6_CONFIG,
-	PROP_MASTER = 2000,
+	/* Signals */
+	void (*vpn_state_changed) (NMVpnConnection *self,
+	                           NMVpnConnectionState new_state,
+	                           NMVpnConnectionStateReason reason);
 
-	LAST_PROP
+	/* not exported over D-Bus */
+	void (*internal_state_changed) (NMVpnConnection *self,
+	                                NMVpnConnectionState new_state,
+	                                NMVpnConnectionState old_state,
+	                                NMVpnConnectionStateReason reason);
+
+	void (*internal_failed_retry)  (NMVpnConnection *self);
 };
+
+G_DEFINE_TYPE (NMVpnConnection, nm_vpn_connection, NM_TYPE_ACTIVE_CONNECTION)
+
+#define NM_VPN_CONNECTION_GET_PRIVATE(self) \
+	({ \
+		/* preserve the const-ness of self. Unfortunately, that
+		 * way, @self cannot be a void pointer */ \
+		typeof (self) _self = (self); \
+		\
+		/* Get compiler error if variable is of wrong type */ \
+		_nm_unused const NMVpnConnection *_self2 = (_self); \
+		\
+		nm_assert (NM_IS_VPN_CONNECTION (_self)); \
+		&_self->_priv; \
+	})
+
+/*****************************************************************************/
 
 static NMSettingsConnection *_get_settings_connection (NMVpnConnection *self,
                                                        gboolean allow_missing);
@@ -493,7 +527,7 @@ _set_vpn_state (NMVpnConnection *self,
 		               new_external_state,
 		               old_external_state,
 		               reason);
-		g_object_notify (G_OBJECT (self), NM_VPN_CONNECTION_VPN_STATE);
+		_notify (self, PROP_VPN_STATE);
 	}
 
 	switch (vpn_state) {
@@ -681,7 +715,7 @@ add_ip4_vpn_gateway_route (NMIP4Config *config, NMDevice *parent_device, guint32
 	if (nm_ip4_config_destination_is_direct (parent_config, vpn_gw, 32))
 		route.gateway = 0;
 
-	route.source = NM_IP_CONFIG_SOURCE_VPN;
+	route.rt_source = NM_IP_CONFIG_SOURCE_VPN;
 	route.metric = route_metric;
 	nm_ip4_config_add_route (config, &route);
 
@@ -693,7 +727,7 @@ add_ip4_vpn_gateway_route (NMIP4Config *config, NMDevice *parent_device, guint32
 	memset (&route, 0, sizeof (route));
 	route.network = parent_gw;
 	route.plen = 32;
-	route.source = NM_IP_CONFIG_SOURCE_VPN;
+	route.rt_source = NM_IP_CONFIG_SOURCE_VPN;
 	route.metric = route_metric;
 
 	nm_ip4_config_add_route (config, &route);
@@ -733,7 +767,7 @@ add_ip6_vpn_gateway_route (NMIP6Config *config,
 	if (nm_ip6_config_destination_is_direct (parent_config, vpn_gw, 128))
 		route.gateway = in6addr_any;
 
-	route.source = NM_IP_CONFIG_SOURCE_VPN;
+	route.rt_source = NM_IP_CONFIG_SOURCE_VPN;
 	route.metric = route_metric;
 	nm_ip6_config_add_route (config, &route);
 
@@ -745,7 +779,7 @@ add_ip6_vpn_gateway_route (NMIP6Config *config,
 	memset (&route, 0, sizeof (route));
 	route.network = *parent_gw;
 	route.plen = 128;
-	route.source = NM_IP_CONFIG_SOURCE_VPN;
+	route.rt_source = NM_IP_CONFIG_SOURCE_VPN;
 	route.metric = route_metric;
 
 	nm_ip6_config_add_route (config, &route);
@@ -1246,7 +1280,7 @@ process_generic_config (NMVpnConnection *self, GVariant *dict)
 	g_clear_pointer (&priv->banner, g_free);
 	if (g_variant_lookup (dict, NM_VPN_PLUGIN_CONFIG_BANNER, "&s", &str)) {
 		priv->banner = g_strdup (str);
-		g_object_notify (G_OBJECT (self), NM_VPN_CONNECTION_BANNER);
+		_notify (self, PROP_BANNER);
 	}
 
 	/* External world-visible address of the VPN server */
@@ -1338,6 +1372,8 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 	const char *str;
 	GVariant *v;
 	gboolean b;
+	guint i, n;
+	int ip_ifindex;
 
 	g_return_if_fail (dict && g_variant_is_of_type (dict, G_VARIANT_TYPE_VARDICT));
 
@@ -1365,7 +1401,11 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 		priv->has_ip6 = FALSE;
 	}
 
-	config = nm_ip4_config_new (nm_vpn_connection_get_ip_ifindex (self, TRUE));
+	ip_ifindex = nm_vpn_connection_get_ip_ifindex (self, TRUE);
+	if (ip_ifindex <= 0)
+		g_return_if_reached ();
+
+	config = nm_ip4_config_new (ip_ifindex);
 	nm_ip4_config_set_dns_priority (config, NM_DNS_PRIORITY_DEFAULT_VPN);
 
 	memset (&address, 0, sizeof (address));
@@ -1389,7 +1429,7 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 		address.plen = u32;
 
 	if (address.address && address.plen && address.plen <= 32) {
-		address.source = NM_IP_CONFIG_SOURCE_VPN;
+		address.addr_source = NM_IP_CONFIG_SOURCE_VPN;
 		nm_ip4_config_add_address (config, &address);
 	} else {
 		_LOGW ("invalid IP4 config received!");
@@ -1424,9 +1464,17 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 
 	route_metric = nm_vpn_connection_get_ip4_route_metric (self);
 
-	if (g_variant_lookup (dict, NM_VPN_PLUGIN_IP4_CONFIG_ROUTES, "aau", &iter)) {
+	if (   g_variant_lookup (dict, NM_VPN_PLUGIN_IP4_CONFIG_PRESERVE_ROUTES, "b", &b)
+	    && b) {
+		if (priv->ip4_config) {
+			n = nm_ip4_config_get_num_routes (priv->ip4_config);
+			for (i = 0; i < n; i++)
+				nm_ip4_config_add_route (config, nm_ip4_config_get_route (priv->ip4_config, i));
+		}
+	} else if (g_variant_lookup (dict, NM_VPN_PLUGIN_IP4_CONFIG_ROUTES, "aau", &iter)) {
 		while (g_variant_iter_next (iter, "@au", &v)) {
 			NMPlatformIP4Route route = { 0, };
+			guint32 plen;
 
 			switch (g_variant_n_children (v)) {
 			case 5:
@@ -1434,14 +1482,15 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 				/* fallthrough */
 			case 4:
 				g_variant_get_child (v, 0, "u", &route.network);
-				g_variant_get_child (v, 1, "u", &route.plen);
+				g_variant_get_child (v, 1, "u", &plen);
 				g_variant_get_child (v, 2, "u", &route.gateway);
 				/* 4th item is unused route metric */
 				route.metric = route_metric;
-				route.source = NM_IP_CONFIG_SOURCE_VPN;
+				route.rt_source = NM_IP_CONFIG_SOURCE_VPN;
 
-				if (route.plen > 32)
+				if (plen > 32 || plen == 0)
 					break;
+				route.plen = plen;
 
 				/* Ignore host routes to the VPN gateway since NM adds one itself
 				 * below.  Since NM knows more about the routing situation than
@@ -1473,7 +1522,7 @@ nm_vpn_connection_ip4_config_get (NMVpnConnection *self, GVariant *dict)
 	} else {
 		priv->ip4_config = config;
 		nm_exported_object_export (NM_EXPORTED_OBJECT (config));
-		g_object_notify (G_OBJECT (self), NM_ACTIVE_CONNECTION_IP4_CONFIG);
+		g_object_notify ((GObject *) self, NM_ACTIVE_CONNECTION_IP4_CONFIG);
 	}
 
 	nm_vpn_connection_config_maybe_complete (self, TRUE);
@@ -1490,6 +1539,8 @@ nm_vpn_connection_ip6_config_get (NMVpnConnection *self, GVariant *dict)
 	const char *str;
 	GVariant *v;
 	gboolean b;
+	guint i, n;
+	int ip_ifindex;
 
 	g_return_if_fail (dict && g_variant_is_of_type (dict, G_VARIANT_TYPE_VARDICT));
 
@@ -1504,7 +1555,11 @@ nm_vpn_connection_ip6_config_get (NMVpnConnection *self, GVariant *dict)
 		return;
 	}
 
-	config = nm_ip6_config_new (priv->ip_ifindex);
+	ip_ifindex = nm_vpn_connection_get_ip_ifindex (self, TRUE);
+	if (ip_ifindex <= 0)
+		g_return_if_reached ();
+
+	config = nm_ip6_config_new (ip_ifindex);
 	nm_ip6_config_set_dns_priority (config, NM_DNS_PRIORITY_DEFAULT_VPN);
 
 	memset (&address, 0, sizeof (address));
@@ -1532,7 +1587,7 @@ nm_vpn_connection_ip6_config_get (NMVpnConnection *self, GVariant *dict)
 		address.plen = u32;
 
 	if (!IN6_IS_ADDR_UNSPECIFIED (&address.address) && address.plen && address.plen <= 128) {
-		address.source = NM_IP_CONFIG_SOURCE_VPN;
+		address.addr_source = NM_IP_CONFIG_SOURCE_VPN;
 		nm_ip6_config_add_address (config, &address);
 	} else {
 		_LOGW ("invalid IP6 config received!");
@@ -1566,7 +1621,14 @@ nm_vpn_connection_ip6_config_get (NMVpnConnection *self, GVariant *dict)
 
 	route_metric = nm_vpn_connection_get_ip6_route_metric (self);
 
-	if (g_variant_lookup (dict, NM_VPN_PLUGIN_IP6_CONFIG_ROUTES, "a(ayuayu)", &iter)) {
+	if (   g_variant_lookup (dict, NM_VPN_PLUGIN_IP6_CONFIG_PRESERVE_ROUTES, "b", &b)
+	    && b) {
+		if (priv->ip6_config) {
+			n = nm_ip6_config_get_num_routes (priv->ip6_config);
+			for (i = 0; i < n; i++)
+				nm_ip6_config_add_route (config, nm_ip6_config_get_route (priv->ip6_config, i));
+		}
+	} else if (g_variant_lookup (dict, NM_VPN_PLUGIN_IP6_CONFIG_ROUTES, "a(ayuayu)", &iter)) {
 		GVariant *dest, *next_hop;
 		guint32 prefix, metric;
 
@@ -1578,13 +1640,13 @@ nm_vpn_connection_ip6_config_get (NMVpnConnection *self, GVariant *dict)
 			if (!ip6_addr_from_variant (dest, &route.network))
 				goto next;
 
-			if (prefix > 128)
+			if (prefix > 128 || prefix == 0)
 				goto next;
 
 			route.plen = prefix;
 			ip6_addr_from_variant (next_hop, &route.gateway);
 			route.metric = route_metric;
-			route.source = NM_IP_CONFIG_SOURCE_VPN;
+			route.rt_source = NM_IP_CONFIG_SOURCE_VPN;
 
 			/* Ignore host routes to the VPN gateway since NM adds one itself.
 			 * Since NM knows more about the routing situation than the VPN
@@ -1615,7 +1677,7 @@ next:
 	} else {
 		priv->ip6_config = config;
 		nm_exported_object_export (NM_EXPORTED_OBJECT (config));
-		g_object_notify (G_OBJECT (self), NM_ACTIVE_CONNECTION_IP6_CONFIG);
+		g_object_notify ((GObject *) self, NM_ACTIVE_CONNECTION_IP6_CONFIG);
 	}
 
 	nm_vpn_connection_config_maybe_complete (self, TRUE);
@@ -1933,6 +1995,41 @@ _daemon_exec_timeout (gpointer data)
 	return G_SOURCE_REMOVE;
 }
 
+static int
+_get_log_level (void)
+{
+	NMLogLevel level;
+
+	/* curiously enough, nm-logging also uses syslog. But it
+	 * maps NMLogLevel differently to the syslog levels then we
+	 * do here.
+	 *
+	 * The reason is, that LOG_NOTICE is already something worth
+	 * highlighting in the journal, but we have 3 levels that are
+	 * lower then LOG_NOTICE (LOGL_TRACE, LOGL_DEBUG, LOGL_INFO),
+	 * On the other hand, syslog only defines LOG_DEBUG and LOG_INFO.
+	 * Thus, we must map them differently.
+	 *
+	 * Inside the VPN plugin, you might want to treat LOG_NOTICE as
+	 * as low severity, not worthy to be highlighted (like NM does). */
+
+	level = nm_logging_get_level (LOGD_VPN_PLUGIN);
+	if (level != _LOGL_OFF) {
+		if (level <= LOGL_TRACE)
+			return LOG_DEBUG;
+		if (level <= LOGL_DEBUG)
+			return LOG_INFO;
+		if (level <= LOGL_INFO)
+			return LOG_NOTICE;
+		if (level <= LOGL_WARN)
+			return LOG_WARNING;
+		if (level <= LOGL_ERR)
+			return LOG_ERR;
+	}
+
+	return LOG_EMERG;
+}
+
 static gboolean
 nm_vpn_service_daemon_exec (NMVpnConnection *self, GError **error)
 {
@@ -1941,20 +2038,50 @@ nm_vpn_service_daemon_exec (NMVpnConnection *self, GError **error)
 	char *vpn_argv[4];
 	gboolean success = FALSE;
 	GError *spawn_error = NULL;
-	int i = 0;
+	guint i, j, n_environ;
+	gs_free char **envp = NULL;
+	char env_log_level[NM_STRLEN ("NM_VPN_LOG_LEVEL=") + 100];
+	char env_log_syslog[NM_STRLEN ("NM_VPN_LOG_SYSLOG=") + 10];
+	const int N_ENVIRON_EXTRA = 3;
+	char **p_environ;
 
 	g_return_val_if_fail (NM_IS_VPN_CONNECTION (self), FALSE);
+
 	priv = NM_VPN_CONNECTION_GET_PRIVATE (self);
 
+	i = 0;
 	vpn_argv[i++] = (char *) nm_vpn_plugin_info_get_program (priv->plugin_info);
+	g_return_val_if_fail (vpn_argv[0], FALSE);
 	if (nm_vpn_plugin_info_supports_multiple (priv->plugin_info)) {
 		vpn_argv[i++] = "--bus-name";
 		vpn_argv[i++] = priv->bus_name;
 	}
-	vpn_argv[i] = NULL;
-	g_assert (vpn_argv[0]);
+	vpn_argv[i++] = NULL;
 
-	success = g_spawn_async (NULL, vpn_argv, NULL, 0, nm_utils_setpgid, NULL, &pid, &spawn_error);
+	/* we include <unistd.h> and "config.h" defines _GNU_SOURCE for us. So, we have @environ. */
+	p_environ = environ;
+	n_environ = p_environ ? g_strv_length (p_environ) : 0;
+	envp = g_new (char *, n_environ + N_ENVIRON_EXTRA);
+	for (i = 0, j = 0; j < n_environ; j++) {
+		if (   g_str_has_prefix (p_environ[j], "NM_VPN_LOG_LEVEL=")
+		    || g_str_has_prefix (p_environ[j], "NM_VPN_LOG_SYSLOG="))
+			continue;
+		envp[i++] = p_environ[j];
+	}
+
+	/* NM_VPN_LOG_LEVEL: the syslog logging level for the plugin. */
+	envp[i++] = nm_sprintf_buf (env_log_level,  "NM_VPN_LOG_LEVEL=%d", _get_log_level ());
+
+	/* NM_VPN_LOG_SYSLOG: whether to log to stdout or syslog. If NetworkManager itself runs in
+	 * foreground, we also want the plugin to log to stdout.
+	 * If the plugin runs in background, the plugin should prefer logging to syslog. Otherwise
+	 * logging messages will be lost (unless using journald, in which case it wouldn't matter). */
+	envp[i++] = nm_sprintf_buf (env_log_syslog, "NM_VPN_LOG_SYSLOG=%c", nm_logging_syslog_enabled () ? '1' : '0');
+
+	envp[i++] = NULL;
+	nm_assert (i <= n_environ + N_ENVIRON_EXTRA);
+
+	success = g_spawn_async (NULL, vpn_argv, envp, 0, nm_utils_setpgid, NULL, &pid, &spawn_error);
 
 	if (success) {
 		_LOGI ("Started the VPN service, PID %ld", (long int) pid);
@@ -2030,10 +2157,8 @@ nm_vpn_connection_activate (NMVpnConnection *self,
 	s_vpn = nm_connection_get_setting_vpn (_get_applied_connection (self));
 	g_return_if_fail (s_vpn);
 
-	service = nm_vpn_plugin_info_lookup_property (plugin_info,
-	                                              NM_VPN_PLUGIN_INFO_KF_GROUP_CONNECTION,
-	                                              "service");
-	g_return_if_fail (service);
+	service = nm_vpn_plugin_info_get_service (plugin_info);
+	nm_assert (service);
 
 	if (nm_vpn_plugin_info_supports_multiple (plugin_info)) {
 		const char *path;
@@ -2421,7 +2546,7 @@ device_changed (NMActiveConnection *active,
                 NMDevice *new_device,
                 NMDevice *old_device)
 {
-	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (active);
+	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE ((NMVpnConnection *) active);
 
 	if (!_service_and_connection_can_persist (NM_VPN_CONNECTION (active)))
 		return;
@@ -2494,7 +2619,7 @@ dispose (GObject *object)
 static void
 finalize (GObject *object)
 {
-	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (object);
+	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE ((NMVpnConnection *) object);
 
 	g_free (priv->banner);
 	g_free (priv->ip_iface);
@@ -2515,7 +2640,7 @@ static void
 get_property (GObject *object, guint prop_id,
               GValue *value, GParamSpec *pspec)
 {
-	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE (object);
+	NMVpnConnectionPrivate *priv = NM_VPN_CONNECTION_GET_PRIVATE ((NMVpnConnection *) object);
 	NMDevice *parent_dev;
 
 	switch (prop_id) {
@@ -2547,8 +2672,6 @@ nm_vpn_connection_class_init (NMVpnConnectionClass *connection_class)
 	GObjectClass *object_class = G_OBJECT_CLASS (connection_class);
 	NMActiveConnectionClass *active_class = NM_ACTIVE_CONNECTION_CLASS (connection_class);
 
-	g_type_class_add_private (connection_class, sizeof (NMVpnConnectionPrivate));
-
 	/* virtual methods */
 	object_class->get_property = get_property;
 	object_class->dispose = dispose;
@@ -2556,51 +2679,49 @@ nm_vpn_connection_class_init (NMVpnConnectionClass *connection_class)
 	active_class->device_state_changed = device_state_changed;
 	active_class->device_changed = device_changed;
 
-	g_object_class_override_property (object_class, PROP_MASTER, NM_ACTIVE_CONNECTION_MASTER);
+	obj_properties[PROP_VPN_STATE] =
+	    g_param_spec_uint (NM_VPN_CONNECTION_VPN_STATE, "", "",
+	                       NM_VPN_CONNECTION_STATE_UNKNOWN,
+	                       NM_VPN_CONNECTION_STATE_DISCONNECTED,
+	                       NM_VPN_CONNECTION_STATE_UNKNOWN,
+	                       G_PARAM_READABLE |
+	                       G_PARAM_STATIC_STRINGS);
 
-	/* properties */
-	g_object_class_install_property
-		(object_class, PROP_VPN_STATE,
-		 g_param_spec_uint (NM_VPN_CONNECTION_VPN_STATE, "", "",
-		                    NM_VPN_CONNECTION_STATE_UNKNOWN,
-		                    NM_VPN_CONNECTION_STATE_DISCONNECTED,
-		                    NM_VPN_CONNECTION_STATE_UNKNOWN,
-		                    G_PARAM_READABLE |
-		                    G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_BANNER] =
+	    g_param_spec_string (NM_VPN_CONNECTION_BANNER, "", "",
+	                         NULL,
+	                         G_PARAM_READABLE |
+	                         G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-		(object_class, PROP_BANNER,
-		 g_param_spec_string (NM_VPN_CONNECTION_BANNER, "", "",
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS));
+	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
+	g_object_class_override_property (object_class, PROP_MASTER,
+	                                  NM_ACTIVE_CONNECTION_MASTER);
 	g_object_class_override_property (object_class, PROP_IP4_CONFIG,
 	                                  NM_ACTIVE_CONNECTION_IP4_CONFIG);
 	g_object_class_override_property (object_class, PROP_IP6_CONFIG,
 	                                  NM_ACTIVE_CONNECTION_IP6_CONFIG);
 
-	/* signals */
 	signals[VPN_STATE_CHANGED] =
-		g_signal_new ("vpn-state-changed",
-		              G_OBJECT_CLASS_TYPE (object_class),
-		              G_SIGNAL_RUN_FIRST,
-		              0, NULL, NULL, NULL,
-		              G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
+	    g_signal_new ("vpn-state-changed",
+	                  G_OBJECT_CLASS_TYPE (object_class),
+	                  G_SIGNAL_RUN_FIRST,
+	                  0, NULL, NULL, NULL,
+	                  G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 
 	signals[INTERNAL_STATE_CHANGED] =
-		g_signal_new (NM_VPN_CONNECTION_INTERNAL_STATE_CHANGED,
-		              G_OBJECT_CLASS_TYPE (object_class),
-		              G_SIGNAL_RUN_FIRST,
-		              0, NULL, NULL, NULL,
-		              G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
+	    g_signal_new (NM_VPN_CONNECTION_INTERNAL_STATE_CHANGED,
+	                  G_OBJECT_CLASS_TYPE (object_class),
+	                  G_SIGNAL_RUN_FIRST,
+	                  0, NULL, NULL, NULL,
+	                  G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 
 	signals[INTERNAL_RETRY_AFTER_FAILURE] =
-		g_signal_new (NM_VPN_CONNECTION_INTERNAL_RETRY_AFTER_FAILURE,
-		              G_OBJECT_CLASS_TYPE (object_class),
-		              G_SIGNAL_RUN_FIRST,
-		              0, NULL, NULL, NULL,
-		              G_TYPE_NONE, 0);
+	    g_signal_new (NM_VPN_CONNECTION_INTERNAL_RETRY_AFTER_FAILURE,
+	                  G_OBJECT_CLASS_TYPE (object_class),
+	                  G_SIGNAL_RUN_FIRST,
+	                  0, NULL, NULL, NULL,
+	                  G_TYPE_NONE, 0);
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (connection_class),
 	                                        NMDBUS_TYPE_VPN_CONNECTION_SKELETON,

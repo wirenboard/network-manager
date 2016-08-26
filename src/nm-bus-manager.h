@@ -22,8 +22,6 @@
 #ifndef __NM_BUS_MANAGER_H__
 #define __NM_BUS_MANAGER_H__
 
-G_BEGIN_DECLS
-
 #define NM_TYPE_BUS_MANAGER (nm_bus_manager_get_type ())
 #define NM_BUS_MANAGER(o) (G_TYPE_CHECK_INSTANCE_CAST ((o), NM_TYPE_BUS_MANAGER, NMBusManager))
 #define NM_BUS_MANAGER_CLASS(k) (G_TYPE_CHECK_CLASS_CAST((k), NM_TYPE_BUS_MANAGER, NMBusManagerClass))
@@ -68,6 +66,12 @@ gboolean nm_bus_manager_get_caller_info (NMBusManager *self,
                                          gulong *out_uid,
                                          gulong *out_pid);
 
+gboolean nm_bus_manager_ensure_uid (NMBusManager          *self,
+                                    GDBusMethodInvocation *context,
+                                    gulong uid,
+                                    GQuark error_domain,
+                                    int error_code);
+
 const char *nm_bus_manager_connection_get_private_name (NMBusManager *self,
                                                         GDBusConnection *connection);
 
@@ -101,7 +105,5 @@ GDBusProxy *nm_bus_manager_new_proxy (NMBusManager *self,
                                       const char *name,
                                       const char *path,
                                       const char *iface);
-
-G_END_DECLS
 
 #endif /* __NM_BUS_MANAGER_H__ */

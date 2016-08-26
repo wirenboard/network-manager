@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingConnection.html" title="NMSettingConnection">
 <link rel="next" href="NMSettingWireless.html" title="NMSettingWireless">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -394,7 +394,7 @@ necessary for connection to Ethernet networks.</p>
 nm_setting_wired_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> errors.</p>
 </div>
 </div>
@@ -405,7 +405,7 @@ nm_setting_wired_error_quark (<em class="parameter"><code><span class="type">voi
 nm_setting_wired_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -416,7 +416,7 @@ nm_setting_wired_new (<em class="parameter"><code><span class="type">void</span>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wired_get_port (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-port.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -431,7 +431,7 @@ nm_setting_wired_get_port (<em class="parameter"><code><a class="link" href="NMS
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-port.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--port" title="The “port” property"><span class="type">“port”</span></a> property of the setting</p>
 </div>
 </div>
@@ -441,7 +441,7 @@ nm_setting_wired_get_port (<em class="parameter"><code><a class="link" href="NMS
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wired_get_speed (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.5.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-speed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -456,7 +456,7 @@ nm_setting_wired_get_speed (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.5.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-speed.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--speed" title="The “speed” property"><span class="type">“speed”</span></a> property of the setting</p>
 </div>
 </div>
@@ -466,7 +466,7 @@ nm_setting_wired_get_speed (<em class="parameter"><code><a class="link" href="NM
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wired_get_duplex (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.6.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-duplex.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -481,7 +481,7 @@ nm_setting_wired_get_duplex (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.6.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-duplex.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--duplex" title="The “duplex” property"><span class="type">“duplex”</span></a> property of the setting</p>
 </div>
 </div>
@@ -491,7 +491,7 @@ nm_setting_wired_get_duplex (<em class="parameter"><code><a class="link" href="N
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_wired_get_auto_negotiate (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.7.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-auto-negotiate.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -506,7 +506,7 @@ nm_setting_wired_get_auto_negotiate (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.7.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-auto-negotiate.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--auto-negotiate" title="The “auto-negotiate” property"><span class="type">“auto-negotiate”</span></a> property of the setting</p>
 </div>
 </div>
@@ -516,7 +516,7 @@ nm_setting_wired_get_auto_negotiate (<em class="parameter"><code><a class="link"
 <pre class="programlisting">const <span class="returnvalue">GByteArray</span> *
 nm_setting_wired_get_mac_address (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.8.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-mac-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -531,7 +531,7 @@ nm_setting_wired_get_mac_address (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.8.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-mac-address.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--mac-address" title="The “mac-address” property"><span class="type">“mac-address”</span></a> property of the setting</p>
 </div>
 </div>
@@ -542,7 +542,7 @@ nm_setting_wired_get_mac_address (<em class="parameter"><code><a class="link" hr
 nm_setting_wired_get_cloned_mac_address
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.9.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-cloned-mac-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -557,7 +557,7 @@ nm_setting_wired_get_cloned_mac_address
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.9.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-cloned-mac-address.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--cloned-mac-address" title="The “cloned-mac-address” property"><span class="type">“cloned-mac-address”</span></a> property of the setting</p>
 </div>
 </div>
@@ -568,7 +568,7 @@ nm_setting_wired_get_cloned_mac_address
 nm_setting_wired_get_mac_address_blacklist
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.10.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-mac-address-blacklist.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -583,7 +583,7 @@ nm_setting_wired_get_mac_address_blacklist
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.10.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-mac-address-blacklist.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--mac-address-blacklist" title="The “mac-address-blacklist” property"><span class="type">“mac-address-blacklist”</span></a>
 property of the setting. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> GLib.ByteArray]</span></p>
@@ -596,7 +596,7 @@ property of the setting. </p>
 nm_setting_wired_get_num_mac_blacklist_items
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.11.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-num-mac-blacklist-items.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -611,7 +611,7 @@ nm_setting_wired_get_num_mac_blacklist_items
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.11.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-num-mac-blacklist-items.returns"></a><h4>Returns</h4>
 <p> the number of blacklisted MAC addresses</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -624,7 +624,7 @@ nm_setting_wired_get_mac_blacklist_item
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint32</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.12.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-mac-blacklist-item.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -646,7 +646,7 @@ nm_setting_wired_get_mac_blacklist_item
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.12.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-mac-blacklist-item.returns"></a><h4>Returns</h4>
 <p> the blacklisted MAC address string (hex-digits-and-colons notation)
 at index <em class="parameter"><code>idx</code></em>
 </p>
@@ -662,7 +662,7 @@ nm_setting_wired_add_mac_blacklist_item
                                 <em class="parameter"><code>const <span class="type">char</span> *mac</code></em>);</pre>
 <p>Adds a new MAC address to the <a class="link" href="NMSettingWired.html#NMSettingWired--mac-address-blacklist" title="The “mac-address-blacklist” property"><span class="type">“mac-address-blacklist”</span></a> property.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.13.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-add-mac-blacklist-item.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -684,7 +684,7 @@ nm_setting_wired_add_mac_blacklist_item
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.13.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-add-mac-blacklist-item.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the MAC address was added; <code class="literal">FALSE</code> if the MAC address
 is invalid or was already present</p>
 </div>
@@ -700,7 +700,7 @@ nm_setting_wired_remove_mac_blacklist_item
 <p>Removes the MAC address at index <em class="parameter"><code>idx</code></em>
  from the blacklist.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.14.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-remove-mac-blacklist-item.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -733,7 +733,7 @@ nm_setting_wired_remove_mac_blacklist_item_by_value
 <p>Removes the MAC address <em class="parameter"><code>mac</code></em>
  from the blacklist.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.15.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-remove-mac-blacklist-item-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -756,7 +756,7 @@ the blacklist</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.15.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-remove-mac-blacklist-item-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the MAC address was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -769,7 +769,7 @@ nm_setting_wired_clear_mac_blacklist_items
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <p>Removes all blacklisted MAC addresses.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-clear-mac-blacklist-items.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -791,7 +791,7 @@ nm_setting_wired_clear_mac_blacklist_items
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wired_get_mtu (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.5.9.17.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-mtu.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -806,7 +806,7 @@ nm_setting_wired_get_mtu (<em class="parameter"><code><a class="link" href="NMSe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.17.5"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-mtu.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWired.html#NMSettingWired--mtu" title="The “mtu” property"><span class="type">“mtu”</span></a> property of the setting</p>
 </div>
 </div>
@@ -819,7 +819,7 @@ nm_setting_wired_get_s390_subchannels (<em class="parameter"><code><a class="lin
 connection is applicable to.  The connection should only be used in
 conjunction with that device.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-s390-subchannels.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -834,7 +834,7 @@ conjunction with that device.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.18.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-s390-subchannels.returns"></a><h4>Returns</h4>
 <p> <span class="type">GPtrArray</span> of strings, each specifying one
 subchannel the s390 device uses to communicate to the host. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8]</span></p>
@@ -848,7 +848,7 @@ nm_setting_wired_get_s390_nettype (<em class="parameter"><code><a class="link" h
 <p>Returns the s390 device type this connection should apply to.  Will be one
 of 'qeth', 'lcs', or 'ctc'.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.19.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-s390-nettype.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -863,7 +863,7 @@ of 'qeth', 'lcs', or 'ctc'.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.19.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-s390-nettype.returns"></a><h4>Returns</h4>
 <p> the s390 device type</p>
 </div>
 </div>
@@ -876,7 +876,7 @@ nm_setting_wired_get_num_s390_options (<em class="parameter"><code><a class="lin
 device when it is activated.  This can be used to retrieve each s390
 option individually using <a class="link" href="NMSettingWired.html#nm-setting-wired-get-s390-option" title="nm_setting_wired_get_s390_option ()"><code class="function">nm_setting_wired_get_s390_option()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.20.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-num-s390-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -891,7 +891,7 @@ option individually using <a class="link" href="NMSettingWired.html#nm-setting-w
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.20.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-num-s390-options.returns"></a><h4>Returns</h4>
 <p> the number of s390-specific device options</p>
 </div>
 </div>
@@ -909,7 +909,7 @@ are *not* guaranteed to be static across modifications to options done by
 and should not be used to refer to options except for short periods of time
 such as during option iteration.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.21.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-s390-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -944,7 +944,7 @@ option; this value is owned by the setting and should not be modified. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.21.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-s390-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success if the index was valid and an option was found,
 <code class="literal">FALSE</code> if the index was invalid (ie, greater than the number of options
 currently held by the setting)</p>
@@ -961,7 +961,7 @@ nm_setting_wired_get_s390_option_by_key
 <em class="parameter"><code>key</code></em>
 , if it exists.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.22.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-s390-option-by-key.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -983,7 +983,7 @@ nm_setting_wired_get_s390_option_by_key
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.22.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-s390-option-by-key.returns"></a><h4>Returns</h4>
 <p> the value, or <code class="literal">NULL</code> if the key/value pair was never added to the
 setting; the value is owned by the setting and must not be modified</p>
 </div>
@@ -1000,7 +1000,7 @@ of allowed options.  Key names may contain only alphanumeric characters
 (ie [a-zA-Z0-9]).  Adding a new key replaces any existing key/value pair that
 may already exist.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.23.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-add-s390-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1027,7 +1027,7 @@ may already exist.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.23.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-add-s390-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the option was valid and was added to the internal option
 list, <code class="literal">FALSE</code> if it was not.</p>
 </div>
@@ -1042,7 +1042,7 @@ nm_setting_wired_remove_s390_option (<em class="parameter"><code><a class="link"
  from the internal option
 list.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.24.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-remove-s390-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1064,7 +1064,7 @@ list.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.24.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-remove-s390-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the option was found and removed from the internal option
 list, <code class="literal">FALSE</code> if it was not.</p>
 </div>
@@ -1077,7 +1077,7 @@ nm_setting_wired_get_valid_s390_options
                                (<em class="parameter"><code><a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> *setting</code></em>);</pre>
 <p>Returns a list of valid s390 options.</p>
 <div class="refsect3">
-<a name="id-1.2.5.9.25.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wired-get-valid-s390-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1092,7 +1092,7 @@ nm_setting_wired_get_valid_s390_options
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.5.9.25.6"></a><h4>Returns</h4>
+<a name="nm-setting-wired-get-valid-s390-options.returns"></a><h4>Returns</h4>
 <p> a <code class="literal">NULL</code>-terminated array of strings of valid s390 options. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1110,7 +1110,7 @@ nm_setting_wired_get_valid_s390_options
 <div class="refsect2">
 <a name="NMSettingWiredError"></a><h3>enum NMSettingWiredError</h3>
 <div class="refsect3">
-<a name="id-1.2.5.10.3.3"></a><h4>Members</h4>
+<a name="NMSettingWiredError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1328,6 +1328,6 @@ Mbit/s, ie 100 == 100Mbit/s.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

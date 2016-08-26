@@ -47,6 +47,7 @@
         <sub name="org.freedesktop.NetworkManager.IP6Config" link="gdbus-org.freedesktop.NetworkManager.IP6Config.html"/>
         <sub name="org.freedesktop.NetworkManager.VPN.Plugin" link="gdbus-org.freedesktop.NetworkManager.VPN.Plugin.html"/>
         <sub name="org.freedesktop.NetworkManager.SecretAgent" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html"/>
+        <sub name="org.freedesktop.NetworkManager.Device.Statistics" link="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html"/>
       </sub>
       <sub name="Types" link="dbus-types.html">
         <sub name="NetworkManager D-Bus API Types" link="nm-dbus-types.html"/>
@@ -75,6 +76,9 @@
     <keyword type="method" name="The GetLogging() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.GetLogging"/>
     <keyword type="method" name="The CheckConnectivity() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckConnectivity"/>
     <keyword type="method" name="The state() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.state"/>
+    <keyword type="method" name="The CheckpointCreate() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckpointCreate"/>
+    <keyword type="method" name="The CheckpointDestroy() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckpointDestroy"/>
+    <keyword type="method" name="The CheckpointRollback() method" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckpointRollback"/>
     <keyword type="signal" name="The &quot;CheckPermissions&quot; signal" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-signal-org-freedesktop-NetworkManager.CheckPermissions"/>
     <keyword type="signal" name="The &quot;StateChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-signal-org-freedesktop-NetworkManager.StateChanged"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.html#gdbus-signal-org-freedesktop-NetworkManager.PropertiesChanged"/>
@@ -246,6 +250,7 @@
     <keyword type="property" name="The &quot;HwAddress&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.HwAddress"/>
     <keyword type="property" name="The &quot;Carrier&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.Carrier"/>
     <keyword type="property" name="The &quot;Slaves&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.Slaves"/>
+    <keyword type="property" name="The &quot;Config&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.Config"/>
     <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.Tun.html#gdbus-signal-org-freedesktop-NetworkManager-Device-Tun.PropertiesChanged"/>
     <keyword type="property" name="The &quot;Owner&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Tun.html#gdbus-property-org-freedesktop-NetworkManager-Device-Tun.Owner"/>
     <keyword type="property" name="The &quot;Group&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Tun.html#gdbus-property-org-freedesktop-NetworkManager-Device-Tun.Group"/>
@@ -352,6 +357,10 @@
     <keyword type="method" name="The CancelGetSecrets() method" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html#gdbus-method-org-freedesktop-NetworkManager-SecretAgent.CancelGetSecrets"/>
     <keyword type="method" name="The SaveSecrets() method" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html#gdbus-method-org-freedesktop-NetworkManager-SecretAgent.SaveSecrets"/>
     <keyword type="method" name="The DeleteSecrets() method" link="gdbus-org.freedesktop.NetworkManager.SecretAgent.html#gdbus-method-org-freedesktop-NetworkManager-SecretAgent.DeleteSecrets"/>
+    <keyword type="signal" name="The &quot;PropertiesChanged&quot; signal" link="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-signal-org-freedesktop-NetworkManager-Device-Statistics.PropertiesChanged"/>
+    <keyword type="property" name="The &quot;RefreshRateMs&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-property-org-freedesktop-NetworkManager-Device-Statistics.RefreshRateMs"/>
+    <keyword type="property" name="The &quot;TxBytes&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-property-org-freedesktop-NetworkManager-Device-Statistics.TxBytes"/>
+    <keyword type="property" name="The &quot;RxBytes&quot; property" link="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-property-org-freedesktop-NetworkManager-Device-Statistics.RxBytes"/>
     <keyword type="enum" name="enum NMState" link="nm-dbus-types.html#NMState"/>
     <keyword type="enum" name="enum NMConnectivityState" link="nm-dbus-types.html#NMConnectivityState"/>
     <keyword type="enum" name="enum NMDeviceType" link="nm-dbus-types.html#NMDeviceType"/>
@@ -370,6 +379,8 @@
     <keyword type="enum" name="enum NMSecretAgentGetSecretsFlags" link="nm-dbus-types.html#NMSecretAgentGetSecretsFlags"/>
     <keyword type="enum" name="enum NMSecretAgentCapabilities" link="nm-dbus-types.html#NMSecretAgentCapabilities"/>
     <keyword type="enum" name="enum NMIPTunnelMode" link="nm-dbus-types.html#NMIPTunnelMode"/>
+    <keyword type="enum" name="enum NMCheckpointCreateFlags" link="nm-dbus-types.html#NMCheckpointCreateFlags"/>
+    <keyword type="enum" name="enum NMRollbackResult" link="nm-dbus-types.html#NMRollbackResult"/>
     <keyword type="enum" name="enum NMVpnServiceState" link="nm-vpn-dbus-types.html#NMVpnServiceState"/>
     <keyword type="enum" name="enum NMVpnConnectionState" link="nm-vpn-dbus-types.html#NMVpnConnectionState"/>
     <keyword type="enum" name="enum NMVpnConnectionStateReason" link="nm-vpn-dbus-types.html#NMVpnConnectionStateReason"/>
@@ -557,6 +568,12 @@
     <keyword type="constant" name="NM_IP_TUNNEL_MODE_IPIP6" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.20.4.2.1.4.8.1.1id-1.3.4.2.20.4.2.1.4.8.1.2"/>
     <keyword type="constant" name="NM_IP_TUNNEL_MODE_IP6GRE" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.20.4.2.1.4.9.1.1id-1.3.4.2.20.4.2.1.4.9.1.2"/>
     <keyword type="constant" name="NM_IP_TUNNEL_MODE_VTI6" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.20.4.2.1.4.10.1.1id-1.3.4.2.20.4.2.1.4.10.1.2"/>
+    <keyword type="constant" name="NM_CHECKPOINT_CREATE_FLAG_NONE" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.21.4.2.1.4.1.1.1id-1.3.4.2.21.4.2.1.4.1.1.2"/>
+    <keyword type="constant" name="NM_CHECKPOINT_CREATE_FLAG_DESTROY_ALL" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.21.4.2.1.4.2.1.1id-1.3.4.2.21.4.2.1.4.2.1.2"/>
+    <keyword type="constant" name="NM_ROLLBACK_RESULT_OK" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.22.4.2.1.4.1.1.1id-1.3.4.2.22.4.2.1.4.1.1.2"/>
+    <keyword type="constant" name="NM_ROLLBACK_RESULT_ERR_NO_DEVICE" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.22.4.2.1.4.2.1.1id-1.3.4.2.22.4.2.1.4.2.1.2"/>
+    <keyword type="constant" name="NM_ROLLBACK_RESULT_ERR_DEVICE_UNMANAGED" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.22.4.2.1.4.3.1.1id-1.3.4.2.22.4.2.1.4.3.1.2"/>
+    <keyword type="constant" name="NM_ROLLBACK_RESULT_ERR_FAILED" link="nm-dbus-types.htmlnm-dbus-types.html#id-1.3.4.2.22.4.2.1.4.4.1.1id-1.3.4.2.22.4.2.1.4.4.1.2"/>
     <keyword type="constant" name="NM_VPN_SERVICE_STATE_UNKNOWN" link="nm-vpn-dbus-types.htmlnm-vpn-dbus-types.html#id-1.3.4.3.3.4.2.1.4.1.1.1id-1.3.4.3.3.4.2.1.4.1.1.2"/>
     <keyword type="constant" name="NM_VPN_SERVICE_STATE_INIT" link="nm-vpn-dbus-types.htmlnm-vpn-dbus-types.html#id-1.3.4.3.3.4.2.1.4.2.1.1id-1.3.4.3.3.4.2.1.4.2.1.2"/>
     <keyword type="constant" name="NM_VPN_SERVICE_STATE_SHUTDOWN" link="nm-vpn-dbus-types.htmlnm-vpn-dbus-types.html#id-1.3.4.3.3.4.2.1.4.3.1.1id-1.3.4.3.3.4.2.1.4.3.1.2"/>

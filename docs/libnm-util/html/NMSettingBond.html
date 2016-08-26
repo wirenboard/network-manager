@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingWimax.html" title="NMSettingWimax">
 <link rel="next" href="NMSettingBridge.html" title="NMSettingBridge">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -269,7 +269,7 @@ necessary for bond connections.</p>
 nm_setting_bond_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-bond-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> errors.</p>
 </div>
 </div>
@@ -280,7 +280,7 @@ nm_setting_bond_error_quark (<em class="parameter"><code><span class="type">void
 nm_setting_bond_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-bond-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -291,7 +291,7 @@ nm_setting_bond_new (<em class="parameter"><code><span class="type">void</span><
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_bond_get_interface_name (<em class="parameter"><code><a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.13.9.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-get-interface-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -306,7 +306,7 @@ nm_setting_bond_get_interface_name (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-bond-get-interface-name.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingBond.html#NMSettingBond--interface-name" title="The “interface-name” property"><span class="type">“interface-name”</span></a> property of the setting</p>
 </div>
 </div>
@@ -319,7 +319,7 @@ nm_setting_bond_get_num_options (<em class="parameter"><code><a class="link" hre
 is activated. This can be used to retrieve each option individually
 using <a class="link" href="NMSettingBond.html#nm-setting-bond-get-option" title="nm_setting_bond_get_option ()"><code class="function">nm_setting_bond_get_option()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.5.5"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-get-num-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -334,7 +334,7 @@ using <a class="link" href="NMSettingBond.html#nm-setting-bond-get-option" title
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.5.6"></a><h4>Returns</h4>
+<a name="nm-setting-bond-get-num-options.returns"></a><h4>Returns</h4>
 <p> the number of bonding options</p>
 </div>
 </div>
@@ -352,7 +352,7 @@ are *not* guaranteed to be static across modifications to options done by
 and should not be used to refer to options except for short periods of time
 such as during option iteration.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.6.5"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-get-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -387,7 +387,7 @@ option; this value is owned by the setting and should not be modified. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.6.6"></a><h4>Returns</h4>
+<a name="nm-setting-bond-get-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success if the index was valid and an option was found,
 <code class="literal">FALSE</code> if the index was invalid (ie, greater than the number of options
 currently held by the setting)</p>
@@ -403,7 +403,7 @@ nm_setting_bond_get_option_by_name (<em class="parameter"><code><a class="link" 
 <em class="parameter"><code>name</code></em>
 , if it exists.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.7.5"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-get-option-by-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -425,7 +425,7 @@ nm_setting_bond_get_option_by_name (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.7.6"></a><h4>Returns</h4>
+<a name="nm-setting-bond-get-option-by-name.returns"></a><h4>Returns</h4>
 <p> the value, or <code class="literal">NULL</code> if the key/value pair was never added to the
 setting; the value is owned by the setting and must not be modified</p>
 </div>
@@ -444,7 +444,7 @@ that may already exist.</p>
 <p>The order of how to set several options is relevant because there are options
 that conflict with each other.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.8.6"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-add-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -471,7 +471,7 @@ that conflict with each other.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.8.7"></a><h4>Returns</h4>
+<a name="nm-setting-bond-add-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the option was valid and was added to the internal option
 list, <code class="literal">FALSE</code> if it was not.</p>
 </div>
@@ -486,7 +486,7 @@ nm_setting_bond_remove_option (<em class="parameter"><code><a class="link" href=
  from the internal option
 list.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.9.5"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-remove-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -508,7 +508,7 @@ list.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.9.6"></a><h4>Returns</h4>
+<a name="nm-setting-bond-remove-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the option was found and removed from the internal option
 list, <code class="literal">FALSE</code> if it was not.</p>
 </div>
@@ -526,7 +526,7 @@ the <em class="parameter"><code>name</code></em>
 . If <em class="parameter"><code>value</code></em>
  is <code class="literal">NULL</code>, the function only validates the option name.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.10.5"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-validate-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -548,7 +548,7 @@ the <em class="parameter"><code>name</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.10.6"></a><h4>Returns</h4>
+<a name="nm-setting-bond-validate-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code>, if the <em class="parameter"><code>value</code></em>
 is valid for the given name.
 If the <em class="parameter"><code>name</code></em>
@@ -563,7 +563,7 @@ is not a valid option, <code class="literal">FALSE</code> will be returned.</p>
 nm_setting_bond_get_valid_options (<em class="parameter"><code><a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> *setting</code></em>);</pre>
 <p>Returns a list of valid bond options.</p>
 <div class="refsect3">
-<a name="id-1.2.13.9.11.5"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-get-valid-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -578,7 +578,7 @@ nm_setting_bond_get_valid_options (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.11.6"></a><h4>Returns</h4>
+<a name="nm-setting-bond-get-valid-options.returns"></a><h4>Returns</h4>
 <p> a <code class="literal">NULL</code>-terminated array of strings of valid bond options. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -590,7 +590,7 @@ nm_setting_bond_get_valid_options (<em class="parameter"><code><a class="link" h
 nm_setting_bond_get_option_default (<em class="parameter"><code><a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> *setting</code></em>,
                                     <em class="parameter"><code>const <span class="type">char</span> *name</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.13.9.12.4"></a><h4>Parameters</h4>
+<a name="nm-setting-bond-get-option-default.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -612,7 +612,7 @@ nm_setting_bond_get_option_default (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.13.9.12.5"></a><h4>Returns</h4>
+<a name="nm-setting-bond-get-option-default.returns"></a><h4>Returns</h4>
 <p> the value of the bond option if not overridden by an entry in
 the <a class="link" href="NMSettingBond.html#NMSettingBond--options" title="The “options” property"><span class="type">“options”</span></a> property.</p>
 </div>
@@ -629,7 +629,7 @@ the <a class="link" href="NMSettingBond.html#NMSettingBond--options" title="The 
 <div class="refsect2">
 <a name="NMSettingBondError"></a><h3>enum NMSettingBondError</h3>
 <div class="refsect3">
-<a name="id-1.2.13.10.3.3"></a><h4>Members</h4>
+<a name="NMSettingBondError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -654,20 +654,24 @@ the <a class="link" href="NMSettingBond.html#NMSettingBond--options" title="The 
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-BOND-ERROR-MISSING-PROPERTY:CAPS"></a>NM_SETTING_BOND_ERROR_MISSING_PROPERTY</p></td>
 <td class="enum_member_description">
-<p>the property was missing and is
-required</p>
+<p>the property was missing and is</p>
 </td>
 <td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-BOND-ERROR-INVALID-OPTION:CAPS"></a>NM_SETTING_BOND_ERROR_INVALID_OPTION</p></td>
-<td> </td>
-<td> </td>
+<td class="enum_member_description">
+<p>the option was invalid</p>
+</td>
+<td class="enum_member_annotations"> </td>
 </tr>
 <tr>
 <td class="enum_member_name"><p><a name="NM-SETTING-BOND-ERROR-MISSING-OPTION:CAPS"></a>NM_SETTING_BOND_ERROR_MISSING_OPTION</p></td>
-<td> </td>
-<td> </td>
+<td class="enum_member_description">
+<p>the option was missing
+required</p>
+</td>
+<td class="enum_member_annotations"> </td>
 </tr>
 </tbody>
 </table></div>
@@ -803,6 +807,6 @@ must be strings. Option names must contain only alphanumeric characters
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

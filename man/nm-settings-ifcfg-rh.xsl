@@ -53,7 +53,7 @@
           The plugin currently supports reading and writing Ethernet, Wi-Fi, InfiniBand,
           VLAN, Bond, Bridge, and Team connections. Unsupported connection types (such as
           WWAN, PPPoE, VPN, or ADSL) are handled by <emphasis>keyfile</emphasis> plugin
-          (<citerefentry><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum></citerefentry>).
+          (<link linkend='nm-settings-keyfile'><citerefentry><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>).
           The main reason for using <emphasis>ifcfg-rh</emphasis> plugin is the compatibility
           with legacy configurations for <emphasis>ifup</emphasis> and <emphasis>ifdown</emphasis>
           (initscripts).
@@ -257,6 +257,11 @@ DEVICETYPE=TeamPort
                     assigns the interface 10.42.0.1, or it uses the first static address,
                     if configured.</para>
                  </listitem>
+                  <listitem>
+                    <para><literal>HWADDR</literal> -
+                    initscripts compare the currently set hardware address of a device, while
+                    NetworkManager considers the permanent one.</para>
+                  </listitem>
                 </itemizedlist>
               </para></listitem>
             </varlistentry>
@@ -311,12 +316,12 @@ DEVICETYPE=TeamPort
         <para><filename>/usr/share/doc/initscripts/sysconfig.txt</filename></para>
       </refsect1>
       <refsect1 id='see_also'><title>See Also</title>
-        <para><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>NetworkManager.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry></para>
+        <para><link linkend='nm-settings'><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
+        <link linkend='nm-settings-keyfile'><citerefentry><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
+        <link linkend='NetworkManager'><citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry></link>,
+        <link linkend='NetworkManager.conf'><citerefentry><refentrytitle>NetworkManager.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
+        <link linkend='nmcli'><citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry></link>,
+        <link linkend='nmcli-examples'><citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry></link></para>
       </refsect1>
     </refentry>
   </xsl:template>

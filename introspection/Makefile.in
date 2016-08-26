@@ -90,8 +90,9 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = introspection
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -114,21 +115,21 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libnmdbus_la_LIBADD =
 nodist_libnmdbus_la_OBJECTS = nmdbus-access-point.lo \
 	nmdbus-active-connection.lo nmdbus-agent-manager.lo \
-	nmdbus-device-adsl.lo nmdbus-device-bond.lo \
-	nmdbus-device-bridge.lo nmdbus-device-bt.lo \
-	nmdbus-device-ethernet.lo nmdbus-device.lo \
+	nmdbus-checkpoint.lo nmdbus-device-adsl.lo \
+	nmdbus-device-bond.lo nmdbus-device-bridge.lo \
+	nmdbus-device-bt.lo nmdbus-device-ethernet.lo nmdbus-device.lo \
 	nmdbus-device-generic.lo nmdbus-device-infiniband.lo \
 	nmdbus-device-ip-tunnel.lo nmdbus-device-macvlan.lo \
 	nmdbus-device-modem.lo nmdbus-device-olpc-mesh.lo \
-	nmdbus-device-team.lo nmdbus-device-tun.lo \
-	nmdbus-device-veth.lo nmdbus-device-vlan.lo \
-	nmdbus-device-vxlan.lo nmdbus-device-wifi.lo \
-	nmdbus-device-wimax.lo nmdbus-dhcp4-config.lo \
-	nmdbus-dhcp6-config.lo nmdbus-ip4-config.lo \
-	nmdbus-ip6-config.lo nmdbus-manager.lo nmdbus-ppp-manager.lo \
-	nmdbus-secret-agent.lo nmdbus-settings-connection.lo \
-	nmdbus-settings.lo nmdbus-vpn-connection.lo \
-	nmdbus-vpn-plugin.lo
+	nmdbus-device-statistics.lo nmdbus-device-team.lo \
+	nmdbus-device-tun.lo nmdbus-device-veth.lo \
+	nmdbus-device-vlan.lo nmdbus-device-vxlan.lo \
+	nmdbus-device-wifi.lo nmdbus-device-wimax.lo \
+	nmdbus-dhcp4-config.lo nmdbus-dhcp6-config.lo \
+	nmdbus-ip4-config.lo nmdbus-ip6-config.lo nmdbus-manager.lo \
+	nmdbus-ppp-manager.lo nmdbus-secret-agent.lo \
+	nmdbus-settings-connection.lo nmdbus-settings.lo \
+	nmdbus-vpn-connection.lo nmdbus-vpn-plugin.lo
 libnmdbus_la_OBJECTS = $(nodist_libnmdbus_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -231,6 +232,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -287,13 +289,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -305,6 +308,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -365,6 +370,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -400,6 +407,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -480,6 +488,8 @@ nodist_libnmdbus_la_SOURCES = \
 	nmdbus-active-connection.h \
 	nmdbus-agent-manager.c \
 	nmdbus-agent-manager.h \
+	nmdbus-checkpoint.c \
+	nmdbus-checkpoint.h \
 	nmdbus-device-adsl.c \
 	nmdbus-device-adsl.h \
 	nmdbus-device-bond.c \
@@ -504,6 +514,8 @@ nodist_libnmdbus_la_SOURCES = \
 	nmdbus-device-modem.h \
 	nmdbus-device-olpc-mesh.c \
 	nmdbus-device-olpc-mesh.h \
+	nmdbus-device-statistics.c \
+	nmdbus-device-statistics.h \
 	nmdbus-device-team.c \
 	nmdbus-device-team.h \
 	nmdbus-device-tun.c \
@@ -544,6 +556,7 @@ nodist_libnmdbus_la_SOURCES = \
 DBUS_INTERFACE_DOCS = \
 	nmdbus-access-point-org.freedesktop.NetworkManager.AccessPoint.xml \
 	nmdbus-active-connection-org.freedesktop.NetworkManager.Connection.Active.xml \
+	nmdbus-checkpoint-org.freedesktop.NetworkManager.Checkpoint.xml \
 	nmdbus-device-team-org.freedesktop.NetworkManager.Device.Team.xml \
 	nmdbus-dhcp6-config-org.freedesktop.NetworkManager.DHCP6Config.xml \
 	nmdbus-device-wifi-org.freedesktop.NetworkManager.Device.Wireless.xml \
@@ -574,7 +587,8 @@ DBUS_INTERFACE_DOCS = \
 	nmdbus-device-veth-org.freedesktop.NetworkManager.Device.Veth.xml \
 	nmdbus-settings-org.freedesktop.NetworkManager.Settings.xml \
 	nmdbus-device-ethernet-org.freedesktop.NetworkManager.Device.Wired.xml \
-	nmdbus-ip4-config-org.freedesktop.NetworkManager.IP4Config.xml
+	nmdbus-ip4-config-org.freedesktop.NetworkManager.IP4Config.xml \
+	nmdbus-device-statistics-org.freedesktop.NetworkManager.Device.Statistics.xml
 
 BUILT_SOURCES = $(nodist_libnmdbus_la_SOURCES) $(DBUS_INTERFACE_DOCS)
 CLEANFILES = $(BUILT_SOURCES)
@@ -582,6 +596,7 @@ EXTRA_DIST = \
 	nm-access-point.xml \
 	nm-active-connection.xml \
 	nm-agent-manager.xml \
+	nm-checkpoint.xml \
 	nm-device-adsl.xml \
 	nm-device-bond.xml \
 	nm-device-bridge.xml \
@@ -593,6 +608,7 @@ EXTRA_DIST = \
 	nm-device-macvlan.xml \
 	nm-device-modem.xml \
 	nm-device-olpc-mesh.xml \
+	nm-device-statistics.xml \
 	nm-device-team.xml \
 	nm-device-tun.xml \
 	nm-device-veth.xml \
@@ -672,6 +688,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-access-point.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-active-connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-agent-manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-checkpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-adsl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-bond.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-bridge.Plo@am__quote@
@@ -683,6 +700,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-macvlan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-modem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-olpc-mesh.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-statistics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-team.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-tun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nmdbus-device-veth.Plo@am__quote@

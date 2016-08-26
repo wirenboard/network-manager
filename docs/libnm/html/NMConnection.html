@@ -8,7 +8,7 @@
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="next" href="NMSimpleConnection.html" title="NMSimpleConnection">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -572,7 +572,7 @@ same name which has previously been added to the <a class="link" href="NMConnect
 connection takes ownership of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object and does not increase
 the setting object's reference count.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.2.5"></a><h4>Parameters</h4>
+<a name="nm-connection-add-setting.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -603,7 +603,7 @@ nm_connection_remove_setting (<em class="parameter"><code><a class="link" href="
 <p>Removes the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> with the given <span class="type">GType</span> from the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>.  This
 operation dereferences the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.3.5"></a><h4>Parameters</h4>
+<a name="nm-connection-remove-setting.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -634,7 +634,7 @@ nm_connection_get_setting (<em class="parameter"><code><a class="link" href="NMC
 <p>Gets the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> with the given <span class="type">GType</span>, if one has been previously added
 to the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.4.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -656,7 +656,7 @@ to the <a class="link" href="NMConnection.html" title="NMConnection"><span class
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.4.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a>, or <code class="literal">NULL</code> if no setting of that type was previously
 added to the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -671,7 +671,7 @@ nm_connection_get_setting_by_name (<em class="parameter"><code><a class="link" h
 <p>Gets the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> with the given name, if one has been previously added
 the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.5.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-by-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -693,7 +693,7 @@ the <a class="link" href="NMConnection.html" title="NMConnection"><span class="t
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.5.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-by-name.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a>, or <code class="literal">NULL</code> if no setting with that name was previously
 added to the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -709,7 +709,7 @@ nm_connection_to_dbus (<em class="parameter"><code><a class="link" href="NMConne
 <code class="literal">NM_VARIANT_TYPE_CONNECTION</code> describing the connection, suitable for
 marshalling over D-Bus or otherwise serializing.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.6.5"></a><h4>Parameters</h4>
+<a name="nm-connection-to-dbus.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -731,7 +731,7 @@ marshalling over D-Bus or otherwise serializing.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.6.6"></a><h4>Returns</h4>
+<a name="nm-connection-to-dbus.returns"></a><h4>Returns</h4>
 <p> a new floating <span class="type">GVariant</span> describing the connection,
 its settings, and each setting's properties. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -750,7 +750,7 @@ nm_connection_replace_settings (<em class="parameter"><code><a class="link" href
 syntactically valid, and describe a known type of connection, but does not
 need to result in a connection that passes <a class="link" href="NMConnection.html#nm-connection-verify" title="nm_connection_verify ()"><code class="function">nm_connection_verify()</code></a>).</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.7.5"></a><h4>Parameters</h4>
+<a name="nm-connection-replace-settings.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -777,7 +777,7 @@ need to result in a connection that passes <a class="link" href="NMConnection.ht
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.7.6"></a><h4>Returns</h4>
+<a name="nm-connection-replace-settings.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if connection was updated, <code class="literal">FALSE</code> if <em class="parameter"><code>new_settings</code></em>
 could not
 be deserialized (in which case <em class="parameter"><code>connection</code></em>
@@ -796,7 +796,7 @@ nm_connection_replace_settings_from_connection
 
 with the copied settings.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.8.5"></a><h4>Parameters</h4>
+<a name="nm-connection-replace-settings-from-connection.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -827,7 +827,7 @@ nm_connection_clear_settings (<em class="parameter"><code><a class="link" href="
 <p>Deletes all of <em class="parameter"><code>connection</code></em>
 's settings.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.9.5"></a><h4>Parameters</h4>
+<a name="nm-connection-clear-settings.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -853,7 +853,7 @@ nm_connection_compare (<em class="parameter"><code><a class="link" href="NMConne
 modified by a set of flags.  See <a class="link" href="NMSetting.html#nm-setting-compare" title="nm_setting_compare ()"><code class="function">nm_setting_compare()</code></a> for a description of
 each flag's behavior.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.10.5"></a><h4>Parameters</h4>
+<a name="nm-connection-compare.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -880,7 +880,7 @@ each flag's behavior.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.10.6"></a><h4>Returns</h4>
+<a name="nm-connection-compare.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the comparison succeeds, <code class="literal">FALSE</code> if it does not</p>
 </div>
 </div>
@@ -899,7 +899,7 @@ each setting that differ are added to the returned <em class="parameter"><code>o
  hash table.
 No values are returned, only key names.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.11.5"></a><h4>Parameters</h4>
+<a name="nm-connection-diff.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -934,7 +934,7 @@ differ mapped to one or more of <a class="link" href="NMSetting.html#NMSettingDi
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.11.6"></a><h4>Returns</h4>
+<a name="nm-connection-diff.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connections contain the same values, <code class="literal">FALSE</code> if they do
 not</p>
 </div>
@@ -955,7 +955,7 @@ connection for the connection to be valid.  As another example, the
 MAC address.  The returned <span class="type">GError</span> contains information about which
 setting and which property failed validation, and how it failed validation.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.12.5"></a><h4>Parameters</h4>
+<a name="nm-connection-verify.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -977,7 +977,7 @@ setting and which property failed validation, and how it failed validation.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.12.6"></a><h4>Returns</h4>
+<a name="nm-connection-verify.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is valid, <code class="literal">FALSE</code> if it is not</p>
 </div>
 </div>
@@ -989,7 +989,7 @@ nm_connection_verify_secrets (<em class="parameter"><code><a class="link" href="
                               <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Verifies the secrets in the connection.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.13.5"></a><h4>Parameters</h4>
+<a name="nm-connection-verify-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1011,7 +1011,7 @@ nm_connection_verify_secrets (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.13.6"></a><h4>Returns</h4>
+<a name="nm-connection-verify-secrets.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secrets are valid, <code class="literal">FALSE</code> if they are not</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -1033,7 +1033,7 @@ is valid. As this function only performs some specific normalization steps
 it cannot repair all connections. If the connection has errors that
 cannot be normalized, the connection will not be modified.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.14.6"></a><h4>Parameters</h4>
+<a name="nm-connection-normalize.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1070,7 +1070,7 @@ why the connection is invalid, if the function returns an error.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.14.7"></a><h4>Returns</h4>
+<a name="nm-connection-normalize.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is valid, <code class="literal">FALSE</code> if it is not</p>
 </div>
 </div>
@@ -1086,7 +1086,7 @@ intended as a guide to what secrets may be required, because in some
 circumstances, there is no way to conclusively determine exactly which
 secrets are needed.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.15.5"></a><h4>Parameters</h4>
+<a name="nm-connection-need-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1112,7 +1112,7 @@ elements. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.15.6"></a><h4>Returns</h4>
+<a name="nm-connection-need-secrets.returns"></a><h4>Returns</h4>
 <p> the setting name of the <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object which has invalid or
 missing secrets</p>
 </div>
@@ -1125,7 +1125,7 @@ nm_connection_clear_secrets (<em class="parameter"><code><a class="link" href="N
 <p>Clears and frees any secrets that may be stored in the connection, to avoid
 keeping secret data in memory when not needed.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.16.5"></a><h4>Parameters</h4>
+<a name="nm-connection-clear-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1151,7 +1151,7 @@ nm_connection_clear_secrets_with_flags
 <p>Clears and frees secrets determined by <em class="parameter"><code>func</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.17.5"></a><h4>Parameters</h4>
+<a name="nm-connection-clear-secrets-with-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1197,7 +1197,7 @@ returned by <a class="link" href="NMConnection.html#nm-connection-to-dbus" title
 settings contained in <em class="parameter"><code>secrets</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.18.5"></a><h4>Parameters</h4>
+<a name="nm-connection-update-secrets.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1230,7 +1230,7 @@ or <a class="link" href="NMConnection.html#NM-VARIANT-TYPE-SETTING:CAPS" title="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.18.6"></a><h4>Returns</h4>
+<a name="nm-connection-update-secrets.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secrets were successfully updated, <code class="literal">FALSE</code> if the update
 failed (tried to update secrets for a setting that doesn't exist, etc)</p>
 </div>
@@ -1245,7 +1245,7 @@ nm_connection_set_path (<em class="parameter"><code><a class="link" href="NMConn
 is only for the reference of the caller.  Sets the <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection--path"><span class="type">“path”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.19.5"></a><h4>Parameters</h4>
+<a name="nm-connection-set-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1275,7 +1275,7 @@ which provides the connection</p></td>
 nm_connection_get_path (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>Returns the connection's D-Bus path.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.20.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1290,7 +1290,7 @@ nm_connection_get_path (<em class="parameter"><code><a class="link" href="NMConn
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.20.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-path.returns"></a><h4>Returns</h4>
 <p> the D-Bus path of the connection, previously set by a call to
 <a class="link" href="NMConnection.html#nm-connection-set-path" title="nm_connection_set_path ()"><code class="function">nm_connection_set_path()</code></a>.</p>
 </div>
@@ -1306,7 +1306,7 @@ If the connection contains no NMSettingConnection, it will return <code class="l
 this name is used to match the device. for software devices created by
 NetworkManager, this is the name of the created interface.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.21.6"></a><h4>Parameters</h4>
+<a name="nm-connection-get-interface-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1321,7 +1321,7 @@ NetworkManager, this is the name of the created interface.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.21.7"></a><h4>Returns</h4>
+<a name="nm-connection-get-interface-name.returns"></a><h4>Returns</h4>
 <p> Name of the kernel interface or <code class="literal">NULL</code></p>
 </div>
 </div>
@@ -1337,7 +1337,7 @@ type (ie wired, Wi-Fi, ppp, etc). Checks the <a class="link" href="NMSettingConn
 property of the connection and matches that against <em class="parameter"><code>type</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.22.5"></a><h4>Parameters</h4>
+<a name="nm-connection-is-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1360,7 +1360,7 @@ property of the connection and matches that against <em class="parameter"><code>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.22.6"></a><h4>Returns</h4>
+<a name="nm-connection-is-type.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is of the given <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if not</p>
 </div>
@@ -1375,7 +1375,7 @@ nm_connection_for_each_setting_value (<em class="parameter"><code><a class="link
 <p>Iterates over the properties of each <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> object in the <a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a>,
 calling the supplied user function for each property.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.23.5"></a><h4>Parameters</h4>
+<a name="nm-connection-for-each-setting-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1412,7 +1412,7 @@ nm_connection_dump (<em class="parameter"><code><a class="link" href="NMConnecti
 be used for serialization of the connection or machine-parsed in any way. The
 output format is not guaranteed to be stable and may change at any time.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.24.5"></a><h4>Parameters</h4>
+<a name="nm-connection-dump.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1434,7 +1434,7 @@ output format is not guaranteed to be stable and may change at any time.</p>
 nm_connection_get_uuid (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return the UUID from the connection's <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.25.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-uuid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1449,7 +1449,7 @@ nm_connection_get_uuid (<em class="parameter"><code><a class="link" href="NMConn
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.25.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-uuid.returns"></a><h4>Returns</h4>
 <p> the UUID from the connection's 'connection' setting</p>
 </div>
 </div>
@@ -1460,7 +1460,7 @@ nm_connection_get_uuid (<em class="parameter"><code><a class="link" href="NMConn
 nm_connection_get_id (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return the ID from the connection's <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.26.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-id.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1475,7 +1475,7 @@ nm_connection_get_id (<em class="parameter"><code><a class="link" href="NMConnec
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.26.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-id.returns"></a><h4>Returns</h4>
 <p> the ID from the connection's 'connection' setting</p>
 </div>
 </div>
@@ -1486,7 +1486,7 @@ nm_connection_get_id (<em class="parameter"><code><a class="link" href="NMConnec
 nm_connection_get_connection_type (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return the type from the connection's <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.27.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-connection-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1501,7 +1501,7 @@ nm_connection_get_connection_type (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.27.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-connection-type.returns"></a><h4>Returns</h4>
 <p> the type from the connection's 'connection' setting</p>
 </div>
 </div>
@@ -1514,7 +1514,7 @@ nm_connection_is_virtual (<em class="parameter"><code><a class="link" href="NMCo
  refers to a virtual device (and thus can potentially be
 activated even if the device it refers to doesn't exist).</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.28.5"></a><h4>Parameters</h4>
+<a name="nm-connection-is-virtual.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1529,7 +1529,7 @@ activated even if the device it refers to doesn't exist).</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.28.6"></a><h4>Returns</h4>
+<a name="nm-connection-is-virtual.returns"></a><h4>Returns</h4>
 <p> whether <em class="parameter"><code>connection</code></em>
 refers to a virtual device</p>
 </div>
@@ -1545,7 +1545,7 @@ return for the virtual device that would be created for <em class="parameter"><c
 .
 Eg, "VLAN (eth1.1)".</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.29.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-virtual-device-description.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1560,7 +1560,7 @@ Eg, "VLAN (eth1.1)".</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.29.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-virtual-device-description.returns"></a><h4>Returns</h4>
 <p> the name of <em class="parameter"><code>connection</code></em>
 's device,
 or <code class="literal">NULL</code> if <em class="parameter"><code>connection</code></em>
@@ -1575,7 +1575,7 @@ is not a virtual connection type. </p>
 nm_connection_get_setting_802_1x (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.30.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-802-1x.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1590,7 +1590,7 @@ nm_connection_get_setting_802_1x (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.30.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-802-1x.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSetting8021x.html" title="NMSetting8021x"><span class="type">NMSetting8021x</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1602,7 +1602,7 @@ nm_connection_get_setting_802_1x (<em class="parameter"><code><a class="link" hr
 nm_connection_get_setting_bluetooth (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="type">NMSettingBluetooth</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.31.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-bluetooth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1617,7 +1617,7 @@ nm_connection_get_setting_bluetooth (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.31.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-bluetooth.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingBluetooth.html" title="NMSettingBluetooth"><span class="type">NMSettingBluetooth</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1629,7 +1629,7 @@ nm_connection_get_setting_bluetooth (<em class="parameter"><code><a class="link"
 nm_connection_get_setting_bond (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.32.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-bond.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1644,7 +1644,7 @@ nm_connection_get_setting_bond (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.32.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-bond.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingBond.html" title="NMSettingBond"><span class="type">NMSettingBond</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1656,7 +1656,7 @@ nm_connection_get_setting_bond (<em class="parameter"><code><a class="link" href
 nm_connection_get_setting_team (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingTeam.html" title="NMSettingTeam"><span class="type">NMSettingTeam</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.33.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-team.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1671,7 +1671,7 @@ nm_connection_get_setting_team (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.33.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-team.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingTeam.html" title="NMSettingTeam"><span class="type">NMSettingTeam</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1683,7 +1683,7 @@ nm_connection_get_setting_team (<em class="parameter"><code><a class="link" href
 nm_connection_get_setting_team_port (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort"><span class="type">NMSettingTeamPort</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.34.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-team-port.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1698,7 +1698,7 @@ nm_connection_get_setting_team_port (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.34.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-team-port.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingTeamPort.html" title="NMSettingTeamPort"><span class="type">NMSettingTeamPort</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1710,7 +1710,7 @@ nm_connection_get_setting_team_port (<em class="parameter"><code><a class="link"
 nm_connection_get_setting_bridge (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingBridge.html" title="NMSettingBridge"><span class="type">NMSettingBridge</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.35.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-bridge.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1725,7 +1725,7 @@ nm_connection_get_setting_bridge (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.35.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-bridge.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingBridge.html" title="NMSettingBridge"><span class="type">NMSettingBridge</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1737,7 +1737,7 @@ nm_connection_get_setting_bridge (<em class="parameter"><code><a class="link" hr
 nm_connection_get_setting_bridge_port (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.36.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-bridge-port.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1752,7 +1752,7 @@ nm_connection_get_setting_bridge_port (<em class="parameter"><code><a class="lin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.36.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-bridge-port.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingBridgePort.html" title="NMSettingBridgePort"><span class="type">NMSettingBridgePort</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1764,7 +1764,7 @@ nm_connection_get_setting_bridge_port (<em class="parameter"><code><a class="lin
 nm_connection_get_setting_cdma (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingCdma.html" title="NMSettingCdma"><span class="type">NMSettingCdma</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.37.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-cdma.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1779,7 +1779,7 @@ nm_connection_get_setting_cdma (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.37.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-cdma.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingCdma.html" title="NMSettingCdma"><span class="type">NMSettingCdma</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1791,7 +1791,7 @@ nm_connection_get_setting_cdma (<em class="parameter"><code><a class="link" href
 nm_connection_get_setting_connection (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.38.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-connection.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1806,7 +1806,7 @@ nm_connection_get_setting_connection (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.38.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-connection.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1818,7 +1818,7 @@ nm_connection_get_setting_connection (<em class="parameter"><code><a class="link
 nm_connection_get_setting_dcb (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.39.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-dcb.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1833,7 +1833,7 @@ nm_connection_get_setting_dcb (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.39.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-dcb.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> if the connection contains one, otherwise NULL. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1845,7 +1845,7 @@ nm_connection_get_setting_dcb (<em class="parameter"><code><a class="link" href=
 nm_connection_get_setting_generic (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingGeneric.html" title="NMSettingGeneric"><span class="type">NMSettingGeneric</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.40.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-generic.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1860,7 +1860,7 @@ nm_connection_get_setting_generic (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.40.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-generic.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingGeneric.html" title="NMSettingGeneric"><span class="type">NMSettingGeneric</span></a> if the connection contains one, otherwise NULL. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1872,7 +1872,7 @@ nm_connection_get_setting_generic (<em class="parameter"><code><a class="link" h
 nm_connection_get_setting_gsm (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingGsm.html" title="NMSettingGsm"><span class="type">NMSettingGsm</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.41.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-gsm.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1887,7 +1887,7 @@ nm_connection_get_setting_gsm (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.41.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-gsm.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingGsm.html" title="NMSettingGsm"><span class="type">NMSettingGsm</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1899,7 +1899,7 @@ nm_connection_get_setting_gsm (<em class="parameter"><code><a class="link" href=
 nm_connection_get_setting_infiniband (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="type">NMSettingInfiniband</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.42.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-infiniband.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1914,7 +1914,7 @@ nm_connection_get_setting_infiniband (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.42.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-infiniband.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingInfiniband.html" title="NMSettingInfiniband"><span class="type">NMSettingInfiniband</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1926,7 +1926,7 @@ nm_connection_get_setting_infiniband (<em class="parameter"><code><a class="link
 nm_connection_get_setting_ip_tunnel (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel"><span class="type">NMSettingIPTunnel</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.43.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-ip-tunnel.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1941,7 +1941,7 @@ nm_connection_get_setting_ip_tunnel (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.43.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-ip-tunnel.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel"><span class="type">NMSettingIPTunnel</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1957,7 +1957,7 @@ nm_connection_get_setting_ip4_config (<em class="parameter"><code><a class="link
 majority of IPv4-setting-related methods are on that type, not
 <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config"><span class="type">NMSettingIP4Config</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.44.6"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-ip4-config.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1972,7 +1972,7 @@ majority of IPv4-setting-related methods are on that type, not
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.44.7"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-ip4-config.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config"><span class="type">NMSettingIP4Config</span></a> if the
 connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> NMSettingIP4Config][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -1988,7 +1988,7 @@ nm_connection_get_setting_ip6_config (<em class="parameter"><code><a class="link
 majority of IPv6-setting-related methods are on that type, not
 <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.45.6"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-ip6-config.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2003,7 +2003,7 @@ majority of IPv6-setting-related methods are on that type, not
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.45.7"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-ip6-config.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> if the
 connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Override the parsed C type with given type."><span class="acronym">type</span></acronym> NMSettingIP6Config][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -2016,7 +2016,7 @@ connection contains one, otherwise <code class="literal">NULL</code>. </p>
 nm_connection_get_setting_macvlan (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingMacvlan.html" title="NMSettingMacvlan"><span class="type">NMSettingMacvlan</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.46.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-macvlan.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2031,7 +2031,7 @@ nm_connection_get_setting_macvlan (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.46.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-macvlan.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingMacvlan.html" title="NMSettingMacvlan"><span class="type">NMSettingMacvlan</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2044,7 +2044,7 @@ nm_connection_get_setting_macvlan (<em class="parameter"><code><a class="link" h
 nm_connection_get_setting_olpc_mesh (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingOlpcMesh.html" title="NMSettingOlpcMesh"><span class="type">NMSettingOlpcMesh</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.47.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-olpc-mesh.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2059,7 +2059,7 @@ nm_connection_get_setting_olpc_mesh (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.47.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-olpc-mesh.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingOlpcMesh.html" title="NMSettingOlpcMesh"><span class="type">NMSettingOlpcMesh</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2071,7 +2071,7 @@ nm_connection_get_setting_olpc_mesh (<em class="parameter"><code><a class="link"
 nm_connection_get_setting_ppp (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingPpp.html" title="NMSettingPpp"><span class="type">NMSettingPpp</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.48.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-ppp.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2086,7 +2086,7 @@ nm_connection_get_setting_ppp (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.48.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-ppp.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingPpp.html" title="NMSettingPpp"><span class="type">NMSettingPpp</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2098,7 +2098,7 @@ nm_connection_get_setting_ppp (<em class="parameter"><code><a class="link" href=
 nm_connection_get_setting_pppoe (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingPppoe.html" title="NMSettingPppoe"><span class="type">NMSettingPppoe</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.49.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-pppoe.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2113,7 +2113,7 @@ nm_connection_get_setting_pppoe (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.49.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-pppoe.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingPppoe.html" title="NMSettingPppoe"><span class="type">NMSettingPppoe</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2125,7 +2125,7 @@ nm_connection_get_setting_pppoe (<em class="parameter"><code><a class="link" hre
 nm_connection_get_setting_serial (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingSerial.html" title="NMSettingSerial"><span class="type">NMSettingSerial</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.50.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-serial.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2140,7 +2140,7 @@ nm_connection_get_setting_serial (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.50.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-serial.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingSerial.html" title="NMSettingSerial"><span class="type">NMSettingSerial</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2152,7 +2152,7 @@ nm_connection_get_setting_serial (<em class="parameter"><code><a class="link" hr
 nm_connection_get_setting_tun (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingTun.html" title="NMSettingTun"><span class="type">NMSettingTun</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.51.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-tun.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2167,7 +2167,7 @@ nm_connection_get_setting_tun (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.51.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-tun.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingTun.html" title="NMSettingTun"><span class="type">NMSettingTun</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2180,7 +2180,7 @@ nm_connection_get_setting_tun (<em class="parameter"><code><a class="link" href=
 nm_connection_get_setting_vpn (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.52.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-vpn.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2195,7 +2195,7 @@ nm_connection_get_setting_vpn (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.52.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-vpn.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingVpn.html" title="NMSettingVpn"><span class="type">NMSettingVpn</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2207,7 +2207,7 @@ nm_connection_get_setting_vpn (<em class="parameter"><code><a class="link" href=
 nm_connection_get_setting_wimax (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingWimax.html" title="NMSettingWimax"><span class="type">NMSettingWimax</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.53.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-wimax.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2222,7 +2222,7 @@ nm_connection_get_setting_wimax (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.53.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-wimax.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingWimax.html" title="NMSettingWimax"><span class="type">NMSettingWimax</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2234,7 +2234,7 @@ nm_connection_get_setting_wimax (<em class="parameter"><code><a class="link" hre
 nm_connection_get_setting_adsl (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingAdsl.html" title="NMSettingAdsl"><span class="type">NMSettingAdsl</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.54.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-adsl.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2249,7 +2249,7 @@ nm_connection_get_setting_adsl (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.54.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-adsl.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingAdsl.html" title="NMSettingAdsl"><span class="type">NMSettingAdsl</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2261,7 +2261,7 @@ nm_connection_get_setting_adsl (<em class="parameter"><code><a class="link" href
 nm_connection_get_setting_wired (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.55.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-wired.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2276,7 +2276,7 @@ nm_connection_get_setting_wired (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.55.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-wired.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingWired.html" title="NMSettingWired"><span class="type">NMSettingWired</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2288,7 +2288,7 @@ nm_connection_get_setting_wired (<em class="parameter"><code><a class="link" hre
 nm_connection_get_setting_wireless (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.56.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-wireless.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2303,7 +2303,7 @@ nm_connection_get_setting_wireless (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.56.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-wireless.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2316,7 +2316,7 @@ nm_connection_get_setting_wireless_security
                                (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.57.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-wireless-security.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2331,7 +2331,7 @@ nm_connection_get_setting_wireless_security
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.57.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-wireless-security.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity"><span class="type">NMSettingWirelessSecurity</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2343,7 +2343,7 @@ nm_connection_get_setting_wireless_security
 nm_connection_get_setting_vlan (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingVlan.html" title="NMSettingVlan"><span class="type">NMSettingVlan</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.58.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-vlan.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2358,7 +2358,7 @@ nm_connection_get_setting_vlan (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.58.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-vlan.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingVlan.html" title="NMSettingVlan"><span class="type">NMSettingVlan</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2370,7 +2370,7 @@ nm_connection_get_setting_vlan (<em class="parameter"><code><a class="link" href
 nm_connection_get_setting_vxlan (<em class="parameter"><code><a class="link" href="NMConnection.html" title="NMConnection"><span class="type">NMConnection</span></a> *connection</code></em>);</pre>
 <p>A shortcut to return any <a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> the connection might contain.</p>
 <div class="refsect3">
-<a name="id-1.4.2.7.59.5"></a><h4>Parameters</h4>
+<a name="nm-connection-get-setting-vxlan.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2385,7 +2385,7 @@ nm_connection_get_setting_vxlan (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.2.7.59.6"></a><h4>Returns</h4>
+<a name="nm-connection-get-setting-vxlan.returns"></a><h4>Returns</h4>
 <p> an <a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> if the connection contains one, otherwise <code class="literal">NULL</code>. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -2431,7 +2431,7 @@ nm_connection_get_setting_vxlan (<em class="parameter"><code><a class="link" hre
 } NMConnectionInterface;
 </pre>
 <div class="refsect3">
-<a name="id-1.4.2.8.6.4"></a><h4>Members</h4>
+<a name="NMConnectionInterface.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="struct_members_name">
@@ -2478,7 +2478,7 @@ an <code class="literal">NM_VARIANT_TYPE_CONNECTION</code> dictionary.</p>
 <p>These flags determine which properties are serialized when calling when
 calling <a class="link" href="NMConnection.html#nm-connection-to-dbus" title="nm_connection_to_dbus ()"><code class="function">nm_connection_to_dbus()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.4.2.8.8.4"></a><h4>Members</h4>
+<a name="NMConnectionSerializationFlags.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -2514,6 +2514,6 @@ calling <a class="link" href="NMConnection.html#nm-connection-to-dbus" title="nm
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

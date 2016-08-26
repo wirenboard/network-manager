@@ -20,11 +20,12 @@
 
 #include "nm-default.h"
 
+#include "nm-device-macvlan.h"
+
 #include <string.h>
 
-#include "nm-device-macvlan.h"
 #include "nm-device-private.h"
-#include "nm-connection-provider.h"
+#include "nm-settings.h"
 #include "nm-activation-request.h"
 #include "nm-manager.h"
 #include "nm-platform.h"
@@ -372,9 +373,8 @@ match_hwaddr (NMDevice *device, NMConnection *connection, gboolean fail_if_no_hw
 	if (!priv->parent)
 		return !fail_if_no_hwaddr;
 
-	parent_mac = nm_device_get_hw_address (priv->parent);
-
-	return nm_utils_hwaddr_matches (setting_mac, -1, parent_mac, -1);
+	parent_mac = nm_device_get_permanent_hw_address (priv->parent, FALSE);
+	return parent_mac && nm_utils_hwaddr_matches (setting_mac, -1, parent_mac, -1);
 }
 
 static gboolean
@@ -488,7 +488,7 @@ update_connection (NMDevice *device, NMConnection *connection)
 			NMConnection *parent_connection;
 
 			/* Don't change a parent specified by UUID if it's still valid */
-			parent_connection = nm_connection_provider_get_connection_by_uuid (nm_connection_provider_get (), setting_parent);
+			parent_connection = (NMConnection *) nm_settings_get_connection_by_uuid (nm_device_get_settings (device), setting_parent);
 			if (parent_connection && nm_device_check_connection_compatible (priv->parent, parent_connection))
 				new_parent = NULL;
 		}
@@ -502,8 +502,6 @@ update_connection (NMDevice *device, NMConnection *connection)
 static NMActStageReturn
 act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 {
-	NMSettingWired *s_wired;
-	const char *cloned_mac;
 	NMActStageReturn ret;
 
 	g_return_val_if_fail (reason != NULL, NM_ACT_STAGE_RETURN_FAILURE);
@@ -512,14 +510,9 @@ act_stage1_prepare (NMDevice *dev, NMDeviceStateReason *reason)
 	if (ret != NM_ACT_STAGE_RETURN_SUCCESS)
 		return ret;
 
-	s_wired = (NMSettingWired *) nm_device_get_applied_setting (dev, NM_TYPE_SETTING_WIRED);
-	if (s_wired) {
-		/* Set device MAC address if the connection wants to change it */
-		cloned_mac = nm_setting_wired_get_cloned_mac_address (s_wired);
-		nm_device_set_hw_addr (dev, cloned_mac, "set", LOGD_HW);
-	}
-
-	return TRUE;
+	if (!nm_device_hw_addr_set_cloned (dev, nm_device_get_applied_connection (dev), FALSE))
+		return NM_ACT_STAGE_RETURN_FAILURE;
+	return NM_ACT_STAGE_RETURN_SUCCESS;
 }
 
 static void
@@ -546,16 +539,6 @@ realize_start_notify (NMDevice *device, const NMPlatformLink *plink)
 	NM_DEVICE_CLASS (nm_device_macvlan_parent_class)->realize_start_notify (device, plink);
 
 	update_properties (device);
-}
-
-static void
-deactivate (NMDevice *device)
-{
-	/* Reset MAC address back to initial address */
-	if (nm_device_get_initial_hw_address (device)) {
-		nm_device_set_hw_addr (device, nm_device_get_initial_hw_address (device),
-		                       "reset", LOGD_DEVICE);
-	}
 }
 
 /******************************************************************/
@@ -638,7 +621,6 @@ nm_device_macvlan_class_init (NMDeviceMacvlanClass *klass)
 	device_class->complete_connection = complete_connection;
 	device_class->connection_type = NM_SETTING_MACVLAN_SETTING_NAME;
 	device_class->create_and_realize = create_and_realize;
-	device_class->deactivate = deactivate;
 	device_class->get_generic_capabilities = get_generic_capabilities;
 	device_class->ip4_config_pre_commit = ip4_config_pre_commit;
 	device_class->is_available = is_available;

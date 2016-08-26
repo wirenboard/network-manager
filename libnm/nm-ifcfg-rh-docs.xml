@@ -71,7 +71,8 @@ MACADDR for bridges is an NM extension."/>
 <setting name="connection">
 <property name="id" variable="NAME(+)" format="" values="" default="" example="" description="User friendly name for the connection profile."/>
 <property name="uuid" variable="UUID(+)" format="" values="" default="" example="" description="UUID for the connection profile. When missing, NetworkManager
-creates the UUID itself (by hashing the file)."/>
+creates the UUID itself (by hashing the filename)."/>
+<property name="stable-id" variable="STABLE_ID(+)" format="" values="" default="" example="" description="Token to generate stable IDs."/>
 <property name="interface-name" variable="DEVICE" format="" values="" default="" example="" description="Interface name of the device this profile is bound to. The variable
 can be left out when the profile should apply for more devices. Note that DEVICE
 can be required for some connection types."/>
@@ -158,6 +159,9 @@ meaning as &apos;never-default&apos; property."/>
 <property name="may-fail" variable="IPV4_FAILURE_FATAL(+)" format="" values="" default="no" example="" description="IPV4_FAILURE_FATAL has the opposite meaning as &apos;may-fail&apos; property."/>
 <property name="route-metric" variable="IPV4_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection.
 If set to -1, a default metric based on the device type is used."/>
+<property name="dns-priority" variable="IPV4_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV4_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
+If zero, the default value will be used (50 for VPNs, 100 for other connections).
+A negative value prevents DNS from other connections with greater values to be used."/>
 <property name="dhcp-client-id" variable="DHCP_CLIENT_ID(+)" format="" values="" default="" example="DHCP_CLIENT_ID=ax-srv-1" description="A string sent to the DHCP server to identify the local machine."/>
 <property name="dad-timeout" variable="ARPING_WAIT" format="" values="" default="missing variable means global default (config override or 3)" example="ARPING_WAIT=2" description="Timeout (in seconds) for performing DAD before configuring
 IPv4 addresses. 0 turns off the DAD completely, -1 means default value."/>
@@ -185,9 +189,13 @@ meaning as &apos;never-default&apos; property."/>
 <property name="may-fail" variable="IPV6_FAILURE_FATAL(+)" format="" values="" default="no" example="" description="IPV6_FAILURE_FATAL has the opposite meaning as &apos;may-fail&apos; property."/>
 <property name="route-metric" variable="IPV6_ROUTE_METRIC(+)" format="" values="" default="-1" example="" description="IPV6_ROUTE_METRIC is the default IPv6 metric for routes on this connection.
 If set to -1, a default metric based on the device type is used."/>
+<property name="dns-priority" variable="IPV6_DNS_PRIORITY(+)" format="" values="" default="0" example="IPV6_DNS_PRIORITY=20" description="The priority for DNS servers of this connection. Lower values have higher priority.
+If zero, the default value will be used (50 for VPNs, 100 for other connections).
+A negative value prevents DNS from other connections with greater values to be used."/>
 <property name="ip6-privacy" variable="IPV6_PRIVACY, IPV6_PRIVACY_PREFER_PUBLIC_IP(+)" format="" values="IPV6_PRIVACY: no, yes (rfc3041 or rfc4941);
 IPV6_PRIVACY_PREFER_PUBLIC_IP: yes, no" default="no" example="IPV6_PRIVACY=rfc3041 IPV6_PRIVACY_PREFER_PUBLIC_IP=yes" description="Configure IPv6 Privacy Extensions for SLAAC (RFC4941)."/>
 <property name="addr-gen-mode" variable="IPV6_ADDR_GEN_MODE" format="" values="IPV6_ADDR_GEN_MODE: eui64, stable-privacy" default="eui64" example="IPV6_ADDR_GEN_MODE=stable-privacy" description="Configure IPv6 Stable Privacy addressing for SLAAC (RFC7217)."/>
+<property name="token" variable="IPV6_TOKEN" format="" values="" default="" example="IPV6_TOKEN=::53" description="The IPv6 tokenized interface identifier token"/>
 </setting>
 <setting name="macvlan">
 </setting>
@@ -232,6 +240,8 @@ but VLAN id from DEVICE takes precedence over VLAN_ID."/>
 notation (e.g. 00:22:68:14:5A:05)."/>
 <property name="cloned-mac-address" variable="MACADDR" format="" values="" default="" example="" description="Cloned (spoofed) MAC address in traditional hex-digits-and-colons
 notation (e.g. 00:22:68:14:5A:99)."/>
+<property name="generate-mac-address-mask" variable="GENERATE_MAC_ADDRESS_MASK" format="" values="" default="" example="" description="the MAC address mask for generating randomized and stable
+cloned-mac-address."/>
 <property name="mac-address-blacklist" variable="HWADDR_BLACKLIST(+)" format="" values="" default="" example="HWADDR_BLACKLIST=&quot;00:22:68:11:69:08 00:11:22:11:44:55&quot;" description="It denies usage of the connection for any device whose address
 is listed."/>
 <property name="mtu" variable="MTU" format="" values="" default="" example="" description="MTU of the interface."/>
@@ -279,6 +289,8 @@ band is &quot;bg&quot;."/>
 notation (e.g. 00:22:68:14:5A:05)."/>
 <property name="cloned-mac-address" variable="MACADDR" format="" values="" default="" example="" description="Cloned (spoofed) MAC address in traditional hex-digits-and-colons
 notation (e.g. 00:22:68:14:5A:99)."/>
+<property name="generate-mac-address-mask" variable="GENERATE_MAC_ADDRESS_MASK" format="" values="" default="" example="" description="the MAC address mask for generating randomized and stable
+cloned-mac-address."/>
 <property name="mac-address-blacklist" variable="HWADDR_BLACKLIST(+)" format="" values="" default="" example="" description="It denies usage of the connection for any device whose address
 is listed."/>
 <property name="seen-bssids" variable="(none)" format="" values="" default="" example="" description="This property is not handled by ifcfg-rh plugin."/>

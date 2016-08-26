@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
-<refentry id="nm-settings-keyfile"><refentryinfo><title>nm-settings-keyfile</title><author>NetworkManager developers</author></refentryinfo><refmeta><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum><refmiscinfo class="source">NetworkManager</refmiscinfo><refmiscinfo class="manual">Configuration</refmiscinfo><refmiscinfo class="version">1.2.4</refmiscinfo></refmeta><refnamediv><refname>nm-settings-keyfile</refname><refpurpose>Description of <emphasis>keyfile</emphasis> settings plugin</refpurpose></refnamediv><refsect1 id="description"><title>Description</title><para>
+<refentry id="nm-settings-keyfile"><refentryinfo><title>nm-settings-keyfile</title><author>NetworkManager developers</author></refentryinfo><refmeta><refentrytitle>nm-settings-keyfile</refentrytitle><manvolnum>5</manvolnum><refmiscinfo class="source">NetworkManager</refmiscinfo><refmiscinfo class="manual">Configuration</refmiscinfo><refmiscinfo class="version">1.4.0</refmiscinfo></refmeta><refnamediv><refname>nm-settings-keyfile</refname><refpurpose>Description of <emphasis>keyfile</emphasis> settings plugin</refpurpose></refnamediv><refsect1 id="description"><title>Description</title><para>
           NetworkManager is based on the concept of connection profiles that contain
           network configuration (see <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry> for details). The profiles can be
           stored in various formats. NetworkManager uses plugins for reading and writing
@@ -128,7 +128,7 @@ id=4
           There are several exceptions to this rule, mainly for making keyfile syntax easier
           for humans. The exceptions handled specially by <emphasis>keyfile</emphasis>
           plugin are listed below. Refer to
-          <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+          <link linkend="nm-settings"><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>
           for all available settings and properties and their description.
         </para><formalpara><title>Name aliases</title><para>
             Some of the NetworkManager setting names are somewhat hard to type or remember. Therefore
@@ -234,9 +234,9 @@ Example: </emphasis>mac-address-blacklist= 00:22:68:12:79:A6;00:22:68:12:79:78</
               and storing this secret; when it is required, agents will be asked to provide it.</para></listitem><listitem><para>2 - (not-saved) - this secret should not be saved but should be requested
               from the user each time it is required.</para></listitem><listitem><para>4 - (not-required) - in some situations it cannot be automatically determined
               that a secret is required or not. This flag hints that the secret is not required
-              and should not be requested from the user.</para></listitem></itemizedlist></refsect2></refsect1><refsect1 id="files"><title>Files</title><para><filename>/etc/NetworkManager/system-connections/*</filename></para></refsect1><refsect1 id="see_also"><title>See Also</title><para><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>nm-settings-ifcfg-rh</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>NetworkManager.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-        <citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry></para></refsect1></refentry>
+              and should not be requested from the user.</para></listitem></itemizedlist></refsect2></refsect1><refsect1 id="files"><title>Files</title><para><filename>/etc/NetworkManager/system-connections/*</filename></para></refsect1><refsect1 id="see_also"><title>See Also</title><para><link linkend="nm-settings"><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
+        <link linkend="nm-settings-ifcfg-rh"><citerefentry><refentrytitle>nm-settings-ifcfg-rh</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
+        <link linkend="NetworkManager"><citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry></link>,
+        <link linkend="NetworkManager.conf"><citerefentry><refentrytitle>NetworkManager.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
+        <link linkend="nmcli"><citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry></link>,
+        <link linkend="nmcli-examples"><citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry></link></para></refsect1></refentry>

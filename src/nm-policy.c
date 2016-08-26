@@ -180,38 +180,35 @@ _set_hostname (NMPolicy *self,
 	if (new_hostname)
 		g_clear_object (&priv->lookup_addr);
 
-	/* Don't change the hostname or update DNS this is the first time we're
-	 * trying to change the hostname, and it's not actually changing.
-	 */
 	if (   priv->orig_hostname
 	    && (priv->hostname_changed == FALSE)
-	    && g_strcmp0 (priv->orig_hostname, new_hostname) == 0)
-		return;
+	    && g_strcmp0 (priv->orig_hostname, new_hostname) == 0) {
+		/* Don't change the hostname or update DNS this is the first time we're
+		 * trying to change the hostname, and it's not actually changing.
+		 */
+	} else if (g_strcmp0 (priv->cur_hostname, new_hostname) == 0) {
+		/* Don't change the hostname or update DNS if the hostname isn't actually
+		 * going to change.
+		 */
+	} else {
+		g_free (priv->cur_hostname);
+		priv->cur_hostname = g_strdup (new_hostname);
+		priv->hostname_changed = TRUE;
 
-	/* Don't change the hostname or update DNS if the hostname isn't actually
-	 * going to change.
-	 */
-	if (g_strcmp0 (priv->cur_hostname, new_hostname) == 0)
-		return;
-
-	g_free (priv->cur_hostname);
-	priv->cur_hostname = g_strdup (new_hostname);
-	priv->hostname_changed = TRUE;
-
-	/* Notify the DNS manager of the hostname change so that the domain part, if
-	 * present, can be added to the search list.
-	 */
-	nm_dns_manager_set_hostname (priv->dns_manager, priv->cur_hostname);
+		/* Notify the DNS manager of the hostname change so that the domain part, if
+		 * present, can be added to the search list.
+		 */
+		nm_dns_manager_set_hostname (priv->dns_manager, priv->cur_hostname);
+	}
 
 	 /* Finally, set kernel hostname */
-
-	if (!priv->cur_hostname)
+	if (!new_hostname)
 		name = FALLBACK_HOSTNAME4;
-	else if (!priv->cur_hostname[0]) {
+	else if (!new_hostname[0]) {
 		g_warn_if_reached ();
 		name = FALLBACK_HOSTNAME4;
 	} else
-		name = priv->cur_hostname;
+		name = new_hostname;
 
 	old_hostname[HOST_NAME_MAX] = '\0';
 	errno = 0;
@@ -862,7 +859,7 @@ reset_autoconnect_all (NMPolicy *self, NMDevice *device)
 	} else
 		_LOGD (LOGD_DEVICE, "re-enabling autoconnect for all connections");
 
-	connections = nm_settings_get_connections (priv->settings);
+	connections = nm_settings_get_connections_sorted (priv->settings);
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		if (!device || nm_device_check_connection_compatible (device, iter->data)) {
 			nm_settings_connection_reset_autoconnect_retries (iter->data);
@@ -880,7 +877,7 @@ reset_autoconnect_for_failed_secrets (NMPolicy *self)
 
 	_LOGD (LOGD_DEVICE, "re-enabling autoconnect for all connections with failed secrets");
 
-	connections = nm_settings_get_connections (priv->settings);
+	connections = nm_settings_get_connections_sorted (priv->settings);
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		NMSettingsConnection *connection = NM_SETTINGS_CONNECTION (iter->data);
 
@@ -908,7 +905,7 @@ block_autoconnect_for_device (NMPolicy *self, NMDevice *device)
 	if (!nm_device_is_software (device))
 		return;
 
-	connections = nm_settings_get_connections (priv->settings);
+	connections = nm_settings_get_connections_sorted (priv->settings);
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		if (nm_device_check_connection_compatible (device, iter->data)) {
 			nm_settings_connection_set_autoconnect_blocked_reason (NM_SETTINGS_CONNECTION (iter->data),
@@ -991,7 +988,7 @@ reset_connections_retries (gpointer user_data)
 
 	min_stamp = 0;
 	now = nm_utils_get_monotonic_timestamp_s ();
-	connections = nm_settings_get_connections (priv->settings);
+	connections = nm_settings_get_connections_sorted (priv->settings);
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		NMSettingsConnection *connection = NM_SETTINGS_CONNECTION (iter->data);
 
@@ -1023,8 +1020,10 @@ activate_slave_connections (NMPolicy *self, NMDevice *device)
 {
 	NMPolicyPrivate *priv = NM_POLICY_GET_PRIVATE (self);
 	const char *master_device, *master_uuid_settings = NULL, *master_uuid_applied = NULL;
-	GSList *connections, *iter;
+	gs_free_slist GSList *connections = NULL;
+	GSList *iter;
 	NMActRequest *req;
+	gboolean internal_activation = FALSE;
 
 	master_device = nm_device_get_iface (device);
 	g_assert (master_device);
@@ -1032,6 +1031,7 @@ activate_slave_connections (NMPolicy *self, NMDevice *device)
 	req = nm_device_get_act_request (device);
 	if (req) {
 		NMConnection *con;
+		NMAuthSubject *subject;
 
 		con = nm_active_connection_get_applied_connection (NM_ACTIVE_CONNECTION (req));
 		if (con)
@@ -1042,9 +1042,14 @@ activate_slave_connections (NMPolicy *self, NMDevice *device)
 			if (!g_strcmp0 (master_uuid_settings, master_uuid_applied))
 				master_uuid_settings = NULL;
 		}
+
+		subject = nm_active_connection_get_subject (NM_ACTIVE_CONNECTION (req));
+		internal_activation = subject && nm_auth_subject_is_internal (subject);
 	}
 
-	connections = nm_settings_get_connections (priv->settings);
+	if (!internal_activation)
+		connections = nm_settings_get_connections_sorted (priv->settings);
+
 	for (iter = connections; iter; iter = g_slist_next (iter)) {
 		NMConnection *slave;
 		NMSettingConnection *s_slave_con;
@@ -1064,8 +1069,6 @@ activate_slave_connections (NMPolicy *self, NMDevice *device)
 		    || !g_strcmp0 (slave_master, master_uuid_settings))
 			nm_settings_connection_reset_autoconnect_retries (NM_SETTINGS_CONNECTION (slave));
 	}
-
-	g_slist_free (connections);
 
 	schedule_activate_all (self);
 }
@@ -1312,6 +1315,7 @@ device_ip4_config_changed (NMDevice *device,
 		}
 		update_ip4_dns (self, priv->dns_manager);
 		update_ip4_routing (self, TRUE);
+		update_system_hostname (self, priv->default_device4, priv->default_device6);
 	} else {
 		/* Old configs get removed immediately */
 		if (old_config)
@@ -1346,6 +1350,7 @@ device_ip6_config_changed (NMDevice *device,
 		}
 		update_ip6_dns (self, priv->dns_manager);
 		update_ip6_routing (self, TRUE);
+		update_system_hostname (self, priv->default_device4, priv->default_device6);
 	} else {
 		/* Old configs get removed immediately */
 		if (old_config)

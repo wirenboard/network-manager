@@ -31,9 +31,10 @@
 #include "nm-utils.h"
 
 #include "nm-core-utils.h"
+#include "nm-platform-utils.h"
 #include "nmp-object.h"
 
-#include "nm-test-utils.h"
+#include "nm-test-utils-core.h"
 
 /*********************************************************************************************/
 
@@ -505,7 +506,7 @@ link_set_noarp (NMPlatform *platform, int ifindex)
 	return TRUE;
 }
 
-static gboolean
+static NMPlatformError
 link_set_address (NMPlatform *platform, int ifindex, gconstpointer addr, size_t len)
 {
 	NMFakePlatformLink *device = link_get (platform, ifindex);
@@ -514,7 +515,7 @@ link_set_address (NMPlatform *platform, int ifindex, gconstpointer addr, size_t 
 	    || len == 0
 	    || len > NM_UTILS_HWADDR_LEN_MAX
 	    || !addr)
-		g_return_val_if_reached (FALSE);
+		g_return_val_if_reached (NM_PLATFORM_ERROR_BUG);
 
 	if (   device->link.addr.len != len
 	    || (   len > 0
@@ -524,7 +525,7 @@ link_set_address (NMPlatform *platform, int ifindex, gconstpointer addr, size_t 
 		link_changed (platform, link_get (platform, ifindex), TRUE);
 	}
 
-	return TRUE;
+	return NM_PLATFORM_ERROR_SUCCESS;
 }
 
 static gboolean
@@ -709,12 +710,13 @@ static gboolean
 infiniband_partition_add (NMPlatform *platform, int parent, int p_key, const NMPlatformLink **out_link)
 {
 	NMFakePlatformLink *device, *parent_device;
-	gs_free char *name = NULL;
+	char name[IFNAMSIZ];
 
 	parent_device = link_get (platform, parent);
 	g_return_val_if_fail (parent_device != NULL, FALSE);
 
-	name = g_strdup_printf ("%s.%04x", parent_device->link.name, p_key);
+	nm_utils_new_infiniband_name (name, parent_device->link.name, p_key);
+
 	if (!link_add (platform, name, NM_LINK_TYPE_INFINIBAND, NULL, 0, out_link))
 		return FALSE;
 
@@ -726,7 +728,6 @@ infiniband_partition_add (NMPlatform *platform, int parent, int p_key, const NMP
 	device->lnk->lnk_infiniband.p_key = p_key;
 	device->lnk->lnk_infiniband.mode = "datagram";
 	device->link.parent = parent;
-
 	return TRUE;
 }
 
@@ -739,7 +740,7 @@ infiniband_partition_delete (NMPlatform *platform, int parent, int p_key)
 	parent_device = link_get (platform, parent);
 	g_return_val_if_fail (parent_device != NULL, FALSE);
 
-	name = g_strdup_printf ("%s.%04x", parent_device->link.name, p_key);
+	nm_utils_new_infiniband_name (name, parent_device->link.name, p_key);
 	return link_delete (platform, nm_platform_link_get_ifindex (platform, name));
 }
 
@@ -911,7 +912,7 @@ ip4_address_add (NMPlatform *platform,
 	int i;
 
 	memset (&address, 0, sizeof (address));
-	address.source = NM_IP_CONFIG_SOURCE_KERNEL;
+	address.addr_source = NM_IP_CONFIG_SOURCE_KERNEL;
 	address.ifindex = ifindex;
 	address.address = addr;
 	address.peer_address = peer_addr;
@@ -962,7 +963,7 @@ ip6_address_add (NMPlatform *platform,
 	int i;
 
 	memset (&address, 0, sizeof (address));
-	address.source = NM_IP_CONFIG_SOURCE_KERNEL;
+	address.addr_source = NM_IP_CONFIG_SOURCE_KERNEL;
 	address.ifindex = ifindex;
 	address.address = addr;
 	address.peer_address = (IN6_IS_ADDR_UNSPECIFIED (&peer_addr) || IN6_ARE_ADDR_EQUAL (&addr, &peer_addr)) ? in6addr_any : peer_addr;
@@ -1207,9 +1208,8 @@ ip4_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 	scope = gateway == 0 ? RT_SCOPE_LINK : RT_SCOPE_UNIVERSE;
 
 	memset (&route, 0, sizeof (route));
-	route.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	route.ifindex = ifindex;
-	route.source = source;
+	route.rt_source = nmp_utils_ip_config_source_round_trip_rtprot (source);
 	route.network = nm_utils_ip4_address_clear_host_address (network, plen);
 	route.plen = plen;
 	route.gateway = gateway;
@@ -1273,9 +1273,8 @@ ip6_route_add (NMPlatform *platform, int ifindex, NMIPConfigSource source,
 	metric = nm_utils_ip6_route_metric_normalize (metric);
 
 	memset (&route, 0, sizeof (route));
-	route.source = NM_IP_CONFIG_SOURCE_KERNEL;
 	route.ifindex = ifindex;
-	route.source = source;
+	route.rt_source = nmp_utils_ip_config_source_round_trip_rtprot (source);
 	nm_utils_ip6_address_clear_host_address (&route.network, &network, plen);
 	route.plen = plen;
 	route.gateway = gateway;

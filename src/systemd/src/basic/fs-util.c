@@ -30,26 +30,22 @@
 #include <unistd.h>
 
 #include "alloc-util.h"
-#if 0 /* NM_IGNORED */
 #include "dirent-util.h"
-#endif /* NM_IGNORED */
 #include "fd-util.h"
 #include "fileio.h"
 #include "fs-util.h"
 #include "log.h"
 #include "macro.h"
-#if 0 /* NM_IGNORED */
 #include "missing.h"
 #include "mkdir.h"
-#endif /* NM_IGNORED */
 #include "parse-util.h"
 #include "path-util.h"
+#include "stat-util.h"
+#include "stdio-util.h"
 #include "string-util.h"
 #include "strv.h"
 #include "time-util.h"
-#if 0 /* NM_IGNORED */
 #include "user-util.h"
-#endif /* NM_IGNORED */
 #include "util.h"
 
 int unlink_noerrno(const char *path) {
@@ -151,6 +147,7 @@ int rename_noreplace(int olddirfd, const char *oldpath, int newdirfd, const char
 
         return 0;
 }
+#endif /* NM_IGNORED */
 
 int readlinkat_malloc(int fd, const char *p, char **ret) {
         size_t l = 100;
@@ -189,6 +186,7 @@ int readlink_malloc(const char *p, char **ret) {
         return readlinkat_malloc(AT_FDCWD, p, ret);
 }
 
+#if 0 /* NM_IGNORED */
 int readlink_value(const char *p, char **ret) {
         _cleanup_free_ char *link = NULL;
         char *value;
@@ -503,5 +501,107 @@ int get_files_in_directory(const char *path, char ***list) {
         }
 
         return n;
+}
+
+static int getenv_tmp_dir(const char **ret_path) {
+        const char *n;
+        int r, ret = 0;
+
+        assert(ret_path);
+
+        /* We use the same order of environment variables python uses in tempfile.gettempdir():
+         * https://docs.python.org/3/library/tempfile.html#tempfile.gettempdir */
+        FOREACH_STRING(n, "TMPDIR", "TEMP", "TMP") {
+                const char *e;
+
+                e = secure_getenv(n);
+                if (!e)
+                        continue;
+                if (!path_is_absolute(e)) {
+                        r = -ENOTDIR;
+                        goto next;
+                }
+                if (!path_is_safe(e)) {
+                        r = -EPERM;
+                        goto next;
+                }
+
+                r = is_dir(e, true);
+                if (r < 0)
+                        goto next;
+                if (r == 0) {
+                        r = -ENOTDIR;
+                        goto next;
+                }
+
+                *ret_path = e;
+                return 1;
+
+        next:
+                /* Remember first error, to make this more debuggable */
+                if (ret >= 0)
+                        ret = r;
+        }
+
+        if (ret < 0)
+                return ret;
+
+        *ret_path = NULL;
+        return ret;
+}
+
+static int tmp_dir_internal(const char *def, const char **ret) {
+        const char *e;
+        int r, k;
+
+        assert(def);
+        assert(ret);
+
+        r = getenv_tmp_dir(&e);
+        if (r > 0) {
+                *ret = e;
+                return 0;
+        }
+
+        k = is_dir(def, true);
+        if (k == 0)
+                k = -ENOTDIR;
+        if (k < 0)
+                return r < 0 ? r : k;
+
+        *ret = def;
+        return 0;
+}
+
+int var_tmp_dir(const char **ret) {
+
+        /* Returns the location for "larger" temporary files, that is backed by physical storage if available, and thus
+         * even might survive a boot: /var/tmp. If $TMPDIR (or related environment variables) are set, its value is
+         * returned preferably however. Note that both this function and tmp_dir() below are affected by $TMPDIR,
+         * making it a variable that overrides all temporary file storage locations. */
+
+        return tmp_dir_internal("/var/tmp", ret);
+}
+
+int tmp_dir(const char **ret) {
+
+        /* Similar to var_tmp_dir() above, but returns the location for "smaller" temporary files, which is usually
+         * backed by an in-memory file system: /tmp. */
+
+        return tmp_dir_internal("/tmp", ret);
+}
+
+int inotify_add_watch_fd(int fd, int what, uint32_t mask) {
+        char path[strlen("/proc/self/fd/") + DECIMAL_STR_MAX(int) + 1];
+        int r;
+
+        /* This is like inotify_add_watch(), except that the file to watch is not referenced by a path, but by an fd */
+        xsprintf(path, "/proc/self/fd/%i", what);
+
+        r = inotify_add_watch(fd, path, mask);
+        if (r < 0)
+                return -errno;
+
+        return r;
 }
 #endif /* NM_IGNORED */

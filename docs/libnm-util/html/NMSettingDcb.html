@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingAdsl.html" title="NMSettingAdsl">
 <link rel="next" href="NMSetting8021x.html" title="NMSetting8021x">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -447,7 +447,7 @@ of storage technologies like Fibre Channel over Ethernet (FCoE) and iSCSI.</p>
 nm_setting_dcb_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> errors.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -459,7 +459,7 @@ nm_setting_dcb_error_quark (<em class="parameter"><code><span class="type">void<
 nm_setting_dcb_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -471,7 +471,7 @@ nm_setting_dcb_new (<em class="parameter"><code><span class="type">void</span></
 <pre class="programlisting"><a class="link" href="NMSettingDcb.html#NMSettingDcbFlags" title="enum NMSettingDcbFlags"><span class="returnvalue">NMSettingDcbFlags</span></a>
 nm_setting_dcb_get_app_fcoe_flags (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-fcoe-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -486,7 +486,7 @@ nm_setting_dcb_get_app_fcoe_flags (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-fcoe-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-fcoe-flags" title="The “app-fcoe-flags” property"><span class="type">“app-fcoe-flags”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -497,7 +497,7 @@ nm_setting_dcb_get_app_fcoe_flags (<em class="parameter"><code><a class="link" h
 <pre class="programlisting"><span class="returnvalue">gint</span>
 nm_setting_dcb_get_app_fcoe_priority (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.5.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-fcoe-priority.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -512,7 +512,7 @@ nm_setting_dcb_get_app_fcoe_priority (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.5.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-fcoe-priority.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-fcoe-priority" title="The “app-fcoe-priority” property"><span class="type">“app-fcoe-priority”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -523,7 +523,7 @@ nm_setting_dcb_get_app_fcoe_priority (<em class="parameter"><code><a class="link
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_dcb_get_app_fcoe_mode (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.6.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-fcoe-mode.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -538,7 +538,7 @@ nm_setting_dcb_get_app_fcoe_mode (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.6.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-fcoe-mode.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-fcoe-mode" title="The “app-fcoe-mode” property"><span class="type">“app-fcoe-mode”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -549,7 +549,7 @@ nm_setting_dcb_get_app_fcoe_mode (<em class="parameter"><code><a class="link" hr
 <pre class="programlisting"><a class="link" href="NMSettingDcb.html#NMSettingDcbFlags" title="enum NMSettingDcbFlags"><span class="returnvalue">NMSettingDcbFlags</span></a>
 nm_setting_dcb_get_app_iscsi_flags (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.7.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-iscsi-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -564,7 +564,7 @@ nm_setting_dcb_get_app_iscsi_flags (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.7.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-iscsi-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-iscsi-flags" title="The “app-iscsi-flags” property"><span class="type">“app-iscsi-flags”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -575,7 +575,7 @@ nm_setting_dcb_get_app_iscsi_flags (<em class="parameter"><code><a class="link" 
 <pre class="programlisting"><span class="returnvalue">gint</span>
 nm_setting_dcb_get_app_iscsi_priority (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.8.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-iscsi-priority.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -590,7 +590,7 @@ nm_setting_dcb_get_app_iscsi_priority (<em class="parameter"><code><a class="lin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.8.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-iscsi-priority.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-iscsi-priority" title="The “app-iscsi-priority” property"><span class="type">“app-iscsi-priority”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -601,7 +601,7 @@ nm_setting_dcb_get_app_iscsi_priority (<em class="parameter"><code><a class="lin
 <pre class="programlisting"><a class="link" href="NMSettingDcb.html#NMSettingDcbFlags" title="enum NMSettingDcbFlags"><span class="returnvalue">NMSettingDcbFlags</span></a>
 nm_setting_dcb_get_app_fip_flags (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.9.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-fip-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -616,7 +616,7 @@ nm_setting_dcb_get_app_fip_flags (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.9.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-fip-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-fip-flags" title="The “app-fip-flags” property"><span class="type">“app-fip-flags”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -627,7 +627,7 @@ nm_setting_dcb_get_app_fip_flags (<em class="parameter"><code><a class="link" hr
 <pre class="programlisting"><span class="returnvalue">gint</span>
 nm_setting_dcb_get_app_fip_priority (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.10.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-app-fip-priority.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -642,7 +642,7 @@ nm_setting_dcb_get_app_fip_priority (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.10.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-app-fip-priority.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--app-fip-priority" title="The “app-fip-priority” property"><span class="type">“app-fip-priority”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -654,7 +654,7 @@ nm_setting_dcb_get_app_fip_priority (<em class="parameter"><code><a class="link"
 nm_setting_dcb_get_priority_flow_control_flags
                                (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.11.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-flow-control-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -669,7 +669,7 @@ nm_setting_dcb_get_priority_flow_control_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.11.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-flow-control-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-flow-control-flags" title="The “priority-flow-control-flags” property"><span class="type">“priority-flow-control-flags”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -682,7 +682,7 @@ nm_setting_dcb_get_priority_flow_control
                                (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint</span> user_priority</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.12.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-flow-control.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -704,7 +704,7 @@ nm_setting_dcb_get_priority_flow_control
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.12.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-flow-control.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if flow control is enabled for the given <em class="parameter"><code>user_priority</code></em>
 ,
 <code class="literal">FALSE</code> if not enabled</p>
@@ -722,7 +722,7 @@ nm_setting_dcb_set_priority_flow_control
 <p>These values are only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-flow-control" title="The “priority-flow-control” property"><span class="type">“priority-flow-control”</span></a> includes
 the <a class="link" href="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"><code class="literal">NM_SETTING_DCB_FLAG_ENABLE</code></a> flag.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.13.5"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-set-priority-flow-control.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -757,7 +757,7 @@ the <a class="link" href="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"><co
 nm_setting_dcb_get_priority_group_flags
                                (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.14.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-group-flags.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -772,7 +772,7 @@ nm_setting_dcb_get_priority_group_flags
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.14.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-group-flags.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -784,7 +784,7 @@ nm_setting_dcb_get_priority_group_flags
 nm_setting_dcb_get_priority_group_id (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>,
                                       <em class="parameter"><code><span class="type">guint</span> user_priority</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.15.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-group-id.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -806,7 +806,7 @@ nm_setting_dcb_get_priority_group_id (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.15.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-group-id.returns"></a><h4>Returns</h4>
 <p> the group number <em class="parameter"><code>user_priority</code></em>
 is assigned to.  These values are
 only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes the
@@ -824,7 +824,7 @@ nm_setting_dcb_set_priority_group_id (<em class="parameter"><code><a class="link
 <p>These values are only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes
 the <a class="link" href="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"><code class="literal">NM_SETTING_DCB_FLAG_ENABLE</code></a> flag.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-set-priority-group-id.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -862,7 +862,7 @@ nm_setting_dcb_get_priority_group_bandwidth
                                (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint</span> group_id</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.17.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-group-bandwidth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -884,7 +884,7 @@ nm_setting_dcb_get_priority_group_bandwidth
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.17.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-group-bandwidth.returns"></a><h4>Returns</h4>
 <p> the bandwidth percentage assigned to <em class="parameter"><code>group_id</code></em>
 .  These values are
 only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes the
@@ -903,7 +903,7 @@ nm_setting_dcb_set_priority_group_bandwidth
 <p>These values are only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes
 the <a class="link" href="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"><code class="literal">NM_SETTING_DCB_FLAG_ENABLE</code></a> flag.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-set-priority-group-bandwidth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -939,7 +939,7 @@ to</p></td>
 nm_setting_dcb_get_priority_bandwidth (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>,
                                        <em class="parameter"><code><span class="type">guint</span> user_priority</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.19.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-bandwidth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -961,7 +961,7 @@ nm_setting_dcb_get_priority_bandwidth (<em class="parameter"><code><a class="lin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.19.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-bandwidth.returns"></a><h4>Returns</h4>
 <p> the allowed bandwidth percentage of <em class="parameter"><code>user_priority</code></em>
 in its priority group.
 These values are only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes the
@@ -979,7 +979,7 @@ nm_setting_dcb_set_priority_bandwidth (<em class="parameter"><code><a class="lin
 <p>These values are only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes
 the <a class="link" href="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"><code class="literal">NM_SETTING_DCB_FLAG_ENABLE</code></a> flag.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.20.5"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-set-priority-bandwidth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1017,7 +1017,7 @@ nm_setting_dcb_get_priority_strict_bandwidth
                                (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint</span> user_priority</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.21.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-strict-bandwidth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1039,7 +1039,7 @@ nm_setting_dcb_get_priority_strict_bandwidth
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.21.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-strict-bandwidth.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>user_priority</code></em>
 may use all of the bandwidth allocated to its
 assigned group, or <code class="literal">FALSE</code> if not. These values are only valid when
@@ -1058,7 +1058,7 @@ nm_setting_dcb_set_priority_strict_bandwidth
 <p>These values are only valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes
 the <a class="link" href="NMSettingDcb.html#NM-SETTING-DCB-FLAG-ENABLE:CAPS"><code class="literal">NM_SETTING_DCB_FLAG_ENABLE</code></a> flag.</p>
 <div class="refsect3">
-<a name="id-1.2.23.9.22.5"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-set-priority-strict-bandwidth.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1096,7 +1096,7 @@ nm_setting_dcb_get_priority_traffic_class
                                (<em class="parameter"><code><a class="link" href="NMSettingDcb.html" title="NMSettingDcb"><span class="type">NMSettingDcb</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint</span> user_priority</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.23.9.23.4"></a><h4>Parameters</h4>
+<a name="nm-setting-dcb-get-priority-traffic-class.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1118,7 +1118,7 @@ nm_setting_dcb_get_priority_traffic_class
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.23.9.23.5"></a><h4>Returns</h4>
+<a name="nm-setting-dcb-get-priority-traffic-class.returns"></a><h4>Returns</h4>
 <p> the traffic class assigned to <em class="parameter"><code>user_priority</code></em>
 . These values are only
 valid when <a class="link" href="NMSettingDcb.html#NMSettingDcb--priority-group-flags" title="The “priority-group-flags” property"><span class="type">“priority-group-flags”</span></a> includes the
@@ -1147,7 +1147,7 @@ nm_setting_dcb_set_priority_traffic_class
 <div class="refsect2">
 <a name="NMSettingDcbError"></a><h3>enum NMSettingDcbError</h3>
 <div class="refsect3">
-<a name="id-1.2.23.10.3.3"></a><h4>Members</h4>
+<a name="NMSettingDcbError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1192,7 +1192,7 @@ required</p>
 <a name="NMSettingDcbFlags"></a><h3>enum NMSettingDcbFlags</h3>
 <p>DCB feature flags.</p>
 <div class="refsect3">
-<a name="id-1.2.23.10.5.4"></a><h4>Members</h4>
+<a name="NMSettingDcbFlags.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1517,6 +1517,6 @@ which the priority is mapped.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

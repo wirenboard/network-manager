@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
-#include "nm-default.h"
 #include "nm-connection.h"
 
 /*****************************************************************************/
@@ -93,6 +92,7 @@ GETTER (void) \
 
 gboolean nm_ethernet_address_is_valid (gconstpointer addr, gssize len);
 
+gconstpointer nm_utils_ipx_address_clear_host_address (int family, gpointer dst, gconstpointer src, guint8 plen);
 in_addr_t nm_utils_ip4_address_clear_host_address (in_addr_t addr, guint8 plen);
 const struct in6_addr *nm_utils_ip6_address_clear_host_address (struct in6_addr *dst, const struct in6_addr *src, guint8 plen);
 gboolean nm_utils_ip6_address_same_prefix (const struct in6_addr *addr_a, const struct in6_addr *addr_b, guint8 plen);
@@ -275,7 +275,7 @@ _nm_utils_strbuf_init (char *buf, gsize len, char **p_buf_ptr, gsize *p_buf_len)
 		G_STATIC_ASSERT (G_N_ELEMENTS (buf) == sizeof (buf) && sizeof (buf) > sizeof (char *)); \
 		_nm_utils_strbuf_init ((buf), sizeof (buf), (p_buf_ptr), (p_buf_len)); \
 	} G_STMT_END
-void nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...) __attribute__((__format__ (__printf__, 3, 4)));
+void nm_utils_strbuf_append (char **buf, gsize *len, const char *format, ...) _nm_printf (3, 4);
 void nm_utils_strbuf_append_c (char **buf, gsize *len, char c);
 void nm_utils_strbuf_append_str (char **buf, gsize *len, const char *str);
 
@@ -283,6 +283,7 @@ const char *nm_utils_get_ip_config_method (NMConnection *connection,
                                            GType         ip_setting_type);
 
 char *nm_utils_new_vlan_name (const char *parent_iface, guint32 vlan_id);
+const char *nm_utils_new_infiniband_name (char *name, const char *parent_name, int p_key);
 
 GPtrArray *nm_utils_read_resolv_conf_nameservers (const char *rc_contents);
 GPtrArray *nm_utils_read_resolv_conf_dns_options (const char *rc_contents);
@@ -307,6 +308,12 @@ const char *nm_utils_ip6_property_path (const char *ifname, const char *property
 const char *nm_utils_ip4_property_path (const char *ifname, const char *property);
 
 gboolean nm_utils_is_specific_hostname (const char *name);
+
+int nm_utils_fd_wait_for_event (int fd, int event, gint64 timeout_ns);
+ssize_t nm_utils_fd_read_loop (int fd, void *buf, size_t nbytes, bool do_poll);
+int nm_utils_fd_read_loop_exact (int fd, void *buf, size_t nbytes, bool do_poll);
+
+int nm_utils_read_urandom (void *p, size_t n);
 
 char *nm_utils_machine_id_read (void);
 gboolean nm_utils_machine_id_parse (const char *id_str, /*uuid_t*/ guchar *out_uuid);
@@ -333,23 +340,43 @@ struct _NMUtilsIPv6IfaceId {
 
 #define NM_UTILS_IPV6_IFACE_ID_INIT { { .id = 0 } }
 
+void nm_utils_ipv6_addr_set_interface_identifier (struct in6_addr *addr,
+                                                 const NMUtilsIPv6IfaceId iid);
+
+void nm_utils_ipv6_interface_identifier_get_from_addr (NMUtilsIPv6IfaceId *iid,
+                                                      const struct in6_addr *addr);
+
+gboolean nm_utils_ipv6_interface_identifier_get_from_token (NMUtilsIPv6IfaceId *iid,
+                                                           const char *token);
+
+const char *nm_utils_inet6_interface_identifier_to_token (NMUtilsIPv6IfaceId iid,
+                                                         char *buf);
+
 gboolean nm_utils_get_ipv6_interface_identifier (NMLinkType link_type,
                                                  const guint8 *hwaddr,
                                                  guint len,
                                                  guint dev_id,
                                                  NMUtilsIPv6IfaceId *out_iid);
 
-void nm_utils_ipv6_addr_set_interface_identfier (struct in6_addr *addr,
-                                                 const NMUtilsIPv6IfaceId iid);
+typedef enum { /*< skip >*/
+	NM_UTILS_STABLE_TYPE_UUID = 0,
+	NM_UTILS_STABLE_TYPE_STABLE_ID = 1,
+} NMUtilsStableType;
 
-gboolean nm_utils_ipv6_addr_set_stable_privacy (struct in6_addr *addr,
+gboolean nm_utils_ipv6_addr_set_stable_privacy (NMUtilsStableType id_type,
+                                                struct in6_addr *addr,
                                                 const char *ifname,
-                                                const char *uuid,
+                                                const char *network_id,
                                                 guint dad_counter,
                                                 GError **error);
 
-void nm_utils_ipv6_interface_identfier_get_from_addr (NMUtilsIPv6IfaceId *iid,
-                                                      const struct in6_addr *addr);
+char *nm_utils_hw_addr_gen_random_eth (const char *current_mac_address,
+                                       const char *generate_mac_address_mask);
+char *nm_utils_hw_addr_gen_stable_eth (NMUtilsStableType stable_type,
+                                       const char *stable_id,
+                                       const char *ifname,
+                                       const char *current_mac_address,
+                                       const char *generate_mac_address_mask);
 
 void nm_utils_array_remove_at_indexes (GArray *array, const guint *indexes_to_delete, gsize len);
 
@@ -396,7 +423,7 @@ gboolean nm_utils_lifetime_get (guint32 timestamp,
 
 gboolean nm_utils_ip4_address_is_link_local (in_addr_t addr);
 
-const char *nm_utils_dnsmasq_status_to_string (int status, char *dest, guint size);
+const char *nm_utils_dnsmasq_status_to_string (int status, char *dest, gsize size);
 
 void nm_utils_get_reverse_dns_domains_ip4 (guint32 ip, guint8 plen, GPtrArray *domains);
 void nm_utils_get_reverse_dns_domains_ip6 (const struct in6_addr *ip, guint8 plen, GPtrArray *domains);

@@ -8,7 +8,7 @@
 <link rel="up" href="ch02.html" title="libnm-glib API Reference">
 <link rel="prev" href="NMDeviceEthernet.html" title="NMDeviceEthernet">
 <link rel="next" href="NMDeviceModem.html" title="NMDeviceModem">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -277,7 +277,7 @@
 nm_device_wifi_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.2.5"></a><h4>Returns</h4>
+<a name="nm-device-wifi-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> errors.</p>
 </div>
 </div>
@@ -289,7 +289,7 @@ nm_device_wifi_new (<em class="parameter"><code><a href="/usr/share/gtk-doc/html
                     <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
 <p>Creates a new <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.3.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-new.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -311,7 +311,7 @@ nm_device_wifi_new (<em class="parameter"><code><a href="/usr/share/gtk-doc/html
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.3.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-new.returns"></a><h4>Returns</h4>
 <p> a new Wi-Fi device. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -323,7 +323,7 @@ nm_device_wifi_new (<em class="parameter"><code><a href="/usr/share/gtk-doc/html
 nm_device_wifi_get_hw_address (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets the actual hardware (MAC) address of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a></p>
 <div class="refsect3">
-<a name="id-1.3.6.9.4.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-hw-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -338,7 +338,7 @@ nm_device_wifi_get_hw_address (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.4.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-hw-address.returns"></a><h4>Returns</h4>
 <p> the actual hardware address. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -351,7 +351,7 @@ nm_device_wifi_get_permanent_hw_address
                                (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets the permanent hardware (MAC) address of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a></p>
 <div class="refsect3">
-<a name="id-1.3.6.9.5.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-permanent-hw-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -366,7 +366,7 @@ nm_device_wifi_get_permanent_hw_address
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.5.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-permanent-hw-address.returns"></a><h4>Returns</h4>
 <p> the permanent hardware address. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -378,7 +378,7 @@ device, and must not be modified.</p>
 nm_device_wifi_get_mode (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> mode.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.6.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-mode.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -393,7 +393,7 @@ nm_device_wifi_get_mode (<em class="parameter"><code><a class="link" href="NMDev
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.6.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-mode.returns"></a><h4>Returns</h4>
 <p> the mode</p>
 </div>
 </div>
@@ -404,7 +404,7 @@ nm_device_wifi_get_mode (<em class="parameter"><code><a class="link" href="NMDev
 nm_device_wifi_get_bitrate (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets the bit rate of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> in kbit/s.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.7.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-bitrate.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -419,7 +419,7 @@ nm_device_wifi_get_bitrate (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.7.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-bitrate.returns"></a><h4>Returns</h4>
 <p> the bit rate (kbit/s)</p>
 </div>
 </div>
@@ -430,7 +430,7 @@ nm_device_wifi_get_bitrate (<em class="parameter"><code><a class="link" href="NM
 nm_device_wifi_get_capabilities (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets the Wi-Fi capabilities of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.8.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-capabilities.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -445,7 +445,7 @@ nm_device_wifi_get_capabilities (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.8.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-capabilities.returns"></a><h4>Returns</h4>
 <p> the capabilities</p>
 </div>
 </div>
@@ -457,7 +457,7 @@ nm_device_wifi_get_active_access_point
                                (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets the active <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.9.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-active-access-point.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -472,7 +472,7 @@ nm_device_wifi_get_active_access_point
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.9.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-active-access-point.returns"></a><h4>Returns</h4>
 <p> the access point or <code class="literal">NULL</code> if none is active. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -486,7 +486,7 @@ nm_device_wifi_get_access_point_by_path
                                 <em class="parameter"><code>const <span class="type">char</span> *path</code></em>);</pre>
 <p>Gets a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> by path.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.10.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-access-point-by-path.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -508,7 +508,7 @@ nm_device_wifi_get_access_point_by_path
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.10.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-access-point-by-path.returns"></a><h4>Returns</h4>
 <p> the access point or <code class="literal">NULL</code> if none is found. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -520,7 +520,7 @@ nm_device_wifi_get_access_point_by_path
 nm_device_wifi_get_access_points (<em class="parameter"><code><a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a> *device</code></em>);</pre>
 <p>Gets all the scanned access points of the <a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><span class="type">NMDeviceWifi</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.11.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-get-access-points.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -535,9 +535,9 @@ nm_device_wifi_get_access_points (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.3.6.9.11.6"></a><h4>Returns</h4>
+<a name="nm-device-wifi-get-access-points.returns"></a><h4>Returns</h4>
 <p> a <span class="type">GPtrArray</span> containing all the
-scanned <a href="NMAccessPoint.html"><span class="type">NMAccessPoints</span></a>.
+scanned <a href="/usr/share/gtk-doc/html/libnm/NMAccessPoint.html#NMAccessPoint-struct"><span class="type">NMAccessPoints</span></a>.
 The returned array is owned by the client and should not be modified. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMAccessPoint]</span></p>
 </div>
@@ -561,7 +561,7 @@ nm_device_wifi_request_scan_simple (<em class="parameter"><code><a class="link" 
 instructs NM to perform scanning. Use <a class="link" href="NMDeviceWifi.html#nm-device-wifi-get-access-points" title="nm_device_wifi_get_access_points ()"><code class="function">nm_device_wifi_get_access_points()</code></a>
 to get available access points.</p>
 <div class="refsect3">
-<a name="id-1.3.6.9.13.5"></a><h4>Parameters</h4>
+<a name="nm-device-wifi-request-scan-simple.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -595,7 +595,7 @@ to get available access points.</p>
 <div class="refsect2">
 <a name="NMDeviceWifiError"></a><h3>enum NMDeviceWifiError</h3>
 <div class="refsect3">
-<a name="id-1.3.6.10.2.3"></a><h4>Members</h4>
+<a name="NMDeviceWifiError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -775,7 +775,7 @@ user_function (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><sp
                <span class="type">gpointer</span>      user_data)</pre>
 <p>Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is added to the Wi-Fi device.</p>
 <div class="refsect3">
-<a name="id-1.3.6.12.2.5"></a><h4>Parameters</h4>
+<a name="NMDeviceWifi-access-point-added.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -812,7 +812,7 @@ user_function (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><sp
                <span class="type">gpointer</span>      user_data)</pre>
 <p>Notifies that a <a class="link" href="NMAccessPoint.html" title="NMAccessPoint"><span class="type">NMAccessPoint</span></a> is removed from the Wi-Fi device.</p>
 <div class="refsect3">
-<a name="id-1.3.6.12.3.5"></a><h4>Parameters</h4>
+<a name="NMDeviceWifi-access-point-removed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -843,6 +843,6 @@ user_function (<a class="link" href="NMDeviceWifi.html" title="NMDeviceWifi"><sp
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

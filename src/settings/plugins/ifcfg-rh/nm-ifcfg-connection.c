@@ -20,6 +20,8 @@
 
 #include "nm-default.h"
 
+#include "nm-ifcfg-connection.h"
+
 #include <string.h>
 
 #include <glib/gstdio.h>
@@ -37,7 +39,6 @@
 
 #include "common.h"
 #include "nm-config.h"
-#include "nm-ifcfg-connection.h"
 #include "reader.h"
 #include "writer.h"
 #include "nm-inotify-helper.h"
@@ -469,7 +470,7 @@ nm_ifcfg_connection_init (NMIfcfgConnection *connection)
 
 static void
 set_property (GObject *object, guint prop_id,
-		    const GValue *value, GParamSpec *pspec)
+            const GValue *value, GParamSpec *pspec)
 {
 	NMIfcfgConnectionPrivate *priv = NM_IFCFG_CONNECTION_GET_PRIVATE (object);
 
@@ -488,7 +489,7 @@ set_property (GObject *object, guint prop_id,
 
 static void
 get_property (GObject *object, guint prop_id,
-		    GValue *value, GParamSpec *pspec)
+            GValue *value, GParamSpec *pspec)
 {
 	NMIfcfgConnectionPrivate *priv = NM_IFCFG_CONNECTION_GET_PRIVATE (object);
 

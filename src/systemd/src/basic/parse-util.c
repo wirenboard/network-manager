@@ -28,11 +28,10 @@
 #include <xlocale.h>
 
 #include "alloc-util.h"
-#if 0 /* NM_IGNORED */
 #include "extract-word.h"
-#endif /* NM_IGNORED */
 #include "macro.h"
 #include "parse-util.h"
+#include "process-util.h"
 #include "string-util.h"
 
 int parse_boolean(const char *v) {
@@ -538,3 +537,46 @@ int parse_fractional_part_u(const char **p, size_t digits, unsigned *res) {
 
         return 0;
 }
+
+int parse_percent_unbounded(const char *p) {
+        const char *pc, *n;
+        unsigned v;
+        int r;
+
+        pc = endswith(p, "%");
+        if (!pc)
+                return -EINVAL;
+
+        n = strndupa(p, pc - p);
+        r = safe_atou(n, &v);
+        if (r < 0)
+                return r;
+
+        return (int) v;
+}
+
+int parse_percent(const char *p) {
+        int v;
+
+        v = parse_percent_unbounded(p);
+        if (v > 100)
+                return -ERANGE;
+
+        return v;
+}
+
+#if 0 /* NM_IGNORED */
+int parse_nice(const char *p, int *ret) {
+        int n, r;
+
+        r = safe_atoi(p, &n);
+        if (r < 0)
+                return r;
+
+        if (!nice_is_valid(n))
+                return -ERANGE;
+
+        *ret = n;
+        return 0;
+}
+#endif /* NM_IGNORED */

@@ -39,6 +39,12 @@ typedef struct dual_timestamp {
         usec_t monotonic;
 } dual_timestamp;
 
+typedef struct triple_timestamp {
+        usec_t realtime;
+        usec_t monotonic;
+        usec_t boottime;
+} triple_timestamp;
+
 #define USEC_INFINITY ((usec_t) -1)
 #define NSEC_INFINITY ((nsec_t) -1)
 
@@ -62,14 +68,17 @@ typedef struct dual_timestamp {
 #define USEC_PER_YEAR ((usec_t) (31557600ULL*USEC_PER_SEC))
 #define NSEC_PER_YEAR ((nsec_t) (31557600ULL*NSEC_PER_SEC))
 
-#define FORMAT_TIMESTAMP_MAX ((4*4+1)+11+9+4+1) /* weekdays can be unicode */
+/* We assume a maximum timezone length of 6. TZNAME_MAX is not defined on Linux, but glibc internally initializes this
+ * to 6. Let's rely on that. */
+#define FORMAT_TIMESTAMP_MAX (3+1+10+1+8+1+6+1+6+1)
 #define FORMAT_TIMESTAMP_WIDTH 28 /* when outputting, assume this width */
 #define FORMAT_TIMESTAMP_RELATIVE_MAX 256
 #define FORMAT_TIMESPAN_MAX 64
 
 #define TIME_T_MAX (time_t)((UINTMAX_C(1) << ((sizeof(time_t) << 3) - 1)) - 1)
 
-#define DUAL_TIMESTAMP_NULL ((struct dual_timestamp) { 0ULL, 0ULL })
+#define DUAL_TIMESTAMP_NULL ((struct dual_timestamp) {})
+#define TRIPLE_TIMESTAMP_NULL ((struct triple_timestamp) {})
 
 usec_t now(clockid_t clock);
 nsec_t now_nsec(clockid_t clock);
@@ -79,10 +88,27 @@ dual_timestamp* dual_timestamp_from_realtime(dual_timestamp *ts, usec_t u);
 dual_timestamp* dual_timestamp_from_monotonic(dual_timestamp *ts, usec_t u);
 dual_timestamp* dual_timestamp_from_boottime_or_monotonic(dual_timestamp *ts, usec_t u);
 
+triple_timestamp* triple_timestamp_get(triple_timestamp *ts);
+triple_timestamp* triple_timestamp_from_realtime(triple_timestamp *ts, usec_t u);
+
+#define DUAL_TIMESTAMP_HAS_CLOCK(clock)                               \
+        IN_SET(clock, CLOCK_REALTIME, CLOCK_REALTIME_ALARM, CLOCK_MONOTONIC)
+
+#define TRIPLE_TIMESTAMP_HAS_CLOCK(clock)                               \
+        IN_SET(clock, CLOCK_REALTIME, CLOCK_REALTIME_ALARM, CLOCK_MONOTONIC, CLOCK_BOOTTIME, CLOCK_BOOTTIME_ALARM)
+
 static inline bool dual_timestamp_is_set(dual_timestamp *ts) {
         return ((ts->realtime > 0 && ts->realtime != USEC_INFINITY) ||
                 (ts->monotonic > 0 && ts->monotonic != USEC_INFINITY));
 }
+
+static inline bool triple_timestamp_is_set(triple_timestamp *ts) {
+        return ((ts->realtime > 0 && ts->realtime != USEC_INFINITY) ||
+                (ts->monotonic > 0 && ts->monotonic != USEC_INFINITY) ||
+                (ts->boottime > 0 && ts->boottime != USEC_INFINITY));
+}
+
+usec_t triple_timestamp_by_clock(triple_timestamp *ts, clockid_t clock);
 
 usec_t timespec_load(const struct timespec *ts) _pure_;
 struct timespec *timespec_store(struct timespec *ts, usec_t u);
@@ -112,6 +138,8 @@ bool ntp_synced(void);
 int get_timezones(char ***l);
 bool timezone_is_valid(const char *name);
 
+bool clock_boottime_supported(void);
+bool clock_supported(clockid_t clock);
 clockid_t clock_boottime_or_monotonic(void);
 
 #define xstrftime(buf, fmt, tm) \

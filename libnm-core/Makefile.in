@@ -101,8 +101,9 @@ host_triplet = @host@
 @WITH_NSS_TRUE@am__append_6 = $(NSS_LIBS)
 subdir = libnm-core
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -127,10 +128,10 @@ am__DEPENDENCIES_1 =
 @WITH_GNUTLS_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 @WITH_NSS_TRUE@am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1)
 libnm_core_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2) \
-	$(am__DEPENDENCIES_3)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
 am__libnm_core_la_SOURCES_DIST =  \
-	$(top_builddir)/shared/nm-shared-utils.c \
+	$(top_builddir)/shared/nm-utils/nm-shared-utils.c \
 	$(core_build)/nm-core-enum-types.c $(core)/crypto.c \
 	$(core)/nm-connection.c $(core)/nm-dbus-utils.c \
 	$(core)/nm-errors.c $(core)/nm-keyfile-reader.c \
@@ -154,12 +155,12 @@ am__libnm_core_la_SOURCES_DIST =  \
 	$(core)/nm-setting-wireless.c $(core)/nm-setting.c \
 	$(core)/nm-simple-connection.c $(core)/nm-utils.c \
 	$(core)/nm-vpn-editor-plugin.c $(core)/nm-vpn-plugin-info.c \
-	$(top_builddir)/shared/nm-shared-utils.h $(core)/crypto.h \
-	$(core)/nm-connection-private.h $(core)/nm-core-internal.h \
-	$(core)/nm-core-types-internal.h $(core)/nm-keyfile-internal.h \
-	$(core)/nm-keyfile-utils.h $(core)/nm-property-compare.h \
-	$(core)/nm-setting-private.h $(core)/nm-utils-private.h \
-	crypto_gnutls.c crypto_nss.c
+	$(top_builddir)/shared/nm-utils/nm-shared-utils.h \
+	$(core)/crypto.h $(core)/nm-connection-private.h \
+	$(core)/nm-core-internal.h $(core)/nm-core-types-internal.h \
+	$(core)/nm-keyfile-internal.h $(core)/nm-keyfile-utils.h \
+	$(core)/nm-property-compare.h $(core)/nm-setting-private.h \
+	$(core)/nm-utils-private.h crypto_gnutls.c crypto_nss.c
 am__objects_1 = nm-shared-utils.lo nm-core-enum-types.lo crypto.lo \
 	nm-connection.lo nm-dbus-utils.lo nm-errors.lo \
 	nm-keyfile-reader.lo nm-keyfile-utils.lo nm-keyfile-writer.lo \
@@ -359,6 +360,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -415,13 +417,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -433,6 +436,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -493,6 +498,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -528,6 +535,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -593,10 +601,10 @@ SUBDIRS = . tests
 AM_CPPFLAGS = -I${top_srcdir}/shared -I${top_builddir}/shared \
 	-DG_LOG_DOMAIN=\""libnm"\" -DLOCALEDIR=\"$(datadir)/locale\" \
 	-DNMCONFDIR=\"$(nmconfdir)\" -DNMLIBDIR=\"$(nmlibdir)\" \
-	-DNMPLUGINDIR=\"$(pkglibdir)\" \
+	-DNMPLUGINDIR=\"$(pkglibdir)\" -DLIBEXECDIR=\"$(libexecdir)\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_LIB \
-	$(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) $(am__append_1) \
-	$(am__append_4)
+	$(GLIB_CFLAGS) $(CODE_COVERAGE_CFLAGS) $(JANSSON_CFLAGS) \
+	$(am__append_1) $(am__append_4)
 noinst_LTLIBRARIES = libnm-core.la
 core = $(top_srcdir)/libnm-core
 core_build = $(top_builddir)/libnm-core
@@ -647,7 +655,7 @@ libnm_core_headers = \
 	$(core)/nm-vpn-plugin-info.h
 
 libnm_core_private_headers = \
-	$(top_builddir)/shared/nm-shared-utils.h \
+	$(top_builddir)/shared/nm-utils/nm-shared-utils.h \
 	$(core)/crypto.h			\
 	$(core)/nm-connection-private.h		\
 	$(core)/nm-core-internal.h		\
@@ -659,7 +667,7 @@ libnm_core_private_headers = \
 	$(core)/nm-utils-private.h
 
 libnm_core_sources = \
-	$(top_builddir)/shared/nm-shared-utils.c \
+	$(top_builddir)/shared/nm-utils/nm-shared-utils.c \
 	$(core_build)/nm-core-enum-types.c	\
 	$(core)/crypto.c			\
 	$(core)/nm-connection.c			\
@@ -717,8 +725,8 @@ GLIB_GENERATED = nm-core-enum-types.h nm-core-enum-types.c
 nm_core_enum_types_sources = $(filter-out %nm-core-enum-types.h,$(libnminclude_HEADERS))
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
 GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
-libnm_core_la_LIBADD = $(GLIB_LIBS) $(UUID_LIBS) $(am__append_3) \
-	$(am__append_6)
+libnm_core_la_LIBADD = $(GLIB_LIBS) $(UUID_LIBS) $(JANSSON_LIBS) \
+	$(am__append_3) $(am__append_6)
 libnm_core_la_LDFLAGS = \
 	$(CODE_COVERAGE_LDFLAGS)
 
@@ -850,12 +858,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-nm-shared-utils.lo: $(top_builddir)/shared/nm-shared-utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-shared-utils.lo -MD -MP -MF $(DEPDIR)/nm-shared-utils.Tpo -c -o nm-shared-utils.lo `test -f '$(top_builddir)/shared/nm-shared-utils.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-shared-utils.c
+nm-shared-utils.lo: $(top_builddir)/shared/nm-utils/nm-shared-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-shared-utils.lo -MD -MP -MF $(DEPDIR)/nm-shared-utils.Tpo -c -o nm-shared-utils.lo `test -f '$(top_builddir)/shared/nm-utils/nm-shared-utils.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-utils/nm-shared-utils.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/nm-shared-utils.Tpo $(DEPDIR)/nm-shared-utils.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/shared/nm-shared-utils.c' object='nm-shared-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/shared/nm-utils/nm-shared-utils.c' object='nm-shared-utils.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-shared-utils.lo `test -f '$(top_builddir)/shared/nm-shared-utils.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-shared-utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nm-shared-utils.lo `test -f '$(top_builddir)/shared/nm-utils/nm-shared-utils.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-utils/nm-shared-utils.c
 
 nm-core-enum-types.lo: $(core_build)/nm-core-enum-types.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-core-enum-types.lo -MD -MP -MF $(DEPDIR)/nm-core-enum-types.Tpo -c -o nm-core-enum-types.lo `test -f '$(core_build)/nm-core-enum-types.c' || echo '$(srcdir)/'`$(core_build)/nm-core-enum-types.c

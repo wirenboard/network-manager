@@ -8,7 +8,7 @@
 <link rel="up" href="index.html" title="NetworkManager Reference Manual">
 <link rel="prev" href="secrets-flags.html" title="Secret flag types">
 <link rel="next" href="license.html" title="Appendix A. License">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -176,11 +176,23 @@
 </dt>
 <dt>org.freedesktop.NetworkManager.Device.Reapply(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.html#gdbus-method-org-freedesktop-NetworkManager-Device.Reapply">The Reapply() method</a>
 </dt>
+<dt>org.freedesktop.NetworkManager.Device.Statistics, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-interface-org-freedesktop-NetworkManager-Device-Statistics.top_of_page">org.freedesktop.NetworkManager.Device.Statistics</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.Device.Statistics::PropertiesChanged, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-signal-org-freedesktop-NetworkManager-Device-Statistics.PropertiesChanged">The "PropertiesChanged" signal</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.Device.Statistics:RefreshRateMs, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-property-org-freedesktop-NetworkManager-Device-Statistics.RefreshRateMs">The "RefreshRateMs" property</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.Device.Statistics:RxBytes, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-property-org-freedesktop-NetworkManager-Device-Statistics.RxBytes">The "RxBytes" property</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.Device.Statistics:TxBytes, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Statistics.html#gdbus-property-org-freedesktop-NetworkManager-Device-Statistics.TxBytes">The "TxBytes" property</a>
+</dt>
 <dt>org.freedesktop.NetworkManager.Device.Team, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-interface-org-freedesktop-NetworkManager-Device-Team.top_of_page">org.freedesktop.NetworkManager.Device.Team</a>
 </dt>
 <dt>org.freedesktop.NetworkManager.Device.Team::PropertiesChanged, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-signal-org-freedesktop-NetworkManager-Device-Team.PropertiesChanged">The "PropertiesChanged" signal</a>
 </dt>
 <dt>org.freedesktop.NetworkManager.Device.Team:Carrier, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.Carrier">The "Carrier" property</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.Device.Team:Config, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.Config">The "Config" property</a>
 </dt>
 <dt>org.freedesktop.NetworkManager.Device.Team:HwAddress, <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.Device.Team.html#gdbus-property-org-freedesktop-NetworkManager-Device-Team.HwAddress">The "HwAddress" property</a>
 </dt>
@@ -563,6 +575,12 @@
 </dt>
 <dt>org.freedesktop.NetworkManager.CheckConnectivity(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckConnectivity">The CheckConnectivity() method</a>
 </dt>
+<dt>org.freedesktop.NetworkManager.CheckpointCreate(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckpointCreate">The CheckpointCreate() method</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.CheckpointDestroy(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckpointDestroy">The CheckpointDestroy() method</a>
+</dt>
+<dt>org.freedesktop.NetworkManager.CheckpointRollback(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.CheckpointRollback">The CheckpointRollback() method</a>
+</dt>
 <dt>org.freedesktop.NetworkManager.DeactivateConnection(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.DeactivateConnection">The DeactivateConnection() method</a>
 </dt>
 <dt>org.freedesktop.NetworkManager.Enable(), <a class="indexterm" href="gdbus-org.freedesktop.NetworkManager.html#gdbus-method-org-freedesktop-NetworkManager.Enable">The Enable() method</a>
@@ -648,6 +666,8 @@
 </dt>
 <dt>NMBluetoothCapabilities, <a class="indexterm" href="nm-dbus-types.html#NMBluetoothCapabilities">enum NMBluetoothCapabilities</a>
 </dt>
+<dt>NMCheckpointCreateFlags, <a class="indexterm" href="nm-dbus-types.html#NMCheckpointCreateFlags">enum NMCheckpointCreateFlags</a>
+</dt>
 <dt>NMConnectivityState, <a class="indexterm" href="nm-dbus-types.html#NMConnectivityState">enum NMConnectivityState</a>
 </dt>
 <dt>NMDeviceCapabilities, <a class="indexterm" href="nm-dbus-types.html#NMDeviceCapabilities">enum NMDeviceCapabilities</a>
@@ -665,6 +685,8 @@
 <dt>NMIPTunnelMode, <a class="indexterm" href="nm-dbus-types.html#NMIPTunnelMode">enum NMIPTunnelMode</a>
 </dt>
 <dt>NMMetered, <a class="indexterm" href="nm-dbus-types.html#NMMetered">enum NMMetered</a>
+</dt>
+<dt>NMRollbackResult, <a class="indexterm" href="nm-dbus-types.html#NMRollbackResult">enum NMRollbackResult</a>
 </dt>
 <dt>NMSecretAgentCapabilities, <a class="indexterm" href="nm-dbus-types.html#NMSecretAgentCapabilities">enum NMSecretAgentCapabilities</a>
 </dt>
@@ -753,6 +775,6 @@
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

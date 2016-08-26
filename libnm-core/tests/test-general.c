@@ -62,7 +62,7 @@
 
 #include "test-general-enums.h"
 
-#include "nm-test-utils.h"
+#include "nm-utils/nm-test-utils.h"
 
 /* When passing a "bool" typed argument to a variadic function that
  * expects a gboolean, the compiler will promote the integer type
@@ -145,54 +145,54 @@ test_setting_vpn_items (void)
 	nm_setting_vpn_remove_secret (s_vpn, "foobar4");
 
 	/* Try to add some blank values and make sure they are rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*key != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (key != NULL));
 	nm_setting_vpn_add_data_item (s_vpn, NULL, NULL);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strlen (key) > 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strlen (key) > 0));
 	nm_setting_vpn_add_data_item (s_vpn, "", "");
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*item != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (item != NULL));
 	nm_setting_vpn_add_data_item (s_vpn, "foobar1", NULL);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strlen (item) > 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strlen (item) > 0));
 	nm_setting_vpn_add_data_item (s_vpn, "foobar1", "");
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*key != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (key != NULL));
 	nm_setting_vpn_add_data_item (s_vpn, NULL, "blahblah1");
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strlen (key) > 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strlen (key) > 0));
 	nm_setting_vpn_add_data_item (s_vpn, "", "blahblah1");
 	g_test_assert_expected_messages ();
 
 	nm_setting_vpn_foreach_data_item (s_vpn, vpn_check_empty_func, NULL);
 
 	/* Try to add some blank secrets and make sure they are rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*key != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (key != NULL));
 	nm_setting_vpn_add_secret (s_vpn, NULL, NULL);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strlen (key) > 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strlen (key) > 0));
 	nm_setting_vpn_add_secret (s_vpn, "", "");
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*secret != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (secret != NULL));
 	nm_setting_vpn_add_secret (s_vpn, "foobar1", NULL);
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strlen (secret) > 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strlen (secret) > 0));
 	nm_setting_vpn_add_secret (s_vpn, "foobar1", "");
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*key != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (key != NULL));
 	nm_setting_vpn_add_secret (s_vpn, NULL, "blahblah1");
 	g_test_assert_expected_messages ();
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strlen (key) > 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strlen (key) > 0));
 	nm_setting_vpn_add_secret (s_vpn, "", "blahblah1");
 	g_test_assert_expected_messages ();
 
@@ -1621,47 +1621,47 @@ test_setting_connection_permissions_helpers (void)
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
 
 	/* Ensure a bad [type] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strcmp (ptype, \"user\") == 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strcmp (ptype, "user") == 0));
 	success = nm_setting_connection_add_permission (s_con, "foobar", "blah", NULL);
 	g_test_assert_expected_messages ();
 	g_assert (!success);
 
 	/* Ensure a bad [type] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*ptype*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (ptype));
 	success = nm_setting_connection_add_permission (s_con, NULL, "blah", NULL);
 	g_test_assert_expected_messages ();
 	g_assert (!success);
 
 	/* Ensure a bad [item] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*uname*");
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*p != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (uname));
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (p != NULL));
 	success = nm_setting_connection_add_permission (s_con, "user", NULL, NULL);
 	g_test_assert_expected_messages ();
 	g_assert (!success);
 
 	/* Ensure a bad [item] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*uname[0] != '\\0'*");
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*p != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (uname[0] != '\0'));
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (p != NULL));
 	success = nm_setting_connection_add_permission (s_con, "user", "", NULL);
 	g_test_assert_expected_messages ();
 	g_assert (!success);
 
 	/* Ensure an [item] with ':' is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strchr (uname, ':')*");
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*p != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strchr (uname, ':') == NULL));
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (p != NULL));
 	success = nm_setting_connection_add_permission (s_con, "user", "ad:asdf", NULL);
 	g_test_assert_expected_messages ();
 	g_assert (!success);
 
 	/* Ensure a non-UTF-8 [item] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*g_utf8_validate (uname, -1, NULL)*");
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*p != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (g_utf8_validate (uname, -1, NULL) == TRUE));
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (p != NULL));
 	success = nm_setting_connection_add_permission (s_con, "user", buf, NULL);
 	g_test_assert_expected_messages ();
 	g_assert (!success);
 
 	/* Ensure a non-NULL [detail] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*detail == NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (detail == NULL));
 	success = nm_setting_connection_add_permission (s_con, "user", "dafasdf", "asdf");
 	g_test_assert_expected_messages ();
 	g_assert (!success);
@@ -1732,49 +1732,49 @@ test_setting_connection_permissions_property (void)
 	s_con = NM_SETTING_CONNECTION (nm_setting_connection_new ());
 
 	/* Ensure a bad [type] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strncmp (str, PERM_USER_PREFIX, strlen (PERM_USER_PREFIX)) == 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strncmp (str, PERM_USER_PREFIX, strlen (PERM_USER_PREFIX)) == 0));
 	add_permission_property (s_con, "foobar", "blah", -1, NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure a bad [type] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*strncmp (str, PERM_USER_PREFIX, strlen (PERM_USER_PREFIX)) == 0*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (strncmp (str, PERM_USER_PREFIX, strlen (PERM_USER_PREFIX)) == 0));
 	add_permission_property (s_con, NULL, "blah", -1, NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure a bad [item] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*last_colon > str*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (last_colon > str));
 	add_permission_property (s_con, "user", NULL, -1, NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure a bad [item] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*last_colon > str*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (last_colon > str));
 	add_permission_property (s_con, "user", "", -1, NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure an [item] with ':' in the middle is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*str[i] != ':'*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (str[i] != ':'));
 	add_permission_property (s_con, "user", "ad:asdf", -1, NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure an [item] with ':' at the end is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*str[i] != ':'*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (str[i] != ':'));
 	add_permission_property (s_con, "user", "adasdfaf:", -1, NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure a non-UTF-8 [item] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*g_utf8_validate (str, -1, NULL)*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (g_utf8_validate (str, -1, NULL) == TRUE));
 	add_permission_property (s_con, "user", buf, (int) sizeof (buf), NULL);
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
 
 	/* Ensure a non-NULL [detail] is rejected */
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*(last_colon + 1) == '\\0'*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (*(last_colon + 1) == '\0'));
 	add_permission_property (s_con, "user", "dafasdf", -1, "asdf");
 	g_test_assert_expected_messages ();
 	g_assert_cmpint (nm_setting_connection_get_num_permissions (s_con), ==, 0);
@@ -1916,6 +1916,7 @@ test_connection_diff_a_only (void)
 		{ NM_SETTING_CONNECTION_SETTING_NAME, {
 			{ NM_SETTING_CONNECTION_ID,                   NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_UUID,                 NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_CONNECTION_STABLE_ID,            NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_INTERFACE_NAME,       NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_TYPE,                 NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_CONNECTION_TIMESTAMP,            NM_SETTING_DIFF_RESULT_IN_A },
@@ -1940,6 +1941,7 @@ test_connection_diff_a_only (void)
 			{ NM_SETTING_WIRED_AUTO_NEGOTIATE,        NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_WIRED_MAC_ADDRESS,           NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_WIRED_CLONED_MAC_ADDRESS,    NM_SETTING_DIFF_RESULT_IN_A },
+			{ NM_SETTING_WIRED_GENERATE_MAC_ADDRESS_MASK, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_WIRED_MAC_ADDRESS_BLACKLIST, NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_WIRED_MTU,                   NM_SETTING_DIFF_RESULT_IN_A },
 			{ NM_SETTING_WIRED_S390_SUBCHANNELS,      NM_SETTING_DIFF_RESULT_IN_A },
@@ -2385,6 +2387,154 @@ test_setting_compare_id (void)
 }
 
 static void
+test_setting_compare_addresses (void)
+{
+	gs_unref_object NMSetting *s1 = NULL, *s2 = NULL;
+	gboolean success;
+	NMIPAddress *a;
+	GHashTable *result = NULL;
+
+	s1 = nm_setting_ip4_config_new ();
+	s2 = nm_setting_ip4_config_new ();
+
+	a = nm_ip_address_new (AF_INET, "192.168.7.5", 24, NULL);
+
+	nm_ip_address_set_attribute (a, "label", g_variant_new_string ("xoxoxo"));
+	nm_setting_ip_config_add_address ((NMSettingIPConfig *) s1, a);
+
+	nm_ip_address_set_attribute (a, "label", g_variant_new_string ("hello"));
+	nm_setting_ip_config_add_address ((NMSettingIPConfig *) s2, a);
+
+	nm_ip_address_unref (a);
+
+	if (nmtst_get_rand_int () % 2)
+		NMTST_SWAP (s1, s2);
+
+	success = nm_setting_compare (s1, s2, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (!success);
+
+	success = nm_setting_diff (s1, s2, NM_SETTING_COMPARE_FLAG_EXACT, FALSE, &result);
+	g_assert (!success);
+	g_clear_pointer (&result, g_hash_table_unref);
+}
+
+static void
+test_setting_compare_routes (void)
+{
+	gs_unref_object NMSetting *s1 = NULL, *s2 = NULL;
+	gboolean success;
+	NMIPRoute *r;
+	GHashTable *result = NULL;
+
+	s1 = nm_setting_ip4_config_new ();
+	s2 = nm_setting_ip4_config_new ();
+
+	r = nm_ip_route_new (AF_INET, "192.168.12.0", 24, "192.168.11.1", 473, NULL);
+
+	nm_ip_route_set_attribute (r, "label", g_variant_new_string ("xoxoxo"));
+	nm_setting_ip_config_add_route ((NMSettingIPConfig *) s1, r);
+
+	nm_ip_route_set_attribute (r, "label", g_variant_new_string ("hello"));
+	nm_setting_ip_config_add_route ((NMSettingIPConfig *) s2, r);
+
+	nm_ip_route_unref (r);
+
+	if (nmtst_get_rand_int () % 2)
+		NMTST_SWAP (s1, s2);
+
+	success = nm_setting_compare (s1, s2, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (!success);
+
+	success = nm_setting_diff (s1, s2, NM_SETTING_COMPARE_FLAG_EXACT, FALSE, &result);
+	g_assert (!success);
+	g_clear_pointer (&result, g_hash_table_unref);
+}
+
+static void
+test_setting_compare_wired_cloned_mac_address (void)
+{
+	gs_unref_object NMSetting *old = NULL, *new = NULL;
+	gboolean success;
+	gs_free char *str1 = NULL;
+
+	old = nm_setting_wired_new ();
+	g_object_set (old,
+	              NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "stable",
+	              NULL);
+
+	g_assert_cmpstr ("stable", ==, nm_setting_wired_get_cloned_mac_address ((NMSettingWired *) old));
+	g_object_get (old, NM_SETTING_WIRED_CLONED_MAC_ADDRESS, &str1, NULL);
+	g_assert_cmpstr ("stable", ==, str1);
+	g_clear_pointer (&str1, g_free);
+
+	new = nm_setting_duplicate (old);
+	g_object_set (new, NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "11:22:33:44:55:66", NULL);
+
+	g_assert_cmpstr ("11:22:33:44:55:66", ==, nm_setting_wired_get_cloned_mac_address ((NMSettingWired *) new));
+	g_object_get (new, NM_SETTING_WIRED_CLONED_MAC_ADDRESS, &str1, NULL);
+	g_assert_cmpstr ("11:22:33:44:55:66", ==, str1);
+	g_clear_pointer (&str1, g_free);
+
+	success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (!success);
+	g_clear_object (&new);
+
+	new = nm_setting_duplicate (old);
+	g_object_set (new, NM_SETTING_WIRED_CLONED_MAC_ADDRESS, "stable-bia", NULL);
+
+	g_assert_cmpstr ("stable-bia", ==, nm_setting_wired_get_cloned_mac_address ((NMSettingWired *) new));
+	g_object_get (new, NM_SETTING_WIRED_CLONED_MAC_ADDRESS, &str1, NULL);
+	g_assert_cmpstr ("stable-bia", ==, str1);
+	g_clear_pointer (&str1, g_free);
+
+	success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (!success);
+	g_clear_object (&new);
+}
+
+static void
+test_setting_compare_wireless_cloned_mac_address (void)
+{
+	gs_unref_object NMSetting *old = NULL, *new = NULL;
+	gboolean success;
+	gs_free char *str1 = NULL;
+
+	old = nm_setting_wireless_new ();
+	g_object_set (old,
+	              NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, "stable",
+	              NULL);
+
+	g_assert_cmpstr ("stable", ==, nm_setting_wireless_get_cloned_mac_address ((NMSettingWireless *) old));
+	g_object_get (old, NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, &str1, NULL);
+	g_assert_cmpstr ("stable", ==, str1);
+	g_clear_pointer (&str1, g_free);
+
+	new = nm_setting_duplicate (old);
+	g_object_set (new, NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, "11:22:33:44:55:66", NULL);
+
+	g_assert_cmpstr ("11:22:33:44:55:66", ==, nm_setting_wireless_get_cloned_mac_address ((NMSettingWireless *) new));
+	g_object_get (new, NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, &str1, NULL);
+	g_assert_cmpstr ("11:22:33:44:55:66", ==, str1);
+	g_clear_pointer (&str1, g_free);
+
+	success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (!success);
+	g_clear_object (&new);
+
+	new = nm_setting_duplicate (old);
+	g_object_set (new, NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, "stable-bia", NULL);
+
+	g_assert_cmpstr ("stable-bia", ==, nm_setting_wireless_get_cloned_mac_address ((NMSettingWireless *) new));
+	g_object_get (new, NM_SETTING_WIRELESS_CLONED_MAC_ADDRESS, &str1, NULL);
+	g_assert_cmpstr ("stable-bia", ==, str1);
+	g_clear_pointer (&str1, g_free);
+
+	success = nm_setting_compare (old, new, NM_SETTING_COMPARE_FLAG_EXACT);
+	g_assert (!success);
+	g_clear_object (&new);
+}
+
+static void
 test_setting_compare_timestamp (void)
 {
 	gs_unref_object NMSetting *old = NULL, *new = NULL;
@@ -2755,7 +2905,7 @@ test_setting_connection_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_connection_add_permission (s_con, "user", "billsmith", NULL));
 	ASSERT_CHANGED (nm_setting_connection_remove_permission (s_con, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*iter != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (iter != NULL));
 	ASSERT_UNCHANGED (nm_setting_connection_remove_permission (s_con, 1));
 	g_test_assert_expected_messages ();
 
@@ -2763,7 +2913,7 @@ test_setting_connection_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_connection_add_secondary (s_con, uuid));
 	ASSERT_CHANGED (nm_setting_connection_remove_secondary (s_con, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_connection_remove_secondary (s_con, 1));
 	g_test_assert_expected_messages ();
 
@@ -2815,7 +2965,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns (s_ip4, "11.22.0.0"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->dns->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2825,7 +2975,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns_search (s_ip4, "foobar.com"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns_search (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns_search->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->dns_search->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns_search (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2837,7 +2987,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_address (s_ip4, addr));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_address (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->addresses->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->addresses->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_address (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2850,7 +3000,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_route (s_ip4, route));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_route (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->routes->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->routes->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_route (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2860,7 +3010,7 @@ test_setting_ip4_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns_option (s_ip4, "debug"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns_option (s_ip4, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns_options->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->dns_options->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns_option (s_ip4, 1));
 	g_test_assert_expected_messages ();
 
@@ -2891,7 +3041,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns (s_ip6, "1:2:3::4:5:6"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->dns->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2901,7 +3051,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_dns_search (s_ip6, "foobar.com"));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_dns_search (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->dns_search->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->dns_search->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_dns_search (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2914,7 +3064,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_address (s_ip6, addr));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_address (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->addresses->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->addresses->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_address (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2927,7 +3077,7 @@ test_setting_ip6_changed_signal (void)
 	ASSERT_CHANGED (nm_setting_ip_config_add_route (s_ip6, route));
 	ASSERT_CHANGED (nm_setting_ip_config_remove_route (s_ip6, 0));
 
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < priv->routes->len*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < priv->routes->len));
 	ASSERT_UNCHANGED (nm_setting_ip_config_remove_route (s_ip6, 1));
 	g_test_assert_expected_messages ();
 
@@ -2957,7 +3107,7 @@ test_setting_vlan_changed_signal (void)
 
 	ASSERT_CHANGED (nm_setting_vlan_add_priority (s_vlan, NM_VLAN_INGRESS_MAP, 1, 3));
 	ASSERT_CHANGED (nm_setting_vlan_remove_priority (s_vlan, NM_VLAN_INGRESS_MAP, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < g_slist_length (list)*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < g_slist_length (list)));
 	ASSERT_UNCHANGED (nm_setting_vlan_remove_priority (s_vlan, NM_VLAN_INGRESS_MAP, 1));
 	g_test_assert_expected_messages ();
 	ASSERT_CHANGED (nm_setting_vlan_add_priority_str (s_vlan, NM_VLAN_INGRESS_MAP, "1:3"));
@@ -2965,7 +3115,7 @@ test_setting_vlan_changed_signal (void)
 
 	ASSERT_CHANGED (nm_setting_vlan_add_priority (s_vlan, NM_VLAN_EGRESS_MAP, 1, 3));
 	ASSERT_CHANGED (nm_setting_vlan_remove_priority (s_vlan, NM_VLAN_EGRESS_MAP, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*idx < g_slist_length (list)*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (idx < g_slist_length (list)));
 	ASSERT_UNCHANGED (nm_setting_vlan_remove_priority (s_vlan, NM_VLAN_EGRESS_MAP, 1));
 	g_test_assert_expected_messages ();
 	ASSERT_CHANGED (nm_setting_vlan_add_priority_str (s_vlan, NM_VLAN_EGRESS_MAP, "1:3"));
@@ -3064,7 +3214,7 @@ test_setting_wireless_security_changed_signal (void)
 	/* Protos */
 	ASSERT_CHANGED (nm_setting_wireless_security_add_proto (s_wsec, "wpa"));
 	ASSERT_CHANGED (nm_setting_wireless_security_remove_proto (s_wsec, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_wireless_security_remove_proto (s_wsec, 1));
 	g_test_assert_expected_messages ();
 
@@ -3074,7 +3224,7 @@ test_setting_wireless_security_changed_signal (void)
 	/* Pairwise ciphers */
 	ASSERT_CHANGED (nm_setting_wireless_security_add_pairwise (s_wsec, "tkip"));
 	ASSERT_CHANGED (nm_setting_wireless_security_remove_pairwise (s_wsec, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_wireless_security_remove_pairwise (s_wsec, 1));
 	g_test_assert_expected_messages ();
 
@@ -3084,7 +3234,7 @@ test_setting_wireless_security_changed_signal (void)
 	/* Group ciphers */
 	ASSERT_CHANGED (nm_setting_wireless_security_add_group (s_wsec, "ccmp"));
 	ASSERT_CHANGED (nm_setting_wireless_security_remove_group (s_wsec, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_wireless_security_remove_group (s_wsec, 1));
 	g_test_assert_expected_messages ();
 
@@ -3119,7 +3269,7 @@ test_setting_802_1x_changed_signal (void)
 	/* EAP methods */
 	ASSERT_CHANGED (nm_setting_802_1x_add_eap_method (s_8021x, "tls"));
 	ASSERT_CHANGED (nm_setting_802_1x_remove_eap_method (s_8021x, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_802_1x_remove_eap_method (s_8021x, 1));
 	g_test_assert_expected_messages ();
 
@@ -3129,7 +3279,7 @@ test_setting_802_1x_changed_signal (void)
 	/* alternate subject matches */
 	ASSERT_CHANGED (nm_setting_802_1x_add_altsubject_match (s_8021x, "EMAIL:server@example.com"));
 	ASSERT_CHANGED (nm_setting_802_1x_remove_altsubject_match (s_8021x, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_802_1x_remove_altsubject_match (s_8021x, 1));
 	g_test_assert_expected_messages ();
 
@@ -3139,7 +3289,7 @@ test_setting_802_1x_changed_signal (void)
 	/* phase2 alternate subject matches */
 	ASSERT_CHANGED (nm_setting_802_1x_add_phase2_altsubject_match (s_8021x, "EMAIL:server@example.com"));
 	ASSERT_CHANGED (nm_setting_802_1x_remove_phase2_altsubject_match (s_8021x, 0));
-	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, "*elt != NULL*");
+	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL, NMTST_G_RETURN_MSG (elt != NULL));
 	ASSERT_UNCHANGED (nm_setting_802_1x_remove_phase2_altsubject_match (s_8021x, 1));
 	g_test_assert_expected_messages ();
 
@@ -3773,7 +3923,6 @@ test_connection_normalize_may_fail (void)
 {
 	gs_unref_object NMConnection *con = NULL;
 	NMSettingIPConfig *s_ip4, *s_ip6;
-	gs_free_error GError *error = NULL;
 
 	con = nmtst_create_minimal_connection ("test2", NULL, NM_SETTING_WIRED_SETTING_NAME, NULL);
 	nmtst_assert_connection_verifies_and_normalizable (con);
@@ -4477,6 +4626,110 @@ test_nm_utils_dns_option_find_idx (void)
 
 /******************************************************************************/
 
+static void
+_json_config_check_valid (const char *conf, gboolean expected)
+{
+	gs_free_error GError *error = NULL;
+	gboolean res;
+
+	res = _nm_utils_check_valid_json (conf, &error);
+	g_assert_cmpint (res, ==, expected);
+	g_assert (res || error);
+}
+
+static void
+test_nm_utils_check_valid_json (void)
+{
+	_json_config_check_valid (NULL, FALSE);
+	_json_config_check_valid ("", FALSE);
+#if WITH_JANSSON
+	_json_config_check_valid ("{ }", TRUE);
+	_json_config_check_valid ("{ \"a\" : 1 }", TRUE);
+	_json_config_check_valid ("{ \"a\" : }", FALSE);
+#else
+	/* Without JSON library everything except empty string is considered valid */
+	_json_config_check_valid ("{ }", TRUE);
+	_json_config_check_valid ("{'%!-a1", TRUE);
+#endif
+}
+
+static void
+_team_config_equal_check (const char *conf1,
+                          const char *conf2,
+                          gboolean port_config,
+                          gboolean expected)
+{
+	g_assert_cmpint (_nm_utils_team_config_equal (conf1, conf2, port_config), ==, expected);
+}
+
+static void
+test_nm_utils_team_config_equal (void)
+{
+#if WITH_JANSSON
+	_team_config_equal_check ("", "", TRUE, TRUE);
+	_team_config_equal_check ("{}",
+	                          "{ }",
+	                          TRUE,
+	                          TRUE);
+	_team_config_equal_check ("{}",
+	                          "{",
+	                          TRUE,
+	                          FALSE);
+
+	/* team config */
+	_team_config_equal_check ("{ }",
+	                          "{ \"runner\" :  { \"name\" : \"roundrobin\"} }",
+	                          FALSE,
+	                          TRUE);
+	_team_config_equal_check ("{ }",
+	                          "{ \"runner\" :  { \"name\" : \"random\"} }",
+	                          FALSE,
+	                          FALSE);
+	_team_config_equal_check ("{ \"runner\" :  { \"name\" : \"roundrobin\"} }",
+	                          "{ \"runner\" :  { \"name\" : \"random\"} }",
+	                          FALSE,
+	                          FALSE);
+	_team_config_equal_check ("{ \"runner\" :  { \"name\" : \"random\"} }",
+	                          "{ \"runner\" :  { \"name\" : \"random\"} }",
+	                          FALSE,
+	                          TRUE);
+	_team_config_equal_check ("{ \"runner\" :  { \"name\" : \"random\"}, \"ports\" : { \"eth0\" : {} } }",
+	                          "{ \"runner\" :  { \"name\" : \"random\"}, \"ports\" : { \"eth1\" : {} } }",
+	                          FALSE,
+	                          TRUE);
+
+	/* team port config */
+	_team_config_equal_check ("{ }",
+	                          "{ \"link_watch\" :  { \"name\" : \"ethtool\"} }",
+	                          TRUE,
+	                          TRUE);
+	_team_config_equal_check ("{ }",
+	                          "{ \"link_watch\" :  { \"name\" : \"arp_ping\"} }",
+	                          TRUE,
+	                          FALSE);
+	_team_config_equal_check ("{ \"link_watch\" :  { \"name\" : \"ethtool\"} }",
+	                          "{ \"link_watch\" :  { \"name\" : \"arp_ping\"} }",
+	                          TRUE,
+	                          FALSE);
+	_team_config_equal_check ("{ \"link_watch\" :  { \"name\" : \"arp_ping\"} }",
+	                          "{ \"link_watch\" :  { \"name\" : \"arp_ping\"} }",
+	                          TRUE,
+	                          TRUE);
+	_team_config_equal_check ("{ \"link_watch\" :  { \"name\" : \"arp_ping\"}, \"ports\" : { \"eth0\" : {} } }",
+	                          "{ \"link_watch\" :  { \"name\" : \"arp_ping\"}, \"ports\" : { \"eth1\" : {} } }",
+	                          TRUE,
+	                          TRUE);
+#else
+	/* Without JSON library, strings are compared for equality */
+	_team_config_equal_check ("", "", TRUE, TRUE);
+	_team_config_equal_check ("", " ", TRUE, FALSE);
+	_team_config_equal_check ("{ \"a\": 1 }", "{ \"a\": 1 }", TRUE, TRUE);
+	_team_config_equal_check ("{ \"a\": 1 }", "{ \"a\":   1 }", TRUE, FALSE);
+#endif
+}
+
+/******************************************************************************/
+
 enum TEST_IS_POWER_OF_TWP_ENUM_SIGNED {
 	_DUMMY_1 = -1,
 };
@@ -5074,6 +5327,10 @@ int main (int argc, char **argv)
 	g_test_add_func ("/core/general/test_setting_to_dbus_transform", test_setting_to_dbus_transform);
 	g_test_add_func ("/core/general/test_setting_to_dbus_enum", test_setting_to_dbus_enum);
 	g_test_add_func ("/core/general/test_setting_compare_id", test_setting_compare_id);
+	g_test_add_func ("/core/general/test_setting_compare_addresses", test_setting_compare_addresses);
+	g_test_add_func ("/core/general/test_setting_compare_routes", test_setting_compare_routes);
+	g_test_add_func ("/core/general/test_setting_compare_wired_cloned_mac_address", test_setting_compare_wired_cloned_mac_address);
+	g_test_add_func ("/core/general/test_setting_compare_wirless_cloned_mac_address", test_setting_compare_wireless_cloned_mac_address);
 	g_test_add_func ("/core/general/test_setting_compare_timestamp", test_setting_compare_timestamp);
 #define ADD_FUNC(name, func, secret_flags, comp_flags, remove_secret) \
 	g_test_add_data_func_full ("/core/general/" G_STRINGIFY (func) "_" name, \
@@ -5163,7 +5420,8 @@ int main (int argc, char **argv)
 
 	g_test_add_func ("/core/general/_nm_utils_dns_option_validate", test_nm_utils_dns_option_validate);
 	g_test_add_func ("/core/general/_nm_utils_dns_option_find_idx", test_nm_utils_dns_option_find_idx);
-
+	g_test_add_func ("/core/general/_nm_utils_validate_json", test_nm_utils_check_valid_json);
+	g_test_add_func ("/core/general/_nm_utils_team_config_equal", test_nm_utils_team_config_equal);
 	g_test_add_func ("/core/general/test_nm_utils_enum", test_nm_utils_enum);
 
 	return g_test_run ();

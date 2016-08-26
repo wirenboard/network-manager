@@ -25,7 +25,52 @@
 #include "sd-lldp.h"
 #include "sd-event.h"
 
-#include "nm-test-utils.h"
+#include "nm-test-utils-core.h"
+
+/*****************************************************************************
+ * Stub implementations of libNetworkManagerBase symbols
+ *****************************************************************************/
+
+gboolean
+nm_utils_get_testing_initialized (void)
+{
+	return TRUE;
+}
+
+void
+_nm_utils_set_testing (NMUtilsTestFlags flags)
+{
+	g_assert_not_reached ();
+}
+
+gint32
+nm_utils_get_monotonic_timestamp_s (void)
+{
+	return 1;
+}
+
+NMLogDomain _nm_logging_enabled_state[_LOGL_N_REAL];
+
+void
+_nm_log_impl (const char *file,
+              guint line,
+              const char *func,
+              NMLogLevel level,
+              NMLogDomain domain,
+              int error,
+              const char *fmt,
+              ...)
+{
+}
+
+gboolean
+nm_logging_setup (const char  *level,
+                  const char  *domains,
+                  char       **bad_domains,
+                  GError     **error)
+{
+	return TRUE;
+}
 
 /*****************************************************************************/
 
@@ -39,6 +84,12 @@ test_dhcp_create (void)
 	g_assert (r == 0);
 	g_assert (client4);
 
+	if (/* never true */ client4 == (gpointer) &r) {
+		/* we don't want to call this, but ensure that the linker
+		 * includes all these symbols. */
+		sd_dhcp_client_start (client4);
+	}
+
 	sd_dhcp_client_unref (client4);
 }
 
@@ -48,10 +99,9 @@ static void
 test_lldp_create (void)
 {
 	sd_lldp *lldp = NULL;
-	int ifindex = 1;
 	int r;
 
-	r = sd_lldp_new (&lldp, ifindex);
+	r = sd_lldp_new (&lldp);
 	g_assert (r == 0);
 	g_assert (lldp);
 

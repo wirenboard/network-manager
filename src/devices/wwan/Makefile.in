@@ -88,10 +88,16 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@WITH_OFONO_TRUE@am__append_1 = \
+@WITH_OFONO_TRUE@	nm-modem-ofono.c \
+@WITH_OFONO_TRUE@	nm-modem-ofono.h \
+@WITH_OFONO_TRUE@	$(NULL)
+
 subdir = src/devices/wwan
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -157,10 +163,16 @@ libnm_device_plugin_wwan_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 libnm_wwan_la_DEPENDENCIES =  \
 	$(top_builddir)/introspection/libnmdbus.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am__libnm_wwan_la_SOURCES_DIST = nm-modem-broadband.c \
+	nm-modem-broadband.h nm-modem-manager.c nm-modem-manager.h \
+	nm-modem.c nm-modem.h nm-modem-enum-types.h \
+	nm-modem-enum-types.c nm-modem-ofono.c nm-modem-ofono.h
 am__objects_1 = nm-modem-enum-types.lo
+@WITH_OFONO_TRUE@am__objects_2 = nm-modem-ofono.lo
 am_libnm_wwan_la_OBJECTS = nm-modem-broadband.lo nm-modem-manager.lo \
-	nm-modem.lo $(am__objects_1)
+	nm-modem.lo $(am__objects_1) $(am__objects_2)
 libnm_wwan_la_OBJECTS = $(am_libnm_wwan_la_OBJECTS)
 libnm_wwan_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -202,7 +214,7 @@ am__v_CCLD_1 =
 SOURCES = $(libnm_device_plugin_wwan_la_SOURCES) \
 	$(libnm_wwan_la_SOURCES)
 DIST_SOURCES = $(libnm_device_plugin_wwan_la_SOURCES) \
-	$(libnm_wwan_la_SOURCES)
+	$(am__libnm_wwan_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -264,6 +276,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -320,13 +333,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -338,6 +352,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -398,6 +414,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -433,6 +451,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -508,6 +527,7 @@ AM_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\""NetworkManager-wwan"\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
 	$(GLIB_CFLAGS) \
+	$(LIBSYSTEMD_CFLAGS) \
 	$(MM_GLIB_CFLAGS)
 
 BUILT_SOURCES = $(null) $(GLIB_GENERATED)
@@ -516,18 +536,11 @@ pkglib_LTLIBRARIES = libnm-wwan.la libnm-device-plugin-wwan.la
 ###########################################################
 GLIB_GENERATED = nm-modem-enum-types.h nm-modem-enum-types.c
 GLIB_MKENUMS_H_FLAGS = --identifier-prefix NM
-GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM
+GLIB_MKENUMS_C_FLAGS = --identifier-prefix NM --fhead '\#include "nm-default.h"\n'
 nm_modem_enum_types_sources = $(srcdir)/nm-modem.h
-libnm_wwan_la_SOURCES = \
-	nm-modem-broadband.c \
-	nm-modem-broadband.h \
-	nm-modem-manager.c \
-	nm-modem-manager.h \
-	nm-modem.c \
-	nm-modem.h \
-	\
-	$(GLIB_GENERATED)
-
+libnm_wwan_la_SOURCES = nm-modem-broadband.c nm-modem-broadband.h \
+	nm-modem-manager.c nm-modem-manager.h nm-modem.c nm-modem.h \
+	$(GLIB_GENERATED) $(am__append_1)
 WWAN_SYMBOL_VIS_FILE = $(srcdir)/wwan-exports.ver
 libnm_wwan_la_LDFLAGS = \
 	-avoid-version \
@@ -536,6 +549,7 @@ libnm_wwan_la_LDFLAGS = \
 libnm_wwan_la_LIBADD = \
 	$(top_builddir)/introspection/libnmdbus.la \
 	$(GLIB_LIBS) \
+	$(LIBSYSTEMD_LIBS) \
 	$(MM_GLIB_LIBS)
 
 
@@ -646,6 +660,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-modem-broadband.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-modem-enum-types.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-modem-manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-modem-ofono.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-modem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-wwan-factory.Plo@am__quote@
 
@@ -897,7 +912,9 @@ include $(GLIB_MAKEFILE)
 
 @ENABLE_TESTS_TRUE@check-local:
 @ENABLE_TESTS_TRUE@	$(top_srcdir)/tools/check-exports.sh $(builddir)/.libs/libnm-device-plugin-wwan.so $(SYMBOL_VIS_FILE)
+@ENABLE_TESTS_TRUE@	LD_BIND_NOW=1 LD_PRELOAD=$(builddir)/.libs/libnm-device-plugin-wwan.so $(top_builddir)/src/NetworkManager --version >/dev/null
 @ENABLE_TESTS_TRUE@	$(top_srcdir)/tools/check-exports.sh $(builddir)/.libs/libnm-wwan.so $(WWAN_SYMBOL_VIS_FILE)
+@ENABLE_TESTS_TRUE@	LD_BIND_NOW=1 LD_PRELOAD=$(builddir)/.libs/libnm-wwan.so $(top_builddir)/src/NetworkManager --version >/dev/null
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -65,12 +65,14 @@ typedef enum  { /*< skip >*/
 	LOGD_DISPATCH   = (1LL << 33),
 	LOGD_AUDIT      = (1LL << 34),
 	LOGD_SYSTEMD    = (1LL << 35),
+	LOGD_VPN_PLUGIN = (1LL << 36),
 
 	__LOGD_MAX,
-	LOGD_ALL       = ((__LOGD_MAX - 1LL) << 1) - 1LL,
+	LOGD_ALL       = (((__LOGD_MAX - 1LL) << 1) - 1LL),
 	LOGD_DEFAULT   = LOGD_ALL & ~(
 	                              LOGD_DBUS_PROPS |
 	                              LOGD_WIFI_SCAN |
+	                              LOGD_VPN_PLUGIN |
 	                              0),
 
 	/* aliases: */
@@ -101,12 +103,20 @@ typedef enum  { /*< skip >*/
 #define nm_log_dbg(domain, ...)     nm_log (LOGL_DEBUG, (domain), __VA_ARGS__)
 #define nm_log_trace(domain, ...)   nm_log (LOGL_TRACE, (domain), __VA_ARGS__)
 
+//#define _NM_LOG_FUNC G_STRFUNC
+#define _NM_LOG_FUNC NULL
+
 /* A wrapper for the _nm_log_impl() function that adds call site information.
  * Contrary to nm_log(), it unconditionally calls the function without
  * checking whether logging for the given level and domain is enabled. */
 #define _nm_log(level, domain, error, ...) \
     G_STMT_START { \
-        _nm_log_impl (__FILE__, __LINE__, G_STRFUNC, (level), (domain), (error), ""__VA_ARGS__); \
+        _nm_log_impl (__FILE__, __LINE__, \
+                      _NM_LOG_FUNC, \
+                      (level), \
+                      (domain), \
+                      (error), \
+                      ""__VA_ARGS__); \
     } G_STMT_END
 
 /* nm_log() only evaluates it's argument list after checking
@@ -154,11 +164,21 @@ void _nm_log_impl (const char *file,
                    NMLogDomain domain,
                    int error,
                    const char *fmt,
-                   ...) __attribute__((__format__ (__printf__, 7, 8)));
+                   ...) _nm_printf (7, 8);
 
 const char *nm_logging_level_to_string (void);
 const char *nm_logging_domains_to_string (void);
-gboolean nm_logging_enabled (NMLogLevel level, NMLogDomain domain);
+
+extern NMLogDomain _nm_logging_enabled_state[_LOGL_N_REAL];
+static inline gboolean
+nm_logging_enabled (NMLogLevel level, NMLogDomain domain)
+{
+	nm_assert (((guint) level) < G_N_ELEMENTS (_nm_logging_enabled_state));
+	return    (((guint) level) < G_N_ELEMENTS (_nm_logging_enabled_state))
+	       && !!(_nm_logging_enabled_state[level] & domain);
+}
+
+NMLogLevel nm_logging_get_level (NMLogDomain domain);
 
 const char *nm_logging_all_levels_to_string (void);
 const char *nm_logging_all_domains_to_string (void);
@@ -168,6 +188,7 @@ gboolean nm_logging_setup (const char  *level,
                            char       **bad_domains,
                            GError     **error);
 void     nm_logging_syslog_openlog (const char *logging_backend);
+gboolean nm_logging_syslog_enabled (void);
 
 /*****************************************************************************/
 

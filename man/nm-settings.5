@@ -2,12 +2,12 @@
 .\"     Title: nm-settings
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/03/2016
+.\"      Date: 08/24/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.2.4
+.\"    Source: NetworkManager 1.4.0
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.2\&.4" "Configuration"
+.TH "NM\-SETTINGS" "5" "" "NetworkManager 1\&.4\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -921,6 +921,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 autoconnect
@@ -1047,6 +1048,15 @@ T}:T{
 \ \&
 T}:T{
 Setting name of the device type of this slave\*(Aqs master connection (eg, "bond"), or NULL if this connection is not a slave\&.
+T}
+T{
+stable\-id
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+This token to generate stable IDs for the connection\&. If unset, the UUID will be used instead\&. The stable\-id is used instead of the connection UUID for generating IPv6 stable private addresses with ipv6\&.addr\-gen\-mode=stable\-privacy\&. It is also used to seed the generated cloned MAC address for ethernet\&.cloned\-mac\-address=stable and wifi\&.cloned\-mac\-address=stable\&.
 T}
 T{
 timestamp
@@ -1811,6 +1821,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 addr\-gen\-mode
@@ -2009,6 +2020,15 @@ T}:T{
 []
 T}:T{
 Deprecated in favor of the \*(Aqroute\-data\*(Aq property, but this can be used for backward\-compatibility with older daemons\&. Note that if you send this property the daemon will ignore \*(Aqroute\-data\*(Aq\&.  Array of IPv6 route structures\&.  Each IPv6 route structure is composed of an IPv6 address, a prefix length (1 \- 128), an IPv6 next hop address (which may be zeroed out if there is no next hop), and a metric\&. If the metric is 0, NM will choose an appropriate default metric for the device\&.
+T}
+T{
+token
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+Configure the token for draft\-chown\-6man\-tokenised\-ipv6\-identifiers\-02 IPv6 tokenized interface identifiers\&. Useful with eui64 addr\-gen\-mode\&.
 T}
 .TE
 .sp 1
@@ -3297,7 +3317,18 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
+T{
+assigned\-mac\-address
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&.
+T}
 T{
 auto\-negotiate
 T}:T{
@@ -3314,7 +3345,7 @@ byte array
 T}:T{
 \ \&
 T}:T{
-If specified, request that the device use this MAC address instead of its permanent MAC address\&.  This is known as MAC cloning or spoofing\&.
+This D\-Bus field is deprecated in favor of "assigned\-mac\-address" which is more flexible and allows specifying special variants like "random"\&.
 T}
 T{
 duplex
@@ -3324,6 +3355,15 @@ T}:T{
 \ \&
 T}:T{
 If specified, request that the device only use the specified duplex mode\&. Either "half" or "full"\&.
+T}
+T{
+generate\-mac\-address\-mask
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+With "cloned\-mac\-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally\-administered, unicast MAC address is created\&. This property allows to specify that certain bits are fixed\&. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address\&. If the property is NULL, it is eligible to be overwritten by a default connection setting\&. If the value is still NULL or an empty string, the default is to create a locally\-administered, unicast MAC address\&. If the value contains one MAC address, this address is used as mask\&. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization\&. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm\&. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized\&. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized\&. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally\-administered, burned\-in MAC address\&. If the value contains more then one additional MAC addresses, one of them is chosen randomly\&. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered\&.
 T}
 T{
 mac\-address
@@ -3461,7 +3501,18 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
+l l l l
 l l l l.
+T{
+assigned\-mac\-address
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+The new field for the cloned MAC address\&. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable"\&. This field replaces the deprecated "cloned\-mac\-address" on D\-Bus, which can only contain explict hardware addresses\&.
+T}
 T{
 band
 T}:T{
@@ -3496,7 +3547,16 @@ byte array
 T}:T{
 \ \&
 T}:T{
-If specified, request that the Wi\-Fi device use this MAC address instead of its permanent MAC address\&.  This is known as MAC cloning or spoofing\&.
+This D\-Bus field is deprecated in favor of "assigned\-mac\-address" which is more flexible and allows specifying special variants like "random"\&.
+T}
+T{
+generate\-mac\-address\-mask
+T}:T{
+string
+T}:T{
+\ \&
+T}:T{
+With "cloned\-mac\-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally\-administered, unicast MAC address is created\&. This property allows to specify that certain bits are fixed\&. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address\&. If the property is NULL, it is eligible to be overwritten by a default connection setting\&. If the value is still NULL or an empty string, the default is to create a locally\-administered, unicast MAC address\&. If the value contains one MAC address, this address is used as mask\&. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization\&. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm\&. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized\&. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized\&. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally\-administered, burned\-in MAC address\&. If the value contains more then one additional MAC addresses, one of them is chosen randomly\&. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered\&.
 T}
 T{
 hidden
@@ -3532,7 +3592,7 @@ uint32
 T}:T{
 0
 T}:T{
-One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address)\&.
+One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address)\&. Deprecated: 1
 T}
 T{
 mode

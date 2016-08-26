@@ -45,12 +45,18 @@ G_DEFINE_TYPE (NMDeviceTeam, nm_device_team, NM_TYPE_DEVICE)
 
 #define NM_DEVICE_TEAM_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_DEVICE_TEAM, NMDeviceTeamPrivate))
 
+NM_GOBJECT_PROPERTIES_DEFINE (NMDeviceTeam,
+	PROP_CONFIG,
+);
+
 typedef struct {
 	struct teamdctl *tdc;
 	GPid teamd_pid;
 	guint teamd_process_watch;
 	guint teamd_timeout;
+	guint teamd_read_timeout;
 	guint teamd_dbus_watch;
+	char *config;
 } NMDeviceTeamPrivate;
 
 static gboolean teamd_start (NMDevice *device, NMSettingTeam *s_team);
@@ -147,39 +153,74 @@ ensure_teamd_connection (NMDevice *device)
 	return !!priv->tdc;
 }
 
+static gboolean
+teamd_read_config (NMDevice *device)
+{
+	NMDeviceTeam *self = NM_DEVICE_TEAM (device);
+	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (self);
+	char *config = NULL;
+	int err;
+
+	if (priv->tdc) {
+		err = teamdctl_config_actual_get_raw_direct (priv->tdc, &config);
+		if (err)
+			return FALSE;
+	}
+
+	if (!nm_streq0 (config, priv->config)) {
+		g_free (priv->config);
+		priv->config = g_strdup (config);
+		_notify (self, PROP_CONFIG);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+teamd_read_timeout_cb (gpointer user_data)
+{
+	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (user_data);
+
+	teamd_read_config ((NMDevice *) user_data);
+	priv->teamd_read_timeout = 0;
+
+	return G_SOURCE_REMOVE;
+}
+
 static void
 update_connection (NMDevice *device, NMConnection *connection)
 {
 	NMDeviceTeam *self = NM_DEVICE_TEAM (device);
 	NMSettingTeam *s_team = nm_connection_get_setting_team (connection);
 	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (self);
+	struct teamdctl *tdc = priv->tdc;
 
 	if (!s_team) {
 		s_team = (NMSettingTeam *) nm_setting_team_new ();
 		nm_connection_add_setting (connection, (NMSetting *) s_team);
 	}
-	g_object_set (G_OBJECT (s_team), NM_SETTING_TEAM_CONFIG, NULL, NULL);
 
-	if (priv->tdc) {
-		const char *config = NULL;
-		int err;
+	/* Read the configuration only if not already set */
+	if (!priv->config && ensure_teamd_connection (device))
+		teamd_read_config (device);
 
-		err = teamdctl_config_get_raw_direct (NM_DEVICE_TEAM_GET_PRIVATE (device)->tdc,
-		                                      (char **)&config);
-		if (err == 0)
-			g_object_set (G_OBJECT (s_team), NM_SETTING_TEAM_CONFIG, config, NULL);
-		else
-			_LOGE (LOGD_TEAM, "failed to read teamd config (err=%d)", err);
+	/* Restore previous tdc state */
+	if (priv->tdc && !tdc) {
+		teamdctl_disconnect (priv->tdc);
+		teamdctl_free (priv->tdc);
+		priv->tdc = NULL;
 	}
+
+	g_object_set (G_OBJECT (s_team), NM_SETTING_TEAM_CONFIG, priv->config, NULL);
 }
 
 /******************************************************************/
 
 static gboolean
 master_update_slave_connection (NMDevice *self,
-                                   NMDevice *slave,
-                                   NMConnection *connection,
-                                   GError **error)
+                                NMDevice *slave,
+                                NMConnection *connection,
+                                GError **error)
 {
 	NMSettingTeamPort *s_port;
 	char *port_config = NULL;
@@ -249,6 +290,7 @@ teamd_cleanup (NMDevice *device, gboolean free_tdc)
 
 	nm_clear_g_source (&priv->teamd_process_watch);
 	nm_clear_g_source (&priv->teamd_timeout);
+	nm_clear_g_source (&priv->teamd_read_timeout);
 
 	if (priv->teamd_pid > 0) {
 		nm_utils_kill_child_async (priv->teamd_pid, SIGTERM, LOGD_TEAM, "teamd", 2000, NULL, NULL);
@@ -279,6 +321,14 @@ teamd_timeout_cb (gpointer user_data)
 
 		g_warn_if_fail (nm_device_is_activating (device));
 		nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED);
+	} else {
+		/* Read again the configuration after the timeout since it might
+		 * have changed.
+		 */
+		if (!teamd_read_config (device)) {
+			_LOGW (LOGD_TEAM, "failed to read teamd configuration");
+			nm_device_state_changed (device, NM_DEVICE_STATE_FAILED, NM_DEVICE_STATE_REASON_TEAMD_CONTROL_FAILED);
+		}
 	}
 
 	return G_SOURCE_REMOVE;
@@ -338,6 +388,8 @@ teamd_dbus_appeared (GDBusConnection *connection,
 	 */
 	success = ensure_teamd_connection (device);
 	if (nm_device_get_state (device) == NM_DEVICE_STATE_PREPARE) {
+		if (success)
+			success = teamd_read_config (device);
 		if (success)
 			nm_device_activate_schedule_stage2_device_config (device);
 		else if (!nm_device_uses_assumed_connection (device))
@@ -523,7 +575,7 @@ act_stage1_prepare (NMDevice *device, NMDeviceStateReason *reason)
 		 * have a PID, then we must fail.
 		 */
 		cfg = teamdctl_config_get_raw (priv->tdc);
-		if (cfg && strcmp (cfg,  nm_setting_team_get_config (s_team)) == 0) {
+		if (cfg && nm_streq0 (cfg,  nm_setting_team_get_config (s_team))) {
 			_LOGD (LOGD_TEAM, "using existing matching teamd config");
 			return NM_ACT_STAGE_RETURN_SUCCESS;
 		}
@@ -626,6 +678,11 @@ enslave_slave (NMDevice *device,
 		if (!success)
 			return FALSE;
 
+		nm_clear_g_source (&priv->teamd_read_timeout);
+		priv->teamd_read_timeout = g_timeout_add_seconds (5,
+		                                                  teamd_read_timeout_cb,
+		                                                  self);
+
 		_LOGI (LOGD_TEAM, "enslaved team port %s", slave_iface);
 	} else
 		_LOGI (LOGD_TEAM, "team port %s was enslaved", slave_iface);
@@ -639,6 +696,7 @@ release_slave (NMDevice *device,
                gboolean configure)
 {
 	NMDeviceTeam *self = NM_DEVICE_TEAM (device);
+	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (device);
 	gboolean success, no_firmware = FALSE;
 
 	if (configure) {
@@ -658,6 +716,11 @@ release_slave (NMDevice *device,
 		if (!nm_device_bring_up (slave, TRUE, &no_firmware))
 			_LOGW (LOGD_TEAM, "released team port %s could not be brought up",
 			       nm_device_get_ip_iface (slave));
+
+		nm_clear_g_source (&priv->teamd_read_timeout);
+		priv->teamd_read_timeout = g_timeout_add_seconds (5,
+		                                                  teamd_read_timeout_cb,
+		                                                  self);
 	} else
 		_LOGI (LOGD_TEAM, "team port %s was released", nm_device_get_ip_iface (slave));
 }
@@ -701,6 +764,23 @@ nm_device_team_new (const char *iface)
 }
 
 static void
+get_property (GObject *object, guint prop_id,
+              GValue *value, GParamSpec *pspec)
+{
+	NMDeviceTeam *self = NM_DEVICE_TEAM (object);
+	NMDeviceTeamPrivate *priv = NM_DEVICE_TEAM_GET_PRIVATE (self);
+
+	switch (prop_id) {
+	case PROP_CONFIG:
+		g_value_set_string (value, priv->config);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
 nm_device_team_init (NMDeviceTeam * self)
 {
 }
@@ -738,6 +818,7 @@ dispose (GObject *object)
 	}
 
 	teamd_cleanup (device, TRUE);
+	g_clear_pointer (&priv->config, g_free);
 
 	G_OBJECT_CLASS (nm_device_team_parent_class)->dispose (object);
 }
@@ -754,6 +835,7 @@ nm_device_team_class_init (NMDeviceTeamClass *klass)
 
 	object_class->constructed = constructed;
 	object_class->dispose = dispose;
+	object_class->get_property = get_property;
 
 	parent_class->create_and_realize = create_and_realize;
 	parent_class->get_generic_capabilities = get_generic_capabilities;
@@ -769,6 +851,14 @@ nm_device_team_class_init (NMDeviceTeamClass *klass)
 	parent_class->deactivate = deactivate;
 	parent_class->enslave_slave = enslave_slave;
 	parent_class->release_slave = release_slave;
+
+	obj_properties[PROP_CONFIG] =
+	    g_param_spec_string (NM_DEVICE_TEAM_CONFIG, "", "",
+	                         NULL,
+	                         G_PARAM_READABLE |
+	                         G_PARAM_STATIC_STRINGS);
+
+	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (klass),
 	                                        NMDBUS_TYPE_DEVICE_TEAM_SKELETON,

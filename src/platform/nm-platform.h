@@ -49,8 +49,6 @@
 
 /******************************************************************/
 
-typedef struct _NMPlatform NMPlatform;
-
 /* workaround for older libnl version, that does not define these flags. */
 #ifndef IFA_F_MANAGETEMPADDR
 #define IFA_F_MANAGETEMPADDR 0x100
@@ -90,6 +88,7 @@ typedef enum { /*< skip >*/
 	NM_PLATFORM_ERROR_WRONG_TYPE,
 	NM_PLATFORM_ERROR_NOT_SLAVE,
 	NM_PLATFORM_ERROR_NO_FIRMWARE,
+	NM_PLATFORM_ERROR_OPNOTSUPP,
 } NMPlatformError;
 
 
@@ -98,6 +97,11 @@ typedef struct {
 		guint8 addr_ptr[1];
 		in_addr_t addr4;
 		struct in6_addr addr6;
+
+		/* NMIPAddr is really a union for IP addresses.
+		 * However, as ethernet addresses fit in here nicely, ruse
+		 * it also for an ethernet MAC address. */
+		guint8 addr_eth[6 /*ETH_ALEN*/];
 	};
 } NMIPAddr;
 
@@ -144,16 +148,19 @@ struct _NMPlatformLink {
 		guint8 len;
 	} addr;
 
-	/* rtnl_link_inet6_get_token() */
-	struct {
-		NMUtilsIPv6IfaceId iid;
-		guint8 is_valid;
-	} inet6_token;
+	/* rtnl_link_inet6_get_token(), IFLA_INET6_TOKEN */
+	NMUtilsIPv6IfaceId inet6_token;
 
 	/* The bitwise inverse of rtnl_link_inet6_get_addr_gen_mode(). It is inverse
 	 * to have a default of 0 -- meaning: unspecified. That way, a struct
 	 * initialized with memset(0) has and unset value.*/
 	guint8 inet6_addr_gen_mode_inv;
+
+	/* Statistics */
+	guint64 rx_packets;
+	guint64 rx_bytes;
+	guint64 tx_packets;
+	guint64 tx_bytes;
 
 	/* @connected is mostly identical to (@n_ifi_flags & IFF_UP). Except for bridge/bond masters,
 	 * where we coerce the link as disconnect if it has no slaves. */
@@ -200,7 +207,7 @@ typedef struct {
 
 #define __NMPlatformIPAddress_COMMON \
 	__NMPlatformObject_COMMON; \
-	NMIPConfigSource source; \
+	NMIPConfigSource addr_source; \
 	\
 	/* Timestamp in seconds in the reference system of nm_utils_get_monotonic_timestamp_*().
 	 *
@@ -303,8 +310,21 @@ typedef union {
 
 #define __NMPlatformIPRoute_COMMON \
 	__NMPlatformObject_COMMON; \
-	NMIPConfigSource source; \
+	\
+	/* The NMIPConfigSource. For routes that we receive from cache this corresponds
+	 * to the rtm_protocol field (and is one of the NM_IP_CONFIG_SOURCE_RTPROT_* values).
+	 * When adding a route, the source will be coerced to the protocol using
+	 * nmp_utils_ip_config_source_coerce_to_rtprot(). */ \
+	NMIPConfigSource rt_source; \
+	\
 	guint8 plen; \
+	\
+	/* the route has rtm_flags set to RTM_F_CLONED. Such a route
+	 * is hidden by platform and does not exist from the point-of-view
+	 * of platform users. This flag is internal to track those hidden
+	 * routes. Such a route is not alive, according to nmp_object_is_alive(). */ \
+	bool rt_cloned:1; \
+	\
 	guint32 metric; \
 	guint32 mss; \
 	;
@@ -506,13 +526,14 @@ typedef struct {
 	const char *(*link_get_udi) (NMPlatform *self, int ifindex);
 	GObject *(*link_get_udev_device) (NMPlatform *self, int ifindex);
 
-	gboolean (*link_set_user_ipv6ll_enabled) (NMPlatform *, int ifindex, gboolean enabled);
+	NMPlatformError (*link_set_user_ipv6ll_enabled) (NMPlatform *, int ifindex, gboolean enabled);
+	gboolean (*link_set_token) (NMPlatform *, int ifindex, NMUtilsIPv6IfaceId iid);
 
 	gboolean (*link_get_permanent_address) (NMPlatform *,
 	                                        int ifindex,
 	                                        guint8 *buf,
 	                                        size_t *length);
-	gboolean (*link_set_address) (NMPlatform *, int ifindex, gconstpointer address, size_t length);
+	NMPlatformError (*link_set_address) (NMPlatform *, int ifindex, gconstpointer address, size_t length);
 	gboolean (*link_set_mtu) (NMPlatform *, int ifindex, guint32 mtu);
 
 	char *   (*link_get_physical_port_id) (NMPlatform *, int ifindex);
@@ -717,7 +738,6 @@ gboolean nm_platform_link_is_up (NMPlatform *self, int ifindex);
 gboolean nm_platform_link_is_connected (NMPlatform *self, int ifindex);
 gboolean nm_platform_link_uses_arp (NMPlatform *self, int ifindex);
 guint32 nm_platform_link_get_mtu (NMPlatform *self, int ifindex);
-gboolean nm_platform_link_get_ipv6_token (NMPlatform *self, int ifindex, NMUtilsIPv6IfaceId *iid);
 gboolean nm_platform_link_get_user_ipv6ll_enabled (NMPlatform *self, int ifindex);
 gconstpointer nm_platform_link_get_address (NMPlatform *self, int ifindex, size_t *length);
 int nm_platform_link_get_master (NMPlatform *self, int slave);
@@ -740,10 +760,11 @@ const char *nm_platform_link_get_udi (NMPlatform *self, int ifindex);
 
 GObject *nm_platform_link_get_udev_device (NMPlatform *self, int ifindex);
 
-gboolean nm_platform_link_set_user_ipv6ll_enabled (NMPlatform *self, int ifindex, gboolean enabled);
+NMPlatformError nm_platform_link_set_user_ipv6ll_enabled (NMPlatform *self, int ifindex, gboolean enabled);
+gboolean nm_platform_link_set_ipv6_token (NMPlatform *self, int ifindex, NMUtilsIPv6IfaceId iid);
 
 gboolean nm_platform_link_get_permanent_address (NMPlatform *self, int ifindex, guint8 *buf, size_t *length);
-gboolean nm_platform_link_set_address (NMPlatform *self, int ifindex, const void *address, size_t length);
+NMPlatformError nm_platform_link_set_address (NMPlatform *self, int ifindex, const void *address, size_t length);
 gboolean nm_platform_link_set_mtu (NMPlatform *self, int ifindex, guint32 mtu);
 
 char    *nm_platform_link_get_physical_port_id (NMPlatform *self, int ifindex);

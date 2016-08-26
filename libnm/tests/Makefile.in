@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -94,8 +95,9 @@ host_triplet = @host@
 @ENABLE_TESTS_TRUE@	test-secret-agent$(EXEEXT)
 subdir = libnm/tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -114,6 +116,21 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+am__DEPENDENCIES_1 =
+libnm_vpn_plugin_utils_test_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_libnm_vpn_plugin_utils_test_la_OBJECTS =  \
+	libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.lo
+libnm_vpn_plugin_utils_test_la_OBJECTS =  \
+	$(am_libnm_vpn_plugin_utils_test_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libnm_vpn_plugin_utils_test_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libnm_vpn_plugin_utils_test_la_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 @ENABLE_TESTS_TRUE@am__EXEEXT_1 = test-nm-client$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-remote-settings-client$(EXEEXT) \
 @ENABLE_TESTS_TRUE@	test-secret-agent$(EXEEXT)
@@ -126,14 +143,9 @@ am__test_nm_client_SOURCES_DIST =  \
 @ENABLE_TESTS_TRUE@	test-nm-client.$(OBJEXT)
 test_nm_client_OBJECTS = $(am_test_nm_client_OBJECTS)
 test_nm_client_LDADD = $(LDADD)
-am__DEPENDENCIES_1 =
 @ENABLE_TESTS_TRUE@test_nm_client_DEPENDENCIES =  \
 @ENABLE_TESTS_TRUE@	$(top_builddir)/libnm/libnm.la \
 @ENABLE_TESTS_TRUE@	$(am__DEPENDENCIES_1)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 am__test_remote_settings_client_SOURCES_DIST =  \
 	$(top_builddir)/shared/nm-test-utils-impl.c \
 	$(top_builddir)/shared/nm-test-libnm-utils.h \
@@ -193,10 +205,12 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_nm_client_SOURCES) \
+SOURCES = $(libnm_vpn_plugin_utils_test_la_SOURCES) \
+	$(test_nm_client_SOURCES) \
 	$(test_remote_settings_client_SOURCES) \
 	$(test_secret_agent_SOURCES)
-DIST_SOURCES = $(am__test_nm_client_SOURCES_DIST) \
+DIST_SOURCES = $(libnm_vpn_plugin_utils_test_la_SOURCES) \
+	$(am__test_nm_client_SOURCES_DIST) \
 	$(am__test_remote_settings_client_SOURCES_DIST) \
 	$(am__test_secret_agent_SOURCES_DIST)
 am__can_run_installinfo = \
@@ -464,6 +478,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -520,13 +535,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -538,6 +554,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -598,6 +616,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -633,6 +653,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -725,6 +746,27 @@ with_valgrind = @with_valgrind@
 @ENABLE_TESTS_TRUE@	$(top_builddir)/shared/nm-test-libnm-utils.h \
 @ENABLE_TESTS_TRUE@	test-secret-agent.c
 
+
+###############################################################################
+noinst_LTLIBRARIES = \
+    libnm-vpn-plugin-utils-test.la
+
+libnm_vpn_plugin_utils_test_la_SOURCES = \
+     $(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c \
+     $(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.h \
+     $(NULL)
+
+libnm_vpn_plugin_utils_test_la_CFLAGS = \
+    $(GLIB_CFLAGS) \
+    -I$(top_srcdir)/shared \
+    -I$(top_srcdir)/libnm-core \
+    -I$(top_srcdir)/libnm \
+    $(NULL)
+
+libnm_vpn_plugin_utils_test_la_LIBADD = \
+    $(GLIB_LIBS) \
+    $(NULL)
+
 all: all-am
 
 .SUFFIXES:
@@ -759,6 +801,20 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
+libnm-vpn-plugin-utils-test.la: $(libnm_vpn_plugin_utils_test_la_OBJECTS) $(libnm_vpn_plugin_utils_test_la_DEPENDENCIES) $(EXTRA_libnm_vpn_plugin_utils_test_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libnm_vpn_plugin_utils_test_la_LINK)  $(libnm_vpn_plugin_utils_test_la_OBJECTS) $(libnm_vpn_plugin_utils_test_la_LIBADD) $(LIBS)
+
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
 	echo " rm -f" $$list; \
@@ -786,6 +842,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nm-test-utils-impl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-nm-client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-remote-settings-client.Po@am__quote@
@@ -811,6 +868,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.lo: $(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_vpn_plugin_utils_test_la_CFLAGS) $(CFLAGS) -MT libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.lo -MD -MP -MF $(DEPDIR)/libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.Tpo -c -o libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.lo `test -f '$(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c' || echo '$(srcdir)/'`$(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.Tpo $(DEPDIR)/libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c' object='libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libnm_vpn_plugin_utils_test_la_CFLAGS) $(CFLAGS) -c -o libnm_vpn_plugin_utils_test_la-nm-vpn-plugin-utils.lo `test -f '$(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c' || echo '$(srcdir)/'`$(top_srcdir)/shared/nm-utils/nm-vpn-plugin-utils.c
 
 nm-test-utils-impl.o: $(top_builddir)/shared/nm-test-utils-impl.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nm-test-utils-impl.o -MD -MP -MF $(DEPDIR)/nm-test-utils-impl.Tpo -c -o nm-test-utils-impl.o `test -f '$(top_builddir)/shared/nm-test-utils-impl.c' || echo '$(srcdir)/'`$(top_builddir)/shared/nm-test-utils-impl.c
@@ -1094,7 +1158,7 @@ distdir: $(DISTFILES)
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -1131,8 +1195,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -1203,23 +1267,26 @@ uninstall-am:
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-TESTS check-am clean \
-	clean-generic clean-libtool clean-noinstPROGRAMS cscopelist-am \
-	ctags ctags-am distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	recheck tags tags-am uninstall uninstall-am
+	clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	clean-noinstPROGRAMS cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
+	uninstall-am
 
 .PRECIOUS: Makefile
 
 
 @ENABLE_TESTS_TRUE@@WITH_VALGRIND_TRUE@@VALGRIND_RULES@ --launch-dbus
+
+###############################################################################
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

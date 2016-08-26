@@ -6,21 +6,11 @@
 #include "config.h"
 
 #include "nm-enum-types.h"
+#include "nm-default.h"
 
-#include "nm-device-bond.h" 
-#include "nm-device-bridge.h" 
-#include "nm-device-ethernet.h" 
-#include "nm-device-infiniband.h" 
-#include "nm-device-ip-tunnel.h" 
-#include "nm-device-macvlan.h" 
-#include "nm-device-tun.h" 
-#include "nm-device-veth.h" 
-#include "nm-device-vlan.h" 
-#include "nm-device-vxlan.h" 
-#include "nm-dhcp-dhclient.h" 
 #include "nm-dhcp-dhclient-utils.h" 
-#include "nm-dhcp-dhcpcd.h" 
-#include "nm-dhcp-systemd.h" 
+#include "nm-checkpoint-manager.h" 
+#include "nm-checkpoint.h" 
 #include "nm-device.h" 
 #include "nm-lldp-listener.h" 
 #include "nm-arping-manager.h" 
@@ -42,10 +32,8 @@
 #include "nm-platform-utils.h" 
 #include "nm-platform.h" 
 #include "nm-linux-platform.h" 
-#include "nm-fake-platform.h" 
 #include "wifi-utils-nl80211.h" 
 #include "wifi-utils.h" 
-#include "nm-fake-rdisc.h" 
 #include "nm-lndp-rdisc.h" 
 #include "nm-rdisc.h" 
 #include "nm-ppp-manager.h" 
@@ -74,7 +62,6 @@
 #include "nm-bus-manager.h" 
 #include "nm-config.h" 
 #include "nm-config-data.h" 
-#include "nm-connection-provider.h" 
 #include "nm-connectivity.h" 
 #include "nm-dcb.h" 
 #include "nm-route-manager.h" 
@@ -86,7 +73,6 @@
 #include "nm-firewall-manager.h" 
 #include "nm-ip4-config.h" 
 #include "nm-ip6-config.h" 
-#include "nm-logging.h" 
 #include "nm-auth-manager.h" 
 #include "nm-auth-subject.h" 
 #include "nm-auth-utils.h" 
@@ -97,30 +83,9 @@
 #include "nm-session-monitor.h" 
 #include "nm-sleep-monitor.h" 
 #include "nm-types.h" 
-#include "nm-core-utils.h" 
 #include "NetworkManagerUtils.h" 
 #include "wifi-utils-wext.h"
 
-GType
-nm_vlan_error_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_VLAN_ERROR_CONNECTION_NOT_VLAN, "NM_VLAN_ERROR_CONNECTION_NOT_VLAN", "ConnectionNotVlan" },
-        { NM_VLAN_ERROR_CONNECTION_INVALID, "NM_VLAN_ERROR_CONNECTION_INVALID", "ConnectionInvalid" },
-        { NM_VLAN_ERROR_CONNECTION_INCOMPATIBLE, "NM_VLAN_ERROR_CONNECTION_INCOMPATIBLE", "ConnectionIncompatible" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMVlanError"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
 GType
 nm_unman_flag_op_get_type (void)
 {
@@ -475,6 +440,27 @@ nm_supplicant_error_get_type (void)
   return g_define_type_id__volatile;
 }
 GType
+nm_config_run_state_property_type_get_type (void)
+{
+  static volatile gsize g_define_type_id__volatile = 0;
+
+  if (g_once_init_enter (&g_define_type_id__volatile))
+    {
+      static const GEnumValue values[] = {
+        { NM_CONFIG_STATE_PROPERTY_NONE, "NM_CONFIG_STATE_PROPERTY_NONE", "none" },
+        { NM_CONFIG_STATE_PROPERTY_NETWORKING_ENABLED, "NM_CONFIG_STATE_PROPERTY_NETWORKING_ENABLED", "networking-enabled" },
+        { NM_CONFIG_STATE_PROPERTY_WIFI_ENABLED, "NM_CONFIG_STATE_PROPERTY_WIFI_ENABLED", "wifi-enabled" },
+        { NM_CONFIG_STATE_PROPERTY_WWAN_ENABLED, "NM_CONFIG_STATE_PROPERTY_WWAN_ENABLED", "wwan-enabled" },
+        { 0, NULL, NULL }
+      };
+      GType g_define_type_id =
+        g_enum_register_static (g_intern_static_string ("NMConfigRunStatePropertyType"), values);
+      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
+    }
+
+  return g_define_type_id__volatile;
+}
+GType
 nm_config_get_value_flags_get_type (void)
 {
   static volatile gsize g_define_type_id__volatile = 0;
@@ -551,6 +537,7 @@ nm_dispatcher_action_get_type (void)
         { DISPATCHER_ACTION_VPN_DOWN, "DISPATCHER_ACTION_VPN_DOWN", "vpn-down" },
         { DISPATCHER_ACTION_DHCP4_CHANGE, "DISPATCHER_ACTION_DHCP4_CHANGE", "dhcp4-change" },
         { DISPATCHER_ACTION_DHCP6_CHANGE, "DISPATCHER_ACTION_DHCP6_CHANGE", "dhcp6-change" },
+        { DISPATCHER_ACTION_CONNECTIVITY_CHANGE, "DISPATCHER_ACTION_CONNECTIVITY_CHANGE", "connectivity-change" },
         { 0, NULL, NULL }
       };
       GType g_define_type_id =
@@ -610,8 +597,14 @@ nm_ip_config_source_get_type (void)
     {
       static const GEnumValue values[] = {
         { NM_IP_CONFIG_SOURCE_UNKNOWN, "NM_IP_CONFIG_SOURCE_UNKNOWN", "nm-ip-config-source-unknown" },
-        { _NM_IP_CONFIG_SOURCE_RTM_F_CLONED, "_NM_IP_CONFIG_SOURCE_RTM_F_CLONED", "-nm-ip-config-source-rtm-f-cloned" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_UNSPEC, "NM_IP_CONFIG_SOURCE_RTPROT_UNSPEC", "nm-ip-config-source-rtprot-unspec" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_REDIRECT, "NM_IP_CONFIG_SOURCE_RTPROT_REDIRECT", "nm-ip-config-source-rtprot-redirect" },
         { NM_IP_CONFIG_SOURCE_RTPROT_KERNEL, "NM_IP_CONFIG_SOURCE_RTPROT_KERNEL", "nm-ip-config-source-rtprot-kernel" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_BOOT, "NM_IP_CONFIG_SOURCE_RTPROT_BOOT", "nm-ip-config-source-rtprot-boot" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_STATIC, "NM_IP_CONFIG_SOURCE_RTPROT_STATIC", "nm-ip-config-source-rtprot-static" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_RA, "NM_IP_CONFIG_SOURCE_RTPROT_RA", "nm-ip-config-source-rtprot-ra" },
+        { NM_IP_CONFIG_SOURCE_RTPROT_DHCP, "NM_IP_CONFIG_SOURCE_RTPROT_DHCP", "nm-ip-config-source-rtprot-dhcp" },
+        { _NM_IP_CONFIG_SOURCE_RTPROT_LAST, "_NM_IP_CONFIG_SOURCE_RTPROT_LAST", "-nm-ip-config-source-rtprot-last" },
         { NM_IP_CONFIG_SOURCE_KERNEL, "NM_IP_CONFIG_SOURCE_KERNEL", "nm-ip-config-source-kernel" },
         { NM_IP_CONFIG_SOURCE_SHARED, "NM_IP_CONFIG_SOURCE_SHARED", "nm-ip-config-source-shared" },
         { NM_IP_CONFIG_SOURCE_IP4LL, "NM_IP_CONFIG_SOURCE_IP4LL", "nm-ip-config-source-ip4ll" },
@@ -644,7 +637,7 @@ nm_link_type_get_type (void)
         { NM_LINK_TYPE_INFINIBAND, "NM_LINK_TYPE_INFINIBAND", "infiniband" },
         { NM_LINK_TYPE_OLPC_MESH, "NM_LINK_TYPE_OLPC_MESH", "olpc-mesh" },
         { NM_LINK_TYPE_WIFI, "NM_LINK_TYPE_WIFI", "wifi" },
-        { NM_LINK_TYPE_WWAN_ETHERNET, "NM_LINK_TYPE_WWAN_ETHERNET", "wwan-ethernet" },
+        { NM_LINK_TYPE_WWAN_NET, "NM_LINK_TYPE_WWAN_NET", "wwan-net" },
         { NM_LINK_TYPE_WIMAX, "NM_LINK_TYPE_WIMAX", "wimax" },
         { NM_LINK_TYPE_DUMMY, "NM_LINK_TYPE_DUMMY", "dummy" },
         { NM_LINK_TYPE_GRE, "NM_LINK_TYPE_GRE", "gre" },
@@ -725,49 +718,6 @@ nm_ip_config_merge_flags_get_type (void)
       };
       GType g_define_type_id =
         g_flags_register_static (g_intern_static_string ("NMIPConfigMergeFlags"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_match_spec_match_type_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GEnumValue values[] = {
-        { NM_MATCH_SPEC_NO_MATCH, "NM_MATCH_SPEC_NO_MATCH", "no-match" },
-        { NM_MATCH_SPEC_MATCH, "NM_MATCH_SPEC_MATCH", "match" },
-        { NM_MATCH_SPEC_NEG_MATCH, "NM_MATCH_SPEC_NEG_MATCH", "neg-match" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_enum_register_static (g_intern_static_string ("NMMatchSpecMatchType"), values);
-      g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-    }
-
-  return g_define_type_id__volatile;
-}
-GType
-nm_utils_test_flags_get_type (void)
-{
-  static volatile gsize g_define_type_id__volatile = 0;
-
-  if (g_once_init_enter (&g_define_type_id__volatile))
-    {
-      static const GFlagsValue values[] = {
-        { NM_UTILS_TEST_NONE, "NM_UTILS_TEST_NONE", "nm-utils-test-none" },
-        { _NM_UTILS_TEST_INITIALIZED, "_NM_UTILS_TEST_INITIALIZED", "-nm-utils-test-initialized" },
-        { _NM_UTILS_TEST_GENERAL, "_NM_UTILS_TEST_GENERAL", "-nm-utils-test-general" },
-        { NM_UTILS_TEST_NO_KEYFILE_OWNER_CHECK, "NM_UTILS_TEST_NO_KEYFILE_OWNER_CHECK", "nm-utils-test-no-keyfile-owner-check" },
-        { _NM_UTILS_TEST_LAST, "_NM_UTILS_TEST_LAST", "-nm-utils-test-last" },
-        { NM_UTILS_TEST_ALL, "NM_UTILS_TEST_ALL", "nm-utils-test-all" },
-        { 0, NULL, NULL }
-      };
-      GType g_define_type_id =
-        g_flags_register_static (g_intern_static_string ("NMUtilsTestFlags"), values);
       g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
     }
 
