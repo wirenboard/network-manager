@@ -2,6 +2,8 @@ network-manager (1.4.0-2) UNRELEASED; urgency=medium
 
   * Correctly set the connectivity state if we enforce online mode with
     unmanaged devices.
+  * Stop mentioning "managed=true" mode in README.Debian. Its usage is
+    strongly discouraged nowadays.
 
  -- Michael Biebl <biebl@debian.org>  Fri, 26 Aug 2016 20:32:37 +0200
 
