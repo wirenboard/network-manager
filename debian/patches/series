@@ -1,9 +1,6 @@
 Force-online-state-with-unmanaged-devices.patch
 Don-t-setup-Sleep-Monitor-if-not-booted-with-systemd.patch
 fix-arping-path.patch
-Check-at-runtime-whether-to-start-ModemManager.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 systemd-Don-t-enable-NetworkManager-wait-online.service-s.patch
 Fix-iscsiadm-path.patch
-wifi-clear-WiFi-requested_scan-if-suppl-exits.patch
-wifi-clear-WiFi-requested_scan-if-suppl-goes-INACTIVE.patch

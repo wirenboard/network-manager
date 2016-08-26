@@ -12,46 +12,9 @@ systemd.
 
 Closes: #742933
 ---
- configure.ac           | 3 ++-
- src/Makefile.am        | 2 ++
  src/nm-sleep-monitor.c | 5 +++++
- 3 files changed, 9 insertions(+), 1 deletion(-)
+ 1 file changed, 5 insertions(+)
 
-diff --git a/configure.ac b/configure.ac
-index 4c56e14..a47f09e 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -474,8 +474,9 @@ fi
- case $with_suspend_resume in
-     upower) ;;
-     systemd)
-+        # Link against libsystemd-daemon for sd_booted()
-         PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd >= 209],,
--                          [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
-+                          [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183 libsystemd-daemon])])
-         AC_DEFINE([SUSPEND_RESUME_SYSTEMD], 1, [Define to 1 to use systemd suspend api])
-         ;;
-     consolekit)
-diff --git a/src/Makefile.am b/src/Makefile.am
-index 48af5a0..b4fc16d 100644
---- a/src/Makefile.am
-+++ b/src/Makefile.am
-@@ -474,6 +474,7 @@ AM_CPPFLAGS += \
- 	$(SELINUX_CFLAGS) \
- 	$(LIBAUDIT_CFLAGS) \
- 	$(SYSTEMD_LOGIN_CFLAGS) \
-+	$(SYSTEMD_INHIBIT_CFLAGS) \
- 	$(SYSTEMD_JOURNAL_CFLAGS) \
- 	$(SYSTEMD_NM_CFLAGS_PATHS) \
- 	\
-@@ -507,6 +508,7 @@ libNetworkManager_la_LIBADD = \
- 	$(GUDEV_LIBS) \
- 	$(LIBNL_LIBS) \
- 	$(SYSTEMD_LOGIN_LIBS) \
-+	$(SYSTEMD_INHIBIT_LIBS) \
- 	$(SYSTEMD_JOURNAL_LIBS) \
- 	$(LIBNDP_LIBS) \
- 	$(LIBDL) \
 diff --git a/src/nm-sleep-monitor.c b/src/nm-sleep-monitor.c
 index 13ce1be..561e503 100644
 --- a/src/nm-sleep-monitor.c
