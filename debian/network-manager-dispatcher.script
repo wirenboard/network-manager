@@ -4,6 +4,12 @@
 # Runs ifupdown scripts when NetworkManager fiddles with interfaces.
 # See NetworkManager(8) for further documentation of the dispatcher events.
 
+# We do not handle connectivity-change events in ifupdown so simply exit at
+# this point
+if [ "$2" = "connectivity-change" ]; then
+    exit 0;
+fi
+
 if [ -z "$1" ]; then
     echo "$0: called with no interface" 1>&2
     exit 1;
