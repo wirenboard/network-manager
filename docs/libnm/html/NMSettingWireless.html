@@ -8,7 +8,7 @@
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingWired.html" title="NMSettingWired">
 <link rel="next" href="NMSettingWirelessSecurity.html" title="NMSettingWirelessSecurity">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -114,6 +114,13 @@
 </td>
 <td class="function_name">
 <a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-cloned-mac-address" title="nm_setting_wireless_get_cloned_mac_address ()">nm_setting_wireless_get_cloned_mac_address</a> <span class="c_punctuation">()</span>
+</td>
+</tr>
+<tr>
+<td class="function_type">const <span class="returnvalue">char</span> *
+</td>
+<td class="function_name">
+<a class="link" href="NMSettingWireless.html#nm-setting-wireless-get-generate-mac-address-mask" title="nm_setting_wireless_get_generate_mac_address_mask ()">nm_setting_wireless_get_generate_mac_address_mask</a> <span class="c_punctuation">()</span>
 </td>
 </tr>
 <tr>
@@ -269,6 +276,12 @@
 <td class="property_flags">Read / Write</td>
 </tr>
 <tr>
+<td class="property_type">
+<span class="type">gchar</span> *</td>
+<td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--generate-mac-address-mask" title="The “generate-mac-address-mask” property">generate-mac-address-mask</a></td>
+<td class="property_flags">Read / Write</td>
+</tr>
+<tr>
 <td class="property_type"><span class="type">gboolean</span></td>
 <td class="property_name"><a class="link" href="NMSettingWireless.html#NMSettingWireless--hidden" title="The “hidden” property">hidden</a></td>
 <td class="property_flags">Read / Write</td>
@@ -379,6 +392,10 @@
 </tr>
 <tr>
 <td class="define_keyword">#define</td>
+<td class="function_name"><a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-GENERATE-MAC-ADDRESS-MASK:CAPS" title="NM_SETTING_WIRELESS_GENERATE_MAC_ADDRESS_MASK">NM_SETTING_WIRELESS_GENERATE_MAC_ADDRESS_MASK</a></td>
+</tr>
+<tr>
+<td class="define_keyword">#define</td>
 <td class="function_name"><a class="link" href="NMSettingWireless.html#NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS" title="NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST">NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST</a></td>
 </tr>
 <tr>
@@ -446,7 +463,7 @@ necessary for connection to 802.11 Wi-Fi networks.</p>
 nm_setting_wireless_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -457,7 +474,7 @@ nm_setting_wireless_new (<em class="parameter"><code><span class="type">void</sp
 <pre class="programlisting"><span class="returnvalue">GBytes</span> *
 nm_setting_wireless_get_ssid (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.3.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-ssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -472,7 +489,7 @@ nm_setting_wireless_get_ssid (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-ssid.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--ssid" title="The “ssid” property"><span class="type">“ssid”</span></a> property of the setting. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -483,7 +500,7 @@ nm_setting_wireless_get_ssid (<em class="parameter"><code><a class="link" href="
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wireless_get_mode (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-mode.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -498,7 +515,7 @@ nm_setting_wireless_get_mode (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-mode.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--mode" title="The “mode” property"><span class="type">“mode”</span></a> property of the setting</p>
 </div>
 </div>
@@ -508,7 +525,7 @@ nm_setting_wireless_get_mode (<em class="parameter"><code><a class="link" href="
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wireless_get_band (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.5.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-band.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -523,7 +540,7 @@ nm_setting_wireless_get_band (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.5.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-band.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--band" title="The “band” property"><span class="type">“band”</span></a> property of the setting</p>
 </div>
 </div>
@@ -533,7 +550,7 @@ nm_setting_wireless_get_band (<em class="parameter"><code><a class="link" href="
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wireless_get_channel (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.6.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-channel.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -548,7 +565,7 @@ nm_setting_wireless_get_channel (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.6.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-channel.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--channel" title="The “channel” property"><span class="type">“channel”</span></a> property of the setting</p>
 </div>
 </div>
@@ -558,7 +575,7 @@ nm_setting_wireless_get_channel (<em class="parameter"><code><a class="link" hre
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wireless_get_bssid (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.7.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-bssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -573,7 +590,7 @@ nm_setting_wireless_get_bssid (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.7.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-bssid.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--bssid" title="The “bssid” property"><span class="type">“bssid”</span></a> property of the setting</p>
 </div>
 </div>
@@ -583,7 +600,7 @@ nm_setting_wireless_get_bssid (<em class="parameter"><code><a class="link" href=
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wireless_get_rate (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.8.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-rate.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -598,7 +615,7 @@ nm_setting_wireless_get_rate (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.8.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-rate.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--rate" title="The “rate” property"><span class="type">“rate”</span></a> property of the setting</p>
 </div>
 </div>
@@ -608,7 +625,7 @@ nm_setting_wireless_get_rate (<em class="parameter"><code><a class="link" href="
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wireless_get_tx_power (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.9.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-tx-power.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -623,7 +640,7 @@ nm_setting_wireless_get_tx_power (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.9.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-tx-power.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--tx-power" title="The “tx-power” property"><span class="type">“tx-power”</span></a> property of the setting</p>
 </div>
 </div>
@@ -633,7 +650,7 @@ nm_setting_wireless_get_tx_power (<em class="parameter"><code><a class="link" hr
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_wireless_get_mac_address (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.10.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-mac-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -648,7 +665,7 @@ nm_setting_wireless_get_mac_address (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.10.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-mac-address.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--mac-address" title="The “mac-address” property"><span class="type">“mac-address”</span></a> property of the setting</p>
 </div>
 </div>
@@ -659,7 +676,7 @@ nm_setting_wireless_get_mac_address (<em class="parameter"><code><a class="link"
 nm_setting_wireless_get_cloned_mac_address
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.11.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-cloned-mac-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -674,9 +691,36 @@ nm_setting_wireless_get_cloned_mac_address
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.11.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-cloned-mac-address.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--cloned-mac-address" title="The “cloned-mac-address” property"><span class="type">“cloned-mac-address”</span></a> property of the setting</p>
 </div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="nm-setting-wireless-get-generate-mac-address-mask"></a><h3>nm_setting_wireless_get_generate_mac_address_mask ()</h3>
+<pre class="programlisting">const <span class="returnvalue">char</span> *
+nm_setting_wireless_get_generate_mac_address_mask
+                               (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
+<div class="refsect3">
+<a name="nm-setting-wireless-get-generate-mac-address-mask.parameters"></a><h4>Parameters</h4>
+<div class="informaltable"><table width="100%" border="0">
+<colgroup>
+<col width="150px" class="parameters_name">
+<col class="parameters_description">
+<col width="200px" class="parameters_annotations">
+</colgroup>
+<tbody><tr>
+<td class="parameter_name"><p>setting</p></td>
+<td class="parameter_description"><p>the <a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a></p></td>
+<td class="parameter_annotations"> </td>
+</tr></tbody>
+</table></div>
+</div>
+<div class="refsect3">
+<a name="nm-setting-wireless-get-generate-mac-address-mask.returns"></a><h4>Returns</h4>
+<p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--generate-mac-address-mask" title="The “generate-mac-address-mask” property"><span class="type">“generate-mac-address-mask”</span></a> property of the setting</p>
+</div>
+<p class="since">Since: 1.4</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -685,7 +729,7 @@ nm_setting_wireless_get_cloned_mac_address
 nm_setting_wireless_get_mac_address_blacklist
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.12.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-mac-address-blacklist.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -700,7 +744,7 @@ nm_setting_wireless_get_mac_address_blacklist
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.12.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-mac-address-blacklist.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--mac-address-blacklist" title="The “mac-address-blacklist” property"><span class="type">“mac-address-blacklist”</span></a> property of the setting</p>
 </div>
 </div>
@@ -711,7 +755,7 @@ nm_setting_wireless_get_mac_address_blacklist
 nm_setting_wireless_get_num_mac_blacklist_items
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.13.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-num-mac-blacklist-items.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -726,7 +770,7 @@ nm_setting_wireless_get_num_mac_blacklist_items
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.13.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-num-mac-blacklist-items.returns"></a><h4>Returns</h4>
 <p> the number of blacklisted MAC addresses</p>
 </div>
 </div>
@@ -738,7 +782,7 @@ nm_setting_wireless_get_mac_blacklist_item
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint32</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.14.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-mac-blacklist-item.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -760,7 +804,7 @@ nm_setting_wireless_get_mac_blacklist_item
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.14.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-mac-blacklist-item.returns"></a><h4>Returns</h4>
 <p> the blacklisted MAC address string (hex-digits-and-colons notation)
 at index <em class="parameter"><code>idx</code></em>
 </p>
@@ -775,7 +819,7 @@ nm_setting_wireless_add_mac_blacklist_item
                                 <em class="parameter"><code>const <span class="type">char</span> *mac</code></em>);</pre>
 <p>Adds a new MAC address to the <a class="link" href="NMSettingWireless.html#NMSettingWireless--mac-address-blacklist" title="The “mac-address-blacklist” property"><span class="type">“mac-address-blacklist”</span></a> property.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.15.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-add-mac-blacklist-item.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -797,7 +841,7 @@ nm_setting_wireless_add_mac_blacklist_item
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.15.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-add-mac-blacklist-item.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the MAC address was added; <code class="literal">FALSE</code> if the MAC address
 is invalid or was already present</p>
 </div>
@@ -812,7 +856,7 @@ nm_setting_wireless_remove_mac_blacklist_item
 <p>Removes the MAC address at index <em class="parameter"><code>idx</code></em>
  from the blacklist.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-remove-mac-blacklist-item.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -844,7 +888,7 @@ nm_setting_wireless_remove_mac_blacklist_item_by_value
 <p>Removes the MAC address <em class="parameter"><code>mac</code></em>
  from the blacklist.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.17.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-remove-mac-blacklist-item-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -867,7 +911,7 @@ the blacklist</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.17.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-remove-mac-blacklist-item-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the MAC address was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 </div>
@@ -879,7 +923,7 @@ nm_setting_wireless_clear_mac_blacklist_items
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <p>Removes all blacklisted MAC addresses.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-clear-mac-blacklist-items.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -900,7 +944,7 @@ nm_setting_wireless_clear_mac_blacklist_items
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wireless_get_mtu (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.19.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-mtu.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -915,7 +959,7 @@ nm_setting_wireless_get_mtu (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.19.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-mtu.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--mtu" title="The “mtu” property"><span class="type">“mtu”</span></a> property of the setting</p>
 </div>
 </div>
@@ -925,7 +969,7 @@ nm_setting_wireless_get_mtu (<em class="parameter"><code><a class="link" href="N
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_wireless_get_hidden (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.20.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-hidden.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -940,7 +984,7 @@ nm_setting_wireless_get_hidden (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.20.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-hidden.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--hidden" title="The “hidden” property"><span class="type">“hidden”</span></a> property of the setting</p>
 </div>
 </div>
@@ -950,7 +994,7 @@ nm_setting_wireless_get_hidden (<em class="parameter"><code><a class="link" href
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_wireless_get_powersave (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.21.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-powersave.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -965,7 +1009,7 @@ nm_setting_wireless_get_powersave (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.21.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-powersave.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--powersave" title="The “powersave” property"><span class="type">“powersave”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -977,7 +1021,7 @@ nm_setting_wireless_get_powersave (<em class="parameter"><code><a class="link" h
 nm_setting_wireless_get_mac_address_randomization
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.22.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-mac-address-randomization.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -992,7 +1036,7 @@ nm_setting_wireless_get_mac_address_randomization
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.22.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-mac-address-randomization.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingWireless.html#NMSettingWireless--mac-address-randomization" title="The “mac-address-randomization” property"><span class="type">“mac-address-randomization”</span></a> property of the
 setting</p>
 </div>
@@ -1009,7 +1053,7 @@ NetworkManager now tracks previously seen BSSIDs internally so this function
 no longer has much use. Actually, changes you make using this function will
 not be preserved.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.23.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-add-seen-bssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1031,7 +1075,7 @@ not be preserved.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.23.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-add-seen-bssid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>bssid</code></em>
 was already known, <code class="literal">FALSE</code> if not</p>
 </div>
@@ -1043,7 +1087,7 @@ was already known, <code class="literal">FALSE</code> if not</p>
 nm_setting_wireless_get_num_seen_bssids
                                (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.24.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-num-seen-bssids.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1058,7 +1102,7 @@ nm_setting_wireless_get_num_seen_bssids
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.24.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-num-seen-bssids.returns"></a><h4>Returns</h4>
 <p> the number of BSSIDs in the previously seen BSSID list</p>
 </div>
 </div>
@@ -1069,7 +1113,7 @@ nm_setting_wireless_get_num_seen_bssids
 nm_setting_wireless_get_seen_bssid (<em class="parameter"><code><a class="link" href="NMSettingWireless.html" title="NMSettingWireless"><span class="type">NMSettingWireless</span></a> *setting</code></em>,
                                     <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.34.8.25.4"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-get-seen-bssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1091,7 +1135,7 @@ nm_setting_wireless_get_seen_bssid (<em class="parameter"><code><a class="link" 
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.25.5"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-get-seen-bssid.returns"></a><h4>Returns</h4>
 <p> the BSSID at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -1114,7 +1158,7 @@ and mode.  Useful for clients that wish to filter a set of connections
 against a set of access points and determine which connections are
 compatible with which access points.</p>
 <div class="refsect3">
-<a name="id-1.4.34.8.26.5"></a><h4>Parameters</h4>
+<a name="nm-setting-wireless-ap-security-compatible.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1158,7 +1202,7 @@ capabilities</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.34.8.26.6"></a><h4>Returns</h4>
+<a name="nm-setting-wireless-ap-security-compatible.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the given settings are compatible with the access point's
 security flags and mode, <code class="literal">FALSE</code> if they are not.</p>
 </div>
@@ -1227,6 +1271,12 @@ security flags and mode, <code class="literal">FALSE</code> if they are not.</p>
 </div>
 <hr>
 <div class="refsect2">
+<a name="NM-SETTING-WIRELESS-GENERATE-MAC-ADDRESS-MASK:CAPS"></a><h3>NM_SETTING_WIRELESS_GENERATE_MAC_ADDRESS_MASK</h3>
+<pre class="programlisting">#define NM_SETTING_WIRELESS_GENERATE_MAC_ADDRESS_MASK "generate-mac-address-mask"
+</pre>
+</div>
+<hr>
+<div class="refsect2">
 <a name="NM-SETTING-WIRELESS-MAC-ADDRESS-BLACKLIST:CAPS"></a><h3>NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST</h3>
 <pre class="programlisting">#define NM_SETTING_WIRELESS_MAC_ADDRESS_BLACKLIST "mac-address-blacklist"
 </pre>
@@ -1289,7 +1339,7 @@ for this connection.</p>
 <a name="NMSettingWirelessPowersave"></a><h3>enum NMSettingWirelessPowersave</h3>
 <p>These flags indicate whether wireless powersave must be enabled.</p>
 <div class="refsect3">
-<a name="id-1.4.34.9.21.4"></a><h4>Members</h4>
+<a name="NMSettingWirelessPowersave.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1385,8 +1435,50 @@ also requires the "band" property to be set.</p>
 <div class="refsect2">
 <a name="NMSettingWireless--cloned-mac-address"></a><h3>The <code class="literal">“cloned-mac-address”</code> property</h3>
 <pre class="programlisting">  “cloned-mac-address”       <span class="type">gchar</span> *</pre>
-<p>If specified, request that the Wi-Fi device use this MAC address instead
-of its permanent MAC address.  This is known as MAC cloning or spoofing.</p>
+<p>If specified, request that the device use this MAC address instead of its
+permanent MAC address.  This is known as MAC cloning or spoofing.</p>
+<p>Beside explicitly specifing a MAC address, the special values "preserve", "permanent",
+"random" and "stable" are supported.
+"preserve" means not to touch the MAC address on activation.
+"permanent" means to use the permanent hardware address of the device.
+"random" creates a random MAC address on each connect.
+"stable" creates a hashed MAC address based on connection.stable-id (or
+the connection's UUID) and a machine dependent key.</p>
+<p>If unspecified, the value can be overwritten via global defaults, see manual
+of NetworkManager.conf. If still unspecified, it defaults to "permanent".</p>
+<p>On D-Bus, this field is expressed as "assigned-mac-address" or the deprecated
+"cloned-mac-address".</p>
+<p>Flags: Read / Write</p>
+<p>Default value: NULL</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="NMSettingWireless--generate-mac-address-mask"></a><h3>The <code class="literal">“generate-mac-address-mask”</code> property</h3>
+<pre class="programlisting">  “generate-mac-address-mask” <span class="type">gchar</span> *</pre>
+<p>With <a class="link" href="NMSettingWireless.html#NMSettingWireless--cloned-mac-address" title="The “cloned-mac-address” property"><span class="type">“cloned-mac-address”</span></a> setting "random" or "stable",
+by default all bits of the MAC address are scrambled and a locally-administered,
+unicast MAC address is created. This property allows to specify that certain bits
+are fixed. Note that the least significant bit of the first MAC address will
+always be unset to create a unicast MAC address.</p>
+<p>If the property is <code class="literal">NULL</code>, it is eligible to be overwritten by a default
+connection setting. If the value is still <code class="literal">NULL</code> or an empty string, the
+default is to create a locally-administered, unicast MAC address.</p>
+<p>If the value contains one MAC address, this address is used as mask. The set
+bits of the mask are to be filled with the current MAC address of the device,
+while the unset bits are subject to randomization.
+Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address
+and only randomize the lower 3 bytes using the "random" or "stable" algorithm.</p>
+<p>If the value contains one additional MAC address after the mask,
+this address is used instead of the current MAC address to fill the bits
+that shall not be randomized. For example, a value of
+"FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address
+to 68:F7:28, while the lower bits are randomized. A value of
+"02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled
+globally-administered, burned-in MAC address.</p>
+<p>If the value contains more then one additional MAC addresses, one of
+them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00"
+will create a fully scrambled MAC address, randomly locally or globally
+administered.</p>
 <p>Flags: Read / Write</p>
 <p>Default value: NULL</p>
 </div>
@@ -1430,6 +1522,10 @@ the user has set a global default to randomize and the supplicant
 supports randomization),  <a class="link" href="NMSetting.html#NM-SETTING-MAC-RANDOMIZATION-NEVER:CAPS"><code class="literal">NM_SETTING_MAC_RANDOMIZATION_NEVER</code></a> (never
 randomize the MAC address), or <a class="link" href="NMSetting.html#NM-SETTING-MAC-RANDOMIZATION-ALWAYS:CAPS"><code class="literal">NM_SETTING_MAC_RANDOMIZATION_ALWAYS</code></a>
 (always randomize the MAC address).</p>
+<div class="warning">
+<p><code class="literal">NMSettingWireless:mac-address-randomization</code> has been deprecated since version 1.4 and should not be used in newly-written code.</p>
+<p>Deprecated by NMSettingWireless:cloned-mac-address property</p>
+</div>
 <p>Flags: Read / Write</p>
 <p>Default value: 0</p>
 <p class="since">Since: 1.2</p>
@@ -1508,6 +1604,6 @@ devices support setting a static transmit power.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

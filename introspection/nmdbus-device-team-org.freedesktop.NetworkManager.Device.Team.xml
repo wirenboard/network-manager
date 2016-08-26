@@ -17,6 +17,7 @@
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Device-Team.HwAddress">HwAddress</link>  readable   s
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Carrier">Carrier</link>    readable   b
 <link linkend="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Slaves">Slaves</link>     readable   ao
+<link linkend="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Config">Config</link>     readable   s
 </synopsis>
   </refsect1>
 <refsect1 role="desc" id="gdbus-interface-org-freedesktop-NetworkManager-Device-Team">
@@ -69,6 +70,15 @@ Slaves  readable   ao
 </programlisting>
 <para>        Array of object paths representing devices which are currently slaved to
         this device.
+</para>
+</refsect2>
+<refsect2 role="property" id="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Config">
+  <title>The "Config" property</title>
+  <indexterm zone="gdbus-property-org-freedesktop-NetworkManager-Device-Team.Config"><primary sortas=".Device.Team:Config">org.freedesktop.NetworkManager.Device.Team:Config</primary></indexterm>
+<programlisting>
+Config  readable   s
+</programlisting>
+<para>        The JSON configuration currently applied on the device.
 </para>
 </refsect2>
 </refsect1>

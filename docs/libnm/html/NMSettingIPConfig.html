@@ -8,7 +8,7 @@
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingIP6Config.html" title="NMSettingIP6Config">
 <link rel="next" href="NMSettingIPTunnel.html" title="NMSettingIPTunnel">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -975,7 +975,7 @@ nm_ip_address_new (<em class="parameter"><code><span class="type">int</span> fam
                    <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a> object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.2.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-new.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1008,7 +1008,7 @@ nm_ip_address_new (<em class="parameter"><code><span class="type">int</span> fam
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.2.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-new.returns"></a><h4>Returns</h4>
 <p> the new <a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a> object, or <code class="literal">NULL</code> on error. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1026,7 +1026,7 @@ nm_ip_address_new_binary (<em class="parameter"><code><span class="type">int</sp
 correct size for <em class="parameter"><code>family</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.3.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-new-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1059,7 +1059,7 @@ correct size for <em class="parameter"><code>family</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.3.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-new-binary.returns"></a><h4>Returns</h4>
 <p> the new <a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a> object, or <code class="literal">NULL</code> on error. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1071,7 +1071,7 @@ correct size for <em class="parameter"><code>family</code></em>
 nm_ip_address_ref (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a> *address</code></em>);</pre>
 <p>Increases the reference count of the object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.4.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-ref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1094,7 +1094,7 @@ nm_ip_address_unref (<em class="parameter"><code><a class="link" href="NMSetting
 <p>Decreases the reference count of the object.  If the reference count
 reaches zero, the object will be destroyed.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.5.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-unref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1118,7 +1118,7 @@ nm_ip_address_equal (<em class="parameter"><code><a class="link" href="NMSetting
 <p>Determines if two <a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a> objects contain the same address and prefix
 (attributes are not compared).</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.6.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-equal.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1141,7 +1141,7 @@ to.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.6.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-equal.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the objects contain the same values, <code class="literal">FALSE</code> if they do not.</p>
 </div>
 </div>
@@ -1153,7 +1153,7 @@ nm_ip_address_dup (<em class="parameter"><code><a class="link" href="NMSettingIP
 <p>Creates a copy of <em class="parameter"><code>address</code></em>
 </p>
 <div class="refsect3">
-<a name="id-1.4.19.11.7.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-dup.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1168,7 +1168,7 @@ nm_ip_address_dup (<em class="parameter"><code><a class="link" href="NMSettingIP
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.7.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-dup.returns"></a><h4>Returns</h4>
 <p> a copy of <em class="parameter"><code>address</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -1182,7 +1182,7 @@ nm_ip_address_get_family (<em class="parameter"><code><a class="link" href="NMSe
 <p>Gets the IP address family (eg, AF_INET) property of this address
 object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.8.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-get-family.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1197,7 +1197,7 @@ object.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.8.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-get-family.returns"></a><h4>Returns</h4>
 <p> the IP address family</p>
 </div>
 </div>
@@ -1208,7 +1208,7 @@ object.</p>
 nm_ip_address_get_address (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html#NMIPAddress"><span class="type">NMIPAddress</span></a> *address</code></em>);</pre>
 <p>Gets the IP address property of this address object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.9.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-get-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1223,7 +1223,7 @@ nm_ip_address_get_address (<em class="parameter"><code><a class="link" href="NMS
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.9.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-get-address.returns"></a><h4>Returns</h4>
 <p> the IP address</p>
 </div>
 </div>
@@ -1239,7 +1239,7 @@ nm_ip_address_set_address (<em class="parameter"><code><a class="link" href="NMS
 's family. If you aren't sure you
 have a valid address, use <a class="link" href="libnm-nm-utils.html#nm-utils-ipaddr-valid" title="nm_utils_ipaddr_valid ()"><code class="function">nm_utils_ipaddr_valid()</code></a> to check it.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.10.6"></a><h4>Parameters</h4>
+<a name="nm-ip-address-set-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1273,7 +1273,7 @@ nm_ip_address_get_address_binary (<em class="parameter"><code><a class="link" hr
 's family.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.4.19.11.11.7"></a><h4>Parameters</h4>
+<a name="nm-ip-address-get-address-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1307,7 +1307,7 @@ nm_ip_address_set_address_binary (<em class="parameter"><code><a class="link" hr
 's family.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.4.19.11.12.7"></a><h4>Parameters</h4>
+<a name="nm-ip-address-set-address-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1337,7 +1337,7 @@ nm_ip_address_get_prefix (<em class="parameter"><code><a class="link" href="NMSe
 <p>Gets the IP address prefix (ie "24" or "30" etc) property of this address
 object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.13.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-get-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1352,7 +1352,7 @@ object.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.13.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-get-prefix.returns"></a><h4>Returns</h4>
 <p> the IP address prefix</p>
 </div>
 </div>
@@ -1364,7 +1364,7 @@ nm_ip_address_set_prefix (<em class="parameter"><code><a class="link" href="NMSe
                           <em class="parameter"><code><span class="type">guint</span> prefix</code></em>);</pre>
 <p>Sets the IP address prefix property of this address object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.14.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-set-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1394,7 +1394,7 @@ nm_ip_address_get_attribute_names (<em class="parameter"><code><a class="link" h
 <p>Gets an array of attribute names defined on <em class="parameter"><code>address</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.15.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-get-attribute-names.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1409,7 +1409,7 @@ nm_ip_address_get_attribute_names (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.15.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-get-attribute-names.returns"></a><h4>Returns</h4>
 <p> a <code class="literal">NULL</code>-terminated array of attribute names,. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1424,7 +1424,7 @@ nm_ip_address_get_attribute (<em class="parameter"><code><a class="link" href="N
  on <em class="parameter"><code>address</code></em>
 </p>
 <div class="refsect3">
-<a name="id-1.4.19.11.16.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-get-attribute.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1446,7 +1446,7 @@ nm_ip_address_get_attribute (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.16.6"></a><h4>Returns</h4>
+<a name="nm-ip-address-get-attribute.returns"></a><h4>Returns</h4>
 <p> the value of the attribute with name <em class="parameter"><code>name</code></em>
 on
 <em class="parameter"><code>address</code></em>
@@ -1465,7 +1465,7 @@ nm_ip_address_set_attribute (<em class="parameter"><code><a class="link" href="N
 <p>Sets or clears the named attribute on <em class="parameter"><code>address</code></em>
  to the given value.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.17.5"></a><h4>Parameters</h4>
+<a name="nm-ip-address-set-attribute.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1504,7 +1504,7 @@ nm_ip_route_new (<em class="parameter"><code><span class="type">int</span> famil
                  <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.18.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-new.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1547,7 +1547,7 @@ nm_ip_route_new (<em class="parameter"><code><span class="type">int</span> famil
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.18.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-new.returns"></a><h4>Returns</h4>
 <p> the new <a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> object, or <code class="literal">NULL</code> on error. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1568,7 +1568,7 @@ nm_ip_route_new_binary (<em class="parameter"><code><span class="type">int</span
 point to buffers of the correct size for <em class="parameter"><code>family</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.19.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-new-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1611,7 +1611,7 @@ point to buffers of the correct size for <em class="parameter"><code>family</cod
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.19.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-new-binary.returns"></a><h4>Returns</h4>
 <p> the new <a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> object, or <code class="literal">NULL</code> on error. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1623,7 +1623,7 @@ point to buffers of the correct size for <em class="parameter"><code>family</cod
 nm_ip_route_ref (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> *route</code></em>);</pre>
 <p>Increases the reference count of the object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.20.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-ref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1646,7 +1646,7 @@ nm_ip_route_unref (<em class="parameter"><code><a class="link" href="NMSettingIP
 <p>Decreases the reference count of the object.  If the reference count
 reaches zero, the object will be destroyed.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.21.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-unref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1670,7 +1670,7 @@ nm_ip_route_equal (<em class="parameter"><code><a class="link" href="NMSettingIP
 <p>Determines if two <a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> objects contain the same destination, prefix,
 next hop, and metric. (Attributes are not compared.)</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.22.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-equal.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1693,7 +1693,7 @@ to.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.22.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-equal.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the objects contain the same values, <code class="literal">FALSE</code> if they do not.</p>
 </div>
 </div>
@@ -1705,7 +1705,7 @@ nm_ip_route_dup (<em class="parameter"><code><a class="link" href="NMSettingIPCo
 <p>Creates a copy of <em class="parameter"><code>route</code></em>
 </p>
 <div class="refsect3">
-<a name="id-1.4.19.11.23.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-dup.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1720,7 +1720,7 @@ nm_ip_route_dup (<em class="parameter"><code><a class="link" href="NMSettingIPCo
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.23.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-dup.returns"></a><h4>Returns</h4>
 <p> a copy of <em class="parameter"><code>route</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -1734,7 +1734,7 @@ nm_ip_route_get_family (<em class="parameter"><code><a class="link" href="NMSett
 <p>Gets the IP address family (eg, AF_INET) property of this route
 object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.24.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-family.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1749,7 +1749,7 @@ object.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.24.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-family.returns"></a><h4>Returns</h4>
 <p> the IP address family</p>
 </div>
 </div>
@@ -1760,7 +1760,7 @@ object.</p>
 nm_ip_route_get_dest (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> *route</code></em>);</pre>
 <p>Gets the IP destination address property of this route object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.25.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-dest.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1775,7 +1775,7 @@ nm_ip_route_get_dest (<em class="parameter"><code><a class="link" href="NMSettin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.25.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-dest.returns"></a><h4>Returns</h4>
 <p> the IP address of the route's destination</p>
 </div>
 </div>
@@ -1791,7 +1791,7 @@ nm_ip_route_set_dest (<em class="parameter"><code><a class="link" href="NMSettin
 's family. If you aren't sure you
 have a valid address, use <a class="link" href="libnm-nm-utils.html#nm-utils-ipaddr-valid" title="nm_utils_ipaddr_valid ()"><code class="function">nm_utils_ipaddr_valid()</code></a> to check it.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.26.6"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-dest.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1825,7 +1825,7 @@ nm_ip_route_get_dest_binary (<em class="parameter"><code><a class="link" href="N
 's family.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.4.19.11.27.7"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-dest-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1859,7 +1859,7 @@ nm_ip_route_set_dest_binary (<em class="parameter"><code><a class="link" href="N
 's family.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.4.19.11.28.7"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-dest-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1888,7 +1888,7 @@ nm_ip_route_set_dest_binary (<em class="parameter"><code><a class="link" href="N
 nm_ip_route_get_prefix (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html#NMIPRoute"><span class="type">NMIPRoute</span></a> *route</code></em>);</pre>
 <p>Gets the IP prefix (ie "24" or "30" etc) of this route.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.29.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1903,7 +1903,7 @@ nm_ip_route_get_prefix (<em class="parameter"><code><a class="link" href="NMSett
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.29.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-prefix.returns"></a><h4>Returns</h4>
 <p> the IP prefix</p>
 </div>
 </div>
@@ -1915,7 +1915,7 @@ nm_ip_route_set_prefix (<em class="parameter"><code><a class="link" href="NMSett
                         <em class="parameter"><code><span class="type">guint</span> prefix</code></em>);</pre>
 <p>Sets the prefix property of this route object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.30.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1945,7 +1945,7 @@ nm_ip_route_get_next_hop (<em class="parameter"><code><a class="link" href="NMSe
 <p>Gets the IP address of the next hop of this route; this will be <code class="literal">NULL</code> if the
 route has no next hop.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.31.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-next-hop.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1960,7 +1960,7 @@ route has no next hop.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.31.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-next-hop.returns"></a><h4>Returns</h4>
 <p> the IP address of the next hop, or <code class="literal">NULL</code> if this is a device route.</p>
 </div>
 </div>
@@ -1977,7 +1977,7 @@ nm_ip_route_set_next_hop (<em class="parameter"><code><a class="link" href="NMSe
 aren't sure you have a valid address, use <a class="link" href="libnm-nm-utils.html#nm-utils-ipaddr-valid" title="nm_utils_ipaddr_valid ()"><code class="function">nm_utils_ipaddr_valid()</code></a> to check
 it.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.32.6"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-next-hop.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2011,7 +2011,7 @@ nm_ip_route_get_next_hop_binary (<em class="parameter"><code><a class="link" hre
 's family.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.4.19.11.33.7"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-next-hop-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2033,7 +2033,7 @@ nm_ip_route_get_next_hop_binary (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.33.8"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-next-hop-binary.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>route</code></em>
 has a next hop, <code class="literal">FALSE</code> if not (in which case
 <em class="parameter"><code>next_hop</code></em>
@@ -2053,7 +2053,7 @@ nm_ip_route_set_next_hop_binary (<em class="parameter"><code><a class="link" hre
 's family.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.4.19.11.34.7"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-next-hop-binary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2084,7 +2084,7 @@ nm_ip_route_get_metric (<em class="parameter"><code><a class="link" href="NMSett
 indicate "better" or more preferred routes; -1 indicates "default"
 (meaning NetworkManager will set it appropriately).</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.35.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-metric.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2099,7 +2099,7 @@ indicate "better" or more preferred routes; -1 indicates "default"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.35.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-metric.returns"></a><h4>Returns</h4>
 <p> the route metric</p>
 </div>
 </div>
@@ -2111,7 +2111,7 @@ nm_ip_route_set_metric (<em class="parameter"><code><a class="link" href="NMSett
                         <em class="parameter"><code><span class="type">gint64</span> metric</code></em>);</pre>
 <p>Sets the metric property of this route object.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.36.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-metric.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2141,7 +2141,7 @@ nm_ip_route_get_attribute_names (<em class="parameter"><code><a class="link" hre
 <p>Gets an array of attribute names defined on <em class="parameter"><code>route</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.37.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-attribute-names.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2156,7 +2156,7 @@ nm_ip_route_get_attribute_names (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.37.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-attribute-names.returns"></a><h4>Returns</h4>
 <p> a <code class="literal">NULL</code>-terminated array of attribute names. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -2171,7 +2171,7 @@ nm_ip_route_get_attribute (<em class="parameter"><code><a class="link" href="NMS
  on <em class="parameter"><code>route</code></em>
 </p>
 <div class="refsect3">
-<a name="id-1.4.19.11.38.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-get-attribute.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2193,7 +2193,7 @@ nm_ip_route_get_attribute (<em class="parameter"><code><a class="link" href="NMS
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.38.6"></a><h4>Returns</h4>
+<a name="nm-ip-route-get-attribute.returns"></a><h4>Returns</h4>
 <p> the value of the attribute with name <em class="parameter"><code>name</code></em>
 on
 <em class="parameter"><code>route</code></em>
@@ -2212,7 +2212,7 @@ nm_ip_route_set_attribute (<em class="parameter"><code><a class="link" href="NMS
 <p>Sets the named attribute on <em class="parameter"><code>route</code></em>
  to the given value.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.39.5"></a><h4>Parameters</h4>
+<a name="nm-ip-route-set-attribute.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2245,7 +2245,7 @@ nm_ip_route_set_attribute (<em class="parameter"><code><a class="link" href="NMS
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_ip_config_get_method (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.40.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-method.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2260,7 +2260,7 @@ nm_setting_ip_config_get_method (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.40.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-method.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--method" title="The “method” property"><span class="type">“method”</span></a> property of the setting; see
 <a class="link" href="NMSettingIP4Config.html" title="NMSettingIP4Config"><span class="type">NMSettingIP4Config</span></a> and <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> for details of the
 methods available with each type.</p>
@@ -2272,7 +2272,7 @@ methods available with each type.</p>
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_ip_config_get_num_dns (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.41.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-num-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2287,7 +2287,7 @@ nm_setting_ip_config_get_num_dns (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.41.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-num-dns.returns"></a><h4>Returns</h4>
 <p> the number of configured DNS servers</p>
 </div>
 </div>
@@ -2298,7 +2298,7 @@ nm_setting_ip_config_get_num_dns (<em class="parameter"><code><a class="link" hr
 nm_setting_ip_config_get_dns (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>,
                               <em class="parameter"><code><span class="type">int</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.42.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2320,7 +2320,7 @@ nm_setting_ip_config_get_dns (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.42.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dns.returns"></a><h4>Returns</h4>
 <p> the IP address of the DNS server at index <em class="parameter"><code>idx</code></em>
 </p>
 </div>
@@ -2333,7 +2333,7 @@ nm_setting_ip_config_add_dns (<em class="parameter"><code><a class="link" href="
                               <em class="parameter"><code>const <span class="type">char</span> *dns</code></em>);</pre>
 <p>Adds a new DNS server to the setting.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.43.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-add-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2355,7 +2355,7 @@ nm_setting_ip_config_add_dns (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.43.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-add-dns.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS server was added; <code class="literal">FALSE</code> if the server was already
 known</p>
 </div>
@@ -2369,7 +2369,7 @@ nm_setting_ip_config_remove_dns (<em class="parameter"><code><a class="link" hre
 <p>Removes the DNS server at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.44.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2401,7 +2401,7 @@ nm_setting_ip_config_remove_dns_by_value
 <p>Removes the DNS server <em class="parameter"><code>dns</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.45.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-dns-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2423,7 +2423,7 @@ nm_setting_ip_config_remove_dns_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.45.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-remove-dns-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS server was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 </div>
@@ -2434,7 +2434,7 @@ nm_setting_ip_config_remove_dns_by_value
 nm_setting_ip_config_clear_dns (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <p>Removes all configured DNS servers.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.46.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-clear-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2456,7 +2456,7 @@ nm_setting_ip_config_clear_dns (<em class="parameter"><code><a class="link" href
 nm_setting_ip_config_get_num_dns_searches
                                (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.47.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-num-dns-searches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2471,7 +2471,7 @@ nm_setting_ip_config_get_num_dns_searches
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.47.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-num-dns-searches.returns"></a><h4>Returns</h4>
 <p> the number of configured DNS search domains</p>
 </div>
 </div>
@@ -2482,7 +2482,7 @@ nm_setting_ip_config_get_num_dns_searches
 nm_setting_ip_config_get_dns_search (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>,
                                      <em class="parameter"><code><span class="type">int</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.48.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dns-search.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2504,7 +2504,7 @@ nm_setting_ip_config_get_dns_search (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.48.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dns-search.returns"></a><h4>Returns</h4>
 <p> the DNS search domain at index <em class="parameter"><code>idx</code></em>
 </p>
 </div>
@@ -2517,7 +2517,7 @@ nm_setting_ip_config_add_dns_search (<em class="parameter"><code><a class="link"
                                      <em class="parameter"><code>const <span class="type">char</span> *dns_search</code></em>);</pre>
 <p>Adds a new DNS search domain to the setting.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.49.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-add-dns-search.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2539,7 +2539,7 @@ nm_setting_ip_config_add_dns_search (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.49.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-add-dns-search.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS search domain was added; <code class="literal">FALSE</code> if the search
 domain was already known</p>
 </div>
@@ -2554,7 +2554,7 @@ nm_setting_ip_config_remove_dns_search
 <p>Removes the DNS search domain at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.50.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-dns-search.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2586,7 +2586,7 @@ nm_setting_ip_config_remove_dns_search_by_value
 <p>Removes the DNS search domain <em class="parameter"><code>dns_search</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.51.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-dns-search-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2608,7 +2608,7 @@ nm_setting_ip_config_remove_dns_search_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.51.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-remove-dns-search-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS search domain was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 <p>Since 0.9.10</p>
 </div>
@@ -2621,7 +2621,7 @@ nm_setting_ip_config_clear_dns_searches
                                (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <p>Removes all configured DNS search domains.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.52.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-clear-dns-searches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2643,7 +2643,7 @@ nm_setting_ip_config_clear_dns_searches
 nm_setting_ip_config_get_num_dns_options
                                (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.53.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-num-dns-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2658,7 +2658,7 @@ nm_setting_ip_config_get_num_dns_options
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.53.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-num-dns-options.returns"></a><h4>Returns</h4>
 <p> the number of configured DNS options</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -2674,7 +2674,7 @@ Either the options are explicitly set to have no values,
 or the options are left undefined. The latter means to use
 a default configuration, while the former explicitly means "no-options".</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.54.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-has-dns-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2689,7 +2689,7 @@ a default configuration, while the former explicitly means "no-options".</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.54.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-has-dns-options.returns"></a><h4>Returns</h4>
 <p> whether DNS options are initalized or left unset (the default).</p>
 </div>
 </div>
@@ -2700,7 +2700,7 @@ a default configuration, while the former explicitly means "no-options".</p>
 nm_setting_ip_config_get_dns_option (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>,
                                      <em class="parameter"><code><span class="type">guint</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.55.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dns-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2722,7 +2722,7 @@ nm_setting_ip_config_get_dns_option (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.55.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dns-option.returns"></a><h4>Returns</h4>
 <p> the DNS option at index <em class="parameter"><code>idx</code></em>
 </p>
 </div>
@@ -2736,7 +2736,7 @@ nm_setting_ip_config_next_valid_dns_option
                                (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">guint</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.56.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-next-valid-dns-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2758,7 +2758,7 @@ nm_setting_ip_config_next_valid_dns_option
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.56.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-next-valid-dns-option.returns"></a><h4>Returns</h4>
 <p> the index, greater or equal than <em class="parameter"><code>idx</code></em>
 , of the first valid
 DNS option, or -1 if no valid option is found</p>
@@ -2773,7 +2773,7 @@ nm_setting_ip_config_add_dns_option (<em class="parameter"><code><a class="link"
                                      <em class="parameter"><code>const <span class="type">char</span> *dns_option</code></em>);</pre>
 <p>Adds a new DNS option to the setting.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.57.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-add-dns-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2795,7 +2795,7 @@ nm_setting_ip_config_add_dns_option (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.57.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-add-dns-option.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS option was added; <code class="literal">FALSE</code> otherwise</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -2810,7 +2810,7 @@ nm_setting_ip_config_remove_dns_option
 <p>Removes the DNS option at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.58.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-dns-option.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2843,7 +2843,7 @@ nm_setting_ip_config_remove_dns_option_by_value
 <p>Removes the DNS option <em class="parameter"><code>dns_option</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.59.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-dns-option-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2865,7 +2865,7 @@ nm_setting_ip_config_remove_dns_option_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.59.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-remove-dns-option-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS option was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -2879,7 +2879,7 @@ nm_setting_ip_config_clear_dns_options
                                 <em class="parameter"><code><span class="type">gboolean</span> is_set</code></em>);</pre>
 <p>Removes all configured DNS options.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.60.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-clear-dns-options.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2909,7 +2909,7 @@ Specify how to clear the options.</p></td>
 <pre class="programlisting"><span class="returnvalue">gint</span>
 nm_setting_ip_config_get_dns_priority (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.61.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dns-priority.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2924,10 +2924,10 @@ nm_setting_ip_config_get_dns_priority (<em class="parameter"><code><a class="lin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.61.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dns-priority.returns"></a><h4>Returns</h4>
 <p> the priority of DNS servers</p>
 </div>
-<p class="since">Since: 1.2.4</p>
+<p class="since">Since: 1.4</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -2936,7 +2936,7 @@ nm_setting_ip_config_get_dns_priority (<em class="parameter"><code><a class="lin
 nm_setting_ip_config_get_num_addresses
                                (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.62.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-num-addresses.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2951,7 +2951,7 @@ nm_setting_ip_config_get_num_addresses
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.62.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-num-addresses.returns"></a><h4>Returns</h4>
 <p> the number of configured addresses</p>
 </div>
 </div>
@@ -2962,7 +2962,7 @@ nm_setting_ip_config_get_num_addresses
 nm_setting_ip_config_get_address (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>,
                                   <em class="parameter"><code><span class="type">int</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.63.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2984,7 +2984,7 @@ nm_setting_ip_config_get_address (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.63.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-address.returns"></a><h4>Returns</h4>
 <p> the address at index <em class="parameter"><code>idx</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -2999,7 +2999,7 @@ nm_setting_ip_config_add_address (<em class="parameter"><code><a class="link" hr
 <p>Adds a new IP address and associated information to the setting.  The
 given address is duplicated internally and is not changed by this function.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.64.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-add-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3021,7 +3021,7 @@ given address is duplicated internally and is not changed by this function.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.64.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-add-address.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the address was added; <code class="literal">FALSE</code> if the address was already
 known.</p>
 </div>
@@ -3035,7 +3035,7 @@ nm_setting_ip_config_remove_address (<em class="parameter"><code><a class="link"
 <p>Removes the address at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.65.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3067,7 +3067,7 @@ nm_setting_ip_config_remove_address_by_value
 <p>Removes the address <em class="parameter"><code>address</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.66.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-address-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3089,7 +3089,7 @@ nm_setting_ip_config_remove_address_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.66.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-remove-address-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the address was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 </div>
@@ -3100,7 +3100,7 @@ nm_setting_ip_config_remove_address_by_value
 nm_setting_ip_config_clear_addresses (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <p>Removes all configured addresses.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.67.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-clear-addresses.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3121,7 +3121,7 @@ nm_setting_ip_config_clear_addresses (<em class="parameter"><code><a class="link
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_ip_config_get_gateway (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.68.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-gateway.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3136,7 +3136,7 @@ nm_setting_ip_config_get_gateway (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.68.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-gateway.returns"></a><h4>Returns</h4>
 <p> the IP address of the gateway associated with this configuration, or
 <code class="literal">NULL</code>.</p>
 </div>
@@ -3147,7 +3147,7 @@ nm_setting_ip_config_get_gateway (<em class="parameter"><code><a class="link" hr
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_ip_config_get_num_routes (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.69.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-num-routes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3162,7 +3162,7 @@ nm_setting_ip_config_get_num_routes (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.69.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-num-routes.returns"></a><h4>Returns</h4>
 <p> the number of configured routes</p>
 </div>
 </div>
@@ -3173,7 +3173,7 @@ nm_setting_ip_config_get_num_routes (<em class="parameter"><code><a class="link"
 nm_setting_ip_config_get_route (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>,
                                 <em class="parameter"><code><span class="type">int</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.70.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-route.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3195,7 +3195,7 @@ nm_setting_ip_config_get_route (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.70.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-route.returns"></a><h4>Returns</h4>
 <p> the route at index <em class="parameter"><code>idx</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -3210,7 +3210,7 @@ nm_setting_ip_config_add_route (<em class="parameter"><code><a class="link" href
 <p>Adds a new route and associated information to the setting.  The
 given route is duplicated internally and is not changed by this function.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.71.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-add-route.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3232,7 +3232,7 @@ given route is duplicated internally and is not changed by this function.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.71.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-add-route.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the route was added; <code class="literal">FALSE</code> if the route was already known.</p>
 </div>
 </div>
@@ -3245,7 +3245,7 @@ nm_setting_ip_config_remove_route (<em class="parameter"><code><a class="link" h
 <p>Removes the route at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.72.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-route.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3277,7 +3277,7 @@ nm_setting_ip_config_remove_route_by_value
 <p>Removes the route <em class="parameter"><code>route</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.73.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-remove-route-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3299,7 +3299,7 @@ nm_setting_ip_config_remove_route_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.73.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-remove-route-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the route was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 </div>
@@ -3310,7 +3310,7 @@ nm_setting_ip_config_remove_route_by_value
 nm_setting_ip_config_clear_routes (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <p>Removes all configured routes.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.74.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-clear-routes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3333,7 +3333,7 @@ nm_setting_ip_config_get_route_metric (<em class="parameter"><code><a class="lin
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--route-metric" title="The “route-metric” property"><span class="type">“route-metric”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.75.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-route-metric.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3348,7 +3348,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.75.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-route-metric.returns"></a><h4>Returns</h4>
 <p> the route metric that is used for routes that don't explicitly
 specify a metric. See <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--route-metric" title="The “route-metric” property"><span class="type">“route-metric”</span></a> for more details.</p>
 </div>
@@ -3362,7 +3362,7 @@ nm_setting_ip_config_get_ignore_auto_routes
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--ignore-auto-routes" title="The “ignore-auto-routes” property"><span class="type">“ignore-auto-routes”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.76.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-ignore-auto-routes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3377,7 +3377,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.76.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-ignore-auto-routes.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if automatically configured (ie via DHCP) routes should be
 ignored.</p>
 </div>
@@ -3391,7 +3391,7 @@ nm_setting_ip_config_get_ignore_auto_dns
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--ignore-auto-dns" title="The “ignore-auto-dns” property"><span class="type">“ignore-auto-dns”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.77.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-ignore-auto-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3406,7 +3406,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.77.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-ignore-auto-dns.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if automatically configured (ie via DHCP) DNS information
 should be ignored.</p>
 </div>
@@ -3420,7 +3420,7 @@ nm_setting_ip_config_get_dhcp_hostname
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-hostname" title="The “dhcp-hostname” property"><span class="type">“dhcp-hostname”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.78.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dhcp-hostname.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3435,7 +3435,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.78.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dhcp-hostname.returns"></a><h4>Returns</h4>
 <p> the configured hostname to send to the DHCP server</p>
 </div>
 </div>
@@ -3448,7 +3448,7 @@ nm_setting_ip_config_get_dhcp_send_hostname
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-send-hostname" title="The “dhcp-send-hostname” property"><span class="type">“dhcp-send-hostname”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.79.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dhcp-send-hostname.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3463,7 +3463,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.79.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dhcp-send-hostname.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if NetworkManager should send the machine hostname to the
 DHCP server when requesting addresses to allow the server to automatically
 update DNS information for this machine.</p>
@@ -3478,7 +3478,7 @@ nm_setting_ip_config_get_never_default
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--never-default" title="The “never-default” property"><span class="type">“never-default”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.80.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-never-default.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3493,7 +3493,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.80.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-never-default.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if this connection should never be the default
 connection</p>
 </div>
@@ -3506,7 +3506,7 @@ nm_setting_ip_config_get_may_fail (<em class="parameter"><code><a class="link" h
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--may-fail" title="The “may-fail” property"><span class="type">“may-fail”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.81.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-may-fail.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3521,7 +3521,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.81.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-may-fail.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if this connection doesn't require this type of IP
 addressing to complete for the connection to succeed.</p>
 </div>
@@ -3532,7 +3532,7 @@ addressing to complete for the connection to succeed.</p>
 <pre class="programlisting"><span class="returnvalue">gint</span>
 nm_setting_ip_config_get_dad_timeout (<em class="parameter"><code><a class="link" href="NMSettingIPConfig.html" title="NMSettingIPConfig"><span class="type">NMSettingIPConfig</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.19.11.82.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dad-timeout.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3547,7 +3547,7 @@ nm_setting_ip_config_get_dad_timeout (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.82.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dad-timeout.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dad-timeout" title="The “dad-timeout” property"><span class="type">“dad-timeout”</span></a> property.</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -3560,7 +3560,7 @@ nm_setting_ip_config_get_dhcp_timeout (<em class="parameter"><code><a class="lin
 <p>Returns the value contained in the <a class="link" href="NMSettingIPConfig.html#NMSettingIPConfig--dhcp-timeout" title="The “dhcp-timeout” property"><span class="type">“dhcp-timeout”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.4.19.11.83.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip-config-get-dhcp-timeout.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3575,7 +3575,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.19.11.83.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip-config-get-dhcp-timeout.returns"></a><h4>Returns</h4>
 <p> the configured DHCP timeout in seconds. 0 = default for
 the particular kind of device.</p>
 </div>
@@ -3879,7 +3879,7 @@ priority, only DNS servers from configurations with the lowest priority
 value will be used.</p>
 <p>Flags: Read / Write / Construct</p>
 <p>Default value: 0</p>
-<p class="since">Since: 1.2.4</p>
+<p class="since">Since: 1.4</p>
 </div>
 <hr>
 <div class="refsect2">
@@ -3996,6 +3996,6 @@ For IPv4, zero is a regular value for the metric.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

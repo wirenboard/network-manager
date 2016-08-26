@@ -448,6 +448,7 @@ generate_duid_from_machine_id (void)
 	GRand *generator;
 	guint i;
 	gs_free char *machine_id_s = NULL;
+	gs_free char *str = NULL;
 
 	machine_id_s = nm_utils_machine_id_read ();
 	if (nm_utils_machine_id_parse (machine_id_s, uuid)) {
@@ -457,7 +458,7 @@ generate_duid_from_machine_id (void)
 		g_checksum_get_digest (sum, buffer, &sumlen);
 		g_checksum_free (sum);
 	} else {
-		nm_log_warn (LOGD_DHCP6, "dhcp6: failed to read " SYSCONFDIR "/machine-id "
+		nm_log_warn (LOGD_DHCP, "dhcp: failed to read " SYSCONFDIR "/machine-id "
 		             "or " LOCALSTATEDIR "/lib/dbus/machine-id to generate "
 		             "DHCPv6 DUID; creating non-persistent random DUID.");
 
@@ -481,6 +482,8 @@ generate_duid_from_machine_id (void)
 	 */
 	g_byte_array_append (duid, buffer, 16);
 
+	nm_log_dbg (LOGD_DHCP, "dhcp: generated DUID %s",
+	            (str = nm_dhcp_utils_duid_to_string (duid)));
 	return duid;
 }
 
@@ -489,17 +492,10 @@ get_duid (NMDhcpClient *self)
 {
 	static GByteArray *duid = NULL;
 	GByteArray *copy = NULL;
-	char *str;
 
 	if (G_UNLIKELY (duid == NULL)) {
 		duid = generate_duid_from_machine_id ();
 		g_assert (duid);
-
-		if (nm_logging_enabled (LOGL_DEBUG, LOGD_DHCP6)) {
-			str = nm_dhcp_utils_duid_to_string (duid);
-			_LOGD ("generated DUID %s", str);
-			g_free (str);
-		}
 	}
 
 	if (G_LIKELY (duid)) {
@@ -519,7 +515,7 @@ nm_dhcp_client_start_ip6 (NMDhcpClient *self,
                           NMSettingIP6ConfigPrivacy privacy)
 {
 	NMDhcpClientPrivate *priv;
-	char *str;
+	gs_free char *str = NULL;
 
 	g_return_val_if_fail (NM_IS_DHCP_CLIENT (self), FALSE);
 
@@ -534,11 +530,7 @@ nm_dhcp_client_start_ip6 (NMDhcpClient *self,
 	if (!priv->duid)
 		priv->duid = NM_DHCP_CLIENT_GET_CLASS (self)->get_duid (self);
 
-	if (nm_logging_enabled (LOGL_DEBUG, LOGD_DHCP6)) {
-		str = nm_dhcp_utils_duid_to_string (priv->duid);
-		_LOGD ("DUID is '%s'", str);
-		g_free (str);
-	}
+	_LOGD ("DUID is '%s'", (str = nm_dhcp_utils_duid_to_string (priv->duid)));
 
 	g_clear_pointer (&priv->hostname, g_free);
 	priv->hostname = g_strdup (hostname);
@@ -559,51 +551,49 @@ nm_dhcp_client_start_ip6 (NMDhcpClient *self,
 void
 nm_dhcp_client_stop_existing (const char *pid_file, const char *binary_name)
 {
-	char *pid_contents = NULL, *proc_contents = NULL, *proc_path = NULL;
-	long int tmp;
+	guint64 start_time;
+	pid_t pid, ppid;
+	const char *exe;
+	char proc_path[NM_STRLEN ("/proc/%lu/cmdline") + 100];
+	gs_free char *pid_contents = NULL, *proc_contents = NULL;
 
 	/* Check for an existing instance and stop it */
 	if (!g_file_get_contents (pid_file, &pid_contents, NULL, NULL))
 		return;
 
-	errno = 0;
-	tmp = strtol (pid_contents, NULL, 10);
-	if ((errno == 0) && (tmp > 1)) {
-		guint64 start_time;
-		const char *exe;
-		pid_t ppid;
+	pid = _nm_utils_ascii_str_to_int64 (pid_contents, 10, 1, G_MAXINT64, 0);
+	if (pid <= 0)
+		goto out;
 
-		/* Ensure the process is a DHCP client */
-		start_time = nm_utils_get_start_time_for_pid (tmp, NULL, &ppid);
-		proc_path = g_strdup_printf ("/proc/%ld/cmdline", tmp);
-		if (   start_time
-		    && g_file_get_contents (proc_path, &proc_contents, NULL, NULL)) {
-			exe = strrchr (proc_contents, '/');
-			if (exe)
-				exe++;
-			else
-				exe = proc_contents;
+	start_time = nm_utils_get_start_time_for_pid (pid, NULL, &ppid);
+	if (start_time == 0)
+		goto out;
 
-			if (!strcmp (exe, binary_name)) {
-				if (ppid == getpid ()) {
-					/* the process is our own child. */
-					nm_utils_kill_child_sync (tmp, SIGTERM, LOGD_DHCP, "dhcp-client", NULL, 1000 / 2, 1000 / 20);
-				} else {
-					nm_utils_kill_process_sync (tmp, start_time, SIGTERM, LOGD_DHCP,
-					                            "dhcp-client", 1000 / 2, 1000 / 20, 2000);
-				}
-			}
-		}
+	nm_sprintf_buf (proc_path, "/proc/%lu/cmdline", (long unsigned) pid);
+	if (!g_file_get_contents (proc_path, &proc_contents, NULL, NULL))
+		goto out;
+
+	exe = strrchr (proc_contents, '/');
+	if (exe)
+		exe++;
+	else
+		exe = proc_contents;
+	if (!nm_streq0 (exe, binary_name))
+		goto out;
+
+	if (ppid == getpid ()) {
+		/* the process is our own child. */
+		nm_utils_kill_child_sync (pid, SIGTERM, LOGD_DHCP, "dhcp-client", NULL, 1000 / 2, 1000 / 20);
+	} else {
+		nm_utils_kill_process_sync (pid, start_time, SIGTERM, LOGD_DHCP,
+		                            "dhcp-client", 1000 / 2, 1000 / 20, 2000);
 	}
 
+out:
 	if (remove (pid_file) == -1) {
 		nm_log_dbg (LOGD_DHCP, "dhcp: could not remove pid file \"%s\": %d (%s)",
 		            pid_file, errno, g_strerror (errno));
 	}
-
-	g_free (proc_path);
-	g_free (pid_contents);
-	g_free (proc_contents);
 }
 
 void
@@ -631,7 +621,7 @@ nm_dhcp_client_stop (NMDhcpClient *self, gboolean release)
 /********************************************/
 
 static char *
-bytearray_variant_to_string (GVariant *value, const char *key)
+bytearray_variant_to_string (NMDhcpClient *self, GVariant *value, const char *key)
 {
 	const guint8 *array;
 	gsize length;
@@ -662,7 +652,7 @@ bytearray_variant_to_string (GVariant *value, const char *key)
 
 	converted = str->str;
 	if (!g_utf8_validate (converted, -1, NULL))
-		nm_log_warn (LOGD_DHCP, "dhcp: option '%s' couldn't be converted to UTF-8", key);
+		_LOGW ("option '%s' couldn't be converted to UTF-8", key);
 	g_string_free (str, FALSE);
 	return converted;
 }
@@ -671,7 +661,8 @@ bytearray_variant_to_string (GVariant *value, const char *key)
 #define NEW_TAG "new_"
 
 static void
-maybe_add_option (GHashTable *hash,
+maybe_add_option (NMDhcpClient *self,
+                  GHashTable *hash,
                   const char *key,
                   GVariant *value)
 {
@@ -701,7 +692,7 @@ maybe_add_option (GHashTable *hash,
 	if (!key[0])
 		return;
 
-	str_value = bytearray_variant_to_string (value, key);
+	str_value = bytearray_variant_to_string (self, value, key);
 	if (str_value)
 		g_hash_table_insert (hash, g_strdup (key), str_value);
 }
@@ -747,7 +738,7 @@ nm_dhcp_client_handle_event (gpointer unused,
 		str_options = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 		g_variant_iter_init (&iter, options);
 		while (g_variant_iter_next (&iter, "{&sv}", &name, &value)) {
-			maybe_add_option (str_options, name, value);
+			maybe_add_option (self, str_options, name, value);
 			g_variant_unref (value);
 		}
 
@@ -836,7 +827,7 @@ set_property (GObject *object, guint prop_id,
 	switch (prop_id) {
 	case PROP_IFACE:
 		/* construct-only */
-		priv->iface = g_strdup (g_value_get_string (value));
+		priv->iface = g_value_dup_string (value);
 		break;
 	case PROP_IFINDEX:
 		/* construct-only */

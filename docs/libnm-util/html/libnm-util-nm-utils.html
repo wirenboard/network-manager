@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingVPN.html" title="NMSettingVPN">
 <link rel="next" href="libnm-util-NetworkManager.html" title="NetworkManager">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -503,7 +503,7 @@ nm_utils_init (<em class="parameter"><code><span class="type">GError</span> **er
 <p>Initializes libnm-util; should be called when starting any program that
 uses libnm-util.  This function can be called more than once.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.2.5"></a><h4>Parameters</h4>
+<a name="nm-utils-init.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -518,7 +518,7 @@ uses libnm-util.  This function can be called more than once.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.2.6"></a><h4>Returns</h4>
+<a name="nm-utils-init.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the initialization was successful, <code class="literal">FALSE</code> on failure.</p>
 </div>
 </div>
@@ -540,7 +540,7 @@ nm_utils_is_empty_ssid (<em class="parameter"><code>const <span class="type">gui
 AP's SSID.  This function attempts to detect blank/empty SSIDs using a
 number of known SSID-cloaking methods.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.4.5"></a><h4>Parameters</h4>
+<a name="nm-utils-is-empty-ssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -563,7 +563,7 @@ number of known SSID-cloaking methods.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.4.6"></a><h4>Returns</h4>
+<a name="nm-utils-is-empty-ssid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the SSID is "empty", <code class="literal">FALSE</code> if it is not</p>
 </div>
 </div>
@@ -578,7 +578,7 @@ replacing embedded NULLs and non-printable characters with the hexadecimal
 representation of that character.  Intended for debugging only, should not
 be used for display of SSIDs.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.5.5"></a><h4>Parameters</h4>
+<a name="nm-utils-escape-ssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -601,7 +601,7 @@ be used for display of SSIDs.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.5.6"></a><h4>Returns</h4>
+<a name="nm-utils-escape-ssid.returns"></a><h4>Returns</h4>
 <p> pointer to the escaped SSID, which uses an internal static buffer
 and will be overwritten by subsequent calls to this function</p>
 </div>
@@ -620,7 +620,7 @@ and thus was changed.  This function compensates for that behavior at the
 cost of some compatibility with odd SSIDs that may legitimately have trailing
 NULLs, even though that is functionally pointless.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.6.5"></a><h4>Parameters</h4>
+<a name="nm-utils-same-ssid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -647,7 +647,7 @@ NULLs, even though that is functionally pointless.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.6.6"></a><h4>Returns</h4>
+<a name="nm-utils-same-ssid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the SSIDs are the same, <code class="literal">FALSE</code> if they are not</p>
 </div>
 </div>
@@ -676,7 +676,7 @@ into a printable UTF-8 string, using roughly the following procedure:</p>
 <p>Again, this function should be used for debugging and display purposes
 _only_.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.7.8"></a><h4>Parameters</h4>
+<a name="nm-utils-ssid-to-utf8.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -691,7 +691,7 @@ _only_.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.7.9"></a><h4>Returns</h4>
+<a name="nm-utils-ssid-to-utf8.returns"></a><h4>Returns</h4>
 <p> an allocated string containing a UTF-8
 representation of the SSID, which must be freed by the caller using <code class="function">g_free()</code>.
 Returns <code class="literal">NULL</code> on errors. </p>
@@ -705,7 +705,7 @@ Returns <code class="literal">NULL</code> on errors. </p>
 nm_utils_gvalue_hash_dup (<em class="parameter"><code><span class="type">GHashTable</span> *hash</code></em>);</pre>
 <p>Utility function to duplicate a hash table of <span class="type">GValues</span>.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.8.5"></a><h4>Parameters</h4>
+<a name="nm-utils-gvalue-hash-dup.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -720,7 +720,7 @@ nm_utils_gvalue_hash_dup (<em class="parameter"><code><span class="type">GHashTa
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.8.6"></a><h4>Returns</h4>
+<a name="nm-utils-gvalue-hash-dup.returns"></a><h4>Returns</h4>
 <p> a newly allocated duplicated <span class="type">GHashTable</span>, caller must free the
 returned hash with <code class="function">g_hash_table_unref()</code> or <code class="function">g_hash_table_destroy()</code>. </p>
 <p><span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> utf8 GObject.Value]</span></p>
@@ -739,7 +739,7 @@ nm_utils_slist_free (<em class="parameter"><code><span class="type">GSList</span
 <p>Utility function to free a <span class="type">GSList</span>.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.2.30.8.9.7"></a><h4>Parameters</h4>
+<a name="nm-utils-slist-free.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -779,7 +779,7 @@ type, and AP capabilities intersect.</p>
 <p>NOTE: this function cannot handle checking security for AP/Hotspot mode;
 use <a class="link" href="libnm-util-nm-utils.html#nm-utils-ap-mode-security-valid" title="nm_utils_ap_mode_security_valid ()"><code class="function">nm_utils_ap_mode_security_valid()</code></a> instead.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.10.6"></a><h4>Parameters</h4>
+<a name="nm-utils-security-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -833,7 +833,7 @@ e.g. (<a class="link" href="libnm-util-NetworkManager.html#NM-802-11-AP-SEC-PAIR
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.10.7"></a><h4>Returns</h4>
+<a name="nm-utils-security-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device capabilities and AP capabilties intersect and are
 compatible with the desired <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if they are not</p>
@@ -849,7 +849,7 @@ nm_utils_ap_mode_security_valid (<em class="parameter"><code><a class="link" hre
 against, determines whether the combination of device capabilities and
 desired security type are valid for AP/Hotspot connections.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.11.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ap-mode-security-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -873,7 +873,7 @@ e.g. <a class="link" href="libnm-util-nm-utils.html#NMU-SEC-STATIC-WEP:CAPS"><sp
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.11.6"></a><h4>Returns</h4>
+<a name="nm-utils-ap-mode-security-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device capabilities are compatible with the desired
 <em class="parameter"><code>type</code></em>
 , <code class="literal">FALSE</code> if they are not.</p>
@@ -889,7 +889,7 @@ nm_utils_wep_key_valid (<em class="parameter"><code>const <span class="type">cha
 <p>Checks if <em class="parameter"><code>key</code></em>
  is a valid WEP key</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.12.5"></a><h4>Parameters</h4>
+<a name="nm-utils-wep-key-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -911,7 +911,7 @@ nm_utils_wep_key_valid (<em class="parameter"><code>const <span class="type">cha
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.12.6"></a><h4>Returns</h4>
+<a name="nm-utils-wep-key-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>key</code></em>
 is a WEP key, <code class="literal">FALSE</code> if not</p>
 </div>
@@ -925,7 +925,7 @@ nm_utils_wpa_psk_valid (<em class="parameter"><code>const <span class="type">cha
 <p>Checks if <em class="parameter"><code>psk</code></em>
  is a valid WPA PSK</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.13.5"></a><h4>Parameters</h4>
+<a name="nm-utils-wpa-psk-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -940,7 +940,7 @@ nm_utils_wpa_psk_valid (<em class="parameter"><code>const <span class="type">cha
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.13.6"></a><h4>Returns</h4>
+<a name="nm-utils-wpa-psk-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>psk</code></em>
 is a WPA PSK, <code class="literal">FALSE</code> if not</p>
 </div>
@@ -957,7 +957,7 @@ and prefix) into a <span class="type">GSList</span> of <a class="link" href="NMS
 this serialization is not guaranteed to be stable and the <span class="type">GArray</span> may be
 extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.14.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-addresses-from-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -972,7 +972,7 @@ extended in the future.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.14.6"></a><h4>Returns</h4>
+<a name="nm-utils-ip4-addresses-from-gvalue.returns"></a><h4>Returns</h4>
 <p> a newly allocated <span class="type">GSList</span> of <a class="link" href="NMSettingIP4Config.html#NMIP4Address"><span class="type">NMIP4Address</span></a> objects. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMIP4Address]</span></p>
 </div>
@@ -989,7 +989,7 @@ addresses (which is a tuple of address, gateway, and prefix).   The specific
 format of this serialization is not guaranteed to be stable and may be
 extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.15.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-addresses-to-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1024,7 +1024,7 @@ prefix, and metric) into a <span class="type">GSList</span> of <a class="link" h
 format of this serialization is not guaranteed to be stable and may be
 extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.16.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-routes-from-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1039,7 +1039,7 @@ extended in the future.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.16.6"></a><h4>Returns</h4>
+<a name="nm-utils-ip4-routes-from-gvalue.returns"></a><h4>Returns</h4>
 <p> a newly allocated <span class="type">GSList</span> of <a class="link" href="NMSettingIP4Config.html#NMIP4Route"><span class="type">NMIP4Route</span></a> objects. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMIP4Route]</span></p>
 </div>
@@ -1056,7 +1056,7 @@ routes (which is a tuple of route, next hop, prefix, and metric).   The
 specific format of this serialization is not guaranteed to be stable and may
 be extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.17.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-routes-to-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1086,7 +1086,7 @@ which should be unset by the caller (when no longer needed) with
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_utils_ip4_netmask_to_prefix (<em class="parameter"><code><span class="type">guint32</span> netmask</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.30.8.18.4"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-netmask-to-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1101,7 +1101,7 @@ nm_utils_ip4_netmask_to_prefix (<em class="parameter"><code><span class="type">g
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.18.5"></a><h4>Returns</h4>
+<a name="nm-utils-ip4-netmask-to-prefix.returns"></a><h4>Returns</h4>
 <p> the CIDR prefix represented by the netmask</p>
 </div>
 </div>
@@ -1111,7 +1111,7 @@ nm_utils_ip4_netmask_to_prefix (<em class="parameter"><code><span class="type">g
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_utils_ip4_prefix_to_netmask (<em class="parameter"><code><span class="type">guint32</span> prefix</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.30.8.19.4"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-prefix-to-netmask.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1126,7 +1126,7 @@ nm_utils_ip4_prefix_to_netmask (<em class="parameter"><code><span class="type">g
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.19.5"></a><h4>Returns</h4>
+<a name="nm-utils-ip4-prefix-to-netmask.returns"></a><h4>Returns</h4>
 <p> the netmask represented by the prefix, in network byte order</p>
 </div>
 </div>
@@ -1140,7 +1140,7 @@ segmented into three network classes: A, B, and C.  This function will return
 a prefix that is associated with the IP address specified defining where it
 falls in the predefined classes.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.20.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip4-get-default-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1155,7 +1155,7 @@ falls in the predefined classes.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.20.6"></a><h4>Returns</h4>
+<a name="nm-utils-ip4-get-default-prefix.returns"></a><h4>Returns</h4>
 <p> the default class prefix for the given IP</p>
 </div>
 </div>
@@ -1170,7 +1170,7 @@ prefix, and gateway), into a <span class="type">GSList</span> of <a class="link"
 this serialization is not guaranteed to be stable and the <span class="type">GValueArray</span> may be
 extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.21.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip6-addresses-from-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1185,7 +1185,7 @@ extended in the future.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.21.6"></a><h4>Returns</h4>
+<a name="nm-utils-ip6-addresses-from-gvalue.returns"></a><h4>Returns</h4>
 <p> a newly allocated <span class="type">GSList</span> of <a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> objects. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMIP6Address]</span></p>
 </div>
@@ -1202,7 +1202,7 @@ nm_utils_ip6_addresses_to_gvalue (<em class="parameter"><code><span class="type"
 this serialization is not guaranteed to be stable and may be extended in the
 future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.22.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip6-addresses-to-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1237,7 +1237,7 @@ routes (which is a tuple of destination, prefix, next hop, and metric)
 into a <span class="type">GSList</span> of <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> objects.  The specific format of this serialization
 is not guaranteed to be stable and may be extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.23.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip6-routes-from-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1253,7 +1253,7 @@ is not guaranteed to be stable and may be extended in the future.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.23.6"></a><h4>Returns</h4>
+<a name="nm-utils-ip6-routes-from-gvalue.returns"></a><h4>Returns</h4>
 <p> a newly allocated <span class="type">GSList</span> of <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> objects. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMIP6Route]</span></p>
 </div>
@@ -1270,7 +1270,7 @@ representing a list of NetworkManager IPv6 routes (which is a tuple of destinati
 prefix, next hop, and metric).  The specific format of this serialization is not
 guaranteed to be stable and may be extended in the future.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.24.5"></a><h4>Parameters</h4>
+<a name="nm-utils-ip6-routes-to-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1303,7 +1303,7 @@ nm_utils_ip6_dns_from_gvalue (<em class="parameter"><code>const <span class="typ
 <span class="type">GByteArrays</span> into a <span class="type">GSList</span> of <code class="literal"><span class="type">struct in6_addr</span></code>s.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.2.30.8.25.6"></a><h4>Parameters</h4>
+<a name="nm-utils-ip6-dns-from-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1318,7 +1318,7 @@ nm_utils_ip6_dns_from_gvalue (<em class="parameter"><code>const <span class="typ
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.25.7"></a><h4>Returns</h4>
+<a name="nm-utils-ip6-dns-from-gvalue.returns"></a><h4>Returns</h4>
 <p> a <span class="type">GSList</span> of IP6 addresses.</p>
 </div>
 </div>
@@ -1335,7 +1335,7 @@ The specific format of this serialization is not guaranteed to be
 stable and may be extended in the future.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.2.30.8.26.6"></a><h4>Parameters</h4>
+<a name="nm-utils-ip6-dns-to-gvalue.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1365,7 +1365,7 @@ addresses, which should be unset by the caller (when no longer needed) with
 <pre class="programlisting"><span class="returnvalue">char</span> *
 nm_utils_uuid_generate (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.30.8.27.4"></a><h4>Returns</h4>
+<a name="nm-utils-uuid-generate.returns"></a><h4>Returns</h4>
 <p> a newly allocated UUID suitable for use as the <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>
 object's <a class="link" href="NMSettingConnection.html#NMSettingConnection--id" title="The “id” property"><span class="type">“id”</span></a>: property.  Should be freed with <code class="function">g_free()</code></p>
 </div>
@@ -1378,7 +1378,7 @@ nm_utils_uuid_generate_from_string (<em class="parameter"><code>const <span clas
 <p>For a given <em class="parameter"><code>s</code></em>
 , this function will always return the same UUID.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.28.5"></a><h4>Parameters</h4>
+<a name="nm-utils-uuid-generate-from-string.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1393,7 +1393,7 @@ nm_utils_uuid_generate_from_string (<em class="parameter"><code>const <span clas
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.28.6"></a><h4>Returns</h4>
+<a name="nm-utils-uuid-generate-from-string.returns"></a><h4>Returns</h4>
 <p> a newly allocated UUID suitable for use as the <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>
 object's <a class="link" href="NMSettingConnection.html#NMSettingConnection--id" title="The “id” property"><span class="type">“id”</span></a>: property</p>
 </div>
@@ -1410,7 +1410,7 @@ nm_utils_rsa_key_encrypt (<em class="parameter"><code>const <span class="type">G
 a password if no password was given) and converts the data to PEM format
 suitable for writing to a file. It uses Triple DES cipher for the encryption.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.29.5"></a><h4>Parameters</h4>
+<a name="nm-utils-rsa-key-encrypt.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1444,7 +1444,7 @@ and returned in this argument. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.29.6"></a><h4>Returns</h4>
+<a name="nm-utils-rsa-key-encrypt.returns"></a><h4>Returns</h4>
 <p> on success, PEM-formatted data suitable for writing to a PEM-formatted
 certificate/private key file. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -1462,7 +1462,7 @@ nm_utils_rsa_key_encrypt_aes (<em class="parameter"><code>const <span class="typ
 a password if no password was given) and converts the data to PEM format
 suitable for writing to a file.  It uses AES cipher for the encryption.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.30.5"></a><h4>Parameters</h4>
+<a name="nm-utils-rsa-key-encrypt-aes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1496,7 +1496,7 @@ and returned in this argument. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.30.6"></a><h4>Returns</h4>
+<a name="nm-utils-rsa-key-encrypt-aes.returns"></a><h4>Returns</h4>
 <p> on success, PEM-formatted data suitable for writing to a PEM-formatted
 certificate/private key file. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -1510,7 +1510,7 @@ nm_utils_file_is_pkcs12 (<em class="parameter"><code>const <span class="type">ch
 <p>Utility function to find out if the <em class="parameter"><code>filename</code></em>
  is in PKCS#12 format.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.31.5"></a><h4>Parameters</h4>
+<a name="nm-utils-file-is-pkcs12.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1525,7 +1525,7 @@ nm_utils_file_is_pkcs12 (<em class="parameter"><code>const <span class="type">ch
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.31.6"></a><h4>Returns</h4>
+<a name="nm-utils-file-is-pkcs12.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the file is PKCS#12, <code class="literal">FALSE</code> if it is not</p>
 </div>
 </div>
@@ -1551,7 +1551,7 @@ nm_utils_file_search_in_paths (<em class="parameter"><code>const <span class="ty
  file in a list of search <em class="parameter"><code>paths</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.33.5"></a><h4>Parameters</h4>
+<a name="nm-utils-file-search-in-paths.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1610,7 +1610,7 @@ function. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.33.6"></a><h4>Returns</h4>
+<a name="nm-utils-file-search-in-paths.returns"></a><h4>Returns</h4>
 <p> the full path to the helper, if found, or <code class="literal">NULL</code> if not found.
 The returned string is not owned by the caller, but later
 invocations of the function might overwrite it. </p>
@@ -1624,7 +1624,7 @@ invocations of the function might overwrite it. </p>
 nm_utils_wifi_freq_to_channel (<em class="parameter"><code><span class="type">guint32</span> freq</code></em>);</pre>
 <p>Utility function to translate a Wi-Fi frequency to its corresponding channel.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.34.5"></a><h4>Parameters</h4>
+<a name="nm-utils-wifi-freq-to-channel.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1639,7 +1639,7 @@ nm_utils_wifi_freq_to_channel (<em class="parameter"><code><span class="type">gu
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.34.6"></a><h4>Returns</h4>
+<a name="nm-utils-wifi-freq-to-channel.returns"></a><h4>Returns</h4>
 <p> the channel represented by the frequency or 0</p>
 </div>
 </div>
@@ -1651,7 +1651,7 @@ nm_utils_wifi_channel_to_freq (<em class="parameter"><code><span class="type">gu
                                <em class="parameter"><code>const <span class="type">char</span> *band</code></em>);</pre>
 <p>Utility function to translate a Wi-Fi channel to its corresponding frequency.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.35.5"></a><h4>Parameters</h4>
+<a name="nm-utils-wifi-channel-to-freq.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1673,7 +1673,7 @@ nm_utils_wifi_channel_to_freq (<em class="parameter"><code><span class="type">gu
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.35.6"></a><h4>Returns</h4>
+<a name="nm-utils-wifi-channel-to-freq.returns"></a><h4>Returns</h4>
 <p> the frequency represented by the channel of the band,
 or -1 when the freq is invalid, or 0 when the band
 is invalid</p>
@@ -1688,7 +1688,7 @@ nm_utils_wifi_find_next_channel (<em class="parameter"><code><span class="type">
                                  <em class="parameter"><code><span class="type">char</span> *band</code></em>);</pre>
 <p>Utility function to find out next/previous Wi-Fi channel for a channel.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.36.5"></a><h4>Parameters</h4>
+<a name="nm-utils-wifi-find-next-channel.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1715,7 +1715,7 @@ nm_utils_wifi_find_next_channel (<em class="parameter"><code><span class="type">
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.36.6"></a><h4>Returns</h4>
+<a name="nm-utils-wifi-find-next-channel.returns"></a><h4>Returns</h4>
 <p> the next channel in the specified direction or 0</p>
 </div>
 </div>
@@ -1727,7 +1727,7 @@ nm_utils_wifi_is_channel_valid (<em class="parameter"><code><span class="type">g
                                 <em class="parameter"><code>const <span class="type">char</span> *band</code></em>);</pre>
 <p>Utility function to verify Wi-Fi channel validity.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.37.5"></a><h4>Parameters</h4>
+<a name="nm-utils-wifi-is-channel-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1749,7 +1749,7 @@ nm_utils_wifi_is_channel_valid (<em class="parameter"><code><span class="type">g
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.37.6"></a><h4>Returns</h4>
+<a name="nm-utils-wifi-is-channel-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
 </div>
 </div>
@@ -1761,7 +1761,7 @@ nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> t
 <p>Returns the length in octets of a hardware address of type <em class="parameter"><code>type</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.38.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-len.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1777,7 +1777,7 @@ nm_utils_hwaddr_len (<em class="parameter"><code><span class="type">int</span> t
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.38.6"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-len.returns"></a><h4>Returns</h4>
 <p> the positive length, or -1 if the type is unknown/unsupported.</p>
 </div>
 </div>
@@ -1798,7 +1798,7 @@ a length; but you can just use <a class="link" href="libnm-util-nm-utils.html#nm
 <p>Returns the type (either <code class="literal">ARPHRD_ETHER</code> or
 <code class="literal">ARPHRD_INFINIBAND</code>) of the raw address given its length.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.39.6"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1813,7 +1813,7 @@ a length; but you can just use <a class="link" href="libnm-util-nm-utils.html#nm
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.39.7"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-type.returns"></a><h4>Returns</h4>
 <p> the type, either <code class="literal">ARPHRD_ETHER</code> or
 <code class="literal">ARPHRD_INFINIBAND</code>.  If the length is unexpected, return -1
 (unsupported type/length).</p>
@@ -1830,7 +1830,7 @@ nm_utils_hwaddr_ntoa (<em class="parameter"><code><span class="type">gconstpoint
 <p>See also <a class="link" href="libnm-util-nm-utils.html#nm-utils-hwaddr-ntoa-len" title="nm_utils_hwaddr_ntoa_len ()"><code class="function">nm_utils_hwaddr_ntoa_len()</code></a>, which takes a length instead of
 a type.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.40.6"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-ntoa.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1853,7 +1853,7 @@ a type.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.40.7"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-ntoa.returns"></a><h4>Returns</h4>
 <p> the textual form of <em class="parameter"><code>addr</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -1869,7 +1869,7 @@ nm_utils_hwaddr_atoba (<em class="parameter"><code>const <span class="type">char
  and converts it to binary form in a <span class="type">GByteArray</span>. See
 <a class="link" href="libnm-util-nm-utils.html#nm-utils-hwaddr-aton" title="nm_utils_hwaddr_aton ()"><code class="function">nm_utils_hwaddr_aton()</code></a> if you don't want a <span class="type">GByteArray</span>.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.41.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-atoba.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1892,7 +1892,7 @@ nm_utils_hwaddr_atoba (<em class="parameter"><code>const <span class="type">char
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.41.6"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-atoba.returns"></a><h4>Returns</h4>
 <p> a new <span class="type">GByteArray</span>, or <code class="literal">NULL</code> if <em class="parameter"><code>asc</code></em>
 couldn't
 be parsed. </p>
@@ -1914,7 +1914,7 @@ nm_utils_hwaddr_aton (<em class="parameter"><code>const <span class="type">char<
 <p>See also <a class="link" href="libnm-util-nm-utils.html#nm-utils-hwaddr-aton-len" title="nm_utils_hwaddr_aton_len ()"><code class="function">nm_utils_hwaddr_aton_len()</code></a>, which takes an output length
 instead of a type.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.42.6"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-aton.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1942,7 +1942,7 @@ instead of a type.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.42.7"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-aton.returns"></a><h4>Returns</h4>
 <p> <em class="parameter"><code>buffer</code></em>
 , or <code class="literal">NULL</code> if <em class="parameter"><code>asc</code></em>
 couldn't be parsed</p>
@@ -1957,7 +1957,7 @@ nm_utils_hwaddr_ntoa_len (<em class="parameter"><code><span class="type">gconstp
 <p>Converts <em class="parameter"><code>addr</code></em>
  to textual form.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.43.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-ntoa-len.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1980,7 +1980,7 @@ nm_utils_hwaddr_ntoa_len (<em class="parameter"><code><span class="type">gconstp
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.43.6"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-ntoa-len.returns"></a><h4>Returns</h4>
 <p> the textual form of <em class="parameter"><code>addr</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -2000,7 +2000,7 @@ nm_utils_hwaddr_aton_len (<em class="parameter"><code>const <span class="type">c
 Bytes in <em class="parameter"><code>asc</code></em>
  can be sepatared by colons (:), or hyphens (-), but not mixed.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.44.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-aton-len.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2028,7 +2028,7 @@ the size of the buffer in bytes.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.44.6"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-aton-len.returns"></a><h4>Returns</h4>
 <p> <em class="parameter"><code>buffer</code></em>
 , or <code class="literal">NULL</code> if <em class="parameter"><code>asc</code></em>
 couldn't be parsed
@@ -2045,7 +2045,7 @@ nm_utils_hwaddr_valid (<em class="parameter"><code>const <span class="type">char
 <p>Parses <em class="parameter"><code>asc</code></em>
  to see if it is a valid hardware address of some type.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.45.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hwaddr-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2060,7 +2060,7 @@ nm_utils_hwaddr_valid (<em class="parameter"><code>const <span class="type">char
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.45.6"></a><h4>Returns</h4>
+<a name="nm-utils-hwaddr-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>asc</code></em>
 appears to be a valid hardware address
 of some type, <code class="literal">FALSE</code> if not.</p>
@@ -2080,7 +2080,7 @@ If <em class="parameter"><code>final_len</code></em>
  is greater than -1, the returned string is terminated at
 that index (returned_string[final_len] == '\0'),</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.46.5"></a><h4>Parameters</h4>
+<a name="nm-utils-bin2hexstr.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2108,7 +2108,7 @@ array</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.46.6"></a><h4>Returns</h4>
+<a name="nm-utils-bin2hexstr.returns"></a><h4>Returns</h4>
 <p> the textual form of <em class="parameter"><code>bytes</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
@@ -2122,7 +2122,7 @@ array</p></td>
 nm_utils_hex2byte (<em class="parameter"><code>const <span class="type">char</span> *hex</code></em>);</pre>
 <p>Converts a hex string (2 characters) into its byte representation.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.47.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hex2byte.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2137,7 +2137,7 @@ nm_utils_hex2byte (<em class="parameter"><code>const <span class="type">char</sp
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.47.6"></a><h4>Returns</h4>
+<a name="nm-utils-hex2byte.returns"></a><h4>Returns</h4>
 <p> a byte, or -1 if <em class="parameter"><code>hex</code></em>
 doesn't represent a hex byte</p>
 </div>
@@ -2154,7 +2154,7 @@ nm_utils_hexstr2bin (<em class="parameter"><code>const <span class="type">char</
 length is <em class="parameter"><code>len</code></em>
 /2.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.48.5"></a><h4>Parameters</h4>
+<a name="nm-utils-hexstr2bin.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2177,7 +2177,7 @@ string (it has to be even)</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.48.6"></a><h4>Returns</h4>
+<a name="nm-utils-hexstr2bin.returns"></a><h4>Returns</h4>
 <p> a array of bytes, or <code class="literal">NULL</code> on error. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -2191,7 +2191,7 @@ nm_utils_iface_valid_name (<em class="parameter"><code>const <span class="type">
 <p>This function is a 1:1 copy of the kernel's interface validation
 function in net/core/dev.c.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.49.5"></a><h4>Parameters</h4>
+<a name="nm-utils-iface-valid-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2206,7 +2206,7 @@ function in net/core/dev.c.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.49.6"></a><h4>Returns</h4>
+<a name="nm-utils-iface-valid-name.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if interface name is valid, otherwise <code class="literal">FALSE</code> is returned.</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -2219,7 +2219,7 @@ nm_utils_is_uuid (<em class="parameter"><code>const <span class="type">char</spa
 <p>Checks if <em class="parameter"><code>str</code></em>
  is a UUID</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.50.5"></a><h4>Parameters</h4>
+<a name="nm-utils-is-uuid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2234,7 +2234,7 @@ nm_utils_is_uuid (<em class="parameter"><code>const <span class="type">char</spa
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.50.6"></a><h4>Returns</h4>
+<a name="nm-utils-is-uuid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>str</code></em>
 is a UUID, <code class="literal">FALSE</code> if not</p>
 </div>
@@ -2249,7 +2249,7 @@ nm_utils_inet4_ntop (<em class="parameter"><code><span class="type">in_addr_t</s
 <p>Wrapper for inet_ntop.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.2.30.8.51.6"></a><h4>Parameters</h4>
+<a name="nm-utils-inet4-ntop.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2280,7 +2280,7 @@ buffer to avoid these issues.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.51.7"></a><h4>Returns</h4>
+<a name="nm-utils-inet4-ntop.returns"></a><h4>Returns</h4>
 <p> the input buffer <em class="parameter"><code>dst</code></em>
 , or a pointer to an
 internal, static buffer. This function cannot fail.</p>
@@ -2296,7 +2296,7 @@ nm_utils_inet6_ntop (<em class="parameter"><code>const <span class="type">struct
 <p>Wrapper for inet_ntop.</p>
 <p><span class="annotation">[<acronym title="Exposed in C code, not necessarily available in other languages."><span class="acronym">skip</span></acronym>]</span></p>
 <div class="refsect3">
-<a name="id-1.2.30.8.52.6"></a><h4>Parameters</h4>
+<a name="nm-utils-inet6-ntop.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2327,7 +2327,7 @@ buffer to avoid these issues.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.52.7"></a><h4>Returns</h4>
+<a name="nm-utils-inet6-ntop.returns"></a><h4>Returns</h4>
 <p> the input buffer <em class="parameter"><code>dst</code></em>
 , or a pointer to an
 internal, static buffer. <code class="literal">NULL</code> is not allowed as <em class="parameter"><code>in6addr</code></em>
@@ -2364,7 +2364,7 @@ compatible with <em class="parameter"><code>virtual_type</code></em>
 configuration of the two connections, or on the capabilities of an
 underlying device driver.</p>
 <div class="refsect3">
-<a name="id-1.2.30.8.53.8"></a><h4>Parameters</h4>
+<a name="nm-utils-check-virtual-device-compatibility.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2387,7 +2387,7 @@ underlying device driver.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.30.8.53.9"></a><h4>Returns</h4>
+<a name="nm-utils-check-virtual-device-compatibility.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> or <code class="literal">FALSE</code></p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -2401,7 +2401,7 @@ underlying device driver.</p>
 Used with <a class="link" href="libnm-util-nm-utils.html#nm-utils-security-valid" title="nm_utils_security_valid ()"><code class="function">nm_utils_security_valid()</code></a> for checking whether a given access
 point is compatible with a network device.</p>
 <div class="refsect3">
-<a name="id-1.2.30.9.2.4"></a><h4>Members</h4>
+<a name="NMUtilsSecurityType.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -2498,6 +2498,6 @@ for both <a class="link" href="libnm-util-nm-utils.html#nm-utils-inet4-ntop" tit
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

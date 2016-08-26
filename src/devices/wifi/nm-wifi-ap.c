@@ -42,29 +42,48 @@ typedef struct
 	char *supplicant_path;   /* D-Bus object path of this AP from wpa_supplicant */
 
 	/* Scanned or cached values */
-	GByteArray *	ssid;
-	char *          address;
-	NM80211Mode		mode;
-	guint8			strength;
-	guint32			freq;		/* Frequency in MHz; ie 2412 (== 2.412 GHz) */
-	guint32			max_bitrate;/* Maximum bitrate of the AP in Kbit/s (ie 54000 Kb/s == 54Mbit/s) */
+	GByteArray *       ssid;
+	char *             address;
+	NM80211Mode        mode;
+	guint8             strength;
+	guint32            freq;        /* Frequency in MHz; ie 2412 (== 2.412 GHz) */
+	guint32            max_bitrate; /* Maximum bitrate of the AP in Kbit/s (ie 54000 Kb/s == 54Mbit/s) */
 
 	NM80211ApFlags         flags;      /* General flags */
 	NM80211ApSecurityFlags wpa_flags;  /* WPA-related flags */
 	NM80211ApSecurityFlags rsn_flags;  /* RSN (WPA2) -related flags */
 
 	/* Non-scanned attributes */
-	gboolean			fake;	/* Whether or not the AP is from a scan */
-	gboolean            hotspot;    /* Whether the AP is a local device's hotspot network */
+	bool                fake;       /* Whether or not the AP is from a scan */
+	bool                hotspot;    /* Whether the AP is a local device's hotspot network */
 	gint32              last_seen;  /* Timestamp when the AP was seen lastly (obtained via nm_utils_get_monotonic_timestamp_s()) */
 } NMAccessPointPrivate;
 
-#define NM_AP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), NM_TYPE_AP, NMAccessPointPrivate))
+struct _NMAccessPoint {
+	NMExportedObject parent;
+	NMAccessPointPrivate _priv;
+};
+
+struct _NMAccessPointClass{
+	NMExportedObjectClass parent;
+};
+
+#define NM_AP_GET_PRIVATE(self) \
+	({ \
+		/* preserve the const-ness of self. Unfortunately, that
+		 * way, @self cannot be a void pointer */ \
+		typeof (self) _self = (self); \
+		\
+		/* Get compiler error if variable is of wrong type */ \
+		_nm_unused const NMAccessPoint *_self2 = (_self); \
+		\
+		nm_assert (NM_IS_AP (_self)); \
+		&_self->_priv; \
+	})
 
 G_DEFINE_TYPE (NMAccessPoint, nm_ap, NM_TYPE_EXPORTED_OBJECT)
 
-enum {
-	PROP_0,
+NM_GOBJECT_PROPERTIES_DEFINE (NMAccessPoint,
 	PROP_FLAGS,
 	PROP_WPA_FLAGS,
 	PROP_RSN_FLAGS,
@@ -75,8 +94,7 @@ enum {
 	PROP_MAX_BITRATE,
 	PROP_STRENGTH,
 	PROP_LAST_SEEN,
-	LAST_PROP
-};
+);
 
 /*****************************************************************/
 
@@ -130,7 +148,7 @@ nm_ap_set_ssid (NMAccessPoint *ap, const guint8 *ssid, gsize len)
 		g_byte_array_append (priv->ssid, ssid, len);
 	}
 
-	g_object_notify (G_OBJECT (ap), NM_AP_SSID);
+	_notify (ap, PROP_SSID);
 }
 
 static void
@@ -144,7 +162,7 @@ nm_ap_set_flags (NMAccessPoint *ap, NM80211ApFlags flags)
 
 	if (priv->flags != flags) {
 		priv->flags = flags;
-		g_object_notify (G_OBJECT (ap), NM_AP_FLAGS);
+		_notify (ap, PROP_FLAGS);
 	}
 }
 
@@ -158,7 +176,7 @@ nm_ap_set_wpa_flags (NMAccessPoint *ap, NM80211ApSecurityFlags flags)
 	priv = NM_AP_GET_PRIVATE (ap);
 	if (priv->wpa_flags != flags) {
 		priv->wpa_flags = flags;
-		g_object_notify (G_OBJECT (ap), NM_AP_WPA_FLAGS);
+		_notify (ap, PROP_WPA_FLAGS);
 	}
 }
 
@@ -172,7 +190,7 @@ nm_ap_set_rsn_flags (NMAccessPoint *ap, NM80211ApSecurityFlags flags)
 	priv = NM_AP_GET_PRIVATE (ap);
 	if (priv->rsn_flags != flags) {
 		priv->rsn_flags = flags;
-		g_object_notify (G_OBJECT (ap), NM_AP_RSN_FLAGS);
+		_notify (ap, PROP_RSN_FLAGS);
 	}
 }
 
@@ -198,7 +216,7 @@ nm_ap_set_address (NMAccessPoint *ap, const char *addr)
 	if (!priv->address || !nm_utils_hwaddr_matches (addr, -1, priv->address, -1)) {
 		g_free (priv->address);
 		priv->address = g_strdup (addr);
-		g_object_notify (G_OBJECT (ap), NM_AP_HW_ADDRESS);
+		_notify (ap, PROP_HW_ADDRESS);
 	}
 }
 
@@ -223,7 +241,7 @@ nm_ap_set_mode (NMAccessPoint *ap, const NM80211Mode mode)
 
 	if (priv->mode != mode) {
 		priv->mode = mode;
-		g_object_notify (G_OBJECT (ap), NM_AP_MODE);
+		_notify (ap, PROP_MODE);
 	}
 }
 
@@ -254,7 +272,7 @@ nm_ap_set_strength (NMAccessPoint *ap, const gint8 strength)
 
 	if (priv->strength != strength) {
 		priv->strength = strength;
-		g_object_notify (G_OBJECT (ap), NM_AP_STRENGTH);
+		_notify (ap, PROP_STRENGTH);
 	}
 }
 
@@ -278,7 +296,7 @@ nm_ap_set_freq (NMAccessPoint *ap,
 
 	if (priv->freq != freq) {
 		priv->freq = freq;
-		g_object_notify (G_OBJECT (ap), NM_AP_FREQUENCY);
+		_notify (ap, PROP_FREQUENCY);
 	}
 }
 
@@ -302,7 +320,7 @@ nm_ap_set_max_bitrate (NMAccessPoint *ap, guint32 bitrate)
 
 	if (priv->max_bitrate != bitrate) {
 		priv->max_bitrate = bitrate;
-		g_object_notify (G_OBJECT (ap), NM_AP_MAX_BITRATE);
+		_notify (ap, PROP_MAX_BITRATE);
 	}
 }
 
@@ -333,7 +351,7 @@ nm_ap_set_last_seen (NMAccessPoint *ap, gint32 last_seen)
 
 	if (priv->last_seen != last_seen) {
 		priv->last_seen = last_seen;
-		g_object_notify (G_OBJECT (ap), NM_AP_LAST_SEEN);
+		_notify (ap, PROP_LAST_SEEN);
 	}
 }
 
@@ -347,18 +365,20 @@ security_from_vardict (GVariant *security)
 
 	g_return_val_if_fail (g_variant_is_of_type (security, G_VARIANT_TYPE_VARDICT), NM_802_11_AP_SEC_NONE);
 
-	if (g_variant_lookup (security, "KeyMgmt", "^a&s", &array)) {
-		if (_nm_utils_string_in_list ("wpa-psk", array))
+	if (   g_variant_lookup (security, "KeyMgmt", "^a&s", &array)
+	    && array) {
+		if (g_strv_contains (array, "wpa-psk"))
 			flags |= NM_802_11_AP_SEC_KEY_MGMT_PSK;
-		if (_nm_utils_string_in_list ("wpa-eap", array))
+		if (g_strv_contains (array, "wpa-eap"))
 			flags |= NM_802_11_AP_SEC_KEY_MGMT_802_1X;
 		g_free (array);
 	}
 
-	if (g_variant_lookup (security, "Pairwise", "^a&s", &array)) {
-		if (_nm_utils_string_in_list ("tkip", array))
+	if (   g_variant_lookup (security, "Pairwise", "^a&s", &array)
+	    && array) {
+		if (g_strv_contains (array, "tkip"))
 			flags |= NM_802_11_AP_SEC_PAIR_TKIP;
-		if (_nm_utils_string_in_list ("ccmp", array))
+		if (g_strv_contains (array, "ccmp"))
 			flags |= NM_802_11_AP_SEC_PAIR_CCMP;
 		g_free (array);
 	}
@@ -879,7 +899,7 @@ nm_ap_init (NMAccessPoint *ap)
 static void
 finalize (GObject *object)
 {
-	NMAccessPointPrivate *priv = NM_AP_GET_PRIVATE (object);
+	NMAccessPointPrivate *priv = NM_AP_GET_PRIVATE ((NMAccessPoint *) object);
 
 	g_free (priv->supplicant_path);
 	if (priv->ssid)
@@ -891,16 +911,16 @@ finalize (GObject *object)
 
 static void
 set_property (GObject *object, guint prop_id,
-		    const GValue *value, GParamSpec *pspec)
+              const GValue *value, GParamSpec *pspec)
 {
 	G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 }
 
 static void
 get_property (GObject *object, guint prop_id,
-			  GValue *value, GParamSpec *pspec)
+              GValue *value, GParamSpec *pspec)
 {
-	NMAccessPointPrivate *priv = NM_AP_GET_PRIVATE (object);
+	NMAccessPointPrivate *priv = NM_AP_GET_PRIVATE ((NMAccessPoint *) object);
 	GVariant *ssid;
 
 	switch (prop_id) {
@@ -965,8 +985,6 @@ nm_ap_class_init (NMAccessPointClass *ap_class)
 	                                             | NM_802_11_AP_SEC_KEY_MGMT_PSK
 	                                             | NM_802_11_AP_SEC_KEY_MGMT_802_1X;
 
-	g_type_class_add_private (ap_class, sizeof (NMAccessPointPrivate));
-
 	exported_object_class->export_path = NM_DBUS_PATH_ACCESS_POINT "/%u";
 
 	/* virtual methods */
@@ -975,72 +993,64 @@ nm_ap_class_init (NMAccessPointClass *ap_class)
 	object_class->finalize = finalize;
 
 	/* properties */
-	g_object_class_install_property
-	    (object_class, PROP_FLAGS,
-	     g_param_spec_uint (NM_AP_FLAGS, "", "",
-	                        NM_802_11_AP_FLAGS_NONE,
-	                        NM_802_11_AP_FLAGS_PRIVACY,
-	                        NM_802_11_AP_FLAGS_NONE,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_FLAGS] =
+	    g_param_spec_uint (NM_AP_FLAGS, "", "",
+	                       NM_802_11_AP_FLAGS_NONE,
+	                       NM_802_11_AP_FLAGS_PRIVACY,
+	                       NM_802_11_AP_FLAGS_NONE,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_WPA_FLAGS,
-	     g_param_spec_uint (NM_AP_WPA_FLAGS, "", "",
-	                        NM_802_11_AP_SEC_NONE,
-	                        all_sec_flags,
-	                        NM_802_11_AP_SEC_NONE,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_WPA_FLAGS] =
+	    g_param_spec_uint (NM_AP_WPA_FLAGS, "", "",
+	                       NM_802_11_AP_SEC_NONE,
+	                       all_sec_flags,
+	                       NM_802_11_AP_SEC_NONE,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_RSN_FLAGS,
-	     g_param_spec_uint (NM_AP_RSN_FLAGS, "", "",
-	                        NM_802_11_AP_SEC_NONE,
-	                        all_sec_flags,
-	                        NM_802_11_AP_SEC_NONE,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_RSN_FLAGS] =
+	    g_param_spec_uint (NM_AP_RSN_FLAGS, "", "",
+	                       NM_802_11_AP_SEC_NONE,
+	                       all_sec_flags,
+	                       NM_802_11_AP_SEC_NONE,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_SSID,
-	     g_param_spec_variant (NM_AP_SSID, "", "",
-	                           G_VARIANT_TYPE ("ay"),
-	                           NULL,
-	                           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-
-	g_object_class_install_property
-	    (object_class, PROP_FREQUENCY,
-	     g_param_spec_uint (NM_AP_FREQUENCY, "", "",
-	                        0, 10000, 0,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-
-	g_object_class_install_property
-	    (object_class, PROP_HW_ADDRESS,
-	     g_param_spec_string (NM_AP_HW_ADDRESS, "", "",
+	obj_properties[PROP_SSID] =
+	    g_param_spec_variant (NM_AP_SSID, "", "",
+	                          G_VARIANT_TYPE ("ay"),
 	                          NULL,
-	                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_MODE,
-	     g_param_spec_uint (NM_AP_MODE, "", "",
-	                        NM_802_11_MODE_ADHOC, NM_802_11_MODE_INFRA, NM_802_11_MODE_INFRA,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_FREQUENCY] =
+	    g_param_spec_uint (NM_AP_FREQUENCY, "", "",
+	                       0, 10000, 0,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_MAX_BITRATE,
-	     g_param_spec_uint (NM_AP_MAX_BITRATE, "", "",
-	                        0, G_MAXUINT16, 0,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_HW_ADDRESS] =
+	    g_param_spec_string (NM_AP_HW_ADDRESS, "", "",
+	                         NULL,
+	                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_STRENGTH,
-	     g_param_spec_uchar (NM_AP_STRENGTH, "", "",
-	                         0, G_MAXINT8, 0,
-	                         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_MODE] =
+	    g_param_spec_uint (NM_AP_MODE, "", "",
+	                       NM_802_11_MODE_ADHOC, NM_802_11_MODE_INFRA, NM_802_11_MODE_INFRA,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_property
-	    (object_class, PROP_LAST_SEEN,
-	     g_param_spec_int (NM_AP_LAST_SEEN, "", "",
-	                       -1, G_MAXINT, -1,
-	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+	obj_properties[PROP_MAX_BITRATE] =
+	    g_param_spec_uint (NM_AP_MAX_BITRATE, "", "",
+	                       0, G_MAXUINT16, 0,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+	obj_properties[PROP_STRENGTH] =
+	    g_param_spec_uchar (NM_AP_STRENGTH, "", "",
+	                        0, G_MAXINT8, 0,
+	                        G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+	obj_properties[PROP_LAST_SEEN] =
+	    g_param_spec_int (NM_AP_LAST_SEEN, "", "",
+	                      -1, G_MAXINT, -1,
+	                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 
 	nm_exported_object_class_add_interface (NM_EXPORTED_OBJECT_CLASS (ap_class),
 	                                        NMDBUS_TYPE_ACCESS_POINT_SKELETON,

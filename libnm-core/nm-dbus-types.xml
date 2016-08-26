@@ -1288,4 +1288,74 @@
     </refsect3>
   </refsect2>
 
+  <refsect2 id="NMCheckpointCreateFlags" role="enum">
+    <title>enum NMCheckpointCreateFlags</title>
+    <indexterm zone="NMCheckpointCreateFlags">
+      <primary>NMCheckpointCreateFlags</primary>
+    </indexterm>
+    <para><para>The flags for CheckpointCreate call</para><para>Since: 1.4</para><para></para></para>
+    <refsect3 role="enum_members">
+      <title>Values</title>
+      <informaltable role="enum_members_table" pgwide="1" frame="none">
+        <tgroup cols="4">
+          <colspec colname="enum_members_name" colwidth="300px" />
+          <colspec colname="enum_members_value" colwidth="100px"/>
+          <colspec colname="enum_members_description" />
+          <tbody>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_NONE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>no flags</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_CHECKPOINT_CREATE_FLAG_DESTROY_ALL</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0x01</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>when creating a new checkpoint, destroy all existing ones.</para><para></para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </refsect3>
+  </refsect2>
+
+  <refsect2 id="NMRollbackResult" role="enum">
+    <title>enum NMRollbackResult</title>
+    <indexterm zone="NMRollbackResult">
+      <primary>NMRollbackResult</primary>
+    </indexterm>
+    <para><para>The result of a checkpoint Rollback() operation for a specific device.</para><para>Since: 1.4</para><para></para></para>
+    <refsect3 role="enum_members">
+      <title>Values</title>
+      <informaltable role="enum_members_table" pgwide="1" frame="none">
+        <tgroup cols="4">
+          <colspec colname="enum_members_name" colwidth="300px" />
+          <colspec colname="enum_members_value" colwidth="100px"/>
+          <colspec colname="enum_members_description" />
+          <tbody>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ROLLBACK_RESULT_OK</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>0</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>the rollback succeeded.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ROLLBACK_RESULT_ERR_NO_DEVICE</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>1</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>the device no longer exists.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ROLLBACK_RESULT_ERR_DEVICE_UNMANAGED</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>2</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>the device is now unmanaged.</para><para></para></entry>
+            </row>
+            <row role="constant">
+              <entry role="enum_member_name"><para>NM_ROLLBACK_RESULT_ERR_FAILED</para><para></para></entry>
+              <entry role="enum_member_value"><para>= <literal>3</literal></para><para></para></entry>
+              <entry role="enum_member_description"><para>other errors during rollback.</para><para></para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </refsect3>
+  </refsect2>
+
 </refentry>

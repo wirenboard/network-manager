@@ -102,8 +102,9 @@ TESTS = test-ip4-config$(EXEEXT) test-ip6-config$(EXEEXT) \
 	test-wired-defname$(EXEEXT) test-utils$(EXEEXT)
 subdir = src/tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -159,7 +160,7 @@ am_test_route_manager_fake_OBJECTS =  \
 test_route_manager_fake_OBJECTS =  \
 	$(am_test_route_manager_fake_OBJECTS)
 test_route_manager_fake_DEPENDENCIES =  \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 am_test_route_manager_linux_OBJECTS =  \
 	test_route_manager_linux-test-common.$(OBJEXT) \
 	test_route_manager_linux-test-route-manager.$(OBJEXT)
@@ -169,9 +170,7 @@ test_route_manager_linux_DEPENDENCIES =  \
 	$(top_builddir)/src/libNetworkManager.la
 am_test_systemd_OBJECTS = test_systemd-test-systemd.$(OBJEXT)
 test_systemd_OBJECTS = $(am_test_systemd_OBJECTS)
-test_systemd_DEPENDENCIES =  \
-	$(top_builddir)/src/libNetworkManager-base.la \
-	$(top_builddir)/src/libsystemd-nm.la
+test_systemd_DEPENDENCIES = $(top_builddir)/src/libsystemd-nm.la
 test_systemd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_systemd_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -533,6 +532,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -589,13 +589,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -607,6 +608,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -667,6 +670,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -702,6 +707,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -776,8 +782,10 @@ AM_CPPFLAGS = \
 	-I$(top_builddir)/src \
 	-DG_LOG_DOMAIN=\""NetworkManager"\" \
 	-DNETWORKMANAGER_COMPILATION=NM_NETWORKMANAGER_COMPILATION_INSIDE_DAEMON \
-	$(GLIB_CFLAGS)
+	$(GLIB_CFLAGS) \
+	$(CODE_COVERAGE_CFLAGS)
 
+AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
 
 ####### ip4 config test #######
 test_ip4_config_SOURCES = \
@@ -798,6 +806,7 @@ test_ip6_config_LDADD = \
 ####### route manager test #######
 test_route_manager_fake_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
+	$(GUDEV_CFLAGS) \
 	-I$(top_srcdir)/src/platform/tests \
 	-DSETUP=nm_fake_platform_setup \
 	-DKERNEL_HACKS=0
@@ -807,7 +816,7 @@ test_route_manager_fake_SOURCES = \
 	test-route-manager.c
 
 test_route_manager_fake_LDADD = \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 
 test_route_manager_linux_SOURCES = \
 	$(top_srcdir)/src/platform/tests/test-common.c \
@@ -815,6 +824,7 @@ test_route_manager_linux_SOURCES = \
 
 test_route_manager_linux_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
+	$(GUDEV_CFLAGS) \
 	-I$(top_srcdir)/src/platform/tests \
 	-DSETUP=nm_linux_platform_setup \
 	-DKERNEL_HACKS=1
@@ -874,7 +884,6 @@ test_systemd_SOURCES = \
 	test-systemd.c
 
 test_systemd_LDADD = \
-	$(top_builddir)/src/libNetworkManager-base.la \
 	$(top_builddir)/src/libsystemd-nm.la
 
 
@@ -1632,6 +1641,8 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+
+@GNOME_CODE_COVERAGE_RULES@
 
 ###########################################
 

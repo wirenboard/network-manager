@@ -37,6 +37,7 @@
 #define UPPERCASE_LETTERS "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define LETTERS           LOWERCASE_LETTERS UPPERCASE_LETTERS
 #define ALPHANUMERICAL    LETTERS DIGITS
+#define HEXDIGITS         DIGITS "abcdefABCDEF"
 
 #define streq(a,b) (strcmp((a),(b)) == 0)
 #define strneq(a, b, n) (strncmp((a), (b), (n)) == 0)
@@ -63,6 +64,10 @@ static inline const char *strna(const char *s) {
 
 static inline bool isempty(const char *p) {
         return !p || !p[0];
+}
+
+static inline const char *empty_to_null(const char *p) {
+        return isempty(p) ? NULL : p;
 }
 
 static inline char *startswith(const char *s, const char *prefix) {
@@ -131,6 +136,9 @@ char *truncate_nl(char *s);
 char ascii_tolower(char x);
 char *ascii_strlower(char *s);
 char *ascii_strlower_n(char *s, size_t n);
+
+char ascii_toupper(char x);
+char *ascii_strupper(char *s);
 
 int ascii_strcasecmp_n(const char *a, const char *b, size_t n);
 int ascii_strcasecmp_nn(const char *a, size_t n, const char *b, size_t m);

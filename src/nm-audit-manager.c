@@ -233,10 +233,10 @@ nm_audit_manager_audit_enabled (NMAuditManager *self)
 void
 _nm_audit_manager_log_connection_op (NMAuditManager *self, const char *file, guint line,
                                      const char *func, const char *op, NMSettingsConnection *connection,
-                                     gboolean result, gpointer subject_context, const char *reason)
+                                     gboolean result, const char *args, gpointer subject_context, const char *reason)
 {
 	gs_unref_ptrarray GPtrArray *fields = NULL;
-	AuditField uuid_field = { }, name_field = { };
+	AuditField uuid_field = { }, name_field = { }, args_field = { };
 
 	g_return_if_fail (op);
 
@@ -252,11 +252,16 @@ _nm_audit_manager_log_connection_op (NMAuditManager *self, const char *file, gui
 		g_ptr_array_add (fields, &name_field);
 	}
 
+	if (args) {
+		_audit_field_init_string (&args_field, "args", args, FALSE, BACKEND_ALL);
+		g_ptr_array_add (fields, &args_field);
+	}
+
 	_audit_log_helper (self, fields, file, line, func, op, result, subject_context, reason);
 }
 
 void
-_nm_audit_manager_log_control_op (NMAuditManager *self, const char *file, guint line,
+_nm_audit_manager_log_generic_op (NMAuditManager *self, const char *file, guint line,
                                   const char *func, const char *op, const char *arg,
                                   gboolean result, gpointer subject_context,
                                   const char *reason)

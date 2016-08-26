@@ -2,8 +2,8 @@ AC_PREREQ([2.63])
 
 dnl The NM version number
 m4_define([nm_major_version], [1])
-m4_define([nm_minor_version], [2])
-m4_define([nm_micro_version], [4])
+m4_define([nm_minor_version], [4])
+m4_define([nm_micro_version], [0])
 m4_define([nm_version],
           [nm_major_version.nm_minor_version.nm_micro_version])
 m4_define([nm_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
@@ -34,6 +34,10 @@ AM_PROG_CC_C_O
 AC_PROG_CXX
 
 AC_PROG_LN_S
+
+# Prefer gcc-* variants; the ones libtool would choose don't work with LTO
+AC_CHECK_TOOLS(AR, [gcc-ar ar], false)
+AC_CHECK_TOOLS(RANLIB, [gcc-ranlib ranlib], :)
 
 dnl Initialize libtool
 LT_PREREQ([2.2])
@@ -271,8 +275,8 @@ LT_LIB_M
 dnl
 dnl Checks for libdl - on certain platforms its part of libc
 dnl
-AC_CHECK_LIB([dl], [dladdr], LIBDL="-ldl", LIBDL="")
-AC_SUBST(LIBDL)
+AC_SEARCH_LIBS([dlopen], [dl dld], [], [ac_cv_search_dlopen=])
+AC_SUBST([DL_LIBS], "$ac_cv_search_dlopen")
 
 PKG_CHECK_MODULES(GLIB, [gio-unix-2.0 >= 2.37.6 gmodule-2.0],
 	[AC_SUBST(LOG_DRIVER, '$(top_srcdir)/build-aux/tap-driver.sh')
@@ -371,6 +375,10 @@ elif test "$hostname_persist" = slackware; then
 	AC_DEFINE(HOSTNAME_PERSIST_SLACKWARE, 1, [Enable Slackware hostname persist method])
 fi
 
+PKG_CHECK_MODULES(LIBSYSTEMD, [libsystemd >= 209],
+    [AC_DEFINE([HAVE_LIBSYSTEMD], 1, [Define to 1 if libsystemd is available])],
+    [AC_DEFINE([HAVE_LIBSYSTEMD], 0, [Define to 1 if libsystemd is available])])
+
 AC_ARG_WITH(systemd-journal, AS_HELP_STRING([--with-systemd-journal=yes|no], [Use systemd journal for logging]))
 have_systemd_journal=no
 if test "$with_systemd_journal" != "no"; then
@@ -393,7 +401,8 @@ else
 	AC_DEFINE([SYSTEMD_JOURNAL], 0, [Define to 1 if libsystemd-journald is available])
 fi
 
-AC_ARG_WITH(config-logging-backend-default, AS_HELP_STRING([--with-logging-backend-default=backend], [Default value for logging.backend]), nm_config_logging_backend_default="$withval", nm_config_logging_backend_default="")
+AC_ARG_WITH(config-logging-backend-default, AS_HELP_STRING([--with-config-logging-backend-default=backend], [Default value for logging.backend]), nm_config_logging_backend_default="$withval", nm_config_logging_backend_default="")
+
 if test "$nm_config_logging_backend_default" != 'debug' \
      -a "$nm_config_logging_backend_default" != 'syslog' \
      -a "$nm_config_logging_backend_default" != 'journal' \
@@ -472,7 +481,9 @@ if test "z$with_suspend_resume" = "z"; then
 fi
 
 case $with_suspend_resume in
-    upower) ;;
+    upower)
+        AC_DEFINE([SUSPEND_RESUME_UPOWER], 1, [Define to 1 to use UPower suspend api])
+	;;
     systemd)
         PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd >= 209],,
                           [PKG_CHECK_MODULES(SYSTEMD_INHIBIT, [libsystemd-login >= 183])])
@@ -485,9 +496,6 @@ case $with_suspend_resume in
         AC_MSG_ERROR(--with-suspend-resume must be one of [upower, systemd, consolekit])
         ;;
 esac
-AM_CONDITIONAL(SUSPEND_RESUME_UPOWER, test "x$with_suspend_resume" = "xupower")
-AM_CONDITIONAL(SUSPEND_RESUME_SYSTEMD, test "x$with_suspend_resume" = "xsystemd")
-AM_CONDITIONAL(SUSPEND_RESUME_CONSOLEKIT, test "x$with_suspend_resume" = "xconsolekit")
 
 # SELinux support
 AC_ARG_WITH(selinux, AS_HELP_STRING([--with-selinux=yes|no|auto], [Build with SELinux (default: auto)]),,[with_selinux=auto])
@@ -552,6 +560,18 @@ else
 	AC_DEFINE(WITH_TEAMDCTL, 0, [Define if you have Teamd control support])
 fi
 AM_CONDITIONAL(WITH_TEAMDCTL, test "${enable_teamdctl}" = "yes")
+
+PKG_CHECK_MODULES(JANSSON, jansson, [have_jansson=yes], [have_jansson=no])
+AC_ARG_ENABLE(json-validation, AS_HELP_STRING([--enable-json-validation], [Enable JSON validation in libnm]),
+		[enable_json_validation=${enableval}], [enable_json_validation=${have_jansson}])
+if (test "${enable_json_validation}" = "yes"); then
+	if test x"$have_jansson" = x"no"; then
+		AC_MSG_ERROR(Jansson is required for JSON validation)
+	fi
+	AC_DEFINE(WITH_JANSSON, 1, [Define if JANSSON is enabled])
+else
+	AC_DEFINE(WITH_JANSSON, 0, [Define if JANSSON is enabled])
+fi
 
 # we usually compile with polkit support. --enable-polkit=yes|no only sets the
 # default configuration for main.auth-polkit. User can always enable/disable polkit
@@ -714,6 +734,15 @@ else
 fi
 AM_CONDITIONAL(WITH_BLUEZ5_DUN, test "${enable_bluez5_dun}" = "yes")
 
+# OFONO
+AC_ARG_WITH(ofono, AS_HELP_STRING([--with-ofono], [Enable oFono support (experimental)]),,[with_ofono=no])
+if (test "${with_ofono}" = "yes"); then
+	AC_DEFINE(WITH_OFONO, 1, [Define if you have oFono support (experimental)])
+else
+	AC_DEFINE(WITH_OFONO, 0, [Define if you have oFono support (experimental)])
+fi
+AM_CONDITIONAL(WITH_OFONO, test "${with_ofono}" = "yes")
+
 # DHCP client support
 AC_ARG_WITH([dhclient], AS_HELP_STRING([--with-dhclient=yes|no|path], [Enable dhclient 4.x support]))
 AC_ARG_WITH([dhcpcd], AS_HELP_STRING([--with-dhcpcd=yes|no|path], [Enable dhcpcd 4.x support]))
@@ -764,7 +793,10 @@ fi
 AC_ARG_WITH(resolvconf, AS_HELP_STRING([--with-resolvconf=yes|no|path], [Enable resolvconf support]))
 AC_ARG_WITH(netconfig, AS_HELP_STRING([--with-netconfig=yes|no], [Enable SUSE netconfig support]))
 AC_ARG_WITH(config-dns-rc-manager-default, AS_HELP_STRING([--with-config-dns-rc-manager-default=symlink|file|netconfig|resolvconf], [Configure default value for main.rc-manager setting]), [config_dns_rc_manager_default=$withval])
-if test "$config_dns_rc_manager_default" != symlink -a "$config_dns_rc_manager_default" != file -a "$config_dns_rc_manager_default" != netconfig -a "$config_dns_rc_manager_default" != resolvconf; then
+if test "$config_dns_rc_manager_default" != symlink -a \
+        "$config_dns_rc_manager_default" != file -a \
+        "$config_dns_rc_manager_default" != netconfig -a \
+        "$config_dns_rc_manager_default" != resolvconf; then
 	AC_MSG_WARN([Unknown --with-config-dns-rc-manager-default=$config_dns_rc_manager_default setting.])
 	config_dns_rc_manager_default=
 fi
@@ -901,6 +933,11 @@ AM_CONDITIONAL(BUILD_NMTUI, test "$build_nmtui" = yes)
 
 NM_COMPILER_WARNINGS
 
+CC_CHECK_FLAGS_APPEND([with_cflags], [CFLAGS], [\
+	-fno-strict-aliasing \
+])
+CFLAGS="$CFLAGS $with_cflags"
+
 AC_ARG_ENABLE(more-asserts,
               AS_HELP_STRING([--enable-more-asserts], [Enable more assertions for debugging (default: no). Deprecated option. Use --with-more-asserts=level]))
 more_asserts=0
@@ -933,6 +970,53 @@ else
     enable_lto='no'
 fi
 
+AC_ARG_ENABLE(ld-gc, AS_HELP_STRING([--enable-ld-gc], [Enable garbage collection of unused symbols on linking (default: auto)]))
+if (test "${enable_ld_gc}" != "no"); then
+	CC_CHECK_FLAG_APPEND([ld_gc_flags], [CFLAGS], [-fdata-sections -ffunction-sections -Wl,--gc-sections])
+	if (test -n "${ld_gc_flags}"); then
+		enable_ld_gc="yes"
+		CFLAGS="$CFLAGS $ld_gc_flags"
+	else
+		if (test "${enable_ld_gc}" = "yes"); then
+			AC_MSG_ERROR([Unused symbol eviction requested but not supported.])
+		else
+			enable_ld_gc="no"
+		fi
+	fi
+fi
+
+AC_ARG_ENABLE(address-sanitizer, AS_HELP_STRING([--enable-address-sanitizer],
+	[Compile with address sanitizer (default: no)]))
+if (test "${enable_address_sanitizer}" = "yes"); then
+	CC_CHECK_FLAGS_APPEND([asan_cflags], [CFLAGS], [-fsanitize=address])
+	AS_IF([test -z "$asan_cflags"],
+		[AC_MSG_ERROR([*** -fsanitize=address is not supported])])
+
+	sanitizer_cflags="$sanitizer_cflags -fsanitize=address"
+	sanitizer_ldflags="$sanitizer_ldflags -Wc,-fsanitize=address"
+	sanitizers="${sanitizers}asan "
+fi
+
+AC_ARG_ENABLE(undefined-sanitizer, AS_HELP_STRING([--enable-undefined-sanitizer],
+	[Compile with undefined behavior sanitizer (default: no)]))
+if (test "${enable_undefined_sanitizer}" = "yes"); then
+	CC_CHECK_FLAGS_APPEND([ubsan_cflags], [CFLAGS], [-fsanitize=undefined])
+	AS_IF([test -z "$ubsan_cflags"],
+		[AC_MSG_ERROR([*** -fsanitize=undefined is not supported])])
+
+	sanitizer_cflags="$sanitizer_cflags -fsanitize=undefined"
+	sanitizer_ldflags="$sanitizer_ldflags -Wc,-fsanitize=undefined"
+	sanitizers="${sanitizers}ubsan "
+fi
+
+if test -n "$sanitizers"; then
+	CFLAGS="$CFLAGS $sanitizer_cflags -DVALGRIND=1 -fno-omit-frame-pointer"
+	LDFLAGS="$LDFLAGS $sanitizer_ldflags"
+	sanitizers="${sanitizers% }"
+	AC_SUBST(SANITIZER_ENV, [ASAN_OPTIONS=detect_leaks=0])
+fi
+
+AC_SUBST(SANITIZERS, [$sanitizers])
 
 dnl -------------------------
 dnl Vala bindings
@@ -1029,7 +1113,6 @@ fi
 
 AM_CONDITIONAL(BUILD_SETTING_DOCS, test "$build_setting_docs" = "yes")
 AM_CONDITIONAL(SETTING_DOCS_AVAILABLE, test "$build_setting_docs" = "yes" -o "$have_setting_docs" = "yes")
-
 
 AC_CONFIG_FILES([
 Makefile
@@ -1159,8 +1242,9 @@ echo
 echo "Features:"
 echo "  wext: $ac_with_wext"
 echo "  wifi: $enable_wifi"
-echo "  ppp: $enable_ppp"
+echo "  ppp: $enable_ppp ${PPPD_PLUGIN_DIR}"
 echo "  modemmanager-1: $with_modem_manager_1"
+echo "  ofono: $with_ofono"
 echo "  concheck: $enable_concheck"
 echo "  libteamdctl: $enable_teamdctl"
 echo "  libnm-glib: $with_libnm_glib"
@@ -1193,4 +1277,7 @@ echo "  more-asserts: $more_asserts"
 echo "  valgrind: $with_valgrind   $with_valgrind_suppressions"
 echo "  code coverage: $enable_code_coverage"
 echo "  LTO: $enable_lto"
+echo "  linker garbage collection: $enable_ld_gc"
+echo "  JSON validation: $enable_json_validation"
+echo "  sanitizers: $sanitizers"
 echo

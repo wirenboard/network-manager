@@ -18,7 +18,8 @@
  * Copyright (C) 2005 - 2012 Red Hat, Inc.
  */
 
-#include "config.h"
+#include <config.h>
+#define __CONFIG_H__
 
 #define _XOPEN_SOURCE
 #include <time.h>
@@ -177,6 +178,9 @@ merge_dhclient_config (NMDhcpDhclient *self,
 			g_error_free (read_error);
 		}
 	}
+
+	if (is_ip6 && hostname && !strchr (hostname, '.'))
+		_LOGW ("hostname is not a FQDN, it will be ignored");
 
 	new = nm_dhcp_dhclient_create_config (iface, is_ip6, client_id, anycast_addr, hostname, fqdn, orig_path, orig, out_new_client_id);
 	g_assert (new);

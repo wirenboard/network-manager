@@ -32,6 +32,13 @@
                           OUT s         domains);
 <link linkend="gdbus-method-org-freedesktop-NetworkManager.CheckConnectivity">CheckConnectivity</link>        (OUT u         connectivity);
 <link linkend="gdbus-method-org-freedesktop-NetworkManager.state">state</link>                    (OUT u         state);
+<link linkend="gdbus-method-org-freedesktop-NetworkManager.CheckpointCreate">CheckpointCreate</link>         (IN  ao        devices,
+                          IN  u         rollback_timeout,
+                          IN  u         flags,
+                          OUT o         checkpoint);
+<link linkend="gdbus-method-org-freedesktop-NetworkManager.CheckpointDestroy">CheckpointDestroy</link>        (IN  o         checkpoint);
+<link linkend="gdbus-method-org-freedesktop-NetworkManager.CheckpointRollback">CheckpointRollback</link>       (IN  o         checkpoint,
+                          OUT a{su}     result);
 </synopsis>
   </refsynopsisdiv>
   <refsect1 role="signal_proto">
@@ -363,6 +370,77 @@ state (OUT u state);
 <varlistentry>
   <term><literal>OUT u <parameter>state</parameter></literal>:</term>
   <listitem><para><link linkend="NMState">NMState</link></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-freedesktop-NetworkManager.CheckpointCreate">
+  <title>The CheckpointCreate() method</title>
+  <indexterm zone="gdbus-method-org-freedesktop-NetworkManager.CheckpointCreate"><primary sortas="Manager.CheckpointCreate">org.freedesktop.NetworkManager.CheckpointCreate()</primary></indexterm>
+<programlisting>
+CheckpointCreate (IN  ao devices,
+                  IN  u  rollback_timeout,
+                  IN  u  flags,
+                  OUT o  checkpoint);
+</programlisting>
+<para>        <parameter>devices</parameter>: a list of device paths for which a checkpoint should be created. An empty list means all managed devices.
+        <parameter>rollback_timeout</parameter>: the time in seconds until NetworkManager will automatically rollback to the checkpoint. Set to zero for infinite.
+        <parameter>flags</parameter>: optional flags that influence the creation.
+        <parameter>checkpoint</parameter>: on success, returns the path of the checkpoint.
+</para><para>        Create a checkpoint of the current networking configuration
+        for given interfaces. If <parameter>rollback_timeout</parameter> is not zero, a
+        rollback is automatically performed after the given timeout.
+</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN ao <parameter>devices</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN u <parameter>rollback_timeout</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>IN u <parameter>flags</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT o <parameter>checkpoint</parameter></literal>:</term>
+  <listitem><para></para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-freedesktop-NetworkManager.CheckpointDestroy">
+  <title>The CheckpointDestroy() method</title>
+  <indexterm zone="gdbus-method-org-freedesktop-NetworkManager.CheckpointDestroy"><primary sortas="Manager.CheckpointDestroy">org.freedesktop.NetworkManager.CheckpointDestroy()</primary></indexterm>
+<programlisting>
+CheckpointDestroy (IN  o checkpoint);
+</programlisting>
+<para>        Destroy a previously created checkpoint.
+</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN o <parameter>checkpoint</parameter></literal>:</term>
+  <listitem><para>the checkpoint to be destroyed. Set to empty to cancel all pending checkpoints.</para></listitem>
+</varlistentry>
+</variablelist>
+</refsect2>
+<refsect2 role="method" id="gdbus-method-org-freedesktop-NetworkManager.CheckpointRollback">
+  <title>The CheckpointRollback() method</title>
+  <indexterm zone="gdbus-method-org-freedesktop-NetworkManager.CheckpointRollback"><primary sortas="Manager.CheckpointRollback">org.freedesktop.NetworkManager.CheckpointRollback()</primary></indexterm>
+<programlisting>
+CheckpointRollback (IN  o     checkpoint,
+                    OUT a{su} result);
+</programlisting>
+<para>        Rollback a checkpoint before the timeout is reached.
+</para>
+<variablelist role="params">
+<varlistentry>
+  <term><literal>IN o <parameter>checkpoint</parameter></literal>:</term>
+  <listitem><para>the checkpoint to be rolled back.</para></listitem>
+</varlistentry>
+<varlistentry>
+  <term><literal>OUT a{su} <parameter>result</parameter></literal>:</term>
+  <listitem><para>on return, a dictionary of devices and results. Devices are represented by their original D-Bus path; each result is a <link linkend="NMRollbackResult">RollbackResult</link>.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>

@@ -24,10 +24,15 @@
 
 #include <stdlib.h>
 
+#include "nm-glib.h"
+
 /********************************************************/
 
 #define _nm_packed __attribute__ ((packed))
 #define _nm_unused __attribute__ ((unused))
+#define _nm_pure   __attribute__ ((pure))
+#define _nm_const  __attribute__ ((const))
+#define _nm_printf(a,b) __attribute__ ((__format__ (__printf__, a, b)))
 
 #define nm_auto(fcn) __attribute__ ((cleanup(fcn)))
 
@@ -305,6 +310,22 @@ _NM_IN_STRSET_streq (const char *x, const char *s)
 
 /*****************************************************************************/
 
+/* glib/C provides the following kind of assertions:
+ *   - assert() -- disable with NDEBUG
+ *   - g_return_if_fail() -- disable with G_DISABLE_CHECKS
+ *   - g_assert() -- disable with G_DISABLE_ASSERT
+ * but they are all enabled by default and usually even production builds have
+ * these kind of assertions enabled. It also means, that disabling assertions
+ * is an untested configuration, and might have bugs.
+ *
+ * Add our own assertion macro nm_assert(), which is disabled by default and must
+ * be explicitly enabled. They are useful for more expensive checks or checks that
+ * depend less on runtime conditions (that is, are generally expected to be true). */
+
+#ifndef NM_MORE_ASSERTS
+#define NM_MORE_ASSERTS 0
+#endif
+
 #if NM_MORE_ASSERTS
 #define nm_assert(cond) G_STMT_START { g_assert (cond); } G_STMT_END
 #define nm_assert_not_reached() G_STMT_START { g_assert_not_reached (); } G_STMT_END
@@ -473,6 +494,36 @@ nm_strstrip (char *str)
 	return str ? g_strstrip (str) : NULL;
 }
 
+/* g_ptr_array_sort()'s compare function takes pointers to the
+ * value. Thus, you cannot use strcmp directly. You can use
+ * nm_strcmp_p().
+ *
+ * Like strcmp(), this function is not forgiving to accept %NULL. */
+static inline int
+nm_strcmp_p (gconstpointer a, gconstpointer b)
+{
+	const char *s1 = *((const char **) a);
+	const char *s2 = *((const char **) b);
+
+	return strcmp (s1, s2);
+}
+
+/* like nm_strcmp_p(), suitable for g_ptr_array_sort_with_data().
+ * g_ptr_array_sort() just casts nm_strcmp_p() to a function of different
+ * signature. I guess, in glib there are knowledgeable people that ensure
+ * that this additional argument doesn't cause problems due to different ABI
+ * for every architecture that glib supports.
+ * For NetworkManager, we'd rather avoid such stunts.
+ **/
+static inline int
+nm_strcmp_p_with_data (gconstpointer a, gconstpointer b, gpointer user_data)
+{
+	const char *s1 = *((const char **) a);
+	const char *s2 = *((const char **) b);
+
+	return strcmp (s1, s2);
+}
+
 /*****************************************************************************/
 
 static inline guint
@@ -488,6 +539,35 @@ nm_decode_version (guint version, guint *major, guint *minor, guint *micro) {
 	*micro = (version & 0x000000FFu);
 }
 /*****************************************************************************/
+
+/* if @str is NULL, return "(null)". Otherwise, allocate a buffer using
+ * alloca() of size @bufsize and fill it with @str. @str will be quoted with
+ * single quote, and in case @str is too long, the final quote will be '^'. */
+#define nm_strquote_a(bufsize, str) \
+	({ \
+		G_STATIC_ASSERT ((bufsize) >= 6); \
+		const gsize _BUFSIZE = (bufsize); \
+		const char *const _s = (str); \
+		char *_r; \
+		gsize _l; \
+		gboolean _truncated; \
+		\
+		nm_assert (_BUFSIZE >= 6); \
+		\
+		if (_s) { \
+			_l = strlen (_s) + 3; \
+			if ((_truncated = (_BUFSIZE < _l))) \
+				_l = _BUFSIZE; \
+			\
+			_r = g_alloca (_l); \
+			_r[0] = '\''; \
+			memcpy (&_r[1], _s, _l - 3); \
+			_r[_l - 2] = _truncated ? '^' : '\''; \
+			_r[_l - 1] = '\0'; \
+		} else \
+			_r = "(null)"; \
+		_r; \
+	})
 
 #define nm_sprintf_buf(buf, format, ...) ({ \
 		char * _buf = (buf); \

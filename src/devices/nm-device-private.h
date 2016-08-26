@@ -24,8 +24,6 @@
 
 #include "nm-device.h"
 
-#include "nm-default.h"
-
 /* This file should only be used by subclasses of NMDevice */
 
 enum NMActStageReturn {
@@ -42,6 +40,8 @@ enum NMActStageReturn {
 
 #define NM_DEVICE_CAP_INTERNAL_MASK 0xc0000000
 
+NMSettings *nm_device_get_settings (NMDevice *self);
+
 void nm_device_set_ip_iface (NMDevice *self, const char *iface);
 
 void nm_device_activate_schedule_stage3_ip_config_start (NMDevice *device);
@@ -54,8 +54,9 @@ gboolean nm_device_bring_up (NMDevice *self, gboolean wait, gboolean *no_firmwar
 
 void nm_device_take_down (NMDevice *self, gboolean block);
 
-gboolean nm_device_set_hw_addr (NMDevice *device, const char *addr,
-                                const char *detail, guint64 hw_log_domain);
+gboolean nm_device_hw_addr_set (NMDevice *device, const char *addr, const char *detail);
+gboolean nm_device_hw_addr_set_cloned (NMDevice *device, NMConnection *connection, gboolean is_wifi);
+gboolean nm_device_hw_addr_reset (NMDevice *device, const char *detail);
 
 void nm_device_set_firmware_missing (NMDevice *self, gboolean missing);
 
@@ -70,9 +71,11 @@ void nm_device_activate_schedule_ip6_config_timeout (NMDevice *device);
 
 gboolean nm_device_activate_ip4_state_in_conf (NMDevice *device);
 gboolean nm_device_activate_ip4_state_in_wait (NMDevice *device);
+gboolean nm_device_activate_ip4_state_done (NMDevice *device);
 
 gboolean nm_device_activate_ip6_state_in_conf (NMDevice *device);
 gboolean nm_device_activate_ip6_state_in_wait (NMDevice *device);
+gboolean nm_device_activate_ip6_state_done (NMDevice *device);
 
 void nm_device_set_dhcp_timeout (NMDevice *device, guint32 timeout);
 void nm_device_set_dhcp_anycast_address (NMDevice *device, const char *addr);
@@ -102,6 +105,10 @@ void nm_device_queue_recheck_available (NMDevice *device,
 
 void nm_device_set_wwan_ip4_config (NMDevice *device, NMIP4Config *config);
 void nm_device_set_wwan_ip6_config (NMDevice *device, NMIP6Config *config);
+
+gboolean nm_device_hw_addr_is_explict (NMDevice *device);
+
+void nm_device_ip_method_failed (NMDevice *self, int family, NMDeviceStateReason reason);
 
 gboolean nm_device_ipv6_sysctl_set (NMDevice *self, const char *property, const char *value);
 

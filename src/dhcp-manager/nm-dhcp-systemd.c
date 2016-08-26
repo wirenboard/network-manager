@@ -34,12 +34,10 @@
 #include "NetworkManagerUtils.h"
 #include "nm-platform.h"
 #include "nm-dhcp-client-logging.h"
+#include "nm-sd.h"
 
 #include "sd-dhcp-client.h"
 #include "sd-dhcp6-client.h"
-
-#include "nm-sd-adapt.h"
-#include "dhcp-lease-internal.h"
 
 G_DEFINE_TYPE (NMDhcpSystemd, nm_dhcp_systemd, NM_TYPE_DHCP_CLIENT)
 
@@ -193,7 +191,7 @@ add_requests_to_options (GHashTable *options, const ReqOption *requests)
 #define LOG_LEASE(domain, ...) \
 G_STMT_START { \
 	if (log_lease) { \
-		nm_log (LOGL_INFO, (domain), __VA_ARGS__); \
+		_LOG2I ((domain), (iface), __VA_ARGS__); \
 	} \
 } G_STMT_END
 
@@ -256,7 +254,7 @@ lease_to_ip4_config (const char *iface,
 	                SD_DHCP_OPTION_IP_ADDRESS_LEASE_TIME,
 	                end_time);
 
-	address.source = NM_IP_CONFIG_SOURCE_DHCP;
+	address.addr_source = NM_IP_CONFIG_SOURCE_DHCP;
 	nm_ip4_config_add_address (ip4_config, &address);
 
 	/* DNS Servers */
@@ -323,7 +321,7 @@ lease_to_ip4_config (const char *iface,
 			route.gateway = a.s_addr;
 
 			if (route.plen) {
-				route.source = NM_IP_CONFIG_SOURCE_DHCP;
+				route.rt_source = NM_IP_CONFIG_SOURCE_DHCP;
 				route.metric = default_priority;
 				nm_ip4_config_add_route (ip4_config, &route);
 
@@ -578,6 +576,8 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 		return FALSE;
 	}
 
+	_LOGT ("dhcp-client4: set %p", priv->client4);
+
 	r = sd_dhcp_client_attach_event (priv->client4, NULL, 0);
 	if (r < 0) {
 		_LOGW ("failed to attach event (%d)", r);
@@ -602,9 +602,9 @@ ip4_start (NMDhcpClient *client, const char *dhcp_anycast_addr, const char *last
 		}
 	}
 
-	r = sd_dhcp_client_set_index (priv->client4, nm_dhcp_client_get_ifindex (client));
+	r = sd_dhcp_client_set_ifindex (priv->client4, nm_dhcp_client_get_ifindex (client));
 	if (r < 0) {
-		_LOGW ("failed to set ifindex (%d)", r);
+		_LOGW ("failed to set ififindex (%d)", r);
 		goto error;
 	}
 
@@ -741,7 +741,7 @@ lease_to_ip6_config (const char *iface,
 			.timestamp = ts,
 			.lifetime = lft_valid,
 			.preferred = lft_pref,
-			.source = NM_IP_CONFIG_SOURCE_DHCP,
+			.addr_source = NM_IP_CONFIG_SOURCE_DHCP,
 		};
 
 		nm_ip6_config_add_address (ip6_config, &address);
@@ -895,6 +895,8 @@ ip6_start (NMDhcpClient *client,
 		return FALSE;
 	}
 
+	_LOGT ("dhcp-client6: set %p", priv->client4);
+
 	if (info_only)
 	    sd_dhcp6_client_set_information_request (priv->client6, 1);
 
@@ -928,7 +930,7 @@ ip6_start (NMDhcpClient *client,
 		}
 	}
 
-	r = sd_dhcp6_client_set_index (priv->client6, nm_dhcp_client_get_ifindex (client));
+	r = sd_dhcp6_client_set_ifindex (priv->client6, nm_dhcp_client_get_ifindex (client));
 	if (r < 0) {
 		_LOGW ("failed to set ifindex (%d)", r);
 		goto error;
@@ -958,6 +960,8 @@ ip6_start (NMDhcpClient *client,
 		goto error;
 	}
 
+	nm_dhcp_client_start_timeout (client);
+
 	return TRUE;
 
 error:
@@ -972,6 +976,10 @@ stop (NMDhcpClient *client, gboolean release, const GByteArray *duid)
 	NMDhcpSystemd *self = NM_DHCP_SYSTEMD (client);
 	NMDhcpSystemdPrivate *priv = NM_DHCP_SYSTEMD_GET_PRIVATE (self);
 	int r = 0;
+
+	_LOGT ("dhcp-client%d: stop %p",
+	       priv->client4 ? '4' : '6',
+	       priv->client4 ? (gpointer) priv->client4 : (gpointer) priv->client6);
 
 	if (priv->client4) {
 		sd_dhcp_client_set_callback (priv->client4, NULL, NULL);

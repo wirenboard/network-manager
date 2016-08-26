@@ -220,7 +220,7 @@ gboolean      nm_setting_ip_config_remove_dns_option_by_value (NMSettingIPConfig
                                                                const char        *dns_option);
 void          nm_setting_ip_config_clear_dns_options          (NMSettingIPConfig *setting, gboolean is_set);
 
-NM_AVAILABLE_IN_1_2_4
+NM_AVAILABLE_IN_1_4
 gint          nm_setting_ip_config_get_dns_priority (NMSettingIPConfig *setting);
 
 guint         nm_setting_ip_config_get_num_addresses          (NMSettingIPConfig *setting);

@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSetting.html" title="NMSetting">
 <link rel="next" href="NMSettingWired.html" title="NMSettingWired">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -430,7 +430,7 @@ a <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><s
 nm_setting_connection_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-connection-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> errors.</p>
 </div>
 </div>
@@ -441,7 +441,7 @@ nm_setting_connection_error_quark (<em class="parameter"><code><span class="type
 nm_setting_connection_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-connection-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> object</p>
 </div>
 </div>
@@ -452,7 +452,7 @@ nm_setting_connection_new (<em class="parameter"><code><span class="type">void</
 nm_setting_connection_get_id (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--id" title="The “id” property"><span class="type">“id”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.4.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-id.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -467,7 +467,7 @@ nm_setting_connection_get_id (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.4.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-id.returns"></a><h4>Returns</h4>
 <p> the connection ID</p>
 </div>
 </div>
@@ -478,7 +478,7 @@ nm_setting_connection_get_id (<em class="parameter"><code><a class="link" href="
 nm_setting_connection_get_uuid (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--uuid" title="The “uuid” property"><span class="type">“uuid”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.5.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-uuid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -493,7 +493,7 @@ nm_setting_connection_get_uuid (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.5.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-uuid.returns"></a><h4>Returns</h4>
 <p> the connection UUID</p>
 </div>
 </div>
@@ -505,7 +505,7 @@ nm_setting_connection_get_interface_name
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--interface-name" title="The “interface-name” property"><span class="type">“interface-name”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.6.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-interface-name.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -520,7 +520,7 @@ nm_setting_connection_get_interface_name
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.6.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-interface-name.returns"></a><h4>Returns</h4>
 <p> the connection's interface name</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -533,7 +533,7 @@ nm_setting_connection_get_connection_type
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--type" title="The “type” property"><span class="type">“type”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.7.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-connection-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -548,7 +548,7 @@ nm_setting_connection_get_connection_type
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.7.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-connection-type.returns"></a><h4>Returns</h4>
 <p> the connection type</p>
 </div>
 </div>
@@ -559,7 +559,7 @@ nm_setting_connection_get_connection_type
 nm_setting_connection_get_autoconnect (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--autoconnect" title="The “autoconnect” property"><span class="type">“autoconnect”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.8.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-autoconnect.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -574,7 +574,7 @@ nm_setting_connection_get_autoconnect (<em class="parameter"><code><a class="lin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.8.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-autoconnect.returns"></a><h4>Returns</h4>
 <p> the connection's autoconnect behavior</p>
 </div>
 </div>
@@ -585,7 +585,7 @@ nm_setting_connection_get_autoconnect (<em class="parameter"><code><a class="lin
 nm_setting_connection_get_timestamp (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--timestamp" title="The “timestamp” property"><span class="type">“timestamp”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.9.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-timestamp.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -600,7 +600,7 @@ nm_setting_connection_get_timestamp (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.9.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-timestamp.returns"></a><h4>Returns</h4>
 <p> the connection's timestamp</p>
 </div>
 </div>
@@ -611,7 +611,7 @@ nm_setting_connection_get_timestamp (<em class="parameter"><code><a class="link"
 nm_setting_connection_get_read_only (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--read-only" title="The “read-only” property"><span class="type">“read-only”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.10.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-read-only.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -626,7 +626,7 @@ nm_setting_connection_get_read_only (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.10.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-read-only.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection is read-only, <code class="literal">FALSE</code> if it is not</p>
 </div>
 </div>
@@ -639,7 +639,7 @@ nm_setting_connection_get_num_permissions
 <p>Returns the number of entires in the <a class="link" href="NMSettingConnection.html#NMSettingConnection--permissions" title="The “permissions” property"><span class="type">“permissions”</span></a>
 property of this setting.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.11.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-num-permissions.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -654,7 +654,7 @@ property of this setting.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.11.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-num-permissions.returns"></a><h4>Returns</h4>
 <p> the number of permissions entires</p>
 </div>
 </div>
@@ -670,7 +670,7 @@ nm_setting_connection_get_permission (<em class="parameter"><code><a class="link
 <p>Retrieve one of the entries of the <a class="link" href="NMSettingConnection.html#NMSettingConnection--permissions" title="The “permissions” property"><span class="type">“permissions”</span></a> property
 of this setting.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.12.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-permission.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -709,7 +709,7 @@ of this setting.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.12.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-permission.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if a permission was returned, <code class="literal">FALSE</code> if <em class="parameter"><code>idx</code></em>
 was invalid</p>
 </div>
@@ -721,7 +721,7 @@ was invalid</p>
 nm_setting_connection_get_zone (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--zone" title="The “zone” property"><span class="type">“zone”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.13.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-zone.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -736,7 +736,7 @@ nm_setting_connection_get_zone (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.13.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-zone.returns"></a><h4>Returns</h4>
 <p> the trust level of a connection</p>
 </div>
 </div>
@@ -749,7 +749,7 @@ nm_setting_connection_permissions_user_allowed
                                 <em class="parameter"><code>const <span class="type">char</span> *uname</code></em>);</pre>
 <p>Checks whether the given username is allowed to view/access this connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.14.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-permissions-user-allowed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -771,7 +771,7 @@ nm_setting_connection_permissions_user_allowed
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.14.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-permissions-user-allowed.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the requested user is allowed to view this connection,
 <code class="literal">FALSE</code> if the given user is not allowed to view this connection</p>
 </div>
@@ -789,7 +789,7 @@ the "user" permission type is supported, and <em class="parameter"><code>pitem</
  must be a username. See
 <a class="link" href="NMSettingConnection.html#NMSettingConnection--permissions" title="The “permissions” property"><span class="type">“permissions”</span></a>: for more details.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.15.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-add-permission.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -822,7 +822,7 @@ the "user" permission type is supported, and <em class="parameter"><code>pitem</
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.15.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-add-permission.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the permission was unique and was successfully added to the
 list, <code class="literal">FALSE</code> if <em class="parameter"><code>ptype</code></em>
 or <em class="parameter"><code>pitem</code></em>
@@ -840,7 +840,7 @@ nm_setting_connection_remove_permission
 <p>Removes the permission at index <em class="parameter"><code>idx</code></em>
  from the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.16.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-remove-permission.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -876,7 +876,7 @@ At this time, only the "user" permission type is supported, and <em class="param
  must
 be a username. See <a class="link" href="NMSettingConnection.html#NMSettingConnection--permissions" title="The “permissions” property"><span class="type">“permissions”</span></a>: for more details.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.17.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-remove-permission-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -909,7 +909,7 @@ be a username. See <a class="link" href="NMSettingConnection.html#NMSettingConne
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.17.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-remove-permission-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the permission was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -921,7 +921,7 @@ be a username. See <a class="link" href="NMSettingConnection.html#NMSettingConne
 nm_setting_connection_get_master (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--master" title="The “master” property"><span class="type">“master”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.18.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-master.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -936,7 +936,7 @@ nm_setting_connection_get_master (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.18.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-master.returns"></a><h4>Returns</h4>
 <p> interface name of the master device or UUID of the master
 connection.</p>
 </div>
@@ -948,7 +948,7 @@ connection.</p>
 nm_setting_connection_is_slave_type (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>,
                                      <em class="parameter"><code>const <span class="type">char</span> *type</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.4.9.19.4"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-is-slave-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -972,7 +972,7 @@ against <em class="parameter"><code>setting</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.19.5"></a><h4>Returns</h4>
+<a name="nm-setting-connection-is-slave-type.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if connection is of the given slave <em class="parameter"><code>type</code></em>
 </p>
 </div>
@@ -984,7 +984,7 @@ against <em class="parameter"><code>setting</code></em>
 nm_setting_connection_get_slave_type (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <p>Returns the <a class="link" href="NMSettingConnection.html#NMSettingConnection--slave-type" title="The “slave-type” property"><span class="type">“slave-type”</span></a> property of the connection.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.20.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-slave-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -999,7 +999,7 @@ nm_setting_connection_get_slave_type (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.20.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-slave-type.returns"></a><h4>Returns</h4>
 <p> the type of slave this connection is, if any</p>
 </div>
 </div>
@@ -1010,7 +1010,7 @@ nm_setting_connection_get_slave_type (<em class="parameter"><code><a class="link
 nm_setting_connection_get_num_secondaries
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.4.9.21.4"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-num-secondaries.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1025,7 +1025,7 @@ nm_setting_connection_get_num_secondaries
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.21.5"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-num-secondaries.returns"></a><h4>Returns</h4>
 <p> the number of configured secondary connection UUIDs</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -1037,7 +1037,7 @@ nm_setting_connection_get_num_secondaries
 nm_setting_connection_get_secondary (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>,
                                      <em class="parameter"><code><span class="type">guint32</span> idx</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.4.9.22.4"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-secondary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1059,7 +1059,7 @@ nm_setting_connection_get_secondary (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.22.5"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-secondary.returns"></a><h4>Returns</h4>
 <p> the secondary connection UUID at index <em class="parameter"><code>idx</code></em>
 </p>
 </div>
@@ -1073,7 +1073,7 @@ nm_setting_connection_add_secondary (<em class="parameter"><code><a class="link"
                                      <em class="parameter"><code>const <span class="type">char</span> *sec_uuid</code></em>);</pre>
 <p>Adds a new secondary connetion UUID to the setting.</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.23.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-add-secondary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1095,7 +1095,7 @@ nm_setting_connection_add_secondary (<em class="parameter"><code><a class="link"
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.23.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-add-secondary.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secondary connection UUID was added; <code class="literal">FALSE</code> if the UUID
 was already present</p>
 </div>
@@ -1111,7 +1111,7 @@ nm_setting_connection_remove_secondary
 <p>Removes the secondary coonnection UUID at index <em class="parameter"><code>idx</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.24.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-remove-secondary.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1144,7 +1144,7 @@ nm_setting_connection_remove_secondary_by_value
 <p>Removes the secondary coonnection UUID <em class="parameter"><code>sec_uuid</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.4.9.25.5"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-remove-secondary-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1166,7 +1166,7 @@ nm_setting_connection_remove_secondary_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.25.6"></a><h4>Returns</h4>
+<a name="nm-setting-connection-remove-secondary-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the secondary connection UUID was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -1178,7 +1178,7 @@ nm_setting_connection_remove_secondary_by_value
 nm_setting_connection_get_gateway_ping_timeout
                                (<em class="parameter"><code><a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.4.9.26.4"></a><h4>Parameters</h4>
+<a name="nm-setting-connection-get-gateway-ping-timeout.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1193,7 +1193,7 @@ nm_setting_connection_get_gateway_ping_timeout
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.4.9.26.5"></a><h4>Returns</h4>
+<a name="nm-setting-connection-get-gateway-ping-timeout.returns"></a><h4>Returns</h4>
 <p> the value contained in the <a class="link" href="NMSettingConnection.html#NMSettingConnection--gateway-ping-timeout" title="The “gateway-ping-timeout” property"><span class="type">“gateway-ping-timeout”</span></a>
 property.</p>
 </div>
@@ -1213,7 +1213,7 @@ property.</p>
 <p>Describes errors that may result from operations involving a
 <a class="link" href="NMSettingConnection.html" title="NMSettingConnection"><span class="type">NMSettingConnection</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.2.4.10.3.4"></a><h4>Members</h4>
+<a name="NMSettingConnectionError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -1517,6 +1517,6 @@ firewall.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

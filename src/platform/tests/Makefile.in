@@ -102,8 +102,9 @@ TESTS = test-address-fake$(EXEEXT) test-address-linux$(EXEEXT) \
 	test-route-fake$(EXEEXT) test-route-linux$(EXEEXT)
 subdir = src/platform/tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_readline.m4 \
-	$(top_srcdir)/m4/compiler_warnings.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
+	$(top_srcdir)/m4/ax_lib_readline.m4 \
+	$(top_srcdir)/m4/compiler_options.m4 \
 	$(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
@@ -170,7 +171,8 @@ test_cleanup_linux_OBJECTS = $(am_test_cleanup_linux_OBJECTS)
 test_cleanup_linux_DEPENDENCIES = $(PLATFORM_LDADD)
 am_test_general_OBJECTS = test-general.$(OBJEXT)
 test_general_OBJECTS = $(am_test_general_OBJECTS)
-test_general_DEPENDENCIES = $(top_builddir)/src/libNetworkManager.la
+test_general_DEPENDENCIES =  \
+	$(top_builddir)/src/libNetworkManagerTest.la
 am__objects_10 = test_link_fake-nm-platform.$(OBJEXT) \
 	test_link_fake-nm-fake-platform.$(OBJEXT) \
 	test_link_fake-nm-linux-platform.$(OBJEXT)
@@ -192,7 +194,7 @@ test_link_linux_DEPENDENCIES = $(PLATFORM_LDADD)
 am_test_nmp_object_OBJECTS = test-nmp-object.$(OBJEXT)
 test_nmp_object_OBJECTS = $(am_test_nmp_object_OBJECTS)
 test_nmp_object_DEPENDENCIES =  \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 am__objects_14 = test_route_fake-nm-platform.$(OBJEXT) \
 	test_route_fake-nm-fake-platform.$(OBJEXT) \
 	test_route_fake-nm-linux-platform.$(OBJEXT)
@@ -522,6 +524,7 @@ DHCLIENT_PATH = @DHCLIENT_PATH@
 DHCPCD_PATH = @DHCPCD_PATH@
 DISTRO_NETWORK_SERVICE = @DISTRO_NETWORK_SERVICE@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DNSMASQ_PATH = @DNSMASQ_PATH@
 DNSSEC_TRIGGER_SCRIPT = @DNSSEC_TRIGGER_SCRIPT@
 DSYMUTIL = @DSYMUTIL@
@@ -578,13 +581,14 @@ INTROSPECTION_MAKEFILE = @INTROSPECTION_MAKEFILE@
 INTROSPECTION_SCANNER = @INTROSPECTION_SCANNER@
 INTROSPECTION_TYPELIBDIR = @INTROSPECTION_TYPELIBDIR@
 IPTABLES_PATH = @IPTABLES_PATH@
+JANSSON_CFLAGS = @JANSSON_CFLAGS@
+JANSSON_LIBS = @JANSSON_LIBS@
 KERNEL_FIRMWARE_DIR = @KERNEL_FIRMWARE_DIR@
 LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBAUDIT_CFLAGS = @LIBAUDIT_CFLAGS@
 LIBAUDIT_LIBS = @LIBAUDIT_LIBS@
-LIBDL = @LIBDL@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBM = @LIBM@
@@ -596,6 +600,8 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBSYSTEMD_CFLAGS = @LIBSYSTEMD_CFLAGS@
+LIBSYSTEMD_LIBS = @LIBSYSTEMD_LIBS@
 LIBTEAMDCTL_CFLAGS = @LIBTEAMDCTL_CFLAGS@
 LIBTEAMDCTL_LIBS = @LIBTEAMDCTL_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -656,6 +662,8 @@ QT_CFLAGS = @QT_CFLAGS@
 QT_LIBS = @QT_LIBS@
 RANLIB = @RANLIB@
 READLINE_LIBS = @READLINE_LIBS@
+SANITIZERS = @SANITIZERS@
+SANITIZER_ENV = @SANITIZER_ENV@
 SED = @SED@
 SELINUX_CFLAGS = @SELINUX_CFLAGS@
 SELINUX_LIBS = @SELINUX_LIBS@
@@ -691,6 +699,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_RANLIB = @ac_ct_RANLIB@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -772,7 +781,7 @@ TEST_SOURCES = \
 AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
 AM_LDFLAGS = $(GLIB_LIBS) $(GUDEV_LIBS) $(LIBNL_LIBS) $(CODE_COVERAGE_LDFLAGS)
 PLATFORM_LDADD = \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 
 EXTRA_DIST = test-common.h
 monitor_SOURCES = monitor.c $(PLATFORM_SOURCES)
@@ -837,13 +846,13 @@ test_nmp_object_SOURCES = \
 	test-nmp-object.c
 
 test_nmp_object_LDADD = \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 
 test_general_SOURCES = \
 	test-general.c
 
 test_general_LDADD = \
-	$(top_builddir)/src/libNetworkManager.la
+	$(top_builddir)/src/libNetworkManagerTest.la
 
 all: all-am
 

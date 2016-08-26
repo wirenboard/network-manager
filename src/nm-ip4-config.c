@@ -35,11 +35,7 @@
 
 #include "nmdbus-ip4-config.h"
 
-G_DEFINE_TYPE (NMIP4Config, nm_ip4_config, NM_TYPE_EXPORTED_OBJECT)
-
-#define NM_IP4_CONFIG_GET_PRIVATE(o) ((o)->priv)
-
-typedef struct _NMIP4ConfigPrivate {
+typedef struct {
 	gboolean never_default;
 	guint32 gateway;
 	gboolean has_gateway;
@@ -60,6 +56,30 @@ typedef struct _NMIP4ConfigPrivate {
 	gboolean metered;
 	gint dns_priority;
 } NMIP4ConfigPrivate;
+
+struct _NMIP4Config {
+	NMExportedObject parent;
+	NMIP4ConfigPrivate _priv;
+};
+
+struct _NMIP4ConfigClass {
+	NMExportedObjectClass parent;
+};
+
+G_DEFINE_TYPE (NMIP4Config, nm_ip4_config, NM_TYPE_EXPORTED_OBJECT)
+
+#define NM_IP4_CONFIG_GET_PRIVATE(self) \
+	({ \
+		/* preserve the const-ness of self. Unfortunately, that
+		 * way, @self cannot be a void pointer */ \
+		typeof (self) _self = (self); \
+		\
+		/* Get compiler error if variable is of wrong type */ \
+		_nm_unused const NMIP4Config *_self2 = (_self); \
+		\
+		nm_assert (NM_IS_IP4_CONFIG (_self)); \
+		&_self->_priv; \
+	})
 
 /* internal guint32 are assigned to gobject properties of type uint. Ensure, that uint is large enough */
 G_STATIC_ASSERT (sizeof (uint) >= sizeof (guint32));
@@ -209,8 +229,8 @@ _addresses_sort_cmp (gconstpointer a, gconstpointer b)
 		return p1 > p2 ? -1 : 1;
 
 	/* Sort the addresses based on their source. */
-	if (a1->source != a2->source)
-		return a1->source > a2->source ? -1 : 1;
+	if (a1->addr_source != a2->addr_source)
+		return a1->addr_source > a2->addr_source ? -1 : 1;
 
 	if ((a1->label[0] == '\0') != (a2->label[0] == '\0'))
 		return (a1->label[0] == '\0') ? -1 : 1;
@@ -337,7 +357,7 @@ nm_ip4_config_capture (int ifindex, gboolean capture_resolv_conf)
 gboolean
 nm_ip4_config_commit (const NMIP4Config *config, int ifindex, gboolean routes_full_sync, gint64 default_route_metric)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 	int i;
 	gs_unref_ptrarray GPtrArray *added_addresses = NULL;
 
@@ -370,7 +390,7 @@ nm_ip4_config_commit (const NMIP4Config *config, int ifindex, gboolean routes_fu
 				nm_assert (addr->plen <= 32);
 
 				route.ifindex = ifindex;
-				route.source = NM_IP_CONFIG_SOURCE_KERNEL;
+				route.rt_source = NM_IP_CONFIG_SOURCE_KERNEL;
 
 				/* The destination network depends on the peer-address. */
 				route.network = nm_utils_ip4_address_clear_host_address (addr->peer_address, addr->plen);
@@ -400,14 +420,6 @@ nm_ip4_config_commit (const NMIP4Config *config, int ifindex, gboolean routes_fu
 			const NMPlatformIP4Route *route;
 
 			route = nm_ip4_config_get_route (config, i);
-
-			/* Don't add the route if it's more specific than one of the subnets
-			 * the device already has an IP address on.
-			 */
-			if (   route->gateway == 0
-			    && nm_ip4_config_destination_is_direct (config, route->network, route->plen))
-				continue;
-
 			/* duplicates in @routes are no problem as route-manager handles them
 			 * gracefully (by ignoring them). */
 			g_array_append_vals (routes, route, 1);
@@ -473,7 +485,7 @@ nm_ip4_config_merge_setting (NMIP4Config *config, NMSettingIPConfig *setting, gu
 		nm_assert (address.plen <= 32);
 		address.lifetime = NM_PLATFORM_LIFETIME_PERMANENT;
 		address.preferred = NM_PLATFORM_LIFETIME_PERMANENT;
-		address.source = NM_IP_CONFIG_SOURCE_USER;
+		address.addr_source = NM_IP_CONFIG_SOURCE_USER;
 
 		label = nm_ip_address_get_attribute (s_addr, "label");
 		if (label)
@@ -502,7 +514,7 @@ nm_ip4_config_merge_setting (NMIP4Config *config, NMSettingIPConfig *setting, gu
 			route.metric = default_route_metric;
 		else
 			route.metric = nm_ip_route_get_metric (s_route);
-		route.source = NM_IP_CONFIG_SOURCE_USER;
+		route.rt_source = NM_IP_CONFIG_SOURCE_USER;
 
 		nm_ip4_config_add_route (config, &route);
 	}
@@ -612,7 +624,7 @@ nm_ip4_config_create_setting (const NMIP4Config *config)
 			continue;
 
 		/* Ignore routes provided by external sources */
-		if (route->source != NM_IP_CONFIG_SOURCE_USER)
+		if (route->rt_source != nmp_utils_ip_config_source_round_trip_rtprot (NM_IP_CONFIG_SOURCE_USER))
 			continue;
 
 		s_route = nm_ip_route_new_binary (AF_INET,
@@ -654,7 +666,8 @@ nm_ip4_config_create_setting (const NMIP4Config *config)
 void
 nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src, NMIPConfigMergeFlags merge_flags)
 {
-	NMIP4ConfigPrivate *dst_priv, *src_priv;
+	NMIP4ConfigPrivate *dst_priv;
+	const NMIP4ConfigPrivate *src_priv;
 	guint32 i;
 
 	g_return_if_fail (src != NULL);
@@ -748,7 +761,7 @@ nm_ip4_config_merge (NMIP4Config *dst, const NMIP4Config *src, NMIPConfigMergeFl
 static int
 _addresses_get_index (const NMIP4Config *self, const NMPlatformIP4Address *addr)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->addresses->len; i++) {
@@ -763,7 +776,7 @@ _addresses_get_index (const NMIP4Config *self, const NMPlatformIP4Address *addr)
 static int
 _nameservers_get_index (const NMIP4Config *self, guint32 ns)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->nameservers->len; i++) {
@@ -778,7 +791,7 @@ _nameservers_get_index (const NMIP4Config *self, guint32 ns)
 static int
 _routes_get_index (const NMIP4Config *self, const NMPlatformIP4Route *route)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->routes->len; i++) {
@@ -794,7 +807,7 @@ _routes_get_index (const NMIP4Config *self, const NMPlatformIP4Route *route)
 static int
 _domains_get_index (const NMIP4Config *self, const char *domain)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->domains->len; i++) {
@@ -809,7 +822,7 @@ _domains_get_index (const NMIP4Config *self, const char *domain)
 static int
 _searches_get_index (const NMIP4Config *self, const char *search)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->searches->len; i++) {
@@ -824,7 +837,7 @@ _searches_get_index (const NMIP4Config *self, const char *search)
 static int
 _dns_options_get_index (const NMIP4Config *self, const char *option)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->dns_options->len; i++) {
@@ -839,7 +852,7 @@ _dns_options_get_index (const NMIP4Config *self, const char *option)
 static int
 _nis_servers_get_index (const NMIP4Config *self, guint32 nis_server)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->nis->len; i++) {
@@ -854,7 +867,7 @@ _nis_servers_get_index (const NMIP4Config *self, guint32 nis_server)
 static int
 _wins_get_index (const NMIP4Config *self, guint32 wins_server)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (self);
 	guint i;
 
 	for (i = 0; i < priv->wins->len; i++) {
@@ -1041,7 +1054,8 @@ nm_ip4_config_replace (NMIP4Config *dst, const NMIP4Config *src, gboolean *relev
 #endif
 	gboolean has_minor_changes = FALSE, has_relevant_changes = FALSE, are_equal;
 	guint i, num;
-	NMIP4ConfigPrivate *dst_priv, *src_priv;
+	NMIP4ConfigPrivate *dst_priv;
+	const NMIP4ConfigPrivate *src_priv;
 	const NMPlatformIP4Address *dst_addr, *src_addr;
 	const NMPlatformIP4Route *dst_route, *src_route;
 
@@ -1398,7 +1412,7 @@ nm_ip4_config_set_never_default (NMIP4Config *config, gboolean never_default)
 gboolean
 nm_ip4_config_get_never_default (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->never_default;
 }
@@ -1440,7 +1454,7 @@ nm_ip4_config_unset_gateway (NMIP4Config *config)
 gboolean
 nm_ip4_config_has_gateway (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->has_gateway;
 }
@@ -1448,7 +1462,7 @@ nm_ip4_config_has_gateway (const NMIP4Config *config)
 guint32
 nm_ip4_config_get_gateway (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->gateway;
 }
@@ -1456,7 +1470,7 @@ nm_ip4_config_get_gateway (const NMIP4Config *config)
 gint64
 nm_ip4_config_get_route_metric (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->route_metric;
 }
@@ -1507,14 +1521,14 @@ nm_ip4_config_add_address (NMIP4Config *config, const NMPlatformIP4Address *new)
 			*item = *new;
 
 			/* But restore highest priority source */
-			item->source = MAX (item_old.source, new->source);
+			item->addr_source = MAX (item_old.addr_source, new->addr_source);
 
 			/* for addresses that we read from the kernel, we keep the timestamps as defined
 			 * by the previous source (item_old). The reason is, that the other source configured the lifetimes
 			 * with "what should be" and the kernel values are "what turned out after configuring it".
 			 *
 			 * For other sources, the longer lifetime wins. */
-			if (   (new->source == NM_IP_CONFIG_SOURCE_KERNEL && new->source != item_old.source)
+			if (   (new->addr_source == NM_IP_CONFIG_SOURCE_KERNEL && new->addr_source != item_old.addr_source)
 			    || nm_platform_ip_address_cmp_expiry ((const NMPlatformIPAddress *) &item_old, (const NMPlatformIPAddress *) new) > 0) {
 				item->timestamp = item_old.timestamp;
 				item->lifetime = item_old.lifetime;
@@ -1547,7 +1561,7 @@ nm_ip4_config_del_address (NMIP4Config *config, guint i)
 guint
 nm_ip4_config_get_num_addresses (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->addresses->len;
 }
@@ -1555,7 +1569,7 @@ nm_ip4_config_get_num_addresses (const NMIP4Config *config)
 const NMPlatformIP4Address *
 nm_ip4_config_get_address (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return &g_array_index (priv->addresses, NMPlatformIP4Address, i);
 }
@@ -1600,7 +1614,7 @@ nm_ip4_config_add_route (NMIP4Config *config, const NMPlatformIP4Route *new)
 
 	g_return_if_fail (new != NULL);
 	g_return_if_fail (new->plen > 0 && new->plen <= 32);
-	g_assert (priv->ifindex);
+	g_return_if_fail (priv->ifindex > 0);
 
 	for (i = 0; i < priv->routes->len; i++ ) {
 		NMPlatformIP4Route *item = &g_array_index (priv->routes, NMPlatformIP4Route, i);
@@ -1608,10 +1622,10 @@ nm_ip4_config_add_route (NMIP4Config *config, const NMPlatformIP4Route *new)
 		if (routes_are_duplicate (item, new, FALSE)) {
 			if (nm_platform_ip4_route_cmp (item, new) == 0)
 				return;
-			old_source = item->source;
+			old_source = item->rt_source;
 			memcpy (item, new, sizeof (*item));
 			/* Restore highest priority source */
-			item->source = MAX (old_source, new->source);
+			item->rt_source = MAX (old_source, new->rt_source);
 			item->ifindex = priv->ifindex;
 			goto NOTIFY;
 		}
@@ -1639,7 +1653,7 @@ nm_ip4_config_del_route (NMIP4Config *config, guint i)
 guint
 nm_ip4_config_get_num_routes (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->routes->len;
 }
@@ -1647,7 +1661,7 @@ nm_ip4_config_get_num_routes (const NMIP4Config *config)
 const NMPlatformIP4Route *
 nm_ip4_config_get_route (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return &g_array_index (priv->routes, NMPlatformIP4Route, i);
 }
@@ -1655,7 +1669,7 @@ nm_ip4_config_get_route (const NMIP4Config *config, guint i)
 const NMPlatformIP4Route *
 nm_ip4_config_get_direct_route_for_host (const NMIP4Config *config, guint32 host)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 	guint i;
 	NMPlatformIP4Route *best_route = NULL;
 
@@ -1725,7 +1739,7 @@ nm_ip4_config_del_nameserver (NMIP4Config *config, guint i)
 guint32
 nm_ip4_config_get_num_nameservers (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->nameservers->len;
 }
@@ -1733,7 +1747,7 @@ nm_ip4_config_get_num_nameservers (const NMIP4Config *config)
 guint32
 nm_ip4_config_get_nameserver (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return g_array_index (priv->nameservers, guint32, i);
 }
@@ -1782,7 +1796,7 @@ nm_ip4_config_del_domain (NMIP4Config *config, guint i)
 guint32
 nm_ip4_config_get_num_domains (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->domains->len;
 }
@@ -1790,7 +1804,7 @@ nm_ip4_config_get_num_domains (const NMIP4Config *config)
 const char *
 nm_ip4_config_get_domain (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return g_ptr_array_index (priv->domains, i);
 }
@@ -1854,7 +1868,7 @@ nm_ip4_config_del_search (NMIP4Config *config, guint i)
 guint32
 nm_ip4_config_get_num_searches (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->searches->len;
 }
@@ -1862,7 +1876,7 @@ nm_ip4_config_get_num_searches (const NMIP4Config *config)
 const char *
 nm_ip4_config_get_search (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return g_ptr_array_index (priv->searches, i);
 }
@@ -1911,7 +1925,7 @@ nm_ip4_config_del_dns_option(NMIP4Config *config, guint i)
 guint32
 nm_ip4_config_get_num_dns_options (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->dns_options->len;
 }
@@ -1919,7 +1933,7 @@ nm_ip4_config_get_num_dns_options (const NMIP4Config *config)
 const char *
 nm_ip4_config_get_dns_option (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return g_ptr_array_index (priv->dns_options, i);
 }
@@ -1958,7 +1972,7 @@ nm_ip4_config_set_mss (NMIP4Config *config, guint32 mss)
 guint32
 nm_ip4_config_get_mss (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->mss;
 }
@@ -1999,7 +2013,7 @@ nm_ip4_config_del_nis_server (NMIP4Config *config, guint i)
 guint32
 nm_ip4_config_get_num_nis_servers (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->nis->len;
 }
@@ -2007,7 +2021,7 @@ nm_ip4_config_get_num_nis_servers (const NMIP4Config *config)
 guint32
 nm_ip4_config_get_nis_server (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return g_array_index (priv->nis, guint32, i);
 }
@@ -2024,7 +2038,7 @@ nm_ip4_config_set_nis_domain (NMIP4Config *config, const char *domain)
 const char *
 nm_ip4_config_get_nis_domain (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->nis_domain;
 }
@@ -2072,7 +2086,7 @@ nm_ip4_config_del_wins (NMIP4Config *config, guint i)
 guint32
 nm_ip4_config_get_num_wins (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->wins->len;
 }
@@ -2080,7 +2094,7 @@ nm_ip4_config_get_num_wins (const NMIP4Config *config)
 guint32
 nm_ip4_config_get_wins (const NMIP4Config *config, guint i)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return g_array_index (priv->wins, guint32, i);
 }
@@ -2102,7 +2116,7 @@ nm_ip4_config_set_mtu (NMIP4Config *config, guint32 mtu, NMIPConfigSource source
 guint32
 nm_ip4_config_get_mtu (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->mtu;
 }
@@ -2110,7 +2124,7 @@ nm_ip4_config_get_mtu (const NMIP4Config *config)
 NMIPConfigSource
 nm_ip4_config_get_mtu_source (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->mtu_source;
 }
@@ -2128,7 +2142,7 @@ nm_ip4_config_set_metered (NMIP4Config *config, gboolean metered)
 gboolean
 nm_ip4_config_get_metered (const NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
+	const NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	return priv->metered;
 }
@@ -2245,10 +2259,7 @@ nm_ip4_config_equal (const NMIP4Config *a, const NMIP4Config *b)
 static void
 nm_ip4_config_init (NMIP4Config *config)
 {
-	NMIP4ConfigPrivate *priv;
-
-	priv = G_TYPE_INSTANCE_GET_PRIVATE (config, NM_TYPE_IP4_CONFIG, NMIP4ConfigPrivate);
-	config->priv = priv;
+	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
 
 	priv->addresses = g_array_new (FALSE, FALSE, sizeof (NMPlatformIP4Address));
 	priv->routes = g_array_new (FALSE, FALSE, sizeof (NMPlatformIP4Route));
@@ -2282,7 +2293,7 @@ finalize (GObject *object)
 
 static void
 get_property (GObject *object, guint prop_id,
-			  GValue *value, GParamSpec *pspec)
+              GValue *value, GParamSpec *pspec)
 {
 	NMIP4Config *config = NM_IP4_CONFIG (object);
 	NMIP4ConfigPrivate *priv = NM_IP4_CONFIG_GET_PRIVATE (config);
@@ -2473,8 +2484,6 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	GObjectClass *object_class = G_OBJECT_CLASS (config_class);
 	NMExportedObjectClass *exported_object_class = NM_EXPORTED_OBJECT_CLASS (config_class);
 
-	g_type_class_add_private (config_class, sizeof (NMIP4ConfigPrivate));
-
 	exported_object_class->export_path = NM_DBUS_PATH "/IP4Config/%u";
 
 	object_class->get_property = get_property;
@@ -2482,72 +2491,72 @@ nm_ip4_config_class_init (NMIP4ConfigClass *config_class)
 	object_class->finalize = finalize;
 
 	obj_properties[PROP_IFINDEX] =
-		g_param_spec_int (NM_IP4_CONFIG_IFINDEX, "", "",
-		                  -1, G_MAXINT, -1,
-		                  G_PARAM_READWRITE |
-		                  G_PARAM_CONSTRUCT_ONLY |
-		                  G_PARAM_STATIC_STRINGS);
+	    g_param_spec_int (NM_IP4_CONFIG_IFINDEX, "", "",
+	                      -1, G_MAXINT, -1,
+	                      G_PARAM_READWRITE |
+	                      G_PARAM_CONSTRUCT_ONLY |
+	                      G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ADDRESS_DATA] =
-		g_param_spec_variant (NM_IP4_CONFIG_ADDRESS_DATA, "", "",
-		                      G_VARIANT_TYPE ("aa{sv}"),
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS);
+	    g_param_spec_variant (NM_IP4_CONFIG_ADDRESS_DATA, "", "",
+	                          G_VARIANT_TYPE ("aa{sv}"),
+	                          NULL,
+	                          G_PARAM_READABLE |
+	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ADDRESSES] =
-		g_param_spec_variant (NM_IP4_CONFIG_ADDRESSES, "", "",
-		                      G_VARIANT_TYPE ("aau"),
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS);
+	    g_param_spec_variant (NM_IP4_CONFIG_ADDRESSES, "", "",
+	                          G_VARIANT_TYPE ("aau"),
+	                          NULL,
+	                          G_PARAM_READABLE |
+	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ROUTE_DATA] =
-		g_param_spec_variant (NM_IP4_CONFIG_ROUTE_DATA, "", "",
-		                      G_VARIANT_TYPE ("aa{sv}"),
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS);
+	    g_param_spec_variant (NM_IP4_CONFIG_ROUTE_DATA, "", "",
+	                          G_VARIANT_TYPE ("aa{sv}"),
+	                          NULL,
+	                          G_PARAM_READABLE |
+	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_ROUTES] =
-		g_param_spec_variant (NM_IP4_CONFIG_ROUTES, "", "",
-		                      G_VARIANT_TYPE ("aau"),
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS);
+	    g_param_spec_variant (NM_IP4_CONFIG_ROUTES, "", "",
+	                          G_VARIANT_TYPE ("aau"),
+	                          NULL,
+	                          G_PARAM_READABLE |
+	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_GATEWAY] =
-		g_param_spec_string (NM_IP4_CONFIG_GATEWAY, "", "",
-		                     NULL,
-		                     G_PARAM_READABLE |
-		                     G_PARAM_STATIC_STRINGS);
+	    g_param_spec_string (NM_IP4_CONFIG_GATEWAY, "", "",
+	                         NULL,
+	                         G_PARAM_READABLE |
+	                         G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_NAMESERVERS] =
-		g_param_spec_variant (NM_IP4_CONFIG_NAMESERVERS, "", "",
-		                      G_VARIANT_TYPE ("au"),
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS);
+	    g_param_spec_variant (NM_IP4_CONFIG_NAMESERVERS, "", "",
+	                          G_VARIANT_TYPE ("au"),
+	                          NULL,
+	                          G_PARAM_READABLE |
+	                          G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DOMAINS] =
-		g_param_spec_boxed (NM_IP4_CONFIG_DOMAINS, "", "",
-		                    G_TYPE_STRV,
-		                    G_PARAM_READABLE |
-		                    G_PARAM_STATIC_STRINGS);
+	    g_param_spec_boxed (NM_IP4_CONFIG_DOMAINS, "", "",
+	                        G_TYPE_STRV,
+	                        G_PARAM_READABLE |
+	                        G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_SEARCHES] =
-		g_param_spec_boxed (NM_IP4_CONFIG_SEARCHES, "", "",
-		                    G_TYPE_STRV,
-		                    G_PARAM_READABLE |
-		                    G_PARAM_STATIC_STRINGS);
+	    g_param_spec_boxed (NM_IP4_CONFIG_SEARCHES, "", "",
+	                        G_TYPE_STRV,
+	                        G_PARAM_READABLE |
+	                        G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DNS_OPTIONS] =
-		 g_param_spec_boxed (NM_IP4_CONFIG_DNS_OPTIONS, "", "",
-		                     G_TYPE_STRV,
-		                     G_PARAM_READABLE |
-		                     G_PARAM_STATIC_STRINGS);
+	     g_param_spec_boxed (NM_IP4_CONFIG_DNS_OPTIONS, "", "",
+	                         G_TYPE_STRV,
+	                         G_PARAM_READABLE |
+	                         G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_DNS_PRIORITY] =
-		 g_param_spec_int (NM_IP4_CONFIG_DNS_PRIORITY, "", "",
-		                   G_MININT32, G_MAXINT32, 0,
-		                   G_PARAM_READABLE |
-		                   G_PARAM_STATIC_STRINGS);
+	     g_param_spec_int (NM_IP4_CONFIG_DNS_PRIORITY, "", "",
+	                       G_MININT32, G_MAXINT32, 0,
+	                       G_PARAM_READABLE |
+	                       G_PARAM_STATIC_STRINGS);
 	obj_properties[PROP_WINS_SERVERS] =
-		g_param_spec_variant (NM_IP4_CONFIG_WINS_SERVERS, "", "",
-		                      G_VARIANT_TYPE ("au"),
-		                      NULL,
-		                      G_PARAM_READABLE |
-		                      G_PARAM_STATIC_STRINGS);
+	    g_param_spec_variant (NM_IP4_CONFIG_WINS_SERVERS, "", "",
+	                          G_VARIANT_TYPE ("au"),
+	                          NULL,
+	                          G_PARAM_READABLE |
+	                          G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, _PROPERTY_ENUMS_LAST, obj_properties);
 

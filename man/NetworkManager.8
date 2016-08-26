@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/03/2016
+.\"      Date: 08/24/2016
 .\"    Manual: Network management daemons
-.\"    Source: NetworkManager 1.2.4
+.\"    Source: NetworkManager 1.4.0
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER" "8" "" "NetworkManager 1\&.2\&.4" "Network management daemons"
+.TH "NETWORKMANAGER" "8" "" "NetworkManager 1\&.4\&.0" "Network management daemons"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,7 +41,9 @@ NetworkManager will execute scripts in the /etc/NetworkManager/dispatcher\&.d di
 .PP
 Each script receives two arguments, the first being the interface name of the device an operation just happened on, and second the action\&. For device actions, the interface is the name of the kernel interface suitable for IP configuration\&. Thus it is either VPN_IP_IFACE, DEVICE_IP_IFACE, or DEVICE_IFACE, as applicable\&. For the
 \fIhostname\fR
-action it is always "none"\&.
+and
+\fIconnectivity\-change\fR
+actions it is always "none"\&.
 .PP
 The actions are:
 .PP
@@ -98,6 +100,11 @@ The DHCPv4 lease has changed (renewed, rebound, etc)\&.
 \fIdhcp6\-change\fR
 .RS 4
 The DHCPv6 lease has changed (renewed, rebound, etc)\&.
+.RE
+.PP
+\fIconnectivity\-change\fR
+.RS 4
+The network connectivity state has changed (no connectivity, went online, etc)\&.
 .RE
 .PP
 The environment contains more information about the interface and the connection\&. The following variables are available for the use in the dispatcher scripts:
@@ -181,6 +188,11 @@ If the connection used DHCP for address configuration, the received DHCP configu
 \fIIP6_<name> and DHCP6_<name>\fR
 .RS 4
 The same variables as for IPv4 are available for IPv6, but the prefixes are IP6_ and DHCP6_ instead\&.
+.RE
+.PP
+\fICONNECTIVITY_STATE\fR
+.RS 4
+The network connectivity state, which can take the values defined by the NMConnectivityState type, from the org\&.freedesktop\&.NetworkManager D\-Bus API: unknown, none, portal, limited or full\&. Note: this variable will only be set for connectivity\-change actions\&.
 .RE
 .PP
 In case of VPN, VPN_IP_IFACE is set, and IP4_*, IP6_* variables with VPN prefix are exported too, like VPN_IP4_ADDRESS_0, VPN_IP4_NUM_ADDRESSES\&.
@@ -307,4 +319,5 @@ to enable debug logging inside NetworkManager itself\&.
 \fBnm-online\fR(1),
 \fBnm-settings\fR(5),
 \fBnm-applet\fR(1),
-\fBnm-connection-editor\fR(1)\fBudev\fR(7)
+\fBnm-connection-editor\fR(1),
+\fBudev\fR(7)

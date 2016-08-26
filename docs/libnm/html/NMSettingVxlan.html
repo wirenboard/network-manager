@@ -8,7 +8,7 @@
 <link rel="up" href="ch03.html" title="Connection and Setting API Reference">
 <link rel="prev" href="NMSettingVpn.html" title="NMSettingVpn">
 <link rel="next" href="NMSettingWimax.html" title="NMSettingWimax">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -375,7 +375,7 @@ necessary for connection to VXLAN interfaces.</p>
 nm_setting_vxlan_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.4.31.8.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -387,7 +387,7 @@ nm_setting_vxlan_new (<em class="parameter"><code><span class="type">void</span>
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_vxlan_get_parent (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.3.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-parent.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -402,7 +402,7 @@ nm_setting_vxlan_get_parent (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.3.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-parent.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--parent" title="The “parent” property"><span class="type">“parent”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -413,7 +413,7 @@ nm_setting_vxlan_get_parent (<em class="parameter"><code><a class="link" href="N
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_id (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.4.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-id.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -428,7 +428,7 @@ nm_setting_vxlan_get_id (<em class="parameter"><code><a class="link" href="NMSet
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.4.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-id.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--id" title="The “id” property"><span class="type">“id”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -439,7 +439,7 @@ nm_setting_vxlan_get_id (<em class="parameter"><code><a class="link" href="NMSet
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_vxlan_get_local (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.5.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-local.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -454,7 +454,7 @@ nm_setting_vxlan_get_local (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.5.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-local.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--local" title="The “local” property"><span class="type">“local”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -465,7 +465,7 @@ nm_setting_vxlan_get_local (<em class="parameter"><code><a class="link" href="NM
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_vxlan_get_remote (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.6.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-remote.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -480,7 +480,7 @@ nm_setting_vxlan_get_remote (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.6.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-remote.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--remote" title="The “remote” property"><span class="type">“remote”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -491,7 +491,7 @@ nm_setting_vxlan_get_remote (<em class="parameter"><code><a class="link" href="N
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_source_port_min (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.7.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-source-port-min.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -506,7 +506,7 @@ nm_setting_vxlan_get_source_port_min (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.7.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-source-port-min.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--source-port-min" title="The “source-port-min” property"><span class="type">“source-port-min”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -517,7 +517,7 @@ nm_setting_vxlan_get_source_port_min (<em class="parameter"><code><a class="link
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_source_port_max (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.8.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-source-port-max.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -532,7 +532,7 @@ nm_setting_vxlan_get_source_port_max (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.8.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-source-port-max.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--source-port-max" title="The “source-port-max” property"><span class="type">“source-port-max”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -543,7 +543,7 @@ nm_setting_vxlan_get_source_port_max (<em class="parameter"><code><a class="link
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_destination_port (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.9.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-destination-port.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -558,7 +558,7 @@ nm_setting_vxlan_get_destination_port (<em class="parameter"><code><a class="lin
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.9.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-destination-port.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--destination-port" title="The “destination-port” property"><span class="type">“destination-port”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -569,7 +569,7 @@ nm_setting_vxlan_get_destination_port (<em class="parameter"><code><a class="lin
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_tos (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.10.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-tos.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -584,7 +584,7 @@ nm_setting_vxlan_get_tos (<em class="parameter"><code><a class="link" href="NMSe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.10.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-tos.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--tos" title="The “tos” property"><span class="type">“tos”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -595,7 +595,7 @@ nm_setting_vxlan_get_tos (<em class="parameter"><code><a class="link" href="NMSe
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_ttl (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.11.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-ttl.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -610,7 +610,7 @@ nm_setting_vxlan_get_ttl (<em class="parameter"><code><a class="link" href="NMSe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.11.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-ttl.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--ttl" title="The “ttl” property"><span class="type">“ttl”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -621,7 +621,7 @@ nm_setting_vxlan_get_ttl (<em class="parameter"><code><a class="link" href="NMSe
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_ageing (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.12.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-ageing.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -636,7 +636,7 @@ nm_setting_vxlan_get_ageing (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.12.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-ageing.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--ageing" title="The “ageing” property"><span class="type">“ageing”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -647,7 +647,7 @@ nm_setting_vxlan_get_ageing (<em class="parameter"><code><a class="link" href="N
 <pre class="programlisting"><span class="returnvalue">guint</span>
 nm_setting_vxlan_get_limit (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.13.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-limit.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -662,7 +662,7 @@ nm_setting_vxlan_get_limit (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.13.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-limit.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--limit" title="The “limit” property"><span class="type">“limit”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -673,7 +673,7 @@ nm_setting_vxlan_get_limit (<em class="parameter"><code><a class="link" href="NM
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_vxlan_get_proxy (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.14.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-proxy.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -688,7 +688,7 @@ nm_setting_vxlan_get_proxy (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.14.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-proxy.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--proxy" title="The “proxy” property"><span class="type">“proxy”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -699,7 +699,7 @@ nm_setting_vxlan_get_proxy (<em class="parameter"><code><a class="link" href="NM
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_vxlan_get_learning (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.15.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-learning.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -714,7 +714,7 @@ nm_setting_vxlan_get_learning (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.15.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-learning.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--learning" title="The “learning” property"><span class="type">“learning”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -725,7 +725,7 @@ nm_setting_vxlan_get_learning (<em class="parameter"><code><a class="link" href=
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_vxlan_get_rsc (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.16.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-rsc.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -740,7 +740,7 @@ nm_setting_vxlan_get_rsc (<em class="parameter"><code><a class="link" href="NMSe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.16.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-rsc.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--rsc" title="The “rsc” property"><span class="type">“rsc”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -751,7 +751,7 @@ nm_setting_vxlan_get_rsc (<em class="parameter"><code><a class="link" href="NMSe
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_vxlan_get_l2_miss (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.17.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-l2-miss.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -766,7 +766,7 @@ nm_setting_vxlan_get_l2_miss (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.17.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-l2-miss.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--l2-miss" title="The “l2-miss” property"><span class="type">“l2_miss”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -777,7 +777,7 @@ nm_setting_vxlan_get_l2_miss (<em class="parameter"><code><a class="link" href="
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_setting_vxlan_get_l3_miss (<em class="parameter"><code><a class="link" href="NMSettingVxlan.html" title="NMSettingVxlan"><span class="type">NMSettingVxlan</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.4.31.8.18.4"></a><h4>Parameters</h4>
+<a name="nm-setting-vxlan-get-l3-miss.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -792,7 +792,7 @@ nm_setting_vxlan_get_l3_miss (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.4.31.8.18.5"></a><h4>Returns</h4>
+<a name="nm-setting-vxlan-get-l3-miss.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingVxlan.html#NMSettingVxlan--l3-miss" title="The “l3-miss” property"><span class="type">“l3_miss”</span></a> property of the setting</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -1069,6 +1069,6 @@ tunnel endpoint.</p>
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

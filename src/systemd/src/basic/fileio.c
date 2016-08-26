@@ -49,6 +49,8 @@
 #include "umask-util.h"
 #include "utf8.h"
 
+#define READ_FULL_BYTES_MAX (4U*1024U*1024U)
+
 int write_string_stream(FILE *f, const char *line, bool enforce_newline) {
 
         assert(f);
@@ -232,7 +234,7 @@ int read_full_stream(FILE *f, char **contents, size_t *size) {
         if (S_ISREG(st.st_mode)) {
 
                 /* Safety check */
-                if (st.st_size > 4*1024*1024)
+                if (st.st_size > READ_FULL_BYTES_MAX)
                         return -E2BIG;
 
                 /* Start with the right file size, but be prepared for
@@ -247,26 +249,31 @@ int read_full_stream(FILE *f, char **contents, size_t *size) {
                 char *t;
                 size_t k;
 
-                t = realloc(buf, n+1);
+                t = realloc(buf, n + 1);
                 if (!t)
                         return -ENOMEM;
 
                 buf = t;
                 k = fread(buf + l, 1, n - l, f);
+                if (k > 0)
+                        l += k;
 
-                if (k <= 0) {
-                        if (ferror(f))
-                                return -errno;
+                if (ferror(f))
+                        return -errno;
 
+                if (feof(f))
                         break;
-                }
 
-                l += k;
-                n *= 2;
+                /* We aren't expecting fread() to return a short read outside
+                 * of (error && eof), assert buffer is full and enlarge buffer.
+                 */
+                assert(l == n);
 
                 /* Safety check */
-                if (n > 4*1024*1024)
+                if (n >= READ_FULL_BYTES_MAX)
                         return -E2BIG;
+
+                n = MIN(n * 2, READ_FULL_BYTES_MAX);
         }
 
         buf[l] = 0;
@@ -1071,7 +1078,7 @@ int fflush_and_check(FILE *f) {
         return 0;
 }
 
-/* This is much like like mkostemp() but is subject to umask(). */
+/* This is much like mkostemp() but is subject to umask(). */
 int mkostemp_safe(char *pattern, int flags) {
         _cleanup_umask_ mode_t u = 0;
         int fd;
@@ -1084,30 +1091,6 @@ int mkostemp_safe(char *pattern, int flags) {
         if (fd < 0)
                 return -errno;
 
-        return fd;
-}
-
-int open_tmpfile(const char *path, int flags) {
-        char *p;
-        int fd;
-
-        assert(path);
-
-#ifdef O_TMPFILE
-        /* Try O_TMPFILE first, if it is supported */
-        fd = open(path, flags|O_TMPFILE|O_EXCL, S_IRUSR|S_IWUSR);
-        if (fd >= 0)
-                return fd;
-#endif
-
-        /* Fall back to unguessable name + unlinking */
-        p = strjoina(path, "/systemd-tmp-XXXXXX");
-
-        fd = mkostemp_safe(p, flags);
-        if (fd < 0)
-                return fd;
-
-        unlink(p);
         return fd;
 }
 
@@ -1185,12 +1168,13 @@ int tempfn_random(const char *p, const char *extra, char **ret) {
         return 0;
 }
 
+#if 0 /* NM_IGNORED */
 int tempfn_random_child(const char *p, const char *extra, char **ret) {
         char *t, *x;
         uint64_t u;
         unsigned i;
+        int r;
 
-        assert(p);
         assert(ret);
 
         /* Turns this:
@@ -1198,6 +1182,12 @@ int tempfn_random_child(const char *p, const char *extra, char **ret) {
          * Into this:
          *         /foo/bar/waldo/.#<extra>3c2b6219aa75d7d0
          */
+
+        if (!p) {
+                r = tmp_dir(&p);
+                if (r < 0)
+                        return r;
+        }
 
         if (!extra)
                 extra = "";
@@ -1220,7 +1210,6 @@ int tempfn_random_child(const char *p, const char *extra, char **ret) {
         return 0;
 }
 
-#if 0 /* NM_IGNORED */
 int write_timestamp_file_atomic(const char *fn, usec_t n) {
         char ln[DECIMAL_STR_MAX(n)+2];
 
@@ -1234,7 +1223,6 @@ int write_timestamp_file_atomic(const char *fn, usec_t n) {
 
         return write_string_file(fn, ln, WRITE_STRING_FILE_CREATE|WRITE_STRING_FILE_ATOMIC);
 }
-#endif /* NM_IGNORED */
 
 int read_timestamp_file(const char *fn, usec_t *ret) {
         _cleanup_free_ char *ln = NULL;
@@ -1255,6 +1243,7 @@ int read_timestamp_file(const char *fn, usec_t *ret) {
         *ret = (usec_t) t;
         return 0;
 }
+#endif /* NM_IGNORED */
 
 int fputs_with_space(FILE *f, const char *s, const char *separator, bool *space) {
         int r;
@@ -1284,3 +1273,150 @@ int fputs_with_space(FILE *f, const char *s, const char *separator, bool *space)
 
         return fputs(s, f);
 }
+
+#if 0 /* NM_IGNORED */
+int open_tmpfile_unlinkable(const char *directory, int flags) {
+        char *p;
+        int fd, r;
+
+        if (!directory) {
+                r = tmp_dir(&directory);
+                if (r < 0)
+                        return r;
+        }
+
+        /* Returns an unlinked temporary file that cannot be linked into the file system anymore */
+
+#ifdef O_TMPFILE
+        /* Try O_TMPFILE first, if it is supported */
+        fd = open(directory, flags|O_TMPFILE|O_EXCL, S_IRUSR|S_IWUSR);
+        if (fd >= 0)
+                return fd;
+#endif
+
+        /* Fall back to unguessable name + unlinking */
+        p = strjoina(directory, "/systemd-tmp-XXXXXX");
+
+        fd = mkostemp_safe(p, flags);
+        if (fd < 0)
+                return fd;
+
+        (void) unlink(p);
+
+        return fd;
+}
+
+int open_tmpfile_linkable(const char *target, int flags, char **ret_path) {
+        _cleanup_free_ char *tmp = NULL;
+        int r, fd;
+
+        assert(target);
+        assert(ret_path);
+
+        /* Don't allow O_EXCL, as that has a special meaning for O_TMPFILE */
+        assert((flags & O_EXCL) == 0);
+
+        /* Creates a temporary file, that shall be renamed to "target" later. If possible, this uses O_TMPFILE – in
+         * which case "ret_path" will be returned as NULL. If not possible a the tempoary path name used is returned in
+         * "ret_path". Use link_tmpfile() below to rename the result after writing the file in full. */
+
+#ifdef O_TMPFILE
+        {
+                _cleanup_free_ char *dn = NULL;
+
+                dn = dirname_malloc(target);
+                if (!dn)
+                        return -ENOMEM;
+
+                fd = open(dn, O_TMPFILE|flags, 0640);
+                if (fd >= 0) {
+                        *ret_path = NULL;
+                        return fd;
+                }
+
+                log_debug_errno(errno, "Failed to use O_TMPFILE on %s: %m", dn);
+        }
+#endif
+
+        r = tempfn_random(target, NULL, &tmp);
+        if (r < 0)
+                return r;
+
+        fd = open(tmp, O_CREAT|O_EXCL|O_NOFOLLOW|O_NOCTTY|flags, 0640);
+        if (fd < 0)
+                return -errno;
+
+        *ret_path = tmp;
+        tmp = NULL;
+
+        return fd;
+}
+
+int link_tmpfile(int fd, const char *path, const char *target) {
+
+        assert(fd >= 0);
+        assert(target);
+
+        /* Moves a temporary file created with open_tmpfile() above into its final place. if "path" is NULL an fd
+         * created with O_TMPFILE is assumed, and linkat() is used. Otherwise it is assumed O_TMPFILE is not supported
+         * on the directory, and renameat2() is used instead.
+         *
+         * Note that in both cases we will not replace existing files. This is because linkat() does not support this
+         * operation currently (renameat2() does), and there is no nice way to emulate this. */
+
+        if (path) {
+                if (rename_noreplace(AT_FDCWD, path, AT_FDCWD, target) < 0)
+                        return -errno;
+        } else {
+                char proc_fd_path[strlen("/proc/self/fd/") + DECIMAL_STR_MAX(fd) + 1];
+
+                xsprintf(proc_fd_path, "/proc/self/fd/%i", fd);
+
+                if (linkat(AT_FDCWD, proc_fd_path, AT_FDCWD, target, AT_SYMLINK_FOLLOW) < 0)
+                        return -errno;
+        }
+
+        return 0;
+}
+
+int read_nul_string(FILE *f, char **ret) {
+        _cleanup_free_ char *x = NULL;
+        size_t allocated = 0, n = 0;
+
+        assert(f);
+        assert(ret);
+
+        /* Reads a NUL-terminated string from the specified file. */
+
+        for (;;) {
+                int c;
+
+                if (!GREEDY_REALLOC(x, allocated, n+2))
+                        return -ENOMEM;
+
+                c = fgetc(f);
+                if (c == 0) /* Terminate at NUL byte */
+                        break;
+                if (c == EOF) {
+                        if (ferror(f))
+                                return -errno;
+                        break; /* Terminate at EOF */
+                }
+
+                x[n++] = (char) c;
+        }
+
+        if (x)
+                x[n] = 0;
+        else {
+                x = new0(char, 1);
+                if (!x)
+                        return -ENOMEM;
+        }
+
+        *ret = x;
+        x = NULL;
+
+        return 0;
+}
+#endif /* NM_IGNORED */

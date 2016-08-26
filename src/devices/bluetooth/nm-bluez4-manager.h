@@ -1,4 +1,3 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*- */
 /* NetworkManager -- Network link manager
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +20,6 @@
 
 #ifndef __NETWORKMANAGER_BLUEZ4_MANAGER_H__
 #define __NETWORKMANAGER_BLUEZ4_MANAGER_H__
-
-#include "nm-default.h"
-#include "nm-connection-provider.h"
-
-G_BEGIN_DECLS
 
 #define NM_TYPE_BLUEZ4_MANAGER            (nm_bluez4_manager_get_type ())
 #define NM_BLUEZ4_MANAGER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_BLUEZ4_MANAGER, NMBluez4Manager))
@@ -51,7 +45,7 @@ typedef struct {
 
 GType nm_bluez4_manager_get_type (void);
 
-NMBluez4Manager *nm_bluez4_manager_new (NMConnectionProvider *provider);
+NMBluez4Manager *nm_bluez4_manager_new (NMSettings *settings);
 
 void nm_bluez4_manager_query_devices (NMBluez4Manager *manager);
 

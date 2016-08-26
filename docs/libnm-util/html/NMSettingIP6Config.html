@@ -8,7 +8,7 @@
 <link rel="up" href="ch01.html" title="libnm-util API Reference">
 <link rel="prev" href="NMSettingIP4Config.html" title="NMSettingIP4Config">
 <link rel="next" href="NMSettingPPP.html" title="NMSettingPPP">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -706,7 +706,7 @@ properties related to IPv6 addressing, routing, and Domain Name Service</p>
 nm_setting_ip6_config_error_quark (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Registers an error quark for <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> if necessary.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.2.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-error-quark.returns"></a><h4>Returns</h4>
 <p> the error quark used for <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> errors.</p>
 </div>
 </div>
@@ -717,7 +717,7 @@ nm_setting_ip6_config_error_quark (<em class="parameter"><code><span class="type
 nm_ip6_address_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates and returns a new <a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.3.5"></a><h4>Returns</h4>
+<a name="nm-ip6-address-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -729,7 +729,7 @@ nm_ip6_address_new (<em class="parameter"><code><span class="type">void</span></
 nm_ip6_address_dup (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> *source</code></em>);</pre>
 <p>Copies a given <a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> object and returns the copy.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.4.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-dup.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -744,7 +744,7 @@ nm_ip6_address_dup (<em class="parameter"><code><a class="link" href="NMSettingI
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.4.6"></a><h4>Returns</h4>
+<a name="nm-ip6-address-dup.returns"></a><h4>Returns</h4>
 <p> the copy of the given <a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> copy. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -756,7 +756,7 @@ nm_ip6_address_dup (<em class="parameter"><code><a class="link" href="NMSettingI
 nm_ip6_address_ref (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> *address</code></em>);</pre>
 <p>Increases the reference count of the object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.5.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-ref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -779,7 +779,7 @@ nm_ip6_address_unref (<em class="parameter"><code><a class="link" href="NMSettin
 <p>Decreases the reference count of the object.  If the reference count
 reaches zero, the object will be destroyed.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.6.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-unref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -802,7 +802,7 @@ nm_ip6_address_compare (<em class="parameter"><code><a class="link" href="NMSett
                         <em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> *other</code></em>);</pre>
 <p>Determines if two <a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> objects contain the same values.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.7.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-compare.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -825,7 +825,7 @@ to.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.7.6"></a><h4>Returns</h4>
+<a name="nm-ip6-address-compare.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the objects contain the same values, <code class="literal">FALSE</code> if they do not.</p>
 </div>
 </div>
@@ -836,7 +836,7 @@ to.</p></td>
 nm_ip6_address_get_address (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> *address</code></em>);</pre>
 <p>Gets the IPv6 address property of this address object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.8.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-get-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -851,7 +851,7 @@ nm_ip6_address_get_address (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.8.6"></a><h4>Returns</h4>
+<a name="nm-ip6-address-get-address.returns"></a><h4>Returns</h4>
 <p>         the IPv6 address. </p>
 <p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> fixed-size=16][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -864,7 +864,7 @@ nm_ip6_address_set_address (<em class="parameter"><code><a class="link" href="NM
                             <em class="parameter"><code>const <span class="type">struct in6_addr</span> *addr</code></em>);</pre>
 <p>Sets the IPv6 address property of this object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.9.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-set-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -893,7 +893,7 @@ nm_ip6_address_set_address (<em class="parameter"><code><a class="link" href="NM
 nm_ip6_address_get_prefix (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> *address</code></em>);</pre>
 <p>Gets the IPv6 address prefix property of this address object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.10.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-get-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -908,7 +908,7 @@ nm_ip6_address_get_prefix (<em class="parameter"><code><a class="link" href="NMS
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.10.6"></a><h4>Returns</h4>
+<a name="nm-ip6-address-get-prefix.returns"></a><h4>Returns</h4>
 <p> the IPv6 address prefix</p>
 </div>
 </div>
@@ -920,7 +920,7 @@ nm_ip6_address_set_prefix (<em class="parameter"><code><a class="link" href="NMS
                            <em class="parameter"><code><span class="type">guint32</span> prefix</code></em>);</pre>
 <p>Sets the IPv6 address prefix.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.11.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-set-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -949,7 +949,7 @@ nm_ip6_address_set_prefix (<em class="parameter"><code><a class="link" href="NMS
 nm_ip6_address_get_gateway (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Address"><span class="type">NMIP6Address</span></a> *address</code></em>);</pre>
 <p>Gets the IPv6 default gateway property of this address object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.12.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-get-gateway.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -964,7 +964,7 @@ nm_ip6_address_get_gateway (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.12.6"></a><h4>Returns</h4>
+<a name="nm-ip6-address-get-gateway.returns"></a><h4>Returns</h4>
 <p>         the IPv6 gateway address. </p>
 <p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> fixed-size=16][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -977,7 +977,7 @@ nm_ip6_address_set_gateway (<em class="parameter"><code><a class="link" href="NM
                             <em class="parameter"><code>const <span class="type">struct in6_addr</span> *gateway</code></em>);</pre>
 <p>Sets the IPv6 default gateway property of this address object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.13.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-address-set-gateway.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1006,7 +1006,7 @@ nm_ip6_address_set_gateway (<em class="parameter"><code><a class="link" href="NM
 nm_ip6_route_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates and returns a new <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.14.5"></a><h4>Returns</h4>
+<a name="nm-ip6-route-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1018,7 +1018,7 @@ nm_ip6_route_new (<em class="parameter"><code><span class="type">void</span></co
 nm_ip6_route_dup (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> *source</code></em>);</pre>
 <p>Copies a given <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> object and returns the copy.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.15.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-dup.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1033,7 +1033,7 @@ nm_ip6_route_dup (<em class="parameter"><code><a class="link" href="NMSettingIP6
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.15.6"></a><h4>Returns</h4>
+<a name="nm-ip6-route-dup.returns"></a><h4>Returns</h4>
 <p> the copy of the given <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> copy. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1045,7 +1045,7 @@ nm_ip6_route_dup (<em class="parameter"><code><a class="link" href="NMSettingIP6
 nm_ip6_route_ref (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> *route</code></em>);</pre>
 <p>Increases the reference count of the object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.16.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-ref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1068,7 +1068,7 @@ nm_ip6_route_unref (<em class="parameter"><code><a class="link" href="NMSettingI
 <p>Decreases the reference count of the object.  If the reference count
 reaches zero, the object will be destroyed.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.17.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-unref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1091,7 +1091,7 @@ nm_ip6_route_compare (<em class="parameter"><code><a class="link" href="NMSettin
                       <em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> *other</code></em>);</pre>
 <p>Determines if two <a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> objects contain the same values.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.18.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-compare.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1114,7 +1114,7 @@ to.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.18.6"></a><h4>Returns</h4>
+<a name="nm-ip6-route-compare.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the objects contain the same values, <code class="literal">FALSE</code> if they do not.</p>
 </div>
 </div>
@@ -1125,7 +1125,7 @@ to.</p></td>
 nm_ip6_route_get_dest (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> *route</code></em>);</pre>
 <p>Gets the IPv6 destination address property of this route object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.19.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-get-dest.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1140,7 +1140,7 @@ nm_ip6_route_get_dest (<em class="parameter"><code><a class="link" href="NMSetti
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.19.6"></a><h4>Returns</h4>
+<a name="nm-ip6-route-get-dest.returns"></a><h4>Returns</h4>
 <p>         the IPv6 address of destination. </p>
 <p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> fixed-size=16][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1153,7 +1153,7 @@ nm_ip6_route_set_dest (<em class="parameter"><code><a class="link" href="NMSetti
                        <em class="parameter"><code>const <span class="type">struct in6_addr</span> *dest</code></em>);</pre>
 <p>Sets the IPv6 destination address property of this route object.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.20.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-set-dest.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1182,7 +1182,7 @@ nm_ip6_route_set_dest (<em class="parameter"><code><a class="link" href="NMSetti
 nm_ip6_route_get_prefix (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> *route</code></em>);</pre>
 <p>Gets the IPv6 prefix (ie "32" or "64" etc) of this route.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.21.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-get-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1197,7 +1197,7 @@ nm_ip6_route_get_prefix (<em class="parameter"><code><a class="link" href="NMSet
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.21.6"></a><h4>Returns</h4>
+<a name="nm-ip6-route-get-prefix.returns"></a><h4>Returns</h4>
 <p> the IPv6 prefix</p>
 </div>
 </div>
@@ -1209,7 +1209,7 @@ nm_ip6_route_set_prefix (<em class="parameter"><code><a class="link" href="NMSet
                          <em class="parameter"><code><span class="type">guint32</span> prefix</code></em>);</pre>
 <p>Sets the IPv6 prefix of this route.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.22.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-set-prefix.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1238,7 +1238,7 @@ nm_ip6_route_set_prefix (<em class="parameter"><code><a class="link" href="NMSet
 nm_ip6_route_get_next_hop (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html#NMIP6Route"><span class="type">NMIP6Route</span></a> *route</code></em>);</pre>
 <p>Gets the IPv6 address of the next hop of this route.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.23.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-get-next-hop.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1253,7 +1253,7 @@ nm_ip6_route_get_next_hop (<em class="parameter"><code><a class="link" href="NMS
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.23.6"></a><h4>Returns</h4>
+<a name="nm-ip6-route-get-next-hop.returns"></a><h4>Returns</h4>
 <p>         the IPv6 address of next hop. </p>
 <p><span class="annotation">[<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> fixed-size=16][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> guint8][<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1266,7 +1266,7 @@ nm_ip6_route_set_next_hop (<em class="parameter"><code><a class="link" href="NMS
                            <em class="parameter"><code>const <span class="type">struct in6_addr</span> *next_hop</code></em>);</pre>
 <p>Sets the IPv6 address of the next hop of this route.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.24.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-set-next-hop.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1296,7 +1296,7 @@ nm_ip6_route_get_metric (<em class="parameter"><code><a class="link" href="NMSet
 <p>Gets the route metric property of this route object; lower values indicate
 "better" or more preferred routes.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.25.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-get-metric.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1311,7 +1311,7 @@ nm_ip6_route_get_metric (<em class="parameter"><code><a class="link" href="NMSet
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.25.6"></a><h4>Returns</h4>
+<a name="nm-ip6-route-get-metric.returns"></a><h4>Returns</h4>
 <p> the route metric</p>
 </div>
 </div>
@@ -1324,7 +1324,7 @@ nm_ip6_route_set_metric (<em class="parameter"><code><a class="link" href="NMSet
 <p>Sets the route metric property of this route object; lower values indicate
 "better" or more preferred routes.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.26.5"></a><h4>Parameters</h4>
+<a name="nm-ip6-route-set-metric.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1353,7 +1353,7 @@ nm_ip6_route_set_metric (<em class="parameter"><code><a class="link" href="NMSet
 nm_setting_ip6_config_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> object with default values.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.27.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-new.returns"></a><h4>Returns</h4>
 <p> the new empty <a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -1364,7 +1364,7 @@ nm_setting_ip6_config_new (<em class="parameter"><code><span class="type">void</
 <pre class="programlisting">const <span class="returnvalue">char</span> *
 nm_setting_ip6_config_get_method (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.28.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-method.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1379,7 +1379,7 @@ nm_setting_ip6_config_get_method (<em class="parameter"><code><a class="link" hr
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.28.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-method.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--method" title="The “method” property"><span class="type">“method”</span></a> property of the setting</p>
 </div>
 </div>
@@ -1389,7 +1389,7 @@ nm_setting_ip6_config_get_method (<em class="parameter"><code><a class="link" hr
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_ip6_config_get_num_dns (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.29.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-num-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1404,7 +1404,7 @@ nm_setting_ip6_config_get_num_dns (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.29.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-num-dns.returns"></a><h4>Returns</h4>
 <p> the number of configured DNS servers</p>
 </div>
 </div>
@@ -1415,7 +1415,7 @@ nm_setting_ip6_config_get_num_dns (<em class="parameter"><code><a class="link" h
 nm_setting_ip6_config_get_dns (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>,
                                <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.30.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1437,7 +1437,7 @@ nm_setting_ip6_config_get_dns (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.30.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-dns.returns"></a><h4>Returns</h4>
 <p> the IPv6 address of the DNS server at index <em class="parameter"><code>i</code></em>
 . </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -1451,7 +1451,7 @@ nm_setting_ip6_config_add_dns (<em class="parameter"><code><a class="link" href=
                                <em class="parameter"><code>const <span class="type">struct in6_addr</span> *dns</code></em>);</pre>
 <p>Adds a new DNS server to the setting.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.31.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-add-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1473,7 +1473,7 @@ nm_setting_ip6_config_add_dns (<em class="parameter"><code><a class="link" href=
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.31.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-add-dns.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS server was added; <code class="literal">FALSE</code> if the server was already
 known</p>
 </div>
@@ -1487,7 +1487,7 @@ nm_setting_ip6_config_remove_dns (<em class="parameter"><code><a class="link" hr
 <p>Removes the DNS server at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.32.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1519,7 +1519,7 @@ nm_setting_ip6_config_remove_dns_by_value
 <p>Removes the DNS server at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.33.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-dns-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1541,7 +1541,7 @@ nm_setting_ip6_config_remove_dns_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.33.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-remove-dns-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS server was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -1553,7 +1553,7 @@ nm_setting_ip6_config_remove_dns_by_value
 nm_setting_ip6_config_clear_dns (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <p>Removes all configured DNS servers.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.34.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-clear-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1575,7 +1575,7 @@ nm_setting_ip6_config_clear_dns (<em class="parameter"><code><a class="link" hre
 nm_setting_ip6_config_get_num_dns_searches
                                (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.35.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-num-dns-searches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1590,7 +1590,7 @@ nm_setting_ip6_config_get_num_dns_searches
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.35.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-num-dns-searches.returns"></a><h4>Returns</h4>
 <p> the number of configured DNS search domains</p>
 </div>
 </div>
@@ -1601,7 +1601,7 @@ nm_setting_ip6_config_get_num_dns_searches
 nm_setting_ip6_config_get_dns_search (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>,
                                       <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.36.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-dns-search.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1623,7 +1623,7 @@ nm_setting_ip6_config_get_dns_search (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.36.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-dns-search.returns"></a><h4>Returns</h4>
 <p> the DNS search domain at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -1636,7 +1636,7 @@ nm_setting_ip6_config_add_dns_search (<em class="parameter"><code><a class="link
                                       <em class="parameter"><code>const <span class="type">char</span> *dns_search</code></em>);</pre>
 <p>Adds a new DNS search domain to the setting.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.37.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-add-dns-search.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1658,7 +1658,7 @@ nm_setting_ip6_config_add_dns_search (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.37.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-add-dns-search.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS search domain was added; <code class="literal">FALSE</code> if the search
 domain was already known</p>
 </div>
@@ -1673,7 +1673,7 @@ nm_setting_ip6_config_remove_dns_search
 <p>Removes the DNS search domain at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.38.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-dns-search.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1705,7 +1705,7 @@ nm_setting_ip6_config_remove_dns_search_by_value
 <p>Removes the DNS search domain <em class="parameter"><code>dns_search</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.39.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-dns-search-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1727,7 +1727,7 @@ nm_setting_ip6_config_remove_dns_search_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.39.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-remove-dns-search-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the DNS search domain was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 <p>Since 0.9.10</p>
 </div>
@@ -1740,7 +1740,7 @@ nm_setting_ip6_config_clear_dns_searches
                                (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <p>Removes all configured DNS search domains.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.40.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-clear-dns-searches.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1762,7 +1762,7 @@ nm_setting_ip6_config_clear_dns_searches
 nm_setting_ip6_config_get_num_addresses
                                (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.41.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-num-addresses.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1777,7 +1777,7 @@ nm_setting_ip6_config_get_num_addresses
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.41.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-num-addresses.returns"></a><h4>Returns</h4>
 <p> the number of configured addresses</p>
 </div>
 </div>
@@ -1788,7 +1788,7 @@ nm_setting_ip6_config_get_num_addresses
 nm_setting_ip6_config_get_address (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>,
                                    <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.42.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1810,7 +1810,7 @@ nm_setting_ip6_config_get_address (<em class="parameter"><code><a class="link" h
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.42.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-address.returns"></a><h4>Returns</h4>
 <p> the address at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -1824,7 +1824,7 @@ nm_setting_ip6_config_add_address (<em class="parameter"><code><a class="link" h
 <p>Adds a new IPv6 address and associated information to the setting.  The
 given address is duplicated internally and is not changed by this function.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.43.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-add-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1846,7 +1846,7 @@ given address is duplicated internally and is not changed by this function.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.43.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-add-address.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the address was added; <code class="literal">FALSE</code> if the address was already
 known.</p>
 </div>
@@ -1860,7 +1860,7 @@ nm_setting_ip6_config_remove_address (<em class="parameter"><code><a class="link
 <p>Removes the address at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.44.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1892,7 +1892,7 @@ nm_setting_ip6_config_remove_address_by_value
 <p>Removes the address <em class="parameter"><code>address</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.45.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-address-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1914,7 +1914,7 @@ nm_setting_ip6_config_remove_address_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.45.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-remove-address-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the address was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -1926,7 +1926,7 @@ nm_setting_ip6_config_remove_address_by_value
 nm_setting_ip6_config_clear_addresses (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <p>Removes all configured addresses.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.46.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-clear-addresses.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1947,7 +1947,7 @@ nm_setting_ip6_config_clear_addresses (<em class="parameter"><code><a class="lin
 <pre class="programlisting"><span class="returnvalue">guint32</span>
 nm_setting_ip6_config_get_num_routes (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.47.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-num-routes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1962,7 +1962,7 @@ nm_setting_ip6_config_get_num_routes (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.47.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-num-routes.returns"></a><h4>Returns</h4>
 <p> the number of configured routes</p>
 </div>
 </div>
@@ -1973,7 +1973,7 @@ nm_setting_ip6_config_get_num_routes (<em class="parameter"><code><a class="link
 nm_setting_ip6_config_get_route (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>,
                                  <em class="parameter"><code><span class="type">guint32</span> i</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.2.26.11.48.4"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-route.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1995,7 +1995,7 @@ nm_setting_ip6_config_get_route (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.48.5"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-route.returns"></a><h4>Returns</h4>
 <p> the route at index <em class="parameter"><code>i</code></em>
 </p>
 </div>
@@ -2009,7 +2009,7 @@ nm_setting_ip6_config_add_route (<em class="parameter"><code><a class="link" hre
 <p>Adds a new IPv6 route and associated information to the setting.  The
 given route is duplicated internally and is not changed by this function.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.49.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-add-route.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2031,7 +2031,7 @@ given route is duplicated internally and is not changed by this function.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.49.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-add-route.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the route was added; <code class="literal">FALSE</code> if the route was already known.</p>
 </div>
 </div>
@@ -2044,7 +2044,7 @@ nm_setting_ip6_config_remove_route (<em class="parameter"><code><a class="link" 
 <p>Removes the route at index <em class="parameter"><code>i</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.50.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-route.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2076,7 +2076,7 @@ nm_setting_ip6_config_remove_route_by_value
 <p>Removes the route <em class="parameter"><code>route</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.51.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-remove-route-by-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2098,7 +2098,7 @@ nm_setting_ip6_config_remove_route_by_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.51.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-remove-route-by-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the route was found and removed; <code class="literal">FALSE</code> if it was not.</p>
 </div>
 <p class="since">Since: 0.9.10</p>
@@ -2110,7 +2110,7 @@ nm_setting_ip6_config_remove_route_by_value
 nm_setting_ip6_config_clear_routes (<em class="parameter"><code><a class="link" href="NMSettingIP6Config.html" title="NMSettingIP6Config"><span class="type">NMSettingIP6Config</span></a> *setting</code></em>);</pre>
 <p>Removes all configured routes.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.52.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-clear-routes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2134,7 +2134,7 @@ nm_setting_ip6_config_get_ignore_auto_routes
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ignore-auto-routes" title="The “ignore-auto-routes” property"><span class="type">“ignore-auto-routes”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.53.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-ignore-auto-routes.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2149,7 +2149,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.53.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-ignore-auto-routes.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if automatically configured (ie via DHCP) routes should be
 ignored.</p>
 </div>
@@ -2163,7 +2163,7 @@ nm_setting_ip6_config_get_route_metric
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--route-metric" title="The “route-metric” property"><span class="type">“route-metric”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.54.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-route-metric.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2178,7 +2178,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.54.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-route-metric.returns"></a><h4>Returns</h4>
 <p> the route metric that is used for IPv6 routes that don't explicitly
 specify a metric. See <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--route-metric" title="The “route-metric” property"><span class="type">“route-metric”</span></a> for more details.</p>
 </div>
@@ -2193,7 +2193,7 @@ nm_setting_ip6_config_get_ignore_auto_dns
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ignore-auto-dns" title="The “ignore-auto-dns” property"><span class="type">“ignore-auto-dns”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.55.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-ignore-auto-dns.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2208,7 +2208,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.55.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-ignore-auto-dns.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if automatically configured (ie via DHCP or router
 advertisements) DNS information should be ignored.</p>
 </div>
@@ -2222,7 +2222,7 @@ nm_setting_ip6_config_get_dhcp_hostname
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--dhcp-hostname" title="The “dhcp-hostname” property"><span class="type">“dhcp-hostname”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.56.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-dhcp-hostname.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2237,7 +2237,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.56.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-dhcp-hostname.returns"></a><h4>Returns</h4>
 <p> the configured hostname to send to the DHCP server</p>
 </div>
 <p class="since">Since: 0.9.8</p>
@@ -2251,7 +2251,7 @@ nm_setting_ip6_config_get_never_default
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--never-default" title="The “never-default” property"><span class="type">“never-default”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.57.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-never-default.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2266,7 +2266,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.57.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-never-default.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if this connection should never be the default connection
 for IPv6 addressing</p>
 </div>
@@ -2279,7 +2279,7 @@ nm_setting_ip6_config_get_may_fail (<em class="parameter"><code><a class="link" 
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--may-fail" title="The “may-fail” property"><span class="type">“may-fail”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.58.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-may-fail.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2294,7 +2294,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.58.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-may-fail.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if this connection doesn't require IPv6 addressing to complete
 for the connection to succeed.</p>
 </div>
@@ -2307,7 +2307,7 @@ nm_setting_ip6_config_get_ip6_privacy (<em class="parameter"><code><a class="lin
 <p>Returns the value contained in the <a class="link" href="NMSettingIP6Config.html#NMSettingIP6Config--ip6-privacy" title="The “ip6-privacy” property"><span class="type">“ip6-privacy”</span></a>
 property.</p>
 <div class="refsect3">
-<a name="id-1.2.26.11.59.5"></a><h4>Parameters</h4>
+<a name="nm-setting-ip6-config-get-ip6-privacy.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2322,7 +2322,7 @@ property.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.2.26.11.59.6"></a><h4>Returns</h4>
+<a name="nm-setting-ip6-config-get-ip6-privacy.returns"></a><h4>Returns</h4>
 <p> IPv6 Privacy Extensions configuration value (<a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy" title="enum NMSettingIP6ConfigPrivacy"><span class="type">NMSettingIP6ConfigPrivacy</span></a>).</p>
 </div>
 </div>
@@ -2338,7 +2338,7 @@ property.</p>
 <div class="refsect2">
 <a name="NMSettingIP6ConfigError"></a><h3>enum NMSettingIP6ConfigError</h3>
 <div class="refsect3">
-<a name="id-1.2.26.12.3.3"></a><h4>Members</h4>
+<a name="NMSettingIP6ConfigError.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -2518,7 +2518,7 @@ supported for IPv6)</p>
 <p><a class="link" href="NMSettingIP6Config.html#NMSettingIP6ConfigPrivacy" title="enum NMSettingIP6ConfigPrivacy"><span class="type">NMSettingIP6ConfigPrivacy</span></a> values indicate if and how IPv6 Privacy
 Extensions are used (RFC4941).</p>
 <div class="refsect3">
-<a name="id-1.2.26.12.23.4"></a><h4>Members</h4>
+<a name="NMSettingIP6ConfigPrivacy.members"></a><h4>Members</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="300px" class="enum_members_name">
@@ -2723,6 +2723,6 @@ automatic configuration.  Routes cannot be used with the "shared" or
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

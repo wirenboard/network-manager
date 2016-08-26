@@ -19,11 +19,10 @@
  * Copyright (C) 2007 - 2013 Red Hat, Inc.
  */
 
-
-#include "nm-default.h"
-
 #ifndef __NETWORKMANAGER_RFKILL_MANAGER_H__
 #define __NETWORKMANAGER_RFKILL_MANAGER_H__
+
+#define NM_RFKILL_MANAGER_SIGNAL_RFKILL_CHANGED "rfkill-changed"
 
 typedef enum { /*< skip >*/
 	RFKILL_UNBLOCKED = 0,

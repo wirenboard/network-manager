@@ -38,7 +38,7 @@
 #include "nm-utils.h"
 #include "nm-core-internal.h"
 
-#include "nm-test-utils.h"
+#include "nm-utils/nm-test-utils.h"
 
 #define TEST_NEED_SECRETS_EAP_TLS_CA_CERT TEST_CERT_DIR "/test_ca_cert.pem"
 #define TEST_NEED_SECRETS_EAP_TLS_CLIENT_CERT TEST_CERT_DIR "/test_key_and_cert.pem"
@@ -639,7 +639,7 @@ test_update_secrets_null_setting_name_with_setting_hash (void)
 	secrets = build_wep_secrets (wepkey);
 
 	g_test_expect_message ("libnm", G_LOG_LEVEL_CRITICAL,
-	                       "*nm_connection_update_secrets*setting_name != NULL || full_connection*");
+	                       NMTST_G_RETURN_MSG (setting_name != NULL || full_connection));
 	success = nm_connection_update_secrets (connection, NULL, secrets, &error);
 	g_test_assert_expected_messages ();
 	g_assert_no_error (error);

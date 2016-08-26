@@ -25,6 +25,7 @@
 #include <net/if.h>
 #include <netdb.h>
 #include <netinet/ip.h>
+#include <poll.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -35,22 +36,18 @@
 #include "alloc-util.h"
 #include "fd-util.h"
 #include "fileio.h"
-#if 0 /* NM_IGNORED */
 #include "formats-util.h"
-#endif /* NM_IGNORED */
 #include "log.h"
 #include "macro.h"
-#if 0 /* NM_IGNORED */
 #include "missing.h"
-#endif /* NM_IGNORED */
 #include "parse-util.h"
 #include "path-util.h"
 #include "socket-util.h"
 #include "string-table.h"
 #include "string-util.h"
-#if 0 /* NM_IGNORED */
+#include "strv.h"
 #include "user-util.h"
-#endif /* NM_IGNORED */
+#include "utf8.h"
 #include "util.h"
 
 #if 0 /* NM_IGNORED */
@@ -91,7 +88,7 @@ int socket_address_parse(SocketAddress *a, const char *s) {
                         return -EINVAL;
 
                 a->sockaddr.in6.sin6_family = AF_INET6;
-                a->sockaddr.in6.sin6_port = htons((uint16_t) u);
+                a->sockaddr.in6.sin6_port = htobe16((uint16_t)u);
                 a->size = sizeof(struct sockaddr_in6);
 
         } else if (*s == '/') {
@@ -139,7 +136,7 @@ int socket_address_parse(SocketAddress *a, const char *s) {
                         if (r > 0) {
                                 /* Gotcha, it's a traditional IPv4 address */
                                 a->sockaddr.in.sin_family = AF_INET;
-                                a->sockaddr.in.sin_port = htons((uint16_t) u);
+                                a->sockaddr.in.sin_port = htobe16((uint16_t)u);
                                 a->size = sizeof(struct sockaddr_in);
                         } else {
                                 unsigned idx;
@@ -153,7 +150,7 @@ int socket_address_parse(SocketAddress *a, const char *s) {
                                         return -EINVAL;
 
                                 a->sockaddr.in6.sin6_family = AF_INET6;
-                                a->sockaddr.in6.sin6_port = htons((uint16_t) u);
+                                a->sockaddr.in6.sin6_port = htobe16((uint16_t)u);
                                 a->sockaddr.in6.sin6_scope_id = idx;
                                 a->sockaddr.in6.sin6_addr = in6addr_any;
                                 a->size = sizeof(struct sockaddr_in6);
@@ -170,12 +167,12 @@ int socket_address_parse(SocketAddress *a, const char *s) {
 
                         if (socket_ipv6_is_supported()) {
                                 a->sockaddr.in6.sin6_family = AF_INET6;
-                                a->sockaddr.in6.sin6_port = htons((uint16_t) u);
+                                a->sockaddr.in6.sin6_port = htobe16((uint16_t)u);
                                 a->sockaddr.in6.sin6_addr = in6addr_any;
                                 a->size = sizeof(struct sockaddr_in6);
                         } else {
                                 a->sockaddr.in.sin_family = AF_INET;
-                                a->sockaddr.in.sin_port = htons((uint16_t) u);
+                                a->sockaddr.in.sin_port = htobe16((uint16_t)u);
                                 a->sockaddr.in.sin_addr.s_addr = INADDR_ANY;
                                 a->size = sizeof(struct sockaddr_in);
                         }
@@ -494,9 +491,7 @@ int sockaddr_port(const struct sockaddr *_sa) {
         if (!IN_SET(sa->sa.sa_family, AF_INET, AF_INET6))
                 return -EAFNOSUPPORT;
 
-        return ntohs(sa->sa.sa_family == AF_INET6 ?
-                       sa->in6.sin6_port :
-                       sa->in.sin_port);
+        return be16toh(sa->sa.sa_family == AF_INET6 ? sa->in6.sin6_port : sa->in.sin_port);
 }
 
 int sockaddr_pretty(const struct sockaddr *_sa, socklen_t salen, bool translate_ipv6, bool include_port, char **ret) {
@@ -512,13 +507,13 @@ int sockaddr_pretty(const struct sockaddr *_sa, socklen_t salen, bool translate_
         case AF_INET: {
                 uint32_t a;
 
-                a = ntohl(sa->in.sin_addr.s_addr);
+                a = be32toh(sa->in.sin_addr.s_addr);
 
                 if (include_port)
                         r = asprintf(&p,
                                      "%u.%u.%u.%u:%u",
                                      a >> 24, (a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF,
-                                     ntohs(sa->in.sin_port));
+                                     be16toh(sa->in.sin_port));
                 else
                         r = asprintf(&p,
                                      "%u.%u.%u.%u",
@@ -540,7 +535,7 @@ int sockaddr_pretty(const struct sockaddr *_sa, socklen_t salen, bool translate_
                                 r = asprintf(&p,
                                              "%u.%u.%u.%u:%u",
                                              a[0], a[1], a[2], a[3],
-                                             ntohs(sa->in6.sin6_port));
+                                             be16toh(sa->in6.sin6_port));
                         else
                                 r = asprintf(&p,
                                              "%u.%u.%u.%u",
@@ -556,7 +551,7 @@ int sockaddr_pretty(const struct sockaddr *_sa, socklen_t salen, bool translate_
                                 r = asprintf(&p,
                                              "[%s]:%u",
                                              a,
-                                             ntohs(sa->in6.sin6_port));
+                                             be16toh(sa->in6.sin6_port));
                                 if (r < 0)
                                         return -ENOMEM;
                         } else {
@@ -803,6 +798,42 @@ static const char* const ip_tos_table[] = {
 
 DEFINE_STRING_TABLE_LOOKUP_WITH_FALLBACK(ip_tos, int, 0xff);
 
+bool ifname_valid(const char *p) {
+        bool numeric = true;
+
+        /* Checks whether a network interface name is valid. This is inspired by dev_valid_name() in the kernel sources
+         * but slightly stricter, as we only allow non-control, non-space ASCII characters in the interface name. We
+         * also don't permit names that only container numbers, to avoid confusion with numeric interface indexes. */
+
+        if (isempty(p))
+                return false;
+
+        if (strlen(p) >= IFNAMSIZ)
+                return false;
+
+        if (STR_IN_SET(p, ".", ".."))
+                return false;
+
+        while (*p) {
+                if ((unsigned char) *p >= 127U)
+                        return false;
+
+                if ((unsigned char) *p <= 32U)
+                        return false;
+
+                if (*p == ':' || *p == '/')
+                        return false;
+
+                numeric = numeric && (*p >= '0' && *p <= '9');
+                p++;
+        }
+
+        if (numeric)
+                return false;
+
+        return true;
+}
+
 int getpeercred(int fd, struct ucred *ucred) {
         socklen_t n = sizeof(struct ucred);
         struct ucred u;
@@ -959,7 +990,7 @@ ssize_t next_datagram_size_fd(int fd) {
 
         l = recv(fd, NULL, 0, MSG_PEEK|MSG_TRUNC);
         if (l < 0) {
-                if (errno == EOPNOTSUPP)
+                if (errno == EOPNOTSUPP || errno == EFAULT)
                         goto fallback;
 
                 return -errno;
@@ -979,4 +1010,57 @@ fallback:
                 return -errno;
 
         return (ssize_t) k;
+}
+
+int flush_accept(int fd) {
+
+        struct pollfd pollfd = {
+                .fd = fd,
+                .events = POLLIN,
+        };
+        int r;
+
+
+        /* Similar to flush_fd() but flushes all incoming connection by accepting them and immediately closing them. */
+
+        for (;;) {
+                int cfd;
+
+                r = poll(&pollfd, 1, 0);
+                if (r < 0) {
+                        if (errno == EINTR)
+                                continue;
+
+                        return -errno;
+
+                } else if (r == 0)
+                        return 0;
+
+                cfd = accept4(fd, NULL, NULL, SOCK_NONBLOCK|SOCK_CLOEXEC);
+                if (cfd < 0) {
+                        if (errno == EINTR)
+                                continue;
+
+                        if (errno == EAGAIN)
+                                return 0;
+
+                        return -errno;
+                }
+
+                close(cfd);
+        }
+}
+
+struct cmsghdr* cmsg_find(struct msghdr *mh, int level, int type, socklen_t length) {
+        struct cmsghdr *cmsg;
+
+        assert(mh);
+
+        CMSG_FOREACH(cmsg, mh)
+                if (cmsg->cmsg_level == level &&
+                    cmsg->cmsg_type == type &&
+                    (length == (socklen_t) -1 || length == cmsg->cmsg_len))
+                        return cmsg;
+
+        return NULL;
 }

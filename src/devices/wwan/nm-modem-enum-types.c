@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include "nm-modem-enum-types.h"
+#include "nm-default.h"
 
 #include "nm-modem.h"
 

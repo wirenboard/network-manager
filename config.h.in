@@ -62,6 +62,9 @@
 /* Define if you have libaudit support */
 #undef HAVE_LIBAUDIT
 
+/* Define to 1 if libsystemd is available */
+#undef HAVE_LIBSYSTEMD
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -216,6 +219,9 @@
 /* Define to 1 to use systemd suspend api */
 #undef SUSPEND_RESUME_SYSTEMD
 
+/* Define to 1 to use UPower suspend api */
+#undef SUSPEND_RESUME_UPOWER
+
 /* Define to 1 if libsystemd-journald is available */
 #undef SYSTEMD_JOURNAL
 
@@ -259,11 +265,17 @@
 /* Define if you have dhcpcd */
 #undef WITH_DHCPCD
 
+/* Define if JANSSON is enabled */
+#undef WITH_JANSSON
+
 /* Define if you have libsoup */
 #undef WITH_LIBSOUP
 
 /* Define if you have ModemManager1 support */
 #undef WITH_MODEM_MANAGER_1
+
+/* Define if you have oFono support (experimental) */
+#undef WITH_OFONO
 
 /* whether to compile polkit support */
 #undef WITH_POLKIT

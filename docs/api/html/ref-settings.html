@@ -8,7 +8,7 @@
 <link rel="up" href="index.html" title="NetworkManager Reference Manual">
 <link rel="prev" href="nm-vpn-dbus-types.html" title="VPN Plugin D-Bus API Types">
 <link rel="next" href="secrets-flags.html" title="Secret flag types">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -37,7 +37,7 @@
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
 <a name="id-1.4.3"></a>Configuration Settings</h2></div></div></div>
 <div class="table">
-<a name="id-1.4.3.2.1"></a><p class="title"><b>Table 58. 802-1x setting</b></p>
+<a name="id-1.4.3.2.1"></a><p class="title"><b>Table 81. 802-1x setting</b></p>
 <div class="table-contents"><table summary="802-1x setting" border="1">
 <colgroup>
 <col>
@@ -267,7 +267,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.3.1"></a><p class="title"><b>Table 59. adsl setting</b></p>
+<a name="id-1.4.3.3.1"></a><p class="title"><b>Table 82. adsl setting</b></p>
 <div class="table-contents"><table summary="adsl setting" border="1">
 <colgroup>
 <col>
@@ -335,7 +335,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.4.1"></a><p class="title"><b>Table 60. bluetooth setting</b></p>
+<a name="id-1.4.3.4.1"></a><p class="title"><b>Table 83. bluetooth setting</b></p>
 <div class="table-contents"><table summary="bluetooth setting" border="1">
 <colgroup>
 <col>
@@ -373,7 +373,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.5.1"></a><p class="title"><b>Table 61. bond setting</b></p>
+<a name="id-1.4.3.5.1"></a><p class="title"><b>Table 84. bond setting</b></p>
 <div class="table-contents"><table summary="bond setting" border="1">
 <colgroup>
 <col>
@@ -411,7 +411,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.6.1"></a><p class="title"><b>Table 62. bridge setting</b></p>
+<a name="id-1.4.3.6.1"></a><p class="title"><b>Table 85. bridge setting</b></p>
 <div class="table-contents"><table summary="bridge setting" border="1">
 <colgroup>
 <col>
@@ -491,7 +491,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.7.1"></a><p class="title"><b>Table 63. bridge-port setting</b></p>
+<a name="id-1.4.3.7.1"></a><p class="title"><b>Table 86. bridge-port setting</b></p>
 <div class="table-contents"><table summary="bridge-port setting" border="1">
 <colgroup>
 <col>
@@ -535,7 +535,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.8.1"></a><p class="title"><b>Table 64. cdma setting</b></p>
+<a name="id-1.4.3.8.1"></a><p class="title"><b>Table 87. cdma setting</b></p>
 <div class="table-contents"><table summary="cdma setting" border="1">
 <colgroup>
 <col>
@@ -585,7 +585,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.9.1"></a><p class="title"><b>Table 65. connection setting</b></p>
+<a name="id-1.4.3.9.1"></a><p class="title"><b>Table 88. connection setting</b></p>
 <div class="table-contents"><table summary="connection setting" border="1">
 <colgroup>
 <col>
@@ -685,6 +685,12 @@
 <td>Setting name of the device type of this slave's master connection (eg, "bond"), or NULL if this connection is not a slave.</td>
 </tr>
 <tr>
+<td><pre class="screen">stable-id</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>This token to generate stable IDs for the connection. If unset, the UUID will be used instead. The stable-id is used instead of the connection UUID for generating IPv6 stable private addresses with ipv6.addr-gen-mode=stable-privacy. It is also used to seed the generated cloned MAC address for ethernet.cloned-mac-address=stable and wifi.cloned-mac-address=stable.</td>
+</tr>
+<tr>
 <td><pre class="screen">timestamp</pre></td>
 <td><pre class="screen">uint64</pre></td>
 <td><pre class="screen">0</pre></td>
@@ -713,7 +719,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.10.1"></a><p class="title"><b>Table 66. dcb setting</b></p>
+<a name="id-1.4.3.10.1"></a><p class="title"><b>Table 89. dcb setting</b></p>
 <div class="table-contents"><table summary="dcb setting" border="1">
 <colgroup>
 <col>
@@ -829,7 +835,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.11.1"></a><p class="title"><b>Table 67. generic setting</b></p>
+<a name="id-1.4.3.11.1"></a><p class="title"><b>Table 90. generic setting</b></p>
 <div class="table-contents"><table summary="generic setting" border="1">
 <colgroup>
 <col>
@@ -853,7 +859,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.12.1"></a><p class="title"><b>Table 68. gsm setting</b></p>
+<a name="id-1.4.3.12.1"></a><p class="title"><b>Table 91. gsm setting</b></p>
 <div class="table-contents"><table summary="gsm setting" border="1">
 <colgroup>
 <col>
@@ -951,7 +957,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.13.1"></a><p class="title"><b>Table 69. infiniband setting</b></p>
+<a name="id-1.4.3.13.1"></a><p class="title"><b>Table 92. infiniband setting</b></p>
 <div class="table-contents"><table summary="infiniband setting" border="1">
 <colgroup>
 <col>
@@ -1007,7 +1013,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.14.1"></a><p class="title"><b>Table 70. ipv4 setting</b></p>
+<a name="id-1.4.3.14.1"></a><p class="title"><b>Table 93. ipv4 setting</b></p>
 <div class="table-contents"><table summary="ipv4 setting" border="1">
 <colgroup>
 <col>
@@ -1159,7 +1165,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.15.1"></a><p class="title"><b>Table 71. ipv6 setting</b></p>
+<a name="id-1.4.3.15.1"></a><p class="title"><b>Table 94. ipv6 setting</b></p>
 <div class="table-contents"><table summary="ipv6 setting" border="1">
 <colgroup>
 <col>
@@ -1306,12 +1312,18 @@
 <td><pre class="screen">[]</pre></td>
 <td>Deprecated in favor of the 'route-data' property, but this can be used for backward-compatibility with older daemons. Note that if you send this property the daemon will ignore 'route-data'.  Array of IPv6 route structures.  Each IPv6 route structure is composed of an IPv6 address, a prefix length (1 - 128), an IPv6 next hop address (which may be zeroed out if there is no next hop), and a metric. If the metric is 0, NM will choose an appropriate default metric for the device.</td>
 </tr>
+<tr>
+<td><pre class="screen">token</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>Configure the token for draft-chown-6man-tokenised-ipv6-identifiers-02 IPv6 tokenized interface identifiers. Useful with eui64 addr-gen-mode.</td>
+</tr>
 </tbody>
 </table></div>
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.16.1"></a><p class="title"><b>Table 72. ip-tunnel setting</b></p>
+<a name="id-1.4.3.16.1"></a><p class="title"><b>Table 95. ip-tunnel setting</b></p>
 <div class="table-contents"><table summary="ip-tunnel setting" border="1">
 <colgroup>
 <col>
@@ -1409,7 +1421,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.17.1"></a><p class="title"><b>Table 73. macvlan setting</b></p>
+<a name="id-1.4.3.17.1"></a><p class="title"><b>Table 96. macvlan setting</b></p>
 <div class="table-contents"><table summary="macvlan setting" border="1">
 <colgroup>
 <col>
@@ -1459,7 +1471,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.18.1"></a><p class="title"><b>Table 74. 802-11-olpc-mesh setting</b></p>
+<a name="id-1.4.3.18.1"></a><p class="title"><b>Table 97. 802-11-olpc-mesh setting</b></p>
 <div class="table-contents"><table summary="802-11-olpc-mesh setting" border="1">
 <colgroup>
 <col>
@@ -1503,7 +1515,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.19.1"></a><p class="title"><b>Table 75. ppp setting</b></p>
+<a name="id-1.4.3.19.1"></a><p class="title"><b>Table 98. ppp setting</b></p>
 <div class="table-contents"><table summary="ppp setting" border="1">
 <colgroup>
 <col>
@@ -1637,7 +1649,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.20.1"></a><p class="title"><b>Table 76. pppoe setting</b></p>
+<a name="id-1.4.3.20.1"></a><p class="title"><b>Table 99. pppoe setting</b></p>
 <div class="table-contents"><table summary="pppoe setting" border="1">
 <colgroup>
 <col>
@@ -1687,7 +1699,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.21.1"></a><p class="title"><b>Table 77. serial setting</b></p>
+<a name="id-1.4.3.21.1"></a><p class="title"><b>Table 100. serial setting</b></p>
 <div class="table-contents"><table summary="serial setting" border="1">
 <colgroup>
 <col>
@@ -1743,7 +1755,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.22.1"></a><p class="title"><b>Table 78. team setting</b></p>
+<a name="id-1.4.3.22.1"></a><p class="title"><b>Table 101. team setting</b></p>
 <div class="table-contents"><table summary="team setting" border="1">
 <colgroup>
 <col>
@@ -1781,7 +1793,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.23.1"></a><p class="title"><b>Table 79. team-port setting</b></p>
+<a name="id-1.4.3.23.1"></a><p class="title"><b>Table 102. team-port setting</b></p>
 <div class="table-contents"><table summary="team-port setting" border="1">
 <colgroup>
 <col>
@@ -1813,7 +1825,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.24.1"></a><p class="title"><b>Table 80. tun setting</b></p>
+<a name="id-1.4.3.24.1"></a><p class="title"><b>Table 103. tun setting</b></p>
 <div class="table-contents"><table summary="tun setting" border="1">
 <colgroup>
 <col>
@@ -1875,7 +1887,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.25.1"></a><p class="title"><b>Table 81. vlan setting</b></p>
+<a name="id-1.4.3.25.1"></a><p class="title"><b>Table 104. vlan setting</b></p>
 <div class="table-contents"><table summary="vlan setting" border="1">
 <colgroup>
 <col>
@@ -1937,7 +1949,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.26.1"></a><p class="title"><b>Table 82. vpn setting</b></p>
+<a name="id-1.4.3.26.1"></a><p class="title"><b>Table 105. vpn setting</b></p>
 <div class="table-contents"><table summary="vpn setting" border="1">
 <colgroup>
 <col>
@@ -1999,7 +2011,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.27.1"></a><p class="title"><b>Table 83. vxlan setting</b></p>
+<a name="id-1.4.3.27.1"></a><p class="title"><b>Table 106. vxlan setting</b></p>
 <div class="table-contents"><table summary="vxlan setting" border="1">
 <colgroup>
 <col>
@@ -2121,7 +2133,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.28.1"></a><p class="title"><b>Table 84. wimax setting</b></p>
+<a name="id-1.4.3.28.1"></a><p class="title"><b>Table 107. wimax setting</b></p>
 <div class="table-contents"><table summary="wimax setting" border="1">
 <colgroup>
 <col>
@@ -2159,7 +2171,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.29.1"></a><p class="title"><b>Table 85. 802-3-ethernet setting</b></p>
+<a name="id-1.4.3.29.1"></a><p class="title"><b>Table 108. 802-3-ethernet setting</b></p>
 <div class="table-contents"><table summary="802-3-ethernet setting" border="1">
 <colgroup>
 <col>
@@ -2175,6 +2187,12 @@
 </tr></thead>
 <tbody>
 <tr>
+<td><pre class="screen">assigned-mac-address</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>The new field for the cloned MAC address. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable". This field replaces the deprecated "cloned-mac-address" on D-Bus, which can only contain explict hardware addresses.</td>
+</tr>
+<tr>
 <td><pre class="screen">auto-negotiate</pre></td>
 <td><pre class="screen">boolean</pre></td>
 <td><pre class="screen">TRUE</pre></td>
@@ -2184,13 +2202,19 @@
 <td><pre class="screen">cloned-mac-address</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen"></pre></td>
-<td>If specified, request that the device use this MAC address instead of its permanent MAC address.  This is known as MAC cloning or spoofing.</td>
+<td>This D-Bus field is deprecated in favor of "assigned-mac-address" which is more flexible and allows specifying special variants like "random".</td>
 </tr>
 <tr>
 <td><pre class="screen">duplex</pre></td>
 <td><pre class="screen">string</pre></td>
 <td><pre class="screen"></pre></td>
 <td>If specified, request that the device only use the specified duplex mode. Either "half" or "full".</td>
+</tr>
+<tr>
+<td><pre class="screen">generate-mac-address-mask</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>With "cloned-mac-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally-administered, unicast MAC address is created. This property allows to specify that certain bits are fixed. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address. If the property is NULL, it is eligible to be overwritten by a default connection setting. If the value is still NULL or an empty string, the default is to create a locally-administered, unicast MAC address. If the value contains one MAC address, this address is used as mask. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally-administered, burned-in MAC address. If the value contains more then one additional MAC addresses, one of them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered.</td>
 </tr>
 <tr>
 <td><pre class="screen">mac-address</pre></td>
@@ -2263,7 +2287,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.30.1"></a><p class="title"><b>Table 86. 802-11-wireless setting</b></p>
+<a name="id-1.4.3.30.1"></a><p class="title"><b>Table 109. 802-11-wireless setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless setting" border="1">
 <colgroup>
 <col>
@@ -2278,6 +2302,12 @@
 <th>Value Description</th>
 </tr></thead>
 <tbody>
+<tr>
+<td><pre class="screen">assigned-mac-address</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>The new field for the cloned MAC address. It can be either a hardware address in ASCII representation, or one of the special values "preserve", "permanent", "random" or "stable". This field replaces the deprecated "cloned-mac-address" on D-Bus, which can only contain explict hardware addresses.</td>
+</tr>
 <tr>
 <td><pre class="screen">band</pre></td>
 <td><pre class="screen">string</pre></td>
@@ -2300,7 +2330,13 @@
 <td><pre class="screen">cloned-mac-address</pre></td>
 <td><pre class="screen">byte array</pre></td>
 <td><pre class="screen"></pre></td>
-<td>If specified, request that the Wi-Fi device use this MAC address instead of its permanent MAC address.  This is known as MAC cloning or spoofing.</td>
+<td>This D-Bus field is deprecated in favor of "assigned-mac-address" which is more flexible and allows specifying special variants like "random".</td>
+</tr>
+<tr>
+<td><pre class="screen">generate-mac-address-mask</pre></td>
+<td><pre class="screen">string</pre></td>
+<td><pre class="screen"></pre></td>
+<td>With "cloned-mac-address" setting "random" or "stable", by default all bits of the MAC address are scrambled and a locally-administered, unicast MAC address is created. This property allows to specify that certain bits are fixed. Note that the least significant bit of the first MAC address will always be unset to create a unicast MAC address. If the property is NULL, it is eligible to be overwritten by a default connection setting. If the value is still NULL or an empty string, the default is to create a locally-administered, unicast MAC address. If the value contains one MAC address, this address is used as mask. The set bits of the mask are to be filled with the current MAC address of the device, while the unset bits are subject to randomization. Setting "FE:FF:FF:00:00:00" means to preserve the OUI of the current MAC address and only randomize the lower 3 bytes using the "random" or "stable" algorithm. If the value contains one additional MAC address after the mask, this address is used instead of the current MAC address to fill the bits that shall not be randomized. For example, a value of "FE:FF:FF:00:00:00 68:F7:28:00:00:00" will set the OUI of the MAC address to 68:F7:28, while the lower bits are randomized. A value of "02:00:00:00:00:00 00:00:00:00:00:00" will create a fully scrambled globally-administered, burned-in MAC address. If the value contains more then one additional MAC addresses, one of them is chosen randomly. For example, "02:00:00:00:00:00 00:00:00:00:00:00 02:00:00:00:00:00" will create a fully scrambled MAC address, randomly locally or globally administered.</td>
 </tr>
 <tr>
 <td><pre class="screen">hidden</pre></td>
@@ -2324,7 +2360,7 @@
 <td><pre class="screen">mac-address-randomization</pre></td>
 <td><pre class="screen">uint32</pre></td>
 <td><pre class="screen">0</pre></td>
-<td>One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address).</td>
+<td>One of NM_SETTING_MAC_RANDOMIZATION_DEFAULT (0) (never randomize unless the user has set a global default to randomize and the supplicant supports randomization),  NM_SETTING_MAC_RANDOMIZATION_NEVER (1) (never randomize the MAC address), or NM_SETTING_MAC_RANDOMIZATION_ALWAYS (2) (always randomize the MAC address). Deprecated: 1</td>
 </tr>
 <tr>
 <td><pre class="screen">mode</pre></td>
@@ -2385,7 +2421,7 @@
 </div>
 <p><br class="table-break"></p>
 <div class="table">
-<a name="id-1.4.3.31.1"></a><p class="title"><b>Table 87. 802-11-wireless-security setting</b></p>
+<a name="id-1.4.3.31.1"></a><p class="title"><b>Table 110. 802-11-wireless-security setting</b></p>
 <div class="table-contents"><table summary="802-11-wireless-security setting" border="1">
 <colgroup>
 <col>
@@ -2515,6 +2551,6 @@
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

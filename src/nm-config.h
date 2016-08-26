@@ -45,6 +45,7 @@
 
 #define NM_CONFIG_KEYFILE_GROUPPREFIX_INTERN                ".intern."
 #define NM_CONFIG_KEYFILE_GROUPPREFIX_CONNECTION            "connection"
+#define NM_CONFIG_KEYFILE_GROUPPREFIX_DEVICE                "device"
 #define NM_CONFIG_KEYFILE_GROUPPREFIX_GLOBAL_DNS_DOMAIN     "global-dns-domain-"
 #define NM_CONFIG_KEYFILE_GROUPPREFIX_TEST_APPEND_STRINGLIST ".test-append-stringlist"
 
@@ -69,6 +70,8 @@
 #define NM_CONFIG_KEYFILE_KEY_IFUPDOWN_MANAGED              "managed"
 #define NM_CONFIG_KEYFILE_KEY_AUDIT                         "audit"
 
+#define NM_CONFIG_KEYFILE_KEY_DEVICE_IGNORE_CARRIER         "ignore-carrier"
+
 #define NM_CONFIG_KEYFILE_KEYPREFIX_WAS                     ".was."
 #define NM_CONFIG_KEYFILE_KEYPREFIX_SET                     ".set."
 
@@ -78,6 +81,24 @@
 	NM_CONFIG_KEYFILE_GROUPPREFIX_INTERN NM_CONFIG_KEYFILE_GROUPPREFIX_GLOBAL_DNS_DOMAIN
 
 typedef struct NMConfigCmdLineOptions NMConfigCmdLineOptions;
+
+typedef enum {
+	NM_CONFIG_STATE_PROPERTY_NONE,
+
+	/* 1 set-argument: (gboolean enabled) */
+	NM_CONFIG_STATE_PROPERTY_NETWORKING_ENABLED,
+	NM_CONFIG_STATE_PROPERTY_WIFI_ENABLED,
+	NM_CONFIG_STATE_PROPERTY_WWAN_ENABLED,
+} NMConfigRunStatePropertyType;
+
+typedef struct {
+	bool net_enabled;
+	bool wifi_enabled;
+	bool wwan_enabled;
+
+	/* Whether the runstate is modified and not saved to disk. */
+	bool dirty;
+} NMConfigState;
 
 struct _NMConfig {
 	GObject parent;
@@ -126,6 +147,15 @@ void nm_config_set_no_auto_default_for_device  (NMConfig *config, NMDevice *devi
 NMConfig *nm_config_new (const NMConfigCmdLineOptions *cli, char **atomic_section_prefixes, GError **error);
 NMConfig *nm_config_setup (const NMConfigCmdLineOptions *cli, char **atomic_section_prefixes, GError **error);
 void nm_config_reload (NMConfig *config, NMConfigChangeFlags reload_flags);
+
+const NMConfigState *nm_config_state_get (NMConfig *config);
+
+void _nm_config_state_set (NMConfig *config,
+                           gboolean allow_persist,
+                           gboolean force_persist,
+                           ...);
+#define nm_config_state_set(config, allow_persist, force_persist, ...) \
+    _nm_config_state_set (config, allow_persist, force_persist, ##__VA_ARGS__, 0)
 
 gint nm_config_parse_boolean (const char *str, gint default_value);
 

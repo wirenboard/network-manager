@@ -8,7 +8,7 @@
 <link rel="up" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="prev" href="ch04.html" title="Device and Runtime Configuration API Reference">
 <link rel="next" href="NMDeviceAdsl.html" title="NMDeviceAdsl">
-<meta name="generator" content="GTK-Doc V1.24 (XML mode)">
+<meta name="generator" content="GTK-Doc V1.25 (XML mode)">
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -832,7 +832,7 @@ NMDevice implements
 nm_device_get_iface (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the interface name of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.2.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-iface.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -847,7 +847,7 @@ nm_device_get_iface (<em class="parameter"><code><a class="link" href="NMDevice.
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.2.6"></a><h4>Returns</h4>
+<a name="nm-device-get-iface.returns"></a><h4>Returns</h4>
 <p> the interface of the device. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -860,7 +860,7 @@ nm_device_get_ip_iface (<em class="parameter"><code><a class="link" href="NMDevi
 <p>Gets the IP interface name of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> over which IP traffic flows
 when the device is in the ACTIVATED state.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.3.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-ip-iface.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -875,7 +875,7 @@ when the device is in the ACTIVATED state.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.3.6"></a><h4>Returns</h4>
+<a name="nm-device-get-ip-iface.returns"></a><h4>Returns</h4>
 <p> the IP traffic interface of the device. This is the internal string
 used by the device, and must not be modified.</p>
 </div>
@@ -887,7 +887,7 @@ used by the device, and must not be modified.</p>
 nm_device_get_device_type (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Returns the numeric type of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>, ie Ethernet, Wi-Fi, etc.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.4.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-device-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -902,7 +902,7 @@ nm_device_get_device_type (<em class="parameter"><code><a class="link" href="NMD
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.4.6"></a><h4>Returns</h4>
+<a name="nm-device-get-device-type.returns"></a><h4>Returns</h4>
 <p> the device type</p>
 </div>
 </div>
@@ -913,7 +913,7 @@ nm_device_get_device_type (<em class="parameter"><code><a class="link" href="NMD
 nm_device_get_udi (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the Unique Device Identifier of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.5.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-udi.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -928,7 +928,7 @@ nm_device_get_udi (<em class="parameter"><code><a class="link" href="NMDevice.ht
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.5.6"></a><h4>Returns</h4>
+<a name="nm-device-get-udi.returns"></a><h4>Returns</h4>
 <p> the Unique Device Identifier of the device.  This identifier may be
 used to gather more information about the device from various operating
 system services like udev or sysfs.</p>
@@ -941,7 +941,7 @@ system services like udev or sysfs.</p>
 nm_device_get_driver (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the driver of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.6.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-driver.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -956,7 +956,7 @@ nm_device_get_driver (<em class="parameter"><code><a class="link" href="NMDevice
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.6.6"></a><h4>Returns</h4>
+<a name="nm-device-get-driver.returns"></a><h4>Returns</h4>
 <p> the driver of the device. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -968,7 +968,7 @@ device, and must not be modified.</p>
 nm_device_get_driver_version (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the driver version of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.7.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-driver-version.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -983,7 +983,7 @@ nm_device_get_driver_version (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.7.6"></a><h4>Returns</h4>
+<a name="nm-device-get-driver-version.returns"></a><h4>Returns</h4>
 <p> the version of the device driver. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -995,7 +995,7 @@ device, and must not be modified.</p>
 nm_device_get_firmware_version (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the firmware version of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.8.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-firmware-version.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1010,7 +1010,7 @@ nm_device_get_firmware_version (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.8.6"></a><h4>Returns</h4>
+<a name="nm-device-get-firmware-version.returns"></a><h4>Returns</h4>
 <p> the firmware version of the device. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -1024,7 +1024,7 @@ nm_device_get_type_description (<em class="parameter"><code><a class="link" href
 <em class="parameter"><code>device</code></em>
  is.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.9.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-type-description.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1039,7 +1039,7 @@ nm_device_get_type_description (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.9.6"></a><h4>Returns</h4>
+<a name="nm-device-get-type-description.returns"></a><h4>Returns</h4>
 <p> the type description of the device. This is the internal
 string used by the device, and must not be modified.</p>
 </div>
@@ -1052,7 +1052,7 @@ nm_device_get_hw_address (<em class="parameter"><code><a class="link" href="NMDe
 <p>Gets the current a hardware address (MAC) for the <em class="parameter"><code>device</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.10.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-hw-address.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1067,7 +1067,7 @@ nm_device_get_hw_address (<em class="parameter"><code><a class="link" href="NMDe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.10.6"></a><h4>Returns</h4>
+<a name="nm-device-get-hw-address.returns"></a><h4>Returns</h4>
 <p> the current MAC of the device, or <code class="literal">NULL</code>.
 This is the internal string used by the device, and must not be modified.</p>
 </div>
@@ -1079,7 +1079,7 @@ This is the internal string used by the device, and must not be modified.</p>
 nm_device_get_capabilities (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the device' capabilities.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.11.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-capabilities.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1094,7 +1094,7 @@ nm_device_get_capabilities (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.11.6"></a><h4>Returns</h4>
+<a name="nm-device-get-capabilities.returns"></a><h4>Returns</h4>
 <p> the capabilities</p>
 </div>
 </div>
@@ -1105,7 +1105,7 @@ nm_device_get_capabilities (<em class="parameter"><code><a class="link" href="NM
 nm_device_get_managed (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Whether the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> is managed by NetworkManager.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.12.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-managed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1120,7 +1120,7 @@ nm_device_get_managed (<em class="parameter"><code><a class="link" href="NMDevic
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.12.6"></a><h4>Returns</h4>
+<a name="nm-device-get-managed.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device is managed by NetworkManager</p>
 </div>
 </div>
@@ -1132,7 +1132,7 @@ nm_device_set_managed (<em class="parameter"><code><a class="link" href="NMDevic
                        <em class="parameter"><code><span class="type">gboolean</span> managed</code></em>);</pre>
 <p>Enables or disables management of  <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> by NetworkManager.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.13.5"></a><h4>Parameters</h4>
+<a name="nm-device-set-managed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1162,7 +1162,7 @@ nm_device_set_managed (<em class="parameter"><code><a class="link" href="NMDevic
 nm_device_get_autoconnect (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Whether the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> can be autoconnected.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.14.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-autoconnect.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1177,7 +1177,7 @@ nm_device_get_autoconnect (<em class="parameter"><code><a class="link" href="NMD
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.14.6"></a><h4>Returns</h4>
+<a name="nm-device-get-autoconnect.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device is allowed to be autoconnected</p>
 </div>
 </div>
@@ -1189,7 +1189,7 @@ nm_device_set_autoconnect (<em class="parameter"><code><a class="link" href="NMD
                            <em class="parameter"><code><span class="type">gboolean</span> autoconnect</code></em>);</pre>
 <p>Enables or disables automatic activation of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.15.5"></a><h4>Parameters</h4>
+<a name="nm-device-set-autoconnect.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1219,7 +1219,7 @@ nm_device_get_firmware_missing (<em class="parameter"><code><a class="link" href
 <p>Indicates that firmware required for the device's operation is likely
 to be missing.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.16.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-firmware-missing.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1234,7 +1234,7 @@ to be missing.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.16.6"></a><h4>Returns</h4>
+<a name="nm-device-get-firmware-missing.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if firmware required for the device's operation is likely
 to be missing.</p>
 </div>
@@ -1246,7 +1246,7 @@ to be missing.</p>
 nm_device_get_nm_plugin_missing (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Indicates that the NetworkManager plugin for the device is not installed.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.17.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-nm-plugin-missing.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1261,7 +1261,7 @@ nm_device_get_nm_plugin_missing (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.17.6"></a><h4>Returns</h4>
+<a name="nm-device-get-nm-plugin-missing.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device plugin not installed.</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -1275,7 +1275,7 @@ nm_device_get_ip4_config (<em class="parameter"><code><a class="link" href="NMDe
 <p>You can alternatively use <a class="link" href="NMActiveConnection.html#nm-active-connection-get-ip4-config" title="nm_active_connection_get_ip4_config ()"><code class="function">nm_active_connection_get_ip4_config()</code></a>, which also
 works with VPN connections.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.18.6"></a><h4>Parameters</h4>
+<a name="nm-device-get-ip4-config.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1290,7 +1290,7 @@ works with VPN connections.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.18.7"></a><h4>Returns</h4>
+<a name="nm-device-get-ip4-config.returns"></a><h4>Returns</h4>
 <p> the IPv4 <a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a>, or <code class="literal">NULL</code> if the device is not
 activated. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -1305,7 +1305,7 @@ nm_device_get_dhcp4_config (<em class="parameter"><code><a class="link" href="NM
 <p>You can alternatively use <a class="link" href="NMActiveConnection.html#nm-active-connection-get-dhcp4-config" title="nm_active_connection_get_dhcp4_config ()"><code class="function">nm_active_connection_get_dhcp4_config()</code></a>, which also
 works with VPN connections.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.19.6"></a><h4>Parameters</h4>
+<a name="nm-device-get-dhcp4-config.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1320,7 +1320,7 @@ works with VPN connections.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.19.7"></a><h4>Returns</h4>
+<a name="nm-device-get-dhcp4-config.returns"></a><h4>Returns</h4>
 <p> the IPv4 <a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a>, or <code class="literal">NULL</code> if the device is
 not activated or not using DHCP. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -1335,7 +1335,7 @@ nm_device_get_ip6_config (<em class="parameter"><code><a class="link" href="NMDe
 <p>You can alternatively use <a class="link" href="NMActiveConnection.html#nm-active-connection-get-ip6-config" title="nm_active_connection_get_ip6_config ()"><code class="function">nm_active_connection_get_ip6_config()</code></a>, which also
 works with VPN connections.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.20.6"></a><h4>Parameters</h4>
+<a name="nm-device-get-ip6-config.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1350,7 +1350,7 @@ works with VPN connections.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.20.7"></a><h4>Returns</h4>
+<a name="nm-device-get-ip6-config.returns"></a><h4>Returns</h4>
 <p> the IPv6 <a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> or <code class="literal">NULL</code> if the device is not activated. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
 </div>
@@ -1364,7 +1364,7 @@ nm_device_get_dhcp6_config (<em class="parameter"><code><a class="link" href="NM
 <p>You can alternatively use <a class="link" href="NMActiveConnection.html#nm-active-connection-get-dhcp6-config" title="nm_active_connection_get_dhcp6_config ()"><code class="function">nm_active_connection_get_dhcp6_config()</code></a>, which also
 works with VPN connections.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.21.6"></a><h4>Parameters</h4>
+<a name="nm-device-get-dhcp6-config.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1379,7 +1379,7 @@ works with VPN connections.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.21.7"></a><h4>Returns</h4>
+<a name="nm-device-get-dhcp6-config.returns"></a><h4>Returns</h4>
 <p> the IPv6 <a class="link" href="NMDhcpConfig.html" title="NMDhcpConfig"><span class="type">NMDhcpConfig</span></a>, or <code class="literal">NULL</code> if the device is
 not activated or not using DHCPv6. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -1392,7 +1392,7 @@ not activated or not using DHCPv6. </p>
 nm_device_get_state (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the current <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> state.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.22.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-state.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1407,7 +1407,7 @@ nm_device_get_state (<em class="parameter"><code><a class="link" href="NMDevice.
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.22.6"></a><h4>Returns</h4>
+<a name="nm-device-get-state.returns"></a><h4>Returns</h4>
 <p> the current device state</p>
 </div>
 </div>
@@ -1418,7 +1418,7 @@ nm_device_get_state (<em class="parameter"><code><a class="link" href="NMDevice.
 nm_device_get_state_reason (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the reason for entering the current <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> state.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.23.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-state-reason.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1433,7 +1433,7 @@ nm_device_get_state_reason (<em class="parameter"><code><a class="link" href="NM
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.23.6"></a><h4>Returns</h4>
+<a name="nm-device-get-state-reason.returns"></a><h4>Returns</h4>
 <p> the reason for entering the current device state</p>
 </div>
 </div>
@@ -1444,7 +1444,7 @@ nm_device_get_state_reason (<em class="parameter"><code><a class="link" href="NM
 nm_device_get_active_connection (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> object which owns this device during activation.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.24.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-active-connection.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1459,7 +1459,7 @@ nm_device_get_active_connection (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.24.6"></a><h4>Returns</h4>
+<a name="nm-device-get-active-connection.returns"></a><h4>Returns</h4>
 <p> the <a class="link" href="NMActiveConnection.html" title="NMActiveConnection"><span class="type">NMActiveConnection</span></a> or <code class="literal">NULL</code> if the device is
 not part of an active connection. </p>
 <p><span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span></p>
@@ -1470,11 +1470,11 @@ not part of an active connection. </p>
 <a name="nm-device-get-available-connections"></a><h3>nm_device_get_available_connections ()</h3>
 <pre class="programlisting">const <span class="returnvalue">GPtrArray</span> *
 nm_device_get_available_connections (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
-<p>Gets the <a href="NMRemoteConnection.html"><span class="type">NMRemoteConnections</span></a> currently known to the daemon that could
+<p>Gets the <a href="NMRemoteConnection.html#NMRemoteConnection-struct"><span class="type">NMRemoteConnections</span></a> currently known to the daemon that could
 be activated on <em class="parameter"><code>device</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.25.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-available-connections.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1489,9 +1489,9 @@ be activated on <em class="parameter"><code>device</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.25.6"></a><h4>Returns</h4>
+<a name="nm-device-get-available-connections.returns"></a><h4>Returns</h4>
 <p> the <span class="type">GPtrArray</span>
-containing <a href="NMRemoteConnection.html"><span class="type">NMRemoteConnections</span></a>. This is the internal copy used by
+containing <a href="NMRemoteConnection.html#NMRemoteConnection-struct"><span class="type">NMRemoteConnections</span></a>. This is the internal copy used by
 the connection, and must not be modified. </p>
 <p><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMRemoteConnection]</span></p>
 </div>
@@ -1503,10 +1503,10 @@ the connection, and must not be modified. </p>
 nm_device_get_physical_port_id (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the physical port ID of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>. If non-<code class="literal">NULL</code>, this is
 an opaque string that can be used to recognize when
-seemingly-unrelated <a href="NMDevice.html"><span class="type">NMDevices</span></a> are actually just different virtual
+seemingly-unrelated <a href="NMDevice.html#NMDevice-struct"><span class="type">NMDevices</span></a> are actually just different virtual
 ports on a single physical port. (Eg, NPAR / SR-IOV.)</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.26.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-physical-port-id.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1521,7 +1521,7 @@ ports on a single physical port. (Eg, NPAR / SR-IOV.)</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.26.6"></a><h4>Returns</h4>
+<a name="nm-device-get-physical-port-id.returns"></a><h4>Returns</h4>
 <p> the physical port ID of the device, or <code class="literal">NULL</code> if the port
 ID is unknown. This is the internal string used by the device and
 must not be modified.</p>
@@ -1534,7 +1534,7 @@ must not be modified.</p>
 nm_device_get_mtu (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the  MTU of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.27.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-mtu.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1549,7 +1549,7 @@ nm_device_get_mtu (<em class="parameter"><code><a class="link" href="NMDevice.ht
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.27.6"></a><h4>Returns</h4>
+<a name="nm-device-get-mtu.returns"></a><h4>Returns</h4>
 <p> the MTU of the device.</p>
 </div>
 </div>
@@ -1559,7 +1559,7 @@ nm_device_get_mtu (<em class="parameter"><code><a class="link" href="NMDevice.ht
 <pre class="programlisting"><span class="returnvalue">gboolean</span>
 nm_device_is_real (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <div class="refsect3">
-<a name="id-1.5.2.11.28.4"></a><h4>Parameters</h4>
+<a name="nm-device-is-real.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1574,7 +1574,7 @@ nm_device_is_real (<em class="parameter"><code><a class="link" href="NMDevice.ht
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.28.5"></a><h4>Returns</h4>
+<a name="nm-device-is-real.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the device exists, or <code class="literal">FALSE</code> if it is a placeholder device
 that could be automatically created by NetworkManager if one of its
 <a class="link" href="NMDevice.html#NMDevice--available-connections" title="The “available-connections” property"><span class="type">“available-connections”</span></a> was activated.</p>
@@ -1588,7 +1588,7 @@ that could be automatically created by NetworkManager if one of its
 nm_device_is_software (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Whether the device is a software device.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.29.5"></a><h4>Parameters</h4>
+<a name="nm-device-is-software.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1603,7 +1603,7 @@ nm_device_is_software (<em class="parameter"><code><a class="link" href="NMDevic
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.29.6"></a><h4>Returns</h4>
+<a name="nm-device-is-software.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if <em class="parameter"><code>device</code></em>
 is a software device, <code class="literal">FALSE</code> if it is a hardware device.</p>
 </div>
@@ -1615,7 +1615,7 @@ is a software device, <code class="literal">FALSE</code> if it is a hardware dev
 nm_device_get_product (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the product string of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.30.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-product.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1630,7 +1630,7 @@ nm_device_get_product (<em class="parameter"><code><a class="link" href="NMDevic
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.30.6"></a><h4>Returns</h4>
+<a name="nm-device-get-product.returns"></a><h4>Returns</h4>
 <p> the product name of the device. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -1642,7 +1642,7 @@ device, and must not be modified.</p>
 nm_device_get_vendor (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the vendor string of the <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.31.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-vendor.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1657,7 +1657,7 @@ nm_device_get_vendor (<em class="parameter"><code><a class="link" href="NMDevice
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.31.6"></a><h4>Returns</h4>
+<a name="nm-device-get-vendor.returns"></a><h4>Returns</h4>
 <p> the vendor name of the device. This is the internal string used by the
 device, and must not be modified.</p>
 </div>
@@ -1670,7 +1670,7 @@ nm_device_get_description (<em class="parameter"><code><a class="link" href="NMD
 <p>Gets a description of <em class="parameter"><code>device</code></em>
 , based on its vendor and product names.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.32.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-description.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1685,7 +1685,7 @@ nm_device_get_description (<em class="parameter"><code><a class="link" href="NMD
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.32.6"></a><h4>Returns</h4>
+<a name="nm-device-get-description.returns"></a><h4>Returns</h4>
 <p> a description of <em class="parameter"><code>device</code></em>
 . If either the vendor or the
 product name is unknown, this returns the interface name.</p>
@@ -1698,7 +1698,7 @@ product name is unknown, this returns the interface name.</p>
 nm_device_get_metered (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the metered setting of a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.33.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-metered.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1713,7 +1713,7 @@ nm_device_get_metered (<em class="parameter"><code><a class="link" href="NMDevic
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.33.6"></a><h4>Returns</h4>
+<a name="nm-device-get-metered.returns"></a><h4>Returns</h4>
 <p> the metered setting.</p>
 </div>
 <p class="since">Since: 1.2</p>
@@ -1725,7 +1725,7 @@ nm_device_get_metered (<em class="parameter"><code><a class="link" href="NMDevic
 nm_device_get_lldp_neighbors (<em class="parameter"><code><a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a> *device</code></em>);</pre>
 <p>Gets the list of neighbors discovered through LLDP.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.34.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-lldp-neighbors.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1740,7 +1740,7 @@ nm_device_get_lldp_neighbors (<em class="parameter"><code><a class="link" href="
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.34.6"></a><h4>Returns</h4>
+<a name="nm-device-get-lldp-neighbors.returns"></a><h4>Returns</h4>
 <p> the <span class="type">GPtrArray</span>
 containing <a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a>s. This is the internal copy used by the
 device and must not be modified. The library never modifies the returned
@@ -1759,7 +1759,7 @@ nm_device_disambiguate_names (<em class="parameter"><code><a class="link" href="
 devices in <em class="parameter"><code>devices</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.35.5"></a><h4>Parameters</h4>
+<a name="nm-device-disambiguate-names.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1782,7 +1782,7 @@ devices in <em class="parameter"><code>devices</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.35.6"></a><h4>Returns</h4>
+<a name="nm-device-disambiguate-names.returns"></a><h4>Returns</h4>
 <p> the device names. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>][<acronym title="Parameter points to an array of items."><span class="acronym">array</span></acronym> zero-terminated=1]</span></p>
 </div>
@@ -1800,7 +1800,7 @@ nm_device_reapply (<em class="parameter"><code><a class="link" href="NMDevice.ht
 <p>Attempts to update device with changes to the currently active connection
 made since it was last applied.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.36.5"></a><h4>Parameters</h4>
+<a name="nm-device-reapply.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1844,7 +1844,7 @@ catch concurrent accesses.</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.36.6"></a><h4>Returns</h4>
+<a name="nm-device-reapply.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -1864,7 +1864,7 @@ nm_device_reapply_async (<em class="parameter"><code><a class="link" href="NMDev
 <p>Asynchronously begins an attempt to update device with changes to the
 currently active connection made since it was last applied.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.37.5"></a><h4>Parameters</h4>
+<a name="nm-device-reapply-async.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1924,7 +1924,7 @@ nm_device_reapply_finish (<em class="parameter"><code><a class="link" href="NMDe
                           <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Gets the result of a call to <a class="link" href="NMDevice.html#nm-device-reapply-async" title="nm_device_reapply_async ()"><code class="function">nm_device_reapply_async()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.38.5"></a><h4>Parameters</h4>
+<a name="nm-device-reapply-finish.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -1951,7 +1951,7 @@ nm_device_reapply_finish (<em class="parameter"><code><a class="link" href="NMDe
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.38.6"></a><h4>Returns</h4>
+<a name="nm-device-reapply-finish.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -1968,7 +1968,7 @@ nm_device_get_applied_connection (<em class="parameter"><code><a class="link" hr
                                   <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Fetch the currently applied connection on the device.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.39.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-applied-connection.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2006,7 +2006,7 @@ the applied connection. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.39.6"></a><h4>Returns</h4>
+<a name="nm-device-get-applied-connection.returns"></a><h4>Returns</h4>
 <p> a <a class="link" href="NMConnection.html" title="NMConnection"><code class="literal">NMConnection</code></a> with the currently applied settings
 or <code class="literal">NULL</code> on error.</p>
 <p>The connection is as received from D-Bus and might not validate according
@@ -2027,7 +2027,7 @@ nm_device_get_applied_connection_async
                                 <em class="parameter"><code><span class="type">gpointer</span> user_data</code></em>);</pre>
 <p>Asynchronously begins an get the a currently applied connection.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.40.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-applied-connection-async.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2077,7 +2077,7 @@ nm_device_get_applied_connection_finish
                                 <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Gets the result of a call to <a class="link" href="NMDevice.html#nm-device-get-applied-connection-async" title="nm_device_get_applied_connection_async ()"><code class="function">nm_device_get_applied_connection_async()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.41.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-applied-connection-finish.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2110,7 +2110,7 @@ connection. </p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.41.6"></a><h4>Returns</h4>
+<a name="nm-device-get-applied-connection-finish.returns"></a><h4>Returns</h4>
 <p> a currently applied <a class="link" href="NMConnection.html" title="NMConnection"><code class="literal">NMConnection</code></a> or <code class="literal">NULL</code> in case
 of error.</p>
 <p>The connection is as received from D-Bus and might not validate according
@@ -2130,7 +2130,7 @@ nm_device_disconnect (<em class="parameter"><code><a class="link" href="NMDevice
 automatically connecting to networks until the next manual network connection
 request.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.42.5"></a><h4>Parameters</h4>
+<a name="nm-device-disconnect.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2157,7 +2157,7 @@ request.</p>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.42.6"></a><h4>Returns</h4>
+<a name="nm-device-disconnect.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -2174,7 +2174,7 @@ nm_device_disconnect_async (<em class="parameter"><code><a class="link" href="NM
 prevents the device from automatically connecting to networks until the next
 manual network connection request.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.43.5"></a><h4>Parameters</h4>
+<a name="nm-device-disconnect-async.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2216,7 +2216,7 @@ nm_device_disconnect_finish (<em class="parameter"><code><a class="link" href="N
                              <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Gets the result of a call to <a class="link" href="NMDevice.html#nm-device-disconnect-async" title="nm_device_disconnect_async ()"><code class="function">nm_device_disconnect_async()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.44.5"></a><h4>Parameters</h4>
+<a name="nm-device-disconnect-finish.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2243,7 +2243,7 @@ nm_device_disconnect_finish (<em class="parameter"><code><a class="link" href="N
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.44.6"></a><h4>Returns</h4>
+<a name="nm-device-disconnect-finish.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -2257,7 +2257,7 @@ nm_device_delete (<em class="parameter"><code><a class="link" href="NMDevice.htm
                   <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Deletes the software device. Hardware devices can't be deleted.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.45.5"></a><h4>Parameters</h4>
+<a name="nm-device-delete.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2284,7 +2284,7 @@ nm_device_delete (<em class="parameter"><code><a class="link" href="NMDevice.htm
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.45.6"></a><h4>Returns</h4>
+<a name="nm-device-delete.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -2300,7 +2300,7 @@ nm_device_delete_async (<em class="parameter"><code><a class="link" href="NMDevi
 <p>Asynchronously begins deleteing the software device. Hardware devices can't
 be deleted.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.46.5"></a><h4>Parameters</h4>
+<a name="nm-device-delete-async.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2342,7 +2342,7 @@ nm_device_delete_finish (<em class="parameter"><code><a class="link" href="NMDev
                          <em class="parameter"><code><span class="type">GError</span> **error</code></em>);</pre>
 <p>Gets the result of a call to <a class="link" href="NMDevice.html#nm-device-delete-async" title="nm_device_delete_async ()"><code class="function">nm_device_delete_async()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.47.5"></a><h4>Parameters</h4>
+<a name="nm-device-delete-finish.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2369,7 +2369,7 @@ nm_device_delete_finish (<em class="parameter"><code><a class="link" href="NMDev
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.47.6"></a><h4>Returns</h4>
+<a name="nm-device-delete-finish.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> on success, <code class="literal">FALSE</code> on error, in which case <em class="parameter"><code>error</code></em>
 will be set.</p>
 </div>
@@ -2391,7 +2391,7 @@ Ethernet, Bluetooth, Wi-Fi WPA connections, or any other connection that is
 incompatible with the device. To get the full list of connections see
 <a class="link" href="NMClient.html#nm-client-get-connections" title="nm_client_get_connections ()"><code class="function">nm_client_get_connections()</code></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.48.5"></a><h4>Parameters</h4>
+<a name="nm-device-filter-connections.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2406,16 +2406,16 @@ incompatible with the device. To get the full list of connections see
 </tr>
 <tr>
 <td class="parameter_name"><p>connections</p></td>
-<td class="parameter_description"><p> an array of <a href="NMConnection.html"><span class="type">NMConnections</span></a> to filter. </p></td>
+<td class="parameter_description"><p> an array of <a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct"><span class="type">NMConnections</span></a> to filter. </p></td>
 <td class="parameter_annotations"><span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span></td>
 </tr>
 </tbody>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.48.6"></a><h4>Returns</h4>
+<a name="nm-device-filter-connections.returns"></a><h4>Returns</h4>
 <p> an array of
-<a href="NMConnection.html"><span class="type">NMConnections</span></a> that could be activated with the given <em class="parameter"><code>device</code></em>
+<a href="/usr/share/gtk-doc/html/libnm-util/NMConnection.html#NMConnection-struct"><span class="type">NMConnections</span></a> that could be activated with the given <em class="parameter"><code>device</code></em>
 .  The array
 should be freed with <code class="function">g_ptr_array_unref()</code> when it is no longer required. </p>
 <p><span class="annotation">[<acronym title="Free data container after the code is done."><span class="acronym">transfer container</span></acronym>][<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> NMConnection]</span></p>
@@ -2436,7 +2436,7 @@ network, and will not be valid if it describes a WPA network, or if it is
 an Ethernet, Bluetooth, WWAN, etc connection that is incompatible with the
 device.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.49.5"></a><h4>Parameters</h4>
+<a name="nm-device-connection-valid.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2460,7 +2460,7 @@ against</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.49.6"></a><h4>Returns</h4>
+<a name="nm-device-connection-valid.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection may be activated with this device, <code class="literal">FALSE</code>
 if is incompatible with the device's capabilities and characteristics.</p>
 </div>
@@ -2484,7 +2484,7 @@ device.</p>
 compatibility of the given device and connection. But, in addition, it sets
 GError when FALSE is returned.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.50.6"></a><h4>Parameters</h4>
+<a name="nm-device-connection-compatible.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2513,7 +2513,7 @@ against</p></td>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.50.7"></a><h4>Returns</h4>
+<a name="nm-device-connection-compatible.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if the connection may be activated with this device, <code class="literal">FALSE</code>
 if is incompatible with the device's capabilities and characteristics.</p>
 </div>
@@ -2527,7 +2527,7 @@ nm_device_get_setting_type (<em class="parameter"><code><a class="link" href="NM
 that can be used on <em class="parameter"><code>device</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.51.5"></a><h4>Parameters</h4>
+<a name="nm-device-get-setting-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2542,7 +2542,7 @@ that can be used on <em class="parameter"><code>device</code></em>
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.51.6"></a><h4>Returns</h4>
+<a name="nm-device-get-setting-type.returns"></a><h4>Returns</h4>
 <p> <em class="parameter"><code>device</code></em>
 's associated <a class="link" href="NMSetting.html" title="NMSetting"><span class="type">NMSetting</span></a> type</p>
 </div>
@@ -2554,7 +2554,7 @@ that can be used on <em class="parameter"><code>device</code></em>
 nm_lldp_neighbor_new (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
 <p>Creates a new <a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a> object.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.52.5"></a><h4>Returns</h4>
+<a name="nm-lldp-neighbor-new.returns"></a><h4>Returns</h4>
 <p> the new <a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a> object. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -2567,7 +2567,7 @@ nm_lldp_neighbor_new (<em class="parameter"><code><span class="type">void</span>
 nm_lldp_neighbor_ref (<em class="parameter"><code><a class="link" href="NMDevice.html#NMLldpNeighbor"><span class="type">NMLldpNeighbor</span></a> *neighbor</code></em>);</pre>
 <p>Increases the reference count of the object.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.53.5"></a><h4>Parameters</h4>
+<a name="nm-lldp-neighbor-ref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2591,7 +2591,7 @@ nm_lldp_neighbor_unref (<em class="parameter"><code><a class="link" href="NMDevi
 <p>Decreases the reference count of the object.  If the reference count
 reaches zero, the object will be destroyed.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.54.5"></a><h4>Parameters</h4>
+<a name="nm-lldp-neighbor-unref.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2615,7 +2615,7 @@ nm_lldp_neighbor_get_attr_names (<em class="parameter"><code><a class="link" hre
 <p>Gets an array of attribute names available for <em class="parameter"><code>neighbor</code></em>
 .</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.55.5"></a><h4>Parameters</h4>
+<a name="nm-lldp-neighbor-get-attr-names.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2630,7 +2630,7 @@ nm_lldp_neighbor_get_attr_names (<em class="parameter"><code><a class="link" hre
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.55.6"></a><h4>Returns</h4>
+<a name="nm-lldp-neighbor-get-attr-names.returns"></a><h4>Returns</h4>
 <p> a <code class="literal">NULL</code>-terminated array of attribute names. </p>
 <p><span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span></p>
 </div>
@@ -2648,7 +2648,7 @@ nm_lldp_neighbor_get_attr_string_value
  on <em class="parameter"><code>neighbor</code></em>
 </p>
 <div class="refsect3">
-<a name="id-1.5.2.11.56.5"></a><h4>Parameters</h4>
+<a name="nm-lldp-neighbor-get-attr-string-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2675,7 +2675,7 @@ nm_lldp_neighbor_get_attr_string_value
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.56.6"></a><h4>Returns</h4>
+<a name="nm-lldp-neighbor-get-attr-string-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if a string attribute with name <em class="parameter"><code>name</code></em>
 was found, <code class="literal">FALSE</code> otherwise</p>
 </div>
@@ -2692,7 +2692,7 @@ nm_lldp_neighbor_get_attr_uint_value (<em class="parameter"><code><a class="link
  on <em class="parameter"><code>neighbor</code></em>
 </p>
 <div class="refsect3">
-<a name="id-1.5.2.11.57.5"></a><h4>Parameters</h4>
+<a name="nm-lldp-neighbor-get-attr-uint-value.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2719,7 +2719,7 @@ nm_lldp_neighbor_get_attr_uint_value (<em class="parameter"><code><a class="link
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.57.6"></a><h4>Returns</h4>
+<a name="nm-lldp-neighbor-get-attr-uint-value.returns"></a><h4>Returns</h4>
 <p> <code class="literal">TRUE</code> if a uint attribute with name <em class="parameter"><code>name</code></em>
 was found, <code class="literal">FALSE</code> otherwise</p>
 </div>
@@ -2733,7 +2733,7 @@ nm_lldp_neighbor_get_attr_type (<em class="parameter"><code><a class="link" href
                                 <em class="parameter"><code><span class="type">char</span> *name</code></em>);</pre>
 <p>Get the type of an attribute.</p>
 <div class="refsect3">
-<a name="id-1.5.2.11.58.5"></a><h4>Parameters</h4>
+<a name="nm-lldp-neighbor-get-attr-type.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -2755,7 +2755,7 @@ nm_lldp_neighbor_get_attr_type (<em class="parameter"><code><a class="link" href
 </table></div>
 </div>
 <div class="refsect3">
-<a name="id-1.5.2.11.58.6"></a><h4>Returns</h4>
+<a name="nm-lldp-neighbor-get-attr-type.returns"></a><h4>Returns</h4>
 <p> the <span class="type">GVariantType</span> of the attribute with name <em class="parameter"><code>name</code></em>
 </p>
 </div>
@@ -3038,7 +3038,7 @@ operations like addressing and routing.</p>
 <div class="refsect2">
 <a name="NMDevice--ip4-config"></a><h3>The <code class="literal">“ip4-config”</code> property</h3>
 <pre class="programlisting">  “ip4-config”               <a class="link" href="NMIPConfig.html" title="NMIPConfig"><span class="type">NMIPConfig</span></a> *</pre>
-<p>The <a href="/usr/share/gtk-doc/html/libnm-glib/NMIP4Config.html"><span class="type">NMIP4Config</span></a> of the device.</p>
+<p>The <span class="type">NMIP4Config</span> of the device.</p>
 <p>Flags: Read</p>
 </div>
 <hr>
@@ -3168,7 +3168,7 @@ user_function (<a class="link" href="NMDevice.html" title="NMDevice"><span class
                <span class="type">gpointer</span>  user_data)</pre>
 <p>Notifies the state change of a <a class="link" href="NMDevice.html" title="NMDevice"><span class="type">NMDevice</span></a>.</p>
 <div class="refsect3">
-<a name="id-1.5.2.14.2.5"></a><h4>Parameters</h4>
+<a name="NMDevice-state-changed.parameters"></a><h4>Parameters</h4>
 <div class="informaltable"><table width="100%" border="0">
 <colgroup>
 <col width="150px" class="parameters_name">
@@ -3209,6 +3209,6 @@ user_function (<a class="link" href="NMDevice.html" title="NMDevice"><span class
 </div>
 </div>
 <div class="footer">
-<hr>Generated by GTK-Doc V1.24</div>
+<hr>Generated by GTK-Doc V1.25</div>
 </body>
 </html>

@@ -62,7 +62,7 @@ nodist_libnm_util_include_HEADERS = \
 	nm-utils-enum-types.h
 
 libnm_util_la_private_headers = \
-	$(top_builddir)/shared/nm-shared-utils.h \
+	$(top_builddir)/shared/nm-utils/nm-shared-utils.h \
 	crypto.h			\
 	nm-dbus-glib-types.h		\
 	nm-gvaluearray-compat.h		\
@@ -71,7 +71,7 @@ libnm_util_la_private_headers = \
 	nm-utils-private.h
 
 libnm_util_la_csources = \
-	$(top_builddir)/shared/nm-shared-utils.c \
+	$(top_builddir)/shared/nm-utils/nm-shared-utils.c \
 	crypto.c			\
 	nm-connection.c			\
 	nm-param-spec-specialized.c	\
@@ -168,6 +168,10 @@ EXTRA_DIST = libnm-util.pc.in libnm-util.ver
 INTROSPECTION_GIRS =
 INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+
+# Pass SANITIZER_ENV where a command that uses built libraries is
+# executed, to suppress possible errors
+INTROSPECTION_SCANNER_ENV = $(SANITIZER_ENV)
 
 if HAVE_INTROSPECTION
 introspection_sources = $(libnm_util_include_HEADERS) $(nodist_libnm_util_include_HEADERS) $(libnm_util_la_csources)

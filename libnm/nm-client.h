@@ -66,6 +66,8 @@ G_BEGIN_DECLS
 #define NM_CLIENT_PERMISSION_CHANGED "permission-changed"
 #define NM_CLIENT_CONNECTION_ADDED "connection-added"
 #define NM_CLIENT_CONNECTION_REMOVED "connection-removed"
+#define NM_CLIENT_ACTIVE_CONNECTION_ADDED "active-connection-added"
+#define NM_CLIENT_ACTIVE_CONNECTION_REMOVED "active-connection-removed"
 
 /**
  * NMClientPermission:
@@ -95,6 +97,9 @@ G_BEGIN_DECLS
  * @NM_CLIENT_PERMISSION_SETTINGS_MODIFY_GLOBAL_DNS: modify persistent global
  *  DNS configuration
  * @NM_CLIENT_PERMISSION_RELOAD: controls access to Reload.
+ * @NM_CLIENT_PERMISSION_CHECKPOINT_ROLLBACK: permission to create checkpoints.
+ * @NM_CLIENT_PERMISSION_ENABLE_DISABLE_STATISTICS: controls whether device
+ *  statistics can be globally enabled or disabled
  * @NM_CLIENT_PERMISSION_LAST: a reserved boundary value
  *
  * #NMClientPermission values indicate various permissions that NetworkManager
@@ -115,8 +120,10 @@ typedef enum {
 	NM_CLIENT_PERMISSION_SETTINGS_MODIFY_HOSTNAME = 11,
 	NM_CLIENT_PERMISSION_SETTINGS_MODIFY_GLOBAL_DNS = 12,
 	NM_CLIENT_PERMISSION_RELOAD = 13,
+	NM_CLIENT_PERMISSION_CHECKPOINT_ROLLBACK = 14,
+	NM_CLIENT_PERMISSION_ENABLE_DISABLE_STATISTICS = 15,
 
-	NM_CLIENT_PERMISSION_LAST = 13,
+	NM_CLIENT_PERMISSION_LAST = 15,
 } NMClientPermission;
 
 /**

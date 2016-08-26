@@ -2,12 +2,12 @@
 .\"     Title: nm-settings-ifcfg-rh
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/03/2016
+.\"      Date: 08/24/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.2.4
+.\"    Source: NetworkManager 1.4.0
 .\"  Language: English
 .\"
-.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.2\&.4" "Configuration"
+.TH "NM\-SETTINGS\-IFCFG\" "5" "" "NetworkManager 1\&.4\&.0" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -307,6 +307,18 @@ for IPv4 link\-local addressing using Avahi daemon and
 for connection sharing\&. When
 \fIshared\fR
 is used, NetworkManager assigns the interface 10\&.42\&.0\&.1, or it uses the first static address, if configured\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+HWADDR
+\- initscripts compare the currently set hardware address of a device, while NetworkManager considers the permanent one\&.
 .RE
 .RE
 .PP
@@ -932,6 +944,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 id
@@ -949,7 +962,16 @@ UUID\fI(+)\fR
 T}:T{
 \ \&
 T}:T{
-UUID for the connection profile\&. When missing, NetworkManager creates the UUID itself (by hashing the file)\&.
+UUID for the connection profile\&. When missing, NetworkManager creates the UUID itself (by hashing the filename)\&.
+T}
+T{
+stable\-id
+T}:T{
+STABLE_ID\fI(+)\fR
+T}:T{
+\ \&
+T}:T{
+Token to generate stable IDs\&.
 T}
 T{
 interface\-name
@@ -1421,6 +1443,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 method
@@ -1548,6 +1571,17 @@ T}:T{
 IPV4_ROUTE_METRIC is the default IPv4 metric for routes on this connection\&. If set to \-1, a default metric based on the device type is used\&.
 T}
 T{
+dns\-priority
+T}:T{
+IPV4_DNS_PRIORITY\fI(+)\fR
+T}:T{
+0
+T}:T{
+The priority for DNS servers of this connection\&. Lower values have higher priority\&. If zero, the default value will be used (50 for VPNs, 100 for other connections)\&. A negative value prevents DNS from other connections with greater values to be used\&.\fB
+
+Example: \fRIPV4_DNS_PRIORITY=20
+T}
+T{
 dhcp\-client\-id
 T}:T{
 DHCP_CLIENT_ID\fI(+)\fR
@@ -1612,6 +1646,8 @@ T}:T{
 Description
 T}
 .T&
+l l l l
+l l l l
 l l l l
 l l l l
 l l l l
@@ -1739,6 +1775,17 @@ T}:T{
 IPV6_ROUTE_METRIC is the default IPv6 metric for routes on this connection\&. If set to \-1, a default metric based on the device type is used\&.
 T}
 T{
+dns\-priority
+T}:T{
+IPV6_DNS_PRIORITY\fI(+)\fR
+T}:T{
+0
+T}:T{
+The priority for DNS servers of this connection\&. Lower values have higher priority\&. If zero, the default value will be used (50 for VPNs, 100 for other connections)\&. A negative value prevents DNS from other connections with greater values to be used\&.\fB
+
+Example: \fRIPV6_DNS_PRIORITY=20
+T}
+T{
 ip6\-privacy
 T}:T{
 IPV6_PRIVACY, IPV6_PRIVACY_PREFER_PUBLIC_IP\fI(+)\fR
@@ -1763,6 +1810,17 @@ Configure IPv6 Stable Privacy addressing for SLAAC (RFC7217)\&.\fB
 Example: \fRIPV6_ADDR_GEN_MODE=stable\-privacy\fB
 
 Allowed values: \fRIPV6_ADDR_GEN_MODE: eui64, stable\-privacy
+T}
+T{
+token
+T}:T{
+IPV6_TOKEN
+T}:T{
+\ \&
+T}:T{
+The IPv6 tokenized interface identifier token\fB
+
+Example: \fRIPV6_TOKEN=::53
 T}
 .TE
 .sp 1
@@ -2012,6 +2070,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 port
@@ -2066,6 +2125,15 @@ T}:T{
 \ \&
 T}:T{
 Cloned (spoofed) MAC address in traditional hex\-digits\-and\-colons notation (e\&.g\&. 00:22:68:14:5A:99)\&.
+T}
+T{
+generate\-mac\-address\-mask
+T}:T{
+GENERATE_MAC_ADDRESS_MASK
+T}:T{
+\ \&
+T}:T{
+the MAC address mask for generating randomized and stable cloned\-mac\-address\&.
 T}
 T{
 mac\-address\-blacklist
@@ -2363,6 +2431,7 @@ l l l l
 l l l l
 l l l l
 l l l l
+l l l l
 l l l l.
 T{
 ssid
@@ -2456,6 +2525,15 @@ T}:T{
 \ \&
 T}:T{
 Cloned (spoofed) MAC address in traditional hex\-digits\-and\-colons notation (e\&.g\&. 00:22:68:14:5A:99)\&.
+T}
+T{
+generate\-mac\-address\-mask
+T}:T{
+GENERATE_MAC_ADDRESS_MASK
+T}:T{
+\ \&
+T}:T{
+the MAC address mask for generating randomized and stable cloned\-mac\-address\&.
 T}
 T{
 mac\-address\-blacklist

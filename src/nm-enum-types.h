@@ -10,8 +10,6 @@
 #include <glib-object.h>
 
 G_BEGIN_DECLS
-GType nm_vlan_error_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_VLAN_ERROR (nm_vlan_error_get_type ())
 GType nm_unman_flag_op_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_UNMAN_FLAG_OP (nm_unman_flag_op_get_type ())
 GType nm_dhcp_state_get_type (void) G_GNUC_CONST;
@@ -44,6 +42,8 @@ GType nm_supplicant_feature_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SUPPLICANT_FEATURE (nm_supplicant_feature_get_type ())
 GType nm_supplicant_error_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_SUPPLICANT_ERROR (nm_supplicant_error_get_type ())
+GType nm_config_run_state_property_type_get_type (void) G_GNUC_CONST;
+#define NM_TYPE_CONFIG_RUN_STATE_PROPERTY_TYPE (nm_config_run_state_property_type_get_type ())
 GType nm_config_get_value_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_CONFIG_GET_VALUE_FLAGS (nm_config_get_value_flags_get_type ())
 GType nm_config_change_flags_get_type (void) G_GNUC_CONST;
@@ -62,10 +62,6 @@ GType nm_pobject_type_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_POBJECT_TYPE (nm_pobject_type_get_type ())
 GType nm_ip_config_merge_flags_get_type (void) G_GNUC_CONST;
 #define NM_TYPE_IP_CONFIG_MERGE_FLAGS (nm_ip_config_merge_flags_get_type ())
-GType nm_match_spec_match_type_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_MATCH_SPEC_MATCH_TYPE (nm_match_spec_match_type_get_type ())
-GType nm_utils_test_flags_get_type (void) G_GNUC_CONST;
-#define NM_TYPE_UTILS_TEST_FLAGS (nm_utils_test_flags_get_type ())
 G_END_DECLS
 
 #endif /* __NM_ENUM_TYPES_H__ */

@@ -34,7 +34,6 @@
  **/
 
 
-#include "nm-default.h"
 #include "nm-connection.h"
 #include "nm-core-enum-types.h"
 #include "nm-setting-8021x.h"
@@ -124,6 +123,10 @@ guint32 _nm_setting_get_setting_priority (NMSetting *setting);
 
 gboolean _nm_setting_get_property (NMSetting *setting, const char *name, GValue *value);
 
+guint _nm_utils_hwaddr_length (const char *asc);
+
+char *_nm_utils_bin2str (gconstpointer addr, gsize length, gboolean upper_case);
+
 GSList *    _nm_utils_hash_values_to_slist (GHashTable *hash);
 
 GHashTable *_nm_utils_copy_strdict (GHashTable *strdict);
@@ -144,9 +147,6 @@ GPtrArray *_nm_utils_copy_object_array (const GPtrArray *array);
 gssize _nm_utils_ptrarray_find_first (gpointer *list, gssize len, gconstpointer needle);
 
 gssize _nm_utils_ptrarray_find_binary_search (gpointer *list, gsize len, gpointer needle, GCompareDataFunc cmpfcn, gpointer user_data);
-
-gboolean    _nm_utils_string_in_list   (const char *str,
-                                        const char **valid_strings);
 
 gssize      _nm_utils_strv_find_first (char **list, gssize len, const char *needle);
 
@@ -284,6 +284,16 @@ void     _nm_setting_vlan_get_priorities (NMSettingVlan *setting,
 
 /***********************************************************/
 
+struct ether_addr;
+
+gboolean _nm_utils_generate_mac_address_mask_parse (const char *value,
+                                                    struct ether_addr *out_mask,
+                                                    struct ether_addr **out_ouis,
+                                                    gsize *out_ouis_len,
+                                                    GError **error);
+
+/***********************************************************/
+
 typedef enum {
 	NM_BOND_OPTION_TYPE_INT,
 	NM_BOND_OPTION_TYPE_STRING,
@@ -295,5 +305,25 @@ typedef enum {
 
 NMBondOptionType
 _nm_setting_bond_get_option_type (NMSettingBond *setting, const char *name);
+
+/***********************************************************/
+
+typedef enum {
+	NM_BOND_MODE_UNKNOWN = 0,
+	NM_BOND_MODE_ROUNDROBIN,
+	NM_BOND_MODE_ACTIVEBACKUP,
+	NM_BOND_MODE_XOR,
+	NM_BOND_MODE_BROADCAST,
+	NM_BOND_MODE_8023AD,
+	NM_BOND_MODE_TLB,
+	NM_BOND_MODE_ALB,
+} NMBondMode;
+
+NMBondMode _nm_setting_bond_mode_from_string (const char *str);
+gboolean _nm_setting_bond_option_supported (const char *option, NMBondMode mode);
+
+/***********************************************************/
+
+gboolean _nm_utils_inet6_is_token (const struct in6_addr *in6addr);
 
 #endif

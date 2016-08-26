@@ -26,7 +26,6 @@
 
 #include "nm-exported-object.h"
 #include "nm-dbus-interface.h"
-#include "nm-default.h"
 #include "nm-connection.h"
 #include "nm-rfkill-manager.h"
 #include "NetworkManagerUtils.h"
@@ -58,6 +57,11 @@
 #define NM_DEVICE_PHYSICAL_PORT_ID "physical-port-id"
 #define NM_DEVICE_MTU              "mtu"
 #define NM_DEVICE_HW_ADDRESS       "hw-address"
+
+/* "perm-hw-address" is exposed on D-Bus both for NMDeviceEthernet
+ * and NMDeviceWifi. */
+#define NM_DEVICE_PERM_HW_ADDRESS  "perm-hw-address"
+
 #define NM_DEVICE_METERED          "metered"
 #define NM_DEVICE_LLDP_NEIGHBORS  "lldp-neighbors"
 #define NM_DEVICE_REAL             "real"
@@ -84,7 +88,9 @@
 #define NM_DEVICE_STATE_CHANGED         "state-changed"
 #define NM_DEVICE_LINK_INITIALIZED      "link-initialized"
 
-G_BEGIN_DECLS
+#define NM_DEVICE_STATISTICS_REFRESH_RATE_MS "refresh-rate-ms"
+#define NM_DEVICE_STATISTICS_TX_BYTES        "tx-bytes"
+#define NM_DEVICE_STATISTICS_RX_BYTES        "rx-bytes"
 
 #define NM_TYPE_DEVICE            (nm_device_get_type ())
 #define NM_DEVICE(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NM_TYPE_DEVICE, NMDevice))
@@ -275,6 +281,8 @@ typedef struct {
 	                                             GAsyncResult *res,
 	                                             GError **error);
 
+	void            (* deactivate_reset_hw_addr) (NMDevice *self);
+
 	/* Sync deactivating (in the DISCONNECTED phase) */
 	void            (* deactivate) (NMDevice *self);
 
@@ -324,6 +332,8 @@ typedef struct {
 	gboolean        (* owns_iface) (NMDevice *self, const char *iface);
 
 	NMConnection *  (* new_default_connection) (NMDevice *self);
+
+	gboolean        (* unmanaged_on_quit) (NMDevice *self);
 } NMDeviceClass;
 
 typedef void (*NMDeviceAuthRequestFunc) (NMDevice *device,
@@ -354,7 +364,8 @@ guint32         nm_device_get_ip4_route_metric  (NMDevice *dev);
 guint32         nm_device_get_ip6_route_metric  (NMDevice *dev);
 
 const char *    nm_device_get_hw_address        (NMDevice *dev);
-const char *    nm_device_get_permanent_hw_address (NMDevice *dev);
+const char *    nm_device_get_permanent_hw_address (NMDevice *dev,
+                                                    gboolean fallback_fake);
 const char *    nm_device_get_initial_hw_address (NMDevice *dev);
 
 NMDhcp4Config * nm_device_get_dhcp4_config      (NMDevice *dev);
@@ -412,7 +423,7 @@ gboolean nm_device_check_slave_connection_compatible (NMDevice *device, NMConnec
 
 gboolean nm_device_uses_assumed_connection (NMDevice *device);
 
-gboolean nm_device_can_assume_active_connection (NMDevice *device);
+gboolean nm_device_unmanage_on_quit (NMDevice *self);
 
 gboolean nm_device_spec_match_list (NMDevice *device, const GSList *specs);
 
@@ -440,7 +451,10 @@ RfKillType nm_device_get_rfkill_type (NMDevice *device);
  *   (e.g. via a D-Bus command)
  * @NM_UNMANAGED_USER_SETTINGS: %TRUE when unmanaged by user decision via
  *   the settings plugin (for example keyfile.unmanaged-devices or ifcfg-rh's
- *   NM_CONTROLLED=no)
+ *   NM_CONTROLLED=no). Although this is user-configuration (provided from
+ *   the settings plugins, such as NM_CONTROLLED=no in ifcfg-rh), it cannot
+ *   be overruled and is authorative. That is because users may depend on
+ *   dropping a ifcfg-rh file to ensure the device is unmanaged.
  * @NM_UNMANAGED_BY_DEFAULT: %TRUE for certain device types where we unmanage
  *   them by default
  * @NM_UNMANAGED_USER_UDEV: %TRUE when unmanaged by user decision (via UDev rule)
@@ -493,7 +507,7 @@ void nm_device_set_unmanaged_by_flags_queue (NMDevice *self,
                                              NMUnmanagedFlags flags,
                                              NMUnmanFlagOp set_op,
                                              NMDeviceStateReason reason);
-void nm_device_set_unmanaged_by_user_config (NMDevice *self, const GSList *unmanaged_specs);
+void nm_device_set_unmanaged_by_user_settings (NMDevice *self, const GSList *unmanaged_specs);
 void nm_device_set_unmanaged_by_user_udev (NMDevice *self);
 void nm_device_set_unmanaged_by_quitting (NMDevice *device);
 
@@ -576,8 +590,7 @@ void nm_device_reactivate_ip6_config (NMDevice *device,
 
 void nm_device_update_hw_address (NMDevice *self);
 void nm_device_update_initial_hw_address (NMDevice *self);
+void nm_device_update_permanent_hw_address (NMDevice *self);
 void nm_device_update_dynamic_ip_setup (NMDevice *self);
 
-G_END_DECLS
-
-#endif /* NM_DEVICE_H */
+#endif /* __NETWORKMANAGER_DEVICE_H__ */

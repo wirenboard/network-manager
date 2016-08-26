@@ -89,6 +89,8 @@ enum {
 	PERMISSION_CHANGED,
 	CONNECTION_ADDED,
 	CONNECTION_REMOVED,
+	ACTIVE_CONNECTION_ADDED,
+	ACTIVE_CONNECTION_REMOVED,
 
 	LAST_SIGNAL
 };
@@ -1368,7 +1370,7 @@ nm_client_add_connection_finish (NMClient *client,
 /**
  * nm_client_load_connections:
  * @client: the %NMClient
- * @filenames: %NULL-terminated array of filenames to load
+ * @filenames: (array zero-terminated=1): %NULL-terminated array of filenames to load
  * @failures: (out) (transfer full): on return, a %NULL-terminated array of
  *   filenames that failed to load
  * @cancellable: a #GCancellable, or %NULL
@@ -1427,7 +1429,7 @@ load_connections_cb (GObject *object, GAsyncResult *result, gpointer user_data)
 /**
  * nm_client_load_connections_async:
  * @client: the %NMClient
- * @filenames: %NULL-terminated array of filenames to load
+ * @filenames: (array zero-terminated=1): %NULL-terminated array of filenames to load
  * @cancellable: a #GCancellable, or %NULL
  * @callback: (scope async): callback to be called when the operation completes
  * @user_data: (closure): caller-specific data passed to @callback
@@ -1465,8 +1467,8 @@ nm_client_load_connections_async (NMClient *client,
 /**
  * nm_client_load_connections_finish:
  * @client: the %NMClient
- * @failures: (out) (transfer full): on return, a %NULL-terminated array of
- *   filenames that failed to load
+ * @failures: (out) (transfer full) (array zero-terminated=1): on return, a
+ *    %NULL-terminated array of filenames that failed to load
  * @result: the result passed to the #GAsyncReadyCallback
  * @error: location for a #GError, or %NULL
  *
@@ -1752,6 +1754,22 @@ settings_connection_removed (NMRemoteSettings *manager,
 }
 
 static void
+manager_active_connection_added (NMManager *manager,
+                                 NMActiveConnection *active_connection,
+                                 gpointer client)
+{
+	g_signal_emit (client, signals[ACTIVE_CONNECTION_ADDED], 0, active_connection);
+}
+
+static void
+manager_active_connection_removed (NMManager *manager,
+                                   NMActiveConnection *active_connection,
+                                   gpointer client)
+{
+	g_signal_emit (client, signals[ACTIVE_CONNECTION_REMOVED], 0, active_connection);
+}
+
+static void
 constructed (GObject *object)
 {
 	NMClient *client = NM_CLIENT (object);
@@ -1772,6 +1790,10 @@ constructed (GObject *object)
 	                  G_CALLBACK (manager_any_device_removed), client);
 	g_signal_connect (priv->manager, "permission-changed",
 	                  G_CALLBACK (manager_permission_changed), client);
+	g_signal_connect (priv->manager, "active-connection-added",
+	                  G_CALLBACK (manager_active_connection_added), client);
+	g_signal_connect (priv->manager, "active-connection-removed",
+	                  G_CALLBACK (manager_active_connection_removed), client);
 
 	priv->settings = g_object_new (NM_TYPE_REMOTE_SETTINGS,
 	                               NM_OBJECT_PATH, NM_DBUS_PATH_SETTINGS,
@@ -2353,6 +2375,36 @@ nm_client_class_init (NMClientClass *client_class)
 		              NULL, NULL, NULL,
 		              G_TYPE_NONE, 1,
 		              NM_TYPE_REMOTE_CONNECTION);
+
+	/**
+	 * NMClient::active-connection-added:
+	 * @client: the settings object that received the signal
+	 * @active_connection: the new active connection
+	 *
+	 * Notifies that a #NMActiveConnection has been added.
+	 **/
+	signals[ACTIVE_CONNECTION_ADDED] =
+		g_signal_new (NM_CLIENT_ACTIVE_CONNECTION_ADDED,
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL, NULL,
+		              G_TYPE_NONE, 1,
+		              NM_TYPE_ACTIVE_CONNECTION);
+
+	/**
+	 * NMClient::active-connection-removed:
+	 * @client: the settings object that received the signal
+	 * @active_connection: the removed active connection
+	 *
+	 * Notifies that a #NMActiveConnection has been removed.
+	 **/
+	signals[ACTIVE_CONNECTION_REMOVED] =
+		g_signal_new (NM_CLIENT_ACTIVE_CONNECTION_REMOVED,
+		              G_OBJECT_CLASS_TYPE (object_class),
+		              G_SIGNAL_RUN_FIRST,
+		              0, NULL, NULL, NULL,
+		              G_TYPE_NONE, 1,
+		              NM_TYPE_ACTIVE_CONNECTION);
 }
 
 static void

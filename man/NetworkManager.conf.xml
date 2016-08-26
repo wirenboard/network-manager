@@ -224,30 +224,12 @@ no-auto-default=*
         <term><varname>ignore-carrier</varname></term>
         <listitem>
           <para>
-            Specify devices for which NetworkManager will (partially)
-            ignore the carrier state. Normally, for
-            device types that support carrier-detect, such as Ethernet
-            and InfiniBand, NetworkManager will only allow a
-            connection to be activated on the device if carrier is
-            present (ie, a cable is plugged in), and it will
-            deactivate the device if carrier drops for more than a few
-            seconds.
-          </para>
-          <para>
-            Listing a device here will allow activating connections on
-            that device even when it does not have carrier, provided
-            that the connection uses only statically-configured IP
-            addresses. Additionally, it will allow any active
-            connection (whether static or dynamic) to remain active on
-            the device when carrier is lost.
-          </para>
-          <para>
-            Note that the "carrier" property of NMDevices and device D-Bus
-            interfaces will still reflect the actual device state; it's just
-            that NetworkManager will not make use of that information.
-          </para>
-          <para>See <xref linkend="device-spec"/> for the syntax how to
-           specify a device.
+            This setting is deprecated for the per-device setting
+            <literal>ignore-carrier</literal> which overwrites this setting
+            if specified (See <xref linked="ignore-carrier"/>).
+            Otherwise, it is a list of matches to specify for which device
+            carrier should be ignored. See <xref linkend="device-spec"/> for the
+            syntax how to specify a device.
           </para>
         </listitem>
       </varlistentry>
@@ -307,8 +289,8 @@ no-auto-default=*
         configuration with DNSSEC support. The /etc/resolv.conf
         will be managed by dnssec-trigger daemon.</para>
         <para><literal>none</literal>: NetworkManager will not
-        modify resolv.conf. This implies <varname>rc-manager</varname>
-        <literal>unmanaged</literal></para>
+        modify resolv.conf. This implies
+        <literal>rc-manager</literal>&nbsp;<literal>unmanaged</literal></para>
         </listitem>
       </varlistentry>
 
@@ -322,7 +304,12 @@ no-auto-default=*
         always write resolv.conf to its runtime state directory.</para>
         <para><literal>symlink</literal>: NetworkManager will symlink
         <filename>/etc/resolv.conf</filename> to its private
-        resolv.conf file in the runtime state directory.</para>
+        resolv.conf file in the runtime state directory. If
+        <filename>/etc/resolv.conf</filename>
+        already is a symlink pointing to a different location, the file
+        will not be modified. This allows the user to disable managing
+        by pointing the link <filename>/etc/resolv.conf</filename> to
+        somewhere else.</para>
         <para><literal>file</literal>: NetworkManager will write
         <filename>/etc/resolv.conf</filename> as file. If it finds
         a symlink, it will follow the symlink and update the target
@@ -332,7 +319,7 @@ no-auto-default=*
         <para><literal>netconfig</literal>: NetworkManager will run
         netconfig to update the DNS configuration.</para>
         <para><literal>unmanaged</literal>: don't touch
-        <filename>resolv.conf</filename>.</para>
+        <filename>/etc/resolv.conf</filename>.</para>
         <para><literal>none</literal>: deprecated alias for
         <literal>symlink</literal>.</para>
         </listitem>
@@ -461,7 +448,7 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           WIFI_SCAN, IP4, IP6, AUTOIP4, DNS, VPN, SHARING, SUPPLICANT,
           AGENTS, SETTINGS, SUSPEND, CORE, DEVICE, OLPC, WIMAX,
           INFINIBAND, FIREWALL, ADSL, BOND, VLAN, BRIDGE, DBUS_PROPS,
-          TEAM, CONCHECK, DCB, DISPATCH, AUDIT.</para>
+          TEAM, CONCHECK, DCB, DISPATCH, AUDIT, SYSTEMD, VPN_PLUGIN.</para>
           <para>In addition, these special domains can be used: NONE,
           ALL, DEFAULT, DHCP, IP.</para>
           <para>You can specify per-domain log level overrides by
@@ -507,6 +494,8 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           <member>DCB         : Data Center Bridging (DCB) operations</member>
           <member>DISPATCH    : Dispatcher scripts</member>
           <member>AUDIT       : Audit records</member>
+          <member>SYSTEMD     : Messages from internal libsystemd</member>
+          <member>VPN_PLUGIN  : logging messages from VPN plugins</member>
           <member> </member>
           <member>NONE        : when given by itself logging is disabled</member>
           <member>ALL         : all log domains</member>
@@ -516,6 +505,14 @@ unmanaged-devices=mac:00:22:68:1c:59:b1;mac:00:1E:65:30:D1:C4;interface-name:eth
           <member> </member>
           <member>HW          : deprecated alias for "PLATFORM"</member>
           </simplelist>
+          </para>
+          <para>
+          In general, the logfile should not contain passwords or private data. However,
+          you are always advised to check the file before posting it online or attaching
+          to a bug report. <literal>VPN_PLUGIN</literal> is special as it might reveal
+          private information of the VPN plugins with verbose levels. Therefore this domain
+          will be excluded when setting <literal>ALL</literal> or <literal>DEFAULT</literal>
+          to more verbose levels then <literal>INFO</literal>.
           </para>
         </varlistentry>
         <varlistentry>
@@ -558,7 +555,7 @@ ipv6.ip6-privacy=0
     <para>
       Not all properties can be overwritten, only the following
       properties are supported to have their default values configured
-      (see <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry> for details).
+      (see <link linkend='nm-settings'><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry></link> for details).
       A default value is only consulted if the corresponding per-connection value
       explicitly allows for that.
       <variablelist>
@@ -567,6 +564,13 @@ ipv6.ip6-privacy=0
         </varlistentry>
         <varlistentry>
           <term><varname>connection.lldp</varname></term>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>ethernet.cloned-mac-address</varname></term>
+          <listitem><para>If left unspecified, it defaults to "permanent".</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>ethernet.generate-mac-address-mask</varname></term>
         </varlistentry>
         <varlistentry>
           <term><varname>ethernet.wake-on-lan</varname></term>
@@ -596,8 +600,17 @@ ipv6.ip6-privacy=0
           <listitem><para>If left unspecified, default value of 60 seconds is used.</para></listitem>
         </varlistentry>
         <varlistentry>
+          <term><varname>wifi.cloned-mac-address</varname></term>
+          <listitem><para>If left unspecified, it defaults to "permanent".</para></listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>wifi.generate-mac-address-mask</varname></term>
+        </varlistentry>
+        <varlistentry>
           <term><varname>wifi.mac-address-randomization</varname></term>
-          <listitem><para>If left unspecified, MAC address randomization is disabled.</para></listitem>
+          <listitem><para>If left unspecified, MAC address randomization is disabled.
+            This setting is deprecated for <literal>wifi.cloned-mac-address</literal>.
+          </para></listitem>
         </varlistentry>
         <varlistentry>
           <term><varname>wifi.powersave</varname></term>
@@ -608,7 +621,7 @@ ipv6.ip6-privacy=0
     </para>
     </refsect2>
 
-    <refsect2>
+    <refsect2 id="connection-sections">
     <title>Sections</title>
     <para>
         You can configure multiple <literal>connection</literal>
@@ -677,6 +690,100 @@ ipv6.ip6-privacy=1
           </para></listitem>
         </varlistentry>
       </variablelist>
+    </para>
+    </refsect2>
+  </refsect1>
+
+  <refsect1>
+    <title><literal>device</literal> section</title>
+    <para>Contains per-device persistent configuration.
+    </para>
+    <para>
+      Example:
+<programlisting>
+[device]
+match-device=interface-name:eth3
+unmanaged=1
+</programlisting>
+    </para>
+    <refsect2>
+    <title>Supported Properties</title>
+    <para>
+      The following properties can be configured per-device.
+      <variablelist>
+        <varlistentry id="ignore-carrier">
+          <term><varname>ignore-carrier</varname></term>
+          <listitem>
+            <para>
+              Specify devices for which NetworkManager will (partially)
+              ignore the carrier state. Normally, for
+              device types that support carrier-detect, such as Ethernet
+              and InfiniBand, NetworkManager will only allow a
+              connection to be activated on the device if carrier is
+              present (ie, a cable is plugged in), and it will
+              deactivate the device if carrier drops for more than a few
+              seconds.
+            </para>
+            <para>
+              A device with carrier ignored will allow activating connections on
+              that device even when it does not have carrier, provided
+              that the connection uses only statically-configured IP
+              addresses. Additionally, it will allow any active
+              connection (whether static or dynamic) to remain active on
+              the device when carrier is lost.
+            </para>
+            <para>
+              Note that the "carrier" property of NMDevices and device D-Bus
+              interfaces will still reflect the actual device state; it's just
+              that NetworkManager will not make use of that information.
+            </para>
+            <para>
+              This setting overwrites the deprecated <literal>main.ignore-carrier</literal>
+              setting above.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>wifi.scan-rand-mac-address</varname></term>
+          <listitem>
+            <para>
+              Configures MAC address randomization of a Wi-Fi device during
+              scanning. This defaults to <literal>yes</literal> in which case
+              a random, locally-administered MAC address will be used.
+              The setting <literal>wifi.scan-generate-mac-address-mask</literal>
+              allows to influence the generated MAC address to use certain vendor
+              OUIs.
+              If disabled, the MAC address during scanning is left unchanged to
+              whatever is configured.
+              For the configured MAC address while the device is associated, see instead
+              the per-connection setting <literal>wifi.cloned-mac-address</literal>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term><varname>wifi.scan-generate-mac-address-mask</varname></term>
+          <listitem>
+            <para>
+              Like the per-connection settings <literal>ethernet.generate-mac-address-mask</literal>
+              and <literal>wifi.generate-mac-address-mask</literal>, this allows to configure the
+              generated MAC addresses during scanning. See <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry>
+              for details.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </para>
+    </refsect2>
+
+    <refsect2>
+    <title>Sections</title>
+    <para>
+        The <literal>[device]</literal> section works the same as the <literal>[connection]</literal> section.
+        That is, multiple sections that all start with the prefix "device" can be specified.
+        The settings "match-device" and "stop-match" are available to match a device section
+        on a device. The order of multiple sections is also top-down within the file and
+        later files overwrite previous settings. See <xref linkend="connection-sections"/>
+        for details.
     </para>
     </refsect2>
   </refsect1>
@@ -963,7 +1070,8 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
       <title>Device List Format</title>
       <para>
           The configuration options <literal>main.no-auto-default</literal>, <literal>main.ignore-carrier</literal>,
-          and <literal>keyfile.unmanaged-devices</literal> select devices based on a list of matchings.
+          <literal>keyfile.unmanaged-devices</literal>, <literal>connection*.match-device</literal> and
+          <literal>device*.match-device</literal> select devices based on a list of matchings.
           Devices can be specified using the following format:
       </para>
       <para>
@@ -978,7 +1086,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
         </varlistentry>
         <varlistentry>
           <term>HWADDR</term>
-          <listitem><para>Match the MAC address of the device. Globbing is not supported</para></listitem>
+          <listitem><para>Match the permanent MAC address of the device. Globbing is not supported</para></listitem>
         </varlistentry>
         <varlistentry>
           <term>interface-name:IFNAME</term>
@@ -993,7 +1101,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
         </varlistentry>
         <varlistentry>
           <term>mac:HWADDR</term>
-          <listitem><para>Match the MAC address of the device. Globbing is not supported</para></listitem>
+          <listitem><para>Match the permanent MAC address of the device. Globbing is not supported</para></listitem>
         </varlistentry>
         <varlistentry>
           <term>s390-subchannels:HWADDR</term>
@@ -1040,11 +1148,11 @@ interface-name:vboxnet*,except:interface-name:vboxnet2
   <refsect1>
     <title>See Also</title>
     <para>
-      <citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry>,
-      <citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-      <citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry>,
-      <citerefentry><refentrytitle>nm-online</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
-      <citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry>,
+      <link linkend='NetworkManager'><citerefentry><refentrytitle>NetworkManager</refentrytitle><manvolnum>8</manvolnum></citerefentry></link>,
+      <link linkend='nmcli'><citerefentry><refentrytitle>nmcli</refentrytitle><manvolnum>1</manvolnum></citerefentry></link>,
+      <link linkend='nmcli-examples'><citerefentry><refentrytitle>nmcli-examples</refentrytitle><manvolnum>7</manvolnum></citerefentry></link>,
+      <link linkend='nm-online'><citerefentry><refentrytitle>nm-online</refentrytitle><manvolnum>1</manvolnum></citerefentry></link>,
+      <link linkend='nm-settings'><citerefentry><refentrytitle>nm-settings</refentrytitle><manvolnum>5</manvolnum></citerefentry></link>,
       <citerefentry><refentrytitle>nm-applet</refentrytitle><manvolnum>1</manvolnum></citerefentry>,
       <citerefentry><refentrytitle>nm-connection-editor</refentrytitle><manvolnum>1</manvolnum></citerefentry>
     </para>
