@@ -4,6 +4,7 @@ libnm.so.0 libnm0 #MINVER#
  libnm_1_0_6@libnm_1_0_6 1.0.6
  libnm_1_2_0@libnm_1_2_0 1.1.90
  libnm_1_2_4@libnm_1_2_4 1.2.4
+ libnm_1_4_0@libnm_1_4_0 1.4.0
  nm_802_11_ap_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_ap_security_flags_get_type@libnm_1_0_0 1.0.0
  nm_802_11_mode_get_type@libnm_1_0_0 1.0.0
@@ -273,6 +274,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_device_state_get_type@libnm_1_0_0 1.0.0
  nm_device_state_reason_get_type@libnm_1_0_0 1.0.0
  nm_device_team_get_carrier@libnm_1_0_0 1.0.0
+ nm_device_team_get_config@libnm_1_4_0 1.4.0
  nm_device_team_get_hw_address@libnm_1_0_0 1.0.0
  nm_device_team_get_slaves@libnm_1_0_0 1.0.0
  nm_device_team_get_type@libnm_1_0_0 1.0.0
@@ -572,6 +574,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_connection_get_read_only@libnm_1_0_0 1.0.0
  nm_setting_connection_get_secondary@libnm_1_0_0 1.0.0
  nm_setting_connection_get_slave_type@libnm_1_0_0 1.0.0
+ nm_setting_connection_get_stable_id@libnm_1_4_0 1.4.0
  nm_setting_connection_get_timestamp@libnm_1_0_0 1.0.0
  nm_setting_connection_get_type@libnm_1_0_0 1.0.0
  nm_setting_connection_get_uuid@libnm_1_0_0 1.0.0
@@ -647,6 +650,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_ip6_config_addr_gen_mode_get_type@libnm_1_2_0 1.1.90
  nm_setting_ip6_config_get_addr_gen_mode@libnm_1_2_0 1.1.90
  nm_setting_ip6_config_get_ip6_privacy@libnm_1_0_0 1.0.0
+ nm_setting_ip6_config_get_token@libnm_1_4_0 1.4.0
  nm_setting_ip6_config_get_type@libnm_1_0_0 1.0.0
  nm_setting_ip6_config_new@libnm_1_0_0 1.0.0
  nm_setting_ip6_config_privacy_get_type@libnm_1_0_0 1.0.0
@@ -668,6 +672,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_ip_config_get_dns@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_dns_option@libnm_1_2_0 1.1.90
  nm_setting_ip_config_get_dns_priority@libnm_1_2_4 1.2.4
+ nm_setting_ip_config_get_dns_priority@libnm_1_4_0 1.4.0
  nm_setting_ip_config_get_dns_search@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_gateway@libnm_1_0_0 1.0.0
  nm_setting_ip_config_get_ignore_auto_dns@libnm_1_0_0 1.0.0
@@ -830,6 +835,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wired_get_auto_negotiate@libnm_1_0_0 1.0.0
  nm_setting_wired_get_cloned_mac_address@libnm_1_0_0 1.0.0
  nm_setting_wired_get_duplex@libnm_1_0_0 1.0.0
+ nm_setting_wired_get_generate_mac_address_mask@libnm_1_4_0 1.4.0
  nm_setting_wired_get_mac_address@libnm_1_0_0 1.0.0
  nm_setting_wired_get_mac_address_blacklist@libnm_1_0_0 1.0.0
  nm_setting_wired_get_mac_blacklist_item@libnm_1_0_0 1.0.0
@@ -862,6 +868,7 @@ libnm.so.0 libnm0 #MINVER#
  nm_setting_wireless_get_bssid@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_channel@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_cloned_mac_address@libnm_1_0_0 1.0.0
+ nm_setting_wireless_get_generate_mac_address_mask@libnm_1_4_0 1.4.0
  nm_setting_wireless_get_hidden@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_mac_address@libnm_1_0_0 1.0.0
  nm_setting_wireless_get_mac_address_blacklist@libnm_1_0_0 1.0.0
@@ -993,31 +1000,42 @@ libnm.so.0 libnm0 #MINVER#
  nm_vpn_editor_plugin_export@libnm_1_0_0 1.0.0
  nm_vpn_editor_plugin_get_capabilities@libnm_1_0_0 1.0.0
  nm_vpn_editor_plugin_get_editor@libnm_1_0_0 1.0.0
+ nm_vpn_editor_plugin_get_plugin_info@libnm_1_4_0 1.4.0
  nm_vpn_editor_plugin_get_suggested_filename@libnm_1_0_0 1.0.0
  nm_vpn_editor_plugin_get_type@libnm_1_0_0 1.0.0
+ nm_vpn_editor_plugin_get_vt@libnm_1_4_0 1.4.0
  nm_vpn_editor_plugin_import@libnm_1_0_0 1.0.0
+ nm_vpn_editor_plugin_load@libnm_1_4_0 1.4.0
  nm_vpn_editor_plugin_load_from_file@libnm_1_2_0 1.1.90
+ nm_vpn_editor_plugin_set_plugin_info@libnm_1_4_0 1.4.0
  nm_vpn_editor_update_connection@libnm_1_0_0 1.0.0
  nm_vpn_plugin_error_get_type@libnm_1_0_0 1.0.0
  nm_vpn_plugin_error_quark@libnm_1_0_0 1.0.0
  nm_vpn_plugin_failure_get_type@libnm_1_0_0 1.0.0
+ nm_vpn_plugin_info_get_aliases@libnm_1_4_0 1.4.0
+ nm_vpn_plugin_info_get_auth_dialog@libnm_1_4_0 1.4.0
  nm_vpn_plugin_info_get_editor_plugin@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_get_filename@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_get_name@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_get_plugin@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_get_program@libnm_1_2_0 1.1.90
+ nm_vpn_plugin_info_get_service@libnm_1_4_0 1.4.0
  nm_vpn_plugin_info_get_type@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_list_add@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_list_find_by_filename@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_list_find_by_name@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_list_find_by_service@libnm_1_2_0 1.1.90
+ nm_vpn_plugin_info_list_find_service_type@libnm_1_4_0 1.4.0
+ nm_vpn_plugin_info_list_get_service_types@libnm_1_4_0 1.4.0
  nm_vpn_plugin_info_list_load@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_list_remove@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_load_editor_plugin@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_lookup_property@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_new_from_file@libnm_1_2_0 1.1.90
+ nm_vpn_plugin_info_new_search_file@libnm_1_4_0 1.4.0
  nm_vpn_plugin_info_new_with_data@libnm_1_2_0 1.1.90
  nm_vpn_plugin_info_set_editor_plugin@libnm_1_2_0 1.1.90
+ nm_vpn_plugin_info_supports_hints@libnm_1_4_0 1.4.0
  nm_vpn_plugin_info_validate_filename@libnm_1_2_0 1.1.90
  nm_vpn_plugin_old_disconnect@libnm_1_0_0 1.0.0
  nm_vpn_plugin_old_failure@libnm_1_0_0 1.0.0
