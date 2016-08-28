@@ -4,3 +4,4 @@ fix-arping-path.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 systemd-Don-t-enable-NetworkManager-wait-online.service-s.patch
 Fix-iscsiadm-path.patch
+Export-_IO_stdin_used-symbol-in-NetworkManager.ver.patch

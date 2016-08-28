@@ -1,0 +1,36 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Sat, 27 Aug 2016 23:40:42 +0200
+Subject: Export _IO_stdin_used symbol in NetworkManager.ver
+
+This symbol is required to decide which version of certain IO functions
+to use on various architectures. So we can't strip away the symbol from
+the NetworkManager binary as this will lead to segfaults on those
+architectures.
+
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=835550
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=770515
+---
+ src/NetworkManager.ver | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/src/NetworkManager.ver b/src/NetworkManager.ver
+index c91affc..d5358e5 100644
+--- a/src/NetworkManager.ver
++++ b/src/NetworkManager.ver
+@@ -5,6 +5,16 @@ global:
+ 	_nm*;
+ 	NM*;
+ 	_NM*;
++
++	/* The _IO_stdin_used symbol is used by the GNU libc to determine
++	   which version of the I/O function should be used.  Not
++	   exporting it means that the "old" version is used, causing
++	   crashes or other issues on some architectures.  It should be
++	   exported as an anonymous tag, but ld does not support mixing
++	   anonymous version tags with other version tags.  Fortunately
++	   the GNU libc is able to cope with the symbol having the wrong
++	   version tag. */
++	_IO_stdin_used;
+ local:
+ 	*;
+ };
