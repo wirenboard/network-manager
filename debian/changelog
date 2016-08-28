@@ -1,4 +1,4 @@
-network-manager (1.4.0-3) UNRELEASED; urgency=medium
+network-manager (1.4.0-3) unstable; urgency=medium
 
   * Export _IO_stdin_used symbol in NetworkManager.ver.
     This symbol is required to decide which version of certain IO functions
@@ -6,7 +6,7 @@ network-manager (1.4.0-3) UNRELEASED; urgency=medium
     the NetworkManager binary as this will lead to segfaults on those
     architectures. (Closes: #835550)
 
- -- Michael Biebl <biebl@debian.org>  Sun, 28 Aug 2016 15:49:46 +0200
+ -- Michael Biebl <biebl@debian.org>  Sun, 28 Aug 2016 16:11:16 +0200
 
 network-manager (1.4.0-2) unstable; urgency=medium
 
