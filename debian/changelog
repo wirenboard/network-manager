@@ -1,3 +1,10 @@
+network-manager (1.4.0-4) UNRELEASED; urgency=medium
+
+  * Drop override for dh_auto_test. We don't explicitly need to dump the log
+    files as dh_auto_test runs with VERBOSE=1 by default.
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 17 Sep 2016 14:51:02 +0200
+
 network-manager (1.4.0-3) unstable; urgency=medium
 
   * Export _IO_stdin_used symbol in NetworkManager.ver.
