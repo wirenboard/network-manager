@@ -6,6 +6,9 @@ network-manager (1.4.0-4) UNRELEASED; urgency=medium
     Cherry-pick a couple of upstream commits which work around driver bugs
     when MAC address randomization is used. (Closes: #835822, #835553)
   * Bump debhelper compat level to 10.
+  * Don't try to decrypt PKCS#8 key if no password is supplied. This fixes
+    failures with GnuTLS 3.5.4 which supports PBES1-DES-CBC-MD5 now.
+    (Closes: #838594)
 
  -- Michael Biebl <biebl@debian.org>  Sat, 17 Sep 2016 14:51:02 +0200
 
