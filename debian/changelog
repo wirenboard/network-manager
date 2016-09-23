@@ -1,4 +1,4 @@
-network-manager (1.4.0-4) UNRELEASED; urgency=medium
+network-manager (1.4.0-4) unstable; urgency=medium
 
   * Drop override for dh_auto_test. We don't explicitly need to dump the log
     files as dh_auto_test runs with VERBOSE=1 by default.
@@ -10,7 +10,7 @@ network-manager (1.4.0-4) UNRELEASED; urgency=medium
     failures with GnuTLS 3.5.4 which supports PBES1-DES-CBC-MD5 now.
     (Closes: #838594)
 
- -- Michael Biebl <biebl@debian.org>  Sat, 17 Sep 2016 14:51:02 +0200
+ -- Michael Biebl <biebl@debian.org>  Fri, 23 Sep 2016 23:53:33 +0200
 
 network-manager (1.4.0-3) unstable; urgency=medium
 
