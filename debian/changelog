@@ -4,6 +4,7 @@ network-manager (1.4.2-1) UNRELEASED; urgency=medium
     - Fix emission of NM-style PropertiesChanged signals and deprecate them
       for PropertiesChanged on "org.freedesktop.DBus.Properties" interface.
       (Closes: #836270)
+  * Rebase patches.
 
  -- Michael Biebl <biebl@debian.org>  Sat, 01 Oct 2016 00:39:59 +0200
 

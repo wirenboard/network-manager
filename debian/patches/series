@@ -4,12 +4,3 @@ fix-arping-path.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 systemd-Don-t-enable-NetworkManager-wait-online.service-s.patch
 Fix-iscsiadm-path.patch
-Export-_IO_stdin_used-symbol-in-NetworkManager.ver.patch
-platform-split-processing-result-from-do_change_link.patch
-platform-workaround-kernel-wrongly-returning-ENFILE-when-.patch
-device-fix-spelling-in-logging.patch
-device-add-hack-to-wait-after-changing-MAC-address.patch
-shared-add-NM_MIN-NM_MAX-macros-to-replace-glib-s-MIN-MAX.patch
-device-workaround-driver-issue-with-delayed-change-of-MAC.patch
-device-wait-for-MAC-address-change-to-complete-before-set.patch
-crypto-don-t-try-to-decrypt-PKCS-8-key-if-no-password-is-.patch
