@@ -1058,13 +1058,15 @@ get_secrets_from_user (const char *request_id,
 						nmc_rl_pre_input_deftext = g_strdup (secret->value);
 					}
 				}
-				g_print ("%s\n", msg);
+				if (msg)
+					g_print ("%s\n", msg);
 				pwd = nmc_readline_echo (secret->password ? echo_on : TRUE,
 				                         "%s (%s): ", secret->name, secret->prop_name);
 				if (!pwd)
 					pwd = g_strdup ("");
 			} else {
-				g_print ("%s\n", msg);
+				if (msg)
+					g_print ("%s\n", msg);
 				g_printerr (_("Warning: password for '%s' not given in 'passwd-file' "
 				              "and nmcli cannot ask without '--ask' option.\n"),
 				            secret->prop_name);
@@ -1352,6 +1354,33 @@ nmc_rl_gen_func_basic (const char *text, int state, const char **words)
 			return g_strdup (name);
 	}
 	return NULL;
+}
+
+char *
+nmc_rl_gen_func_ifnames (const char *text, int state)
+{
+	int i;
+	const GPtrArray *devices;
+	const char **ifnames;
+	char *ret;
+
+	nm_cli.get_client (&nm_cli);
+	devices = nm_client_get_devices (nm_cli.client);
+	if (devices->len == 0)
+		return NULL;
+
+	ifnames = g_new (const char *, devices->len + 1);
+	for (i = 0; i < devices->len; i++) {
+		NMDevice *dev = g_ptr_array_index (devices, i);
+		const char *ifname = nm_device_get_iface (dev);
+		ifnames[i] = ifname;
+	}
+	ifnames[i] = NULL;
+
+	ret = nmc_rl_gen_func_basic (text, state, ifnames);
+
+	g_free (ifnames);
+	return ret;
 }
 
 /* for pre-filling a string to readline prompt */

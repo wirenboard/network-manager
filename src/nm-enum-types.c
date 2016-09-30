@@ -18,6 +18,7 @@
 #include "nm-device-factory.h" 
 #include "nm-device-generic.h" 
 #include "nm-dhcp-client.h" 
+#include "nm-dhcp-helper-api.h" 
 #include "nm-dhcp-utils.h" 
 #include "nm-dhcp-listener.h" 
 #include "nm-dhcp-manager.h" 

@@ -2,12 +2,12 @@
 .\"     Title: NetworkManager.conf
 .\"    Author: 
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/24/2016
+.\"      Date: 09/30/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.4.0
+.\"    Source: NetworkManager 1.4.2
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.4\&.0" "Configuration"
+.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.4\&.2" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -218,7 +218,7 @@ rc\-manager\ \&unmanaged
 .RS 4
 Set the
 resolv\&.conf
-management mode\&. The default value depends on how NetworkManager was built, whereas this version of NetworkManager was build with a default of "symlink"\&. Regardless of this setting, NetworkManager will always write resolv\&.conf to its runtime state directory\&.
+management mode\&. The default value depends on NetworkManager build options, and this version of NetworkManager was build with a default of "symlink"\&. Regardless of this setting, NetworkManager will always write resolv\&.conf to its runtime state directory\&.
 .sp
 symlink: NetworkManager will symlink
 /etc/resolv\&.conf
@@ -264,7 +264,7 @@ This key is deprecated and has no effect since the hostname is now stored in /et
 .PP
 \fIpath\fR
 .RS 4
-The location where keyfiles are read and stored\&. This defaults to "/etc/NetworkManager/conf\&.d"\&.
+The location where keyfiles are read and stored\&. This defaults to "${prefix}/etc/NetworkManager/conf\&.d"\&.
 .RE
 .PP
 \fIunmanaged\-devices\fR
@@ -920,6 +920,8 @@ ibft
 to load the plugin without
 ifcfg\-rh
 or to change the plugin order\&.
+.sp
+Note that ibft plugin uses /sbin/iscsiadm and thus requires CAP_SYS_ADMIN capability\&.
 .RE
 .SH "APPENDIX"
 .SS "Device List Format"

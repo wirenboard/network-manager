@@ -118,7 +118,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
 	$(top_srcdir)/m4/ax_lib_readline.m4 \
 	$(top_srcdir)/m4/compiler_options.m4 \
-	$(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/git-sha-record.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
@@ -162,8 +162,8 @@ am__libNetworkManager_la_SOURCES_DIST =  \
 	devices/nm-device-private.h dhcp-manager/nm-dhcp-client.c \
 	dhcp-manager/nm-dhcp-client.h \
 	dhcp-manager/nm-dhcp-client-logging.h \
-	dhcp-manager/nm-dhcp-utils.c dhcp-manager/nm-dhcp-utils.h \
-	dhcp-manager/nm-dhcp-listener.c \
+	dhcp-manager/nm-dhcp-helper-api.h dhcp-manager/nm-dhcp-utils.c \
+	dhcp-manager/nm-dhcp-utils.h dhcp-manager/nm-dhcp-listener.c \
 	dhcp-manager/nm-dhcp-listener.h dhcp-manager/nm-dhcp-manager.c \
 	dhcp-manager/nm-dhcp-manager.h dns-manager/nm-dns-dnsmasq.c \
 	dns-manager/nm-dns-dnsmasq.h dns-manager/nm-dns-unbound.c \
@@ -1085,8 +1085,8 @@ libNetworkManager_la_SOURCES = dhcp-manager/nm-dhcp-dhclient-utils.c \
 	devices/nm-device-private.h dhcp-manager/nm-dhcp-client.c \
 	dhcp-manager/nm-dhcp-client.h \
 	dhcp-manager/nm-dhcp-client-logging.h \
-	dhcp-manager/nm-dhcp-utils.c dhcp-manager/nm-dhcp-utils.h \
-	dhcp-manager/nm-dhcp-listener.c \
+	dhcp-manager/nm-dhcp-helper-api.h dhcp-manager/nm-dhcp-utils.c \
+	dhcp-manager/nm-dhcp-utils.h dhcp-manager/nm-dhcp-listener.c \
 	dhcp-manager/nm-dhcp-listener.h dhcp-manager/nm-dhcp-manager.c \
 	dhcp-manager/nm-dhcp-manager.h dns-manager/nm-dns-dnsmasq.c \
 	dns-manager/nm-dns-dnsmasq.h dns-manager/nm-dns-unbound.c \
