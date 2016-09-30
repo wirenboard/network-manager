@@ -94,7 +94,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/attributes.m4 \
 	$(top_srcdir)/m4/ax_lib_readline.m4 \
 	$(top_srcdir)/m4/compiler_options.m4 \
-	$(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/git-sha-record.m4 \
 	$(top_srcdir)/m4/gnome-code-coverage.m4 \
 	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
@@ -456,7 +456,11 @@ with_dhcpcd = @with_dhcpcd@
 with_netconfig = @with_netconfig@
 with_resolvconf = @with_resolvconf@
 with_valgrind = @with_valgrind@
-nm_dhcp_helper_SOURCES = nm-dhcp-helper.c
+nm_dhcp_helper_SOURCES = \
+	nm-dhcp-helper.c \
+	nm-dhcp-helper-api.h \
+	$(NULL)
+
 nm_dhcp_helper_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir)/shared \

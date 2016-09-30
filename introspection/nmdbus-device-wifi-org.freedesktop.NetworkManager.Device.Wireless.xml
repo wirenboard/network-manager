@@ -97,12 +97,12 @@ RequestScan (IN  a{sv} options);
 <programlisting>
 PropertiesChanged (a{sv} properties);
 </programlisting>
-<para>        Emitted when the wireless device's properties changed.
+<para>        DEPRECATED. Use the standard "PropertiesChanged" signal from "org.freedesktop.DBus.Properties" instead which exists since version NetworkManager 1.2.0.
 </para>
 <variablelist role="params">
 <varlistentry>
   <term><literal>a{sv} <parameter>properties</parameter></literal>:</term>
-  <listitem><para>A dictionary containing the FIXME: check changed parameters.</para></listitem>
+  <listitem><para>A dictionary containing the changed parameters.</para></listitem>
 </varlistentry>
 </variablelist>
 </refsect2>

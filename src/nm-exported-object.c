@@ -27,6 +27,10 @@
 
 #include "nm-bus-manager.h"
 
+#include "nm-device.h"
+#include "nm-active-connection.h"
+#include "nmdbus-device-statistics.h"
+
 #if NM_MORE_ASSERTS >= 2
 #define _ASSERT_NO_EARLY_EXPORT
 #endif
@@ -38,13 +42,12 @@ G_DEFINE_ABSTRACT_TYPE (NMExportedObject, nm_exported_object, G_TYPE_DBUS_OBJECT
 typedef struct {
 	GDBusInterfaceSkeleton *interface;
 	guint property_changed_signal_id;
+	GHashTable *pending_notifies;
 } InterfaceData;
 
 typedef struct {
 	NMBusManager *bus_mgr;
 	char *path;
-
-	GHashTable *pending_notifies;
 
 	InterfaceData *interfaces;
 	guint num_interfaces;
@@ -73,9 +76,18 @@ G_DEFINE_QUARK (NMExportedObjectClassInfo, nm_exported_object_class_info)
 #define _NMLOG_DOMAIN                     LOGD_CORE
 
 #define _NMLOG(level, ...) \
-    nm_log (level, _NMLOG_DOMAIN, \
+    nm_log ((level), _NMLOG_DOMAIN, \
             "%s[%p]: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
             _NMLOG_PREFIX_NAME, (self) \
+            _NM_UTILS_MACRO_REST (__VA_ARGS__))
+
+#define _NMLOG2_PREFIX_NAME               "properties-changed"
+#define _NMLOG2_DOMAIN                    LOGD_DBUS_PROPS
+
+#define _NMLOG2(level, ...) \
+    nm_log ((level), _NMLOG2_DOMAIN, \
+            "%s[%p]: " _NM_UTILS_MACRO_FIRST (__VA_ARGS__), \
+            _NMLOG2_PREFIX_NAME, (self) \
             _NM_UTILS_MACRO_REST (__VA_ARGS__))
 
 /*****************************************************************************/
@@ -492,9 +504,17 @@ nm_exported_object_create_skeletons (NMExportedObject *self,
 		g_dbus_object_skeleton_add_interface ((GDBusObjectSkeleton *) self, ifdata->interface);
 
 		ifdata->property_changed_signal_id = g_signal_lookup ("properties-changed", G_OBJECT_TYPE (ifdata->interface));
+
+		ifdata->pending_notifies = g_hash_table_new_full (g_direct_hash,
+		                                                  g_direct_equal,
+		                                                  NULL,
+		                                                  (GDestroyNotify) g_variant_unref);
 	}
 	nm_assert (i == 0);
 
+	/* The list of interfaces priv->interfaces is to be sorted from parent-class to derived-class.
+	 * On the other hand, if one class defines multiple interfaces, the interfaces are sorted in
+	 * the order of calls to nm_exported_object_class_add_interface(). */
 	if (priv->num_interfaces > 0) {
 		memcpy (&interfaces[num_interfaces], priv->interfaces, sizeof (InterfaceData) * priv->num_interfaces);
 		g_slice_free1 (sizeof (InterfaceData) * priv->num_interfaces, priv->interfaces);
@@ -542,6 +562,7 @@ nm_exported_object_destroy_skeletons (NMExportedObject *self)
 
 		g_dbus_object_skeleton_remove_interface ((GDBusObjectSkeleton *) self, ifdata->interface);
 		nm_exported_object_skeleton_release (ifdata->interface);
+		g_hash_table_destroy (ifdata->pending_notifies);
 	}
 
 	g_slice_free1 (sizeof (InterfaceData) * n, priv->interfaces);
@@ -701,11 +722,7 @@ nm_exported_object_unexport (NMExportedObject *self)
 
 	g_clear_pointer (&priv->path, g_free);
 
-	if (nm_clear_g_source (&priv->notify_idle_id)) {
-		/* We had a notification queued. Since we removed all interfaces,
-		 * the notification is obsolete and must be cleaned up. */
-		g_hash_table_remove_all (priv->pending_notifies);
-	}
+	nm_clear_g_source (&priv->notify_idle_id);
 }
 
 /*****************************************************************************/
@@ -784,70 +801,82 @@ static gboolean
 idle_emit_properties_changed (gpointer self)
 {
 	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (self);
-	gs_unref_variant GVariant *variant = NULL;
-	InterfaceData *ifdata = NULL;
-	GHashTableIter hash_iter;
-	GVariantBuilder notifies;
-	guint i, n;
-	PendingNotifiesItem *values;
+	guint k;
 
 	priv->notify_idle_id = 0;
 
+	for (k = 0; k < priv->num_interfaces; k++) {
+		InterfaceData *ifdata = &priv->interfaces[k];
+		gs_unref_variant GVariant *variant = NULL;
+		PendingNotifiesItem *values;
+		GVariantBuilder notifies;
+		GHashTableIter hash_iter;
+		guint i, n;
 
-	n = g_hash_table_size (priv->pending_notifies);
-	g_return_val_if_fail (n > 0, FALSE);
+		n = g_hash_table_size (ifdata->pending_notifies);
+		if (n == 0)
+			continue;
 
-	values = g_alloca (sizeof (values[0]) * n);
+		nm_assert (ifdata->property_changed_signal_id);
 
-	i = 0;
-	g_hash_table_iter_init (&hash_iter, priv->pending_notifies);
-	while (g_hash_table_iter_next (&hash_iter, (gpointer) &values[i].property_name, (gpointer) &values[i].variant))
-		i++;
-	nm_assert (i == n);
+		/* We use here alloca in a loop, something that is usually avoided.
+		 * But the number of interfaces "priv->num_interfaces" is small (determined by
+		 * the depth of the type inheritance) and the number of possible pending_notifies
+		 * "n" is small (determined by the number of GObject properties). */
+		values = g_alloca (sizeof (values[0]) * n);
 
-	g_qsort_with_data (values, n, sizeof (values[0]), _sort_pending_notifies, NULL);
+		i = 0;
+		g_hash_table_iter_init (&hash_iter, ifdata->pending_notifies);
+		while (g_hash_table_iter_next (&hash_iter, (gpointer) &values[i].property_name, (gpointer) &values[i].variant))
+			i++;
+		nm_assert (i == n);
 
-	g_variant_builder_init (&notifies, G_VARIANT_TYPE_VARDICT);
-	for (i = 0; i < n; i++)
-		g_variant_builder_add (&notifies, "{sv}", values[i].property_name, values[i].variant);
-	variant = g_variant_ref_sink (g_variant_builder_end (&notifies));
+		g_qsort_with_data (values, n, sizeof (values[0]), _sort_pending_notifies, NULL);
 
-	g_hash_table_remove_all (priv->pending_notifies);
+		g_variant_builder_init (&notifies, G_VARIANT_TYPE_VARDICT);
+		for (i = 0; i < n; i++)
+			g_variant_builder_add (&notifies, "{sv}", values[i].property_name, values[i].variant);
+		variant = g_variant_ref_sink (g_variant_builder_end (&notifies));
 
-	for (i = 0; i < priv->num_interfaces; i++) {
-		if (priv->interfaces[i].property_changed_signal_id != 0) {
-			ifdata = &priv->interfaces[i];
-			break;
+
+		if (_LOG2D_ENABLED ()) {
+			gs_free char *notification = g_variant_print (variant, TRUE);
+
+			_LOG2D ("type %s, iface %s: %s",
+			        G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (ifdata->interface),
+			        notification);
 		}
-	}
-	g_return_val_if_fail (ifdata, FALSE);
 
-	if (nm_logging_enabled (LOGL_DEBUG, LOGD_DBUS_PROPS)) {
-		gs_free char *notification = g_variant_print (variant, TRUE);
+		g_signal_emit (ifdata->interface, ifdata->property_changed_signal_id, 0, variant);
 
-		nm_log_dbg (LOGD_DBUS_PROPS, "PropertiesChanged %s %p: %s",
-		            G_OBJECT_TYPE_NAME (self), self, notification);
+		g_hash_table_remove_all (ifdata->pending_notifies);
 	}
 
-	g_signal_emit (ifdata->interface, ifdata->property_changed_signal_id, 0, variant);
-	return FALSE;
+	return G_SOURCE_REMOVE;
 }
 
 static void
 nm_exported_object_notify (GObject *object, GParamSpec *pspec)
 {
-	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (object);
+	NMExportedObject *self = (NMExportedObject *) object;
+	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (self);
 	NMExportedObjectClassInfo *classinfo;
 	GType type;
 	const char *dbus_property_name = NULL;
 	GValue value = G_VALUE_INIT;
+	GVariant *value_variant;
+	InterfaceData *ifdata = NULL;
 	const GVariantType *vtype;
 	guint i, j;
+
+	/* Hook to emit deprecated "PropertiesChanged" signal on NetworkManager interfaces.
+	 * This is to preserve deprecated D-Bus API, nowadays we use instead
+	 * the "PropertiesChanged" signal of "org.freedesktop.DBus.Properties". */
 
 	if (priv->num_interfaces == 0)
 		return;
 
-	for (type = G_OBJECT_TYPE (object); type; type = g_type_parent (type)) {
+	for (type = G_OBJECT_TYPE (self); type; type = g_type_parent (type)) {
 		classinfo = g_type_get_qdata (type, nm_exported_object_class_info_quark ());
 		if (!classinfo)
 			continue;
@@ -857,16 +886,16 @@ nm_exported_object_notify (GObject *object, GParamSpec *pspec)
 			break;
 	}
 	if (!dbus_property_name) {
-		nm_log_trace (LOGD_DBUS_PROPS, "ignoring notification for prop %s on type %s",
-		              pspec->name, G_OBJECT_TYPE_NAME (object));
+		_LOG2T ("ignoring notification for prop %s on type %s",
+		        pspec->name, G_OBJECT_TYPE_NAME (self));
 		return;
 	}
 
 	for (i = 0; i < priv->num_interfaces; i++) {
-		GDBusInterfaceSkeleton *skel = priv->interfaces[i].interface;
 		GDBusInterfaceInfo *iinfo;
 
-		iinfo = g_dbus_interface_skeleton_get_info (skel);
+		ifdata = &priv->interfaces[i];
+		iinfo = g_dbus_interface_skeleton_get_info (ifdata->interface);
 		for (j = 0; iinfo->properties[j]; j++) {
 			if (nm_streq (iinfo->properties[j]->name, dbus_property_name)) {
 				vtype = G_VARIANT_TYPE (iinfo->properties[j]->signature);
@@ -878,17 +907,61 @@ nm_exported_object_notify (GObject *object, GParamSpec *pspec)
 
 vtype_found:
 	g_value_init (&value, pspec->value_type);
-	g_object_get_property (G_OBJECT (object), pspec->name, &value);
-
-	/* @dbus_property_name is inside classinfo and never freed, thus we don't clone it.
-	 * Also, we do a pointer, not string comparison. */
-	g_hash_table_insert (priv->pending_notifies,
-	                     (gpointer) dbus_property_name,
-	                     g_dbus_gvalue_to_gvariant (&value, vtype));
+	g_object_get_property ((GObject *) self, pspec->name, &value);
+	value_variant = g_dbus_gvalue_to_gvariant (&value, vtype);
 	g_value_unset (&value);
 
+	if (   (   NM_IS_DEVICE (self)
+	        && !NMDBUS_IS_DEVICE_STATISTICS_SKELETON (ifdata->interface))
+	    || NM_IS_ACTIVE_CONNECTION (self)) {
+		/* This PropertiesChanged signal is nodaways deprecated in favor
+		 * of "org.freedesktop.DBus.Properties"'s PropertiesChanged signal.
+		 * This function solely exists to raise the NM version of PropertiesChanged.
+		 *
+		 * With types exported on D-Bus that are implemented as derived
+		 * types in glib (NMDevice and NMActiveConnection), multiple types
+		 * in the inheritance tree define a "PropertiesChanged" signal.
+		 *
+		 * In 1.0.0 and earlier, the signal was emitted once for every interface
+		 * that had a "PropertiesChanged" signal. For example:
+		 *   - NMDeviceEthernet.HwAddress was emitted on "fdo.NM.Device.Ethernet"
+		 *     and "fdo.NM.Device.Veth" (if the device was of type NMDeviceVeth).
+		 *   - NMVpnConnection.VpnState was emitted on "fdo.NM.Connecion.Active"
+		 *     and "fdo.NM.VPN.Connection".
+		 *
+		 * NMDevice is special in that it didn't have a "PropertiesChanged" signal.
+		 * Thus, a change to "NMDevice.StateReason" would be emitted on "fdo.NM.Device.Ethernet"
+		 * and also on "fdo.NM.Device.Veth" (in case of a device of type NMDeviceVeth).
+		 *
+		 * The releases of 1.2.0 and 1.4.0 failed to realize above and broke this behavior.
+		 * This special handling here is to bring back the 1.0.0 behavior.
+		 *
+		 * The Device.Statistics signal is special, because it was only added with 1.4.0
+		 * and didn't have above behavior. So let's save the overhead of emitting multiple
+		 * deprecated signals for wrong interfaces. */
+		for (i = 0, j = 0; i < priv->num_interfaces; i++) {
+			ifdata = &priv->interfaces[i];
+			if (   ifdata->property_changed_signal_id
+			    && !NMDBUS_IS_DEVICE_STATISTICS_SKELETON (ifdata->interface)) {
+				j++;
+				g_hash_table_insert (ifdata->pending_notifies,
+				                     (gpointer) dbus_property_name,
+				                     g_variant_ref (value_variant));
+			}
+		}
+		nm_assert (j > 0);
+		g_variant_unref (value_variant);
+	} else if (ifdata->property_changed_signal_id) {
+		/* @dbus_property_name is inside classinfo and never freed, thus we don't clone it.
+		 * Also, we do a pointer, not string comparison. */
+		g_hash_table_insert (ifdata->pending_notifies,
+		                     (gpointer) dbus_property_name,
+		                     value_variant);
+	} else
+		nm_assert_not_reached ();
+
 	if (!priv->notify_idle_id)
-		priv->notify_idle_id = g_idle_add (idle_emit_properties_changed, object);
+		priv->notify_idle_id = g_idle_add (idle_emit_properties_changed, self);
 }
 
 /*****************************************************************************/
@@ -896,12 +969,6 @@ vtype_found:
 static void
 nm_exported_object_init (NMExportedObject *self)
 {
-	NMExportedObjectPrivate *priv = NM_EXPORTED_OBJECT_GET_PRIVATE (self);
-
-	priv->pending_notifies = g_hash_table_new_full (g_direct_hash,
-	                                                g_direct_equal,
-	                                                NULL,
-	                                                (GDestroyNotify) g_variant_unref);
 }
 
 static void
@@ -937,7 +1004,6 @@ nm_exported_object_dispose (GObject *object)
 	} else
 		g_clear_pointer (&priv->path, g_free);
 
-	g_clear_pointer (&priv->pending_notifies, g_hash_table_destroy);
 	nm_clear_g_source (&priv->notify_idle_id);
 
 	G_OBJECT_CLASS (nm_exported_object_parent_class)->dispose (object);
