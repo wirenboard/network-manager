@@ -1,4 +1,4 @@
-network-manager (1.4.2-1) UNRELEASED; urgency=medium
+network-manager (1.4.2-1) unstable; urgency=medium
 
   * New upstream release.
     - Fix emission of NM-style PropertiesChanged signals and deprecate them
@@ -6,7 +6,7 @@ network-manager (1.4.2-1) UNRELEASED; urgency=medium
       (Closes: #836270)
   * Rebase patches.
 
- -- Michael Biebl <biebl@debian.org>  Sat, 01 Oct 2016 00:39:59 +0200
+ -- Michael Biebl <biebl@debian.org>  Sat, 01 Oct 2016 01:01:42 +0200
 
 network-manager (1.4.0-4) unstable; urgency=medium
 
