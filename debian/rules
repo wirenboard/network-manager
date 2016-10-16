@@ -64,7 +64,7 @@ override_dh_strip:
 override_dh_systemd_start:
 	dh_link lib/systemd/system/NetworkManager.service \
 		lib/systemd/system/network-manager.service
-	dh_systemd_start -pnetwork-manager NetworkManager.service
+	dh_systemd_start -pnetwork-manager --no-also NetworkManager.service
 
 override_dh_ppp:
 	dh_ppp --breaks
