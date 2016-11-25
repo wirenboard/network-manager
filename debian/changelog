@@ -1,4 +1,4 @@
-network-manager (1.4.2-3) UNRELEASED; urgency=medium
+network-manager (1.4.2-3) unstable; urgency=medium
 
   * Notify the AccessPoint change after an AP is removed.
     Patch cherry-picked from upstream Git.
@@ -6,7 +6,7 @@ network-manager (1.4.2-3) UNRELEASED; urgency=medium
     unmanaged devices.
     Patch cherry-picked from upstream Git.
 
- -- Michael Biebl <biebl@debian.org>  Fri, 25 Nov 2016 12:48:02 +0100
+ -- Michael Biebl <biebl@debian.org>  Fri, 25 Nov 2016 12:53:50 +0100
 
 network-manager (1.4.2-2) unstable; urgency=medium
 
