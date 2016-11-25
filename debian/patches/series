@@ -4,3 +4,5 @@ fix-arping-path.patch
 Don-t-make-NetworkManager-D-Bus-activatable.patch
 systemd-Don-t-enable-NetworkManager-wait-online.service-s.patch
 Fix-iscsiadm-path.patch
+manager-fix-state-transition-on-resuming-from-sleep.patch
+wifi-notify-the-AccessPoint-change-after-an-AP-is-removed.patch
