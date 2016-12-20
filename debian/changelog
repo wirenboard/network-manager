@@ -1,3 +1,13 @@
+network-manager (1.4.4-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Add myself to Uploaders.
+  * Refresh patches, dropping ones that are included upstream:
+    - manager-fix-state-transition-on-resuming-from-sleep.patch
+    - wifi-notify-the-AccessPoint-change-after-an-AP-is-removed.patch
+
+ -- Aron Xu <aron@debian.org>  Tue, 20 Dec 2016 20:57:07 +0800
+
 network-manager (1.4.2-3) unstable; urgency=medium
 
   * Notify the AccessPoint change after an AP is removed.
