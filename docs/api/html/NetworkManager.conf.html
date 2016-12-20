@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>NetworkManager.conf: NetworkManager Reference Manual</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
+<meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
 <link rel="home" href="index.html" title="NetworkManager Reference Manual">
 <link rel="up" href="manpages.html" title="Manual Pages">
 <link rel="prev" href="nm-online.html" title="nm-online">
@@ -277,7 +277,7 @@ no-auto-default=*
         nameserver.</p>
 <p><code class="literal">unbound</code>: NetworkManager will talk
         to unbound and dnssec-triggerd, providing a "split DNS"
-        configuration with DNSSEC support. The /etc/resolv.conf
+        configuration with DNSSEC support. The <code class="filename">/etc/resolv.conf</code>
         will be managed by dnssec-trigger daemon.</p>
 <p><code class="literal">none</code>: NetworkManager will not
         modify resolv.conf. This implies
@@ -354,14 +354,14 @@ no-auto-default=*
 <tr>
 <td><p><span class="term"><code class="varname">hostname</code></span></p></td>
 <td><p>This key is deprecated and has no effect
-          since the hostname is now stored in /etc/hostname or other
-          system configuration files according to build options.
+          since the hostname is now stored in <code class="filename">/etc/hostname</code>
+          or other system configuration files according to build options.
           </p></td>
 </tr>
 <tr>
 <td><p><span class="term"><code class="varname">path</code></span></p></td>
 <td><p>The location where keyfiles are read and stored.
-            This defaults to "<code class="filename">${prefix}/etc/NetworkManager/conf.d</code>".
+            This defaults to "<code class="filename">/etc/NetworkManager/conf.d</code>".
             </p></td>
 </tr>
 <tr>
@@ -1008,7 +1008,7 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
             plugin that supports all the connection types and
             capabilities that NetworkManager has. It writes files out
             in an .ini-style format in
-            /etc/NetworkManager/system-connections.
+            <code class="filename">/etc/NetworkManager/system-connections</code>.
           </p>
 <p>
             The stored connection file may contain passwords and
@@ -1066,15 +1066,16 @@ enable=nm-version-min:1.3,nm-version-min:1.2.6,nm-version-min:1.0.16
 <td>
 <p>
             This plugin allows to read iBFT configuration (iSCSI Boot Firmware Table).
-            The configuration is read using /sbin/iscsiadm. Users are expected to
-            configure iBFT connections via the firmware interfaces.
+            The configuration is read using <code class="filename">/sbin/iscsiadm</code>. Users are
+            expected to configure iBFT connections via the firmware interfaces.
             If ibft support is available, it is automatically enabled after
             <code class="literal">ifcfg-rh</code>. This can be disabled by <code class="literal">no-ibft</code>.
             You can also explicitly specify <code class="literal">ibft</code> to load the
             plugin without <code class="literal">ifcfg-rh</code> or to change the plugin order.
           </p>
 <p>
-            Note that ibft plugin uses /sbin/iscsiadm and thus requires CAP_SYS_ADMIN capability.
+            Note that ibft plugin uses <code class="filename">/sbin/iscsiadm</code> and thus requires
+            CAP_SYS_ADMIN capability.
           </p>
 </td>
 </tr>

@@ -33,7 +33,6 @@
 #include <sys/wait.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <netlink/route/addr.h>
 #include <linux/if_addr.h>
 
 #include "nm-common-macros.h"
@@ -227,10 +226,18 @@ typedef struct _NMDevicePrivate {
 	char *        iface;   /* may change, could be renamed by user */
 	int           ifindex;
 
-	guint         hw_addr_len;
+	union {
+		const guint8 hw_addr_len; /* read-only */
+		guint8 hw_addr_len_;
+	};
 	guint8 /*HwAddrType*/ hw_addr_type;
 
-	bool          real;
+	bool          real:1;
+
+	/* there was a IP config change, but no idle action was scheduled because device
+	 * is still not platform-init */
+	bool queued_ip4_config_pending:1;
+	bool queued_ip6_config_pending:1;
 
 	char *        ip_iface;
 	int           ip_ifindex;
@@ -757,7 +764,7 @@ nm_device_set_ip_iface (NMDevice *self, const char *iface)
 				nm_platform_link_set_up (NM_PLATFORM_GET, priv->ip_ifindex, NULL);
 		} else {
 			/* Device IP interface must always be a kernel network interface */
-			_LOGW (LOGD_HW, "failed to look up interface index");
+			_LOGW (LOGD_PLATFORM, "failed to look up interface index");
 		}
 	}
 
@@ -900,7 +907,7 @@ get_ip_iface_identifier (NMDevice *self, NMUtilsIPv6IfaceId *out_iid)
 	                                                  priv->dev_id,
 	                                                  out_iid);
 	if (!success) {
-		_LOGW (LOGD_HW, "failed to generate interface identifier "
+		_LOGW (LOGD_PLATFORM, "failed to generate interface identifier "
 		       "for link type %u hwaddr_len %u", pllink->type, (unsigned) pllink->addr.len);
 	}
 	return success;
@@ -1819,7 +1826,7 @@ device_link_changed (NMDevice *self)
 	had_hw_addr = (priv->hw_addr != NULL);
 	nm_device_update_hw_address (self);
 	got_hw_addr = (!had_hw_addr && priv->hw_addr);
-	nm_device_update_permanent_hw_address (self);
+	nm_device_update_permanent_hw_address (self, FALSE);
 
 	if (info.name[0] && strcmp (priv->iface, info.name) != 0) {
 		_LOGI (LOGD_DEVICE, "interface index %d renamed iface from '%s' to '%s'",
@@ -1831,7 +1838,7 @@ device_link_changed (NMDevice *self)
 		ip_ifname_changed = !priv->ip_iface;
 
 		if (nm_device_get_unmanaged_flags (self, NM_UNMANAGED_PLATFORM_INIT))
-			nm_device_set_unmanaged_by_user_settings (self, nm_settings_get_unmanaged_specs (priv->settings));
+			nm_device_set_unmanaged_by_user_settings (self);
 		else
 			update_unmanaged_specs = TRUE;
 
@@ -1910,7 +1917,7 @@ device_link_changed (NMDevice *self)
 	}
 
 	if (update_unmanaged_specs)
-		nm_device_set_unmanaged_by_user_settings (self, nm_settings_get_unmanaged_specs (priv->settings));
+		nm_device_set_unmanaged_by_user_settings (self);
 
 	if (   got_hw_addr
 	    && !priv->up
@@ -2279,13 +2286,12 @@ realize_start_setup (NMDevice *self, const NMPlatformLink *plink)
 		_notify (self, PROP_UDI);
 	}
 
-	/* trigger initial ip config change to initialize ip-config */
-	priv->queued_ip4_config_id = g_idle_add (queued_ip4_config_change, self);
-	priv->queued_ip6_config_id = g_idle_add (queued_ip6_config_change, self);
+	priv->queued_ip4_config_pending = TRUE;
+	priv->queued_ip6_config_pending = TRUE;
 
 	nm_device_update_hw_address (self);
 	nm_device_update_initial_hw_address (self);
-	nm_device_update_permanent_hw_address (self);
+	nm_device_update_permanent_hw_address (self, FALSE);
 
 	/* Note: initial hardware address must be read before calling get_ignore_carrier() */
 	config = nm_config_get ();
@@ -2299,7 +2305,7 @@ realize_start_setup (NMDevice *self, const NMPlatformLink *plink)
 
 	if (nm_device_has_capability (self, NM_DEVICE_CAP_CARRIER_DETECT)) {
 		check_carrier (self);
-		_LOGD (LOGD_HW,
+		_LOGD (LOGD_PLATFORM,
 		       "carrier is %s%s",
 		       priv->carrier ? "ON" : "OFF",
 		       priv->ignore_carrier ? " (but ignored)" : "");
@@ -2475,11 +2481,6 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
 		g_clear_pointer (&priv->udi, g_free);
 		_notify (self, PROP_UDI);
 	}
-	if (priv->hw_addr) {
-		priv->hw_addr_len = 0;
-		g_clear_pointer (&priv->hw_addr, g_free);
-		_notify (self, PROP_HW_ADDRESS);
-	}
 	if (priv->physical_port_id) {
 		g_clear_pointer (&priv->physical_port_id, g_free);
 		_notify (self, PROP_PHYSICAL_PORT_ID);
@@ -2488,9 +2489,12 @@ nm_device_unrealize (NMDevice *self, gboolean remove_resources, GError **error)
 	nm_clear_g_source (&priv->stats.timeout_id);
 	_stats_update_counters (self, 0, 0);
 
+	priv->hw_addr_len_ = 0;
+	if (nm_clear_g_free (&priv->hw_addr))
+		_notify (self, PROP_HW_ADDRESS);
 	priv->hw_addr_type = HW_ADDR_TYPE_UNSET;
-	g_clear_pointer (&priv->hw_addr_perm, g_free);
-	_notify (self, PROP_PERM_HW_ADDRESS);
+	if (nm_clear_g_free (&priv->hw_addr_perm))
+		_notify (self, PROP_PERM_HW_ADDRESS);
 	g_clear_pointer (&priv->hw_addr_initial, g_free);
 
 	priv->capabilities = NM_DEVICE_CAP_NM_SUPPORTED;
@@ -3493,95 +3497,35 @@ nm_device_can_assume_connections (NMDevice *self)
 	return !!NM_DEVICE_GET_CLASS (self)->update_connection;
 }
 
-/**
- * nm_device_can_assume_active_connection:
- * @self: #NMDevice instance
- *
- * This is a convenience function to determine whether the device's active
- * connection can be assumed if NetworkManager restarts.  This method returns
- * %TRUE if and only if the device can assume connections, and the device has
- * an active connection, and that active connection can be assumed.
- *
- * Returns: %TRUE if the device's active connection can be assumed, or %FALSE
- * if there is no active connection or the active connection cannot be
- * assumed.
- */
-static gboolean
-nm_device_can_assume_active_connection (NMDevice *self)
-{
-	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
-	NMConnection *connection;
-	const char *method;
-	const char *assumable_ip6_methods[] = {
-		NM_SETTING_IP6_CONFIG_METHOD_IGNORE,
-		NM_SETTING_IP6_CONFIG_METHOD_AUTO,
-		NM_SETTING_IP6_CONFIG_METHOD_DHCP,
-		NM_SETTING_IP6_CONFIG_METHOD_LINK_LOCAL,
-		NM_SETTING_IP6_CONFIG_METHOD_MANUAL,
-		NULL
-	};
-	const char *assumable_ip4_methods[] = {
-		NM_SETTING_IP4_CONFIG_METHOD_DISABLED,
-		NM_SETTING_IP6_CONFIG_METHOD_AUTO,
-		NM_SETTING_IP6_CONFIG_METHOD_MANUAL,
-		NULL
-	};
-
-	if (!nm_device_can_assume_connections (self))
-		return FALSE;
-
-	connection = nm_device_get_applied_connection (self);
-	if (!connection)
-		return FALSE;
-
-	/* Can't assume connections that aren't yet configured
-	 * FIXME: what about bridges/bonds waiting for slaves?
-	 */
-	if (priv->state < NM_DEVICE_STATE_IP_CONFIG)
-		return FALSE;
-	if (priv->ip4_state != IP_DONE && priv->ip6_state != IP_DONE)
-		return FALSE;
-
-	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP6_CONFIG);
-	if (!g_strv_contains (assumable_ip6_methods, method))
-		return FALSE;
-
-	method = nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG);
-	if (!g_strv_contains (assumable_ip4_methods, method))
-		return FALSE;
-
-	return TRUE;
-}
-
 static gboolean
 unmanaged_on_quit (NMDevice *self)
 {
-	/* Leave certain devices alone when quitting so their configuration
-	 * can be taken over when NM restarts.  This ensures connectivity while
-	 * NM is stopped.
-	 */
-	if (nm_device_uses_assumed_connection (self)) {
-		/* An assume connection must be left alone */
-		return FALSE;
+	NMConnection *connection;
+
+	/* NMDeviceWifi overwrites this function to always unmanage wifi devices.
+	 *
+	 * For all other types, if the device type can assume connections, we leave
+	 * it up on quit.
+	 *
+	 * Originally, we would only keep devices up that can be assumed afterwards.
+	 * However, that meant we unmanged layer-2 only devices. So, this was step
+	 * by step refined to unmanage less (commit 25aaaab3, rh#1311988, rh#1333983).
+	 * But there are more scenarios where we also want to keep the device up
+	 * (rh#1378418, rh#1371126). */
+	if (!nm_device_can_assume_connections (self))
+		return TRUE;
+
+	/* the only exception are IPv4 shared connections. We unmanage them on quit. */
+	connection = nm_device_get_applied_connection (self);
+	if (connection) {
+		if (NM_IN_STRSET (nm_utils_get_ip_config_method (connection, NM_TYPE_SETTING_IP4_CONFIG),
+		                  NM_SETTING_IP4_CONFIG_METHOD_SHARED)) {
+			/* shared connections are to be unmangaed. */
+			return TRUE;
+		}
 	}
 
-	if (!nm_device_get_act_request (self)) {
-		/* a device without any active connection is either UNAVAILABLE or DISCONNECTED
-		 * state. Since we don't know whether the device was upped by NetworkManager,
-		 * we must leave it up on exit.
-		 */
-		return FALSE;
-	}
-
-	if (!nm_platform_link_can_assume (NM_PLATFORM_GET, nm_device_get_ifindex (self))) {
-		/* The device has no layer 3 configuration. Leave it up. */
-		return FALSE;
-	}
-
-	if (nm_device_can_assume_active_connection (self))
-		return FALSE;
-
-	return TRUE;
+	return FALSE;
 }
 
 gboolean
@@ -3768,7 +3712,7 @@ activation_source_schedule (NMDevice *self, ActivationHandleFunc func, int famil
 
 	act_data = activation_source_get_by_family (self, family, &source_func);
 
-	if (act_data->id && act_data->func != func) {
+	if (act_data->id && act_data->func == func) {
 		/* Don't bother rescheduling the same function that's about to
 		 * run anyway.  Fixes issues with crappy wireless drivers sending
 		 * streams of associate events before NM has had a chance to process
@@ -4869,8 +4813,6 @@ END_ADD_DEFAULT_ROUTE:
 		priv->default_route.v4_has = _device_get_default_route_from_platform (self, AF_INET, (NMPlatformIPRoute *) &priv->default_route.v4);
 	}
 
-	nm_ip4_config_addresses_sort (composite);
-
 	/* Allow setting MTU etc */
 	if (commit) {
 		if (NM_DEVICE_GET_CLASS (self)->ip4_config_pre_commit)
@@ -5490,12 +5432,14 @@ ip6_config_merge_and_apply (NMDevice *self,
 
 	/* If no config was passed in, create a new one */
 	composite = nm_ip6_config_new (nm_device_get_ip_ifindex (self));
+	nm_ip6_config_set_privacy (composite,
+	                           priv->rdisc ?
+	                           priv->rdisc_use_tempaddr :
+	                           NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN);
 	init_ip6_config_dns_priority (self, composite);
 
 	if (commit)
 		ensure_con_ip6_config (self);
-
-	g_assert (composite);
 
 	/* Merge all the IP configs into the composite config */
 	if (priv->ac_ip6_config) {
@@ -5622,9 +5566,6 @@ END_ADD_DEFAULT_ROUTE:
 		 */
 		priv->default_route.v6_has = _device_get_default_route_from_platform (self, AF_INET6, (NMPlatformIPRoute *) &priv->default_route.v6);
 	}
-
-	nm_ip6_config_addresses_sort (composite,
-	    priv->rdisc ? priv->rdisc_use_tempaddr : NM_SETTING_IP6_CONFIG_PRIVACY_UNKNOWN);
 
 	/* Allow setting MTU etc */
 	if (commit) {
@@ -7686,6 +7627,7 @@ _cleanup_ip4_pre (NMDevice *self, CleanupType cleanup_type)
 
 	if (nm_clear_g_source (&priv->queued_ip4_config_id))
 		_LOGD (LOGD_DEVICE, "clearing queued IP4 config change");
+	priv->queued_ip4_config_pending = FALSE;
 
 	dhcp4_cleanup (self, cleanup_type, FALSE);
 	arp_cleanup (self);
@@ -7702,6 +7644,7 @@ _cleanup_ip6_pre (NMDevice *self, CleanupType cleanup_type)
 
 	if (nm_clear_g_source (&priv->queued_ip6_config_id))
 		_LOGD (LOGD_DEVICE, "clearing queued IP6 config change");
+	priv->queued_ip6_config_pending = FALSE;
 
 	g_clear_object (&priv->dad6_ip6_config);
 	dhcp6_cleanup (self, cleanup_type, FALSE);
@@ -7911,6 +7854,7 @@ reapply_connection (NMDevice *self,
 	                               error,
 	                               NM_SETTING_CONNECTION_ID,
 	                               NM_SETTING_CONNECTION_UUID,
+	                               NM_SETTING_CONNECTION_AUTOCONNECT,
 	                               NM_SETTING_CONNECTION_ZONE,
 	                               NM_SETTING_CONNECTION_METERED))
 		return FALSE;
@@ -9094,7 +9038,7 @@ nm_device_bring_up (NMDevice *self, gboolean block, gboolean *no_firmware)
 
 	g_return_val_if_fail (NM_IS_DEVICE (self), FALSE);
 
-	_LOGD (LOGD_HW, "bringing up device");
+	_LOGD (LOGD_PLATFORM, "bringing up device");
 
 	if (NM_DEVICE_GET_CLASS (self)->bring_up) {
 		if (!NM_DEVICE_GET_CLASS (self)->bring_up (self, no_firmware))
@@ -9120,9 +9064,9 @@ nm_device_bring_up (NMDevice *self, gboolean block, gboolean *no_firmware)
 
 	if (!device_is_up) {
 		if (block)
-			_LOGW (LOGD_HW, "device not up after timeout!");
+			_LOGW (LOGD_PLATFORM, "device not up after timeout!");
 		else
-			_LOGD (LOGD_HW, "device not up immediately");
+			_LOGD (LOGD_PLATFORM, "device not up immediately");
 		return FALSE;
 	}
 
@@ -9186,7 +9130,7 @@ nm_device_take_down (NMDevice *self, gboolean block)
 
 	g_return_if_fail (NM_IS_DEVICE (self));
 
-	_LOGD (LOGD_HW, "taking down device");
+	_LOGD (LOGD_PLATFORM, "taking down device");
 
 	if (NM_DEVICE_GET_CLASS (self)->take_down) {
 		if (!NM_DEVICE_GET_CLASS (self)->take_down (self))
@@ -9208,9 +9152,9 @@ nm_device_take_down (NMDevice *self, gboolean block)
 
 	if (device_is_up) {
 		if (block)
-			_LOGW (LOGD_HW, "device not down after timeout!");
+			_LOGW (LOGD_PLATFORM, "device not down after timeout!");
 		else
-			_LOGD (LOGD_HW, "device not down immediately");
+			_LOGD (LOGD_PLATFORM, "device not down immediately");
 	}
 }
 
@@ -9223,7 +9167,7 @@ take_down (NMDevice *self)
 		return nm_platform_link_set_down (NM_PLATFORM_GET, ifindex);
 
 	/* devices without ifindex are always up. */
-	_LOGD (LOGD_HW, "cannot take down device without ifindex");
+	_LOGD (LOGD_PLATFORM, "cannot take down device without ifindex");
 	return FALSE;
 }
 
@@ -9401,6 +9345,7 @@ update_ip4_config (NMDevice *self, gboolean initial)
 	    && activation_source_is_scheduled (self,
 	                                       activate_stage5_ip4_config_commit,
 	                                       AF_INET)) {
+		priv->queued_ip4_config_pending = FALSE;
 		priv->queued_ip4_config_id = g_idle_add (queued_ip4_config_change, self);
 		_LOGT (LOGD_DEVICE, "IP4 update was postponed");
 		return;
@@ -9491,6 +9436,7 @@ update_ip6_config (NMDevice *self, gboolean initial)
 	    && activation_source_is_scheduled (self,
 	                                       activate_stage5_ip6_config_commit,
 	                                       AF_INET6)) {
+		priv->queued_ip6_config_pending = FALSE;
 		priv->queued_ip6_config_id = g_idle_add (queued_ip6_config_change, self);
 		_LOGT (LOGD_DEVICE, "IP6 update was postponed");
 		return;
@@ -9568,6 +9514,8 @@ queued_ip4_config_change (gpointer user_data)
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
 
+	nm_assert (!priv->queued_ip4_config_pending);
+
 	/* Wait for any queued state changes */
 	if (priv->queued_state.id)
 		return TRUE;
@@ -9591,6 +9539,8 @@ queued_ip6_config_change (gpointer user_data)
 	g_return_val_if_fail (NM_IS_DEVICE (self), G_SOURCE_REMOVE);
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
+
+	nm_assert (!priv->queued_ip4_config_pending);
 
 	/* Wait for any queued state changes */
 	if (priv->queued_state.id)
@@ -9669,7 +9619,11 @@ device_ipx_changed (NMPlatform *platform,
 	switch (obj_type) {
 	case NMP_OBJECT_TYPE_IP4_ADDRESS:
 	case NMP_OBJECT_TYPE_IP4_ROUTE:
-		if (!priv->queued_ip4_config_id) {
+		if (nm_device_get_unmanaged_flags (self, NM_UNMANAGED_PLATFORM_INIT)) {
+			priv->queued_ip4_config_pending = TRUE;
+			nm_assert_se (!nm_clear_g_source (&priv->queued_ip4_config_id));
+		} else if (!priv->queued_ip4_config_id) {
+			priv->queued_ip4_config_pending = FALSE;
 			priv->queued_ip4_config_id = g_idle_add (queued_ip4_config_change, self);
 			_LOGD (LOGD_DEVICE, "queued IP4 config change");
 		}
@@ -9686,7 +9640,11 @@ device_ipx_changed (NMPlatform *platform,
 		}
 		/* fallthrough */
 	case NMP_OBJECT_TYPE_IP6_ROUTE:
-		if (!priv->queued_ip6_config_id) {
+		if (nm_device_get_unmanaged_flags (self, NM_UNMANAGED_PLATFORM_INIT)) {
+			priv->queued_ip6_config_pending = TRUE;
+			nm_assert_se (!nm_clear_g_source (&priv->queued_ip6_config_id));
+		} else if (!priv->queued_ip6_config_id) {
+			priv->queued_ip6_config_pending = FALSE;
 			priv->queued_ip6_config_id = g_idle_add (queued_ip6_config_change, self);
 			_LOGD (LOGD_DEVICE, "queued IP6 config change");
 		}
@@ -9928,6 +9886,33 @@ _set_unmanaged_flags (NMDevice *self,
 		allow_state_transition = FALSE;
 	was_managed = allow_state_transition && nm_device_get_managed (self, FALSE);
 
+	if (   NM_FLAGS_HAS (priv->unmanaged_flags, NM_UNMANAGED_PLATFORM_INIT)
+	    && NM_FLAGS_HAS (flags, NM_UNMANAGED_PLATFORM_INIT)
+	    && NM_IN_SET (set_op, NM_UNMAN_FLAG_OP_SET_MANAGED)) {
+		/* we are clearing the platform-init flags. This triggers additional actions. */
+		if (!NM_FLAGS_HAS (flags, NM_UNMANAGED_USER_SETTINGS)) {
+			gboolean unmanaged;
+
+			unmanaged = nm_device_spec_match_list (self,
+			                                       nm_settings_get_unmanaged_specs (NM_DEVICE_GET_PRIVATE (self)->settings));
+			nm_device_set_unmanaged_flags (self,
+			                               NM_UNMANAGED_USER_SETTINGS,
+			                               !!unmanaged);
+		}
+
+		if (priv->queued_ip4_config_pending) {
+			priv->queued_ip4_config_pending = FALSE;
+			nm_assert_se (!nm_clear_g_source (&priv->queued_ip4_config_id));
+			priv->queued_ip4_config_id = g_idle_add (queued_ip4_config_change, self);
+		}
+
+		if (priv->queued_ip6_config_pending) {
+			priv->queued_ip6_config_pending = FALSE;
+			nm_assert_se (!nm_clear_g_source (&priv->queued_ip6_config_id));
+			priv->queued_ip6_config_id = g_idle_add (queued_ip6_config_change, self);
+		}
+	}
+
 	old_flags = priv->unmanaged_flags;
 	old_mask = priv->unmanaged_mask;
 
@@ -10042,20 +10027,30 @@ nm_device_set_unmanaged_by_flags_queue (NMDevice *self,
 }
 
 void
-nm_device_set_unmanaged_by_user_settings (NMDevice *self, const GSList *unmanaged_specs)
+nm_device_set_unmanaged_by_user_settings (NMDevice *self)
 {
-	NMDevicePrivate *priv;
 	gboolean unmanaged;
 
 	g_return_if_fail (NM_IS_DEVICE (self));
 
-	priv = NM_DEVICE_GET_PRIVATE (self);
+	if (nm_device_get_unmanaged_flags (self, NM_UNMANAGED_PLATFORM_INIT)) {
+		/* the device is already unmanaged due to platform-init.
+		 *
+		 * We want to delay evaluating the device spec, because it will freeze
+		 * the permanent MAC address. That should not be done, before the platform
+		 * link is fully initialized (via UDEV).
+		 *
+		 * Note that when clearing NM_UNMANAGED_PLATFORM_INIT, we will re-evaluate
+		 * whether the device is unmanaged by user-settings. */
+		return;
+	}
 
-	unmanaged = nm_device_spec_match_list (self, unmanaged_specs);
+	unmanaged = nm_device_spec_match_list (self,
+	                                       nm_settings_get_unmanaged_specs (NM_DEVICE_GET_PRIVATE (self)->settings));
 
 	nm_device_set_unmanaged_by_flags (self,
 	                                  NM_UNMANAGED_USER_SETTINGS,
-	                                  unmanaged,
+	                                  !!unmanaged,
 	                                  unmanaged
 	                                      ? NM_DEVICE_STATE_REASON_NOW_UNMANAGED
 	                                      : NM_DEVICE_STATE_REASON_NOW_MANAGED);
@@ -11211,7 +11206,7 @@ _set_state_full (NMDevice *self,
 		if (reason != NM_DEVICE_STATE_REASON_CONNECTION_ASSUMED) {
 			if (old_state == NM_DEVICE_STATE_UNMANAGED || priv->firmware_missing) {
 				if (!nm_device_bring_up (self, TRUE, &no_firmware) && no_firmware)
-					_LOGW (LOGD_HW, "firmware may be missing.");
+					_LOGW (LOGD_PLATFORM, "firmware may be missing.");
 				nm_device_set_firmware_missing (self, no_firmware ? TRUE : FALSE);
 			}
 
@@ -11560,11 +11555,17 @@ const char *
 nm_device_get_hw_address (NMDevice *self)
 {
 	NMDevicePrivate *priv;
+	char buf[NM_UTILS_HWADDR_LEN_MAX];
+	gsize l;
 
 	g_return_val_if_fail (NM_IS_DEVICE (self), NULL);
+
 	priv = NM_DEVICE_GET_PRIVATE (self);
 
-	nm_assert ((!priv->hw_addr) ^ (priv->hw_addr_len > 0));
+	nm_assert (   (!priv->hw_addr && priv->hw_addr_len == 0)
+	           || (   priv->hw_addr
+	               && _nm_utils_hwaddr_aton (priv->hw_addr, buf, sizeof (buf), &l)
+	               && l == priv->hw_addr_len));
 
 	return priv->hw_addr;
 }
@@ -11575,7 +11576,6 @@ nm_device_update_hw_address (NMDevice *self)
 	NMDevicePrivate *priv;
 	const guint8 *hwaddr;
 	gsize hwaddrlen = 0;
-	gboolean changed = FALSE;
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
 	if (priv->ifindex <= 0)
@@ -11588,38 +11588,46 @@ nm_device_update_hw_address (NMDevice *self)
 	    && nm_utils_hwaddr_matches (hwaddr, hwaddrlen, nm_ip_addr_zero.addr_eth, sizeof (nm_ip_addr_zero.addr_eth)))
 		hwaddrlen = 0;
 
-	if (hwaddrlen) {
-		priv->hw_addr_len = hwaddrlen;
-		if (!priv->hw_addr || !nm_utils_hwaddr_matches (priv->hw_addr, -1, hwaddr, hwaddrlen)) {
-			g_free (priv->hw_addr);
-			priv->hw_addr = nm_utils_hwaddr_ntoa (hwaddr, hwaddrlen);
+	if (!hwaddrlen)
+		return FALSE;
 
-			_LOGD (LOGD_HW | LOGD_DEVICE, "hw-addr: hardware address now %s", priv->hw_addr);
-			_notify (self, PROP_HW_ADDRESS);
+	if (   priv->hw_addr_len
+	    && priv->hw_addr_len != hwaddrlen) {
+		char s_buf[NM_UTILS_HWADDR_LEN_MAX_STR];
 
-			if (   !priv->hw_addr_initial
-			    || (   priv->hw_addr_type == HW_ADDR_TYPE_UNSET
-			        && priv->state < NM_DEVICE_STATE_PREPARE
-			        && !nm_device_is_activating (self))) {
-				/* when we get a hw_addr the first time or while the device
-				 * is not activated (with no explict hw address set), always
-				 * update our inital hw-address as well. */
-				nm_device_update_initial_hw_address (self);
-			}
-			changed = TRUE;
-		}
-	} else {
-		/* Invalid or no hardware address */
-		if (priv->hw_addr_len != 0) {
-			_LOGD (LOGD_HW | LOGD_DEVICE,
-			       "hw-addr: failed reading current MAC address (stay with %s)",
-			       priv->hw_addr);
-		} else {
-			_LOGD (LOGD_HW | LOGD_DEVICE,
-			       "hw-addr: failed reading current MAC address");
-		}
+		/* we cannot change the address length of a device once it is set (except
+		 * unrealizing the device).
+		 *
+		 * The reason is that the permanent and initial MAC addresses also must have the
+		 * same address length, so it's unclear what it would mean that the length changes. */
+		_LOGD (LOGD_PLATFORM | LOGD_DEVICE,
+		       "hw-addr: read a MAC address with differing length (%s vs. %s)",
+		       priv->hw_addr,
+		       nm_utils_hwaddr_ntoa_buf (hwaddr, hwaddrlen, TRUE, s_buf, sizeof (s_buf)));
+		return FALSE;
 	}
-	return changed;
+
+	if (   priv->hw_addr
+	    && nm_utils_hwaddr_matches (priv->hw_addr, -1, hwaddr, hwaddrlen))
+		return FALSE;
+
+	g_free (priv->hw_addr);
+	priv->hw_addr_len_ = hwaddrlen;
+	priv->hw_addr = nm_utils_hwaddr_ntoa (hwaddr, hwaddrlen);
+
+	_LOGD (LOGD_PLATFORM | LOGD_DEVICE, "hw-addr: hardware address now %s", priv->hw_addr);
+	_notify (self, PROP_HW_ADDRESS);
+
+	if (   !priv->hw_addr_initial
+	    || (   priv->hw_addr_type == HW_ADDR_TYPE_UNSET
+	        && priv->state < NM_DEVICE_STATE_PREPARE
+	        && !nm_device_is_activating (self))) {
+		/* when we get a hw_addr the first time or while the device
+		 * is not activated (with no explict hw address set), always
+		 * update our inital hw-address as well. */
+		nm_device_update_initial_hw_address (self);
+	}
+	return TRUE;
 }
 
 void
@@ -11643,12 +11651,14 @@ nm_device_update_initial_hw_address (NMDevice *self)
 }
 
 void
-nm_device_update_permanent_hw_address (NMDevice *self)
+nm_device_update_permanent_hw_address (NMDevice *self, gboolean force_freeze)
 {
 	NMDevicePrivate *priv = NM_DEVICE_GET_PRIVATE (self);
 	guint8 buf[NM_UTILS_HWADDR_LEN_MAX];
 	size_t len = 0;
 	gboolean success_read;
+	int ifindex;
+	const NMPlatformLink *pllink;
 
 	if (priv->hw_addr_perm) {
 		/* the permanent hardware address is only read once and not
@@ -11659,35 +11669,60 @@ nm_device_update_permanent_hw_address (NMDevice *self)
 		return;
 	}
 
-	if (priv->ifindex <= 0)
+	ifindex = priv->ifindex;
+	if (ifindex <= 0)
 		return;
 
-	if (!priv->hw_addr_len) {
-		nm_device_update_hw_address (self);
-		if (!priv->hw_addr_len)
+	/* the user is advised to configure stable MAC addresses for software devices via
+	 * UDEV. Thus, check whether the link is fully initialized. */
+	pllink = nm_platform_link_get (NM_PLATFORM_GET, ifindex);
+	if (   !pllink
+	    || !pllink->initialized) {
+		if (!force_freeze) {
+			/* we can afford to wait. Back off and leave the permanent MAC address
+			 * undecided for now. */
 			return;
+		}
+		/* try to refresh the link just to give UDEV a bit more time... */
+		nm_platform_link_refresh (NM_PLATFORM_GET, ifindex);
+		/* maybe the MAC address changed... */
+		nm_device_update_hw_address (self);
+	} else if (!priv->hw_addr_len)
+		nm_device_update_hw_address (self);
+
+	if (!priv->hw_addr_len) {
+		/* we need the current MAC address because we require the permanent MAC address
+		 * to have the same length as the current address.
+		 *
+		 * Abort if there is no current MAC address. */
+		return;
 	}
 
-	success_read = nm_platform_link_get_permanent_address (NM_PLATFORM_GET, priv->ifindex, buf, &len);
-	if (!success_read || len != priv->hw_addr_len) {
-		/* Fall back to current address. We use the fake address and keep it
-		 * until the device unrealizes.
-		 *
-		 * In some cases it might be necessary to know whether this is a "real" or
-		 * a temporary address (fake). */
-		_LOGD (LOGD_HW | LOGD_ETHER, "hw-addr: %s (use current: %s)",
-		       success_read
-		           ? "read HW addr length of permanent MAC address differs"
-		           : "unable to read permanent MAC address",
-		       priv->hw_addr);
-		priv->hw_addr_perm_fake = TRUE;
-		priv->hw_addr_perm = g_strdup (priv->hw_addr);
-	} else {
+	success_read = nm_platform_link_get_permanent_address (NM_PLATFORM_GET, ifindex, buf, &len);
+	if (success_read && priv->hw_addr_len == len) {
 		priv->hw_addr_perm_fake = FALSE;
 		priv->hw_addr_perm = nm_utils_hwaddr_ntoa (buf, len);
 		_LOGD (LOGD_DEVICE, "hw-addr: read permanent MAC address '%s'",
 		       priv->hw_addr_perm);
+		goto notify_and_out;
 	}
+
+	/* we failed to read a permanent MAC address, thus we use a fake address,
+	 * that is the current MAC address of the device.
+	 *
+	 * Note that the permanet MAC address of a NMDevice instance does not change
+	 * after being set once. Thus, we use now a fake address and stick to that
+	 * (until we unrealize the device). */
+	priv->hw_addr_perm_fake = TRUE;
+
+	_LOGD (LOGD_PLATFORM | LOGD_ETHER, "hw-addr: %s (use current: %s)",
+	       success_read
+	           ? "read HW addr length of permanent MAC address differs"
+	           : "unable to read permanent MAC address",
+	       priv->hw_addr);
+	priv->hw_addr_perm = g_strdup (priv->hw_addr);
+
+notify_and_out:
 	_notify (self, PROP_PERM_HW_ADDRESS);
 }
 
@@ -11779,25 +11814,25 @@ nm_device_hw_addr_is_explict (NMDevice *self)
 }
 
 static gboolean
-_hw_addr_matches (NMDevice *self, const char *addr)
+_hw_addr_matches (NMDevice *self, const guint8 *addr, gsize addr_len)
 {
 	const char *cur_addr;
 
 	cur_addr = nm_device_get_hw_address (self);
-	return cur_addr && nm_utils_hwaddr_matches (cur_addr, -1, addr, -1);
+	return cur_addr && nm_utils_hwaddr_matches (addr, addr_len, cur_addr, -1);
 }
 
 static gboolean
 _hw_addr_set (NMDevice *self,
-              const char *addr,
-              const char *operation,
-              const char *detail)
+              const char *const addr,
+              const char *const operation,
+              const char *const detail)
 {
 	NMDevicePrivate *priv;
 	gboolean success = FALSE;
 	NMPlatformError plerr;
 	guint8 addr_bytes[NM_UTILS_HWADDR_LEN_MAX];
-	guint hw_addr_len;
+	gsize addr_len;
 	gboolean was_up;
 
 	nm_assert (NM_IS_DEVICE (self));
@@ -11806,17 +11841,17 @@ _hw_addr_set (NMDevice *self,
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
 
+	if (!_nm_utils_hwaddr_aton (addr, addr_bytes, sizeof (addr_bytes), &addr_len))
+		g_return_val_if_reached (FALSE);
+
 	/* Do nothing if current MAC is same */
-	if (_hw_addr_matches (self, addr)) {
+	if (_hw_addr_matches (self, addr_bytes, addr_len)) {
 		_LOGT (LOGD_DEVICE, "set-hw-addr: no MAC address change needed (%s)", addr);
 		return TRUE;
 	}
 
-	hw_addr_len = priv->hw_addr_len;
-	if (!hw_addr_len)
-		hw_addr_len = _nm_utils_hwaddr_length (addr);
-	if (   !hw_addr_len
-	    || !nm_utils_hwaddr_aton (addr, addr_bytes, hw_addr_len))
+	if (   priv->hw_addr_len
+	    && priv->hw_addr_len != addr_len)
 		g_return_val_if_reached (FALSE);
 
 	_LOGT (LOGD_DEVICE, "set-hw-addr: setting MAC address to '%s' (%s, %s)...", addr, operation, detail);
@@ -11827,12 +11862,12 @@ _hw_addr_set (NMDevice *self,
 		nm_device_take_down (self, FALSE);
 	}
 
-	plerr = nm_platform_link_set_address (NM_PLATFORM_GET, nm_device_get_ip_ifindex (self), addr_bytes, hw_addr_len);
+	plerr = nm_platform_link_set_address (NM_PLATFORM_GET, nm_device_get_ip_ifindex (self), addr_bytes, addr_len);
 	success = (plerr == NM_PLATFORM_ERROR_SUCCESS);
 	if (success) {
 		/* MAC address succesfully changed; update the current MAC to match */
 		nm_device_update_hw_address (self);
-		if (_hw_addr_matches (self, addr)) {
+		if (_hw_addr_matches (self, addr_bytes, addr_len)) {
 			_LOGI (LOGD_DEVICE, "set-hw-addr: %s MAC address to %s (%s)",
 			       operation, addr, detail);
 		} else {
@@ -11862,7 +11897,7 @@ _hw_addr_set (NMDevice *self,
 					goto handle_fail;
 				if (!nm_device_update_hw_address (self))
 					goto handle_wait;
-				if (!_hw_addr_matches (self, addr))
+				if (!_hw_addr_matches (self, addr_bytes, addr_len))
 					goto handle_fail;
 
 				break;
@@ -11945,7 +11980,7 @@ nm_device_hw_addr_set_cloned (NMDevice *self, NMConnection *connection, gboolean
 	}
 
 	if (nm_streq (addr, NM_CLONED_MAC_PERMANENT)) {
-		addr = nm_device_get_permanent_hw_address (self, TRUE);
+		addr = nm_device_get_permanent_hw_address (self);
 		if (!addr)
 			return FALSE;
 		priv->hw_addr_type = HW_ADDR_TYPE_PERMANENT;
@@ -11989,9 +12024,8 @@ nm_device_hw_addr_set_cloned (NMDevice *self, NMConnection *connection, gboolean
 		addr = hw_addr_generated;
 	} else {
 		/* this must be a valid address. Otherwise, we shouldn't come here. */
-		if (_nm_utils_hwaddr_length (addr) <= 0) {
+		if (!nm_utils_hwaddr_valid (addr, -1))
 			g_return_val_if_reached (FALSE);
-		}
 		priv->hw_addr_type = HW_ADDR_TYPE_EXPLICIT;
 	}
 
@@ -12023,19 +12057,30 @@ nm_device_hw_addr_reset (NMDevice *self, const char *detail)
 }
 
 const char *
-nm_device_get_permanent_hw_address (NMDevice *self, gboolean fallback_fake)
+nm_device_get_permanent_hw_address_full (NMDevice *self, gboolean force_freeze, gboolean *out_is_fake)
 {
 	NMDevicePrivate *priv;
 
 	g_return_val_if_fail (NM_IS_DEVICE (self), NULL);
 
 	priv = NM_DEVICE_GET_PRIVATE (self);
-	if (!priv->hw_addr_perm)
-		return NULL;
-	if (   priv->hw_addr_perm_fake
-	    && !fallback_fake)
-		return NULL;
+
+	if (   !priv->hw_addr_perm
+	    && force_freeze) {
+		/* somebody requests a permanent MAC address, but we don't have it set
+		 * yet. We cannot delay it any longer and try to get it without waiting
+		 * for UDEV. */
+		nm_device_update_permanent_hw_address (self, TRUE);
+	}
+
+	NM_SET_OUT (out_is_fake, priv->hw_addr_perm && priv->hw_addr_perm_fake);
 	return priv->hw_addr_perm;
+}
+
+const char *
+nm_device_get_permanent_hw_address (NMDevice *self)
+{
+	return nm_device_get_permanent_hw_address_full (self, TRUE, NULL);
 }
 
 const char *
@@ -12092,7 +12137,7 @@ spec_match_list (NMDevice *self, const GSList *specs)
 		}
 	}
 
-	hw_addr_perm = nm_device_get_permanent_hw_address (self, FALSE);
+	hw_addr_perm = nm_device_get_permanent_hw_address (self);
 	if (hw_addr_perm) {
 		m = nm_match_spec_hwaddr (specs, hw_addr_perm);
 		matched = MAX (matched, m);
@@ -12188,13 +12233,16 @@ constructor (GType type,
 	}
 
 	if (priv->hw_addr_perm) {
-		priv->hw_addr_len = _nm_utils_hwaddr_length (priv->hw_addr_perm);
-		if (!priv->hw_addr_len) {
+		guint8 buf[NM_UTILS_HWADDR_LEN_MAX];
+		gsize l;
+
+		if (!_nm_utils_hwaddr_aton (priv->hw_addr_perm, buf, sizeof (buf), &l)) {
 			g_clear_pointer (&priv->hw_addr_perm, g_free);
 			g_return_val_if_reached (object);
 		}
 
-		priv->hw_addr = g_strdup (priv->hw_addr_perm);
+		priv->hw_addr_len_ = l;
+		priv->hw_addr = nm_utils_hwaddr_ntoa (buf, l);
 		_LOGT (LOGD_DEVICE, "hw-addr: has permanent hw-address '%s'", priv->hw_addr_perm);
 	}
 
@@ -12563,10 +12611,15 @@ get_property (GObject *object, guint prop_id,
 	case PROP_HW_ADDRESS:
 		g_value_set_string (value, priv->hw_addr);
 		break;
-	case PROP_PERM_HW_ADDRESS:
+	case PROP_PERM_HW_ADDRESS: {
+		const char *perm_hw_addr;
+		gboolean perm_hw_addr_is_fake;
+
+		perm_hw_addr = nm_device_get_permanent_hw_address_full (self, FALSE, &perm_hw_addr_is_fake);
 		/* this property is exposed on D-Bus for NMDeviceEthernet and NMDeviceWifi. */
-		g_value_set_string (value, nm_device_get_permanent_hw_address (self, FALSE));
+		g_value_set_string (value, perm_hw_addr && !perm_hw_addr_is_fake ? perm_hw_addr : NULL);
 		break;
+	}
 	case PROP_HAS_PENDING_ACTION:
 		g_value_set_boolean (value, nm_device_has_pending_action (self));
 		break;

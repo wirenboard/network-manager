@@ -2179,6 +2179,10 @@ active_connection_state_cb (NMActiveConnection *active, GParamSpec *pspec, Activ
 		g_print (_("Connection successfully activated (D-Bus active path: %s)\n"),
 		         nm_object_get_path (NM_OBJECT (active)));
 		activate_connection_info_finish (info);
+	} else if (state == NM_ACTIVE_CONNECTION_STATE_DEACTIVATED) {
+		g_string_printf (nmc->return_text, _("Error: Connection activation failed."));
+		nmc->return_value = NMC_RESULT_ERROR_CON_ACTIVATION;
+		activate_connection_info_finish (info);
 	} else if (state == NM_ACTIVE_CONNECTION_STATE_ACTIVATING) {
 		/* activating master connection does not automatically activate any slaves, so their
 		 * active connection state will not progress beyond ACTIVATING state.
@@ -4149,7 +4153,8 @@ set_ip4_address (NmCli *nmc, NMConnection *con, OptionInfo *option, const char *
 		              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP4_CONFIG_METHOD_MANUAL,
 		              NULL);
 	}
-	return set_property (con, option->setting_name, option->property, value, '\0', error);
+	return set_property (con, option->setting_name, option->property, value,
+	                     option->flags & OPTION_MULTI ? '+' : '\0', error);
 }
 
 static gboolean
@@ -4168,7 +4173,8 @@ set_ip6_address (NmCli *nmc, NMConnection *con, OptionInfo *option, const char *
 		              NM_SETTING_IP_CONFIG_METHOD, NM_SETTING_IP6_CONFIG_METHOD_MANUAL,
 		              NULL);
 	}
-	return set_property (con, option->setting_name, option->property, value, '\0', error);
+	return set_property (con, option->setting_name, option->property, value,
+	                     option->flags & OPTION_MULTI ? '+' : '\0', error);
 }
 
 

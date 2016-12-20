@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nmcli
 .\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 09/30/2016
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 12/16/2016
 .\"    Manual: General Commands Manual
-.\"    Source: NetworkManager 1.4.2
+.\"    Source: NetworkManager 1.4.4
 .\"  Language: English
 .\"
-.TH "NMCLI" "1" "" "NetworkManager 1\&.4\&.2" "General Commands Manual"
+.TH "NMCLI" "1" "" "NetworkManager 1\&.4\&.4" "General Commands Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -529,6 +529,7 @@ For 802\&.1X password, the line would be
 .RE
 .\}
 .sp
+
 \fBnmcli\fR
 also accepts
 wifi\-sec
@@ -1321,7 +1322,7 @@ l l l.
 T{
 type
 T}:T{
-connection.type
+connection\&.type
 T}:T{
 This option also accepts values of \fBbond\-slave\fR,
 \fBteam\-slave\fR and \fBbridge\-slave\fR\&. They create
@@ -1331,21 +1332,21 @@ T}
 T{
 con\-name
 T}:T{
-connection.id
+connection\&.id
 T}:T{
 When not provided a default name is generated: <type>[\-<ifname>][\-<num>])\&.
 T}
 T{
 autoconnect
 T}:T{
-connection.autoconnect
+connection\&.autoconnect
 T}:T{
 \ \&
 T}
 T{
 ifname
 T}:T{
-connection.interface-name
+connection\&.interface\-name
 T}:T{
 A value of * will be interpreted as
 no value, making the connection profile interface\-independent\&.
@@ -1355,7 +1356,7 @@ T}
 T{
 master
 T}:T{
-connection.master
+connection\&.master
 T}:T{
 Value specified here will be canonicalized\&.
 It can be prefixed with ifname/, uuid/
@@ -1364,7 +1365,7 @@ T}
 T{
 slave\-type
 T}:T{
-connection.slave-type
+connection\&.slave\-type
 T}:T{
 \ \&
 T}
@@ -1391,17 +1392,17 @@ l l.
 T{
 username
 T}:T{
-pppoe.username
+pppoe\&.username
 T}
 T{
 password
 T}:T{
-pppoe.password
+pppoe\&.password
 T}
 T{
 service
 T}:T{
-pppoe.service
+pppoe\&.service
 T}
 .TE
 .sp 1
@@ -1426,17 +1427,17 @@ l l.
 T{
 mtu
 T}:T{
-wired.mtu
+wired\&.mtu
 T}
 T{
 mac
 T}:T{
-wired.mac-address
+wired\&.mac\-address
 T}
 T{
 cloned\-mac
 T}:T{
-wired.cloned-mac-address
+wired\&.cloned\-mac\-address
 T}
 .TE
 .sp 1
@@ -1463,27 +1464,27 @@ l l.
 T{
 mtu
 T}:T{
-infiniband.mtu
+infiniband\&.mtu
 T}
 T{
 mac
 T}:T{
-infiniband.mac-address
+infiniband\&.mac\-address
 T}
 T{
 transport\-mode
 T}:T{
-infiniband.transport-mode
+infiniband\&.transport\-mode
 T}
 T{
 parent
 T}:T{
-infiniband.parent
+infiniband\&.parent
 T}
 T{
 p\-key
 T}:T{
-infiniband.p-key
+infiniband\&.p\-key
 T}
 .TE
 .sp 1
@@ -1492,7 +1493,7 @@ T}
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&5.\ \&Wi-Fi options
+.B Table\ \&5.\ \&Wi\-Fi options
 .TS
 allbox tab(:);
 lB lB.
@@ -1510,27 +1511,27 @@ l l.
 T{
 ssid
 T}:T{
-wireless.ssid
+wireless\&.ssid
 T}
 T{
 mode
 T}:T{
-wireless.mode
+wireless\&.mode
 T}
 T{
 mtu
 T}:T{
-wireless.mtu
+wireless\&.mtu
 T}
 T{
 mac
 T}:T{
-wireless.mac-address
+wireless\&.mac\-address
 T}
 T{
 cloned\-mac
 T}:T{
-wireless.cloned-mac-address
+wireless\&.cloned\-mac\-address
 T}
 .TE
 .sp 1
@@ -1554,12 +1555,12 @@ l l.
 T{
 nsp
 T}:T{
-wimax.network-name
+wimax\&.network\-name
 T}
 T{
 mac
 T}:T{
-wimax.mac-address
+wimax\&.mac\-address
 T}
 .TE
 .sp 1
@@ -1584,17 +1585,17 @@ l l.
 T{
 apn
 T}:T{
-gsm.apn
+gsm\&.apn
 T}
 T{
 user
 T}:T{
-gsm.username
+gsm\&.username
 T}
 T{
 password
 T}:T{
-gsm.password
+gsm\&.password
 T}
 .TE
 .sp 1
@@ -1618,12 +1619,12 @@ l l.
 T{
 user
 T}:T{
-cdma.username
+cdma\&.username
 T}
 T{
 password
 T}:T{
-cdma.password
+cdma\&.password
 T}
 .TE
 .sp 1
@@ -1649,14 +1650,14 @@ l l lt.
 T{
 addr
 T}:T{
-bluetooth.bdaddr
+bluetooth\&.bdaddr
 T}:T{
 \ \&
 T}
 T{
 bt\-type
 T}:T{
-bluetooth.type
+bluetooth\&.type
 T}:T{
 Apart from the usual dun and
 panu options, the values of dun\-gsm
@@ -1689,27 +1690,27 @@ l l.
 T{
 dev
 T}:T{
-vlan.parent
+vlan\&.parent
 T}
 T{
 id
 T}:T{
-vlan.id
+vlan\&.id
 T}
 T{
 flags
 T}:T{
-vlan.flags
+vlan\&.flags
 T}
 T{
 ingress
 T}:T{
-vlan.ingress-priority-map
+vlan\&.ingress\-priority\-map
 T}
 T{
 egress
 T}:T{
-vlan.egress-priority-map
+vlan\&.egress\-priority\-map
 T}
 .TE
 .sp 1
@@ -1788,7 +1789,7 @@ l l.
 T{
 config
 T}:T{
-team.config
+team\&.config
 T}
 .TE
 .sp 1
@@ -1811,7 +1812,7 @@ l l.
 T{
 config
 T}:T{
-team-port.config
+team\-port\&.config
 T}
 .TE
 .sp 1
@@ -1844,57 +1845,57 @@ l l.
 T{
 stp
 T}:T{
-bridge.stp
+bridge\&.stp
 T}
 T{
 priority
 T}:T{
-bridge.priority
+bridge\&.priority
 T}
 T{
 forward\-delay
 T}:T{
-bridge.forward-delay
+bridge\&.forward\-delay
 T}
 T{
 hello\-time
 T}:T{
-bridge.hello-time
+bridge\&.hello\-time
 T}
 T{
 max\-age
 T}:T{
-bridge.max-age
+bridge\&.max\-age
 T}
 T{
 ageing\-time
 T}:T{
-bridge.ageing-time
+bridge\&.ageing\-time
 T}
 T{
 multicast\-snooping
 T}:T{
-bridge.multicast-snooping
+bridge\&.multicast\-snooping
 T}
 T{
 mac
 T}:T{
-bridge.mac-address
+bridge\&.mac\-address
 T}
 T{
 priority
 T}:T{
-bridge-port.priority
+bridge\-port\&.priority
 T}
 T{
 path\-cost
 T}:T{
-bridge-port.path-cost
+bridge\-port\&.path\-cost
 T}
 T{
 hairpin
 T}:T{
-bridge-port.hairpin-mode
+bridge\-port\&.hairpin\-mode
 T}
 .TE
 .sp 1
@@ -1918,12 +1919,12 @@ l l.
 T{
 vpn\-type
 T}:T{
-vpn.service-type
+vpn\&.service\-type
 T}
 T{
 user
 T}:T{
-vpn.user-name
+vpn\&.user\-name
 T}
 .TE
 .sp 1
@@ -1948,17 +1949,17 @@ l l.
 T{
 ssid
 T}:T{
-olpc-mesh.ssid
+olpc\-mesh\&.ssid
 T}
 T{
 channel
 T}:T{
-olpc-mesh.channel
+olpc\-mesh\&.channel
 T}
 T{
 dhcp\-anycast
 T}:T{
-olpc-mesh.dhcp-anycast-address
+olpc\-mesh\&.dhcp\-anycast\-address
 T}
 .TE
 .sp 1
@@ -1984,22 +1985,22 @@ l l.
 T{
 username
 T}:T{
-adsl.username
+adsl\&.username
 T}
 T{
 protocol
 T}:T{
-adsl.protocol
+adsl\&.protocol
 T}
 T{
 password
 T}:T{
-adsl.password
+adsl\&.password
 T}
 T{
 encapsulation
 T}:T{
-adsl.encapsulation
+adsl\&.encapsulation
 T}
 .TE
 .sp 1
@@ -2024,17 +2025,17 @@ l l.
 T{
 dev
 T}:T{
-macvlan.parent
+macvlan\&.parent
 T}
 T{
 mode
 T}:T{
-macvlan.mode
+macvlan\&.mode
 T}
 T{
 tap
 T}:T{
-macvlan.tap
+macvlan\&.tap
 T}
 .TE
 .sp 1
@@ -2063,37 +2064,37 @@ l l.
 T{
 id
 T}:T{
-vxlan.id
+vxlan\&.id
 T}
 T{
 remote
 T}:T{
-vxlan.remote
+vxlan\&.remote
 T}
 T{
 dev
 T}:T{
-vxlan.parent
+vxlan\&.parent
 T}
 T{
 local
 T}:T{
-vxlan.local
+vxlan\&.local
 T}
 T{
 source\-port\-min
 T}:T{
-vxlan.source-port-min
+vxlan\&.source\-port\-min
 T}
 T{
 source\-port\-max
 T}:T{
-vxlan.source-port-max
+vxlan\&.source\-port\-max
 T}
 T{
 destination\-port
 T}:T{
-vxlan.destination-port
+vxlan\&.destination\-port
 T}
 .TE
 .sp 1
@@ -2121,32 +2122,32 @@ l l.
 T{
 mode
 T}:T{
-tun.mode
+tun\&.mode
 T}
 T{
 owner
 T}:T{
-tun.owner
+tun\&.owner
 T}
 T{
 group
 T}:T{
-tun.group
+tun\&.group
 T}
 T{
 pi
 T}:T{
-tun.pi
+tun\&.pi
 T}
 T{
 vnet\-hdr
 T}:T{
-tun.vnet-hdr
+tun\&.vnet\-hdr
 T}
 T{
 multi\-queue
 T}:T{
-tun.multi-queue
+tun\&.multi\-queue
 T}
 .TE
 .sp 1
@@ -2172,22 +2173,22 @@ l l.
 T{
 mode
 T}:T{
-ip-tunnel.mode
+ip\-tunnel\&.mode
 T}
 T{
 local
 T}:T{
-ip-tunnel.local
+ip\-tunnel\&.local
 T}
 T{
 remote
 T}:T{
-ip-tunnel.remote
+ip\-tunnel\&.remote
 T}
 T{
 dev
 T}:T{
-ip-tunnel.parent
+ip\-tunnel\&.parent
 T}
 .TE
 .sp 1
@@ -2213,7 +2214,7 @@ l l l.
 T{
 ip4
 T}:T{
-ipv4.addresses
+ipv4\&.addresses
 T}:T{
 This option can be specified multiple times\&.
 It\*(Aqs equivalent of using +ipv4\&.addresses syntax\&.
@@ -2221,7 +2222,7 @@ T}
 T{
 gw4
 T}:T{
-ipv4.gateway
+ipv4\&.gateway
 T}:T{
 \ \&
 T}
@@ -2249,7 +2250,7 @@ l l l.
 T{
 ip6
 T}:T{
-ipv6.addresses
+ipv6\&.addresses
 T}:T{
 This option can be specified multiple times\&.
 It\*(Aqs equivalent of using +ipv6\&.addresses syntax\&.
@@ -2257,7 +2258,7 @@ T}
 T{
 gw6
 T}:T{
-ipv6.gateway
+ipv6\&.gateway
 T}:T{
 \ \&
 T}

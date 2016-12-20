@@ -610,7 +610,7 @@ find_device_by_permanent_hw_addr (NMManager *manager, const char *hwaddr)
 
 	if (nm_utils_hwaddr_valid (hwaddr, -1)) {
 		for (iter = NM_MANAGER_GET_PRIVATE (manager)->devices; iter; iter = iter->next) {
-			device_addr = nm_device_get_permanent_hw_address (NM_DEVICE (iter->data), FALSE);
+			device_addr = nm_device_get_permanent_hw_address (NM_DEVICE (iter->data));
 			if (device_addr && nm_utils_hwaddr_matches (hwaddr, -1, device_addr, -1))
 				return NM_DEVICE (iter->data);
 		}
@@ -746,9 +746,7 @@ checked_connectivity (GObject *object, GAsyncResult *result, gpointer user_data)
 
 		if (connectivity == NM_CONNECTIVITY_FULL)
 			set_state (manager, NM_STATE_CONNECTED_GLOBAL);
-		else if (   connectivity == NM_CONNECTIVITY_PORTAL
-		         || connectivity == NM_CONNECTIVITY_LIMITED)
-			set_state (manager, NM_STATE_CONNECTED_SITE);
+
 		_notify (manager, PROP_CONNECTIVITY);
 	}
 
@@ -756,7 +754,7 @@ checked_connectivity (GObject *object, GAsyncResult *result, gpointer user_data)
 }
 
 static NMState
-find_best_device_state (NMManager *manager)
+find_best_device_state (NMManager *manager, gboolean *force_connectivity_check)
 {
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (manager);
 	NMState best_state = NM_STATE_DISCONNECTED;
@@ -774,6 +772,7 @@ find_best_device_state (NMManager *manager)
 					return NM_STATE_CONNECTED_GLOBAL;
 
 				best_state = NM_STATE_CONNECTED_SITE;
+				NM_SET_OUT (force_connectivity_check, TRUE);
 			} else {
 				if (best_state < NM_STATE_CONNECTING)
 					best_state = NM_STATE_CONNECTED_LOCAL;
@@ -827,6 +826,7 @@ nm_manager_update_state (NMManager *manager)
 {
 	NMManagerPrivate *priv;
 	NMState new_state = NM_STATE_DISCONNECTED;
+	gboolean force_connectivity_check = FALSE;
 
 	g_return_if_fail (NM_IS_MANAGER (manager));
 
@@ -835,11 +835,11 @@ nm_manager_update_state (NMManager *manager)
 	if (manager_sleeping (manager))
 		new_state = NM_STATE_ASLEEP;
 	else
-		new_state = find_best_device_state (manager);
+		new_state = find_best_device_state (manager, &force_connectivity_check);
 
 	nm_connectivity_set_online (priv->connectivity, new_state >= NM_STATE_CONNECTED_LOCAL);
 
-	if (new_state == NM_STATE_CONNECTED_SITE) {
+	if (new_state == NM_STATE_CONNECTED_SITE || force_connectivity_check) {
 		nm_connectivity_check_async (priv->connectivity,
 		                             checked_connectivity,
 		                             g_object_ref (manager));
@@ -1320,11 +1320,10 @@ system_unmanaged_devices_changed_cb (NMSettings *settings,
 {
 	NMManager *self = NM_MANAGER (user_data);
 	NMManagerPrivate *priv = NM_MANAGER_GET_PRIVATE (self);
-	const GSList *unmanaged_specs, *iter;
+	const GSList *iter;
 
-	unmanaged_specs = nm_settings_get_unmanaged_specs (priv->settings);
 	for (iter = priv->devices; iter; iter = g_slist_next (iter))
-		nm_device_set_unmanaged_by_user_settings (NM_DEVICE (iter->data), unmanaged_specs);
+		nm_device_set_unmanaged_by_user_settings (NM_DEVICE (iter->data));
 }
 
 static void
@@ -1993,7 +1992,7 @@ add_device (NMManager *self, NMDevice *device, GError **error)
 	type_desc = nm_device_get_type_desc (device);
 	g_assert (type_desc);
 
-	nm_device_set_unmanaged_by_user_settings (device, nm_settings_get_unmanaged_specs (priv->settings));
+	nm_device_set_unmanaged_by_user_settings (device);
 
 	nm_device_set_unmanaged_flags (device,
 	                               NM_UNMANAGED_SLEEPING,
@@ -2127,10 +2126,10 @@ platform_link_added (NMManager *self,
 		device = nm_device_factory_create_device (factory, plink->name, plink, NULL, &ignore, &error);
 		if (!device) {
 			if (!ignore) {
-				_LOGW (LOGD_HW, "%s: factory failed to create device: %s",
+				_LOGW (LOGD_PLATFORM, "%s: factory failed to create device: %s",
 				       plink->name, error->message);
 			} else {
-				_LOGD (LOGD_HW, "%s: factory failed to create device: %s",
+				_LOGD (LOGD_PLATFORM, "%s: factory failed to create device: %s",
 				       plink->name, error->message);
 			}
 			return;
@@ -2144,7 +2143,7 @@ platform_link_added (NMManager *self,
 		case NM_LINK_TYPE_OLPC_MESH:
 		case NM_LINK_TYPE_TEAM:
 		case NM_LINK_TYPE_WIFI:
-			_LOGI (LOGD_HW, "(%s): '%s' plugin not available; creating generic device",
+			_LOGI (LOGD_PLATFORM, "(%s): '%s' plugin not available; creating generic device",
 			       plink->name, nm_link_type_to_string (plink->type));
 			nm_plugin_missing = TRUE;
 			/* fall through */
@@ -2812,15 +2811,15 @@ unmanaged_to_disconnected (NMDevice *device)
 
 	if (nm_device_get_state (device) == NM_DEVICE_STATE_UNMANAGED) {
 		nm_device_state_changed (device,
-					 NM_DEVICE_STATE_UNAVAILABLE,
-					 NM_DEVICE_STATE_REASON_USER_REQUESTED);
+		                         NM_DEVICE_STATE_UNAVAILABLE,
+		                         NM_DEVICE_STATE_REASON_USER_REQUESTED);
 	}
 
 	if (   nm_device_is_available (device, NM_DEVICE_CHECK_DEV_AVAILABLE_FOR_USER_REQUEST)
 	    && (nm_device_get_state (device) == NM_DEVICE_STATE_UNAVAILABLE)) {
 		nm_device_state_changed (device,
-					 NM_DEVICE_STATE_DISCONNECTED,
-					 NM_DEVICE_STATE_REASON_USER_REQUESTED);
+		                         NM_DEVICE_STATE_DISCONNECTED,
+		                         NM_DEVICE_STATE_REASON_USER_REQUESTED);
 	}
 }
 
@@ -4060,16 +4059,26 @@ do_sleep_wake (NMManager *self, gboolean sleeping_changed)
 
 		if (waking_from_suspend) {
 			sleep_devices_clear (self);
-			/* Belatedly take down Wake-on-LAN devices; ideally we wouldn't have to do this
-			 * but for now it's the only way to make sure we re-check their connectivity.
-			 */
 			for (iter = priv->devices; iter; iter = iter->next) {
 				NMDevice *device = iter->data;
 
 				if (nm_device_is_software (device))
 					continue;
+
+				/* Belatedly take down Wake-on-LAN devices; ideally we wouldn't have to do this
+				 * but for now it's the only way to make sure we re-check their connectivity.
+				 */
 				if (device_is_wake_on_lan (device))
 					nm_device_set_unmanaged_by_flags (device, NM_UNMANAGED_SLEEPING, TRUE, NM_DEVICE_STATE_REASON_SLEEPING);
+
+				/* Check if the device is unmanaged but the state transition is still pending.
+				 * If so, change state now so that later we re-manage the device forcing a
+				 * re-check of available connections.
+				 */
+				if (   !nm_device_get_managed (device, FALSE)
+				    && nm_device_get_state (device) != NM_DEVICE_STATE_UNMANAGED) {
+					nm_device_state_changed (device, NM_DEVICE_STATE_UNMANAGED, NM_DEVICE_STATE_REASON_SLEEPING);
+				}
 			}
 		}
 
@@ -5323,7 +5332,7 @@ rfkill_change (NMManager *self, const char *desc, RfKillType rtype, gboolean ena
 	g_return_if_fail (rtype == RFKILL_TYPE_WLAN || rtype == RFKILL_TYPE_WWAN);
 
 	errno = 0;
-	fd = open ("/dev/rfkill", O_RDWR);
+	fd = open ("/dev/rfkill", O_RDWR | O_CLOEXEC);
 	if (fd < 0) {
 		if (errno == EACCES)
 			_LOGW (LOGD_RFKILL, "(%s): failed to open killswitch device", desc);
@@ -5644,7 +5653,6 @@ get_property (GObject *object, guint prop_id,
 		g_value_set_string (value, VERSION);
 		break;
 	case PROP_STATE:
-		nm_manager_update_state (self);
 		g_value_set_uint (value, priv->state);
 		break;
 	case PROP_STARTUP:

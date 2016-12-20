@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: NetworkManager.conf
 .\"    Author: 
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 09/30/2016
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 12/16/2016
 .\"    Manual: Configuration
-.\"    Source: NetworkManager 1.4.2
+.\"    Source: NetworkManager 1.4.4
 .\"  Language: English
 .\"
-.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.4\&.2" "Configuration"
+.TH "NETWORKMANAGER\&.CON" "5" "" "NetworkManager 1\&.4\&.4" "Configuration"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -208,7 +208,9 @@ dnsmasq: NetworkManager will run dnsmasq as a local caching nameserver, using a 
 resolv\&.conf
 to point to the local nameserver\&.
 .sp
-unbound: NetworkManager will talk to unbound and dnssec\-triggerd, providing a "split DNS" configuration with DNSSEC support\&. The /etc/resolv\&.conf will be managed by dnssec\-trigger daemon\&.
+unbound: NetworkManager will talk to unbound and dnssec\-triggerd, providing a "split DNS" configuration with DNSSEC support\&. The
+/etc/resolv\&.conf
+will be managed by dnssec\-trigger daemon\&.
 .sp
 none: NetworkManager will not modify resolv\&.conf\&. This implies
 rc\-manager\ \&unmanaged
@@ -259,12 +261,14 @@ This section contains keyfile\-plugin\-specific options, and is normally only us
 .PP
 \fIhostname\fR
 .RS 4
-This key is deprecated and has no effect since the hostname is now stored in /etc/hostname or other system configuration files according to build options\&.
+This key is deprecated and has no effect since the hostname is now stored in
+/etc/hostname
+or other system configuration files according to build options\&.
 .RE
 .PP
 \fIpath\fR
 .RS 4
-The location where keyfiles are read and stored\&. This defaults to "${prefix}/etc/NetworkManager/conf\&.d"\&.
+The location where keyfiles are read and stored\&. This defaults to "/etc/NetworkManager/conf\&.d"\&.
 .RE
 .PP
 \fIunmanaged\-devices\fR
@@ -875,7 +879,8 @@ enable=nm\-version\-min:1\&.3,nm\-version\-min:1\&.2\&.6,nm\-version\-min:1\&.0\
 .RS 4
 The
 keyfile
-plugin is the generic plugin that supports all the connection types and capabilities that NetworkManager has\&. It writes files out in an \&.ini\-style format in /etc/NetworkManager/system\-connections\&.
+plugin is the generic plugin that supports all the connection types and capabilities that NetworkManager has\&. It writes files out in an \&.ini\-style format in
+/etc/NetworkManager/system\-connections\&.
 .sp
 The stored connection file may contain passwords and private keys, so it will be made readable only to root, and the plugin will ignore files that are readable or writable by any user or group other than root\&.
 .sp
@@ -913,7 +918,8 @@ plugin instead\&.
 .PP
 \fIibft\fR, \fIno\-ibft\fR
 .RS 4
-This plugin allows to read iBFT configuration (iSCSI Boot Firmware Table)\&. The configuration is read using /sbin/iscsiadm\&. Users are expected to configure iBFT connections via the firmware interfaces\&. If ibft support is available, it is automatically enabled after
+This plugin allows to read iBFT configuration (iSCSI Boot Firmware Table)\&. The configuration is read using
+/sbin/iscsiadm\&. Users are expected to configure iBFT connections via the firmware interfaces\&. If ibft support is available, it is automatically enabled after
 ifcfg\-rh\&. This can be disabled by
 no\-ibft\&. You can also explicitly specify
 ibft
@@ -921,7 +927,9 @@ to load the plugin without
 ifcfg\-rh
 or to change the plugin order\&.
 .sp
-Note that ibft plugin uses /sbin/iscsiadm and thus requires CAP_SYS_ADMIN capability\&.
+Note that ibft plugin uses
+/sbin/iscsiadm
+and thus requires CAP_SYS_ADMIN capability\&.
 .RE
 .SH "APPENDIX"
 .SS "Device List Format"
