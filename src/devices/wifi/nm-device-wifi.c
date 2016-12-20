@@ -203,7 +203,7 @@ constructed (GObject *object)
 	G_OBJECT_CLASS (nm_device_wifi_parent_class)->constructed (object);
 
 	if (priv->capabilities & NM_WIFI_DEVICE_CAP_AP)
-		_LOGI (LOGD_HW | LOGD_WIFI, "driver supports Access Point (AP) mode");
+		_LOGI (LOGD_PLATFORM | LOGD_WIFI, "driver supports Access Point (AP) mode");
 
 	/* Connect to the supplicant manager */
 	priv->sup_mgr = g_object_ref (nm_supplicant_manager_get ());
@@ -478,13 +478,14 @@ ap_add_remove (NMDeviceWifi *self,
 	}
 
 	g_signal_emit (self, signals[signum], 0, ap);
-	_notify (self, PROP_ACCESS_POINTS);
 
 	if (signum == ACCESS_POINT_REMOVED) {
 		g_hash_table_remove (priv->aps, nm_exported_object_get_path ((NMExportedObject *) ap));
 		nm_exported_object_unexport ((NMExportedObject *) ap);
 		g_object_unref (ap);
 	}
+
+	_notify (self, PROP_ACCESS_POINTS);
 
 	nm_device_emit_recheck_auto_activate (NM_DEVICE (self));
 	if (recheck_available_connections)
@@ -615,7 +616,7 @@ check_connection_compatible (NMDevice *device, NMConnection *connection)
 	if (!s_wireless)
 		return FALSE;
 
-	perm_hw_addr = nm_device_get_permanent_hw_address (device, FALSE);
+	perm_hw_addr = nm_device_get_permanent_hw_address (device);
 	mac = nm_setting_wireless_get_mac_address (s_wireless);
 	if (perm_hw_addr) {
 		if (mac && !nm_utils_hwaddr_matches (mac, -1, perm_hw_addr, -1))
@@ -907,7 +908,7 @@ complete_connection (NMDevice *device,
 	if (hidden)
 		g_object_set (s_wifi, NM_SETTING_WIRELESS_HIDDEN, TRUE, NULL);
 
-	perm_hw_addr = nm_device_get_permanent_hw_address (device, FALSE);
+	perm_hw_addr = nm_device_get_permanent_hw_address (device);
 	if (perm_hw_addr) {
 		setting_mac = nm_setting_wireless_get_mac_address (s_wifi);
 		if (setting_mac) {

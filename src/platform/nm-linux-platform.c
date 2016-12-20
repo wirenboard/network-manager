@@ -36,12 +36,7 @@
 #include <linux/if_tun.h>
 #include <linux/if_tunnel.h>
 #include <netlink/netlink.h>
-#include <netlink/object.h>
-#include <netlink/cache.h>
-#include <netlink/route/link.h>
-#include <netlink/route/link/vlan.h>
-#include <netlink/route/addr.h>
-#include <netlink/route/route.h>
+#include <netlink/msg.h>
 #include <gudev/gudev.h>
 
 #include "nm-utils.h"
@@ -54,6 +49,7 @@
 #include "nm-platform-utils.h"
 #include "wifi/wifi-utils.h"
 #include "wifi/wifi-utils-wext.h"
+#include "nm-utils/unaligned.h"
 
 #define offset_plus_sizeof(t,m) (offsetof (t,m) + sizeof (((t *) NULL)->m))
 
@@ -61,6 +57,7 @@
 
 /* nm-internal error codes for libnl. Make sure they don't overlap. */
 #define _NLE_NM_NOBUFS 500
+#define _NLE_MSG_TRUNC 501
 
 /*********************************************************************************************/
 
@@ -724,7 +721,7 @@ _linktype_get_type (NMPlatform *platform,
 		}
 
 		/* Fallback for drivers that don't call SET_NETDEV_DEVTYPE() */
-		if (wifi_utils_is_wifi (ifname))
+		if (wifi_utils_is_wifi (ifindex, ifname))
 			return NM_LINK_TYPE_WIFI;
 
 		if (arptype == ARPHRD_ETHER) {
@@ -1477,12 +1474,18 @@ _new_from_nl_link (NMPlatform *platform, const NMPCache *cache, struct nlmsghdr 
 	}
 
 	if (tb[IFLA_STATS64]) {
-		struct rtnl_link_stats64 *stats = nla_data (tb[IFLA_STATS64]);
+		/* tb[IFLA_STATS64] is only guaranteed to be 32bit-aligned,
+		 * so in general we can't access the rtnl_link_stats64 struct
+		 * members directly on 64bit architectures. */
+		char *stats = nla_data (tb[IFLA_STATS64]);
 
-		obj->link.rx_packets = stats->rx_packets;
-		obj->link.rx_bytes = stats->rx_bytes;
-		obj->link.tx_packets = stats->tx_packets;
-		obj->link.tx_bytes = stats->tx_bytes;
+#define READ_STAT64(member) \
+	unaligned_read_ne64 (stats + offsetof (struct rtnl_link_stats64, member))
+
+		obj->link.rx_packets = READ_STAT64 (rx_packets);
+		obj->link.rx_bytes   = READ_STAT64 (rx_bytes);
+		obj->link.tx_packets = READ_STAT64 (tx_packets);
+		obj->link.tx_bytes   = READ_STAT64 (tx_bytes);
 	}
 
 	obj->link.n_ifi_flags = ifi->ifi_flags;
@@ -5144,7 +5147,7 @@ tun_add (NMPlatform *platform, const char *name, gboolean tap,
 	_LOGD ("link: add %s '%s' owner %" G_GINT64_FORMAT " group %" G_GINT64_FORMAT,
 	       tap ? "tap" : "tun", name, owner, group);
 
-	fd = open ("/dev/net/tun", O_RDWR);
+	fd = open ("/dev/net/tun", O_RDWR | O_CLOEXEC);
 	if (fd < 0)
 		return FALSE;
 
@@ -5967,6 +5970,23 @@ continue_reading:
 			n = -NLE_AGAIN;
 		}
 		break;
+	case -NLE_MSG_TRUNC: {
+		int buf_size;
+
+		/* the message receive buffer was too small. We lost one message, which
+		 * is unfortunate. Try to double the buffer size for the next time. */
+		buf_size = nl_socket_get_msg_buf_size (sk);
+		if (buf_size < 512*1024) {
+			buf_size *= 2;
+			_LOGT ("netlink: recvmsg: increase message buffer size for recvmsg() to %d bytes", buf_size);
+			if (nl_socket_set_msg_buf_size (sk, buf_size) < 0)
+				nm_assert_not_reached ();
+			if (!handle_events)
+				goto continue_reading;
+		}
+		n = -_NLE_MSG_TRUNC;
+		break;
+	}
 	case -NLE_NOMEM:
 		if (errno == ENOBUFS) {
 			/* we are very much interested in a overrun of the receive buffer.
@@ -6155,8 +6175,17 @@ event_handler_read_netlink (NMPlatform *platform, gboolean wait_for_acks)
 				case -NLE_DUMP_INTR:
 					_LOGD ("netlink: read: uncritical failure to retrieve incoming events: %s (%d)", nl_geterror (nle), nle);
 					break;
+				case -_NLE_MSG_TRUNC:
 				case -_NLE_NM_NOBUFS:
-					_LOGI ("netlink: read: too many netlink events. Need to resynchronize platform cache");
+					_LOGI ("netlink: read: %s. Need to resynchronize platform cache",
+					       ({
+					            const char *_reason = "unknown";
+					            switch (nle) {
+					            case -_NLE_MSG_TRUNC: _reason = "message truncated";       break;
+					            case -_NLE_NM_NOBUFS: _reason = "too many netlink events"; break;
+					            }
+					            _reason;
+					       }));
 					event_handler_recvmsgs (platform, FALSE);
 					delayed_action_wait_for_nl_response_complete_all (platform, WAIT_FOR_NL_RESPONSE_RESULT_FAILED_RESYNC);
 					delayed_action_schedule (platform,
@@ -6411,6 +6440,12 @@ constructed (GObject *_object)
 
 	/* use 8 MB for receive socket kernel queue. */
 	nle = nl_socket_set_buffer_size (priv->nlh, 8*1024*1024, 0);
+	g_assert (!nle);
+
+	/* explicitly set the msg buffer size and disable MSG_PEEK.
+	 * If we later encounter NLE_MSG_TRUNC, we will adjust the buffer size. */
+	nl_socket_disable_msg_peek (priv->nlh);
+	nle = nl_socket_set_msg_buf_size (priv->nlh, 32 * 1024);
 	g_assert (!nle);
 
 	nle = nl_socket_add_memberships (priv->nlh,

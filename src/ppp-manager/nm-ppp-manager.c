@@ -197,7 +197,7 @@ monitor_cb (gpointer user_data)
 		if (errno != ENODEV)
 			_LOGW ("could not read ppp stats: %s", strerror (errno));
 	} else {
-		g_signal_emit (manager, signals[STATS], 0, 
+		g_signal_emit (manager, signals[STATS], 0,
 		               stats.p.ppp_ibytes,
 		               stats.p.ppp_obytes);
 	}
@@ -214,7 +214,7 @@ monitor_stats (NMPPPManager *manager)
 	if (priv->monitor_fd >= 0)
 		return;
 
-	priv->monitor_fd = socket (AF_INET, SOCK_DGRAM, 0);
+	priv->monitor_fd = socket (AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
 	if (priv->monitor_fd >= 0) {
 		g_warn_if_fail (priv->monitor_id == 0);
 		if (priv->monitor_id)
@@ -595,7 +595,7 @@ nm_ppp_manager_class_init (NMPPPManagerClass *manager_class)
 
 	g_type_class_add_private (manager_class, sizeof (NMPPPManagerPrivate));
 
-	exported_object_class->export_path = NM_DBUS_PATH "/PPP";
+	exported_object_class->export_path = NM_DBUS_PATH "/PPP/%u";
 	exported_object_class->export_on_construction = TRUE;
 
 	object_class->dispose = dispose;
@@ -834,6 +834,7 @@ create_pppd_cmd_line (NMPPPManager *self,
                       NMSettingPppoe *pppoe,
                       NMSettingAdsl  *adsl,
                       const char *ppp_name,
+                      guint baud_override,
                       GError **err)
 {
 	NMPPPManagerPrivate *priv = NM_PPP_MANAGER_GET_PRIVATE (self);
@@ -925,6 +926,8 @@ create_pppd_cmd_line (NMPPPManager *self,
 
 	if (nm_setting_ppp_get_baud (setting))
 		nm_cmd_line_add_int (cmd, nm_setting_ppp_get_baud (setting));
+	else if (baud_override)
+		nm_cmd_line_add_int (cmd, (int) baud_override);
 
 	/* noauth by default, because we certainly don't have any information
 	 * with which to verify anything the peer gives us if we ask it to
@@ -1023,6 +1026,7 @@ nm_ppp_manager_start (NMPPPManager *manager,
                       NMActRequest *req,
                       const char *ppp_name,
                       guint32 timeout_secs,
+                      guint baud_override,
                       GError **err)
 {
 	NMPPPManagerPrivate *priv;
@@ -1076,7 +1080,7 @@ nm_ppp_manager_start (NMPPPManager *manager,
 
 	adsl_setting = (NMSettingAdsl *) nm_connection_get_setting (connection, NM_TYPE_SETTING_ADSL);
 
-	ppp_cmd = create_pppd_cmd_line (manager, s_ppp, pppoe_setting, adsl_setting, ppp_name, err);
+	ppp_cmd = create_pppd_cmd_line (manager, s_ppp, pppoe_setting, adsl_setting, ppp_name, baud_override, err);
 	if (!ppp_cmd)
 		goto out;
 

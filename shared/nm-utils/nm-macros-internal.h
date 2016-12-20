@@ -22,7 +22,9 @@
 #ifndef __NM_MACROS_INTERNAL_H__
 #define __NM_MACROS_INTERNAL_H__
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "nm-glib.h"
 
@@ -59,7 +61,31 @@ _nm_auto_free_gstring_impl (GString **str)
 }
 #define nm_auto_free_gstring nm_auto(_nm_auto_free_gstring_impl)
 
-/********************************************************/
+static inline void
+_nm_auto_close_impl (int *pfd)
+{
+	if (*pfd >= 0) {
+		int errsv = errno;
+
+		(void) close (*pfd);
+		errno = errsv;
+	}
+}
+#define nm_auto_close nm_auto(_nm_auto_close_impl)
+
+static inline void
+_nm_auto_fclose_impl (FILE **pfd)
+{
+	if (*pfd) {
+		int errsv = errno;
+
+		(void) fclose (*pfd);
+		errno = errsv;
+	}
+}
+#define nm_auto_fclose nm_auto(_nm_auto_fclose_impl)
+
+/*****************************************************************************/
 
 /* http://stackoverflow.com/a/11172679 */
 #define  _NM_UTILS_MACRO_FIRST(...)                           __NM_UTILS_MACRO_FIRST_HELPER(__VA_ARGS__, throwaway)
@@ -260,13 +286,11 @@ _NM_IN_STRSET_streq (const char *x, const char *s)
 
 /*****************************************************************************/
 
-#define nm_str_not_empty(str) \
-	({ \
-		/* implemented as macro to preserve constness */ \
-		typeof (str) __str = (str); \
-		_nm_unused const char *__str_type_check = __str; \
-		((__str && __str[0]) ? __str : ((char *) NULL)); \
-	})
+static inline const char *
+nm_str_not_empty (const char *str)
+{
+	return str && str[0] ? str : NULL;
+}
 
 static inline char *
 nm_strdup_not_empty (const char *str)
@@ -302,9 +326,11 @@ nm_strdup_not_empty (const char *str)
 
 #if NM_MORE_ASSERTS
 #define nm_assert(cond) G_STMT_START { g_assert (cond); } G_STMT_END
+#define nm_assert_se(cond) G_STMT_START { if (G_LIKELY (cond)) { ; } else { g_assert (FALSE && (cond)); } } G_STMT_END
 #define nm_assert_not_reached() G_STMT_START { g_assert_not_reached (); } G_STMT_END
 #else
 #define nm_assert(cond) G_STMT_START { if (FALSE) { if (cond) { } } } G_STMT_END
+#define nm_assert_se(cond) G_STMT_START { if (G_LIKELY (cond)) { ; } } G_STMT_END
 #define nm_assert_not_reached() G_STMT_START { ; } G_STMT_END
 #endif
 
@@ -367,6 +393,27 @@ nm_g_object_unref (gpointer obj)
 	if (obj)
 		g_object_unref (obj);
 }
+
+/* basically, replaces
+ *   g_clear_pointer (&location, g_free)
+ * with
+ *   nm_clear_g_free (&location)
+ *
+ * Another advantage is that by using a macro and typeof(), it is more
+ * typesafe and gives you for example a compiler warning when pp is a const
+ * pointer or points to a const-pointer.
+ */
+#define nm_clear_g_free(pp) \
+	({  \
+		typeof (*(pp)) *_pp = (pp); \
+		typeof (**_pp) *_p = *_pp; \
+		\
+		if (_p) { \
+			*_pp = NULL; \
+			g_free (_p); \
+		} \
+		!!_p; \
+	})
 
 static inline gboolean
 nm_clear_g_source (guint *id)
